@@ -45,6 +45,7 @@ PUBLISHED:
 
   void add_region(GuiRegion*);
   void add_label(GuiLabel*);
+  void add_label(GuiLabel*, Node*);
 
   void remove_region(GuiRegion*);
   void remove_label(GuiLabel*);

@@ -29,6 +29,11 @@ void GuiBehavior::manage(GuiManager* mgr, EventHandler& eh) {
   GuiItem::manage(mgr, eh);
 }
 
+void GuiBehavior::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
+  _eh = &eh;
+  GuiItem::manage(mgr, eh, n);
+}
+
 void GuiBehavior::unmanage(void) {
   if (_behavior_running)
     this->stop_behavior();

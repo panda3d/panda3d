@@ -149,6 +149,19 @@ void GuiManager::add_label(GuiLabel* label) {
 		       << ") more then once" << endl;
 }
 
+void GuiManager::add_label(GuiLabel* label, Node* parent) {
+  label->test_ref_count_integrity();
+  LabelSet::const_iterator li;
+  li = _labels.find(label);
+  if (li == _labels.end()) {
+    // add it to the scenegraph
+    label->set_arc(new RenderRelation(parent, label->get_geometry()));
+    _labels.insert(label);
+  } else
+    gui_cat->warning() << "tried adding label (0x" << (void*)label
+		       << ") more then once" << endl;
+}
+
 void GuiManager::remove_region(GuiRegion* region) {
   region->test_ref_count_integrity();
   RegionSet::iterator ri;

@@ -15,7 +15,9 @@ void GuiLabel::recompute_transform(void) {
   switch (_type) {
   case SIMPLE_TEXT:
     {
-      LMatrix4f mat = LMatrix4f::scale_mat(_scale) *
+      LMatrix4f mat = LMatrix4f::scale_mat(LVector3f::rfu(_scale_x, _scale_y,
+							  _scale_z)) *
+	LMatrix4f::scale_mat(_scale) *
 	LMatrix4f::scale_mat(LVector3f::rfu((_mirror_x?-1.:1.), 1.,
 					    (_mirror_y?-1.:1.))) *
 	LMatrix4f::translate_mat(_pos);
@@ -27,7 +29,9 @@ void GuiLabel::recompute_transform(void) {
   case SIMPLE_CARD:
   case L_NULL:
     {
-      LMatrix4f mat = LMatrix4f::scale_mat(_scale) *
+      LMatrix4f mat = LMatrix4f::scale_mat(LVector3f::rfu(_scale_x, _scale_y,
+							  _scale_z)) *
+	LMatrix4f::scale_mat(_scale) *
 	LMatrix4f::scale_mat(LVector3f::rfu((_mirror_x?-1.:1.), 1.,
 					    (_mirror_y?-1.:1.))) *
 	LMatrix4f::translate_mat(_pos);
@@ -38,7 +42,9 @@ void GuiLabel::recompute_transform(void) {
     {
       float w=_have_width?_scale*_width:_scale;
       float h=_have_height?_scale*_height:_scale;
-      LMatrix4f mat = LMatrix4f::scale_mat(LVector3f::rfu(w, 1., h)) *
+      LMatrix4f mat = LMatrix4f::scale_mat(LVector3f::rfu(_scale_x, _scale_y,
+							  _scale_z)) *
+	LMatrix4f::scale_mat(LVector3f::rfu(w, 1., h)) *
 	LMatrix4f::scale_mat(LVector3f::rfu((_mirror_x?-1.:1.), 1.,
 					    (_mirror_y?-1.:1.))) *
 	LMatrix4f::translate_mat(_pos);
@@ -334,7 +340,9 @@ void GuiLabel::get_extents(float& l, float& r, float& b, float& t) {
 	ul = LVector3f::rfu(-ratio, 0., 0.5);
 	lr = LVector3f::rfu(ratio, 0., -0.5);
       }
-      LMatrix4f mat = LMatrix4f::scale_mat(_scale) *
+      LMatrix4f mat = LMatrix4f::scale_mat(LVector3f::rfu(_scale_x, _scale_y,
+							  _scale_z)) *
+	LMatrix4f::scale_mat(_scale) *
 	LMatrix4f::translate_mat(_pos);
       ul = mat * ul;
       lr = mat * lr;

@@ -155,7 +155,10 @@ void GuiButton::switch_state(GuiButton::States nstate) {
     _rgn->trap_clicks(false);
     break;
   case UP:
-    _mgr->add_label(_up);
+    if (_alt_root.is_null())
+      _mgr->add_label(_up);
+    else
+      _mgr->add_label(_up, _alt_root);
     if (!_up_event.empty()) {
       gui_cat->debug() << "throwing _up_event '" << _up_event << "'" << endl;
       throw_event(_up_event);
@@ -167,15 +170,21 @@ void GuiButton::switch_state(GuiButton::States nstate) {
     break;
   case UP_ROLLOVER:
     if (_up_rollover != (GuiLabel*)0L) {
-      _mgr->add_label(_up_rollover);
+      if (_alt_root.is_null())
+	_mgr->add_label(_up_rollover);
+      else
+	_mgr->add_label(_up_rollover, _alt_root);
       if (!_up_rollover_event.empty()) {
-	gui_cat->debug() << "throwing _up_rollover_event '" << _up_rollover_event << "'"
-	     << endl;
+	gui_cat->debug() << "throwing _up_rollover_event '"
+			 << _up_rollover_event << "'" << endl;
 	throw_event(_up_rollover_event);
       } else
 	gui_cat->debug() << "_up_rollover_event is empty!" << endl;
     } else {
-      _mgr->add_label(_up);
+      if (_alt_root.is_null())
+	_mgr->add_label(_up);
+      else
+	_mgr->add_label(_up, _alt_root);
       if (!_up_event.empty()) {
 	gui_cat->debug() << "throwing _up_event '" << _up_event << "'" << endl;
 	throw_event(_up_event);
@@ -188,7 +197,10 @@ void GuiButton::switch_state(GuiButton::States nstate) {
       _mgr->add_region(_rgn);
     break;
   case DOWN:
-    _mgr->add_label(_down);
+    if (_alt_root.is_null())
+      _mgr->add_label(_down);
+    else
+      _mgr->add_label(_down, _alt_root);
     if (!_down_event.empty())
       throw_event(_down_event);
     else
@@ -199,13 +211,19 @@ void GuiButton::switch_state(GuiButton::States nstate) {
     break;
   case DOWN_ROLLOVER:
     if (_down_rollover != (GuiLabel*)0L) {
-      _mgr->add_label(_down_rollover);
+      if (_alt_root.is_null())
+	_mgr->add_label(_down_rollover);
+      else
+	_mgr->add_label(_down_rollover, _alt_root);
       if (!_down_rollover_event.empty())
 	throw_event(_down_rollover_event);
       else
 	gui_cat->debug() << "_down_rollover_event is empty!" << endl;
     } else {
-      _mgr->add_label(_down);
+      if (_alt_root.is_null())
+	_mgr->add_label(_down);
+      else
+	_mgr->add_label(_down, _alt_root);
       if (!_down_event.empty())
 	throw_event(_down_event);
       else
@@ -218,7 +236,10 @@ void GuiButton::switch_state(GuiButton::States nstate) {
     break;
   case INACTIVE:
     if (_inactive != (GuiLabel*)0L) {
-      _mgr->add_label(_inactive);
+      if (_alt_root.is_null())
+	_mgr->add_label(_inactive);
+      else
+	_mgr->add_label(_inactive, _alt_root);
       if (!_inactive_event.empty())
 	throw_event(_inactive_event);
     }
@@ -228,7 +249,10 @@ void GuiButton::switch_state(GuiButton::States nstate) {
     break;
   case INACTIVE_ROLLOVER:
     if (_inactive != (GuiLabel*)0L) {
-      _mgr->add_label(_inactive);
+      if (_alt_root.is_null())
+	_mgr->add_label(_inactive);
+      else
+	_mgr->add_label(_inactive, _alt_root);
       if (!_inactive_event.empty())
 	throw_event(_inactive_event);
     }
@@ -255,6 +279,46 @@ void GuiButton::recompute_frame(void) {
     _inactive->recompute();
   GetExtents(_up, _down, _up_rollover, _down_rollover, _inactive, _left,
 	     _right, _bottom, _top);
+  if (_alt_root.is_null()) {
+    // adjust for graph transform
+    LVector3f sc = this->get_graph_scale();
+    LPoint3f p = this->get_graph_pos();
+    float x = sc.dot(LVector3f::rfu(1., 0., 0.));
+    _left *= x;
+    _right *= x;
+    float y = sc.dot(LVector3f::rfu(0., 0., 1.));
+    _bottom *= y;
+    _top *= y;
+    x = p.dot(LVector3f::rfu(1., 0., 0.));
+    _left += x;
+    _right += y;
+    y = p.dot(LVector3f::rfu(0., 0., 1.));
+    _bottom += y;
+    _top += y;
+  }
+  _rgn->set_region(_left, _right, _bottom, _top);
+}
+
+void GuiButton::adjust_region(void) {
+  GetExtents(_up, _down, _up_rollover, _down_rollover, _inactive, _left,
+	     _right, _bottom, _top);
+  if (_alt_root.is_null()) {
+    // adjust for graph transform
+    LVector3f sc = this->get_graph_scale();
+    LPoint3f p = this->get_graph_pos();
+    float x = sc.dot(LVector3f::rfu(1., 0., 0.));
+    _left *= x;
+    _right *= x;
+    float y = sc.dot(LVector3f::rfu(0., 0., 1.));
+    _bottom *= y;
+    _top *= y;
+    x = p.dot(LVector3f::rfu(1., 0., 0.));
+    _left += x;
+    _right += y;
+    y = p.dot(LVector3f::rfu(0., 0., 1.));
+    _bottom += y;
+    _top += y;
+  }
   _rgn->set_region(_left, _right, _bottom, _top);
 }
 
@@ -421,6 +485,29 @@ void GuiButton::manage(GuiManager* mgr, EventHandler& eh) {
 		       << ") that is already managed" << endl;
 }
 
+void GuiButton::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
+  if (!_added_hooks) {
+    eh.add_hook("gui-in-button-" + get_name(), enter_button);
+    eh.add_hook("gui-out-button-" + get_name(), exit_button);
+    eh.add_hook("gui-button-" + get_name() + "-mouse1", click_button_down);
+    eh.add_hook("gui-button-" + get_name() + "-mouse2", click_button_down);
+    eh.add_hook("gui-button-" + get_name() + "-mouse3", click_button_down);
+    eh.add_hook("gui-button-" + get_name() + "-mouse1-up", click_button_up);
+    eh.add_hook("gui-button-" + get_name() + "-mouse2-up", click_button_up);
+    eh.add_hook("gui-button-" + get_name() + "-mouse3-up", click_button_up);
+    _added_hooks = true;
+  }
+  if (_mgr == (GuiManager*)0L) {
+    mgr->add_region(_rgn);
+    GuiBehavior::manage(mgr, eh, n);
+    if (_behavior_running)
+      this->start_behavior();
+    switch_state(UP);
+  } else
+    gui_cat->warning() << "tried to manage button (0x" << (void*)this
+		       << ") that is already managed" << endl;
+}
+
 void GuiButton::unmanage(void) {
   if (_mgr != (GuiManager*)0L)
     _mgr->remove_region(_rgn);
@@ -466,6 +553,19 @@ void GuiButton::set_scale(float f) {
   if (_inactive != (GuiLabel*)0L)
     _inactive->set_scale(f * _inactive_scale);
   GuiBehavior::set_scale(f);
+  this->recompute_frame();
+}
+
+void GuiButton::set_scale(float x, float y, float z) {
+  _up->set_scale(x, y, z);
+  _down->set_scale(x, y, z);
+  if (_up_rollover != (GuiLabel*)0L)
+    _up_rollover->set_scale(x, y, z);
+  if (_down_rollover != (GuiLabel*)0L)
+    _down_rollover->set_scale(x, y, z);
+  if (_inactive != (GuiLabel*)0L)
+    _inactive->set_scale(x, y, z);
+  GuiBehavior::set_scale(x, y, z);
   this->recompute_frame();
 }
 

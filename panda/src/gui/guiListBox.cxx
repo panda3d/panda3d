@@ -325,6 +325,17 @@ void GuiListBox::manage(GuiManager* mgr, EventHandler& eh) {
 		       << ") that is already managed" << endl;
 }
 
+void GuiListBox::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
+  if (_mgr == (GuiManager*)0L) {
+    this->recompute_frame();
+    for (ItemVector::iterator i=_visible.begin(); i!=_visible.end(); ++i)
+      (*i)->manage(mgr, eh, n);
+    GuiBehavior::manage(mgr, eh, n);
+  } else
+    gui_cat->warning() << "tried to manage listbox (0x" << (void*)this
+		       << ") that is already managed" << endl;
+}
+
 void GuiListBox::unmanage(void) {
   for (ItemVector::iterator i=_visible.begin(); i!=_visible.end(); ++i)
     (*i)->unmanage();
@@ -341,6 +352,18 @@ void GuiListBox::set_scale(float f) {
        ++j)
     (*j)->set_scale(f);
   GuiBehavior::set_scale(f);
+}
+
+void GuiListBox::set_scale(float x, float y, float z) {
+  ItemVector::iterator i;
+  for (i=_top_stack.begin(); i!=_top_stack.end(); ++i)
+    (*i)->set_scale(x, y, z);
+  for (i=_visible.begin(); i!=_visible.end(); ++i)
+    (*i)->set_scale(x, y, z);
+  for (ItemDeque::iterator j=_bottom_stack.begin(); j!=_bottom_stack.end();
+       ++j)
+    (*j)->set_scale(x, y, z);
+  GuiBehavior::set_scale(x, y, z);
 }
 
 void GuiListBox::set_pos(const LVector3f& p) {

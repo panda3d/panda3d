@@ -332,6 +332,19 @@ void GuiFrame::manage(GuiManager* mgr, EventHandler& eh) {
 		       << ") that is already managed" << endl;
 }
 
+void GuiFrame::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
+  if (!_added_hooks) {
+    _added_hooks = true;
+  }
+  if (_mgr == (GuiManager*)0L) {
+    for (Boxes::iterator i=_items.begin(); i!=_items.end(); ++i)
+      (*i).get_item()->manage(mgr, eh, n);
+    GuiItem::manage(mgr, eh, n);
+  } else
+    gui_cat->warning() << "tried to manage frame (0x" << (void*)this
+		       << ") that is already managed" << endl;
+}
+
 void GuiFrame::unmanage(void) {
   for (Boxes::iterator i=_items.begin(); i!=_items.end(); ++i)
     (*i).get_item()->unmanage();
@@ -343,6 +356,14 @@ void GuiFrame::set_scale(float f) {
     (*i).get_item()->set_scale(f * (*i).get_scale());
   GuiItem::set_scale(f);
   //  this->recompute_frame();
+}
+
+void GuiFrame::set_scale(float x, float y, float z) {
+  for (Boxes::iterator i=_items.begin(); i!=_items.end(); ++i)
+    (*i).get_item()->set_scale(x * (*i).get_item()->get_scale_x(),
+			       y * (*i).get_item()->get_scale_y(),
+			       z * (*i).get_item()->get_scale_z());
+  GuiItem::set_scale(x, y, z);
 }
 
 void GuiFrame::set_pos(const LVector3f& p) {

@@ -11,11 +11,16 @@ void GuiItem::recompute_frame(void) {
   test_ref_count_integrity();
 }
 
+void GuiItem::adjust_region(void) {
+  test_ref_count_integrity();
+}
+
 void GuiItem::set_priority(GuiLabel*, const GuiItem::Priority) {
 }
 
 GuiItem::GuiItem(const string& name) : Namable(name), _added_hooks(false),
-				       _scale(1.), _left(-1.), _right(1.),
+				       _scale(1.), _scale_x(1.), _scale_y(1.),
+				       _scale_z(1.), _left(-1.), _right(1.),
 				       _bottom(-1.), _top(1.),
 				       _pos(0., 0., 0.),
 				       _mgr((GuiManager*)0L), _pri(P_Normal) {
@@ -39,6 +44,14 @@ int GuiItem::thaw() {
 void GuiItem::manage(GuiManager* mgr, EventHandler&) {
   test_ref_count_integrity();
   _mgr = mgr;
+  _alt_root.clear();
+}
+
+void GuiItem::manage(GuiManager* mgr, EventHandler&, Node* n) {
+  test_ref_count_integrity();
+  _mgr = mgr;
+  _alt_root = n;
+  this->adjust_region();
 }
 
 void GuiItem::unmanage(void) {
@@ -48,6 +61,12 @@ void GuiItem::unmanage(void) {
 
 void GuiItem::set_scale(float f) {
   _scale = f;
+}
+
+void GuiItem::set_scale(float x, float y, float z) {
+  _scale_x = x;
+  _scale_y = y;
+  _scale_z = z;
 }
 
 void GuiItem::set_pos(const LVector3f& p) {

@@ -67,6 +67,18 @@ void GuiBackground::manage(GuiManager* mgr, EventHandler& eh) {
 		       << ") thta is already managed" << endl;
 }
 
+void GuiBackground::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
+  if (!_added_hooks)
+    _added_hooks = true;
+  if (_mgr == (GuiManager*)0L) {
+    mgr->add_label(_bg, n);
+    _item->manage(mgr, eh, n);
+    GuiItem::manage(mgr, eh, n);
+  } else
+    gui_cat->warning() << "tried to manage background (0x" << (void*)this
+		       << ") thta is already managed" << endl;
+}
+
 void GuiBackground::unmanage(void) {
   if (_mgr != (GuiManager*)0L) {
     _mgr->remove_label(_bg);
@@ -89,6 +101,13 @@ void GuiBackground::set_scale(float f) {
   _bg->set_scale(f);
   _item->set_scale(f);
   GuiItem::set_scale(f);
+  recompute_frame();
+}
+
+void GuiBackground::set_scale(float x, float y, float z) {
+  _bg->set_scale(x, y, z);
+  _item->set_scale(x, y, z);
+  GuiItem::set_scale(x, y, z);
   recompute_frame();
 }
 

@@ -23,12 +23,14 @@ PUBLISHED:
   ~GuiSign(void);
 
   virtual void manage(GuiManager*, EventHandler&);
+  virtual void manage(GuiManager*, EventHandler&, Node*);
   virtual void unmanage(void);
 
   virtual int freeze();
   virtual int thaw();
 
   virtual void set_scale(float);
+  virtual void set_scale(float, float, float);
   virtual void set_pos(const LVector3f&);
   virtual void set_priority(GuiLabel*, const Priority);
   virtual void set_priority(GuiItem*, const Priority);

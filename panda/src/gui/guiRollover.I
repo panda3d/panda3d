@@ -13,7 +13,10 @@ INLINE void GuiRollover::enter(void) {
 		       << "' more then once without exit" << endl;
   } else if (_mgr != (GuiManager*)0L) {
     _mgr->remove_label(_off);
-    _mgr->add_label(_on);
+    if (_alt_root.is_null())
+      _mgr->add_label(_on);
+    else
+      _mgr->add_label(_on, _alt_root);
     _state = true;
   }
 }
@@ -25,7 +28,10 @@ INLINE void GuiRollover::exit(void) {
 		       << "' more then once without enter" << endl;
   } else if (_mgr != (GuiManager*)0L) {
     _mgr->remove_label(_on);
-    _mgr->add_label(_off);
+    if (_alt_root.is_null())
+      _mgr->add_label(_off);
+    else
+      _mgr->add_label(_off, _alt_root);
     _state = false;
   }
 }

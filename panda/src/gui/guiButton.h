@@ -38,6 +38,7 @@ private:
   INLINE GuiButton(void);
   void switch_state(States);
   virtual void recompute_frame(void);
+  virtual void adjust_region(void);
 
   static void behavior_up(CPT_Event, void*);
   static void behavior_down(CPT_Event, void*);
@@ -52,6 +53,7 @@ PUBLISHED:
 
 public:
   virtual void manage(GuiManager*, EventHandler&);
+  virtual void manage(GuiManager*, EventHandler&, Node*);
   virtual void unmanage(void);
 
 PUBLISHED:
@@ -90,6 +92,7 @@ PUBLISHED:
   INLINE GuiBehavior::BehaviorFunctor* get_behavior_functor(void) const;
 
   virtual void set_scale(float);
+  virtual void set_scale(float, float, float);
   virtual void set_pos(const LVector3f&);
   virtual void set_priority(GuiLabel*, const Priority);
   virtual void set_priority(GuiItem*, const Priority);

@@ -36,6 +36,7 @@ private:
   float _model_width, _model_height;
 
   float _scale;
+  float _scale_x, _scale_y, _scale_z;
   LVector3f _pos;
   Colorf _foreground;
   bool _have_background;
@@ -83,6 +84,7 @@ PUBLISHED:
   INLINE void set_height(float);
 
   INLINE void set_scale(float);
+  INLINE void set_scale(float, float, float);
   INLINE void set_mirror_x(bool);
   INLINE void set_mirror_y(bool);
   INLINE void set_pos(float, float, float);

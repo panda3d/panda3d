@@ -24,12 +24,14 @@ private:
 
   INLINE GuiRollover(void);
   virtual void recompute_frame(void);
+  virtual void adjust_region(void);
 
 PUBLISHED:
   GuiRollover(const string&, GuiLabel*, GuiLabel*);
   virtual ~GuiRollover(void);
 
   virtual void manage(GuiManager*, EventHandler&);
+  virtual void manage(GuiManager*, EventHandler&, Node*);
   virtual void unmanage(void);
 
   virtual int freeze(void);
@@ -41,6 +43,7 @@ PUBLISHED:
   INLINE bool is_over(void) const;
 
   virtual void set_scale(float);
+  virtual void set_scale(float, float, float);
   virtual void set_pos(const LVector3f&);
   virtual void set_priority(GuiLabel*, const Priority);
   virtual void set_priority(GuiItem*, const Priority);

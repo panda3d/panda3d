@@ -9,6 +9,7 @@ INLINE GuiLabel::GuiLabel(void) : _type(GuiLabel::NONE),
 				  _internal((RenderRelation*)0L),
 				  _gset((Geom*)0L), _model_width(1.),
 				  _model_height(1.), _scale(1.),
+				  _scale_x(1.), _scale_y(1.), _scale_z(1.),
 				  _pos(0., 0., 0.),
 				  _foreground(1., 1., 1., 1.),
 				  _have_background(false),
@@ -62,6 +63,13 @@ INLINE void GuiLabel::set_height(float f) {
 
 INLINE void GuiLabel::set_scale(float f) {
   _scale = f;
+  recompute_transform();
+}
+
+INLINE void GuiLabel::set_scale(float x, float y, float z) {
+  _scale_x = x;
+  _scale_y = y;
+  _scale_z = z;
   recompute_transform();
 }
 

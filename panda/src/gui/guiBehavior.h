@@ -26,6 +26,7 @@ PUBLISHED:
   virtual ~GuiBehavior(void);
 
   virtual void manage(GuiManager*, EventHandler&) = 0;
+  virtual void manage(GuiManager*, EventHandler&, Node*) = 0;
   virtual void unmanage(void) = 0;
 
   virtual void start_behavior(void) = 0;

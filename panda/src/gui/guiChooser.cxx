@@ -91,7 +91,10 @@ void GuiChooser::move_prev(void) {
   }
   if (_mgr != (GuiManager*)0L) {
     _items[_curr]->unmanage();
-    _items[tmp]->manage(_mgr, *_eh);
+    if (_alt_root.is_null())
+      _items[tmp]->manage(_mgr, *_eh);
+    else
+      _items[tmp]->manage(_mgr, *_eh, _alt_root);
     if (tmp == 0) {
       _prev_button->exit();
       _prev_button->inactive();
@@ -132,7 +135,10 @@ void GuiChooser::move_next(void) {
   }
   if (_mgr != (GuiManager*)0L) {
     _items[_curr]->unmanage();
-    _items[tmp]->manage(_mgr, *_eh);
+    if (_alt_root.is_null())
+      _items[tmp]->manage(_mgr, *_eh);
+    else
+      _items[tmp]->manage(_mgr, *_eh, _alt_root);
     if (tmp == 0) {
       _prev_button->exit();
       _prev_button->inactive();
@@ -212,6 +218,27 @@ void GuiChooser::manage(GuiManager* mgr, EventHandler& eh) {
 		       << ") that is already managed" << endl;
 }
 
+void GuiChooser::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
+  if (_mgr == (GuiManager*)0L) {
+    _prev_button->manage(mgr, eh, n);
+    _next_button->manage(mgr, eh, n);
+    if (_curr != -1) {
+      _items[_curr]->manage(mgr, eh, n);
+      if (_curr == 0)
+	_prev_button->inactive();
+      int foo = _items.size() - 1;
+      if (_curr == foo)
+	_next_button->inactive();
+    } else {
+      _prev_button->inactive();
+      _next_button->inactive();
+    }
+    GuiBehavior::manage(mgr, eh, n);
+  } else
+    gui_cat->warning() << "tried to manage chooser (0x" << (void*)this
+		       << ") that is already managed" << endl;
+}
+
 void GuiChooser::unmanage(void) {
   _prev_button->unmanage();
   _next_button->unmanage();
@@ -222,6 +249,10 @@ void GuiChooser::unmanage(void) {
 
 void GuiChooser::set_scale(float f) {
   GuiBehavior::set_scale(f);
+}
+
+void GuiChooser::set_scale(float x, float y, float z) {
+  GuiBehavior::set_scale(x, y, z);
 }
 
 void GuiChooser::set_pos(const LVector3f& p) {

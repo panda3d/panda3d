@@ -16,30 +16,40 @@ PUBLISHED:
 
 protected:
   bool _added_hooks;
-  float _scale, _left, _right, _bottom, _top;
+  float _scale, _scale_x, _scale_y, _scale_z, _left, _right, _bottom, _top;
   LVector3f _pos;
   GuiManager* _mgr;
   Priority _pri;
+  PT_Node _alt_root;
 
   INLINE GuiItem(void);
   virtual void recompute_frame(void) = 0;
+  virtual void adjust_region(void);
+
+  INLINE LVector3f get_graph_scale(void);
+  INLINE LPoint3f get_graph_pos(void);
 
 PUBLISHED:
   GuiItem(const string&);
   virtual ~GuiItem(void);
 
   virtual void manage(GuiManager*, EventHandler&) = 0;
+  virtual void manage(GuiManager*, EventHandler&, Node*) = 0;
   virtual void unmanage(void) = 0;
 
   virtual int freeze();
   virtual int thaw();
 
   virtual void set_scale(float) = 0;
+  virtual void set_scale(float, float, float) = 0;
   virtual void set_pos(const LVector3f&) = 0;
   virtual void set_priority(GuiLabel*, const Priority) = 0;
   virtual void set_priority(GuiItem*, const Priority) = 0;
 
   INLINE float get_scale(void) const;
+  INLINE float get_scale_x(void) const;
+  INLINE float get_scale_y(void) const;
+  INLINE float get_scale_z(void) const;
   INLINE LVector3f get_pos(void) const;
   INLINE float get_left(void) const;
   INLINE float get_right(void) const;

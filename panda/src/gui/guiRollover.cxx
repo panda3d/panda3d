@@ -64,6 +64,45 @@ void GuiRollover::recompute_frame(void) {
   _off->recompute();
   _on->recompute();
   GetExtents(_off, _on, _left, _right, _bottom, _top);
+  if (_alt_root.is_null()) {
+    // adjust for graph transform
+    LVector3f sc = this->get_graph_scale();
+    LPoint3f p = this->get_graph_pos();
+    float x = sc.dot(LVector3f::rfu(1., 0., 0.));
+    _left *= x;
+    _right *= x;
+    float y = sc.dot(LVector3f::rfu(0., 0., 1.));
+    _bottom *= y;
+    _top *= y;
+    x = p.dot(LVector3f::rfu(1., 0., 0.));
+    _left += x;
+    _right += y;
+    y = p.dot(LVector3f::rfu(0., 0., 1.));
+    _bottom += y;
+    _top += y;
+  }
+  _rgn->set_region(_left, _right, _bottom, _top);
+}
+
+void GuiRollover::adjust_region(void) {
+  GetExtents(_off, _on, _left, _right, _bottom, _top);
+  if (_alt_root.is_null()) {
+    // adjust for graph transform
+    LVector3f sc = this->get_graph_scale();
+    LPoint3f p = this->get_graph_pos();
+    float x = sc.dot(LVector3f::rfu(1., 0., 0.));
+    _left *= x;
+    _right *= x;
+    float y = sc.dot(LVector3f::rfu(0., 0., 1.));
+    _bottom *= y;
+    _top *= y;
+    x = p.dot(LVector3f::rfu(1., 0., 0.));
+    _left += x;
+    _right += y;
+    y = p.dot(LVector3f::rfu(0., 0., 1.));
+    _bottom += y;
+    _top += y;
+  }
   _rgn->set_region(_left, _right, _bottom, _top);
 }
 
@@ -109,6 +148,22 @@ void GuiRollover::manage(GuiManager* mgr, EventHandler& eh) {
 		       << ") that is already managed" << endl;
 }
 
+void GuiRollover::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
+  if (!_added_hooks) {
+    eh.add_hook("gui-in-rollover-" + get_name(), enter_rollover);
+    eh.add_hook("gui-out-rollover-" + get_name(), exit_rollover);
+    _added_hooks = true;
+  }
+  if (_mgr == (GuiManager*)0L) {
+    mgr->add_region(_rgn);
+    _state = false;
+    mgr->add_label(_off, n);
+    GuiItem::manage(mgr, eh, n);
+  } else
+    gui_cat->warning() << "tried to manage rollover (0x" << (void*)this
+		       << ") that is already managed" << endl;
+}
+
 void GuiRollover::unmanage(void) {
   if (_mgr != (GuiManager*)0L) {
     _mgr->remove_region(_rgn);
@@ -134,6 +189,13 @@ void GuiRollover::set_scale(float f) {
   _on->set_scale(f * _on_scale);
   _off->set_scale(f * _off_scale);
   GuiItem::set_scale(f);
+  recompute_frame();
+}
+
+void GuiRollover::set_scale(float x, float y, float z) {
+  _on->set_scale(x, y, z);
+  _off->set_scale(x, y, z);
+  GuiItem::set_scale(x, y, z);
   recompute_frame();
 }
 
