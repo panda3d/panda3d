@@ -18,14 +18,13 @@ $archive_root="\\\\dimbo\\panda\\win\\";
 "prevent runtime relocation of DLLs by the windows loader.  This speeds",
 "loading.  This file was generated using \$PANDATOOL/src/scripts/basedlls.pl",
 "which uses rebase.exe from the MS platform SDK.  It may additionally be",
-"hand-hacked to simplify addresses for popular dlls to aid debugging."
+"hand-hacked to simplify addresses for popular dlls to aid debugging.",
 );
 
 $headerstr="";
 for($i=0;$i<=$#headerstrs;$i++) {
    $headerstr.="; ".$headerstrs[$i]."\n";
 }
-$headerstr.="\n";
 
 @modules=("dtool","panda","direct","toontown");
 
@@ -40,7 +39,6 @@ foreach my $nm (@dll_names) {
 # 0x60000000 is the recommended base address for user dll addr space
 $baseaddr="0x60000000";
 $dllbasefile="dllbase.txt";
-$dllbasefile_dbg="dllbase_d.txt";
 $basedlllogfilename="log.txt";
 
 # rebase will modify input dlls, so make tmp copies of them
@@ -58,6 +56,7 @@ $archivepath=$archive_root."debug";
 # need to remove existing files or rebase will just append to them
 open(OUTFILE, ">$dllbasefile") || die "Couldn't open $dllbasefile!\n";
 print OUTFILE $headerstr;
+print OUTFILE "\n; release dlls\n\n";
 close(OUTFILE);
 
 foreach my $dir1 (@modules) {    
@@ -73,8 +72,8 @@ system(@args);
 ############################
 ### do release
 
-open(OUTFILE, ">$dllbasefile_dbg") || die "Couldn't open $dllbasefile!\n";
-print OUTFILE $headerstr;
+open(OUTFILE, ">>$dllbasefile") || die "Couldn't open $dllbasefile!\n";
+print OUTFILE "\n; debug dlls\n\n";
 close(OUTFILE);
 
 $archivepath=$archive_root."release";
@@ -83,8 +82,14 @@ foreach my $dir1 (@modules) {
    system(@args);
 }
 
-$argstr="-v -b $baseaddr -c $dllbasefile_dbg -l $basedlllogfilename $dll_names_dbg";
+$argstr="-v -b $baseaddr -c $dllbasefile -l $basedlllogfilename $dll_names_dbg";
 @args=("cmd.exe","/C","rebase.exe $argstr");
+print $args[0]." ".$args[1]." ".$args[2]."\n";
+system(@args);
+
+$argstr="-v -b $baseaddr -c $dllbasefile -l $basedlllogfilename $dll_names_dbg";
+
+@args=("dos2unix",$dllbasefile);
 print $args[0]." ".$args[1]." ".$args[2]."\n";
 system(@args);
 
