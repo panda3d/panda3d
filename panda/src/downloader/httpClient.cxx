@@ -163,6 +163,9 @@ get_username(const string &server, const string &realm) const {
 string HTTPClient::
 get_http_version_string() const {
   switch (_http_version) {
+  case HV_09:
+    return "HTTP/0.9";
+
   case HV_10:
     return "HTTP/1.0";
 
@@ -191,6 +194,8 @@ parse_http_version_string(const string &version) {
     return HV_10;
   } else if (version == "HTTP/1.1") {
     return HV_11;
+  } else if (version.substr(0, 6) == "HTTP/0") {
+    return HV_09;
   } else {
     return HV_other;
   }

@@ -64,6 +64,7 @@ PUBLISHED:
   string get_username(const string &server, const string &realm) const;
 
   enum HTTPVersion {
+    HV_09,  // HTTP 0.9 or older
     HV_10,  // HTTP 1.0
     HV_11,  // HTTP 1.1
     HV_other,

@@ -228,8 +228,8 @@ is_regular_file() const {
 ////////////////////////////////////////////////////////////////////
 bool HTTPDocument::
 will_close_connection() const {
-  if (get_http_version() == HTTPClient::HV_10) {
-    // HTTP 1.0 always closes.
+  if (get_http_version() < HTTPClient::HV_11) {
+    // pre-HTTP 1.1 always closes.
     return true;
   }
 
