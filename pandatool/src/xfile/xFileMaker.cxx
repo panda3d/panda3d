@@ -279,6 +279,32 @@ add_polyset(EggBin *egg_bin, LPDIRECTXFILEDATA dx_parent) {
     }
   }
 
+  if (mesh.has_colors()) {
+    // Tack on colors.
+    LPDIRECTXFILEDATA xcolors;
+    mesh.make_color_data(raw_data);
+    if (!create_object(xcolors, TID_D3DRMMeshVertexColors, 
+                       "colors" + mesh_index, raw_data)) {
+      return false;
+    }
+    if (!attach_and_release(xcolors, xobj)) {
+      return false;
+    }
+  }
+
+  if (mesh.has_uvs()) {
+    // Tack on texture coordinates.
+    LPDIRECTXFILEDATA xuvs;
+    mesh.make_uv_data(raw_data);
+    if (!create_object(xuvs, TID_D3DRMMeshTextureCoords, 
+                       "uvs" + mesh_index, raw_data)) {
+      return false;
+    }
+    if (!attach_and_release(xuvs, xobj)) {
+      return false;
+    }
+  }
+
   if (!attach_and_release(xobj, dx_parent)) {
     return false;
   }

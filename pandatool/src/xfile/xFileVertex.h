@@ -38,6 +38,8 @@ public:
   Vertexf _point;
   TexCoordf _uv;
   Colorf _color;
+  bool _has_color;
+  bool _has_uv;
 };
 
 #endif

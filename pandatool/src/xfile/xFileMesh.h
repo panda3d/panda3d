@@ -47,9 +47,13 @@ public:
   int add_normal(EggVertex *egg_vertex, EggPrimitive *egg_prim);
 
   bool has_normals() const;
+  bool has_colors() const;
+  bool has_uvs() const;
 
   void make_mesh_data(Datagram &raw_data);
   void make_normal_data(Datagram &raw_data);
+  void make_color_data(Datagram &raw_data);
+  void make_uv_data(Datagram &raw_data);
 
 private:
   typedef pvector<XFileVertex *> Vertices;
@@ -67,6 +71,8 @@ private:
   UniqueNormals _unique_normals;
 
   bool _has_normals;
+  bool _has_colors;
+  bool _has_uvs;
 };
 
 #endif

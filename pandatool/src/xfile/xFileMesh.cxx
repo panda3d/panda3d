@@ -29,6 +29,8 @@
 XFileMesh::
 XFileMesh() {
   _has_normals = false;
+  _has_colors = false;
+  _has_uvs = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -38,7 +40,16 @@ XFileMesh() {
 ////////////////////////////////////////////////////////////////////
 XFileMesh::
 ~XFileMesh() {
-  // ** Delete stuff.
+  Vertices::iterator vi;
+  for (vi = _vertices.begin(); vi != _vertices.end(); ++vi) {
+    XFileVertex *vertex = (*vi);
+    delete vertex;
+  }
+  Normals::iterator ni;
+  for (ni = _normals.begin(); ni != _normals.end(); ++ni) {
+    XFileNormal *normal = (*ni);
+    delete normal;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -63,6 +74,13 @@ int XFileMesh::
 add_vertex(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
   int next_index = _vertices.size();
   XFileVertex *vertex = new XFileVertex(egg_vertex, egg_prim);
+  if (vertex->_has_color) {
+    _has_colors = true;
+  }
+  if (vertex->_has_uv) {
+    _has_uvs = true;
+  }
+
   pair<UniqueVertices::iterator, bool> result =
     _unique_vertices.insert(UniqueVertices::value_type(vertex, next_index));
 
@@ -118,6 +136,28 @@ add_normal(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
 bool XFileMesh::
 has_normals() const {
   return _has_normals;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileMesh::has_colors
+//       Access: Public
+//  Description: Returns true if any of the vertices or faces added to
+//               this mesh used a color, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool XFileMesh::
+has_colors() const {
+  return _has_colors;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileMesh::has_uvs
+//       Access: Public
+//  Description: Returns true if any of the vertices added to this
+//               mesh used a texture coordinate, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool XFileMesh::
+has_uvs() const {
+  return _has_uvs;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -187,5 +227,50 @@ make_normal_data(Datagram &raw_data) {
          ++fvi) {
       raw_data.add_int32((*fvi)._normal_index);
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileMesh::make_color_data
+//       Access: Public
+//  Description: Fills the datagram with the raw data for the DX
+//               MeshVertexColors template.
+////////////////////////////////////////////////////////////////////
+void XFileMesh::
+make_color_data(Datagram &raw_data) {
+  raw_data.clear();
+  raw_data.add_int32(_vertices.size());
+  
+  Vertices::const_iterator vi;
+  int i = 0;
+  for (vi = _vertices.begin(); vi != _vertices.end(); ++vi) {
+    XFileVertex *vertex = (*vi);
+    const Colorf &color = vertex->_color;
+    raw_data.add_int32(i);
+    raw_data.add_float32(color[0]);
+    raw_data.add_float32(color[1]);
+    raw_data.add_float32(color[2]);
+    raw_data.add_float32(color[3]);
+    i++;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileMesh::make_uv_data
+//       Access: Public
+//  Description: Fills the datagram with the raw data for the DX
+//               MeshTextureCoords template.
+////////////////////////////////////////////////////////////////////
+void XFileMesh::
+make_uv_data(Datagram &raw_data) {
+  raw_data.clear();
+  raw_data.add_int32(_vertices.size());
+  
+  Vertices::const_iterator vi;
+  for (vi = _vertices.begin(); vi != _vertices.end(); ++vi) {
+    XFileVertex *vertex = (*vi);
+    const TexCoordf &uv = vertex->_uv;
+    raw_data.add_float32(uv[0]);
+    raw_data.add_float32(uv[1]);
   }
 }

@@ -27,12 +27,15 @@
 ////////////////////////////////////////////////////////////////////
 XFileVertex::
 XFileVertex(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
+  _has_color = true;
+  _has_uv = true;
   _point = LCAST(float, egg_vertex->get_pos3());
 
   if (egg_vertex->has_uv()) {
     _uv = LCAST(float, egg_vertex->get_uv());
   } else {
     _uv.set(0.0, 0.0);
+    _has_uv = false;
   }
 
   if (egg_vertex->has_color()) {
@@ -41,6 +44,7 @@ XFileVertex(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
     _color = egg_prim->get_color();
   } else {
     _color.set(1.0, 1.0, 1.0, 1.0);
+    _has_color = false;
   }
 }
 
