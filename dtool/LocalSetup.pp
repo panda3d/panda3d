@@ -43,6 +43,9 @@ $[cdefine HAVE_TIFF]
 /* Define if we have libfftw installed.  */
 $[cdefine HAVE_FFTW]
 
+/* Define if we have NURBS++ installed.  */
+$[cdefine HAVE_NURBSPP]
+
 /* Define if we have VRPN installed.  */
 $[cdefine HAVE_VRPN]
 

@@ -182,6 +182,13 @@
 #defer HAVE_FFTW $[libtest $[FFTW_LPATH],$[FFTW_LIBS]]
 
 
+// Is NURBS++ installed, and where?
+#define NURBSPP_IPATH /usr/local/include/nurbs++
+#define NURBSPP_LPATH /usr/local/lib
+#define NURBSPP_LIBS nurbsf matrixN matrixI matrix
+#defer HAVE_NURBSPP $[libtest $[NURBSPP_LPATH],$[NURBSPP_LIBS]]
+
+
 // Is VRPN installed, and where?
 #define VRPN_IPATH
 #define VRPN_LPATH

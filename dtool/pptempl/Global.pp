@@ -152,6 +152,13 @@
   #define fftw_libs $[FFTW_LIBS]
 #endif
 
+#if $[HAVE_NURBSPP]
+  #define nurbspp_ipath $[wildcard $[NURBSPP_IPATH]]
+  #define nurbspp_lpath $[wildcard $[NURBSPP_LPATH]]
+  #define nurbspp_cflags $[NURBSPP_CFLAGS]
+  #define nurbspp_libs $[NURBSPP_LIBS]
+#endif
+
 #if $[HAVE_VRPN]
   #define vrpn_ipath $[wildcard $[VRPN_IPATH]]
   #define vrpn_lpath $[wildcard $[VRPN_LPATH]]
@@ -284,6 +291,7 @@
   $[if $[HAVE_JPEG],$[IF_JPEG_SOURCES]] \
   $[if $[HAVE_TIFF],$[IF_TIFF_SOURCES]] \
   $[if $[HAVE_FFTW],$[IF_FFTW_SOURCES]] \
+  $[if $[HAVE_NURBSPP],$[IF_NURBSPP_SOURCES]] \
   $[if $[HAVE_ZLIB],$[IF_ZLIB_SOURCES]] \
   $[if $[HAVE_IPC],$[IF_IPC_SOURCES]] \
   $[if $[HAVE_NET],$[IF_NET_SOURCES]] \
@@ -295,6 +303,7 @@
   $[IF_JPEG_SOURCES] \
   $[IF_TIFF_SOURCES] \
   $[IF_FFTW_SOURCES] \
+  $[IF_NURBSPP_SOURCES] \
   $[IF_ZLIB_SOURCES] \
   $[IF_IPC_SOURCES] \
   $[IF_NET_SOURCES] \
@@ -373,6 +382,9 @@
   #if $[ne $[USE_FFTW] $[components $[USE_FFTW],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[fftw_cflags]
   #endif 
+  #if $[ne $[USE_NURBSPP] $[components $[USE_NURBSPP],$[active_component_libs]],]
+    #set alt_cflags $[alt_cflags] $[nurbspp_cflags]
+  #endif 
   #if $[ne $[USE_VRPN] $[components $[USE_VRPN],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[vrpn_cflags]
   #endif 
@@ -434,6 +446,9 @@
   #endif
   #if $[ne $[USE_FFTW] $[components $[USE_FFTW],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[fftw_ipath]
+  #endif
+  #if $[ne $[USE_NURBSPP] $[components $[USE_NURBSPP],$[active_component_libs]],]
+    #set alt_ipath $[alt_ipath] $[nurbspp_ipath]
   #endif
   #if $[ne $[USE_VRPN] $[components $[USE_VRPN],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[vrpn_ipath]
@@ -497,6 +512,9 @@
   #if $[ne $[USE_FFTW] $[components $[USE_FFTW],$[active_component_libs] $[transitive_link]],]
     #set alt_lpath $[alt_lpath] $[fftw_lpath]
   #endif
+  #if $[ne $[USE_NURBSPP] $[components $[USE_NURBSPP],$[active_component_libs] $[transitive_link]],]
+    #set alt_lpath $[alt_lpath] $[nurbspp_lpath]
+  #endif
   #if $[ne $[USE_VRPN] $[components $[USE_VRPN],$[active_component_libs] $[transitive_link]],]
     #set alt_lpath $[alt_lpath] $[vrpn_lpath]
   #endif
@@ -559,6 +577,9 @@
   #endif
   #if $[ne $[USE_FFTW] $[components $[USE_FFTW],$[active_component_libs] $[transitive_link]],]
     #set alt_libs $[alt_libs] $[fftw_libs]
+  #endif
+  #if $[ne $[USE_NURBSPP] $[components $[USE_NURBSPP],$[active_component_libs] $[transitive_link]],]
+    #set alt_libs $[alt_libs] $[nurbspp_libs]
   #endif
   #if $[ne $[USE_VRPN] $[components $[USE_VRPN],$[active_component_libs] $[transitive_link]],]
     #set alt_libs $[alt_libs] $[vrpn_libs]

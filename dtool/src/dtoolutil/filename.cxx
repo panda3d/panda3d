@@ -608,6 +608,9 @@ make_canonical() {
 ////////////////////////////////////////////////////////////////////
 string Filename::
 to_os_specific() const {
+  if (empty()) {
+    return string();
+  }
   Filename standard(*this);
   standard.standardize();
 
