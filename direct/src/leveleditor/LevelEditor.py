@@ -55,6 +55,8 @@ OBJECT_SNAP_POINTS = {
                      (Vec3(0), Vec3(0))],
     'street_20x20': [(Vec3(20.0,0,0), Vec3(0)),
                      (Vec3(0), Vec3(0))],
+    'street_30x20': [(Vec3(30.0,0,0), Vec3(0)),
+                     (Vec3(0), Vec3(0))],
     'street_40x20': [(Vec3(40.0,0,0), Vec3(0)),
                      (Vec3(0), Vec3(0))],
     'street_80x20': [(Vec3(80.0,0,0), Vec3(0)),
