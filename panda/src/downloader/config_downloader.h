@@ -27,6 +27,7 @@
 #include "configVariableBool.h"
 #include "configVariableString.h"
 #include "configVariableFilename.h"
+#include "configVariableList.h"
 
 ConfigureDecl(config_downloader, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
 NotifyCategoryDecl(downloader, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
@@ -48,6 +49,9 @@ extern ConfigVariableInt patcher_buffer_size;
 extern ConfigVariableBool early_random_seed;
 extern ConfigVariableBool verify_ssl;
 extern ConfigVariableString ssl_cipher_list;
+extern ConfigVariableList expected_ssl_server;
+extern ConfigVariableList ssl_certificates;
+
 extern ConfigVariableString http_proxy;
 extern ConfigVariableString http_direct_hosts;
 extern ConfigVariableBool http_try_all_direct;
@@ -58,5 +62,6 @@ extern ConfigVariableDouble http_timeout;
 extern ConfigVariableInt http_max_connect_count;
 extern ConfigVariableFilename http_client_certificate_filename;
 extern ConfigVariableString http_client_certificate_passphrase;
+extern ConfigVariableList http_username;
 
 #endif

@@ -22,6 +22,9 @@
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
 #include "dconfig.h"
+#include "configVariableBool.h"
+#include "configVariableDouble.h"
+#include "configVariableList.h"
 
 class DSearchPath;
 
@@ -29,26 +32,25 @@ ConfigureDecl(config_pgraph, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(pgraph, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(loader, EXPCL_PANDA, EXPTP_PANDA);
 
-extern const bool fake_view_frustum_cull;
-extern const bool allow_portal_cull;
-extern const bool unambiguous_graph;
-extern const bool allow_unrelated_wrt;
-extern const bool paranoid_compose;
-extern const bool compose_componentwise;
-extern const bool paranoid_const;
+extern ConfigVariableBool fake_view_frustum_cull;
+extern ConfigVariableBool allow_portal_cull;
+extern ConfigVariableBool unambiguous_graph;
+extern ConfigVariableBool allow_unrelated_wrt;
+extern ConfigVariableBool paranoid_compose;
+extern ConfigVariableBool compose_componentwise;
+extern ConfigVariableBool paranoid_const;
 
-extern const bool polylight_info;
-extern const double lod_fade_time;
+extern ConfigVariableBool polylight_info;
+extern ConfigVariableDouble lod_fade_time;
 
-extern const bool m_dual;
-extern const bool m_dual_opaque;
-extern const bool m_dual_transparent;
-extern const bool m_dual_flash;
+extern ConfigVariableBool m_dual;
+extern ConfigVariableBool m_dual_opaque;
+extern ConfigVariableBool m_dual_transparent;
+extern ConfigVariableBool m_dual_flash;
 
-extern const bool asynchronous_loads;
-const DSearchPath &get_bam_path();
+extern ConfigVariableBool asynchronous_loads;
 
-extern Config::ConfigTable::Symbol *load_file_type;
+extern ConfigVariableList load_file_type;
 
 extern EXPCL_PANDA void init_libpgraph();
 

@@ -28,67 +28,100 @@
 ConfigureDef(config_egg2pg);
 NotifyCategoryDef(egg2pg, "");
 
-bool egg_mesh = config_egg2pg.GetBool("egg-mesh", true);
-bool egg_retesselate_coplanar = config_egg2pg.GetBool("egg-retesselate-coplanar", true);
-bool egg_unroll_fans = config_egg2pg.GetBool("egg-unroll-fans", true);
-bool egg_show_tstrips = config_egg2pg.GetBool("egg-show-tstrips", false);
-bool egg_show_qsheets = config_egg2pg.GetBool("egg-show-qsheets", false);
-bool egg_show_quads = config_egg2pg.GetBool("egg-show-quads", false);
-bool egg_false_color = (egg_show_tstrips | egg_show_qsheets | egg_show_quads);
-bool egg_show_normals = config_egg2pg.GetBool("egg-show-normals", false);
-double egg_normal_scale = config_egg2pg.GetDouble("egg-normal-scale", 1.0);
-bool egg_subdivide_polys = config_egg2pg.GetBool("egg-subdivide-polys", true);
-bool egg_consider_fans = config_egg2pg.GetBool("egg-consider-fans", true);
-double egg_max_tfan_angle = config_egg2pg.GetDouble("egg-max-tfan-angle", 40.0);
-int egg_min_tfan_tris = config_egg2pg.GetInt("egg-min-tfan-tris", 4);
-double egg_coplanar_threshold = config_egg2pg.GetDouble("egg-coplanar-threshold", 0.01);
-bool egg_ignore_mipmaps = config_egg2pg.GetBool("egg-ignore-mipmaps", false);
-bool egg_ignore_filters = config_egg2pg.GetBool("egg-ignore-filters", false);
-bool egg_ignore_clamp = config_egg2pg.GetBool("egg-ignore-clamp", false);
-bool egg_ignore_decals = config_egg2pg.GetBool("egg-ignore-decals", false);
-bool egg_flatten = config_egg2pg.GetBool("egg-flatten", true);
+ConfigVariableBool egg_mesh
+("egg-mesh", true);
+ConfigVariableBool egg_retesselate_coplanar
+("egg-retesselate-coplanar", true);
+ConfigVariableBool egg_unroll_fans
+("egg-unroll-fans", true);
+ConfigVariableBool egg_show_tstrips
+("egg-show-tstrips", false);
+ConfigVariableBool egg_show_qsheets
+("egg-show-qsheets", false);
+ConfigVariableBool egg_show_quads
+("egg-show-quads", false);
+ConfigVariableBool egg_show_normals
+("egg-show-normals", false);
+ConfigVariableDouble egg_normal_scale
+("egg-normal-scale", 1.0);
+ConfigVariableBool egg_subdivide_polys
+("egg-subdivide-polys", true);
+ConfigVariableBool egg_consider_fans
+("egg-consider-fans", true);
+ConfigVariableDouble egg_max_tfan_angle
+("egg-max-tfan-angle", 40.0);
+ConfigVariableInt egg_min_tfan_tris
+("egg-min-tfan-tris", 4);
+ConfigVariableDouble egg_coplanar_threshold
+("egg-coplanar-threshold", 0.01);
 
-// Set this true to combine sibling GeomNodes into a single GeomNode,
-// when possible.  This is probably a good idea in general, but we
-// have it default to false for now for historical reasons (to avoid
-// breaking code that assumes this doesn't happen).  Eventually the
-// default will be set to true.
-bool egg_combine_geoms = config_egg2pg.GetBool("egg-combine-geoms", false);
+ConfigVariableEnum<CoordinateSystem> egg_coordinate_system
+("egg-coordinate-system", CS_default);
 
-// Set this true to combine siblings of any combinable type into a
-// single Node when possible.  It is almost always a bad idea to set
-// this true.
-bool egg_combine_siblings = config_egg2pg.GetBool("egg-combine-siblings", false);
+ConfigVariableBool egg_ignore_mipmaps
+("egg-ignore-mipmaps", false);
+ConfigVariableBool egg_ignore_filters
+("egg-ignore-filters", false);
+ConfigVariableBool egg_ignore_clamp
+("egg-ignore-clamp", false);
+ConfigVariableBool egg_ignore_decals
+("egg-ignore-decals", false);
+ConfigVariableBool egg_flatten
+("egg-flatten", true);
 
-bool egg_show_collision_solids = config_egg2pg.GetBool("egg-show-collision-solids", false);
-
-// When this is true, a <NurbsCurve> entry appearing in an egg file
-// will load as a NurbsCurve or ClassicNurbsCurve object (see below).
-// When this is false, it will load a RopeNode instead, which uses the
-// new NurbsCurveEvaluator interface.
-bool egg_load_old_curves = config_egg2pg.GetBool("egg-load-old-curves", true);
-
-// When this is true (and the above is also true), a <NurbsCurve>
-// entry appearing in an egg file will load a ClassicNurbsCurve object
-// instead of the default, a NurbsCurve object.  This only makes a
-// difference when the NURBS++ library is available, in which case the
-// default, NurbsCurve, is actually a NurbsPPCurve object.
-bool egg_load_classic_nurbs_curves = config_egg2pg.GetBool("egg-load-classic-nurbs-curves", false);
-
-// When this is true, certain kinds of recoverable errors (not syntax
-// errors) in an egg file will be allowed and ignored when an egg file
-// is loaded.  When it is false, only perfectly pristine egg files may
-// be loaded.
-bool egg_accept_errors = config_egg2pg.GetBool("egg-accept-errors", true);
-
-// When this is true, objects flagged as "hidden" with the visibility
-// scalar are not created at all.  When false, these objects are
-// created, but initially stashed.
-bool egg_suppress_hidden = config_egg2pg.GetBool("egg-suppress-hidden", false);
+ConfigVariableBool egg_combine_geoms
+("egg-combine-geoms", false,
+ PRC_DESC("Set this true to combine sibling GeomNodes into a single GeomNode, "
+          "when possible.  This is probably a good idea in general, but we "
+          "have it default to false for now for historical reasons (to avoid "
+          "breaking code that assumes this doesn't happen).  Eventually the "
+          "default may be set to true."));
 
 
-CoordinateSystem egg_coordinate_system = CS_invalid;
-EggRenderMode::AlphaMode egg_alpha_mode = EggRenderMode::AM_unspecified;
+ConfigVariableBool egg_combine_siblings
+("egg-combine-siblings", false,
+ PRC_DESC("Set this true to combine siblings of any combinable type into a "
+          "single Node when possible.  It is almost always a bad idea to set "
+          "this true."));
+
+
+ConfigVariableBool egg_show_collision_solids
+("egg-show-collision-solids", false);
+
+ConfigVariableBool egg_load_old_curves
+("egg-load-old-curves", true,
+ PRC_DESC("When this is true, a <NurbsCurve> entry appearing in an egg file "
+          "will load as a NurbsCurve or ClassicNurbsCurve object (see below). "
+          "When this is false, it will load a RopeNode instead, which uses the "
+          "new NurbsCurveEvaluator interface."));
+
+
+ConfigVariableBool egg_load_classic_nurbs_curves
+("egg-load-classic-nurbs-curves", false,
+ PRC_DESC("When this is true (and the above is also true), a <NurbsCurve> "
+          "entry appearing in an egg file will load a ClassicNurbsCurve object "
+          "instead of the default, a NurbsCurve object.  This only makes a "
+          "difference when the NURBS++ library is available, in which case the "
+          "default, NurbsCurve, is actually a NurbsPPCurve object."));
+
+
+ConfigVariableBool egg_accept_errors
+("egg-accept-errors", true,
+ PRC_DESC("When this is true, certain kinds of recoverable errors (not syntax "
+          "errors) in an egg file will be allowed and ignored when an egg file "
+          "is loaded.  When it is false, only perfectly pristine egg files may "
+          "be loaded."));
+
+
+ConfigVariableBool egg_suppress_hidden
+("egg-suppress-hidden", false,
+ PRC_DESC("When this is true, objects flagged as \"hidden\" with the visibility "
+          "scalar are not created at all.  When false, these objects are "
+          "created, but initially stashed."));
+
+
+ConfigVariableEnum<EggRenderMode::AlphaMode> egg_alpha_mode
+("egg-alpha-mode", EggRenderMode::AM_blend);
 
 ConfigureFn(config_egg2pg) {
   init_libegg2pg();
@@ -120,30 +153,6 @@ init_libegg2pg() {
      ConfigVariableCore::VT_string, "",
      "Defines egg syntax for the named object type.",
      ConfigVariableCore::F_dynamic);
-
-  // Get egg-coordinate-system
-  string csstr = config_egg2pg.GetString("egg-coordinate-system", "default");
-  CoordinateSystem cs = parse_coordinate_system_string(csstr);
-
-  if (cs == CS_invalid) {
-    egg2pg_cat.error()
-      << "Unexpected egg-coordinate-system string: " << csstr << "\n";
-    cs = CS_default;
-  }
-  egg_coordinate_system = (cs == CS_default) ?
-    get_default_coordinate_system() : cs;
-
-  // Get egg-alpha-mode
-  string amstr = config_egg2pg.GetString("egg-alpha-mode", "blend");
-  EggRenderMode::AlphaMode am = EggRenderMode::string_alpha_mode(amstr);
-
-  if (am == EggRenderMode::AM_unspecified) {
-    egg2pg_cat.error()
-      << "Unexpected egg-alpha-mode string: " << amstr << "\n";
-    egg_alpha_mode = EggRenderMode::AM_on;
-  } else {
-    egg_alpha_mode = am;
-  }
 
   LoaderFileTypeEgg::init_type();
 

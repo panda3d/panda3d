@@ -308,50 +308,43 @@ fetch_load(uint id) {
 ////////////////////////////////////////////////////////////////////
 void Loader::
 load_file_types() {
-  nassertv(load_file_type != (Config::ConfigTable::Symbol *)NULL);
-
   if (!_file_types_loaded) {
-    
-    // When we use GetAll(), we might inadvertently read duplicate
-    // lines.  Filter them out with a set.
-    pset<string> already_read;
+    int num_unique_values = load_file_type.get_num_unique_values();
 
-    Config::ConfigTable::Symbol::iterator ti;
-    for (ti = load_file_type->begin(); ti != load_file_type->end(); ++ti) {
-      string param = (*ti).Val();
-      if (already_read.insert(param).second) {
-        vector_string words;
-        extract_words(param, words);
+    for (int i = 0; i < num_unique_values; i++) {
+      string param = load_file_type.get_unique_value(i);
 
-        if (words.size() == 1) {
-          // Exactly one word: load the named library immediately.
-          string name = words[0];
-          Filename dlname = Filename::dso_filename("lib" + name + ".so");
-          loader_cat.info()
-            << "loading file type module: " << name << endl;
-          void *tmp = load_dso(dlname);
-          if (tmp == (void *)NULL) {
-            loader_cat.warning()
-              << "Unable to load " << dlname.to_os_specific()
-              << ": " << load_dso_error() << endl;
+      vector_string words;
+      extract_words(param, words);
+
+      if (words.size() == 1) {
+        // Exactly one word: load the named library immediately.
+        string name = words[0];
+        Filename dlname = Filename::dso_filename("lib" + name + ".so");
+        loader_cat.info()
+          << "loading file type module: " << name << endl;
+        void *tmp = load_dso(dlname);
+        if (tmp == (void *)NULL) {
+          loader_cat.warning()
+            << "Unable to load " << dlname.to_os_specific()
+            << ": " << load_dso_error() << endl;
+        }
+        
+      } else if (words.size() > 1) {
+        // Multiple words: the first n words are filename extensions,
+        // and the last word is the name of the library to load should
+        // any of those filename extensions be encountered.
+        LoaderFileTypeRegistry *registry = LoaderFileTypeRegistry::get_ptr();
+        size_t num_extensions = words.size() - 1;
+        string library_name = words[num_extensions];
+        
+        for (size_t i = 0; i < num_extensions; i++) {
+          string extension = words[i];
+          if (extension[0] == '.') {
+            extension = extension.substr(1);
           }
           
-        } else if (words.size() > 1) {
-          // Multiple words: the first n words are filename extensions,
-          // and the last word is the name of the library to load should
-          // any of those filename extensions be encountered.
-          LoaderFileTypeRegistry *registry = LoaderFileTypeRegistry::get_ptr();
-          size_t num_extensions = words.size() - 1;
-          string library_name = words[num_extensions];
-          
-          for (size_t i = 0; i < num_extensions; i++) {
-            string extension = words[i];
-            if (extension[0] == '.') {
-              extension = extension.substr(1);
-            }
-            
-            registry->register_deferred_type(extension, library_name);
-          }
+          registry->register_deferred_type(extension, library_name);
         }
       }
     }

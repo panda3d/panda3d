@@ -22,6 +22,7 @@
 #include "physicsObject.h"
 #include "baseIntegrator.h"
 #include "linearForce.h"
+#include "configVariableDouble.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LinearIntegrator
@@ -43,7 +44,7 @@ protected:
   LinearIntegrator();
 
 private:
-  static const float _max_linear_dt;
+  static ConfigVariableDouble _max_linear_dt;
 
   // this allows baseLinearIntegrator to censor/modify data that the
   // actual integration function receives.

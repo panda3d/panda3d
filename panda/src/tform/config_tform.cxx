@@ -31,17 +31,28 @@
 Configure(config_tform);
 NotifyCategoryDef(tform, "");
 
-const double drive_forward_speed = config_tform.GetDouble("drive-forward-speed", 20.0);
-const double drive_reverse_speed = config_tform.GetDouble("drive-reverse-speed", 10.0);
-const double drive_rotate_speed = config_tform.GetDouble("drive-rotate-speed", 80.0);
-const double drive_vertical_dead_zone = config_tform.GetDouble("drive-vertical-dead-zone", 0.1);
-const double drive_vertical_center = config_tform.GetDouble("drive-vertical-center", 0.0);
-const double drive_horizontal_dead_zone = config_tform.GetDouble("drive-horizontal-dead-zone", 0.1);
-const double drive_horizontal_center = config_tform.GetDouble("drive-horizontal-center", 0.0);
-const double drive_vertical_ramp_up_time = config_tform.GetDouble("drive-vertical-ramp-up-time", 0.0);
-const double drive_vertical_ramp_down_time = config_tform.GetDouble("drive-vertical-ramp-down-time", 0.0);
-const double drive_horizontal_ramp_up_time = config_tform.GetDouble("drive-horizontal-ramp-up-time", 0.0);
-const double drive_horizontal_ramp_down_time = config_tform.GetDouble("drive-horizontal-ramp-down-time", 0.0);
+ConfigVariableDouble drive_forward_speed
+("drive-forward-speed", 20.0);
+ConfigVariableDouble drive_reverse_speed
+("drive-reverse-speed", 10.0);
+ConfigVariableDouble drive_rotate_speed
+("drive-rotate-speed", 80.0);
+ConfigVariableDouble drive_vertical_dead_zone
+("drive-vertical-dead-zone", 0.1);
+ConfigVariableDouble drive_vertical_center
+("drive-vertical-center", 0.0);
+ConfigVariableDouble drive_horizontal_dead_zone
+("drive-horizontal-dead-zone", 0.1);
+ConfigVariableDouble drive_horizontal_center
+("drive-horizontal-center", 0.0);
+ConfigVariableDouble drive_vertical_ramp_up_time
+("drive-vertical-ramp-up-time", 0.0);
+ConfigVariableDouble drive_vertical_ramp_down_time
+("drive-vertical-ramp-down-time", 0.0);
+ConfigVariableDouble drive_horizontal_ramp_up_time
+("drive-horizontal-ramp-up-time", 0.0);
+ConfigVariableDouble drive_horizontal_ramp_down_time
+("drive-horizontal-ramp-down-time", 0.0);
 
 ConfigureFn(config_tform) {
   DriveInterface::init_type();

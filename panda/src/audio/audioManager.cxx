@@ -50,13 +50,13 @@ register_AudioManager_creator(Create_AudioManager_proc* proc) {
 PT(AudioManager) AudioManager::
 create_AudioManager() {
   audio_debug("create_AudioManager()\n  audio_library_name=\""
-      <<*audio_library_name<<"\"");
+      <<audio_library_name<<"\"");
   static int lib_load;
   if (!lib_load) {
     lib_load=1;
-    if (!audio_library_name->empty() && !((*audio_library_name) == "null")) {
+    if (!audio_library_name.empty() && !(audio_library_name == "null")) {
       Filename dl_name = Filename::dso_filename(
-          "lib"+*audio_library_name+".so");
+          "lib"+string(audio_library_name)+".so");
       dl_name.to_os_specific();
       audio_debug("  dl_name=\""<<dl_name<<"\"");
       void* lib = load_dso(dl_name);

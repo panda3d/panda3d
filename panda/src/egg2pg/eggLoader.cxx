@@ -1590,7 +1590,8 @@ setup_bucket(BuilderBucket &bucket, EggLoader::BakeInUVs &bake_in_uvs,
     }
   }
 
-  if (am == EggRenderMode::AM_on) {
+  if (am == EggRenderMode::AM_on && 
+      egg_alpha_mode != EggRenderMode::AM_unspecified) {
     // Alpha type "on" means to get the default transparency type.
     am = egg_alpha_mode;
   }

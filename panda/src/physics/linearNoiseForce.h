@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "linearRandomForce.h"
+#include "configVariableInt.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LinearNoiseForce
@@ -36,7 +37,7 @@ PUBLISHED:
   virtual void write(ostream &out, unsigned int indent=0) const;
 
 public:
-  static int _random_seed;
+  static ConfigVariableInt _random_seed;
   static void init_noise_tables();
 
 private:

@@ -21,6 +21,11 @@
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
+#include "configVariableInt.h"
+#include "configVariableBool.h"
+#include "configVariableDouble.h"
+#include "configVariableString.h"
+#include "configVariableFilename.h"
 
 #ifdef WIN32_VC
 #pragma warning (disable : 4231)
@@ -28,28 +33,28 @@
 
 NotifyCategoryDecl(audio, EXPCL_PANDA, EXPTP_PANDA);
 
-extern EXPCL_PANDA bool audio_active;
-extern EXPCL_PANDA int audio_cache_limit;
-extern EXPCL_PANDA float audio_volume;
+extern EXPCL_PANDA ConfigVariableBool audio_active;
+extern EXPCL_PANDA ConfigVariableInt audio_cache_limit;
+extern EXPCL_PANDA ConfigVariableDouble audio_volume;
 
-extern EXPCL_PANDA float audio_doppler_factor;
-extern EXPCL_PANDA float audio_distance_factor;
-extern EXPCL_PANDA float audio_drop_off_factor;
+extern EXPCL_PANDA ConfigVariableDouble audio_doppler_factor;
+extern EXPCL_PANDA ConfigVariableDouble audio_distance_factor;
+extern EXPCL_PANDA ConfigVariableDouble audio_drop_off_factor;
 
-extern EXPCL_PANDA int audio_min_hw_channels;
+extern EXPCL_PANDA ConfigVariableInt audio_min_hw_channels;
 
-extern EXPCL_PANDA bool audio_software_midi;
-extern EXPCL_PANDA string* audio_dls_file;
+extern EXPCL_PANDA ConfigVariableBool audio_software_midi;
+extern EXPCL_PANDA ConfigVariableFilename audio_dls_file;
 
-extern EXPCL_PANDA bool audio_play_midi;
-extern EXPCL_PANDA bool audio_play_wave;
-extern EXPCL_PANDA bool audio_play_mp3;
+extern EXPCL_PANDA ConfigVariableBool audio_play_midi;
+extern EXPCL_PANDA ConfigVariableBool audio_play_wave;
+extern EXPCL_PANDA ConfigVariableBool audio_play_mp3;
 
-extern EXPCL_PANDA int audio_output_rate;
-extern EXPCL_PANDA int audio_output_bits;
-extern EXPCL_PANDA int audio_output_channels;
+extern EXPCL_PANDA ConfigVariableInt audio_output_rate;
+extern EXPCL_PANDA ConfigVariableInt audio_output_bits;
+extern EXPCL_PANDA ConfigVariableInt audio_output_channels;
 
-extern EXPCL_PANDA string* audio_library_name;
+extern EXPCL_PANDA ConfigVariableString audio_library_name;
 
 #ifndef NDEBUG //[
   // Non-release build:

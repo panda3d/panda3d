@@ -27,19 +27,19 @@ NotifyCategoryDef(downloader, "");
 
 ConfigVariableInt downloader_disk_write_frequency
 ("downloader-disk-write-frequency", 4,
- "How often we write to disk is determined by this ratio which is "
- "relative to the downloader-byte-rate (e.g. if disk-write-ratio is 4, "
- "we will write every 4 seconds if the frequency is 0.2)");
+ PRC_DESC("How often we write to disk is determined by this ratio which is "
+          "relative to the downloader-byte-rate (e.g. if disk-write-ratio is 4, "
+          "we will write every 4 seconds if the frequency is 0.2)"));
 
 ConfigVariableInt downloader_byte_rate
 ("downloader-byte-rate", 3600,
- "We'd like this to be about 1 second worth of download assuming a "
- "28.8Kb connection (28.8Kb / 8 = 3600 bytes per second).");
+ PRC_DESC("We'd like this to be about 1 second worth of download assuming a "
+          "28.8Kb connection (28.8Kb / 8 = 3600 bytes per second)."));
 
 ConfigVariableDouble downloader_frequency
 ("downloader-frequency", 0.2,
- "Frequency of download chunk requests in seconds (or fractions of) "
- "(Estimated 200 msec round-trip to server).");
+ PRC_DESC("Frequency of download chunk requests in seconds (or fractions of) "
+          "(Estimated 200 msec round-trip to server)."));
 
 ConfigVariableInt downloader_timeout
 ("downloader-timeout", 15);
@@ -64,81 +64,96 @@ ConfigVariableInt patcher_buffer_size
 
 ConfigVariableBool early_random_seed
 ("early-random-seed", true,
- "Configure this true (the default) to compute the SSL random seed "
- "early on in the application (specifically, when the first "
- "HTTPClient is created), or false to defer this until it is actually "
- "needed, causing a delay the first time a https connection is "
- "attempted.");
+ PRC_DESC("Configure this true (the default) to compute the SSL random seed "
+          "early on in the application (specifically, when the first "
+          "HTTPClient is created), or false to defer this until it is actually "
+          "needed, causing a delay the first time a https connection is "
+          "attempted."));
 
 ConfigVariableBool verify_ssl
 ("verify-ssl", true,
- "Configure this true (the default) to insist on verifying all SSL "
- "(e.g. https) servers against a known certificate, or false to allow "
- "an unverified connection.  This controls the default behavior; the "
- "specific behavior for a particular HTTPClient can be adjusted at "
- "runtime with set_verify_ssl().");
+ PRC_DESC("Configure this true (the default) to insist on verifying all SSL "
+          "(e.g. https) servers against a known certificate, or false to allow "
+          "an unverified connection.  This controls the default behavior; the "
+          "specific behavior for a particular HTTPClient can be adjusted at "
+          "runtime with set_verify_ssl()."));
 
 ConfigVariableString ssl_cipher_list
 ("ssl-cipher-list", "DEFAULT",
- "This is the default value for HTTPClient::set_cipher_list().");
+ PRC_DESC("This is the default value for HTTPClient::set_cipher_list()."));
+
+ConfigVariableList expected_ssl_server
+("expected-ssl-server");
+
+ConfigVariableList ssl_certificates
+("ssl-certificates");
 
 ConfigVariableString http_proxy
 ("http-proxy", "",
- "This specifies the default value for HTTPClient::set_proxy_spec().  "
- "It is a semicolon-delimited list of proxies that we use to contact "
- "all HTTP hosts that don't specify otherwise.  See "
- "set_proxy_spec() for more information.");
+ PRC_DESC("This specifies the default value for HTTPClient::set_proxy_spec().  "
+          "It is a semicolon-delimited list of proxies that we use to contact "
+          "all HTTP hosts that don't specify otherwise.  See "
+          "set_proxy_spec() for more information."));
 ConfigVariableString http_direct_hosts
 ("http-direct-hosts", "",
- "This specifies the default value for HTTPClient::set_direct_host_spec().  "
- "It is a semicolon-delimited list of host names that do not require a "
- "proxy.  See set_direct_host_spec() for more information.");
+ PRC_DESC("This specifies the default value for HTTPClient::set_direct_host_spec().  "
+          "It is a semicolon-delimited list of host names that do not require a "
+          "proxy.  See set_direct_host_spec() for more information."));
 ConfigVariableBool http_try_all_direct
 ("http-try-all-direct", true,
- "This specifies the default value for HTTPClient::set_try_all_direct().  "
- "If this is true, a direct connection will always be attempted after an "
- "attempt to connect through a proxy fails.");
+ PRC_DESC("This specifies the default value for HTTPClient::set_try_all_direct().  "
+          "If this is true, a direct connection will always be attempted after an "
+          "attempt to connect through a proxy fails."));
 ConfigVariableString http_proxy_username
 ("http-proxy-username", "",
- "This specifies a default username:password to pass to the proxy.");
+ PRC_DESC("This specifies a default username:password to pass to the proxy."));
 ConfigVariableBool http_proxy_tunnel
 ("http-proxy-tunnel", false,
- "This specifies the default value for HTTPChannel::set_proxy_tunnel().  "
- "If this is true, we will tunnel through a proxy for all connections, "
- "instead of asking the proxy to serve documents normally.");
+ PRC_DESC("This specifies the default value for HTTPChannel::set_proxy_tunnel().  "
+          "If this is true, we will tunnel through a proxy for all connections, "
+          "instead of asking the proxy to serve documents normally."));
 
 ConfigVariableDouble http_connect_timeout
 ("http-connect-timeout", 10.0,
- "This is the default amount of time to wait for a TCP/IP connection "
- "to be established, in seconds.");
+ PRC_DESC("This is the default amount of time to wait for a TCP/IP connection "
+          "to be established, in seconds."));
 
 ConfigVariableDouble http_timeout
 ("http-timeout", 20.0,
- "This is the default amount of time to wait for the HTTP server (or "
- "proxy) to finish sending its response to our request, in seconds. "
- "It starts counting after the TCP connection has been established "
- "(http_connect_timeout, above) and the request has been sent.");
+ PRC_DESC("This is the default amount of time to wait for the HTTP server (or "
+          "proxy) to finish sending its response to our request, in seconds. "
+          "It starts counting after the TCP connection has been established "
+          "(http_connect_timeout, above) and the request has been sent."));
 
 ConfigVariableInt http_max_connect_count
 ("http-max-connect-count", 10,
- "This is the maximum number of times to try reconnecting to the "
- "server on any one document attempt.  This is just a failsafe to "
- "prevent the code from attempting runaway connections; this limit "
- "should never be reached in practice.");
+ PRC_DESC("This is the maximum number of times to try reconnecting to the "
+          "server on any one document attempt.  This is just a failsafe to "
+          "prevent the code from attempting runaway connections; this limit "
+          "should never be reached in practice."));
 
 ConfigVariableFilename http_client_certificate_filename
 ("http-client-certificate-filename", "",
- "This provides a default client certificate to offer up should an "
- "SSL server demand one.  The file names a PEM-formatted file "
- "that includes a public and private key specification.  A "
- "connection-specific certificate may also be specified at runtime on "
- "the HTTPClient object, but this will require having a different "
- "HTTPClient object for each differently-certificated connection.");
+ PRC_DESC("This provides a default client certificate to offer up should an "
+          "SSL server demand one.  The file names a PEM-formatted file "
+          "that includes a public and private key specification.  A "
+          "connection-specific certificate may also be specified at runtime on "
+          "the HTTPClient object, but this will require having a different "
+          "HTTPClient object for each differently-certificated connection."));
 
 ConfigVariableString http_client_certificate_passphrase
 ("http-client-certificate-passphrase", "",
- "This specifies the passphrase to use to decode the certificate named "
- "by http-client-certificate-filename.");
+ PRC_DESC("This specifies the passphrase to use to decode the certificate named "
+          "by http-client-certificate-filename."));
+
+ConfigVariableList http_username
+("http-username",
+ PRC_DESC("Adds one or more username/password pairs to all HTTP clients.  The client "
+          "will present this username/password when asked to authenticate a request "
+          "for a particular server and/or realm.  The username is of the form "
+          "server:realm:username:password, where either or both of server and "
+          "realm may be empty, or just server:username:password or username:password.  "
+          "If the server or realm is empty, they will match anything."));
 
 ConfigureFn(config_downloader) {
 #ifdef HAVE_SSL

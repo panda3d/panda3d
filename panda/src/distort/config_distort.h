@@ -21,10 +21,11 @@
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
+#include "configVariableBool.h"
 
 NotifyCategoryDecl(distort, EXPCL_PANDAFX, EXPTP_PANDAFX);
 
-extern const bool project_invert_uvs;
+extern ConfigVariableBool project_invert_uvs;
 
 extern EXPCL_PANDAFX void init_libdistort();
 

@@ -24,40 +24,44 @@
 #include "coordinateSystem.h"
 #include "eggRenderMode.h"
 #include "notifyCategoryProxy.h"
+#include "configVariableBool.h"
+#include "configVariableDouble.h"
+#include "configVariableEnum.h"
+#include "configVariableInt.h"
 #include "dconfig.h"
 
 ConfigureDecl(config_egg2pg, EXPCL_PANDAEGG, EXPTP_PANDAEGG);
 NotifyCategoryDecl(egg2pg, EXPCL_PANDAEGG, EXPTP_PANDAEGG);
 
-extern EXPCL_PANDAEGG bool egg_mesh;
-extern EXPCL_PANDAEGG bool egg_retesselate_coplanar;
-extern EXPCL_PANDAEGG bool egg_unroll_fans;
-extern EXPCL_PANDAEGG bool egg_show_tstrips;
-extern EXPCL_PANDAEGG bool egg_show_qsheets;
-extern EXPCL_PANDAEGG bool egg_show_quads;
-extern EXPCL_PANDAEGG bool egg_false_color;
-extern EXPCL_PANDAEGG bool egg_show_normals;
-extern EXPCL_PANDAEGG double egg_normal_scale;
-extern EXPCL_PANDAEGG bool egg_subdivide_polys;
-extern EXPCL_PANDAEGG bool egg_consider_fans;
-extern EXPCL_PANDAEGG double egg_max_tfan_angle;
-extern EXPCL_PANDAEGG int egg_min_tfan_tris;
-extern EXPCL_PANDAEGG double egg_coplanar_threshold;
-extern EXPCL_PANDAEGG CoordinateSystem egg_coordinate_system;
-extern EXPCL_PANDAEGG bool egg_ignore_mipmaps;
-extern EXPCL_PANDAEGG bool egg_ignore_filters;
-extern EXPCL_PANDAEGG bool egg_ignore_clamp;
-extern EXPCL_PANDAEGG bool egg_ignore_decals;
-extern EXPCL_PANDAEGG bool egg_flatten;
-extern EXPCL_PANDAEGG bool egg_combine_geoms;
-extern EXPCL_PANDAEGG bool egg_combine_siblings;
-extern EXPCL_PANDAEGG bool egg_show_collision_solids;
-extern EXPCL_PANDAEGG bool egg_load_old_curves;
-extern EXPCL_PANDAEGG bool egg_load_classic_nurbs_curves;
-extern EXPCL_PANDAEGG bool egg_accept_errors;
-extern EXPCL_PANDAEGG bool egg_accept_errors;
-extern EXPCL_PANDAEGG bool egg_suppress_hidden;
-extern EXPCL_PANDAEGG EggRenderMode::AlphaMode egg_alpha_mode;
+extern EXPCL_PANDAEGG ConfigVariableBool egg_mesh;
+extern EXPCL_PANDAEGG ConfigVariableBool egg_retesselate_coplanar;
+extern EXPCL_PANDAEGG ConfigVariableBool egg_unroll_fans;
+extern EXPCL_PANDAEGG ConfigVariableBool egg_show_tstrips;
+extern EXPCL_PANDAEGG ConfigVariableBool egg_show_qsheets;
+extern EXPCL_PANDAEGG ConfigVariableBool egg_show_quads;
+#define egg_false_color (egg_show_tstrips | egg_show_qsheets | egg_show_quads)
+extern EXPCL_PANDAEGG ConfigVariableBool egg_show_normals;
+extern EXPCL_PANDAEGG ConfigVariableDouble egg_normal_scale;
+extern EXPCL_PANDAEGG ConfigVariableBool egg_subdivide_polys;
+extern EXPCL_PANDAEGG ConfigVariableBool egg_consider_fans;
+extern EXPCL_PANDAEGG ConfigVariableDouble egg_max_tfan_angle;
+extern EXPCL_PANDAEGG ConfigVariableInt egg_min_tfan_tris;
+extern EXPCL_PANDAEGG ConfigVariableDouble egg_coplanar_threshold;
+extern EXPCL_PANDAEGG ConfigVariableEnum<CoordinateSystem> egg_coordinate_system;
+extern EXPCL_PANDAEGG ConfigVariableBool egg_ignore_mipmaps;
+extern EXPCL_PANDAEGG ConfigVariableBool egg_ignore_filters;
+extern EXPCL_PANDAEGG ConfigVariableBool egg_ignore_clamp;
+extern EXPCL_PANDAEGG ConfigVariableBool egg_ignore_decals;
+extern EXPCL_PANDAEGG ConfigVariableBool egg_flatten;
+extern EXPCL_PANDAEGG ConfigVariableBool egg_combine_geoms;
+extern EXPCL_PANDAEGG ConfigVariableBool egg_combine_siblings;
+extern EXPCL_PANDAEGG ConfigVariableBool egg_show_collision_solids;
+extern EXPCL_PANDAEGG ConfigVariableBool egg_load_old_curves;
+extern EXPCL_PANDAEGG ConfigVariableBool egg_load_classic_nurbs_curves;
+extern EXPCL_PANDAEGG ConfigVariableBool egg_accept_errors;
+extern EXPCL_PANDAEGG ConfigVariableBool egg_accept_errors;
+extern EXPCL_PANDAEGG ConfigVariableBool egg_suppress_hidden;
+extern EXPCL_PANDAEGG ConfigVariableEnum<EggRenderMode::AlphaMode> egg_alpha_mode;
 
 extern EXPCL_PANDAEGG void init_libegg2pg();
 

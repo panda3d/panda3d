@@ -21,6 +21,7 @@
 
 #include "baseIntegrator.h"
 #include "angularForce.h"
+#include "configVariableDouble.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BaseAngularIntegrator
@@ -42,7 +43,7 @@ protected:
   AngularIntegrator();
 
 private:
-  static const float _max_angular_dt;
+  static ConfigVariableDouble _max_angular_dt;
 
   // this allows baseAngularIntegrator to censor/modify data that the
   // actual integration function receives.

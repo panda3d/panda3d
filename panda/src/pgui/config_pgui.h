@@ -25,7 +25,6 @@
 NotifyCategoryDecl(pgui, EXPCL_PANDA, EXPTP_PANDA);
 
 // Configure variables for pgui package.
-extern const bool pgui_quick;
 
 extern EXPCL_PANDA void init_libpgui();
 

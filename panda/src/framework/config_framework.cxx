@@ -24,38 +24,25 @@
 Configure(config_framework);
 NotifyCategoryDef(framework, "");
 
-const int win_width = config_framework.GetInt("win-width", 640);
-const int win_height = config_framework.GetInt("win-height", 480);
-const int win_origin_x = config_framework.GetInt("win-origin-x", -1);
-const int win_origin_y = config_framework.GetInt("win-origin-y", -1);
-const bool fullscreen = config_framework.GetBool("fullscreen", false);
-const bool undecorated = config_framework.GetBool("undecorated", false);
-const bool cursor_hidden = config_framework.GetBool("cursor-hidden", false);
-WindowProperties::ZOrder z_order = WindowProperties::Z_normal;
-const string window_title = config_framework.GetString("window-title", "Panda");
-
-const float aspect_ratio = config_framework.GetFloat("aspect-ratio", 0.0f);
-const bool show_frame_rate_meter = config_framework.GetBool("show-frame-rate-meter", false);
+ConfigVariableDouble aspect_ratio
+("aspect-ratio", 0.0);
+ConfigVariableBool show_frame_rate_meter
+("show-frame-rate-meter", false);
 
 // The default window background color.
-const float win_background_r = config_framework.GetFloat("win-background-r", 0.41);
-const float win_background_g = config_framework.GetFloat("win-background-g", 0.41);
-const float win_background_b = config_framework.GetFloat("win-background-b", 0.41);
+ConfigVariableDouble win_background_r
+("win-background-r", 0.41);
+ConfigVariableDouble win_background_g
+("win-background-g", 0.41);
+ConfigVariableDouble win_background_b
+("win-background-b", 0.41);
 
-const string record_session = config_framework.GetString("record-session", "");
-const string playback_session = config_framework.GetString("playback-session", "");
+ConfigVariableString record_session
+("record-session", "");
+ConfigVariableString playback_session
+("playback-session", "");
 
 
 ConfigureFn(config_framework) {
-  string string_z_order = config_framework.GetString("z-order", "normal");
-  if (string_z_order == "bottom") {
-    z_order = WindowProperties::Z_bottom;
-  } else if (string_z_order == "top") {
-    z_order = WindowProperties::Z_top;
-  } else if (!(string_z_order == "normal")) {
-    framework_cat.warning()
-      << "Unknown z-order: " << string_z_order << "\n";
-  }
-
   WindowFramework::init_type();
 }

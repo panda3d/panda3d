@@ -25,63 +25,59 @@ Configure(config_audio);
 NotifyCategoryDef(audio, "");
 
 
-bool audio_active 
-    =config_audio.GetBool("audio-active", true);
+ConfigVariableBool audio_active 
+("audio-active", true);
 
-//number of sounds in cache
-int audio_cache_limit 
-    =config_audio.GetInt("audio-cache-limit", 15);  
+ConfigVariableInt audio_cache_limit 
+("audio-cache-limit", 15,
+ PRC_DESC("The number of sounds in the cache."));
 
-float audio_volume 
-    =config_audio.GetFloat("audio-volume", 1.0f);
+ConfigVariableDouble audio_volume 
+("audio-volume", 1.0f);
 
-float audio_doppler_factor
-    =config_audio.GetFloat("audio-doppler-factor", 1.0f);
+ConfigVariableDouble audio_doppler_factor
+("audio-doppler-factor", 1.0f);
 
-float audio_distance_factor
-    =config_audio.GetFloat("audio-distance-factor", 1.0f);
+ConfigVariableDouble audio_distance_factor
+("audio-distance-factor", 1.0f);
 
-float audio_drop_off_factor
-    =config_audio.GetFloat("audio-drop-off-factor", 1.0f);
+ConfigVariableDouble audio_drop_off_factor
+("audio-drop-off-factor", 1.0f);
 
-// Guarantee this many channels on local sound card, or just
-// play EVERYTHING in software.
-int audio_min_hw_channels
-    =config_audio.GetInt("audio-min-hw-channels", 15);
+ConfigVariableInt audio_min_hw_channels
+("audio-min-hw-channels", 15,
+ PRC_DESC("Guarantee this many channels on the local sound card, or just "
+          "play EVERYTHING in software."));
 
-bool audio_software_midi 
-    =config_audio.GetBool("audio-software-midi", false);
+ConfigVariableBool audio_software_midi 
+("audio-software-midi", false);
 
-bool audio_play_midi 
-    =config_audio.GetBool("audio-play-midi", true);
+ConfigVariableFilename audio_dls_file
+("audio-dls-file", "");
 
-bool audio_play_wave 
-    =config_audio.GetBool("audio-play-wave", true);
+ConfigVariableBool audio_play_midi 
+("audio-play-midi", true);
 
-bool audio_play_mp3 
-    =config_audio.GetBool("audio-play-mp3", true);
+ConfigVariableBool audio_play_wave 
+("audio-play-wave", true);
 
-int audio_output_rate 
-    =config_audio.GetInt("audio-output-rate", 22050);
+ConfigVariableBool audio_play_mp3 
+("audio-play-mp3", true);
 
-int audio_output_bits
-    =config_audio.GetInt("audio-output-bits", 16);
+ConfigVariableInt audio_output_rate 
+("audio-output-rate", 22050);
 
-int audio_output_channels
-    =config_audio.GetInt("audio-output-channels", 2);
+ConfigVariableInt audio_output_bits
+("audio-output-bits", 16);
 
-string* audio_dls_file;
+ConfigVariableInt audio_output_channels
+("audio-output-channels", 2);
 
-string* audio_library_name;
+ConfigVariableString audio_library_name
+("audio-library-name", "miles_audio");
 
 
 ConfigureFn(config_audio) {
-  audio_dls_file = new string(
-      config_audio.GetString("audio-dls-file", ""));
-
-  audio_library_name = new string(
-      config_audio.GetString("audio-library-name", "miles_audio"));
-
   AudioManager::init_type();
   AudioSound::init_type();
 }

@@ -21,6 +21,8 @@
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
+#include "configVariableInt.h"
+#include "configVariableBool.h"
 
 // Configure variables for net package.
 

@@ -48,14 +48,13 @@ GraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
       << " using GSG " << (void *)gsg << "\n";
   }
 
-  // Some default properties for windows unless specified otherwise.
-  // Other properties (size, title, etc.) must be explicitly
-  // specified.
   _properties.set_open(false);
   _properties.set_undecorated(false);
   _properties.set_fullscreen(false);
   _properties.set_minimized(false);
   _properties.set_cursor_hidden(false);
+
+  request_properties(WindowProperties::get_default());
 
   _window_event = "window-event";
 }

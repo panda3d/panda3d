@@ -40,18 +40,13 @@
 Configure(config_chan);
 NotifyCategoryDef(chan, "");
 
-// Set this true to enable compress of animation channels when writing to
-// the bam file.  This is an experimental lossy compression.
-bool compress_channels = config_chan.GetBool("compress-channels", false);
+ConfigVariableBool compress_channels
+("compress-channels", false,
+ PRC_DESC("Set this true to enable lossy compression of animation channels "
+          "when writing to the bam file.  This serves to reduce the size of "
+          "the bam file only; it does reduce the memory footprint of the "
+          "channels when the bam file is loaded."));
 
-// The quality level is an integer number that generally ranges
-// between 0 and 100, where smaller numbers indicate greater
-// compression at the cost of quality, and larger numbers indicate
-// higher quality but less compression.  Generally, 95 is the highest
-// useful value; values between 95 and 100 produce substantially
-// larger, but not substantially better, output files.  This is akin
-// to the JPEG compression level.
-//
 // There are some special values above 100 which are generally only
 // useful for debugging (specifically, to research at what point a
 // particular animation artifact is being introduced):
@@ -70,13 +65,23 @@ bool compress_channels = config_chan.GetBool("compress-channels", false);
 //        artifacts are being introduced at this point, check your
 //        sanity.
 //
-int compress_chan_quality = config_chan.GetInt("compress-chan-quality", 95);
+ConfigVariableInt compress_chan_quality
+("compress-chan-quality", 95,
+ PRC_DESC("The quality level is an integer number that generally ranges "
+          "between 0 and 100, where smaller numbers indicate greater "
+          "compression at the cost of quality, and larger numbers indicate "
+          "higher quality but less compression.  Generally, 95 is the highest "
+          "useful value; values between 95 and 100 produce substantially "
+          "larger, but not substantially better, output files.  This is akin "
+          "to the JPEG compression level."));
 
-// Set this false to disable reading of compressed animation channels,
-// even if the decompression code is available.  The only reason you
-// might want to do this would be to speed load time when you don't
-// care about what the animation looks like.
-bool read_compressed_channels = config_chan.GetBool("read-compressed-channels", true);
+ConfigVariableBool read_compressed_channels
+("read-compressed-channels", true,
+PRC_DESC("Set this false to disable reading of compressed animation channels, "
+         "even if the decompression code is available.  The only reason you "
+         "might want to do this would be to speed load time when you don't "
+         "care about what the animation looks like."));
+
 
 ConfigureFn(config_chan) {
   AnimBundle::init_type();

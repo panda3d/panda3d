@@ -124,6 +124,8 @@ private:
 };
 
 ostream &operator << (ostream &out, EggRenderMode::AlphaMode mode);
+istream &operator >> (istream &in, EggRenderMode::AlphaMode &mode);
+
 ostream &operator << (ostream &out, EggRenderMode::DepthWriteMode mode);
 ostream &operator << (ostream &out, EggRenderMode::DepthTestMode mode);
 ostream &operator << (ostream &out, EggRenderMode::VisibilityMode mode);

@@ -20,6 +20,7 @@
 #define WINDOWPROPERTIES_H
 
 #include "pandabase.h"
+#include "notify.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : WindowProperties
@@ -40,6 +41,8 @@ PUBLISHED:
   INLINE WindowProperties(const WindowProperties &copy);
   void operator = (const WindowProperties &copy);
   INLINE ~WindowProperties();
+
+  static WindowProperties get_default();
 
   bool operator == (const WindowProperties &other) const;
   INLINE bool operator != (const WindowProperties &other) const;
@@ -107,7 +110,7 @@ PUBLISHED:
   void add_properties(const WindowProperties &other);
 
   void output(ostream &out) const;
-  
+
 private:
   // This bitmask indicates which of the parameters in the properties
   // structure have been filled in by the user, and which remain
@@ -148,6 +151,11 @@ private:
   ZOrder _z_order;
   int _flags;
 };
+
+EXPCL_PANDA ostream &
+operator << (ostream &out, WindowProperties::ZOrder z_order);
+EXPCL_PANDA istream &
+operator >> (istream &in, WindowProperties::ZOrder &z_order);
 
 INLINE ostream &operator << (ostream &out, const WindowProperties &properties);
 

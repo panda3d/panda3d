@@ -99,74 +99,93 @@ ConfigureFn(config_pgraph) {
   init_libpgraph();
 }
 
-// Set this true to cause culling to be performed by rendering the
-// object in red wireframe, rather than actually culling it.  This
-// helps make culling errors obvious.
-const bool fake_view_frustum_cull = config_pgraph.GetBool("fake-view-frustum-cull", false);
+ConfigVariableBool fake_view_frustum_cull
+("fake-view-frustum-cull", false,
+ PRC_DESC("Set this true to cause culling to be performed by rendering the "
+          "object in red wireframe, rather than actually culling it.  This "
+          "helps make culling errors obvious."));
 
-// Set this true to enable portal clipping. This will enable the renderer to cull
-// more objects that are clipped if not in the current list ot portals
-const bool allow_portal_cull = config_pgraph.GetBool("allow-portal-cull", false);
 
-// Set this true to make ambiguous path warning messages generate an
-// assertion failure instead of just a warning (which can then be
-// trapped with assert-abort).
-const bool unambiguous_graph = config_pgraph.GetBool("unambiguous-graph", false);
+ConfigVariableBool allow_portal_cull
+("allow-portal-cull", false,
+ PRC_DESC("Set this true to enable portal clipping.  This will enable the "
+          "renderer to cull more objects that are clipped if not in the "
+          "current list of portals.  This is still somewhat experimental."));
 
-// Set this true to allow unrelated NodePaths (that is, nodes which
-// have no common ancestor) to be adjusted relative to each other.  If
-// true, these will be treated as if they had a common node above
-// their top nodes.
-const bool allow_unrelated_wrt = config_pgraph.GetBool("allow-unrelated-wrt", true);
+ConfigVariableBool unambiguous_graph
+("unambiguous-graph", false,
+ PRC_DESC("Set this true to make ambiguous path warning messages generate an "
+          "assertion failure instead of just a warning (which can then be "
+          "trapped with assert-abort)."));
 
-// Set this true to double-check the componentwise transform compose
-// (or invert) operation against the equivalent matrix-based
-// operation.  This has no effect if NDEBUG is defined.
-const bool paranoid_compose = config_pgraph.GetBool("paranoid-compose", false);
+ConfigVariableBool allow_unrelated_wrt
+("allow-unrelated-wrt", true,
+ PRC_DESC("Set this true to allow unrelated NodePaths (that is, nodes which "
+          "have no common ancestor) to be adjusted relative to each other.  If "
+          "true, these will be treated as if they had a common node above "
+          "their top nodes."));
 
-// Set this true to perform componentwise compose and invert
-// operations at all.  If this is false, the compositions are computed
-// by matrix.
-const bool compose_componentwise = config_pgraph.GetBool("compose-componentwise", true);
+ConfigVariableBool paranoid_compose
+("paranoid-compose", false,
+ PRC_DESC("Set this true to double-check the componentwise transform compose "
+          "(or invert) operation against the equivalent matrix-based "
+          "operation.  This has no effect if NDEBUG is defined."));
 
-// Set this true to double-check that nothing is inappropriately
-// modifying the supposedly const structures like RenderState,
-// RenderAttrib, TransformState, and RenderEffect.  This has no effect
-// if NDEBUG is defined.
-const bool paranoid_const = config_pgraph.GetBool("paranoid-const", false);
+ConfigVariableBool compose_componentwise
+("compose-componentwise", true,
+ PRC_DESC("Set this true to perform componentwise compose and invert "
+          "operations when possible.  If this is false, the compositions "
+          "are always computed by matrix."));
 
-// Set this true to view some info statements regarding the polylight
-// It is helpful for debugging
-const bool polylight_info = config_pgraph.GetBool("polylight-info", false);
+ConfigVariableBool paranoid_const
+("paranoid-const", false,
+ PRC_DESC("Set this true to double-check that nothing is inappropriately "
+          "modifying the supposedly const structures like RenderState, "
+          "RenderAttrib, TransformState, and RenderEffect.  This has no effect "
+          "if NDEBUG is defined."));
 
-// The default amount of time (in seconds) over which a FadeLODNode
-// transitions between its different levels.
-const double lod_fade_time = config_pgraph.GetDouble("lod-fade-time", 0.5);
+ConfigVariableBool polylight_info
+("polylight-info", false,
+ PRC_DESC("Set this true to view some info statements regarding the polylight. "
+          "It is helpful for debugging."));
 
-// Set this false to disable TransparencyAttrib::M_dual altogether
-// (and use M_alpha in its place).
-const bool m_dual = config_pgraph.GetBool("m-dual", true);
-// Set this false to disable just the opaque part of M_dual.
-const bool m_dual_opaque = config_pgraph.GetBool("m-dual-opaque", true);
-// Set this false to disable just the transparent part of M_dual.
-const bool m_dual_transparent = config_pgraph.GetBool("m-dual-transparent", true);
-// Set this true to flash any objects that use M_dual, for debugging.
-const bool m_dual_flash = config_pgraph.GetBool("m-dual-flash", false);
+ConfigVariableDouble lod_fade_time
+("lod-fade-time", 0.5,
+ PRC_DESC("The default amount of time (in seconds) over which a FadeLODNode "
+          "transitions between its different levels."));
 
-// Set this true to support actual asynchronous loads via the
-// request_load()/fetch_load() interface to Loader.  Set it false to
-// map these to blocking, synchronous loads instead.  Currently, the
-// rest of Panda isn't quite ready for asynchronous loads, so leave
-// this false for now.
-const bool asynchronous_loads = config_pgraph.GetBool("asynchronous-loads", false);
+ConfigVariableBool m_dual
+("m-dual", true,
+ PRC_DESC("Set this false to disable TransparencyAttrib::M_dual altogether "
+          "(and use M_alpha in its place)."));
 
-Config::ConfigTable::Symbol *load_file_type = (Config::ConfigTable::Symbol *)NULL;
+ConfigVariableBool m_dual_opaque
+("m-dual-opaque", true,
+ PRC_DESC("Set this false to disable just the opaque part of M_dual."));
 
-const DSearchPath &
-get_bam_path() {
-  static DSearchPath *bam_path = NULL;
-  return get_config_path("bam-path", bam_path);
-}
+ConfigVariableBool m_dual_transparent
+("m-dual-transparent", true,
+ PRC_DESC("Set this false to disable just the transparent part of M_dual."));
+
+ConfigVariableBool m_dual_flash
+("m-dual-flash", false,
+ PRC_DESC("Set this true to flash any objects that use M_dual, for debugging."));
+ 
+ 
+ConfigVariableBool asynchronous_loads
+("asynchronous-loads", false,
+ PRC_DESC("Set this true to support actual asynchronous loads via the "
+          "request_load()/fetch_load() interface to Loader.  Set it false to "
+          "map these to blocking, synchronous loads instead.  Currently, the "
+          "rest of Panda isn't quite ready for asynchronous loads, so leave "
+          "this false for now."));
+
+ConfigVariableList load_file_type
+("load-file-type", 
+ PRC_DESC("List the model loader modules that Panda will automatically "
+          "import when a new, unknown model type is loaded.  This may be "
+          "either the name of a module, or a space-separate list of filename "
+          "extensions, followed by the name of the module."));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpgraph
@@ -183,9 +202,6 @@ init_libpgraph() {
     return;
   }
   initialized = true;
-
-  load_file_type = new Config::ConfigTable::Symbol;
-  config_pgraph.GetAll("load-file-type", *load_file_type);
 
   AlphaTestAttrib::init_type();
   AmbientLight::init_type();

@@ -113,19 +113,10 @@ HTTPClient() {
 
   {
     // Also load in the general usernames.
-    Config::ConfigTable::Symbol http_usernames;
-    config_downloader.GetAll("http-username", http_usernames);
-    
-    // When we use GetAll(), we might inadvertently read duplicate
-    // lines.  Filter them out with a set.
-    pset<string> already_read;
-    
-    Config::ConfigTable::Symbol::iterator si;
-    for (si = http_usernames.begin(); si != http_usernames.end(); ++si) {
-      string http_username = (*si).Val();
-      if (already_read.insert(http_username).second) {
-        add_http_username(http_username);
-      }
+    int num_unique_values = http_username.get_num_unique_values();
+    for (int i = 0; i < num_unique_values; i++) {
+      string username = http_username.get_unique_value(i);
+      add_http_username(username);
     }
   }
 
@@ -1074,21 +1065,10 @@ get_ssl_ctx() {
   notify_ssl_errors();
 
   // Get the configured set of expected servers.
-  {
-    Config::ConfigTable::Symbol expected_servers;
-    config_downloader.GetAll("expected-ssl-server", expected_servers);
-    
-    // When we use GetAll(), we might inadvertently read duplicate
-    // lines.  Filter them out with a set.
-    pset<string> already_read;
-    
-    Config::ConfigTable::Symbol::iterator si;
-    for (si = expected_servers.begin(); si != expected_servers.end(); ++si) {
-      string expected_server = (*si).Val();
-      if (already_read.insert(expected_server).second) {
-        add_expected_server(expected_server);
-      }
-    }
+  int num_servers = expected_ssl_server.get_num_unique_values();
+  for (int si = 0; si < num_servers; si++) {
+    string expected_server = expected_ssl_server.get_unique_value(si);
+    add_expected_server(expected_server);
   }
 
   if (_x509_store != (X509_STORE *)NULL) {
@@ -1107,20 +1087,11 @@ get_ssl_ctx() {
     SSL_CTX_set_cert_store(_ssl_ctx, _x509_store);
 
     // Load in any default certificates listed in the Configrc file.
-    Config::ConfigTable::Symbol cert_files;
-    config_downloader.GetAll("ssl-certificates", cert_files);
-    
-    // When we use GetAll(), we might inadvertently read duplicate
-    // lines.  Filter them out with a set.
-    pset<string> already_read;
-    
-    Config::ConfigTable::Symbol::iterator si;
-    for (si = cert_files.begin(); si != cert_files.end(); ++si) {
-      string cert_file = (*si).Val();
-      if (already_read.insert(cert_file).second) {
-        Filename filename = Filename::from_os_specific(ExecutionEnvironment::expand_string(cert_file));
-        load_certificates(filename);
-      }
+    int num_certs = ssl_certificates.get_num_unique_values();
+    for (int ci = 0; ci < num_certs; ci++) {
+      string cert_file = ssl_certificates.get_unique_value(ci);
+      Filename filename = Filename::expand_from(cert_file);
+      load_certificates(filename);
     }
   }
 
@@ -1156,7 +1127,7 @@ get_proxies_for_scheme(const string &scheme, pvector<URLSpec> &proxies) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::add_http_username
 //       Access: Private
-//  Description: Handles a Configrc definition for http-username as
+//  Description: Handles a Config definition for http-username as
 //               server:realm:username:password, where either or both
 //               of server and realm may be empty, or just
 //               server:username:password or username:password.

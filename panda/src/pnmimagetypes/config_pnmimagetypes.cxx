@@ -44,30 +44,50 @@ NotifyCategoryDefName(pnmimage_jpg, "jpg", pnmimage_cat);
 NotifyCategoryDefName(pnmimage_png, "png", pnmimage_cat);
 NotifyCategoryDefName(pnmimage_tiff, "tiff", pnmimage_cat);
 
-int sgi_storage_type = STORAGE_RLE;
-const string sgi_imagename = config_pnmimagetypes.GetString("sgi-imagename", "");
+ConfigVariableEnum<SGIStorageType> sgi_storage_type
+("sgi-storage-type", SST_rle,
+ PRC_DESC("Use either 'rle' or 'verbatim' to indicate how SGI (*.rgb) "
+          "files are written."));
+ConfigVariableString sgi_imagename
+("sgi-imagename", "",
+ PRC_DESC("This string is written to the header of an SGI (*.rgb) file.  "
+          "It seems to have documentation purposes only."));
 
 // TGA supports RLE compression, as well as colormapping and/or
 // grayscale images.  Set these true to enable these features, if
 // possible, or false to disable them.  Some programs (like xv) have
 // difficulty reading these advanced TGA files.
-const bool tga_rle = config_pnmimagetypes.GetBool("tga-rle", false);
-const bool tga_colormap = config_pnmimagetypes.GetBool("tga-colormap", false);
-const bool tga_grayscale = config_pnmimagetypes.GetBool("tga-grayscale", false);
+ConfigVariableBool tga_rle
+("tga-rle", false,
+ PRC_DESC("Set this true to enable RLE compression when writing TGA files."));
 
-// IMG format is just a sequential string of r, g, b bytes.  However,
-// it may or may not include a "header" which consists of the xsize
-// and the ysize of the image, either as shorts or as longs.
-IMGHeaderType img_header_type;
-// The following are only used if header_type is 'none'.
-const int img_xsize = config_pnmimagetypes.GetInt("img-xsize", 0);
-const int img_ysize = config_pnmimagetypes.GetInt("img-ysize", 0);
+ConfigVariableBool tga_colormap
+("tga-colormap", false,
+ PRC_DESC("Set this true to write colormapped TGA files."));
 
-// Set this to the quality percentage for writing JPEG files.  95 is
-// the highest useful value (values greater than 95 do not lead to
-// significantly better quality, but do lead to significantly greater
-// size).
-const int jpeg_quality = config_pnmimagetypes.GetInt("jpeg-quality", 95);
+ConfigVariableBool tga_grayscale
+("tga-grayscale", false,
+ PRC_DESC("Set this true to enable writing grayscale TGA files."));
+
+ConfigVariableEnum<IMGHeaderType> img_header_type
+("img-header-type", IHT_short,
+ PRC_DESC("IMG format is just a sequential string of r, g, b bytes.  However, "
+          "it may or may not include a \"header\" which consists of the xsize "
+          "and the ysize of the image, either as shorts or as longs.  Specify "
+          "that with this variable, either 'short', 'long', or 'none' for "
+          "no header at all (in which case you should also set img-size)."));
+
+ConfigVariableInt img_size
+("img-size", 0,
+ PRC_DESC("If an IMG file without a header is loaded (e.g. img-header-type "
+          "is set to 'none', this specifies the fixed x y size of the image."));
+ConfigVariableInt jpeg_quality
+("jpeg-quality", 95,
+ PRC_DESC("Set this to the quality percentage for writing JPEG files.  95 is "
+          "the highest useful value (values greater than 95 do not lead to "
+          "significantly better quality, but do lead to significantly greater "
+          "size)."));
+
 
 // These control the scaling that is automatically performed on a JPEG
 // file for decompression.  You might specify to scale down by a
@@ -76,13 +96,80 @@ const int jpeg_quality = config_pnmimagetypes.GetInt("jpeg-quality", 95);
 // correspondingly.  Attempting to use this to scale up, or to scale
 // by any fraction other than an even power of two, may not be
 // supported.
-const int jpeg_scale_num = config_pnmimagetypes.GetInt("jpeg-scale-num", 1);
-const int jpeg_scale_denom = config_pnmimagetypes.GetInt("jpeg-scale-denom", 1);
+ConfigVariableInt jpeg_scale_num
+("jpeg-scale-num", 1);
+ConfigVariableInt jpeg_scale_denom
+("jpeg-scale-denom", 1);
 
-// This controls how many bits per pixel are written out for BMP
-// files.  If this is zero, the default, the number of bits per pixel
-// is based on the image.
-const int bmp_bpp = config_pnmimagetypes.GetInt("bmp-bpp", 0);
+ConfigVariableInt bmp_bpp
+("bmp-bpp", 0,
+ PRC_DESC("This controls how many bits per pixel are written out for BMP "
+          "files.  If this is zero, the default, the number of bits per pixel "
+          "is based on the image."));
+
+ostream &
+operator << (ostream &out, SGIStorageType sst) {
+  switch (sst) {
+  case SST_rle:
+    return out << "rle";
+  case SST_verbatim:
+    return out << "verbatim";
+  }
+
+  return out << "**invalid SGIStorageType(" << (int)sst << ")**";
+}
+
+istream &
+operator >> (istream &in, SGIStorageType &sst) {
+  string word;
+  in >> word;
+
+  if (cmp_nocase(word, "rle") == 0) {
+    sst = SST_rle;
+  } else if (cmp_nocase(word, "verbatim") == 0) {
+    sst = SST_verbatim;
+  } else {
+    pnmimage_img_cat->error()
+      << "Invalid SGIStorageType: " << word << "\n";
+    sst = SST_verbatim;
+  }
+
+  return in;
+}
+
+ostream &
+operator << (ostream &out, IMGHeaderType iht) {
+  switch (iht) {
+  case IHT_none:
+    return out << "none";
+  case IHT_short:
+    return out << "short";
+  case IHT_long:
+    return out << "long";
+  }
+
+  return out << "**invalid IMGHeaderType(" << (int)iht << ")**";
+}
+
+istream &
+operator >> (istream &in, IMGHeaderType &iht) {
+  string word;
+  in >> word;
+
+  if (cmp_nocase(word, "none") == 0) {
+    iht = IHT_none;
+  } else if (cmp_nocase(word, "short") == 0) {
+    iht = IHT_short;
+  } else if (cmp_nocase(word, "long") == 0) {
+    iht = IHT_long;
+  } else {
+    pnmimage_img_cat->error()
+      << "Invalid IMGHeaderType: " << word << "\n";
+    iht = IHT_none;
+  }
+
+  return in;
+}
 
 ConfigureFn(config_pnmimagetypes) {
   init_libpnmimagetypes();
@@ -120,30 +207,6 @@ init_libpnmimagetypes() {
 #ifdef HAVE_TIFF
   PNMFileTypeTIFF::init_type();
 #endif
-
-  string sgi_storage_type_str =
-    config_pnmimagetypes.GetString("sgi-storage-type", "rle");
-  if (cmp_nocase(sgi_storage_type_str, "rle") == 0) {
-    sgi_storage_type = STORAGE_RLE;
-  } else if (cmp_nocase(sgi_storage_type_str, "verbatim") == 0) {
-    sgi_storage_type = STORAGE_VERBATIM;
-  } else {
-    pnmimage_sgi_cat->error()
-      << "Invalid sgi-storage-type: " << sgi_storage_type_str << "\n";
-  }
-
-  string img_header_type_str =
-    config_pnmimagetypes.GetString("img-header-type", "long");
-  if (cmp_nocase(img_header_type_str, "none") == 0) {
-    img_header_type = IHT_none;
-  } else if (cmp_nocase(img_header_type_str, "short") == 0) {
-    img_header_type = IHT_short;
-  } else if (cmp_nocase(img_header_type_str, "long") == 0) {
-    img_header_type = IHT_long;
-  } else {
-    pnmimage_img_cat->error()
-      << "Invalid img-header-type: " << img_header_type_str << "\n";
-  }
 
   // Register each type with the PNMFileTypeRegistry.
   PNMFileTypeRegistry *tr = PNMFileTypeRegistry::get_ptr();

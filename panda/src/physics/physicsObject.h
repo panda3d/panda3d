@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "typedReferenceCount.h"
 #include "luse.h"
+#include "configVariableDouble.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysicsObject
@@ -39,7 +40,7 @@ PUBLISHED:
   virtual ~PhysicsObject();
   const PhysicsObject &operator =(const PhysicsObject &other);
 
-  static const float _default_terminal_velocity;
+  static ConfigVariableDouble _default_terminal_velocity;
 
   INLINE void set_active(bool flag);
   INLINE bool get_active() const;

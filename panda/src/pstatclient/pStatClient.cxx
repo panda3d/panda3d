@@ -66,7 +66,7 @@ PerThreadData() {
 PStatClient::
 PStatClient() :
   _reader(this, 0),
-  _writer(this, pstats_threaded_write ? 1 : 0)
+  _writer(this, get_pstats_threaded_write() ? 1 : 0)
 {
   _is_connected = false;
   _got_udp_port = false;
@@ -93,6 +93,8 @@ PStatClient() :
 
   _tcp_count = 1;
   _udp_count = 1;
+
+  double pstats_tcp_ratio = get_pstats_tcp_ratio();
 
   if (pstats_tcp_ratio >= 1.0f) {
     _tcp_count_factor = 0.0f;

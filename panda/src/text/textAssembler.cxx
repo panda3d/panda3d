@@ -540,7 +540,7 @@ wordwrap_text(const TextAssembler::TextString &text,
         // of our forbidden characters.
         size_t i = 0;
         while ((int)i < text_max_never_break && q - i > p && 
-               text_never_break_before->find(text[q - i]._character) != wstring::npos) {
+               get_text_never_break_before().find(text[q - i]._character) != wstring::npos) {
           i++;
         }
         if ((int)i < text_max_never_break) {
@@ -600,9 +600,10 @@ wordwrap_text(const TextAssembler::TextString &text,
       }
     }
     if (output_hyphen) {
+      wstring text_soft_hyphen_output = get_text_soft_hyphen_output();
       wstring::const_iterator wi;
-      for (wi = text_soft_hyphen_output->begin();
-           wi != text_soft_hyphen_output->end();
+      for (wi = text_soft_hyphen_output.begin();
+           wi != text_soft_hyphen_output.end();
            ++wi) {
         output_text.push_back(TextCharacter(*wi, text[last_hyphen]._properties));
       }
@@ -657,9 +658,10 @@ calc_hyphen_width(const TextCharacter &tch) {
   nassertr(font != (TextFont *)NULL, 0.0f);
 
   float hyphen_width = 0.0f;
+  wstring text_soft_hyphen_output = get_text_soft_hyphen_output();
   wstring::const_iterator wi;
-  for (wi = text_soft_hyphen_output->begin();
-       wi != text_soft_hyphen_output->end();
+  for (wi = text_soft_hyphen_output.begin();
+       wi != text_soft_hyphen_output.end();
        ++wi) {
     hyphen_width += calc_width(*wi, *tch._properties);
   }

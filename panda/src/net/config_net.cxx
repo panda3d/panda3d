@@ -29,6 +29,7 @@ ConfigureFn(config_net) {
   init_libnet();
 }
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libnet
 //  Description: Initializes the library.  This must be called at
@@ -48,25 +49,50 @@ init_libnet() {
   NetDatagram::init_type();
 }
 
+
 // The following two maximum queue sizes are totally arbitrary and
 // serve only to provide sanity caps on the various queues in the net
 // package.  You can set them to any sane values you like.  Also see
 // the set_max_queue_size() methods in the various classes, which you
 // can change at runtime on a particular instance.
 
-// This one limits the number of datagrams in a ConnectionWriter's
-// output queue.
-int get_net_max_write_queue() {
-  return config_net.GetInt("net-max-write-queue", 10000);
+int
+get_net_max_write_queue() {
+  static ConfigVariableInt *net_max_write_queue = NULL;
+
+  if (net_max_write_queue == (ConfigVariableInt *)NULL) {
+    net_max_write_queue = new ConfigVariableInt
+      ("net-max-write-queue", 10000,
+       PRC_DESC("This limits the number of datagrams in a ConnectionWriter's "
+                "output queue."));
+  }
+
+  return *net_max_write_queue;
 }
 
-// This one limits the number of datagrams, messages, what have you,
-// in the various QueuedConnectionReader, QueuedConnectionListener,
-// and QueuedConnectionManager classes.
-int get_net_max_response_queue() {
-  return config_net.GetInt("net-max-response-queue", 50000);
+int
+get_net_max_response_queue() {
+  static ConfigVariableInt *net_max_response_queue = NULL;
+
+  if (net_max_response_queue == (ConfigVariableInt *)NULL) {
+    net_max_response_queue = new ConfigVariableInt
+      ("net-max-response-queue", 50000,
+       PRC_DESC("This limits the number of datagrams, messages, what have you, "
+                "in the various QueuedConnectionReader, QueuedConnectionListener, "
+                "and QueuedConnectionManager classes."));
+  }
+
+  return *net_max_response_queue;
 }
 
-bool get_net_error_abort() {
-  return config_net.GetBool("net-error-abort", false);
+bool
+get_net_error_abort() {
+  static ConfigVariableBool *net_error_abort = NULL;
+
+  if (net_error_abort == (ConfigVariableBool *)NULL) {
+    net_error_abort = new ConfigVariableBool
+      ("net-error-abort", false);
+  }
+
+  return *net_error_abort;
 }

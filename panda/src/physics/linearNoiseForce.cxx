@@ -23,6 +23,9 @@
 
 // declare the statics
 
+ConfigVariableInt LinearNoiseForce::_random_seed
+("default_noise_force_seed", 665);
+
 bool LinearNoiseForce::_initialized = false;
 unsigned char LinearNoiseForce::_prn_table[256];
 LVector3f LinearNoiseForce::_gradient_table[256];

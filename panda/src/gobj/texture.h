@@ -203,6 +203,9 @@ private:
   friend class PreparedGraphicsObjects;
 };
 
+EXPCL_PANDA ostream &operator << (ostream &out, Texture::FilterType ft);
+EXPCL_PANDA istream &operator >> (istream &in, Texture::FilterType &ft);
+
 #include "texture.I"
 
 #endif

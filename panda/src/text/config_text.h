@@ -22,33 +22,38 @@
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
 #include "texture.h"
+#include "configVariableBool.h"
+#include "configVariableInt.h"
+#include "configVariableDouble.h"
+#include "configVariableFilename.h"
+#include "configVariableEnum.h"
 
 class DSearchPath;
 
 NotifyCategoryDecl(text, EXPCL_PANDA, EXPTP_PANDA);
 
-extern const bool text_flatten;
-extern const bool text_update_cleared_glyphs;
-extern const int text_anisotropic_degree;
-extern const int text_texture_margin;
-extern const float text_poly_margin;
-extern const int text_page_x_size;
-extern const int text_page_y_size;
-extern const bool text_small_caps;
-extern const float text_small_caps_scale;
-extern const string text_default_font;
-extern const float text_tab_width;
-extern const int text_push_properties_key;
-extern const int text_pop_properties_key;
-extern const int text_soft_hyphen_key;
-extern const int text_soft_break_key;
-extern wstring *text_soft_hyphen_output;
-extern const float text_hyphen_ratio;
-extern wstring *text_never_break_before;
-extern const int text_max_never_break;
+extern ConfigVariableBool text_flatten;
+extern ConfigVariableBool text_update_cleared_glyphs;
+extern ConfigVariableInt text_anisotropic_degree;
+extern ConfigVariableInt text_texture_margin;
+extern ConfigVariableDouble text_poly_margin;
+extern ConfigVariableInt text_page_x_size;
+extern ConfigVariableInt text_page_y_size;
+extern ConfigVariableBool text_small_caps;
+extern ConfigVariableDouble text_small_caps_scale;
+extern ConfigVariableFilename text_default_font;
+extern ConfigVariableDouble text_tab_width;
+extern ConfigVariableInt text_push_properties_key;
+extern ConfigVariableInt text_pop_properties_key;
+extern ConfigVariableInt text_soft_hyphen_key;
+extern ConfigVariableInt text_soft_break_key;
+extern wstring get_text_soft_hyphen_output();
+extern ConfigVariableDouble text_hyphen_ratio;
+extern wstring get_text_never_break_before();
+extern ConfigVariableInt text_max_never_break;
 
-extern Texture::FilterType text_minfilter;
-extern Texture::FilterType text_magfilter;
+extern ConfigVariableEnum<Texture::FilterType> text_minfilter;
+extern ConfigVariableEnum<Texture::FilterType> text_magfilter;
 
 extern EXPCL_PANDA void init_libtext();
 

@@ -36,7 +36,8 @@
 Configure(config_device);
 NotifyCategoryDef(device, "");
 
-const bool asynchronous_clients = config_device.GetBool("asynchronous-clients", true);
+ConfigVariableBool asynchronous_clients
+("asynchronous-clients", true);
 
 ConfigureFn(config_device) {
   init_libdevice();

@@ -128,18 +128,18 @@ MilesAudioManager() {
 
         HDLSDEVICE dls;
         AIL_quick_handles(0, 0, &dls);
-        nassertv(audio_dls_file);
         nassertv(!_dls_field);
-        if (audio_dls_file->empty()) {
-          get_gm_file_path(*audio_dls_file);
+        string dls_file = Filename(audio_dls_file).to_os_specific();
+        if (dls_file.empty()) {
+          get_gm_file_path(dls_file);
           // we need more dbg info in logs, so bumping the msgs from 'debug' status to 'info' status
-          audio_info("  using default audio_dls_file: "<< (*audio_dls_file) );
+          audio_info("  using default dls_file: "<< dls_file );
         }
 
-        audio_debug("  audio_dls_file=\""<<*audio_dls_file<<"\"");
+        audio_debug("  dls_file=\""<<dls_file<<"\"");
 
         // note: if AIL_DLS_load_file is not done, midi fails to play on some machines.
-        _dls_field=AIL_DLS_load_file(dls, audio_dls_file->c_str(), 0);
+        _dls_field=AIL_DLS_load_file(dls, dls_file.c_str(), 0);
         if (!_dls_field) {
           audio_error("  AIL_DLS_load_file() failed, \""<<AIL_last_error() <<"\" Switching to hardware midi");
           AIL_quick_shutdown();

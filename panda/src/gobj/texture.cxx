@@ -989,3 +989,43 @@ write_datagram(BamWriter *manager, Datagram &me) {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::FilterType output operator
+//  Description:
+////////////////////////////////////////////////////////////////////
+ostream &
+operator << (ostream &out, Texture::FilterType ft) {
+  switch (ft) {
+  case Texture::FT_nearest:
+    return out << "nearest";
+  case Texture::FT_linear:
+    return out << "linear";
+
+  case Texture::FT_nearest_mipmap_nearest:
+    return out << "nearest_mipmap_nearest";
+  case Texture::FT_linear_mipmap_nearest:
+    return out << "linear_mipmap_nearest";
+  case Texture::FT_nearest_mipmap_linear:
+    return out << "nearest_mipmap_linear";
+  case Texture::FT_linear_mipmap_linear:
+    return out << "linear_mipmap_linear";
+
+  case Texture::FT_invalid:
+    return out << "invalid";
+  }
+
+  return out << "(**invalid Texture::FilterType(" << (int)ft << ")**)";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::FilterType input operator
+//  Description:
+////////////////////////////////////////////////////////////////////
+istream &
+operator >> (istream &in, Texture::FilterType &ft) {
+  string word;
+  in >> word;
+
+  ft = Texture::string_filter_type(word);
+  return in;
+}

@@ -31,7 +31,8 @@ ConfigureFn(config_milesAudio) {
   init_libMilesAudio();
 }
 
-bool miles_audio_force_midi_reset = config_milesAudio.GetBool("audio-force-midi-reset", true);
+ConfigVariableBool miles_audio_force_midi_reset
+("audio-force-midi-reset", true);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libMilesAudio

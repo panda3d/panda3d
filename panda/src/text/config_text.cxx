@@ -36,58 +36,109 @@ ConfigureFn(config_text) {
   init_libtext();
 }
 
-const bool text_flatten = config_text.GetBool("text-flatten", true);
-const bool text_update_cleared_glyphs = config_text.GetBool("text-update-cleared-glyphs", false);
-const int text_anisotropic_degree = config_text.GetInt("text-anisotropic-degree", 1);
-const int text_texture_margin = config_text.GetInt("text-texture-margin", 2);
-const float text_poly_margin = config_text.GetFloat("text-poly-margin", 0.0f);
-const int text_page_x_size = config_text.GetInt("text-page-x-size", 256);
-const int text_page_y_size = config_text.GetInt("text-page-y-size", 256);
-const bool text_small_caps = config_text.GetBool("text-small-caps", false);
-const float text_small_caps_scale = config_text.GetFloat("text-small-caps-scale", 0.8f);
-const string text_default_font = config_text.GetString("text-default-font", "");
-const float text_tab_width = config_text.GetFloat("text-tab-width", 5.0f);
+ConfigVariableBool text_flatten
+("text-flatten", true);
+
+ConfigVariableBool text_update_cleared_glyphs
+("text-update-cleared-glyphs", false);
+
+ConfigVariableInt text_anisotropic_degree
+("text-anisotropic-degree", 1);
+
+ConfigVariableInt text_texture_margin
+("text-texture-margin", 2);
+
+ConfigVariableDouble text_poly_margin
+("text-poly-margin", 0.0f);
+
+ConfigVariableInt text_page_x_size
+("text-page-x-size", 256);
+
+ConfigVariableInt text_page_y_size
+("text-page-y-size", 256);
+
+ConfigVariableBool text_small_caps
+("text-small-caps", false);
+
+ConfigVariableDouble text_small_caps_scale
+("text-small-caps-scale", 0.8f);
+
+ConfigVariableFilename text_default_font
+("text-default-font", "");
+
+ConfigVariableDouble text_tab_width
+("text-tab-width", 5.0f);
 
 
 // This is the decimal character number that, embedded in a string, is
 // used to bracket the name of a TextProperties structure added to the
 // TextPropertiesManager object, to control the appearance of
 // subsequent text.
-const int text_push_properties_key = config_text.GetInt("text-push-properties-key", 1);
+ConfigVariableInt text_push_properties_key
+("text-push-properties-key", 1);
 
 // This is the decimal character number that undoes the effect of a
 // previous appearance of text_push_properties_key.
-const int text_pop_properties_key = config_text.GetInt("text-pop-properties-key", 2);
+ConfigVariableInt text_pop_properties_key
+("text-pop-properties-key", 2);
 
 // This is the decimal character number that, embedded in a string, is
 // identified as the soft-hyphen character.
-const int text_soft_hyphen_key = config_text.GetInt("text-soft-hyphen-key", 3);
+ConfigVariableInt text_soft_hyphen_key
+("text-soft-hyphen-key", 3);
 
 // This is similar to the soft-hyphen key, above, except that when it
 // is used as a break point, no character is introduced in its place.
-const int text_soft_break_key = config_text.GetInt("text-soft-break-key", 4);
+ConfigVariableInt text_soft_break_key
+("text-soft-break-key", 4);
 
 // This is the string that is output, encoded in the default encoding,
 // to represent the hyphen character that is introduced when the line
 // is broken at a soft-hyphen key.
-wstring *text_soft_hyphen_output;
+wstring
+get_text_soft_hyphen_output() {
+  static wstring *text_soft_hyphen_output = NULL;
+  static ConfigVariableString cv("text-soft-hyphen-output", "-");
+
+  if (text_soft_hyphen_output == NULL) {
+    TextEncoder encoder;
+    text_soft_hyphen_output = new wstring(encoder.decode_text(cv));
+  }
+
+  return *text_soft_hyphen_output;
+}
 
 // If the rightmost whitespace character falls before this fraction of
 // the line, hyphenate a word to the right of that if possible.
-const float text_hyphen_ratio = config_text.GetFloat("text-hyphen-ratio", 0.7);
+ConfigVariableDouble text_hyphen_ratio
+("text-hyphen-ratio", 0.7);
 
 // This string represents a list of individual characters that should
 // never appear at the beginning of a line following a forced break.
 // Typically these will be punctuation characters.
-wstring *text_never_break_before;
+wstring
+get_text_never_break_before() {
+  static wstring *text_never_break_before = NULL;
+  static ConfigVariableString cv("text-never-break-before", ",.-:?!;");
+
+  if (text_never_break_before == NULL) {
+    TextEncoder encoder;
+    text_never_break_before = new wstring(encoder.decode_text(cv));
+  }
+
+  return *text_never_break_before;
+}
 
 // Unless we have more than this number of text_never_break_before
 // characters in a row, in which case forget it and break wherever we
 // can.
-const int text_max_never_break = config_text.GetInt("text-max-never-break", 3);
+ConfigVariableInt text_max_never_break
+("text-max-never-break", 3);
 
-Texture::FilterType text_minfilter = Texture::FT_invalid;
-Texture::FilterType text_magfilter = Texture::FT_invalid;
+ConfigVariableEnum<Texture::FilterType> text_minfilter
+("text-minfilter", Texture::FT_linear_mipmap_linear);
+ConfigVariableEnum<Texture::FilterType> text_magfilter
+("text-magfilter", Texture::FT_linear);
 
 
 ////////////////////////////////////////////////////////////////////
@@ -117,39 +168,4 @@ init_libtext() {
   GeomTextGlyph::init_type();
   GeomTextGlyph::register_with_read_factory();
 #endif
-
-  // FT_linear_mipmap_nearest (that is, choose the nearest mipmap
-  // level and bilinear filter the pixels from there) gives us some
-  // mipmapping to avoid dropping pixels, but avoids the hideous
-  // artifacts that we get from some cards (notably TNT2) from
-  // filtering between two different mipmap levels.
-
-  // But, full mipmapping still gives smoother blending from small to
-  // large, so maybe we'll use it as the default anyway.
-  string text_minfilter_str = config_text.GetString("text-minfilter", "linear_mipmap_linear");
-  string text_magfilter_str = config_text.GetString("text-magfilter", "linear");
-
-  text_minfilter = Texture::string_filter_type(text_minfilter_str);
-  if (text_minfilter == Texture::FT_invalid) {
-    text_cat.error()
-      << "Invalid text-minfilter: " << text_minfilter_str << "\n";
-    text_minfilter = Texture::FT_linear;
-  }
-
-  text_magfilter = Texture::string_filter_type(text_magfilter_str);
-  if (text_magfilter == Texture::FT_invalid) {
-    text_cat.error()
-      << "Invalid text-magfilter: " << text_magfilter_str << "\n";
-    text_magfilter = Texture::FT_linear;
-  }
-
-  // Make sure libexpress is initialized before we ask something of
-  // TextEncoder.
-  init_libexpress();
-  TextEncoder encoder;
-  string st1 = config_text.GetString("text-soft-hyphen-output", "-");
-  text_soft_hyphen_output = new wstring(encoder.decode_text(st1));
-
-  string st2 = config_text.GetString("text-never-break-before", ",.-:?!;");
-  text_never_break_before = new wstring(encoder.decode_text(st2));
 }

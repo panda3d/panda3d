@@ -41,7 +41,7 @@ PandaFramework() :
   _is_open = false;
   _made_default_pipe = false;
   _data_root = NodePath("data");
-  _window_title = window_title;
+  _window_title = string();
   _start_time = 0.0;
   _frame_count = 0;
   _wireframe_enabled = false;
@@ -261,18 +261,14 @@ define_key(const string &event_name, const string &description,
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
 get_default_window_props(WindowProperties &props) {
-  props.set_open(true);
-  props.set_size(win_width, win_height);
-  if (win_origin_x >= 0 && win_origin_y >= 0) {
-    props.set_origin(win_origin_x, win_origin_y);
+  // This function is largely vestigial and will be removed soon.  We
+  // have moved the default window properties into
+  // WindowProperties::get_default().
+
+  props.add_properties(WindowProperties::get_default());
+  if (!_window_title.empty()) {
+    props.set_title(_window_title);
   }
-  props.set_fullscreen(fullscreen);
-  props.set_undecorated(undecorated);
-  props.set_cursor_hidden(cursor_hidden);
-  if (z_order != WindowProperties::Z_normal) {
-    props.set_z_order(z_order);
-  }
-  props.set_title(_window_title);
 }
 
 ////////////////////////////////////////////////////////////////////

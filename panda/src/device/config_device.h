@@ -21,10 +21,11 @@
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
+#include "configVariableBool.h"
 
 NotifyCategoryDecl(device, EXPCL_PANDA, EXPTP_PANDA);
 
-extern const bool asynchronous_clients;
+extern ConfigVariableBool asynchronous_clients;
 
 extern EXPCL_PANDA void init_libdevice();
 

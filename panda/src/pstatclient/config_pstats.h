@@ -23,6 +23,10 @@
 
 #include "notifyCategoryProxy.h"
 #include "dconfig.h"
+#include "configVariableString.h"
+#include "configVariableInt.h"
+#include "configVariableDouble.h"
+#include "configVariableBool.h"
 
 // Configure variables for pstats package.
 
@@ -31,16 +35,16 @@ NotifyCategoryDecl(pstats, EXPCL_PANDA, EXPTP_PANDA);
 
 extern EXPCL_PANDA string get_pstats_name();
 extern EXPCL_PANDA float get_pstats_max_rate();
-extern EXPCL_PANDA const string pstats_host;
-extern EXPCL_PANDA const int pstats_port;
-extern EXPCL_PANDA const float pstats_target_frame_rate;
+extern EXPCL_PANDA bool get_pstats_threaded_write();
+extern EXPCL_PANDA double get_pstats_tcp_ratio();
 
-extern EXPCL_PANDA const bool pstats_scroll_mode;
-extern EXPCL_PANDA const float pstats_history;
-extern EXPCL_PANDA const float pstats_average_time;
+extern EXPCL_PANDA ConfigVariableString pstats_host;
+extern EXPCL_PANDA ConfigVariableInt pstats_port;
+extern EXPCL_PANDA ConfigVariableDouble pstats_target_frame_rate;
 
-extern EXPCL_PANDA const bool pstats_threaded_write;
-extern EXPCL_PANDA const float pstats_tcp_ratio;
+extern EXPCL_PANDA ConfigVariableBool pstats_scroll_mode;
+extern EXPCL_PANDA ConfigVariableDouble pstats_history;
+extern EXPCL_PANDA ConfigVariableDouble pstats_average_time;
 
 extern EXPCL_PANDA void init_libpstatclient();
 

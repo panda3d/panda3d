@@ -203,8 +203,8 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
       ((unsigned char)magic_number[3]);
 
   } else {
-    _x_size = img_xsize;
-    _y_size = img_ysize;
+    _x_size = img_size[0];
+    _y_size = img_size[1];
   }
 
   if (_x_size == 0 || _y_size == 0 ||

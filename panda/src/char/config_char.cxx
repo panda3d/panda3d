@@ -34,20 +34,13 @@ ConfigureFn(config_char) {
   init_libchar();
 }
 
-// The animation system, by default, only recomputes the characters'
-// vertices on frames for which there is some change in the animation
-// cycle.  Since this doesn't happen every frame, and since the
-// recomputing of vertices can take significant time, this might
-// result in irregular patterns of slow frames and fast frames,
-// resulting in an unsteady frame rate.  Sometimes it is preferable to
-// achieve a more even frame rate, even if the average frame rate is
-// slower overall.
-
-// Set even-animation to true to achieve this.  When this is true,
-// characters' vertices will be recomputed every frame, whether they
-// need it or not.  This will tend to balance out the frame rate so
-// that it is more uniformly slow.
-const bool even_animation = config_char.GetBool("even-animation", false);
+ConfigVariableBool even_animation
+("even-animation", false,
+ PRC_DESC("When this is true, characters' vertices will be recomputed "
+          "every frame, whether they need it or not.  This will tend to "
+          "balance out the frame rate so that it is more uniformly slow.  "
+          "The default is to compute vertices only when they need to be "
+          "computed, which can lead to an uneven frame rate."));
 
 
 ////////////////////////////////////////////////////////////////////

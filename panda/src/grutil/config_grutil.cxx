@@ -28,11 +28,20 @@ ConfigureFn(config_grutil) {
   init_libgrutil();
 }
 
-const double frame_rate_meter_update_interval = config_grutil.GetDouble("frame-rate-meter-update-interval", 1.5);
-const string frame_rate_meter_text_pattern = config_grutil.GetString("frame-rate-meter-text-pattern", "%0.1f fps");
-const int frame_rate_meter_layer_sort = config_grutil.GetInt("frame-rate-meter-layer-sort", 1000);
-const float frame_rate_meter_scale = config_grutil.GetFloat("frame-rate-meter-scale", 0.05f);
-const float frame_rate_meter_side_margins = config_grutil.GetFloat("frame-rate-meter-side-margins", 0.5f);
+ConfigVariableDouble frame_rate_meter_update_interval
+("frame-rate-meter-update-interval", 1.5);
+
+ConfigVariableString frame_rate_meter_text_pattern
+("frame-rate-meter-text-pattern", "%0.1f fps");
+
+ConfigVariableInt frame_rate_meter_layer_sort
+("frame-rate-meter-layer-sort", 1000);
+
+ConfigVariableDouble frame_rate_meter_scale
+("frame-rate-meter-scale", 0.05);
+
+ConfigVariableDouble frame_rate_meter_side_margins
+("frame-rate-meter-side-margins", 0.5);
 
 
 ////////////////////////////////////////////////////////////////////

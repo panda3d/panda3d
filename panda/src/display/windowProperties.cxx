@@ -47,6 +47,33 @@ operator = (const WindowProperties &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::get_default
+//       Access: Published, Static
+//  Description: Returns a WindowProperties structure with all of the
+//               default values filled in according to the user's
+//               config file.
+////////////////////////////////////////////////////////////////////
+WindowProperties WindowProperties::
+get_default() {
+  WindowProperties props;
+
+  props.set_open(true);
+  props.set_size(win_width, win_height);
+  if (win_origin_x >= 0 && win_origin_y >= 0) {
+    props.set_origin(win_origin_x, win_origin_y);
+  }
+  props.set_fullscreen(fullscreen);
+  props.set_undecorated(undecorated);
+  props.set_cursor_hidden(cursor_hidden);
+  if (z_order != WindowProperties::Z_normal) {
+    props.set_z_order(z_order);
+  }
+  props.set_title(window_title);
+
+  return props;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WindowProperties::operator == 
 //       Access: Published
 //  Description:
@@ -166,16 +193,44 @@ output(ostream &out) const {
     out << (get_cursor_hidden() ? "cursor_hidden " : "!cursor_hidden ");
   }
   if (has_z_order()) {
-    switch (get_z_order()) {
-    case Z_bottom:
-      out << "Z_bottom ";
-      break;
-    case Z_normal:
-      out << "Z_normal ";
-      break;
-    case Z_top:
-      out << "Z_top ";
-      break;
-    }
   }
+}
+
+ostream &
+operator << (ostream &out, WindowProperties::ZOrder z_order) {
+  switch (z_order) {
+  case WindowProperties::Z_bottom:
+    return out << "bottom";
+
+  case WindowProperties::Z_normal:
+    return out << "normal";
+
+  case WindowProperties::Z_top:
+    return out << "top";
+  }
+
+  return out << "**invalid WindowProperties::ZOrder(" << (int)z_order << ")**";
+}
+
+istream &
+operator >> (istream &in, WindowProperties::ZOrder &z_order) {
+  string word;
+  in >> word;
+
+  if (word == "bottom") {
+    z_order = WindowProperties::Z_bottom;
+
+  } else if (word == "top") {
+    z_order = WindowProperties::Z_top;
+
+  } else if (word == "normal") {
+    z_order = WindowProperties::Z_normal;
+
+  } else {
+    display_cat.warning()
+      << "Unknown z-order: " << word << "\n";
+    z_order = WindowProperties::Z_normal;
+  }
+
+  return in;
 }

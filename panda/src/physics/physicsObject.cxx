@@ -18,6 +18,9 @@
 
 #include "physicsObject.h"
 
+ConfigVariableDouble PhysicsObject::_default_terminal_velocity
+("default_terminal_velocity", 400.0f);
+
 TypeHandle PhysicsObject::_type_handle;
 
 ////////////////////////////////////////////////////////////////////

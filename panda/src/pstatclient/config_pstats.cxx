@@ -28,32 +28,71 @@ ConfigureFn(config_pstats) {
 }
 
 string get_pstats_name() {
-  return config_pstats.GetString("pstats-name", "Panda Stats");
+  static ConfigVariableString *pstats_name = NULL;
+
+  if (pstats_name == (ConfigVariableString *)NULL) {
+    pstats_name = new ConfigVariableString
+      ("pstats-name", "Panda Stats");
+  }
+
+  return pstats_name->get_value();
 }
 
 float get_pstats_max_rate() {
-  return config_pstats.GetFloat("pstats-max-rate", 30.0);
+  static ConfigVariableDouble *pstats_max_rate = NULL;
+
+  if (pstats_max_rate == (ConfigVariableDouble *)NULL) {
+    pstats_max_rate = new ConfigVariableDouble
+      ("pstats-max-rate", 30.0);
+  }
+
+  return *pstats_max_rate;
 }
 
-const string pstats_host = config_pstats.GetString("pstats-host", "localhost");
+bool get_pstats_threaded_write() {
+  static ConfigVariableBool *pstats_threaded_write = NULL;
+
+  if (pstats_threaded_write == (ConfigVariableBool *)NULL) {
+    pstats_threaded_write = new ConfigVariableBool
+      ("pstats-threaded-write", false);
+  }
+
+  return *pstats_threaded_write;
+}
+
+double get_pstats_tcp_ratio() {
+  static ConfigVariableDouble *pstats_tcp_ratio = NULL;
+
+  if (pstats_tcp_ratio == (ConfigVariableDouble *)NULL) {
+    pstats_tcp_ratio = new ConfigVariableDouble
+      ("pstats-tcp-ratio", 0.01,
+       PRC_DESC("This specifies the ratio of frame update messages that are eligible "
+                "for UDP that are sent via TCP instead.  It does not count messages "
+                "that are too large for UDP and must be sent via TCP anyway.  1.0 "
+                "means all messages are sent TCP; 0.0 means all are sent UDP."));
+  }
+
+  return *pstats_tcp_ratio;
+}
+
+ConfigVariableString pstats_host
+("pstats-host", "localhost");
 
 // The default port for PStats used to be 5180, but that's used by AIM.
-const int pstats_port = config_pstats.GetInt("pstats-port", 5185);
+ConfigVariableInt pstats_port
+("pstats-port", 5185);
 
-const float pstats_target_frame_rate = config_pstats.GetFloat("pstats-target-frame-rate", 30.0);
+ConfigVariableDouble pstats_target_frame_rate
+("pstats-target-frame-rate", 30.0);
 
 // The rest are different in that they directly control the server,
 // not the client.
-const bool pstats_scroll_mode = config_pstats.GetBool("pstats-scroll-mode", true);
-const float pstats_history = config_pstats.GetFloat("pstats-history", 60.0);
-const float pstats_average_time = config_pstats.GetFloat("pstats-average-time", 3.0);
-const bool pstats_threaded_write = config_pstats.GetBool("pstats-threaded-write", false);
-
-// This specifies the ratio of frame update messages that are eligible
-// for UDP that are sent via TCP instead.  It does not count messages
-// that are too large for UDP and must be sent via TCP anyway.  1.0
-// means all messages are sent TCP; 0.0 means are are sent UDP.
-const float pstats_tcp_ratio = config_pstats.GetFloat("pstats-tcp-ratio", 1.0);
+ConfigVariableBool pstats_scroll_mode
+("pstats-scroll-mode", true);
+ConfigVariableDouble pstats_history
+("pstats-history", 60.0);
+ConfigVariableDouble pstats_average_time
+("pstats-average-time", 3.0);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpstatclient

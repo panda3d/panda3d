@@ -27,10 +27,14 @@ ConfigureFn(config_pnmtext) {
   init_libpnmtext();
 }
 
-const float text_point_size = config_pnmtext.GetFloat("text-point-size", 10.0f);
-const float text_pixels_per_unit = config_pnmtext.GetFloat("text-pixels-per-unit", 30.0f);
-const float text_scale_factor = config_pnmtext.GetFloat("text-scale-factor", 2.0f);
-const bool text_native_antialias = config_pnmtext.GetBool("text-native-antialias", true);
+ConfigVariableDouble text_point_size
+("text-point-size", 10.0f);
+ConfigVariableDouble text_pixels_per_unit
+("text-pixels-per-unit", 30.0f);
+ConfigVariableDouble text_scale_factor
+("text-scale-factor", 2.0f);
+ConfigVariableBool text_native_antialias
+("text-native-antialias", true);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpnmtext

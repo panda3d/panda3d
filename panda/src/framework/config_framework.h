@@ -22,28 +22,21 @@
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
 #include "windowProperties.h"
+#include "configVariableDouble.h"
+#include "configVariableBool.h"
+#include "configVariableString.h"
 
 NotifyCategoryDecl(framework, EXPCL_FRAMEWORK, EXPTP_FRAMEWORK);
 
 // Configure variables for framework package.
-extern const int win_width;
-extern const int win_height;
-extern const int win_origin_x;
-extern const int win_origin_y;
-extern const bool fullscreen;
-extern const bool undecorated;
-extern const bool cursor_hidden;
-extern WindowProperties::ZOrder z_order;
-extern const string window_title;
+extern ConfigVariableDouble aspect_ratio;
+extern ConfigVariableBool show_frame_rate_meter;
 
-extern const float aspect_ratio;
-extern const bool show_frame_rate_meter;
+extern ConfigVariableDouble win_background_r;
+extern ConfigVariableDouble win_background_g;
+extern ConfigVariableDouble win_background_b;
 
-extern const float win_background_r;
-extern const float win_background_g;
-extern const float win_background_b;
-
-extern const string record_session;
-extern const string playback_session;
+extern ConfigVariableString record_session;
+extern ConfigVariableString playback_session;
 
 #endif

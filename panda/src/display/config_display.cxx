@@ -119,6 +119,33 @@ ConfigVariableBool window_inverted
           "they will render upside-down and backwards.  Normally this is useful only "
           "for debugging."));
 
+ConfigVariableInt win_width
+("win-width", 640);
+
+ConfigVariableInt win_height
+("win-height", 480);
+
+ConfigVariableInt win_origin_x
+("win-origin-x", -1);
+
+ConfigVariableInt win_origin_y
+("win-origin-y", -1);
+
+ConfigVariableBool fullscreen
+("fullscreen", false);
+
+ConfigVariableBool undecorated
+("undecorated", false);
+
+ConfigVariableBool cursor_hidden
+("cursor-hidden", false);
+
+ConfigVariableEnum<WindowProperties::ZOrder> z_order
+("z-order", WindowProperties::Z_normal);
+
+ConfigVariableString window_title
+("window-title", "Panda");
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libdisplay

@@ -39,12 +39,6 @@ ConfigureFn(config_pgui) {
   init_libpgui();
 }
 
-// If this is true, uses a QuickRenderTraverser to render PGItems;
-// otherwise, uses a normal DirectRenderTraverser, which is more
-// powerful but somewhat slower.
-const bool pgui_quick = config_pgui.GetBool("pgui-quick", true);
-
-
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpgui
 //  Description: Initializes the library.  This must be called at

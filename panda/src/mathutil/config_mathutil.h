@@ -21,13 +21,14 @@
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
+#include "configVariableDouble.h"
 
 NotifyCategoryDecl(mathutil, EXPCL_PANDA, EXPTP_PANDA);
 
-extern const double fft_offset;
-extern const double fft_factor;
-extern const double fft_exponent;
-extern const double fft_error_threshold;
+extern ConfigVariableDouble fft_offset;
+extern ConfigVariableDouble fft_factor;
+extern ConfigVariableDouble fft_exponent;
+extern ConfigVariableDouble fft_error_threshold;
 
 #endif
 

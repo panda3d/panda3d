@@ -44,19 +44,22 @@ ConfigureFn(config_collide) {
   init_libcollide();
 }
 
-// Set this true to have all CollisionTraversers in the world respect
-// the previous frame's transform (position) for a given object when
-// determining motion for collision tests.  If this is false, you must
-// explicitly enable motion detection for a particular traverser.  It
-// is false by default to force programmers to decide on a
-// case-by-case basis whether they really need this feature.
-const bool respect_prev_transform = config_collide.GetBool("respect-prev-transform", false);
+ConfigVariableBool respect_prev_transform
+("respect-prev-transform", false,
+ PRC_DESC("Set this true to have all CollisionTraversers in the world respect "
+          "the previous frame's transform (position) for a given object when "
+          "determining motion for collision tests.  If this is false, you must "
+          "explicitly enable motion detection for a particular traverser.  It "
+          "is false by default to force programmers to decide on a "
+          "case-by-case basis whether they really need this feature."));
 
-// This should be true to support the effective_normal interface of
-// polygons.  Set it false to disable this feature, so that all
-// collision solids (including polygons and planes) use their actual
-// normal for intersection and physics tests.
-const bool respect_effective_normal = config_collide.GetBool("respect-effective-normal", true);
+ConfigVariableBool respect_effective_normal
+("respect-effective-normal", true,
+ PRC_DESC("This should be true to support the effective_normal interface of "
+          "polygons.  Set it false to disable this feature, so that all "
+          "collision solids (including polygons and planes) use their actual "
+          "normal for intersection and physics tests."));
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libcollide

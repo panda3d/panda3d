@@ -21,6 +21,11 @@
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
+#include "configVariableInt.h"
+#include "configVariableString.h"
+#include "configVariableBool.h"
+#include "configVariableEnum.h"
+#include "sgi.h"
 
 NotifyCategoryDecl(pnmimage_sgi, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(pnmimage_alias, EXPCL_PANDA, EXPTP_PANDA);
@@ -32,18 +37,25 @@ NotifyCategoryDecl(pnmimage_bmp, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(pnmimage_jpg, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(pnmimage_png, EXPCL_PANDA, EXPTP_PANDA);
 
+enum SGIStorageType {
+  SST_rle = STORAGE_RLE,
+  SST_verbatim = STORAGE_VERBATIM,
+};
 
-extern int sgi_storage_type;
-extern const string sgi_imagename;
-extern const bool tga_rle;
-extern const bool tga_colormap;
-extern const bool tga_grayscale;
+EXPCL_PANDA ostream &operator << (ostream &out, SGIStorageType sst);
+EXPCL_PANDA istream &operator >> (istream &in, SGIStorageType &sst);
 
-extern const int jpeg_quality;
-extern const int jpeg_scale_num;
-extern const int jpeg_scale_denom;
+extern ConfigVariableEnum<SGIStorageType> sgi_storage_type;
+extern ConfigVariableString sgi_imagename;
+extern ConfigVariableBool tga_rle;
+extern ConfigVariableBool tga_colormap;
+extern ConfigVariableBool tga_grayscale;
 
-extern const int bmp_bpp;
+extern ConfigVariableInt jpeg_quality;
+extern ConfigVariableInt jpeg_scale_num;
+extern ConfigVariableInt jpeg_scale_denom;
+
+extern ConfigVariableInt bmp_bpp;
 
 enum IMGHeaderType {
   IHT_none,
@@ -51,9 +63,11 @@ enum IMGHeaderType {
   IHT_long,
 };
 
-extern IMGHeaderType img_header_type;
-extern const int img_xsize;
-extern const int img_ysize;
+EXPCL_PANDA ostream &operator << (ostream &out, IMGHeaderType iht);
+EXPCL_PANDA istream &operator >> (istream &in, IMGHeaderType &iht);
+
+extern ConfigVariableEnum<IMGHeaderType> img_header_type;
+extern ConfigVariableInt img_size;
 
 extern EXPCL_PANDA void init_libpnmimagetypes();
 
