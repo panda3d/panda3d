@@ -401,7 +401,13 @@ Datagram DCClass::
 client_format_update(const string &field_name, int do_id, 
                      PyObject *args) const {
   DCField *field = get_field_by_name(field_name);
-  nassertr_always(field != NULL, Datagram());
+  if (field == (DCField *)NULL) {
+    ostringstream strm;
+    strm << "No field named " << field_name << " in class " << get_name()
+         << "\n";
+    nassert_raise(strm.str());
+    return Datagram();
+  }
   return field->client_format_update(do_id, args);
 }
 #endif  // HAVE_PYTHON
@@ -418,7 +424,13 @@ Datagram DCClass::
 ai_format_update(const string &field_name, int do_id, 
                  int to_id, int from_id, PyObject *args) const {
   DCField *field = get_field_by_name(field_name);
-  nassertr_always(field != NULL, Datagram());
+  if (field == (DCField *)NULL) {
+    ostringstream strm;
+    strm << "No field named " << field_name << " in class " << get_name()
+         << "\n";
+    nassert_raise(strm.str());
+    return Datagram();
+  }
   return field->ai_format_update(do_id, to_id, from_id, args);
 }
 #endif  // HAVE_PYTHON
