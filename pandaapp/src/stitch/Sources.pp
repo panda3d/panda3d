@@ -4,7 +4,8 @@
     stitchbase
   #define OTHER_LIBS \
     progbase \
-    linmath:c putil:c express:c panda:m pandaexpress:m pystub dtoolconfig dtool
+    pnmimage:c mathutil:c linmath:c putil:c panda:m \
+    express:c pandaexpress:m pystub dtoolconfig dtool
 
   #define SOURCES \
     stitchCommandProgram.cxx stitchCommandProgram.h
@@ -19,8 +20,8 @@
     stitchbase
   #define OTHER_LIBS \
     progbase \
-    pnmimagetypes:c pnmimage:c linmath:c putil:c express:c panda:m \
-    pandaexpress:m pystub dtoolconfig dtool
+    pnmimagetypes:c pnmimage:c linmath:c putil:c panda:m \
+    express:c pandaexpress:m pystub dtoolconfig dtool
 
   #define SOURCES \
     stitchImageProgram.cxx stitchImageProgram.h

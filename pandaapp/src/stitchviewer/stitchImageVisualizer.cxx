@@ -6,6 +6,7 @@
 #include "stitchImageVisualizer.h"
 #include "config_stitch.h"
 #include "triangleMesh.h"
+#include "stitchLens.h"
 
 #include <luse.h>
 #include <chancfg.h>
@@ -25,6 +26,8 @@
 #include <clockObject.h>
 #include <config_gobj.h>
 #include <allAttributesWrapper.h>
+#include <renderRelation.h>
+#include <dataRelation.h>
 
 #include <algorithm>
 
@@ -177,7 +180,7 @@ setup() {
   _main_win = ChanConfig(_main_pipe, chan_cfg, _cameras, _render, override);
   assert(_main_win != (GraphicsWindow*)0L);
 
-  // Turn on culling.
+  // Turn on backface culling.
   CullFaceAttribute *cfa = new CullFaceAttribute;
   cfa->set_mode(CullFaceProperty::M_cull_clockwise);
   _initial_state.set_attribute(CullFaceTransition::get_class_type(), cfa);
@@ -187,21 +190,21 @@ setup() {
 
   // Create a mouse and put it in the data graph.
   _mak = new MouseAndKeyboard(_main_win, 0);
-  new RenderRelation(_data_root, _mak);
+  new DataRelation(_data_root, _mak);
 
   // Create a trackball to handle the mouse input.
   _trackball = new Trackball("trackball");
 
-  new RenderRelation(_mak, _trackball);
+  new DataRelation(_mak, _trackball);
 
   // Connect the trackball output to the camera's transform.
   PT(Transform2SG) tball2cam = new Transform2SG("tball2cam");
   tball2cam->set_arc(cam_trans);
-  new RenderRelation(_trackball, tball2cam);
+  new DataRelation(_trackball, tball2cam);
   
   // Create an ButtonThrower to throw events from the keyboard.
   PT(ButtonThrower) et = new ButtonThrower("kb-events");
-  new RenderRelation(_mak, et);
+  new DataRelation(_mak, et);
 
   // Create all the images.
   Images::iterator ii;
@@ -253,7 +256,9 @@ create_image_geometry(StitchImageVisualizer::Image &im) {
   int y_verts = 2;
   TriangleMesh mesh(x_verts, y_verts);
 
-  LVector3f center = LCAST(float, im._image->extrude(LPoint2d(0.5, 0.5)));
+  StitchLens *lens = im._image->_lens;
+  LVector3d center = 
+    lens->extrude(LPoint2d(0.0, 0.0), im._image->_size_mm[0]);
   double scale = 10.0 / length(center);
 
   for (int xi = 0; xi < x_verts; xi++) {

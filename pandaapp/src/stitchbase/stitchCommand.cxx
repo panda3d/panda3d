@@ -599,8 +599,8 @@ create_image() {
   }
 
   StitchImage *image = 
-    new StitchImage(get_name(), filename, lens, size_pixels, film_offset_mm,
-		    resolution);
+    new StitchImage(get_name(), filename, lens, size_pixels, resolution,
+		    film_offset_mm);
   image->setup_grid(50, 50);
 
   // Also look for points and other stuff.
