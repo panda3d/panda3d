@@ -171,6 +171,9 @@ prepare_flares(const LVector3f &delta, const LPoint3f &light, const float &angle
     {
       for(int i = _flare_arcs.size(); i < (int)_flares.size(); i++)
       {
+        //Sanity check
+        nassertv(_flare_offsets[i].size() == _flare_scales[i].size());
+
         GeomSprite *sprite = new GeomSprite();
         GeomNode *node = new GeomNode();
 
@@ -183,9 +186,6 @@ prepare_flares(const LVector3f &delta, const LPoint3f &light, const float &angle
         //it valid values for those, but pass it an empty array of
         //vertices
         PTA_Vertexf coords(0);
-
-        //Sanity check
-        nassertv(_flare_offsets[i].size() == _flare_scales[i].size());
 
         sprite->set_coords(coords, G_PER_VERTEX);
         sprite->set_num_prims(_flare_offsets[i].size());
