@@ -350,7 +350,7 @@ class DistributedObject(PandaObject):
         # which means the client created it instead of the AI, and it
         # gets some other special handling.  Normally, only the local
         # avatar class overrides this to return true.
-        return (self.cr.isLocalId(self.doId))
+        return self.cr and self.cr.isLocalId(self.doId)
 
     def updateZone(self, zoneId):
         self.cr.sendUpdateZone(self, zoneId)

@@ -121,7 +121,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         running, you won't be able to lerp the node or directly
         position it.
         """
-        if not self.wantsSmoothing() or self.isLocal() or self.isDisabled():
+        if not self.wantsSmoothing() or self.isDisabled() or self.isLocal():
             return
         if not self.smoothStarted:
             taskName = self.taskName("smooth")

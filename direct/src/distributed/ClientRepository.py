@@ -723,6 +723,25 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         # send the message
         self.send(datagram)
 
+    def getObjectsOfClass(self, objClass):
+        """ returns dict of doId:object, containing all objects
+        that inherit from 'class'. returned dict is safely mutable. """
+        doDict = {}
+        for doId, do in self.doId2do.items():
+            if isinstance(do, objClass):
+                doDict[doId] = do
+        return doDict
+
+    def getObjectsOfExactClass(self, objClass):
+        """ returns dict of doId:object, containing all objects that
+        are exactly of type 'class' (neglecting inheritance). returned
+        dict is safely mutable. """
+        doDict = {}
+        for doId, do in self.doId2do.items():
+            if do.__class__ == objClass:
+                doDict[doId] = do
+        return doDict
+
     if wantOtpServer:
         def sendEmulateSetZone(self, zoneId, visibleZoneList=None, parentIdin=None, event=None):
             """
