@@ -7,9 +7,10 @@
 #define DIR_TYPE metalib
 #define BUILDING_DLL BUILDING_PANDAEGG
 
-#define LOCAL_LIBS \
+#define COMPONENT_LIBS \
     egg2sg egg builder
 
+#define LOCAL_LIBS putil
 #define OTHER_LIBS dtool
 
 #begin metalib_target

@@ -9,9 +9,9 @@
 #define DIR_TYPE metalib
 #define BUILDING_DLL BUILDING_PANDAGL
 
-#define LOCAL_LIBS \
+#define COMPONENT_LIBS \
     glgsg glxdisplay // sgiglxdisplay
-
+#define LOCAL_LIBS gsgbase display
 #define OTHER_LIBS dtool
 
 #begin metalib_target

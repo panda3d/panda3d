@@ -9,9 +9,9 @@
 #define DIR_TYPE metalib
 #define BUILDING_DLL BUILDING_PANDARIB
 
-#define LOCAL_LIBS \
+#define COMPONENT_LIBS \
     ribgsg ribdisplay
-
+#define LOCAL_LIBS gsgbase display
 #define OTHER_LIBS dtool
 
 #begin metalib_target
