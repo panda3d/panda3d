@@ -60,6 +60,18 @@ DynamicTextFont(const Filename &font_filename, int face_index) {
   _small_caps = text_small_caps;
   _small_caps_scale = text_small_caps_scale;
 
+  // We don't necessarily want to use mipmaps, since we don't want to
+  // regenerate those every time the texture changes, but we probably
+  // do want at least linear filtering.  Use whatever the Configrc
+  // file suggests.
+  _minfilter = text_minfilter;
+  _magfilter = text_magfilter;
+
+  // Anisotropic filtering can help the look of the text, and doesn't
+  // require generating mipmaps, but does require hardware support.
+  _anisotropic_degree = text_anisotropic_degree;
+
+
   _preferred_page = 0;
 
   if (!_ft_initialized) {
@@ -290,6 +302,24 @@ get_glyph(int character, const TextGlyph *&glyph, float &glyph_scale) {
   }
 
   return (glyph_index != 0 && glyph != (DynamicTextGlyph *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::update_filters
+//       Access: Private
+//  Description: Reapplies all current filter settings to all of the
+//               pages.  This is normally called whenever the filter
+//               settings change.
+////////////////////////////////////////////////////////////////////
+void DynamicTextFont::
+update_filters() {
+  Pages::iterator pi;
+  for (pi = _pages.begin(); pi != _pages.end(); ++pi) {
+    DynamicTextPage *page = (*pi);
+    page->set_minfilter(_minfilter);
+    page->set_magfilter(_magfilter);
+    page->set_anisotropic_degree(_anisotropic_degree);
+  }
 }
  
 ////////////////////////////////////////////////////////////////////

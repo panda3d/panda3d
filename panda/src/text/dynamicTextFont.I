@@ -231,6 +231,77 @@ get_page_y_size() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::set_minfilter
+//       Access: Published
+//  Description: Sets the filter type used when minimizing the
+//               textures created for this font.
+////////////////////////////////////////////////////////////////////
+INLINE void DynamicTextFont::
+set_minfilter(Texture::FilterType filter) {
+  _minfilter = filter;
+  update_filters();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::get_minfilter
+//       Access: Published
+//  Description: Returns the filter type used when minimizing the
+//               textures created for this font.
+////////////////////////////////////////////////////////////////////
+INLINE Texture::FilterType DynamicTextFont::
+get_minfilter() const {
+  return _minfilter;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::set_magfilter
+//       Access: Published
+//  Description: Sets the filter type used when enlarging the
+//               textures created for this font.
+////////////////////////////////////////////////////////////////////
+INLINE void DynamicTextFont::
+set_magfilter(Texture::FilterType filter) {
+  _magfilter = filter;
+  update_filters();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::get_magfilter
+//       Access: Published
+//  Description: Returns the filter type used when enlarging the
+//               textures created for this font.
+////////////////////////////////////////////////////////////////////
+INLINE Texture::FilterType DynamicTextFont::
+get_magfilter() const {
+  return _magfilter;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::set_anisotropic_degree
+//       Access: Published
+//  Description: Enables or disables anisotropic filtering on the
+//               textures created for this font.  The default value is
+//               usually 1, or off.  See
+//               Texture::set_anisotropic_degree().
+////////////////////////////////////////////////////////////////////
+INLINE void DynamicTextFont::
+set_anisotropic_degree(int anisotropic_degree) {
+  _anisotropic_degree = anisotropic_degree;
+  update_filters();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::get_anisotropic_degree
+//       Access: Published
+//  Description: Returns the current anisotropic degree for textures
+//               created for this font.  See set_anisotropic_degree().
+////////////////////////////////////////////////////////////////////
+INLINE int DynamicTextFont::
+get_anisotropic_degree() const {
+  return _anisotropic_degree;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextFont::set_update_cleared_glyphs
 //       Access: Published, Static
 //  Description: Sets the flag indicating whether texture memory

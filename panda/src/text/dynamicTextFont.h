@@ -66,6 +66,13 @@ PUBLISHED:
   INLINE int get_page_x_size() const;
   INLINE int get_page_y_size() const;
 
+  INLINE void set_minfilter(Texture::FilterType filter);
+  INLINE Texture::FilterType get_minfilter() const;
+  INLINE void set_magfilter(Texture::FilterType filter);
+  INLINE Texture::FilterType get_magfilter() const;
+  INLINE void set_anisotropic_degree(int anisotropic_degree);
+  INLINE int get_anisotropic_degree() const;
+
   INLINE static void set_update_cleared_glyphs(bool update_cleared_glyphs);
   INLINE static bool get_update_cleared_glyphs();
 
@@ -83,6 +90,7 @@ public:
                          float &glyph_scale);
 
 private:
+  void update_filters();
   bool reset_scale();
   DynamicTextGlyph *make_glyph(int glyph_index);
   DynamicTextGlyph *slot_glyph(int x_size, int y_size);
@@ -97,6 +105,10 @@ private:
   float _poly_margin;
   int _page_x_size, _page_y_size;
   static bool _update_cleared_glyphs;
+
+  Texture::FilterType _minfilter;
+  Texture::FilterType _magfilter;
+  int _anisotropic_degree;
 
   typedef pvector< PT(DynamicTextPage) > Pages;
   Pages _pages;
