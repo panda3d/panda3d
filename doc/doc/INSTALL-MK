@@ -9,41 +9,45 @@ Panda3D Install --- using the 'makepanda' system.
 
 MAKE SURE YOU HAVE ALL OF THE SOURCE CODE
 
-There are two ways to obtain panda source.  One is to download a
-complete distribution from the panda website, panda3d.etc.cmu.edu.
-Look for something like this on the downloads page:
+The easiest way to download the source for panda is to download the
+"source package" from the panda3d website.  If you downloaded a file
+labeled "source package", then you have everything you need.  Skip to
+the next section.
 
-   Panda Source + Windows Tools: panda3d-1.0.0.zip
-   Panda Source + Linux Tools: panda3d-1.0.0.tar.gz 
+Alternately, it is possible to download the source in pieces. There
+are three pieces:
 
-If you choose to download one of these files, you will have everything
-you need to build panda.  In that case, skip to the next section.
+    1. Source code from Sourceforge.
+    2. Third-party tools.
+    3. Sample programs.
 
-The other way to obtain panda source is to check it out from
-sourceforge.  If you choose to do this, you will end up with all the
-source code, but you will be missing certain tools needed to use
-makepanda.  In particular, you will be missing two directories.  The
-top level of the panda tree looks like this:
+You will need all three to use makepanda.  You can download all three
+pieces from the panda website.  Look for the files labeled "Panda3D
+source, piecewise, X of 3".  You can also obtain the first piece
+directly from the sourceforge CVS server:
 
-	direct
-	dmodels
-	doc
-	dtool
-	makepanda
-	models
-	panda
-	pandaapp
-	pandatool
-	ppremake
-	samples
-	SceneEditor
-	thirdparty
+    CVSROOT=:pserver:anonymous@cvs.sourceforge.net:/cvsroot/panda3d
 
-You will be missing the "thirdparty" and "samples" directories.  At
-present, the only way to obtain the contents of these two directories
-is to download a complete distribution from the panda website.  You
-can then extract these two directories, and insert them into your
-CVS tree.
+Make sure you have all three pieces.  If you do, then your panda
+directory will contain the following subdirectories:
+
+    direct	- piece 1, source code from sourceforge
+    dmodels	- piece 1, source code from sourceforge
+    doc         - piece 1, source code from sourceforge
+    dtool	- piece 1, source code from sourceforge
+    Makefile	- piece 1, source code from sourceforge
+    makepanda	- piece 1, source code from sourceforge
+    models	- piece 1, source code from sourceforge
+    panda	- piece 1, source code from sourceforge
+    pandaapp	- piece 1, source code from sourceforge
+    pandatool	- piece 1, source code from sourceforge
+    ppremake	- piece 1, source code from sourceforge
+    SceneEditor - piece 1, source code from sourceforge
+    thirdparty  - piece 2, third party tools
+    samples	- piece 3, sample programs
+
+If you have all of these, you're ready to go.  If not, then you
+must have missed a piece.
 
 INVOKING MAKEPANDA
 
@@ -78,8 +82,8 @@ the built subdirectory.
 
 You can also move the built subdirectory elsewhere on your machine.
 If you choose to do so, you must first copy the subdirectories
-'models', 'samples', and 'SceneEditor' into the built subdirectory,
-and 'direct/src' into 'built/direct/src'.
+'models' and 'samples' into the built subdirectory, and 'direct/src'
+into 'built/direct/src'.
 
 
 MAKEPANDA COMMAND-LINE OPTIONS
