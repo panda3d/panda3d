@@ -44,13 +44,12 @@ JointVertexTransform() :
 //               other indicated joint's space.
 ////////////////////////////////////////////////////////////////////
 JointVertexTransform::
-JointVertexTransform(CharacterJoint *from, CharacterJoint *to) :
-  _from(from),
-  _to(to),
+JointVertexTransform(CharacterJoint *joint) :
+  _joint(joint),
   _matrix_stale(true)
 {
-  // Tell the "to" joint that we need to be informed when it moves.
-  _to->_vertex_transforms.insert(this);
+  // Tell the joint that we need to be informed when it moves.
+  _joint->_vertex_transforms.insert(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -60,8 +59,8 @@ JointVertexTransform(CharacterJoint *from, CharacterJoint *to) :
 ////////////////////////////////////////////////////////////////////
 JointVertexTransform::
 ~JointVertexTransform() {
-  // Tell the "to" joint to stop informing us about its motion.
-  _to->_vertex_transforms.erase(this);
+  // Tell the joint to stop informing us about its motion.
+  _joint->_vertex_transforms.erase(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -73,8 +72,8 @@ void JointVertexTransform::
 get_matrix(LMatrix4f &matrix) const {
   if (_matrix_stale) {
     ((JointVertexTransform *)this)->_matrix = 
-      _from->_initial_net_transform_inverse *
-      _to->_net_transform;
+      _joint->_initial_net_transform_inverse *
+      _joint->_net_transform;
     ((JointVertexTransform *)this)->_matrix_stale = false;
   }
   
@@ -88,7 +87,7 @@ get_matrix(LMatrix4f &matrix) const {
 ////////////////////////////////////////////////////////////////////
 void JointVertexTransform::
 output(ostream &out) const {
-  out << _to->get_name();
+  out << _joint->get_name();
 }
 
 

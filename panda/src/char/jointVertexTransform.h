@@ -27,11 +27,16 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : JointVertexTransform
 // Description : This is a specialization on VertexTransform that
-//               returns the relative transform from one joint's
-//               initial position to another joint's (or possibly the
-//               same joint's) current position.  It is used to
-//               implement soft-skinned vertices for an animated
-//               character.
+//               returns the transform necessary to move vertices as
+//               if they were assigned to the indicated joint.  The
+//               geometry itself should be parented to the scene graph
+//               at the level of the character's root joint; that is,
+//               it should not be parented under a node directly
+//               animated by any joints.
+//
+//               Multiple combinations of these with different weights
+//               are used to implement soft-skinned vertices for an
+//               animated character.
 //
 //               This is part of the experimental Geom rewrite.
 ////////////////////////////////////////////////////////////////////
@@ -40,19 +45,17 @@ private:
   JointVertexTransform();
 
 PUBLISHED:
-  JointVertexTransform(CharacterJoint *from, CharacterJoint *to);
+  JointVertexTransform(CharacterJoint *joint);
   virtual ~JointVertexTransform();
 
-  INLINE const CharacterJoint *get_from() const;
-  INLINE const CharacterJoint *get_to() const;
+  INLINE const CharacterJoint *get_joint() const;
 
   virtual void get_matrix(LMatrix4f &matrix) const;
 
   virtual void output(ostream &out) const;
 
 private:
-  PT(CharacterJoint) _from;
-  PT(CharacterJoint) _to;
+  PT(CharacterJoint) _joint;
 
   LMatrix4f _matrix;
   bool _matrix_stale;

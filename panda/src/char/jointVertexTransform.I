@@ -18,23 +18,12 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: JointVertexTransform::get_from
+//     Function: JointVertexTransform::get_joint
 //       Access: Published
-//  Description: Returns the joint whose coordinate space this object
-//               moves vertices from.
+//  Description: Returns the joint for which this object returns the
+//               transform.
 ////////////////////////////////////////////////////////////////////
 INLINE const CharacterJoint *JointVertexTransform::
-get_from() const {
-  return _from;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: JointVertexTransform::get_to
-//       Access: Published
-//  Description: Returns the joint whose coordinate space this object
-//               moves vertices into.
-////////////////////////////////////////////////////////////////////
-INLINE const CharacterJoint *JointVertexTransform::
-get_to() const {
-  return _to;
+get_joint() const {
+  return _joint;
 }
