@@ -201,9 +201,14 @@ class ClientRepository(DirectObject.DirectObject):
         doId = di.getArg(STUint32)
         # If it is in the dictionaries, remove it.
         if self.doId2do.has_key(doId):
+            obj = self.doId2do[doId]
+            # Remove it from the dictionaries
             del(self.doId2do[doId])
             del(self.doId2cdc[doId])
+            # Sanity check the dictionaries
             assert(len(self.doId2do) == len(self.doId2cdc))
+            # Delete the object itself
+            obj.delete()
         # If it is in the cache, remove it.
         elif self.cache.contains(doId):
             self.cache.delete(doId)
