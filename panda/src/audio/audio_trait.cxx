@@ -56,6 +56,7 @@ void AudioTraits::PlayerClass::set_volume(AudioTraits::PlayingClass*, float) {
   audio_cat->error() << "In abstract PlayerClass::set_volume!" << endl;
 }
 
-void AudioTraits::PlayerClass::adjust_volume(AudioTraits::PlayingClass*) {
+bool AudioTraits::PlayerClass::adjust_volume(AudioTraits::PlayingClass*) {
   audio_cat->error() << "In abstract PlayerClass::adjust_volume!" << endl;
+  return false;
 }

@@ -77,7 +77,8 @@ void AudioManager::ns_update(void) {
 	AudioManager::play(sound);
 	AudioManager::set_loop(sound, true);
       } else if (AudioManager::_master_volume_change)
-	sound->get_player()->adjust_volume(sound->get_state());
+	if (sound->get_player()->adjust_volume(sound->get_state()))
+	  AudioManager::stop(sound);
     }
   AudioManager::_master_volume_change = false;
 }

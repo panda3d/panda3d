@@ -896,14 +896,14 @@ void WinSamplePlayer::set_volume(AudioTraits::PlayingClass* play, float v) {
   play->set_volume(v);
 }
 
-void WinSamplePlayer::adjust_volume(AudioTraits::PlayingClass* play) {
+bool WinSamplePlayer::adjust_volume(AudioTraits::PlayingClass* play) {
   if (audio_cat->is_debug())
     audio_cat->debug() << "winsampleplayer adjust_volume" << endl;
   initialize();
   if (!audio_is_active)
-    return;
+    return true;
   if (!AudioManager::get_sfx_active())
-    return;
+    return true;
   WinSamplePlaying* wplay = (WinSamplePlaying*)play;
   LPDIRECTSOUNDBUFFER chan = wplay->get_channel();
   float tmpv = play->get_volume() * AudioManager::get_master_sfx_volume();
@@ -911,6 +911,7 @@ void WinSamplePlayer::adjust_volume(AudioTraits::PlayingClass* play) {
     LONG v2 = (tmpv * (DSBVOLUME_MAX - DSBVOLUME_MIN)) + DSBVOLUME_MIN;
     chan->SetVolume(v2);
   }
+  return false;
 }
 
 WinSamplePlayer* WinSamplePlayer::get_instance(void) {
@@ -1003,18 +1004,19 @@ void WinMusicPlayer::set_volume(AudioTraits::PlayingClass* play, float v) {
   play->set_volume(v);
 }
 
-void WinMusicPlayer::adjust_volume(AudioTraits::PlayingClass* play) {
+bool WinMusicPlayer::adjust_volume(AudioTraits::PlayingClass* play) {
   if (audio_cat->is_debug())
     audio_cat->debug() << "WinMusicPlayer::adjust_volume()" << endl;
   WinMusicPlaying* wplay = (WinMusicPlaying*)play;
   IDirectMusicPerformance* perf = wplay->get_performance();
   float tmpv = play->get_volume() * AudioManager::get_master_music_volume();
   if (!AudioManager::get_music_active())
-    return;
+    return true;
   if (perf) {
     LONG v2 = (tmpv * (DSBVOLUME_MAX - DSBVOLUME_MIN)) + DSBVOLUME_MIN;
     perf->SetGlobalParam(GUID_PerfMasterVolume, &v2, sizeof(LONG));
   }
+  return false;
 }
 
 WinMusicPlayer* WinMusicPlayer::get_instance(void) {

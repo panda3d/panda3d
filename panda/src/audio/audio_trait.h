@@ -50,7 +50,7 @@ public:
     virtual void play_sound(SoundClass*, PlayingClass*, float) = 0;
     virtual void stop_sound(SoundClass*, PlayingClass*) = 0;
     virtual void set_volume(PlayingClass*, float) = 0;
-    virtual void adjust_volume(PlayingClass*) = 0;
+    virtual bool adjust_volume(PlayingClass*) = 0;
   };
 };
 

@@ -106,7 +106,7 @@ public:
   virtual void stop_sound(AudioTraits::SoundClass*,
 			  AudioTraits::PlayingClass*);
   virtual void set_volume(AudioTraits::PlayingClass*, float);
-  virtual void adjust_volume(AudioTraits::PlayingClass*);
+  virtual bool adjust_volume(AudioTraits::PlayingClass*);
 public:
   // used by the readers
   static MikModSamplePlayer* get_instance(void);
@@ -124,7 +124,7 @@ public:
   virtual void stop_sound(AudioTraits::SoundClass*,
 			  AudioTraits::PlayingClass*);
   virtual void set_volume(AudioTraits::PlayingClass*, float);
-  virtual void adjust_volume(AudioTraits::PlayingClass*);
+  virtual bool adjust_volume(AudioTraits::PlayingClass*);
 public:
   // used by the readers
   static MikModFmsynthPlayer* get_instance(void);
@@ -142,7 +142,7 @@ public:
   virtual void stop_sound(AudioTraits::SoundClass*,
 			  AudioTraits::PlayingClass*);
   virtual void set_volume(AudioTraits::PlayingClass*, float);
-  virtual void adjust_volume(AudioTraits::PlayingClass*);
+  virtual bool adjust_volume(AudioTraits::PlayingClass*);
 public:
   // used by the readers
   static MikModMidiPlayer* get_instance(void);

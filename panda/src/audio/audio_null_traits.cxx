@@ -80,9 +80,10 @@ void NullPlayer::set_volume(AudioTraits::PlayingClass* p, float v) {
   p->set_volume(v);
 }
 
-void NullPlayer::adjust_volume(AudioTraits::PlayingClass*) {
+bool NullPlayer::adjust_volume(AudioTraits::PlayingClass*) {
   if (audio_cat->is_debug())
     audio_cat->debug() << "in adjust volume in Null audio driver" << endl;
+  return false;
 }
 
 #endif /* AUDIO_USE_NULL */

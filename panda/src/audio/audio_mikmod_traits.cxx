@@ -321,13 +321,14 @@ void MikModSamplePlayer::set_volume(AudioTraits::PlayingClass* state,
   state->set_volume(v);
 }
 
-void MikModSamplePlayer::adjust_volume(AudioTraits::PlayingClass* state) {
+bool MikModSamplePlayer::adjust_volume(AudioTraits::PlayingClass* state) {
   initialize();
   MikModSamplePlaying* mplay = (MikModSamplePlaying*)state;
   if (!AudioManager::get_sfx_active())
-    return;
+    return true;
   Voice_SetVolume(mplay->get_voice(),
 		  state->get_volume() * AudioManager::get_master_sfx_volume());
+  return false;
 }
 
 MikModSamplePlayer* MikModSamplePlayer::get_instance(void) {
@@ -361,10 +362,11 @@ void MikModFmsynthPlayer::set_volume(AudioTraits::PlayingClass* p, float v) {
   p->set_volume(v);
 }
 
-void MikModFmsynthPlayer::adjust_volume(AudioTraits::PlayingClass*) {
+bool MikModFmsynthPlayer::adjust_volume(AudioTraits::PlayingClass*) {
   audio_cat->error()
     << "trying to adjust volume on a sample with a MikModFmsynthPlayer"
     << endl;
+  return false;
 }
 
 MikModFmsynthPlayer* MikModFmsynthPlayer::get_instance(void) {
@@ -397,9 +399,10 @@ void MikModMidiPlayer::set_volume(AudioTraits::PlayingClass* p, float v) {
   p->set_volume(v);
 }
 
-void MikModMidiPlayer::adjust_volume(AudioTraits::PlayingClass*) {
+bool MikModMidiPlayer::adjust_volume(AudioTraits::PlayingClass*) {
   audio_cat->error()
     << "trying to adjust volume on a sample with a mikModMidiPlayer" << endl;
+  return false;
 }
 
 MikModMidiPlayer* MikModMidiPlayer::get_instance(void) {

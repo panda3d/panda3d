@@ -360,7 +360,8 @@ void LinuxSamplePlayer::set_volume(AudioTraits::PlayingClass* p, float v) {
   p->set_volume(v);
 }
 
-void LinuxSamplePlayer::adjust_volume(AudioTraits::PlayingClass*) {
+bool LinuxSamplePlayer::adjust_volume(AudioTraits::PlayingClass*) {
+  return false;
 }
 
 LinuxSamplePlayer* LinuxSamplePlayer::get_instance(void) {
@@ -389,7 +390,8 @@ void LinuxMusicPlayer::set_volume(AudioTraits::PlayingClass* p, float v) {
   p->set_volume(v);
 }
 
-void LinuxMusicPlayer::adjust_volume(AudioTraits::PlayingClass*) {
+bool LinuxMusicPlayer::adjust_volume(AudioTraits::PlayingClass*) {
+  return false;
 }
 
 LinuxMusicPlayer* LinuxMusicPlayer::get_instance(void) {
