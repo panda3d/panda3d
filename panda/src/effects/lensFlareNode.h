@@ -38,8 +38,9 @@ PUBLISHED:
   INLINE void set_light_source(PT_Node source);
 
 public:
-  virtual bool sub_render(const AllAttributesWrapper &attrib, AllTransitionsWrapper &trans, 
-			  GraphicsStateGuardianBase *gsgbase);
+  virtual bool sub_render(const AllAttributesWrapper &attrib,
+			  AllTransitionsWrapper &trans, 
+			  RenderTraverser *trav);
   virtual bool has_sub_render() const;
   
 private:

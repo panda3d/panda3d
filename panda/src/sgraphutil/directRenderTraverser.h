@@ -36,7 +36,8 @@ class EXPCL_PANDA DirectRenderTraverser :
   public RenderTraverser, 
   public TraverserVisitor<AllTransitionsWrapper, DirectRenderLevelState> {
 public:
-  DirectRenderTraverser(GraphicsStateGuardian *gsg, TypeHandle graph_type);
+  DirectRenderTraverser(GraphicsStateGuardian *gsg, TypeHandle graph_type,
+			const ArcChain &arc_chain = ArcChain());
   virtual ~DirectRenderTraverser();
 
   virtual void traverse(Node *root, 

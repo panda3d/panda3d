@@ -8,6 +8,8 @@
 
 #include <pandabase.h>
 
+#include "config_cull.h"
+
 #include <geomNode.h>
 #include <allTransitionsWrapper.h>
 #include <allAttributesWrapper.h>
@@ -15,10 +17,10 @@
 #include <pointerToArray.h>
 #include <updateSeq.h>
 #include <referenceCount.h>
-#include <pt_Node.h>
-#include <vector_PT_Node.h>
+#include <arcChain.h>
 
 #include <map>
+#include <vector>
 
 class GraphicsStateGuardian;
 class GeomBin;
@@ -34,8 +36,8 @@ class GeomBin;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CullState : public ReferenceCount {
 public:
-  typedef vector<PT(GeomNode)> CurrentGeomNodes;
-  typedef vector_PT_Node CurrentDirectNodes;
+  typedef vector<ArcChain> CurrentGeomNodes;
+  typedef vector<ArcChain> CurrentDirectNodes;
 
 public:
   INLINE CullState(const AllTransitionsWrapper &trans);
@@ -50,8 +52,8 @@ public:
   INLINE void mark_verified(Node *node, UpdateSeq now);
 
   INLINE void clear_current_nodes();
-  INLINE void record_current_geom_node(const PT(GeomNode) &node);
-  INLINE void record_current_direct_node(const PT_Node &node);
+  INLINE void record_current_geom_node(const ArcChain &arc_chain);
+  INLINE void record_current_direct_node(const ArcChain &arc_chain);
   INLINE bool is_empty() const;
   INLINE int count_current_nodes() const;
   INLINE int get_empty_frames_count() const;

@@ -24,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ProjectionNode : public NamedNode {
 PUBLISHED:
-  INLINE ProjectionNode(const string& name = "");
+  INLINE ProjectionNode(const string &name = "");
 
 public:
   INLINE ProjectionNode(const ProjectionNode &copy);
@@ -33,12 +33,12 @@ public:
   virtual Node *make_copy() const;
 
 PUBLISHED:  
-  void set_projection( const Projection& projection );
-  const Projection* get_projection( void ) const;
+  void set_projection(const Projection &projection);
+  void share_projection(Projection *projection);
+  Projection *get_projection();
   
 protected:
-  
-  PT(Projection)    		_projection;
+  PT(Projection) _projection;
   
 public:
   

@@ -14,9 +14,10 @@
 #include <wrt.h>
 #include <frustumCullTraverser.h>
 #include <graphicsStateGuardian.h>
-#include <billboardTransition.h>
 #include <decalTransition.h>
 #include <pruneTransition.h>
+#include <transformTransition.h>
+#include <nodeTransitionWrapper.h>
 #include <indent.h>
 #include <config_sgraphutil.h>  // for implicit_app_traversal
 #include <pStatTimer.h>
@@ -36,8 +37,9 @@ PStatCollector CullTraverser::_draw_pcollector =
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 CullTraverser::
-CullTraverser(GraphicsStateGuardian *gsg, TypeHandle graph_type) :
-  RenderTraverser(gsg, graph_type)
+CullTraverser(GraphicsStateGuardian *gsg, TypeHandle graph_type,
+	      const ArcChain &arc_chain) :
+  RenderTraverser(gsg, graph_type, arc_chain)
 {
   _default_bin = new GeomBinNormal("default", this);
   _nested_count = 0;
@@ -85,9 +87,14 @@ traverse(Node *root,
 
   nassertv(!_bins.empty());
 
-  _now = last_graph_update[_graph_type];
-
   bool is_initial = (_nested_count == 0);
+  if (is_initial) {
+    if (cull_force_update) {
+      _now = UpdateSeq::fresh();
+    } else {
+      _now = UpdateSeq::initial();
+    }
+  }
   _nested_count++;
 
   if (is_initial) {
@@ -101,8 +108,25 @@ traverse(Node *root,
 
   CullLevelState level_state;
   level_state._lookup = &_lookup;
-  fc_traverse(root, *this, NullAttributeWrapper(), level_state,
-	      _gsg, _graph_type);
+  level_state._now = _now;
+
+  // Determine the relative transform matrix from the camera to our
+  // starting node.  This is important for proper view-frustum
+  // culling.
+  LMatrix4f rel_from_camera;
+  NodeTransitionWrapper ntw(TransformTransition::get_class_type());
+  wrt(_gsg->get_current_projection_node(), root, begin(), end(),
+      ntw, get_graph_type());
+  const TransformTransition *tt;
+  if (get_transition_into(tt, ntw)) {
+    rel_from_camera = tt->get_matrix();
+  } else {
+    // No relative transform.
+    rel_from_camera = LMatrix4f::ident_mat();
+  }
+
+  fc_traverse(root, rel_from_camera, *this, NullAttributeWrapper(), 
+	      level_state, _gsg, _graph_type);
 
   if (is_initial) {
     draw();
@@ -262,9 +286,12 @@ clean_out_old_states() {
 //               appropriate bin.
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
-add_geom_node(const PT(GeomNode) &node, const AllTransitionsWrapper &trans,
+add_geom_node(GeomNode *node, const AllTransitionsWrapper &trans,
 	      const CullLevelState &level_state) {
   nassertv(node != (GeomNode *)NULL);
+  const ArcChain &arc_chain = get_arc_chain();
+  nassertv(!arc_chain.empty());
+  nassertv(arc_chain.back()->get_child() == node);
 
   AllTransitionsWrapper complete_trans;
   level_state._lookup->compose_trans(trans, complete_trans);
@@ -275,17 +302,23 @@ add_geom_node(const PT(GeomNode) &node, const AllTransitionsWrapper &trans,
   // remove it here just to be paranoid.
   complete_trans.clear_transition(DirectRenderTransition::get_class_type());
 
-  CullState *cs = level_state._lookup->find_node(node, complete_trans, _now);
+  CullState *cs = level_state._lookup->find_node
+    (node, complete_trans, level_state._now);
   if (cs == (CullState *)NULL) {
+    if (cull_cat.is_spam()) {
+      cull_cat.spam()
+	<< "Finding a new bin state\n";
+    }
+
     // The node didn't have a previously-associated CullState that we
     // could use, so determine a new one for it.
     cs = find_bin_state(complete_trans);
     nassertv(cs != (CullState *)NULL);
 
-    level_state._lookup->record_node(node, cs, _now);
+    level_state._lookup->record_node(node, cs, level_state._now);
   }
 
-  cs->record_current_geom_node(node);
+  cs->record_current_geom_node(arc_chain);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -294,13 +327,16 @@ add_geom_node(const PT(GeomNode) &node, const AllTransitionsWrapper &trans,
 //  Description: Records the indicated Node as one that is immediately
 //               under a DirectRenderTransition, and thus it and its
 //               subtree should be rendered directly, in a depth-first
-//               traversal.  This is usuall done when the render order
+//               traversal.  This is usually done when the render order
 //               is very important within a small subtree of nodes.
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
-add_direct_node(const PT_Node &node, const AllTransitionsWrapper &trans,
+add_direct_node(Node *node, const AllTransitionsWrapper &trans,
 		const CullLevelState &level_state) {
   nassertv(node != (Node *)NULL);
+  const ArcChain &arc_chain = get_arc_chain();
+  nassertv(!arc_chain.empty());
+  nassertv(arc_chain.back()->get_child() == node);
 
   AllTransitionsWrapper complete_trans;
   level_state._lookup->compose_trans(trans, complete_trans);
@@ -309,17 +345,18 @@ add_direct_node(const PT_Node &node, const AllTransitionsWrapper &trans,
   // and interfere with state-sorting.
   complete_trans.clear_transition(DirectRenderTransition::get_class_type());
 
-  CullState *cs = level_state._lookup->find_node(node, complete_trans, _now);
+  CullState *cs = level_state._lookup->find_node
+    (node, complete_trans, level_state._now);
   if (cs == (CullState *)NULL) {
     // The node didn't have a previously-associated CullState that we
     // could use, so determine a new one for it.
     cs = find_bin_state(complete_trans);
     nassertv(cs != (CullState *)NULL);
 
-    level_state._lookup->record_node(node, cs, _now);
+    level_state._lookup->record_node(node, cs, level_state._now);
   }
 
-  cs->record_current_direct_node(node);
+  cs->record_current_direct_node(arc_chain);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -346,6 +383,11 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
 
   AllTransitionsWrapper trans;
 
+  UpdateSeq last_update = arc->get_last_update();
+  if (level_state._now < last_update) {
+    level_state._now = last_update;
+  }
+
   bool is_instanced = (node->get_num_parents(_graph_type) > 1);
   bool is_geom = node->is_of_type(GeomNode::get_class_type());
   bool node_has_sub_render = node->has_sub_render();
@@ -354,10 +396,18 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
     arc->has_transition(DirectRenderTransition::get_class_type()) ||
     arc->has_transition(DecalTransition::get_class_type());
 
+  if (arc_has_sub_render) {
+    level_state._now = UpdateSeq::fresh();
+  }
+  _now = level_state._now;
+
+  mark_forward_arc(arc);
+
   if (cull_cat.is_spam()) {
     cull_cat.spam() 
       << "Reached " << *node << ":\n"
-      << "is_instanced = " << is_instanced
+      << " now = " << level_state._now
+      << " is_instanced = " << is_instanced
       << " is_geom = " << is_geom
       << " node_has_sub_render = " << node_has_sub_render
       << " arc_has_sub_render = " << arc_has_sub_render
@@ -382,10 +432,9 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
 
       AllTransitionsWrapper new_trans;
 
-      if (!arc->sub_render_trans(attrib, new_trans, _gsg)) {
-	return false;
-      }
-      if (!node->sub_render(attrib, new_trans, _gsg)) {
+      if (!arc->sub_render_trans(attrib, new_trans, this) ||
+	  !node->sub_render(attrib, new_trans, this)) {
+	mark_backward_arc(arc);
 	return false;
       }
 
@@ -399,6 +448,7 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
     // traverse any further beyond it--the rest of the subgraph
     // beginning at this node will be traversed when the node is
     // rendered.
+    mark_backward_arc(arc);
     return false;
   }
 

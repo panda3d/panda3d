@@ -11,7 +11,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq::
 UpdateSeq() {
-  _seq = (unsigned)SC_initial;
+  _seq = (unsigned int)SC_initial;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -32,7 +32,19 @@ initial() {
 INLINE UpdateSeq UpdateSeq::
 old() {
   UpdateSeq result;
-  result._seq = (unsigned)SC_old;
+  result._seq = (unsigned int)SC_old;
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UpdateSeq::fresh (named constructor)
+//       Access: Public, Static
+//  Description: Returns an UpdateSeq in the 'fresh' state.
+////////////////////////////////////////////////////////////////////
+INLINE UpdateSeq UpdateSeq::
+fresh() {
+  UpdateSeq result;
+  result._seq = (unsigned int)SC_fresh;
   return result;
 }
 
@@ -64,7 +76,7 @@ operator = (const UpdateSeq &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE void UpdateSeq::
 clear() {
-  _seq = (unsigned)SC_initial;
+  _seq = (unsigned int)SC_initial;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -75,7 +87,7 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 is_initial() const {
-  return _seq == SC_initial;
+  return _seq == (unsigned int)SC_initial;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,18 +97,37 @@ is_initial() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 is_old() const {
-  return _seq == SC_old;
+  return _seq == (unsigned int)SC_old;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UpdateSeq::is_fresh
+//       Access: Public
+//  Description: Returns true if the UpdateSeq is in the 'fresh'
+//               state.
+////////////////////////////////////////////////////////////////////
+INLINE bool UpdateSeq::
+is_fresh() const {
+  return _seq == (unsigned int)SC_fresh;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: UpdateSeq::is_special
 //       Access: Public
 //  Description: Returns true if the UpdateSeq is in any special
-//               states, i.e. 'initial' or 'old'.
+//               states, i.e. 'initial', 'old', or 'fresh'.
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 is_special() const {
-  return _seq <= (unsigned)SC_old;
+  switch (_seq) {
+  case (unsigned int)SC_initial:
+  case (unsigned int)SC_old:
+  case (unsigned int)SC_fresh:
+    return true;
+
+  default:
+    return false;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -127,10 +158,12 @@ operator != (const UpdateSeq &other) const {
 INLINE bool UpdateSeq::
 operator < (const UpdateSeq &other) const {
   // The special cases of SC_initial or SC_old are less than all other
-  // non-special numbers, and SC_initial is less than SC_old.  For all
-  // other cases, we use a circular comparision such that n < m iff
-  // (signed)(n - m) < 0.
-  return (is_special() || other.is_special()) ? (_seq < other._seq) :
+  // non-special numbers, and SC_initial is less than SC_old.  The
+  // special case of SC_fresh is greater than all other non-special
+  // numbers.  For all other cases, we use a circular comparision such
+  // that n < m iff (signed)(n - m) < 0.
+  return
+    (is_special() || other.is_special()) ? (_seq < other._seq) :
     ((signed int)(_seq - other._seq) < 0);
 }
 
@@ -155,7 +188,7 @@ operator ++ () {
   if (is_special()) {
     // Oops, wraparound.  We don't want to confuse the new value
     // with our special cases.
-    _seq = (unsigned)SC_old + 1;
+    _seq = (unsigned int)SC_old + 1;
   }
     
   return *this;
@@ -187,6 +220,10 @@ output(ostream &out) const {
 
   case SC_old:
     out << "old";
+    break;
+
+  case SC_fresh:
+    out << "fresh";
     break;
 
   default:

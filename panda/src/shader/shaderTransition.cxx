@@ -245,9 +245,9 @@ must_blend()
 ////////////////////////////////////////////////////////////////////
 bool ShaderTransition::
 sub_render(NodeRelation *arc, const AllAttributesWrapper &attrib,
-	   AllTransitionsWrapper &trans, GraphicsStateGuardianBase *gsgbase) {
+	   AllTransitionsWrapper &trans, RenderTraverser *trav) {
   Node *node = arc->get_child();
-  GraphicsStateGuardian *gsg = DCAST(GraphicsStateGuardian, gsgbase);
+  GraphicsStateGuardian *gsg = trav->get_gsg();
   bool multipass_on = false;
 
   // No shaders; never mind.

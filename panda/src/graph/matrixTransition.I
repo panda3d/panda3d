@@ -176,8 +176,17 @@ internal_compare_to(const NodeTransition *other) const {
   const MatrixTransition<Matrix> *ot;
   DCAST_INTO_R(ot, other, false);
 
-  //  return _matrix.compare_to(ot->_matrix);
-  return this - other;
+  // Should we bother comparing matrices componentwise, or should we
+  // just assume that any two different Matrix pointers are probably
+  // different matrices?
+
+  // For now, we compare componentwise.  It makes paranoid_wrt more
+  // sensible, and it doesn't seem to make a big different to
+  // performance.
+  return _matrix.compare_to(ot->_matrix, 0.001);
+
+  // Uncomment this line instead to compare matrices pointerwise.
+  //  return this - other;
 }
 
 ////////////////////////////////////////////////////////////////////

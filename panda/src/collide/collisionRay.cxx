@@ -75,8 +75,8 @@ output(ostream &out) const {
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool CollisionRay::
-set_projection(const ProjectionNode *camera, const LPoint2f &point) {
-  const Projection *proj = camera->get_projection();
+set_projection(ProjectionNode *camera, const LPoint2f &point) {
+  Projection *proj = camera->get_projection();
 
   bool success = true;
   if (!proj->extrude(point, _origin, _direction)) {

@@ -33,3 +33,7 @@ ConfigureFn(config_cull) {
   DirectRenderTransition::init_type();
 }
 
+// Set this true to force all of the caching to blow itself away every
+// frame.  Normally you would only do this during testing.
+const bool cull_force_update = config_cull.GetBool("cull-force-update", false);
+

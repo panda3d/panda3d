@@ -9,12 +9,19 @@
     allAttributesWrapper.I allAttributesWrapper.cxx \
     allAttributesWrapper.h allTransitionsWrapper.I \
     allTransitionsWrapper.cxx allTransitionsWrapper.h \
-    bitMask32Transition.cxx bitMask32Transition.h boundedObject.I \
+    arcChain.I arcChain.cxx arcChain.h \
+    bitMask32Transition.cxx bitMask32Transition.h \
+    bitMaskAttribute.I bitMaskAttribute.h \
+    bitMaskTransition.I bitMaskTransition.h \
+    boundedObject.I \
     boundedObject.N boundedObject.cxx boundedObject.h config_graph.cxx \
     config_graph.h graphReducer.cxx graphReducer.h immediateAttribute.I \
     immediateAttribute.cxx immediateAttribute.h immediateTransition.I \
     immediateTransition.cxx immediateTransition.h \
-    lmatrix4fTransition.cxx lmatrix4fTransition.h multiNodeAttribute.I \
+    lmatrix4fTransition.cxx lmatrix4fTransition.h \
+    matrixAttribute.I matrixAttribute.h matrixTransition.I \
+    matrixTransition.h \
+    multiNodeAttribute.I \
     multiNodeAttribute.cxx multiNodeAttribute.h multiNodeTransition.I \
     multiNodeTransition.cxx multiNodeTransition.h namedNode.I \
     namedNode.cxx namedNode.h node.I node.cxx node.h nodeAttribute.I \
@@ -36,11 +43,14 @@
     onOffTransition.I onOffTransition.cxx onOffTransition.h \
     onTransition.I onTransition.cxx onTransition.h pt_NamedNode.N \
     pt_NamedNode.cxx pt_NamedNode.h pt_Node.N pt_Node.cxx pt_Node.h \
-    vector_PT_Node.cxx vector_PT_Node.h
+    setTransitionHelpers.I setTransitionHelpers.h \
+    traverserVisitor.I traverserVisitor.h \
+    vector_PT_Node.cxx vector_PT_Node.h wrt.I wrt.h
 
   #define INSTALL_HEADERS \
     allAttributesWrapper.I allAttributesWrapper.h \
     allTransitionsWrapper.I allTransitionsWrapper.h \
+    arcChain.I arcChain.h \
     bitMask32Transition.h bitMaskAttribute.I bitMaskAttribute.h \
     bitMaskTransition.I bitMaskTransition.h boundedObject.I \
     boundedObject.h config_graph.h dftraverser.I dftraverser.h \

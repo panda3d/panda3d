@@ -29,7 +29,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 bool PruneTransition::
 sub_render(NodeRelation *, const AllAttributesWrapper &,
-	   AllTransitionsWrapper &, GraphicsStateGuardianBase *) {
+	   AllTransitionsWrapper &, RenderTraverser *) {
   return false; 
 }
 

@@ -382,11 +382,11 @@ compose_transitions_from(const NodeTransitions &trans) {
 bool NodeRelation::
 sub_render_trans(const AllAttributesWrapper &attrib,
 		 AllTransitionsWrapper &trans,
-		 GraphicsStateGuardianBase *gsgbase) {
+		 RenderTraverser *trav) {
   bool all_true = true;
   NodeTransitions::const_iterator ti;
   for (ti = _transitions.begin(); ti != _transitions.end(); ++ti) {
-    if (!(*ti).second->sub_render(this, attrib, trans, gsgbase)) {
+    if (!(*ti).second->sub_render(this, attrib, trans, trav)) {
       all_true = false;
     }
   }
@@ -449,7 +449,7 @@ attach() {
 
   // Blow out the cache and increment the current update sequence.
   _net_transitions.clear();
-  ++last_graph_update[_type];
+  _last_update = ++last_graph_update[_type];
 
   _parent->force_bound_stale();
   mark_bound_stale();
@@ -491,7 +491,7 @@ detach() {
 
   // Blow out the cache and increment the current update sequence.
   _net_transitions.clear();
-  ++last_graph_update[_type];
+  _last_update = ++last_graph_update[_type];
 
   return result;
 }
@@ -522,7 +522,7 @@ detach_below() {
 
   // Blow out the cache and increment the current update sequence.
   _net_transitions.clear();
-  ++last_graph_update[_type];
+  _last_update = ++last_graph_update[_type];
 
   return result;
 }
@@ -544,7 +544,7 @@ changed_transition(TypeHandle trans_type) {
   if (_net_transitions != (NodeTransitionCache *)NULL) {
     _net_transitions->clear_transition(trans_type);
   }
-  last_graph_update[get_type()]++;
+  _last_update = ++last_graph_update[get_type()];
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -125,7 +125,6 @@ prepare_delete() {
   _ref_count = -100;
 }
 
-#ifdef NDEBUG
 ////////////////////////////////////////////////////////////////////
 //     Function: ReferenceCount::unref_consider_delete
 //       Access: Public
@@ -143,7 +142,6 @@ unref_consider_delete() {
   unref();
   return (get_ref_count() == 0);
 }
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ReferenceCount::get_ref_count
@@ -291,6 +289,16 @@ template<class RefCountType>
 INLINE void
 unref_delete(RefCountType *ptr) {
   if (((ReferenceCount *)ptr)->unref_consider_delete()) {
+#ifndef NDEBUG
+    if (get_leak_memory()) {
+      // In leak-memory mode, we don't actually delete the pointer,
+      // although we do call the destructor explicitly.  This has
+      // exactly the same effect as deleting it, without actually
+      // freeing up the memory it uses.
+      ptr->~RefCountType();
+      return;
+    }
+#endif
     delete ptr;
   }
 }

@@ -9,6 +9,7 @@
 #include "renderRelation.h"
 
 #include <graphicsStateGuardian.h>
+#include <renderTraverser.h>
 #include <projectionNode.h>
 #include <look_at.h>
 #include <nodeTransitionWrapper.h>
@@ -39,9 +40,9 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 bool BillboardTransition::
 sub_render(NodeRelation *arc, const AllAttributesWrapper &,
-	   AllTransitionsWrapper &trans, GraphicsStateGuardianBase *gsgbase) {
+	   AllTransitionsWrapper &trans, RenderTraverser *trav) {
   Node *node = arc->get_child();
-  GraphicsStateGuardian *gsg = DCAST(GraphicsStateGuardian, gsgbase);
+  GraphicsStateGuardian *gsg = trav->get_gsg();
 
   // Get the current camera from the gsg
   const ProjectionNode *camera = gsg->get_current_projection_node();
@@ -50,7 +51,8 @@ sub_render(NodeRelation *arc, const AllAttributesWrapper &,
   // And the relative coordinate space.
   LMatrix4f rel_mat;
   NodeTransitionWrapper ntw(TransformTransition::get_class_type());
-  wrt(camera, node, (&arc), (&arc) + 1, ntw, RenderRelation::get_class_type());
+  wrt(camera, node, trav->begin(), trav->end(), 
+      ntw, RenderRelation::get_class_type());
   TransformTransition *tt;
   if (!get_transition_into(tt, ntw)) {
     // No relative transform.

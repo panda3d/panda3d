@@ -128,6 +128,6 @@ get_direction() const {
 //               the screen given a camera and a mouse location.
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionRay::
-set_projection(const ProjectionNode *camera, float px, float py) {
+set_projection(ProjectionNode *camera, float px, float py) {
   return set_projection(camera, LPoint2f(px, py));
 }

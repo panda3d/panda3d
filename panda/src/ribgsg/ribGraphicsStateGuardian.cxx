@@ -243,7 +243,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
 //               may be modified during rendering.
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
-render_scene(Node *root, const ProjectionNode *projnode,
+render_scene(Node *root, ProjectionNode *projnode,
 	     const AllAttributesWrapper &initial_state) {
   _current_root_node = root;
 
@@ -262,10 +262,10 @@ render_scene(Node *root, const ProjectionNode *projnode,
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 render_subgraph(RenderTraverser *traverser, 
-		Node *subgraph, const ProjectionNode *projnode,
+		Node *subgraph, ProjectionNode *projnode,
 		const AllAttributesWrapper &initial_state,
 		const AllTransitionsWrapper &net_trans) {
-  const ProjectionNode *old_projection_node = _current_projection_node;
+  ProjectionNode *old_projection_node = _current_projection_node;
   _current_projection_node = projnode;
 
   (*_output) << "\n";

@@ -8,11 +8,14 @@
 
 #include <pandabase.h>
 
+#include <arcChain.h>
 #include <typeHandle.h>
 #include <typedReferenceCount.h>
+#include <notify.h>
 
 class GraphicsStateGuardian;
 class Node;
+class NodeRelation;
 class AllAttributesWrapper;
 class AllTransitionsWrapper;
 
@@ -26,7 +29,18 @@ class AllTransitionsWrapper;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA RenderTraverser : public TypedReferenceCount {
 public:
-  INLINE RenderTraverser(GraphicsStateGuardian *gsg, TypeHandle graph_type);
+  INLINE RenderTraverser(GraphicsStateGuardian *gsg, 
+			 TypeHandle graph_type,
+			 const ArcChain &arc_chain);
+  INLINE ~RenderTraverser();
+
+  typedef ArcChain::iterator iterator;
+  typedef ArcChain::const_iterator const_iterator;
+  
+  INLINE const ArcChain &get_arc_chain() const;
+  INLINE const_iterator begin() const;
+  INLINE const_iterator end() const;
+  INLINE bool empty() const;
 
 PUBLISHED:
   INLINE GraphicsStateGuardian *get_gsg() const;
@@ -41,9 +55,16 @@ PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
+protected:  
+  // These methods are to be called by derived classes as we traverse
+  // each arc.  They update the arc list returned by begin()/end().
+  INLINE void mark_forward_arc(NodeRelation *arc);
+  INLINE void mark_backward_arc(NodeRelation *arc);
+
 protected:
   GraphicsStateGuardian *_gsg;
   TypeHandle _graph_type;
+  ArcChain _arc_chain;
 
 public:
   static TypeHandle get_class_type() {

@@ -32,7 +32,7 @@ clear_current_states() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinFixed::record_current_state
 //       Access: Public, Virtual
-//  Description: Called each frame by the CullTraverser to indicated
+//  Description: Called each frame by the CullTraverser to indicate
 //               that the given CullState (and all of its current
 //               GeomNodes) is visible this frame.
 ////////////////////////////////////////////////////////////////////
@@ -46,16 +46,14 @@ record_current_state(GraphicsStateGuardian *, CullState *cs,
 
   CullState::geom_const_iterator gi;
   for (gi = cs->geom_begin(); gi != cs->geom_end(); ++gi) {
-    GeomNode *node = (*gi);
-    nassertv(node != (GeomNode *)NULL);
-    _node_entries.insert(NodeEntry(draw_order, cs, node, false));
+    const ArcChain &arc_chain = (*gi);
+    _node_entries.insert(NodeEntry(draw_order, cs, arc_chain, false));
   }
 
   CullState::direct_const_iterator di;
   for (di = cs->direct_begin(); di != cs->direct_end(); ++di) {
-    Node *node = (*di);
-    nassertv(node != (Node *)NULL);
-    _node_entries.insert(NodeEntry(draw_order, cs, node, true));
+    const ArcChain &arc_chain = (*di);
+    _node_entries.insert(NodeEntry(draw_order, cs, arc_chain, true));
   }
 }
 

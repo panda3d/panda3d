@@ -232,7 +232,7 @@ get_child(TypeHandle type, int index) const {
 ////////////////////////////////////////////////////////////////////
 bool Node::
 sub_render(const AllAttributesWrapper &, AllTransitionsWrapper &, 
-	   GraphicsStateGuardianBase *) {
+	   RenderTraverser *) {
   return true;
 }
 

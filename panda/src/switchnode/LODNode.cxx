@@ -12,12 +12,12 @@
 
 #include <graphicsStateGuardian.h>
 #include <get_rel_pos.h>
-#include <dftraverser.h>
 #include <luse.h>
 #include <renderRelation.h>
 #include <transformTransition.h>
 #include <allAttributesWrapper.h>
 #include <allTransitionsWrapper.h>
+#include <renderTraverser.h>
 
 ////////////////////////////////////////////////////////////////////
 // Static variables
@@ -69,9 +69,9 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 bool LODNode::
 sub_render(const AllAttributesWrapper &attrib, AllTransitionsWrapper &trans,
-	   GraphicsStateGuardianBase *gsgbase) {
+	   RenderTraverser *trav) {
 
-  GraphicsStateGuardian *gsg = DCAST(GraphicsStateGuardian, gsgbase);
+  GraphicsStateGuardian *gsg = trav->get_gsg();
 
   // Get the current camera position from the gsg
   const ProjectionNode* camera = gsg->get_current_projection_node();
@@ -81,7 +81,8 @@ sub_render(const AllAttributesWrapper &attrib, AllTransitionsWrapper &trans,
   LPoint3f LOD_pos;
 
   NodeTransitionWrapper ntw(TransformTransition::get_class_type());
-  wrt(this, camera, ntw, RenderRelation::get_class_type());
+  wrt(this, camera, trav->begin(), trav->end(),
+      ntw, RenderRelation::get_class_type());
   const TransformTransition *tt;
   if (get_transition_into(tt, ntw)) {
     LOD_pos = _lod._center * tt->get_matrix();
@@ -110,8 +111,7 @@ sub_render(const AllAttributesWrapper &attrib, AllTransitionsWrapper &trans,
     new_trans.compose_in_place(arc_trans);
 
     // Now render everything from this node and below.
-    gsg->render_subgraph(gsg->get_render_traverser(), 
-			 arc->get_child(), attrib, new_trans);
+    gsg->render_subgraph(trav, arc->get_child(), attrib, new_trans);
 
   } else {
     if (switchnode_cat.is_debug()) {

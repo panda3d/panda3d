@@ -36,7 +36,7 @@ get_handle() const {
 ////////////////////////////////////////////////////////////////////
 bool NodeTransition::
 sub_render(NodeRelation *, const AllAttributesWrapper &, 
-	   AllTransitionsWrapper &, GraphicsStateGuardianBase *) {
+	   AllTransitionsWrapper &, RenderTraverser *) {
   return true;
 }
 

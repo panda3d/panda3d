@@ -70,7 +70,7 @@ public:
   virtual bool sub_render(NodeRelation *arc,
 			  const AllAttributesWrapper &attrib,
 			  AllTransitionsWrapper &trans,
-			  GraphicsStateGuardianBase *gsgbase);
+			  RenderTraverser *trav);
   virtual bool has_sub_render() const;
 
 private:

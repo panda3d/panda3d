@@ -1,7 +1,6 @@
 #include <eventHandler.h>
 #include <chancfg.h>
 #include <textNode.h>
-#include <eggLoader.h>
 #include <mouse.h>
 #include <graphicsWindow.h>
 #include <chatInput.h>
@@ -50,22 +49,23 @@ void chat_keys(EventHandler& eh) {
   eh.add_hook("chat_exit", event_chat_exit);
   eh.add_hook("chat_overflow", event_chat_overflow);
 
-  PT_NamedNode font = loader.load_sync("ttf-comic"); 
+  PT_Node font = loader.load_sync("ttf-comic"); 
 
   // Create the input text node
   input_text_node = new TextNode("input_text_node");
   input_text_node->set_billboard(false);
   input_text_node->set_font(font.p());
   input_text_node->set_text("Press Enter to begin chat mode.");
+  input_text_node->set_wordwrap(12.0);
   RenderRelation *text_arc = new RenderRelation(cameras, input_text_node);
   LMatrix4f mat = LMatrix4f::scale_mat(0.25);
-  mat.set_row(3, LVector3f(-3, 8, -2.4));
+  mat.set_row(3, LVector3f(-3, 8, -1.4));
   text_arc->set_transition(new TransformTransition(mat));
   LightTransition *no_light = new LightTransition(LightTransition::all_off());
   text_arc->set_transition(no_light);
 
   chat_input = new ChatInput(input_text_node, "chat input");
-  chat_input->set_max_chars(20);
+  chat_input->set_max_lines(2);
 
   // Create the output text node
   output_text_node = new TextNode("output_text_node");

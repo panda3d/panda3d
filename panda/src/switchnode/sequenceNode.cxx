@@ -16,6 +16,7 @@
 #include <allAttributesWrapper.h>
 #include <allTransitionsWrapper.h>
 #include <renderRelation.h>
+#include <renderTraverser.h>
 
 ////////////////////////////////////////////////////////////////////
 // Static variables
@@ -62,9 +63,8 @@ set_switch_time(float switch_time)
 ////////////////////////////////////////////////////////////////////
 bool SequenceNode::
 sub_render(const AllAttributesWrapper &attrib, AllTransitionsWrapper &trans,
-	   GraphicsStateGuardianBase *gsgbase) 
-{
-  GraphicsStateGuardian *gsg = DCAST(GraphicsStateGuardian, gsgbase);
+	   RenderTraverser *trav) {
+  GraphicsStateGuardian *gsg = trav->get_gsg();
 
   // Determine which child to traverse
   int num_children = get_num_children(RenderRelation::get_class_type());
@@ -88,8 +88,7 @@ sub_render(const AllAttributesWrapper &attrib, AllTransitionsWrapper &trans,
     new_trans.compose_in_place(arc_trans);
 
     // Now render everything from this node and below.
-    gsg->render_subgraph(gsg->get_render_traverser(), 
-			 arc->get_child(), attrib, new_trans);
+    gsg->render_subgraph(trav, arc->get_child(), attrib, new_trans);
 
   } else {
     if (switchnode_cat.is_debug()) {

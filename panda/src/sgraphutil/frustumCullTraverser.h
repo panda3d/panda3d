@@ -28,7 +28,7 @@ public:
   typedef TYPENAME Visitor::TransitionWrapper TransitionWrapper;
   typedef TYPENAME Visitor::AttributeWrapper AttributeWrapper;
 
-  FrustumCullTraverser(Node *root,
+  FrustumCullTraverser(Node *root, const LMatrix4f &rel_from_camera,
 		       Visitor &visitor,
 		       const AttributeWrapper &initial_render_state,
 		       const LevelState &initial_level_state,
@@ -67,12 +67,12 @@ protected:
 // Convenience function.
 template<class Visitor, class AttributeWrapper, class LevelState>
 INLINE void
-fc_traverse(Node *root, Visitor &visitor,
+fc_traverse(Node *root, const LMatrix4f &rel_from_camera, Visitor &visitor,
 	    const AttributeWrapper &initial_render_state, 
 	    const LevelState &initial_level_state,
 	    GraphicsStateGuardian *gsg, TypeHandle graph_type) {
   FrustumCullTraverser<Visitor, LevelState> 
-    fct(root, visitor, initial_render_state, 
+    fct(root, rel_from_camera, visitor, initial_render_state, 
 	initial_level_state, gsg, graph_type);
 }
 

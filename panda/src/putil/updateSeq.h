@@ -22,15 +22,17 @@
 //               first created.  This sequence is older than any other
 //               sequence number.  Secondly, a sequence number may be
 //               explicitly set to 'old'.  This is older than any
-//               other sequence number except 'initial'.  All other
-//               sequences are numeric and are monotonically
-//               increasing.
+//               other sequence number except 'initial'.  Finally, we
+//               have the explicit number 'fresh', which is newer
+//               than any other sequence number.  All other sequences
+//               are numeric and are monotonically increasing.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA UpdateSeq {
 public:
   INLINE UpdateSeq();
   INLINE static UpdateSeq initial();
   INLINE static UpdateSeq old();
+  INLINE static UpdateSeq fresh();
 
   INLINE UpdateSeq(const UpdateSeq &copy);
   INLINE UpdateSeq &operator = (const UpdateSeq &copy);
@@ -39,6 +41,7 @@ public:
 
   INLINE bool is_initial() const;
   INLINE bool is_old() const;
+  INLINE bool is_fresh() const;
   INLINE bool is_special() const;
 
   INLINE bool operator == (const UpdateSeq &other) const;
@@ -55,9 +58,10 @@ private:
   enum SpecialCases {
     SC_initial = 0,
     SC_old = 1,
+    SC_fresh = ~0,
   };
 
-  unsigned _seq;
+  unsigned int _seq;
 };
 
 INLINE ostream &operator << (ostream &out, const UpdateSeq &value);

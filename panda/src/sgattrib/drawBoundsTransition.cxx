@@ -20,6 +20,7 @@
 #include <allTransitionsWrapper.h>
 #include <allAttributesWrapper.h>
 #include <graphicsStateGuardian.h>
+#include <renderTraverser.h>
 #include <geomSphere.h>
 
 TypeHandle DrawBoundsTransition::_type_handle;
@@ -70,8 +71,8 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 bool DrawBoundsTransition::
 sub_render(NodeRelation *arc, const AllAttributesWrapper &attrib,
-	   AllTransitionsWrapper &, GraphicsStateGuardianBase *gsgbase) {
-  GraphicsStateGuardian *gsg = DCAST(GraphicsStateGuardian, gsgbase);
+	   AllTransitionsWrapper &, RenderTraverser *trav) {
+  GraphicsStateGuardian *gsg = trav->get_gsg();
 
   const BoundingVolume &vol = arc->get_bound();
   if (!vol.is_empty() && !vol.is_infinite()) {

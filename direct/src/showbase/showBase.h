@@ -17,16 +17,11 @@
 #include <nodePath.h>
 #include <dconfig.h>
 
-#define testint 1
-#define testfloat 1.2345
-#define testcstring "testcstring"
-#include <string>
-#define teststring string("teststring")
-
 ConfigureDecl(config_showbase, EXPCL_DIRECT, EXPTP_DIRECT);
 typedef Config::Config<ConfigureGetConfig_config_showbase> ConfigShowbase;
 
 class CollisionTraverser;
+class Camera;
 
 BEGIN_PUBLISH
 
@@ -39,7 +34,9 @@ EXPCL_DIRECT PT(GraphicsWindow)
 		       NodeAttributes &initial_state
 		       );	
 
-EXPCL_DIRECT NodePath setup_panda_2d(PT(GraphicsWindow) win);
+EXPCL_DIRECT NodePath setup_panda_2d(GraphicsWindow *win);
+EXPCL_DIRECT void add_render_layer(GraphicsWindow *win, Node *render_top,
+				   Camera *camera);
 
 EXPCL_DIRECT void set_collision_traverser(CollisionTraverser *traverser);
 EXPCL_DIRECT CollisionTraverser *get_collision_traverser();

@@ -50,20 +50,36 @@ CullState *CullStateLookup::
 find_node(Node *node,
 	  const AllTransitionsWrapper &trans,
 	  UpdateSeq now) {
+  if (cull_cat.is_spam()) {
+    cull_cat.spam()
+      << "Looking up " << *node << " in lookup " << (void *)this << "\n";
+  }
   CullStates::iterator csi;
   csi = _cull_states.find(node);
   if (csi == _cull_states.end()) {
     // No entry for the node.
+    if (cull_cat.is_spam()) {
+      cull_cat.spam()
+	<< "No entry for the node.\n";
+    }
     return NULL;
   }
 
   CullState *cs = (*csi).second;
   if (cs->check_currency(node, trans, now)) {
     // The entry is current enough to use.
+    if (cull_cat.is_spam()) {
+      cull_cat.spam()
+	<< "The entry is found and current.\n";
+    }
     return cs;
   }
 
   // The entry is stale; remove it and return NULL.
+  if (cull_cat.is_spam()) {
+    cull_cat.spam()
+      << "The entry is stale.\n";
+  }
   _cull_states.erase(csi);
   return NULL;
 }
@@ -94,10 +110,19 @@ get_subtree(const PT(NodeRelation) &arc,
 	    const AllTransitionsWrapper &trans,
 	    Node *top_subtree,
 	    UpdateSeq now) {
+  if (cull_cat.is_spam()) {
+    cull_cat.spam()
+      << "Getting subtree for " << *arc << " in lookup "
+      << (void *)this << "\n";
+  }
   Subtrees::iterator si;
   si = _subtrees.find(arc);
   if (si == _subtrees.end()) {
     // No entry for the arc.
+    if (cull_cat.is_spam()) {
+      cull_cat.spam()
+	<< "No entry for the arc; creating new one.\n";
+    }
     CullStateSubtree *subtree = 
       new CullStateSubtree(this, trans, top_subtree, now);
     _subtrees.insert(Subtrees::value_type(arc, subtree));
@@ -107,10 +132,18 @@ get_subtree(const PT(NodeRelation) &arc,
   CullStateSubtree *subtree = (*si).second;
   if (subtree->check_currency(trans, top_subtree, now)) {
     // The entry is current enough to use.
+    if (cull_cat.is_spam()) {
+      cull_cat.spam()
+	<< "The entry is found and current.\n";
+    }
     return subtree;
   }
 
   // The entry is stale; update it.
+  if (cull_cat.is_spam()) {
+    cull_cat.spam()
+      << "The entry is stale.\n";
+  }
   subtree->update(trans, top_subtree, now);
   return subtree;
 }

@@ -62,10 +62,10 @@ public:
   virtual void prepare_display_region();
 
   virtual void render_frame(const AllAttributesWrapper &initial_state);
-  virtual void render_scene(Node *root, const ProjectionNode *projnode,
+  virtual void render_scene(Node *root, ProjectionNode *projnode,
 			    const AllAttributesWrapper &initial_state);
   virtual void render_subgraph(RenderTraverser *traverser, 
-			       Node *subgraph, const ProjectionNode *projnode,
+			       Node *subgraph, ProjectionNode *projnode,
 			       const AllAttributesWrapper &initial_state,
 			       const AllTransitionsWrapper &net_trans);
   virtual void render_subgraph(RenderTraverser *traverser,

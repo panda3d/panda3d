@@ -79,8 +79,13 @@ clear_current_nodes() {
 //               be visible this frame.
 ////////////////////////////////////////////////////////////////////
 INLINE void CullState::
-record_current_geom_node(const PT(GeomNode) &node) {
-  _current_geom_nodes.push_back(node);
+record_current_geom_node(const ArcChain &arc_chain) {
+  if (cull_cat.is_spam()) {
+    cull_cat.spam()
+      << "Recording geom node " << arc_chain << " with state " << (void *)this
+      << "\n";
+  }
+  _current_geom_nodes.push_back(arc_chain);
   _empty_frames_count = 0;
 }
 
@@ -92,8 +97,8 @@ record_current_geom_node(const PT(GeomNode) &node) {
 //               visible this frame.
 ////////////////////////////////////////////////////////////////////
 INLINE void CullState::
-record_current_direct_node(const PT_Node &node) {
-  _current_direct_nodes.push_back(node);
+record_current_direct_node(const ArcChain &arc_chain) {
+  _current_direct_nodes.push_back(arc_chain);
   _empty_frames_count = 0;
 }
 

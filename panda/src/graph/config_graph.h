@@ -14,6 +14,7 @@ NotifyCategoryDecl(wrt, EXPCL_PANDA, EXPTP_PANDA);
 
 // Configure variables for graph package.
 extern const bool EXPCL_PANDA cache_wrt;
+extern const bool EXPCL_PANDA ambiguous_wrt_abort;
 extern const bool EXPCL_PANDA paranoid_wrt;
 extern const bool EXPCL_PANDA paranoid_graph;
 

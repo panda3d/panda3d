@@ -316,6 +316,20 @@ compare_transitions_to(const NodeRelation *arc) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::get_last_update
+//       Access: Public
+//  Description: Returns the sequence number associated with the last
+//               time this arc was changed, for instance to change its
+//               state or to reparent it.  The only sensible thing you
+//               can do with this is store it and note whether it
+//               increases.
+////////////////////////////////////////////////////////////////////
+INLINE UpdateSeq NodeRelation::
+get_last_update() const {
+  return _last_update;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodeRelation::create_typed_arc
 //       Access: Public, Static
 //  Description: Creates a new arc of the scene graph of the indicated

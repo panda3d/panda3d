@@ -10,6 +10,8 @@
 
 #include "cullStateLookup.h"
 
+#include <updateSeq.h>
+
 ////////////////////////////////////////////////////////////////////
 //       Class : CullLevelState
 // Description : This is the state information the
@@ -19,6 +21,7 @@
 class EXPCL_PANDA CullLevelState {
 public:
   CullStateLookup *_lookup;
+  UpdateSeq _now;
 };
 
 #endif

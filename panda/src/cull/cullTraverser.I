@@ -57,19 +57,38 @@ draw_geom(GeomNode *geom_node, const AllAttributesWrapper &initial_state) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::draw_geom
+//       Access: Public
+//  Description: Sets up the GSG to draw the indicated GeomNode in the
+//               indicated state.  If the state so demands it and the
+//               GeomNode has children, draws the rest of the
+//               hierarchy below it immediately.
+////////////////////////////////////////////////////////////////////
+INLINE void CullTraverser::
+draw_geom(const ArcChain &arc_chain, const AllAttributesWrapper &initial_state) {
+  nassertv(!arc_chain.empty());
+  GeomNode *geom_node;
+  DCAST_INTO_V(geom_node, arc_chain.back()->get_child());
+  draw_geom(geom_node, initial_state);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::draw_direct
 //       Access: Public
 //  Description: Draws the indicated subtree beginning at the
 //               indicated node, and including all nested nodes below.
 ////////////////////////////////////////////////////////////////////
 INLINE void CullTraverser::
-draw_direct(Node *node, const AllAttributesWrapper &initial_state) {
+draw_direct(const ArcChain &arc_chain, 
+	    const AllAttributesWrapper &initial_state) {
+  nassertv(!arc_chain.empty());
+  Node *node = arc_chain.back()->get_child();
   if (cull_cat.is_spam()) {
     cull_cat.spam() 
       << "Drawing " << *node << " in direct mode.\n";
   }
   nassertv(node != (Node *)NULL);
-  DirectRenderTraverser drt(_gsg, _graph_type);
+  DirectRenderTraverser drt(_gsg, _graph_type, arc_chain);
   drt.traverse(node, initial_state, AllTransitionsWrapper());
 }
 
@@ -87,14 +106,15 @@ draw_direct(Node *node, const AllAttributesWrapper &initial_state) {
 INLINE CullStateLookup *CullTraverser::
 add_instance(NodeRelation *arc, const AllTransitionsWrapper &trans,
 	     Node *top_subtree, const CullLevelState &level_state) {
-  return level_state._lookup->get_subtree(arc, trans, top_subtree, _now);
+  return level_state._lookup->get_subtree
+    (arc, trans, top_subtree, level_state._now);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::find_bin_state
 //       Access: Private
 //  Description: Looks for a CullState in the set that corresponds to
-//               the indicates set of transitions; if one is found,
+//               the indicated set of transitions; if one is found,
 //               returns its pointer; otherwise, creates a new one and
 //               returns it.
 ////////////////////////////////////////////////////////////////////
@@ -108,14 +128,32 @@ find_bin_state(const AllTransitionsWrapper &trans) {
   // corresponding CullState that is (now) stored in the set.
   pair<States::iterator, bool> result = _states.insert(cs);
 
-  /*
-  if (result.second) {
-    // The insert succeeded, so the CullState was not there
-    // previously.
-    cerr << "Created CullState for:\n";
-    trans.write(cerr, 2);
+  if (cull_cat.is_spam()) {
+    if (result.second) {
+      // The insert succeeded, so the CullState was not there
+      // previously.
+      cull_cat.spam() 
+	<< "Created CullState " << (void *)cs << " for:\n";
+      trans.write(cull_cat.spam(false), 2);
+    } else {
+      cull_cat.spam() 
+	<< "Found existing CullState " << (void *)(*result.first)
+	<< " for:\n";
+      trans.write(cull_cat.spam(false), 2);
+    }
   }
-  */
 		       
   return *result.first;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::backward_arc
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void CullTraverser::
+backward_arc(NodeRelation *arc, NullTransitionWrapper &,
+	     NullAttributeWrapper &, NullAttributeWrapper &,
+	     const CullLevelState &) {
+  mark_backward_arc(arc);
 }

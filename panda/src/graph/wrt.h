@@ -8,6 +8,10 @@
 
 #include <pandabase.h>
 
+#include "nodeRelation.h"
+#include "node.h"
+#include "config_graph.h"
+
 #include <typeHandle.h>
 
 class Node;
@@ -57,6 +61,7 @@ wrt(const Node *from,
     InputIterator2 to_arcs_begin, InputIterator2 to_arcs_end,
     TransitionWrapper &result, TypeHandle graph_type);
 
+#ifndef NDEBUG
 // Similar to the above, but always uncached.  Useful mainly for
 // debugging, or when you suspect the cache is invalid.  Also note
 // that you can configure 'cache-wrt' or 'paranoid-wrt' to disable or
@@ -87,17 +92,18 @@ uncached_wrt(const Node *from,
 	     const Node *to,
 	     InputIterator2 to_arcs_begin, InputIterator2 to_arcs_end,
 	     TransitionWrapper &result, TypeHandle graph_type);
+#endif
 
 
 // The following function is a bit different.  Rather than computing
 // the relative transform between two nodes, it computes the net
-// transform along the shortest unambigous path from the indicated arc
-// towards the root.  That is, this is the wrt between the child of
-// the indicated arc and the closest ancestor node that has multiple
-// parents, or the root of the scene graph if the arc only appears
-// once in the scene graph.  The return value is the particular node
-// with multiple parents at which the wrt stopped, or NULL if it went
-// all the way to the root.
+// transform along the shortest unambiguous path from the indicated
+// arc towards the root.  That is, this is the wrt between the child
+// of the indicated arc and the closest ancestor node that has
+// multiple parents, or the root of the scene graph if the arc only
+// appears once in the scene graph.  The return value is the
+// particular node with multiple parents at which the wrt stopped, or
+// NULL if it went all the way to the root.
 
 // This is extended just a bit further by allowing the user to specify
 // a "to" node.  This must be either NULL, or the expected top node,
@@ -113,7 +119,7 @@ uncached_wrt(const Node *from,
 // CullTraverser) that needs to cache a wrt-type value for many nodes
 // across the entire tree.
 template<class TransitionWrapper>
-Node *
+INLINE Node *
 wrt_subtree(NodeRelation *arc, Node *to, TransitionWrapper &result, 
 	    TypeHandle graph_type);
 

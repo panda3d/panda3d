@@ -31,7 +31,7 @@ clear_current_states() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinBackToFront::record_current_state
 //       Access: Public, Virtual
-//  Description: Called each frame by the CullTraverser to indicated
+//  Description: Called each frame by the CullTraverser to indicate
 //               that the given CullState (and all of its current
 //               GeomNodes) is visible this frame.
 ////////////////////////////////////////////////////////////////////
@@ -45,7 +45,10 @@ record_current_state(GraphicsStateGuardian *gsg, CullState *cs, int,
 
   CullState::geom_const_iterator gi;
   for (gi = cs->geom_begin(); gi != cs->geom_end(); ++gi) {
-    GeomNode *node = (*gi);
+    const ArcChain &arc_chain = (*gi);
+    nassertv(!arc_chain.empty());
+    GeomNode *node;
+    DCAST_INTO_V(node, arc_chain.back()->get_child());
     nassertv(node != (GeomNode *)NULL);
     const BoundingVolume &volume = node->get_bound();
 
@@ -60,13 +63,15 @@ record_current_state(GraphicsStateGuardian *gsg, CullState *cs, int,
       }
 
       float distance = gsg->compute_distance_to(center);
-      _node_entries.insert(NodeEntry(distance, cs, node, false));
+      _node_entries.insert(NodeEntry(distance, cs, arc_chain, false));
     }
   }
 
   CullState::direct_const_iterator di;
   for (di = cs->direct_begin(); di != cs->direct_end(); ++di) {
-    Node *node = (*di);
+    const ArcChain &arc_chain = (*di);
+    nassertv(!arc_chain.empty());
+    Node *node = arc_chain.back()->get_child();
     nassertv(node != (Node *)NULL);
 
     const BoundingVolume &volume = node->get_bound();
@@ -119,7 +124,7 @@ record_current_state(GraphicsStateGuardian *gsg, CullState *cs, int,
       }
     }
 
-    _node_entries.insert(NodeEntry(distance, cs, node, true));
+    _node_entries.insert(NodeEntry(distance, cs, arc_chain, true));
   }
 }
 

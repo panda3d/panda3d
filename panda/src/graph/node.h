@@ -15,7 +15,7 @@
 #include <luse.h>
 
 class NodeAttributes;
-class GraphicsStateGuardianBase;
+class RenderTraverser;
 class AllAttributesWrapper;
 class AllTransitionsWrapper;
 class BamWriter;
@@ -70,7 +70,7 @@ public:
   // It may or may not intercept the render traversal.
   virtual bool sub_render(const AllAttributesWrapper &attrib,
 			  AllTransitionsWrapper &trans,
-			  GraphicsStateGuardianBase *gsgbase);
+			  RenderTraverser *trav);
   virtual bool has_sub_render() const;
 
 PUBLISHED:

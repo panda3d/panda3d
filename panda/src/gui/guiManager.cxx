@@ -18,7 +18,8 @@
 
 GuiManager::GuiMap* GuiManager::_map = (GuiManager::GuiMap*)0L;
 
-GuiManager* GuiManager::get_ptr(GraphicsWindow* w, MouseAndKeyboard* mak) {
+GuiManager* GuiManager::get_ptr(GraphicsWindow* w, MouseAndKeyboard* mak,
+				Node *root2d) {
   GuiManager* ret;
   if (_map == (GuiMap*)0L) {
     if (gui_cat->is_debug())
@@ -83,30 +84,36 @@ GuiManager* GuiManager::get_ptr(GraphicsWindow* w, MouseAndKeyboard* mak) {
 			 << watcher->get_leave_pattern()
 			 << "' with 'gui-out-%r'" << endl;
     watcher->set_leave_pattern("gui-out-%r");
-    // next, create a 2d layer for the GUI stuff to live in.
-    Node* root2d_top = new NamedNode("GUI_top");
-    Node* root2d = new NamedNode("GUI");
-    NodeRelation* root2d_arc = new RenderRelation(root2d_top, root2d);
-    root2d_arc->set_transition(new DepthTestTransition(DepthTestProperty::M_none), 1);
-    root2d_arc->set_transition(new DepthWriteTransition(DepthWriteTransition::off()), 1);
-    root2d_arc->set_transition(new LightTransition(LightTransition::all_off()), 1);
-    root2d_arc->set_transition(new MaterialTransition(MaterialTransition::off()), 1);
-    root2d_arc->set_transition(new CullFaceTransition(CullFaceProperty::M_cull_none), 1);
-    PT(Camera) cam = new Camera("GUI_cam");
-    new RenderRelation(root2d, cam);
-    cam->set_scene(root2d_top);
-    Frustumf frust2d;
-    frust2d.make_ortho_2D();
-    cam->set_projection(OrthoProjection(frust2d));
-    GraphicsChannel *chan = w->get_channel(0);  // root/full-window channel
-    nassertr(chan != (GraphicsChannel*)0L, NULL);
-    GraphicsLayer *layer = chan->make_layer();
-    nassertr(layer != (GraphicsLayer*)0L, NULL);
-    DisplayRegion *dr = layer->make_display_region();
-    nassertr(dr != (DisplayRegion*)0L, NULL);
-    dr->set_camera(cam);
-    if (gui_cat->is_debug())
-      gui_cat->debug() << "2D layer created" << endl;
+
+    if (root2d == (Node *)NULL) {
+      // If we weren't given a 2-d scene graph, then create one now.
+      // It lives in its own layer.
+
+      Node* root2d_top = new NamedNode("GUI_top");
+      root2d = new NamedNode("GUI");
+      NodeRelation* root2d_arc = new RenderRelation(root2d_top, root2d);
+      root2d_arc->set_transition(new DepthTestTransition(DepthTestProperty::M_none), 1);
+      root2d_arc->set_transition(new DepthWriteTransition(DepthWriteTransition::off()), 1);
+      root2d_arc->set_transition(new LightTransition(LightTransition::all_off()), 1);
+      root2d_arc->set_transition(new MaterialTransition(MaterialTransition::off()), 1);
+      root2d_arc->set_transition(new CullFaceTransition(CullFaceProperty::M_cull_none), 1);
+      PT(Camera) cam = new Camera("GUI_cam");
+      new RenderRelation(root2d, cam);
+      cam->set_scene(root2d_top);
+      Frustumf frust2d;
+      frust2d.make_ortho_2D();
+      cam->set_projection(OrthoProjection(frust2d));
+      GraphicsChannel *chan = w->get_channel(0);  // root/full-window channel
+      nassertr(chan != (GraphicsChannel*)0L, NULL);
+      GraphicsLayer *layer = chan->make_layer();
+      nassertr(layer != (GraphicsLayer*)0L, NULL);
+      DisplayRegion *dr = layer->make_display_region();
+      nassertr(dr != (DisplayRegion*)0L, NULL);
+      dr->set_camera(cam);
+      if (gui_cat->is_debug())
+	gui_cat->debug() << "2D layer created" << endl;
+    }
+
     // now make the manager for this window
     ret = new GuiManager(watcher, root2d);
     if (gui_cat->is_debug())

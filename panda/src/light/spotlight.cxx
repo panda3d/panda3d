@@ -76,7 +76,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 float Spotlight::get_cutoff_angle(void) const
 {
-  const Projection* proj = get_projection();
+  Projection* proj = ((ProjectionNode *)this)->get_projection();
   Frustumf frustum;
   float cutoff = 0;
   if (proj->get_type() == PerspectiveProjection::get_class_type()) {

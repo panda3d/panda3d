@@ -78,6 +78,7 @@ RenderRelation *flare_arc = (RenderRelation *)NULL;
 DownRelationPointers *current_siblings;
 DownRelationPointers::iterator current_sib;
 
+/*
 void 
 setup_panda2d() {
   static bool already_setup = false;
@@ -173,7 +174,6 @@ setup_panda2d() {
   } else {
     nout << "Couldn't find lilsmiley.egg\n";
   }
-  
 }
 
 static void
@@ -191,6 +191,7 @@ event_out_label2d(CPT_Event) {
 
   label2d->set_card_color(0.5, 0.5, 0.5, 0.5);
 }
+*/
 
 
 static void
@@ -219,6 +220,9 @@ set_highlight(Node *node) {
     NodeRelation *arc = (*urp.begin());
     const BoundingVolume &vol = arc->get_bound();
     nout << "Bounding volume of arc is " << vol << "\n";
+
+    nout << "Transitions on arc:\n";
+    arc->write_transitions(nout, 2);
 
     arc->set_transition(new DrawBoundsTransition);
     bounds_arc = arc;
@@ -408,15 +412,6 @@ event_h(CPT_Event) {
   }
 }
 
-static void
-event_2(CPT_Event) {
-  static bool is_setup = false;
-  if (!is_setup) {
-    setup_panda2d();
-    is_setup = true;
-  }
-}
-
 static void attach_sky() {
   // Load the sun and sky
   sky = DCAST(NamedNode, loader.load_sync("sky"));
@@ -556,8 +551,10 @@ void demo_keys(EventHandler&) {
   new RenderRelation( lights, dlight );
   have_dlight = true;
 
+  /*
   event_handler.add_hook("mw-in-label2d", event_in_label2d);
   event_handler.add_hook("mw-out-label2d", event_out_label2d);
+  */
 
   event_handler.add_hook("h", event_h);
   event_handler.add_hook("up", event_up);
@@ -574,8 +571,6 @@ void demo_keys(EventHandler&) {
   event_handler.add_hook("f8", event_fkey);
   event_handler.add_hook("f9", event_fkey);
 
-  event_handler.add_hook("2", event_2);
- 
   event_handler.add_hook("L", event_L);
   event_handler.add_hook("k", event_k);
   event_handler.add_hook("a", event_a);

@@ -11,4 +11,6 @@
 
 NotifyCategoryDecl(cull, EXPCL_PANDA, EXPTP_PANDA);
 
+extern const bool cull_force_update;
+
 #endif

@@ -49,7 +49,7 @@ get_state() const {
 //               projection node (i.e. the camera) for this scene, as
 //               set by the last call to render_subgraph().
 ////////////////////////////////////////////////////////////////////
-INLINE const ProjectionNode *GraphicsStateGuardian::
+INLINE ProjectionNode *GraphicsStateGuardian::
 get_current_projection_node(void) const { 
   return _current_projection_node;
 }

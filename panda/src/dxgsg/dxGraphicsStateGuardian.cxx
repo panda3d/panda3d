@@ -875,7 +875,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
 //               may be modified during rendering.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-render_scene(Node *root, const ProjectionNode *projnode,
+render_scene(Node *root, ProjectionNode *projnode,
          const AllAttributesWrapper &initial_state) {
 #ifdef GSG_VERBOSE
   _pass_number = 0;
@@ -905,11 +905,11 @@ render_scene(Node *root, const ProjectionNode *projnode,
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 render_subgraph(RenderTraverser *traverser,
-        Node *subgraph, const ProjectionNode *projnode,
+        Node *subgraph, ProjectionNode *projnode,
         const AllAttributesWrapper &initial_state,
         const AllTransitionsWrapper &net_trans) {
   activate();
-  const ProjectionNode *old_projection_node = _current_projection_node;
+  ProjectionNode *old_projection_node = _current_projection_node;
   _current_projection_node = projnode;
   LMatrix4f old_projection_mat = _current_projection_mat;
 

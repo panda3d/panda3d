@@ -12,10 +12,10 @@
 ////////////////////////////////////////////////////////////////////
 INLINE GeomBinBackToFront::NodeEntry::
 NodeEntry(float distance, const PT(CullState) &state, 
-	  Node *node, bool is_direct) :
+	  const ArcChain &arc_chain, bool is_direct) :
   _distance(distance),
   _state(state),
-  _node(node),
+  _arc_chain(arc_chain),
   _is_direct(is_direct)
 {
 }
@@ -29,7 +29,7 @@ INLINE GeomBinBackToFront::NodeEntry::
 NodeEntry(const GeomBinBackToFront::NodeEntry &copy) :
   _distance(copy._distance),
   _state(copy._state),
-  _node(copy._node),
+  _arc_chain(copy._arc_chain),
   _is_direct(copy._is_direct)
 {
 }
@@ -43,7 +43,7 @@ INLINE void GeomBinBackToFront::NodeEntry::
 operator = (const NodeEntry &copy) {
   _distance = copy._distance;
   _state = copy._state;
-  _node = copy._node;
+  _arc_chain = copy._arc_chain;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -63,12 +63,11 @@ operator < (const NodeEntry &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomBinBackToFront::NodeEntry::
 draw(CullTraverser *trav) const {
-  nassertv(_node != (GeomNode *)NULL);
+  nassertv(!_arc_chain.empty());
   if (_is_direct) {
-    trav->draw_direct(_node, AllAttributesWrapper(_state->get_attributes()));
+    trav->draw_direct(_arc_chain, AllAttributesWrapper(_state->get_attributes()));
   } else {
-    trav->draw_geom(DCAST(GeomNode, _node), 
-		    AllAttributesWrapper(_state->get_attributes()));
+    trav->draw_geom(_arc_chain, AllAttributesWrapper(_state->get_attributes()));
   }
 }
 

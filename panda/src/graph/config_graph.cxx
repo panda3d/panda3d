@@ -49,8 +49,15 @@ ConfigureFn(config_graph) {
 // wrt(), so that the second time wrt() is called on a particular
 // node-node pair it will be much cheaper than the first time.  This
 // is the default behavior; you'd only want to turn it off if for some
-// reason it was broken.
+// reason it was broken.  This is true by default and cannot be turned
+// off in optimized (NDEBUG) mode.
 const bool cache_wrt = config_graph.GetBool("cache-wrt", true);
+
+// Set this true to force abort() to be called if an ambiguous wrt()
+// call is made.  This will hopefully allow the programmer to get a
+// stack dump and determine who is issuing the ambiguous wrt().  This
+// cannot be turned on in optimized (NDEBUG) mode.
+const bool ambiguous_wrt_abort = config_graph.GetBool("ambiguous-wrt-abort", false);
 
 // Set this true to double-check the cached value of wrt(), above, by
 // performing an explicit uncached wrt() and comparing the results.

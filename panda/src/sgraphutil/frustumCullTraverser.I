@@ -4,11 +4,11 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "frustumCullTraverser.h"
-#include "get_rel_pos.h"
 #include "config_sgraphutil.h"
 
 #include <notify.h>
 #include <nodeTransitionWrapper.h>
+#include <transformTransition.h>
 #include <wrt.h>
 
 ////////////////////////////////////////////////////////////////////
@@ -18,7 +18,7 @@
 ////////////////////////////////////////////////////////////////////
 template<class Visitor, class LevelState>
 FrustumCullTraverser<Visitor, LevelState>::
-FrustumCullTraverser(Node *root,
+FrustumCullTraverser(Node *root, const LMatrix4f &rel_from_camera,
 		     Visitor &visitor,
 		     const AttributeWrapper &initial_render_state,
 		     const LevelState &initial_level_state,
@@ -36,7 +36,7 @@ FrustumCullTraverser(Node *root,
     // If we're to be performing view-frustum culling, determine the
     // bounding volume associated with the current viewing frustum.
 
-    const ProjectionNode *camera = _gsg->get_current_projection_node();
+    ProjectionNode *camera = _gsg->get_current_projection_node();
     if (camera != (const ProjectionNode *)NULL) {
       const Projection *proj = camera->get_projection();
       nassertv(proj != (const Projection *)NULL);
@@ -49,17 +49,14 @@ FrustumCullTraverser(Node *root,
       }
     }
 
-    LMatrix4f mat;
-    get_rel_mat(_gsg->get_current_projection_node(), root, mat);
-
     local_frustum = DCAST(GeometricBoundingVolume, _view_frustum->make_copy());
-    local_frustum->xform(mat);
+    local_frustum->xform(rel_from_camera);
 
     if (sgraphutil_cat.is_spam()) {
       sgraphutil_cat.spam()
 	<< "Beginning frustum cull, frustum is: " << *local_frustum << "\n"
 	<< "Transform is:\n";
-      mat.write(sgraphutil_cat.spam(false), 2);
+      rel_from_camera.write(sgraphutil_cat.spam(false), 2);
     }
   }
 

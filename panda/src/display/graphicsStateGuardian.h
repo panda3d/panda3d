@@ -68,10 +68,10 @@ public:
   virtual void prepare_display_region()=0;
 
   virtual void render_frame(const AllAttributesWrapper &initial_state)=0;
-  virtual void render_scene(Node *root, const ProjectionNode *projnode,
+  virtual void render_scene(Node *root, ProjectionNode *projnode,
 			    const AllAttributesWrapper &initial_state)=0;
   virtual void render_subgraph(RenderTraverser *traverser, 
-			       Node *subgraph, const ProjectionNode *projnode,
+			       Node *subgraph, ProjectionNode *projnode,
 			       const AllAttributesWrapper &initial_state,
 			       const AllTransitionsWrapper &net_trans)=0;
   virtual void render_subgraph(RenderTraverser *traverser,
@@ -99,7 +99,7 @@ public:
 
   RenderBuffer get_render_buffer(int buffer_type);
 
-  INLINE const ProjectionNode* get_current_projection_node(void) const ;
+  INLINE ProjectionNode *get_current_projection_node(void) const ;
   INLINE const Node* get_current_root_node(void) const;
 
   INLINE CPT(DisplayRegion) get_current_display_region(void) const;
@@ -144,7 +144,7 @@ protected:
 
   // These must be set by render_scene().
   Node *_current_root_node;
-  const ProjectionNode *_current_projection_node;
+  ProjectionNode *_current_projection_node;
   CPT(DisplayRegion) _current_display_region;
 
   // This is used by wants_normals()

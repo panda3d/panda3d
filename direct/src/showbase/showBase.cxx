@@ -66,6 +66,7 @@ public:
     _data_root(data_root),
     _initial_state(initial_state),
     _app_traverser(RenderRelation::get_class_type()) { }
+  virtual ~WindowCallback() { }
   
   virtual void draw(bool) {
     _app_traverser.traverse(_render);
@@ -156,7 +157,7 @@ PT(GraphicsWindow) make_graphics_window(GraphicsPipe *pipe,
 // can contain 2-d geometry and will be rendered on top of the
 // existing 3-d window.  Returns the top node of the scene graph.
 NodePath
-setup_panda_2d(PT(GraphicsWindow) win) {
+setup_panda_2d(GraphicsWindow *win) {
   PT(Node) render2d_top;
   
   render2d_top = new NamedNode("render2d_top");
@@ -165,6 +166,12 @@ setup_panda_2d(PT(GraphicsWindow) win) {
 
   // Set up some overrides to turn off certain properties which we
   // probably won't need for 2-d objects.
+
+  // It's particularly important to turn off the depth test, since
+  // we'll be keeping the same depth buffer already filled by the
+  // previously-drawn 3-d scene--we don't want to pay for a clear
+  // operation, but we also don't want to collide with that depth
+  // buffer.
   render2d_arc->set_transition(new DepthTestTransition(DepthTestProperty::M_none), 1);
   render2d_arc->set_transition(new DepthWriteTransition(DepthWriteTransition::off()), 1);
   render2d_arc->set_transition(new LightTransition(LightTransition::all_off()), 1);
@@ -174,24 +181,30 @@ setup_panda_2d(PT(GraphicsWindow) win) {
   // Create a 2-d camera.
   Camera *cam2d = new Camera("cam2d");
   new RenderRelation(render2d, cam2d);
-  cam2d->set_scene(render2d_top);
 
   Frustumf frustum2d;
   frustum2d.make_ortho(-1000,1000);
   cam2d->set_projection(OrthoProjection(frustum2d));
 
-  // Now create a new layer.
-  GraphicsChannel *chan = win->get_channel(0);
-  nassertr(chan != (GraphicsChannel *)NULL, NodePath());
-
-  GraphicsLayer *layer = chan->make_layer();
-  nassertr(layer != (GraphicsLayer *)NULL, NodePath());
-
-  DisplayRegion *dr = layer->make_display_region();
-  nassertr(dr != (DisplayRegion *)NULL, NodePath());
-  dr->set_camera(cam2d);
+  add_render_layer(win, render2d_top, cam2d);
 
   return NodePath(render2d_arc);
+}
+
+// Create an auxiliary scene graph starting at the indicated node,
+// layered on top of the previously-created layers.
+void
+add_render_layer(GraphicsWindow *win, Node *render_top, Camera *camera) {
+  GraphicsChannel *chan = win->get_channel(0);
+  nassertv(chan != (GraphicsChannel *)NULL);
+
+  GraphicsLayer *layer = chan->make_layer();
+  nassertv(layer != (GraphicsLayer *)NULL);
+
+  DisplayRegion *dr = layer->make_display_region();
+  nassertv(dr != (DisplayRegion *)NULL);
+  camera->set_scene(render_top);
+  dr->set_camera(camera);
 }
 
 // Enable the collision traversal using a particular traverser.

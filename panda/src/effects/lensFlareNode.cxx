@@ -14,6 +14,7 @@
 #include <billboardTransition.h>
 #include <transformAttribute.h>
 #include <transparencyTransition.h>
+#include <renderTraverser.h>
 
 #include <orthoProjection.h>
 #include <perspectiveProjection.h>
@@ -295,15 +296,14 @@ render_children(const vector_relation &arcs, const AllAttributesWrapper &attrib,
 ////////////////////////////////////////////////////////////////////
 bool LensFlareNode::
 sub_render(const AllAttributesWrapper &attrib, AllTransitionsWrapper &trans,
-	   GraphicsStateGuardianBase *gsgbase) 
-{
-  GraphicsStateGuardian *gsg = DCAST(GraphicsStateGuardian, gsgbase);
+	   RenderTraverser *trav) {
+  GraphicsStateGuardian *gsg = trav->get_gsg();
 
   nassertr(_light_node != (Node*) NULL, false);
 
   //First we need the light position
-  const ProjectionNode *camera_node = gsg->get_current_projection_node();
-  const PerspectiveProjection *pp = DCAST(PerspectiveProjection, camera_node->get_projection());
+  ProjectionNode *camera_node = gsg->get_current_projection_node();
+  PerspectiveProjection *pp = DCAST(PerspectiveProjection, camera_node->get_projection());
 
   LPoint3f light_pos = get_rel_pos(_light_node, camera_node);
   

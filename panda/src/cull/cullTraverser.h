@@ -37,7 +37,8 @@ class EXPCL_PANDA CullTraverser :
   public RenderTraverser, 
   public TraverserVisitor<NullTransitionWrapper, CullLevelState> {
 public:
-  CullTraverser(GraphicsStateGuardian *gsg, TypeHandle graph_type);
+  CullTraverser(GraphicsStateGuardian *gsg, TypeHandle graph_type,
+		const ArcChain &arc_chain = ArcChain());
   virtual ~CullTraverser();
 
   INLINE void set_default_bin(GeomBin *bin);
@@ -49,7 +50,9 @@ public:
 
   INLINE void draw_geom(GeomNode *geom_node,
 			const AllAttributesWrapper &initial_state);
-  INLINE void draw_direct(Node *node,
+  INLINE void draw_geom(const ArcChain &arc_chain,
+			const AllAttributesWrapper &initial_state);
+  INLINE void draw_direct(const ArcChain &arc_chain,
 			  const AllAttributesWrapper &initial_state);
 
 PUBLISHED:
@@ -60,10 +63,10 @@ private:
   void draw();
   void clean_out_old_states();
 
-  void add_geom_node(const PT(GeomNode) &node, 
+  void add_geom_node(GeomNode *node, 
 		     const AllTransitionsWrapper &trans,
 		     const CullLevelState &level_state);
-  void add_direct_node(const PT_Node &node, 
+  void add_direct_node(Node *node, 
 		       const AllTransitionsWrapper &trans,
 		       const CullLevelState &level_state);
 		     
@@ -83,8 +86,12 @@ public:
 		   NullAttributeWrapper &pre, NullAttributeWrapper &post,
 		   CullLevelState &level_state);
 
+  INLINE void 
+  backward_arc(NodeRelation *arc, NullTransitionWrapper &trans,
+	       NullAttributeWrapper &pre, NullAttributeWrapper &post,
+	       const CullLevelState &level_state);
+
 private:
-  UpdateSeq _now;
   AllAttributesWrapper _initial_state;
 
   typedef set<PT(GeomBin)> Bins;
@@ -96,6 +103,7 @@ private:
 
   CullStateLookup _lookup;
   int _nested_count;
+  UpdateSeq _now;
 
 public:
   // Statistics

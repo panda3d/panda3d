@@ -30,26 +30,43 @@ make_copy() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: set_projection 
-//       Access:
-//  Description:
+//       Access: Public
+//  Description: Sets up the ProjectionNode using a copy of the
+//               indicated Projection.  If the original Projection is
+//               changed or destroyed, this ProjectionNode is not
+//               affected.
 ////////////////////////////////////////////////////////////////////
-void ProjectionNode::set_projection( const Projection& projection )
-{
-    _projection = projection.make_copy();
+void ProjectionNode::
+set_projection(const Projection &projection) {
+  _projection = projection.make_copy();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: share_projection 
+//       Access: Public
+//  Description: This is similar to set_projection(), but the
+//               Projection is assigned by pointer.  If the original
+//               Projection is changed, this ProjectionNode is
+//               immediately affected.
+////////////////////////////////////////////////////////////////////
+void ProjectionNode::
+share_projection(Projection *projection) {
+  _projection = projection;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: get_projection 
-//       Access:
-//  Description:
+//       Access: Public
+//  Description: Returns a pointer to particular Projection associated
+//               with this ProjectionNode.
 ////////////////////////////////////////////////////////////////////
-const Projection* ProjectionNode::get_projection( void ) const
-{
-  if (_projection == NULL) {
-    // If we have no projection yet, just return a default projection.
+Projection *ProjectionNode::
+get_projection() {
+  if (_projection == (Projection *)NULL) {
+    // If we have no projection yet, give us a default Projection.
     Frustumf f;
-    static PerspectiveProjection default_projection(f);
-    return &default_projection;
+    _projection = new PerspectiveProjection(f);
   }
+
   return _projection;
 }

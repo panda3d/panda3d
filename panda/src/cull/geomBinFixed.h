@@ -37,7 +37,7 @@ private:
   class NodeEntry {
   public:
     INLINE NodeEntry(int draw_order, const PT(CullState) &state, 
-		     Node *node, bool is_direct);
+		     const ArcChain &arc_chain, bool is_direct);
     INLINE NodeEntry(const NodeEntry &copy);
     INLINE void operator = (const NodeEntry &copy);
 
@@ -48,7 +48,7 @@ private:
   private:
     int _draw_order;
     PT(CullState) _state;
-    Node *_node;
+    ArcChain _arc_chain;
     bool _is_direct;
   };
 

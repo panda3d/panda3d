@@ -50,9 +50,12 @@ template<class T>
 void PointerToBase<T>::
 reassign(To *ptr) {
   if (ptr != _ptr) {
-    if (_ptr != (To *)NULL) {
-      unref_delete(_ptr);
-    }
+    // First save the old pointer; we won't delete it until we have
+    // assigned the new one.  We do this just in case there are
+    // cascading effects from deleting this pointer that might
+    // inadvertently delete the new one.  (Don't laugh--it's
+    // happened!)
+    To *old_ptr = _ptr;
     
     _ptr = ptr;
     if (_ptr != (To *)NULL) {
@@ -71,6 +74,11 @@ reassign(To *ptr) {
 	}
       }
 #endif
+    }
+
+    // Now delete the old pointer.
+    if (old_ptr != (To *)NULL) {
+      unref_delete(old_ptr);
     }
   }
 }

@@ -90,26 +90,24 @@ draw(CullTraverser *trav) {
 
       CullState::geom_iterator gi;
       for (gi = cs->geom_begin(); gi != cs->geom_end(); ++gi) {
-	GeomNode *geom = (*gi);
-	nassertv(geom != (GeomNode *)NULL);
+	const ArcChain &arc_chain = (*gi);
+	nassertv(!arc_chain.empty());
+	GeomNode *geom_node;
+	DCAST_INTO_V(geom_node, arc_chain.back()->get_child());
 	if (cull_cat.is_spam()) {
 	  cull_cat.spam()
-	    << "Drawing " << *geom << "\n";
+	    << "Drawing " << *geom_node << "\n";
 	}
-	geom->draw(gsg);
+	geom_node->draw(gsg);
       }
     }
 
     CullState::direct_iterator di;
     for (di = cs->direct_begin(); di != cs->direct_end(); ++di) {
-      Node *node = (*di);
-      nassertv(node != (Node *)NULL);
+      const ArcChain &arc_chain = (*di);
+      nassertv(!arc_chain.empty());
 	  
-      if (cull_cat.is_spam()) {
-	cull_cat.spam()
-	  << "Drawing direct: " << *node << "\n";
-      }
-      trav->draw_direct(node, cs->get_attributes());
+      trav->draw_direct(arc_chain, cs->get_attributes());
     }
   }
 }
