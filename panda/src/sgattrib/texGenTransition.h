@@ -27,8 +27,9 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TexGenTransition
-// Description : This controls the kinds of blending between colors
-//               being rendered and the existing frame buffer.
+// Description : This controls generation of texture coordinates in
+//               the graphics HW, for instance for projected
+//               textures.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TexGenTransition : public OnTransition {
 public:
@@ -45,6 +46,9 @@ public:
 
   virtual NodeTransition *make_copy() const;
   virtual NodeAttribute *make_attrib() const;
+  virtual NodeTransition *make_initial() const;
+
+  virtual void issue(GraphicsStateGuardianBase *gsgbase);
 
 protected:
   virtual void set_value_from(const OnTransition *other);

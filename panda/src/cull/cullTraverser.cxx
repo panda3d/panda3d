@@ -163,7 +163,7 @@ clear_state() {
   }
   _default_bin->clear_current_states();
 
-  _initial_state = AllAttributesWrapper();
+  _initial_state = AllTransitionsWrapper();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -224,8 +224,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
 traverse(Node *root,
-         const AllAttributesWrapper &initial_state,
-         const AllTransitionsWrapper &net_trans) {
+         const AllTransitionsWrapper &initial_state) {
   // Statistics
   PStatTimer timer(_cull_pcollector);
 
@@ -247,7 +246,7 @@ traverse(Node *root,
   _nested_count++;
 
   if (is_initial) {
-    _initial_state.apply_from(initial_state, net_trans);
+    _initial_state = initial_state;
 
     States::iterator si;
     for (si = _states.begin(); si != _states.end(); ++si) {
@@ -276,7 +275,7 @@ traverse(Node *root,
   }
 
   fc_traverse(_arc_chain, root, rel_from_camera, *this,
-              NullAttributeWrapper(), level_state, _gsg, _graph_type);
+              NullTransitionWrapper(), level_state, _gsg, _graph_type);
 
   if (is_initial) {
     draw();
@@ -407,9 +406,8 @@ draw() {
       int draw_order = 0;
 
       // Check the requested bin for the Geoms in this state.
-      const GeomBinAttribute *bin_attrib;
-      if (get_attribute_into(bin_attrib, cs->get_attributes(),
-                             GeomBinTransition::get_class_type())) {
+      const GeomBinTransition *bin_attrib;
+      if (get_transition_into(bin_attrib, cs->get_attributes())) {
         draw_order = bin_attrib->get_draw_order();
         bin_name = bin_attrib->get_bin();
         requested_bin = get_bin(bin_name);
@@ -573,7 +571,7 @@ add_direct_node(Node *node, const AllTransitionsWrapper &trans,
 ////////////////////////////////////////////////////////////////////
 bool CullTraverser::
 forward_arc(NodeRelation *arc, NullTransitionWrapper &,
-            NullAttributeWrapper &, NullAttributeWrapper &,
+            NullTransitionWrapper &, NullTransitionWrapper &,
             CullLevelState &level_state) {
   nassertr(level_state._lookup != (CullStateLookup *)NULL, false);
 
@@ -689,18 +687,16 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
     if (_gsg != (GraphicsStateGuardian *)NULL) {
       AllTransitionsWrapper complete_trans;
       level_state._lookup->compose_trans(trans, complete_trans);
-      AllAttributesWrapper attrib;
-      attrib.apply_from(_initial_state, complete_trans);
+      AllTransitionsWrapper attrib;
+      attrib.compose_from(_initial_state, complete_trans);
 
-      AllTransitionsWrapper new_trans;
-
-      if (!arc->sub_render_trans(attrib, new_trans, this) ||
-          !node->sub_render(attrib, new_trans, this)) {
+      AllTransitionsWrapper modify_trans;
+      if (!arc->sub_render_trans(attrib, modify_trans, this) ||
+          !node->sub_render(attrib, modify_trans, this)) {
         mark_backward_arc(arc);
         return false;
       }
-
-      trans.compose_in_place(new_trans);
+      trans.compose_in_place(modify_trans);
     }
   }
 

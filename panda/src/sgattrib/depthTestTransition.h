@@ -35,7 +35,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DepthTestTransition : public OnTransition {
 PUBLISHED:
-  INLINE DepthTestTransition(DepthTestProperty::Mode mode);
+  INLINE DepthTestTransition(DepthTestProperty::Mode mode = DepthTestProperty::M_less);
 
   INLINE void set_mode(DepthTestProperty::Mode mode);
   INLINE DepthTestProperty::Mode get_mode() const;
@@ -43,9 +43,11 @@ PUBLISHED:
 public:
   virtual NodeTransition *make_copy() const;
   virtual NodeAttribute *make_attrib() const;
+  virtual NodeTransition *make_initial() const;
+
+  virtual void issue(GraphicsStateGuardianBase *gsgbase);
 
 protected:
-  INLINE DepthTestTransition();
   virtual void set_value_from(const OnTransition *other);
   virtual int compare_values(const OnTransition *other) const;
   virtual void output_value(ostream &out) const;

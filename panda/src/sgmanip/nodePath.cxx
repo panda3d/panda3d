@@ -26,14 +26,11 @@
 #include <indent.h>
 #include <look_at.h>
 #include <nodeTransitionWrapper.h>
-#include <nodeAttributeWrapper.h>
 #include <drawBoundsTransition.h>
 #include <geometricBoundingVolume.h>
 #include <boundingSphere.h>
 #include <sceneGraphAnalyzer.h>
 #include <sceneGraphReducer.h>
-#include <nodeTransitionWrapper.h>
-#include <nodeAttributeWrapper.h>
 #include <nullLevelState.h>
 #include <traverserVisitor.h>
 #include <dftraverser.h>
@@ -55,7 +52,7 @@ TypeHandle NodePath::_type_handle;
 class ScenePrepareVisitor : public TraverserVisitor<NodeTransitionWrapper, NullLevelState> {
 public:
   bool forward_arc(NodeRelation *, NodeTransitionWrapper &trans,
-                   NodeAttributeWrapper &, NodeAttributeWrapper &,
+                   NodeTransitionWrapper &, NodeTransitionWrapper &,
                    NullLevelState &) {
     TextureTransition *tt;
     if (get_transition_into(tt, trans)) {
@@ -66,7 +63,7 @@ public:
     return true;
   }
 
-  bool reached_node(Node *node, NodeAttributeWrapper &,
+  bool reached_node(Node *node, NodeTransitionWrapper &,
                     NullLevelState &) {
     if (_retained_mode && node->is_of_type(GeomNode::get_class_type())) {
       GeomNode *gnode = DCAST(GeomNode, node);
@@ -2738,7 +2735,7 @@ prepare_scene(GraphicsStateGuardianBase *gsg, bool force_retained_mode) {
   visitor._gsg = gsg;
   visitor._retained_mode = retained_mode || force_retained_mode;
 
-  NodeAttributeWrapper initial(TextureTransition::get_class_type());
+  NodeTransitionWrapper initial(TextureTransition::get_class_type());
   df_traverse(node(), visitor, initial, NullLevelState(),
               RenderRelation::get_class_type());
 }

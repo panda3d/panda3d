@@ -23,6 +23,34 @@
 
 TypeHandle LightTransition::_type_handle;
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: LightTransition::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+LightTransition::
+LightTransition() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LightTransition::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+LightTransition::
+LightTransition(const LightTransition &copy) : MultiTransition<PT_Light, LightNameClass>(copy) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LightTransition::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+LightTransition::
+~LightTransition() {
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LightTransition::make_copy
 //       Access: Public, Virtual
@@ -53,6 +81,30 @@ make_attrib() const {
 NodeTransition *LightTransition::
 make_identity() const {
   return new LightTransition;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LightTransition::make_initial
+//       Access: Public, Virtual
+//  Description: Returns a newly allocated LightTransition
+//               corresponding to the default initial state.
+////////////////////////////////////////////////////////////////////
+NodeTransition *LightTransition::
+make_initial() const {
+  return new LightTransition;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LightTransition::issue
+//       Access: Public, Virtual
+//  Description: This is called on scene graph rendering attributes
+//               when it is time to issue the particular attribute to
+//               the graphics engine.  It should call the appropriate
+//               method on GraphicsStateGuardianBase.
+////////////////////////////////////////////////////////////////////
+void LightTransition::
+issue(GraphicsStateGuardianBase *gsgbase) {
+  gsgbase->issue_light(this);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -125,8 +125,8 @@ PUBLISHED:
   INLINE_GRAPH void clear_wrt_cache();
 
 public:
-  bool sub_render_trans(const AllAttributesWrapper &attrib,
-                        AllTransitionsWrapper &trans,
+  bool sub_render_trans(const AllTransitionsWrapper &input_trans,
+                        AllTransitionsWrapper &modify_trans,
                         RenderTraverser *trav);
   bool has_sub_render_trans() const;
   int get_num_sub_render_trans() const;

@@ -36,43 +36,24 @@
 #include <pointLight.h>
 #include <spotlight.h>
 #include <projectionNode.h>
-#include <transformAttribute.h>
 #include <transformTransition.h>
-#include <colorAttribute.h>
 #include <colorTransition.h>
-#include <lightAttribute.h>
 #include <lightTransition.h>
-#include <textureAttribute.h>
 #include <textureTransition.h>
-#include <renderModeAttribute.h>
 #include <renderModeTransition.h>
-#include <materialAttribute.h>
 #include <materialTransition.h>
-#include <colorBlendAttribute.h>
 #include <colorBlendTransition.h>
-#include <colorMaskAttribute.h>
 #include <colorMaskTransition.h>
-#include <texMatrixAttribute.h>
 #include <texMatrixTransition.h>
-#include <texGenAttribute.h>
 #include <texGenTransition.h>
-#include <textureApplyAttribute.h>
 #include <textureApplyTransition.h>
-#include <clipPlaneAttribute.h>
 #include <clipPlaneTransition.h>
-#include <transparencyAttribute.h>
 #include <transparencyTransition.h>
-#include <fogAttribute.h>
 #include <fogTransition.h>
-#include <linesmoothAttribute.h>
 #include <linesmoothTransition.h>
-#include <depthTestAttribute.h>
 #include <depthTestTransition.h>
-#include <depthWriteAttribute.h>
 #include <depthWriteTransition.h>
-#include <cullFaceAttribute.h>
 #include <cullFaceTransition.h>
-#include <stencilAttribute.h>
 #include <stencilTransition.h>
 #include <throw_event.h>
 #ifdef DO_PSTATS
@@ -489,11 +470,11 @@ init_dx(  LPDIRECTDRAW7     context,
 
     // Make sure the GL state matches all of our initial attribute
     // states.
-    PT(DepthTestAttribute) dta = new DepthTestAttribute;
-    PT(DepthWriteAttribute) dwa = new DepthWriteAttribute;
-    PT(CullFaceAttribute) cfa = new CullFaceAttribute;
-    PT(LightAttribute) la = new LightAttribute;
-    PT(TextureAttribute) ta = new TextureAttribute;
+    PT(DepthTestTransition) dta = new DepthTestTransition;
+    PT(DepthWriteTransition) dwa = new DepthWriteTransition;
+    PT(CullFaceTransition) cfa = new CullFaceTransition;
+    PT(LightTransition) la = new LightTransition;
+    PT(TextureTransition) ta = new TextureTransition;
 
     dta->issue(this);
     dwa->issue(this);
@@ -727,7 +708,7 @@ void DXGraphicsStateGuardian::set_clipper(RECT cliprect) {
 //               pre- and post-processing like swapping buffers.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-render_frame(const AllAttributesWrapper &initial_state) {
+render_frame() {
   if (!_dx_ready) 
     return;
 
@@ -743,8 +724,8 @@ render_frame(const AllAttributesWrapper &initial_state) {
   // texture state has changed, we have to be sure to clear the
   // current texture state now.  A bit unfortunate, but probably not
   // measurably expensive.
-  NodeAttributes state;
-  state.set_attribute(TextureTransition::get_class_type(), new TextureAttribute);
+  NodeTransitions state;
+  state.set_transition(new TextureTransition);
   set_state(state, false);
 #endif
 
@@ -799,7 +780,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
                                 cam->is_active() && cam->get_scene() != (Node *)NULL) {
                                 DisplayRegionStack old_dr = push_display_region(dr);
                                 prepare_display_region();
-                                render_scene(cam->get_scene(), cam, initial_state);
+                                render_scene(cam->get_scene(), cam);
                                 pop_display_region(old_dr);
                             }
                         }
@@ -826,8 +807,8 @@ render_frame(const AllAttributesWrapper &initial_state) {
         // Also force the lighting state to unlit, so that issue_light()
         // will be guaranteed to be called next frame even if we have the
         // same set of light pointers we had this frame.
-        NodeAttributes state;
-        state.set_attribute(LightTransition::get_class_type(), new LightAttribute);
+        NodeTransitions state;
+        state.set_transition(new LightTransition);
         set_state(state, false);
 
         // All this work to undo the lighting state each frame doesn't seem
@@ -1036,8 +1017,7 @@ report_texmgr_stats() {
 //               may be modified during rendering.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-render_scene(Node *root, ProjectionNode *projnode,
-             const AllAttributesWrapper &initial_state) {
+render_scene(Node *root, ProjectionNode *projnode) {
 #ifdef GSG_VERBOSE
     _pass_number = 0;
     dxgsg_cat.debug()
@@ -1046,7 +1026,7 @@ render_scene(Node *root, ProjectionNode *projnode,
 #endif
     _current_root_node = root;
 
-    render_subgraph(_render_traverser, root, projnode, initial_state,
+    render_subgraph(_render_traverser, root, projnode,
                     AllTransitionsWrapper());
 
 #ifdef GSG_VERBOSE
@@ -1067,7 +1047,6 @@ render_scene(Node *root, ProjectionNode *projnode,
 void DXGraphicsStateGuardian::
 render_subgraph(RenderTraverser *traverser,
                 Node *subgraph, ProjectionNode *projnode,
-                const AllAttributesWrapper &initial_state,
                 const AllTransitionsWrapper &net_trans) {
     ProjectionNode *old_projection_node = _current_projection_node;
     _current_projection_node = projnode;
@@ -1124,7 +1103,7 @@ render_subgraph(RenderTraverser *traverser,
     AllTransitionsWrapper sub_trans = net_trans;
     sub_trans.set_transition(new TransformTransition(modelview_mat));
 
-    render_subgraph(traverser, subgraph, initial_state, sub_trans);
+    render_subgraph(traverser, subgraph, sub_trans);
 
     _current_projection_node = old_projection_node;
     _current_projection_mat = old_projection_mat;
@@ -1149,7 +1128,6 @@ render_subgraph(RenderTraverser *traverser,
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 render_subgraph(RenderTraverser *traverser, Node *subgraph,
-                const AllAttributesWrapper &initial_state,
                 const AllTransitionsWrapper &net_trans) {
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug()
@@ -1158,7 +1136,7 @@ render_subgraph(RenderTraverser *traverser, Node *subgraph,
 #endif
 
     nassertv(traverser != (RenderTraverser *)NULL);
-    traverser->traverse(subgraph, initial_state, net_trans);
+    traverser->traverse(subgraph, net_trans);
 
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug()
@@ -1310,8 +1288,8 @@ wants_colors() const {
     // If we have scene graph color enabled, return false to indicate we
     // shouldn't bother issuing geometry color commands.
 
-    const ColorAttribute *catt;
-    if (!get_attribute_into(catt, _state, ColorTransition::get_class_type())) {
+    const ColorTransition *catt;
+    if (!get_transition_into(catt, _state, ColorTransition::get_class_type())) {
         // No scene graph color at all.
         return true;
     }
@@ -1810,8 +1788,8 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
     // save the modelview matrix
     LMatrix4f modelview_mat;
 
-    const TransformAttribute *ctatt;
-    if (!get_attribute_into(ctatt, _state, TransformTransition::get_class_type()))
+    const TransformTransition *ctatt;
+    if (!get_transition_into(ctatt, _state, TransformTransition::get_class_type()))
         modelview_mat = LMatrix4f::ident_mat();
     else
         modelview_mat = ctatt->get_matrix();
@@ -1835,16 +1813,14 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
     float scaled_width, scaled_height;
 
     // set up the texture-rendering state
-    NodeAttributes state;
+    NodeTransitions state;
 
     // this sets up texturing.  Could just set the renderstates directly, but this is a little cleaner
-    TextureAttribute *ta = new TextureAttribute;
-    ta->set_on(tex);
-    state.set_attribute(TextureTransition::get_class_type(), ta);
+    TextureTransition *ta = new TextureTransition(tex);
+    state.set_transition(ta);
 
-    TextureApplyAttribute *taa = new TextureApplyAttribute;
-    taa->set_mode(TextureApplyProperty::M_modulate);
-    state.set_attribute(TextureApplyTransition::get_class_type(), taa);
+    TextureApplyTransition *taa = new TextureApplyTransition(TextureApplyProperty::M_modulate);
+    state.set_transition(taa);
 
     set_state(state, false);
 
@@ -1853,8 +1829,8 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
 
     if (!geom->get_alpha_disable()) {
         // figure out if alpha's enabled (if not, no reason to sort)
-        const TransparencyAttribute *ctratt;
-        if (get_attribute_into(ctratt, _state, TransparencyTransition::get_class_type()))
+        const TransparencyTransition *ctratt;
+        if (get_transition_into(ctratt, _state, TransparencyTransition::get_class_type()))
             alpha = true;
     }
 
@@ -2304,11 +2280,11 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
             }
         }
 
-        ColorAttribute *catt=NULL;
+        ColorTransition *catt=NULL;
         bool bDoGlobalSceneGraphColor=FALSE,bDoColor=(ColorBinding != G_OFF);
 
         // We should issue geometry colors only if the scene graph color is off.
-        if (get_attribute_into(catt, _state, ColorTransition::get_class_type()) && !catt->is_off()) {
+        if (get_transition_into(catt, _state, ColorTransition::get_class_type()) && !catt->is_off()) {
             if (!catt->is_real())
                 bDoColor=FALSE;  // this turns off any Geom colors
             else {
@@ -2705,11 +2681,11 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
             }
         }
 
-        ColorAttribute *catt=NULL;
+        ColorTransition *catt=NULL;
         bool bDoGlobalSceneGraphColor=FALSE,bDoColor=(ColorBinding != G_OFF);
 
         // We should issue geometry colors only if the scene graph color is off.
-        if (get_attribute_into(catt, _state, ColorTransition::get_class_type()) && !catt->is_off()) {
+        if (get_transition_into(catt, _state, ColorTransition::get_class_type()) && !catt->is_off()) {
             if (!catt->is_real())
                 bDoColor=FALSE;  // this turns off any Geom colors
             else {
@@ -3507,35 +3483,24 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr) {
     DisplayRegionStack old_dr = push_display_region(dr);
     prepare_display_region();
 
-    NodeAttributes state;
-    CullFaceAttribute *cfa = new CullFaceAttribute;
-    cfa->set_mode(CullFaceProperty::M_cull_none);
-    DepthTestAttribute *dta = new DepthTestAttribute;
-    dta->set_mode(DepthTestProperty::M_none);
-    DepthWriteAttribute *dwa = new DepthWriteAttribute;
-    dwa->set_off();
-    TextureAttribute *ta = new TextureAttribute;
-    ta->set_on(tex);
-    TextureApplyAttribute *taa = new TextureApplyAttribute;
-    taa->set_mode(TextureApplyProperty::M_decal);
+    NodeTransitions state;
+    CullFaceTransition *cfa = new CullFaceTransition(CullFaceProperty::M_cull_none);
+    DepthTestTransition *dta = new DepthTestTransition(DepthTestProperty::M_none);
+    DepthWriteTransition *dwa = new DepthWriteTransition(DepthWriteTransition::off());
+    TextureTransition *ta = new TextureTransition(tex);
+    TextureApplyTransition *taa = new TextureApplyTransition(TextureApplyProperty::M_decal);
 
-    state.set_attribute(LightTransition::get_class_type(),
-                        new LightAttribute);
-    state.set_attribute(ColorMaskTransition::get_class_type(),
-                        new ColorMaskAttribute);
-    state.set_attribute(RenderModeTransition::get_class_type(),
-                        new RenderModeAttribute);
-    state.set_attribute(TexMatrixTransition::get_class_type(),
-                        new TexMatrixAttribute);
-    state.set_attribute(TransformTransition::get_class_type(),
-                        new TransformAttribute);
-    state.set_attribute(ColorBlendTransition::get_class_type(),
-                        new ColorBlendAttribute);
-    state.set_attribute(CullFaceTransition::get_class_type(), cfa);
-    state.set_attribute(DepthTestTransition::get_class_type(), dta);
-    state.set_attribute(DepthWriteTransition::get_class_type(), dwa);
-    state.set_attribute(TextureTransition::get_class_type(), ta);
-    state.set_attribute(TextureApplyTransition::get_class_type(), taa);
+    state.set_transition(new LightTransition);
+    state.set_transition(new ColorMaskTransition);
+    state.set_transition(new RenderModeTransition);
+    state.set_transition(new TexMatrixTransition);
+    state.set_transition(new TransformTransition);
+    state.set_transition(new ColorBlendTransition);
+    state.set_transition(cfa);
+    state.set_transition(dta);
+    state.set_transition(dwa);
+    state.set_transition(ta);
+    state.set_transition(taa);
     set_state(state, false);
 
     // We set up an orthographic projection that defines our entire
@@ -3693,7 +3658,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-                  const NodeAttributes& na) {
+                  const NodeTransitions& na) {
 
     dxgsg_cat.fatal() << "DXGSG draw_pixel_buffer unimplemented!!!";
     return;
@@ -3705,31 +3670,23 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
     DisplayRegionStack old_dr = push_display_region(dr);
     prepare_display_region();
 
-    NodeAttributes state(na);
-    state.set_attribute(LightTransition::get_class_type(),
-                        new LightAttribute);
-    state.set_attribute(TextureTransition::get_class_type(),
-                        new TextureAttribute);
-    state.set_attribute(TransformTransition::get_class_type(),
-                        new TransformAttribute);
-    state.set_attribute(ColorBlendTransition::get_class_type(),
-                        new ColorBlendAttribute);
-    state.set_attribute(StencilTransition::get_class_type(),
-                        new StencilAttribute);
+    NodeTransitions state(na);
+    state.set_transition(new LightTransition);
+    state.set_transition(new TextureTransition);
+    state.set_transition(new TransformTransition);
+    state.set_transition(new ColorBlendTransition);
+    state.set_transition(new StencilTransition);
 
 
     switch (pb->get_format()) {
         case PixelBuffer::F_depth_component:
             {
-                ColorMaskAttribute *cma = new ColorMaskAttribute;
-                cma->set_mask(0);
-                DepthTestAttribute *dta = new DepthTestAttribute;
-                dta->set_mode(DepthTestProperty::M_always);
-                DepthWriteAttribute *dwa = new DepthWriteAttribute;
-                dwa->set_off();
-                state.set_attribute(ColorMaskTransition::get_class_type(), cma);
-                state.set_attribute(DepthTestTransition::get_class_type(), dta);
-                state.set_attribute(DepthWriteTransition::get_class_type(), dwa);
+                ColorMaskTransition *cma = new ColorMaskTransition(0);
+                DepthTestTransition *dta = new DepthTestTransition(DepthTestProperty::M_always);
+                DepthWriteTransition *dwa = new DepthWriteTransition(DepthWriteTransition::off());
+                state.set_transition(cma);
+                state.set_transition(dta);
+                state.set_transition(dwa);
             }
             break;
 
@@ -3742,14 +3699,12 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
         case PixelBuffer::F_rgba8:
         case PixelBuffer::F_rgba12:
             {
-                ColorMaskAttribute *cma = new ColorMaskAttribute;
-                DepthTestAttribute *dta = new DepthTestAttribute;
-                dta->set_mode(DepthTestProperty::M_none);
-                DepthWriteAttribute *dwa = new DepthWriteAttribute;
-                dwa->set_off();
-                state.set_attribute(ColorMaskTransition::get_class_type(), cma);
-                state.set_attribute(DepthTestTransition::get_class_type(), dta);
-                state.set_attribute(DepthWriteTransition::get_class_type(), dwa);
+                ColorMaskTransition *cma = new ColorMaskTransition;
+                DepthTestTransition *dta = new DepthTestTransition(DepthTestProperty::M_none);
+                DepthWriteTransition *dwa = new DepthWriteTransition(DepthWriteTransition::off());
+                state.set_transition(cma);
+                state.set_transition(dta);
+                state.set_transition(dwa);
             }
             break;
         default:
@@ -3822,7 +3777,7 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-                  const RenderBuffer &rb, const NodeAttributes& na) {
+                  const RenderBuffer &rb, const NodeTransitions& na) {
     set_read_buffer(rb);
     draw_pixel_buffer(pb, dr, na);
 }
@@ -4161,7 +4116,7 @@ void DXGraphicsStateGuardian::apply_light( AmbientLight* light ) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-issue_transform(const TransformAttribute *attrib) {
+issue_transform(const TransformTransition *attrib) {
 #ifndef NDEBUG
     if (dx_show_transforms) {
 
@@ -4205,7 +4160,7 @@ issue_transform(const TransformAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-issue_tex_matrix(const TexMatrixAttribute *attrib) {
+issue_tex_matrix(const TexMatrixTransition *attrib) {
     dxgsg_cat.fatal() << "DXGSG issue_tex_matrix unimplemented!!!";
     return;
 
@@ -4228,7 +4183,7 @@ issue_tex_matrix(const TexMatrixAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-issue_color(const ColorAttribute *attrib) {
+issue_color(const ColorTransition *attrib) {
     
     bool bAttribOn=attrib->is_on();
     bool bIsReal = (bAttribOn ? attrib->is_real() : false);
@@ -4254,11 +4209,11 @@ issue_color(const ColorAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-issue_color_transform(const ColorMatrixAttribute *attrib) {
+issue_color_transform(const ColorMatrixTransition *attrib) {
     _current_color_mat = attrib->get_matrix();
 
     // couldnt we compare a single ptr instead of doing full comparison?
-    // bugbug: the ColorMatrixAttribute needs to be an On/Off attribute 
+    // bugbug: the ColorMatrixTransition needs to be an On/Off transition 
     // so we dont have to do this comparison
     if (_current_color_mat == LMatrix4f::ident_mat()) { 
         _color_transform_enabled = false;
@@ -4279,7 +4234,7 @@ issue_color_transform(const ColorMatrixAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-issue_alpha_transform(const AlphaTransformAttribute *attrib) {
+issue_alpha_transform(const AlphaTransformTransition *attrib) {
     _current_alpha_offset = attrib->get_offset();
     _current_alpha_scale = attrib->get_scale();
 
@@ -4302,7 +4257,7 @@ issue_alpha_transform(const AlphaTransformAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-issue_texture(const TextureAttribute *attrib) {
+issue_texture(const TextureTransition *attrib) {
     if (attrib->is_on()) {
         enable_texturing(true);
         Texture *tex = attrib->get_texture();
@@ -4319,7 +4274,7 @@ issue_texture(const TextureAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-issue_tex_gen(const TexGenAttribute *attrib) {
+issue_tex_gen(const TexGenTransition *attrib) {
     dxgsg_cat.fatal() << "DXGSG issue_tex_gen unimplemented!!!";
     return;
 #ifdef WBD_GL_MODE
@@ -4374,7 +4329,7 @@ issue_tex_gen(const TexGenAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-issue_material(const MaterialAttribute *attrib) {
+issue_material(const MaterialTransition *attrib) {
     if (attrib->is_on()) {
         const Material *material = attrib->get_material();
         nassertv(material != (const Material *)NULL);
@@ -4388,7 +4343,7 @@ issue_material(const MaterialAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-issue_fog(const FogAttribute *attrib) {
+issue_fog(const FogTransition *attrib) {
 
     if (attrib->is_on()) {
         enable_fog(true);
@@ -4406,7 +4361,7 @@ issue_fog(const FogAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-issue_render_mode(const RenderModeAttribute *attrib) {
+issue_render_mode(const RenderModeTransition *attrib) {
 
     RenderModeProperty::Mode mode = attrib->get_mode();
 
@@ -4431,93 +4386,98 @@ issue_render_mode(const RenderModeAttribute *attrib) {
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::issue_light(const LightAttribute *attrib ) {
-    nassertv(attrib->get_properties_is_on());
+void DXGraphicsStateGuardian::issue_light(const LightTransition *attrib ) {
+  nassertv(attrib->get_default_dir() != TD_on);
 
-    // Initialize the current ambient light total and currently enabled
-    // light list
-    _cur_ambient_light.set(0, 0, 0, 1);
-    int i;
-    for (i = 0; i < _max_lights; i++)
-        _cur_light_enabled[i] = false;
+  // Initialize the current ambient light total and currently enabled
+  // light list
+  _cur_ambient_light.set(0, 0, 0, 1);
+  int i;
+  for (i = 0; i < _max_lights; i++)
+    _cur_light_enabled[i] = false;
 
-    int num_enabled = 0;
-    LightAttribute::const_iterator li;
-    for (li = attrib->begin(); li != attrib->end(); ++li) {
-        _cur_light_id = -1;
-        num_enabled++;
-        enable_lighting(true);
-        Light *light = (*li);
-        nassertv(light != (Light *)NULL);
+  int num_enabled = 0;
+  LightTransition::const_iterator li;
+  for (li = attrib->begin(); li != attrib->end(); ++li) {
+    Light *light = (*li).first;
+    nassertv(light != (Light *)NULL);
+    TransitionDirection dir = (*li).second;
+ 
+    if (dir == TD_on) {
+      num_enabled++;
+      enable_lighting(true);
 
-        // Ambient lights don't require specific light ids
-        // Simply add in the ambient contribution to the current total
-        if (light->get_light_type() == AmbientLight::get_class_type()) {
-            light->apply(this);
-            // We need to indicate that no light id is necessary because
-            // it's an ambient light
-            _cur_light_id = -2;
+      _cur_light_id = -1;
+            
+      // Ambient lights don't require specific light ids
+      // Simply add in the ambient contribution to the current total
+      if (light->get_light_type() == AmbientLight::get_class_type()) {
+        light->apply(this);
+        // We need to indicate that no light id is necessary because
+        // it's an ambient light
+        _cur_light_id = -2;
+      }
+
+      // Check to see if this light has already been bound to an id
+      for (i = 0; i < _max_lights; i++) {
+        if (_available_light_ids[i] == light) {
+          // Light has already been bound to an id, we only need
+          // to enable the light, not apply it
+          _cur_light_id = -2;
+          if (enable_light(i, true))  _cur_light_enabled[i] = true;
+          break;
         }
+      }
 
-        // Check to see if this light has already been bound to an id
+      // See if there are any unbound light ids
+      if (_cur_light_id == -1) {
         for (i = 0; i < _max_lights; i++) {
-            if (_available_light_ids[i] == light) {
-                // Light has already been bound to an id, we only need
-                // to enable the light, not apply it
-                _cur_light_id = -2;
-                if (enable_light(i, true))  _cur_light_enabled[i] = true;
-                break;
-            }
+          if (_available_light_ids[i] == NULL) {
+            _available_light_ids[i] = light;
+            _cur_light_id = i;
+            break;
+          }
         }
+      }
 
-        // See if there are any unbound light ids
-        if (_cur_light_id == -1) {
-            for (i = 0; i < _max_lights; i++) {
-                if (_available_light_ids[i] == NULL) {
-                    _available_light_ids[i] = light;
-                    _cur_light_id = i;
-                    break;
-                }
-            }
+      // If there were no unbound light ids, see if we can replace
+      // a currently unused but previously bound id
+      if (_cur_light_id == -1) {
+        for (i = 0; i < _max_lights; i++) {
+          if (attrib->is_off(_available_light_ids[i])) {
+            _available_light_ids[i] = light;
+            _cur_light_id = i;
+            break;
+          }
         }
+      }
 
-        // If there were no unbound light ids, see if we can replace
-        // a currently unused but previously bound id
-        if (_cur_light_id == -1) {
-            for (i = 0; i < _max_lights; i++) {
-                if (attrib->is_off(_available_light_ids[i])) {
-                    _available_light_ids[i] = light;
-                    _cur_light_id = i;
-                    break;
-                }
-            }
-        }
+      if (_cur_light_id >= 0) {
+        if (enable_light(_cur_light_id, true))  _cur_light_enabled[_cur_light_id] = true;
 
-        if (_cur_light_id >= 0) {
-            if (enable_light(_cur_light_id, true))  _cur_light_enabled[_cur_light_id] = true;
-
-            // We need to do something different for each type of light
-            light->apply(this);
-        } else if (_cur_light_id == -1) {
-            dxgsg_cat.error()
-            << "issue_light() - failed to bind light to id" << endl;
-        }
+        // We need to do something different for each type of light
+        light->apply(this);
+      } else if (_cur_light_id == -1) {
+        dxgsg_cat.error()
+          << "issue_light() - failed to bind light to id" << endl;
+      }
     }
+  }
 
-    // Disable all unused lights
-    for (i = 0; i < _max_lights; i++) {
-        if (!_cur_light_enabled[i])
-            enable_light(i, false);
-    }
-
-    // If no lights were enabled, disable lighting
-    if (num_enabled == 0) {
-        enable_lighting(false);
-        enable_color_material(false);
-    } else {
-        call_dxLightModelAmbient(_cur_ambient_light);
-        enable_color_material(true);
-    }
+  // Disable all unused lights
+  for (i = 0; i < _max_lights; i++) {
+    if (!_cur_light_enabled[i])
+      enable_light(i, false);
+  }
+  
+  // If no lights were enabled, disable lighting
+  if (num_enabled == 0) {
+    enable_lighting(false);
+    enable_color_material(false);
+  } else {
+    call_dxLightModelAmbient(_cur_ambient_light);
+    enable_color_material(true);
+  }
 }
 
 
@@ -4539,7 +4499,7 @@ reset_ambient() {
 //  Description:                                                  //
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-issue_color_blend(const ColorBlendAttribute *attrib) {
+issue_color_blend(const ColorBlendTransition *attrib) {
     
     ColorBlendProperty::Mode mode = attrib->get_mode();
 
@@ -4686,10 +4646,10 @@ enable_texturing(bool val) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::issue_texture_apply
 //       Access: Public, Virtual
-//  Description: handles texture attribute (i.e. filter modes, etc) changes
+//  Description: handles texture transition (i.e. filter modes, etc) changes
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-issue_texture_apply(const TextureApplyAttribute *attrib) {
+issue_texture_apply(const TextureApplyTransition *attrib) {
 
     _CurTexBlendMode = attrib->get_mode();
 
@@ -4706,7 +4666,7 @@ issue_texture_apply(const TextureApplyAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-issue_color_mask(const ColorMaskAttribute *attrib) {
+issue_color_mask(const ColorMaskTransition *attrib) {
     dxgsg_cat.fatal() << "DXGSG issue_color_mask unimplemented (not implementable on DX7)!!!";
     return;
 }
@@ -4717,7 +4677,7 @@ issue_color_mask(const ColorMaskAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-issue_depth_test(const DepthTestAttribute *attrib) {
+issue_depth_test(const DepthTestTransition *attrib) {
     
 
     DepthTestProperty::Mode mode = attrib->get_mode();
@@ -4738,7 +4698,7 @@ issue_depth_test(const DepthTestAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-issue_depth_write(const DepthWriteAttribute *attrib) {
+issue_depth_write(const DepthWriteTransition *attrib) {
     _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, attrib->is_on());
 }
 
@@ -4748,7 +4708,7 @@ issue_depth_write(const DepthWriteAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-issue_stencil(const StencilAttribute *attrib) {
+issue_stencil(const StencilTransition *attrib) {
 
   StencilProperty::Mode mode = attrib->get_mode();
 
@@ -4775,12 +4735,12 @@ issue_stencil(const StencilAttribute *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::issue_cull_attribute
+//     Function: DXGraphicsStateGuardian::issue_cull_transition
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-issue_cull_face(const CullFaceAttribute *attrib) {
+issue_cull_face(const CullFaceTransition *attrib) {
     
 #ifndef NDEBUG
     if(dx_force_backface_culling!=0) {
@@ -4817,82 +4777,85 @@ issue_cull_face(const CullFaceAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-issue_clip_plane(const ClipPlaneAttribute *attrib) {
+issue_clip_plane(const ClipPlaneTransition *attrib) {
+  nassertv(attrib->get_default_dir() != TD_on);
     
+  // Initialize the currently enabled clip plane list
+  int i;
+  for (i = 0; i < _max_clip_planes; i++)
+    _cur_clip_plane_enabled[i] = false;
+  
+  int num_enabled = 0;
+  ClipPlaneTransition::const_iterator pi;
+  for (pi = attrib->begin(); pi != attrib->end(); ++pi) {
+    PlaneNode *plane_node;
+    DCAST_INTO_V(plane_node, (*pi).first);
+    nassertv(plane_node != (PlaneNode *)NULL);
+    TransitionDirection dir = (*pi).second;
 
-    // Initialize the currently enabled clip plane list
-    int i;
-    for (i = 0; i < _max_clip_planes; i++)
-        _cur_clip_plane_enabled[i] = false;
-
-    int num_enabled = 0;
-    ClipPlaneAttribute::const_iterator pi;
-    for (pi = attrib->begin(); pi != attrib->end(); ++pi) {
-        PlaneNode *plane_node;
-        DCAST_INTO_V(plane_node, (*pi));
-        nassertv(plane_node != (PlaneNode *)NULL);
-
-        _cur_clip_plane_id = -1;
-        num_enabled++;
-
-        // Check to see if this clip plane has already been bound to an id
+    if (dir == TD_on) {
+      _cur_clip_plane_id = -1;
+      num_enabled++;
+      
+      // Check to see if this clip plane has already been bound to an id
+      for (i = 0; i < _max_clip_planes; i++) {
+        if (_available_clip_plane_ids[i] == plane_node) {
+          // Clip plane has already been bound to an id, we only need
+          // to enable the clip plane, not apply it
+          _cur_clip_plane_id = -2;
+          enable_clip_plane(i, true);
+          _cur_clip_plane_enabled[i] = true;
+          break;
+        }
+      }
+      
+      // See if there are any unbound clip plane ids
+      if (_cur_clip_plane_id == -1) {
         for (i = 0; i < _max_clip_planes; i++) {
-            if (_available_clip_plane_ids[i] == plane_node) {
-                // Clip plane has already been bound to an id, we only need
-                // to enable the clip plane, not apply it
-                _cur_clip_plane_id = -2;
-                enable_clip_plane(i, true);
-                _cur_clip_plane_enabled[i] = true;
-                break;
-            }
+          if (_available_clip_plane_ids[i] == NULL) {
+            _available_clip_plane_ids[i] = plane_node;
+            _cur_clip_plane_id = i;
+            break;
+          }
         }
-
-        // See if there are any unbound clip plane ids
-        if (_cur_clip_plane_id == -1) {
-            for (i = 0; i < _max_clip_planes; i++) {
-                if (_available_clip_plane_ids[i] == NULL) {
-                    _available_clip_plane_ids[i] = plane_node;
-                    _cur_clip_plane_id = i;
-                    break;
-                }
-            }
+      }
+      
+      // If there were no unbound clip plane ids, see if we can replace
+      // a currently unused but previously bound id
+      if (_cur_clip_plane_id == -1) {
+        for (i = 0; i < _max_clip_planes; i++) {
+          if (attrib->is_off(_available_clip_plane_ids[i])) {
+            _available_clip_plane_ids[i] = plane_node;
+            _cur_clip_plane_id = i;
+            break;
+          }
         }
-
-        // If there were no unbound clip plane ids, see if we can replace
-        // a currently unused but previously bound id
-        if (_cur_clip_plane_id == -1) {
-            for (i = 0; i < _max_clip_planes; i++) {
-                if (attrib->is_off(_available_clip_plane_ids[i])) {
-                    _available_clip_plane_ids[i] = plane_node;
-                    _cur_clip_plane_id = i;
-                    break;
-                }
-            }
-        }
-
-        if (_cur_clip_plane_id >= 0) {
-            enable_clip_plane(_cur_clip_plane_id, true);
-            _cur_clip_plane_enabled[_cur_clip_plane_id] = true;
-            const Planef clip_plane = plane_node->get_plane();
-
-            D3DVALUE equation[4];
-            equation[0] = clip_plane._a;
-            equation[1] = clip_plane._b;
-            equation[2] = clip_plane._c;
-            equation[3] = clip_plane._d;
-            _d3dDevice->SetClipPlane(_cur_clip_plane_id, equation);
-
-        } else if (_cur_clip_plane_id == -1) {
-            dxgsg_cat.error()
-            << "issue_clip_plane() - failed to bind clip plane to id" << endl;
-        }
+      }
+      
+      if (_cur_clip_plane_id >= 0) {
+        enable_clip_plane(_cur_clip_plane_id, true);
+        _cur_clip_plane_enabled[_cur_clip_plane_id] = true;
+        const Planef clip_plane = plane_node->get_plane();
+        
+        D3DVALUE equation[4];
+        equation[0] = clip_plane._a;
+        equation[1] = clip_plane._b;
+        equation[2] = clip_plane._c;
+        equation[3] = clip_plane._d;
+        _d3dDevice->SetClipPlane(_cur_clip_plane_id, equation);
+        
+      } else if (_cur_clip_plane_id == -1) {
+        dxgsg_cat.error()
+          << "issue_clip_plane() - failed to bind clip plane to id" << endl;
+      }
     }
+  }
 
-    // Disable all unused clip planes
-    for (i = 0; i < _max_clip_planes; i++) {
-        if (!_cur_clip_plane_enabled[i])
-            enable_clip_plane(i, false);
-    }
+  // Disable all unused clip planes
+  for (i = 0; i < _max_clip_planes; i++) {
+    if (!_cur_clip_plane_enabled[i])
+      enable_clip_plane(i, false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4901,7 +4864,7 @@ issue_clip_plane(const ClipPlaneAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-issue_transparency(const TransparencyAttribute *attrib ) {
+issue_transparency(const TransparencyTransition *attrib ) {
 
     TransparencyProperty::Mode mode = attrib->get_mode();
 
@@ -4959,7 +4922,7 @@ issue_transparency(const TransparencyAttribute *attrib ) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-issue_linesmooth(const LinesmoothAttribute *attrib) {
+issue_linesmooth(const LinesmoothTransition *attrib) {
     enable_line_smooth(attrib->is_on());
 }
 
@@ -4993,13 +4956,13 @@ wants_texcoords() const {
 //               rendered up until the next call of end_decal() should
 //               be rendered as decals of the base_geom.
 //
-//               The attributes wrapper is the current state as of the
+//               The transitions wrapper is the current state as of the
 //               base geometry node.  It may or may not be modified by
 //               the GSG to reflect whatever rendering state is
 //               necessary to render the decals properly.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-begin_decal(GeomNode *base_geom, AllAttributesWrapper &attrib) {
+begin_decal(GeomNode *base_geom, AllTransitionsWrapper &attrib) {
     nassertv(base_geom != (GeomNode *)NULL);
 
     _decal_level++;

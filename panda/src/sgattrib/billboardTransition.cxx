@@ -48,13 +48,24 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BillboardTransition::make_initial
+//       Access: Public, Virtual
+//  Description: Returns a newly allocated BillboardTransition
+//               corresponding to the default initial state.
+////////////////////////////////////////////////////////////////////
+NodeTransition *BillboardTransition::
+make_initial() const {
+  return new BillboardTransition;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BillboardTransition::sub_render
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool BillboardTransition::
-sub_render(NodeRelation *arc, const AllAttributesWrapper &,
-           AllTransitionsWrapper &trans, RenderTraverser *trav) {
+sub_render(NodeRelation *arc, const AllTransitionsWrapper &, 
+           AllTransitionsWrapper &modify_trans, RenderTraverser *trav) {
   Node *node = arc->get_child();
   GraphicsStateGuardian *gsg = trav->get_gsg();
 
@@ -122,10 +133,7 @@ sub_render(NodeRelation *arc, const AllAttributesWrapper &,
 
   // And finally, apply the rotation transform to the set of
   // transitions we've accumulated for this node.
-  AllTransitionsWrapper new_trans;
-  new_trans.set_transition(new TransformTransition(rotate));
-
-  trans.compose_in_place(new_trans);
+  modify_trans.set_transition(new TransformTransition(rotate));
 
   // Continue the render pass
   return true;

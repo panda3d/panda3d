@@ -34,16 +34,18 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CullFaceTransition : public OnTransition {
 public:
-  INLINE CullFaceTransition(CullFaceProperty::Mode mode);
+  INLINE CullFaceTransition(CullFaceProperty::Mode mode = CullFaceProperty::M_cull_none);
 
   INLINE void set_mode(CullFaceProperty::Mode mode);
   INLINE CullFaceProperty::Mode get_mode() const;
 
   virtual NodeTransition *make_copy() const;
   virtual NodeAttribute *make_attrib() const;
+  virtual NodeTransition *make_initial() const;
+
+  virtual void issue(GraphicsStateGuardianBase *gsgbase);
 
 protected:
-  INLINE CullFaceTransition(void);
   virtual void set_value_from(const OnTransition *other);
   virtual int compare_values(const OnTransition *other) const;
   virtual void output_value(ostream &out) const;

@@ -36,6 +36,9 @@ PUBLISHED:
 public:
   virtual NodeTransition *make_copy() const;
   virtual NodeAttribute *make_attrib() const;
+  virtual NodeTransition *make_initial() const;
+
+  virtual void issue(GraphicsStateGuardianBase *gsgbase);
 
 public:
   static void register_with_read_factory();

@@ -48,6 +48,30 @@ make_attrib() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DepthWriteTransition::make_initial
+//       Access: Public, Virtual
+//  Description: Returns a newly allocated DepthWriteTransition
+//               corresponding to the default initial state.
+////////////////////////////////////////////////////////////////////
+NodeTransition *DepthWriteTransition::
+make_initial() const {
+  return new DepthWriteTransition;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DepthWriteTransition::issue
+//       Access: Public, Virtual
+//  Description: This is called on scene graph rendering attributes
+//               when it is time to issue the particular attribute to
+//               the graphics engine.  It should call the appropriate
+//               method on GraphicsStateGuardianBase.
+////////////////////////////////////////////////////////////////////
+void DepthWriteTransition::
+issue(GraphicsStateGuardianBase *gsgbase) {
+  gsgbase->issue_depth_write(this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DepthWriteTransition::register_with_factory
 //       Access: Public, Static
 //  Description: Factory method to generate a DepthWriteTransition object

@@ -26,7 +26,7 @@ template<class Visitor, class LevelState>
 FrustumCullTraverser<Visitor, LevelState>::
 FrustumCullTraverser(ArcChain &arc_chain, Node *root,
                      const LMatrix4f &rel_from_camera, Visitor &visitor,
-                     const AttributeWrapper &initial_render_state,
+                     const TransitionWrapper &initial_render_state,
                      const LevelState &initial_level_state,
                      GraphicsStateGuardian *gsg,
                      TypeHandle graph_type) :
@@ -101,7 +101,7 @@ FrustumCullTraverser(ArcChain &arc_chain, Node *root,
 ////////////////////////////////////////////////////////////////////
 template<class Visitor, class LevelState>
 void FrustumCullTraverser<Visitor, LevelState>::
-traverse(NodeRelation *arc, AttributeWrapper render_state,
+traverse(NodeRelation *arc, TransitionWrapper render_state,
          LevelState level_state, PT(GeometricBoundingVolume) local_frustum,
          bool all_in) {
   // local_frustum, above, is a PT(GeometricBoundingVolume), instead
@@ -234,8 +234,8 @@ traverse(NodeRelation *arc, AttributeWrapper render_state,
       TransitionWrapper::init_from(_initial_render_state);
     trans.extract_from(arc);
 
-    AttributeWrapper post_state(render_state);
-    post_state.apply_in_place(trans);
+    TransitionWrapper post_state(render_state);
+    post_state.compose_in_place(trans);
     if (_visitor.forward_arc(arc, trans, render_state, post_state,
                              level_state)) {
 
@@ -258,7 +258,7 @@ traverse(NodeRelation *arc, AttributeWrapper render_state,
 ////////////////////////////////////////////////////////////////////
 template<class Visitor, class LevelState>
 void FrustumCullTraverser<Visitor, LevelState>::
-traverse(Node *node, AttributeWrapper &render_state, LevelState &level_state,
+traverse(Node *node, TransitionWrapper &render_state, LevelState &level_state,
          GeometricBoundingVolume *local_frustum, bool all_in) {
   // Tell the visitor we reached the node, and give it a chance to
   // veto our further progress.

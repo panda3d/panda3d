@@ -18,58 +18,57 @@
 
 #include "framework.h"
 
-#include <eventHandler.h>
-#include <chancfg.h>
-#include <string>
-#include <renderModeTransition.h>
-#include <colorTransition.h>
-#include <colorBlendTransition.h>
-#include <cullFaceTransition.h>
-#include <depthTestTransition.h>
-#include <depthWriteTransition.h>
-#include <textureTransition.h>
-#include <textureApplyTransition.h>
-#include <lightTransition.h>
-#include <materialTransition.h>
-#include <transformTransition.h>
-#include <transparencyTransition.h>
-#include <drawBoundsTransition.h>
-#include <pruneTransition.h>
-#include <get_rel_pos.h>
-#include <boundingSphere.h>
-#include <geomSphere.h>
-#include <geomNode.h>
-#include <notify.h>
-#include <directionalLight.h>
-#include <renderRelation.h>
-#include <camera.h>
-#include <frustum.h>
-#include <orthoProjection.h>
-#include <perspectiveProjection.h>
-#include <textNode.h>
-#include <shaderTransition.h>
-#include <colorMatrixTransition.h>
-#include <alphaTransformTransition.h>
-#include <lensFlareNode.h>
-#include <texture.h>
-#include <texturePool.h>
-#include <spotlight.h>
-#include <nodePath.h>
-#include <pta_Colorf.h>
-#include <pta_float.h>
-#include <pt_Node.h>
-#include <panda.h>
+#include "eventHandler.h"
+#include "chancfg.h"
+#include "string"
+#include "renderModeTransition.h"
+#include "colorTransition.h"
+#include "colorBlendTransition.h"
+#include "cullFaceTransition.h"
+#include "depthTestTransition.h"
+#include "depthWriteTransition.h"
+#include "textureTransition.h"
+#include "textureApplyTransition.h"
+#include "lightTransition.h"
+#include "materialTransition.h"
+#include "transformTransition.h"
+#include "transparencyTransition.h"
+#include "drawBoundsTransition.h"
+#include "pruneTransition.h"
+#include "get_rel_pos.h"
+#include "boundingSphere.h"
+#include "geomSphere.h"
+#include "geomNode.h"
+#include "notify.h"
+#include "directionalLight.h"
+#include "renderRelation.h"
+#include "camera.h"
+#include "frustum.h"
+#include "orthoProjection.h"
+#include "perspectiveProjection.h"
+#include "textNode.h"
+#include "colorMatrixTransition.h"
+#include "alphaTransformTransition.h"
+#include "lensFlareNode.h"
+#include "texture.h"
+#include "texturePool.h"
+#include "spotlight.h"
+#include "nodePath.h"
+#include "pta_Colorf.h"
+#include "pta_float.h"
+#include "pt_Node.h"
+#include "panda.h"
 
 // If we're doing a static link, we should explicitly initialize some
 // of our external libraries, or they may not get linked in.
 #ifdef LINK_ALL_STATIC
   #ifdef HAVE_GL
-    #include <pandagl.h>
+    #include "pandagl.h"
   #endif
   #ifdef HAVE_DX
-    #include <pandadx.h>
+    #include "pandadx.h"
   #endif
-  #include <pandaegg.h>
+  #include "pandaegg.h"
 #endif
 
 //From framework

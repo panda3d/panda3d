@@ -32,7 +32,6 @@
 #include <renderModeTransition.h>
 #include <textureTransition.h>
 #include <transformTransition.h>
-#include <allAttributesWrapper.h>
 #include <allTransitionsWrapper.h>
 #include <transformTransition.h>
 #include <nodeTransitionWrapper.h>
@@ -80,13 +79,9 @@ DirectRenderTraverser::
 ////////////////////////////////////////////////////////////////////
 void DirectRenderTraverser::
 traverse(Node *root,
-         const AllAttributesWrapper &initial_state,
-         const AllTransitionsWrapper &net_trans) {
+         const AllTransitionsWrapper &initial_state) {
   // Statistics
   PStatTimer timer(_draw_pcollector);
-
-  AllAttributesWrapper render_state;
-  render_state.apply_from(initial_state, net_trans);
 
   DirectRenderLevelState level_state;
 
@@ -94,10 +89,9 @@ traverse(Node *root,
   if (support_decals != SD_off)
 #endif
     {
-      DecalAttribute *decal_attrib;
-      if (get_attribute_into(decal_attrib, render_state,
-                             DecalTransition::get_class_type())) {
-        level_state._decal_mode = decal_attrib->is_on();
+      DecalTransition *decal_trans;
+      if (get_transition_into(decal_trans, initial_state)) {
+        level_state._decal_mode = decal_trans->is_on();
       }
     }
 
@@ -118,12 +112,12 @@ traverse(Node *root,
       rel_from_camera = LMatrix4f::ident_mat();
     }
     fc_traverse(_arc_chain, root, rel_from_camera, *this,
-                render_state, level_state, _gsg, _graph_type);
+                initial_state, level_state, _gsg, _graph_type);
 
   } else {
     // No view-frustum culling is requested; just do a normal
     // depth-first traversal of the complete tree.
-    df_traverse(root, *this, render_state, level_state, _graph_type);
+    df_traverse(root, *this, initial_state, level_state, _graph_type);
   }
 
   if (level_state._decal_mode &&
@@ -145,7 +139,7 @@ traverse(Node *root,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool DirectRenderTraverser::
-reached_node(Node *node, AllAttributesWrapper &render_state,
+reached_node(Node *node, AllTransitionsWrapper &render_state,
              DirectRenderLevelState &level_state) {
   if (implicit_app_traversal) {
     node->app_traverse(_arc_chain);
@@ -162,15 +156,16 @@ reached_node(Node *node, AllAttributesWrapper &render_state,
   if (support_subrender == SD_on)
 #endif
     {
-      if (!node->sub_render(render_state, new_trans, this)) {
+      AllTransitionsWrapper modify_trans;
+      if (!node->sub_render(render_state, modify_trans, this)) {
         return false;
       }
-      render_state.apply_in_place(new_trans);
+      render_state.compose_in_place(modify_trans);
     }
 
   if (node->is_of_type(GeomNode::get_class_type())) {
     _gsg->_geom_nodes_pcollector.add_level(1);
-    _gsg->set_state(render_state.get_attributes(), true);
+    _gsg->set_state(render_state.get_transitions(), true);
     // Make sure the current display region is still in effect.
     _gsg->prepare_display_region();
 
@@ -181,10 +176,9 @@ reached_node(Node *node, AllAttributesWrapper &render_state,
     if (support_decals != SD_off)
 #endif
       {
-        DecalAttribute *decal_attrib;
-        if (get_attribute_into(decal_attrib, render_state,
-                               DecalTransition::get_class_type())) {
-          level_state._decal_mode = decal_attrib->is_on();
+        DecalTransition *decal_trans;
+        if (get_transition_into(decal_trans, render_state)) {
+          level_state._decal_mode = decal_trans->is_on();
         }
       }
 
@@ -217,7 +211,7 @@ reached_node(Node *node, AllAttributesWrapper &render_state,
 ////////////////////////////////////////////////////////////////////
 bool DirectRenderTraverser::
 forward_arc(NodeRelation *arc, AllTransitionsWrapper &trans,
-            AllAttributesWrapper &, AllAttributesWrapper &post,
+            AllTransitionsWrapper &, AllTransitionsWrapper &post,
             DirectRenderLevelState &) {
   bool carry_on = true;
 
@@ -235,11 +229,11 @@ forward_arc(NodeRelation *arc, AllTransitionsWrapper &trans,
       AllTransitionsWrapper::const_iterator nti;
       for (nti = trans.begin(); nti != trans.end(); ++nti) {
         NodeTransition *t = (*nti).second.get_trans();
-        AllTransitionsWrapper new_trans;
-        if (!t->sub_render(arc, post, new_trans, this)) {
+        AllTransitionsWrapper modify_trans;
+        if (!t->sub_render(arc, post, modify_trans, this)) {
           carry_on = false;
         }
-        post.apply_in_place(new_trans);
+        post.compose_in_place(modify_trans);
       }
     }
 
@@ -258,12 +252,12 @@ forward_arc(NodeRelation *arc, AllTransitionsWrapper &trans,
 ////////////////////////////////////////////////////////////////////
 void DirectRenderTraverser::
 backward_arc(NodeRelation *arc, AllTransitionsWrapper &,
-             AllAttributesWrapper &, AllAttributesWrapper &post,
+             AllTransitionsWrapper &, AllTransitionsWrapper &post,
              const DirectRenderLevelState &level_state) {
   mark_backward_arc(arc);
   if (level_state._decal_mode) {
     // Reset the state to redraw the base geometry.
-    _gsg->set_state(post.get_attributes(), true);
+    _gsg->set_state(post.get_transitions(), true);
     _gsg->prepare_display_region();
     _gsg->end_decal(DCAST(GeomNode, arc->get_child()));
   }

@@ -23,10 +23,9 @@
 
 #include <traverserVisitor.h>
 #include <nodeTransitionWrapper.h>
-#include <nodeAttributeWrapper.h>
 #include <nullLevelState.h>
 
-class AllAttributesWrapper;
+class AllTransitionsWrapper;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AttribTraverser
@@ -36,9 +35,9 @@ class EXPCL_PANDA AttribTraverser :
   public TraverserVisitor<NodeTransitionWrapper, NullLevelState> {
 public:
   AttribTraverser();
-  bool reached_node(Node *node, NodeAttributeWrapper &state, NullLevelState &);
+  bool reached_node(Node *node, NodeTransitionWrapper &state, NullLevelState &);
   bool forward_arc(NodeRelation *arc, TransitionWrapper &trans,
-                   NodeAttributeWrapper &, NodeAttributeWrapper &,
+                   NodeTransitionWrapper &, NodeTransitionWrapper &,
                    NullLevelState &);
 
 
@@ -52,10 +51,10 @@ private:
   TypeHandle _transition_type;
 };
 
-bool EXPCL_PANDA is_textured(Node* root);
-bool EXPCL_PANDA is_textured(Node* root, const AllAttributesWrapper &init_state);
+EXPCL_PANDA bool is_textured(Node* root);
+EXPCL_PANDA bool is_textured(Node* root, const AllTransitionsWrapper &init_state);
 
-bool EXPCL_PANDA is_shaded(Node* root);
+EXPCL_PANDA bool is_shaded(Node* root);
 
 #endif
 

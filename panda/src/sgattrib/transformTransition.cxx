@@ -49,6 +49,30 @@ make_attrib() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformTransition::make_initial
+//       Access: Public, Virtual
+//  Description: Returns a newly allocated TransformTransition
+//               corresponding to the default initial state.
+////////////////////////////////////////////////////////////////////
+NodeTransition *TransformTransition::
+make_initial() const {
+  return new TransformTransition;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformTransition::issue
+//       Access: Public, Virtual
+//  Description: This is called on scene graph rendering attributes
+//               when it is time to issue the particular attribute to
+//               the graphics engine.  It should call the appropriate
+//               method on GraphicsStateGuardianBase.
+////////////////////////////////////////////////////////////////////
+void TransformTransition::
+issue(GraphicsStateGuardianBase *gsgbase) {
+  gsgbase->issue_transform(this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformTransition::make_with_matrix
 //       Access: Protected, Virtual
 //  Description: Returns a new transition with the indicated matrix.

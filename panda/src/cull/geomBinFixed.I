@@ -79,9 +79,9 @@ INLINE void GeomBinFixed::NodeEntry::
 draw(CullTraverser *trav) const {
   nassertv(!_arc_chain.empty());
   if (_is_direct) {
-    trav->draw_direct(_arc_chain, AllAttributesWrapper(_state->get_attributes()));
+    trav->draw_direct(_arc_chain, _state->get_attributes());
   } else {
-    trav->draw_geom(_arc_chain, AllAttributesWrapper(_state->get_attributes()));
+    trav->draw_geom(_arc_chain, _state->get_attributes());
   }
 }
 

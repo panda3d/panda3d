@@ -37,6 +37,7 @@ class BamWriter;
 class BamReader;
 class Datagram;
 class DatagramIterator;
+class GraphicsStateGuardianBase;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : NodeTransition
@@ -75,6 +76,7 @@ PUBLISHED:
 public:
   virtual NodeTransition *make_copy() const=0;
   virtual NodeAttribute *make_attrib() const=0;
+  virtual NodeTransition *make_initial() const;
 
   virtual TypeHandle get_handle() const;
 
@@ -83,13 +85,17 @@ public:
   virtual NodeAttribute *apply(const NodeAttribute *attrib) const=0;
 
   virtual bool sub_render(NodeRelation *arc,
-                          const AllAttributesWrapper &attrib,
-                          AllTransitionsWrapper &trans,
+                          const AllTransitionsWrapper &input_trans,
+                          AllTransitionsWrapper &modify_trans,
                           RenderTraverser *trav);
   virtual bool has_sub_render() const;
 
+PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
+
+public:
+  virtual void issue(GraphicsStateGuardianBase *gsgbase);
 
 protected:
   virtual int internal_compare_to(const NodeTransition *other) const=0;

@@ -20,10 +20,9 @@
 #include "geomBinBackToFront.h"
 #include "cullTraverser.h"
 
-#include <nodeAttributes.h>
+#include <nodeTransitions.h>
 #include <graphicsStateGuardian.h>
 #include <transformTransition.h>
-#include <transformAttribute.h>
 #include <geometricBoundingVolume.h>
 #include <pStatTimer.h>
 
@@ -55,9 +54,8 @@ record_current_state(GraphicsStateGuardian *gsg, CullState *cs, int,
   PStatTimer timer(CullTraverser::_cull_bins_btf_pcollector);
 
   // Get the transform matrix from the state.
-  TransformAttribute *trans_attrib = NULL;
-  get_attribute_into(trans_attrib, cs->get_attributes(),
-                     TransformTransition::get_class_type());
+  TransformTransition *trans_attrib = NULL;
+  get_transition_into(trans_attrib, cs->get_attributes());
 
   CullState::geom_const_iterator gi;
   for (gi = cs->geom_begin(); gi != cs->geom_end(); ++gi) {
@@ -74,11 +72,12 @@ record_current_state(GraphicsStateGuardian *gsg, CullState *cs, int,
       DCAST_INTO_V(gbv, &volume);
 
       LPoint3f center = gbv->get_approx_center();
-      if (trans_attrib != (TransformAttribute *)NULL) {
+      if (trans_attrib != (TransformTransition *)NULL) {
         center = center * trans_attrib->get_matrix();
       }
 
       float distance = gsg->compute_distance_to(center);
+
       _node_entries.insert(NodeEntry(distance, cs, arc_chain, false));
     }
   }
@@ -100,7 +99,7 @@ record_current_state(GraphicsStateGuardian *gsg, CullState *cs, int,
       DCAST_INTO_V(gbv, &volume);
 
       LPoint3f center = gbv->get_approx_center();
-      if (trans_attrib != (TransformAttribute *)NULL) {
+      if (trans_attrib != (TransformTransition *)NULL) {
         center = center * trans_attrib->get_matrix();
       }
 
@@ -132,7 +131,7 @@ record_current_state(GraphicsStateGuardian *gsg, CullState *cs, int,
 
       if (num_points > 0) {
         avg /= (float)num_points;
-        if (trans_attrib != (TransformAttribute *)NULL) {
+        if (trans_attrib != (TransformTransition *)NULL) {
           avg = avg * trans_attrib->get_matrix();
         }
         distance = gsg->compute_distance_to(avg);

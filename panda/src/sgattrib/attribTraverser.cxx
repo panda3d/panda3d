@@ -18,16 +18,16 @@
 
 #include "attribTraverser.h"
 #include "renderRelation.h"
-#include <onOffAttribute.h>
+#include <onOffTransition.h>
 #include <onOffTransition.h>
 #include <immediateTransition.h>
 
 #include "textureTransition.h"
-#include "textureAttribute.h"
+#include "textureTransition.h"
 
 #include <geomNode.h>
 #include <dftraverser.h>
-#include <allAttributesWrapper.h>
+#include <allTransitionsWrapper.h>
 #include <typedObject.h>
 
 ////////////////////////////////////////////////////////////////////
@@ -49,7 +49,7 @@ AttribTraverser()
 //  Description: Called for each node of the scene graph
 ////////////////////////////////////////////////////////////////////
 bool AttribTraverser::
-reached_node(Node *node, NodeAttributeWrapper &state, NullLevelState &) {
+reached_node(Node *node, NodeTransitionWrapper &state, NullLevelState &) {
 
   //Short circuit if we aren't looking for an attribute
   if (_attrib_type == TypeHandle::none())
@@ -59,14 +59,14 @@ reached_node(Node *node, NodeAttributeWrapper &state, NullLevelState &) {
 
   if (node->is_of_type(GeomNode::get_class_type()))
   {
-    NodeAttribute *attrib = state.get_attrib();
-    if (attrib != (NodeAttribute *)NULL)
+    NodeTransition *attrib = state.get_trans();
+    if (attrib != (NodeTransition *)NULL)
     {
       nassertr(attrib->is_of_type(_attrib_type), false);
 
-      if (attrib->is_of_type(OnOffAttribute::get_class_type()))
+      if (attrib->is_of_type(OnOffTransition::get_class_type()))
       {
-        if(DCAST(OnOffAttribute, attrib)->is_on())
+        if(DCAST(OnOffTransition, attrib)->is_on())
         {
           _has_attrib = true;
         }
@@ -91,7 +91,7 @@ reached_node(Node *node, NodeAttributeWrapper &state, NullLevelState &) {
 ////////////////////////////////////////////////////////////////////
 bool AttribTraverser::
 forward_arc(NodeRelation *, TransitionWrapper &trans,
-            NodeAttributeWrapper &, NodeAttributeWrapper &,
+            NodeTransitionWrapper &, NodeTransitionWrapper &,
             NullLevelState &)
 {
   //Short circuit if we aren't looking for a transition
@@ -143,10 +143,10 @@ bool
 is_textured(Node* root) {
   AttribTraverser trav;
 
-  trav.set_attrib_type(TextureAttribute::get_class_type());
+  trav.set_attrib_type(TextureTransition::get_class_type());
 
   df_traverse(root, trav,
-              NodeAttributeWrapper(TextureTransition::get_class_type()),
+              NodeTransitionWrapper(TextureTransition::get_class_type()),
               NullLevelState(), RenderRelation::get_class_type());
 
   return trav._has_attrib;
@@ -158,14 +158,14 @@ is_textured(Node* root) {
 //               see if any geometry is textured
 ////////////////////////////////////////////////////////////////////
 bool
-is_textured(Node* root, const AllAttributesWrapper &init_state)
+is_textured(Node* root, const AllTransitionsWrapper &init_state)
 {
   AttribTraverser trav;
 
-  trav.set_attrib_type(TextureAttribute::get_class_type());
+  trav.set_attrib_type(TextureTransition::get_class_type());
 
-  NodeAttributeWrapper state(TextureTransition::get_class_type());
-  state.set_attrib(init_state.get_attribute(TextureTransition::get_class_type()));
+  NodeTransitionWrapper state(TextureTransition::get_class_type());
+  state.set_trans(init_state.get_transition(TextureTransition::get_class_type()));
 
   df_traverse(root, trav, state, NullLevelState(), RenderRelation::get_class_type());
 
@@ -189,7 +189,7 @@ is_shaded(Node* root) {
   trav.set_transition_type(TypeRegistry::ptr()->find_type("ShaderTransition"));
 
   df_traverse(root, trav,
-              NodeAttributeWrapper(TypeRegistry::ptr()->find_type("ShaderTransition")),
+              NodeTransitionWrapper(TypeRegistry::ptr()->find_type("ShaderTransition")),
               NullLevelState(), RenderRelation::get_class_type());
 
   return trav._has_attrib;

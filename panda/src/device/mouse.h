@@ -21,15 +21,16 @@
 ////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <dataNode.h>
-#include <vec3DataTransition.h>
-#include <vec3DataAttribute.h>
-#include <buttonEventDataTransition.h>
-#include <buttonEventDataAttribute.h>
-#include <graphicsWindow.h>
-#include <pointerTo.h>
+#include "dataNode.h"
+#include "vec3DataTransition.h"
+#include "vec3DataAttribute.h"
+#include "buttonEventDataTransition.h"
+#include "buttonEventDataAttribute.h"
+#include "graphicsWindow.h"
+#include "pointerTo.h"
+#include "nodeAttributes.h"
 
 ////////////////////////////////////////////////////////////////////
 // Defines

@@ -50,8 +50,7 @@
      renderModeAttribute.h renderModeProperty.I \
      renderModeProperty.h renderModeTransition.I \
      renderModeTransition.h renderRelation.I renderRelation.N \
-     renderRelation.h showHideAttribute.I showHideAttribute.h \
-     showHideTransition.I showHideTransition.h stencilAttribute.I \
+     renderRelation.h stencilAttribute.I \
      stencilAttribute.h stencilProperty.I stencilProperty.h \
      stencilTransition.I stencilTransition.h texGenAttribute.I \
      texGenAttribute.h texGenProperty.I texGenProperty.h \
@@ -85,7 +84,7 @@
         pointShapeTransition.cxx polygonOffsetAttribute.cxx \
         polygonOffsetProperty.cxx polygonOffsetTransition.cxx pruneTransition.cxx \
         renderModeAttribute.cxx renderModeProperty.cxx renderModeTransition.cxx \
-        renderRelation.cxx showHideAttribute.cxx showHideTransition.cxx \
+        renderRelation.cxx \
         stencilAttribute.cxx stencilProperty.cxx stencilTransition.cxx \
         texGenAttribute.cxx texGenProperty.cxx texGenTransition.cxx \
         texMatrixAttribute.cxx texMatrixTransition.cxx textureApplyAttribute.cxx \
@@ -128,8 +127,7 @@
     pruneTransition.I pruneTransition.h renderModeAttribute.I \
     renderModeAttribute.h renderModeProperty.I renderModeProperty.h \
     renderModeTransition.I renderModeTransition.h renderRelation.I \
-    renderRelation.h showHideAttribute.I showHideAttribute.h \
-    showHideNameClass.h showHideTransition.I showHideTransition.h \
+    renderRelation.h \
     stencilAttribute.I stencilAttribute.h stencilProperty.I \
     stencilProperty.h stencilTransition.I stencilTransition.h \
     texGenAttribute.I texGenAttribute.h texGenProperty.I \
@@ -146,16 +144,6 @@
     transparencyTransition.I transparencyTransition.h
 
   #define IGATESCAN all
-  
-
-//  #define IGATESCAN \
-//    renderRelation.cxx textureTransition.cxx materialTransition.cxx \
-//    clipPlaneTransition.cxx linesmoothTransition.cxx transformTransition.cxx \
-//    texMatrixTransition.cxx colorTransition.cxx billboardTransition.cxx \
-//    depthWriteTransition.cxx decalTransition.cxx \
-//    showHideTransition.cxx showHideAttribute.cxx pruneTransition.cxx \
-//    fogTransition.cxx transparencyTransition.cxx polygonOffsetTransition.cxx \
-//    colorMatrixTransition.cxx alphaTransformTransition.cxx 
 
 #end lib_target
 

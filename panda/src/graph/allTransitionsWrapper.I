@@ -301,6 +301,18 @@ compose_in_place(const AllTransitionsWrapper &other) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AllTransitionsWrapper::compose_from
+//       Access: Public
+//  Description: Sets this transition to the composition of the two
+//               transitions.
+////////////////////////////////////////////////////////////////////
+INLINE_GRAPH void AllTransitionsWrapper::
+compose_from(const AllTransitionsWrapper &a, const AllTransitionsWrapper &b) {
+  _cache = NodeTransitionCache::compose(a._cache, b._cache);
+  _all_verified.clear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AllTransitionsWrapper::invert_in_place
 //       Access: Public
 //  Description:

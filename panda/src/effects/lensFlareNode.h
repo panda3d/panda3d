@@ -51,8 +51,7 @@ PUBLISHED:
   INLINE void set_light_source(PT_Node source);
 
 public:
-  virtual bool sub_render(const AllAttributesWrapper &attrib,
-                          AllTransitionsWrapper &trans,
+  virtual bool sub_render(AllTransitionsWrapper &trans,
                           RenderTraverser *trav);
   virtual bool has_sub_render() const;
 
@@ -97,9 +96,9 @@ private:
                     const LPoint3f &light, const float &angle);
 
 
-  void render_child(RenderRelation *arc, const AllAttributesWrapper &attrib,
+  void render_child(RenderRelation *arc,
                     AllTransitionsWrapper &trans, GraphicsStateGuardian *gsg);
-  void render_children(const vector_relation &arcs, const AllAttributesWrapper &attrib,
+  void render_children(const vector_relation &arcs,
                        AllTransitionsWrapper &trans, GraphicsStateGuardian *gsg);
 
 public:

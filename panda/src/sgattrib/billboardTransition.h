@@ -57,10 +57,11 @@ public:
   INLINE float get_offset() const;
 
   virtual NodeTransition *make_copy() const;
+  virtual NodeTransition *make_initial() const;
 
   virtual bool sub_render(NodeRelation *arc,
-                          const AllAttributesWrapper &attrib,
-                          AllTransitionsWrapper &trans,
+                          const AllTransitionsWrapper &input_trans,
+                          AllTransitionsWrapper &modify_trans,
                           RenderTraverser *trav);
   virtual bool has_sub_render() const;
 

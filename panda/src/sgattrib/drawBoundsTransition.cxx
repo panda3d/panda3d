@@ -18,20 +18,15 @@
 
 #include "config_sgattrib.h"
 #include "drawBoundsTransition.h"
-#include "renderModeAttribute.h"
 #include "renderModeTransition.h"
-#include "cullFaceAttribute.h"
 #include "cullFaceTransition.h"
-#include "colorAttribute.h"
 #include "colorTransition.h"
 #include "transformTransition.h"
-#include "transformAttribute.h"
 
 #include <boundingSphere.h>
-#include <nodeAttributes.h>
+#include <nodeTransitions.h>
 #include <nodeTransitionWrapper.h>
 #include <allTransitionsWrapper.h>
-#include <allAttributesWrapper.h>
 #include <graphicsStateGuardian.h>
 #include <renderTraverser.h>
 #include <geomSphere.h>
@@ -45,24 +40,19 @@ TypeHandle DrawBoundsTransition::_type_handle;
 ////////////////////////////////////////////////////////////////////
 DrawBoundsTransition::
 DrawBoundsTransition() {
-  RenderModeAttribute *rma = new RenderModeAttribute;
-  rma->set_mode(RenderModeProperty::M_wireframe);
-  CullFaceAttribute *cfao = new CullFaceAttribute;
-  cfao->set_mode(CullFaceProperty::M_cull_clockwise);
-  ColorAttribute *cao = new ColorAttribute;
-  cao->set_on(0.3, 1.0, 0.5, 1.0);
+  RenderModeTransition *rma = new RenderModeTransition(RenderModeProperty::M_wireframe);
+  CullFaceTransition *cfao = new CullFaceTransition(CullFaceProperty::M_cull_clockwise);
+  ColorTransition *cao = new ColorTransition(0.3, 1.0, 0.5, 1.0);
 
-  CullFaceAttribute *cfai = new CullFaceAttribute;
-  cfai->set_mode(CullFaceProperty::M_cull_counter_clockwise);
-  ColorAttribute *cai = new ColorAttribute;
-  cai->set_on(0.15, 0.5, 0.25, 1.0);
+  CullFaceTransition *cfai = new CullFaceTransition(CullFaceProperty::M_cull_counter_clockwise);
+  ColorTransition *cai = new ColorTransition(0.15, 0.5, 0.25, 1.0);
 
-  _outside_attrib.set_attribute(RenderModeTransition::get_class_type(), rma);
-  _outside_attrib.set_attribute(CullFaceTransition::get_class_type(), cfao);
-  _outside_attrib.set_attribute(ColorTransition::get_class_type(), cao);
+  _outside_attrib.set_transition(rma);
+  _outside_attrib.set_transition(cfao);
+  _outside_attrib.set_transition(cao);
 
-  _inside_attrib.set_attribute(CullFaceTransition::get_class_type(), cfai);
-  _inside_attrib.set_attribute(ColorTransition::get_class_type(), cai);
+  _inside_attrib.set_transition(cfai);
+  _inside_attrib.set_transition(cai);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -77,13 +67,24 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DrawBoundsTransition::make_initial
+//       Access: Public, Virtual
+//  Description: Returns a newly allocated DrawBoundsTransition
+//               corresponding to the default initial state.
+////////////////////////////////////////////////////////////////////
+NodeTransition *DrawBoundsTransition::
+make_initial() const {
+  return new DrawBoundsTransition;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DrawBoundsTransition::sub_render
 //       Access: Public, Virtual
 //  Description: This is called by the RenderTraverser to tell the
 //               drawBounds to do its thing.
 ////////////////////////////////////////////////////////////////////
 bool DrawBoundsTransition::
-sub_render(NodeRelation *arc, const AllAttributesWrapper &attrib,
+sub_render(NodeRelation *arc, const AllTransitionsWrapper &input_trans, 
            AllTransitionsWrapper &, RenderTraverser *trav) {
   GraphicsStateGuardian *gsg = trav->get_gsg();
 
@@ -93,8 +94,8 @@ sub_render(NodeRelation *arc, const AllAttributesWrapper &attrib,
     // been transformed by this arc's transform.
 
     LMatrix4f mat;
-    TransformAttribute *ta;
-    if (get_attribute_into(ta, attrib, TransformTransition::get_class_type())) {
+    TransformTransition *ta;
+    if (get_transition_into(ta, input_trans)) {
       mat = ta->get_matrix();
     } else {
       mat = LMatrix4f::ident_mat();
@@ -106,9 +107,9 @@ sub_render(NodeRelation *arc, const AllAttributesWrapper &attrib,
       mat = ::invert(tt->get_matrix()) * mat;
     }
 
-    TransformAttribute *new_ta = new TransformAttribute;
+    TransformTransition *new_ta = new TransformTransition;
     new_ta->set_matrix(mat);
-    _outside_attrib.set_attribute(TransformTransition::get_class_type(), new_ta);
+    _outside_attrib.set_transition(new_ta);
 
     gsg->set_state(_outside_attrib, true);
 

@@ -49,6 +49,30 @@ make_attrib() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureApplyTransition::make_initial
+//       Access: Public, Virtual
+//  Description: Returns a newly allocated TextureApplyTransition
+//               corresponding to the default initial state.
+////////////////////////////////////////////////////////////////////
+NodeTransition *TextureApplyTransition::
+make_initial() const {
+  return new TextureApplyTransition;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureApplyTransition::issue
+//       Access: Public, Virtual
+//  Description: This is called on scene graph rendering attributes
+//               when it is time to issue the particular attribute to
+//               the graphics engine.  It should call the appropriate
+//               method on GraphicsStateGuardianBase.
+////////////////////////////////////////////////////////////////////
+void TextureApplyTransition::
+issue(GraphicsStateGuardianBase *gsgbase) {
+  gsgbase->issue_texture_apply(this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureApplyTransition::set_value_from
 //       Access: Protected, Virtual
 //  Description: Copies the value from the other transition pointer,

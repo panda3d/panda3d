@@ -62,7 +62,7 @@ is_closed() const {
 //               should be used with caution, as it could grow to be
 //               expensive.
 ////////////////////////////////////////////////////////////////////
-INLINE const NodeAttributes &GraphicsStateGuardian::
+INLINE const NodeTransitions &GraphicsStateGuardian::
 get_state() const {
   return _state;
 }

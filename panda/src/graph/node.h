@@ -90,8 +90,8 @@ public:
 
   // This function is similar to another function in NodeTransition.
   // It may or may not intercept the render traversal.
-  virtual bool sub_render(const AllAttributesWrapper &attrib,
-                          AllTransitionsWrapper &trans,
+  virtual bool sub_render(const AllTransitionsWrapper &input_trans,
+                          AllTransitionsWrapper &modify_trans,
                           RenderTraverser *trav);
   virtual bool has_sub_render() const;
 

@@ -32,13 +32,16 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PointShapeTransition : public OnTransition {
 public:
-  INLINE PointShapeTransition(PointShapeProperty::Mode mode);
+  INLINE PointShapeTransition(PointShapeProperty::Mode mode = PointShapeProperty::M_square);
 
   INLINE void set_mode(PointShapeProperty::Mode mode);
   INLINE PointShapeProperty::Mode get_mode() const;
 
   virtual NodeTransition *make_copy() const;
   virtual NodeAttribute *make_attrib() const;
+  virtual NodeTransition *make_initial() const;
+
+  virtual void issue(GraphicsStateGuardianBase *gsgbase);
 
 protected:
   virtual void set_value_from(const OnTransition *other);

@@ -32,16 +32,18 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TextureApplyTransition : public OnTransition {
 public:
-  INLINE TextureApplyTransition(TextureApplyProperty::Mode mode);
+  INLINE TextureApplyTransition(TextureApplyProperty::Mode mode = TextureApplyProperty::M_modulate);
 
   INLINE void set_mode(TextureApplyProperty::Mode mode);
   INLINE TextureApplyProperty::Mode get_mode() const;
 
   virtual NodeTransition *make_copy() const;
   virtual NodeAttribute *make_attrib() const;
+  virtual NodeTransition *make_initial() const;
+
+  virtual void issue(GraphicsStateGuardianBase *gsgbase);
 
 protected:
-  INLINE TextureApplyTransition(void);
   virtual void set_value_from(const OnTransition *other);
   virtual int compare_values(const OnTransition *other) const;
   virtual void output_value(ostream &out) const;

@@ -22,23 +22,20 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ColorMaskTransition::
-ColorMaskTransition(int mask) :
-  _value(mask)
+ColorMaskTransition() :
+  _value(ColorMaskProperty::all_on())
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ColorMaskTransition::all_on
-//       Access: Public, Static
-//  Description: This named constructor returns a ColorMaskTransition
-//               whose bits are all on: that transition that writes to
-//               all the color planes at once (the normal case).
+//     Function: ColorMaskTransition::Constructor
+//       Access: Public
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE ColorMaskTransition ColorMaskTransition::
-all_on() {
-  ColorMaskTransition t(0);
-  t._value = ColorMaskProperty::all_on();
-  return t;
+INLINE ColorMaskTransition::
+ColorMaskTransition(int mask) :
+  _value(mask)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -60,4 +57,48 @@ set_mask(int mask) {
 INLINE int ColorMaskTransition::
 get_mask() const {
   return _value.get_mask();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorMaskTransition::is_write_r
+//       Access: Public
+//  Description: Returns true if the red component is enabled for
+//               writing.
+////////////////////////////////////////////////////////////////////
+INLINE bool ColorMaskTransition::
+is_write_r() const {
+  return (_value.get_mask() & ColorMaskProperty::M_r) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorMaskTransition::is_write_g
+//       Access: Public
+//  Description: Returns true if the green component is enabled for
+//               writing.
+////////////////////////////////////////////////////////////////////
+INLINE bool ColorMaskTransition::
+is_write_g() const {
+  return (_value.get_mask() & ColorMaskProperty::M_g) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorMaskTransition::is_write_b
+//       Access: Public
+//  Description: Returns true if the blue component is enabled for
+//               writing.
+////////////////////////////////////////////////////////////////////
+INLINE bool ColorMaskTransition::
+is_write_b() const {
+  return (_value.get_mask() & ColorMaskProperty::M_b) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorMaskTransition::is_write_a
+//       Access: Public
+//  Description: Returns true if the alpha component is enabled for
+//               writing.
+////////////////////////////////////////////////////////////////////
+INLINE bool ColorMaskTransition::
+is_write_a() const {
+  return (_value.get_mask() & ColorMaskProperty::M_a) != 0;
 }

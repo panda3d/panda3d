@@ -25,7 +25,6 @@ INLINE CullState::
 CullState(const AllTransitionsWrapper &trans) :
   _trans(trans)
 {
-  _attrib = (NodeAttributes *)NULL;
   _bin = (GeomBin *)NULL;
   _empty_frames_count = 0;
 }
@@ -41,10 +40,6 @@ INLINE CullState::
   // If it is, something went screwy with the reference counts or with
   // the bin logic somewhere.
   nassertv(_bin == (GeomBin *)NULL);
-
-  if (_attrib != (NodeAttributes *)NULL) {
-    delete _attrib;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -157,12 +152,8 @@ get_empty_frames_count() const {
 //               CullState and stored within the CullState object.
 ////////////////////////////////////////////////////////////////////
 INLINE void CullState::
-apply_to(const AllAttributesWrapper &initial_state) {
-  if (_attrib != (NodeAttributes *)NULL) {
-    delete _attrib;
-  }
-  _attrib = initial_state.apply(_trans);
-  nassertv(_attrib != NULL);
+apply_to(const AllTransitionsWrapper &initial_state) {
+  _attrib.compose_from(initial_state, _trans);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -172,14 +163,9 @@ apply_to(const AllAttributesWrapper &initial_state) {
 //               object, based on the CullState's net transitions set
 //               and the initial state set by apply_to().
 ////////////////////////////////////////////////////////////////////
-INLINE const NodeAttributes &CullState::
+INLINE const AllTransitionsWrapper &CullState::
 get_attributes() const {
-#ifndef NDEBUG
-  static NodeAttributes empty_attributes;
-#endif
-
-  nassertr(_attrib != NULL, empty_attributes);
-  return *_attrib;
+  return _attrib;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -49,6 +49,30 @@ make_attrib() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ColorMatrixTransition::make_initial
+//       Access: Public, Virtual
+//  Description: Returns a newly allocated ColorMatrixTransition
+//               corresponding to the default initial state.
+////////////////////////////////////////////////////////////////////
+NodeTransition *ColorMatrixTransition::
+make_initial() const {
+  return new ColorMatrixTransition;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorMatrixTransition::issue
+//       Access: Public, Virtual
+//  Description: This is called on scene graph rendering attributes
+//               when it is time to issue the particular attribute to
+//               the graphics engine.  It should call the appropriate
+//               method on GraphicsStateGuardianBase.
+////////////////////////////////////////////////////////////////////
+void ColorMatrixTransition::
+issue(GraphicsStateGuardianBase *gsgbase) {
+  gsgbase->issue_color_transform(this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ColorMatrixTransition::make_with_matrix
 //       Access: Protected, Virtual
 //  Description: Returns a new transition with the indicated matrix.

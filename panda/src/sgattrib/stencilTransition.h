@@ -37,7 +37,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA StencilTransition : public OnTransition {
 public:
-  INLINE StencilTransition(StencilProperty::Mode mode,
+  INLINE StencilTransition(StencilProperty::Mode mode = StencilProperty::M_none,
                            StencilProperty::Action action = StencilProperty::A_keep);
 
   INLINE void set_mode(StencilProperty::Mode mode);
@@ -48,6 +48,9 @@ public:
 
   virtual NodeTransition *make_copy() const;
   virtual NodeAttribute *make_attrib() const;
+  virtual NodeTransition *make_initial() const;
+
+  virtual void issue(GraphicsStateGuardianBase *gsgbase);
 
 protected:
   virtual void set_value_from(const OnTransition *other);

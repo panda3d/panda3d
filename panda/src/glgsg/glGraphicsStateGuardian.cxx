@@ -42,52 +42,29 @@
 #include <spotlight.h>
 #include <GL/glu.h>
 #include <projectionNode.h>
-#include <transformAttribute.h>
 #include <transformTransition.h>
-#include <colorMatrixAttribute.h>
 #include <colorMatrixTransition.h>
-#include <alphaTransformAttribute.h>
 #include <alphaTransformTransition.h>
-#include <colorAttribute.h>
 #include <colorTransition.h>
-#include <lightAttribute.h>
 #include <lightTransition.h>
-#include <textureAttribute.h>
 #include <textureTransition.h>
-#include <renderModeAttribute.h>
 #include <renderModeTransition.h>
-#include <materialAttribute.h>
 #include <materialTransition.h>
-#include <colorBlendAttribute.h>
 #include <colorBlendTransition.h>
-#include <colorMaskAttribute.h>
 #include <colorMaskTransition.h>
-#include <texMatrixAttribute.h>
 #include <texMatrixTransition.h>
-#include <texGenAttribute.h>
 #include <texGenTransition.h>
-#include <textureApplyAttribute.h>
 #include <textureApplyTransition.h>
-#include <clipPlaneAttribute.h>
 #include <clipPlaneTransition.h>
-#include <transparencyAttribute.h>
 #include <transparencyTransition.h>
-#include <fogAttribute.h>
 #include <fogTransition.h>
-#include <linesmoothAttribute.h>
 #include <linesmoothTransition.h>
-#include <depthTestAttribute.h>
 #include <depthTestTransition.h>
-#include <depthWriteAttribute.h>
 #include <depthWriteTransition.h>
-#include <cullFaceAttribute.h>
 #include <cullFaceTransition.h>
-#include <stencilAttribute.h>
 #include <stencilTransition.h>
-#include <pointShapeAttribute.h>
 #include <pointShapeTransition.h>
 #include <polygonOffsetTransition.h>
-#include <polygonOffsetAttribute.h>
 #include <clockObject.h>
 #include <pStatTimer.h>
 #include <string_utils.h>
@@ -317,11 +294,11 @@ reset() {
 
   // Make sure the GL state matches all of our initial attribute
   // states.
-  PT(DepthTestAttribute) dta = new DepthTestAttribute;
-  PT(DepthWriteAttribute) dwa = new DepthWriteAttribute;
-  PT(CullFaceAttribute) cfa = new CullFaceAttribute;
-  PT(LightAttribute) la = new LightAttribute;
-  PT(TextureAttribute) ta = new TextureAttribute;
+  PT(DepthTestTransition) dta = new DepthTestTransition;
+  PT(DepthWriteTransition) dwa = new DepthWriteTransition;
+  PT(CullFaceTransition) cfa = new CullFaceTransition;
+  PT(LightTransition) la = new LightTransition;
+  PT(TextureTransition) ta = new TextureTransition;
 
   dta->issue(this);
   dwa->issue(this);
@@ -354,15 +331,14 @@ clear(const RenderBuffer &buffer) {
   nassertv(buffer._gsg == this);
   int buffer_type = buffer._buffer_type;
   GLbitfield mask = 0;
-  NodeAttributes state;
+  NodeTransitions state;
 
   if (buffer_type & RenderBuffer::T_color) {
     call_glClearColor(_color_clear_value[0],
                       _color_clear_value[1],
                       _color_clear_value[2],
                       _color_clear_value[3]);
-    state.set_attribute(ColorMaskTransition::get_class_type(),
-                        new ColorMaskAttribute);
+    state.set_transition(new ColorMaskTransition);
     mask |= GL_COLOR_BUFFER_BIT;
 
     set_draw_buffer(buffer);
@@ -375,8 +351,7 @@ clear(const RenderBuffer &buffer) {
     // In order to clear the depth buffer, the depth mask must enable
     // writing to the depth buffer.
     if (!_depth_mask) {
-      state.set_attribute(DepthWriteTransition::get_class_type(),
-                          new DepthWriteAttribute);
+      state.set_transition(new DepthWriteTransition);
     }
   }
 
@@ -467,7 +442,7 @@ prepare_display_region() {
 //               pre- and post-processing like swapping buffers.
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-render_frame(const AllAttributesWrapper &initial_state) {
+render_frame() {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug()
     << "begin frame " << ClockObject::get_global_clock()->get_frame_count()
@@ -524,7 +499,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
                   cam->is_active() && cam->get_scene() != (Node *)NULL) {
                 DisplayRegionStack old_dr = push_display_region(dr);
                 prepare_display_region();
-                render_scene(cam->get_scene(), cam, initial_state);
+                render_scene(cam->get_scene(), cam);
                 pop_display_region(old_dr);
               }
             }
@@ -580,8 +555,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
 //               may be modified during rendering.
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-render_scene(Node *root, ProjectionNode *projnode,
-             const AllAttributesWrapper &initial_state) {
+render_scene(Node *root, ProjectionNode *projnode) {
 #ifdef GSG_VERBOSE
   _pass_number = 0;
   glgsg_cat.debug()
@@ -590,7 +564,7 @@ render_scene(Node *root, ProjectionNode *projnode,
 #endif
   _current_root_node = root;
 
-  render_subgraph(_render_traverser, root, projnode, initial_state,
+  render_subgraph(_render_traverser, root, projnode,
                   AllTransitionsWrapper());
 
 #ifdef GSG_VERBOSE
@@ -611,7 +585,6 @@ render_scene(Node *root, ProjectionNode *projnode,
 void GLGraphicsStateGuardian::
 render_subgraph(RenderTraverser *traverser,
                 Node *subgraph, ProjectionNode *projnode,
-                const AllAttributesWrapper &initial_state,
                 const AllTransitionsWrapper &net_trans) {
   // Calling activate() frequently seems to be intolerably expensive
   // on some platforms.  We'll limit ourselves for now to calling it
@@ -661,7 +634,7 @@ render_subgraph(RenderTraverser *traverser,
   AllTransitionsWrapper sub_trans = net_trans;
   sub_trans.set_transition(new TransformTransition(modelview_mat));
 
-  render_subgraph(traverser, subgraph, initial_state, sub_trans);
+  render_subgraph(traverser, subgraph, sub_trans);
 
   _current_projection_node = old_projection_node;
   _current_projection_mat = old_projection_mat;
@@ -688,7 +661,6 @@ render_subgraph(RenderTraverser *traverser,
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 render_subgraph(RenderTraverser *traverser, Node *subgraph,
-                const AllAttributesWrapper &initial_state,
                 const AllTransitionsWrapper &net_trans) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug()
@@ -698,7 +670,7 @@ render_subgraph(RenderTraverser *traverser, Node *subgraph,
   //  activate();
 
   nassertv(traverser != (RenderTraverser *)NULL);
-  traverser->traverse(subgraph, initial_state, net_trans);
+  traverser->traverse(subgraph, net_trans);
 
 #ifdef GSG_VERBOSE
   glgsg_cat.debug()
@@ -972,8 +944,8 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   // save the modelview matrix
   LMatrix4f modelview_mat;
 
-  const TransformAttribute *ctatt;
-  if (!get_attribute_into(ctatt, _state, TransformTransition::get_class_type()))
+  const TransformTransition *ctatt;
+  if (!get_transition_into(ctatt, _state, TransformTransition::get_class_type()))
     modelview_mat = LMatrix4f::ident_mat();
   else
     modelview_mat = ctatt->get_matrix();
@@ -1029,15 +1001,15 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   float scaled_width, scaled_height;
 
   // set up the texture-rendering state
-  NodeAttributes state;
+  NodeTransitions state;
 
-  TextureAttribute *ta = new TextureAttribute;
+  TextureTransition *ta = new TextureTransition;
   ta->set_on(tex);
-  state.set_attribute(TextureTransition::get_class_type(), ta);
+  state.set_transition(ta);
 
-  TextureApplyAttribute *taa = new TextureApplyAttribute;
+  TextureApplyTransition *taa = new TextureApplyTransition;
   taa->set_mode(TextureApplyProperty::M_modulate);
-  state.set_attribute(TextureApplyTransition::get_class_type(), taa);
+  state.set_transition(taa);
 
   set_state(state, false);
 
@@ -1046,8 +1018,8 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
 
   if (geom->get_alpha_disable() == false) {
     // figure out if alpha's enabled (if not, no reason to sort)
-    const TransparencyAttribute *ctratt;
-    if (get_attribute_into(ctratt, _state, TransparencyTransition::get_class_type()))
+    const TransparencyTransition *ctratt;
+    if (get_transition_into(ctratt, _state))
       alpha = true;
   }
 
@@ -2031,35 +2003,29 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr) {
   DisplayRegionStack old_dr = push_display_region(dr);
   prepare_display_region();
 
-  NodeAttributes state;
-  CullFaceAttribute *cfa = new CullFaceAttribute;
+  NodeTransitions state;
+  CullFaceTransition *cfa = new CullFaceTransition;
   cfa->set_mode(CullFaceProperty::M_cull_none);
-  DepthTestAttribute *dta = new DepthTestAttribute;
+  DepthTestTransition *dta = new DepthTestTransition;
   dta->set_mode(DepthTestProperty::M_none);
-  DepthWriteAttribute *dwa = new DepthWriteAttribute;
+  DepthWriteTransition *dwa = new DepthWriteTransition;
   dwa->set_off();
-  TextureAttribute *ta = new TextureAttribute;
+  TextureTransition *ta = new TextureTransition;
   ta->set_on(tex);
-  TextureApplyAttribute *taa = new TextureApplyAttribute;
+  TextureApplyTransition *taa = new TextureApplyTransition;
   taa->set_mode(TextureApplyProperty::M_decal);
 
-  state.set_attribute(LightTransition::get_class_type(),
-                      new LightAttribute);
-  state.set_attribute(ColorMaskTransition::get_class_type(),
-                      new ColorMaskAttribute);
-  state.set_attribute(RenderModeTransition::get_class_type(),
-                      new RenderModeAttribute);
-  state.set_attribute(TexMatrixTransition::get_class_type(),
-                      new TexMatrixAttribute);
-  state.set_attribute(TransformTransition::get_class_type(),
-                      new TransformAttribute);
-  state.set_attribute(ColorBlendTransition::get_class_type(),
-                      new ColorBlendAttribute);
-  state.set_attribute(CullFaceTransition::get_class_type(), cfa);
-  state.set_attribute(DepthTestTransition::get_class_type(), dta);
-  state.set_attribute(DepthWriteTransition::get_class_type(), dwa);
-  state.set_attribute(TextureTransition::get_class_type(), ta);
-  state.set_attribute(TextureApplyTransition::get_class_type(), taa);
+  state.set_transition(new LightTransition);
+  state.set_transition(new ColorMaskTransition);
+  state.set_transition(new RenderModeTransition);
+  state.set_transition(new TexMatrixTransition);
+  state.set_transition(new TransformTransition);
+  state.set_transition(new ColorBlendTransition);
+  state.set_transition(cfa);
+  state.set_transition(dta);
+  state.set_transition(dwa);
+  state.set_transition(ta);
+  state.set_transition(taa);
   set_state(state, false);
 
   // We set up an orthographic projection that defines our entire
@@ -2248,7 +2214,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-                  const NodeAttributes& na) {
+                  const NodeTransitions& na) {
   nassertv(pb != NULL && dr != NULL);
   nassertv(!pb->_image.empty());
   //  activate();
@@ -2256,30 +2222,22 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
   DisplayRegionStack old_dr = push_display_region(dr);
   prepare_display_region();
 
-  NodeAttributes state(na);
-  state.set_attribute(LightTransition::get_class_type(),
-                      new LightAttribute);
-  state.set_attribute(TextureTransition::get_class_type(),
-                      new TextureAttribute);
-  state.set_attribute(TransformTransition::get_class_type(),
-                      new TransformAttribute);
-  //state.set_attribute(ColorBlendTransition::get_class_type(),
-  //              new ColorBlendAttribute);
-  state.set_attribute(StencilTransition::get_class_type(),
-                      new StencilAttribute);
+  NodeTransitions state(na);
+  state.set_transition(new LightTransition);
+  state.set_transition(new TextureTransition);
+  state.set_transition(new TransformTransition);
+  //state.set_transition(new ColorBlendTransition);
+  state.set_transition(new StencilTransition);
 
   switch (pb->get_format()) {
   case PixelBuffer::F_depth_component:
     {
-      ColorMaskAttribute *cma = new ColorMaskAttribute;
-      cma->set_mask(0);
-      DepthTestAttribute *dta = new DepthTestAttribute;
-      dta->set_mode(DepthTestProperty::M_always);
-      DepthWriteAttribute *dwa = new DepthWriteAttribute;
-      dwa->set_on();
-      state.set_attribute(ColorMaskTransition::get_class_type(), cma);
-      state.set_attribute(DepthTestTransition::get_class_type(), dta);
-      state.set_attribute(DepthWriteTransition::get_class_type(), dwa);
+      ColorMaskTransition *cma = new ColorMaskTransition(0);
+      DepthTestTransition *dta = new DepthTestTransition(DepthTestProperty::M_always);
+      DepthWriteTransition *dwa = new DepthWriteTransition;
+      state.set_transition(cma);
+      state.set_transition(dta);
+      state.set_transition(dwa);
     }
     break;
 
@@ -2294,14 +2252,12 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
   case PixelBuffer::F_rgba8:
   case PixelBuffer::F_rgba12:
     {
-      ColorMaskAttribute *cma = new ColorMaskAttribute;
-      DepthTestAttribute *dta = new DepthTestAttribute;
-      dta->set_mode(DepthTestProperty::M_none);
-      DepthWriteAttribute *dwa = new DepthWriteAttribute;
-      dwa->set_off();
-      state.set_attribute(ColorMaskTransition::get_class_type(), cma);
-      state.set_attribute(DepthTestTransition::get_class_type(), dta);
-      state.set_attribute(DepthWriteTransition::get_class_type(), dwa);
+      ColorMaskTransition *cma = new ColorMaskTransition;
+      DepthTestTransition *dta = new DepthTestTransition(DepthTestProperty::M_none);
+      DepthWriteTransition *dwa = new DepthWriteTransition(DepthWriteTransition::off());
+      state.set_transition(cma);
+      state.set_transition(dta);
+      state.set_transition(dwa);
     }
     break;
   default:
@@ -2373,7 +2329,7 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-                  const RenderBuffer &rb, const NodeAttributes& na) {
+                  const RenderBuffer &rb, const NodeTransitions& na) {
   //  activate();
   set_draw_buffer(rb);
   draw_pixel_buffer(pb, dr, na);
@@ -2639,7 +2595,7 @@ void GLGraphicsStateGuardian::apply_light( AmbientLight* )
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-issue_transform(const TransformAttribute *attrib) {
+issue_transform(const TransformTransition *attrib) {
   //  activate();
 #ifdef GSG_VERBOSE
   glgsg_cat.debug()
@@ -2686,7 +2642,7 @@ issue_transform(const TransformAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-issue_color_transform(const ColorMatrixAttribute *attrib) {
+issue_color_transform(const ColorMatrixTransition *attrib) {
   _current_color_mat = attrib->get_matrix();
 
   if (_current_color_mat == LMatrix4f::ident_mat()) {
@@ -2704,7 +2660,7 @@ issue_color_transform(const ColorMatrixAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-issue_alpha_transform(const AlphaTransformAttribute *attrib) {
+issue_alpha_transform(const AlphaTransformTransition *attrib) {
   _current_alpha_offset= attrib->get_offset();
   _current_alpha_scale = attrib->get_scale();
 
@@ -2723,7 +2679,7 @@ issue_alpha_transform(const AlphaTransformAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-issue_tex_matrix(const TexMatrixAttribute *attrib) {
+issue_tex_matrix(const TexMatrixTransition *attrib) {
   //  activate();
 #ifdef GSG_VERBOSE
   glgsg_cat.debug()
@@ -2740,7 +2696,7 @@ issue_tex_matrix(const TexMatrixAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-issue_color(const ColorAttribute *attrib) {
+issue_color(const ColorTransition *attrib) {
   if (attrib->is_on()) {
     if (attrib->is_real()) {
       // The color attribute is "on" and "real": it specifies a scene
@@ -2773,7 +2729,7 @@ issue_color(const ColorAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-issue_texture(const TextureAttribute *attrib) {
+issue_texture(const TextureTransition *attrib) {
   //  activate();
 
   if (attrib->is_on()) {
@@ -2793,7 +2749,7 @@ issue_texture(const TextureAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-issue_tex_gen(const TexGenAttribute *attrib) {
+issue_tex_gen(const TexGenTransition *attrib) {
   //  activate();
   TexGenProperty::Mode mode = attrib->get_mode();
 
@@ -2846,7 +2802,7 @@ issue_tex_gen(const TexGenAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-issue_material(const MaterialAttribute *attrib) {
+issue_material(const MaterialTransition *attrib) {
   //  activate();
   if (attrib->is_on()) {
     const Material *material = attrib->get_material();
@@ -2862,7 +2818,7 @@ issue_material(const MaterialAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-issue_fog(const FogAttribute *attrib) {
+issue_fog(const FogTransition *attrib) {
   //  activate();
 
   if (attrib->is_on()) {
@@ -2882,7 +2838,7 @@ issue_fog(const FogAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-issue_render_mode(const RenderModeAttribute *attrib) {
+issue_render_mode(const RenderModeTransition *attrib) {
   //  activate();
 
   RenderModeProperty::Mode mode = attrib->get_mode();
@@ -2910,9 +2866,9 @@ issue_render_mode(const RenderModeAttribute *attrib) {
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void GLGraphicsStateGuardian::issue_light(const LightAttribute *attrib )
+void GLGraphicsStateGuardian::issue_light(const LightTransition *attrib )
 {
-  nassertv(attrib->get_properties_is_on());
+  nassertv(attrib->get_default_dir() != TD_on);
   //  activate();
 
   // Initialize the current ambient light total and newly enabled
@@ -2924,64 +2880,68 @@ void GLGraphicsStateGuardian::issue_light(const LightAttribute *attrib )
   }
 
   int num_enabled = 0;
-  LightAttribute::const_iterator li;
+  LightTransition::const_iterator li;
   for (li = attrib->begin(); li != attrib->end(); ++li) {
-    num_enabled++;
-    enable_lighting(true);
-    Light *light = (*li);
+    Light *light = (*li).first;
     nassertv(light != (Light *)NULL);
+    TransitionDirection dir = (*li).second;
 
-    if (light->get_light_type() == AmbientLight::get_class_type()) {
-      // Ambient lights don't require specific light ids; simply add
-      // in the ambient contribution to the current total
-      cur_ambient_light += light->get_color();
+    if (dir == TD_on) {
+      num_enabled++;
+      enable_lighting(true);
 
-    } else {
-      // Check to see if this light has already been bound to an id
-      _cur_light_id = -1;
-      for (i = 0; i < _max_lights; i++) {
-        if (_light_info[i]._light == light) {
-          // Light has already been bound to an id, we only need
-          // to enable the light, not apply it
-          _cur_light_id = -2;
-          enable_light(i, true);
+      if (light->get_light_type() == AmbientLight::get_class_type()) {
+        // Ambient lights don't require specific light ids; simply add
+        // in the ambient contribution to the current total
+        cur_ambient_light += light->get_color();
+        
+      } else {
+        // Check to see if this light has already been bound to an id
+        _cur_light_id = -1;
+        for (i = 0; i < _max_lights; i++) {
+          if (_light_info[i]._light == light) {
+            // Light has already been bound to an id, we only need
+            // to enable the light, not apply it
+            _cur_light_id = -2;
+            enable_light(i, true);
+            _light_info[i]._next_enabled = true;
+            break;
+          }
+        }
+        
+        // See if there are any unbound light ids
+        if (_cur_light_id == -1) {
+          for (i = 0; i < _max_lights; i++) {
+            if (_light_info[i]._light == (Light *)NULL) {
+              _light_info[i]._light = light;
+              _cur_light_id = i;
+              break;
+            }
+          }
+        }
+        
+        // If there were no unbound light ids, see if we can replace
+        // a currently unused but previously bound id
+        if (_cur_light_id == -1) {
+          for (i = 0; i < _max_lights; i++) {
+            if (attrib->is_off(_light_info[i]._light)) {
+              _light_info[i]._light = light;
+              _cur_light_id = i;
+              break;
+            }
+          }
+        }
+        
+        if (_cur_light_id >= 0) {
+          enable_light(_cur_light_id, true);
           _light_info[i]._next_enabled = true;
-          break;
+          
+          // We need to do something different for each type of light
+          light->apply(this);
+        } else if (_cur_light_id == -1) {
+          glgsg_cat.error()
+            << "issue_light() - failed to bind light to id" << endl;
         }
-      }
-
-      // See if there are any unbound light ids
-      if (_cur_light_id == -1) {
-        for (i = 0; i < _max_lights; i++) {
-          if (_light_info[i]._light == (Light *)NULL) {
-            _light_info[i]._light = light;
-            _cur_light_id = i;
-            break;
-          }
-        }
-      }
-
-      // If there were no unbound light ids, see if we can replace
-      // a currently unused but previously bound id
-      if (_cur_light_id == -1) {
-        for (i = 0; i < _max_lights; i++) {
-          if (attrib->is_off(_light_info[i]._light)) {
-            _light_info[i]._light = light;
-            _cur_light_id = i;
-            break;
-          }
-        }
-      }
-
-      if (_cur_light_id >= 0) {
-        enable_light(_cur_light_id, true);
-        _light_info[i]._next_enabled = true;
-
-        // We need to do something different for each type of light
-        light->apply(this);
-      } else if (_cur_light_id == -1) {
-        glgsg_cat.error()
-          << "issue_light() - failed to bind light to id" << endl;
       }
     }
   }
@@ -3007,7 +2967,7 @@ void GLGraphicsStateGuardian::issue_light(const LightAttribute *attrib )
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-issue_color_blend(const ColorBlendAttribute *attrib) {
+issue_color_blend(const ColorBlendTransition *attrib) {
   //  activate();
   ColorBlendProperty::Mode mode = attrib->get_mode();
 
@@ -3045,7 +3005,7 @@ issue_color_blend(const ColorBlendAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-issue_texture_apply(const TextureApplyAttribute *attrib) {
+issue_texture_apply(const TextureApplyTransition *attrib) {
   //  activate();
   GLint glmode = get_texture_apply_mode_type(attrib->get_mode());
   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, glmode);
@@ -3058,7 +3018,7 @@ issue_texture_apply(const TextureApplyAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-issue_color_mask(const ColorMaskAttribute *attrib) {
+issue_color_mask(const ColorMaskTransition *attrib) {
   //  activate();
   glColorMask(attrib->is_write_r(),
               attrib->is_write_g(),
@@ -3073,7 +3033,7 @@ issue_color_mask(const ColorMaskAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-issue_depth_test(const DepthTestAttribute *attrib) {
+issue_depth_test(const DepthTestTransition *attrib) {
   //  activate();
 
   DepthTestProperty::Mode mode = attrib->get_mode();
@@ -3092,7 +3052,7 @@ issue_depth_test(const DepthTestAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-issue_depth_write(const DepthWriteAttribute *attrib) {
+issue_depth_write(const DepthWriteTransition *attrib) {
   //  activate();
 
   call_glDepthMask(attrib->is_on());
@@ -3105,7 +3065,7 @@ issue_depth_write(const DepthWriteAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-issue_stencil(const StencilAttribute *attrib) {
+issue_stencil(const StencilTransition *attrib) {
   //  activate();
 
   StencilProperty::Mode mode = attrib->get_mode();
@@ -3121,14 +3081,13 @@ issue_stencil(const StencilAttribute *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::issue_cull_attribute
+//     Function: GLGraphicsStateGuardian::issue_cull_transition
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-issue_cull_face(const CullFaceAttribute *attrib) {
+issue_cull_face(const CullFaceTransition *attrib) {
   //  activate();
-
   CullFaceProperty::Mode mode = attrib->get_mode();
 
   switch (mode) {
@@ -3161,8 +3120,9 @@ issue_cull_face(const CullFaceAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-issue_clip_plane(const ClipPlaneAttribute *attrib)
+issue_clip_plane(const ClipPlaneTransition *attrib)
 {
+  nassertv(attrib->get_default_dir() != TD_on);
   //  activate();
 
   // Initialize the currently enabled clip plane list
@@ -3171,68 +3131,71 @@ issue_clip_plane(const ClipPlaneAttribute *attrib)
     _cur_clip_plane_enabled[i] = false;
 
   int num_enabled = 0;
-  ClipPlaneAttribute::const_iterator pi;
+  ClipPlaneTransition::const_iterator pi;
   for (pi = attrib->begin(); pi != attrib->end(); ++pi) {
     PlaneNode *plane_node;
-    DCAST_INTO_V(plane_node, (*pi));
+    DCAST_INTO_V(plane_node, (*pi).first);
     nassertv(plane_node != (PlaneNode *)NULL);
+    TransitionDirection dir = (*pi).second;
 
-    _cur_clip_plane_id = -1;
-    num_enabled++;
+    if (dir == TD_on) {
+      _cur_clip_plane_id = -1;
+      num_enabled++;
 
-    // Check to see if this clip plane has already been bound to an id
-    for (i = 0; i < _max_clip_planes; i++) {
-      if (_available_clip_plane_ids[i] == plane_node) {
-        // Clip plane has already been bound to an id, we only need
-        // to enable the clip plane, not apply it
-        _cur_clip_plane_id = -2;
-        enable_clip_plane(i, true);
-        _cur_clip_plane_enabled[i] = true;
-        break;
-      }
-    }
-
-    // See if there are any unbound clip plane ids
-    if (_cur_clip_plane_id == -1) {
+      // Check to see if this clip plane has already been bound to an id
       for (i = 0; i < _max_clip_planes; i++) {
-        if (_available_clip_plane_ids[i] == NULL) {
-          _available_clip_plane_ids[i] = plane_node;
-          _cur_clip_plane_id = i;
+        if (_available_clip_plane_ids[i] == plane_node) {
+          // Clip plane has already been bound to an id, we only need
+          // to enable the clip plane, not apply it
+          _cur_clip_plane_id = -2;
+          enable_clip_plane(i, true);
+          _cur_clip_plane_enabled[i] = true;
           break;
         }
       }
-    }
 
-    // If there were no unbound clip plane ids, see if we can replace
-    // a currently unused but previously bound id
-    if (_cur_clip_plane_id == -1) {
-      for (i = 0; i < _max_clip_planes; i++) {
-        if (attrib->is_off(_available_clip_plane_ids[i])) {
-          _available_clip_plane_ids[i] = plane_node;
-          _cur_clip_plane_id = i;
-          break;
+      // See if there are any unbound clip plane ids
+      if (_cur_clip_plane_id == -1) {
+        for (i = 0; i < _max_clip_planes; i++) {
+          if (_available_clip_plane_ids[i] == NULL) {
+            _available_clip_plane_ids[i] = plane_node;
+            _cur_clip_plane_id = i;
+            break;
+          }
         }
       }
-    }
-
-    if (_cur_clip_plane_id >= 0) {
-      enable_clip_plane(_cur_clip_plane_id, true);
-      _cur_clip_plane_enabled[_cur_clip_plane_id] = true;
-      double equation[4];
-      const Planef clip_plane = plane_node->get_plane();
-      // Move us into the coordinate space of the plane
-      glMatrixMode(GL_MODELVIEW);
-      glPushMatrix();
-      glLoadMatrixf(clip_plane.get_reflection_mat().get_data());
-      equation[0] = clip_plane._a;
-      equation[1] = clip_plane._b;
-      equation[2] = clip_plane._c;
-      equation[3] = clip_plane._d;
-      glClipPlane(get_clip_plane_id(_cur_clip_plane_id), equation);
-      glPopMatrix();
-    } else if (_cur_clip_plane_id == -1) {
-      glgsg_cat.error()
-        << "issue_clip_plane() - failed to bind clip plane to id" << endl;
+      
+      // If there were no unbound clip plane ids, see if we can replace
+      // a currently unused but previously bound id
+      if (_cur_clip_plane_id == -1) {
+        for (i = 0; i < _max_clip_planes; i++) {
+          if (attrib->is_off(_available_clip_plane_ids[i])) {
+            _available_clip_plane_ids[i] = plane_node;
+            _cur_clip_plane_id = i;
+            break;
+          }
+        }
+      }
+      
+      if (_cur_clip_plane_id >= 0) {
+        enable_clip_plane(_cur_clip_plane_id, true);
+        _cur_clip_plane_enabled[_cur_clip_plane_id] = true;
+        double equation[4];
+        const Planef clip_plane = plane_node->get_plane();
+        // Move us into the coordinate space of the plane
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+        glLoadMatrixf(clip_plane.get_reflection_mat().get_data());
+        equation[0] = clip_plane._a;
+        equation[1] = clip_plane._b;
+        equation[2] = clip_plane._c;
+        equation[3] = clip_plane._d;
+        glClipPlane(get_clip_plane_id(_cur_clip_plane_id), equation);
+        glPopMatrix();
+      } else if (_cur_clip_plane_id == -1) {
+        glgsg_cat.error()
+          << "issue_clip_plane() - failed to bind clip plane to id" << endl;
+      }
     }
   }
 
@@ -3250,7 +3213,7 @@ issue_clip_plane(const ClipPlaneAttribute *attrib)
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-issue_transparency(const TransparencyAttribute *attrib )
+issue_transparency(const TransparencyTransition *attrib )
 {
   //  activate();
 
@@ -3311,7 +3274,7 @@ issue_transparency(const TransparencyAttribute *attrib )
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-issue_linesmooth(const LinesmoothAttribute *attrib) {
+issue_linesmooth(const LinesmoothTransition *attrib) {
   //  activate();
   enable_line_smooth(attrib->is_on());
   report_errors();
@@ -3323,7 +3286,7 @@ issue_linesmooth(const LinesmoothAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-issue_point_shape(const PointShapeAttribute *attrib) {
+issue_point_shape(const PointShapeTransition *attrib) {
   //  activate();
 
   if (attrib->get_mode() == PointShapeProperty::M_square)
@@ -3339,7 +3302,7 @@ issue_point_shape(const PointShapeAttribute *attrib) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-issue_polygon_offset(const PolygonOffsetAttribute *attrib) {
+issue_polygon_offset(const PolygonOffsetTransition *attrib) {
   //  activate();
   //GL really wants to do a enable/disable of PolygonOffset, but it
   //seems more intuitive to have a PolygonOffset "on" all the time,
@@ -3402,13 +3365,13 @@ wants_colors() const {
 //               rendered up until the next call of end_decal() should
 //               be rendered as decals of the base_geom.
 //
-//               The attributes wrapper is the current state as of the
+//               The transitions wrapper is the current state as of the
 //               base geometry node.  It may or may not be modified by
 //               the GSG to reflect whatever rendering state is
 //               necessary to render the decals properly.
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-begin_decal(GeomNode *base_geom, AllAttributesWrapper &attrib) {
+begin_decal(GeomNode *base_geom, AllTransitionsWrapper &attrib) {
   nassertv(base_geom != (GeomNode *)NULL);
   _decal_level++;
 
@@ -3432,9 +3395,9 @@ begin_decal(GeomNode *base_geom, AllAttributesWrapper &attrib) {
     } else {
       // Turn off writing the depth buffer to render the base geometry.
       call_glDepthMask(false);
-      DepthWriteAttribute *dwa = new DepthWriteAttribute;
+      DepthWriteTransition *dwa = new DepthWriteTransition;
       dwa->set_off();
-      attrib.set_attribute(DepthWriteTransition::get_class_type(), dwa);
+      attrib.set_transition(dwa);
 
       // Now render the base geometry.
       base_geom->draw(this);
@@ -3512,8 +3475,8 @@ end_decal(GeomNode *base_geom) {
 
       // Finally, restore the depth write and color mask states to the
       // way they're supposed to be.
-      DepthWriteAttribute *depth_write;
-      if (get_attribute_into(depth_write, _state,
+      DepthWriteTransition *depth_write;
+      if (get_transition_into(depth_write, _state,
                              DepthWriteTransition::get_class_type())) {
         issue_depth_write(depth_write);
       }
@@ -3524,8 +3487,8 @@ end_decal(GeomNode *base_geom) {
           call_glBlendFunc(old_blend_source_func, old_blend_dest_func);
         }
       } else {
-        ColorMaskAttribute *color_mask;
-        if (get_attribute_into(color_mask, _state, ColorMaskTransition::get_class_type())) {
+        ColorMaskTransition *color_mask;
+        if (get_transition_into(color_mask, _state, ColorMaskTransition::get_class_type())) {
           issue_color_mask(color_mask);
         } else {
           glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);

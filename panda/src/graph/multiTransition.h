@@ -100,9 +100,9 @@ public:
 protected:
   virtual int internal_compare_to(const NodeTransition *other) const;
 
-  virtual void output_property(ostream &out, const Property &prop) const=0;
+  virtual void output_property(ostream &out, const Property &prop) const;
   virtual void write_property(ostream &out, const Property &prop,
-                              int indent_level) const=0;
+                              int indent_level) const;
 
 public:
   // These functions and typedefs allow one to peruse all of the

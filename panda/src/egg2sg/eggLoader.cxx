@@ -1973,6 +1973,6 @@ void EggLoader::
 apply_deferred_arcs(Node *root) {
   DeferredArcTraverser trav(_deferred_arcs);
 
-  df_traverse(root, trav, NullAttributeWrapper(), DeferredArcProperty(),
+  df_traverse(root, trav, NullTransitionWrapper(), DeferredArcProperty(),
               RenderRelation::get_class_type());
 }

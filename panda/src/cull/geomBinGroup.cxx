@@ -137,7 +137,7 @@ clear_current_states() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinUnsorted::record_current_state
 //       Access: Public, Virtual
-//  Description: Called each frame by the CullTraverser to indicated
+//  Description: Called each frame by the CullTraverser to indicate
 //               that the given CullState (and all of its current
 //               GeomNodes) is visible this frame.
 ////////////////////////////////////////////////////////////////////

@@ -29,7 +29,6 @@
 class GraphicsStateGuardian;
 class Node;
 class NodeRelation;
-class AllAttributesWrapper;
 class AllTransitionsWrapper;
 
 ////////////////////////////////////////////////////////////////////
@@ -61,8 +60,7 @@ PUBLISHED:
 
 public:
   virtual void traverse(Node *root,
-                        const AllAttributesWrapper &initial_state,
-                        const AllTransitionsWrapper &net_trans)=0;
+                        const AllTransitionsWrapper &initial_state)=0;
 
 PUBLISHED:
   virtual void output(ostream &out) const;

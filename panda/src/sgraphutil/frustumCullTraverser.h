@@ -49,30 +49,29 @@ template<class Visitor, class LevelState>
 class FrustumCullTraverser {
 public:
   typedef TYPENAME Visitor::TransitionWrapper TransitionWrapper;
-  typedef TYPENAME Visitor::AttributeWrapper AttributeWrapper;
 
   FrustumCullTraverser(ArcChain &arc_chain, Node *root,
                        const LMatrix4f &rel_from_camera, Visitor &visitor,
-                       const AttributeWrapper &initial_render_state,
+                       const TransitionWrapper &initial_render_state,
                        const LevelState &initial_level_state,
                        GraphicsStateGuardian *gsg,
                        TypeHandle graph_type);
 
 protected:
   void traverse(NodeRelation *arc,
-                AttributeWrapper render_state,
+                TransitionWrapper render_state,
                 LevelState level_state,
                 PT(GeometricBoundingVolume) local_frustum,
                 bool all_in);
   void traverse(Node *node,
-                AttributeWrapper &render_state,
+                TransitionWrapper &render_state,
                 LevelState &level_state,
                 GeometricBoundingVolume *local_frustum,
                 bool all_in);
 
   ArcChain &_arc_chain;
   Visitor &_visitor;
-  AttributeWrapper _initial_render_state;
+  TransitionWrapper _initial_render_state;
   GraphicsStateGuardian *_gsg;
   TypeHandle _graph_type;
 
@@ -84,11 +83,11 @@ protected:
 };
 
 // Convenience function.
-template<class Visitor, class AttributeWrapper, class LevelState>
+template<class Visitor, class TransitionWrapper, class LevelState>
 INLINE void
 fc_traverse(ArcChain &arc_chain, Node *root,
             const LMatrix4f &rel_from_camera, Visitor &visitor,
-            const AttributeWrapper &initial_render_state,
+            const TransitionWrapper &initial_render_state,
             const LevelState &initial_level_state,
             GraphicsStateGuardian *gsg, TypeHandle graph_type) {
   FrustumCullTraverser<Visitor, LevelState>

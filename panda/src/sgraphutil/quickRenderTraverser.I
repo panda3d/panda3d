@@ -24,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE void QuickRenderTraverser::
 backward_arc(NodeRelation *arc, NullTransitionWrapper &,
-             NullAttributeWrapper &, NullAttributeWrapper &,
+             NullTransitionWrapper &, NullTransitionWrapper &,
              const QuickRenderLevelState &) {
   mark_backward_arc(arc);
   _arc_chain.pop_back();

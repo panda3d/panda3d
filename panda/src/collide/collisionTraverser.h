@@ -26,7 +26,6 @@
 
 #include <traverserVisitor.h>
 #include <nullTransitionWrapper.h>
-#include <nullAttributeWrapper.h>
 #include <pointerTo.h>
 #include <renderRelation.h>
 #include <pointerTo.h>
@@ -69,11 +68,11 @@ public:
   // These methods, from parent class TraverserVisitor, define the
   // behavior of the CollisionTraverser as it traverses the graph.
   // Normally you would never call these directly.
-  bool reached_node(Node *node, NullAttributeWrapper &render_state,
+  bool reached_node(Node *node, NullTransitionWrapper &render_state,
                     CollisionLevelState &level_state);
 
   bool forward_arc(NodeRelation *arc, NullTransitionWrapper &trans,
-                   NullAttributeWrapper &pre, NullAttributeWrapper &post,
+                   NullTransitionWrapper &pre, NullTransitionWrapper &post,
                    CollisionLevelState &level_state);
 
 private:

@@ -47,7 +47,7 @@ public:
   // These methods, from parent class TraverserVisitor, define the
   // behavior of the AppTraverser as it traverses the graph.
   // Normally you would never call these directly.
-  bool reached_node(Node *node, NullAttributeWrapper &render_state,
+  bool reached_node(Node *node, NullTransitionWrapper &render_state,
                     NullLevelState &level_state);
 
 private:

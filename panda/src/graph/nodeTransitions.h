@@ -68,14 +68,20 @@ public:
   // STL-like definitions to allow read-only traversal of the
   // individual transitions.  Beware!  These are not safe to use
   // outside of PANDA.DLL.
-  typedef Transitions::const_iterator iterator;
+  typedef Transitions::iterator iterator;
   typedef Transitions::const_iterator const_iterator;
+  typedef Transitions::key_type key_type;
   typedef Transitions::value_type value_type;
   typedef Transitions::size_type size_type;
 
   INLINE_GRAPH size_type size() const;
+  INLINE_GRAPH iterator begin();
+  INLINE_GRAPH iterator end();
   INLINE_GRAPH const_iterator begin() const;
   INLINE_GRAPH const_iterator end() const;
+  INLINE_GRAPH iterator insert(iterator position, const value_type &x);
+  INLINE_GRAPH iterator find(const key_type &k);
+  INLINE_GRAPH void erase(iterator position);
 
 public:
   void output(ostream &out) const;

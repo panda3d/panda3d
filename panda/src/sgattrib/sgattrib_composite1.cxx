@@ -15,7 +15,6 @@
 #include "pointShapeAttribute.cxx"
 #include "polygonOffsetAttribute.cxx"
 #include "renderModeAttribute.cxx"
-#include "showHideAttribute.cxx"
 #include "stencilAttribute.cxx"
 #include "texGenAttribute.cxx"
 #include "texMatrixAttribute.cxx"

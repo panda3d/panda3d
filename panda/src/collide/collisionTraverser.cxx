@@ -254,7 +254,7 @@ traverse(const NodePath &root) {
     (*hi).first->begin_group();
   }
 
-  df_traverse(root.node(), *this, NullAttributeWrapper(),
+  df_traverse(root.node(), *this, NullTransitionWrapper(),
               level_state, _graph_type);
 
   for (hi = _handlers.begin(); hi != _handlers.end(); ++hi) {
@@ -347,7 +347,7 @@ prepare_colliders(CollisionLevelState &level_state) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool CollisionTraverser::
-reached_node(Node *node, NullAttributeWrapper &,
+reached_node(Node *node, NullTransitionWrapper &,
              CollisionLevelState &level_state) {
   if (node->is_of_type(CollisionNode::get_class_type())) {
     level_state.reached_collision_node();
@@ -435,7 +435,7 @@ reached_node(Node *node, NullAttributeWrapper &,
 ////////////////////////////////////////////////////////////////////
 bool CollisionTraverser::
 forward_arc(NodeRelation *arc, NullTransitionWrapper &,
-            NullAttributeWrapper &, NullAttributeWrapper &,
+            NullTransitionWrapper &, NullTransitionWrapper &,
             CollisionLevelState &level_state) {
   // Check the bounding volume on the arc against each of our
   // colliders.

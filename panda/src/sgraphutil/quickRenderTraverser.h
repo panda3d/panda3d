@@ -26,8 +26,7 @@
 #include "renderTraverser.h"
 #include "traverserVisitor.h"
 #include "nullTransitionWrapper.h"
-#include "nullAttributeWrapper.h"
-#include "allAttributesWrapper.h"
+#include "allTransitionsWrapper.h"
 #include "pStatCollector.h"
 
 class GraphicsStateGuardian;
@@ -52,25 +51,24 @@ public:
   virtual ~QuickRenderTraverser();
 
   virtual void traverse(Node *root,
-                        const AllAttributesWrapper &initial_state,
-                        const AllTransitionsWrapper &net_trans);
+                        const AllTransitionsWrapper &initial_state);
 
 public:
   // These methods, from parent class TraverserVisitor, define the
   // behavior of the RenderTraverser as it traverses the graph.
   // Normally you would never call these directly.
   bool forward_arc(NodeRelation *arc, NullTransitionWrapper &trans,
-                   NullAttributeWrapper &pre, NullAttributeWrapper &post,
+                   NullTransitionWrapper &pre, NullTransitionWrapper &post,
                    QuickRenderLevelState &level_state);
 
   INLINE void
   backward_arc(NodeRelation *arc, NullTransitionWrapper &trans,
-               NullAttributeWrapper &pre, NullAttributeWrapper &post,
+               NullTransitionWrapper &pre, NullTransitionWrapper &post,
                const QuickRenderLevelState &level_state);
 
 private:
   Node *_root;
-  AllAttributesWrapper _initial_state;
+  AllTransitionsWrapper _initial_state;
 
   // Statistics
   static PStatCollector _draw_pcollector;

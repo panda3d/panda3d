@@ -48,6 +48,26 @@ size() const {
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
+INLINE_GRAPH NodeTransitions::iterator NodeTransitions::
+begin() {
+  return _transitions.begin();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeTransitions::end
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_GRAPH NodeTransitions::iterator NodeTransitions::
+end() {
+  return _transitions.end();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeTransitions::begin
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeTransitions::const_iterator NodeTransitions::
 begin() const {
   return _transitions.begin();
@@ -61,6 +81,37 @@ begin() const {
 INLINE_GRAPH NodeTransitions::const_iterator NodeTransitions::
 end() const {
   return _transitions.end();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeTransitions::insert
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_GRAPH NodeTransitions::iterator NodeTransitions::
+insert(NodeTransitions::iterator position,
+       const NodeTransitions::value_type &x) {
+  return _transitions.insert(position, x);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeTransitions::find
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_GRAPH NodeTransitions::iterator NodeTransitions::
+find(const key_type &k) {
+  return _transitions.find(k);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeTransitions::erase
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_GRAPH void NodeTransitions::
+erase(NodeTransitions::iterator position) {
+  _transitions.erase(position);
 }
 
 INLINE_GRAPH ostream &operator << (ostream &out, const NodeTransitions &nts) {

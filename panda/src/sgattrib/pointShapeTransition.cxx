@@ -45,6 +45,30 @@ make_attrib() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PointShapeTransition::make_initial
+//       Access: Public, Virtual
+//  Description: Returns a newly allocated PointShapeTransition
+//               corresponding to the default initial state.
+////////////////////////////////////////////////////////////////////
+NodeTransition *PointShapeTransition::
+make_initial() const {
+  return new PointShapeTransition;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PointShapeTransition::issue
+//       Access: Public, Virtual
+//  Description: This is called on scene graph rendering attributes
+//               when it is time to issue the particular attribute to
+//               the graphics engine.  It should call the appropriate
+//               method on GraphicsStateGuardianBase.
+////////////////////////////////////////////////////////////////////
+void PointShapeTransition::
+issue(GraphicsStateGuardianBase *gsgbase) {
+  gsgbase->issue_point_shape(this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PointShapeTransition
 //       Access: Protected, Virtual
 //  Description: Copies the value from the other transition pointer,

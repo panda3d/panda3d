@@ -28,7 +28,6 @@
 #include <renderTraverser.h>
 #include <traverserVisitor.h>
 #include <nullTransitionWrapper.h>
-#include <nullAttributeWrapper.h>
 #include <pStatCollector.h>
 
 #include "plist.h"
@@ -67,15 +66,14 @@ PUBLISHED:
 public:
 
   virtual void traverse(Node *root,
-                        const AllAttributesWrapper &initial_state,
-                        const AllTransitionsWrapper &net_trans);
+                        const AllTransitionsWrapper &initial_state);
 
   INLINE void draw_geom(GeomNode *geom_node,
-                        const AllAttributesWrapper &initial_state);
+                        const AllTransitionsWrapper &initial_state);
   INLINE void draw_geom(const ArcChain &arc_chain,
-                        const AllAttributesWrapper &initial_state);
+                        const AllTransitionsWrapper &initial_state);
   INLINE void draw_direct(const ArcChain &arc_chain,
-                          const AllAttributesWrapper &initial_state);
+                          const AllTransitionsWrapper &initial_state);
 
 private:
   void setup_initial_bins();
@@ -103,12 +101,12 @@ public:
   // behavior of the RenderTraverser as it traverses the graph.
   // Normally you would never call these directly.
   bool forward_arc(NodeRelation *arc, NullTransitionWrapper &trans,
-                   NullAttributeWrapper &pre, NullAttributeWrapper &post,
+                   NullTransitionWrapper &pre, NullTransitionWrapper &post,
                    CullLevelState &level_state);
 
   INLINE void
   backward_arc(NodeRelation *arc, NullTransitionWrapper &trans,
-               NullAttributeWrapper &pre, NullAttributeWrapper &post,
+               NullTransitionWrapper &pre, NullTransitionWrapper &post,
                const CullLevelState &level_state);
 
 private:
@@ -117,7 +115,7 @@ private:
   void detach_toplevel_bin(GeomBin *bin);
   void detach_sub_bin(GeomBin *bin);
 
-  AllAttributesWrapper _initial_state;
+  AllTransitionsWrapper _initial_state;
 
   typedef pmap<string,  PT(GeomBin) > ToplevelBins;
   typedef pmultimap<int,  PT(GeomBin) > SubBins;

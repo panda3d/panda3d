@@ -65,6 +65,7 @@ public:
   INLINE_GRAPH TypeHandle get_handle() const;
   INLINE_GRAPH bool has_trans() const;
   INLINE_GRAPH NodeTransition *get_trans() const;
+  INLINE_GRAPH void set_trans(NodeTransition *trans);
 
   INLINE_GRAPH bool is_identity() const;
   INLINE_GRAPH int compare_to(const NodeTransitionWrapper &other) const;

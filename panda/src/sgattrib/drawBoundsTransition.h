@@ -22,7 +22,7 @@
 #include <pandabase.h>
 
 #include <immediateTransition.h>
-#include <nodeAttributes.h>
+#include <nodeTransitions.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DrawBoundsTransition
@@ -38,15 +38,16 @@ public:
 
 public:
   virtual NodeTransition *make_copy() const;
+  virtual NodeTransition *make_initial() const;
 
   virtual bool sub_render(NodeRelation *arc,
-                          const AllAttributesWrapper &attrib,
-                          AllTransitionsWrapper &trans,
+                          const AllTransitionsWrapper &input_trans,
+                          AllTransitionsWrapper &modify_trans,
                           RenderTraverser *trav);
   virtual bool has_sub_render() const;
 
-  NodeAttributes _outside_attrib;
-  NodeAttributes _inside_attrib;
+  NodeTransitions _outside_attrib;
+  NodeTransitions _inside_attrib;
 
 public:
   virtual TypeHandle get_type() const {

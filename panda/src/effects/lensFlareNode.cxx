@@ -25,14 +25,14 @@
 #include "textureTransition.h"
 #include "transformTransition.h"
 #include "billboardTransition.h"
-#include "transformAttribute.h"
+#include "transformTransition.h"
 #include "transparencyTransition.h"
 #include "renderTraverser.h"
 #include "orthoProjection.h"
 #include "perspectiveProjection.h"
 #include "get_rel_pos.h"
 #include "clockObject.h"
-#include "allAttributesWrapper.h"
+#include "allTransitionsWrapper.h"
 #include "allTransitionsWrapper.h"
 #include "graphicsStateGuardian.h"
 #include "datagram.h"
@@ -266,22 +266,21 @@ prepare_blind(const float &angle, const float &tnear)
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void LensFlareNode::
-render_child(RenderRelation *arc, const AllAttributesWrapper &attrib,
+render_child(RenderRelation *arc,
              AllTransitionsWrapper &trans, GraphicsStateGuardian *gsg)
 {
 
-  AllAttributesWrapper new_attrib(attrib);
-  new_attrib.clear_attribute(TransformTransition::get_class_type());
+  AllTransitionsWrapper new_trans(trans);
+  new_trans.clear_transition(TransformTransition::get_class_type());
 
   AllTransitionsWrapper arc_trans;
   arc_trans.extract_from(arc);
 
-  AllTransitionsWrapper new_trans(trans);
   new_trans.compose_in_place(arc_trans);
 
   // Now render everything from this node and below.
   gsg->render_subgraph(gsg->get_render_traverser(),
-                       arc->get_child(), new_attrib, new_trans);
+                       arc->get_child(), new_trans);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -290,12 +289,12 @@ render_child(RenderRelation *arc, const AllAttributesWrapper &attrib,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void LensFlareNode::
-render_children(const vector_relation &arcs, const AllAttributesWrapper &attrib,
+render_children(const vector_relation &arcs, 
                 AllTransitionsWrapper &trans, GraphicsStateGuardian *gsg)
 {
   for(int i = 0; i < (int)arcs.size(); i++)
   {
-    render_child(arcs[i], attrib, trans, gsg);
+    render_child(arcs[i], trans, gsg);
   }
 }
 
@@ -305,8 +304,7 @@ render_children(const vector_relation &arcs, const AllAttributesWrapper &attrib,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool LensFlareNode::
-sub_render(const AllAttributesWrapper &attrib, AllTransitionsWrapper &trans,
-           RenderTraverser *trav) {
+sub_render(AllTransitionsWrapper &trans, RenderTraverser *trav) {
   GraphicsStateGuardian *gsg = trav->get_gsg();
 
   nassertr(_light_node != (Node*) NULL, false);
@@ -322,8 +320,8 @@ sub_render(const AllAttributesWrapper &attrib, AllTransitionsWrapper &trans,
 
   LMatrix4f modelview_mat;
 
-  const TransformAttribute *ta;
-  if (!get_attribute_into(ta, attrib.get_attributes(), TransformTransition::get_class_type()))
+  const TransformTransition *ta;
+  if (!get_transition_into(ta, trans))
     modelview_mat = LMatrix4f::ident_mat();
   else
     modelview_mat = ta->get_matrix();
@@ -355,8 +353,8 @@ sub_render(const AllAttributesWrapper &attrib, AllTransitionsWrapper &trans,
   prepare_flares(delta, light_pos, dot);
   prepare_blind(dot, pp->get_frustum()._fnear);
 
-  render_children(_flare_arcs, attrib, trans, gsg);
-  render_child(_blind_arc, attrib, trans, gsg);
+  render_children(_flare_arcs, trans, gsg);
+  render_child(_blind_arc, trans, gsg);
 
   //Short circuit the rendering
   return false;

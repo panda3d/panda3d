@@ -29,7 +29,7 @@
 void AppTraverser::
 traverse(Node *root) {
   if (!implicit_app_traversal) {
-    df_traverse(root, *this, NullAttributeWrapper(), NullLevelState(),
+    df_traverse(root, *this, NullTransitionWrapper(), NullLevelState(),
                 _graph_type);
   }
 }
@@ -40,7 +40,7 @@ traverse(Node *root) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool AppTraverser::
-reached_node(Node *node, NullAttributeWrapper &, NullLevelState &) {
+reached_node(Node *node, NullTransitionWrapper &, NullLevelState &) {
   ArcChain bogus;
   node->app_traverse(bogus);
 

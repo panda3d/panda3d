@@ -41,7 +41,7 @@ make_copy() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool PruneTransition::
-sub_render(NodeRelation *, const AllAttributesWrapper &,
+sub_render(NodeRelation *, const AllTransitionsWrapper &, 
            AllTransitionsWrapper &, RenderTraverser *) {
   return false;
 }

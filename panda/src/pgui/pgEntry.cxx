@@ -132,9 +132,8 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void PGEntry::
 draw_item(PGTop *top, GraphicsStateGuardian *gsg, 
-          const AllAttributesWrapper &attrib,
           const AllTransitionsWrapper &trans) {
-  PGItem::draw_item(top, gsg, attrib, trans);
+  PGItem::draw_item(top, gsg, trans);
   update_text();
   update_cursor();
 
@@ -144,7 +143,7 @@ draw_item(PGTop *top, GraphicsStateGuardian *gsg,
   // of the text.
   DirectRenderTraverser drt(gsg, RenderRelation::get_class_type());
   drt.set_view_frustum_cull(false);
-  drt.traverse(_text_render_root, attrib, trans);
+  drt.traverse(_text_render_root, trans);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -25,7 +25,6 @@
 
 #include <traverserVisitor.h>
 #include <nullTransitionWrapper.h>
-#include <nullAttributeWrapper.h>
 
 #include "pmap.h"
 
@@ -47,7 +46,7 @@ public:
   DeferredArcTraverser(const DeferredArcs &deferred_arcs);
 
   bool forward_arc(NodeRelation *arc, NullTransitionWrapper &,
-                   NullAttributeWrapper &, NullAttributeWrapper &,
+                   NullTransitionWrapper &, NullTransitionWrapper &,
                    DeferredArcProperty &level_state);
 
   const DeferredArcs &_deferred_arcs;

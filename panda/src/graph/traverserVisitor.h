@@ -28,10 +28,9 @@ template<class TW, class LevelState>
 class EXPCL_PANDA TraverserVisitor {
 public:
   typedef TW TransitionWrapper;
-  typedef TYPENAME TransitionWrapper::AttributeWrapper AttributeWrapper;
 
   INLINE_GRAPH bool reached_node(Node *node,
-                                 AttributeWrapper &render_state,
+                                 TransitionWrapper &render_state,
                                  LevelState &level_state);
 
   // Some traversers (notably DFTraverser) will also call the
@@ -39,10 +38,10 @@ public:
   // allow the Visitor to maintain its own internal state as needed.
 
   INLINE_GRAPH bool forward_arc(NodeRelation *arc, TransitionWrapper &trans,
-                                AttributeWrapper &pre, AttributeWrapper &post,
+                                TransitionWrapper &pre, TransitionWrapper &post,
                                 LevelState &level_state);
   INLINE_GRAPH void backward_arc(NodeRelation *arc, TransitionWrapper &trans,
-                                 AttributeWrapper &pre, AttributeWrapper &post,
+                                 TransitionWrapper &pre, TransitionWrapper &post,
                                  const LevelState &level_state);
 };
 

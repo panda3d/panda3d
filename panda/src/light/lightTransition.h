@@ -44,13 +44,18 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, MULTITRANSITION_LIGHT);
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA LightTransition : public MultiTransition<PT_Light, LightNameClass> {
 PUBLISHED:
-  INLINE LightTransition();
+  LightTransition();
+  LightTransition(const LightTransition &copy);
+  ~LightTransition();
   INLINE static LightTransition all_off();
 
 public:
   virtual NodeTransition *make_copy() const;
   virtual NodeAttribute *make_attrib() const;
   virtual NodeTransition *make_identity() const;
+  virtual NodeTransition *make_initial() const;
+
+  virtual void issue(GraphicsStateGuardianBase *gsgbase);
 
 protected:
   virtual void output_property(ostream &out, const PT_Light &prop) const;

@@ -26,7 +26,7 @@
 #include "namedNode.h"
 #include "mouseWatcher.h"
 #include "pointerTo.h"
-#include "allAttributesWrapper.h"
+#include "allTransitionsWrapper.h"
 
 class GraphicsStateGuardian;
 class RenderTraverser;
@@ -58,8 +58,8 @@ public:
 
   virtual Node *make_copy() const;
 
-  virtual bool sub_render(const AllAttributesWrapper &attrib,
-                          AllTransitionsWrapper &trans,
+  virtual bool sub_render(const AllTransitionsWrapper &input_trans,
+                          AllTransitionsWrapper &modify_trans,
                           RenderTraverser *trav);
   virtual bool has_sub_render() const;
 
@@ -79,7 +79,7 @@ private:
   PGMouseWatcherGroup *_watcher_group;
   GraphicsStateGuardian *_gsg;
   RenderTraverser *_trav;
-  AllAttributesWrapper _attrib;
+  AllTransitionsWrapper _trans;
   int _sort_index;
   
 public:

@@ -37,14 +37,22 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ColorMaskTransition : public OnTransition {
 public:
+  INLINE ColorMaskTransition();
   INLINE ColorMaskTransition(int mask);
-  INLINE static ColorMaskTransition all_on();
 
   INLINE void set_mask(int mask);
   INLINE int get_mask() const;
 
+  INLINE bool is_write_r() const;
+  INLINE bool is_write_g() const;
+  INLINE bool is_write_b() const;
+  INLINE bool is_write_a() const;
+
   virtual NodeTransition *make_copy() const;
   virtual NodeAttribute *make_attrib() const;
+  virtual NodeTransition *make_initial() const;
+
+  virtual void issue(GraphicsStateGuardianBase *gsgbase);
 
 protected:
   virtual void set_value_from(const OnTransition *other);

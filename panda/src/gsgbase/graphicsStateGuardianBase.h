@@ -19,11 +19,10 @@
 #ifndef GRAPHICSSTATEGUARDIANBASE_H
 #define GRAPHICSSTATEGUARDIANBASE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <typedReferenceCount.h>
-#include <nodeTransition.h>
-#include <nodeAttributes.h>
+#include "typedReferenceCount.h"
+#include "nodeTransitions.h"
 
 // A handful of forward references.
 
@@ -51,6 +50,30 @@ class PixelBuffer;
 
 class Material;
 class Fog;
+
+class TransformTransition;
+class ColorMatrixTransition;
+class AlphaTransformTransition;
+class TexMatrixTransition;
+class ColorTransition;
+class TextureTransition;
+class LightTransition;
+class MaterialTransition;
+class RenderModeTransition;
+class ColorBlendTransition;
+class TextureApplyTransition;
+class ColorMaskTransition;
+class DepthTestTransition;
+class DepthWriteTransition;
+class TexGenTransition;
+class CullFaceTransition;
+class StencilTransition;
+class ClipPlaneTransition;
+class TransparencyTransition;
+class FogTransition;
+class LinesmoothTransition;
+class PointShapeTransition;
+class PolygonOffsetTransition;
 
 class TransformAttribute;
 class ColorMatrixAttribute;
@@ -93,7 +116,7 @@ class ProjectionNode;
 //               class, which is itself a base class for the various
 //               GSG's for different platforms.  This class contains
 //               all the function prototypes to support the
-//               double-dispatch of GSG to geoms, attributes, etc.  It
+//               double-dispatch of GSG to geoms, transitions, etc.  It
 //               lives in a separate class in its own package so we
 //               can avoid circular build dependency problems.
 ////////////////////////////////////////////////////////////////////
@@ -109,9 +132,9 @@ public:
 
   // Defined here are some internal interface functions for the
   // GraphicsStateGuardian.  These are here to support
-  // double-dispatching from Geoms and NodeAttributes, and are
+  // double-dispatching from Geoms and NodeTransitions, and are
   // intended to be invoked only directly by the appropriate Geom and
-  // NodeAttribute types.  They're public only because it would be too
+  // NodeTransition types.  They're public only because it would be too
   // inconvenient to declare each of those types to be friends of this
   // class.
 
@@ -152,10 +175,10 @@ public:
   virtual void copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
                                  const RenderBuffer &rb)=0;
   virtual void draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-                                 const NodeAttributes& na=NodeAttributes())=0;
+                                 const NodeTransitions& na=NodeTransitions())=0;
   virtual void draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
                                  const RenderBuffer &rb,
-                                 const NodeAttributes& na=NodeAttributes())=0;
+                                 const NodeTransitions& na=NodeTransitions())=0;
 
   virtual void apply_material(const Material *material)=0;
   virtual void apply_fog(Fog *fog)=0;
@@ -164,6 +187,30 @@ public:
   virtual void apply_light(DirectionalLight *light)=0;
   virtual void apply_light(Spotlight *light)=0;
   virtual void apply_light(AmbientLight *light)=0;
+
+  virtual void issue_transform(const TransformTransition *) { }
+  virtual void issue_color_transform(const ColorMatrixTransition *) { }
+  virtual void issue_alpha_transform(const AlphaTransformTransition *) { }
+  virtual void issue_tex_matrix(const TexMatrixTransition *) { }
+  virtual void issue_color(const ColorTransition *) { }
+  virtual void issue_texture(const TextureTransition *) { }
+  virtual void issue_light(const LightTransition *) { }
+  virtual void issue_material(const MaterialTransition *) { }
+  virtual void issue_render_mode(const RenderModeTransition *) { }
+  virtual void issue_color_blend(const ColorBlendTransition *) { }
+  virtual void issue_texture_apply(const TextureApplyTransition *) { }
+  virtual void issue_color_mask(const ColorMaskTransition *) { }
+  virtual void issue_depth_test(const DepthTestTransition *) { }
+  virtual void issue_depth_write(const DepthWriteTransition *) { }
+  virtual void issue_tex_gen(const TexGenTransition *) { }
+  virtual void issue_cull_face(const CullFaceTransition *) { }
+  virtual void issue_stencil(const StencilTransition *) { }
+  virtual void issue_clip_plane(const ClipPlaneTransition *) { }
+  virtual void issue_transparency(const TransparencyTransition *) { }
+  virtual void issue_fog(const FogTransition *) { }
+  virtual void issue_linesmooth(const LinesmoothTransition *) { }
+  virtual void issue_point_shape(const PointShapeTransition *) { }
+  virtual void issue_polygon_offset(const PolygonOffsetTransition *) { }
 
   virtual void issue_transform(const TransformAttribute *) { }
   virtual void issue_color_transform(const ColorMatrixAttribute *) { }

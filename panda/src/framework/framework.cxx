@@ -18,95 +18,94 @@
 
 // We need to include bitMask.h first to avoid a VC++ compiler bug
 // related to 2 parameter templates
-#include <bitMask.h>
+#include "bitMask.h"
 
 #include "framework.h"
 #include "config_framework.h"
 
-#include <pystub.h>
-#include <time.h>
+#include "pystub.h"
+#include "time.h"
 // Since framework.cxx includes pystub.h, no program that links with
 // framework needs to do so.  No Python code should attempt to link
 // with libframework.so.
 
-#include <cullTraverser.h>
-#include <appTraverser.h>
-#include <directRenderTraverser.h>
-#include <mouse.h>
-#include <mouseWatcher.h>
-#include <buttonThrower.h>
-#include <keyboardButton.h>
-#include <eventHandler.h>
-#include <throw_event.h>
-#include <camera.h>
-#include <geom.h>
-#include <geomprimitives.h>
-#include <renderRelation.h>
-#include <dataRelation.h>
-#include <geomNode.h>
-#include <namedNode.h>
-#include <pt_NamedNode.h>
-#include <colorTransition.h>
-#include <renderModeTransition.h>
-#include <renderModeAttribute.h>
-#include <materialTransition.h>
-#include <dataGraphTraversal.h>
-#include <trackball.h>
-#include <driveInterface.h>
-#include <transform2sg.h>
-#include <texture.h>
-#include <texturePool.h>
-#include <textureTransition.h>
-#include <textureAttribute.h>
-#include <interactiveGraphicsPipe.h>
-#include <noninteractiveGraphicsPipe.h>
-#include <graphicsWindow.h>
+#include "cullTraverser.h"
+#include "appTraverser.h"
+#include "directRenderTraverser.h"
+#include "mouse.h"
+#include "mouseWatcher.h"
+#include "buttonThrower.h"
+#include "keyboardButton.h"
+#include "eventHandler.h"
+#include "throw_event.h"
+#include "camera.h"
+#include "geom.h"
+#include "geomprimitives.h"
+#include "renderRelation.h"
+#include "dataRelation.h"
+#include "geomNode.h"
+#include "namedNode.h"
+#include "pt_NamedNode.h"
+#include "colorTransition.h"
+#include "renderModeTransition.h"
+#include "renderModeAttribute.h"
+#include "materialTransition.h"
+#include "dataGraphTraversal.h"
+#include "trackball.h"
+#include "driveInterface.h"
+#include "transform2sg.h"
+#include "texture.h"
+#include "texturePool.h"
+#include "textureTransition.h"
+#include "textureAttribute.h"
+#include "interactiveGraphicsPipe.h"
+#include "noninteractiveGraphicsPipe.h"
+#include "graphicsWindow.h"
 #include "plist.h"
-#include <lightTransition.h>
-#include <lightAttribute.h>
-#include <materialTransition.h>
-#include <materialAttribute.h>
-#include <animControl.h>
-#include <animControlCollection.h>
-#include <auto_bind.h>
-#include <ambientLight.h>
-#include <directionalLight.h>
-#include <pointLight.h>
-#include <spotlight.h>
-#include <dconfig.h>
-#include <cullFaceTransition.h>
-#include <cullFaceAttribute.h>
-#include <pruneTransition.h>
-#include <dftraverser.h>
-#include <renderBuffer.h>
-#include <loader.h>
-#include <fogTransition.h>
-#include <fogAttribute.h>
-#include <clockObject.h>
-#include <compose_matrix.h>
-#include <notify.h>
-#include <nullTransitionWrapper.h>
-#include <nullAttributeWrapper.h>
-#include <nullLevelState.h>
-#include <sceneGraphReducer.h>
-#include <textNode.h>
-#include <depthTestTransition.h>
-#include <depthWriteTransition.h>
-#include <orthoProjection.h>
-#include <transparencyTransition.h>
-#include <bamReader.h>
-#include <collisionRay.h>
-#include <collisionNode.h>
-#include <collisionTraverser.h>
-#include <collisionHandlerFloor.h>
-#include <nodePath.h>
-#include <multiplexStream.h>
-#include <dSearchPath.h>
+#include "lightTransition.h"
+#include "lightAttribute.h"
+#include "materialTransition.h"
+#include "materialAttribute.h"
+#include "animControl.h"
+#include "animControlCollection.h"
+#include "auto_bind.h"
+#include "ambientLight.h"
+#include "directionalLight.h"
+#include "pointLight.h"
+#include "spotlight.h"
+#include "dconfig.h"
+#include "cullFaceTransition.h"
+#include "cullFaceAttribute.h"
+#include "pruneTransition.h"
+#include "dftraverser.h"
+#include "renderBuffer.h"
+#include "loader.h"
+#include "fogTransition.h"
+#include "fogAttribute.h"
+#include "clockObject.h"
+#include "compose_matrix.h"
+#include "notify.h"
+#include "nullTransitionWrapper.h"
+#include "nullLevelState.h"
+#include "sceneGraphReducer.h"
+#include "textNode.h"
+#include "depthTestTransition.h"
+#include "depthWriteTransition.h"
+#include "orthoProjection.h"
+#include "transparencyTransition.h"
+#include "bamReader.h"
+#include "collisionRay.h"
+#include "collisionNode.h"
+#include "collisionTraverser.h"
+#include "collisionHandlerFloor.h"
+#include "nodePath.h"
+#include "multiplexStream.h"
+#include "dSearchPath.h"
 
 #ifdef USE_IPC
-#include <ipc_file.h>
-#include <ipc_mutex.h>
-#include <ipc_thread.h>
+#include "ipc_file.h"
+#include "ipc_mutex.h"
+#include "ipc_thread.h"
 #endif
 
 Configure(framework);
@@ -118,7 +117,9 @@ AppTraverser *app_traverser;
 PT_NamedNode data_root;
 PT_NamedNode root;
 PT(GeomNode) geomnode;
+PT_NamedNode render_top;
 PT_NamedNode render;
+NodeRelation *render_arc;
 PT_NamedNode cameras;
 PT(MouseAndKeyboard) mak;
 PT(MouseWatcher) mouse_watcher;
@@ -128,7 +129,6 @@ PT(DriveInterface) drive_interface;
 static Node *current_trackball = NULL;
 static Node *alt_trackball = NULL;
 
-NodeAttributes initial_state;
 Texture* ttex;
 PT(GraphicsPipe) main_pipe;
 PT(GraphicsPipe) rib_pipe;
@@ -217,7 +217,7 @@ class NormalAddTraverser :
   public TraverserVisitor<NullTransitionWrapper, NullLevelState> {
 public:
   NormalAddTraverser(GraphicsStateGuardian *gsg) : _gsg(gsg) {}
-  bool reached_node(Node*, NullAttributeWrapper&, NullLevelState&);
+  bool reached_node(Node*, NullTransitionWrapper&, NullLevelState&);
 
   // No need to declare a forward_arc() function that simply returns
   // true; this is the default behavior.
@@ -227,7 +227,7 @@ public:
 };
 
 bool NormalAddTraverser::
-reached_node(Node *node, NullAttributeWrapper &, NullLevelState &) {
+reached_node(Node *node, NullTransitionWrapper &, NullLevelState &) {
   if (node->is_of_type(GeomNode::get_class_type())) {
     GeomNorms *gn = new GeomNorms;
     GeomNode *geom = DCAST(GeomNode, node);
@@ -286,13 +286,13 @@ class NormalDelTraverser :
   public TraverserVisitor<NullTransitionWrapper, NullLevelState> {
 public:
   NormalDelTraverser(GraphicsStateGuardian *gsg) : _gsg(gsg) {}
-  bool reached_node(Node*, NullAttributeWrapper&, NullLevelState&);
+  bool reached_node(Node*, NullTransitionWrapper&, NullLevelState&);
 public:
   GraphicsStateGuardian *_gsg;
 };
 
 bool NormalDelTraverser::
-reached_node(Node *node, NullAttributeWrapper &, NullLevelState &) {
+reached_node(Node *node, NullTransitionWrapper &, NullLevelState &) {
   if (node->is_of_type(GeomNode::get_class_type())) {
     GeomNode *geom = DCAST(GeomNode, node);
     int i, j;
@@ -313,11 +313,11 @@ reached_node(Node *node, NullAttributeWrapper &, NullLevelState &) {
 }
 
 void render_frame(GraphicsPipe *pipe) {
-  app_traverser->traverse(render);
+  app_traverser->traverse(render_top);
   int num_windows = pipe->get_num_windows();
   for (int w = 0; w < num_windows; w++) {
     GraphicsWindow *win = pipe->get_window(w);
-    win->get_gsg()->render_frame(initial_state);
+    win->get_gsg()->render_frame();
   }
   ClockObject::get_global_clock()->tick();
   throw_event("NewFrame");
@@ -343,17 +343,17 @@ void display_func( void ) {
 void set_lighting(bool enabled) {
   if (enabled) {
     // Enable the lights on the initial state.
-    LightAttribute *la = new LightAttribute;
+    PT(LightTransition) la = new LightTransition;
     la->set_on(light.p());
 
     if (have_dlight) {
       la->set_on(dlight.p());
     }
-    initial_state.set_attribute(LightTransition::get_class_type(), la);
+    render_arc->set_transition(la);
 
   } else {
     // Remove the lights from the initial state.
-    initial_state.clear_attribute(LightTransition::get_class_type());
+    render_arc->clear_transition(LightTransition::get_class_type());
   }
 }
 
@@ -368,7 +368,7 @@ class IdleCallback : public GraphicsWindow::Callback {
       // Perform the collision traversal, if we have a collision
       // traverser standing by.
       if (col_trans != (CollisionTraverser *)NULL) {
-        col_trans->traverse(render);
+        col_trans->traverse(render_top);
       }
 
       // Throw any events generated recently.
@@ -620,12 +620,12 @@ void event_t(CPT_Event) {
   textures_enabled = !textures_enabled;
   if (textures_enabled) {
     // Remove the override from the initial state.
-    initial_state.clear_attribute(TextureTransition::get_class_type());
+    render_arc->clear_transition(TextureTransition::get_class_type());
   } else {
     // Set an override on the initial state to disable texturing.
-    TextureAttribute *ta = new TextureAttribute;
+    TextureTransition *ta = new TextureTransition;
     ta->set_priority(100);
-    initial_state.set_attribute(TextureTransition::get_class_type(), ta);
+    render_arc->set_transition(ta);
   }
 }
 
@@ -644,21 +644,17 @@ void event_w(CPT_Event) {
   wireframe_mode = !wireframe_mode;
   if (!wireframe_mode) {
     // Set the normal, filled mode on the render arc.
-    RenderModeAttribute *rma = new RenderModeAttribute;
-    rma->set_mode(RenderModeProperty::M_filled);
-    CullFaceAttribute *cfa = new CullFaceAttribute;
-    cfa->set_mode(CullFaceProperty::M_cull_clockwise);
-    initial_state.set_attribute(RenderModeTransition::get_class_type(), rma);
-    initial_state.set_attribute(CullFaceTransition::get_class_type(), cfa);
+    RenderModeTransition *rma = new RenderModeTransition(RenderModeProperty::M_filled);
+    CullFaceTransition *cfa = new CullFaceTransition(CullFaceProperty::M_cull_clockwise);
+    render_arc->set_transition(rma);
+    render_arc->set_transition(cfa);
 
   } else {
     // Set the initial state up for wireframe mode.
-    RenderModeAttribute *rma = new RenderModeAttribute;
-    rma->set_mode(RenderModeProperty::M_wireframe);
-    CullFaceAttribute *cfa = new CullFaceAttribute;
-    cfa->set_mode(CullFaceProperty::M_cull_none);
-    initial_state.set_attribute(RenderModeTransition::get_class_type(), rma);
-    initial_state.set_attribute(CullFaceTransition::get_class_type(), cfa);
+    RenderModeTransition *rma = new RenderModeTransition(RenderModeProperty::M_wireframe);
+    CullFaceTransition *cfa = new CullFaceTransition(CullFaceProperty::M_cull_none);
+    render_arc->set_transition(rma);
+    render_arc->set_transition(cfa);
   }
 }
 
@@ -669,14 +665,12 @@ void event_b(CPT_Event) {
   backface_mode = !backface_mode;
   if (backface_mode) {
     material->set_twoside(true);
-    CullFaceAttribute *cfa = new CullFaceAttribute;
-    cfa->set_mode(CullFaceProperty::M_cull_none);
-    initial_state.set_attribute(CullFaceTransition::get_class_type(), cfa);
+    CullFaceTransition *cfa = new CullFaceTransition(CullFaceProperty::M_cull_none);
+    render_arc->set_transition(cfa);
   } else {
     material->set_twoside(false);
-    CullFaceAttribute *cfa = new CullFaceAttribute;
-    cfa->set_mode(CullFaceProperty::M_cull_clockwise);
-    initial_state.set_attribute(CullFaceTransition::get_class_type(), cfa);
+    CullFaceTransition *cfa = new CullFaceTransition(CullFaceProperty::M_cull_clockwise);
+    render_arc->set_transition(cfa);
   }
 }
 
@@ -734,11 +728,11 @@ void event_n(CPT_Event) {
   normals_on = !normals_on;
   if (normals_on) {
     NormalAddTraverser trav(main_win->get_gsg());
-    df_traverse(render, trav, NullAttributeWrapper(), NullLevelState(),
+    df_traverse(render, trav, NullTransitionWrapper(), NullLevelState(),
                 RenderRelation::get_class_type());
   } else {
     NormalDelTraverser trav(main_win->get_gsg());
-    df_traverse(render, trav, NullAttributeWrapper(), NullLevelState(),
+    df_traverse(render, trav, NullTransitionWrapper(), NullLevelState(),
                 RenderRelation::get_class_type());
   }
 }
@@ -911,12 +905,11 @@ void event_g(CPT_Event) {
 
   fog_mode = !fog_mode;
   if (fog_mode) {
-    FogAttribute *fa = new FogAttribute;
-    fa->set_on(fog);
-    initial_state.set_attribute(FogTransition::get_class_type(), fa);
+    FogTransition *fa = new FogTransition(fog);
+    render_arc->set_transition(fa);
   } else {
-    FogAttribute *fa = new FogAttribute;
-    initial_state.set_attribute(FogTransition::get_class_type(), fa);
+    FogTransition *fa = new FogTransition;
+    render_arc->set_transition(fa);
   }
 }
 
@@ -997,8 +990,8 @@ static void move_gridded_stuff(GriddedMotionType gridmotiontype,gridded_file_inf
   for(int i = 0; i < size; i++) {
   double time_delta = (now-InfoArr[i].starttime);
   #define DO_FP_MODULUS(VAL,MAXVAL)  \
-    {if(VAL > MAXVAL) {int idivresult = VAL / (float)MAXVAL;  VAL=VAL-idivresult*MAXVAL;} else  \
-    if(VAL < -MAXVAL) {int idivresult = VAL / (float)MAXVAL;  VAL=VAL+idivresult*MAXVAL;}}
+    {if(VAL > MAXVAL) {int idivresult = (int)(VAL / (float)MAXVAL);  VAL=VAL-idivresult*MAXVAL;} else  \
+    if(VAL < -MAXVAL) {int idivresult = (int)(VAL / (float)MAXVAL);  VAL=VAL+idivresult*MAXVAL;}}
   
   // probably should use panda lerps for this stuff, but I dont understand how
 
@@ -1112,8 +1105,8 @@ int framework_main(int argc, char *argv[]) {
   int gridrepeats=1;
   GriddedMotionType gridmotiontype = None;
 
-  bool bRotateGriddedObjs = false;
-  bool bMoveGriddedObjs = false;
+  //  bool bRotateGriddedObjs = false;
+  //  bool bMoveGriddedObjs = false;
 
   for (int a = 1; a < argc; a++) {
     if ((argv[a] != (char*)0L) && ((argv[a])[0] != '-') &&
@@ -1187,32 +1180,32 @@ int framework_main(int argc, char *argv[]) {
     extra_overrides_func(override, conf);
 
   // Create the render node
+  render_top = new NamedNode("render_top");
   render = new NamedNode("render");
+  render_arc = new RenderRelation(render_top, render);
 
-  ChanConfig chanConfig = ChanConfig(main_pipe, conf, render, override);
+  ChanConfig chanConfig = ChanConfig(main_pipe, conf, render_top, override);
   main_win = chanConfig.get_win();
   assert(main_win != (GraphicsWindow*)0L);
   cameras = chanConfig.get_group_node(0);
   cameras->set_name("cameras");
   for(int group_node_index=1;group_node_index<chanConfig.get_num_groups();
       group_node_index++) {
-    RenderRelation *arc2 = 
-      new RenderRelation(render, chanConfig.get_group_node(group_node_index));
+    new RenderRelation(render, chanConfig.get_group_node(group_node_index));
   }
   RenderRelation* arc1 = new RenderRelation(render, cameras);
 
   // is ok if this doesn't work or returns NULL
   if (rib_pipe != (GraphicsPipe*)0L) { 
-    ChanConfig chanConfig = ChanConfig(rib_pipe, "single", render, override);
+    ChanConfig chanConfig = ChanConfig(rib_pipe, "single", render_top, override);
     rib_win = chanConfig.get_win();
     NamedNode *rib_cameras = chanConfig.get_group_node(0);
     rib_cameras->set_name("rib_cameras");
     for(int rib_group_node_index=1;
         rib_group_node_index<chanConfig.get_num_groups();
         rib_group_node_index++) {
-      RenderRelation *ribarc = 
-        new RenderRelation(render, 
-                           chanConfig.get_group_node(rib_group_node_index));
+      new RenderRelation(render, 
+                         chanConfig.get_group_node(rib_group_node_index));
     }
     new RenderRelation(render, rib_cameras);
   }
@@ -1238,16 +1231,14 @@ int framework_main(int argc, char *argv[]) {
 #endif
 
   // Turn on culling.
-  CullFaceAttribute *cfa = new CullFaceAttribute;
-  cfa->set_mode(CullFaceProperty::M_cull_clockwise);
-  initial_state.set_attribute(CullFaceTransition::get_class_type(), cfa);
+  CullFaceTransition *cfa = new CullFaceTransition(CullFaceProperty::M_cull_clockwise);
+  render_arc->set_transition(cfa);
 
-  // Set up a default material
+  // Set up a default material.
   material = new Material;
   material->set_ambient( Colorf( 1, 1, 1, 1 ) );
-  MaterialAttribute *ma = new MaterialAttribute;
-  ma->set_on(material);
-  initial_state.set_attribute(MaterialTransition::get_class_type(), ma);
+  MaterialTransition *ma = new MaterialTransition(material);
+  render_arc->set_transition(ma);
 
   // Set up a default fog
   fog = new Fog;
@@ -1363,164 +1354,163 @@ int framework_main(int argc, char *argv[]) {
       filename.resolve_filename(local_path);
 
       PT_Node node = loader.load_sync(filename);
-
+      
       if (node == (Node *)NULL) {
-                  framework_cat.error() << "Unable to load file " << filename << "\n";
-                  continue;
-          }
+        framework_cat.error() << "Unable to load file " << filename << "\n";
+        continue;
+      }
+      
+      new RenderRelation(root, node);
+    }
 
-          RenderRelation *pArc = new RenderRelation(root, node);
+    if(!gridded_files.empty()) {
+      
+      typedef RenderRelation *RenderRelationPtr;
+      
+      gridded_files_size= gridded_files.size();
+      pNodeArr = new PT_Node[gridded_files.size()*gridrepeats];
+      pRRptrArr = new RenderRelationPtr[gridded_files.size()*gridrepeats];
+      InfoArr = new gridded_file_info[gridded_files.size()*gridrepeats];
+      
+      int j=0;
+      
+      for (fi = gridded_files.begin(); fi != gridded_files.end(); (++fi),j++) {
+        Filename filename = (*fi);
+        
+        filename.resolve_filename(local_path);
+        
+        pNodeArr[j] = loader.load_sync(filename);
+        
+        if (pNodeArr[j] == (Node *)NULL) {
+          framework_cat.error() << "Unable to load file " << filename << "\n";
+          j--;
+          gridded_files_size--;
+          continue;
         }
+      }
+      
+      gridwidth=1;
+      while(gridwidth*gridwidth < gridded_files_size*gridrepeats) {
+        gridwidth++;
+      }
+      
+      grid_pos_offset = -gridwidth*GRIDCELLSIZE/2.0;
+      wander_area_pos_offset = -max(fabs(grid_pos_offset),MIN_WANDERAREA_DIMENSION/2.0);
+      
+      float xpos = grid_pos_offset;
+      float ypos = grid_pos_offset;
+      int filenum=0;
+      
+      srand( (unsigned)time( NULL ) );
+      
+      double now = ClockObject::get_global_clock()->get_frame_time();
 
-        if(!gridded_files.empty()) {
+      for(int passnum=0;passnum<gridrepeats;passnum++) {
+        for (j = 0; j < gridded_files_size; j++,filenum++) {
 
-                typedef RenderRelation *RenderRelationPtr;
-
-                gridded_files_size= gridded_files.size();
-                pNodeArr = new PT_Node[gridded_files.size()*gridrepeats];
-                pRRptrArr = new RenderRelationPtr[gridded_files.size()*gridrepeats];
-                InfoArr = new gridded_file_info[gridded_files.size()*gridrepeats];
-
-
-                int j=0;
-
-                for (fi = gridded_files.begin(); fi != gridded_files.end(); (++fi),j++) {
-                          Filename filename = (*fi);
-
-                          filename.resolve_filename(local_path);
-
-                          pNodeArr[j] = loader.load_sync(filename);
-
-                          if (pNodeArr[j] == (Node *)NULL) {
-                                  framework_cat.error() << "Unable to load file " << filename << "\n";
-                                  j--;
-                                  gridded_files_size--;
-                                  continue;
-                          }
-                }
-
-                gridwidth=1;
-                while(gridwidth*gridwidth < gridded_files_size*gridrepeats) {
-                        gridwidth++;
-                }
-
-                grid_pos_offset = -gridwidth*GRIDCELLSIZE/2.0;
-                wander_area_pos_offset = -max(fabs(grid_pos_offset),MIN_WANDERAREA_DIMENSION/2.0);
-
-                float xpos = grid_pos_offset;
-                float ypos = grid_pos_offset;
-                int filenum=0;
-
-                srand( (unsigned)time( NULL ) );
-
-                double now = ClockObject::get_global_clock()->get_frame_time();
-
-                for(int passnum=0;passnum<gridrepeats;passnum++) {
-                  for (j = 0; j < gridded_files_size; j++,filenum++) {
-
-                          if(passnum>0) {
+          if(passnum>0) {
                                 // cant directly instance characters due to LOD problems,
                                 // must copy using copy_subgraph for now
 
-                                  pNodeArr[filenum] = pNodeArr[j]->copy_subgraph(RenderRelation::get_class_type());
-                          }
+            pNodeArr[filenum] = pNodeArr[j]->copy_subgraph(RenderRelation::get_class_type());
+          }
 
-                          pRRptrArr[filenum] = new RenderRelation(root, pNodeArr[filenum]);
+          pRRptrArr[filenum] = new RenderRelation(root, pNodeArr[filenum]);
 
-                          LMatrix4f xfm_mat,tmat1,tmat2;
+          LMatrix4f xfm_mat,tmat1,tmat2;
 
-                          if(gridmotiontype==Rotation) {
+          if(gridmotiontype==Rotation) {
 
-                                  #define MIN_REVOLUTION_ANGVEL 30
-                                  #define MAX_REVOLUTION_ANGVEL 60
+#define MIN_REVOLUTION_ANGVEL 30
+#define MAX_REVOLUTION_ANGVEL 60
 
-                                  #define MIN_ROTATION_ANGVEL 30
-                                  #define MAX_ROTATION_ANGVEL 600
+#define MIN_ROTATION_ANGVEL 30
+#define MAX_ROTATION_ANGVEL 600
 
-                                  #define MAX_RADIUS 4.0*GRIDCELLSIZE
-                                  #define MIN_RADIUS 0.1*GRIDCELLSIZE
+#define MAX_RADIUS 4.0*GRIDCELLSIZE
+#define MIN_RADIUS 0.1*GRIDCELLSIZE
 
-                                  InfoArr[filenum].starttime = now;
+            InfoArr[filenum].starttime = now;
 
-                                  InfoArr[filenum].xcenter=xpos;
-                                  InfoArr[filenum].ycenter=ypos;
-                                  InfoArr[filenum].ang1=RANDFRAC * 360.0;
-                                  InfoArr[filenum].ang1_vel=((MAX_REVOLUTION_ANGVEL-MIN_REVOLUTION_ANGVEL) * RANDFRAC) + MIN_REVOLUTION_ANGVEL;
+            InfoArr[filenum].xcenter=xpos;
+            InfoArr[filenum].ycenter=ypos;
+            InfoArr[filenum].ang1=RANDFRAC * 360.0;
+            InfoArr[filenum].ang1_vel=((MAX_REVOLUTION_ANGVEL-MIN_REVOLUTION_ANGVEL) * RANDFRAC) + MIN_REVOLUTION_ANGVEL;
 
-                                  InfoArr[filenum].ang2=RANDFRAC * 360.0;
-                                  InfoArr[filenum].ang2_vel=((MAX_ROTATION_ANGVEL-MIN_ROTATION_ANGVEL) * RANDFRAC) + MIN_ROTATION_ANGVEL;
+            InfoArr[filenum].ang2=RANDFRAC * 360.0;
+            InfoArr[filenum].ang2_vel=((MAX_ROTATION_ANGVEL-MIN_ROTATION_ANGVEL) * RANDFRAC) + MIN_ROTATION_ANGVEL;
 
-                                  InfoArr[filenum].radius = (RANDFRAC * (MAX_RADIUS-MIN_RADIUS)) + MIN_RADIUS;
+            InfoArr[filenum].radius = (RANDFRAC * (MAX_RADIUS-MIN_RADIUS)) + MIN_RADIUS;
 
-                                  if(RANDFRAC>0.5) {
-                                          InfoArr[filenum].ang1_vel=-InfoArr[filenum].ang1_vel;
-                                  }
+            if(RANDFRAC>0.5) {
+              InfoArr[filenum].ang1_vel=-InfoArr[filenum].ang1_vel;
+            }
 
-                                  if(RANDFRAC>0.5) {
-                                          InfoArr[filenum].ang2_vel=-InfoArr[filenum].ang2_vel;
-                                  }
+            if(RANDFRAC>0.5) {
+              InfoArr[filenum].ang2_vel=-InfoArr[filenum].ang2_vel;
+            }
 
-                                  // xforms happen left to right
-                                  LVector2f new_center = LVector2f(InfoArr[filenum].radius,0.0) *
-                                                   LMatrix3f::rotate_mat(InfoArr[filenum].ang1);
+            // xforms happen left to right
+            LVector2f new_center = LVector2f(InfoArr[filenum].radius,0.0) *
+              LMatrix3f::rotate_mat(InfoArr[filenum].ang1);
 
-                                  const LVector3f rotate_axis(0.0, 0.0, 1.0);
+            const LVector3f rotate_axis(0.0, 0.0, 1.0);
 
-                                  LVector3f translate_vec(xpos+new_center._v.v._0,
-                                                                                  ypos+new_center._v.v._1,
-                                                                                  0.0);
+            LVector3f translate_vec(xpos+new_center._v.v._0,
+                                    ypos+new_center._v.v._1,
+                                    0.0);
 
-                                  LMatrix4f::rotate_mat_normaxis(InfoArr[filenum].ang2,rotate_axis,tmat1);
-                                  tmat2 = LMatrix4f::translate_mat(translate_vec);
-                                  xfm_mat = tmat1 * tmat2;
-                          } else if(gridmotiontype==LinearMotion) {
+            LMatrix4f::rotate_mat_normaxis(InfoArr[filenum].ang2,rotate_axis,tmat1);
+            tmat2 = LMatrix4f::translate_mat(translate_vec);
+            xfm_mat = tmat1 * tmat2;
+          } else if(gridmotiontype==LinearMotion) {
 
-                                      #define MIN_VEL 2.0
-                                      #define MAX_VEL (fabs(wander_area_pos_offset))
+#define MIN_VEL 2.0
+#define MAX_VEL (fabs(wander_area_pos_offset))
 
-                                          InfoArr[filenum].vel=((MAX_VEL-MIN_VEL) * RANDFRAC) + MIN_VEL;
+            InfoArr[filenum].vel=((MAX_VEL-MIN_VEL) * RANDFRAC) + MIN_VEL;
 
-                                          InfoArr[filenum].xstart=xpos;
-                                          InfoArr[filenum].ystart=ypos;
+            InfoArr[filenum].xstart=xpos;
+            InfoArr[filenum].ystart=ypos;
 
-                                          InfoArr[filenum].xend = RANDFRAC*fabs(2.0*wander_area_pos_offset) + wander_area_pos_offset;
-                                          InfoArr[filenum].yend = RANDFRAC*fabs(2.0*wander_area_pos_offset) + wander_area_pos_offset;
+            InfoArr[filenum].xend = RANDFRAC*fabs(2.0*wander_area_pos_offset) + wander_area_pos_offset;
+            InfoArr[filenum].yend = RANDFRAC*fabs(2.0*wander_area_pos_offset) + wander_area_pos_offset;
 
-                                          InfoArr[filenum].starttime = now;
+            InfoArr[filenum].starttime = now;
 
-                                          float xdel = InfoArr[filenum].xdel = InfoArr[filenum].xend-InfoArr[filenum].xstart;
-                                          float ydel = InfoArr[filenum].ydel = InfoArr[filenum].yend-InfoArr[filenum].ystart;
+            float xdel = InfoArr[filenum].xdel = InfoArr[filenum].xend-InfoArr[filenum].xstart;
+            float ydel = InfoArr[filenum].ydel = InfoArr[filenum].yend-InfoArr[filenum].ystart;
 
-                                          InfoArr[filenum].endtime = csqrt(xdel*xdel+ydel*ydel)/InfoArr[filenum].vel;
+            InfoArr[filenum].endtime = csqrt(xdel*xdel+ydel*ydel)/InfoArr[filenum].vel;
 
-                                          InfoArr[filenum].timedel = InfoArr[filenum].endtime - InfoArr[filenum].starttime;
+            InfoArr[filenum].timedel = InfoArr[filenum].endtime - InfoArr[filenum].starttime;
 
-                                          const LVector3f rotate_axis(0.0, 0.0, 1.0);
-                                          float ang = rad_2_deg(atan2(-xdel,ydel));
+            const LVector3f rotate_axis(0.0, 0.0, 1.0);
+            float ang = rad_2_deg(atan2(-xdel,ydel));
 
-                                          LMatrix4f::rotate_mat_normaxis(ang,rotate_axis,InfoArr[filenum].rotmat);
+            LMatrix4f::rotate_mat_normaxis(ang,rotate_axis,InfoArr[filenum].rotmat);
 
-                                          LVector3f translate_vec(xpos, ypos, 0.0);
-                                          LMatrix4f tmat2 = LMatrix4f::translate_mat(translate_vec);
+            LVector3f translate_vec(xpos, ypos, 0.0);
+            LMatrix4f tmat2 = LMatrix4f::translate_mat(translate_vec);
 
-                                          xfm_mat = InfoArr[filenum].rotmat * tmat2;
-                          } else {
-                                  LVector3f translate_vec(xpos, ypos, 0.0);
-                                  xfm_mat = LMatrix4f::translate_mat(translate_vec);
-                          }
+            xfm_mat = InfoArr[filenum].rotmat * tmat2;
+          } else {
+            LVector3f translate_vec(xpos, ypos, 0.0);
+            xfm_mat = LMatrix4f::translate_mat(translate_vec);
+          }
 
-                          pRRptrArr[filenum]->set_transition(new TransformTransition(xfm_mat));
+          pRRptrArr[filenum]->set_transition(new TransformTransition(xfm_mat));
 
-                          if(((filenum+1) % gridwidth) == 0) {
-                                  xpos= -gridwidth*GRIDCELLSIZE/2.0;
-                                  ypos+=GRIDCELLSIZE;
-                          } else {
-                                  xpos+=GRIDCELLSIZE;
-                          }
-                        }
-                }
-
+          if(((filenum+1) % gridwidth) == 0) {
+            xpos= -gridwidth*GRIDCELLSIZE/2.0;
+            ypos+=GRIDCELLSIZE;
+          } else {
+            xpos+=GRIDCELLSIZE;
+          }
         }
+      }
+
+    }
 
     // If we happened to load up both a character file and its
     // matching animation file, attempt to bind them together now.

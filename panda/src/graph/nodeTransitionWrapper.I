@@ -95,6 +95,16 @@ get_trans() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodeTransitionWrapper::set_trans
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_GRAPH void NodeTransitionWrapper::
+set_trans(NodeTransition *trans) {
+  _entry.set_trans(trans);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionWrapper::is_identity
 //       Access: Public
 //  Description: Returns true if the wrapper represents an identity

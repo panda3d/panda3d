@@ -47,6 +47,17 @@ make_attrib() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DecalTransition::make_initial
+//       Access: Public, Virtual
+//  Description: Returns a newly allocated DecalTransition
+//               corresponding to the default initial state.
+////////////////////////////////////////////////////////////////////
+NodeTransition *DecalTransition::
+make_initial() const {
+  return new DecalTransition;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DecalTransition::has_sub_render
 //       Access: Public, Virtual
 //  Description: DecalTransition doesn't actually have a sub_render()

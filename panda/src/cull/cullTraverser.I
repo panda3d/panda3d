@@ -31,13 +31,13 @@
 //               hierarchy below it immediately.
 ////////////////////////////////////////////////////////////////////
 INLINE void CullTraverser::
-draw_geom(GeomNode *geom_node, const AllAttributesWrapper &initial_state) {
+draw_geom(GeomNode *geom_node, const AllTransitionsWrapper &initial_state) {
   if (cull_cat.is_spam()) {
     cull_cat.spam()
       << "Drawing " << *geom_node << " with state: " << initial_state << "\n";
   }
   nassertv(geom_node != (GeomNode *)NULL);
-  _gsg->set_state(initial_state.get_attributes(), true);
+  _gsg->set_state(initial_state.get_transitions(), true);
   _gsg->prepare_display_region();
   geom_node->draw(_gsg);
 }
@@ -51,7 +51,7 @@ draw_geom(GeomNode *geom_node, const AllAttributesWrapper &initial_state) {
 //               hierarchy below it immediately.
 ////////////////////////////////////////////////////////////////////
 INLINE void CullTraverser::
-draw_geom(const ArcChain &arc_chain, const AllAttributesWrapper &initial_state) {
+draw_geom(const ArcChain &arc_chain, const AllTransitionsWrapper &initial_state) {
   nassertv(!arc_chain.empty());
   GeomNode *geom_node;
   DCAST_INTO_V(geom_node, arc_chain.back()->get_child());
@@ -66,7 +66,7 @@ draw_geom(const ArcChain &arc_chain, const AllAttributesWrapper &initial_state) 
 ////////////////////////////////////////////////////////////////////
 INLINE void CullTraverser::
 draw_direct(const ArcChain &arc_chain,
-            const AllAttributesWrapper &initial_state) {
+            const AllTransitionsWrapper &initial_state) {
   nassertv(!arc_chain.empty());
   Node *node = arc_chain.back()->get_child();
   if (cull_cat.is_spam()) {
@@ -75,7 +75,7 @@ draw_direct(const ArcChain &arc_chain,
   }
   nassertv(node != (Node *)NULL);
   DirectRenderTraverser drt(_gsg, _graph_type, arc_chain);
-  drt.traverse(node, initial_state, AllTransitionsWrapper());
+  drt.traverse(node, initial_state);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -145,7 +145,7 @@ find_bin_state(const AllTransitionsWrapper &trans) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CullTraverser::
 backward_arc(NodeRelation *arc, NullTransitionWrapper &,
-             NullAttributeWrapper &, NullAttributeWrapper &,
+             NullTransitionWrapper &, NullTransitionWrapper &,
              const CullLevelState &) {
   mark_backward_arc(arc);
 }

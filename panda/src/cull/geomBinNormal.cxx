@@ -21,10 +21,9 @@
 #include "geomBinUnsorted.h"
 #include "geomBinBackToFront.h"
 
-#include <nodeAttributes.h>
+#include <nodeTransitions.h>
 
 #include <transparencyTransition.h>
-#include <transparencyAttribute.h>
 
 TypeHandle GeomBinNormal::_type_handle;
 
@@ -56,9 +55,8 @@ int GeomBinNormal::
 choose_bin(CullState *cs) const {
   bool is_transparent = false;
 
-  TransparencyAttribute *trans_attrib;
-  if (get_attribute_into(trans_attrib, cs->get_attributes(),
-                         TransparencyTransition::get_class_type())) {
+  TransparencyTransition *trans_attrib;
+  if (get_transition_into(trans_attrib, cs->get_attributes())) {
     is_transparent =
       (trans_attrib->get_mode() != TransparencyProperty::M_none);
   }

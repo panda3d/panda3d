@@ -514,9 +514,7 @@ internal_compare_to(const NodeTransition *other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: MultiTransition::output_property
 //       Access: Public, Virtual
-//  Description: This is a pure virtual function and normally would
-//               not need a body, except that VC++ doesn't seem happy
-//               about instantiating the template otherwise.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
 void MultiTransition<Property, NameClass>::
@@ -526,9 +524,7 @@ output_property(ostream &, const Property &) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: MultiTransition::write_property
 //       Access: Public, Virtual
-//  Description: This is a pure virtual function and normally would
-//               not need a body, except that VC++ doesn't seem happy
-//               about instantiating the template otherwise.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
 void MultiTransition<Property, NameClass>::

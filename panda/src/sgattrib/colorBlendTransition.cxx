@@ -45,6 +45,30 @@ make_attrib() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ColorBlendTransition::make_initial
+//       Access: Public, Virtual
+//  Description: Returns a newly allocated ColorBlendTransition
+//               corresponding to the default initial state.
+////////////////////////////////////////////////////////////////////
+NodeTransition *ColorBlendTransition::
+make_initial() const {
+  return new ColorBlendTransition;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorBlendTransition::issue
+//       Access: Public, Virtual
+//  Description: This is called on scene graph rendering attributes
+//               when it is time to issue the particular attribute to
+//               the graphics engine.  It should call the appropriate
+//               method on GraphicsStateGuardianBase.
+////////////////////////////////////////////////////////////////////
+void ColorBlendTransition::
+issue(GraphicsStateGuardianBase *gsgbase) {
+  gsgbase->issue_color_blend(this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ColorBlendTransition::set_value_from
 //       Access: Protected, Virtual
 //  Description: Copies the value from the other transition pointer,

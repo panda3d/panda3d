@@ -28,16 +28,6 @@ TextureApplyTransition(TextureApplyProperty::Mode mode) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureApplyTransition::Constructor
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE TextureApplyTransition::
-TextureApplyTransition(void)
-{
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TextureApplyTransition::set_mode
 //       Access: Public
 //  Description:

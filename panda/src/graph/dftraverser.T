@@ -25,7 +25,7 @@
 template<class Visitor, class LevelState>
 INLINE_GRAPH DFTraverser<Visitor, LevelState>::
 DFTraverser(Visitor &visitor,
-            const AttributeWrapper &initial_render_state,
+            const TransitionWrapper &initial_render_state,
             TypeHandle graph_type) :
   _visitor(visitor),
   _initial_render_state(initial_render_state),
@@ -63,7 +63,7 @@ start(Node *root, const LevelState &initial_level_state) {
 ////////////////////////////////////////////////////////////////////
 template<class Visitor, class LevelState>
 void DFTraverser<Visitor, LevelState>::
-traverse(NodeRelation *arc, AttributeWrapper state, LevelState level_state) {
+traverse(NodeRelation *arc, TransitionWrapper state, LevelState level_state) {
   nassertv(arc->get_child() != (Node *)NULL);
 
   // Give the visitor a chance to veto this arc.
@@ -71,8 +71,8 @@ traverse(NodeRelation *arc, AttributeWrapper state, LevelState level_state) {
     TransitionWrapper::init_from(_initial_render_state);
   trans.extract_from(arc);
 
-  AttributeWrapper post_state(state);
-  post_state.apply_in_place(trans);
+  TransitionWrapper post_state(state);
+  post_state.compose_in_place(trans);
   if (_visitor.forward_arc(arc, trans, state, post_state, level_state)) {
     traverse(arc->get_child(), post_state, level_state);
     _visitor.backward_arc(arc, trans, state, post_state, level_state);
@@ -88,7 +88,7 @@ traverse(NodeRelation *arc, AttributeWrapper state, LevelState level_state) {
 ////////////////////////////////////////////////////////////////////
 template<class Visitor, class LevelState>
 void DFTraverser<Visitor, LevelState>::
-traverse(Node *node, AttributeWrapper &state, LevelState &level_state) {
+traverse(Node *node, TransitionWrapper &state, LevelState &level_state) {
   // Tell the visitor we reached the node, and give it a chance to
   // veto our further progress.
   if (_visitor.reached_node(node, state, level_state)) {
@@ -106,10 +106,10 @@ traverse(Node *node, AttributeWrapper &state, LevelState &level_state) {
 }
 
 // Convenience functions.
-template<class Visitor, class AttributeWrapper, class LevelState>
+template<class Visitor, class TransitionWrapper, class LevelState>
 INLINE void
 df_traverse(NodeRelation *arc, Visitor &visitor,
-            const AttributeWrapper &initial_render_state,
+            const TransitionWrapper &initial_render_state,
             const LevelState &initial_level_state,
             TypeHandle graph_type) {
   DFTraverser<Visitor, LevelState>
@@ -117,10 +117,10 @@ df_traverse(NodeRelation *arc, Visitor &visitor,
   dft.start(arc, initial_level_state);
 }
 
-template<class Visitor, class AttributeWrapper, class LevelState>
+template<class Visitor, class TransitionWrapper, class LevelState>
 INLINE void
 df_traverse(Node *root, Visitor &visitor,
-            const AttributeWrapper &initial_render_state,
+            const TransitionWrapper &initial_render_state,
             const LevelState &initial_level_state,
             TypeHandle graph_type) {
   DFTraverser<Visitor, LevelState>

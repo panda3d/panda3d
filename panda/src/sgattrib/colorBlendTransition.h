@@ -32,13 +32,16 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ColorBlendTransition : public OnTransition {
 public:
-  INLINE ColorBlendTransition(ColorBlendProperty::Mode mode);
+  INLINE ColorBlendTransition(ColorBlendProperty::Mode mode = ColorBlendProperty::M_none);
 
   INLINE void set_mode(ColorBlendProperty::Mode mode);
   INLINE ColorBlendProperty::Mode get_mode() const;
 
   virtual NodeTransition *make_copy() const;
   virtual NodeAttribute *make_attrib() const;
+  virtual NodeTransition *make_initial() const;
+
+  virtual void issue(GraphicsStateGuardianBase *gsgbase);
 
 protected:
   virtual void set_value_from(const OnTransition *other);

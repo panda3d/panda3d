@@ -49,6 +49,30 @@ make_attrib() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullFaceTransition::make_initial
+//       Access: Public, Virtual
+//  Description: Returns a newly allocated CullFaceTransition
+//               corresponding to the default initial state.
+////////////////////////////////////////////////////////////////////
+NodeTransition *CullFaceTransition::
+make_initial() const {
+  return new CullFaceTransition;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullFaceTransition::issue
+//       Access: Public, Virtual
+//  Description: This is called on scene graph rendering attributes
+//               when it is time to issue the particular attribute to
+//               the graphics engine.  It should call the appropriate
+//               method on GraphicsStateGuardianBase.
+////////////////////////////////////////////////////////////////////
+void CullFaceTransition::
+issue(GraphicsStateGuardianBase *gsgbase) {
+  gsgbase->issue_cull_face(this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullFaceTransition::set_value_from
 //       Access: Protected, Virtual
 //  Description: Copies the value from the other transition pointer,

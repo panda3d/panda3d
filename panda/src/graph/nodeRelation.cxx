@@ -542,13 +542,13 @@ adjust_all_priorities(int adjustment) {
 //               false if any returned false.
 ////////////////////////////////////////////////////////////////////
 bool NodeRelation::
-sub_render_trans(const AllAttributesWrapper &attrib,
-                 AllTransitionsWrapper &trans,
+sub_render_trans(const AllTransitionsWrapper &input_trans,
+                 AllTransitionsWrapper &modify_trans,
                  RenderTraverser *trav) {
   bool all_true = true;
   NodeTransitions::const_iterator ti;
   for (ti = _transitions.begin(); ti != _transitions.end(); ++ti) {
-    if (!(*ti).second->sub_render(this, attrib, trans, trav)) {
+    if (!(*ti).second->sub_render(this, input_trans, modify_trans, trav)) {
       all_true = false;
     }
   }

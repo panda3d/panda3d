@@ -45,6 +45,30 @@ make_attrib() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: StencilTransition::make_initial
+//       Access: Public, Virtual
+//  Description: Returns a newly allocated StencilTransition
+//               corresponding to the default initial state.
+////////////////////////////////////////////////////////////////////
+NodeTransition *StencilTransition::
+make_initial() const {
+  return new StencilTransition;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StencilTransition::issue
+//       Access: Public, Virtual
+//  Description: This is called on scene graph rendering attributes
+//               when it is time to issue the particular attribute to
+//               the graphics engine.  It should call the appropriate
+//               method on GraphicsStateGuardianBase.
+////////////////////////////////////////////////////////////////////
+void StencilTransition::
+issue(GraphicsStateGuardianBase *gsgbase) {
+  gsgbase->issue_stencil(this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: StencilTransition::set_value_from
 //       Access: Protected, Virtual
 //  Description: Copies the value from the other transition pointer,

@@ -39,7 +39,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TransparencyTransition : public OnTransition {
 PUBLISHED:
-  INLINE TransparencyTransition(TransparencyProperty::Mode mode);
+  INLINE TransparencyTransition(TransparencyProperty::Mode mode = TransparencyProperty::M_none);
 
   INLINE void set_mode(TransparencyProperty::Mode mode);
   INLINE TransparencyProperty::Mode get_mode() const;
@@ -47,9 +47,11 @@ PUBLISHED:
 public:
   virtual NodeTransition *make_copy() const;
   virtual NodeAttribute *make_attrib() const;
+  virtual NodeTransition *make_initial() const;
+
+  virtual void issue(GraphicsStateGuardianBase *gsgbase);
 
 protected:
-  INLINE TransparencyTransition(void);
   virtual void set_value_from(const OnTransition *other);
   virtual int compare_values(const OnTransition *other) const;
   virtual void output_value(ostream &out) const;

@@ -26,7 +26,7 @@
 #include "renderRelation.h"
 #include "geomNode.h"
 #include "allTransitionsWrapper.h"
-#include "allAttributesWrapper.h"
+#include "allTransitionsWrapper.h"
 #include "wrt.h"
 #include "switchNode.h"
 #include "transformTransition.h"
@@ -87,9 +87,9 @@ make_copy() const {
 //               in the scene graph order.
 ////////////////////////////////////////////////////////////////////
 bool PGTop::
-sub_render(const AllAttributesWrapper &attrib, AllTransitionsWrapper &,
-           RenderTraverser *trav) {
-  _attrib = attrib;
+sub_render(const AllTransitionsWrapper &input_trans,
+           AllTransitionsWrapper &, RenderTraverser *trav) {
+  _trans = input_trans;
   _gsg = trav->get_gsg();
   const ArcChain &chain = trav->get_arc_chain();
 
@@ -203,22 +203,24 @@ r_traverse(Node *node, const ArcChain &chain) {
     // And draw the item, however it wishes to be drawn.
     
     // Get the net transitions to the PGItem.
-    AllTransitionsWrapper complete_trans;
+    AllTransitionsWrapper wrt_trans;
     wrt(pgi, chain.begin(), chain.end(), this,
-        complete_trans, RenderRelation::get_class_type());
-    pgi->draw_item(this, _gsg, _attrib, complete_trans);
+        wrt_trans, RenderRelation::get_class_type());
+    AllTransitionsWrapper complete_trans;
+    complete_trans.compose_from(_trans, wrt_trans);
+    pgi->draw_item(this, _gsg, complete_trans);
 
   } else if (node->is_of_type(GeomNode::get_class_type())) {
     _gsg->_geom_nodes_pcollector.add_level(1);
     GeomNode *geom = DCAST(GeomNode, node);
 
     // Get the complete state of the GeomNode.
+    AllTransitionsWrapper wrt_trans;
+    wrt(node, chain.begin(), chain.end(), this,
+        wrt_trans, RenderRelation::get_class_type());
     AllTransitionsWrapper complete_trans;
-    wrt(geom, chain.begin(), chain.end(), this,
-        complete_trans, RenderRelation::get_class_type());
-    AllAttributesWrapper complete_state;
-    complete_state.apply_from(_attrib, complete_trans);
-    _gsg->set_state(complete_state.get_attributes(), true);
+    complete_trans.compose_from(_trans, wrt_trans);
+    _gsg->set_state(complete_trans.get_transitions(), true);
 
     // Finally, draw the Geom.
     _gsg->prepare_display_region();

@@ -31,7 +31,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA RenderModeTransition : public OnTransition {
 public:
-  INLINE RenderModeTransition(RenderModeProperty::Mode mode,
+  INLINE RenderModeTransition(RenderModeProperty::Mode mode = RenderModeProperty::M_filled,
                               double line_width = 1.0);
 
   INLINE void set_mode(RenderModeProperty::Mode mode);
@@ -42,6 +42,9 @@ public:
 
   virtual NodeTransition *make_copy() const;
   virtual NodeAttribute *make_attrib() const;
+  virtual NodeTransition *make_initial() const;
+
+  virtual void issue(GraphicsStateGuardianBase *gsgbase);
 
 protected:
   virtual void set_value_from(const OnTransition *other);

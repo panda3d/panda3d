@@ -19,7 +19,8 @@
 #include "alphaTransformTransition.h"
 #include "alphaTransformAttribute.h"
 
-#include <indent.h>
+#include "graphicsStateGuardianBase.h"
+#include "indent.h"
 
 TypeHandle AlphaTransformTransition::_type_handle;
 
@@ -42,6 +43,30 @@ make_copy() const {
 NodeAttribute *AlphaTransformTransition::
 make_attrib() const {
   return new AlphaTransformAttribute;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AlphaTransformTransition::make_initial
+//       Access: Public, Virtual
+//  Description: Returns a newly allocated AlphaTransformTransition
+//               corresponding to the default initial state.
+////////////////////////////////////////////////////////////////////
+NodeTransition *AlphaTransformTransition::
+make_initial() const {
+  return new AlphaTransformTransition;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AlphaTransformTransition::issue
+//       Access: Public, Virtual
+//  Description: This is called on scene graph rendering attributes
+//               when it is time to issue the particular attribute to
+//               the graphics engine.  It should call the appropriate
+//               method on GraphicsStateGuardianBase.
+////////////////////////////////////////////////////////////////////
+void AlphaTransformTransition::
+issue(GraphicsStateGuardianBase *gsgbase) {
+  gsgbase->issue_alpha_transform(this);
 }
 
 ////////////////////////////////////////////////////////////////////

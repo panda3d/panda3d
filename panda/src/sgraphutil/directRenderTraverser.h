@@ -27,7 +27,6 @@
 #include <traverserVisitor.h>
 #include <nodeRelation.h>
 #include <allTransitionsWrapper.h>
-#include <allAttributesWrapper.h>
 #include <geometricBoundingVolume.h>
 #include <lmatrix.h>
 #include <pointerTo.h>
@@ -54,8 +53,7 @@ public:
   virtual ~DirectRenderTraverser();
 
   virtual void traverse(Node *root,
-                        const AllAttributesWrapper &initial_state,
-                        const AllTransitionsWrapper &net_trans);
+                        const AllTransitionsWrapper &initial_state);
 
   INLINE void set_view_frustum_cull(bool flag);
 
@@ -63,15 +61,15 @@ public:
   // These methods, from parent class TraverserVisitor, define the
   // behavior of the DirectRenderTraverser as it traverses the graph.
   // Normally you would never call these directly.
-  bool reached_node(Node *node, AllAttributesWrapper &render_state,
+  bool reached_node(Node *node, AllTransitionsWrapper &render_state,
                     DirectRenderLevelState &level_state);
 
   bool forward_arc(NodeRelation *arc, AllTransitionsWrapper &trans,
-                   AllAttributesWrapper &pre, AllAttributesWrapper &post,
+                   AllTransitionsWrapper &pre, AllTransitionsWrapper &post,
                    DirectRenderLevelState &level_state);
 
   void backward_arc(NodeRelation *arc, AllTransitionsWrapper &trans,
-                    AllAttributesWrapper &pre, AllAttributesWrapper &post,
+                    AllTransitionsWrapper &pre, AllTransitionsWrapper &post,
                     const DirectRenderLevelState &level_state);
 
 private:

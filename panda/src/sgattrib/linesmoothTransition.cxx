@@ -41,3 +41,27 @@ NodeAttribute *LinesmoothTransition::
 make_attrib() const {
   return new LinesmoothAttribute;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: LinesmoothTransition::make_initial
+//       Access: Public, Virtual
+//  Description: Returns a newly allocated LinesmoothTransition
+//               corresponding to the default initial state.
+////////////////////////////////////////////////////////////////////
+NodeTransition *LinesmoothTransition::
+make_initial() const {
+  return new LinesmoothTransition;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LinesmoothTransition::issue
+//       Access: Public, Virtual
+//  Description: This is called on scene graph rendering attributes
+//               when it is time to issue the particular attribute to
+//               the graphics engine.  It should call the appropriate
+//               method on GraphicsStateGuardianBase.
+////////////////////////////////////////////////////////////////////
+void LinesmoothTransition::
+issue(GraphicsStateGuardianBase *gsgbase) {
+  gsgbase->issue_linesmooth(this);
+}

@@ -19,23 +19,23 @@
 #ifndef GRAPHICSSTATEGUARDIAN_H
 #define GRAPHICSSTATEGUARDIAN_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "savedFrameBuffer.h"
 #include "frameBufferStack.h"
 #include "displayRegionStack.h"
 
-#include <graphicsStateGuardianBase.h>
-#include <nodeTransition.h>
-#include <luse.h>
-#include <coordinateSystem.h>
-#include <factory.h>
-#include <renderTraverser.h>
-#include <pStatCollector.h>
+#include "graphicsStateGuardianBase.h"
+#include "nodeTransition.h"
+#include "nodeTransitionCache.h"
+#include "luse.h"
+#include "coordinateSystem.h"
+#include "factory.h"
+#include "renderTraverser.h"
+#include "pStatCollector.h"
 
 #include "plist.h"
 
-class AllAttributesWrapper;
 class AllTransitionsWrapper;
 
 ////////////////////////////////////////////////////////////////////
@@ -102,16 +102,13 @@ public:
 
   virtual void prepare_display_region()=0;
 
-  virtual void render_frame(const AllAttributesWrapper &initial_state)=0;
-  virtual void render_scene(Node *root, ProjectionNode *projnode,
-                            const AllAttributesWrapper &initial_state)=0;
+  virtual void render_frame()=0;
+  virtual void render_scene(Node *root, ProjectionNode *projnode)=0;
   virtual void render_subgraph(RenderTraverser *traverser,
                                Node *subgraph, ProjectionNode *projnode,
-                               const AllAttributesWrapper &initial_state,
                                const AllTransitionsWrapper &net_trans)=0;
   virtual void render_subgraph(RenderTraverser *traverser,
                                Node *subgraph,
-                               const AllAttributesWrapper &initial_state,
                                const AllTransitionsWrapper &net_trans)=0;
 
   INLINE void enable_normals(bool val) { _normals_enabled = val; }
@@ -124,13 +121,14 @@ public:
   virtual bool wants_texcoords(void) const;
   virtual bool wants_colors(void) const;
 
-  virtual void begin_decal(GeomNode *base_geom, AllAttributesWrapper &attrib);
+  virtual void begin_decal(GeomNode *base_geom, AllTransitionsWrapper &attrib);
   virtual void end_decal(GeomNode *base_geom);
 
   virtual void reset();
 
-  void set_state(const NodeAttributes &new_state, bool complete);
-  INLINE const NodeAttributes &get_state() const;
+  void set_state(const NodeTransitions &new_state, bool complete);
+  void set_state(const NodeTransitionCache &new_state, bool complete);
+  INLINE const NodeTransitions &get_state() const;
 
   RenderBuffer get_render_buffer(int buffer_type);
 
@@ -191,7 +189,7 @@ protected:
 
 protected:
   int _buffer_mask;
-  NodeAttributes _state;
+  NodeTransitions _state;
   Colorf _color_clear_value;
   float _depth_clear_value;
   bool _stencil_clear_value;

@@ -50,6 +50,30 @@ make_attrib() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MaterialTransition::make_initial
+//       Access: Public, Virtual
+//  Description: Returns a newly allocated MaterialTransition
+//               corresponding to the default initial state.
+////////////////////////////////////////////////////////////////////
+NodeTransition *MaterialTransition::
+make_initial() const {
+  return new MaterialTransition;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MaterialTransition::issue
+//       Access: Public, Virtual
+//  Description: This is called on scene graph rendering attributes
+//               when it is time to issue the particular attribute to
+//               the graphics engine.  It should call the appropriate
+//               method on GraphicsStateGuardianBase.
+////////////////////////////////////////////////////////////////////
+void MaterialTransition::
+issue(GraphicsStateGuardianBase *gsgbase) {
+  gsgbase->issue_material(this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MaterialTransition::set_value_from
 //       Access: Protected, Virtual
 //  Description: Copies the value from the other transition pointer,

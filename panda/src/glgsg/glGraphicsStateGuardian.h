@@ -75,16 +75,13 @@ public:
 
   virtual void prepare_display_region();
 
-  virtual void render_frame(const AllAttributesWrapper &initial_state);
-  virtual void render_scene(Node *root, ProjectionNode *projnode,
-                            const AllAttributesWrapper &initial_state);
+  virtual void render_frame();
+  virtual void render_scene(Node *root, ProjectionNode *projnode);
   virtual void render_subgraph(RenderTraverser *traverser,
                                Node *subgraph, ProjectionNode *projnode,
-                               const AllAttributesWrapper &initial_state,
                                const AllTransitionsWrapper &net_trans);
   virtual void render_subgraph(RenderTraverser *traverser,
                                Node *subgraph,
-                               const AllAttributesWrapper &initial_state,
                                const AllTransitionsWrapper &net_trans);
 
   virtual void draw_point(GeomPoint *geom, GeomContext *gc);
@@ -121,10 +118,10 @@ public:
   virtual void copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
                                  const RenderBuffer &rb);
   virtual void draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-                                 const NodeAttributes& na=NodeAttributes());
+                                 const NodeTransitions& na=NodeTransitions());
   virtual void draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
                                  const RenderBuffer &rb,
-                                 const NodeAttributes& na=NodeAttributes());
+                                 const NodeTransitions& na=NodeTransitions());
 
   virtual void apply_material(const Material *material);
   virtual void apply_fog(Fog *fog);
@@ -134,35 +131,35 @@ public:
   virtual void apply_light(Spotlight* light);
   virtual void apply_light(AmbientLight* light);
 
-  virtual void issue_transform(const TransformAttribute *attrib);
-  virtual void issue_color_transform(const ColorMatrixAttribute *attrib);
-  virtual void issue_alpha_transform(const AlphaTransformAttribute *attrib);
-  virtual void issue_tex_matrix(const TexMatrixAttribute *attrib);
-  virtual void issue_color(const ColorAttribute *attrib);
-  virtual void issue_texture(const TextureAttribute *attrib);
-  virtual void issue_light(const LightAttribute *attrib);
-  virtual void issue_material(const MaterialAttribute *attrib);
-  virtual void issue_render_mode(const RenderModeAttribute *attrib);
-  virtual void issue_color_blend(const ColorBlendAttribute *attrib);
-  virtual void issue_texture_apply(const TextureApplyAttribute *attrib);
-  virtual void issue_color_mask(const ColorMaskAttribute *attrib);
-  virtual void issue_depth_test(const DepthTestAttribute *attrib);
-  virtual void issue_depth_write(const DepthWriteAttribute *attrib);
-  virtual void issue_tex_gen(const TexGenAttribute *attrib);
-  virtual void issue_cull_face(const CullFaceAttribute *attrib);
-  virtual void issue_stencil(const StencilAttribute *attrib);
-  virtual void issue_clip_plane(const ClipPlaneAttribute *attrib);
-  virtual void issue_transparency(const TransparencyAttribute *attrib);
-  virtual void issue_fog(const FogAttribute *attrib);
-  virtual void issue_linesmooth(const LinesmoothAttribute *attrib);
-  virtual void issue_point_shape(const PointShapeAttribute *attrib);
-  virtual void issue_polygon_offset(const PolygonOffsetAttribute *attrib);
+  virtual void issue_transform(const TransformTransition *attrib);
+  virtual void issue_color_transform(const ColorMatrixTransition *attrib);
+  virtual void issue_alpha_transform(const AlphaTransformTransition *attrib);
+  virtual void issue_tex_matrix(const TexMatrixTransition *attrib);
+  virtual void issue_color(const ColorTransition *attrib);
+  virtual void issue_texture(const TextureTransition *attrib);
+  virtual void issue_light(const LightTransition *attrib);
+  virtual void issue_material(const MaterialTransition *attrib);
+  virtual void issue_render_mode(const RenderModeTransition *attrib);
+  virtual void issue_color_blend(const ColorBlendTransition *attrib);
+  virtual void issue_texture_apply(const TextureApplyTransition *attrib);
+  virtual void issue_color_mask(const ColorMaskTransition *attrib);
+  virtual void issue_depth_test(const DepthTestTransition *attrib);
+  virtual void issue_depth_write(const DepthWriteTransition *attrib);
+  virtual void issue_tex_gen(const TexGenTransition *attrib);
+  virtual void issue_cull_face(const CullFaceTransition *attrib);
+  virtual void issue_stencil(const StencilTransition *attrib);
+  virtual void issue_clip_plane(const ClipPlaneTransition *attrib);
+  virtual void issue_transparency(const TransparencyTransition *attrib);
+  virtual void issue_fog(const FogTransition *attrib);
+  virtual void issue_linesmooth(const LinesmoothTransition *attrib);
+  virtual void issue_point_shape(const PointShapeTransition *attrib);
+  virtual void issue_polygon_offset(const PolygonOffsetTransition *attrib);
 
   virtual bool wants_normals(void) const;
   virtual bool wants_texcoords(void) const;
   virtual bool wants_colors(void) const;
 
-  virtual void begin_decal(GeomNode *base_geom, AllAttributesWrapper &attrib);
+  virtual void begin_decal(GeomNode *base_geom, AllTransitionsWrapper &attrib);
   virtual void end_decal(GeomNode *base_geom);
 
   virtual float compute_distance_to(const LPoint3f &point) const;

@@ -57,8 +57,6 @@
 #include "texMatrixTransition.h"
 #include "texMatrixAttribute.h"
 #include "billboardTransition.h"
-#include "showHideTransition.h"
-#include "showHideAttribute.h"
 #include "polygonOffsetTransition.h"
 #include "polygonOffsetAttribute.h"
 #include "pruneTransition.h"
@@ -177,8 +175,6 @@ ConfigureFn(config_sgattrib) {
   FogAttribute::init_type();
   LinesmoothTransition::init_type();
   LinesmoothAttribute::init_type();
-  ShowHideTransition::init_type();
-  ShowHideAttribute::init_type();
   PruneTransition::init_type();
   ColorTransition::init_type();
   ColorAttribute::init_type();

@@ -329,7 +329,7 @@ dgraph_traverse(const ArcChain &) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool Node::
-sub_render(const AllAttributesWrapper &, AllTransitionsWrapper &,
+sub_render(const AllTransitionsWrapper &, AllTransitionsWrapper &, 
            RenderTraverser *) {
   return true;
 }

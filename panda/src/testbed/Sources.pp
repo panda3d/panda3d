@@ -2,7 +2,7 @@
                    dtoolutil:c dtoolbase:c dtool:m pystub
 #define LOCAL_LIBS \
     framework putil collide loader sgmanip chan text chancfg cull \
-    pnmimage pnmimagetypes event effects shader graph gobj display \
+    pnmimage pnmimagetypes event effects graph gobj display \
     mathutil sgattrib putil express light dgraph device tform sgraph \
     linmath sgraphutil pstatclient panda
 

@@ -19,7 +19,6 @@
 #include "quickRenderTraverser.h"
 #include "config_sgraphutil.h"
 
-#include "allAttributesWrapper.h"
 #include "allTransitionsWrapper.h"
 #include "graphicsStateGuardian.h"
 #include "dftraverser.h"
@@ -66,22 +65,19 @@ QuickRenderTraverser::
 //               the first frame.
 ////////////////////////////////////////////////////////////////////
 void QuickRenderTraverser::
-traverse(Node *root,
-         const AllAttributesWrapper &initial_state,
-         const AllTransitionsWrapper &net_trans) {
+traverse(Node *root, const AllTransitionsWrapper &initial_state) {
   // Statistics
   PStatTimer timer(_draw_pcollector);
 
   _root = root;
-  _initial_state.apply_from(initial_state, net_trans);
+  _initial_state = initial_state;
   _arc_chain = ArcChain(_root);
 
   QuickRenderLevelState level_state;
   level_state._as_of = UpdateSeq::initial();
   level_state._under_instance = false;
 
-  df_traverse(_root, *this,
-              NullAttributeWrapper(), level_state, _graph_type);
+  df_traverse(_root, *this, NullTransitionWrapper(), level_state, _graph_type);
 
   _root = (Node *)NULL;
 }
@@ -93,7 +89,7 @@ traverse(Node *root,
 ////////////////////////////////////////////////////////////////////
 bool QuickRenderTraverser::
 forward_arc(NodeRelation *arc, NullTransitionWrapper &,
-            NullAttributeWrapper &, NullAttributeWrapper &,
+            NullTransitionWrapper &, NullTransitionWrapper &,
             QuickRenderLevelState &level_state) {
   if (arc->has_transition(PruneTransition::get_class_type())) {
     return false;
@@ -174,10 +170,10 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
       */
     }
 
-    AllAttributesWrapper attrib;
-    attrib.apply_from(_initial_state, trans);
+    AllTransitionsWrapper attrib(_initial_state);
+    attrib.compose_in_place(trans);
 
-    _gsg->set_state(attrib.get_attributes(), true);
+    _gsg->set_state(attrib.get_transitions(), true);
     gnode->draw(_gsg);
   }
 

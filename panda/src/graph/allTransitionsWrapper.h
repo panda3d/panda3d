@@ -88,6 +88,8 @@ public:
   INLINE_GRAPH void store_to(NodeRelation *arc) const;
 
   INLINE_GRAPH void compose_in_place(const AllTransitionsWrapper &other);
+  INLINE_GRAPH void compose_from(const AllTransitionsWrapper &a,
+                                 const AllTransitionsWrapper &b);
   INLINE_GRAPH void invert_in_place();
   INLINE_GRAPH void invert_compose_in_place(const AllTransitionsWrapper &other);
 

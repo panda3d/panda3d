@@ -19,8 +19,9 @@
 #include "nodeTransition.h"
 #include "nodeTransitions.h"
 #include "nodeRelation.h"
+#include "config_graph.h"
 
-#include <indent.h>
+#include "indent.h"
 
 TypeHandle NodeTransition::_type_handle;
 
@@ -39,6 +40,18 @@ get_handle() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodeTransition::make_initial
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+NodeTransition *NodeTransition::
+make_initial() const {
+  graph_cat.warning()
+    << "make_initial() not defined for " << get_type() << "\n";
+  return (NodeTransition *)this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodeTransition::sub_render
 //       Access: Public, Virtual
 //  Description: This virtual function is normally a no-op.  It is
@@ -48,7 +61,7 @@ get_handle() const {
 //               process.
 ////////////////////////////////////////////////////////////////////
 bool NodeTransition::
-sub_render(NodeRelation *, const AllAttributesWrapper &,
+sub_render(NodeRelation *, const AllTransitionsWrapper &, 
            AllTransitionsWrapper &, RenderTraverser *) {
   return true;
 }
@@ -83,6 +96,18 @@ output(ostream &out) const {
 void NodeTransition::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeTransition::issue
+//       Access: Public, Virtual
+//  Description: This is called on scene graph rendering attributes
+//               when it is time to issue the particular attribute to
+//               the graphics engine.  It should call the appropriate
+//               method on GraphicsStateGuardianBase.
+////////////////////////////////////////////////////////////////////
+void NodeTransition::
+issue(GraphicsStateGuardianBase *) {
 }
 
 ////////////////////////////////////////////////////////////////////

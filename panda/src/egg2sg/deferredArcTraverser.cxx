@@ -36,7 +36,7 @@ DeferredArcTraverser(const DeferredArcs &deferred_arcs) :
 ////////////////////////////////////////////////////////////////////
 bool DeferredArcTraverser::
 forward_arc(NodeRelation *arc, NullTransitionWrapper &,
-            NullAttributeWrapper &, NullAttributeWrapper &,
+            NullTransitionWrapper &, NullTransitionWrapper &,
             DeferredArcProperty &level_state) {
 
   // Do we have a DeferredArcProperty associated with this arc?

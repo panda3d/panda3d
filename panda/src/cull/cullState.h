@@ -25,7 +25,6 @@
 
 #include <geomNode.h>
 #include <allTransitionsWrapper.h>
-#include <allAttributesWrapper.h>
 #include <pointerTo.h>
 #include <pointerToArray.h>
 #include <updateSeq.h>
@@ -71,8 +70,8 @@ public:
   INLINE int count_current_nodes() const;
   INLINE int get_empty_frames_count() const;
 
-  INLINE void apply_to(const AllAttributesWrapper &initial_state);
-  INLINE const NodeAttributes &get_attributes() const;
+  INLINE void apply_to(const AllTransitionsWrapper &initial_state);
+  INLINE const AllTransitionsWrapper &get_attributes() const;
   INLINE const AllTransitionsWrapper &get_transitions() const;
 
   INLINE bool has_bin() const;
@@ -105,7 +104,7 @@ public:
 
 private:
   AllTransitionsWrapper _trans;
-  NodeAttributes *_attrib;
+  AllTransitionsWrapper _attrib;
 
   typedef pmap<Node *, UpdateSeq> Verified;
   Verified _verified;

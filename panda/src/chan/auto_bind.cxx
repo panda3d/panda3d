@@ -25,7 +25,6 @@
 #include <traverserVisitor.h>
 #include <dftraverser.h>
 #include <string_utils.h>
-#include <nullAttributeWrapper.h>
 #include <nullLevelState.h>
 #include <nullTransitionWrapper.h>
 #include "auto_bind.h"
@@ -46,7 +45,7 @@ typedef pmap<string, PartNodes> Parts;
 class CollectNodes :
   public TraverserVisitor<NullTransitionWrapper, NullLevelState> {
 public:
-  bool reached_node(Node *node, const NullAttributeWrapper &,
+  bool reached_node(Node *node, const NullTransitionWrapper &,
                     NullLevelState &) {
     if (node->is_of_type(AnimBundleNode::get_class_type())) {
       AnimBundleNode *bn = DCAST(AnimBundleNode, node);
@@ -139,7 +138,7 @@ void auto_bind(Node *root_node, AnimControlCollection &controls,
 
   // First, locate all the bundles in the subgraph.
   CollectNodes cn;
-  df_traverse(root_node, cn, NullAttributeWrapper(), NullLevelState(),
+  df_traverse(root_node, cn, NullTransitionWrapper(), NullLevelState(),
               RenderRelation::get_class_type());
 
   // Now, match up the bundles by name.

@@ -46,7 +46,6 @@ public:
   virtual Node *make_copy() const;
 
   virtual void draw_item(PGTop *top, GraphicsStateGuardian *gsg, 
-                         const AllAttributesWrapper &attrib,
                          const AllTransitionsWrapper &trans);
 
   virtual void press(const MouseWatcherParameter &param);

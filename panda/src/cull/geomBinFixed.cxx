@@ -20,10 +20,9 @@
 #include "geomBinFixed.h"
 #include "cullTraverser.h"
 
-#include <nodeAttributes.h>
+#include <nodeTransitions.h>
 #include <graphicsStateGuardian.h>
 #include <transformTransition.h>
-#include <transformAttribute.h>
 #include <geometricBoundingVolume.h>
 #include <pStatTimer.h>
 
@@ -57,9 +56,8 @@ record_current_state(GraphicsStateGuardian *, CullState *cs,
   PStatTimer timer(CullTraverser::_cull_bins_fixed_pcollector);
 
   // Get the transform matrix from the state.
-  TransformAttribute *trans_attrib = NULL;
-  get_attribute_into(trans_attrib, cs->get_attributes(),
-                     TransformTransition::get_class_type());
+  TransformTransition *trans_attrib = NULL;
+  get_transition_into(trans_attrib, cs->get_attributes());
 
   CullState::geom_const_iterator gi;
   for (gi = cs->geom_begin(); gi != cs->geom_end(); ++gi) {

@@ -46,6 +46,17 @@ make_attrib() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomBinTransition::make_initial
+//       Access: Public, Virtual
+//  Description: Returns a newly allocated GeomBinTransition
+//               corresponding to the default initial state.
+////////////////////////////////////////////////////////////////////
+NodeTransition *GeomBinTransition::
+make_initial() const {
+  return new GeomBinTransition;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomBinTransition::set_value_from
 //       Access: Protected, Virtual
 //  Description: Copies the value from the other transition pointer,

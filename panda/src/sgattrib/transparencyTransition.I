@@ -28,16 +28,6 @@ TransparencyTransition(TransparencyProperty::Mode mode) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TransparencyTransition::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE TransparencyTransition::
-TransparencyTransition(void)
-{
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TransparencyTransition::set_mode
 //       Access: Public
 //  Description:

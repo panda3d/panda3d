@@ -18,7 +18,6 @@
 #include "polygonOffsetTransition.cxx"
 #include "pruneTransition.cxx"
 #include "renderModeTransition.cxx"
-#include "showHideTransition.cxx"
 #include "stencilTransition.cxx"
 #include "texGenTransition.cxx"
 #include "texMatrixTransition.cxx"

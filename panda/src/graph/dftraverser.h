@@ -39,10 +39,9 @@ template<class Visitor, class LevelState>
 class DFTraverser {
 public:
   typedef TYPENAME Visitor::TransitionWrapper TransitionWrapper;
-  typedef TYPENAME Visitor::AttributeWrapper AttributeWrapper;
 
   INLINE_GRAPH DFTraverser(Visitor &visitor,
-                           const AttributeWrapper &initial_render_state,
+                           const TransitionWrapper &initial_render_state,
                            TypeHandle graph_type);
 
   INLINE_GRAPH void start(NodeRelation *arc, const LevelState &initial_level_state);
@@ -50,14 +49,14 @@ public:
 
 protected:
   void traverse(NodeRelation *arc,
-                AttributeWrapper render_state,
+                TransitionWrapper render_state,
                 LevelState level_state);
   void traverse(Node *node,
-                AttributeWrapper &render_state,
+                TransitionWrapper &render_state,
                 LevelState &level_state);
 
   Visitor &_visitor;
-  AttributeWrapper _initial_render_state;
+  TransitionWrapper _initial_render_state;
   TypeHandle _graph_type;
 };
 
