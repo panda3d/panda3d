@@ -150,12 +150,12 @@ make_faces() {
     EggVertexPool *egg_vpool = _points->_egg_vpool;
 
     // We reverse the vertex ordering to compensate for Lightwave's
-    // clockwise ordering convention.
-    vector_int::reverse_iterator vi;
-    for (vi = poly->_vertices.rbegin(); 
-	 vi != poly->_vertices.rend() && is_valid; 
-	 ++vi) {
-      int vindex = (*vi);
+    // clockwise ordering convention.  We also want to start with the
+    // last vertex, so that the first convex angle is the first angle
+    // in the EggPolygon (for determining correct normals).
+    int num_vertices = poly->_vertices.size();
+    for (int vi = num_vertices; vi > 0; vi--) {
+      int vindex = poly->_vertices[vi % num_vertices];
       if (vindex < 0 || vindex >= num_points) {
 	nout << "Invalid vertex index " << vindex << " in polygon.\n";
 	is_valid = false;
