@@ -51,9 +51,9 @@ EXPCL_DIRECT NodePath setup_panda_2d(GraphicsWindow *win, const string &name);
 EXPCL_DIRECT void add_render_layer(GraphicsWindow *win, Node *render_top,
                                    Camera *camera);
 
-EXPCL_DIRECT void toggle_wireframe(NodeRelation *render_arc);
-EXPCL_DIRECT void toggle_texture(NodeRelation *render_arc);
-EXPCL_DIRECT void toggle_backface(NodeRelation *render_arc);
+EXPCL_DIRECT bool toggle_wireframe(NodeRelation *render_arc);
+EXPCL_DIRECT bool toggle_texture(NodeRelation *render_arc);
+EXPCL_DIRECT bool toggle_backface(NodeRelation *render_arc);
 
 EXPCL_DIRECT void take_snapshot(GraphicsWindow *win, const string &name);
 

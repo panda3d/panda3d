@@ -389,13 +389,37 @@ class ShowBase:
         self.eventMgr.shutdown()
 
     def toggleBackface(self):
-        toggleBackface(self.render.arc())
+        return toggleBackface(self.render.arc())
+
+    def backfaceCullingOn(self):
+        if self.toggleBackface():
+            self.toggleBackface()
+
+    def backfaceCullingOff(self):
+        if not self.toggleBackface():
+            self.toggleBackface()
 
     def toggleTexture(self):
-        toggleTexture(self.render.arc())
+        return toggleTexture(self.render.arc())
+
+    def textureOn(self):
+        if not self.toggleTexture():
+            self.toggleTexture()
+
+    def textureOff(self):
+        if self.toggleTexture():
+            self.toggleTexture()
 
     def toggleWireframe(self):
-        toggleWireframe(self.render.arc())
+        return toggleWireframe(self.render.arc())
+
+    def wireframeOn(self):
+        if not self.toggleWireframe():
+            self.toggleWireframe()
+
+    def wireframeOff(self):
+        if self.toggleWireframe():
+            self.toggleWireframe()
 
     def disableMouse(self):
         """

@@ -207,7 +207,7 @@ add_render_layer(GraphicsWindow *win, Node *render_top, Camera *camera) {
 }
 
 
-void
+bool
 toggle_wireframe(NodeRelation *render_arc) {
   static bool wireframe_mode = false;
 
@@ -226,10 +226,11 @@ toggle_wireframe(NodeRelation *render_arc) {
     render_arc->set_transition(rma);
     render_arc->set_transition(cfa);
   }
+  return wireframe_mode;
 }
 
 
-void
+bool
 toggle_backface(NodeRelation *render_arc) {
   static bool backface_mode = false;
 
@@ -245,10 +246,11 @@ toggle_backface(NodeRelation *render_arc) {
     CullFaceTransition *cfa = new CullFaceTransition(CullFaceProperty::M_cull_clockwise);
     render_arc->set_transition(cfa);
   }
+  return backface_mode;
 }
 
 
-void toggle_texture(NodeRelation *render_arc) {
+bool toggle_texture(NodeRelation *render_arc) {
   static bool textures_enabled = true;
 
   textures_enabled = !textures_enabled;
@@ -261,6 +263,7 @@ void toggle_texture(NodeRelation *render_arc) {
     ta->set_priority(100);
     render_arc->set_transition(ta);
   }
+  return textures_enabled;
 }
 
 void take_snapshot(GraphicsWindow *win, const string &name) {
