@@ -1,3 +1,13 @@
+NOTE: As of April 2002, we have rewritten the primary scene graph
+interface to Panda, which invalidates almost all of the contents of
+this document.  We hope to be providing an updated document soon.  In
+the meantime, this document remains, and may be useful for historical
+purposes.
+
+
+
+
+
 Panda has two primary modes of rendering: with or without a separate
 "Cull" traversal.
 
