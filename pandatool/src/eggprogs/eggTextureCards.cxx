@@ -121,9 +121,18 @@ EggTextureCards() : EggWriter(true, true) {
 
   add_option
     ("b", "", 0,
-     "Make the textured polygons backfaced",
+     "Make the textured polygons backfaced (two-sided).",
      &EggTextureCards::dispatch_none, &_apply_bface);
 
+  add_option
+    ("fps", "frame-rate", 0,
+     "Normally, all of the texture cards are created as a series of nodes "
+     "beneath a SequenceNode.  This allows all of the cards to be viewed, "
+     "one at a time, if the output file is loaded in pview.  It also has the "
+     "nice side-effect of creating an automatic texture flip that can be "
+     "used directly by applications; use this parameter to specify the "
+     "frame rate of that texture flip.",
+     &EggTextureCards::dispatch_double, NULL, &_frame_rate);
 
   _polygon_geometry.set(-0.5, 0.5, -0.5, 0.5);
   _polygon_color.set(1.0, 1.0, 1.0, 1.0);
@@ -133,6 +142,7 @@ EggTextureCards() : EggWriter(true, true) {
   _format_2 = EggTexture::F_unspecified;
   _format_3 = EggTexture::F_unspecified;
   _format_4 = EggTexture::F_unspecified;
+  _frame_rate = 2.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -293,7 +303,7 @@ run() {
   // tiles one at a time.
   if (_texture_names.size() > 1) {
     group->set_switch_flag(true);
-    group->set_switch_fps(2.0);
+    group->set_switch_fps(_frame_rate);
   }
 
   EggVertexPool *vpool = new EggVertexPool("vpool");

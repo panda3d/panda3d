@@ -64,6 +64,7 @@ public:
   EggTexture::Format _format;
   EggTexture::Format _format_1, _format_2, _format_3, _format_4;
   bool _apply_bface;
+  double _frame_rate;
 };
 
 #endif
