@@ -13,7 +13,7 @@
 EggTrans::
 EggTrans() {
   set_program_description
-    ("This program reads an egg file and writes an essentially equivalent "
+    ("egg-trans reads an egg file and writes an essentially equivalent "
      "egg file to the standard output, or to the file specified with -o.  "
      "Some simple operations on the egg file are supported."); 
 }

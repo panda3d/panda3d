@@ -236,6 +236,7 @@ private:
 
 
   // Support for the color palette.
+  bool _got_color_palette;
   typedef vector<FltPackedColor> Colors;
   typedef map<int, string> ColorNames;
   Colors _colors;

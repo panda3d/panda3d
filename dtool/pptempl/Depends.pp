@@ -31,6 +31,10 @@ Warning: Lib(s) $[nonexisting], referenced in $[DIRNAME]/$[TARGET], not found.
     #set DEPENDABLE_HEADERS $[DEPENDABLE_HEADERS] $[filter %.h %.I,$[SOURCES]]
   #end metalib_target static_lib_target ss_lib_target lib_target noinst_lib_target bin_target noinst_bin_target
 
+  #forscopes test_bin_target
+    #set DEPENDABLE_HEADERS $[DEPENDABLE_HEADERS] $[filter %.h %.I,$[SOURCES]]
+  #end test_bin_target
+
   // Allow the user to define additional EXTRA_DEPENDS targets in each
   // Sources.pp.
   #define DEPEND_DIRS \

@@ -20,6 +20,8 @@
 class EggFilter : public EggReader, public EggWriter {
 public:
   EggFilter(bool allow_last_param = false, bool allow_stdout = true);
+
+protected:
   virtual bool handle_args(Args &args);
 };
 

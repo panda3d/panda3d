@@ -130,6 +130,8 @@ public:
   bool open_append(ofstream &stream) const;
   bool open_read_write(fstream &stream) const;
 
+  bool touch() const;
+
   bool unlink() const;
   bool rename_to(const Filename &other) const;
 

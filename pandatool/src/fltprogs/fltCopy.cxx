@@ -141,6 +141,11 @@ copy_flt_file(const Filename &source, const Filename &dest,
     }
   }
 
+  // Remove all the textures from the palette, and then add back only
+  // those we found in use.  This way we don't copy a file that
+  // references bogus textures.
+  header->clear_textures();
+
   Textures::const_iterator ti;
   for (ti = textures.begin(); ti != textures.end(); ++ti) {
     FltTexture *tex = (*ti);
@@ -164,6 +169,7 @@ copy_flt_file(const Filename &source, const Filename &dest,
       // filename, relative to the flt file.
       tex->_filename = dir->get_rel_to(texture_dir) + "/" + 
 	texture_filename.get_basename();
+      header->add_texture(tex);
     }
   }
 

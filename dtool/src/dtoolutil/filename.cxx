@@ -18,6 +18,14 @@
 #include <stdio.h>  // For rename()
 #include <sys/stat.h>
 
+#ifdef HAVE_UTIME_H
+#include <utime.h>
+
+// We assume we have these too.
+#include <errno.h>
+#include <fcntl.h>
+#endif
+
 
 #if defined(WIN32)
 /* begin Win32-specific code */
@@ -785,6 +793,45 @@ open_read_write(fstream &stream) const {
 #endif
 
   return (!stream.fail());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::touch
+//       Access: Public
+//  Description: Updates the modification time of the file to the
+//               current time.  If the file does not already exist, it
+//               will be created.  Returns true if successful, false
+//               if there is an error.
+////////////////////////////////////////////////////////////////////
+bool Filename::
+touch() const {
+#ifdef HAVE_UTIME_H
+  // Most Unix systems can do this explicitly.
+  string filename = to_os_specific();
+  int result = utime(filename.c_str(), NULL);
+  if (result < 0) {
+    if (errno == ENOENT) {
+      // So the file doesn't already exist; create it.
+      int fd = creat(filename.c_str(), 0666);
+      if (fd < 0) {
+	perror(filename.c_str());
+	return false;
+      }
+      close(fd);
+      return true;
+    }
+    perror(filename.c_str());
+    return false;
+  }
+  return true;
+#else
+  // Other systems may not have an explicit control over the
+  // modification time.  For these systems, we'll just temporary open
+  // the file in append mode, then close it again (it gets closed when
+  // the ofstream goes out of scope).
+  ofstream file;
+  return open_append(file);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

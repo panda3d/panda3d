@@ -130,6 +130,9 @@ $[cdefine HAVE_SYS_TYPES]
 /* Define if you have the <unistd.h> header file.  */
 $[cdefine HAVE_UNISTD_H]
 
+/* Define if you have the <utime.h> header file.  */
+$[cdefine HAVE_UTIME_H]
+
 /* Do we have <sys/soundcard.h> (and presumably a Linux-style audio
    interface)? */
 $[cdefine HAVE_SYS_SOUNDCARD_H]

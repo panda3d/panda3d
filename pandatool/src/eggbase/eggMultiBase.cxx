@@ -1,55 +1,42 @@
-// Filename: eggBase.cxx
-// Created by:  drose (14Feb00)
+// Filename: eggMultiBase.cxx
+// Created by:  drose (02Nov00)
 // 
 ////////////////////////////////////////////////////////////////////
 
-#include "eggBase.h"
+#include "eggMultiBase.h"
 
+#include <eggData.h>
 #include <eggComment.h>
+#include <filename.h>
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggBase::Constructor
+//     Function: EggMultiBase::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-EggBase::
-EggBase() {
+EggMultiBase::
+EggMultiBase() {
   add_option
     ("cs", "coordinate-system", 80, 
      "Specify the coordinate system to operate in.  This may be one of "
      "'y-up', 'z-up', 'y-up-left', or 'z-up-left'.",
-     &EggBase::dispatch_coordinate_system, 
+     &EggMultiBase::dispatch_coordinate_system, 
      &_got_coordinate_system, &_coordinate_system);
 }
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggBase::post_command_line
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-bool EggBase::
-post_command_line() {
-  if (_got_coordinate_system) {
-    _data.set_coordinate_system(_coordinate_system);
-  }
-  
-  return ProgramBase::post_command_line();
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggBase::append_command_comment
+//     Function: EggMultiBase::append_command_comment
 //       Access: Protected
 //  Description: Inserts a comment into the beginning of the indicated
 //               egg file corresponding to the command line that
 //               invoked this program.
 //
 //               Normally this function is called automatically when
-//               appropriate by EggWriter, and it's not necessary to
-//               call it explicitly.
+//               appropriate by EggMultiFilter, and it's not necessary
+//               to call it explicitly.
 ////////////////////////////////////////////////////////////////////
-void EggBase::
+void EggMultiBase::
 append_command_comment(EggData &data) {
   string comment;
 
@@ -90,4 +77,28 @@ append_command_comment(EggData &data) {
   }
 
   data.insert(data.begin(), new EggComment("", comment));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMultiBase::read_egg
+//       Access: Protected, Virtual
+//  Description: Allocates and returns a new EggData structure that
+//               represents the indicated egg file.  If the egg file
+//               cannot be read for some reason, returns NULL. 
+//
+//               This can be overridden by derived classes to control
+//               how the egg files are read, or to extend the
+//               information stored with each egg structure, by
+//               deriving from EggData.
+////////////////////////////////////////////////////////////////////
+EggData *EggMultiBase::
+read_egg(const Filename &filename) {
+  EggData *data = new EggData;
+  if (data->read(filename)) {
+    return data;
+  }
+
+  // Failure reading.
+  delete data;
+  return (EggData *)NULL;
 }

@@ -56,6 +56,7 @@ FltHeader() : FltBeadID(this) {
 
   _vertex_lookups_stale = false;
   _current_vertex_offset = 0;
+  _got_color_palette = false;
   _got_eyepoint_trackplane_palette = false;
 
   _auto_attr_update = AU_if_missing;
@@ -1264,6 +1265,11 @@ extract_color_palette(FltRecordReader &reader) {
   nassertr(reader.get_opcode() == FO_color_palette, false);
   DatagramIterator &iterator = reader.get_iterator();
 
+  if (_got_color_palette) {
+    nout << "Warning: multiple color palettes found.\n";
+  }
+  _got_color_palette = true;
+
   static const int expected_color_entries = 1024;
 
   iterator.skip_bytes(128);
@@ -1559,7 +1565,7 @@ write_eyepoint_palette(FltRecordWriter &writer) const {
     return FE_ok;
   }
 
-  writer.set_opcode(FO_color_palette);
+  writer.set_opcode(FO_eyepoint_palette);
   Datagram &datagram = writer.update_datagram();
   datagram.pad_bytes(4);
 

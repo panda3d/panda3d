@@ -568,6 +568,55 @@ dispatch_int(const string &opt, const string &arg, void *var) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ProgramBase::dispatch_int_pair
+//       Access: Protected
+//  Description: Standard dispatch function for an option that takes
+//               a pair of integer parameters.  The data pointer is to
+//               an array of two integers.
+////////////////////////////////////////////////////////////////////
+bool ProgramBase::
+dispatch_int_pair(const string &opt, const string &arg, void *var) {
+  if (arg.empty()) {
+    nout << "-" << opt
+	 << " requires an pair of integers separated by a comma.\n";
+    return false;
+  }
+
+  size_t comma = arg.find(',');
+  if (comma == string::npos) {
+    nout << "-" << opt
+	 << " requires an pair of integers separated by a comma.\n";
+    return false;
+  }
+
+  string first = arg.substr(0, comma);
+  string second = arg.substr(comma + 1);
+
+  int *ip = (int *)var;
+  char *endptr;
+
+  const char *first_str = first.c_str();
+  ip[0] = strtol(first_str, &endptr, 0);
+
+  if (*endptr != '\0') {
+    nout << "Invalid integer parameter for -" << opt << ": " 
+	 << first << "\n";
+    return false;
+  }
+
+  const char *second_str = second.c_str();
+  ip[1] = strtol(second_str, &endptr, 0);
+
+  if (*endptr != '\0') {
+    nout << "Invalid integer parameter for -" << opt << ": " 
+	 << second << "\n";
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ProgramBase::dispatch_double
 //       Access: Protected
 //  Description: Standard dispatch function for an option that takes

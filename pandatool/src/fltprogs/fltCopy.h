@@ -11,6 +11,7 @@
 #include "cvsCopy.h"
 
 #include <dSearchPath.h>
+#include <pointerTo.h>
 
 #include <set>
 
@@ -54,8 +55,8 @@ private:
 		    bool new_file);
 
 
-  typedef set<FltExternalReference *> Refs;
-  typedef set<FltTexture *> Textures;
+  typedef set<PT(FltExternalReference)> Refs;
+  typedef set<PT(FltTexture)> Textures;
 
   void scan_flt(FltRecord *record, Refs &refs, Textures &textures);
 

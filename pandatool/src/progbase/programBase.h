@@ -61,6 +61,7 @@ protected:
   bool dispatch_none(const string &opt, const string &arg, void *);
   bool dispatch_count(const string &opt, const string &arg, void *var);
   bool dispatch_int(const string &opt, const string &arg, void *var);
+  bool dispatch_int_pair(const string &opt, const string &arg, void *var);
   bool dispatch_double(const string &opt, const string &arg, void *var);
   bool dispatch_string(const string &opt, const string &arg, void *var);
   bool dispatch_filename(const string &opt, const string &arg, void *var);
