@@ -111,6 +111,7 @@ MayaToEggConverter(const MayaToEggConverter &copy) :
   _from_selection(copy._from_selection),
   _subsets(copy._subsets),
   _ignore_sliders(copy._ignore_sliders),
+  _force_joints(copy._force_joints),
   _tree(this),
   _maya(copy._maya),
   _polygon_output(copy._polygon_output),
@@ -276,6 +277,52 @@ bool MayaToEggConverter::
 ignore_slider(const string &name) const {
   Globs::const_iterator gi;
   for (gi = _ignore_sliders.begin(); gi != _ignore_sliders.end(); ++gi) {
+    if ((*gi).matches(name)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::clear_force_joints
+//       Access: Public
+//  Description: Empties the list of force_joints added via
+//               add_force_joint().  No joints will be forced.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+clear_force_joints() {
+  _force_joints.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::add_force_joint
+//       Access: Public
+//  Description: Adds a name pattern to the list of force_joints.
+//
+//               Any DAG node that matches a name on the list will be
+//               treated as if it were a joint during the conversion
+//               process; it will receive animation and position
+//               information.  Normally, a true Maya joint, as well as
+//               any DAG nodes whose transforms are animated, will
+//               automatically be flagged as a Panda joint.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+add_force_joint(const GlobPattern &glob) {
+  _force_joints.push_back(glob);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::force_joint
+//       Access: Public
+//  Description: Returns true if the indicated name is on the list of
+//               DAG nodes to treat as a joint, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool MayaToEggConverter::
+force_joint(const string &name) const {
+  Globs::const_iterator gi;
+  for (gi = _force_joints.begin(); gi != _force_joints.end(); ++gi) {
     if ((*gi).matches(name)) {
       return true;
     }

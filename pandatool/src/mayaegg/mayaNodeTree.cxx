@@ -63,7 +63,7 @@ MayaNodeTree(MayaToEggConverter *converter) :
 MayaNodeDesc *MayaNodeTree::
 build_node(const MDagPath &dag_path) {
   MayaNodeDesc *node_desc = r_build_node(dag_path.fullPathName().asChar());
-  node_desc->from_dag_path(dag_path);
+  node_desc->from_dag_path(dag_path, _converter);
   return node_desc;
 }
 

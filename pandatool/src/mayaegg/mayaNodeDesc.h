@@ -31,6 +31,7 @@
 #include <maya/MFnDagNode.h>
 #include "post_maya_include.h"
 
+class MayaToEggConverter;
 class MayaNodeTree;
 class EggGroup;
 class EggTable;
@@ -49,7 +50,7 @@ public:
                MayaNodeDesc *parent = NULL, const string &name = string());
   ~MayaNodeDesc();
 
-  void from_dag_path(const MDagPath &dag_path);
+  void from_dag_path(const MDagPath &dag_path, MayaToEggConverter *converter);
   bool has_dag_path() const;
   const MDagPath &get_dag_path() const;
 

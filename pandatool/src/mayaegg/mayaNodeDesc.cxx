@@ -19,6 +19,7 @@
 #include "mayaNodeDesc.h"
 #include "mayaNodeTree.h"
 #include "mayaBlendDesc.h"
+#include "mayaToEggConverter.h"
 #include "maya_funcs.h"
 #include "config_mayaegg.h"
 
@@ -88,14 +89,24 @@ MayaNodeDesc::
 //               some Maya instance.
 ////////////////////////////////////////////////////////////////////
 void MayaNodeDesc::
-from_dag_path(const MDagPath &dag_path) {
+from_dag_path(const MDagPath &dag_path, MayaToEggConverter *converter) {
   MStatus status;
 
   if (_dag_path == (MDagPath *)NULL) {
     _dag_path = new MDagPath(dag_path);
 
-    if (_dag_path->hasFn(MFn::kJoint)) {
-      // This node is a joint.
+    string name;
+    MFnDagNode dag_node(dag_path, &status);
+    if (!status) {
+      status.perror("MFnDagNode constructor");
+    } else {
+      name = dag_node.name().asChar();
+      cerr << "node " << name << "\n";
+    }
+
+    if (_dag_path->hasFn(MFn::kJoint) || converter->force_joint(name)) {
+      // This node is a joint, or the user specifically asked to treat
+      // it like a joint.
       _joint_type = JT_joint;
       if (_parent != (MayaNodeDesc *)NULL) {
         _parent->mark_joint_parent();

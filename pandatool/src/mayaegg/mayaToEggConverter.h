@@ -84,6 +84,10 @@ public:
   void add_ignore_slider(const GlobPattern &glob);
   bool ignore_slider(const string &name) const;
 
+  void clear_force_joints();
+  void add_force_joint(const GlobPattern &glob);
+  bool force_joint(const string &name) const;
+
   void set_from_selection(bool from_selection);
 
   bool convert_maya();
@@ -144,6 +148,7 @@ private:
   typedef pvector<GlobPattern> Globs;
   Globs _subsets;
   Globs _ignore_sliders;
+  Globs _force_joints;
 
   MayaNodeTree _tree;
 
