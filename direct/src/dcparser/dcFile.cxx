@@ -91,8 +91,7 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 bool DCFile::
 read_all() {
-  ConfigVariableList dc_files("dc-file", 0,
-                              "The list of dc files to load.");
+  ConfigVariableList dc_files("dc-file", "The list of dc files to load.");
 
   if (dc_files.size() == 0) {
     cerr << "No files specified via dc-file Config.prc variable!\n";

@@ -40,6 +40,17 @@ ConfigureDef(config_util);
 NotifyCategoryDef(util, "");
 NotifyCategoryDef(bam, util_cat);
 
+#ifndef CPPPARSER
+ConfigVariableSearchPath model_path
+("model-path", "The default directories to search for all models and general files loaded into Panda.");
+
+ConfigVariableSearchPath texture_path
+("texture-path", "A special directory path to search for textures only.  Textures are also searched for along the model-path, so the use of texture-path is only useful if you have special directories that only contain textures.");
+
+ConfigVariableSearchPath sound_path
+("sound-path", "The directories to search for loaded sound and music files.");
+#endif  // CPPPARSER
+
 ConfigureFn(config_util) {
   BamReaderParam::init_type();
   Configurable::init_type();
@@ -71,20 +82,20 @@ ConfigureFn(config_util) {
 //
 //const bool track_memory_usage = config_util.GetBool("track-memory-usage", false);
 
-DSearchPath &
+// There is no longer any need for C++ code to call these functions to
+// access the various path variables; instead, new C++ code should
+// just access the path variables directly.
+ConfigVariableSearchPath &
 get_model_path() {
-  static DSearchPath *model_path = NULL;
-  return get_config_path("model-path", model_path);
+  return model_path;
 }
 
-DSearchPath &
+ConfigVariableSearchPath &
 get_texture_path() {
-  static DSearchPath *texture_path = NULL;
-  return get_config_path("texture-path", texture_path);
+  return texture_path;
 }
 
-DSearchPath &
+ConfigVariableSearchPath &
 get_sound_path() {
-  static DSearchPath *sound_path = NULL;
-  return get_config_path("sound-path", sound_path);
+  return sound_path;
 }

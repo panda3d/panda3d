@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
+#include "configVariableSearchPath.h"
 #include "dconfig.h"
 
 class DSearchPath;
@@ -36,14 +37,16 @@ NotifyCategoryDecl(bam, EXPCL_PANDA, EXPTP_PANDA);
 
 //extern EXPCL_PANDA const bool track_memory_usage;
 
-// These are functions instead of constant variables because they are
-// computed based on the concatenation of all appearances of the
-// corresponding variable in the config files.
+extern EXPCL_PANDA ConfigVariableSearchPath model_path;
+extern EXPCL_PANDA ConfigVariableSearchPath texture_path;
+extern EXPCL_PANDA ConfigVariableSearchPath sound_path;
 
+// The above variables are also shadowed by these functions, so that
+// they can easily be accessed in the interpreter (e.g. Python).
 BEGIN_PUBLISH
-EXPCL_PANDA DSearchPath &get_model_path();
-EXPCL_PANDA DSearchPath &get_texture_path();
-EXPCL_PANDA DSearchPath &get_sound_path();
+EXPCL_PANDA ConfigVariableSearchPath &get_model_path();
+EXPCL_PANDA ConfigVariableSearchPath &get_texture_path();
+EXPCL_PANDA ConfigVariableSearchPath &get_sound_path();
 END_PUBLISH
 
 #endif /* __CONFIG_UTIL_H__ */

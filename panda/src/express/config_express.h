@@ -37,6 +37,7 @@
 #include "configVariableInt.h"
 #include "configVariableList.h"
 #include "configVariableManager.h"
+#include "configVariableSearchPath.h"
 #include "configVariableString.h"
 
 ConfigureDecl(config_express, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);

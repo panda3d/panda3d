@@ -289,7 +289,7 @@ handle_args(Args &args) {
 bool SomethingToEgg::
 post_command_line() {
   // Prepend the source filename to the model path.
-  DSearchPath &model_path = get_model_path();
+  ConfigVariableSearchPath &model_path = get_model_path();
   Filename directory = _input_filename.get_dirname();
   if (directory.empty()) {
     directory = ".";

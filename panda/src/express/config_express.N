@@ -18,6 +18,7 @@ forcetype ConfigVariableDouble
 forcetype ConfigVariableInt
 forcetype ConfigVariableList
 forcetype ConfigVariableManager
+forcetype ConfigVariableSearchPath
 forcetype ConfigVariableString
 
 forcetype istream
