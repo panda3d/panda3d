@@ -761,4 +761,21 @@ parse_authority() {
     string port_str = _url.substr(_port_start, _port_end - _port_start);
     _port = atoi(port_str.c_str());
   }
+
+  // Make sure the server name is lowercase only.
+  for (size_t si = _server_start; si != _server_end; ++si) {
+    _url[si] = tolower(_url[si]);
+  }
+
+  // Also make sure the server name doesn't end with a dot.  It's
+  // happened!  Silly users.
+  if (_server_end > _server_start && _url[_server_end - 1] == '.') {
+    _url = _url.substr(0, _server_end - 1) + _url.substr(_server_end);
+    _server_end--;
+    _port_start--;
+    _port_end--;
+    _path_start--;
+    _path_end--;
+    _query_start--;
+  }
 }
