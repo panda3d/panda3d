@@ -95,8 +95,7 @@ draw_to(float x, float y, float z) {
 //           
 ////////////////////////////////////////////////////////////////////
 INLINE void PortalClipper::
-draw_camera_frustum()
-{
+draw_camera_frustum() {
   _color = Colorf(1,1,1,1);
   draw_hexahedron(_hex_frustum);
 }

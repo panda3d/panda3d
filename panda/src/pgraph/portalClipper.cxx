@@ -111,8 +111,7 @@ draw_to(const LVecBase3f &v) {
 //           
 ////////////////////////////////////////////////////////////////////
 void PortalClipper::
-draw_hexahedron(BoundingHexahedron *frustum)
-{
+draw_hexahedron(BoundingHexahedron *frustum) {
   /*
   pgraph_cat.debug() << "frustum points " << frustum->get_num_points() << endl;
 
@@ -146,7 +145,6 @@ draw_hexahedron(BoundingHexahedron *frustum)
   draw_to(frustum->get_point(5));
   draw_to(frustum->get_point(6));
   draw_to(frustum->get_point(2));
-
 }
 ////////////////////////////////////////////////////////////////////
 //     Function: PortalClipper::draw the lines
