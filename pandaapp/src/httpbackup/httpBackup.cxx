@@ -49,8 +49,10 @@ HTTPBackup() {
 
   add_option
     ("p", "url", 0,
-     "Specifies the URL of the HTTP proxy server, if one is required.",
-     &HTTPBackup::dispatch_url, &_got_proxy, &_proxy);
+     "Specifies the URL of the HTTP proxy server(s), if one is required.  "
+     "Multiple servers may be specified by separating them with semicolons; "
+     "they will be tried in the order listed.",
+     &HTTPBackup::dispatch_string, &_got_proxy, &_proxy);
 
   add_option
     ("a", "", 0,
@@ -183,7 +185,7 @@ handle_args(ProgramBase::Args &args) {
 bool HTTPBackup::
 post_command_line() {
   if (_got_proxy) {
-    _http.set_proxy(_proxy);
+    _http.set_proxy_spec(_proxy);
   }
 
   if (!_catalog_name.is_fully_qualified()) {

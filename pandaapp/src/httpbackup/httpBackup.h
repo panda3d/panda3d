@@ -58,7 +58,7 @@ private:
   void check_unique(string &filename);
 
 private:
-  URLSpec _proxy;
+  string _proxy;
   bool _got_proxy;
 
   URLSpec _url;
