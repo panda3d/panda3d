@@ -60,7 +60,7 @@ precompute_linear_matrices(Physical *physical,
 
   // by local forces, we mean members of the physical's force set.
   int local_force_vec_size = physical->get_linear_forces().size();
-  int index = 0, i;
+  int i;
 
   LMatrix4f current_xform;
   ForceNode *force_node;
@@ -75,7 +75,7 @@ precompute_linear_matrices(Physical *physical,
     nassertv(force_node != (ForceNode *) NULL);
 
     get_rel_mat(physical_node, force_node, current_xform);
-    _precomputed_linear_matrices[index++] = current_xform;
+    _precomputed_linear_matrices.push_back(current_xform);
   }
 
   const pvector< PT(LinearForce) > &force_vector =
@@ -87,7 +87,7 @@ precompute_linear_matrices(Physical *physical,
     nassertv(force_node != (ForceNode *) NULL);
 
     get_rel_mat(physical_node, force_node, current_xform);
-    _precomputed_linear_matrices[index++] = current_xform;
+    _precomputed_linear_matrices.push_back(current_xform);
   }
 }
 
@@ -111,7 +111,7 @@ precompute_angular_matrices(Physical *physical,
 
   // by local forces, we mean members of the physical's force set.
   int local_force_vec_size = physical->get_angular_forces().size();
-  int index = 0, i;
+  int i;
 
   LMatrix4f current_xform;
   ForceNode *force_node;
@@ -126,7 +126,7 @@ precompute_angular_matrices(Physical *physical,
     nassertv(force_node != (ForceNode *) NULL);
 
     get_rel_mat(physical_node, force_node, current_xform);
-    _precomputed_angular_matrices[index++] = current_xform;
+    _precomputed_angular_matrices.push_back(current_xform);
   }
 
   const pvector< PT(AngularForce) > &force_vector =
@@ -138,6 +138,6 @@ precompute_angular_matrices(Physical *physical,
     nassertv(force_node != (ForceNode *) NULL);
 
     get_rel_mat(physical_node, force_node, current_xform);
-    _precomputed_angular_matrices[index++] = current_xform;
+    _precomputed_angular_matrices.push_back(current_xform);
   }
 }
