@@ -276,6 +276,7 @@ protected:
   bool _needs_tex_mat;
   CPT(TexGenAttrib) _current_tex_gen;
   bool _needs_tex_gen;
+  bool _tex_gen_modifies_mat;
   bool _auto_antialias_mode;
   RenderModeAttrib::Mode _render_mode;
 

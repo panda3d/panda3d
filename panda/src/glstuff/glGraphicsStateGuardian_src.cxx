@@ -611,6 +611,7 @@ reset() {
   _needs_tex_mat = false;
   _current_tex_gen = DCAST(TexGenAttrib, TexGenAttrib::make());
   _needs_tex_gen = false;
+  _tex_gen_modifies_mat = false;
   _auto_antialias_mode = false;
   _render_mode = RenderModeAttrib::M_filled;
 
@@ -4597,8 +4598,17 @@ finish_modify_state() {
     do_issue_texture();
   }
 
+  // If one of the previously-loaded TexGen modes modified the texture
+  // matrix, then if either state changed, we have to change both of
+  // them now.
+  if (_tex_gen_modifies_mat &&
+      (_needs_tex_mat || _needs_tex_gen)) {
+    _needs_tex_mat = true;
+    _needs_tex_gen = true;
+  }
+
   // Apply the texture matrix, if needed.
-  if (_needs_tex_mat || _needs_tex_gen) {
+  if (_needs_tex_mat) {
     _needs_tex_mat = false;
 
     int num_stages = _current_texture->get_num_on_stages();
@@ -4642,6 +4652,8 @@ finish_modify_state() {
     static const float t_data[4] = { 0, 1, 0, 0 };
     static const float r_data[4] = { 0, 0, 1, 0 };
     static const float q_data[4] = { 0, 0, 0, 1 };
+
+    _tex_gen_modifies_mat = false;
     
     for (int i = 0; i < num_stages; i++) {
       TextureStage *stage = _current_texture->get_on_stage(i);
@@ -4685,7 +4697,7 @@ finish_modify_state() {
 
             // Now we need to reset the texture matrix next time
             // around to undo this.
-            _needs_tex_mat = true;
+            _tex_gen_modifies_mat = true;
           }
 
           GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
@@ -4723,7 +4735,7 @@ finish_modify_state() {
 
             // Now we need to reset the texture matrix next time
             // around to undo this.
-            _needs_tex_mat = true;
+            _tex_gen_modifies_mat = true;
           }
 
           GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
