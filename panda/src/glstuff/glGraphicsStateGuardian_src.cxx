@@ -4482,6 +4482,7 @@ set_blend_mode() {
     return;
     
   case TransparencyAttrib::M_multisample:
+    // We need to enable *both* of these in M_multisample case.
     enable_multisample_alpha_one(true);
     enable_multisample_alpha_mask(true);
     enable_blend(false);

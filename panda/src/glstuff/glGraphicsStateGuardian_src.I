@@ -117,20 +117,20 @@ enable_multisample_antialias(bool val) {
 INLINE void CLP(GraphicsStateGuardian)::
 enable_multisample_alpha_one(bool val) {
   if (_supports_multisample) {
-    if ((_multisample_mode & MM_antialias) != 0 && !val) {
+    if ((_multisample_mode & MM_alpha_one) != 0 && !val) {
       // Turn off sample_alpha_to_one multisample.
-      _multisample_mode &= ~MM_antialias;
+      _multisample_mode &= ~MM_alpha_one;
       GLP(Disable)(GL_SAMPLE_ALPHA_TO_ONE);
       if (_multisample_mode == 0) {
         GLP(Disable)(GL_MULTISAMPLE);
       }
-    } else if ((_multisample_mode & MM_antialias) == 0 && val) {
+    } else if ((_multisample_mode & MM_alpha_one) == 0 && val) {
       // Turn on sample_alpha_to_one multisample.
       if (_multisample_mode == 0) {
         GLP(Enable)(GL_MULTISAMPLE);
       }
       GLP(Enable)(GL_SAMPLE_ALPHA_TO_ONE);
-      _multisample_mode |= MM_antialias;
+      _multisample_mode |= MM_alpha_one;
     }
   }
 }
@@ -145,20 +145,20 @@ enable_multisample_alpha_one(bool val) {
 INLINE void CLP(GraphicsStateGuardian)::
 enable_multisample_alpha_mask(bool val) {
   if (_supports_multisample) {
-    if ((_multisample_mode & MM_antialias) != 0 && !val) {
+    if ((_multisample_mode & MM_alpha_mask) != 0 && !val) {
       // Turn off sample_alpha_to_mask multisample.
-      _multisample_mode &= ~MM_antialias;
+      _multisample_mode &= ~MM_alpha_mask;
       GLP(Disable)(GL_SAMPLE_ALPHA_TO_COVERAGE);
       if (_multisample_mode == 0) {
         GLP(Disable)(GL_MULTISAMPLE);
       }
-    } else if ((_multisample_mode & MM_antialias) == 0 && val) {
+    } else if ((_multisample_mode & MM_alpha_mask) == 0 && val) {
       // Turn on sample_alpha_to_mask multisample.
       if (_multisample_mode == 0) {
         GLP(Enable)(GL_MULTISAMPLE);
       }
       GLP(Enable)(GL_SAMPLE_ALPHA_TO_COVERAGE);
-      _multisample_mode |= MM_antialias;
+      _multisample_mode |= MM_alpha_mask;
     }
   }
 }
