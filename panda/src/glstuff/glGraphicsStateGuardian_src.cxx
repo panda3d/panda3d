@@ -2347,6 +2347,16 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   tex->set_x_size(w);
   tex->set_y_size(h);
 
+  if (tex->get_match_framebuffer_format()) {
+    FrameBufferProperties properties = get_properties();
+    int mode = properties.get_frame_buffer_mode();
+    if (mode & FrameBufferProperties::FM_alpha) {
+      tex->set_format(Texture::F_rgba);
+    } else {
+      tex->set_format(Texture::F_rgb);
+    }
+  }
+
   TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   nassertv(tc != (TextureContext *)NULL);
   bind_texture(tc);

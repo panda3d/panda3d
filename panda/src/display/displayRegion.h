@@ -59,6 +59,7 @@ private:
 
 public:
   ~DisplayRegion();
+  void cleanup();
 
   INLINE bool operator < (const DisplayRegion &other) const;
 

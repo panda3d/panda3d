@@ -223,7 +223,9 @@ clear_delete_flag() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsOutput::
 get_delete_flag() const {
-  return _delete_flag;
+  // We only delete the window or buffer automatically when it is
+  // no longer associated with a texture.
+  return _delete_flag && !_hold_texture.is_valid_pointer();
 }
 
 ////////////////////////////////////////////////////////////////////

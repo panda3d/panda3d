@@ -447,6 +447,9 @@ begin_scene() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 end_scene() {
+  // We should clear this pointer now, so that we don't keep unneeded
+  // reference counts dangling.
+  _scene_setup = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

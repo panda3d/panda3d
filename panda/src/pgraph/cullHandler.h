@@ -28,7 +28,7 @@
 // Description : This defines the abstract interface for an object
 //               that receives Geoms identified by the CullTraverser.
 //               By itself, it's not a particularly useful class; to
-//               use it, derive from it and redefine record_geom().
+//               use it, derive from it and redefine record_object().
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CullHandler {
 public:

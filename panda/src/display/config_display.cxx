@@ -87,12 +87,8 @@ ConfigVariableBool show_buffers
           "GraphicsWindows, if possible, so that their contents may be viewed "
           "interactively.  Handy during development of multipass algorithms."));
 
-// Temporarily false by default until this code proves to be more
-// robust on different graphics drivers.  In particular, it seems to
-// cause problems on Jason's ATI FireGL and on Joe's Compaq laptop so
-// far.
 ConfigVariableBool prefer_texture_buffer
-("prefer-texture-buffer", false,
+("prefer-texture-buffer", true,
  PRC_DESC("Set this true to make GraphicsOutput::make_texture_buffer() always "
           "try to create an offscreen buffer supporting render-to-texture, "
           "if the graphics card claims to be able to support this feature.  "
@@ -123,6 +119,16 @@ ConfigVariableBool prefer_single_buffer
           "false (since in that case the buffer can share a graphics context "
           "with the window)."));
 
+// Temporarily false by default until this code proves to be more
+// robust on different graphics drivers.  In particular, it seems to
+// cause problems on Jason's ATI FireGL and on Joe's Compaq laptop so
+// far.
+ConfigVariableBool support_render_texture
+("support-render-texture", false,
+ PRC_DESC("Set this true allow use of the render-to-a-texture feature, if it "
+          "is supported by your graphics card.  Without this enabled, "
+          "offscreen renders will be copied to a texture instead of directly "
+          "rendered there."));
 
 ConfigVariableBool copy_texture_inverted
 ("copy-texture-inverted", false,

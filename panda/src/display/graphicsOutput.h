@@ -34,6 +34,7 @@
 #include "filename.h"
 #include "drawMask.h"
 #include "pvector.h"
+#include "weakPointerTo.h"
 
 class PNMImage;
 
@@ -75,7 +76,6 @@ PUBLISHED:
 
   INLINE bool has_texture() const;  
   INLINE Texture *get_texture() const;  
-  void detach_texture();
   void setup_render_texture(Texture *tex, bool allow_bind, bool to_ram);
 
   INLINE int get_x_size() const;
@@ -102,6 +102,7 @@ PUBLISHED:
   INLINE DisplayRegion *make_display_region(float l, float r,
                                             float b, float t);
   bool remove_display_region(DisplayRegion *display_region);
+  void remove_all_display_regions();
 
   int get_num_display_regions() const;
   PT(DisplayRegion) get_display_region(int n) const;
@@ -192,6 +193,12 @@ protected:
   bool _one_shot;
   bool _inverted;
   bool _delete_flag;
+
+  // This weak pointer is used to keep track of whether the buffer's
+  // bound Texture has been deleted or not.  Until it has, we don't
+  // auto-close the buffer (since that would deallocate the memory
+  // associated with the texture).
+  WPT(Texture) _hold_texture;
 
 protected:
   Mutex _lock; 

@@ -180,29 +180,6 @@ GraphicsOutput::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::detach_texture
-//       Access: Published
-//  Description: Disassociates the texture from the GraphicsOutput.
-//               The texture will no longer be filled as the frame
-//               renders, and it may be used as an ordinary texture in
-//               its own right.  However, its contents may be
-//               undefined.
-////////////////////////////////////////////////////////////////////
-void GraphicsOutput::
-detach_texture() {
-  MutexHolder holder(_lock);
-
-  if (_rtm_mode == RTM_bind_texture && _gsg != (GraphicsStateGuardian *)NULL) {
-    _gsg->framebuffer_release_texture(this, get_texture());
-  }
-
-  _texture = NULL;
-  _rtm_mode = RTM_none;
-
-  set_inverted(window_inverted);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::setup_render_texture
 //       Access: Published
 //  Description: Creates a new Texture object, suitable for rendering
@@ -238,10 +215,6 @@ detach_texture() {
 void GraphicsOutput::
 setup_render_texture(Texture *tex, bool allow_bind, bool to_ram) {
   MutexHolder holder(_lock);
-
-  if (_rtm_mode == RTM_bind_texture && _gsg != (GraphicsStateGuardian *)NULL) {
-    _gsg->framebuffer_release_texture(this, get_texture());
-  }
 
   if (tex == (Texture *)NULL) {
     _texture = new Texture(get_name());
@@ -364,6 +337,8 @@ remove_display_region(DisplayRegion *display_region) {
   TotalDisplayRegions::iterator dri =
     find(_total_display_regions.begin(), _total_display_regions.end(), drp);
   if (dri != _total_display_regions.end()) {
+    // Let's aggressively clean up the display region too.
+    display_region->cleanup();
     display_region->_window = NULL;
     _total_display_regions.erase(dri);
     if (display_region->is_active()) {
@@ -374,6 +349,32 @@ remove_display_region(DisplayRegion *display_region) {
   }
 
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::remove_all_display_regions
+//       Access: Published
+//  Description: Removes all display regions from the window, except
+//               the default one that is created with the window.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+remove_all_display_regions() {
+  MutexHolder holder(_lock);
+
+  TotalDisplayRegions::iterator dri;
+  for (dri = _total_display_regions.begin();
+       dri != _total_display_regions.end();
+       ++dri) {
+    DisplayRegion *display_region = (*dri);
+    if (display_region != _default_display_region) {
+      // Let's aggressively clean up the display region too.
+      display_region->cleanup();
+      display_region->_window = NULL;
+    }
+  }
+  _total_display_regions.clear();
+  _total_display_regions.push_back(_default_display_region);
+  _display_regions_stale = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -517,7 +518,8 @@ make_texture_buffer(const string &name, int x_size, int y_size,
   }
   
   bool allow_bind = 
-    (prefer_texture_buffer && gsg->get_supports_render_texture() && !to_ram);
+    (prefer_texture_buffer && support_render_texture && 
+     gsg->get_supports_render_texture() && !to_ram);
 
   // If the user so indicated in the Config.prc file, try to create a
   // parasite buffer first.  We can only do this if the requested size
@@ -857,13 +859,38 @@ end_frame() {
     _flip_ready = true;
   }
 
-  if (_one_shot && !show_buffers) {
+  if (_one_shot) {
     // In one-shot mode, we request the GraphicsEngine to delete the
-    // window after we have rendered a frame.  But when show-buffers
-    // mode is enabled, we don't do this, to give the user a chance to
-    // see the output.
+    // window after we have rendered a frame.
     _active = false;
     _delete_flag = true;
+
+    // We have to be sure to remove all of the display regions
+    // immediately, so that circular reference counts can be cleared
+    // up (each display region keeps a pointer to a CullResult, which
+    // can hold all sorts of pointers).
+    remove_all_display_regions();
+
+
+    // If we were rendering directly to texture, we can't delete the
+    // buffer until the texture is gone too.
+    if (_rtm_mode == RTM_bind_texture) {
+      _hold_texture = _texture;
+    }
+
+    // Also, when show-buffers mode is enabled, we want to keep the
+    // window around until the user has a chance to see the texture.
+    // Same story: we'll hold it until the texture is gone.  In this
+    // case we also keep the active flag true, so the window will
+    // repaint when needed.
+    if (show_buffers) {
+      _hold_texture = _texture;
+      _active = true;
+    }
+
+    // We have to be sure to clear the _texture pointer, though, or
+    // we'll end up holding a reference to it forever.
+    _texture = NULL;
   }
 
   _cube_map_index = -1;

@@ -288,7 +288,6 @@ flatten(GraphicsOutput *window) {
     // Create a root node for the buffer's scene graph, and set up
     // some appropriate properties for it.
     NodePath render("buffer");
-    cam_node->set_scene(render);
     render.set_bin("unsorted", 0);
     render.set_depth_test(false);
     render.set_depth_write(false);

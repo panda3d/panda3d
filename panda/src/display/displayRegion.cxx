@@ -90,12 +90,26 @@ operator = (const DisplayRegion&) {
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
 ~DisplayRegion() {
-  set_camera(NodePath());
+  cleanup();
 
   // The window pointer should already have been cleared by the time
   // the DisplayRegion destructs (since the GraphicsOutput class keeps
   // a reference count on the DisplayRegion).
   nassertv(_window == (GraphicsOutput *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::cleanup
+//       Access: Public
+//  Description: Cleans up some pointers associated with the
+//               DisplayRegion to help reduce the chance of memory
+//               leaks due to circular reference counts.
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+cleanup() {
+  set_camera(NodePath());
+
+  _cull_result = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
