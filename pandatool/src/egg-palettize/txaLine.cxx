@@ -73,7 +73,7 @@ parse(const string &line) {
 
   vector_string::iterator wi;
   for (wi = words.begin(); wi != words.end(); ++wi) {
-    const string &word = (*wi);
+    string word = (*wi);
 
     // If the pattern ends in the string ".egg", and only if it ends
     // in this string, it is deemed an egg pattern and will only be
@@ -82,8 +82,15 @@ parse(const string &line) {
     // textures.
     if (word.length() > 4 && word.substr(word.length() - 4) == ".egg") {
       _egg_patterns.push_back(GlobPattern(word));
+
     } else {
-      _texture_patterns.push_back(GlobPattern(*wi));
+      // However, the filename extension, if any, is stripped off
+      // because the texture key names nowadays don't include them.
+      size_t dot = word.rfind('.');
+      if (dot != string::npos) {
+        word = word.substr(0, dot);
+      }
+      _texture_patterns.push_back(GlobPattern(word));
     }
   }
 

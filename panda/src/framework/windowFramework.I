@@ -94,6 +94,16 @@ get_two_sided() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::get_one_sided_reverse
+//       Access: Public
+//  Description: Returns the current state of the one_sided_reverse flag.
+////////////////////////////////////////////////////////////////////
+INLINE bool WindowFramework::
+get_one_sided_reverse() const {
+  return _one_sided_reverse_enabled;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WindowFramework::get_lighting
 //       Access: Public
 //  Description: Returns the current state of the lighting flag.

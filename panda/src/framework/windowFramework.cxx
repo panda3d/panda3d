@@ -39,6 +39,7 @@
 #include "config_framework.h"
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
+#include "cullFaceAttrib.h"
 #include "pgTop.h"
 #include "geomNode.h"
 #include "geomTristrip.h"
@@ -70,6 +71,7 @@ WindowFramework(PandaFramework *panda_framework) :
   _wireframe_enabled = false;
   _texture_enabled = true;
   _two_sided_enabled = false;
+  _one_sided_reverse_enabled = false;
   _lighting_enabled = false;
   _background_type = BT_default;
 }
@@ -136,6 +138,7 @@ close_window() {
   _wireframe_enabled = false;
   _texture_enabled = true;
   _two_sided_enabled = false;
+  _one_sided_reverse_enabled = false;
   _lighting_enabled = false;
 }
 
@@ -600,6 +603,10 @@ set_wireframe(bool enable) {
     if (!_two_sided_enabled) {
       render.clear_two_sided();
     }
+    if (_one_sided_reverse_enabled) {
+      CPT(RenderAttrib) attrib = CullFaceAttrib::make_reverse();
+      render.node()->set_attrib(attrib);
+    }
   }
 
   _wireframe_enabled = enable;
@@ -651,6 +658,35 @@ set_two_sided(bool enable) {
   }
 
   _two_sided_enabled = enable;
+  _one_sided_reverse_enabled = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::set_one_sided_reverse
+//       Access: Public
+//  Description: Toggles one-sided reverse mode.  In this mode, the
+//               front sides of one-sided polygons are culled instead
+//               of the back side.
+////////////////////////////////////////////////////////////////////
+void WindowFramework::
+set_one_sided_reverse(bool enable) {
+  if (enable == _one_sided_reverse_enabled) {
+    return;
+  }
+
+  NodePath render = get_render();
+
+  if (!_wireframe_enabled) {
+    if (enable) {
+      CPT(RenderAttrib) attrib = CullFaceAttrib::make_reverse();
+      render.node()->set_attrib(attrib);
+    } else {
+      render.clear_two_sided();
+    }
+  }
+
+  _two_sided_enabled = false;
+  _one_sided_reverse_enabled = enable;
 }
 
 ////////////////////////////////////////////////////////////////////

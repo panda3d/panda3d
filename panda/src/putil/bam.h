@@ -34,7 +34,8 @@ static const unsigned short _bam_major_ver = 4;
 // Bumped to major version 3 on 12/8/00 to change float64's to float32's.
 // Bumped to major version 4 on 4/10/02 to store new scene graph.
 
-static const unsigned short _bam_minor_ver = 0;
+static const unsigned short _bam_minor_ver = 1;
+// Bumped to minor version 1 on 4/10/03 to add CullFaceAttrib::reverse.
 
 
 #endif

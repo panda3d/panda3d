@@ -41,7 +41,7 @@ Palettizer *pal = (Palettizer *)NULL;
 // allows us to easily update egg-palettize to write out additional
 // information to its pi file, without having it increment the bam
 // version number for all bam and boo files anywhere in the world.
-int Palettizer::_pi_version = 7;
+int Palettizer::_pi_version = 8;
 // Updated to version 1 on 12/11/00 to add _remap_char_uv.
 // Updated to version 2 on 12/19/00 to add TexturePlacement::_dest.
 // Updated to version 3 on 12/19/00 to add PaletteGroup::_dependency_order.
@@ -49,6 +49,7 @@ int Palettizer::_pi_version = 7;
 // Updated to version 5 on 10/31/01 to add TextureProperties::_force_format.
 // Updated to version 6 on 3/14/02 to add TextureImage::_alpha_mode.
 // Updated to version 7 on 8/23/02 to add TextureProperties::_anisotropic_degree.
+// Updated to version 8 on 3/20/03 to remove extensions from texture key names.
 
 int Palettizer::_read_pi_version = 0;
 
@@ -962,6 +963,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   for (i = 0; i < _num_textures; i++) {
     TextureImage *texture;
     DCAST_INTO_R(texture, p_list[index], index);
+
     _textures.insert(Textures::value_type(texture->get_name(), texture));
     index++;
   }

@@ -1290,14 +1290,20 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
                                 source->get_alpha_filename());
 
     bool inserted = _sources.insert(Sources::value_type(key, source)).second;
-    nassertr(inserted, pi);
+    if (!inserted) {
+      nout << "Warning: texture key " << key
+           << " is nonunique; texture lost.\n";
+    }
   }
 
   for (i = 0; i < _num_dests; i++) {
     DestTextureImage *dest;
     DCAST_INTO_R(dest, p_list[pi++], pi);
     bool inserted = _dests.insert(Dests::value_type(dest->get_filename(), dest)).second;
-    nassertr(inserted, pi);
+    if (!inserted) {
+      nout << "Warning: dest filename " << dest->get_filename()
+           << " is nonunique; texture lost.\n";
+    }
   }
 
   return pi;

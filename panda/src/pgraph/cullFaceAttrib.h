@@ -34,15 +34,19 @@ PUBLISHED:
     M_cull_none,                // Cull no polygons
     M_cull_clockwise,           // Cull clockwise-oriented polygons
     M_cull_counter_clockwise,   // Cull counter-clockwise-oriented polygons
+    M_cull_unchanged,           // Do not change existing cull behavior
   };
 
 private:
-  INLINE CullFaceAttrib(Mode mode = M_cull_clockwise);
+  INLINE CullFaceAttrib(Mode mode, bool reverse);
 
 PUBLISHED:
   static CPT(RenderAttrib) make(Mode mode = M_cull_clockwise);
+  static CPT(RenderAttrib) make_reverse();
 
-  INLINE Mode get_mode() const;
+  INLINE Mode get_actual_mode() const;
+  INLINE bool get_reverse() const;
+  Mode get_effective_mode() const;
 
 public:
   virtual void issue(GraphicsStateGuardianBase *gsg) const;
@@ -50,10 +54,13 @@ public:
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;
+  virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
+  virtual CPT(RenderAttrib) invert_compose_impl(const RenderAttrib *other) const;
   virtual RenderAttrib *make_default_impl() const;
 
 private:
   Mode _mode;
+  bool _reverse;
 
 public:
   static void register_with_read_factory();

@@ -88,12 +88,14 @@ public:
   void set_wireframe(bool enable);
   void set_texture(bool enable);
   void set_two_sided(bool enable);
+  void set_one_sided_reverse(bool enable);
   void set_lighting(bool enable);
   void set_background_type(BackgroundType type);
 
   INLINE bool get_wireframe() const;
   INLINE bool get_texture() const;
   INLINE bool get_two_sided() const;
+  INLINE bool get_one_sided_reverse() const;
   INLINE bool get_lighting() const;
   INLINE BackgroundType get_background_type() const;
 
@@ -130,6 +132,7 @@ private:
   bool _wireframe_enabled;
   bool _texture_enabled;
   bool _two_sided_enabled;
+  bool _one_sided_reverse_enabled;
   bool _lighting_enabled;
 
   BackgroundType _background_type;

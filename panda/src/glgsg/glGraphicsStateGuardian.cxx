@@ -2311,7 +2311,7 @@ issue_depth_write(const DepthWriteAttrib *attrib) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 issue_cull_face(const CullFaceAttrib *attrib) {
-  CullFaceAttrib::Mode mode = attrib->get_mode();
+  CullFaceAttrib::Mode mode = attrib->get_effective_mode();
 
   switch (mode) {
   case CullFaceAttrib::M_cull_none:

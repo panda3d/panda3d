@@ -611,6 +611,7 @@ do_enable_default_keys() {
   _event_handler.add_hook("w", event_w, this);
   _event_handler.add_hook("t", event_t, this);
   _event_handler.add_hook("b", event_b, this);
+  _event_handler.add_hook("i", event_i, this);
   _event_handler.add_hook("l", event_l, this);
   _event_handler.add_hook("c", event_c, this);
   _event_handler.add_hook("shift-c", event_C, this);
@@ -709,6 +710,22 @@ event_b(CPT_Event event, void *) {
     DCAST_INTO_V(wf, param.get_ptr());
 
     wf->set_two_sided(!wf->get_two_sided());
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::event_i
+//       Access: Protected, Static
+//  Description: Default handler for i key: invert one-sided faces.
+////////////////////////////////////////////////////////////////////
+void PandaFramework::
+event_i(CPT_Event event, void *) {
+  if (event->get_num_parameters() == 1) {
+    EventParameter param = event->get_parameter(0);
+    WindowFramework *wf;
+    DCAST_INTO_V(wf, param.get_ptr());
+
+    wf->set_one_sided_reverse(!wf->get_one_sided_reverse());
   }
 }
 

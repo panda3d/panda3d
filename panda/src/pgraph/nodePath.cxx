@@ -2057,7 +2057,7 @@ get_two_sided() const {
     node()->get_attrib(CullFaceAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
     const CullFaceAttrib *cfa = DCAST(CullFaceAttrib, attrib);
-    return (cfa->get_mode() == CullFaceAttrib::M_cull_none);
+    return (cfa->get_actual_mode() == CullFaceAttrib::M_cull_none);
   }
 
   return false;

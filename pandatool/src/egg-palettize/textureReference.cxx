@@ -106,7 +106,7 @@ from_egg(EggFile *egg_file, EggData *data, EggTexture *egg_tex) {
   _properties._magfilter = _egg_tex->get_magfilter();
   _properties._anisotropic_degree = _egg_tex->get_anisotropic_degree();
 
-  string name = filename.get_basename();
+  string name = filename.get_basename_wo_extension();
   TextureImage *texture = pal->get_texture(name);
   _source_texture = texture->get_source(filename, alpha_filename);
   _source_texture->update_properties(_properties);

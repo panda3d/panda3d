@@ -34,11 +34,73 @@ TypeHandle CullFaceAttrib::_type_handle;
 //               are ordered counterclockwise when seen from the
 //               front, so the M_cull_clockwise will cull backfacing
 //               polygons.
+//
+//               M_cull_unchanged is an identity attrib; if this is
+//               applied to vertices without any other intervening
+//               attrib, it is the same as applying the default
+//               attrib.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) CullFaceAttrib::
 make(CullFaceAttrib::Mode mode) {
-  CullFaceAttrib *attrib = new CullFaceAttrib(mode);
+  CullFaceAttrib *attrib = new CullFaceAttrib(mode, false);
   return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullFaceAttrib::make_reverse
+//       Access: Published, Static
+//  Description: Constructs a new CullFaceAttrib object that reverses
+//               the effects of any other CullFaceAttrib objects in
+//               the scene graph.  M_cull_clockwise will be treated as
+//               M_cull_counter_clockwise, and vice-versa.
+//               M_cull_none is unchanged.
+
+
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) CullFaceAttrib::
+make_reverse() {
+  CullFaceAttrib *attrib = new CullFaceAttrib(M_cull_unchanged, true);
+  return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullFaceAttrib::get_effective_mode
+//       Access: Published
+//  Description: Returns the effective culling mode.  This is the same
+//               as the actual culling mode, unless the reverse flag
+//               is set, which swaps CW for CCW and vice-versa.  Also,
+//               M_cull_unchanged is mapped to M_cull_none.
+////////////////////////////////////////////////////////////////////
+CullFaceAttrib::Mode CullFaceAttrib::
+get_effective_mode() const {
+  if (_reverse) {
+    switch (_mode) {
+    case M_cull_clockwise:
+    case M_cull_unchanged:
+      return M_cull_counter_clockwise;
+
+    case M_cull_counter_clockwise:
+      return M_cull_clockwise;
+
+    default:
+      break;
+    }
+
+  } else {
+    switch (_mode) {
+    case M_cull_clockwise:
+    case M_cull_unchanged:
+      return M_cull_clockwise;
+
+    case M_cull_counter_clockwise:
+      return M_cull_counter_clockwise;
+
+    default:
+      break;
+    }
+  }
+      
+  return M_cull_none;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -63,7 +125,7 @@ issue(GraphicsStateGuardianBase *gsg) const {
 void CullFaceAttrib::
 output(ostream &out) const {
   out << get_type() << ":";
-  switch (get_mode()) {
+  switch (get_actual_mode()) {
   case M_cull_none:
     out << "cull_none";
     break;
@@ -73,6 +135,12 @@ output(ostream &out) const {
   case M_cull_counter_clockwise:
     out << "cull_counter_clockwise";
     break;
+  case M_cull_unchanged:
+    out << "cull_unchanged";
+    break;
+  }
+  if (get_reverse()) {
+    out << "(reverse)";
   }
 }
 
@@ -95,7 +163,81 @@ int CullFaceAttrib::
 compare_to_impl(const RenderAttrib *other) const {
   const CullFaceAttrib *ta;
   DCAST_INTO_R(ta, other, 0);
-  return (int)_mode - (int)ta->_mode;
+  if (_mode != ta->_mode) {
+    return (int)_mode - (int)ta->_mode;
+  }
+  return (int)_reverse - (int)ta->_reverse;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullFaceAttrib::compose_impl
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by derived RenderAttrib
+//               types to specify how two consecutive RenderAttrib
+//               objects of the same type interact.
+//
+//               This should return the result of applying the other
+//               RenderAttrib to a node in the scene graph below this
+//               RenderAttrib, which was already applied.  In most
+//               cases, the result is the same as the other
+//               RenderAttrib (that is, a subsequent RenderAttrib
+//               completely replaces the preceding one).  On the other
+//               hand, some kinds of RenderAttrib (for instance,
+//               ColorTransformAttrib) might combine in meaningful
+//               ways.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) CullFaceAttrib::
+compose_impl(const RenderAttrib *other) const {
+  const CullFaceAttrib *ta;
+  DCAST_INTO_R(ta, other, 0);
+
+  if (!_reverse && ta->_mode != M_cull_unchanged) {
+    // The normal case (there is nothing funny going on): the second
+    // attrib completely replaces this attrib.
+    return other;
+  }
+
+  // In the more complex case, the two attribs affect each other in
+  // some way, and we must generate a new attrib from the result.
+  Mode mode = _mode;
+  if (ta->_mode != M_cull_unchanged) {
+    mode = ta->_mode;
+  }
+  bool reverse = (_reverse && !ta->_reverse) || (!_reverse && ta->_reverse);
+
+  CullFaceAttrib *attrib = new CullFaceAttrib(mode, reverse);
+  return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullFaceAttrib::invert_compose_impl
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by derived RenderAttrib
+//               types to specify how two consecutive RenderAttrib
+//               objects of the same type interact.
+//
+//               See invert_compose() and compose_impl().
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) CullFaceAttrib::
+invert_compose_impl(const RenderAttrib *other) const {
+  const CullFaceAttrib *ta;
+  DCAST_INTO_R(ta, other, 0);
+
+  // The invert case is the same as the normal case, except that the
+  // meaning of _reverse is inverted.  See compose_impl(), above.
+
+  if (_reverse && ta->_mode != M_cull_unchanged) {
+    return other;
+  }
+
+  Mode mode = _mode;
+  if (ta->_mode != M_cull_unchanged) {
+    mode = ta->_mode;
+  }
+  bool reverse = (!_reverse && !ta->_reverse) || (_reverse && ta->_reverse);
+
+  CullFaceAttrib *attrib = new CullFaceAttrib(mode, reverse);
+  return return_new(attrib);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -111,7 +253,7 @@ compare_to_impl(const RenderAttrib *other) const {
 ////////////////////////////////////////////////////////////////////
 RenderAttrib *CullFaceAttrib::
 make_default_impl() const {
-  return new CullFaceAttrib;
+  return new CullFaceAttrib(M_cull_clockwise, false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -136,6 +278,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
 
   dg.add_int8(_mode);
+  dg.add_bool(_reverse);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -148,7 +291,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 ////////////////////////////////////////////////////////////////////
 TypedWritable *CullFaceAttrib::
 make_from_bam(const FactoryParams &params) {
-  CullFaceAttrib *attrib = new CullFaceAttrib;
+  CullFaceAttrib *attrib = new CullFaceAttrib(M_cull_none, false);
   DatagramIterator scan;
   BamReader *manager;
 
@@ -170,4 +313,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
   _mode = (Mode)scan.get_int8();
+  if (manager->get_file_minor_ver() >= 1) {
+    _reverse = scan.get_bool();
+  }
 }
