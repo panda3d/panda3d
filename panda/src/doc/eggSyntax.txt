@@ -284,6 +284,7 @@ appear before they are referenced.
       WORLD_POSITION
       OBJECT_POSITION
       EYE_POSITION
+      OBJECT_NORMAL
 
   <Scalar> stage-name { name }
 

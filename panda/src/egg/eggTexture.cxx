@@ -816,6 +816,9 @@ string_tex_gen(const string &string) {
   } else if (cmp_nocase_uh(string, "eye_position") == 0) {
     return TG_eye_position;
 
+  } else if (cmp_nocase_uh(string, "object_normal") == 0) {
+    return TG_object_normal;
+
   } else {
     return TG_unspecified;
   }
@@ -1125,6 +1128,9 @@ operator << (ostream &out, EggTexture::TexGen tex_gen) {
 
   case EggTexture::TG_eye_position:
     return out << "eye_position";
+
+  case EggTexture::TG_object_normal:
+    return out << "object_normal";
   }
 
   return out << "**invalid TexGen(" << (int)tex_gen << ")**";

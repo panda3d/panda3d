@@ -21,7 +21,6 @@
 #include "graphicsStateGuardian.h"
 #include "geomprimitives.h"
 #include "texture.h"
-#include "pixelBuffer.h"
 #include "displayRegion.h"
 #include "material.h"
 #include "depthTestAttrib.h"
@@ -95,17 +94,10 @@ public:
   virtual GeomContext *prepare_geom(Geom *geom);
   virtual void release_geom(GeomContext *gc);
 
-  virtual void copy_texture(Texture *tex, const DisplayRegion *dr);
-  virtual void copy_texture(Texture *tex, const DisplayRegion *dr,
-                            const RenderBuffer &rb);
-
-  virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb);
-  virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
-                                       const DisplayRegion *dr);
-
-  virtual bool copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr);
-  virtual bool copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-                                 const RenderBuffer &rb);
+  virtual void framebuffer_copy_to_texture
+    (Texture *tex, const DisplayRegion *dr, const RenderBuffer &rb);
+  virtual bool framebuffer_copy_to_ram
+    (Texture *tex, const DisplayRegion *dr, const RenderBuffer &rb);
 
   virtual void apply_material(const Material *material);
   void apply_fog(Fog *fog);
@@ -182,9 +174,6 @@ protected:
   virtual void finish_modify_state();
 
   virtual void free_pointers();
-  virtual PT(SavedFrameBuffer) save_frame_buffer(const RenderBuffer &buffer,
-                                                 CPT(DisplayRegion) dr);
-  virtual void restore_frame_buffer(SavedFrameBuffer *frame_buffer);
 
   INLINE void enable_multisample_antialias(bool val);
   INLINE void enable_multisample_alpha_one(bool val);
@@ -215,19 +204,18 @@ protected:
   void bind_texture(TextureContext *tc);
   void specify_texture(Texture *tex);
   bool apply_texture_immediate(CLP(TextureContext) *gtc, Texture *tex);
+  bool upload_texture_image(CLP(TextureContext) *gtc, bool uses_mipmaps, 
+                            GLenum target, GLint internal_format, 
+                            int width, int height, int depth,
+                            GLint external_format, GLenum component_type, 
+                            const unsigned char *image);
 
-  void draw_texture(TextureContext *tc, const DisplayRegion *dr);
-  void draw_texture(TextureContext *tc, const DisplayRegion *dr, 
-                    const RenderBuffer &rb);
-  void draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr);
-  void draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-                         const RenderBuffer &rb);
-
-  GLenum get_texture_wrap_mode(Texture::WrapMode wm) const;
+  static GLenum get_texture_target(Texture::TextureType texture_type);
+  GLenum get_texture_wrap_mode(Texture::WrapMode wm);
   static GLenum get_texture_filter_type(Texture::FilterType ft, bool ignore_mipmaps);
-  static GLenum get_image_type(PixelBuffer::Type type);
-  GLint get_external_image_format(PixelBuffer::Format format) const;
-  static GLint get_internal_image_format(PixelBuffer::Format format);
+  static GLenum get_component_type(Texture::ComponentType component_type);
+  GLint get_external_image_format(Texture::Format format) const;
+  static GLint get_internal_image_format(Texture::Format format);
   static GLint get_texture_apply_mode_type(TextureStage::Mode am);
   static GLint get_texture_combine_type(TextureStage::CombineMode cm);
   static GLint get_texture_src_type(TextureStage::CombineSource cs);
@@ -243,7 +231,7 @@ protected:
 
 #ifndef NDEBUG
   void build_phony_mipmaps(Texture *tex);
-  void build_phony_mipmap_level(int level, int xsize, int ysize);
+  void build_phony_mipmap_level(int level, int x_size, int y_size);
   void save_mipmap_images(Texture *tex);
 #endif
 
@@ -305,6 +293,10 @@ protected:
   pset<string> _extensions;
 
 public:
+  GLint _max_texture_size;
+  GLint _max_3d_texture_size;
+  GLint _max_cube_map_size;
+
   bool _supports_bgr;
   bool _supports_rescale_normal;
 

@@ -51,14 +51,9 @@ ns_has_texture(const Filename &orig_filename) {
     filename = _fake_texture_image;
   }
 
-  if (use_vfs) {
-    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    vfs->resolve_filename(filename, get_texture_path());
-    vfs->resolve_filename(filename, get_model_path());
-  } else {
-    filename.resolve_filename(get_texture_path());
-    filename.resolve_filename(get_model_path());
-  }
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  vfs->resolve_filename(filename, get_texture_path());
+  vfs->resolve_filename(filename, get_model_path());
 
   Textures::const_iterator ti;
   ti = _textures.find(filename);
@@ -83,14 +78,9 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels) {
     filename = _fake_texture_image;
   }
 
-  if (use_vfs) {
-    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    vfs->resolve_filename(filename, get_texture_path()) ||
-      vfs->resolve_filename(filename, get_model_path());
-  } else {
-    filename.resolve_filename(get_texture_path()) ||
-      filename.resolve_filename(get_model_path());
-  }
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  vfs->resolve_filename(filename, get_texture_path()) ||
+    vfs->resolve_filename(filename, get_model_path());
 
   Textures::const_iterator ti;
   ti = _textures.find(filename);
@@ -102,11 +92,10 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels) {
   gobj_cat.info()
     << "Loading texture " << filename << "\n";
   PT(Texture) tex = new Texture;
-  if (!tex->read(filename, primary_file_num_channels)) {
+  if (!tex->read(filename, 0, primary_file_num_channels)) {
     // This texture was not found.
     gobj_cat.error()
       << "Unable to read texture \"" << filename << "\""
-      << (use_vfs ? " (using vfs) ": "")
       << " on texture_path " << texture_path
       << " or model_path " << model_path <<"\n";
     return NULL;
@@ -136,21 +125,12 @@ ns_load_texture(const Filename &orig_filename,
     return ns_load_texture(_fake_texture_image, primary_file_num_channels);
   }
 
-  if (use_vfs) {
-    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    vfs->resolve_filename(filename, get_texture_path()) ||
-      vfs->resolve_filename(filename, get_model_path());
-
-    vfs->resolve_filename(alpha_filename, get_texture_path()) ||
-      vfs->resolve_filename(alpha_filename, get_model_path());
-
-  } else {
-    filename.resolve_filename(get_texture_path()) ||
-      filename.resolve_filename(get_model_path());
-
-    alpha_filename.resolve_filename(get_texture_path()) ||
-      alpha_filename.resolve_filename(get_model_path());
-  }
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  vfs->resolve_filename(filename, get_texture_path()) ||
+    vfs->resolve_filename(filename, get_model_path());
+  
+  vfs->resolve_filename(alpha_filename, get_texture_path()) ||
+    vfs->resolve_filename(alpha_filename, get_model_path());
 
   Textures::const_iterator ti;
   ti = _textures.find(filename);
@@ -163,7 +143,7 @@ ns_load_texture(const Filename &orig_filename,
     << "Loading texture " << filename << " and alpha component "
     << alpha_filename << endl;
   PT(Texture) tex = new Texture;
-  if (!tex->read(filename, alpha_filename, primary_file_num_channels,
+  if (!tex->read(filename, alpha_filename, 0, primary_file_num_channels,
                  alpha_file_channel)) {
     // This texture was not found.
     gobj_cat.error() << "Unable to read texture " << filename << "\n";
@@ -260,7 +240,7 @@ ns_list_contents(ostream &out) const {
     Texture *texture = (*ti).second;
     out << "  " << (*ti).first
         << " (count = " << texture->get_ref_count() << ", ram = "
-        << texture->_pbuffer->_image.size() / 1024 << " Kb)\n";
+        << texture->get_ram_image_size() / 1024 << " Kb)\n";
   }
 }
 

@@ -18,7 +18,6 @@
 
 #include "config_dxgsg9.h"
 #include "dxGraphicsStateGuardian9.h"
-#include "dxSavedFrameBuffer9.h"
 #include "dxTextureContext9.h"
 #include "graphicsPipeSelection.h"
 #include "wdxGraphicsWindow9.h"
@@ -143,7 +142,6 @@ init_libdxgsg9() {
   initialized = true;
 
   DXGraphicsStateGuardian9::init_type();
-  DXSavedFrameBuffer9::init_type();
   DXTextureContext9::init_type();
 
   wdxGraphicsPipe9::init_type();

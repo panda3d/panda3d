@@ -36,17 +36,12 @@ DynamicTextPage(DynamicTextFont *font, int page_number) :
   _x_size = _font->get_page_x_size();
   _y_size = _font->get_page_y_size();
 
+  setup_2d_texture(_x_size, _y_size, T_unsigned_byte, F_alpha);
+
   // Assign a name to the Texture.
   ostringstream strm;
   strm << font->get_name() << "_" << page_number;
   set_name(strm.str());
-
-  // Initialize the Texture to an empty, black (transparent) image of
-  // the appropriate size.
-  _pbuffer = new PixelBuffer(_x_size, _y_size, 1, 1, 
-                             PixelBuffer::T_unsigned_byte,
-                             PixelBuffer::F_alpha);
-  mark_dirty(DF_image);
 
   // We'd better never free this image.
   set_keep_ram_image(true);
@@ -58,8 +53,8 @@ DynamicTextPage(DynamicTextFont *font, int page_number) :
 
   // It's slightly better to let the texture clamp, rather than
   // wrapping, so we're less likely to get bleeding at the edges.
-  set_wrapu(WM_clamp);
-  set_wrapv(WM_clamp);
+  set_wrap_u(WM_clamp);
+  set_wrap_v(WM_clamp);
 }
 
 ////////////////////////////////////////////////////////////////////

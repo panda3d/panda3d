@@ -52,6 +52,7 @@ static const unsigned short _bam_minor_ver = 16;
 // Bumped to minor version 14 on 11/18/04 to differentiate old_hpr from new_hpr in compressed anim channels.
 // Bumped to minor version 15 on 1/16/05 to remove width from GeomLine, etc.
 // Bumped to minor version 16 on 2/24/05 to add TextureStage::rgb_scale, etc.
+// Bumped to minor version 17 on 3/03/05 to add 3-d textures, etc.
 
 
 #endif

@@ -134,6 +134,7 @@ PUBLISHED:
     TG_world_position,
     TG_object_position,
     TG_eye_position,
+    TG_object_normal,
   };
 
   INLINE void set_format(Format format);

@@ -24,7 +24,7 @@
   // build dxGraphicsStateGuardian separately since its so big
   
   #define SOURCES \
-    dxGraphicsStateGuardian9.cxx dxSavedFrameBuffer9.I dxSavedFrameBuffer9.h \
+    dxGraphicsStateGuardian9.cxx \
     dxGraphicsDevice9.h \
     wdxGraphicsPipe9.I wdxGraphicsPipe9.h \
     wdxGraphicsWindow9.I wdxGraphicsWindow9.h \
@@ -32,7 +32,7 @@
     
   #define INCLUDED_SOURCES \
     config_dxgsg9.cxx \
-    dxSavedFrameBuffer9.cxx dxTextureContext9.cxx \
+    dxTextureContext9.cxx \
     d3dfont9.cxx \
     dxGraphicsDevice9.cxx \
     wdxGraphicsPipe9.cxx wdxGraphicsWindow9.cxx

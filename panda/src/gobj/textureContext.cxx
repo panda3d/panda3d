@@ -18,7 +18,6 @@
 
 #include "textureContext.h"
 
-#include "pixelBuffer.h"
 #include "texture.h"
 
 TypeHandle TextureContext::_type_handle;
@@ -34,45 +33,43 @@ TypeHandle TextureContext::_type_handle;
 ////////////////////////////////////////////////////////////////////
 size_t TextureContext::
 estimate_texture_memory() {
-  PixelBuffer *pb = _texture->_pbuffer;
-
-  size_t pixels = pb->get_xsize() * pb->get_ysize();
+  size_t pixels = _texture->get_x_size() * _texture->get_y_size();
 
   size_t bpp = 4;
 
   /*
   size_t bpp = 1;
-  switch (pb->get_format()) {
-  case PixelBuffer::F_rgb332:
-  case PixelBuffer::F_alpha:
-  case PixelBuffer::F_red:
-  case PixelBuffer::F_green:
-  case PixelBuffer::F_blue:
-  case PixelBuffer::F_luminance:
-  case PixelBuffer::F_luminance_alpha:
-  case PixelBuffer::F_luminance_alphamask:
-  case PixelBuffer::F_color_index:
-  case PixelBuffer::F_stencil_index:
-  case PixelBuffer::F_depth_component:
+  switch (_texture->get_format()) {
+  case Texture::F_rgb332:
+  case Texture::F_alpha:
+  case Texture::F_red:
+  case Texture::F_green:
+  case Texture::F_blue:
+  case Texture::F_luminance:
+  case Texture::F_luminance_alpha:
+  case Texture::F_luminance_alphamask:
+  case Texture::F_color_index:
+  case Texture::F_stencil_index:
+  case Texture::F_depth_component:
     bpp = 1;
     break;
 
-  case PixelBuffer::F_rgba:
-  case PixelBuffer::F_rgba4:
-  case PixelBuffer::F_rgbm:
-  case PixelBuffer::F_rgb:
-  case PixelBuffer::F_rgb5:
-  case PixelBuffer::F_rgba5:
+  case Texture::F_rgba:
+  case Texture::F_rgba4:
+  case Texture::F_rgbm:
+  case Texture::F_rgb:
+  case Texture::F_rgb5:
+  case Texture::F_rgba5:
     bpp = 2;
     break;
 
-  case PixelBuffer::F_rgb8:
-  case PixelBuffer::F_rgba8:
+  case Texture::F_rgb8:
+  case Texture::F_rgba8:
     bpp = 4;
     break;
 
-  case PixelBuffer::F_rgba12:
-  case PixelBuffer::F_rgb12:
+  case Texture::F_rgba12:
+  case Texture::F_rgb12:
     bpp = 6;
     break;
   }

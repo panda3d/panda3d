@@ -22,12 +22,10 @@
 #include "drawable.h"
 #include "geom.h"
 #include "geomprimitives.h"
-#include "imageBuffer.h"
 #include "material.h"
 #include "orthographicLens.h"
 #include "matrixLens.h"
 #include "perspectiveLens.h"
-#include "pixelBuffer.h"
 #include "lens.h"
 #include "texture.h"
 #include "textureStage.h"
@@ -52,7 +50,7 @@ ConfigVariableBool keep_texture_ram
 ("keep-texture-ram", false,
  PRC_DESC("Set this to true to retain the ram image for each texture after it "
           "has been prepared with the GSG.  This will allow the texture to be "
-          "prepared with multiple GSG, or to be re-prepared later after it is "
+          "prepared with multiple GSG's, or to be re-prepared later after it is "
           "explicitly released from the GSG, without having to reread the "
           "texture image from disk; but it will consume memory somewhat "
           "wastefully."));
@@ -135,12 +133,10 @@ ConfigureFn(config_gobj) {
   GeomTri::init_type();
   GeomTrifan::init_type();
   GeomTristrip::init_type();
-  ImageBuffer::init_type();
   Material::init_type();
   OrthographicLens::init_type();
   MatrixLens::init_type();
   PerspectiveLens::init_type();
-  PixelBuffer::init_type();
   Lens::init_type();
   Texture::init_type();
   dDrawable::init_type();

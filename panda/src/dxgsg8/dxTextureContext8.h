@@ -41,7 +41,7 @@ public:
   Texture *_tex;            // ptr to parent, primarily for access to namestr
   IDirect3DTexture8 *CreateTexture(DXScreenData &scrn);
 
-  D3DFORMAT _PixBufD3DFmt;    // the 'D3DFORMAT' the Panda PixelBuffer fmt corresponds to
+  D3DFORMAT _PixBufD3DFmt;    // the 'D3DFORMAT' the Panda TextureBuffer fmt corresponds to
 
   bool _bHasMipMaps;
 
@@ -54,7 +54,7 @@ public:
   HRESULT FillDDSurfTexturePixels(void);
 
 protected:
-    unsigned int get_bits_per_pixel(PixelBuffer::Format format, int *alphbits);
+    unsigned int get_bits_per_pixel(Texture::Format format, int *alphbits);
 
 public:
   static TypeHandle get_class_type() {
@@ -74,7 +74,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-extern HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface8 *pD3DSurf8,PixelBuffer *pixbuf);
+extern HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface8 *pD3DSurf8,Texture *pixbuf);
 
 #endif
 

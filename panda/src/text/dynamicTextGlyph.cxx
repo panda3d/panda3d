@@ -47,7 +47,6 @@ unsigned char *DynamicTextGlyph::
 get_row(int y) {
   nassertr(y >= 0 && y < _y_size - _margin * 2, (unsigned char *)NULL);
   nassertr(_page != (DynamicTextPage *)NULL, (unsigned char *)NULL);
-  nassertr(_page->_pbuffer != (PixelBuffer *)NULL, (unsigned char *)NULL);
 
   // First, offset y by the glyph's start.
   y += _y + _margin;
@@ -55,10 +54,10 @@ get_row(int y) {
   int x = _x + _margin;
 
   // Invert y.
-  y = _page->_pbuffer->get_ysize() - 1 - y;
+  y = _page->get_y_size() - 1 - y;
 
-  int offset = (y * _page->_pbuffer->get_xsize()) + x;
-  return _page->_pbuffer->_image + offset; 
+  int offset = (y * _page->get_x_size()) + x;
+  return _page->modify_ram_image() + offset; 
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -69,14 +68,14 @@ get_row(int y) {
 void DynamicTextGlyph::
 erase() {
   nassertv(_page != (DynamicTextPage *)NULL);
-  nassertv(_page->_pbuffer != (PixelBuffer *)NULL);
+  nassertv(_page->has_ram_image());
 
-  int ysizetop = _page->_pbuffer->get_ysize() - 1;
-  int xsize = _page->_pbuffer->get_xsize();
-  unsigned char *buffer = _page->_pbuffer->_image;
+  int ysizetop = _page->get_y_size() - 1;
+  int width = _page->get_x_size();
+  unsigned char *buffer = _page->modify_ram_image();
 
   for (int y = _y; y < _y + _y_size; y++) {
-    int offset = (ysizetop - y) * xsize + _x;
+    int offset = (ysizetop - y) * width + _x;
     memset(buffer + offset, 0, _x_size);
   }
 }

@@ -48,7 +48,6 @@ class PreparedGraphicsObjects;
 class GraphicsOutput;
 class TextureContext;
 class Texture;
-class PixelBuffer;
 class RenderState;
 class TransformState;
 
@@ -166,20 +165,13 @@ public:
   virtual void draw_trifan(GeomTrifan *geom, GeomContext *gc)=0;
   virtual void draw_sphere(GeomSphere *geom, GeomContext *gc)=0;
 
-  virtual void copy_texture(Texture *tex, const DisplayRegion *dr)=0;
-  virtual void copy_texture(Texture *tex, const DisplayRegion *dr,
-                            const RenderBuffer &rb)=0;
+  virtual void framebuffer_copy_to_texture
+  (Texture *tex, const DisplayRegion *dr, const RenderBuffer &rb)=0;
+  virtual bool framebuffer_copy_to_ram
+  (Texture *tex, const DisplayRegion *dr, const RenderBuffer &rb)=0;
 
   virtual bool framebuffer_bind_to_texture(GraphicsOutput *win, Texture *tex)=0;
   virtual void framebuffer_release_texture(GraphicsOutput *win, Texture *tex)=0;
-
-  virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb)=0;
-  virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
-                                const DisplayRegion *dr)=0;
-
-  virtual bool copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr)=0;
-  virtual bool copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-                                 const RenderBuffer &rb)=0;
 
   virtual void apply_material(const Material *material)=0;
 

@@ -26,7 +26,7 @@
   // build dxGraphicsStateGuardian separately since its so big
   
   #define SOURCES \
-    dxGraphicsStateGuardian7.cxx dxSavedFrameBuffer7.I dxSavedFrameBuffer7.h \
+    dxGraphicsStateGuardian7.cxx \
     wdxGraphicsPipe7.I wdxGraphicsPipe7.h \
     wdxGraphicsWindow7.I wdxGraphicsWindow7.h \
     $[INSTALL_HEADERS]
@@ -34,7 +34,7 @@
   #define INCLUDED_SOURCES \
     config_dxgsg7.cxx \
     dxgsg7base.cxx \
-    dxSavedFrameBuffer7.cxx dxTextureContext7.cxx \
+    dxTextureContext7.cxx \
     wdxGraphicsPipe7.cxx wdxGraphicsWindow7.cxx
 
 #end lib_target

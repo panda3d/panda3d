@@ -16,12 +16,11 @@
     geomContext.I geomContext.h \
     geomLine.h geomLinestrip.h geomPoint.h geomPolygon.h  \
     geomQuad.h geomSphere.h geomSprite.I geomSprite.h geomTri.h  \
-    geomTrifan.h geomTristrip.h imageBuffer.I imageBuffer.h  \
+    geomTrifan.h geomTristrip.h  \
     material.I material.h materialPool.I materialPool.h  \
     matrixLens.I matrixLens.h \
     orthographicLens.I orthographicLens.h perspectiveLens.I  \
-    perspectiveLens.h pixelBuffer.I  \
-    pixelBuffer.h \
+    perspectiveLens.h \
     preparedGraphicsObjects.I preparedGraphicsObjects.h \
     lens.h lens.I \
     savedContext.I savedContext.h \
@@ -37,9 +36,9 @@
     geomContext.cxx \
     geomLine.cxx geomLinestrip.cxx geomPoint.cxx geomPolygon.cxx  \
     geomQuad.cxx geomSphere.cxx geomSprite.cxx geomTri.cxx  \
-    geomTrifan.cxx geomTristrip.cxx imageBuffer.cxx material.cxx  \
+    geomTrifan.cxx geomTristrip.cxx material.cxx  \
     materialPool.cxx matrixLens.cxx orthographicLens.cxx  \
-    perspectiveLens.cxx pixelBuffer.cxx \
+    perspectiveLens.cxx \
     preparedGraphicsObjects.cxx \
     lens.cxx  \
     savedContext.cxx texture.cxx textureContext.cxx texturePool.cxx \
@@ -53,10 +52,10 @@
     geomLine.h \
     geomLinestrip.h geomPoint.h geomPolygon.h geomQuad.h geomSphere.h \
     geomSprite.I geomSprite.h geomTri.h geomTrifan.h geomTristrip.h \
-    geomprimitives.h imageBuffer.I imageBuffer.h material.I material.h \
+    geomprimitives.h material.I material.h \
     materialPool.I materialPool.h matrixLens.I matrixLens.h \
     orthographicLens.I orthographicLens.h perspectiveLens.I \
-    perspectiveLens.h pixelBuffer.I pixelBuffer.h \
+    perspectiveLens.h \
     preparedGraphicsObjects.I preparedGraphicsObjects.h \
     lens.h lens.I \
     savedContext.I savedContext.h \

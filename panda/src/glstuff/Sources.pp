@@ -25,9 +25,6 @@
      glGraphicsStateGuardian_src.cxx \
      glGraphicsStateGuardian_src.I \
      glGraphicsStateGuardian_src.h \
-     glSavedFrameBuffer_src.cxx \
-     glSavedFrameBuffer_src.I \
-     glSavedFrameBuffer_src.h \
      glTextureContext_src.cxx \
      glTextureContext_src.I \
      glTextureContext_src.h \

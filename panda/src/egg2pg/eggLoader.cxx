@@ -860,16 +860,16 @@ void EggLoader::
 apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
   switch (egg_tex->determine_wrap_u()) {
   case EggTexture::WM_repeat:
-    tex->set_wrapu(Texture::WM_repeat);
+    tex->set_wrap_u(Texture::WM_repeat);
     break;
 
   case EggTexture::WM_clamp:
     if (egg_ignore_clamp) {
       egg2pg_cat.warning()
         << "Ignoring clamp request\n";
-      tex->set_wrapu(Texture::WM_repeat);
+      tex->set_wrap_u(Texture::WM_repeat);
     } else {
-      tex->set_wrapu(Texture::WM_clamp);
+      tex->set_wrap_u(Texture::WM_clamp);
     }
     break;
 
@@ -884,16 +884,16 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
 
   switch (egg_tex->determine_wrap_v()) {
   case EggTexture::WM_repeat:
-    tex->set_wrapv(Texture::WM_repeat);
+    tex->set_wrap_v(Texture::WM_repeat);
     break;
 
   case EggTexture::WM_clamp:
     if (egg_ignore_clamp) {
       egg2pg_cat.warning()
         << "Ignoring clamp request\n";
-      tex->set_wrapv(Texture::WM_repeat);
+      tex->set_wrap_v(Texture::WM_repeat);
     } else {
-      tex->set_wrapv(Texture::WM_clamp);
+      tex->set_wrap_v(Texture::WM_clamp);
     }
     break;
 
@@ -1018,22 +1018,22 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
     tex->set_anisotropic_degree(egg_tex->get_anisotropic_degree());
   }
 
-  if (tex->_pbuffer->get_num_components() == 1) {
+  if (tex->get_num_components() == 1) {
     switch (egg_tex->get_format()) {
     case EggTexture::F_red:
-      tex->_pbuffer->set_format(PixelBuffer::F_red);
+      tex->set_format(Texture::F_red);
       break;
     case EggTexture::F_green:
-      tex->_pbuffer->set_format(PixelBuffer::F_green);
+      tex->set_format(Texture::F_green);
       break;
     case EggTexture::F_blue:
-      tex->_pbuffer->set_format(PixelBuffer::F_blue);
+      tex->set_format(Texture::F_blue);
       break;
     case EggTexture::F_alpha:
-      tex->_pbuffer->set_format(PixelBuffer::F_alpha);
+      tex->set_format(Texture::F_alpha);
       break;
     case EggTexture::F_luminance:
-      tex->_pbuffer->set_format(PixelBuffer::F_luminance);
+      tex->set_format(Texture::F_luminance);
       break;
 
     case EggTexture::F_unspecified:
@@ -1045,14 +1045,14 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
         << " for 1-component texture " << egg_tex->get_name() << "\n";
     }
 
-  } else if (tex->_pbuffer->get_num_components() == 2) {
+  } else if (tex->get_num_components() == 2) {
     switch (egg_tex->get_format()) {
     case EggTexture::F_luminance_alpha:
-      tex->_pbuffer->set_format(PixelBuffer::F_luminance_alpha);
+      tex->set_format(Texture::F_luminance_alpha);
       break;
 
     case EggTexture::F_luminance_alphamask:
-      tex->_pbuffer->set_format(PixelBuffer::F_luminance_alphamask);
+      tex->set_format(Texture::F_luminance_alphamask);
       break;
 
     case EggTexture::F_unspecified:
@@ -1064,15 +1064,15 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
         << " for 2-component texture " << egg_tex->get_name() << "\n";
     }
 
-  } else if (tex->_pbuffer->get_num_components() == 3) {
+  } else if (tex->get_num_components() == 3) {
     switch (egg_tex->get_format()) {
     case EggTexture::F_rgb:
-      tex->_pbuffer->set_format(PixelBuffer::F_rgb);
+      tex->set_format(Texture::F_rgb);
       break;
     case EggTexture::F_rgb12:
-      if (tex->_pbuffer->get_component_width() >= 2) {
+      if (tex->get_component_width() >= 2) {
         // Only do this if the component width supports it.
-        tex->_pbuffer->set_format(PixelBuffer::F_rgb12);
+        tex->set_format(Texture::F_rgb12);
       } else {
         egg2pg_cat.warning()
           << "Ignoring inappropriate format " << egg_tex->get_format()
@@ -1084,13 +1084,13 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
       // We'll quietly accept RGBA8 for a 3-component texture, since
       // flt2egg generates these for 3-component as well as for
       // 4-component textures.
-      tex->_pbuffer->set_format(PixelBuffer::F_rgb8);
+      tex->set_format(Texture::F_rgb8);
       break;
     case EggTexture::F_rgb5:
-      tex->_pbuffer->set_format(PixelBuffer::F_rgb5);
+      tex->set_format(Texture::F_rgb5);
       break;
     case EggTexture::F_rgb332:
-      tex->_pbuffer->set_format(PixelBuffer::F_rgb332);
+      tex->set_format(Texture::F_rgb332);
       break;
 
     case EggTexture::F_unspecified:
@@ -1102,18 +1102,18 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
         << " for 3-component texture " << egg_tex->get_name() << "\n";
     }
 
-  } else if (tex->_pbuffer->get_num_components() == 4) {
+  } else if (tex->get_num_components() == 4) {
     switch (egg_tex->get_format()) {
     case EggTexture::F_rgba:
-      tex->_pbuffer->set_format(PixelBuffer::F_rgba);
+      tex->set_format(Texture::F_rgba);
       break;
     case EggTexture::F_rgbm:
-      tex->_pbuffer->set_format(PixelBuffer::F_rgbm);
+      tex->set_format(Texture::F_rgbm);
       break;
     case EggTexture::F_rgba12:
-      if (tex->_pbuffer->get_component_width() >= 2) {
+      if (tex->get_component_width() >= 2) {
         // Only do this if the component width supports it.
-        tex->_pbuffer->set_format(PixelBuffer::F_rgba12);
+        tex->set_format(Texture::F_rgba12);
       } else {
         egg2pg_cat.warning()
           << "Ignoring inappropriate format " << egg_tex->get_format()
@@ -1121,13 +1121,13 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
       }
       break;
     case EggTexture::F_rgba8:
-      tex->_pbuffer->set_format(PixelBuffer::F_rgba8);
+      tex->set_format(Texture::F_rgba8);
       break;
     case EggTexture::F_rgba4:
-      tex->_pbuffer->set_format(PixelBuffer::F_rgba4);
+      tex->set_format(Texture::F_rgba4);
       break;
     case EggTexture::F_rgba5:
-      tex->_pbuffer->set_format(PixelBuffer::F_rgba5);
+      tex->set_format(Texture::F_rgba5);
       break;
 
     case EggTexture::F_unspecified:
@@ -1451,7 +1451,7 @@ setup_bucket(BuilderBucket &bucket, EggLoader::BakeInUVs &bake_in_uvs,
         const TextureAttrib *tex_attrib = DCAST(TextureAttrib, def._texture);
         Texture *tex = tex_attrib->get_texture();
         nassertv(tex != (Texture *)NULL);
-        int num_components = tex->_pbuffer->get_num_components();
+        int num_components = tex->get_num_components();
         if (egg_tex->has_alpha_channel(num_components)) {
           switch (egg_tex->get_env_type()) {
           case EggTexture::ET_decal:
@@ -3129,6 +3129,9 @@ get_tex_gen(const EggTexture *egg_tex) {
 
   case EggTexture::TG_eye_position:
     return TexGenAttrib::M_eye_position;
+
+  case EggTexture::TG_object_normal:
+    return TexGenAttrib::M_object_normal;
   };
 
   return TexGenAttrib::M_off;

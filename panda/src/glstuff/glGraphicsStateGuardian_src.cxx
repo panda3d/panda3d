@@ -51,6 +51,7 @@
 #include "pvector.h"
 #include "vector_string.h"
 #include "string_utils.h"
+#include "pnmImage.h"
 #ifdef DO_PSTATS
 #include "pStatTimer.h"
 #endif
@@ -213,29 +214,61 @@ ushort_bgra_to_rgba(unsigned short *dest, const unsigned short *source,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: reduce_image
+//  Description: Reduces an image to an acceptable size by sampling
+//               pixels.  This is just a cheap and dirty trick to load
+//               an image that the GL says is too large.
+//
+//               The implementation copies byte_chunk bytes every
+//               byte_chunk * stride bytes.
+////////////////////////////////////////////////////////////////////
+static PTA_uchar
+reduce_image(CPTA_uchar orig_image, int byte_chunk, int stride) {
+  size_t orig_image_size = orig_image.size();
+  size_t new_image_size = orig_image_size / stride;
+  PTA_uchar new_image = PTA_uchar::empty_array(new_image_size);
+  const unsigned char *from = orig_image.p();
+  unsigned char *to = new_image.p();
+
+  const unsigned char *from_end = from + orig_image_size;
+  const unsigned char *to_end = to + new_image_size;
+
+  while (from + byte_chunk <= from_end) {
+    nassertr(to + byte_chunk <= to_end, new_image);
+    memcpy(to, from, byte_chunk);
+    from += stride * byte_chunk;
+    to += byte_chunk;
+  }
+
+  return new_image;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: fix_component_ordering
 //  Description: Reverses the order of the components within the
 //               image, to convert (for instance) GL_BGR to GL_RGB.
-//               Returns the PTA_uchar representing the converted
+//               Returns the CPTA_uchar representing the converted
 //               image, or the original image if it is unchanged.
 ////////////////////////////////////////////////////////////////////
 static PTA_uchar
-fix_component_ordering(GLenum external_format, PixelBuffer *pb) {
-  PTA_uchar new_image = pb->_image;
+fix_component_ordering(CPTA_uchar orig_image, GLenum external_format, 
+                       Texture *tex) {
+  size_t orig_image_size = orig_image.size();
+  PTA_uchar new_image = (PTA_uchar &)orig_image;
 
   switch (external_format) {
   case GL_RGB:
-    switch (pb->get_image_type()) {
-    case PixelBuffer::T_unsigned_byte:
-      new_image = PTA_uchar::empty_array(pb->_image.size());
-      uchar_bgr_to_rgb(new_image, pb->_image, pb->_image.size() / 3);
+    switch (tex->get_component_type()) {
+    case Texture::T_unsigned_byte:
+      new_image = PTA_uchar::empty_array(orig_image_size);
+      uchar_bgr_to_rgb(new_image, orig_image, orig_image_size / 3);
       break;
 
-    case PixelBuffer::T_unsigned_short:
-      new_image = PTA_uchar::empty_array(pb->_image.size());
+    case Texture::T_unsigned_short:
+      new_image = PTA_uchar::empty_array(orig_image_size);
       ushort_bgr_to_rgb((unsigned short *)new_image.p(), 
-                        (unsigned short *)pb->_image.p(), 
-                        pb->_image.size() / 6);
+                        (const unsigned short *)orig_image.p(), 
+                        orig_image_size / 6);
       break;
 
     default:
@@ -244,17 +277,17 @@ fix_component_ordering(GLenum external_format, PixelBuffer *pb) {
     break;
 
   case GL_RGBA:
-    switch (pb->get_image_type()) {
-    case PixelBuffer::T_unsigned_byte:
-      new_image = PTA_uchar::empty_array(pb->_image.size());
-      uchar_bgra_to_rgba(new_image, pb->_image, pb->_image.size() / 4);
+    switch (tex->get_component_type()) {
+    case Texture::T_unsigned_byte:
+      new_image = PTA_uchar::empty_array(orig_image_size);
+      uchar_bgra_to_rgba(new_image, orig_image, orig_image_size / 4);
       break;
 
-    case PixelBuffer::T_unsigned_short:
-      new_image = PTA_uchar::empty_array(pb->_image.size());
+    case Texture::T_unsigned_short:
+      new_image = PTA_uchar::empty_array(orig_image_size);
       ushort_bgra_to_rgba((unsigned short *)new_image.p(), 
-                          (unsigned short *)pb->_image.p(), 
-                          pb->_image.size() / 8);
+                          (const unsigned short *)orig_image.p(), 
+                          orig_image_size / 8);
       break;
 
     default:
@@ -420,6 +453,17 @@ reset() {
       _supports_multisample = false;
     }
   }
+  
+  GLP(GetIntegerv)(GL_MAX_TEXTURE_SIZE, &_max_texture_size);
+  GLP(GetIntegerv)(GL_MAX_3D_TEXTURE_SIZE, &_max_3d_texture_size);
+  GLP(GetIntegerv)(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &_max_cube_map_size);
+
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "max texture size = " << _max_texture_size
+      << ", max 3d texture = " << _max_3d_texture_size
+      << ", max cube map = " << _max_cube_map_size << "\n";
+  }
 
   report_my_gl_errors();
 
@@ -479,10 +523,20 @@ reset() {
   GLP(GetIntegerv)(GL_MAX_LIGHTS, &max_lights);
   _max_lights = max_lights;
 
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "max lights = " << _max_lights << "\n";
+  }
+
   // Count the max number of clipping planes
   GLint max_clip_planes;
   GLP(GetIntegerv)(GL_MAX_CLIP_PLANES, &max_clip_planes);
   _max_clip_planes = max_clip_planes;
+
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "max clip planes = " << _max_clip_planes << "\n";
+  }
 
   _current_projection_mat = LMatrix4f::ident_mat();
   _projection_mat_stack_count = 0;
@@ -491,6 +545,11 @@ reset() {
     GLint max_texture_stages;
     GLP(GetIntegerv)(GL_MAX_TEXTURE_UNITS, &max_texture_stages);
     _max_texture_stages = max_texture_stages;
+
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "max texture stages = " << _max_texture_stages << "\n";
+    }
   }
   _current_texture = DCAST(TextureAttrib, TextureAttrib::make_all_off());
   _current_tex_mat = DCAST(TexMatrixAttrib, TexMatrixAttrib::make());
@@ -1071,8 +1130,8 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   Geom::ColorIterator ci = geom->make_color_iterator();
 
   // need some interface so user can set 2d dimensions if no texture specified
-  float tex_xsize = 1.0f;  
-  float tex_ysize = 1.0f;
+  float tex_x_size = 1.0f;  
+  float tex_y_size = 1.0f;
 
   Texture *tex = geom->get_texture();
   if(tex != NULL) {
@@ -1080,8 +1139,8 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
     modify_state(RenderState::make
                  (TextureAttrib::make(tex),
                   TextureApplyAttrib::make(TextureApplyAttrib::M_modulate)));
-    tex_xsize = tex->_pbuffer->get_xsize();
-    tex_ysize = tex->_pbuffer->get_ysize();
+    tex_x_size = tex->get_x_size();
+    tex_y_size = tex->get_y_size();
   }
 
   // save the modelview matrix
@@ -1101,8 +1160,8 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   float tex_bottom = geom->get_ll_uv()[1];
   float tex_top = geom->get_ur_uv()[1];
 
-  float half_width =  0.5f * tex_xsize * fabs(tex_right - tex_left);
-  float half_height = 0.5f * tex_ysize * fabs(tex_top - tex_bottom);
+  float half_width =  0.5f * tex_x_size * fabs(tex_right - tex_left);
+  float half_height = 0.5f * tex_y_size * fabs(tex_top - tex_bottom);
   float scaled_width = 0.0f;
   float scaled_height = 0.0f;
 
@@ -2053,90 +2112,48 @@ static int binary_log_cap(const int x) {
 #endif
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::copy_texture
+//     Function: CLP(GraphicsStateGuardian)::framebuffer_copy_to_texture
 //       Access: Public, Virtual
-//  Description: Copy the pixel region indicated by the display
+//  Description: Copy the pixels within the indicated display
 //               region from the framebuffer into texture memory
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-copy_texture(Texture *tex, const DisplayRegion *dr) {
-  nassertv(tex != NULL && dr != NULL);
+framebuffer_copy_to_texture(Texture *tex, const DisplayRegion *dr,
+                            const RenderBuffer &rb) {
+  nassertv(tex != NULL && dr != NULL && 
+           tex->get_texture_type() == Texture::TT_2d_texture);
+  set_read_buffer(rb);
 
   int xo, yo, w, h;
   dr->get_region_pixels(xo, yo, w, h);
 
-  PixelBuffer *pb = tex->_pbuffer;
-  pb->set_xsize(w);
-  pb->set_ysize(h);
+  tex->set_x_size(w);
+  tex->set_y_size(h);
 
   TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   nassertv(tc != (TextureContext *)NULL);
   bind_texture(tc);
 
   GLP(CopyTexImage2D)(GL_TEXTURE_2D, 0,
-                      get_internal_image_format(pb->get_format()),
-                      xo, yo, w, h, tex->get_border_width());
+                      get_internal_image_format(tex->get_format()),
+                      xo, yo, w, h, 0);
 
   // Clear the internal texture state, since we've just monkeyed with it.
   modify_state(get_untextured_state());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::copy_texture
+//     Function: CLP(GraphicsStateGuardian)::framebuffer_copy_to_ram
 //       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-copy_texture(Texture *tex, const DisplayRegion *dr, const RenderBuffer &rb) {
-  set_read_buffer(rb);
-  copy_texture(tex, dr);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::texture_to_pixel_buffer
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb) {
-  // This code is now invalidated by the new design; perhaps the
-  // interface is not needed anyway.
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::texture_to_pixel_buffer
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
-                        const DisplayRegion *dr) {
-  nassertv(tc != NULL && pb != NULL && dr != NULL);
-  Texture *tex = tc->_texture;
-
-  // Do a deep copy to initialize the pixel buffer
-  pb->copy(tex->_pbuffer);
-
-  // If the image was empty, we need to render the texture into the frame
-  // buffer and then copy the results into the pixel buffer's image
-  if (pb->_image.empty()) {
-    int w = pb->get_xsize();
-    int h = pb->get_ysize();
-    draw_texture(tc, dr);
-    pb->_image = PTA_uchar::empty_array(w * h * pb->get_num_components());
-    copy_pixel_buffer(pb, dr);
-  }
-  report_my_gl_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::copy_pixel_buffer
-//       Access: Public, Virtual
-//  Description:
+//  Description: Copy the pixels within the indicated display region
+//               from the framebuffer into system memory, not texture
+//               memory.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
-copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
-  nassertr(pb != NULL && dr != NULL, false);
+framebuffer_copy_to_ram(Texture *tex, const DisplayRegion *dr,
+                        const RenderBuffer &rb) {
+  nassertr(tex != NULL && dr != NULL, false);
+  set_read_buffer(rb);
   GLP(PixelStorei)(GL_PACK_ALIGNMENT, 1);
 
   // Bug fix for RE, RE2, and VTX - need to disable texturing in order
@@ -2148,13 +2165,28 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
   int xo, yo, w, h;
   dr->get_region_pixels(xo, yo, w, h);
 
-  GLenum external_format = get_external_image_format(pb->get_format());
+  const FrameBufferProperties &properties = get_properties();
+
+  Texture::ComponentType component_type;
+  if (properties.get_color_bits() <= 24) {
+    component_type = Texture::T_unsigned_byte;
+  } else {
+    component_type = Texture::T_unsigned_short;
+  }
+
+  Texture::Format format;
+  if (properties.get_frame_buffer_mode() & FrameBufferProperties::FM_alpha) {
+    format = Texture::F_rgba;
+  } else {
+    format = Texture::F_rgb;
+  }
+
+  tex->setup_2d_texture(w, h, component_type, format);
+  GLenum external_format = get_external_image_format(format);
 
 #ifdef GSG_VERBOSE
   GLCAT.debug()
-    << "glReadPixels(" << xo << ", " << yo
-    << ", " << pb->get_xsize() << ", " << pb->get_ysize()
-    << ", ";
+    << "glReadPixels(" << xo << ", " << yo << ", " << w << ", " << h << ", ";
   switch (external_format) {
   case GL_DEPTH_COMPONENT:
     GLCAT.debug(false) << "GL_DEPTH_COMPONENT, ";
@@ -2175,9 +2207,12 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
     GLCAT.debug(false) << "unknown, ";
     break;
   }
-  switch (get_image_type(pb->get_image_type())) {
+  switch (get_component_type(component_type)) {
   case GL_UNSIGNED_BYTE:
     GLCAT.debug(false) << "GL_UNSIGNED_BYTE, ";
+    break;
+  case GL_UNSIGNED_SHORT:
+    GLCAT.debug(false) << "GL_UNSIGNED_SHORT, ";
     break;
   case GL_FLOAT:
     GLCAT.debug(false) << "GL_FLOAT, ";
@@ -2187,36 +2222,22 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
     break;
   }
   GLCAT.debug(false)
-    << (void *)pb->_image.p() << ")" << endl;
+    << ")" << endl;
 #endif
 
-  // pixelbuffer "origin" represents upper left screen point at which
-  // pixelbuffer should be drawn using draw_pixel_buffer
-  nassertr(!pb->_image.empty(), false);
-  GLP(ReadPixels)(xo, yo,
-                  pb->get_xsize(), pb->get_ysize(),
-                  external_format,
-                  get_image_type(pb->get_image_type()),
-                  pb->_image.p());
+  GLP(ReadPixels)(xo, yo, w, h,
+                  external_format, get_component_type(component_type),
+                  tex->make_ram_image());
 
   // We may have to reverse the byte ordering of the image if GL
   // didn't do it for us.
-  pb->_image = fix_component_ordering(external_format, pb);
+  if (!_supports_bgr) {
+    tex->set_ram_image(fix_component_ordering(tex->get_ram_image(), 
+                                              external_format, tex));
+  }
 
   report_my_gl_errors();
   return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::copy_pixel_buffer
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-bool CLP(GraphicsStateGuardian)::
-copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-                  const RenderBuffer &rb) {
-  set_read_buffer(rb);
-  return copy_pixel_buffer(pb, dr);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3166,7 +3187,10 @@ bind_texture(TextureContext *tc) {
     << "glBindTexture(): " << tex->get_name() << "(" << (int)gtc->_index
     << ")" << endl;
 #endif
-  GLP(BindTexture)(GL_TEXTURE_2D, gtc->_index);
+
+  GLP(BindTexture)(get_texture_target(tc->_texture->get_texture_type()), 
+                   gtc->_index);
+
   report_my_gl_errors();
 }
 
@@ -3177,13 +3201,21 @@ bind_texture(TextureContext *tc) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 specify_texture(Texture *tex) {
-  GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
-                     get_texture_wrap_mode(tex->get_wrapu()));
-  GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
-                     get_texture_wrap_mode(tex->get_wrapv()));
+  GLenum target = get_texture_target(tex->get_texture_type());
+
+  GLP(TexParameteri)(target, GL_TEXTURE_WRAP_S,
+                     get_texture_wrap_mode(tex->get_wrap_u()));
+  if (target != GL_TEXTURE_1D) {
+    GLP(TexParameteri)(target, GL_TEXTURE_WRAP_T,
+                       get_texture_wrap_mode(tex->get_wrap_v()));
+  }
+  if (target == GL_TEXTURE_3D) {
+    GLP(TexParameteri)(target, GL_TEXTURE_WRAP_R,
+                       get_texture_wrap_mode(tex->get_wrap_w()));
+  }
 
   Colorf border_color = tex->get_border_color();
-  GLP(TexParameterfv)(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR,
+  GLP(TexParameterfv)(target, GL_TEXTURE_BORDER_COLOR,
                       border_color.get_data());
 
   Texture::FilterType minfilter = tex->get_minfilter();
@@ -3202,7 +3234,7 @@ specify_texture(Texture *tex) {
       (auto_generate_mipmaps || !tex->might_have_ram_image())) {
     // If the hardware can automatically generate mipmaps, ask it to
     // do so now, but only if the texture requires them.
-    GLP(TexParameteri)(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, uses_mipmaps);
+    GLP(TexParameteri)(target, GL_GENERATE_MIPMAP, uses_mipmaps);
 
   } else if (!tex->might_have_ram_image()) {
     // If the hardware can't automatically generate mipmaps, but it's
@@ -3213,9 +3245,9 @@ specify_texture(Texture *tex) {
     uses_mipmaps = false;
   }
  
-  GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+  GLP(TexParameteri)(target, GL_TEXTURE_MIN_FILTER,
                      get_texture_filter_type(minfilter, !uses_mipmaps));
-  GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+  GLP(TexParameteri)(target, GL_TEXTURE_MAG_FILTER,
                      get_texture_filter_type(magfilter, true));
 
   report_my_gl_errors();
@@ -3230,7 +3262,8 @@ specify_texture(Texture *tex) {
 //               debugging.
 ////////////////////////////////////////////////////////////////////
 static int
-compute_gl_image_size(int xsize, int ysize, int external_format, int type) {
+compute_gl_image_size(int x_size, int y_size, int z_size, 
+                      int external_format, int type) {
   int num_components = 0;
   switch (external_format) {
   case GL_COLOR_INDEX:
@@ -3279,7 +3312,7 @@ compute_gl_image_size(int xsize, int ysize, int external_format, int type) {
     break;
   }
 
-  return xsize * ysize * pixel_width;
+  return x_size * y_size * z_size * pixel_width;
 }
 #endif  // NDEBUG
 
@@ -3295,43 +3328,101 @@ compute_gl_image_size(int xsize, int ysize, int external_format, int type) {
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 apply_texture_immediate(CLP(TextureContext) *gtc, Texture *tex) {
-  PixelBuffer *pb = tex->get_ram_image();
-  if (pb == (PixelBuffer *)NULL) {
+  CPTA_uchar image = tex->get_ram_image();
+  if (image.is_null()) {
     return false;
   }
 
-  int width = pb->get_xsize();
-  int height = pb->get_ysize();
+  int width = tex->get_x_size();
+  int height = tex->get_y_size();
+  int depth = tex->get_z_size();
 
-  GLint internal_format = get_internal_image_format(pb->get_format());
-  GLint external_format = get_external_image_format(pb->get_format());
-  GLenum type = get_image_type(pb->get_image_type());
+  GLint internal_format = get_internal_image_format(tex->get_format());
+  GLint external_format = get_external_image_format(tex->get_format());
+  GLenum component_type = get_component_type(tex->get_component_type());
 
-  PTA_uchar image = pb->_image;
-  nassertr(!image.empty(), false);
+  // Ensure that the texture fits within the GL's specified limits.
+  int max_dimension;
+  switch (tex->get_texture_type()) {
+  case Texture::TT_3d_texture:
+    max_dimension = _max_3d_texture_size;
+    break;
+
+  case Texture::TT_cube_map:
+    max_dimension = _max_cube_map_size;
+    break;
+
+  default:
+    max_dimension = _max_texture_size;
+  }
+
+  if (max_dimension == 0) {
+    // Guess this GL doesn't support cube mapping/3d textures.
+    return false;
+  }
+
+  int texel_size = tex->get_num_components() * tex->get_component_width();
+
+  // If it doesn't fit, we have to reduce it on-the-fly.  This is kind
+  // of expensive and it doesn't look great; it would have been better
+  // if the user had specified max-texture-dimension to reduce the
+  // texture at load time instead.
+  if (width > max_dimension) {
+    int byte_chunk = texel_size;
+    int stride = 1;
+    int new_width = width;
+    while (new_width > max_dimension) {
+      stride <<= 1;
+      new_width >>= 1;
+    }
+    GLCAT.info()
+      << "Reducing width of " << tex->get_name()
+      << " from " << width << " to " << new_width << "\n";
+    image = reduce_image(image, byte_chunk, stride);
+    width = new_width;
+  }
+  if (height > max_dimension) {
+    int byte_chunk = width * texel_size;
+    int stride = 1;
+    int new_height = height;
+    while (new_height > max_dimension) {
+      stride <<= 1;
+      new_height >>= 1;
+    }
+    GLCAT.info()
+      << "Reducing height of " << tex->get_name()
+      << " from " << height << " to " << new_height << "\n";
+    image = reduce_image(image, byte_chunk, stride);
+    height = new_height;
+  }
+  if (depth > max_dimension) {
+    int byte_chunk = height * width * texel_size;
+    int stride = 1;
+    int new_depth = depth;
+    while (new_depth > max_dimension) {
+      stride <<= 1;
+      new_depth >>= 1;
+    }
+    GLCAT.info()
+      << "Reducing depth of " << tex->get_name()
+      << " from " << depth << " to " << new_depth << "\n";
+    image = reduce_image(image, byte_chunk, stride);
+    depth = new_depth;
+  }
 
   if (!_supports_bgr) {
     // If the GL doesn't claim to support BGR, we may have to reverse
     // the component ordering of the image.
-    image = fix_component_ordering(external_format, pb);
+    image = fix_component_ordering(image, external_format, tex);
   }
 
 #ifndef NDEBUG
   int wanted_size = 
-    compute_gl_image_size(width, height, external_format, type);
-  nassertr(wanted_size == (int)pb->_image.size(), false);
+    compute_gl_image_size(width, height, depth, external_format, component_type);
+  nassertr(wanted_size == (int)image.size(), false);
 #endif  // NDEBUG
 
   GLP(PixelStorei)(GL_UNPACK_ALIGNMENT, 1);
-
-#ifdef GSG_VERBOSE
-  GLCAT.debug()
-    << "glTexImage2D(GL_TEXTURE_2D, "
-    << (int)internal_format << ", "
-    << width << ", " << height << ", "
-    << tex->get_border_width() << ", " << (int)external_format << ", "
-    << (int)type << ", " << tex->get_name() << ")\n";
-#endif
 
   bool uses_mipmaps = (tex->uses_mipmaps() && !CLP(ignore_mipmaps)) || CLP(force_mipmaps);
 
@@ -3341,10 +3432,96 @@ apply_texture_immediate(CLP(TextureContext) *gtc, Texture *tex) {
   }
 #endif
 
+  bool success = true;
+
+  if (tex->get_texture_type() == Texture::TT_cube_map) {
+    // A cube map must load six different 2-d images (which are stored
+    // as the six pages of the system ram image).
+    size_t page_size = height * width * texel_size;
+    const unsigned char *image_base = image;
+    
+    success = success && upload_texture_image
+      (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+       internal_format, width, height, depth, external_format, component_type,
+       image_base);
+    image_base += page_size;
+    
+    success = success && upload_texture_image
+      (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+       internal_format, width, height, depth, external_format, component_type,
+       image_base);
+    image_base += page_size;
+    
+    success = success && upload_texture_image
+      (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+       internal_format, width, height, depth, external_format, component_type,
+       image_base);
+    image_base += page_size;
+    
+    success = success && upload_texture_image
+      (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+       internal_format, width, height, depth, external_format, component_type,
+       image_base);
+    image_base += page_size;
+    
+    success = success && upload_texture_image
+      (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+       internal_format, width, height, depth, external_format, component_type,
+       image_base);
+    image_base += page_size;
+    
+    success = success && upload_texture_image
+      (gtc, uses_mipmaps, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
+       internal_format, width, height, depth, external_format, component_type,
+       image_base);
+    image_base += page_size;
+    
+    nassertr((size_t)(image_base - image) == image.size(), false);
+
+  } else {
+    // Any other kind of texture can be loaded all at once.
+    success = upload_texture_image
+      (gtc, uses_mipmaps, get_texture_target(tex->get_texture_type()),
+       internal_format, width, height, depth, external_format, component_type,
+       image);
+  }
+
+  if (success) {
+    gtc->_already_applied = true;
+    gtc->_internal_format = internal_format;
+    gtc->_width = width;
+    gtc->_height = height;
+    gtc->_depth = depth;
+
+#ifndef NDEBUG
+    if (uses_mipmaps && CLP(save_mipmaps)) {
+      save_mipmap_images(tex);
+    }
+#endif
+
+    return true;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::upload_texture_image
+//       Access: Protected
+//  Description: Loads a texture image, or one page of a cube map
+//               image, from system RAM to texture memory.
+////////////////////////////////////////////////////////////////////
+bool CLP(GraphicsStateGuardian)::
+upload_texture_image(CLP(TextureContext) *gtc, 
+                     bool uses_mipmaps, 
+                     GLenum target, GLint internal_format, 
+                     int width, int height, int depth,
+                     GLint external_format, GLenum component_type, 
+                     const unsigned char *image) {
   if (uses_mipmaps) {
 #ifndef NDEBUG
-    if (CLP(show_mipmaps)) {
-      build_phony_mipmaps(tex);
+    if (CLP(show_mipmaps) && target == GL_TEXTURE_2D) {
+      build_phony_mipmaps(gtc->_texture);
       report_my_gl_errors();
       return true;
       
@@ -3353,57 +3530,82 @@ apply_texture_immediate(CLP(TextureContext) *gtc, Texture *tex) {
       if (!_supports_generate_mipmap || !auto_generate_mipmaps) {
         // We only need to build the mipmaps by hand if the GL
         // doesn't support generating them automatically.
-        GLUP(Build2DMipmaps)(GL_TEXTURE_2D, internal_format,
-                             width, height,
-                             external_format, type, image);
-        
-        gtc->_already_applied = false;
-        gtc->_internal_format = internal_format;
-        gtc->_width = width;
-        gtc->_height = height;
-        gtc->_border_width = 0;
-        
-#ifndef NDEBUG
-        if (CLP(save_mipmaps)) {
-          save_mipmap_images(tex);
+        switch (target) {
+        case GL_TEXTURE_1D:
+          GLUP(Build1DMipmaps)(target, internal_format, width,
+                               external_format, component_type, image);
+          break;
+
+        case GL_TEXTURE_3D:
+          GLUP(Build3DMipmaps)(target, internal_format,
+                               width, height, depth,
+                               external_format, component_type, image);
+          break;
+
+        default:
+          GLUP(Build2DMipmaps)(target, internal_format,
+                               width, height,
+                               external_format, component_type, image);
         }
-#endif
+
         report_my_gl_errors();
         return true;
       }
   }
 
-  GLint border_width = tex->get_border_width();
-
   if (!gtc->_already_applied || 
       gtc->_internal_format != internal_format ||
       gtc->_width != width ||
       gtc->_height != height ||
-      gtc->_border_width != border_width) {
+      gtc->_depth != depth) {
     // We need to reload a new image.
-    GLP(TexImage2D)(GL_TEXTURE_2D, 0, internal_format,
-                    width, height, border_width,
-                    external_format, type, image);
-    gtc->_already_applied = true;
-    gtc->_internal_format = internal_format;
-    gtc->_width = width;
-    gtc->_height = height;
-    gtc->_border_width = border_width;
+    switch (target) {
+    case GL_TEXTURE_1D:
+      GLP(TexImage1D)(target, 0, internal_format,
+                      width, 0,
+                      external_format, component_type, image);
+      break;
+
+    case GL_TEXTURE_3D:
+      GLP(TexImage3D)(target, 0, internal_format,
+                      width, height, depth, 0,
+                      external_format, component_type, image);
+      break;
+
+    default:
+      GLP(TexImage2D)(target, 0, internal_format,
+                      width, height, 0,
+                      external_format, component_type, image);
+    }
 
   } else {
-    // We can reload the image over the previous image, saving on
-    // texture memory fragmentation.
-    GLP(TexSubImage2D)(GL_TEXTURE_2D, 0, 0, 0, width, height,
-                       external_format, type, image);
+    // We can reload the image over the previous image, possibly
+    // saving on texture memory fragmentation.
+    switch (target) {
+    case GL_TEXTURE_1D:
+      GLP(TexSubImage1D)(target, 0, 0, width, 
+                         external_format, component_type, image);
+      break;
+
+    case GL_TEXTURE_3D:
+      GLP(TexSubImage3D)(target, 0, 0, 0, 0, width, height, depth,
+                         external_format, component_type, image);
+      break;
+
+    default:
+      GLP(TexSubImage2D)(target, 0, 0, 0, width, height,
+                         external_format, component_type, image);
+      break;
+    }
   }
 
-  //report_my_gl_errors();
-  // want to give explict error for texture creation failure
+  // Report the error message explicitly if the GL texture creation
+  // failed.
   GLenum error_code = GLP(GetError)();
   if (error_code != GL_NO_ERROR) {
     const GLubyte *error_string = GLUP(ErrorString)(error_code);
     GLCAT.error()
-      << "GL texture creation failed for " << tex->get_name();
+      << "GL texture creation failed for " << gtc->_texture->get_name();
     if (error_string != (const GLubyte *)NULL) {
       GLCAT.error(false)
         << " : " << error_string;
@@ -3415,234 +3617,41 @@ apply_texture_immediate(CLP(TextureContext) *gtc, Texture *tex) {
   return true;
 }
 
+
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::draw_texture
-//       Access: Protected
-//  Description: Copies the texture image directly onto the frame
-//               buffer within the indicated display region.
+//     Function: CLP(GraphicsStateGuardian)::get_texture_target
+//       Access: Protected, Static
+//  Description: Maps from the Texture's texture type symbols to
+//               GL's.
 ////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-draw_texture(TextureContext *tc, const DisplayRegion *dr) {
-  nassertv(tc != NULL && dr != NULL);
-  Texture *tex = tc->_texture;
+GLenum CLP(GraphicsStateGuardian)::
+get_texture_target(Texture::TextureType texture_type) {
+  switch (texture_type) {
+  case Texture::TT_1d_texture:
+    return GL_TEXTURE_1D;
 
-  DisplayRegionStack old_dr = push_display_region(dr);
-  prepare_display_region();
+  case Texture::TT_2d_texture:
+    return GL_TEXTURE_2D;
 
-  static CPT(RenderState) basic_state;
-  if (basic_state == (RenderState *)NULL) {
-    // Create a State object for rendering textures in general.  Lots
-    // of things get turned off.
-    const RenderAttrib *attribs[] = {
-      CullFaceAttrib::make(CullFaceAttrib::M_cull_none),
-      DepthTestAttrib::make(DepthTestAttrib::M_none),
-      DepthWriteAttrib::make(DepthWriteAttrib::M_off),
-      TextureApplyAttrib::make(TextureApplyAttrib::M_decal),
-      ColorWriteAttrib::make(ColorWriteAttrib::M_on),
-      RenderModeAttrib::make(RenderModeAttrib::M_filled),
-      //TexMatrixAttrib::make(LMatrix4f::ident_mat()),
-      ColorBlendAttrib::make_off(),
-      TransparencyAttrib::make(TransparencyAttrib::M_none),
-    };
-    basic_state = 
-      RenderState::make(attribs, sizeof(attribs) / sizeof(void *));
-  }      
-  CPT(RenderState) state = basic_state->compose
-    (RenderState::make(TextureAttrib::make(tex)));
-  modify_state(state);
-  set_transform(TransformState::make_identity());
+  case Texture::TT_3d_texture:
+    return GL_TEXTURE_3D;
 
-  // We set up an orthographic projection that defines our entire
-  // viewport to the range [0..1] in both dimensions.  Then, when we
-  // create a unit square polygon below, it will exactly fill the
-  // viewport (and thus exactly fill the display region).
-  GLP(MatrixMode)(GL_PROJECTION);
-  GLP(PushMatrix)();
-  GLP(LoadIdentity)();
-  GLUP(Ortho2D)(0, 1, 0, 1);
-
-  float txl, txr, tyt, tyb;
-  txl = tyb = 0.0f;
-#if 0
- // remove this auto-scaling stuff for now
- // has_requested_size is only used here for draw_texture()
-  if (tex->_has_requested_size) {
-    txr = ((float)(tex->_requested_w)) / ((float)(tex->_pbuffer->get_xsize()));
-    tyt = ((float)(tex->_requested_h)) / ((float)(tex->_pbuffer->get_ysize()));
-  } else 
-#endif     
-  {
-    txr = tyt = 1.0f;
+  case Texture::TT_cube_map:
+    return GL_TEXTURE_CUBE_MAP;
   }
 
-  // This two-triangle strip is actually a quad.  But it's usually
-  // better to render quads as tristrips anyway.
-  GLP(Begin)(GL_TRIANGLE_STRIP);
-  GLP(TexCoord2f)(txl, tyb);   GLP(Vertex2i)(0, 0);
-  GLP(TexCoord2f)(txr, tyb);   GLP(Vertex2i)(1, 0);
-  GLP(TexCoord2f)(txl, tyt);   GLP(Vertex2i)(0, 1);
-  GLP(TexCoord2f)(txr, tyt);   GLP(Vertex2i)(1, 1);
-  GLP(End)();
-
-  GLP(MatrixMode)(GL_PROJECTION);
-  GLP(PopMatrix)();
-
-  pop_display_region(old_dr);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::draw_texture
-//       Access: Protected
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-draw_texture(TextureContext *tc, const DisplayRegion *dr, 
-             const RenderBuffer &rb) {
-  set_draw_buffer(rb);
-  draw_texture(tc, dr);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::draw_pixel_buffer
-//       Access: Protected
-//  Description: Copies the indicated pixel buffer into the frame
-//               buffer in the given display region.
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
-  // This code is now invalidated by the new design; perhaps the
-  // interface is not needed anyway.
-#if 0
-  nassertv(pb != NULL && dr != NULL);
-  nassertv(!pb->_image.empty());
-  DisplayRegionStack old_dr = push_display_region(dr);
-  prepare_display_region();
-
-  static CPT(RenderState) depth_state;
-  static CPT(RenderState) color_state;
-  if (depth_state == (RenderState *)NULL) {
-    // Create a State object for rendering depth-mask pixel buffers.
-    depth_state = 
-      RenderState::make(TextureAttrib::make_off(),
-                        ColorWriteAttrib::make(ColorWriteAttrib::M_off),
-                        DepthTestAttrib::make(DepthTestAttrib::M_always),
-                        DepthWriteAttrib::make(DepthWriteAttrib::M_on));
-
-    // And one for rendering color buffers.
-    color_state =
-      RenderState::make(TextureAttrib::make_off(),
-                        ColorWriteAttrib::make(ColorWriteAttrib::M_on),
-                        DepthTestAttrib::make(DepthTestAttrib::M_none),
-                        DepthWriteAttrib::make(DepthWriteAttrib::M_off));
-  }
-
-  switch (pb->get_format()) {
-  case PixelBuffer::F_depth_component:
-    modify_state(depth_state);
-    break;
-
-  case PixelBuffer::F_rgb:
-  case PixelBuffer::F_rgb5:
-  case PixelBuffer::F_rgb8:
-  case PixelBuffer::F_rgb12:
-  case PixelBuffer::F_rgba:
-  case PixelBuffer::F_rgbm:
-  case PixelBuffer::F_rgba4:
-  case PixelBuffer::F_rgba5:
-  case PixelBuffer::F_rgba8:
-  case PixelBuffer::F_rgba12:
-    modify_state(color_state);
-    break;
-
-  default:
-    GLCAT.error()
-      << "draw_pixel_buffer(): unknown buffer format" << endl;
-  }
-  set_transform(TransformState::make_identity());
-
-  GLP(PixelStorei)(GL_UNPACK_ALIGNMENT, 1);
-
-  WindowProperties props = _win->get_properties();
-
-  GLP(MatrixMode)( GL_PROJECTION );
-  GLP(PushMatrix)();
-  GLP(LoadIdentity)();
-  GLUP(Ortho2D)(0, props.get_x_size(),
-                0, props.get_y_size());
-
-#ifdef GSG_VERBOSE
-  GLCAT.debug()
-    << "glDrawPixels(" << pb->get_xsize() << ", " << pb->get_ysize()
-    << ", ";
-  switch (get_external_image_format(pb->get_format())) {
-  case GL_DEPTH_COMPONENT:
-    GLCAT.debug(false) << "GL_DEPTH_COMPONENT, ";
-    break;
-  case GL_RGB:
-    GLCAT.debug(false) << "GL_RGB, ";
-    break;
-  case GL_RGBA:
-    GLCAT.debug(false) << "GL_RGBA, ";
-    break;
-  case GL_BGR:
-    GLCAT.debug(false) << "GL_BGR, ";
-    break;
-  case GL_BGRA:
-    GLCAT.debug(false) << "GL_BGRA, ";
-    break;
-  default:
-    GLCAT.debug(false) << "unknown, ";
-    break;
-  }
-  switch (get_image_type(pb->get_image_type())) {
-  case GL_UNSIGNED_BYTE:
-    GLCAT.debug(false) << "GL_UNSIGNED_BYTE, ";
-    break;
-  case GL_FLOAT:
-    GLCAT.debug(false) << "GL_FLOAT, ";
-    break;
-  default:
-    GLCAT.debug(false) << "unknown, ";
-    break;
-  }
-  GLCAT.debug(false)
-    << (void *)pb->_image.p() << ")" << endl;
-#endif
-
-  GLP(RasterPos2i)(0, 0);
-  GLP(DrawPixels)(pb->get_xsize(), pb->get_ysize(),
-                  get_external_image_format(pb->get_format()),
-                  get_image_type(pb->get_image_type()),
-                  pb->_image.p() );
-
-  GLP(MatrixMode)( GL_PROJECTION );
-  GLP(PopMatrix)();
-
-  pop_display_region(old_dr);
-  report_my_gl_errors();
-#endif
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::draw_pixel_buffer
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-                  const RenderBuffer &rb) {
-  set_draw_buffer(rb);
-  draw_pixel_buffer(pb, dr);
+  GLCAT.error() << "Invalid Texture::TextureType value!\n";
+  return GL_TEXTURE_2D;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::get_texture_wrap_mode
-//       Access: Protected
+//       Access: Protected, Static
 //  Description: Maps from the Texture's internal wrap mode symbols to
 //               GL's.
 ////////////////////////////////////////////////////////////////////
 GLenum CLP(GraphicsStateGuardian)::
-get_texture_wrap_mode(Texture::WrapMode wm) const {
+get_texture_wrap_mode(Texture::WrapMode wm) {
   if (CLP(ignore_clamp)) {
     return GL_REPEAT;
   }
@@ -3717,25 +3726,23 @@ get_texture_filter_type(Texture::FilterType ft, bool ignore_mipmaps) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_image_type
+//     Function: CLP(GraphicsStateGuardian)::get_component_type
 //       Access: Protected, Static
-//  Description: Maps from the PixelBuffer's internal Type symbols
+//  Description: Maps from the Texture's internal ComponentType symbols
 //               to GL's.
 ////////////////////////////////////////////////////////////////////
 GLenum CLP(GraphicsStateGuardian)::
-get_image_type(PixelBuffer::Type type) {
-  switch (type) {
-  case PixelBuffer::T_unsigned_byte:
+get_component_type(Texture::ComponentType component_type) {
+  switch (component_type) {
+  case Texture::T_unsigned_byte:
     return GL_UNSIGNED_BYTE;
-  case PixelBuffer::T_unsigned_short:
+  case Texture::T_unsigned_short:
     return GL_UNSIGNED_SHORT;
-  case PixelBuffer::T_unsigned_byte_332:
-    return GL_UNSIGNED_BYTE_3_3_2;
-  case PixelBuffer::T_float:
+  case Texture::T_float:
     return GL_FLOAT;
 
   default:
-    GLCAT.error() << "Invalid PixelBuffer::Type value!\n";
+    GLCAT.error() << "Invalid Texture::Type value!\n";
     return GL_UNSIGNED_BYTE;
   }
 }
@@ -3743,47 +3750,47 @@ get_image_type(PixelBuffer::Type type) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::get_external_image_format
 //       Access: Protected
-//  Description: Maps from the PixelBuffer's Format symbols
+//  Description: Maps from the Texture's Format symbols
 //               to GL's.
 ////////////////////////////////////////////////////////////////////
 GLint CLP(GraphicsStateGuardian)::
-get_external_image_format(PixelBuffer::Format format) const {
+get_external_image_format(Texture::Format format) const {
   switch (format) {
-  case PixelBuffer::F_color_index:
+  case Texture::F_color_index:
     return GL_COLOR_INDEX;
-  case PixelBuffer::F_stencil_index:
+  case Texture::F_stencil_index:
     return GL_STENCIL_INDEX;
-  case PixelBuffer::F_depth_component:
+  case Texture::F_depth_component:
     return GL_DEPTH_COMPONENT;
-  case PixelBuffer::F_red:
+  case Texture::F_red:
     return GL_RED;
-  case PixelBuffer::F_green:
+  case Texture::F_green:
     return GL_GREEN;
-  case PixelBuffer::F_blue:
+  case Texture::F_blue:
     return GL_BLUE;
-  case PixelBuffer::F_alpha:
+  case Texture::F_alpha:
     return GL_ALPHA;
-  case PixelBuffer::F_rgb:
-  case PixelBuffer::F_rgb5:
-  case PixelBuffer::F_rgb8:
-  case PixelBuffer::F_rgb12:
-  case PixelBuffer::F_rgb332:
+  case Texture::F_rgb:
+  case Texture::F_rgb5:
+  case Texture::F_rgb8:
+  case Texture::F_rgb12:
+  case Texture::F_rgb332:
     return _supports_bgr ? GL_BGR : GL_RGB;
-  case PixelBuffer::F_rgba:
-  case PixelBuffer::F_rgbm:
-  case PixelBuffer::F_rgba4:
-  case PixelBuffer::F_rgba5:
-  case PixelBuffer::F_rgba8:
-  case PixelBuffer::F_rgba12:
+  case Texture::F_rgba:
+  case Texture::F_rgbm:
+  case Texture::F_rgba4:
+  case Texture::F_rgba5:
+  case Texture::F_rgba8:
+  case Texture::F_rgba12:
     return _supports_bgr ? GL_BGRA : GL_RGBA;
-  case PixelBuffer::F_luminance:
+  case Texture::F_luminance:
     return GL_LUMINANCE;
-  case PixelBuffer::F_luminance_alphamask:
-  case PixelBuffer::F_luminance_alpha:
+  case Texture::F_luminance_alphamask:
+  case Texture::F_luminance_alpha:
     return GL_LUMINANCE_ALPHA;
   }
   GLCAT.error()
-    << "Invalid PixelBuffer::Format value in get_external_image_format(): "
+    << "Invalid Texture::Format value in get_external_image_format(): "
     << (int)format << "\n";
   return GL_RGB;
 }
@@ -3791,45 +3798,45 @@ get_external_image_format(PixelBuffer::Format format) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::get_internal_image_format
 //       Access: Protected, Static
-//  Description: Maps from the PixelBuffer's Format symbols to a
+//  Description: Maps from the Texture's Format symbols to a
 //               suitable internal format for GL textures.
 ////////////////////////////////////////////////////////////////////
 GLint CLP(GraphicsStateGuardian)::
-get_internal_image_format(PixelBuffer::Format format) {
+get_internal_image_format(Texture::Format format) {
   switch (format) {
-  case PixelBuffer::F_rgba:
-  case PixelBuffer::F_rgbm:
+  case Texture::F_rgba:
+  case Texture::F_rgbm:
     return GL_RGBA;
-  case PixelBuffer::F_rgba4:
+  case Texture::F_rgba4:
     return GL_RGBA4;
-  case PixelBuffer::F_rgba8:
+  case Texture::F_rgba8:
     return GL_RGBA8;
-  case PixelBuffer::F_rgba12:
+  case Texture::F_rgba12:
     return GL_RGBA12;
 
-  case PixelBuffer::F_rgb:
+  case Texture::F_rgb:
     return GL_RGB;
-  case PixelBuffer::F_rgb5:
+  case Texture::F_rgb5:
     return GL_RGB5;
-  case PixelBuffer::F_rgba5:
+  case Texture::F_rgba5:
     return GL_RGB5_A1;
-  case PixelBuffer::F_rgb8:
+  case Texture::F_rgb8:
     return GL_RGB8;
-  case PixelBuffer::F_rgb12:
+  case Texture::F_rgb12:
     return GL_RGB12;
-  case PixelBuffer::F_rgb332:
+  case Texture::F_rgb332:
     return GL_R3_G3_B2;
 
-  case PixelBuffer::F_alpha:
+  case Texture::F_alpha:
     return GL_ALPHA;
 
-  case PixelBuffer::F_red:
-  case PixelBuffer::F_green:
-  case PixelBuffer::F_blue:
-  case PixelBuffer::F_luminance:
+  case Texture::F_red:
+  case Texture::F_green:
+  case Texture::F_blue:
+  case Texture::F_luminance:
     return GL_LUMINANCE;
-  case PixelBuffer::F_luminance_alpha:
-  case PixelBuffer::F_luminance_alphamask:
+  case Texture::F_luminance_alpha:
+  case Texture::F_luminance_alphamask:
     return GL_LUMINANCE_ALPHA;
 
   default:
@@ -4491,7 +4498,6 @@ finish_modify_state() {
       
       switch (_current_tex_gen->get_mode(stage)) {
       case TexGenAttrib::M_off:
-      case TexGenAttrib::M_cube_map:
         GLP(Disable)(GL_TEXTURE_GEN_S);
         GLP(Disable)(GL_TEXTURE_GEN_T);
         GLP(Disable)(GL_TEXTURE_GEN_R);
@@ -4504,6 +4510,17 @@ finish_modify_state() {
         GLP(Enable)(GL_TEXTURE_GEN_S);
         GLP(Enable)(GL_TEXTURE_GEN_T);
         GLP(Disable)(GL_TEXTURE_GEN_R);
+        GLP(Disable)(GL_TEXTURE_GEN_Q);
+        force_normal = true;
+        break;
+        
+      case TexGenAttrib::M_cube_map:
+        GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
+        GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
+        GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
+        GLP(Enable)(GL_TEXTURE_GEN_S);
+        GLP(Enable)(GL_TEXTURE_GEN_T);
+        GLP(Enable)(GL_TEXTURE_GEN_R);
         GLP(Disable)(GL_TEXTURE_GEN_Q);
         force_normal = true;
         break;
@@ -4555,27 +4572,40 @@ finish_modify_state() {
         // We achieve world position coordinates by using the eye
         // position mode, and loading the transform of the root
         // node--thus putting the "eye" at the root.
-        GLP(MatrixMode)(GL_MODELVIEW);
-        GLP(PushMatrix)();
-        CPT(TransformState) root_transform = _scene_setup->get_render_transform();
-        GLP(LoadMatrixf)(root_transform->get_mat().get_data());
-        GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-        GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-        GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
-        GLP(TexGeni)(GL_Q, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+        {
+          GLP(MatrixMode)(GL_MODELVIEW);
+          GLP(PushMatrix)();
+          CPT(TransformState) root_transform = _scene_setup->get_render_transform();
+          GLP(LoadMatrixf)(root_transform->get_mat().get_data());
+          GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+          GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+          GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+          GLP(TexGeni)(GL_Q, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
         
-        GLP(TexGenfv)(GL_S, GL_EYE_PLANE, s_data);
-        GLP(TexGenfv)(GL_T, GL_EYE_PLANE, t_data);
-        GLP(TexGenfv)(GL_R, GL_EYE_PLANE, r_data);
-        GLP(TexGenfv)(GL_Q, GL_EYE_PLANE, q_data);
+          GLP(TexGenfv)(GL_S, GL_EYE_PLANE, s_data);
+          GLP(TexGenfv)(GL_T, GL_EYE_PLANE, t_data);
+          GLP(TexGenfv)(GL_R, GL_EYE_PLANE, r_data);
+          GLP(TexGenfv)(GL_Q, GL_EYE_PLANE, q_data);
+          
+          GLP(Enable)(GL_TEXTURE_GEN_S);
+          GLP(Enable)(GL_TEXTURE_GEN_T);
+          GLP(Enable)(GL_TEXTURE_GEN_R);
+          GLP(Enable)(GL_TEXTURE_GEN_Q);
+          
+          GLP(MatrixMode)(GL_MODELVIEW);
+          GLP(PopMatrix)();
+        }
+        break;
         
+      case TexGenAttrib::M_object_normal:
+        GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
+        GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
+        GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
         GLP(Enable)(GL_TEXTURE_GEN_S);
         GLP(Enable)(GL_TEXTURE_GEN_T);
         GLP(Enable)(GL_TEXTURE_GEN_R);
-        GLP(Enable)(GL_TEXTURE_GEN_Q);
-
-        GLP(MatrixMode)(GL_MODELVIEW);
-        GLP(PopMatrix)();
+        GLP(Disable)(GL_TEXTURE_GEN_Q);
+        force_normal = true;
         break;
       }
     }
@@ -4603,61 +4633,6 @@ finish_modify_state() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 free_pointers() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::save_frame_buffer
-//       Access: Public
-//  Description: Saves the indicated planes of the frame buffer
-//               (within the indicated display region) and returns it
-//               in some meaningful form that can be restored later
-//               via restore_frame_buffer().  This is a helper
-//               function for push_frame_buffer() and
-//               pop_frame_buffer().
-////////////////////////////////////////////////////////////////////
-PT(SavedFrameBuffer) CLP(GraphicsStateGuardian)::
-save_frame_buffer(const RenderBuffer &buffer,
-                  CPT(DisplayRegion) dr) {
-  CLP(SavedFrameBuffer) *sfb = new CLP(SavedFrameBuffer)(buffer, dr);
-
-  if (buffer._buffer_type & RenderBuffer::T_depth) {
-    // Save the depth buffer.
-    sfb->_depth =
-      new PixelBuffer(PixelBuffer::depth_buffer(dr->get_pixel_width(),
-                                                dr->get_pixel_height()));
-    copy_pixel_buffer(sfb->_depth, dr, buffer);
-  }
-
-  if (buffer._buffer_type & RenderBuffer::T_back) {
-    // Save the color buffer.
-    sfb->_back_rgba = new Texture;
-    copy_texture(sfb->_back_rgba, dr, buffer);
-  }
-
-  return sfb;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::restore_frame_buffer
-//       Access: Public
-//  Description: Restores the frame buffer that was previously saved.
-////////////////////////////////////////////////////////////////////
-void CLP(GraphicsStateGuardian)::
-restore_frame_buffer(SavedFrameBuffer *frame_buffer) {
-  CLP(SavedFrameBuffer) *sfb = DCAST(CLP(SavedFrameBuffer), frame_buffer);
-
-  if (sfb->_back_rgba != (Texture *)NULL &&
-      (sfb->_buffer._buffer_type & RenderBuffer::T_back) != 0) {
-    // Restore the color buffer.
-    TextureContext *tc = sfb->_back_rgba->prepare_now(_prepared_objects, this);
-    draw_texture(tc, sfb->_display_region, sfb->_buffer);
-  }
-
-  if (sfb->_depth != (PixelBuffer *)NULL &&
-      (sfb->_buffer._buffer_type & RenderBuffer::T_depth) != 0) {
-    // Restore the depth buffer.
-    draw_pixel_buffer(sfb->_depth, sfb->_display_region, sfb->_buffer);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4744,7 +4719,7 @@ do_issue_texture() {
       // Stage i has changed.  Issue the texture on this stage.
       _glActiveTexture(GL_TEXTURE0 + i);
 
-      GLP(Enable)(GL_TEXTURE_2D);
+      GLP(Enable)(get_texture_target(texture->get_texture_type()));
       
       TextureContext *tc = texture->prepare_now(_prepared_objects, this);
       apply_texture(tc);
@@ -4762,8 +4737,7 @@ do_issue_texture() {
       }
 
       if (stage->get_mode() == TextureStage::M_decal) {
-        if (texture->_pbuffer != (PixelBuffer *)NULL &&
-            texture->_pbuffer->get_num_components() < 3) {
+        if (texture->get_num_components() < 3) {
           // Make a special case for 1- and 2-channel decal textures.
           // OpenGL does not define their use with GL_DECAL for some
           // reason, so implement them using the combiner instead.
@@ -4862,7 +4836,10 @@ do_issue_texture() {
   // Disable the texture stages that are no longer used.
   for (i = num_stages; i < num_old_stages; i++) {
     _glActiveTexture(GL_TEXTURE0 + i);
+    GLP(Disable)(GL_TEXTURE_1D);
     GLP(Disable)(GL_TEXTURE_2D);
+    GLP(Disable)(GL_TEXTURE_3D);
+    GLP(Disable)(GL_TEXTURE_CUBE_MAP);
   }
 
   _current_texture = new_texture;
@@ -4885,38 +4862,37 @@ do_issue_texture() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 build_phony_mipmaps(Texture *tex) {
-  PixelBuffer *pb = tex->_pbuffer;
-  int xsize = pb->get_xsize();
-  int ysize = pb->get_ysize();
+  int x_size = tex->get_x_size();
+  int y_size = tex->get_y_size();
 
   GLCAT.info()
     << "Building phony mipmap levels for " << tex->get_name() << "\n";
   int level = 0;
-  while (xsize > 0 && ysize > 0) {
+  while (x_size > 0 && y_size > 0) {
     GLCAT.info(false)
-      << "  level " << level << " is " << xsize << " by " << ysize << "\n";
-    build_phony_mipmap_level(level, xsize, ysize);
+      << "  level " << level << " is " << x_size << " by " << y_size << "\n";
+    build_phony_mipmap_level(level, x_size, y_size);
 
-    xsize >>= 1;
-    ysize >>= 1;
+    x_size >>= 1;
+    y_size >>= 1;
     level++;
   }
 
-  while (xsize > 0) {
+  while (x_size > 0) {
     GLCAT.info(false)
-      << "  level " << level << " is " << xsize << " by 1\n";
-    build_phony_mipmap_level(level, xsize, 1);
+      << "  level " << level << " is " << x_size << " by 1\n";
+    build_phony_mipmap_level(level, x_size, 1);
 
-    xsize >>= 1;
+    x_size >>= 1;
     level++;
   }
 
-  while (ysize > 0) {
+  while (y_size > 0) {
     GLCAT.info(false)
-      << "  level " << level << " is 1 by " << ysize << "\n";
-    build_phony_mipmap_level(level, 1, ysize);
+      << "  level " << level << " is 1 by " << y_size << "\n";
+    build_phony_mipmap_level(level, 1, y_size);
 
-    ysize >>= 1;
+    y_size >>= 1;
     level++;
   }
 }
@@ -4927,7 +4903,7 @@ build_phony_mipmaps(Texture *tex) {
 //  Description: Generates a single colored mipmap level.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-build_phony_mipmap_level(int level, int xsize, int ysize) {
+build_phony_mipmap_level(int level, int x_size, int y_size) {
   static const int num_levels = 10;
   static const char *level_filenames[num_levels] = {
     "mipmap_level_0.rgb",
@@ -4957,7 +4933,7 @@ build_phony_mipmap_level(int level, int xsize, int ysize) {
   level = level % num_levels;
   Filename filename(level_filenames[level]);
 
-  PNMImage image_sized(xsize, ysize);
+  PNMImage image_sized(x_size, y_size);
   PNMImage image_source;
   if (filename.resolve_filename(get_texture_path()) ||
       filename.resolve_filename(get_model_path())) {
@@ -4975,18 +4951,19 @@ build_phony_mipmap_level(int level, int xsize, int ysize) {
                      level_colors[level][2]);
   }
 
-  PixelBuffer *pb = new PixelBuffer;
-  pb->load(image_sized);
-
-  GLenum internal_format = get_internal_image_format(pb->get_format());
-  GLenum external_format = get_external_image_format(pb->get_format());
-  GLenum type = get_image_type(pb->get_image_type());
-
-  GLP(TexImage2D)(GL_TEXTURE_2D, level, internal_format,
-                  pb->get_xsize(), pb->get_ysize(), 0,
-                  external_format, type, pb->_image );
-
-  delete pb;
+  PT(Texture) tex = new Texture;
+  if (!tex->load(image_sized)) {
+    GLCAT.warning()
+      << "Unable to load phony mipmap image.\n";
+  } else {
+    GLenum internal_format = get_internal_image_format(tex->get_format());
+    GLenum external_format = get_external_image_format(tex->get_format());
+    GLenum type = get_component_type(tex->get_component_type());
+    
+    GLP(TexImage2D)(GL_TEXTURE_2D, level, internal_format,
+                    tex->get_x_size(), tex->get_y_size(), 0,
+                    external_format, type, tex->get_ram_image());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4998,6 +4975,11 @@ build_phony_mipmap_level(int level, int xsize, int ysize) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 save_mipmap_images(Texture *tex) {
+  if (tex->get_texture_type() != Texture::TT_2d_texture) {
+    // Never mind on unusual texture formats.
+    return;
+  }
+
   Filename filename = tex->get_name();
   string name;
   if (filename.empty()) {
@@ -5008,39 +4990,35 @@ save_mipmap_images(Texture *tex) {
     name = filename.get_basename_wo_extension();
   }
 
-  PixelBuffer *pb = tex->get_ram_image();
-  nassertv(pb != (PixelBuffer *)NULL);
+  GLenum external_format = get_external_image_format(tex->get_format());
+  GLenum type = get_component_type(tex->get_component_type());
 
-  GLenum external_format = get_external_image_format(pb->get_format());
-  GLenum type = get_image_type(pb->get_image_type());
-
-  int xsize = pb->get_xsize();
-  int ysize = pb->get_ysize();
+  int x_size = tex->get_x_size();
+  int y_size = tex->get_y_size();
 
   // Specify byte-alignment for the pixels on output.
   GLP(PixelStorei)(GL_PACK_ALIGNMENT, 1);
 
   int mipmap_level = 0;
   do {
-    xsize = max(xsize, 1);
-    ysize = max(ysize, 1);
+    x_size = max(x_size, 1);
+    y_size = max(y_size, 1);
 
-    PT(PixelBuffer) mpb = 
-      new PixelBuffer(xsize, ysize, pb->get_num_components(),
-                      pb->get_component_width(), pb->get_image_type(),
-                      pb->get_format());
+    PT(Texture) mtex = new Texture;
+    mtex->setup_2d_texture(x_size, y_size, tex->get_component_type(), 
+                           tex->get_format());
     GLP(GetTexImage)(GL_TEXTURE_2D, mipmap_level, external_format, 
-                  type, mpb->_image);
+                     type, mtex->make_ram_image());
     Filename mipmap_filename = name + "_" + format_string(mipmap_level) + ".rgb";
     nout << "Writing mipmap level " << mipmap_level
-         << " (" << xsize << " by " << ysize << ") " 
+         << " (" << x_size << " by " << y_size << ") " 
          << mipmap_filename << "\n";
-    mpb->write(mipmap_filename);
+    mtex->write(mipmap_filename);
 
-    xsize >>= 1;
-    ysize >>= 1;
+    x_size >>= 1;
+    y_size >>= 1;
     mipmap_level++;
-  } while (xsize > 0 && ysize > 0);
+  } while (x_size > 0 || y_size > 0);
 }
 #endif  // NDEBUG
 

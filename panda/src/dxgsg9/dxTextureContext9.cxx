@@ -31,7 +31,7 @@ static const DWORD g_LowByteMask = 0x000000FF;
 
 #ifdef PANDA_BGRA_ORDER
 // assume Panda uses byte-order BGRA/LA to store pixels, which when read into little-endian word is ARGB/AL
-// these macros GET from PixelBuffer, (wont work from DDSurface)
+// these macros GET from Texture, (wont work from DDSurface)
 #define GET_RED_BYTE(PIXEL_DWORD)  ((BYTE)((PIXEL_DWORD >> 16) & g_LowByteMask))
 #define GET_BLUE_BYTE(PIXEL_DWORD) ((BYTE)((PIXEL_DWORD)       & g_LowByteMask))
 #else
@@ -135,54 +135,54 @@ enum Format {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXTextureContext9::get_bits_per_pixel
 //       Access: Protected
-//  Description: Maps from the PixelBuffer's Format symbols
+//  Description: Maps from the Texture's Format symbols
 //               to bpp.  returns # of alpha bits
-//               Note: PixelBuffer's format indicates REQUESTED final format,
+//               Note: Texture's format indicates REQUESTED final format,
 //                     not the stored format, which is indicated by pixelbuffer type
 ////////////////////////////////////////////////////////////////////
 
 unsigned int DXTextureContext9::
-get_bits_per_pixel(PixelBuffer::Format format, int *alphbits) {
+get_bits_per_pixel(Texture::Format format, int *alphbits) {
     *alphbits = 0;      // assume no alpha bits
     switch(format) {
-        case PixelBuffer::F_alpha:
+        case Texture::F_alpha:
             *alphbits = 8;
-        case PixelBuffer::F_color_index:
-        case PixelBuffer::F_red:
-        case PixelBuffer::F_green:
-        case PixelBuffer::F_blue:
-        case PixelBuffer::F_rgb332:
+        case Texture::F_color_index:
+        case Texture::F_red:
+        case Texture::F_green:
+        case Texture::F_blue:
+        case Texture::F_rgb332:
             return 8;
-        case PixelBuffer::F_luminance_alphamask:
+        case Texture::F_luminance_alphamask:
             *alphbits = 1;
             return 16;
-        case PixelBuffer::F_luminance_alpha:
+        case Texture::F_luminance_alpha:
             *alphbits = 8;
             return 16;
-        case PixelBuffer::F_luminance:
+        case Texture::F_luminance:
             return 8;
-        case PixelBuffer::F_rgba4:
+        case Texture::F_rgba4:
             *alphbits = 4;
             return 16;
-        case PixelBuffer::F_rgba5:
+        case Texture::F_rgba5:
             *alphbits = 1;
             return 16;
-        case PixelBuffer::F_depth_component:
-        case PixelBuffer::F_rgb5:
+        case Texture::F_depth_component:
+        case Texture::F_rgb5:
             return 16;
-        case PixelBuffer::F_rgb8:
-        case PixelBuffer::F_rgb:
+        case Texture::F_rgb8:
+        case Texture::F_rgb:
             return 24;
-        case PixelBuffer::F_rgba8:
-        case PixelBuffer::F_rgba:
-        case PixelBuffer::F_rgbm:
-            if(format==PixelBuffer::F_rgbm)   // does this make any sense?
+        case Texture::F_rgba8:
+        case Texture::F_rgba:
+        case Texture::F_rgbm:
+            if(format==Texture::F_rgbm)   // does this make any sense?
              *alphbits = 1;
             else *alphbits = 8;
             return 32;
-        case PixelBuffer::F_rgb12:
+        case Texture::F_rgb12:
             return 36;
-        case PixelBuffer::F_rgba12:
+        case Texture::F_rgba12:
             *alphbits = 12;
             return 48;
     }
@@ -190,20 +190,20 @@ get_bits_per_pixel(PixelBuffer::Format format, int *alphbits) {
 }
 
 // still need custom conversion since d3d/d3dx has no way to convert arbitrary fmt to ARGB in-memory user buffer
-HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface9 *pD3DSurf9,PixelBuffer *pixbuf) {
-// copies SrcRect in pD3DSurf to upper left of pixbuf
+HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface9 *pD3DSurf9,Texture *texture) {
+// copies SrcRect in pD3DSurf to upper left of texture
     HRESULT hr;
-    DWORD dwNumComponents=pixbuf->get_num_components();
+    DWORD dwNumComponents=texture->get_num_components();
 
-    assert(pixbuf->get_component_width()==sizeof(BYTE));   // cant handle anything else now
-    assert(pixbuf->get_image_type()==PixelBuffer::T_unsigned_byte);   // cant handle anything else now
+    assert(texture->get_component_width()==sizeof(BYTE));   // cant handle anything else now
+    assert(texture->get_component_type()==Texture::T_unsigned_byte);   // cant handle anything else now
     assert((dwNumComponents==3) || (dwNumComponents==4));  // cant handle anything else now
     assert(IS_VALID_PTR(pD3DSurf9));
 
-    BYTE *pbuf=pixbuf->_image.p();
+    BYTE *pbuf=texture->modify_ram_image().p();
 
     if(IsBadWritePtr(pD3DSurf9,sizeof(DWORD))) {
-        dxgsg9_cat.error() << "ConvertDDSurftoPixBuf failed: bad pD3DSurf ptr value (" << ((void*)pD3DSurf9) << ")\n";
+        dxgsg9_cat.error() << "ConvertDDSurftoTexture failed: bad pD3DSurf ptr value (" << ((void*)pD3DSurf9) << ")\n";
         exit(1);
     }
 
@@ -219,11 +219,11 @@ HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface9 *pD3DSurf9,PixelB
     dwCopyWidth=RECT_XSIZE(SrcRect);
     dwCopyHeight=RECT_YSIZE(SrcRect);
 
-    //make sure there's enough space in the pixbuf, its size must match (especially xsize)
+    //make sure there's enough space in the texture, its size must match (especially xsize)
    // or scanlines will be too long
 
-    if(!((dwCopyWidth==pixbuf->get_xsize()) && (dwCopyHeight<=(DWORD)pixbuf->get_ysize()))) {
-        dxgsg9_cat.error() << "ConvertDDSurftoPixBuf, PixBuf size too small to hold display surface!\n";
+    if(!((dwCopyWidth==texture->get_x_size()) && (dwCopyHeight<=(DWORD)texture->get_y_size()))) {
+        dxgsg9_cat.error() << "ConvertDDSurftoPixBuf, Texture size too small to hold display surface!\n";
         assert(0);
         return E_FAIL;
     }
@@ -239,7 +239,7 @@ HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface9 *pD3DSurf9,PixelB
            (SurfDesc.Format==D3DFMT_R5G6B5)||(SurfDesc.Format==D3DFMT_X1R5G5B5)||(SurfDesc.Format==D3DFMT_A1R5G5B5)||
            (SurfDesc.Format==D3DFMT_A4R4G4B4));
 
-    //pbuf contains raw ARGB in PixelBuffer byteorder
+    //pbuf contains raw ARGB in Texture byteorder
 
     DWORD BytePitch = LockedRect.Pitch;
     BYTE* pSurfBytes = (BYTE*)LockedRect.pBits;
@@ -249,7 +249,7 @@ HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface9 *pD3DSurf9,PixelB
     if(dxgsg9_cat.is_debug()) {
       dxgsg9_cat.debug() 
         << "ConvertD3DSurftoPixBuf converting " << D3DFormatStr(SurfDesc.Format) << "bpp DDSurf to "
-        <<  dwNumComponents << "-channel panda PixelBuffer\n";
+        <<  dwNumComponents << "-channel panda Texture\n";
     }
 
     DWORD *pDstWord = (DWORD *) pbuf;
@@ -285,7 +285,7 @@ HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface9 *pD3DSurf9,PixelB
                             #endif
                         }
             } else {
-                // 24bpp pixbuf case (numComponents==3)
+                // 24bpp texture case (numComponents==3)
                 DWORD *pSrcWord;
                 pSurfBytes+=BytePitch*(dwYWindowOffset+dwCopyHeight-1);
                 for(DWORD y=0; y<dwCopyHeight; y++,pSurfBytes-=BytePitch) {
@@ -336,7 +336,7 @@ HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface9 *pD3DSurf9,PixelB
                         }
                     }
                 } else {
-                    // 24bpp pixbuf case (numComponents==3)
+                    // 24bpp texture case (numComponents==3)
                     for(DWORD y=0; y<dwCopyHeight; y++,pSurfBytes-=BytePitch) {
                         pSrcByte = pSurfBytes+dwXWindowOffset*3*sizeof(BYTE);
                      #ifdef PANDA_BGRA_ORDER
@@ -398,7 +398,7 @@ HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface9 *pD3DSurf9,PixelB
 
                 pSurfBytes+=BytePitch*(dwYWindowOffset+dwCopyHeight-1);
                 if(dwNumComponents==4) {
-                    // Note: these 16bpp loops ignore input alpha completely (alpha is set to fully opaque in pixbuf!)
+                    // Note: these 16bpp loops ignore input alpha completely (alpha is set to fully opaque in texture!)
                     //       if we need to capture alpha, probably need to make separate loops for diff 16bpp fmts
                     //       for best speed
 
@@ -422,7 +422,7 @@ HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface9 *pD3DSurf9,PixelB
                         }
                     }
                 } else {
-                    // 24bpp pixbuf case (numComponents==3)
+                    // 24bpp texture case (numComponents==3)
                     for(DWORD y=0; y<dwCopyHeight; y++,pSurfBytes-=BytePitch) {
                         pSrcWord = ((WORD*)pSurfBytes)+dwXWindowOffset;
                         for(DWORD x=0; x<dwCopyWidth; x++,pSrcWord++) {
@@ -470,20 +470,18 @@ IDirect3DTexture9 *DXTextureContext9::CreateTexture(DXScreenData &scrn) {
 
     assert(IS_VALID_PTR(_texture));
 
-    PixelBuffer *pbuf = _texture->_pbuffer;
-    // bpp indicates requested fmt, not pixbuf fmt
-    DWORD target_bpp = get_bits_per_pixel(pbuf->get_format(), &cNumAlphaBits);
-    PixelBuffer::Type pixbuf_type = pbuf->get_image_type();
-    DWORD cNumColorChannels = pbuf->get_num_components();
+    // bpp indicates requested fmt, not texture fmt
+    DWORD target_bpp = get_bits_per_pixel(_texture->get_format(), &cNumAlphaBits);
+    DWORD cNumColorChannels = _texture->get_num_components();
 
     //PRINT_REFCNT(dxgsg9,scrn.pD3D9);
 
-    DWORD dwOrigWidth  = (DWORD)pbuf->get_xsize();
-    DWORD dwOrigHeight = (DWORD)pbuf->get_ysize();
+    DWORD dwOrigWidth  = (DWORD)_texture->get_x_size();
+    DWORD dwOrigHeight = (DWORD)_texture->get_y_size();
 
-    if((pbuf->get_format() == PixelBuffer::F_luminance_alpha)||
-       (pbuf->get_format() == PixelBuffer::F_luminance_alphamask) ||
-       (pbuf->get_format() == PixelBuffer::F_luminance)) {
+    if((_texture->get_format() == Texture::F_luminance_alpha)||
+       (_texture->get_format() == Texture::F_luminance_alphamask) ||
+       (_texture->get_format() == Texture::F_luminance)) {
         bNeedLuminance = true;
     }
 
@@ -496,7 +494,7 @@ IDirect3DTexture9 *DXTextureContext9::CreateTexture(DXScreenData &scrn) {
 
     _PixBufD3DFmt=D3DFMT_UNKNOWN;
 
-    // figure out what 'D3DFMT' the PixelBuffer is in, so D3DXLoadSurfFromMem knows how to perform copy
+    // figure out what 'D3DFMT' the Texture is in, so D3DXLoadSurfFromMem knows how to perform copy
 
     switch(cNumColorChannels) {
         case 1:
@@ -567,13 +565,13 @@ IDirect3DTexture9 *DXTextureContext9::CreateTexture(DXScreenData &scrn) {
         // need 2 add checks for errors
         PNMImage pnmi_src;
         PNMImage *pnmi = new PNMImage(TargetWidth, TargetHeight, cNumColorChannels);
-        pbuf->store(pnmi_src);
+        _texture->store(pnmi_src);
         pnmi->quick_filter_from(pnmi_src,0,0);
 
-        pbuf->load(*pnmi);  // violates device independence of pixbufs
+        _texture->load(*pnmi);  // violates device independence of pixbufs
 
-        dwOrigWidth  = (DWORD)pbuf->get_xsize();
-        dwOrigHeight = (DWORD)pbuf->get_ysize();
+        dwOrigWidth  = (DWORD)_texture->get_x_size();
+        dwOrigHeight = (DWORD)_texture->get_y_size();
         delete pnmi;
     }
 */
@@ -601,7 +599,7 @@ IDirect3DTexture9 *DXTextureContext9::CreateTexture(DXScreenData &scrn) {
     switch(target_bpp) {
 
     // IMPORTANT NOTE:
-    // target_bpp is REQUESTED bpp, not what exists in the pixbuf array (the pixbuf array contains cNumColorChannels*8bits)
+    // target_bpp is REQUESTED bpp, not what exists in the texture array (the texture array contains cNumColorChannels*8bits)
 
         case 32:
             if(!((cNumColorChannels==3) || (cNumColorChannels==4)))
@@ -772,7 +770,7 @@ IDirect3DTexture9 *DXTextureContext9::CreateTexture(DXScreenData &scrn) {
     ///////////////////////////////////////////////////////////
 
  found_matching_format:
-    // We found a suitable format that matches the pbuffer's format.
+    // We found a suitable format that matches the texture's format.
 
     if (_texture->get_match_framebuffer_format()) {
       // Instead of creating a texture with the found format, we will
@@ -936,8 +934,8 @@ FillDDSurfTexturePixels(void) {
     HRESULT hr=E_FAIL;
     assert(IS_VALID_PTR(_texture));
 
-    PixelBuffer *pbuf = _texture->get_ram_image();
-    if (pbuf == (PixelBuffer *)NULL) {
+    CPTA_uchar image = _texture->get_ram_image();
+    if (image.is_null()) {
       // The texture doesn't have an image to load.  That's ok; it
       // might be a texture we've rendered to by frame buffer
       // operations or something.
@@ -946,12 +944,12 @@ FillDDSurfTexturePixels(void) {
 
     assert(IS_VALID_PTR(_pD3DTexture9));
 
-    DWORD OrigWidth  = (DWORD) pbuf->get_xsize();
-    DWORD OrigHeight = (DWORD) pbuf->get_ysize();
-    DWORD cNumColorChannels = pbuf->get_num_components();
+    DWORD OrigWidth  = (DWORD) _texture->get_x_size();
+    DWORD OrigHeight = (DWORD) _texture->get_y_size();
+    DWORD cNumColorChannels = _texture->get_num_components();
     D3DFORMAT SrcFormat=_PixBufD3DFmt;
-    BYTE *pPixels=(BYTE*)pbuf->_image.p();
-    int component_width = pbuf->get_component_width();
+    BYTE *pPixels=(BYTE*)image.p();
+    int component_width = _texture->get_component_width();
 
     assert(IS_VALID_PTR(pPixels));
 
@@ -1009,7 +1007,7 @@ FillDDSurfTexturePixels(void) {
       // original image.  dx9 does support some of these
       // high-precision formats, but we don't right now.
 
-      int num_components = pbuf->get_num_components();
+      int num_components = _texture->get_num_components();
       int num_pixels = OrigWidth * OrigHeight * num_components;
       BYTE *pTempPixBuf = new BYTE[num_pixels];
       if(!IS_VALID_PTR(pTempPixBuf)) {

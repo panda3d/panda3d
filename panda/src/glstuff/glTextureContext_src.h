@@ -40,7 +40,7 @@ public:
   GLint _internal_format;
   GLsizei _width;
   GLsizei _height;
-  GLint _border_width;
+  GLsizei _depth;
 
 public:
   static TypeHandle get_class_type() {

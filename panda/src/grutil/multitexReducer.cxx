@@ -471,10 +471,7 @@ scan_geom_node(GeomNode *node, const RenderState *state,
       for (int si = 0; si < num_stages; si++) {
         TextureStage *stage = ta->get_on_stage(si);
         Texture *tex = ta->get_on_texture(stage);
-        PixelBuffer *tex_pbuffer = tex->_pbuffer;
-        if (tex_pbuffer != (PixelBuffer *)NULL &&
-            tex_pbuffer->get_xsize() != 0 &&
-            tex_pbuffer->get_ysize() != 0) {
+        if (tex->get_x_size() != 0 && tex->get_y_size() != 0) {
           stage_list.push_back(StageInfo(stage, ta, tma));
 
         } else {
@@ -633,11 +630,10 @@ choose_texture_size(int &x_size, int &y_size,
                     const LVecBase2f &uv_scale,
                     GraphicsOutput *window) const {
   Texture *model_tex = model_stage._tex;
-  PixelBuffer *model_pbuffer = model_tex->_pbuffer;
   
   // Start with the same size as the model texture.
-  x_size = model_pbuffer->get_xsize();
-  y_size = model_pbuffer->get_ysize();
+  x_size = model_tex->get_x_size();
+  y_size = model_tex->get_y_size();
 
   // But we might be looking at just a subset of that texture (scale <
   // 1) or a superset of the texture (scale > 1).  In this case, we

@@ -61,7 +61,6 @@ ConfigVariableBool CLP(color_mask)
 
 void CLP(init_classes)() {
   CLP(GraphicsStateGuardian)::init_type();
-  CLP(SavedFrameBuffer)::init_type();
   CLP(TextureContext)::init_type();
   CLP(GeomContext)::init_type();
 

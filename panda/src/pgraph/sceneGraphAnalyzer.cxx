@@ -366,18 +366,15 @@ collect_statistics(Texture *texture) {
 
     // Attempt to guess how many bytes of texture memory this one
     // requires.
-    PixelBuffer *pb = texture->_pbuffer;
-    if (pb != (PixelBuffer *)NULL) {
-      int bytes =
-        pb->get_xsize() * pb->get_ysize() * pb->get_num_components() *
-        pb->get_component_width();
-
-      if (texture->uses_mipmaps()) {
-        bytes *= 4/3;
-      }
-
-      _texture_bytes += bytes;
+    int bytes =
+      texture->get_x_size() * texture->get_y_size() * 
+      texture->get_num_components() * texture->get_component_width();
+    
+    if (texture->uses_mipmaps()) {
+      bytes *= 4/3;
     }
+    
+    _texture_bytes += bytes;
 
   } else {
     // This texture has been encountered before; don't count it again.

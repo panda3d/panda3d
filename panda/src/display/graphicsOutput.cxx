@@ -200,17 +200,16 @@ setup_render_texture() {
     _gsg->framebuffer_release_texture(this, get_texture());
   }
 
-  _texture = new Texture(true);
-  _texture->set_name(get_name());
-  _texture->set_wrapu(Texture::WM_clamp);
-  _texture->set_wrapv(Texture::WM_clamp);
+  _texture = new Texture(get_name());
+  _texture->set_match_framebuffer_format(true);
+  _texture->set_wrap_u(Texture::WM_clamp);
+  _texture->set_wrap_v(Texture::WM_clamp);
 
   // Go ahead and tell the texture our anticipated size, even if it
   // might be inaccurate (particularly if this is a GraphicsWindow,
   // which has system-imposed restrictions on size).
-  PixelBuffer *pb = _texture->_pbuffer;
-  pb->set_xsize(get_x_size());
-  pb->set_ysize(get_y_size());
+  _texture->set_x_size(get_x_size());
+  _texture->set_y_size(get_y_size());
 
   _copy_texture = true;
   _render_texture = false;
@@ -606,7 +605,7 @@ begin_frame() {
   make_current();
 
   if (_render_texture) {
-    // Release the texture so we can render into the pbuffer.
+    // Release the texture so we can render into the frame buffer.
     _gsg->framebuffer_release_texture(this, get_texture());
   }
 
@@ -686,7 +685,7 @@ end_frame() {
           << "Copying texture for " << get_name() << " at frame end.\n";
       }
       RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type());
-      _gsg->copy_texture(get_texture(), _default_display_region, buffer);
+      _gsg->framebuffer_copy_to_texture(get_texture(), _default_display_region, buffer);
     }
   }
 

@@ -1752,8 +1752,8 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
       modify_state(RenderState::make
                    (TextureAttrib::make(tex),
                     TextureApplyAttrib::make(TextureApplyAttrib::M_modulate)));
-      tex_xsize = tex->_pbuffer->get_xsize();
-      tex_ysize = tex->_pbuffer->get_ysize();
+      tex_xsize = tex->get_x_size();
+      tex_ysize = tex->get_y_size();
     }
 
     // save the modelview matrix
@@ -3375,8 +3375,8 @@ apply_texture(TextureContext *tc) {
 
     Texture *tex = tc->_texture;
     Texture::WrapMode wrapU,wrapV;
-    wrapU=tex->get_wrapu();
-    wrapV=tex->get_wrapv();
+    wrapU=tex->get_wrap_u();
+    wrapV=tex->get_wrap_v();
 
     if (wrapU!=_CurTexWrapModeU) {
         _pScrn->pD3DDevice->SetTextureStageState(0,D3DTSS_ADDRESSU,get_texture_wrap_mode(wrapU));
@@ -3482,88 +3482,42 @@ release_texture(TextureContext *tc) {
     delete gtc;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian7::framebuffer_copy_to_texture
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian7::
-copy_texture(Texture *tex, const DisplayRegion *dr) {
+framebuffer_copy_to_texture(Texture *tex, const DisplayRegion *dr, const RenderBuffer &rb) {
     dxgsg7_cat.error() << "DX copy_texture unimplemented!!!";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian7::copy_texture
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian7::
-copy_texture(Texture *tex, const DisplayRegion *dr, const RenderBuffer &rb) {
-    dxgsg7_cat.error() << "DX copy_texture unimplemented!!!";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian7::texture_to_pixel_buffer
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian7::
-texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb) {
-    dxgsg7_cat.error()
-      << "texture_to_pixel_buffer unimplemented!\n";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian7::texture_to_pixel_buffer
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian7::
-texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
-                        const DisplayRegion *dr) {
-    dxgsg7_cat.error()
-      << "texture_to_pixel_buffer unimplemented!\n";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian7::copy_pixel_buffer
+//     Function: DXGraphicsStateGuardian7::framebuffer_copy_to_ram
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian7::
-copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
+framebuffer_copy_to_ram(Texture *tex, const DisplayRegion *dr,
+                        const RenderBuffer &rb) {
+  set_read_buffer(rb);
+  
+  extern HRESULT ConvertDDSurftoPixBuf(Texture *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf);
+  
+  nassertr(tex != NULL && dr != NULL, false);
+  
+  int xo, yo, w, h;
+  dr->get_region_pixels_i(xo, yo, w, h);
+  
+  // only handled simple case
+  nassertr(xo == 0 && yo==0, false);
 
-    extern HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf);
-
-    nassertr(pb != NULL && dr != NULL, false);
-
-    int xo, yo, w, h;
-    dr->get_region_pixels_i(xo, yo, w, h);
-
-    // only handled simple case
-    nassertr(xo == 0 && yo==0 && w == pb->get_xsize() && h == pb->get_ysize(), false);
-
-/*
-    set_pack_alignment(1);
-    glReadPixels( pb->get_xorg() + xo, pb->get_yorg() + yo,
-                  pb->get_xsize(), pb->get_ysize(),
-                  get_external_image_format(pb->get_format()),
-                  get_image_type(pb->get_image_type()),
-                  pb->_image.p() );
-*/
-
-
-    (void) ConvertDDSurftoPixBuf(pb,((_cur_read_pixel_buffer & RenderBuffer::T_back) ? _pScrn->pddsBack : _pScrn->pddsPrimary));
-
-    nassertr(!pb->_image.empty(), false);
-    return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian7::copy_pixel_buffer
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-bool DXGraphicsStateGuardian7::
-copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-                  const RenderBuffer &rb) {
-    set_read_buffer(rb);
-    return copy_pixel_buffer(pb, dr);
+  tex->setup_2d_texture(w, h, Texture::T_unsigned_byte, Texture::F_rgb);
+  
+  (void) ConvertDDSurftoPixBuf(tex,((_cur_read_pixel_buffer & RenderBuffer::T_back) ? _pScrn->pddsBack : _pScrn->pddsPrimary));
+  
+  nassertr(tex->has_ram_image(), false);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4637,55 +4591,6 @@ free_pointers() {
 #endif
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian7::save_frame_buffer
-//       Access: Public
-//  Description: Saves the indicated planes of the frame buffer
-//               (within the indicated display region) and returns it
-//               in some meaningful form that can be restored later
-//               via restore_frame_buffer().  This is a helper
-//               function for push_frame_buffer() and
-//               pop_frame_buffer().
-////////////////////////////////////////////////////////////////////
-PT(SavedFrameBuffer) DXGraphicsStateGuardian7::
-save_frame_buffer(const RenderBuffer &buffer,
-                  CPT(DisplayRegion) dr) {
-
-    dxgsg7_cat.error() << "save_frame_buffer unimplemented!!\n";
-    return NULL;
-
-#if 0
-    DXSavedFrameBuffer7 *sfb = new DXSavedFrameBuffer7(buffer, dr);
-
-    if (buffer._buffer_type & RenderBuffer::T_depth) {
-        // Save the depth buffer.
-        sfb->_depth =
-        new PixelBuffer(PixelBuffer::depth_buffer(dr->get_pixel_width(),
-                                                  dr->get_pixel_height()));
-        copy_pixel_buffer(sfb->_depth, dr, buffer);
-    }
-
-    if (buffer._buffer_type & RenderBuffer::T_back) {
-        // Save the color buffer.
-        sfb->_back_rgba = new Texture;
-        copy_texture(sfb->_back_rgba->prepare(this), dr, buffer);
-    }
-
-    return sfb;
-#endif
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian7::restore_frame_buffer
-//       Access: Public
-//  Description: Restores the frame buffer that was previously saved.
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian7::
-restore_frame_buffer(SavedFrameBuffer *frame_buffer) {
-    dxgsg7_cat.error() << "restore_frame_buffer unimplemented!!\n";
-    return;
-}
-
 TypeHandle DXGraphicsStateGuardian7::get_type(void) const {
     return get_class_type();
 }
@@ -5243,62 +5148,6 @@ void DXGraphicsStateGuardian7::adjust_view_rect(int x, int y) {
 //  set_clipper(clip_rect);
     }
 }
-
-#if 0
-
-////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::save_mipmap_images
-//       Access: Protected
-//  Description: Saves out each mipmap level of the indicated texture
-//               (which must also be the currently active texture in
-//               the GL state) as a separate image file to disk.
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian7::read_mipmap_images(Texture *tex) {
-   Filename filename = tex->get_name();
-   string name;
-   if (filename.empty()) {
-     static index = 0;
-     name = "texture" + format_string(index);
-     index++;
-   } else {
-     name = filename.get_basename_wo_extension();
-   }
-
-   PixelBuffer *pb = tex->get_ram_image();
-   nassertv(pb != (PixelBuffer *)NULL);
-
-   GLenum external_format = get_external_image_format(pb->get_format());
-   GLenum type = get_image_type(pb->get_image_type());
-
-   int xsize = pb->get_xsize();
-   int ysize = pb->get_ysize();
-
-   // Specify byte-alignment for the pixels on output.
-   glPixelStorei(GL_PACK_ALIGNMENT, 1);
-
-   int mipmap_level = 0;
-   do {
-     xsize = max(xsize, 1);
-     ysize = max(ysize, 1);
-
-     PT(PixelBuffer) mpb =
-       new PixelBuffer(xsize, ysize, pb->get_num_components(),
-                       pb->get_component_width(), pb->get_image_type(),
-                       pb->get_format());
-     glGetTexImage(GL_TEXTURE_2D, mipmap_level, external_format,
-                   type, mpb->_image);
-     Filename mipmap_filename = name + "_" + format_string(mipmap_level) + ".pnm";
-     nout << "Writing mipmap level " << mipmap_level
-          << " (" << xsize << " by " << ysize << ") "
-          << mipmap_filename << "\n";
-     mpb->write(mipmap_filename);
-
-     xsize >>= 1;
-     ysize >>= 1;
-     mipmap_level++;
-   } while (xsize > 0 && ysize > 0);
-}
-#endif
 
 
 #if 0

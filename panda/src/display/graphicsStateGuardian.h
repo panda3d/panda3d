@@ -22,7 +22,6 @@
 #include "pandabase.h"
 
 #include "savedFrameBuffer.h"
-#include "frameBufferStack.h"
 #include "frameBufferProperties.h"
 #include "displayRegionStack.h"
 #include "lensStack.h"
@@ -153,9 +152,6 @@ public:
 
   INLINE DisplayRegionStack push_display_region(const DisplayRegion *dr);
   INLINE void pop_display_region(DisplayRegionStack &node);
-  INLINE FrameBufferStack push_frame_buffer(const RenderBuffer &buffer,
-                                            const DisplayRegion *dr);
-  INLINE void pop_frame_buffer(FrameBufferStack &node);
 
   void set_coordinate_system(CoordinateSystem cs);
   INLINE CoordinateSystem get_coordinate_system() const;
@@ -198,10 +194,6 @@ protected:
   virtual void end_bind_clip_planes();
 
   virtual void set_blend_mode();
-
-  virtual PT(SavedFrameBuffer) save_frame_buffer(const RenderBuffer &buffer,
-                                                 CPT(DisplayRegion) dr)=0;
-  virtual void restore_frame_buffer(SavedFrameBuffer *frame_buffer)=0;
 
   virtual void finish_modify_state();
 

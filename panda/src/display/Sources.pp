@@ -17,7 +17,6 @@
     displayRegionStack.I \
     displayRegionStack.h \
     frameBufferProperties.I frameBufferProperties.h \
-    frameBufferStack.I frameBufferStack.h \
     graphicsEngine.I graphicsEngine.h \
     graphicsOutput.I graphicsOutput.h \
     graphicsBuffer.I graphicsBuffer.h \
@@ -59,7 +58,6 @@
     displayRegion.I displayRegion.h displayRegionStack.I \
     displayRegionStack.h \
     frameBufferProperties.I frameBufferProperties.h \
-    frameBufferStack.I frameBufferStack.h \
     graphicsEngine.I graphicsEngine.h \
     graphicsOutput.I graphicsOutput.h \
     graphicsBuffer.I graphicsBuffer.h \

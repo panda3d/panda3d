@@ -26,7 +26,7 @@
   // build dxGraphicsStateGuardian separately since its so big
   
   #define SOURCES \
-    dxGraphicsStateGuardian8.cxx dxSavedFrameBuffer8.I dxSavedFrameBuffer8.h \
+    dxGraphicsStateGuardian8.cxx \
     dxGraphicsDevice8.h \
     wdxGraphicsPipe8.I wdxGraphicsPipe8.h \
     wdxGraphicsWindow8.I wdxGraphicsWindow8.h \
@@ -34,7 +34,7 @@
     
   #define INCLUDED_SOURCES \
     config_dxgsg8.cxx \
-    dxSavedFrameBuffer8.cxx dxTextureContext8.cxx \
+    dxTextureContext8.cxx \
     d3dfont8.cxx \
     dxGraphicsDevice8.cxx \
     wdxGraphicsPipe8.cxx wdxGraphicsWindow8.cxx

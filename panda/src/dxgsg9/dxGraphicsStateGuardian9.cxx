@@ -1530,8 +1530,8 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
       modify_state(RenderState::make
                    (TextureAttrib::make(tex),
                     TextureApplyAttrib::make(TextureApplyAttrib::M_modulate)));
-      tex_xsize = tex->_pbuffer->get_xsize();
-      tex_ysize = tex->_pbuffer->get_ysize();
+      tex_xsize = tex->get_x_size();
+      tex_ysize = tex->get_y_size();
     }
 
     // save the modelview matrix
@@ -2640,8 +2640,8 @@ apply_texture(TextureContext *tc) {
   
   Texture *tex = tc->_texture;
   Texture::WrapMode wrapU,wrapV;
-  wrapU=tex->get_wrapu();
-  wrapV=tex->get_wrapv();
+  wrapU=tex->get_wrap_u();
+  wrapV=tex->get_wrap_v();
   
   if (wrapU!=_CurTexWrapModeU) {
     _pD3DDevice->SetSamplerState(0,D3DSAMP_ADDRESSU,get_texture_wrap_mode(wrapU));
@@ -2766,15 +2766,15 @@ release_texture(TextureContext *tc) {
 // copies current display region in framebuffer to the texture
 // usually its more efficient to do SetRenderTgt
 void DXGraphicsStateGuardian9::
-copy_texture(Texture *tex, const DisplayRegion *dr) {
+framebuffer_copy_to_texture(Texture *tex, const DisplayRegion *dr, const RenderBuffer &rb) {
+  set_read_buffer(rb);
 
   HRESULT hr;
   int xo, yo, w, h;
   dr->get_region_pixels_i(xo, yo, w, h);
 
-  PixelBuffer *pb = tex->_pbuffer;
-  pb->set_xsize(w);
-  pb->set_ysize(h);
+  tex->set_x_size(w);
+  tex->set_y_size(h);
 
   TextureContext *tc = tex->prepare_now(get_prepared_objects(), this);
   if (tc == (TextureContext *)NULL) {
@@ -2819,153 +2819,94 @@ copy_texture(Texture *tex, const DisplayRegion *dr) {
   SAFE_RELEASE(pTexSurfaceLev0);
 }
 
-
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::copy_texture
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian9::
-copy_texture(Texture *tex, const DisplayRegion *dr, const RenderBuffer &rb) {
-    set_read_buffer(rb);
-    copy_texture(tex, dr);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::texture_to_pixel_buffer
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian9::
-texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb) {
- // This code is now invalidated by the new design; perhaps the
-  // interface is not needed anyway.
-    dxgsg9_cat.error() << "texture_to_pixel_buffer unimplemented for DX!\n";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::texture_to_pixel_buffer
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian9::
-texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
-                        const DisplayRegion *dr) {
-    dxgsg9_cat.error()
-      << "texture_to_pixel_buffer unimplemented!\n";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::copy_pixel_buffer
+//     Function: DXGraphicsStateGuardian9::framebuffer_copy_to_ram
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian9::
-copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
+framebuffer_copy_to_ram(Texture *tex, const DisplayRegion *dr, const RenderBuffer &rb) {
+  set_read_buffer(rb);
 
-    RECT SrcCopyRect;
-    nassertr(pb != NULL && dr != NULL, false);
+  RECT SrcCopyRect;
+  nassertr(tex != NULL && dr != NULL, false);
+  
+  int xo, yo, w, h;
+  dr->get_region_pixels_i(xo, yo, w, h);
 
-    int xo, yo, w, h;
-    dr->get_region_pixels_i(xo, yo, w, h);
+  tex->setup_2d_texture(w, h, Texture::T_unsigned_byte, Texture::F_rgb);
 
-    // only handled simple case
-    nassertr(xo == 0 && yo==0 && w == pb->get_xsize() && h == pb->get_ysize(), false);
+  SrcCopyRect.top = yo;
+  SrcCopyRect.left = xo;
+  SrcCopyRect.right = xo + w;
+  SrcCopyRect.bottom = yo + h;
+  
+  IDirect3DSurface9 *pD3DSurf;
+  HRESULT hr;
+  
+  if(_cur_read_pixel_buffer & RenderBuffer::T_back) {
+    hr=_pD3DDevice->GetBackBuffer(0, 0,D3DBACKBUFFER_TYPE_MONO,&pD3DSurf);
+    
+    if(FAILED(hr)) {
+      dxgsg9_cat.error() << "GetBackBuffer failed" << D3DERRORSTRING(hr);
+      return false;
+    }
+    
+    // note if you try to grab the backbuffer and full-screen anti-aliasing is on,
+    // the backbuffer might be larger than the window size.  for screenshots its safer to get the front buffer.
+    
+  } else if(_cur_read_pixel_buffer & RenderBuffer::T_front) {
+    // must create a A8R8G8B8 sysmem surface for GetFrontBuffer to copy to
+    
+    DWORD TmpSurfXsize,TmpSurfYsize;
+    
+    if(_pScrn->PresParams.Windowed) {
+      // GetFrontBuffer retrieves the entire desktop for a monitor, so
+      // need space for that
+      
+      MONITORINFO minfo;
+      minfo.cbSize = sizeof(MONITORINFO);
+      GetMonitorInfo(_pScrn->hMon, &minfo);   // have to use GetMonitorInfo, since this gsg may not be for primary monitor
+      
+      TmpSurfXsize = RECT_XSIZE(minfo.rcMonitor);
+      TmpSurfYsize = RECT_YSIZE(minfo.rcMonitor);
 
-    IDirect3DSurface9 *pD3DSurf;
-    HRESULT hr;
+      // set SrcCopyRect to client area of window in scrn coords
+      ClientToScreen( _pScrn->hWnd, (POINT*)&SrcCopyRect.left );
+      ClientToScreen( _pScrn->hWnd, (POINT*)&SrcCopyRect.right );
 
-    RECT WindRect;
-    GetWindowRect(_pScrn->hWnd,&WindRect);
-
-    // just handling front and backbuf for now, not textures yet
-    if(_cur_read_pixel_buffer & RenderBuffer::T_back) {
-       hr=_pD3DDevice->GetBackBuffer(0, 0,D3DBACKBUFFER_TYPE_MONO,&pD3DSurf);
-
-       if(FAILED(hr)) {
-           dxgsg9_cat.error() << "GetBackBuffer failed" << D3DERRORSTRING(hr);
-           return false;
-       }
-
-       D3DSURFACE_DESC SurfDesc;
-       hr = pD3DSurf->GetDesc(&SurfDesc);
-
-       SrcCopyRect.top=SrcCopyRect.left=0;
-       SrcCopyRect.right=SurfDesc.Width;
-       SrcCopyRect.bottom=SurfDesc.Height;
-
-       // note if you try to grab the backbuffer and full-screen anti-aliasing is on,
-       // the backbuffer might be larger than the window size.  for screenshots its safer to get the front buffer.
-
-    } else if(_cur_read_pixel_buffer & RenderBuffer::T_front) {
-       // must create a A8R8G8B8 sysmem surface for GetFrontBuffer to copy to
-
-        DWORD TmpSurfXsize,TmpSurfYsize;
-
-        if(_pScrn->PresParams.Windowed) {
-            // GetFrontBuffer retrieves the entire desktop for a monitor, so need space for that
-
-            MONITORINFO minfo;
-            minfo.cbSize = sizeof(MONITORINFO);
-            GetMonitorInfo(_pScrn->hMon, &minfo);   // have to use GetMonitorInfo, since this gsg may not be for primary monitor
-
-            TmpSurfXsize=RECT_XSIZE(minfo.rcMonitor);
-            TmpSurfYsize=RECT_YSIZE(minfo.rcMonitor);
-
-            // set SrcCopyRect to client area of window in scrn coords
-            GetClientRect( _pScrn->hWnd, &SrcCopyRect);
-            ClientToScreen( _pScrn->hWnd, (POINT*)&SrcCopyRect.left );
-            ClientToScreen( _pScrn->hWnd, (POINT*)&SrcCopyRect.right );
-        } else {
-           TmpSurfXsize=RECT_XSIZE(WindRect);
-           TmpSurfYsize=RECT_YSIZE(WindRect);
-
-           SrcCopyRect.top=SrcCopyRect.left=0;
-           SrcCopyRect.right=TmpSurfXsize;
-           SrcCopyRect.bottom=TmpSurfYsize;
-        }
-
-        hr=_pD3DDevice->CreateOffscreenPlainSurface(TmpSurfXsize,TmpSurfYsize,D3DFMT_A8R8G8B8,D3DPOOL_SYSTEMMEM, &pD3DSurf, NULL);
-        if(FAILED(hr)) {
-           dxgsg9_cat.error() << "CreateImageSurface failed in copy_pixel_buffer()" << D3DERRORSTRING(hr);
-           return false;
-        }
-
-        hr=_pD3DDevice->GetFrontBufferData(0, pD3DSurf);
-
-        if(hr==D3DERR_DEVICELOST) {
-           pD3DSurf->Release();
-           dxgsg9_cat.error() << "copy_pixel_buffer failed: device lost\n";
-           return false;
-        }
     } else {
-        dxgsg9_cat.error() << "copy_pixel_buffer: unhandled current_read_pixel_buffer type\n";
-        return false;
+      RECT WindRect;
+      GetWindowRect(_pScrn->hWnd,&WindRect);
+      TmpSurfXsize = RECT_XSIZE(WindRect);
+      TmpSurfYsize = RECT_YSIZE(WindRect);
+    }
+    
+    hr=_pD3DDevice->CreateOffscreenPlainSurface(TmpSurfXsize,TmpSurfYsize,D3DFMT_A8R8G8B8,D3DPOOL_SYSTEMMEM, &pD3DSurf, NULL);
+    if(FAILED(hr)) {
+      dxgsg9_cat.error() << "CreateImageSurface failed in copy_pixel_buffer()" << D3DERRORSTRING(hr);
+      return false;
+    }
+    
+    hr=_pD3DDevice->GetFrontBufferData(0, pD3DSurf);
+    
+    if(hr==D3DERR_DEVICELOST) {
+      pD3DSurf->Release();
+      dxgsg9_cat.error() << "copy_pixel_buffer failed: device lost\n";
+      return false;
     }
 
-    if((RECT_XSIZE(SrcCopyRect)>w) || (RECT_YSIZE(SrcCopyRect)>h)) {
-     dxgsg9_cat.error() << "copy_pixel_buffer: pixel buffer size does not match selected screen RenderBuffer size!\n";
-     return false;
-    }
-
-    (void) ConvertD3DSurftoPixBuf(SrcCopyRect,pD3DSurf,pb);
-
-    RELEASE(pD3DSurf,dxgsg9,"pD3DSurf",RELEASE_ONCE);
-
-    nassertr(!pb->_image.empty(), false);
-    return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::copy_pixel_buffer
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-bool DXGraphicsStateGuardian9::
-copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-                  const RenderBuffer &rb) {
-    set_read_buffer(rb);
-    return copy_pixel_buffer(pb, dr);
+  } else {
+    dxgsg9_cat.error() << "copy_pixel_buffer: unhandled current_read_pixel_buffer type\n";
+    return false;
+  }
+  
+  (void) ConvertD3DSurftoPixBuf(SrcCopyRect,pD3DSurf,tex);
+  
+  RELEASE(pD3DSurf,dxgsg9,"pD3DSurf",RELEASE_ONCE);
+  
+  nassertr(tex->has_ram_image(), false);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3984,55 +3925,6 @@ set_blend_mode() {
 
   // Nothing's set, so disable blending.
   enable_blend(false);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::save_frame_buffer
-//       Access: Public
-//  Description: Saves the indicated planes of the frame buffer
-//               (within the indicated display region) and returns it
-//               in some meaningful form that can be restored later
-//               via restore_frame_buffer().  This is a helper
-//               function for push_frame_buffer() and
-//               pop_frame_buffer().
-////////////////////////////////////////////////////////////////////
-PT(SavedFrameBuffer) DXGraphicsStateGuardian9::
-save_frame_buffer(const RenderBuffer &buffer,
-                  CPT(DisplayRegion) dr) {
-
-    dxgsg9_cat.error() << "save_frame_buffer unimplemented!!\n";
-    return NULL;
-
-#if 0
-    DXSavedFrameBuffer *sfb = new DXSavedFrameBuffer(buffer, dr);
-
-    if (buffer._buffer_type & RenderBuffer::T_depth) {
-        // Save the depth buffer.
-        sfb->_depth =
-        new PixelBuffer(PixelBuffer::depth_buffer(dr->get_pixel_width(),
-                                                  dr->get_pixel_height()));
-        copy_pixel_buffer(sfb->_depth, dr, buffer);
-    }
-
-    if (buffer._buffer_type & RenderBuffer::T_back) {
-        // Save the color buffer.
-        sfb->_back_rgba = new Texture;
-        copy_texture(sfb->_back_rgba, dr, buffer);
-    }
-
-    return sfb;
-#endif
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian9::restore_frame_buffer
-//       Access: Public
-//  Description: Restores the frame buffer that was previously saved.
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian9::
-restore_frame_buffer(SavedFrameBuffer *frame_buffer) {
-    dxgsg9_cat.error() << "restore_frame_buffer unimplemented!!\n";
-    return;
 }
 
 TypeHandle DXGraphicsStateGuardian9::get_type(void) const {

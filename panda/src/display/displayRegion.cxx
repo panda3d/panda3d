@@ -19,10 +19,11 @@
 #include "displayRegion.h"
 #include "graphicsOutput.h"
 #include "config_display.h"
-#include "pixelBuffer.h"
+#include "texture.h"
 #include "camera.h"
 #include "dcast.h"
 #include "mutexHolder.h"
+#include "pnmImage.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -519,29 +520,26 @@ get_screenshot(PNMImage &image) {
   
   GraphicsStateGuardian *gsg = window->get_gsg();
   nassertr(gsg != (GraphicsStateGuardian *)NULL, false);
-
-  int x_size = get_pixel_width();
-  int y_size = get_pixel_height();
   
   window->make_current();
 
   int components = 3;
-  PixelBuffer::Format format = PixelBuffer::F_rgb;
+  Texture::Format format = Texture::F_rgb;
 
   if ((gsg->get_properties().get_frame_buffer_mode() & FrameBufferProperties::FM_alpha) != 0) {
     components = 4;
-    format = PixelBuffer::F_rgba;
+    format = Texture::F_rgba;
   }
 
-  PixelBuffer p(x_size, y_size, components, 1, PixelBuffer::T_unsigned_byte,
-                format);
+  // Create a temporary texture to receive the framebuffer image.
+  PT(Texture) tex = new Texture;
 
   RenderBuffer buffer = gsg->get_render_buffer(get_screenshot_buffer_type());
-  if (!gsg->copy_pixel_buffer(&p, this, buffer)) {
+  if (!gsg->framebuffer_copy_to_ram(tex, this, buffer)) {
     return false;
   }
 
-  if (!p.store(image)) {
+  if (!tex->store(image)) {
     return false;
   }
 

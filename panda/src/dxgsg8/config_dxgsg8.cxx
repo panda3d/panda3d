@@ -18,7 +18,6 @@
 
 #include "config_dxgsg8.h"
 #include "dxGraphicsStateGuardian8.h"
-#include "dxSavedFrameBuffer8.h"
 #include "dxTextureContext8.h"
 #include "graphicsPipeSelection.h"
 #include "wdxGraphicsWindow8.h"
@@ -143,7 +142,6 @@ init_libdxgsg8() {
   initialized = true;
 
   DXGraphicsStateGuardian8::init_type();
-  DXSavedFrameBuffer8::init_type();
   DXTextureContext8::init_type();
 
   wdxGraphicsPipe8::init_type();

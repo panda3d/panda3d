@@ -197,26 +197,9 @@ STDMETHODIMP HxSiteSupplier::SitesNeeded(UINT32 request_id, IHXValues*  pProps) 
   style = WS_OVERLAPPED | WS_VISIBLE | WS_CLIPCHILDREN;
 #endif
   
-  // Determine if there is a valid Panda buffer available
-  // so that it may be sent down into the sites video
-  // surface object.
-  if( _texture->has_ram_image() ) {
-    pSiteWindowed->SetDstBuffer(_texture->_pbuffer->_image, 
-                                _texture->_pbuffer->get_xsize(),
-                                _texture->_pbuffer->get_ysize());
-  }
-  else {
-    cout << "--- {{ HxSiteSupplier.cxx, RELOADED RAM IMAGE!!! }}---" << endl;
-    PixelBuffer* fake = _texture->get_ram_image();
-    if( fake ) {
-        pSiteWindowed->SetDstBuffer(fake->_image, 
-                                    _texture->_pbuffer->get_xsize(),
-                                    _texture->_pbuffer->get_ysize());
-    }
-    else {
-        cout << "--- {{ HxSiteSupplier.cxx, NO RAM IMAGE PRESENT!!! }} ---" << endl;
-    }
-  }
+  pSiteWindowed->SetDstBuffer(_texture->modify_ram_image(), 
+                              _texture->get_x_size(),
+                              _texture->get_y_size());
 
   // Create the window. Not necessary later on.
   hres = pSiteWindowed->Create(NULL, style);

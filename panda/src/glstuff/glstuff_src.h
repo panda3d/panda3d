@@ -42,7 +42,6 @@
 #include "glmisc_src.h"
 #include "glTextureContext_src.h"
 #include "glGeomContext_src.h"
-#include "glSavedFrameBuffer_src.h"
 #include "glCgShaderContext_src.h"
 #include "glGraphicsStateGuardian_src.h"
 

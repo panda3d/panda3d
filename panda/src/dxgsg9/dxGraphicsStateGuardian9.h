@@ -30,7 +30,6 @@
 #include "geomprimitives.h"
 #include "texture.h"
 #include "texGenAttrib.h"
-#include "pixelBuffer.h"
 #include "displayRegion.h"
 #include "material.h"
 #include "depthTestAttrib.h"
@@ -95,17 +94,10 @@ public:
   virtual void apply_texture(TextureContext *tc);
   virtual void release_texture(TextureContext *tc);
 
-  virtual void copy_texture(Texture *tex, const DisplayRegion *dr);
-  virtual void copy_texture(Texture *tex, const DisplayRegion *dr,
-                            const RenderBuffer &rb);
-
-  virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb);
-  virtual void texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
-                const DisplayRegion *dr);
-
-  virtual bool copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr);
-  virtual bool copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
-                                 const RenderBuffer &rb);
+  virtual void framebuffer_copy_to_texture(Texture *tex, const DisplayRegion *dr,
+                                           const RenderBuffer &rb);
+  virtual bool framebuffer_copy_to_ram(Texture *tex, const DisplayRegion *dr,
+                                       const RenderBuffer &rb);
 
   virtual void apply_material(const Material *material);
   virtual void apply_fog(Fog *fog);
@@ -160,9 +152,6 @@ protected:
 
   void free_nondx_resources();            // free local internal buffers
   void free_d3d_device(void);
-  virtual PT(SavedFrameBuffer) save_frame_buffer(const RenderBuffer &buffer,
-                         CPT(DisplayRegion) dr);
-  virtual void restore_frame_buffer(SavedFrameBuffer *frame_buffer);
 
   void set_draw_buffer(const RenderBuffer &rb);
   void set_read_buffer(const RenderBuffer &rb);

@@ -15,13 +15,14 @@
 // panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
+
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
 #include "pandabase.h"
 
-#include "imageBuffer.h"
-#include "pixelBuffer.h"
+#include "typedWritableReferenceCount.h"
+#include "namable.h"
 #include "graphicsStateGuardianBase.h"
 #include "pmap.h"
 
@@ -32,10 +33,64 @@ class PreparedGraphicsObjects;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Texture
-// Description : 2D texture class
+// Description : Represents a texture object, which is typically a
+//               single 2-d image but may also represent a 1-d or 3-d
+//               texture image, or the six 2-d faces of a cube map
+//               texture.
+//
+//               A texture's image data might be stored in system RAM
+//               (see get_ram_image()) or its image may be represented
+//               in texture memory on one or more
+//               GraphicsStateGuardians (see prepare()), or both.  The
+//               typical usage pattern is that a texture is loaded
+//               from an image file on disk, which copies its image
+//               data into system RAM; then the first time the texture
+//               is rendered its image data is copied to texture
+//               memory (actually, to the graphics API), and the
+//               system RAM image is automatically freed.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA Texture : public ImageBuffer {
+class EXPCL_PANDA Texture : public TypedWritableReferenceCount, public Namable {
 PUBLISHED:
+  enum TextureType {
+    TT_1d_texture,
+    TT_2d_texture,
+    TT_3d_texture,
+    TT_cube_map,
+  };
+
+  enum ComponentType {
+    T_unsigned_byte,
+    T_unsigned_short,
+    T_float,
+  };
+
+  enum Format {
+    F_color_index,
+    F_stencil_index,
+    F_depth_component,
+    F_red,
+    F_green,
+    F_blue,
+    F_alpha,
+    F_rgb,     // any suitable RGB mode, whatever the hardware prefers
+    F_rgb5,    // specifically, 5 bits per R,G,B channel.  
+               // this is paired with T_unsigned_byte.  really T_unsigned_byte
+               // should not be specified for this one, it should use
+               // T_unsigned_5bits or something
+    F_rgb8,    // 8 bits per R,G,B channel
+    F_rgb12,   // 12 bits per R,G,B channel
+    F_rgb332,  // 3 bits per R & G, 2 bits for B
+    F_rgba,    // any suitable RGBA mode, whatever the hardware prefers
+    F_rgbm,    // as above, but only requires 1 bit for alpha (i.e. mask)
+    F_rgba4,   // 4 bits per R,G,B,A channel
+    F_rgba5,   // 5 bits per R,G,B channel, 1 bit alpha
+    F_rgba8,   // 8 bits per R,G,B,A channel
+    F_rgba12,  // 12 bits per R,G,B,A channel
+    F_luminance,
+    F_luminance_alpha,      // 8 bits luminance, 8 bits alpha
+    F_luminance_alphamask   // 8 bits luminance, only needs 1 bit of alpha
+  };
+
   enum FilterType {
     // Mag Filter and Min Filter
 
@@ -75,54 +130,118 @@ PUBLISHED:
   };
 
 PUBLISHED:
-  Texture(bool match_framebuffer_format = false);
-  Texture(int xsize, int ysize, int components, int component_width, 
-          PixelBuffer::Type type, PixelBuffer::Format format,
-          bool allocate_ram);
+  Texture(const string &name = string());
   ~Texture();
 
-  bool read(const Filename &fullpath, int primary_file_num_channels = 0);
-  bool read(const Filename &fullpath, const Filename &alpha_fullpath,
+  void setup_texture(TextureType texture_type,
+                     int x_size, int y_size, int z_size,
+                     ComponentType component_type, Format format);
+
+  INLINE void setup_1d_texture();
+  INLINE void setup_1d_texture(int x_size,
+                               ComponentType component_type, Format format);
+  INLINE void setup_2d_texture();
+  INLINE void setup_2d_texture(int x_size, int y_size,
+                               ComponentType component_type, Format format);
+  INLINE void setup_3d_texture(int z_size = 1);
+  INLINE void setup_3d_texture(int x_size, int y_size, int z_size,
+                               ComponentType component_type, Format format);
+  INLINE void setup_cube_map();
+  INLINE void setup_cube_map(int x_size, int y_size,
+                             ComponentType component_type, Format format);
+
+  bool read(const Filename &fullpath, int z = 0,
+            int primary_file_num_channels = 0);
+  bool read(const Filename &fullpath, const Filename &alpha_fullpath, 
+            int z = 0,
             int primary_file_num_channels = 0, int alpha_file_channel = 0);
-  bool write(const Filename &fullpath = "") const;
+  bool write(const Filename &fullpath, int z = 0) const;
 
-  bool load(const PNMImage &pnmimage);
-  bool store(PNMImage &pnmimage) const;
+  bool load(const PNMImage &pnmimage, int z = 0);
+  bool store(PNMImage &pnmimage, int z = 0) const;
 
-  void set_wrapu(WrapMode wrap);
-  void set_wrapv(WrapMode wrap);
+  INLINE bool has_filename() const;
+  INLINE const Filename &get_filename() const;
+  INLINE bool has_alpha_filename() const;
+  INLINE const Filename &get_alpha_filename() const;
+
+  INLINE bool has_fullpath() const;
+  INLINE const Filename &get_fullpath() const;
+  INLINE bool has_alpha_fullpath() const;
+  INLINE const Filename &get_alpha_fullpath() const;
+
+  INLINE int get_x_size() const;
+  INLINE int get_y_size() const;
+  INLINE int get_z_size() const;
+  INLINE int get_num_components() const;
+  INLINE int get_component_width() const;
+  INLINE TextureType get_texture_type() const;
+  INLINE Format get_format() const;
+  INLINE ComponentType get_component_type() const;
+
+  void set_wrap_u(WrapMode wrap);
+  void set_wrap_v(WrapMode wrap);
+  void set_wrap_w(WrapMode wrap);
   void set_minfilter(FilterType filter);
   void set_magfilter(FilterType filter);
   void set_anisotropic_degree(int anisotropic_degree);
   void set_border_color(const Colorf &color);
-  void set_border_width(int border_width);
 
-  INLINE WrapMode get_wrapu() const;
-  INLINE WrapMode get_wrapv() const;
+  INLINE WrapMode get_wrap_u() const;
+  INLINE WrapMode get_wrap_v() const;
+  INLINE WrapMode get_wrap_w() const;
   INLINE FilterType get_minfilter() const;
   INLINE FilterType get_magfilter() const;
   INLINE int get_anisotropic_degree() const;
   INLINE Colorf get_border_color() const;
-  INLINE int get_border_width() const;
   INLINE bool uses_mipmaps() const;
 
-  INLINE bool get_match_framebuffer_format() const;
+  INLINE bool has_ram_image() const;
+  INLINE bool might_have_ram_image() const;
+  INLINE size_t get_ram_image_size() const;
+  INLINE size_t get_expected_ram_image_size() const;
+  INLINE size_t get_expected_ram_page_size() const;
+  CPTA_uchar get_ram_image();
+  PTA_uchar modify_ram_image();
+  PTA_uchar make_ram_image();
+  void set_ram_image(PTA_uchar image);
+  void clear_ram_image();
+  INLINE void set_keep_ram_image(bool keep_ram_image);
+  INLINE bool get_keep_ram_image() const;
 
   void prepare(PreparedGraphicsObjects *prepared_objects);
+  bool release(PreparedGraphicsObjects *prepared_objects);
+  int release_all();
 
 public:
+  // These are public, but in general, you shouldn't be mucking with
+  // these values; they are set automatically when a texture is
+  // loaded.
+  INLINE void set_filename(const Filename &filename);
+  INLINE void clear_filename();
+  INLINE void set_alpha_filename(const Filename &alpha_filename);
+  INLINE void clear_alpha_filename();
+
+  INLINE void set_fullpath(const Filename &fullpath);
+  INLINE void clear_fullpath();
+  INLINE void set_alpha_fullpath(const Filename &alpha_fullpath);
+  INLINE void clear_alpha_fullpath();
+
+  INLINE void set_x_size(int x_size);
+  INLINE void set_y_size(int y_size);
+  INLINE void set_z_size(int z_size);
+  void set_format(Format format);
+  void set_component_type(ComponentType component_type);
+  INLINE void set_loaded_from_disk();
+
+public:
+  INLINE bool get_match_framebuffer_format() const;
+  INLINE void set_match_framebuffer_format(bool flag);
+
   static bool is_mipmap(FilterType type);
 
   TextureContext *prepare_now(PreparedGraphicsObjects *prepared_objects, 
                               GraphicsStateGuardianBase *gsg);
-  bool release(PreparedGraphicsObjects *prepared_objects);
-  int release_all();
-
-  INLINE bool has_ram_image() const;
-  INLINE bool might_have_ram_image() const;
-  PixelBuffer *get_ram_image();
-  INLINE void set_keep_ram_image(bool keep_ram_image);
-  INLINE bool get_keep_ram_image() const;
 
   // These bits are used as parameters to Texture::mark_dirty() and
   // also TextureContext::mark_dirty() (and related functions in
@@ -143,14 +262,53 @@ public:
 private:
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 
-  WrapMode _wrapu;
-  WrapMode _wrapv;
+  static int up_to_power_2(int value);
+  static int down_to_power_2(int value);
+  
+  void consider_rescale(PNMImage &pnmimage);
+  void consider_downgrade(PNMImage &pnmimage, int num_channels);
+
+  INLINE void store_unscaled_byte(int &index, int value);
+  INLINE void store_unscaled_short(int &index, int value);
+  INLINE void store_scaled_byte(int &index, int value, double scale);
+  INLINE void store_scaled_short(int &index, int value, double scale);
+  INLINE double get_unsigned_byte(int &index) const;
+  INLINE double get_unsigned_short(int &index) const;
+
+private:
+  Filename _filename;
+  Filename _alpha_filename;
+  Filename _fullpath;
+  Filename _alpha_fullpath;
+
+  // The number of channels of the primary file we use.  1, 2, 3, or 4.
+  int _primary_file_num_channels;
+
+  // If we have a separate alpha file, this designates which channel
+  // in the alpha file provides the alpha channel.  0 indicates the
+  // combined grayscale value of rgb; otherwise, 1, 2, 3, or 4 are
+  // valid.
+  int _alpha_file_channel;
+
+  int _x_size;
+  int _y_size;
+  int _z_size;
+  int _num_components;
+  int _component_width;
+  TextureType _texture_type;
+  Format _format;
+  ComponentType _component_type;
+
+  bool _loaded_from_disk;
+
+  WrapMode _wrap_u;
+  WrapMode _wrap_v;
+  WrapMode _wrap_w;
   FilterType _minfilter;
   FilterType _magfilter;
   int _anisotropic_degree;
   bool _keep_ram_image;
   Colorf _border_color;
-  int _border_width;
   bool _match_framebuffer_format;
 
   // A Texture keeps a list (actually, a map) of all the
@@ -166,10 +324,8 @@ private:
   // texture.
   int _all_dirty_flags;
 
-public:
-  // These are public to allow direct manipulation of the underlying
-  // pixel buffer when needed.  Know what you are doing!
-  PT(PixelBuffer) _pbuffer;
+  PTA_uchar _image;
+
 
   // Datagram stuff
 public:
@@ -186,9 +342,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    ImageBuffer::init_type();
+    TypedWritableReferenceCount::init_type();
     register_type(_type_handle, "Texture",
-                  ImageBuffer::get_class_type());
+                  TypedWritableReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

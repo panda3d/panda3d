@@ -45,6 +45,7 @@ PUBLISHED:
     M_world_position,
     M_object_position,
     M_eye_position,
+    M_object_normal,
   };
 
 protected:

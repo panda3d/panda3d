@@ -25,6 +25,7 @@
 #include "colorAttrib.h"
 #include "texture.h"
 #include "config_pgraph.h"
+#include "pnmImage.h"
 
 TypeHandle Spotlight::_type_handle;
 
@@ -171,26 +172,20 @@ make_image(Texture *texture, float radius) {
       << "Spotlight::make_image() - NULL texture" << endl;
     return false;
   }
-  PixelBuffer *pb = texture->_pbuffer;
-  int size = pb->get_xsize();
+  int size = min(texture->get_x_size(), texture->get_y_size());
   if (size == 0) {
-    pgraph_cat.error()
-      << "Spotlight::make_image() - pixel buffer has size == 0" << endl;
-    return false;
+    size = 64;
   }
 
-  const Colorf &color = get_color();
+  PNMImage image(size, size, 1);
 
-  RGBColorf scaled_color;
-  scaled_color[0] = (color[0] * 255.0f);
-  scaled_color[1] = (color[1] * 255.0f);
-  scaled_color[2] = (color[2] * 255.0f);
+  const Colorf &c4 = get_color();
+  const RGBColord color(c4[0], c4[1], c4[2]);
 
   int half_width = (size - 2) / 2;
   float dXY = 1 / (float)half_width;
   float Y = dXY + dXY;
   float X, YY, dist_from_center, intensity;
-  uchar C[3];
   int tx, ty, tx2, ty2;
 
   for (int y = 0; y < half_width; y++, Y += dXY) {
@@ -209,28 +204,23 @@ make_image(Texture *texture, float radius) {
       else
         intensity = 0;
 
-      C[0] = (uchar)(intensity * scaled_color[0]);
-      C[1] = (uchar)(intensity * scaled_color[1]);
-      C[2] = (uchar)(intensity * scaled_color[2]);
-
       tx = x + half_width;
 
-      pb->set_uchar_rgb_texel(C, tx, ty, size);
-      pb->set_uchar_rgb_texel(C, tx, size - ty - 1, size);
-      pb->set_uchar_rgb_texel(C, size - tx - 1, ty, size);
-      pb->set_uchar_rgb_texel(C, size - tx - 1, size - ty - 1, size);
+      image.set_xel(tx, ty, color * intensity);
+      image.set_xel(tx, size - ty - 1, color * intensity);
+      image.set_xel(size - tx - 1, ty, color * intensity);
+      image.set_xel(size - tx - 1, size - ty - 1, color * intensity);
 
       tx2 = ty; ty2 = tx;
 
-      pb->set_uchar_rgb_texel(C, tx2, ty2, size);
-      pb->set_uchar_rgb_texel(C, tx2, size - ty2 - 1, size);
-      pb->set_uchar_rgb_texel(C, size - tx2 - 1, ty2, size);
-      pb->set_uchar_rgb_texel(C, size - tx2 - 1, size - ty2 - 1, size);
+      image.set_xel(tx2, ty2, color * intensity);
+      image.set_xel(tx2, size - ty2 - 1, color * intensity);
+      image.set_xel(size - tx2 - 1, ty2, color * intensity);
+      image.set_xel(size - tx2 - 1, size - ty2 - 1, color * intensity);
     }
   }
 
-  // Force the texture to be reloaded into texture memory.
-  texture->mark_dirty(Texture::DF_image);
+  texture->load(image);
 
   return true;
 }

@@ -440,40 +440,6 @@ pop_display_region(DisplayRegionStack &node) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::push_frame_buffer
-//       Access: Public
-//  Description: Saves the contents of the frame buffer (within the
-//               indicated display region only) so that rendering may
-//               be performed (for instance, to render a partial in a
-//               multipass algorithm) and the frame buffer later
-//               restored via a matching call to pop_frame_buffer().
-////////////////////////////////////////////////////////////////////
-INLINE FrameBufferStack GraphicsStateGuardian::
-push_frame_buffer(const RenderBuffer &buffer,
-                  const DisplayRegion *dr) {
-  FrameBufferStack old;
-  old._frame_buffer = save_frame_buffer(buffer, dr);
-  old._stack_level = _frame_buffer_stack_level;
-  _frame_buffer_stack_level++;
-  return old;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::pop_frame_buffer
-//       Access: Public
-//  Description: Restores the contents of the frame buffer as saved by
-//               a previous call to push_frame_buffer().
-////////////////////////////////////////////////////////////////////
-INLINE void GraphicsStateGuardian::
-pop_frame_buffer(FrameBufferStack &node) {
-  nassertv(_frame_buffer_stack_level > 0);
-  _frame_buffer_stack_level--;
-  nassertv(node._stack_level == _frame_buffer_stack_level);
-  restore_frame_buffer(node._frame_buffer);
-  node._stack_level = -1;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_coordinate_system
 //       Access: Public
 //  Description: Returns the coordinate system in effect on this

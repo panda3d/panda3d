@@ -18,7 +18,6 @@
 
 #include "config_dxgsg7.h"
 #include "dxGraphicsStateGuardian7.h"
-#include "dxSavedFrameBuffer7.h"
 #include "dxTextureContext7.h"
 #include "wdxGraphicsPipe7.h"
 #include "wdxGraphicsWindow7.h"
@@ -118,7 +117,6 @@ init_libdxgsg7() {
   initialized = true;
 
   DXGraphicsStateGuardian7::init_type();
-  DXSavedFrameBuffer7::init_type();
   DXTextureContext7::init_type();
 
   wdxGraphicsPipe7::init_type();

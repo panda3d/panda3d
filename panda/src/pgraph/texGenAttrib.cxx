@@ -172,6 +172,9 @@ output(ostream &out) const {
     case M_eye_position:
       out << "eye_position";
       break;
+    case M_object_normal:
+      out << "object_normal";
+      break;
     }
     out << ")";
   }

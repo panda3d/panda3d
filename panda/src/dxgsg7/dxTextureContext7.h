@@ -55,7 +55,7 @@ public:
   HRESULT FillDDSurfTexturePixels(void);
 
 protected:
-    unsigned int get_bits_per_pixel(PixelBuffer::Format format, int *alphbits);
+    unsigned int get_bits_per_pixel(Texture::Format format, int *alphbits);
 
 public:
   static TypeHandle get_class_type() {
