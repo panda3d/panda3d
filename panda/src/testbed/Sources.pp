@@ -24,9 +24,12 @@
     pview.cxx
 #end bin_target
 
-#begin test_bin_target
+//#begin test_bin_target
+// want this in nitely bld
+#begin bin_target
   #define TARGET pgrid
 
   #define SOURCES \
     pgrid.cxx
-#end test_bin_target
+//#end test_bin_target
+#end bin_target
