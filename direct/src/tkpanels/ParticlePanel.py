@@ -938,15 +938,9 @@ class ParticlePanel(AppShell):
     def toggleForce(self, force, pageName, variableName):
         v = self.getVariable(pageName, variableName)
         if v.get():
-            if (force.isLinear() == 1):
-                physicsMgr.addLinearForce(force)
-            else:
-                physicsMgr.addAngularForce(force)
+            force.setActive(1)
         else:
-            if (force.isLinear() == 1):
-                physicsMgr.removeLinearForce(force)
-            else:
-                physicsMgr.removeAngularForce(force)
+            force.setActive(0)
                     
     def getWidget(self, category, text):
         return self.widgetDict[category + '-' + text]
@@ -968,7 +962,7 @@ class ParticlePanel(AppShell):
             title = 'Load Particle Effect',
             parent = self.parent)
         if particleFilename:
-            self.particles.loadConfig(Filename(particleFilename))
+            self.particleEffect.loadConfig(Filename(particleFilename))
 
     def saveParticleEffectToFile(self):
         # Find path to particle directory
@@ -984,7 +978,7 @@ class ParticlePanel(AppShell):
             title = 'Save Particle Effect as',
             parent = self.parent)
         if particleFilename:
-            self.particles.saveConfig(Filename(particleFilename))
+            self.particleEffect.saveConfig(Filename(particleFilename))
 
     ### PARTICLE EFFECTS COMMANDS ###
     def toggleParticleMgr(self):

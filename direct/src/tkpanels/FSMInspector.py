@@ -11,7 +11,7 @@ DELTA = (5.0 / 360.) * 2.0 * math.pi
 
 class FSMInspector(AppShell):
     # Override class variables
-    appname = 'Particle Panel'
+    appname = 'FSM Inspector'
     frameWidth  = 400
     frameHeight = 450
     usecommandarea = 0
