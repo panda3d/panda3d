@@ -994,7 +994,7 @@ int framework_main(int argc, char *argv[]) {
 			 pFileCollection = &grided_files;
 
 			 char *pStr=(argv[a])+2;
-			 if(*pStr!=NULL) {
+			 if (*pStr != '\0') {
 				 gridrepeats=atoi(pStr);
 				 if(gridrepeats<1)
 					 gridrepeats=1;

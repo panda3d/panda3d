@@ -30,7 +30,7 @@ PStatCollector Character::_anim_pcollector("App:Animation", RGBColorf(1,0,1), 30
 ////////////////////////////////////////////////////////////////////
 Character::
 Character(const Character &copy) : 
-  PartBundleNode(copy.get_name(), new CharacterJointBundle(copy.get_name())),
+  PartBundleNode(copy.get_name(), new CharacterJointBundle(copy.get_bundle()->get_name())),
   _cv(DynamicVertices::deep_copy(copy._cv)),
   _computed_vertices(copy._computed_vertices),
   _parts(copy._parts),
