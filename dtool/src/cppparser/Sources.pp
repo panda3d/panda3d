@@ -5,7 +5,7 @@
   #define TARGET cppParser
   
   #define SOURCES							  \
-    cppArrayType.cxx cppArrayType.h cppBison.h				  \
+    cppArrayType.cxx cppArrayType.h \
     cppBison.yxx cppBisonDefs.h						  \
     cppClassTemplateParameter.cxx cppClassTemplateParameter.h		  \
     cppCommentBlock.cxx cppCommentBlock.h cppConstType.cxx		  \
