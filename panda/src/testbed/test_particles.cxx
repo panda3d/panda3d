@@ -53,8 +53,8 @@
 #define PARTICLE_SYSTEM_MANAGER_FRAME_STEPPING 1
 
 // particle system params
-#define PARTICLE_SYSTEM_POOL_SIZE 1024
-#define PARTICLE_SYSTEM_BIRTH_RATE  0.02f
+#define PARTICLE_SYSTEM_POOL_SIZE 1000
+#define PARTICLE_SYSTEM_BIRTH_RATE  0.01f
 //#define PARTICLE_SYSTEM_BIRTH_RATE  0.5f
 #define PARTICLE_SYSTEM_LITTER_SIZE 10
 #define PARTICLE_SYSTEM_LITTER_SPREAD 0
@@ -91,7 +91,7 @@
 /////////////////////////////////////////////////
 
 // particle factory params
-#define PARTICLE_FACTORY_LIFESPAN_BASE   0.5f
+#define PARTICLE_FACTORY_LIFESPAN_BASE   10.0f
 //#define PARTICLE_FACTORY_LIFESPAN_BASE   3.0f
 //#define PARTICLE_FACTORY_LIFESPAN_SPREAD 1.0f
 //#define PARTICLE_FACTORY_MASS_BASE       1.0f
@@ -110,8 +110,8 @@
 //#define PARTICLE_RENDERER_ALPHA_MODE  PR_ALPHA_NONE
 //#define PARTICLE_RENDERER_ALPHA_MODE  PR_ALPHA_IN
 //#define PARTICLE_RENDERER_ALPHA_MODE  PR_ALPHA_OUT
-#define PARTICLE_RENDERER_ALPHA_MODE  BaseParticleRenderer::PR_ALPHA_USER
-#define PARTICLE_RENDERER_USER_ALPHA  1.0
+//#define PARTICLE_RENDERER_ALPHA_MODE  BaseParticleRenderer::PR_ALPHA_USER
+//#define PARTICLE_RENDERER_USER_ALPHA  1.0
 
 #ifdef GEOM_PARTICLE_RENDERER
 #elif defined POINT_PARTICLE_RENDERER
@@ -132,7 +132,8 @@
 //  #define SPARKLE_PARTICLE_RENDERER_LIFE_SCALE    SP_SCALE
 #elif defined SPRITE_PARTICLE_RENDERER
 //  #define SPRITE_PARTICLE_RENDERER_TEXTURE_FILE       "smoke.rgba"
-  #define SPRITE_PARTICLE_RENDERER_TEXTURE_FILE       "lilsmiley.rgba"
+//  #define SPRITE_PARTICLE_RENDERER_TEXTURE_FILE       "lilsmiley.rgba"
+  #define SPRITE_PARTICLE_RENDERER_TEXTURE_FILE       "rock-floor.rgb"
   #define SPRITE_PARTICLE_RENDERER_COLOR              Colorf(1.0f, 1.0f, 1.0f, 1.0f)
 //  #define SPRITE_PARTICLE_RENDERER_X_SCALE_FLAG       true
 //  #define SPRITE_PARTICLE_RENDERER_Y_SCALE_FLAG       true
@@ -142,8 +143,8 @@
 //  #define SPRITE_PARTICLE_RENDERER_INITIAL_Y_SCALE    0.0
 //  #define SPRITE_PARTICLE_RENDERER_FINAL_Y_SCALE      0.5
   #define SPRITE_PARTICLE_RENDERER_NONANIMATED_THETA  45.0f
-  #define SPRITE_PARTICLE_RENDERER_BLEND_METHOD       PP_BLEND_LINEAR
-//  #define SPRITE_PARTICLE_RENDERER_BLEND_METHOD       PP_BLEND_CUBIC
+  #define SPRITE_PARTICLE_RENDERER_BLEND_METHOD       BaseParticleRenderer::PP_BLEND_LINEAR
+//  #define SPRITE_PARTICLE_RENDERER_BLEND_METHOD       BaseParticleRenderer::PP_BLEND_CUBIC
 //  #define SPRITE_PARTICLE_RENDERER_ALPHA_DISABLE      false
 #endif
 
@@ -532,11 +533,48 @@ event_add_particles(CPT_Event) {
   event_handler.add_hook("NewFrame", event_csn_update);
 }
 
+static void set_pool_size(int size) {
+  nout << "setting pool size to " << size << endl;
+  particle_system->set_pool_size(size);
+}
+
+static void
+event_more_particles(CPT_Event) {
+  static int index = 0;
+  static int sizes[] = {
+    999,
+    1000,
+    0,
+    0,
+    10,
+    999,
+    998,
+    999,
+    1000,
+    1001,
+    1002,
+    1003,
+    1004,
+    1000,
+    16*1000,
+    4*1000,
+    3*1000,
+    2*1000,
+    1000,
+    0,
+  };
+
+  if (0 == sizes[index]) index = 0;
+  set_pool_size(sizes[index]);
+  index++;
+}
+
 void demo_keys(EventHandler&) {
   new RenderRelation( lights, dlight );
   have_dlight = true;
 
   event_handler.add_hook("p", event_add_particles);
+  event_handler.add_hook("m", event_more_particles);
 }
 
 int main(int argc, char *argv[]) {

@@ -33,6 +33,6 @@ INLINE float BaseParticle::get_parameterized_age(void) const {
 }
 
 INLINE float BaseParticle::get_parameterized_vel(void) const {
-  if (0 == get_terminal_velocity()) return 0.0;
+  if (IS_NEARLY_ZERO(get_terminal_velocity())) return 0.0;
   return (get_velocity().length()) / get_terminal_velocity();
 }

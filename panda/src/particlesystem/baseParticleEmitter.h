@@ -22,9 +22,9 @@
 class EXPCL_PANDAPHYSICS BaseParticleEmitter : public ReferenceCount {
 PUBLISHED:
   enum emissionType {
-    ET_EXPLICIT, // all particles are emitted in the same direction
+    ET_EXPLICIT, // all particles are emitted in parallel along the same vector
     ET_RADIATE,  // all particles radiate away from a single point
-    ET_CUSTOM    // particle launch vectors are dependent on particular emitter
+    ET_CUSTOM    // particle launch vectors are dependent on particular derived emitter
   };
 
   virtual ~BaseParticleEmitter(void);

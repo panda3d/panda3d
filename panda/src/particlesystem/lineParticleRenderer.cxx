@@ -111,6 +111,8 @@ resize_pool(int new_size) {
   _line_primitive->set_colors(_color_array, G_PER_VERTEX);
 
   _max_pool_size = new_size;
+
+  init_geoms();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -143,6 +145,7 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
   int remaining_particles = ttl_particles;
   int i;
+  int num_lines_drawn = 0;
 
   Vertexf *cur_vert = &_vertex_array[0];
   Colorf *cur_color = &_color_array[0];
@@ -160,26 +163,27 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     if (cur_particle->get_alive() == false)
       continue;
 
+    LPoint3f pos = cur_particle->get_position();
+
     // adjust the aabb
 
-    if (cur_particle->get_position().get_x() > _aabb_max.get_x())
-      _aabb_max[0] = cur_particle->get_position().get_x();
-    else if (cur_particle->get_position().get_x() < _aabb_min.get_x())
-      _aabb_min[0] = cur_particle->get_position().get_x();
+    if (pos.get_x() > _aabb_max.get_x())
+      _aabb_max[0] = pos.get_x();
+    if (pos.get_x() < _aabb_min.get_x())
+      _aabb_min[0] = pos.get_x();
 
-    if (cur_particle->get_position().get_y() > _aabb_max.get_y())
-      _aabb_max[1] = cur_particle->get_position().get_y();
-    else if (cur_particle->get_position().get_y() < _aabb_min.get_y())
-      _aabb_min[1] = cur_particle->get_position().get_y();
+    if (pos.get_y() > _aabb_max.get_y())
+      _aabb_max[1] = pos.get_y();
+    if (pos.get_y() < _aabb_min.get_y())
+      _aabb_min[1] = pos.get_y();
 
-    if (cur_particle->get_position().get_z() > _aabb_max.get_z())
-      _aabb_max[2] = cur_particle->get_position().get_z();
-    else if (cur_particle->get_position().get_z() < _aabb_min.get_z())
-      _aabb_min[2] = cur_particle->get_position().get_z();
+    if (pos.get_z() > _aabb_max.get_z())
+      _aabb_max[2] = pos.get_z();
+    if (pos.get_z() < _aabb_min.get_z())
+      _aabb_min[2] = pos.get_z();
 
     // draw the particle.
 
-    LPoint3f pos = cur_particle->get_position();
     Colorf head_color = _head_color;
     Colorf tail_color = _tail_color;
 
@@ -195,24 +199,26 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
       tail_color[3] = alpha;
     }
 
-    // 1 line from current position to last position
+    // one line from current position to last position
 
-    *cur_vert++ = cur_particle->get_position();
+    *cur_vert++ = pos;
     *cur_vert++ = cur_particle->get_last_position();
 
     *cur_color++ = head_color;
     *cur_color++ = tail_color;
+
+    num_lines_drawn++;
 
     remaining_particles--;
     if (remaining_particles == 0)
       break;
   }
 
-  _line_primitive->set_num_prims(ttl_particles);
+  _line_primitive->set_num_prims(num_lines_drawn);
 
   // done filling geomline node, now do the bb stuff
 
-  LPoint3f aabb_center = _aabb_min + ((_aabb_max - _aabb_min) * 0.5f);
+  LPoint3f aabb_center = (_aabb_min + _aabb_max) * 0.5f;
   float radius = (aabb_center - _aabb_min).length();
 
   _interface_node->set_bound(BoundingSphere(aabb_center, radius));

@@ -29,6 +29,7 @@ protected:
   virtual ~BaseParticle(void);
 
 public:
+
   // local methods
   INLINE void set_age(float age);
   INLINE void set_lifespan(float lifespan);

@@ -29,4 +29,9 @@
 // result is in [-spread,spread]
 #define SPREAD(magnitude) ((magnitude) - (NORMALIZED_RAND() * 2.0f * (magnitude)))
 
+// integer spread calculator
+// spread is non-negative spread magnitude (integer)
+// result is in [-spread,spread]
+#define I_SPREAD(magnitude) ((magnitude) - ((int)rand() % ((2*(magnitude))+1)))
+
 #endif // PARTICLECOMMONFUNCS_H

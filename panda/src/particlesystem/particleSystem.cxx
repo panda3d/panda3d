@@ -100,6 +100,8 @@ ParticleSystem(const ParticleSystem& copy) :
 ////////////////////////////////////////////////////////////////////
 ParticleSystem::
 ~ParticleSystem(void) {
+  set_pool_size(0);
+
   if (_template_system_flag == false) {
     _renderer.clear();
 
@@ -120,14 +122,23 @@ ParticleSystem::
 bool ParticleSystem::
 birth_particle(void) {
   int pool_index;
-//  float lifespan;
-//  float mass, t;
-
-  //  cout << "ParticleSystem::birth_particle" << endl;
 
   // make sure there's room for a new particle
-  if (_living_particles == _particle_pool_size)
+  if (_living_particles >= _particle_pool_size) {
+#ifdef PSDEBUG
+    if (_living_particles > _particle_pool_size) {
+      cout << "_living_particles > _particle_pool_size" << endl;
+    }
+#endif
     return false;
+  }
+
+#ifdef PSDEBUG
+  if (0 == _free_particle_fifo.size()) {
+    cout << "Error: _free_particle_fifo is empty, but _living_particles < _particle_pool_size" << endl;
+    return false;
+  }
+#endif
 
   pool_index = _free_particle_fifo.back();
   _free_particle_fifo.pop_back();
@@ -179,14 +190,12 @@ birth_particle(void) {
 ////////////////////////////////////////////////////////////////////
 void ParticleSystem::
 birth_litter(void) {
-  int litter_size;
+  int litter_size, i;
 
   litter_size = _litter_size;
 
   if (_litter_spread != 0)
-    litter_size += _litter_spread - (rand() % (2 * _litter_spread));
-
-  int i;
+    litter_size += I_SPREAD(_litter_spread);
 
   for (i = 0; i < litter_size; i++) {
     if (birth_particle() == false)
@@ -268,8 +277,6 @@ spawn_child_system(BaseParticle *bp) {
 ////////////////////////////////////////////////////////////////////
 void ParticleSystem::
 kill_particle(int pool_index) {
-//  vector< PT(PhysicsObject) >::iterator cur;
-
   // get a handle on our particle
   BaseParticle *bp = (BaseParticle *) _physics_objects[pool_index].p();
 
@@ -286,6 +293,7 @@ kill_particle(int pool_index) {
 
   // tell renderer
   _renderer->kill_particle(pool_index);
+
   _living_particles--;
 }
 
@@ -294,10 +302,18 @@ kill_particle(int pool_index) {
 //      Access : Private
 // Description : Resizes the particle pool according to _particle_pool_size
 ////////////////////////////////////////////////////////////////////
+#ifdef PSDEBUG
+#define PARTICLE_SYSTEM_RESIZE_POOL_SENTRIES
+#endif
 void ParticleSystem::
 resize_pool(void) {
   int i;
   int delta = _particle_pool_size - _physics_objects.size();
+
+#ifdef PARTICLE_SYSTEM_RESIZE_POOL_SENTRIES
+  cout << "resizing particle pool from " << _physics_objects.size()
+       << " to " << _particle_pool_size << endl;
+#endif
 
   if (_factory.is_null()) {
     particlesystem_cat.error() << "ParticleSystem::resize_pool"
@@ -308,11 +324,8 @@ resize_pool(void) {
   if (_renderer.is_null()) {
     particlesystem_cat.error() << "ParticleSystem::resize_pool"
 			       << " called with null _renderer." << endl;
-
     return;
   }
-
-  _renderer->resize_pool(_particle_pool_size);
 
   // disregard no change
   if (delta == 0)
@@ -326,26 +339,64 @@ resize_pool(void) {
       int free_index = _physics_objects.size();
 
       BaseParticle *new_particle = _factory->alloc_particle();
-      _factory->populate_particle(new_particle);
+      if (new_particle) {
+        _factory->populate_particle(new_particle);
 
-      _physics_objects.push_back(new_particle);
-      _free_particle_fifo.push_front(free_index);
+        _physics_objects.push_back(new_particle);
+        _free_particle_fifo.push_back(free_index);
+      } else {
+#ifdef PSDEBUG
+        cout << "Error allocating new particle" << endl;
+        _particle_pool_size--;
+#endif
+      }
     }
-  }
-  else {
+  } else {
     // subtract elements
-    if (delta > _particle_pool_size) {
+    delta = -delta;
+    if (delta >= _physics_objects.size()) {
+#ifdef PSDEBUG
+      cout << "Weird... do we have a negative pool size??" << endl;
+#endif
       _physics_objects.erase(_physics_objects.begin(), _physics_objects.end());
       _free_particle_fifo.clear();
-    }
-    else {
+    } else {
       for (i = 0; i < delta; i++) {
-	_physics_objects.pop_back();
-	if (_free_particle_fifo.empty() == false)
-	  _free_particle_fifo.pop_back();
+        int delete_index = _physics_objects.size()-1;
+        BaseParticle *bp = (BaseParticle *) _physics_objects[delete_index].p();
+
+        if (bp->get_alive()) {
+#ifdef PSDEBUG
+          cout << "WAS ALIVE" << endl;
+#endif
+          kill_particle(delete_index);
+          _free_particle_fifo.pop_back();
+        } else {
+#ifdef PSDEBUG
+          cout << "WAS NOT ALIVE" << endl;
+#endif
+          deque<int>::iterator i;
+          i = find(_free_particle_fifo.begin(), _free_particle_fifo.end(), delete_index);
+          if (i != _free_particle_fifo.end()) {
+            _free_particle_fifo.erase(i);
+          }
+#ifdef PSDEBUG
+          else {
+            cout << "particle not found in free FIFO!!!!!!!!" << endl;
+          }
+#endif
+        }
+
+        _physics_objects.pop_back();
       }
     }
   }
+
+  _renderer->resize_pool(_particle_pool_size);
+
+#ifdef PARTICLE_SYSTEM_RESIZE_POOL_SENTRIES
+  cout << "particle pool resized" << endl;
+#endif
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -353,24 +404,45 @@ resize_pool(void) {
 //      Access : Public
 // Description : Updates the particle system.  Call once per frame.
 //////////////////////////////////////////////////////////////////////
+#ifdef PSDEBUG
+//#define PARTICLE_SYSTEM_UPDATE_SENTRIES
+#endif
 void ParticleSystem::
 update(float dt) {
   int ttl_updates_left = _living_particles;
   int current_index = 0, index_counter = 0;
   BaseParticle *bp;
-  bool done = false;
   float age;
 
-  // run through the particle array
-  while (!done) {
-    if (ttl_updates_left == 0)
-      break;
+#ifdef PARTICLE_SYSTEM_UPDATE_SENTRIES
+  cout << "UPDATE: pool size: " << _particle_pool_size
+       << ", live particles: " << _living_particles << endl;
+#endif
 
+  // run through the particle array
+  while (ttl_updates_left) {
     current_index = index_counter;
     index_counter++;
 
+#ifdef PSDEBUG
+    if (current_index >= _particle_pool_size) {
+      cout << "ERROR: _living_particles is out of sync (too large)" << endl;
+      cout << "pool size: " << _particle_pool_size
+           << ", live particles: " << _living_particles
+           << ", updates left: " << ttl_updates_left << endl;
+      break;
+    }
+#endif
+
     // get the current particle.
     bp = (BaseParticle *) _physics_objects[current_index].p();
+
+#ifdef PSDEBUG
+    if (!bp) {
+      cout << "NULL ptr at index " << current_index << endl;
+      continue;
+    }
+#endif
 
     if (bp->get_alive() == false)
       continue;
@@ -396,4 +468,7 @@ update(float dt) {
     _tics_since_birth -= _birth_rate;
   }
 
+#ifdef PARTICLE_SYSTEM_UPDATE_SENTRIES
+  cout << "particle update complete" << endl;
+#endif
 }

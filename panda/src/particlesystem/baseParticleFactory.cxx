@@ -50,22 +50,10 @@ BaseParticleFactory::
 ////////////////////////////////////////////////////////////////////
 void BaseParticleFactory::
 populate_particle(BaseParticle *bp) {
-  float lifespan = _lifespan_base;
-  float mass = _mass_base;
-  float tv = _terminal_velocity_base;
+  bp->set_lifespan(_lifespan_base + SPREAD(_lifespan_spread));
+  bp->set_mass(_mass_base + SPREAD(_mass_spread));
+  bp->set_terminal_velocity(_terminal_velocity_base + SPREAD(_terminal_velocity_spread));
 
-  // lifespan
-  lifespan += SPREAD(_lifespan_spread);
-
-  // mass
-  mass += SPREAD(_mass_spread);
-
-  // tv
-  tv += SPREAD(_terminal_velocity_spread);
-
-  bp->set_lifespan(lifespan);
-  bp->set_mass(mass);
-  bp->set_terminal_velocity(tv);
   bp->set_active(false);
   bp->set_alive(false);
   bp->set_age(0.0f);

@@ -3,6 +3,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifndef NDEBUG
+//#define PSDEBUG
+#endif
+
 #ifndef PARTICLESYSTEM_H
 #define PARTICLESYSTEM_H
 
@@ -85,7 +89,7 @@ PUBLISHED:
   INLINE void set_pool_size(int size);
   INLINE void set_birth_rate(float new_br);
   INLINE void set_litter_size(int new_ls);
-  INLINE void set_litter_spread(int new_ld);
+  INLINE void set_litter_spread(int new_ls);
   INLINE void set_local_velocity_flag(bool lv);
   INLINE void set_system_grows_older_flag(bool sgo);
   INLINE void set_system_lifespan(float sl);

@@ -150,16 +150,16 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
       if ((_alpha_mode != PR_ALPHA_NONE) && (_alpha_mode != PR_ALPHA_USER)) {
 
-	float alpha_scalar = cur_particle->get_parameterized_age();
+        float alpha_scalar = cur_particle->get_parameterized_age();
 
-	if (_alpha_mode == PR_ALPHA_IN) {
-	  alpha = new ColorTransition(1.0f, 1.0f, 1.0f, alpha_scalar);
-	}
-	else if (_alpha_mode == PR_ALPHA_OUT) {
-	  alpha = new ColorTransition(1.0f, 1.0f, 1.0f, 1.0f - alpha_scalar);
-	}
+        if (_alpha_mode == PR_ALPHA_IN) {
+          alpha = new ColorTransition(1.0f, 1.0f, 1.0f, alpha_scalar);
+        }
+        else if (_alpha_mode == PR_ALPHA_OUT) {
+          alpha = new ColorTransition(1.0f, 1.0f, 1.0f, 1.0f - alpha_scalar);
+        }
 
-	cur_arc->set_transition(alpha);
+        cur_arc->set_transition(alpha);
       }
 
       cur_arc->set_transition(xform);
@@ -169,7 +169,7 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
       remaining_particles--;
 
       if (remaining_particles == 0)
-	break;
+        break;
     }
 
     cur_arc_iter++;

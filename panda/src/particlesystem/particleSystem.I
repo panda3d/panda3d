@@ -58,8 +58,8 @@ set_litter_size(int new_ls) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void ParticleSystem::
-set_litter_spread(int new_ld) {
-  _litter_spread = new_ld;
+set_litter_spread(int new_ls) {
+  _litter_spread = new_ls;
 }
 
 ////////////////////////////////////////////////////////////////////
