@@ -56,6 +56,7 @@ class ListBox(DirectObject):
                                    drawOrder = self.drawOrder,
                                    font = self.font, event = event)
             button.button.setBehaviorEventParameter(param)
+            button.button.startBehavior()
         else:
             button = Button.Button(item, label,
                                    scale = self.scale,
