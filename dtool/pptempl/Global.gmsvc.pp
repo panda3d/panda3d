@@ -74,7 +74,7 @@
   #define dlllib dll
 #endif
 
-#include $[DTOOL]/pptempl/compilerSettings.pp
+#include $[THISDIRPREFIX]compilerSettings.pp
 
 #define WARNING_LEVEL_FLAG /W3
 

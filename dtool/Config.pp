@@ -71,8 +71,11 @@
 //              not taking advantage of distributed make, because of
 //              the overhead associated with Cygwin fork() calls.
 //
-#define BUILD_TYPE unix
-
+#if $[eq $[PLATFORM],Win32]
+  #define BUILD_TYPE msvc
+#else
+  #define BUILD_TYPE unix
+#endif
 
 // What is the default install directory for all trees in the Panda
 // suite?  You may also override this for a particular tree by
@@ -81,7 +84,11 @@
 // control your attachment to the trees; in this case, the install
 // directory for each tree will by default be the root of the tree
 // itself (although this may be overridden).
-#define INSTALL_DIR /usr/local/panda
+#if $[eq $[PLATFORM],Win32]
+  #define INSTALL_DIR /pandadir
+#else
+  #define INSTALL_DIR /usr/local/panda
+#endif
 
 
 // What level of compiler optimization/debug symbols should we build?
