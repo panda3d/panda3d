@@ -32,7 +32,8 @@ class Track(Interval):
 	for i in intervalList:
             if isinstance(i, Interval):
                 self.ilist.append((i, 0.0, PREVIOUS_END))
-            elif isinstance(i, ListType) or isinstance(i, TupleType):
+            elif (isinstance(i, types.ListType) or
+                  isinstance(i, types.TupleType)):
                 t0 = i[0]
                 ival = i[1]
                 try:
