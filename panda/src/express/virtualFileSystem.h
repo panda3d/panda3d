@@ -48,7 +48,7 @@ PUBLISHED:
   ~VirtualFileSystem();
 
   enum MountFlags {
-    MF_owns_pointer   = 0x0001,
+    MF_owns_pointer   = 0x0001,    // This flag is no longer used.
     MF_read_only      = 0x0002,
   };
 

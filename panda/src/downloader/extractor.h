@@ -59,7 +59,7 @@ PUBLISHED:
 
 private:
   Filename _multifile_name;
-  Multifile _multifile;
+  PT(Multifile) _multifile;
 
   Filename _extract_dir;
 

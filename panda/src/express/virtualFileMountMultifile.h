@@ -23,6 +23,7 @@
 
 #include "virtualFileMount.h"
 #include "multifile.h"
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : VirtualFileMountMultifile
@@ -49,7 +50,7 @@ public:
 
 
 private:
-  Multifile *_multifile;
+  PT(Multifile) _multifile;
 
 
 public:

@@ -23,6 +23,7 @@
   #include <getopt.h>
 #endif
 #include "multifile.h"
+#include "pointerTo.h"
 #include "filename.h"
 #include "pset.h"
 #include <stdio.h>
@@ -214,7 +215,7 @@ get_compression_level(const Filename &subfile_name) {
 }
 
 bool
-add_directory(Multifile &multifile, const Filename &directory_name) {
+add_directory(Multifile *multifile, const Filename &directory_name) {
   vector_string files;
   if (!directory_name.scan_directory(files)) {
     cerr << "Unable to scan directory " << directory_name << "\n";
@@ -238,10 +239,10 @@ add_directory(Multifile &multifile, const Filename &directory_name) {
     } else {
       string new_subfile_name;
       if (update) {
-        new_subfile_name = multifile.update_subfile
+        new_subfile_name = multifile->update_subfile
           (subfile_name, subfile_name, get_compression_level(subfile_name));
       } else {
-        new_subfile_name = multifile.add_subfile
+        new_subfile_name = multifile->add_subfile
           (subfile_name, subfile_name, get_compression_level(subfile_name));
       }
       if (new_subfile_name.empty()) {
@@ -260,27 +261,27 @@ add_directory(Multifile &multifile, const Filename &directory_name) {
 
 bool
 add_files(int argc, char *argv[]) {
-  Multifile multifile;
+  PT(Multifile) multifile = new Multifile;
   if (append || update) {
-    if (!multifile.open_read_write(multifile_name)) {
+    if (!multifile->open_read_write(multifile_name)) {
       cerr << "Unable to open " << multifile_name << " for updating.\n";
       return false;
     }
   } else {
-    if (!multifile.open_write(multifile_name)) {
+    if (!multifile->open_write(multifile_name)) {
       cerr << "Unable to open " << multifile_name << " for writing.\n";
       return false;
     }
   }
 
   if (encryption_flag) {
-    multifile.set_encryption_flag(true);
-    multifile.set_encryption_password(get_password());
+    multifile->set_encryption_flag(true);
+    multifile->set_encryption_password(get_password());
   }
 
-  if (scale_factor != 0 && scale_factor != multifile.get_scale_factor()) {
+  if (scale_factor != 0 && scale_factor != multifile->get_scale_factor()) {
     cerr << "Setting scale factor to " << scale_factor << "\n";
-    multifile.set_scale_factor(scale_factor);
+    multifile->set_scale_factor(scale_factor);
   }
 
   bool okflag = true;
@@ -298,10 +299,10 @@ add_files(int argc, char *argv[]) {
     } else {
       string new_subfile_name;
       if (update) {
-        new_subfile_name = multifile.update_subfile
+        new_subfile_name = multifile->update_subfile
           (subfile_name, subfile_name, get_compression_level(subfile_name));
       } else {
-        new_subfile_name = multifile.add_subfile
+        new_subfile_name = multifile->add_subfile
           (subfile_name, subfile_name, get_compression_level(subfile_name));
       }
       if (new_subfile_name.empty()) {
@@ -315,13 +316,13 @@ add_files(int argc, char *argv[]) {
     }
   }
 
-  if (multifile.needs_repack()) {
-    if (!multifile.repack()) {
+  if (multifile->needs_repack()) {
+    if (!multifile->repack()) {
       cerr << "Failed to write " << multifile_name << ".\n";
       okflag = false;
     }
   } else {
-    if (!multifile.flush()) {
+    if (!multifile->flush()) {
       cerr << "Failed to write " << multifile_name << ".\n";
       okflag = false;
     }
@@ -336,13 +337,13 @@ extract_files(int argc, char *argv[]) {
     cerr << multifile_name << " not found.\n";
     return false;
   }
-  Multifile multifile;
-  if (!multifile.open_read(multifile_name)) {
+  PT(Multifile) multifile = new Multifile;
+  if (!multifile->open_read(multifile_name)) {
     cerr << "Unable to open " << multifile_name << " for reading.\n";
     return false;
   }
 
-  int num_subfiles = multifile.get_num_subfiles();
+  int num_subfiles = multifile->get_num_subfiles();
 
   // First, check to see whether any of the named subfiles have been
   // encrypted.  If any have, we may need to prompt the user to enter
@@ -350,21 +351,21 @@ extract_files(int argc, char *argv[]) {
   int i;
   bool any_encrypted = false;
   for (i = 0; i < num_subfiles && !any_encrypted; i++) {
-    string subfile_name = multifile.get_subfile_name(i);
+    string subfile_name = multifile->get_subfile_name(i);
     if (is_named(subfile_name, argc, argv)) {
-      if (multifile.is_subfile_encrypted(i)) {
+      if (multifile->is_subfile_encrypted(i)) {
         any_encrypted = true;
       }
     }
   }
 
   if (any_encrypted) {
-    multifile.set_encryption_password(get_password());
+    multifile->set_encryption_password(get_password());
   }
 
   // Now walk back through the list and this time do the extraction.
   for (i = 0; i < num_subfiles; i++) {
-    string subfile_name = multifile.get_subfile_name(i);
+    string subfile_name = multifile->get_subfile_name(i);
     if (is_named(subfile_name, argc, argv)) {
       Filename filename = subfile_name;
       if (got_chdir_to) {
@@ -374,12 +375,12 @@ extract_files(int argc, char *argv[]) {
         if (verbose) {
           cerr << filename << "\n";
         }
-        multifile.extract_subfile_to(i, cout);
+        multifile->extract_subfile_to(i, cout);
       } else {
         if (verbose) {
           cout << filename << "\n";
         }
-        multifile.extract_subfile(i, filename);
+        multifile->extract_subfile(i, filename);
       }
     }
   }
@@ -393,58 +394,58 @@ list_files(int argc, char *argv[]) {
     cerr << multifile_name << " not found.\n";
     return false;
   }
-  Multifile multifile;
-  if (!multifile.open_read(multifile_name)) {
+  PT(Multifile) multifile = new Multifile;
+  if (!multifile->open_read(multifile_name)) {
     cerr << "Unable to open " << multifile_name << " for reading.\n";
     return false;
   }
 
-  int num_subfiles = multifile.get_num_subfiles();
+  int num_subfiles = multifile->get_num_subfiles();
   
   if (verbose) {
     cout << num_subfiles << " subfiles:\n" << flush;
     for (int i = 0; i < num_subfiles; i++) {
-      string subfile_name = multifile.get_subfile_name(i);
+      string subfile_name = multifile->get_subfile_name(i);
       if (is_named(subfile_name, argc, argv)) {
         char encrypted_symbol = ' ';
-        if (multifile.is_subfile_encrypted(i)) {
+        if (multifile->is_subfile_encrypted(i)) {
           encrypted_symbol = 'e';
         }
-        if (multifile.is_subfile_compressed(i)) {
-          size_t orig_length = multifile.get_subfile_length(i);
-          size_t internal_length = multifile.get_subfile_internal_length(i);
+        if (multifile->is_subfile_compressed(i)) {
+          size_t orig_length = multifile->get_subfile_length(i);
+          size_t internal_length = multifile->get_subfile_internal_length(i);
           double ratio = 1.0;
           if (orig_length != 0) {
             ratio = (double)internal_length / (double)orig_length;
           }
           if (ratio > 1.0) {
             printf("%12d worse %c %s\n",
-                   multifile.get_subfile_length(i),
+                   multifile->get_subfile_length(i),
                    encrypted_symbol,
                    subfile_name.c_str());
           } else {
             printf("%12d  %3.0f%% %c %s\n",
-                   multifile.get_subfile_length(i),
+                   multifile->get_subfile_length(i),
                    100.0 - ratio * 100.0, encrypted_symbol,
                    subfile_name.c_str());
           }
         } else {
           printf("%12d       %c %s\n", 
-                 multifile.get_subfile_length(i),
+                 multifile->get_subfile_length(i),
                  encrypted_symbol, subfile_name.c_str());
         }
       }
     }
     fflush(stdout);
-    if (multifile.get_scale_factor() != 1) {
-      cout << "Scale factor is " << multifile.get_scale_factor() << "\n";
+    if (multifile->get_scale_factor() != 1) {
+      cout << "Scale factor is " << multifile->get_scale_factor() << "\n";
     }
-    if (multifile.needs_repack()) {
+    if (multifile->needs_repack()) {
       cout << "Multifile needs to be repacked.\n";
     }
   } else {
     for (int i = 0; i < num_subfiles; i++) {
-      string subfile_name = multifile.get_subfile_name(i);
+      string subfile_name = multifile->get_subfile_name(i);
       if (is_named(subfile_name, argc, argv)) {
         cout << subfile_name << "\n";
       }

@@ -53,9 +53,7 @@ VirtualFileSystem::
 //     Function: VirtualFileSystem::mount
 //       Access: Published
 //  Description: Mounts the indicated Multifile at the given mount
-//               point.  If flags contains MF_owns_pointer, the
-//               Multifile will be deleted when it is eventually
-//               unmounted.
+//               point.
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileSystem::
 mount(Multifile *multifile, const string &mount_point, int flags) {
@@ -98,7 +96,6 @@ mount(const Filename &physical_filename, const string &mount_point,
   }
 
   if (physical_filename.is_directory()) {
-    flags &= ~MF_owns_pointer;
     VirtualFileMountSystem *mount =
       new VirtualFileMountSystem(this, physical_filename, 
                                  normalize_mount_point(mount_point),
@@ -108,7 +105,7 @@ mount(const Filename &physical_filename, const string &mount_point,
 
   } else {
     // It's not a directory; it must be a Multifile.
-    Multifile *multifile = new Multifile;
+    PT(Multifile) multifile = new Multifile;
 
     multifile->set_encryption_password(password);
 
@@ -120,8 +117,6 @@ mount(const Filename &physical_filename, const string &mount_point,
       return false;
     }
 
-    // We want to delete this pointer when we're done.
-    flags |= MF_owns_pointer;
     return mount(multifile, mount_point, flags);
   }
 }

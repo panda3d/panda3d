@@ -31,6 +31,7 @@
 Extractor::
 Extractor() {
   _initiated = false;
+  _multifile = new Multifile;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -54,7 +55,7 @@ bool Extractor::
 set_multifile(const Filename &multifile_name) {
   reset();
   _multifile_name = multifile_name;
-  return _multifile.open_read(multifile_name);
+  return _multifile->open_read(multifile_name);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -101,12 +102,12 @@ reset() {
 ////////////////////////////////////////////////////////////////////
 bool Extractor::
 request_subfile(const Filename &subfile_name) {
-  int index = _multifile.find_subfile(subfile_name);
+  int index = _multifile->find_subfile(subfile_name);
   if (index < 0) {
     return false;
   }
   _requests.push_back(index);
-  _requests_total_length += _multifile.get_subfile_length(index);
+  _requests_total_length += _multifile->get_subfile_length(index);
   return true;
 }
 
@@ -120,10 +121,10 @@ int Extractor::
 request_all_subfiles() {
   _requests.clear();
   _requests_total_length = 0;
-  int num_subfiles = _multifile.get_num_subfiles();
+  int num_subfiles = _multifile->get_num_subfiles();
   for (int i = 0; i < num_subfiles; i++) {
     _requests.push_back(i);
-    _requests_total_length += _multifile.get_subfile_length(i);
+    _requests_total_length += _multifile->get_subfile_length(i);
   }
   return num_subfiles;
 }
@@ -164,7 +165,7 @@ step() {
 
     _subfile_index = _requests[_request_index];
     _subfile_filename = Filename(_extract_dir, 
-                                 _multifile.get_subfile_name(_subfile_index));
+                                 _multifile->get_subfile_name(_subfile_index));
     _subfile_filename.set_binary();
     _subfile_filename.make_dir();
     if (!_subfile_filename.open_write(_write, true)) {
@@ -174,13 +175,13 @@ step() {
       return EU_error_abort;
     }
 
-    _subfile_length = _multifile.get_subfile_length(_subfile_index);
+    _subfile_length = _multifile->get_subfile_length(_subfile_index);
     _subfile_pos = 0;
-    _read = _multifile.open_read_subfile(_subfile_index);
+    _read = _multifile->open_read_subfile(_subfile_index);
     if (_read == (istream *)NULL) {
       downloader_cat.error()
         << "Unable to read subfile "
-        << _multifile.get_subfile_name(_subfile_index) << ".\n";
+        << _multifile->get_subfile_name(_subfile_index) << ".\n";
       reset();
       return EU_error_abort;
     }

@@ -29,11 +29,6 @@ TypeHandle VirtualFileMountMultifile::_type_handle;
 ////////////////////////////////////////////////////////////////////
 VirtualFileMountMultifile::
 ~VirtualFileMountMultifile() {
-  if ((_mount_flags & VirtualFileSystem::MF_owns_pointer) != 0) {
-    // Delete the _multifile pointer if we own it.
-    nassertv(_multifile != (Multifile *)NULL);
-    delete _multifile;
-  }
 }
 
 

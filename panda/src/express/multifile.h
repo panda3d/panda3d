@@ -26,13 +26,14 @@
 #include "filename.h"
 #include "ordered_vector.h"
 #include "indirectLess.h"
+#include "referenceCount.h"
 #include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Multifile
 // Description : A file that contains a set of files.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS Multifile {
+class EXPCL_PANDAEXPRESS Multifile : public ReferenceCount {
 PUBLISHED:
   Multifile();
   ~Multifile();
