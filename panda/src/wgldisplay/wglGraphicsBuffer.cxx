@@ -43,13 +43,9 @@ wglGraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   _pbuffer = (HPBUFFERARB)0;
   _pbuffer_dc = (HDC)0;
 
-  // Since the pbuffer (or window, if we use a hidden window) never
-  // gets flipped, we get screenshots from the same buffer we draw
-  // into.
-
-  // Actually, because of an apparent driver bug in nVidia drivers, we
-  // must flip the pbuffer after all.
-  //  _screenshot_buffer_type = _draw_buffer_type;
+  // Since the pbuffer never gets flipped, we get screenshots from the
+  // same buffer we draw into.
+  _screenshot_buffer_type = _draw_buffer_type;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -136,59 +132,7 @@ end_frame() {
     RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type());
     TextureContext *tc = get_texture()->prepare_now(_gsg->get_prepared_objects(), _gsg);
     _gsg->copy_texture(tc, &dr, buffer);
-
-    // It appears that the nVidia graphics driver 5.3.0.3, dated
-    // 11/17/2003 will get confused with the above copy operation and
-    // copy the texture from the wrong window, unless we immediately
-    // swap buffers in the pbuffer, even though there's no reason to
-    // swap buffers otherwise.  This is unfortunate, because it means
-    // we can't use single-buffered pbuffers (for which SwapBuffers is
-    // a no-op).
-    if (_pbuffer_dc) {
-      SwapBuffers(_pbuffer_dc);
-    } else if (_window_dc) {
-      SwapBuffers(_window_dc);
-    }
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsBuffer::make_context
-//       Access: Public, Virtual
-//  Description: If _needs_context is true, this will be called
-//               in the draw thread prior to rendering into the
-//               window.  It should attempt to create a graphics
-//               context, and return true if successful, false
-//               otherwise.  If it returns false the window will be
-//               considered failed.
-////////////////////////////////////////////////////////////////////
-bool wglGraphicsBuffer::
-make_context() {
-  PStatTimer timer(_make_current_pcollector);
-
-  wglGraphicsStateGuardian *wglgsg;
-  DCAST_INTO_R(wglgsg, _gsg, false);
-
-  if (_pbuffer_dc) {
-    HGLRC context = wglgsg->get_context(_pbuffer_dc);
-    if (context) {
-      wglMakeCurrent(_pbuffer_dc, context);
-      wglgsg->reset_if_new();
-      _needs_context = false;
-      return true;
-    }
-
-  } else {
-    HGLRC context = wglgsg->get_context(_window_dc);
-    if (context) {
-      wglMakeCurrent(_window_dc, context);
-      wglgsg->reset_if_new();
-      _needs_context = false;
-      return true;
-    }
-  }
-
-  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -205,13 +149,7 @@ make_current() {
   wglGraphicsStateGuardian *wglgsg;
   DCAST_INTO_V(wglgsg, _gsg);
 
-  // Use the pbuffer if we got it, otherwise fall back to the window.
-  if (_pbuffer_dc) {
-    wglMakeCurrent(_pbuffer_dc, wglgsg->get_context(_pbuffer_dc));
-
-  } else {
-    wglMakeCurrent(_window_dc, wglgsg->get_context(_window_dc));
-  }
+  wglMakeCurrent(_pbuffer_dc, wglgsg->get_context(_pbuffer_dc));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -305,35 +243,34 @@ open_buffer() {
 
   wglMakeCurrent(_window_dc, wglgsg->get_context(_window_dc));
   wglgsg->reset_if_new();
+  _needs_context = false;
 
   // Now that we have fully made a window and used that window to
   // create a rendering context, we can attempt to create a pbuffer.
-  // This might fail if the pbuffer extensions are not supported; in
-  // that case, we'll just keep the window and hope it works even if
-  // it is not shown.
+  // This might fail if the pbuffer extensions are not supported.
 
-  if (make_pbuffer()) {
-    _pbuffer_dc = wglgsg->_wglGetPbufferDCARB(_pbuffer);
-    wgldisplay_cat.info()
-      << "Created PBuffer " << _pbuffer << ", DC " << _pbuffer_dc << "\n";
-
-    wglMakeCurrent(_pbuffer_dc, wglgsg->get_context(_pbuffer_dc));
-    wglgsg->report_my_gl_errors();
-
-    // Now that the pbuffer is created, we don't need the window any
-    // more.
-    if (_window_dc) {
-      ReleaseDC(_window, _window_dc);
-      _window_dc = 0;
-    }
-    if (_window) {
-      DestroyWindow(_window);
-      _window = 0;
-    }
-
-    SwapBuffers(_pbuffer_dc);
+  if (!make_pbuffer()) {
+    return false;
   }
 
+  _pbuffer_dc = wglgsg->_wglGetPbufferDCARB(_pbuffer);
+  wgldisplay_cat.info()
+    << "Created PBuffer " << _pbuffer << ", DC " << _pbuffer_dc << "\n";
+  
+  wglMakeCurrent(_pbuffer_dc, wglgsg->get_context(_pbuffer_dc));
+  wglgsg->report_my_gl_errors();
+  
+  // Now that the pbuffer is created, we don't need the window any
+  // more.
+  if (_window_dc) {
+    ReleaseDC(_window, _window_dc);
+    _window_dc = 0;
+  }
+  if (_window) {
+    DestroyWindow(_window);
+    _window = 0;
+  }
+  
   _is_valid = true;
 
   return true;
@@ -408,6 +345,8 @@ make_pbuffer() {
   DCAST_INTO_R(wglgsg, _gsg, false);
 
   if (!wglgsg->_supports_pbuffer) {
+    wgldisplay_cat.info()
+      << "PBuffers not supported by GL implementation.\n";
     return false;
   }
 
