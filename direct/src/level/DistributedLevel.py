@@ -379,6 +379,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
     def setColorZones(self, fColorZones):
         self.fColorZones = fColorZones
+        self.resetVisibility()
 
     def getColorZones(self):
         return self.fColorZones
