@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "palette.h"
-#include "texture.h"
+#include "pTexture.h"
 #include "attribFile.h"
 #include "string_utils.h"
 
@@ -215,7 +215,7 @@ get_size(int &xsize, int &ysize) const {
   
 
 void Palette::
-place_texture_at(Texture *texture, int left, int top,
+place_texture_at(PTexture *texture, int left, int top,
 		 int xsize, int ysize, int margin) {
   TexturePlacement tp;
   tp._texture = texture;
@@ -230,7 +230,7 @@ place_texture_at(Texture *texture, int left, int top,
 }
 
 bool Palette::
-pack_texture(Texture *texture) {
+pack_texture(PTexture *texture) {
   int xsize, ysize;
   if (!texture->get_req(xsize, ysize)) {
     return false;
@@ -246,7 +246,7 @@ pack_texture(Texture *texture) {
 }
 
 bool Palette::
-unpack_texture(Texture *texture) {
+unpack_texture(PTexture *texture) {
   TexPlace::iterator ti;
   for (ti = _texplace.begin(); ti != _texplace.end(); ++ti) {
     if ((*ti)._texture == texture) {
@@ -334,7 +334,7 @@ finalize_palette() {
 
   if (_texplace.size() == 1) {
     // If we packed exactly one texture, never mind.
-    Texture *texture = (*_texplace.begin())._texture;
+    PTexture *texture = (*_texplace.begin())._texture;
 
     // This is a little odd: we mark the texture as being omitted, but
     // we don't actually unpack it.  That way it will still be
@@ -342,7 +342,7 @@ finalize_palette() {
     // palettizations), but it will also be copied to the map
     // directory, and any egg files that reference it will use the
     // texture and not the palette.
-    texture->set_omit(Texture::OR_solitary);
+    texture->set_omit(PTexture::OR_solitary);
   }
 }
 
@@ -371,7 +371,7 @@ generate_image() {
 
   TexPlace::const_iterator ti;
   for (ti = _texplace.begin(); ti != _texplace.end(); ++ti) {
-    Texture *texture = (*ti)._texture;
+    PTexture *texture = (*ti)._texture;
     nout << "  " << texture->get_name() << "\n";
     okflag = copy_texture_image(palette, *ti) && okflag;
   }
@@ -415,7 +415,7 @@ refresh_image() {
 
   TexPlace::const_iterator ti;
   for (ti = _texplace.begin(); ti != _texplace.end(); ++ti) {
-    Texture *texture = (*ti)._texture;
+    PTexture *texture = (*ti)._texture;
     if (texture->needs_refresh()) {
       if (!any_changed) {
 	nout << "Refreshing " << _filename << "\n";

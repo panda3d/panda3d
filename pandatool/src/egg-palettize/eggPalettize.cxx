@@ -5,7 +5,7 @@
 
 #include "eggPalettize.h"
 #include "attribFile.h"
-#include "texture.h"
+#include "pTexture.h"
 #include "string_utils.h"
 #include "sourceEgg.h"
 
@@ -315,7 +315,7 @@ format_space(int size_pixels, bool verbose) {
 void EggPalettize::
 report_statistics() {
   // Look for textures in common.
-  map<string, Texture *> textures;
+  map<string, PTexture *> textures;
   map<string, int> dup_textures;
 
   AttribFiles::iterator afi;
@@ -371,12 +371,12 @@ report_statistics() {
   int net_orig_size = 0;
   int net_resized_size = 0;
   int net_unplaced_size = 0;
-  typedef map<Texture::OmitReason, pair<int, int> > UnplacedReasons;
+  typedef map<PTexture::OmitReason, pair<int, int> > UnplacedReasons;
   UnplacedReasons unplaced_reasons;
 
-  map<string, Texture *>::iterator ti;
+  map<string, PTexture *>::iterator ti;
   for (ti = textures.begin(); ti != textures.end(); ++ti) {
-    Texture *texture = (*ti).second;
+    PTexture *texture = (*ti).second;
 
     int xsize, ysize;
     int rxsize, rysize;
@@ -427,41 +427,41 @@ report_statistics() {
   for (uri = unplaced_reasons.begin(); 
        uri != unplaced_reasons.end();
        ++uri) {
-    Texture::OmitReason reason = (*uri).first;
+    PTexture::OmitReason reason = (*uri).first;
     int count = (*uri).second.first;
     int size = (*uri).second.second;
     cout << count << " textures (" << format_space(size)
 	 << ") unplaced because ";
     switch (reason) {
-    case Texture::OR_none:
+    case PTexture::OR_none:
       cout << "of no reason--textures should have been placed\n";
       break;
       
-    case Texture::OR_size:
+    case PTexture::OR_size:
       cout << "size was too large for palette\n";
       break;
       
-    case Texture::OR_repeats:
+    case PTexture::OR_repeats:
       cout << "repeating\n";
       break;
       
-    case Texture::OR_omitted:
+    case PTexture::OR_omitted:
       cout << "explicitly omitted\n";
       break;
       
-    case Texture::OR_unused:
+    case PTexture::OR_unused:
       cout << "unused by any egg file\n";
       break;
       
-    case Texture::OR_unknown:
+    case PTexture::OR_unknown:
       cout << "texture file is missing\n";
       break;
       
-    case Texture::OR_cmdline:
+    case PTexture::OR_cmdline:
       cout << "-x was given on command line\n";
       break;
       
-    case Texture::OR_solitary:
+    case PTexture::OR_solitary:
       cout << "texture was alone on a palette\n";
       break;
       

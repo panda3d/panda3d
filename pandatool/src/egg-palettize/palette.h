@@ -14,7 +14,7 @@
 
 #include <vector>
 
-class Texture;
+class PTexture;
 class PNMImage;
 class AttribFile;
 
@@ -41,11 +41,11 @@ public:
 
   void get_size(int &xsize, int &ysize) const;
 
-  void place_texture_at(Texture *texture, int left, int top,
+  void place_texture_at(PTexture *texture, int left, int top,
 			int xsize, int ysize, int margin);
 
-  bool pack_texture(Texture *texture);
-  bool unpack_texture(Texture *texture);
+  bool pack_texture(PTexture *texture);
+  bool unpack_texture(PTexture *texture);
 
   void optimal_resize();
 
@@ -63,7 +63,7 @@ private:
     PNMImage *resize_image(PNMImage *source) const;
     PNMImage *add_margins(PNMImage *source) const;
 
-    Texture *_texture;
+    PTexture *_texture;
     int _left, _top;
     int _xsize, _ysize, _margin;
   };

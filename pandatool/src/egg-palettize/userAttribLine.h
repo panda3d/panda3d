@@ -11,7 +11,7 @@
 #include <vector>
 
 class AttribFile;
-class Texture;
+class PTexture;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : UserAttribLine
@@ -44,7 +44,7 @@ public:
 
   void write(ostream &out) const;
 
-  bool match_texture(Texture *texture, int &margin);
+  bool match_texture(PTexture *texture, int &margin);
 
 private:
   enum LineType {

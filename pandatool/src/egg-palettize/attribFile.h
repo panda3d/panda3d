@@ -14,7 +14,7 @@
 #include <vector>
 
 class UserAttribLine;
-class Texture;
+class PTexture;
 class Palette;
 class SourceEgg;
 class EggPalettize;
@@ -46,20 +46,20 @@ public:
   void finalize_palettes();
   void remove_unused_lines();
   bool check_packing(bool force_optimal);
-  bool pack_texture(Texture *texture);
-  bool unpack_texture(Texture *texture);
+  bool pack_texture(PTexture *texture);
+  bool unpack_texture(PTexture *texture);
 
   void touch_dirty_egg_files(bool force_redo_all,
 			     bool eggs_include_images);
 
-  Texture *get_texture(const string &name);
-  void get_eligible_textures(vector<Texture *> &textures);
+  PTexture *get_texture(const string &name);
+  void get_eligible_textures(vector<PTexture *> &textures);
   SourceEgg *get_egg(Filename name);
 
   bool generate_palette_images();
   bool transfer_unplaced_images(bool force_redo_all);
 
-  void check_dup_textures(map<string, Texture *> &textures,
+  void check_dup_textures(map<string, PTexture *> &textures,
 			  map<string, int> &dup_textures) const;
 
   void collect_statistics(int &num_textures, int &num_placed,
@@ -77,8 +77,8 @@ private:
   typedef vector<Palette *> Palettes;
   Palettes _palettes;
 
-  typedef map<string, Texture *> Textures;
-  Textures _textures;
+  typedef map<string, PTexture *> PTextures;
+  PTextures _textures;
 
   string get_pi_filename(const string &txa_filename) const;
 

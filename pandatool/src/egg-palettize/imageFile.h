@@ -12,7 +12,7 @@
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : ImageFile
-// Description : This is the base class for both Palette and Texture.
+// Description : This is the base class for both Palette and PTexture.
 ////////////////////////////////////////////////////////////////////
 class ImageFile {
 public:

@@ -5,7 +5,7 @@
 
 #include "userAttribLine.h"
 #include "string_utils.h"
-#include "texture.h"
+#include "pTexture.h"
 #include "attribFile.h"
 
 #include <notify.h>
@@ -143,7 +143,7 @@ write(ostream &out) const {
 }
 
 bool UserAttribLine::
-match_texture(Texture *texture, int &margin) {
+match_texture(PTexture *texture, int &margin) {
   // See if the texture name matches any of the filename patterns on
   // this line.
   bool matched_any = false;
@@ -174,7 +174,7 @@ match_texture(Texture *texture, int &margin) {
       texture->reset_req(_xsize, _ysize);
       texture->set_margin(_msize < 0 ? margin : _msize);
       if (_omit) {
-	texture->set_omit(Texture::OR_omitted);
+	texture->set_omit(PTexture::OR_omitted);
       }
       return true;
       
@@ -182,13 +182,13 @@ match_texture(Texture *texture, int &margin) {
       texture->scale_req(_scale_pct);
       texture->set_margin(_msize < 0 ? margin : _msize);
       if (_omit) {
-	texture->set_omit(Texture::OR_omitted);
+	texture->set_omit(PTexture::OR_omitted);
       }
       return true;
       
     case LT_name:
       if (_omit) {
-	texture->set_omit(Texture::OR_omitted);
+	texture->set_omit(PTexture::OR_omitted);
       }
       return true;
       

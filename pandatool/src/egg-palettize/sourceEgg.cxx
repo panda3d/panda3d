@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "sourceEgg.h"
-#include "texture.h"
+#include "pTexture.h"
 #include "eggPalettize.h"
 #include "string_utils.h"
 #include "palette.h"
@@ -18,7 +18,7 @@
 TypeHandle SourceEgg::_type_handle;
 
 SourceEgg::TextureRef::
-TextureRef(Texture *texture, bool repeats, bool alpha) :
+TextureRef(PTexture *texture, bool repeats, bool alpha) :
   _texture(texture),
   _repeats(repeats),
   _alpha(alpha) 
@@ -31,7 +31,7 @@ SourceEgg() {
 }
 
 SourceEgg::TextureRef &SourceEgg::
-add_texture(Texture *texture, bool repeats, bool alpha) {
+add_texture(PTexture *texture, bool repeats, bool alpha) {
   _texrefs.push_back(TextureRef(texture, repeats, alpha));
   return _texrefs.back();
 }
@@ -48,17 +48,17 @@ get_textures(AttribFile &af, EggPalettize *prog) {
     EggTexture *eggtex = (*ti);
     string name = eggtex->get_basename();
     
-    Texture *texture = af.get_texture(name);
+    PTexture *texture = af.get_texture(name);
     texture->add_filename(*eggtex);
 
     if (prog->_dont_palettize) {
       // If the user specified -x, it means to omit all textures
       // processed in this run, forever.
-      texture->set_omit(Texture::OR_cmdline);
+      texture->set_omit(PTexture::OR_cmdline);
     } else {
       // Or until we next see it without -x.
-      if (texture->get_omit() == Texture::OR_cmdline) {
-	texture->set_omit(Texture::OR_none);
+      if (texture->get_omit() == PTexture::OR_cmdline) {
+	texture->set_omit(PTexture::OR_none);
       }
     }
 
@@ -158,19 +158,19 @@ get_textures(AttribFile &af, EggPalettize *prog) {
   }
 }
 
-// Updates each Texture with the flags stored in the various egg
+// Updates each PTexture with the flags stored in the various egg
 // files.  Also marks textures as used.
 void SourceEgg::
 mark_texture_flags() {
   TexRefs::iterator ti;
   for (ti = _texrefs.begin(); ti != _texrefs.end(); ++ti) {
-    Texture *texture = (*ti)._texture;
+    PTexture *texture = (*ti)._texture;
     texture->set_unused(false);
     if ((*ti)._alpha) {
       texture->set_uses_alpha(true);
     }
     if ((*ti)._repeats) {
-      texture->set_omit(Texture::OR_repeats);
+      texture->set_omit(PTexture::OR_repeats);
     }
   }
 }
@@ -180,7 +180,7 @@ void SourceEgg::
 update_trefs() {
   TexRefs::iterator ti;
   for (ti = _texrefs.begin(); ti != _texrefs.end(); ++ti) {
-    Texture *texture = (*ti)._texture;
+    PTexture *texture = (*ti)._texture;
     EggTexture *eggtex = (*ti)._eggtex;
 
     if (eggtex != NULL) {
@@ -194,7 +194,7 @@ update_trefs() {
       */
 
       if (!texture->is_packed() || 
-	  texture->get_omit() != Texture::OR_none) {
+	  texture->get_omit() != PTexture::OR_none) {
 	// This texture wasn't palettized, so just rename the
 	// reference to the new one.
 	eggtex->set_fullpath(texture->get_filename());

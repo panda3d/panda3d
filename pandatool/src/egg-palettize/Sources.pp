@@ -11,10 +11,10 @@
     attribFile.cxx attribFile.h config_egg_palettize.cxx \
     eggPalettize.cxx eggPalettize.h \
     imageFile.cxx imageFile.h palette.cxx palette.h sourceEgg.cxx \
-    sourceEgg.h string_utils.cxx string_utils.h texture.cxx texture.h \
+    sourceEgg.h string_utils.cxx string_utils.h pTexture.cxx pTexture.h \
     userAttribLine.cxx userAttribLine.h
 
-  #define INSTALL_HEADERS \
+  #define INSTALL_HEADERS
 
 #end bin_target
 

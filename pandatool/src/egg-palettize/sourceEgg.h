@@ -12,7 +12,7 @@
 #include <luse.h>
 
 
-class Texture;
+class PTexture;
 class AttribFile;
 class EggPalettize;
 class EggTexture;
@@ -24,7 +24,7 @@ public:
 
   SourceEgg();
 
-  TextureRef &add_texture(Texture *texture, bool repeats, bool alpha);
+  TextureRef &add_texture(PTexture *texture, bool repeats, bool alpha);
   void get_textures(AttribFile &af, EggPalettize *prog);
 
   void mark_texture_flags();
@@ -38,9 +38,9 @@ public:
 
   class TextureRef {
   public:
-    TextureRef(Texture *texture, bool repeats, bool alpha);
+    TextureRef(PTexture *texture, bool repeats, bool alpha);
 
-    Texture *_texture;
+    PTexture *_texture;
     bool _repeats;
     bool _alpha;
 

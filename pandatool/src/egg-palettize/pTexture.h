@@ -1,10 +1,10 @@
-// Filename: texture.h
+// Filename: pTexture.h
 // Created by:  drose (02Sep99)
 // 
 ////////////////////////////////////////////////////////////////////
 
-#ifndef TEXTURE_H
-#define TEXTURE_H
+#ifndef PTEXTURE_H
+#define PTEXTURE_H
 
 #include <pandatoolbase.h>
 
@@ -17,10 +17,10 @@ class PNMImage;
 class AttribFile;
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : Texture
+// 	 Class : PTexture
 // Description : 
 ////////////////////////////////////////////////////////////////////
-class Texture : public ImageFile {
+class PTexture : public ImageFile {
 public:
   enum OmitReason {
     OR_none,
@@ -28,7 +28,7 @@ public:
     OR_cmdline, OR_solitary
   };
 
-  Texture(AttribFile *af, const Filename &name);
+  PTexture(AttribFile *af, const Filename &name);
 
   Filename get_name() const;
   

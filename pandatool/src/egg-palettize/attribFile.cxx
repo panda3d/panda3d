@@ -7,7 +7,7 @@
 #include "userAttribLine.h"
 #include "eggPalettize.h"
 #include "string_utils.h"
-#include "texture.h"
+#include "pTexture.h"
 #include "palette.h"
 #include "sourceEgg.h"
 
@@ -158,9 +158,9 @@ update_params(EggPalettize *prog) {
 
 void AttribFile::
 get_req_sizes() {
-  Textures::iterator ti;
+  PTextures::iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
-    Texture *tex = (*ti).second;
+    PTexture *tex = (*ti).second;
     tex->clear_req();
 
     int margin = _default_margin;
@@ -185,9 +185,9 @@ get_req_sizes() {
 void AttribFile::
 update_texture_flags() {
   // First, clear all the flags.
-  Textures::iterator ti;
+  PTextures::iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
-    Texture *tex = (*ti).second;
+    PTexture *tex = (*ti).second;
     tex->set_unused(true);
     tex->set_uses_alpha(false);
   }
@@ -204,11 +204,11 @@ update_texture_flags() {
   // fine time to mark the textures' original packing state, so we can
   // check later to see if they've been repacked elsewhere.
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
-    Texture *tex = (*ti).second;
+    PTexture *tex = (*ti).second;
     tex->record_orig_state();
 
     if (tex->unused()) {
-      tex->set_omit(Texture::OR_unused);
+      tex->set_omit(PTexture::OR_unused);
     }
   }
 }
@@ -236,11 +236,11 @@ repack_all_textures() {
 
   // Reorder the textures in descending order by height and width for
   // optimal packing.
-  vector<Texture *> textures;
+  vector<PTexture *> textures;
   get_eligible_textures(textures);
   
   // Now pack all the textures.  This will create new palettes.
-  vector<Texture *>::iterator ti;
+  vector<PTexture *>::iterator ti;
   for (ti = textures.begin(); ti != textures.end(); ++ti) {
     pack_texture(*ti);
   }
@@ -259,13 +259,13 @@ repack_some_textures() {
 
   // Reorder the textures in descending order by height and width for
   // optimal packing.
-  vector<Texture *> textures;
+  vector<PTexture *> textures;
   get_eligible_textures(textures);
   
   // Now pack whatever textures are currently unpacked.
-  vector<Texture *>::iterator ti;
+  vector<PTexture *>::iterator ti;
   for (ti = textures.begin(); ti != textures.end(); ++ti) {
-    Texture *tex = (*ti);
+    PTexture *tex = (*ti);
     if (!tex->is_packed()) {
       if (pack_texture(tex)) {
 	any_added = true;
@@ -318,24 +318,24 @@ bool AttribFile::
 check_packing(bool force_optimal) {
   bool all_ok = true;
 
-  Textures::iterator ti;
+  PTextures::iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
-    Texture *texture = (*ti).second;
+    PTexture *texture = (*ti).second;
 
-    if (texture->get_omit() == Texture::OR_none) {
+    if (texture->get_omit() == PTexture::OR_none) {
       // Here's a texture that thinks it wants to be packed.  Does it?
       int xsize, ysize;
       if (!texture->get_req(xsize, ysize)) {
 	// If we don't know the texture's size, we can't place it.
 	nout << "Warning!  Can't determine size of " << texture->get_name()
 	     << "\n";
-	texture->set_omit(Texture::OR_unknown);
+	texture->set_omit(PTexture::OR_unknown);
 
       } else if ((xsize > _pal_xsize || ysize > _pal_ysize) ||
 		 (xsize == _pal_xsize && ysize == _pal_ysize)) {
 	// If the texture is too big for the palette (or exactly fills the
 	// palette), we can't place it.
-	texture->set_omit(Texture::OR_size);
+	texture->set_omit(PTexture::OR_size);
 
       } else {
 	// Ok, this texture really does want to be packed.  Is it?
@@ -360,7 +360,7 @@ check_packing(bool force_optimal) {
       }
     }
 
-    if (texture->get_omit() != Texture::OR_none) {
+    if (texture->get_omit() != PTexture::OR_none) {
       // Here's a texture that doesn't want to be packed.  Is it?
       if (unpack_texture(texture)) {
 	// It was!  Not any more.
@@ -381,7 +381,7 @@ check_packing(bool force_optimal) {
 
 
 bool AttribFile::
-pack_texture(Texture *texture) {
+pack_texture(PTexture *texture) {
   // Now try to place it in each of our existing palettes.
   Palettes::iterator pi;
   for (pi = _palettes.begin(); pi != _palettes.end(); ++pi) {
@@ -395,7 +395,7 @@ pack_texture(Texture *texture) {
     new Palette(_palettes.size() + 1, _pal_xsize, _pal_ysize, 0, this);
   if (!palette->pack_texture(texture)) {
     // Hmm, it didn't fit on an empty palette.  Must be too big.
-    texture->set_omit(Texture::OR_size);
+    texture->set_omit(PTexture::OR_size);
     delete palette;
     return false;
   }
@@ -405,7 +405,7 @@ pack_texture(Texture *texture) {
 }
 
 bool AttribFile::
-unpack_texture(Texture *texture) {
+unpack_texture(PTexture *texture) {
   if (texture->is_packed()) {
     bool unpacked = texture->get_palette()->unpack_texture(texture);
     assert(unpacked);
@@ -439,33 +439,33 @@ touch_dirty_egg_files(bool force_redo_all,
 }
 
 
-Texture *AttribFile::
+PTexture *AttribFile::
 get_texture(const string &name) {
-  Textures::iterator ti;
+  PTextures::iterator ti;
   ti = _textures.find(name);
   if (ti != _textures.end()) {
     return (*ti).second;
   }
 
-  Texture *texture = new Texture(this, name);
+  PTexture *texture = new PTexture(this, name);
   _textures[name] = texture;
   return texture;
 }
 
 void AttribFile::
-get_eligible_textures(vector<Texture *> &textures) {
+get_eligible_textures(vector<PTexture *> &textures) {
   // First, copy the texture pointers into this map structure to sort
   // them in descending order by size.  This is a 2-d map such that
   // each map[ysize][xsize] is a set of texture pointers.
-  typedef map<int, map<int, set<Texture *> > > TexBySize;
+  typedef map<int, map<int, set<PTexture *> > > TexBySize;
   TexBySize tex_by_size;
   int num_textures = 0;
 
-  Textures::iterator ti;
+  PTextures::iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
-    Texture *texture = (*ti).second;
+    PTexture *texture = (*ti).second;
 
-    if (texture->get_omit() == Texture::OR_none) {
+    if (texture->get_omit() == PTexture::OR_none) {
       int xsize, ysize;
       if (texture->get_req(xsize, ysize)) {
 	tex_by_size[-ysize][-xsize].insert(texture);
@@ -481,9 +481,9 @@ get_eligible_textures(vector<Texture *> &textures) {
 
   TexBySize::const_iterator t1;
   for (t1 = tex_by_size.begin(); t1 != tex_by_size.end(); ++t1) {
-    map<int, set<Texture *> >::const_iterator t2;
+    map<int, set<PTexture *> >::const_iterator t2;
     for (t2 = (*t1).second.begin(); t2 != (*t1).second.end(); ++t2) {
-      set<Texture *>::const_iterator t3;
+      set<PTexture *>::const_iterator t3;
       for (t3 = (*t2).second.begin(); t3 != (*t2).second.end(); ++t3) {
 	textures.push_back(*t3);
       }
@@ -531,12 +531,12 @@ bool AttribFile::
 transfer_unplaced_images(bool force_redo_all) {
   bool okflag = true;
 
-  Textures::iterator ti;
+  PTextures::iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
-    Texture *texture = (*ti).second;
+    PTexture *texture = (*ti).second;
 
-    if (texture->get_omit() != Texture::OR_none &&
-	texture->get_omit() != Texture::OR_unused) {
+    if (texture->get_omit() != PTexture::OR_none &&
+	texture->get_omit() != PTexture::OR_unused) {
       // Here's a texture that needs to be moved to our mapdir.  But
       // maybe it's already there and hasn't changed recently.
       if (force_redo_all || texture->needs_refresh()) {
@@ -558,14 +558,14 @@ transfer_unplaced_images(bool force_redo_all) {
 
 
 void AttribFile::
-check_dup_textures(map<string, Texture *> &textures,
+check_dup_textures(map<string, PTexture *> &textures,
 		   map<string, int> &dup_textures) const {
-  Textures::const_iterator ti;
+  PTextures::const_iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
-    Texture *texture = (*ti).second;
+    PTexture *texture = (*ti).second;
     string name = texture->get_name();
       
-    map<string, Texture *>::iterator mi = textures.find(name);
+    map<string, PTexture *>::iterator mi = textures.find(name);
     if (mi == textures.end()) {
       // This texture hasn't been used yet.
       textures[name] = texture;
@@ -573,7 +573,7 @@ check_dup_textures(map<string, Texture *> &textures,
     } else {
       // This texture has already been used in another palette.  The
       // smaller of the two is considered wasted space.
-      Texture *other = (*mi).second;
+      PTexture *other = (*mi).second;
       
       if (!other->is_really_packed() && !texture->is_really_packed()) {
 	// No, neither one is packed, so it's not wasted space.
@@ -637,9 +637,9 @@ collect_statistics(int &num_textures, int &num_placed, int &num_palettes,
   palette_size = 0;
   unplaced_size = 0;
 
-  Textures::const_iterator ti;
+  PTextures::const_iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
-    Texture *texture = (*ti).second;
+    PTexture *texture = (*ti).second;
 
     int xsize, ysize;
     int rxsize, rysize;
@@ -795,7 +795,7 @@ write_pi(ostream &out) const {
   }
 
   out << "\npathnames\n";
-  Textures::const_iterator ti;
+  PTextures::const_iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     (*ti).second->write_pathname(out);
   }
@@ -818,20 +818,20 @@ write_pi(ostream &out) const {
   }
 
   // Sort textures in descending order by scale percent.
-  typedef multimap<double, Texture *> SortTextures;
-  SortTextures sort_textures;
+  typedef multimap<double, PTexture *> SortPTextures;
+  SortPTextures sort_textures;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
-    Texture *texture = (*ti).second;
-    sort_textures.insert(SortTextures::value_type(-texture->get_scale_pct(),
+    PTexture *texture = (*ti).second;
+    sort_textures.insert(SortPTextures::value_type(-texture->get_scale_pct(),
 						  texture));
   }
 
   bool any_surprises = false;
 
   out << "\ntextures\n";
-  SortTextures::const_iterator sti;
+  SortPTextures::const_iterator sti;
   for (sti = sort_textures.begin(); sti != sort_textures.end(); ++sti) {
-    Texture *texture = (*sti).second;
+    PTexture *texture = (*sti).second;
     texture->write_size(out);
     any_surprises = any_surprises || !texture->matched_anything();
   }
@@ -841,7 +841,7 @@ write_pi(ostream &out) const {
     // textures.
     out << "\nsurprises\n";
     for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
-      Texture *texture = (*ti).second;
+      PTexture *texture = (*ti).second;
       if (!texture->matched_anything()) {
 	out << "  " << texture->get_name() << "\n";
       }
@@ -938,7 +938,7 @@ parse_texture(const vector<string> &words, istream &infile,
       nout << "Expected texture name and additional parameters.\n";
       return false;
     }
-    Texture *texture = get_texture(twords[0]);
+    PTexture *texture = get_texture(twords[0]);
 
     int kw = 1;
     while (kw < (int)twords.size()) {
@@ -980,7 +980,7 @@ parse_pathname(const vector<string> &words, istream &infile,
   getline(infile, line);
   line = trim_right(line);
   line_num++;
-  Texture *texture = NULL;
+  PTexture *texture = NULL;
 
   while (!infile.eof() && !line.empty() && isspace(line[0])) {
     vector<string> twords = extract_words(line);
@@ -1094,7 +1094,7 @@ parse_palette(const vector<string> &words, istream &infile,
       return false;
     }
 
-    Texture *texture = get_texture(twords[0]);
+    PTexture *texture = get_texture(twords[0]);
     
     if (!(twords[1] == "at")) {
       nout << "Expected keyword 'at'\n";
@@ -1136,7 +1136,7 @@ parse_unplaced(const vector<string> &words, istream &infile,
     return false;
   }
 
-  Texture *texture = get_texture(words[1]);
+  PTexture *texture = get_texture(words[1]);
 
   if (!(words[2] == "because")) {
     nout << "Expected keyword 'because'\n";
@@ -1144,19 +1144,19 @@ parse_unplaced(const vector<string> &words, istream &infile,
   }
   
   if (words[3] == "size") {
-    texture->set_omit(Texture::OR_size);
+    texture->set_omit(PTexture::OR_size);
   } else if (words[3] == "repeats") {
-    texture->set_omit(Texture::OR_repeats);
+    texture->set_omit(PTexture::OR_repeats);
   } else if (words[3] == "omitted") {
-    texture->set_omit(Texture::OR_omitted);
+    texture->set_omit(PTexture::OR_omitted);
   } else if (words[3] == "unused") {
-    texture->set_omit(Texture::OR_unused);
+    texture->set_omit(PTexture::OR_unused);
   } else if (words[3] == "unknown") {
-    texture->set_omit(Texture::OR_unknown);
+    texture->set_omit(PTexture::OR_unknown);
   } else if (words[3] == "solitary") {
-    texture->set_omit(Texture::OR_solitary);
+    texture->set_omit(PTexture::OR_solitary);
   } else if (words[3] == "cmdline") {
-    texture->set_omit(Texture::OR_cmdline);
+    texture->set_omit(PTexture::OR_cmdline);
   } else {
     nout << "Unknown keyword " << words[3] << "\n";
     return false;
