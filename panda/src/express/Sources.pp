@@ -31,6 +31,7 @@
     nativeNumericData.I nativeNumericData.cxx nativeNumericData.h \
     numeric_types.h 			\
     pointerTo.I pointerTo.h referenceCount.I	\
+    profileTimer.I profileTimer.cxx profileTimer.h	\
     referenceCount.cxx referenceCount.h \
     reversedNumericData.I reversedNumericData.cxx reversedNumericData.h \
     tokenBoard.I tokenBoard.h	\
@@ -62,6 +63,7 @@
     nativeNumericData.I nativeNumericData.h \
     numeric_types.h	\
     pointerTo.I pointerTo.h referenceCount.I referenceCount.h		\
+    profileTimer.I profileTimer.h	\
     reversedNumericData.I reversedNumericData.h \
     tokenBoard.h trueClock.I trueClock.h typeHandle.I typeHandle.h	\
     typedObject.h typedObject.I \
