@@ -132,22 +132,38 @@ auto_bind(PandaNode *root_node, AnimControlCollection &controls,
   r_find_bundles(root_node, anims, parts);
 
   if (chan_cat.is_debug()) {
-    chan_cat.debug()
-      << "Found " << anims.size() << " anims:\n";
+    int anim_count = 0;
     Anims::const_iterator ai;
+    for (ai = anims.begin(); ai != anims.end(); ++ai) {
+      anim_count += (int)(*ai).second.size();
+    }
+    chan_cat.debug()
+      << "Found " << anim_count << " anims:\n";
     for (ai = anims.begin(); ai != anims.end(); ++ai) {
       chan_cat.debug(false)
         << " " << (*ai).first;
+      if ((*ai).second.size() != 1) {
+        chan_cat.debug(false)
+          << "*" << ((*ai).second.size());
+      }
     }
     chan_cat.debug(false)
       << "\n";
 
-    chan_cat.debug()
-      << "Found " << parts.size() << " parts:\n";
+    int part_count = 0;
     Parts::const_iterator pi;
+    for (pi = parts.begin(); pi != parts.end(); ++pi) {
+      part_count += (int)(*pi).second.size();
+    }
+    chan_cat.debug()
+      << "Found " << part_count << " parts:\n";
     for (pi = parts.begin(); pi != parts.end(); ++pi) {
       chan_cat.debug(false)
         << " " << (*pi).first;
+      if ((*pi).second.size() != 1) {
+        chan_cat.debug(false)
+          << "*" << ((*pi).second.size());
+      }
     }
     chan_cat.debug(false)
       << "\n";

@@ -125,6 +125,7 @@ public:
 
   void advance_time(double time);
   bool update();
+  bool force_update();
   virtual void control_activated(AnimControl *control);
 
 protected:

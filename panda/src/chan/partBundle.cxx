@@ -366,6 +366,28 @@ update() {
   return any_changed;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::force_update
+//       Access: Public
+//  Description: Updates all the parts in the bundle to reflect the
+//               data for the current frame, whether we believe it
+//               needs it or not.
+////////////////////////////////////////////////////////////////////
+bool PartBundle::
+force_update() {
+  bool any_changed = do_update(this, NULL, true, true);
+
+  // Now update all the controls for next time.
+  ChannelBlend::const_iterator cbi;
+  for (cbi = _blend.begin(); cbi != _blend.end(); ++cbi) {
+    AnimControl *control = (*cbi).first;
+    control->mark_channels();
+  }
+  _anim_changed = false;
+
+  return any_changed;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::control_activated
