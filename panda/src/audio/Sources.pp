@@ -14,10 +14,16 @@
     config_audio.cxx config_audio.h \
     audioManager.I audioManager.cxx audioManager.h \
     audioSound.cxx audioSound.h \
+    $[if $[HAVE_SYS_SOUNDCARD_H], \
+      linuxAudioManager.cxx linuxAudioManager.h \
+      linuxAudioSound.cxx linuxAudioSound.h \
+    ,] \
     $[if $[HAVE_RAD_MSS], \
       milesAudioManager.cxx milesAudioManager.h \
       milesAudioSound.I milesAudioSound.cxx milesAudioSound.h \
     ,] \
+    nullAudioManager.cxx nullAudioManager.h \
+    nullAudioSound.cxx nullAudioSound.h \
     audio_gui_functor.h audio_gui_functor.cxx
 
   #define INSTALL_HEADERS \
@@ -25,10 +31,16 @@
     audio.h \
     audioManager.h audioManager.I \
     audioSound.h \
+    $[if $[HAVE_SYS_SOUNDCARD_H], \
+      linuxAudioManager.h \
+      linuxAudioSound.h \
+    ,] \
     $[if $[HAVE_RAD_MSS], \
       milesAudioManager.h \
       milesAudioSound.h milesAudioSound.I \
     ,] \
+    nullAudioManager.h \
+    nullAudioSound.h \
     audio_gui_functor.h
 
   #define IGATESCAN audio.h
