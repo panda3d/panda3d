@@ -214,10 +214,15 @@ compute_smooth_position(double timestamp) {
   int point_after = -1;
   double timestamp_after = 0.0;
 
+  // This loop doesn't make any assumptions about the ordering of
+  // timestamps in the queue.  We could probably make it faster by
+  // assuming timestamps are ordered from oldest to newest (as they
+  // are generally guaranteed to be, except for the minor detail of
+  // clients occasionally resetting their clocks).
   int num_points = _points.size();
   for (int i = 0; i < num_points; i++) {
     const SamplePoint &point = _points[i];
-    if (point._timestamp <= timestamp) {
+    if (point._timestamp < timestamp) {
       // This point is before the desired time.  Find the newest of
       // these.
       if (point_before == -1 || point._timestamp > timestamp_before) {
@@ -251,9 +256,30 @@ compute_smooth_position(double timestamp) {
 
   bool result = true;
 
-  if (point_after == -1 || timestamp_before == timestamp_after) {
-    // If we only have a before point, we have to stop there, unless
-    // we have prediction in effect.
+  if (point_after == -1 && _prediction_mode != PM_off) {
+    // With prediction in effect, we're allowed to anticipate where
+    // the avatar is going by a tiny bit, if we don't have current
+    // enough data.  This works only if we have at least two points of
+    // old data, and they're not *too* old.
+    if (point_before > 0 && 
+        timestamp - timestamp_before <= _max_position_age) {
+      // To implement simple prediction, we simply back up in time to
+      // the previous two timestamps, and base our linear
+      // interpolation off of those two, extending into the future.
+      int point_before_before = point_before - 1;
+      const SamplePoint &point = _points[point_before_before];
+      if (point._timestamp < timestamp_before) {
+        point_after = point_before;
+        timestamp_after = timestamp_before;
+        point_before = point_before_before;
+        timestamp_before = point._timestamp;
+      }
+    }
+  }
+
+  if (point_after == -1) {
+    // If we only have a before point even after we've checked for the
+    // possibility of using prediction, then we have to stop there.
     const SamplePoint &point = _points[point_before];
     set_smooth_pos(point._pos, point._hpr, timestamp);
     if (timestamp - point._timestamp > _reset_velocity_age) {

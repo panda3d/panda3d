@@ -100,10 +100,15 @@ PUBLISHED:
   enum SmoothMode {
     SM_off,
     SM_on,
+    // We might conceivably add more kinds of smooth modes later, for
+    // instance, SM_spline.
   };
   enum PredictionMode {
     PM_off,
     PM_on,
+    // Similarly for other kinds of prediction modes.  I don't know
+    // why, though; linear interpolation seems to work pretty darn
+    // well.
   };
 
   INLINE static void set_smooth_mode(SmoothMode mode);
