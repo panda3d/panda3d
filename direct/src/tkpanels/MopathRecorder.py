@@ -1887,3 +1887,27 @@ class MopathRecorder(AppShell, PandaObject):
         # Record widget
         self.widgetDict[category + '-' + text] = widget
         return widget
+
+    def makeCameraWindow(self):
+        # First, we need to make a new layer on the window.
+        chan = base.win.getChannel(0)
+        self.cLayer = chan.makeLayer(1)
+        self.layerIndex = 1
+        self.cDr = self.cLayer.makeDisplayRegion(0.6, 1.0, 0, 0.4)
+        self.cDr.setClearDepthActive(1)
+        self.cDr.setClearColorActive(1)
+        self.cDr.setClearColor(Vec4(0))
+
+        # It gets its own camera
+        self.cCamera = render.attachNewNode('cCamera')
+        self.cCamNode = Camera('cCam')
+        self.cLens = PerspectiveLens()
+        self.cLens.setFov(40,40)
+        self.cLens.setNear(0.1)
+        self.cLens.setFar(100.0)
+        self.cCamNode.setLens(self.cLens)
+        self.cCamNode.setScene(render)
+        self.cCam = self.cCamera.attachNewNode(self.cCamNode)
+        
+        self.cDr.setCamera(self.cCam)
+
