@@ -19,6 +19,9 @@ from direct.showbase import Loader
 
 class DirectSession(PandaObject):
 
+    # post this to the bboard to make sure DIRECT doesn't turn on
+    DIRECTdisablePost = 'disableDIRECT'
+
     def __init__(self):
         # Establish a global pointer to the direct object early on
         # so dependant classes can access it in their code
@@ -189,6 +192,9 @@ class DirectSession(PandaObject):
         __builtins__['cluster'] = self.cluster
             
     def enable(self):
+        # don't enable DIRECT if someone has posted DIRECTdisablePost
+        if bboard.has(DirectSession.DIRECTdisablePost):
+            return
         if self.fEnabled:
             return
         # Make sure old tasks are shut down
