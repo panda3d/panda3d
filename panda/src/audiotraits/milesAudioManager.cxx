@@ -46,6 +46,7 @@ MilesAudioManager() {
   audio_debug("  audio_volume="<<audio_volume);
   _active = audio_active;
   _volume = audio_volume;
+  _is_valid = true;
   if (!_active_managers) {
     S32 use_digital=(audio_play_wave || audio_play_mp3)?1:0;
     S32 use_MIDI=(audio_play_midi)?1:0;
@@ -80,6 +81,7 @@ MilesAudioManager() {
           if (!AIL_quick_startup(use_digital, 1, audio_output_rate, 
               audio_output_bits, audio_output_channels)) {
             audio_error("  startup failed, "<<AIL_last_error());
+            _is_valid = false;
           }
         } else {
           audio_debug("  using Miles software midi");
@@ -87,6 +89,7 @@ MilesAudioManager() {
       }
     } else {
       audio_debug("  AIL_quick_startup failed: "<<AIL_last_error());
+      _is_valid = false;
     }
   }
   // We increment _active_managers regardless of possible errors above.
@@ -126,6 +129,16 @@ MilesAudioManager::
     AIL_quick_shutdown();
     audio_debug("  AIL_quick_shutdown()");
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::is_valid
+//       Access: 
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool MilesAudioManager::
+is_valid() {
+  return _is_valid;
 }
 
 ////////////////////////////////////////////////////////////////////

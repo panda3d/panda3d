@@ -35,6 +35,8 @@ public:
   MilesAudioManager();
   ~MilesAudioManager();
 
+  bool is_valid();
+  
   PT(AudioSound) get_sound(const string& file_name);
   void drop_sound(const string& file_name);
 
@@ -58,6 +60,8 @@ private:
   static int _active_managers;
   // Optional Downloadable Sound field for software midi:
   static HDLSFILEID _dls_field;
+  
+  bool _is_valid;
   
   HAUDIO load(Filename file_name);
   // Tell the manager that the sound dtor was called.

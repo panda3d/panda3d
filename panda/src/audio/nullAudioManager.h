@@ -32,6 +32,8 @@ public:
   NullAudioManager();
   virtual ~NullAudioManager();
   
+  virtual bool is_valid();
+  
   virtual PT(AudioSound) get_sound(const string&);
   virtual void drop_sound(const string&);
 

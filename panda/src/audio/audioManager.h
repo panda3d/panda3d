@@ -38,6 +38,8 @@ PUBLISHED:
   static PT(AudioManager) create_AudioManager();
   virtual ~AudioManager() {}
   
+  virtual bool is_valid() = 0;
+  
   // Get a sound:
   virtual PT(AudioSound) get_sound(const string& file_name) = 0;
   // Tell the AudioManager there is no need to keep this one cached.
