@@ -4,13 +4,16 @@
 #begin lib_target
   #define TARGET audio
   #define LOCAL_LIBS putil
+  
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx
 
   #define SOURCES \
-    config_audio.cxx config_audio.h \
-    audioManager.I audioManager.cxx audioManager.h \
-    audioSound.cxx audioSound.h \
-    nullAudioManager.cxx nullAudioManager.h \
-    nullAudioSound.cxx nullAudioSound.h
+    config_audio.h audioManager.I audioManager.h \
+    audioSound.h nullAudioManager.h nullAudioSound.h
+    
+  #define INCLUDED_SOURCES \
+    config_audio.cxx audioManager.cxx audioSound.cxx \
+    nullAudioManager.cxx nullAudioSound.cxx
 
   #define INSTALL_HEADERS \
     config_audio.h \
