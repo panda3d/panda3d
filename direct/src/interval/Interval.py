@@ -85,6 +85,10 @@ class Interval(DirectObject):
     def play(self, t0=0.0, duration=0.0, scale=1.0):
         """ play(t0, duration)
         """
+        # Make sure the start time is sensible.
+        if t0 > self.duration:
+            t0 = self.duration
+
         # Kill ongoing play task
         taskMgr.removeTasksNamed(self.name + '-play')
         # Start new one
@@ -100,6 +104,7 @@ class Interval(DirectObject):
             # Otherwise use min of interval duration and offset + play duration
             self.endTime = min(self.duration, self.offset + duration)
 	assert(t0 <= self.endTime)
+
         # Spawn task
         taskMgr.spawnMethodNamed(self.__playTask, self.name + '-play')
 
