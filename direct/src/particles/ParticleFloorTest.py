@@ -1,6 +1,4 @@
 from direct.directbase.TestStart import *
-from direct.interval.IntervalGlobal import *
-from direct.actor import Actor
 from direct.particles import ParticleEffect
 from direct.particles import Particles
 from direct.particles import ForceGroup
