@@ -465,7 +465,22 @@ PUBLISHED:
   INLINE bool operator < (const qpNodePath &other) const;
   INLINE int compare_to(const qpNodePath &other) const;
 
+  // Miscellaneous
   bool verify_complete() const;
+
+  void prepare_scene(GraphicsStateGuardianBase *gsg, bool force_retained_mode = false);
+
+  void show_bounds();
+  void hide_bounds();
+  PT(BoundingVolume) get_bounds() const;
+  void write_bounds(ostream &out) const;
+  bool calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point);
+
+  int flatten_light();
+  int flatten_medium(int max_children = 1);
+  int flatten_strong(int max_children = 1);
+
+  bool write_bam_file(const string &filename) const;
 
 private:
   void uncollapse_head() const;
@@ -489,6 +504,10 @@ private:
                       int max_matches, int num_levels_remaining) const;
 
   void r_adjust_all_priorities(PandaNode *node, int adjustment);
+
+  void r_calc_tight_bounds(PandaNode *node,
+                           LPoint3f &min_point, LPoint3f &max_point,
+                           bool &found_any, const TransformState *transform);
 
   PT(qpNodePathComponent) _head;
   ErrorType _error_type;

@@ -91,7 +91,7 @@ class OnscreenText(PandaObject, NodePath):
         """
 
         # make a text node
-        textNode = TextNode()
+        textNode = TextNode('')
         self.textNode = textNode
 
         # We ARE a node path.  Initially, we're an empty node path.

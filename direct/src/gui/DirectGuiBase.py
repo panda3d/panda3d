@@ -697,7 +697,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         DirectGuiBase.__init__(self)
         NodePath.__init__(self)
         # Create a button
-        self.guiItem = self['pgFunc']()
+        self.guiItem = self['pgFunc']('')
         # Override automatically generated guiId
         if self['guiId']:
             self.guiItem.setId(self['guiId'])

@@ -33,6 +33,8 @@
 #include "look_at.h"
 #include "compose_matrix.h"
 #include "plist.h"
+#include "boundingSphere.h"
+#include "qpgeomNode.h"
 
 // stack seems to overflow on Intel C++ at 7000.  If we need more than 
 // 7000, need to increase stack size.
@@ -2220,10 +2222,266 @@ verify_complete() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::prepare_scene
+//       Access: Published
+//  Description: Walks through the scene graph beginning at the bottom
+//               node, and does whatever initialization is required to
+//               render the scene properly with the indicated GSG.  It
+//               is not strictly necessary to call this, since the GSG
+//               will initialize itself when the scene is rendered,
+//               but this may take some of the overhead away from that
+//               process.
+//
+//               If force_retained_mode is true, retained mode is set
+//               on the geometry encountered, regardless of the
+//               setting of the retained-mode Config variable.
+//               Otherwise, retained mode is set only if the
+//               retained-mode Config variable is true.
+////////////////////////////////////////////////////////////////////
+void qpNodePath::
+prepare_scene(GraphicsStateGuardianBase *gsg, bool force_retained_mode) {
+  nassertv_always(!is_empty());
+
+  // **** do something.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::show_bounds
+//       Access: Published
+//  Description: Causes the bounding volume of the bottom node and all
+//               of its descendants (that is, the bounding volume
+//               associated with the the bottom arc) to be rendered,
+//               if possible.  The rendering method is less than
+//               optimal; this is intended primarily for debugging.
+////////////////////////////////////////////////////////////////////
+void qpNodePath::
+show_bounds() {
+  nassertv_always(!is_empty());
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::hide_bounds
+//       Access: Published
+//  Description: Stops the rendering of the bounding volume begun with
+//               show_bounds().
+////////////////////////////////////////////////////////////////////
+void qpNodePath::
+hide_bounds() {
+  nassertv_always(!is_empty());
+  nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::get_bounds
+//       Access: Published
+//  Description: Returns a newly-allocated bounding volume containing
+//               the bottom node and all of its descendants.  This is
+//               the bounding volume on the bottom arc, converted to
+//               the local coordinate space of the node.
+////////////////////////////////////////////////////////////////////
+PT(BoundingVolume) qpNodePath::
+get_bounds() const {
+  nassertr(!is_empty(), new BoundingSphere);
+
+  PandaNode *this_node = node();
+  PT(BoundingVolume) bv = this_node->get_bound().make_copy();
+  if (bv->is_of_type(GeometricBoundingVolume::get_class_type()) &&
+      !this_node->get_transform()->is_identity()) {
+
+    // The bounding volume has already been transformed by the node's
+    // matrix.  We'd rather return a bounding volume in the node's
+    // space, so we have to untransform it now.  Ick.
+    GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, bv);
+    const LMatrix4f &mat = get_parent().get_mat(*this);
+    gbv->xform(mat);
+  }
+
+  return bv;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::write_bounds
+//       Access: Published
+//  Description: Writes a description of the bounding volume
+//               containing the bottom node and all of its descendants
+//               to the indicated output stream.
+////////////////////////////////////////////////////////////////////
+void qpNodePath::
+write_bounds(ostream &out) const {
+  get_bounds()->write(out);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::calc_tight_bounds
+//       Access: Published
+//  Description: Calculates the minimum and maximum vertices of all
+//               Geoms at this qpNodePath's bottom node and below.  This
+//               is a tight bounding box; it will generally be tighter
+//               than the bounding volume returned by get_bounds()
+//               (but it is more expensive to compute).
+//
+//               The return value is true if any points are within the
+//               bounding volume, or false if none are.
+////////////////////////////////////////////////////////////////////
+bool qpNodePath::
+calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point) {
+  min_point.set(0.0f, 0.0f, 0.0f);
+  max_point.set(0.0f, 0.0f, 0.0f);
+  nassertr_always(!is_empty(), false);
+
+  bool found_any = false;
+  r_calc_tight_bounds(node(), min_point, max_point, found_any, 
+                      TransformState::make_identity());
+
+  return found_any;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::flatten_light
+//       Access: Published
+//  Description: Lightly flattens out the hierarchy below this node by
+//               applying transforms, colors, and texture matrices
+//               from the arcs onto the vertices, but does not remove
+//               any nodes.
+//
+//               This can result in improved rendering performance
+//               because there will be fewer transforms in the
+//               resulting scene graph, but the number of nodes will
+//               remain the same.
+//
+//               Particularly, any qpNodePaths that reference nodes
+//               within this hierarchy will not be damaged.  However,
+//               since this operation will remove transforms from the
+//               scene graph, it may be dangerous to apply to arcs
+//               where you expect to dynamically modify the transform,
+//               or where you expect the geometry to remain in a
+//               particular local coordinate system.
+//
+//               The return value is always 0, since flatten_light
+//               does not remove any arcs.
+////////////////////////////////////////////////////////////////////
+int qpNodePath::
+flatten_light() {
+  nassertr(!is_empty(), 0);
+  /*
+  SceneGraphReducer gr(_graph_type);
+  gr.apply_transitions(arc());
+  */
+
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::flatten_medium
+//       Access: Published
+//  Description: A more thorough flattening than flatten_light(), this
+//               first applies all the transforms, colors, and texture
+//               matrices from the arcs onto the vertices, and then
+//               removes unneeded grouping nodes--nodes that have
+//               exactly one child, for instance, but have no special
+//               properties in themselves.
+//
+//               This results in improved perforamance over
+//               flatten_light() because the number of nodes in the
+//               scene graph is reduced.
+//
+//               If max_children is specified, it represents the
+//               maximum number of children a node is allowed to have
+//               and still be flattened.  Normally, this is 1; we
+//               don't typically want to flatten a node that has
+//               multiple children.  However, sometimes this may be
+//               desirable; set this parameter to control the limit.
+//               If this is set to -1, there is no limit.
+//
+//               The return value is the number of arcs removed.
+////////////////////////////////////////////////////////////////////
+int qpNodePath::
+flatten_medium(int max_children) {
+  nassertr(!is_empty(), 0);
+  /*
+  SceneGraphReducer gr(_graph_type);
+  gr.set_max_children(max_children);
+  gr.apply_transitions(arc());
+  int num_removed = gr.flatten(node(), false);
+
+  return num_removed;
+  */
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::flatten_strong
+//       Access: Published
+//  Description: The strongest possible flattening.  This first
+//               applies all of the transforms to the vertices, as in
+//               flatten_medium(), but then it will combine sibling
+//               nodes together when possible, in addition to removing
+//               unnecessary parent-child nodes.  This can result in
+//               substantially fewer nodes, but any nicely-grouped
+//               hierachical bounding volumes may be lost.
+//
+//               It is generally a good idea to apply this kind of
+//               flattening only to nodes that will be culled largely
+//               as a single unit, like a car.  Applying this to an
+//               entire scene may result in overall poorer performance
+//               because of less-effective culling.
+////////////////////////////////////////////////////////////////////
+int qpNodePath::
+flatten_strong(int max_children) {
+  nassertr(!is_empty(), 0);
+  /*
+  SceneGraphReducer gr(_graph_type);
+  gr.set_max_children(max_children);
+  gr.apply_transitions(arc());
+  int num_removed = gr.flatten(node(), true);
+
+  return num_removed;
+  */
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::write_bam_file
+//       Access: Published
+//  Description: Writes the contents of this node and below out to a
+//               bam file with the indicated filename.  This file may
+//               then be read in again, as is, at some later point.
+//               Returns true if successful, false on some kind of
+//               error.
+////////////////////////////////////////////////////////////////////
+bool qpNodePath::
+write_bam_file(const string &filename) const {
+  nassertr(!is_empty(), false);
+
+  /*
+  BamFile bam_file;
+
+  bool okflag = false;
+
+  if (bam_file.open_write(filename)) {
+    if (bam_file.write_object(node())) {
+      okflag = true;
+    }
+    bam_file.close();
+  }
+  return okflag;
+  */
+
+  // At the moment, we can't do this because BamFile is defined in
+  // loader and loader depends on pgraph.
+  nassertr(false, false);
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpNodePath::uncollapse_head
 //       Access: Private
 //  Description: Quietly and transparently uncollapses the _head
-//               pointer if it needs it.
+//               pointer if it needs it.  This can happen only when
+//               two distinct NodePaths are collapsed into the same
+//               path after the removal of an instance somewhere
+//               higher up the chain.
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 uncollapse_head() const {
@@ -2488,5 +2746,57 @@ r_adjust_all_priorities(PandaNode *node, int adjustment) {
   int num_children = cr.get_num_children();
   for (int i = 0; i < num_children; i++) {
     r_adjust_all_priorities(cr.get_child(i), adjustment);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::r_calc_tight_bounds
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void qpNodePath::
+r_calc_tight_bounds(PandaNode *node, LPoint3f &min_point, LPoint3f &max_point,
+                    bool &found_any, const TransformState *transform) {
+  CPT(TransformState) next_transform = 
+    transform->compose(node->get_transform());
+  if (node->is_geom_node()) {
+    qpGeomNode *gnode;
+    DCAST_INTO_V(gnode, node);
+
+    const LMatrix4f &mat = next_transform->get_mat();
+    int num_geoms = gnode->get_num_geoms();
+    for (int i = 0; i < num_geoms; i++) {
+      Geom *geom = gnode->get_geom(i);
+      Geom::VertexIterator vi = geom->make_vertex_iterator();
+      int num_prims = geom->get_num_prims();
+
+      for (int p = 0; p < num_prims; p++) {
+        int length = geom->get_length(p);
+        for (int v = 0; v < length; v++) {
+          Vertexf vertex = geom->get_next_vertex(vi) * mat;
+          
+          if (found_any) {
+            min_point.set(min(min_point[0], vertex[0]),
+                          min(min_point[1], vertex[1]),
+                          min(min_point[2], vertex[2]));
+            max_point.set(max(max_point[0], vertex[0]),
+                          max(max_point[1], vertex[1]),
+                          max(max_point[2], vertex[2]));
+          } else {
+            min_point = vertex;
+            max_point = vertex;
+            found_any = true;
+          }
+        }
+      }
+    }
+  }
+
+  // Now consider children.
+  PandaNode::Children cr = node->get_children();
+  int num_children = cr.get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    r_calc_tight_bounds(cr.get_child(i), min_point, max_point,
+                        found_any, next_transform);
   }
 }
