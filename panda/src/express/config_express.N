@@ -6,3 +6,7 @@ forcetype NotifySeverity
 
 forcetype ConfigExpress
 renametype ConfigExpress ConfigExpress
+
+forcetype istream
+forcetype ostream
+forcetype iostream
