@@ -24,11 +24,12 @@ class MopathInterval(Interval):
 	Interval.__init__(self, n, duration)
 
     def setT(self, t, entry=0):
-	""" setT(t)
+	""" setT(t, entry)
 	    Go to time t
 	"""
-	assert(t >= 0.0)
-	if (entry == 1) and (t > self.duration):
+	if (t < 0):
+	    return
+	elif (entry == 1) and (t > self.duration):
 	    self.mopath.goTo(self.node, self.duration)
 	else:
 	    self.mopath.goTo(self.node, t)

@@ -16,15 +16,16 @@ class LerpInterval(Interval):
 	Interval.__init__(self, name, duration)
 
     def setT(self, t, entry=0):
-	""" setT(t)
+	""" setT(t, entry)
 	"""
-	assert(t >= 0.0)
-	if (entry == 1):
+	if (t < 0):
+	    return
+	elif (entry == 1):
 	    self.lerp = Lerp.Lerp(self.functorFunc(), self.duration, 
 						self.blendType)
 	if (entry == 1) and (t > self.duration):
 	    self.lerp.setT(self.duration)
-	else:
+	elif (t <= self.duration):
 	    self.lerp.setT(t)
 
     def __getBlend(self, blendType):

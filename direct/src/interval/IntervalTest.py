@@ -41,5 +41,16 @@ waterSound = SoundInterval(sound, name='watersound')
 soundTrack = Track([waterSound], 'soundtrack')
 soundTrack.setIntervalStartTime('watersound', waterStartTime)
 
-mtrack = MultiTrack([boatTrack, dockTrack, soundTrack])
+# Throw an event when the water track ends
+eventTime = soundTrack.getIntervalEndTime('watersound')
+waterDone = EventInterval('water-is-done')
+waterEventTrack = Track([waterDone])
+waterEventTrack.setIntervalStartTime('water-is-done', eventTime)
+
+mtrack = MultiTrack([boatTrack, dockTrack, soundTrack, waterEventTrack])
 mtrack.printParams()
+
+def handleWaterDone():
+    print 'water is done'
+
+messenger.accept('water-is-done', 1, handleWaterDone)

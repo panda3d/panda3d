@@ -25,20 +25,27 @@ class SoundInterval(Interval):
 	    self.soundNum = self.soundNum + 1
 	else:
 	    n = name
+	self.prevt = 0.0
 	Interval.__init__(self, n, duration)
 
     def setT(self, t, entry=0):
-	""" setT(t)
+	""" setT(t, entry)
 	    Go to time t
 	"""
-	if (t > self.duration):
+	if (t < 0):
+	    self.prevt = t
+	    return
+	elif (t > self.duration):
 	    if (self.isPlaying == 1):
 		AudioManager.stop(self.sound)
 		self.isPlaying = 0
 	    return
-	assert(t >= 0)
-	if (entry == 1):
+	elif (entry == 1):
 	    self.isPlaying = 1
-	    AudioManager.play(self.sound, t)
+	    if (self.prevt < 0.0):
+	    	AudioManager.play(self.sound)
+	    else:
+		#AudioManager.play(self.sound, t)
+		AudioManager.play(self.sound)
 	    if (self.loop):
 		AudioManager.setLoop(self.sound, 1)

@@ -33,7 +33,7 @@ class MultiTrack(Interval):
 	return duration
 
     def setT(self, t, entry=0):
-	""" setT(t)
+	""" setT(t, entry)
 	    Go to time t
 	"""
 	if (t > self.duration):

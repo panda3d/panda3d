@@ -113,7 +113,9 @@ class Track(Interval):
 	""" setT(t, entry)
 	    Go to time t
 	"""
-	if (entry == 1):
+	if (t < 0):
+	    return
+	elif (entry == 1):
 	    self.currentInterval = None
 	if (len(self.ilist) == 0):
 	    Interval.notify.warning('Track.setT(): track has no intervals')
@@ -123,36 +125,22 @@ class Track(Interval):
 	    # final state of the last Interval on the track
 	    self.ilist[len(self.ilist)-1][0].setT(t, entry=1)
 	else:
-	    # Find out which Interval applies
-	    prev = None
 	    for i in self.ilist:
 		# Calculate the track relative start time for the interval
 		ival = i[0]
 		t0 = self.__getIntervalStartTime(ival)
 
-		# Determine if the Interval is applicable
-		if (t < t0):
-		    if (prev != None):
-			# Gaps between Intervals take the final state of
-			# the previous Interval
-			if (self.currentInterval != prev):
-			    prev.setT(t, entry=1)
-			    self.currentInterval = prev
-			else:
-			    prev.setT(t)
-			return
-		    else:
-			#Interval.notify.warning(
-			#	'Track.setT(): state undefined at t: %f' % t)
-			return
-		elif (t0 <= t) and (t <= t0 + ival.getDuration()):
-		    if (self.currentInterval != ival):
-		        ival.setT(t - t0, entry=1)
-			self.currentInterval = ival
-		    else:
-		    	ival.setT(t - t0)
-		    return
-		prev = ival
+		# Calculate the interval-relative time value for t
+		tc = t - t0
+
+		# There can only be one interval active at any given time
+		# per track, so see if we've crossed over
+		if ((t0 <= t) and (t <= t0 + ival.getDuration()) and
+		    (self.currentInterval != ival)):
+		    ival.setT(tc, entry=1)
+		    self.currentInterval = ival
+		else:
+		     ival.setT(tc)
 
     def printParams(self, indent=0):
 	""" printParams(indent)

@@ -23,10 +23,12 @@ class PosHprInterval(Interval):
 	Interval.__init__(self, n, duration)
 
     def setT(self, t, entry=0):
-	""" setT(t)
+	""" setT(t, entry)
 	    Go to time t
 	"""
-	if (entry == 1):
+	if (t < 0):
+	    return
+	elif (entry == 1):
 	    self.node.setPosHpr(self.pos, self.hpr)
 
 class PosInterval(Interval):
@@ -48,10 +50,12 @@ class PosInterval(Interval):
 	Interval.__init__(n, duration)
 
     def setT(self, t, entry=0):
-	""" setT(t)
+	""" setT(t, entry)
 	    Go to time t
 	"""
-	if (entry == 1):
+	if (t < 0):
+	    return
+	elif (entry == 1):
 	    self.node.setPos(self.pos)
 
 class HprInterval(Interval):
@@ -73,8 +77,10 @@ class HprInterval(Interval):
 	Interval.__init__(n, duration)
 
     def setT(self, t, entry=0):
-	""" setT(t)
+	""" setT(t, entry)
 	    Go to time t
 	"""
-	if (entry == 1):
+	if (t < 0):
+	    return
+	elif (entry == 1):
 	    self.node.setHpr(self.hpr)
