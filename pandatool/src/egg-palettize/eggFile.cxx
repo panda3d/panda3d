@@ -521,25 +521,33 @@ read_egg() {
   nassertr(_data == (EggData *)NULL, false);
   nassertr(!_source_filename.empty(), false);
 
+  Filename user_source_filename = 
+    FilenameUnifier::make_user_filename(_source_filename);
+
   if (!_source_filename.exists()) {
-    nout << _source_filename << " does not exist.\n";
+    nout << user_source_filename << " does not exist.\n";
     return false;
   }
 
   EggData *data = new EggData;
-  if (!data->read(_source_filename)) {
+  if (!data->read(_source_filename, user_source_filename)) {
     // Failure reading.
     delete data;
     return false;
   }
 
-  // We also want to search for filenames based on our current
-  // directory from which we originally loaded the egg file.  This is
-  // important because it's possible the egg file referenced some
-  // textures or something relative to that directory.
+  // We want to search for filenames based on the egg directory, and
+  // also on our current directory from which we originally loaded the
+  // egg file.  This is important because it's possible the egg file
+  // referenced some textures or something relative to that directory.
   DSearchPath dir;
+  dir.append_directory(_source_filename.get_dirname());
   dir.append_directory(_current_directory);
   data->resolve_filenames(dir);
+
+  // If any relative filenames remain, they are relative to the source
+  // directory, by convention.
+  data->force_filenames(_current_directory);
 
   if (!data->load_externals()) {
     // Failure reading an external.

@@ -135,7 +135,8 @@ read_header() {
 
   PNMImageHeader header;
   if (!header.read_header(_filename)) {
-    nout << "Warning: cannot read texture " << _filename << "\n";
+    nout << "Warning: cannot read texture " 
+         << FilenameUnifier::make_user_filename(_filename) << "\n";
     return false;
   }
 
