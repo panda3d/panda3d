@@ -19,10 +19,10 @@
 #ifndef NURBSCURVEDRAWER_H
 #define NURBSCURVEDRAWER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "parametricCurveDrawer.h"
-#include "lineSegs.h"
+#include "qplineSegs.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -56,7 +56,7 @@ PUBLISHED:
 protected:
   LVecBase3f _cv_color, _hull_color, _knot_color;
   int _num_cvs, _num_hull, _num_knots;
-  LineSegs _hull, _knots, _cvs;
+  qpLineSegs _hull, _knots, _cvs;
   pvector<int> _knotnums;
 
   bool _show_cvs, _show_hull, _show_knots;

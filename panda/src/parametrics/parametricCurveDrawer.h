@@ -21,11 +21,10 @@
 
 #include "parametricCurveCollection.h"
 
-#include <lineSegs.h>
-#include <node.h>
-#include <vector_PT_NodeRelation.h>
+#include "qplineSegs.h"
+#include "pandaNode.h"
 
-#include <typedObject.h>
+#include "typedObject.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ParametricCurveDrawer
@@ -42,8 +41,8 @@ PUBLISHED:
   void clear_curves();
   ParametricCurveCollection *get_curves();
 
-  GeomNode *get_geom_node();
-  GeomNode *detach_geom_node();
+  qpGeomNode *get_geom_node();
+  qpGeomNode *detach_geom_node();
 
   void set_num_segs(float num_segs);
   float get_num_segs() const;
@@ -53,8 +52,6 @@ PUBLISHED:
 
   void set_color(float r, float g, float b);
   void set_tick_color(float r, float g, float b);
-  void set_tick_geometry(Node *geom);
-  void clear_tick_geometry();
 
   void set_frame_accurate(bool frame_accurate);
   bool get_frame_accurate() const;
@@ -73,20 +70,16 @@ private:
   static void get_tick_marks(const LVecBase3f &tangent, LVecBase3f &t1, LVecBase3f &t2);
 
 protected:
-  PT(GeomNode) _geom_node;
+  PT(qpGeomNode) _geom_node;
   PT(ParametricCurveCollection) _curves;
   bool _frame_accurate;
 
 private:
   float _num_segs;
-  LineSegs _lines, _ticks;
-  PT(Node) _tick_geometry;
+  qpLineSegs _lines, _ticks;
   bool _drawn;
   float _num_ticks;
   float _tick_scale;
-
-  typedef vector_PT_NodeRelation TickArcs;
-  TickArcs _tick_arcs;
 
 public:
   static TypeHandle get_class_type() {

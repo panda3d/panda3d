@@ -21,10 +21,6 @@
 #include "parametricCurve.h"
 #include "config_parametrics.h"
 
-#include <renderRelation.h>
-#include <transformTransition.h>
-#include <compose_matrix.h>
-
 TypeHandle ParametricCurveDrawer::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -40,7 +36,7 @@ ParametricCurveDrawer() {
   _num_segs = 100.0;
   _num_ticks = 0.0f;
   _frame_accurate = false;
-  _geom_node = new GeomNode;
+  _geom_node = new qpGeomNode("pcd");
   _drawn = false;
 }
 
@@ -132,7 +128,7 @@ get_curves() {
 //               the GeomNode, and the GeomNode will be emptied when the
 //               drawer destructs.  Also see detach_geom_node().
 ////////////////////////////////////////////////////////////////////
-GeomNode *ParametricCurveDrawer::
+qpGeomNode *ParametricCurveDrawer::
 get_geom_node() {
   return _geom_node;
 }
@@ -148,14 +144,13 @@ get_geom_node() {
 //               will return this new GeomNode which will be empty until
 //               the next call to draw().
 ////////////////////////////////////////////////////////////////////
-GeomNode *ParametricCurveDrawer::
+qpGeomNode *ParametricCurveDrawer::
 detach_geom_node() {
   if (!_drawn) {
     draw();
   }
-  PT(GeomNode) g = _geom_node;
-  _geom_node = new GeomNode;
-  _tick_arcs.clear();
+  PT(qpGeomNode) g = _geom_node;
+  _geom_node = new qpGeomNode("pcd");
   _drawn = false;
   return g;
 }
@@ -240,31 +235,6 @@ set_color(float r, float g, float b) {
 void ParametricCurveDrawer::
 set_tick_color(float r, float g, float b) {
   _ticks.set_color(r, g, b);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurveDrawer::set_tick_geometry
-//       Access: Published
-//  Description: Indicates a piece of geometry that will be instanced
-//               to each tick point along the curve instead of a
-//               cross, representing the direction the curve is
-//               oriented.
-////////////////////////////////////////////////////////////////////
-void ParametricCurveDrawer::
-set_tick_geometry(Node *geom) {
-  _tick_geometry = geom;
-  redraw();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ParametricCurveDrawer::clear_tick_geometry
-//       Access: Published
-//  Description: Resets the tick geometry to appear as crosses.
-////////////////////////////////////////////////////////////////////
-void ParametricCurveDrawer::
-clear_tick_geometry() {
-  _tick_geometry.clear();
-  redraw();
 }
 
 
@@ -360,7 +330,7 @@ draw() {
   if (_num_ticks > 0.0f) {
     int total_ticks = (int)cfloor(max_t * _num_ticks + 0.5);
     ParametricCurve *xyz_curve = _curves->get_default_curve();
-    ParametricCurve *hpr_curve = _curves->get_hpr_curve();
+    //    ParametricCurve *hpr_curve = _curves->get_hpr_curve();
 
     scale = max_t / (float)(total_ticks-1);
     for (i = 0; i < total_ticks; i++) {
@@ -369,30 +339,14 @@ draw() {
       LVecBase3f tangent;
 
       if (xyz_curve->get_pt(t0, point, tangent)) {
-        if (_tick_geometry == (Node *)NULL) {
-          // Draw crosses.
-          LVecBase3f t1, t2;
-          get_tick_marks(tangent, t1, t2);
-
-          _ticks.move_to(point - t1 * _tick_scale);
-          _ticks.draw_to(point + t1 * _tick_scale);
-          _ticks.move_to(point - t2 * _tick_scale);
-          _ticks.draw_to(point + t2 * _tick_scale);
-
-        } else {
-          // Instance the tick geometry.
-          NodeRelation *arc = new RenderRelation(_geom_node, _tick_geometry);
-          _tick_arcs.push_back(arc);
-
-          LVecBase3f hpr(0.0f, 0.0f, 0.0f);
-          if (hpr_curve != (ParametricCurve *)NULL) {
-            hpr_curve->get_point(t0, hpr);
-          }
-          LMatrix4f mat;
-          compose_matrix(mat, LVecBase3f(_tick_scale, _tick_scale, _tick_scale),
-                         hpr, point);
-          arc->set_transition(new TransformTransition(mat));
-        }
+        // Draw crosses.
+        LVecBase3f t1, t2;
+        get_tick_marks(tangent, t1, t2);
+        
+        _ticks.move_to(point - t1 * _tick_scale);
+        _ticks.draw_to(point + t1 * _tick_scale);
+        _ticks.move_to(point - t2 * _tick_scale);
+        _ticks.draw_to(point + t2 * _tick_scale);
       }
     }
     _ticks.create(_geom_node, _frame_accurate);
@@ -412,14 +366,8 @@ draw() {
 ////////////////////////////////////////////////////////////////////
 void ParametricCurveDrawer::
 hide() {
-  _geom_node->clear();
+  _geom_node->remove_all_geoms();
   _drawn = false;
-
-  TickArcs::iterator ti;
-  for (ti = _tick_arcs.begin(); ti != _tick_arcs.end(); ++ti) {
-    remove_arc(*ti);
-  }
-  _tick_arcs.clear();
 }
 
 
