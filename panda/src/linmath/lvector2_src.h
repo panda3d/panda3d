@@ -22,7 +22,7 @@ PUBLISHED:
 
   INLINE FLOATNAME(LVector2) operator - () const;
 
-  INLINE FLOATNAME(LVecBase2)operator + (const FLOATNAME(LVecBase2) &other) const;
+  INLINE FLOATNAME(LVecBase2) operator + (const FLOATNAME(LVecBase2) &other) const;
   INLINE FLOATNAME(LVector2) operator + (const FLOATNAME(LVector2) &other) const;
 
   INLINE FLOATNAME(LVecBase2) operator - (const FLOATNAME(LVecBase2) &other) const;
