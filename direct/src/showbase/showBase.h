@@ -15,6 +15,10 @@
 #include <nodeRelation.h>
 #include <pointerTo.h>
 #include <nodePath.h>
+#include <dconfig.h>
+
+ConfigureDecl(config_showbase, EXPCL_DIRECT, EXPTP_DIRECT);
+typedef Config::Config<ConfigureGetConfig_config_showbase> ConfigShowbase;
 
 class CollisionTraverser;
 
@@ -35,5 +39,8 @@ EXPCL_DIRECT void clear_collision_traverser();
 EXPCL_DIRECT void toggle_wireframe(NodeAttributes &initial_state);
 EXPCL_DIRECT void toggle_texture(NodeAttributes &initial_state);
 EXPCL_DIRECT void toggle_backface(NodeAttributes &initial_state);
+
+EXPCL_DIRECT ConfigShowbase &get_config_showbase();
+
 
 #endif

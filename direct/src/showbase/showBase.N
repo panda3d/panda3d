@@ -1,0 +1,1 @@
+forcetype ConfigShowbase

@@ -36,6 +36,10 @@
 #include <appTraverser.h>
 #include <collisionTraverser.h>
 
+ConfigureDef(config_showbase);
+ConfigureFn(config_showbase) {
+}
+
 static CollisionTraverser *collision_traverser = NULL;
 
 void render_frame(GraphicsPipe *pipe,
@@ -260,3 +264,11 @@ void toggle_texture(NodeAttributes &initial_state) {
     initial_state.set_attribute(TextureTransition::get_class_type(), ta);
   }
 }
+
+// Returns the configure object for accessing config variables from a
+// scripting language.
+ConfigShowbase &
+get_config_showbase() {
+  return config_showbase;
+}
+
