@@ -41,17 +41,23 @@ AudioTraits::PlayerClass* NullSound::get_player(void) const {
   return new NullPlayer();
 }
 
+// REFCOUNT
+/*
 AudioTraits::DeleteSoundFunc* NullSound::get_destroy(void) const {
   return NullSound::destroy;
 }
+*/
 
 AudioTraits::DeletePlayingFunc* NullSound::get_delstate(void) const {
   return NullPlaying::destroy;
 }
 
+// REFCOUNT
+/*
 void NullSound::destroy(AudioTraits::SoundClass* sound) {
   delete sound;
 }
+*/
 
 NullPlaying::~NullPlaying(void) {
 }

@@ -24,11 +24,14 @@ AudioTraits::PlayerClass* AudioTraits::SoundClass::get_player(void) const {
   return (AudioTraits::PlayerClass*)0L;
 }
 
+// REFCOUNT
+/*
 AudioTraits::DeleteSoundFunc*
 AudioTraits::SoundClass::get_destroy(void) const {
   audio_cat->error() << "In abstract SoundClass::get_destroy!" << endl;
   return (AudioTraits::DeleteSoundFunc*)0L;
 }
+*/
 
 AudioTraits::DeletePlayingFunc*
 AudioTraits::SoundClass::get_delstate(void) const {

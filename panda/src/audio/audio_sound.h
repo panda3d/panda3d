@@ -10,8 +10,10 @@
 /*
 #include "typedReferenceCount.h"
 */
-#include "typeHandle.h"
-#include "namable.h"
+#include <typeHandle.h>
+#include <namable.h>
+#include <pointerTo.h>
+
 
 class AudioPool;
 class AudioManager;
@@ -21,7 +23,7 @@ class EXPCL_PANDA AudioSound : public TypedReferenceCount, public Namable {
 */
 class EXPCL_PANDA AudioSound : public TypedObject, public Namable {
 private:
-  AudioTraits::SoundClass *_sound;
+  PT(AudioTraits::SoundClass) _sound;
   AudioTraits::PlayingClass *_state;
   AudioTraits::PlayerClass *_player;
   AudioTraits::DeletePlayingFunc *_delstate;

@@ -270,17 +270,23 @@ AudioTraits::PlayerClass* LinuxSample::get_player(void) const {
   return LinuxSamplePlayer::get_instance();
 }
 
+// REFCOUNT
+/*
 AudioTraits::DeleteSoundFunc* LinuxSample::get_destroy(void) const {
   return LinuxSample::destroy;
 }
+*/
 
 AudioTraits::DeletePlayingFunc* LinuxSample::get_delstate(void) const {
   return LinuxSamplePlaying::destroy;
 }
 
+// REFCOUNT
+/*
 void LinuxSample::destroy(AudioTraits::SoundClass* sound) {
   delete sound;
 }
+*/
 
 LinuxSample* LinuxSample::load_raw(byte* data, unsigned long size) {
   LinuxSample* ret = new LinuxSample(data, size);
@@ -302,17 +308,23 @@ AudioTraits::PlayerClass* LinuxMusic::get_player(void) const {
   return LinuxMusicPlayer::get_instance();
 }
 
+// REFCOUNT
+/*
 AudioTraits::DeleteSoundFunc* LinuxMusic::get_destroy(void) const {
   return LinuxMusic::destroy;
 }
+*/
 
 AudioTraits::DeletePlayingFunc* LinuxMusic::get_delstate(void) const {
   return LinuxMusicPlaying::destroy;
 }
 
+// REFCOUNT
+/*
 void LinuxMusic::destroy(AudioTraits::SoundClass* music) {
   delete music;
 }
+*/
 
 LinuxSamplePlaying::~LinuxSamplePlaying(void) {
 }

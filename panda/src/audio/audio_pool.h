@@ -26,7 +26,7 @@ private:
   static AudioPool* get_ptr(void);
 
   static AudioPool *_global_ptr;
-  typedef map<string, AudioTraits::SoundClass* > SoundMap;
+  typedef map<string, PT(AudioTraits::SoundClass) > SoundMap;
   SoundMap _sounds;
 public:
   typedef AudioTraits::SoundClass* SoundLoadFunc(Filename);

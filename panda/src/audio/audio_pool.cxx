@@ -67,7 +67,7 @@ AudioSound* AudioPool::ns_load_sound(Filename filename) {
   si = _sounds.find(filename);
   if (si != _sounds.end()) {
     // this sound was previously loaded
-    AudioTraits::SoundClass* sc = (*si).second;
+    PT(AudioTraits::SoundClass) sc = (*si).second;
     if (audio_cat->is_debug())
       audio_cat->debug() << "sound is already loaded (0x" << (void*)sc
 			 << ")" << endl;
@@ -91,7 +91,7 @@ AudioSound* AudioPool::ns_load_sound(Filename filename) {
 		       << "'" << endl;
     return (AudioSound*)0L;
   }
-  AudioTraits::SoundClass* sound = (*((*sli).second))(filename);
+  PT(AudioTraits::SoundClass) sound = (*((*sli).second))(filename);
   if (sound == (AudioTraits::SoundClass*)0L) {
     audio_cat->error() << "could not load '" << filename << "'" << endl;
     return (AudioSound*)0L;
@@ -116,8 +116,10 @@ void AudioPool::ns_release_sound(AudioSound* sound) {
   SoundMap::iterator si;
   si = _sounds.find(filename);
   if (si != _sounds.end() && (*si).second == sound->get_sound()) {
-    AudioTraits::SoundClass* sc = (*si).second;
-    (*(sc->get_destroy()))(sc);
+    // REFCOUNT
+    // don't do this with refcounting
+    //    AudioTraits::SoundClass* sc = (*si).second;
+    //    (*(sc->get_destroy()))(sc);
     _sounds.erase(si);
   }
 }
@@ -129,8 +131,10 @@ void AudioPool::ns_release_sound(AudioSound* sound) {
 ////////////////////////////////////////////////////////////////////
 void AudioPool::ns_release_all_sounds(void) {
   for (SoundMap::iterator i=_sounds.begin(); i!=_sounds.end(); ++i) {
-    AudioTraits::SoundClass* sc = (*i).second;
-    (*(sc->get_destroy()))(sc);
+    // REFCOUNT
+    // don't do this with refcounting
+    //    AudioTraits::SoundClass* sc = (*i).second;
+    //    (*(sc->get_destroy()))(sc);
   }
   _sounds.clear();
 }

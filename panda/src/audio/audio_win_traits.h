@@ -30,12 +30,14 @@ public:
   virtual float length(void) const;
   virtual AudioTraits::PlayingClass* get_state(void) const;
   virtual AudioTraits::PlayerClass* get_player(void) const;
-  virtual AudioTraits::DeleteSoundFunc* get_destroy(void) const;
+  // REFCOUNT
+  //  virtual AudioTraits::DeleteSoundFunc* get_destroy(void) const;
   virtual AudioTraits::DeletePlayingFunc* get_delstate(void) const;
 public:
   static WinSample* load_wav(Filename);
   static WinSample* load_raw(unsigned char*, unsigned long);
-  static void destroy(AudioTraits::SoundClass*);
+  // REFCOUNT
+  //  static void destroy(AudioTraits::SoundClass*);
 };
 
 class EXPCL_PANDA WinMusic : public AudioTraits::SoundClass {
@@ -55,9 +57,10 @@ public:
   virtual float length(void) const;
   virtual AudioTraits::PlayingClass* get_state(void) const;
   virtual AudioTraits::PlayerClass* get_player(void) const;
-  virtual AudioTraits::DeleteSoundFunc* get_destroy(void) const;
+  // REFCOUNT
+  //  virtual AudioTraits::DeleteSoundFunc* get_destroy(void) const;
+  //  static void destroy(AudioTraits::SoundClass*);
   virtual AudioTraits::DeletePlayingFunc* get_delstate(void) const;
-  static void destroy(AudioTraits::SoundClass*);
   // these are used by the loaders
   static WinMusic* load_midi(Filename);
   // these are used by the players

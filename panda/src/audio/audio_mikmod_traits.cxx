@@ -145,9 +145,12 @@ AudioTraits::PlayerClass* MikModSample::get_player(void) const {
   return MikModSamplePlayer::get_instance();
 }
 
+// REFCOUNT
+/*
 AudioTraits::DeleteSoundFunc* MikModSample::get_destroy(void) const {
   return MikModSample::destroy;
 }
+*/
 
 AudioTraits::DeletePlayingFunc* MikModSample::get_delstate(void) const {
   return MikModSamplePlaying::destroy;
@@ -164,9 +167,12 @@ MikModSample* MikModSample::load_wav(Filename filename) {
   return new MikModSample(sample);
 }
 
+// REFCOUNT
+/*
 void MikModSample::destroy(AudioTraits::SoundClass* sample) {
   delete sample;
 }
+*/
 
 SAMPLE* MikModSample::get_sample(void) {
   return _sample;
@@ -194,17 +200,23 @@ AudioTraits::PlayerClass* MikModMusic::get_player(void) const {
   return MikModFmsynthPlayer::get_instance();
 }
 
+// REFCOUNT
+/*
 AudioTraits::DeleteSoundFunc* MikModMusic::get_destroy(void) const {
   return MikModMusic::destroy;
 }
+*/
 
 AudioTraits::DeletePlayingFunc* MikModMusic::get_delstate(void) const {
   return MikModMusicPlaying::destroy;
 }
 
+// REFCOUNT
+/*
 void MikModMusic::destroy(AudioTraits::SoundClass* music) {
   delete music;
 }
+*/
 
 MikModMidi::MikModMidi(void) {
 }
@@ -229,17 +241,23 @@ AudioTraits::PlayerClass* MikModMidi::get_player(void) const {
   return MikModMidiPlayer::get_instance();
 }
 
+// REFCOUNT
+/*
 AudioTraits::DeleteSoundFunc* MikModMidi::get_destroy(void) const {
   return MikModMidi::destroy;
 }
+*/
 
 AudioTraits::DeletePlayingFunc* MikModMidi::get_delstate(void) const {
   return MikModMidiPlaying::destroy;
 }
 
+// REFCOUNT
+/*
 void MikModMidi::destroy(AudioTraits::SoundClass* music) {
   delete music;
 }
+*/
 
 MikModSamplePlaying::MikModSamplePlaying(AudioTraits::SoundClass* s)
   : AudioTraits::PlayingClass(s) {

@@ -204,12 +204,15 @@ AudioTraits::PlayerClass* WinSample::get_player(void) const {
   return ret;
 }
 
+// REFCOUNT
+/*
 AudioTraits::DeleteSoundFunc* WinSample::get_destroy(void) const {
   if (audio_cat->is_debug())
     audio_cat->debug() << "winsample get_destroy returning 0x"
 		       << (void*)(WinSample::destroy) << endl;
   return WinSample::destroy;
 }
+*/
 
 AudioTraits::DeletePlayingFunc* WinSample::get_delstate(void) const {
   if (audio_cat->is_debug())
@@ -418,12 +421,15 @@ WinSample* WinSample::load_raw(unsigned char* data, unsigned long size) {
   return ret;
 }
 
+// REFCOUNT
+/*
 void WinSample::destroy(AudioTraits::SoundClass* sample) {
   if (audio_cat->is_debug())
     audio_cat->debug() << "winsample destroy deleting 0x" << (void*)sample
 		       << endl;
   delete sample;
 }
+*/
 
 WinMusic::~WinMusic(void) {
   // AudioManager::stop(this);
@@ -554,12 +560,15 @@ AudioTraits::PlayerClass* WinMusic::get_player(void) const {
   return ret;
 }
 
+// REFCOUNT
+/*
 AudioTraits::DeleteSoundFunc* WinMusic::get_destroy(void) const {
   if (audio_cat->is_debug())
     audio_cat->debug() << "winmusic get_destroy returning 0x"
 		       << (void*)(WinMusic::destroy) << endl;
   return WinMusic::destroy;
 }
+*/
 
 AudioTraits::DeletePlayingFunc* WinMusic::get_delstate(void) const {
   if (audio_cat->is_debug())
@@ -568,11 +577,14 @@ AudioTraits::DeletePlayingFunc* WinMusic::get_delstate(void) const {
   return WinMusicPlaying::destroy;
 }
 
+// REFCOUNT
+/*
 void WinMusic::destroy(AudioTraits::SoundClass* music) {
   if (audio_cat->is_debug())
     audio_cat->debug() << "winmusic destroy got 0x" << (void*)music << endl;
   delete music;
 }
+*/
 
 WinMusic* WinMusic::load_midi(Filename filename) {
   if (audio_cat->is_debug())

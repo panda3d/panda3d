@@ -7,6 +7,7 @@
 #define __AUDIO_TRAIT_H__
 
 #include <pandabase.h>
+#include <referenceCount.h>
 
 class EXPCL_PANDA AudioTraits {
 public:
@@ -17,7 +18,7 @@ public:
   typedef void DeleteSoundFunc(SoundClass*);
   typedef void DeletePlayingFunc(PlayingClass*);
 
-  class EXPCL_PANDA SoundClass {
+  class EXPCL_PANDA SoundClass : public ReferenceCount {
   public:
     SoundClass(void) {}
     virtual ~SoundClass(void);
@@ -25,7 +26,8 @@ public:
     virtual float length(void) const = 0;
     virtual PlayingClass* get_state(void) const = 0;
     virtual PlayerClass* get_player(void) const = 0;
-    virtual DeleteSoundFunc* get_destroy(void) const = 0;
+    // REFCOUNT
+    //    virtual DeleteSoundFunc* get_destroy(void) const = 0;
     virtual DeletePlayingFunc* get_delstate(void) const = 0;
   };
   class EXPCL_PANDA PlayingClass {

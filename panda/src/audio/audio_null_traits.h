@@ -21,9 +21,10 @@ public:
   virtual float length(void) const;
   virtual AudioTraits::PlayingClass* get_state(void) const;
   virtual AudioTraits::PlayerClass* get_player(void) const;
-  virtual AudioTraits::DeleteSoundFunc* get_destroy(void) const;
+  // REFCOUNT
+  //  virtual AudioTraits::DeleteSoundFunc* get_destroy(void) const;
+  //  static void destroy(AudioTraits::SoundClass*);
   virtual AudioTraits::DeletePlayingFunc* get_delstate(void) const;
-  static void destroy(AudioTraits::SoundClass*);
 };
 
 class EXPCL_PANDA NullPlaying : public AudioTraits::PlayingClass {
