@@ -1,4 +1,4 @@
-// Filename: glDataContext_src.I
+// Filename: glIndexBufferContext_src.I
 // Created by:  drose (17Mar05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -18,13 +18,13 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(DataContext)::Constructor
+//     Function: CLP(IndexBufferContext)::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE CLP(DataContext)::
-CLP(DataContext)(qpGeomVertexArrayData *data) :
-  DataContext(data)
+INLINE CLP(IndexBufferContext)::
+CLP(IndexBufferContext)(qpGeomPrimitive *data) :
+  IndexBufferContext(data)
 {
   _index = 0;
 }

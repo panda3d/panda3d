@@ -24,6 +24,7 @@
 #include "qpgeomVertexFormat.h"
 #include "qpgeomVertexDataType.h"
 #include "qpgeomVertexArrayData.h"
+#include "qpgeomUsageHint.h"
 #include "internalName.h"
 #include "cycleData.h"
 #include "cycleDataReader.h"
@@ -63,13 +64,13 @@ private:
   qpGeomVertexData();
 PUBLISHED:
   qpGeomVertexData(const qpGeomVertexFormat *format, 
-                   qpGeomVertexArrayData::UsageHint usage_hint);
+                   qpGeomUsageHint::UsageHint usage_hint);
   qpGeomVertexData(const qpGeomVertexData &copy);
   void operator = (const qpGeomVertexData &copy);
   virtual ~qpGeomVertexData();
 
   INLINE const qpGeomVertexFormat *get_format() const;
-  INLINE qpGeomVertexArrayData::UsageHint get_usage_hint() const;
+  INLINE qpGeomUsageHint::UsageHint get_usage_hint() const;
 
   int get_num_vertices() const;
   INLINE bool set_num_vertices(int n);
@@ -113,7 +114,7 @@ private:
 
 private:
   CPT(qpGeomVertexFormat) _format;
-  qpGeomVertexArrayData::UsageHint _usage_hint;
+  qpGeomUsageHint::UsageHint _usage_hint;
 
   typedef pvector< PT(qpGeomVertexArrayData) > Arrays;
 

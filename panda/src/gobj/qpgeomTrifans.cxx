@@ -29,7 +29,9 @@ TypeHandle qpGeomTrifans::_type_handle;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 qpGeomTrifans::
-qpGeomTrifans() {
+qpGeomTrifans(qpGeomUsageHint::UsageHint usage_hint) :
+  qpGeomPrimitive(usage_hint)
+{
 }
  
 ////////////////////////////////////////////////////////////////////
@@ -89,7 +91,7 @@ draw(GraphicsStateGuardianBase *gsg) const {
 ////////////////////////////////////////////////////////////////////
 CPT(qpGeomPrimitive) qpGeomTrifans::
 decompose_impl() const {
-  PT(qpGeomTriangles) triangles = new qpGeomTriangles;
+  PT(qpGeomTriangles) triangles = new qpGeomTriangles(get_usage_hint());
   triangles->set_shade_model(get_shade_model());
   CPTA_ushort vertices = get_vertices();
   CPTA_int ends = get_ends();
@@ -154,7 +156,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 TypedWritable *qpGeomTrifans::
 make_from_bam(const FactoryParams &params) {
-  qpGeomTrifans *object = new qpGeomTrifans;
+  qpGeomTrifans *object = new qpGeomTrifans(qpGeomUsageHint::UH_client);
   DatagramIterator scan;
   BamReader *manager;
 

@@ -1,4 +1,4 @@
-// Filename: dataContext.h
+// Filename: vertexBufferContext.h
 // Created by:  drose (17Mar05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef DATACONTEXT_H
-#define DATACONTEXT_H
+#ifndef VERTEXBUFFERCONTEXT_H
+#define VERTEXBUFFERCONTEXT_H
 
 #include "pandabase.h"
 
@@ -26,7 +26,7 @@
 #include "qpgeomVertexArrayData.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : DataContext
+//       Class : VertexBufferContext
 // Description : This is a special class object that holds all the
 //               information returned by a particular GSG to indicate
 //               the vertex data array's internal context identifier.
@@ -36,13 +36,13 @@
 //               allocate a vertex buffer for the array.  OpenGL can
 //               create a buffer object.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA DataContext : public SavedContext {
+class EXPCL_PANDA VertexBufferContext : public SavedContext {
 public:
-  INLINE DataContext(qpGeomVertexArrayData *data);
+  INLINE VertexBufferContext(qpGeomVertexArrayData *data);
 
   INLINE qpGeomVertexArrayData *get_data() const;
 
-  INLINE int get_num_bytes() const;
+  INLINE int get_data_size_bytes() const;
   INLINE bool changed_size() const;
   INLINE bool was_modified() const;
 
@@ -50,11 +50,11 @@ public:
 
 private:
   // This cannot be a PT(qpGeomVertexArrayData), because the data and
-  // the GSG both own their DataContexts!  That would create a
+  // the GSG both own their VertexBufferContexts!  That would create a
   // circular reference count.
   qpGeomVertexArrayData *_data;
   UpdateSeq _modified;
-  int _num_bytes;
+  int _data_size_bytes;
 
 public:
   static TypeHandle get_class_type() {
@@ -62,7 +62,7 @@ public:
   }
   static void init_type() {
     SavedContext::init_type();
-    register_type(_type_handle, "DataContext",
+    register_type(_type_handle, "VertexBufferContext",
                   SavedContext::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -76,7 +76,7 @@ private:
   friend class PreparedGraphicsObjects;
 };
 
-#include "dataContext.I"
+#include "vertexBufferContext.I"
 
 #endif
 

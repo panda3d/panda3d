@@ -56,7 +56,7 @@
 #include "qpgeomTrifans.h"
 #include "dxGeomMunger8.h"
 #include "config_gobj.h"
-#include "dxDataContext8.h"
+#include "dxVertexBufferContext8.h"
 
 #ifdef DO_PSTATS
 #include "pStatTimer.h"
@@ -2620,8 +2620,8 @@ begin_draw_primitives(const qpGeomVertexData *vertex_data) {
   // the first array.
   const qpGeomVertexArrayData *data = _vertex_data->get_array(0);
 
-  DataContext *dc = ((qpGeomVertexArrayData *)data)->prepare_now(get_prepared_objects(), this);
-  nassertr(dc != (DataContext *)NULL, false);
+  VertexBufferContext *dc = ((qpGeomVertexArrayData *)data)->prepare_now(get_prepared_objects(), this);
+  nassertr(dc != (VertexBufferContext *)NULL, false);
   apply_data(dc);
 
   return true;
@@ -2903,79 +2903,79 @@ release_texture(TextureContext *tc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::prepare_data
+//     Function: DXGraphicsStateGuardian8::prepare_vertex_buffer
 //       Access: Public, Virtual
 //  Description: Creates a new retained-mode representation of the
 //               given data, and returns a newly-allocated
-//               DataContext pointer to reference it.  It is the
+//               VertexBufferContext pointer to reference it.  It is the
 //               responsibility of the calling function to later
-//               call release_data() with this same pointer (which
+//               call release_vertex_buffer() with this same pointer (which
 //               will also delete the pointer).
 //
 //               This function should not be called directly to
 //               prepare a data.  Instead, call Data::prepare().
 ////////////////////////////////////////////////////////////////////
-DataContext *DXGraphicsStateGuardian8::
-prepare_data(qpGeomVertexArrayData *data) {
+VertexBufferContext *DXGraphicsStateGuardian8::
+prepare_vertex_buffer(qpGeomVertexArrayData *data) {
   if (dxgsg8_cat.is_debug()) {
     dxgsg8_cat.debug()
-      << "prepare_data(" << (void *)data << ")\n";
+      << "prepare_vertex_buffer(" << (void *)data << ")\n";
   }
 
-  DXDataContext8 *ddc = new DXDataContext8(data);
+  DXVertexBufferContext8 *dvbc = new DXVertexBufferContext8(data);
 
   if (vertex_buffers) {
-    ddc->create_vbuffer(*_pScrn);
-    ddc->mark_loaded();
+    dvbc->create_vbuffer(*_pScrn);
+    dvbc->mark_loaded();
   }
 
-  return ddc;
+  return dvbc;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::apply_data
+//     Function: DXGraphicsStateGuardian8::apply_vertex_buffer
 //       Access: Public
 //  Description: Makes the data the currently available data for
 //               rendering.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-apply_data(DataContext *dc) {
-  DXDataContext8 *ddc = DCAST(DXDataContext8, dc);
+apply_vertex_buffer(VertexBufferContext *vbc) {
+  DXVertexBufferContext8 *dvbc = DCAST(DXVertexBufferContext8, vbc);
 
-  if (ddc->_vbuffer != NULL) {
-    add_to_data_record(ddc);
+  if (dvbc->_vbuffer != NULL) {
+    add_to_vertex_buffer_record(dvbc);
   
-    if (ddc->was_modified()) {
+    if (dvbc->was_modified()) {
       if (dxgsg8_cat.is_debug()) {
         dxgsg8_cat.debug()
-          << "apply_data(" << (void *)dc->get_data() << ")\n";
+          << "apply_vertex_buffer(" << (void *)vbc->get_data() << ")\n";
       }
-      if (ddc->changed_size()) {
+      if (dvbc->changed_size()) {
         // Here we have to destroy the old vertex buffer and create a
         // new one.
-        ddc->create_vbuffer(*_pScrn);
+        dvbc->create_vbuffer(*_pScrn);
 
       } else {
         // Here we just copy the new data to the vertex buffer.
-        ddc->upload_data();
+        dvbc->upload_data();
       }
       
-      ddc->mark_loaded();
+      dvbc->mark_loaded();
     }
 
     _pD3DDevice->SetStreamSource
-      (0, ddc->_vbuffer, ddc->get_data()->get_array_format()->get_stride());
+      (0, dvbc->_vbuffer, dvbc->get_data()->get_array_format()->get_stride());
     _vbuffer_active = true;
 
   } else {
     _vbuffer_active = false;
   }
 
-  set_vertex_format(ddc->_fvf);
+  set_vertex_format(dvbc->_fvf);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian8::release_data
+//     Function: DXGraphicsStateGuardian8::release_vertex_buffer
 //       Access: Public, Virtual
 //  Description: Frees the GL resources previously allocated for the
 //               data.  This function should never be called
@@ -2983,14 +2983,14 @@ apply_data(DataContext *dc) {
 //               let the Data destruct).
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
-release_data(DataContext *dc) {
+release_vertex_buffer(VertexBufferContext *vbc) {
   if (dxgsg8_cat.is_debug()) {
     dxgsg8_cat.debug()
-      << "release_data(" << (void *)dc->get_data() << ")\n";
+      << "release_vertex_buffer(" << (void *)vbc->get_data() << ")\n";
   }
 
-  DXDataContext8 *ddc = DCAST(DXDataContext8, dc);
-  delete ddc;
+  DXVertexBufferContext8 *dvbc = DCAST(DXVertexBufferContext8, vbc);
+  delete dvbc;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -1,4 +1,4 @@
-// Filename: dataContext.I
+// Filename: indexBufferContext.I
 // Created by:  drose (17Mar05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -18,74 +18,74 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DataContext::Constructor
+//     Function: IndexBufferContext::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE DataContext::
-DataContext(qpGeomVertexArrayData *data) :
+INLINE IndexBufferContext::
+IndexBufferContext(qpGeomPrimitive *data) :
   _data(data),
   // Initially, the number of bytes is zero, until the data has been
   // loaded (and mark_loaded() is called).
-  _num_bytes(0)
+  _data_size_bytes(0)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DataContext::get_data
+//     Function: IndexBufferContext::get_data
 //       Access: Public
 //  Description: Returns the pointer to the client-side array data
 //               object.
 ////////////////////////////////////////////////////////////////////
-INLINE qpGeomVertexArrayData *DataContext::
+INLINE qpGeomPrimitive *IndexBufferContext::
 get_data() const {
   return _data;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DataContext::get_num_bytes
+//     Function: IndexBufferContext::get_data_size_bytes
 //       Access: Public
 //  Description: Returns the number of bytes previously reported for
 //               the data object.  This is used to track changes in
 //               the data object's allocated size; if it changes from
 //               this, we need to create a new buffer.
 ////////////////////////////////////////////////////////////////////
-INLINE int DataContext::
-get_num_bytes() const {
-  return _num_bytes;
+INLINE int IndexBufferContext::
+get_data_size_bytes() const {
+  return _data_size_bytes;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DataContext::changed_size
+//     Function: IndexBufferContext::changed_size
 //       Access: Public
 //  Description: Returns true if the data has changed size since the
 //               last time mark_loaded() was called.
 ////////////////////////////////////////////////////////////////////
-INLINE bool DataContext::
+INLINE bool IndexBufferContext::
 changed_size() const {
-  return get_num_bytes() != _data->get_num_bytes();
+  return get_data_size_bytes() != _data->get_data_size_bytes();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DataContext::was_modified
+//     Function: IndexBufferContext::was_modified
 //       Access: Public
 //  Description: Returns true if the data has been modified since the
 //               last time mark_loaded() was called.
 ////////////////////////////////////////////////////////////////////
-INLINE bool DataContext::
+INLINE bool IndexBufferContext::
 was_modified() const {
   return _modified != _data->get_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DataContext::mark_loaded
+//     Function: IndexBufferContext::mark_loaded
 //       Access: Public
-//  Description: Should be called after the DataContext has been
+//  Description: Should be called after the IndexBufferContext has been
 //               loaded into graphics memory, this updates the
 //               internal flags for changed_size() and modified().
 ////////////////////////////////////////////////////////////////////
-INLINE void DataContext::
+INLINE void IndexBufferContext::
 mark_loaded() {
-  _num_bytes = _data->get_num_bytes();
+  _data_size_bytes = _data->get_data_size_bytes();
   _modified = _data->get_modified();
 }

@@ -30,7 +30,9 @@ TypeHandle qpGeomTristrips::_type_handle;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 qpGeomTristrips::
-qpGeomTristrips() {
+qpGeomTristrips(qpGeomUsageHint::UsageHint usage_hint) :
+  qpGeomPrimitive(usage_hint)
+{
 }
  
 ////////////////////////////////////////////////////////////////////
@@ -90,7 +92,7 @@ draw(GraphicsStateGuardianBase *gsg) const {
 ////////////////////////////////////////////////////////////////////
 CPT(qpGeomPrimitive) qpGeomTristrips::
 decompose_impl() const {
-  PT(qpGeomTriangles) triangles = new qpGeomTriangles;
+  PT(qpGeomTriangles) triangles = new qpGeomTriangles(get_usage_hint());
   triangles->set_shade_model(get_shade_model());
   CPTA_ushort vertices = get_vertices();
   CPTA_int ends = get_ends();
@@ -240,7 +242,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 TypedWritable *qpGeomTristrips::
 make_from_bam(const FactoryParams &params) {
-  qpGeomTristrips *object = new qpGeomTristrips;
+  qpGeomTristrips *object = new qpGeomTristrips(qpGeomUsageHint::UH_client);
   DatagramIterator scan;
   BamReader *manager;
 

@@ -107,8 +107,11 @@ public:
   virtual GeomContext *prepare_geom(Geom *geom);
   virtual void release_geom(GeomContext *gc);
 
-  virtual DataContext *prepare_data(qpGeomVertexArrayData *data);
-  virtual void release_data(DataContext *gc);
+  virtual VertexBufferContext *prepare_vertex_buffer(qpGeomVertexArrayData *data);
+  virtual void release_vertex_buffer(VertexBufferContext *vbc);
+
+  virtual IndexBufferContext *prepare_index_buffer(qpGeomPrimitive *data);
+  virtual void release_index_buffer(IndexBufferContext *ibc);
 
   virtual CPT(qpGeomMunger) get_geom_munger(const RenderState *state);
 
@@ -226,11 +229,13 @@ protected:
   void init_frame_pstats();
   void add_to_texture_record(TextureContext *tc);
   void add_to_geom_record(GeomContext *gc);
-  void add_to_data_record(DataContext *dc);
+  void add_to_vertex_buffer_record(VertexBufferContext *vbc);
+  void add_to_index_buffer_record(IndexBufferContext *ibc);
 
   pset<TextureContext *> _current_textures;
   pset<GeomContext *> _current_geoms;
-  pset<DataContext *> _current_datas;
+  pset<VertexBufferContext *> _current_vertex_buffers;
+  pset<IndexBufferContext *> _current_index_buffers;
 #else
   INLINE void init_frame_pstats() { }
   INLINE void add_to_texture_record(TextureContext *) { }
@@ -314,7 +319,8 @@ public:
   static PStatCollector _total_geom_pcollector;
   static PStatCollector _active_geom_pcollector;
   static PStatCollector _total_buffers_pcollector;
-  static PStatCollector _active_buffers_pcollector;
+  static PStatCollector _active_vertex_buffers_pcollector;
+  static PStatCollector _active_index_buffers_pcollector;
   static PStatCollector _total_geom_node_pcollector;
   static PStatCollector _active_geom_node_pcollector;
   static PStatCollector _total_texmem_pcollector;

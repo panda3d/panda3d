@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "typedWritableReferenceCount.h"
 #include "qpgeomVertexArrayFormat.h"
+#include "qpgeomUsageHint.h"
 #include "pta_uchar.h"
 #include "updateSeq.h"
 #include "cycleData.h"
@@ -31,7 +32,7 @@
 #include "pmap.h"
 
 class PreparedGraphicsObjects;
-class DataContext;
+class VertexBufferContext;
 class GraphicsStateGuardianBase;
 
 ////////////////////////////////////////////////////////////////////
@@ -53,26 +54,8 @@ private:
   qpGeomVertexArrayData();
 
 PUBLISHED:
-  enum UsageHint {
-    // UH_client: don't attempt to upload the data as a "vertex
-    // buffer"; always keep it on the client.
-    UH_client,
-
-    // UH_stream: the data will be created once, used to render a few
-    // times, and then discarded.
-    UH_stream,
-
-    // UH_static: the data will be created once, and used to render
-    // many times, without modification.
-    UH_static,
-
-    // UH_dynamic: the data will be repeatedly modified and
-    // re-rendered.
-    UH_dynamic,
-  };
-
   qpGeomVertexArrayData(const qpGeomVertexArrayFormat *array_format,
-                        UsageHint usage_hint);
+                        qpGeomUsageHint::UsageHint usage_hint);
   qpGeomVertexArrayData(const qpGeomVertexArrayData &copy);
 private:
   void operator = (const qpGeomVertexArrayData &copy);
@@ -80,7 +63,7 @@ PUBLISHED:
   virtual ~qpGeomVertexArrayData();
 
   INLINE const qpGeomVertexArrayFormat *get_array_format() const;
-  INLINE UsageHint get_usage_hint() const;
+  INLINE qpGeomUsageHint::UsageHint get_usage_hint() const;
 
   INLINE CPTA_uchar get_data() const;
   INLINE PTA_uchar modify_data();
@@ -90,14 +73,14 @@ PUBLISHED:
   bool set_num_vertices(int n);
   INLINE void clear_vertices();
 
-  INLINE int get_num_bytes() const;
+  INLINE int get_data_size_bytes() const;
   INLINE UpdateSeq get_modified() const;
 
   void prepare(PreparedGraphicsObjects *prepared_objects);
 
 public:
-  DataContext *prepare_now(PreparedGraphicsObjects *prepared_objects, 
-                           GraphicsStateGuardianBase *gsg);
+  VertexBufferContext *prepare_now(PreparedGraphicsObjects *prepared_objects, 
+                                   GraphicsStateGuardianBase *gsg);
   bool release(PreparedGraphicsObjects *prepared_objects);
   int release_all();
 
@@ -105,14 +88,14 @@ private:
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 
   CPT(qpGeomVertexArrayFormat) _array_format;
-  UsageHint _usage_hint;
+  qpGeomUsageHint::UsageHint _usage_hint;
 
   // A GeomVertexArrayData keeps a list (actually, a map) of all the
   // PreparedGraphicsObjects tables that it has been prepared into.
   // Each PGO conversely keeps a list (a set) of all the Geoms that
   // have been prepared there.  When either destructs, it removes
   // itself from the other's list.
-  typedef pmap<PreparedGraphicsObjects *, DataContext *> Contexts;
+  typedef pmap<PreparedGraphicsObjects *, VertexBufferContext *> Contexts;
   Contexts _contexts;
 
   // This is the data that must be cycled between pipeline stages.

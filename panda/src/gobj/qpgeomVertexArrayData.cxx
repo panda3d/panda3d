@@ -41,7 +41,7 @@ qpGeomVertexArrayData() {
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexArrayData::
 qpGeomVertexArrayData(const qpGeomVertexArrayFormat *array_format,
-                      qpGeomVertexArrayData::UsageHint usage_hint) :
+                      qpGeomUsageHint::UsageHint usage_hint) :
   _array_format(array_format),
   _usage_hint(usage_hint)
 {
@@ -147,7 +147,7 @@ set_num_vertices(int n) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexArrayData::
 prepare(PreparedGraphicsObjects *prepared_objects) {
-  prepared_objects->enqueue_data(this);
+  prepared_objects->enqueue_vertex_buffer(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -155,7 +155,7 @@ prepare(PreparedGraphicsObjects *prepared_objects) {
 //       Access: Public
 //  Description: Creates a context for the data on the particular
 //               GSG, if it does not already exist.  Returns the new
-//               (or old) DataContext.  This assumes that the
+//               (or old) VertexBufferContext.  This assumes that the
 //               GraphicsStateGuardian is the currently active
 //               rendering context and that it is ready to accept new
 //               datas.  If this is not necessarily the case, you
@@ -166,7 +166,7 @@ prepare(PreparedGraphicsObjects *prepared_objects) {
 //               explicitly prepared by the user before it may be
 //               rendered.
 ////////////////////////////////////////////////////////////////////
-DataContext *qpGeomVertexArrayData::
+VertexBufferContext *qpGeomVertexArrayData::
 prepare_now(PreparedGraphicsObjects *prepared_objects, 
             GraphicsStateGuardianBase *gsg) {
   Contexts::const_iterator ci;
@@ -175,11 +175,11 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
     return (*ci).second;
   }
 
-  DataContext *dc = prepared_objects->prepare_data_now(this, gsg);
-  if (dc != (DataContext *)NULL) {
-    _contexts[prepared_objects] = dc;
+  VertexBufferContext *vbc = prepared_objects->prepare_vertex_buffer_now(this, gsg);
+  if (vbc != (VertexBufferContext *)NULL) {
+    _contexts[prepared_objects] = vbc;
   }
-  return dc;
+  return vbc;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -194,13 +194,13 @@ release(PreparedGraphicsObjects *prepared_objects) {
   Contexts::iterator ci;
   ci = _contexts.find(prepared_objects);
   if (ci != _contexts.end()) {
-    DataContext *dc = (*ci).second;
-    prepared_objects->release_data(dc);
+    VertexBufferContext *vbc = (*ci).second;
+    prepared_objects->release_vertex_buffer(vbc);
     return true;
   }
 
   // Maybe it wasn't prepared yet, but it's about to be.
-  return prepared_objects->dequeue_data(this);
+  return prepared_objects->dequeue_vertex_buffer(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -214,7 +214,7 @@ int qpGeomVertexArrayData::
 release_all() {
   // We have to traverse a copy of the _contexts list, because the
   // PreparedGraphicsObjects object will call clear_prepared() in response
-  // to each release_data(), and we don't want to be modifying the
+  // to each release_vertex_buffer(), and we don't want to be modifying the
   // _contexts list while we're traversing it.
   Contexts temp = _contexts;
   int num_freed = (int)_contexts.size();
@@ -222,11 +222,11 @@ release_all() {
   Contexts::const_iterator ci;
   for (ci = temp.begin(); ci != temp.end(); ++ci) {
     PreparedGraphicsObjects *prepared_objects = (*ci).first;
-    DataContext *dc = (*ci).second;
-    prepared_objects->release_data(dc);
+    VertexBufferContext *vbc = (*ci).second;
+    prepared_objects->release_vertex_buffer(vbc);
   }
 
-  // Now that we've called release_data() on every known context,
+  // Now that we've called release_vertex_buffer() on every known context,
   // the _contexts list should have completely emptied itself.
   nassertr(_contexts.empty(), num_freed);
 
@@ -240,7 +240,7 @@ release_all() {
 //               from the data array's table, without actually
 //               releasing the data array.  This is intended to be
 //               called only from
-//               PreparedGraphicsObjects::release_data(); it should
+//               PreparedGraphicsObjects::release_vertex_buffer(); it should
 //               never be called by user code.
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexArrayData::

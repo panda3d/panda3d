@@ -41,7 +41,8 @@
 #include "textureStage.h"
 #include "textureContext.h"
 #include "geomContext.h"
-#include "dataContext.h"
+#include "vertexBufferContext.h"
+#include "indexBufferContext.h"
 #include "internalName.h"
 
 #include "dconfig.h"
@@ -182,7 +183,8 @@ ConfigureFn(config_gobj) {
   qpGeomVertexFormat::init_type();
   TextureContext::init_type();
   GeomContext::init_type();
-  DataContext::init_type();
+  VertexBufferContext::init_type();
+  IndexBufferContext::init_type();
   Material::init_type();
   OrthographicLens::init_type();
   MatrixLens::init_type();

@@ -33,14 +33,16 @@ get_format() const {
 //       Access: Published
 //  Description: Returns the usage hint that was passed to the
 //               constructor, and which will be passed to each array
-//               data object created initially.  However, each
-//               individual array may be replaced with a different
-//               array object with an independent usage hint
-//               specified.
+//               data object created initially, and arrays created as
+//               the result of a convert_to() operation.  See
+//               GeomUsageHint.
 //
-//               See GeomVertexArrayData::get_usage_hint().
+//               However, each individual array may be replaced with a
+//               different array object with an independent usage hint
+//               specified, so there is no guarantee that the
+//               individual arrays all have the same usage_hint.
 ////////////////////////////////////////////////////////////////////
-INLINE qpGeomVertexArrayData::UsageHint qpGeomVertexData::
+INLINE qpGeomUsageHint::UsageHint qpGeomVertexData::
 get_usage_hint() const {
   return _usage_hint;
 }

@@ -19,7 +19,7 @@
 #include "config_dxgsg8.h"
 #include "dxGraphicsStateGuardian8.h"
 #include "dxTextureContext8.h"
-#include "dxDataContext8.h"
+#include "dxVertexBufferContext8.h"
 #include "dxGeomMunger8.h"
 #include "graphicsPipeSelection.h"
 #include "wdxGraphicsWindow8.h"
@@ -145,7 +145,7 @@ init_libdxgsg8() {
 
   DXGraphicsStateGuardian8::init_type();
   DXTextureContext8::init_type();
-  DXDataContext8::init_type();
+  DXVertexBufferContext8::init_type();
   DXGeomMunger8::init_type();
 
   wdxGraphicsPipe8::init_type();

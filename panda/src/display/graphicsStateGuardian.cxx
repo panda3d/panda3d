@@ -20,7 +20,8 @@
 #include "graphicsStateGuardian.h"
 #include "config_display.h"
 #include "textureContext.h"
-#include "dataContext.h"
+#include "vertexBufferContext.h"
+#include "indexBufferContext.h"
 #include "renderBuffer.h"
 #include "colorAttrib.h"
 #include "colorScaleAttrib.h"
@@ -48,7 +49,8 @@ PStatCollector GraphicsStateGuardian::_active_texusage_pcollector("Texture usage
 PStatCollector GraphicsStateGuardian::_total_geom_pcollector("Prepared Geoms");
 PStatCollector GraphicsStateGuardian::_active_geom_pcollector("Prepared Geoms:Active");
 PStatCollector GraphicsStateGuardian::_total_buffers_pcollector("Vertex buffers");
-PStatCollector GraphicsStateGuardian::_active_buffers_pcollector("Vertex buffers:Active");
+PStatCollector GraphicsStateGuardian::_active_vertex_buffers_pcollector("Vertex buffers:Active vertex");
+PStatCollector GraphicsStateGuardian::_active_index_buffers_pcollector("Vertex buffers:Active index");
 PStatCollector GraphicsStateGuardian::_total_geom_node_pcollector("Prepared GeomNodes");
 PStatCollector GraphicsStateGuardian::_active_geom_node_pcollector("Prepared GeomNodes:Active");
 PStatCollector GraphicsStateGuardian::_total_texmem_pcollector("Texture memory");
@@ -271,25 +273,47 @@ release_geom(GeomContext *) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::prepare_data
+//     Function: GraphicsStateGuardian::prepare_vertex_buffer
 //       Access: Public, Virtual
-//  Description: Prepares the indicated data array for retained-mode
+//  Description: Prepares the indicated buffer for retained-mode
 //               rendering.
 ////////////////////////////////////////////////////////////////////
-DataContext *GraphicsStateGuardian::
-prepare_data(qpGeomVertexArrayData *) {
-  return (DataContext *)NULL;
+VertexBufferContext *GraphicsStateGuardian::
+prepare_vertex_buffer(qpGeomVertexArrayData *) {
+  return (VertexBufferContext *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::release_data
+//     Function: GraphicsStateGuardian::release_vertex_buffer
 //       Access: Public, Virtual
 //  Description: Frees the resources previously allocated via a call
-//               to prepare_data(), including deleting the DataContext
-//               itself, if necessary.
+//               to prepare_data(), including deleting the
+//               VertexBufferContext itself, if necessary.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-release_data(DataContext *) {
+release_vertex_buffer(VertexBufferContext *) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::prepare_index_buffer
+//       Access: Public, Virtual
+//  Description: Prepares the indicated buffer for retained-mode
+//               rendering.
+////////////////////////////////////////////////////////////////////
+IndexBufferContext *GraphicsStateGuardian::
+prepare_index_buffer(qpGeomPrimitive *) {
+  return (IndexBufferContext *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::release_index_buffer
+//       Access: Public, Virtual
+//  Description: Frees the resources previously allocated via a call
+//               to prepare_data(), including deleting the
+//               IndexBufferContext itself, if necessary.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+release_index_buffer(IndexBufferContext *) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1443,11 +1467,13 @@ init_frame_pstats() {
   if (PStatClient::is_connected()) {
     _current_textures.clear();
     _current_geoms.clear();
-    _current_datas.clear();
+    _current_vertex_buffers.clear();
+    _current_index_buffers.clear();
     _active_texusage_pcollector.clear_level();
     _active_geom_pcollector.clear_level();
     _active_geom_node_pcollector.clear_level();
-    _active_buffers_pcollector.clear_level();
+    _active_vertex_buffers_pcollector.clear_level();
+    _active_index_buffers_pcollector.clear_level();
     
     // Also clear out our other counters while we're here.
     _vertices_tristrip_pcollector.clear_level();
@@ -1498,21 +1524,42 @@ add_to_geom_record(GeomContext *gc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::add_to_data_record
+//     Function: GraphicsStateGuardian::add_to_vertex_buffer_record
 //       Access: Protected
 //  Description: Records that the indicated data array has been drawn
 //               this frame.  This function is only used to update the
-//               PStats active_buffers collector; it gets compiled out
+//               PStats active_vertex_buffers collector; it gets compiled out
 //               if we aren't using PStats.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-add_to_data_record(DataContext *dc) {
-  if (dc != (DataContext *)NULL) {
-    int delta = dc->get_data()->get_num_bytes() - dc->get_num_bytes();
+add_to_vertex_buffer_record(VertexBufferContext *vbc) {
+  if (vbc != (VertexBufferContext *)NULL) {
+    int delta = vbc->get_data()->get_data_size_bytes() - vbc->get_data_size_bytes();
     _total_buffers_pcollector.add_level(delta);
     if (PStatClient::is_connected()) {
-      if (_current_datas.insert(dc).second) {
-        _active_buffers_pcollector.add_level(dc->get_data()->get_num_bytes());
+      if (_current_vertex_buffers.insert(vbc).second) {
+        _active_vertex_buffers_pcollector.add_level(vbc->get_data()->get_data_size_bytes());
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::add_to_index_buffer_record
+//       Access: Protected
+//  Description: Records that the indicated data array has been drawn
+//               this frame.  This function is only used to update the
+//               PStats active_index_buffers collector; it gets compiled out
+//               if we aren't using PStats.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+add_to_index_buffer_record(IndexBufferContext *ibc) {
+  if (ibc != (IndexBufferContext *)NULL) {
+    int delta = ibc->get_data()->get_data_size_bytes() - ibc->get_data_size_bytes();
+    _total_buffers_pcollector.add_level(delta);
+    if (PStatClient::is_connected()) {
+      if (_current_index_buffers.insert(ibc).second) {
+        _active_index_buffers_pcollector.add_level(ibc->get_data()->get_data_size_bytes());
       }
     }
   }

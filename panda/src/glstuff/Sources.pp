@@ -19,9 +19,12 @@
      glstuff_src.cxx \
      glstuff_src.h \
      glstuff_undef_src.h \
-     glDataContext_src.cxx \
-     glDataContext_src.I \
-     glDataContext_src.h \
+     glVertexBufferContext_src.cxx \
+     glVertexBufferContext_src.I \
+     glVertexBufferContext_src.h \
+     glIndexBufferContext_src.cxx \
+     glIndexBufferContext_src.I \
+     glIndexBufferContext_src.h \
      glGeomContext_src.cxx \
      glGeomContext_src.I \
      glGeomContext_src.h \

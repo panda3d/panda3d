@@ -32,17 +32,9 @@ get_array_format() const {
 //       Access: Published
 //  Description: Returns the usage hint that describes to the
 //               rendering backend how often the vertex data will be
-//               modified and/or rendered.  This is provided as a
-//               performance optimization only, and does not
-//               constraing actual usage; although it may be an
-//               important optimization.
-//
-//               This may only be specified to the GeomVertexArrayData
-//               constructor.  If you need to change it, you must
-//               create a new GeomVertexArrayData object (but you can
-//               just assign the same data pointer to the new object).
+//               modified and/or rendered.  See GeomUsageHint.
 ////////////////////////////////////////////////////////////////////
-INLINE qpGeomVertexArrayData::UsageHint qpGeomVertexArrayData::
+INLINE qpGeomUsageHint::UsageHint qpGeomVertexArrayData::
 get_usage_hint() const {
   return _usage_hint;
 }
@@ -107,7 +99,7 @@ set_data(CPTA_uchar array) {
 ////////////////////////////////////////////////////////////////////
 INLINE int qpGeomVertexArrayData::
 get_num_vertices() const {
-  return get_num_bytes() / _array_format->get_stride();
+  return get_data_size_bytes() / _array_format->get_stride();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -122,12 +114,12 @@ clear_vertices() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexArrayData::get_num_bytes
+//     Function: qpGeomVertexArrayData::get_data_size_bytes
 //       Access: Published
 //  Description: Returns the number of bytes stored in the array.
 ////////////////////////////////////////////////////////////////////
 INLINE int qpGeomVertexArrayData::
-get_num_bytes() const {
+get_data_size_bytes() const {
   CDReader cdata(_cycler);
   return cdata->_data.size();
 }

@@ -18,6 +18,27 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_usage_hint
+//       Access: Published
+//  Description: Returns the usage hint for this primitive.  See
+//               GeomUsageHint.  This has nothing to do with the usage
+//               hint associated with the primitive's vertices; this
+//               only specifies how often the vertex indices that
+//               define the primitive will be modified.
+//
+//               It is perfectly legal (and, in fact, common) for a
+//               GeomPrimitive to have UH_static on itself, while
+//               referencing vertex data with UH_dynamic.  This means
+//               that the vertices themselves will be animated, but
+//               the primitive will always reference the same set of
+//               vertices from the pool.
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomUsageHint::UsageHint qpGeomPrimitive::
+get_usage_hint() const {
+  return _usage_hint;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::get_shade_model
 //       Access: Published
 //  Description: Returns the ShadeModel hint for this primitive.
@@ -194,6 +215,31 @@ INLINE CPTA_ushort qpGeomPrimitive::
 get_maxs() const {
   CDReader cdata(_cycler);
   return cdata->_maxs;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_data_size_bytes
+//       Access: Published
+//  Description: Returns the number of bytes stored in the vertices
+//               array.
+////////////////////////////////////////////////////////////////////
+INLINE int qpGeomPrimitive::
+get_data_size_bytes() const {
+  CDReader cdata(_cycler);
+  return cdata->_vertices.size() * sizeof(short);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::get_modified
+//       Access: Published
+//  Description: Returns a sequence number which is guaranteed to
+//               change at least every time the vertex index array is
+//               modified.
+////////////////////////////////////////////////////////////////////
+INLINE UpdateSeq qpGeomPrimitive::
+get_modified() const {
+  CDReader cdata(_cycler);
+  return cdata->_modified;
 }
 
 ////////////////////////////////////////////////////////////////////

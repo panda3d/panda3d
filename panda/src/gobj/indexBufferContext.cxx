@@ -1,5 +1,5 @@
-// Filename: dxDataContext8.I
-// Created by:  drose (18Mar05)
+// Filename: indexBufferContext.cxx
+// Created by:  drose (17Mar05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,3 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "indexBufferContext.h"
+
+TypeHandle IndexBufferContext::_type_handle;

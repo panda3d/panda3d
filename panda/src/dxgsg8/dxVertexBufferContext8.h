@@ -1,4 +1,4 @@
-// Filename: dxDataContext8.h
+// Filename: dxVertexBufferContext8.h
 // Created by:  drose (18Mar05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,22 +16,22 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef DXDATACONTEXT8_H
-#define DXDATACONTEXT8_H
+#ifndef DXVERTEXBUFFERCONTEXT8_H
+#define DXVERTEXBUFFERCONTEXT8_H
 
 #include "pandabase.h"
 #include "dxgsg8base.h"
-#include "dataContext.h"
+#include "vertexBufferContext.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : DXDataContext8
+//       Class : DXVertexBufferContext8
 // Description : Caches a GeomVertexArrayData in the DirectX device as
 //               a vertex buffer.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDADX DXDataContext8 : public DataContext {
+class EXPCL_PANDADX DXVertexBufferContext8 : public VertexBufferContext {
 public:
-  DXDataContext8(qpGeomVertexArrayData *data);
-  virtual ~DXDataContext8();
+  DXVertexBufferContext8(qpGeomVertexArrayData *data);
+  virtual ~DXVertexBufferContext8();
 
   void create_vbuffer(DXScreenData &scrn);
   void upload_data();
@@ -44,9 +44,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    DataContext::init_type();
-    register_type(_type_handle, "DXDataContext8",
-                  DataContext::get_class_type());
+    VertexBufferContext::init_type();
+    register_type(_type_handle, "DXVertexBufferContext8",
+                  VertexBufferContext::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -57,7 +57,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "dxDataContext8.I"
+#include "dxVertexBufferContext8.I"
 
 #endif
 

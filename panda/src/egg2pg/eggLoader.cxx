@@ -1926,7 +1926,7 @@ make_vertex_data(EggVertexPool *vertex_pool, const LMatrix4d &transform) {
 
   // Now create a new GeomVertexData using the indicated format.
   PT(qpGeomVertexData) vertex_data = 
-    new qpGeomVertexData(format, qpGeomVertexArrayData::UH_static);
+    new qpGeomVertexData(format, qpGeomUsageHint::UH_static);
 
   // And fill the data from the vertex pool.
   EggVertexPool::const_iterator vi;
@@ -1979,10 +1979,10 @@ make_primitive(const EggRenderState *render_state, EggPrimitive *egg_prim,
   PT(qpGeomPrimitive) primitive;
   if (egg_prim->is_of_type(EggPolygon::get_class_type())) {
     if (egg_prim->size() == 3) {
-      primitive = new qpGeomTriangles;
+      primitive = new qpGeomTriangles(qpGeomUsageHint::UH_static);
     }
   } else if (egg_prim->is_of_type(EggTriangleStrip::get_class_type())) {
-    primitive = new qpGeomTristrips;
+    primitive = new qpGeomTristrips(qpGeomUsageHint::UH_static);
   }
 
   if (primitive == (qpGeomPrimitive *)NULL) {

@@ -596,6 +596,18 @@ reset() {
     GLCAT.debug()
       << "max_elements_vertices = " << max_elements_vertices
       << ", max_elements_indices = " << max_elements_indices << "\n";
+    if (_supports_buffers) {
+      if (vertex_buffers) {
+        GLCAT.debug()
+          << "vertex buffer objects are supported.\n";
+      } else {
+        GLCAT.debug()
+          << "vertex buffer objects are supported (but not enabled).\n";
+      }
+    } else {
+      GLCAT.debug()
+        << "vertex buffer objects are NOT supported.\n";
+    }
   }
 
   report_my_gl_errors();
@@ -2107,11 +2119,14 @@ void CLP(GraphicsStateGuardian)::
 draw_triangles(const qpGeomTriangles *primitive) {
   setup_antialias_polygon();
 
+  _vertices_tri_pcollector.add_level(primitive->get_num_vertices());
+  const unsigned short *client_pointer = setup_primitive(primitive);
+ 
   _glDrawRangeElements(GL_TRIANGLES, 
                        primitive->get_min_vertex(),
                        primitive->get_max_vertex(),
                        primitive->get_num_vertices(),
-                       GL_UNSIGNED_SHORT, primitive->get_flat_last_vertices());
+                       GL_UNSIGNED_SHORT, client_pointer);
 
   report_my_gl_errors();
 }
@@ -2125,7 +2140,9 @@ void CLP(GraphicsStateGuardian)::
 draw_tristrips(const qpGeomTristrips *primitive) {
   setup_antialias_polygon();
 
-  CPTA_ushort vertices = primitive->get_flat_last_vertices();
+  _vertices_tristrip_pcollector.add_level(primitive->get_num_vertices());
+  const unsigned short *client_pointer = setup_primitive(primitive);
+
   CPTA_int ends = primitive->get_ends();
   CPTA_ushort mins = primitive->get_mins();
   CPTA_ushort maxs = primitive->get_maxs();
@@ -2135,7 +2152,7 @@ draw_tristrips(const qpGeomTristrips *primitive) {
   for (size_t i = 0; i < ends.size(); i++) {
     _glDrawRangeElements(GL_TRIANGLE_STRIP, 
                          mins[i], maxs[i], ends[i] - start,
-                         GL_UNSIGNED_SHORT, vertices + start);
+                         GL_UNSIGNED_SHORT, client_pointer + start);
     start = ends[i];
   }
 
@@ -2334,83 +2351,74 @@ release_geom(GeomContext *gc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::prepare_data
+//     Function: CLP(GraphicsStateGuardian)::prepare_vertex_buffer
 //       Access: Public, Virtual
 //  Description: Creates a new retained-mode representation of the
 //               given data, and returns a newly-allocated
-//               DataContext pointer to reference it.  It is the
+//               VertexBufferContext pointer to reference it.  It is the
 //               responsibility of the calling function to later
-//               call release_data() with this same pointer (which
+//               call release_vertex_buffer() with this same pointer (which
 //               will also delete the pointer).
 //
 //               This function should not be called directly to
 //               prepare a data.  Instead, call Data::prepare().
 ////////////////////////////////////////////////////////////////////
-DataContext *CLP(GraphicsStateGuardian)::
-prepare_data(qpGeomVertexArrayData *data) {
+VertexBufferContext *CLP(GraphicsStateGuardian)::
+prepare_vertex_buffer(qpGeomVertexArrayData *data) {
   if (GLCAT.is_debug()) {
     GLCAT.debug()
-      << "prepare_data(" << (void *)data << ")\n";
+      << "prepare_vertex_buffer(" << (void *)data << ")\n";
   }
 
   if (_supports_buffers) {
-    CLP(DataContext) *gdc = new CLP(DataContext)(data);
-    _glGenBuffers(1, &gdc->_index);
-
-    /*
-    _glBindBuffer(GL_ARRAY_BUFFER, gdc->_index);
-    _glBufferData(GL_ARRAY_BUFFER, gdc->get_data()->get_num_bytes(),
-                  gdc->get_data()->get_data(), 
-                  get_usage(gdc->get_data()->get_usage_hint()));
-    add_to_data_record(gdc);
-    gdc->mark_loaded();
-    */
+    CLP(VertexBufferContext) *gvbc = new CLP(VertexBufferContext)(data);
+    _glGenBuffers(1, &gvbc->_index);
     
     report_my_gl_errors();
-    return gdc;
+    return gvbc;
   }
 
   return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::apply_data
+//     Function: CLP(GraphicsStateGuardian)::apply_vertex_buffer
 //       Access: Public
 //  Description: Makes the data the currently available data for
 //               rendering.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-apply_data(DataContext *dc) {
+apply_vertex_buffer(VertexBufferContext *vbc) {
   nassertv(_supports_buffers);
 
-  CLP(DataContext) *gdc = DCAST(CLP(DataContext), dc);
+  CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext), vbc);
 
-  _glBindBuffer(GL_ARRAY_BUFFER, gdc->_index);
+  _glBindBuffer(GL_ARRAY_BUFFER, gvbc->_index);
   
-  add_to_data_record(gdc);
-  if (gdc->was_modified()) {
+  add_to_vertex_buffer_record(gvbc);
+  if (gvbc->was_modified()) {
     if (GLCAT.is_debug()) {
       GLCAT.debug()
-        << "apply_data(" << (void *)dc->get_data() << ")\n";
+        << "apply_vertex_buffer(" << (void *)vbc->get_data() << ")\n";
     }
-    if (gdc->changed_size()) {
-      _glBufferData(GL_ARRAY_BUFFER, gdc->get_data()->get_num_bytes(),
-                    gdc->get_data()->get_data(), 
-                    get_usage(gdc->get_data()->get_usage_hint()));
+    if (gvbc->changed_size()) {
+      _glBufferData(GL_ARRAY_BUFFER, gvbc->get_data()->get_data_size_bytes(),
+                    gvbc->get_data()->get_data(), 
+                    get_usage(gvbc->get_data()->get_usage_hint()));
 
     } else {
-      _glBufferSubData(GL_ARRAY_BUFFER, 0, gdc->get_num_bytes(),
-                       gdc->get_data()->get_data());
+      _glBufferSubData(GL_ARRAY_BUFFER, 0, gvbc->get_data_size_bytes(),
+                       gvbc->get_data()->get_data());
     }
 
-    gdc->mark_loaded();
+    gvbc->mark_loaded();
   }
 
   report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::release_data
+//     Function: CLP(GraphicsStateGuardian)::release_vertex_buffer
 //       Access: Public, Virtual
 //  Description: Frees the GL resources previously allocated for the
 //               data.  This function should never be called
@@ -2418,22 +2426,22 @@ apply_data(DataContext *dc) {
 //               let the Data destruct).
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-release_data(DataContext *dc) {
+release_vertex_buffer(VertexBufferContext *vbc) {
   if (GLCAT.is_debug()) {
     GLCAT.debug()
-      << "release_data(" << (void *)dc->get_data() << ")\n";
+      << "release_vertex_buffer(" << (void *)vbc->get_data() << ")\n";
   }
 
   nassertv(_supports_buffers);
   
-  CLP(DataContext) *gdc = DCAST(CLP(DataContext), dc);
+  CLP(VertexBufferContext) *gvbc = DCAST(CLP(VertexBufferContext), vbc);
 
-  _glDeleteBuffers(1, &gdc->_index);
+  _glDeleteBuffers(1, &gvbc->_index);
   report_my_gl_errors();
 
-  gdc->_index = 0;
+  gvbc->_index = 0;
 
-  delete gdc;
+  delete gvbc;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2457,7 +2465,7 @@ setup_array_data(const qpGeomVertexArrayData *data) {
     return data->get_data();
   }
   if (!vertex_buffers ||
-      data->get_usage_hint() == qpGeomVertexArrayData::UH_client) {
+      data->get_usage_hint() == qpGeomUsageHint::UH_client) {
     // The array specifies client rendering only, or buffer objects
     // are configured off.
     _glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -2465,28 +2473,144 @@ setup_array_data(const qpGeomVertexArrayData *data) {
   }
 
   // Prepare the buffer object and bind it.
-  DataContext *dc = ((qpGeomVertexArrayData *)data)->prepare_now(get_prepared_objects(), this);
-  nassertr(dc != (DataContext *)NULL, data->get_data());
-  apply_data(dc);
+  VertexBufferContext *vbc = ((qpGeomVertexArrayData *)data)->prepare_now(get_prepared_objects(), this);
+  nassertr(vbc != (VertexBufferContext *)NULL, data->get_data());
+  apply_vertex_buffer(vbc);
 
   // NULL is the OpenGL convention for the first byte of the buffer.
   return NULL;
 }
 
-#if 0
-static int logs[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048,
-                      4096, 0 };
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::prepare_index_buffer
+//       Access: Public, Virtual
+//  Description: Creates a new retained-mode representation of the
+//               given data, and returns a newly-allocated
+//               IndexBufferContext pointer to reference it.  It is the
+//               responsibility of the calling function to later
+//               call release_index_buffer() with this same pointer (which
+//               will also delete the pointer).
+//
+//               This function should not be called directly to
+//               prepare a data.  Instead, call Data::prepare().
+////////////////////////////////////////////////////////////////////
+IndexBufferContext *CLP(GraphicsStateGuardian)::
+prepare_index_buffer(qpGeomPrimitive *data) {
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "prepare_index_buffer(" << (void *)data << ")\n";
+  }
 
-// This function returns the smallest power of two greater than or
-// equal to x.
-static int binary_log_cap(const int x) {
-  int i = 0;
-  for (; (x > logs[i]) && (logs[i] != 0); ++i);
-  if (logs[i] == 0)
-    return 4096;
-  return logs[i];
+  if (_supports_buffers) {
+    CLP(IndexBufferContext) *gibc = new CLP(IndexBufferContext)(data);
+    _glGenBuffers(1, &gibc->_index);
+    
+    report_my_gl_errors();
+    return gibc;
+  }
+
+  return NULL;
 }
-#endif
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::apply_index_buffer
+//       Access: Public
+//  Description: Makes the data the currently available data for
+//               rendering.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+apply_index_buffer(IndexBufferContext *ibc) {
+  nassertv(_supports_buffers);
+
+  CLP(IndexBufferContext) *gibc = DCAST(CLP(IndexBufferContext), ibc);
+
+  _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gibc->_index);
+  
+  add_to_index_buffer_record(gibc);
+  if (gibc->was_modified()) {
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "apply_index_buffer(" << (void *)ibc->get_data() << ")\n";
+    }
+    if (gibc->changed_size()) {
+      _glBufferData(GL_ELEMENT_ARRAY_BUFFER, gibc->get_data()->get_data_size_bytes(),
+                    gibc->get_data()->get_vertices(), 
+                    get_usage(gibc->get_data()->get_usage_hint()));
+
+    } else {
+      _glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, gibc->get_data_size_bytes(),
+                       gibc->get_data()->get_vertices());
+    }
+
+    gibc->mark_loaded();
+  }
+
+  report_my_gl_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::release_index_buffer
+//       Access: Public, Virtual
+//  Description: Frees the GL resources previously allocated for the
+//               data.  This function should never be called
+//               directly; instead, call Data::release() (or simply
+//               let the Data destruct).
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+release_index_buffer(IndexBufferContext *ibc) {
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "release_index_buffer(" << (void *)ibc->get_data() << ")\n";
+  }
+
+  nassertv(_supports_buffers);
+  
+  CLP(IndexBufferContext) *gibc = DCAST(CLP(IndexBufferContext), ibc);
+
+  _glDeleteBuffers(1, &gibc->_index);
+  report_my_gl_errors();
+
+  gibc->_index = 0;
+
+  delete gibc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::setup_primitive
+//       Access: Public
+//  Description: Internal function to bind a buffer object for the
+//               indicated primitive's index list, if appropriate, or
+//               to unbind a buffer object if it should be rendered
+//               from client memory.
+//
+//               If the buffer object is bound, this function returns
+//               NULL (reprsenting the start of the buffer object in
+//               server memory); if the buffer object is not bound,
+//               this function returns the pointer to the data array
+//               in client memory, that is, the data array passed in.
+////////////////////////////////////////////////////////////////////
+const unsigned short *CLP(GraphicsStateGuardian)::
+setup_primitive(const qpGeomPrimitive *data) {
+  if (!_supports_buffers) {
+    // No support for buffer objects; always render from client.
+    return data->get_vertices();
+  }
+  if (!vertex_buffers ||
+      data->get_usage_hint() == qpGeomUsageHint::UH_client) {
+    // The array specifies client rendering only, or buffer objects
+    // are configured off.
+    _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    return data->get_vertices();
+  }
+
+  // Prepare the buffer object and bind it.
+  IndexBufferContext *ibc = ((qpGeomPrimitive *)data)->prepare_now(get_prepared_objects(), this);
+  nassertr(ibc != (IndexBufferContext *)NULL, data->get_vertices());
+  apply_index_buffer(ibc);
+
+  // NULL is the OpenGL convention for the first byte of the buffer.
+  return NULL;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::get_geom_munger
@@ -4598,18 +4722,18 @@ get_blend_func(ColorBlendAttrib::Operand operand) {
 //  Description: Maps from UsageHint to the GL symbol.
 ////////////////////////////////////////////////////////////////////
 GLenum CLP(GraphicsStateGuardian)::
-get_usage(qpGeomVertexArrayData::UsageHint usage_hint) {
+get_usage(qpGeomUsageHint::UsageHint usage_hint) {
   switch (usage_hint) {
-  case qpGeomVertexArrayData::UH_stream:
+  case qpGeomUsageHint::UH_stream:
     return GL_STREAM_DRAW;
 
-  case qpGeomVertexArrayData::UH_static:
+  case qpGeomUsageHint::UH_static:
     return GL_STATIC_DRAW;
 
-  case qpGeomVertexArrayData::UH_dynamic:
+  case qpGeomUsageHint::UH_dynamic:
     return GL_DYNAMIC_DRAW;
 
-  case qpGeomVertexArrayData::UH_client:
+  case qpGeomUsageHint::UH_client:
     break;
   }
 

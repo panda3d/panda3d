@@ -20,8 +20,10 @@
 #define qpGEOMPRIMITIVE_H
 
 #include "pandabase.h"
+#include "qpgeomUsageHint.h"
 #include "typedWritableReferenceCount.h"
 #include "luse.h"
+#include "updateSeq.h"
 #include "pointerTo.h"
 #include "pta_ushort.h"
 #include "pta_int.h"
@@ -32,8 +34,9 @@
 #include "pipelineCycler.h"
 
 class qpGeomVertexData;
+class PreparedGraphicsObjects;
+class IndexBufferContext;
 class GraphicsStateGuardianBase;
-class GeomContext;
 class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
@@ -61,7 +64,7 @@ class FactoryParams;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA qpGeomPrimitive : public TypedWritableReferenceCount {
 PUBLISHED:
-  qpGeomPrimitive();
+  qpGeomPrimitive(qpGeomUsageHint::UsageHint usage_hint);
   qpGeomPrimitive(const qpGeomPrimitive &copy);
   virtual ~qpGeomPrimitive();
 
@@ -88,6 +91,8 @@ PUBLISHED:
     SM_flat_last_vertex,
   };
 
+  INLINE qpGeomUsageHint::UsageHint get_usage_hint() const;
+
   INLINE ShadeModel get_shade_model() const;
   INLINE void set_shade_model(ShadeModel shade_model);
 
@@ -112,6 +117,8 @@ PUBLISHED:
   INLINE CPTA_ushort get_maxs() const;
 
   int get_num_bytes() const;
+  INLINE int get_data_size_bytes() const;
+  INLINE UpdateSeq get_modified() const;
 
   INLINE int get_min_vertex() const;
   INLINE int get_min_vertex(int i) const;
@@ -132,6 +139,17 @@ PUBLISHED:
 
   void clear_cache();
 
+  void prepare(PreparedGraphicsObjects *prepared_objects);
+
+public:
+  IndexBufferContext *prepare_now(PreparedGraphicsObjects *prepared_objects, 
+                                  GraphicsStateGuardianBase *gsg);
+  bool release(PreparedGraphicsObjects *prepared_objects);
+  int release_all();
+
+private:
+  void clear_prepared(PreparedGraphicsObjects *prepared_objects);
+
 public:
   virtual void draw(GraphicsStateGuardianBase *gsg) const=0;
 
@@ -151,6 +169,16 @@ protected:
   static PStatCollector _rotate_pcollector;
 
 private:
+  qpGeomUsageHint::UsageHint _usage_hint;
+
+  // A GeomPrimitive keeps a list (actually, a map) of all the
+  // PreparedGraphicsObjects tables that it has been prepared into.
+  // Each PGO conversely keeps a list (a set) of all the Geoms that
+  // have been prepared there.  When either destructs, it removes
+  // itself from the other's list.
+  typedef pmap<PreparedGraphicsObjects *, IndexBufferContext *> Contexts;
+  Contexts _contexts;
+
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {
   public:
@@ -167,6 +195,7 @@ private:
     PTA_int _ends;
     PTA_ushort _mins;
     PTA_ushort _maxs;
+    UpdateSeq _modified;
 
     bool _got_minmax;
     unsigned short _min_vertex;
@@ -206,6 +235,7 @@ private:
 
   friend class qpGeom;
   friend class qpGeomVertexCacheManager;
+  friend class PreparedGraphicsObjects;
 };
 
 #include "qpgeomPrimitive.I"

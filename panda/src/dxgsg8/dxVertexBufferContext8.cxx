@@ -1,4 +1,4 @@
-// Filename: dxDataContext8.cxx
+// Filename: dxVertexBufferContext8.cxx
 // Created by:  drose (18Mar05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,23 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "dxDataContext8.h"
+#include "dxVertexBufferContext8.h"
 #include "qpgeomVertexArrayData.h"
 #include "qpgeomVertexArrayFormat.h"
 #include "internalName.h"
 #include "config_dxgsg8.h"
 #include <d3dx8.h>
 
-TypeHandle DXDataContext8::_type_handle;
+TypeHandle DXVertexBufferContext8::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXDataContext8::Constructor
+//     Function: DXVertexBufferContext8::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-DXDataContext8::
-DXDataContext8(qpGeomVertexArrayData *data) :
-  DataContext(data),
+DXVertexBufferContext8::
+DXVertexBufferContext8(qpGeomVertexArrayData *data) :
+  VertexBufferContext(data),
   _vbuffer(NULL)
 {
   // Now fill in the FVF code.
@@ -88,12 +88,12 @@ DXDataContext8(qpGeomVertexArrayData *data) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXDataContext8::Destructor
+//     Function: DXVertexBufferContext8::Destructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-DXDataContext8::
-~DXDataContext8() {
+DXVertexBufferContext8::
+~DXVertexBufferContext8() {
   if (_vbuffer != NULL) {
     RELEASE(_vbuffer, dxgsg8, "vertex buffer", RELEASE_ONCE);
     _vbuffer = NULL;
@@ -101,11 +101,11 @@ DXDataContext8::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXDataContext8::create_vbuffer
+//     Function: DXVertexBufferContext8::create_vbuffer
 //       Access: Public
 //  Description: Creates a new vertex buffer and uploads data to it.
 ////////////////////////////////////////////////////////////////////
-void DXDataContext8::
+void DXVertexBufferContext8::
 create_vbuffer(DXScreenData &scrn) {
   if (_vbuffer != NULL) {
     RELEASE(_vbuffer, dxgsg8, "vertex buffer", RELEASE_ONCE);
@@ -113,7 +113,7 @@ create_vbuffer(DXScreenData &scrn) {
   }
 
   HRESULT hr = scrn.pD3DDevice->CreateVertexBuffer
-    (get_data()->get_num_bytes(), D3DUSAGE_WRITEONLY,
+    (get_data()->get_data_size_bytes(), D3DUSAGE_WRITEONLY,
      _fvf, D3DPOOL_MANAGED, &_vbuffer);
   if (FAILED(hr)) {
     dxgsg8_cat.warning()
@@ -126,24 +126,26 @@ create_vbuffer(DXScreenData &scrn) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXDataContext8::upload_data
+//     Function: DXVertexBufferContext8::upload_data
 //       Access: Public
 //  Description: Copies the latest data from the client store to
 //               DirectX.
 ////////////////////////////////////////////////////////////////////
-void DXDataContext8::
+void DXVertexBufferContext8::
 upload_data() {
   nassertv(_vbuffer != NULL);
 
+  int data_size = get_data()->get_data_size_bytes();
+
   BYTE *local_pointer;
-  HRESULT hr = _vbuffer->Lock(0, 0, &local_pointer, 0);
+  HRESULT hr = _vbuffer->Lock(0, data_size, &local_pointer, 0);
   if (FAILED(hr)) {
     dxgsg8_cat.error()
       << "VertexBuffer::Lock failed" << D3DERRORSTRING(hr);
     return;
   }
 
-  memcpy(local_pointer, get_data()->get_data(), get_data()->get_num_bytes());
+  memcpy(local_pointer, get_data()->get_data(), data_size);
 
   _vbuffer->Unlock();
 }

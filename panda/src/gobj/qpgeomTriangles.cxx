@@ -29,7 +29,9 @@ TypeHandle qpGeomTriangles::_type_handle;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 qpGeomTriangles::
-qpGeomTriangles() {
+qpGeomTriangles(qpGeomUsageHint::UsageHint usage_hint) :
+  qpGeomPrimitive(usage_hint)
+{
 }
  
 ////////////////////////////////////////////////////////////////////
@@ -158,7 +160,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 TypedWritable *qpGeomTriangles::
 make_from_bam(const FactoryParams &params) {
-  qpGeomTriangles *object = new qpGeomTriangles;
+  qpGeomTriangles *object = new qpGeomTriangles(qpGeomUsageHint::UH_client);
   DatagramIterator scan;
   BamReader *manager;
 

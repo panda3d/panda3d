@@ -99,9 +99,9 @@ public:
   virtual void apply_texture(TextureContext *tc);
   virtual void release_texture(TextureContext *tc);
 
-  virtual DataContext *prepare_data(qpGeomVertexArrayData *data);
-  void apply_data(DataContext *dc);
-  virtual void release_data(DataContext *dc);
+  virtual VertexBufferContext *prepare_vertex_buffer(qpGeomVertexArrayData *data);
+  void apply_vertex_buffer(VertexBufferContext *vbc);
+  virtual void release_vertex_buffer(VertexBufferContext *vbc);
 
   virtual CPT(qpGeomMunger) get_geom_munger(const RenderState *state);
 

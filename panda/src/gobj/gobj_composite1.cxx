@@ -1,6 +1,5 @@
 
 #include "boundedObject.cxx"
-#include "dataContext.cxx"
 #include "geom.cxx"
 #include "geomLine.cxx"
 #include "geomLinestrip.cxx"

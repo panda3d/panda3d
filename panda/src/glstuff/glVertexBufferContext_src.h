@@ -1,4 +1,4 @@
-// Filename: glDataContext_src.h
+// Filename: glVertexBufferContext_src.h
 // Created by:  drose (17Mar05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -17,16 +17,16 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pandabase.h"
-#include "dataContext.h"
+#include "vertexBufferContext.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : GLDataContext
+//       Class : GLVertexBufferContext
 // Description : Caches a GeomVertexArrayData on the GL as a buffer
 //               object.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_GL CLP(DataContext) : public DataContext {
+class EXPCL_GL CLP(VertexBufferContext) : public VertexBufferContext {
 public:
-  INLINE CLP(DataContext)(qpGeomVertexArrayData *data);
+  INLINE CLP(VertexBufferContext)(qpGeomVertexArrayData *data);
 
   // This is the GL "name" of the data object.
   GLuint _index;
@@ -36,9 +36,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    DataContext::init_type();
-    register_type(_type_handle, CLASSPREFIX_QUOTED "DataContext",
-                  DataContext::get_class_type());
+    VertexBufferContext::init_type();
+    register_type(_type_handle, CLASSPREFIX_QUOTED "VertexBufferContext",
+                  VertexBufferContext::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -49,5 +49,5 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "glDataContext_src.I"
+#include "glVertexBufferContext_src.I"
 

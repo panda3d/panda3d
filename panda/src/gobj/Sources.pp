@@ -12,7 +12,6 @@
   #define SOURCES \
     boundedObject.I boundedObject.h \
     config_gobj.h \
-    dataContext.I dataContext.h \
     drawable.h \
     geom.I geom.h \
     geomContext.I geomContext.h \
@@ -25,6 +24,7 @@
     qpgeomTriangles.h \
     qpgeomTristrips.h \
     qpgeomTrifans.h \
+    qpgeomUsageHint.h \
     qpgeomVertexArrayData.h qpgeomVertexArrayData.I \
     qpgeomVertexArrayFormat.h qpgeomVertexArrayFormat.I \
     qpgeomVertexCacheManager.h qpgeomVertexCacheManager.I \
@@ -32,6 +32,7 @@
     qpgeomVertexDataType.h qpgeomVertexDataType.I \
     qpgeomVertexFormat.h qpgeomVertexFormat.I \
     qpgeomVertexIterator.h qpgeomVertexIterator.I \
+    indexBufferContext.I indexBufferContext.h \
     internalName.I internalName.h \
     material.I material.h materialPool.I materialPool.h  \
     matrixLens.I matrixLens.h \
@@ -43,12 +44,12 @@
     texture.I texture.h \
     textureContext.I textureContext.h \
     texturePool.I texturePool.h \
-    textureStage.I textureStage.h
+    textureStage.I textureStage.h \
+    vertexBufferContext.I vertexBufferContext.h
     
   #define INCLUDED_SOURCES \
     boundedObject.cxx \
     config_gobj.cxx \
-    dataContext.cxx \
     drawable.cxx geom.cxx  \
     geomContext.cxx \
     geomLine.cxx geomLinestrip.cxx geomPoint.cxx geomPolygon.cxx  \
@@ -67,6 +68,7 @@
     qpgeomVertexDataType.cxx \
     qpgeomVertexFormat.cxx \
     qpgeomVertexIterator.cxx \
+    indexBufferContext.cxx \
     material.cxx  \
     internalName.cxx \
     materialPool.cxx matrixLens.cxx orthographicLens.cxx  \
@@ -74,12 +76,12 @@
     preparedGraphicsObjects.cxx \
     lens.cxx  \
     savedContext.cxx texture.cxx textureContext.cxx texturePool.cxx \
-    textureStage.cxx
+    textureStage.cxx \
+    vertexBufferContext.cxx
 
   #define INSTALL_HEADERS \
     boundedObject.I boundedObject.h \
     config_gobj.h \
-    dataContext.I dataContext.h \
     drawable.h geom.I geom.h \
     textureContext.I textureContext.h \
     geomLine.h \
@@ -92,6 +94,7 @@
     qpgeomTriangles.h \
     qpgeomTristrips.h \
     qpgeomTrifans.h \
+    qpgeomUsageHint.h \
     qpgeomVertexArrayData.h qpgeomVertexArrayData.I \
     qpgeomVertexArrayFormat.h qpgeomVertexArrayFormat.I \
     qpgeomVertexCacheManager.h qpgeomVertexCacheManager.I \
@@ -99,6 +102,7 @@
     qpgeomVertexDataType.h qpgeomVertexDataType.I \
     qpgeomVertexFormat.h qpgeomVertexFormat.I \
     qpgeomVertexIterator.h qpgeomVertexIterator.I \
+    indexBufferContext.I indexBufferContext.h \
     internalName.I internalName.h \
     material.I material.h \
     materialPool.I materialPool.h matrixLens.I matrixLens.h \
@@ -110,7 +114,9 @@
     texture.I texture.h \
     textureContext.I textureContext.h \
     texturePool.I texturePool.h \
-    textureStage.I textureStage.h
+    textureStage.I textureStage.h \
+    vertexBufferContext.I vertexBufferContext.h
+
 
   #define IGATESCAN all
 

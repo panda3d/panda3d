@@ -1,5 +1,5 @@
-// Filename: qpgeomTriangles.h
-// Created by:  drose (06Mar05)
+// Filename: glIndexBufferContext_src.h
+// Created by:  drose (17Mar05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,48 +16,29 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef qpGEOMTRIANGLES_H
-#define qpGEOMTRIANGLES_H
-
 #include "pandabase.h"
-#include "qpgeomPrimitive.h"
+#include "indexBufferContext.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : qpGeomTriangles
-// Description : Defines a series of disconnected triangles.
-//
-//               This is part of the experimental Geom rewrite.
+//       Class : GLIndexBufferContext
+// Description : Caches a GeomPrimitive on the GL as a buffer
+//               object.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA qpGeomTriangles : public qpGeomPrimitive {
-PUBLISHED:
-  qpGeomTriangles(qpGeomUsageHint::UsageHint usage_hint);
-  qpGeomTriangles(const qpGeomTriangles &copy);
-  virtual ~qpGeomTriangles();
-
-  virtual PT(qpGeomPrimitive) make_copy() const;
-
-  virtual int get_num_vertices_per_primitive() const;
-
+class EXPCL_GL CLP(IndexBufferContext) : public IndexBufferContext {
 public:
-  virtual void draw(GraphicsStateGuardianBase *gsg) const;
+  INLINE CLP(IndexBufferContext)(qpGeomPrimitive *data);
 
-protected:
-  virtual CPTA_ushort rotate_impl() const;
-
-public:
-  static void register_with_read_factory();
-
-protected:
-  static TypedWritable *make_from_bam(const FactoryParams &params);
+  // This is the GL "name" of the data object.
+  GLuint _index;
 
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    qpGeomPrimitive::init_type();
-    register_type(_type_handle, "qpGeomTriangles",
-                  qpGeomPrimitive::get_class_type());
+    IndexBufferContext::init_type();
+    register_type(_type_handle, CLASSPREFIX_QUOTED "IndexBufferContext",
+                  IndexBufferContext::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -66,8 +47,7 @@ public:
 
 private:
   static TypeHandle _type_handle;
-
-  friend class qpGeom;
 };
 
-#endif
+#include "glIndexBufferContext_src.I"
+

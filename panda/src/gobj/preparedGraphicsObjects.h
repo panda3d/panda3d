@@ -24,6 +24,7 @@
 #include "texture.h"
 #include "geom.h"
 #include "qpgeomVertexArrayData.h"
+#include "qpgeomPrimitive.h"
 #include "pointerTo.h"
 #include "pStatCollector.h"
 #include "pset.h"
@@ -31,7 +32,8 @@
 
 class TextureContext;
 class GeomContext;
-class DataContext;
+class VertexBufferContext;
+class IndexBufferContext;
 class GraphicsStateGuardianBase;
 
 ////////////////////////////////////////////////////////////////////
@@ -72,13 +74,23 @@ public:
 
   GeomContext *prepare_geom_now(Geom *geom, GraphicsStateGuardianBase *gsg);
 
-  void enqueue_data(qpGeomVertexArrayData *data);
-  bool dequeue_data(qpGeomVertexArrayData *data);
-  void release_data(DataContext *gc);
-  int release_all_datas();
+  void enqueue_vertex_buffer(qpGeomVertexArrayData *data);
+  bool dequeue_vertex_buffer(qpGeomVertexArrayData *data);
+  void release_vertex_buffer(VertexBufferContext *vbc);
+  int release_all_vertex_buffers();
 
-  DataContext *prepare_data_now(qpGeomVertexArrayData *data,
-                                GraphicsStateGuardianBase *gsg);
+  VertexBufferContext *
+  prepare_vertex_buffer_now(qpGeomVertexArrayData *data,
+                            GraphicsStateGuardianBase *gsg);
+
+  void enqueue_index_buffer(qpGeomPrimitive *data);
+  bool dequeue_index_buffer(qpGeomPrimitive *data);
+  void release_index_buffer(IndexBufferContext *ibc);
+  int release_all_index_buffers();
+
+  IndexBufferContext *
+  prepare_index_buffer_now(qpGeomPrimitive *data,
+                           GraphicsStateGuardianBase *gsg);
 
   void update(GraphicsStateGuardianBase *gsg);
 
@@ -87,16 +99,20 @@ private:
   typedef phash_set< PT(Texture) > EnqueuedTextures;
   typedef phash_set<GeomContext *, pointer_hash> Geoms;
   typedef phash_set< PT(Geom) > EnqueuedGeoms;
-  typedef phash_set<DataContext *, pointer_hash> Datas;
-  typedef phash_set< PT(qpGeomVertexArrayData) > EnqueuedDatas;
+  typedef phash_set<VertexBufferContext *, pointer_hash> VertexBuffers;
+  typedef phash_set< PT(qpGeomVertexArrayData) > EnqueuedVertexBuffers;
+  typedef phash_set<IndexBufferContext *, pointer_hash> IndexBuffers;
+  typedef phash_set< PT(qpGeomPrimitive) > EnqueuedIndexBuffers;
 
   Mutex _lock;
   Textures _prepared_textures, _released_textures;  
   EnqueuedTextures _enqueued_textures;
   Geoms _prepared_geoms, _released_geoms;  
   EnqueuedGeoms _enqueued_geoms;
-  Datas _prepared_datas, _released_datas;  
-  EnqueuedDatas _enqueued_datas;
+  VertexBuffers _prepared_vertex_buffers, _released_vertex_buffers;  
+  EnqueuedVertexBuffers _enqueued_vertex_buffers;
+  IndexBuffers _prepared_index_buffers, _released_index_buffers;  
+  EnqueuedIndexBuffers _enqueued_index_buffers;
 
   static PStatCollector _total_texusage_pcollector;
   static PStatCollector _total_buffers_pcollector;

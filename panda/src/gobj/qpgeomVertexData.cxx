@@ -44,7 +44,7 @@ qpGeomVertexData() {
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexData::
 qpGeomVertexData(const qpGeomVertexFormat *format,
-                 qpGeomVertexArrayData::UsageHint usage_hint) :
+                 qpGeomUsageHint::UsageHint usage_hint) :
   _format(format),
   _usage_hint(usage_hint)
 {
@@ -132,7 +132,7 @@ get_num_vertices() const {
 
   // Look up the answer on the first array (since any array will do).
   int stride = _format->get_array(0)->get_stride();
-  return cdata->_arrays[0]->get_num_bytes() / stride;
+  return cdata->_arrays[0]->get_data_size_bytes() / stride;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -211,7 +211,7 @@ get_num_bytes() const {
 
   Arrays::const_iterator ai;
   for (ai = cdata->_arrays.begin(); ai != cdata->_arrays.end(); ++ai) {
-    num_bytes += (*ai)->get_num_bytes();
+    num_bytes += (*ai)->get_data_size_bytes();
   }
 
   return num_bytes;
@@ -405,7 +405,7 @@ set_data(int array, const qpGeomVertexDataType *data_type,
 
   {
     CDReader cdata(_cycler);
-    int array_size = (int)cdata->_arrays[array]->get_num_bytes();
+    int array_size = (int)cdata->_arrays[array]->get_data_size_bytes();
     if (element + data_type->get_total_bytes() > array_size) {
       // Whoops, we need more vertices!
       CDWriter cdataw(_cycler, cdata);

@@ -104,10 +104,15 @@ public:
   virtual GeomContext *prepare_geom(Geom *geom);
   virtual void release_geom(GeomContext *gc);
 
-  virtual DataContext *prepare_data(qpGeomVertexArrayData *data);
-  void apply_data(DataContext *dc);
-  virtual void release_data(DataContext *dc);
+  virtual VertexBufferContext *prepare_vertex_buffer(qpGeomVertexArrayData *data);
+  void apply_vertex_buffer(VertexBufferContext *vbc);
+  virtual void release_vertex_buffer(VertexBufferContext *vbc);
   const unsigned char *setup_array_data(const qpGeomVertexArrayData *data);
+
+  virtual IndexBufferContext *prepare_index_buffer(qpGeomPrimitive *data);
+  void apply_index_buffer(IndexBufferContext *ibc);
+  virtual void release_index_buffer(IndexBufferContext *ibc);
+  const unsigned short *setup_primitive(const qpGeomPrimitive *data);
 
   virtual CPT(qpGeomMunger) get_geom_munger(const RenderState *state);
 
@@ -242,7 +247,7 @@ protected:
   static GLenum get_fog_mode_type(Fog::Mode m);
   static GLenum get_blend_equation_type(ColorBlendAttrib::Mode mode);
   static GLenum get_blend_func(ColorBlendAttrib::Operand operand);
-  static GLenum get_usage(qpGeomVertexArrayData::UsageHint usage_hint);
+  static GLenum get_usage(qpGeomUsageHint::UsageHint usage_hint);
 
   static CPT(RenderState) get_untextured_state();
   static CPT(RenderState) get_smooth_state();

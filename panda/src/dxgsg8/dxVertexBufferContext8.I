@@ -1,5 +1,5 @@
-// Filename: glstuff_src.cxx
-// Created by:  drose (09Feb04)
+// Filename: dxVertexBufferContext8.I
+// Created by:  drose (18Mar05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,19 +15,4 @@
 // panda3d-general@lists.sourceforge.net .
 //
 ////////////////////////////////////////////////////////////////////
-
-// This .cxx file includes all of the gl-related .cxx files in this
-// directory.  It works just like glstuff_src.h; see the comments in
-// that file for an explanation for what you're supposed to declare in
-// order to include this file.
-
-#include "glmisc_src.cxx"
-#include "glTextureContext_src.cxx"
-#include "glVertexBufferContext_src.cxx"
-#include "glIndexBufferContext_src.cxx"
-#include "glGeomContext_src.cxx"
-#include "glGeomMunger_src.cxx"
-#include "glCgShaderContext_src.cxx"
-#include "glGraphicsStateGuardian_src.cxx"
-
 

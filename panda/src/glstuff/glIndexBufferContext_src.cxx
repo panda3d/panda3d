@@ -1,4 +1,4 @@
-// Filename: glDataContext_src.cxx
+// Filename: glIndexBufferContext_src.cxx
 // Created by:  drose (17Mar05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,4 +16,4 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-TypeHandle CLP(DataContext)::_type_handle;
+TypeHandle CLP(IndexBufferContext)::_type_handle;

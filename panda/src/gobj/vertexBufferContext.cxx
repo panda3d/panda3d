@@ -1,4 +1,4 @@
-// Filename: dataContext.cxx
+// Filename: vertexBufferContext.cxx
 // Created by:  drose (17Mar05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,6 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "dataContext.h"
+#include "vertexBufferContext.h"
 
-TypeHandle DataContext::_type_handle;
+TypeHandle VertexBufferContext::_type_handle;

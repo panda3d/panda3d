@@ -41,7 +41,8 @@
 
 #include "glmisc_src.h"
 #include "glTextureContext_src.h"
-#include "glDataContext_src.h"
+#include "glVertexBufferContext_src.h"
+#include "glIndexBufferContext_src.h"
 #include "glGeomContext_src.h"
 #include "glGeomMunger_src.h"
 #include "glCgShaderContext_src.h"
