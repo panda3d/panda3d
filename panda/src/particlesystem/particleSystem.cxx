@@ -55,6 +55,7 @@ ParticleSystem(int pool_size) :
   _system_lifespan = 0.0f;
   _i_was_spawned_flag = false;
   _particle_pool_size = 0;
+  _floor_z = _FPCLASS_NINF;
 
   // just in case someone tries to do something that requires the
   // use of an emitter, renderer, or factory before they've actually
@@ -190,7 +191,7 @@ birth_particle(void) {
   bp->reset_position(world_pos/* + (NORMALIZED_RAND() * new_vel)*/);
   bp->set_velocity(new_vel);
 
-  _living_particles++;
+  ++_living_particles;
 
   // propogate information down to renderer
   _renderer->birth_particle(pool_index);
@@ -212,7 +213,7 @@ birth_litter() {
   if (_litter_spread != 0)
     litter_size += I_SPREAD(_litter_spread);
 
-  for (i = 0; i < litter_size; i++) {
+  for (i = 0; i < litter_size; ++i) {
     if (birth_particle() == false)
       return;
   }
@@ -508,11 +509,18 @@ update(float dt) {
     age = bp->get_age() + dt;
     bp->set_age(age);
 
-    if (age >= bp->get_lifespan())
+    //cerr<<"bp->get_position().get_z() returning "<<bp->get_position().get_z()<<endl;
+    if (age >= bp->get_lifespan()) {
       kill_particle(current_index);
-    else
+    } else if (get_floor_z() != _FPCLASS_NINF
+            && bp->get_position().get_z() <= get_floor_z()) {
+      // ...the particle is going under the floor.
+      // Maybe tell the particle to bounce: bp->bounce()?
+      kill_particle(current_index);
+    } else {
       bp->update();
-
+    }
+      
     // break out early if we're lucky
     ttl_updates_left--;
   }
