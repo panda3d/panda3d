@@ -32,7 +32,7 @@ private:
 
   typedef void UpdateFunc(void);
   typedef void ShutdownFunc(void);
-  typedef set<AudioSound*> LoopSet;
+  typedef set<PT(AudioSound)> LoopSet;
   static AudioManager* _global_ptr;
   static UpdateFunc* _update_func;
   static ShutdownFunc* _shutdown_func;

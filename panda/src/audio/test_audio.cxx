@@ -18,10 +18,11 @@ main(int argc, char* argv[]) {
     }
 
   {
-    AudioSound* tester = AudioPool::load_sound(argv[1]);
-    AudioPool::release_all_sounds();
-    cerr << "all sounds but 1 released" << endl;
-    delete tester;
+    {
+      PT(AudioSound) tester = AudioPool::load_sound(argv[1]);
+      AudioPool::release_all_sounds();
+      cerr << "all sounds but 1 released" << endl;
+    }
     cerr << "all sounds released" << endl;
   }
 

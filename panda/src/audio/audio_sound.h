@@ -7,9 +7,7 @@
 #define __AUDIO_SOUND_H__
 
 #include "audio_trait.h"
-/*
-#include "typedReferenceCount.h"
-*/
+#include <typedReferenceCount.h>
 #include <typeHandle.h>
 #include <namable.h>
 #include <pointerTo.h>
@@ -19,9 +17,9 @@ class AudioPool;
 class AudioManager;
 
 /*
-class EXPCL_PANDA AudioSound : public TypedReferenceCount, public Namable {
-*/
 class EXPCL_PANDA AudioSound : public TypedObject, public Namable {
+*/
+class EXPCL_PANDA AudioSound : public TypedReferenceCount, public Namable {
 private:
   PT(AudioTraits::SoundClass) _sound;
   AudioTraits::PlayingClass *_state;
