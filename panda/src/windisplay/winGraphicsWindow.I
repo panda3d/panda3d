@@ -23,10 +23,10 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void WinGraphicsWindow::
-handle_keypress(ButtonHandle key, int x, int y) {
+handle_keypress(ButtonHandle key, int x, int y, double time) {
   _input_devices[0].set_pointer_in_window(x, y);
   if (key != ButtonHandle::none()) {
-    _input_devices[0].button_down(key);
+    _input_devices[0].button_down(key, time);
   }
 }
 
@@ -38,9 +38,9 @@ handle_keypress(ButtonHandle key, int x, int y) {
 //               tracking the state of modifier keys.
 ////////////////////////////////////////////////////////////////////
 INLINE void WinGraphicsWindow::
-handle_keyresume(ButtonHandle key) {
+handle_keyresume(ButtonHandle key, double time) {
   if (key != ButtonHandle::none()) {
-    _input_devices[0].button_resume_down(key);
+    _input_devices[0].button_resume_down(key, time);
   }
 }
 
@@ -50,9 +50,9 @@ handle_keyresume(ButtonHandle key) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void WinGraphicsWindow::
-handle_keyrelease(ButtonHandle key) {
+handle_keyrelease(ButtonHandle key, double time) {
   if (key != ButtonHandle::none()) {
-    _input_devices[0].button_up(key);
+    _input_devices[0].button_up(key, time);
   }
 }
 
@@ -107,4 +107,20 @@ set_cursor_out_of_window() {
   if (_cursor_window == this) {
     update_cursor_window(NULL);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::get_message_time
+//       Access: Private, Static
+//  Description: May be called only during the servicing of a Windows
+//               message.  This returns the time the message was added
+//               to the Windows message queue (as reported via
+//               GetMessageTime()), converted into global clock units.
+////////////////////////////////////////////////////////////////////
+INLINE double WinGraphicsWindow::
+get_message_time() {
+  DWORD now_ticks = GetTickCount();
+  double now_time = ClockObject::get_global_clock()->get_real_time();
+  DWORD elapsed_ticks = now_ticks - GetMessageTime();
+  return now_time - (double)elapsed_ticks / 1000.0;
 }

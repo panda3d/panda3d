@@ -85,13 +85,15 @@ private:
 
   static void process_1_event();
 
-  INLINE void handle_keypress(ButtonHandle key, int x, int y);
-  INLINE void handle_keyresume(ButtonHandle key);
-  INLINE void handle_keyrelease(ButtonHandle key);
+  INLINE void handle_keypress(ButtonHandle key, int x, int y, double time);
+  INLINE void handle_keyresume(ButtonHandle key, double time);
+  INLINE void handle_keyrelease(ButtonHandle key, double time);
   ButtonHandle lookup_key(WPARAM wparam) const;
   INLINE int translate_mouse(int pos) const;
   INLINE void set_cursor_in_window();
   INLINE void set_cursor_out_of_window();
+
+  INLINE static double get_message_time();
 
   void resend_lost_keypresses();
   static void update_cursor_window(WinGraphicsWindow *to_window);

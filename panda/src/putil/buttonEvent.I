@@ -26,7 +26,8 @@ INLINE ButtonEvent::
 ButtonEvent() :
   _button(ButtonHandle::none()),
   _keycode(0),
-  _type(T_down)
+  _type(T_down),
+  _time(0.0)
 {
 }
 
@@ -36,10 +37,11 @@ ButtonEvent() :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ButtonEvent::
-ButtonEvent(ButtonHandle button, ButtonEvent::Type type) :
+ButtonEvent(ButtonHandle button, ButtonEvent::Type type, double time) :
   _button(button),
   _keycode(0),
-  _type(type)
+  _type(type),
+  _time(time)
 {
 }
 
@@ -49,10 +51,11 @@ ButtonEvent(ButtonHandle button, ButtonEvent::Type type) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ButtonEvent::
-ButtonEvent(short keycode) :
+ButtonEvent(short keycode, double time) :
   _button(ButtonHandle::none()),
   _keycode(keycode),
-  _type(T_keystroke)
+  _type(T_keystroke),
+  _time(time)
 {
 }
 
@@ -65,7 +68,8 @@ INLINE ButtonEvent::
 ButtonEvent(const ButtonEvent &copy) :
   _button(copy._button),
   _keycode(copy._keycode),
-  _type(copy._type)
+  _type(copy._type),
+  _time(copy._time)
 {
 }
 
@@ -79,12 +83,14 @@ operator = (const ButtonEvent &copy) {
   _button = copy._button;
   _keycode = copy._keycode;
   _type = copy._type;
+  _time = copy._time;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonEvent::Equality Operator
 //       Access: Public
-//  Description:
+//  Description: The equality operator does not consider time
+//               significant.
 ////////////////////////////////////////////////////////////////////
 INLINE bool ButtonEvent::
 operator == (const ButtonEvent &other) const {

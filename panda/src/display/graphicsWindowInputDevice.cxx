@@ -154,8 +154,8 @@ get_button_event() {
 //  Description: Records that the indicated button has been depressed.
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
-button_down(ButtonHandle button) {
-  _button_events.push_back(ButtonEvent(button, ButtonEvent::T_down));
+button_down(ButtonHandle button, double time) {
+  _button_events.push_back(ButtonEvent(button, ButtonEvent::T_down, time));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -167,8 +167,8 @@ button_down(ButtonHandle button) {
 //               state of modifier keys.
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
-button_resume_down(ButtonHandle button) {
-  _button_events.push_back(ButtonEvent(button, ButtonEvent::T_resume_down));
+button_resume_down(ButtonHandle button, double time) {
+  _button_events.push_back(ButtonEvent(button, ButtonEvent::T_resume_down, time));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -177,8 +177,8 @@ button_resume_down(ButtonHandle button) {
 //  Description: Records that the indicated button has been released.
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
-button_up(ButtonHandle button) {
-  _button_events.push_back(ButtonEvent(button, ButtonEvent::T_up));
+button_up(ButtonHandle button, double time) {
+  _button_events.push_back(ButtonEvent(button, ButtonEvent::T_up, time));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -188,6 +188,6 @@ button_up(ButtonHandle button) {
 //               generated.
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
-keystroke(int keycode) {
-  _button_events.push_back(ButtonEvent(keycode));
+keystroke(int keycode, double time) {
+  _button_events.push_back(ButtonEvent(keycode, time));
 }

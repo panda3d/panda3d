@@ -43,6 +43,7 @@ ButtonThrower(const string &name) :
 
   _button_events = new ButtonEventList;
 
+  _time_flag = false;
   _throw_buttons_active = false;
 }
 
@@ -55,40 +56,6 @@ ButtonThrower::
 ~ButtonThrower() {
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonThrower::set_prefix
-//       Access: Published
-//  Description: Sets the prefix which is prepended to all event names
-//               thrown by this object.
-////////////////////////////////////////////////////////////////////
-void ButtonThrower::
-set_prefix(const string &prefix) {
-  _prefix = prefix;
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonThrower::has_prefix
-//       Access: Published
-//  Description: Returns true if the ButtonThrower has a prefix set,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
-bool ButtonThrower::
-has_prefix() const {
-  return !_prefix.empty();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonThrower::get_prefix
-//       Access: Published
-//  Description: Returns the prefix that has been set on this
-//               ButtonThrower.  See set_prefix().
-////////////////////////////////////////////////////////////////////
-string ButtonThrower::
-get_prefix() const {
-  return _prefix;
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonThrower::add_parameter
@@ -126,75 +93,6 @@ EventParameter ButtonThrower::
 get_parameter(int n) const {
   nassertr(n >= 0 && n < (int)_parameters.size(), EventParameter(0));
   return _parameters[n];
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonThrower::get_modifier_buttons
-//       Access: Published
-//  Description: Returns the set of ModifierButtons that the
-//               ButtonThrower will consider important enough to
-//               prepend the event name with.  Normally, this set will
-//               be empty, and the ButtonThrower will therefore ignore
-//               all ModifierButtons attached to the key events, but
-//               if one or more buttons have been added to this set,
-//               and those modifier buttons are set on the button
-//               event, then the event name will be prepended with the
-//               names of the modifier buttons.
-////////////////////////////////////////////////////////////////////
-const ModifierButtons &ButtonThrower::
-get_modifier_buttons() const {
-  return _mods;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonThrower::set_modifier_buttons
-//       Access: Published
-//  Description: Changes the set of ModifierButtons that the
-//               ButtonThrower will consider important enough to
-//               prepend the event name with.  Normally, this set will
-//               be empty, and the ButtonThrower will therefore ignore
-//               all ModifierButtons attached to the key events, but
-//               if one or more buttons have been added to this set,
-//               then the event name will be prepended with the names
-//               of the modifier buttons.
-//
-//               It is recommended that you change this setting by
-//               first calling get_modifier_buttons(), making
-//               adjustments, and passing the new value to
-//               set_modifier_buttons().  This way the current state
-//               of the modifier buttons will not be lost.
-////////////////////////////////////////////////////////////////////
-void ButtonThrower::
-set_modifier_buttons(const ModifierButtons &mods) {
-  _mods = mods;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonThrower::set_throw_buttons_active
-//       Access: Published
-//  Description: Sets the flag that indicates whether the
-//               ButtonThrower will only process events for the
-//               explicitly named buttons or not.  Normally this is
-//               false, meaning all buttons are processed; set it true
-//               to indicate that only some buttons should be
-//               processed.  See add_throw_button().
-////////////////////////////////////////////////////////////////////
-void ButtonThrower::
-set_throw_buttons_active(bool flag) {
-  _throw_buttons_active = flag;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ButtonThrower::get_throw_buttons_active
-//       Access: Published
-//  Description: Returns the flag that indicates whether the
-//               ButtonThrower will only process events for the
-//               explicitly named buttons or not.  See
-//               set_throw_buttons_active().
-////////////////////////////////////////////////////////////////////
-bool ButtonThrower::
-get_throw_buttons_active() const {
-  return _throw_buttons_active;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -370,8 +268,12 @@ write(ostream &out, int indent_level) const {
 //               all of the user-requested parameters.
 ////////////////////////////////////////////////////////////////////
 void ButtonThrower::
-do_throw_event(const string &event_name) {
+do_throw_event(const string &event_name, double time) {
   Event *event = new Event(_prefix + event_name);
+
+  if (_time_flag) {
+    event->add_parameter(time);
+  }
 
   ParameterList::const_iterator pi;
   for (pi = _parameters.begin(); pi != _parameters.end(); ++pi) {
@@ -419,7 +321,7 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
 
         if (!_throw_buttons_active || has_throw_button(_mods, be._button)) {
           // Process this button.
-          do_throw_event(event_name);
+          do_throw_event(event_name, be._time);
           
         } else {
           // Don't process this button; instead, pass it down to future
@@ -442,7 +344,7 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
         // definition for the button at all, regardless of the state
         // of the modifier keys.
         if (!_throw_buttons_active || has_throw_button(be._button)) {
-          do_throw_event(event_name + "-up");
+          do_throw_event(event_name + "-up", be._time);
         }
         if (_throw_buttons_active) {
           // Now pass the event on to future generations.  We always

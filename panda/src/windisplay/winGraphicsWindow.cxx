@@ -782,7 +782,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         }
         SetCapture(hwnd);
         handle_keypress(MouseButton::button(button), 
-                        translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+                        translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)),
+                        get_message_time());
         break;
     
       case WM_LBUTTONUP:
@@ -801,7 +802,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           button = 2;
         }
         ReleaseCapture();
-        handle_keyrelease(MouseButton::button(button));
+        handle_keyrelease(MouseButton::button(button), get_message_time());
         break;
     
       case WM_IME_NOTIFY:
@@ -913,7 +914,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           POINT point;
           GetCursorPos(&point);
           ScreenToClient(hwnd, &point);
-          handle_keypress(lookup_key(wparam), point.x, point.y);
+          handle_keypress(lookup_key(wparam), point.x, point.y, 
+                          get_message_time());
           if (wparam == VK_F10) {
             // bypass default windproc F10 behavior (it activates the main
             // menu, but we have none)
@@ -944,12 +946,17 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           windisplay_cat.debug()
             << "keydown: " << wparam << " (" << lookup_key(wparam) << ")\n";
         }
-        {
+
+        // If this bit is not zero, this is just a keyrepeat echo; we
+        // ignore these for handle_keypress (we respect keyrepeat only
+        // for handle_keystroke).
+        if ((lparam & 0x40000000) == 0) {
           POINT point;
           
           GetCursorPos(&point);
           ScreenToClient(hwnd, &point);
-          handle_keypress(lookup_key(wparam), point.x, point.y);
+          handle_keypress(lookup_key(wparam), point.x, point.y,
+                          get_message_time());
     
           // Handle Cntrl-V paste from clipboard.  Is there a better way
           // to detect this hotkey?
@@ -987,7 +994,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           windisplay_cat.debug()
             << "keyup: " << wparam << " (" << lookup_key(wparam) << ")\n";
         }
-        handle_keyrelease(lookup_key(wparam));
+        handle_keyrelease(lookup_key(wparam), get_message_time());
         break;
     
       case WM_KILLFOCUS: 
@@ -1017,10 +1024,11 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             // If we don't want to remember the keystate while the
             // window focus is lost, then generate a keyup event
             // right now for each key currently held.
+            double message_time = get_message_time();
             for (int i = 0; i < num_virtual_keys; i++) {
               if (i != VK_SHIFT && i != VK_CONTROL && i != VK_MENU) {
                 if ((_keyboard_state[i] & 0x80) != 0) {
-                  handle_keyrelease(lookup_key(i));
+                  handle_keyrelease(lookup_key(i), message_time);
                   _keyboard_state[i] &= ~0x80;
                 }
               }
@@ -1135,6 +1143,7 @@ resend_lost_keypresses() {
   BYTE new_keyboard_state[num_virtual_keys];
   GetKeyboardState(new_keyboard_state);
 
+  double message_time = get_message_time();
   for (int i = 0; i < num_virtual_keys; i++) {
     // Filter out these particular three.  We don't want to test
     // these, because these are virtual duplicates for
@@ -1152,14 +1161,14 @@ resend_lost_keypresses() {
               << "key has gone down: " << i << " (" << lookup_key(i) << ")\n";
           }
           
-          handle_keyresume(lookup_key(i));
+          handle_keyresume(lookup_key(i), message_time);
         } else {
           // The key is now released.
           if (windisplay_cat.is_debug()) {
             windisplay_cat.debug()
               << "key has gone up: " << i << " (" << lookup_key(i) << ")\n";
           }
-          handle_keyrelease(lookup_key(i));
+          handle_keyrelease(lookup_key(i), message_time);
         }
       } else {
         // This key is in the same state.

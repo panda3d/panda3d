@@ -10,7 +10,7 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 
   #define SOURCES  \
-    buttonThrower.h \
+    buttonThrower.I buttonThrower.h \
     config_tform.h \
     driveInterface.I driveInterface.h \
     mouseWatcher.I mouseWatcher.h \
@@ -31,7 +31,7 @@
     transform2sg.cxx 
 
   #define INSTALL_HEADERS \
-    buttonThrower.h \
+    buttonThrower.I buttonThrower.h \
     driveInterface.I driveInterface.h \
     mouseWatcher.I mouseWatcher.h \
     mouseWatcherGroup.h \

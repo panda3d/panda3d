@@ -23,6 +23,7 @@
 
 #include "buttonEvent.h"
 #include "mouseData.h"
+#include "clockObject.h"
 
 #include "pdeque.h"
 #include "pvector.h"
@@ -61,10 +62,10 @@ public:
 public:
   // The following interface is for the various kinds of
   // GraphicsWindows to record the data incoming on the device.
-  void button_down(ButtonHandle button);
-  void button_resume_down(ButtonHandle button);
-  void button_up(ButtonHandle button);
-  void keystroke(int keycode);
+  void button_down(ButtonHandle button, double time = ClockObject::get_global_clock()->get_frame_time());
+  void button_resume_down(ButtonHandle button, double time = ClockObject::get_global_clock()->get_frame_time());
+  void button_up(ButtonHandle button, double time = ClockObject::get_global_clock()->get_frame_time());
+  void keystroke(int keycode, double time = ClockObject::get_global_clock()->get_frame_time());
   INLINE void set_pointer_in_window(int x, int y);
   INLINE void set_pointer_out_of_window();
 

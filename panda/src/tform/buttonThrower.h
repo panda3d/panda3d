@@ -45,19 +45,22 @@ PUBLISHED:
   ButtonThrower(const string &name);
   ~ButtonThrower();
 
-  void set_prefix(const string &prefix);
-  bool has_prefix() const;
-  string get_prefix() const;
+  INLINE void set_prefix(const string &prefix);
+  INLINE bool has_prefix() const;
+  INLINE string get_prefix() const;
+
+  INLINE void set_time_flag(bool time_flag);
+  INLINE bool get_time_flag() const;
 
   void add_parameter(const EventParameter &obj);
   int get_num_parameters() const;
   EventParameter get_parameter(int n) const;
 
-  const ModifierButtons &get_modifier_buttons() const;
-  void set_modifier_buttons(const ModifierButtons &mods);
+  INLINE const ModifierButtons &get_modifier_buttons() const;
+  INLINE void set_modifier_buttons(const ModifierButtons &mods);
 
-  void set_throw_buttons_active(bool flag);
-  bool get_throw_buttons_active() const;
+  INLINE void set_throw_buttons_active(bool flag);
+  INLINE bool get_throw_buttons_active() const;
 
   bool add_throw_button(const ModifierButtons &mods, const ButtonHandle &button);
   bool remove_throw_button(const ModifierButtons &mods, const ButtonHandle &button);
@@ -69,11 +72,13 @@ public:
   virtual void write(ostream &out, int indent_level = 0) const;
 
 private:
-  void do_throw_event(const string &event_name);
+  void do_throw_event(const string &event_name, double time);
 
 private:
   string _prefix;
   ModifierButtons _mods;
+
+  bool _time_flag;
 
   typedef pvector<EventParameter> ParameterList;
   ParameterList _parameters;
@@ -113,5 +118,7 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+#include "buttonThrower.I"
 
 #endif

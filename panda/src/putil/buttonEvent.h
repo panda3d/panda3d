@@ -22,6 +22,7 @@
 #include "pandabase.h"
 
 #include "buttonHandle.h"
+#include "clockObject.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ButtonEvent
@@ -71,8 +72,8 @@ public:
   };
 
   INLINE ButtonEvent();
-  INLINE ButtonEvent(ButtonHandle button, Type type);
-  INLINE ButtonEvent(short keycode);
+  INLINE ButtonEvent(ButtonHandle button, Type type, double time = ClockObject::get_global_clock()->get_frame_time());
+  INLINE ButtonEvent(short keycode, double time = ClockObject::get_global_clock()->get_frame_time());
   INLINE ButtonEvent(const ButtonEvent &copy);
   INLINE void operator = (const ButtonEvent &copy);
 
@@ -90,7 +91,14 @@ public:
   // the Unicode character that was typed.
   short _keycode;
 
+  // This is the type of the button event (see above).
   Type _type;
+
+  // This is the time the event occurred, as recorded from the OS if
+  // that information is available.  It is in seconds elapsed from an
+  // arbitrary epoch, and it matches the time reported by
+  // ClockObject::get_global_clock().
+  double _time;
 };
 
 INLINE ostream &operator << (ostream &out, const ButtonEvent &be) {

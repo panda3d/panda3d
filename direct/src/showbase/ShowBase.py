@@ -594,6 +594,20 @@ class ShowBase(DirectObject.DirectObject):
         mods.addButton(KeyboardButton.alt())
         self.buttonThrower.node().setModifierButtons(mods)
 
+        # A special ButtonThrower to generate keyboard events and
+        # include the time from the OS.  This is separate only to
+        # support legacy code that did not expect a time parameter; it
+        # will eventually be folded into the normal ButtonThrower,
+        # above.
+
+        # Temporary hasattr() for old pandas.
+        if hasattr(ButtonThrower, "setTimeFlag"):
+            self.timeButtonThrower = self.mouseWatcher.attachNewNode(ButtonThrower('timeButtons'))
+            self.timeButtonThrower.node().setPrefix('time-')
+            self.timeButtonThrower.node().setTimeFlag(1)
+        else:
+            self.timeButtonThrower = None
+
         # Tell the gui system about our new mouse watcher.
         self.aspect2d.node().setMouseWatcher(self.mouseWatcherNode)
         self.mouseWatcherNode.addRegion(PGMouseWatcherBackground())
