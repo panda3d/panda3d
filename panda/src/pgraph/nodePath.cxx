@@ -658,8 +658,10 @@ get_transform(const NodePath &other) const {
   int a_count, b_count;
   if (find_common_ancestor(*this, other, a_count, b_count) == (NodePathComponent *)NULL) {
     if (allow_unrelated_wrt) {
-      pgraph_cat.debug()
-        << *this << " is not related to " << other << "\n";
+      if (pgraph_cat.is_debug()) {
+        pgraph_cat.debug()
+          << *this << " is not related to " << other << "\n";
+      }
     } else {
       pgraph_cat.error()
         << *this << " is not related to " << other << "\n";
@@ -667,8 +669,19 @@ get_transform(const NodePath &other) const {
     }
   }
 
-  CPT(TransformState) a_transform = r_get_partial_transform(_head, a_count);
-  CPT(TransformState) b_transform = r_get_partial_transform(other._head, b_count);
+  CPT(TransformState) a_transform, b_transform;
+
+  a_transform = r_get_partial_transform(_head, a_count);
+  if (a_transform != (TransformState *)NULL) {
+    b_transform = r_get_partial_transform(other._head, b_count);
+  }
+  if (b_transform == (TransformState *)NULL) {
+    // If either path involved a node with a net_transform
+    // RenderEffect applied, we have to go all the way up to the root
+    // to get the right answer.
+    a_transform = r_get_net_transform(_head);
+    b_transform = r_get_net_transform(other._head);
+  }
   return b_transform->invert_compose(a_transform);
 }
 
@@ -4804,8 +4817,15 @@ r_get_net_transform(NodePathComponent *comp) const {
   if (comp == (NodePathComponent *)NULL) {
     return TransformState::make_identity();
   } else {
+    CPT(TransformState) net_transform = r_get_net_transform(comp->get_next());
     CPT(TransformState) transform = comp->get_node()->get_transform();
-    return r_get_net_transform(comp->get_next())->compose(transform);
+
+    CPT(RenderEffects) effects = comp->get_node()->get_effects();
+    if (effects->has_net_transform()) {
+      net_transform = effects->net_transform(net_transform);
+    }
+      
+    return net_transform->compose(transform);
   }
 }
 
@@ -4816,12 +4836,19 @@ r_get_net_transform(NodePathComponent *comp) const {
 //               indicated component node from the nth node above it.
 //               If n exceeds the length of the path, this returns the
 //               net transform from the root of the graph.
+//
+//               If any node in the path had a net_transform effect
+//               applied, returns NULL--in this case the partial
+//               transform cannot be easily determined.
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) NodePath::
 r_get_partial_transform(NodePathComponent *comp, int n) const {
   if (n == 0 || comp == (NodePathComponent *)NULL) {
     return TransformState::make_identity();
   } else {
+    if (comp->get_node()->get_effects()->has_net_transform()) {
+      return NULL;
+    }
     CPT(TransformState) transform = comp->get_node()->get_transform();
     return r_get_partial_transform(comp->get_next(), n - 1)->compose(transform);
   }

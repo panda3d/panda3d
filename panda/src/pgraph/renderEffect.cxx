@@ -162,6 +162,34 @@ cull_callback(CullTraverser *, CullTraverserData &,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderEffect::has_net_transform
+//       Access: Public, Virtual
+//  Description: Should be overridden by derived classes to return
+//               true if net_transform() has been defined, and
+//               therefore the RenderEffect has some effect on the
+//               node's apparent net transform.
+////////////////////////////////////////////////////////////////////
+bool RenderEffect::
+has_net_transform() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderEffect::net_transform
+//       Access: Public, Virtual
+//  Description: Given the node's parent's net transform, compute its
+//               parent's new net transform after application of the
+//               RenderEffect.  Presumably this interposes some
+//               special transform derived from the RenderEffect.
+//               This may only be called if has_net_transform(),
+//               above, has been defined to return true.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) RenderEffect::
+net_transform(CPT(TransformState) &orig_net_transform) const {
+  return orig_net_transform;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderEffect::output
 //       Access: Published, Virtual
 //  Description: 

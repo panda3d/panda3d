@@ -131,8 +131,13 @@ void BillboardEffect::
 cull_callback(CullTraverser *trav, CullTraverserData &data,
               CPT(TransformState) &node_transform,
               CPT(RenderState) &) const {
-  CPT(TransformState) net_transform = data._net_transform->compose(node_transform);
-  const TransformState *camera_transform = trav->get_camera_transform();
+  CPT(TransformState) net_transform = data._net_transform;
+  if (net_transform->is_singular()) {
+    // If we're under a singular transform, never mind.
+    return;
+  }
+
+  CPT(TransformState) camera_transform = trav->get_camera_transform();
 
   // Determine the relative transform to our camera (or other look_at
   // coordinate space).
@@ -140,52 +145,57 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
     camera_transform = _look_at.get_net_transform();
   }
 
-  if (net_transform->is_singular()) {
-    // If we're under a singular transform, never mind.
-    return;
-  }
+  CPT(TransformState) billboard_transform =
+    compute_billboard(net_transform, camera_transform);
 
-  CPT(TransformState) rel_transform =
-    net_transform->invert_compose(camera_transform);
-  const LMatrix4f &rel_mat = rel_transform->get_mat();
-
-  // Determine the look_at point in the camera space.
-  LVector3f camera_pos, up;
-
-  // If this is an eye-relative Billboard, then (a) the up vector is
-  // relative to the camera, not to the world, and (b) the look
-  // direction is towards the plane that contains the camera,
-  // perpendicular to the forward direction, not directly to the
-  // camera.
-
-  if (_eye_relative) {
-    up = _up_vector * rel_mat;
-    camera_pos = LVector3f::forward() * rel_mat;
-
-  } else {
-    up = _up_vector;
-    camera_pos = -(_look_at_point * rel_mat);
-  }
-
-  // Now determine the rotation matrix for the Billboard.
-  LMatrix4f rotate;
-  if (_axial_rotate) {
-    heads_up(rotate, camera_pos, up);
-  } else {
-    look_at(rotate, camera_pos, up);
-  }
-
-  // Also slide the billboard geometry towards the camera according to
-  // the offset factor.
-  if (_offset != 0.0f) {
-    LVector3f translate(rel_mat(3, 0), rel_mat(3, 1), rel_mat(3, 2));
-    translate.normalize();
-    translate *= _offset;
-    rotate.set_row(3, translate);
-  }
-
-  node_transform = node_transform->compose(TransformState::make_mat(rotate));
+  node_transform = billboard_transform->compose(node_transform);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: BillboardEffect::has_net_transform
+//       Access: Public, Virtual
+//  Description: Should be overridden by derived classes to return
+//               true if net_transform() has been defined, and
+//               therefore the RenderEffect has some effect on the
+//               node's apparent net transform.
+////////////////////////////////////////////////////////////////////
+bool BillboardEffect::
+has_net_transform() const {
+  // A BillboardEffect can only affect the net transform when it is to
+  // a particular node.  A billboard to a camera is camera-dependent,
+  // of course, so it has no effect in the absence of any particular
+  // camera viewing it.
+  return !_look_at.is_empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BillboardEffect::net_transform
+//       Access: Public, Virtual
+//  Description: Given the node's parent's net transform, compute its
+//               parent's new net transform after application of the
+//               RenderEffect.  Presumably this interposes some
+//               special transform derived from the RenderEffect.
+//               This may only be called if has_net_transform(),
+//               above, has been defined to return true.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) BillboardEffect::
+net_transform(const TransformState *orig_net_transform) const {
+  // A BillboardEffect can only affect the net transform when it is to
+  // a particular node.  A billboard to a camera is camera-dependent,
+  // of course, so it has no effect in the absence of any particular
+  // camera viewing it.
+  if (_look_at.is_empty()) {
+    return orig_net_transform;
+  }
+
+  CPT(TransformState) camera_transform = _look_at.get_net_transform();
+
+  CPT(TransformState) billboard_transform =
+    compute_billboard(orig_net_transform, camera_transform);
+
+  return orig_net_transform->compose(billboard_transform);
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BillboardEffect::compare_to_impl
@@ -229,6 +239,57 @@ compare_to_impl(const RenderEffect *other) const {
     return compare;
   }
   return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BillboardEffect::compute_billboard
+//       Access: Private
+//  Description: Computes the billboard operation given the parent's
+//               net transform and the camera transform.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) BillboardEffect::
+compute_billboard(const TransformState *net_transform, 
+                  const TransformState *camera_transform) const {
+  CPT(TransformState) rel_transform =
+    net_transform->invert_compose(camera_transform);
+  const LMatrix4f &rel_mat = rel_transform->get_mat();
+
+  // Determine the look_at point in the camera space.
+  LVector3f camera_pos, up;
+
+  // If this is an eye-relative Billboard, then (a) the up vector is
+  // relative to the camera, not to the world, and (b) the look
+  // direction is towards the plane that contains the camera,
+  // perpendicular to the forward direction, not directly to the
+  // camera.
+
+  if (_eye_relative) {
+    up = _up_vector * rel_mat;
+    camera_pos = LVector3f::forward() * rel_mat;
+
+  } else {
+    up = _up_vector;
+    camera_pos = -(_look_at_point * rel_mat);
+  }
+
+  // Now determine the rotation matrix for the Billboard.
+  LMatrix4f rotate;
+  if (_axial_rotate) {
+    heads_up(rotate, camera_pos, up);
+  } else {
+    look_at(rotate, camera_pos, up);
+  }
+
+  // Also slide the billboard geometry towards the camera according to
+  // the offset factor.
+  if (_offset != 0.0f) {
+    LVector3f translate(rel_mat(3, 0), rel_mat(3, 1), rel_mat(3, 2));
+    translate.normalize();
+    translate *= _offset;
+    rotate.set_row(3, translate);
+  }
+
+  return TransformState::make_mat(rotate);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -75,6 +75,9 @@ public:
                              CPT(TransformState) &node_transform,
                              CPT(RenderState) &node_state) const;
 
+  virtual bool has_net_transform() const;
+  virtual CPT(TransformState) net_transform(CPT(TransformState) &orig_net_transform) const;
+
 PUBLISHED:
   INLINE int compare_to(const RenderEffect &other) const;
 

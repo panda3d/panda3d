@@ -143,15 +143,59 @@ cull_callback(CullTraverser *, CullTraverserData &data,
     return;
   }
 
-  CPT(TransformState) net_transform = data._net_transform->compose(node_transform);
+  CPT(TransformState) true_net_transform = data._net_transform;
+  CPT(TransformState) want_transform = net_transform(data._net_transform);
 
-  // Compute the reference transform: our transform, as applied to the
-  // reference node.
+  // Now compute the transform that will convert true_net_transform to
+  // want_transform.  This is inv(true_net_transform) * want_transform.
+  CPT(TransformState) compass_transform =
+    true_net_transform->invert_compose(want_transform);
+
+  // And modify our local node's apparent transform so that
+  // true_net_transform->compose(new_node_transform) produces the same
+  // result we would have gotten had we actually computed
+  // want_transform->compose(orig_node_transform).
+  node_transform = node_transform->compose(compass_transform);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CompassEffect::has_net_transform
+//       Access: Public, Virtual
+//  Description: Should be overridden by derived classes to return
+//               true if net_transform() has been defined, and
+//               therefore the RenderEffect has some effect on the
+//               node's apparent net transform.
+////////////////////////////////////////////////////////////////////
+bool CompassEffect::
+has_net_transform() const {
+  return (_properties != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CompassEffect::net_transform
+//       Access: Public, Virtual
+//  Description: Given the node's parent's net transform, compute its
+//               parent's new net transform after application of the
+//               RenderEffect.  Presumably this interposes some
+//               special transform derived from the RenderEffect.
+//               This may only be called if has_net_transform(),
+//               above, has been defined to return true.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) CompassEffect::
+net_transform(const TransformState *orig_net_transform) const {
+  if (_properties == 0) {
+    // Nothing to do.
+    return orig_net_transform;
+  }
+
+  // The reference transform: where we are acting as if we inherit
+  // from.  Either the root node (identity) or the specified reference
+  // node.
   CPT(TransformState) ref_transform;
   if (_reference.is_empty()) {
-    ref_transform = node_transform;
+    ref_transform = TransformState::make_identity();
   } else {
-    ref_transform = _reference.get_net_transform()->compose(node_transform);
+    ref_transform = _reference.get_net_transform();
   }
 
   // Now compute the transform we actually want to achieve.  This is
@@ -166,7 +210,7 @@ cull_callback(CullTraverser *, CullTraverserData &data,
   } else {
     // How much of the pos do we want to steal?  We can always
     // determine a transform's pos, even if it's nondecomposable.
-    LVecBase3f want_pos = net_transform->get_pos();
+    LVecBase3f want_pos = orig_net_transform->get_pos();
     const LVecBase3f &ref_pos = ref_transform->get_pos();
     if ((_properties & P_x) != 0) {
       want_pos[0] = ref_pos[0];
@@ -180,7 +224,7 @@ cull_callback(CullTraverser *, CullTraverserData &data,
 
     if ((_properties & ~P_pos) == 0) {
       // If we only want to steal the pos, that's pretty easy.
-      want_transform = net_transform->set_pos(want_pos);
+      want_transform = orig_net_transform->set_pos(want_pos);
   
     } else if ((_properties & (P_rot | P_scale)) == (P_rot | P_scale)) {
       // If we want to steal everything *but* the pos, also easy.
@@ -189,7 +233,7 @@ cull_callback(CullTraverser *, CullTraverserData &data,
     } else {
       // For any other combination, we have to be able to decompose both
       // transforms.
-      if (!net_transform->has_components() || 
+      if (!orig_net_transform->has_components() || 
           !ref_transform->has_components()) {
         // If we can't decompose, just do the best we can: steal
         // everything but the pos.
@@ -197,12 +241,12 @@ cull_callback(CullTraverser *, CullTraverserData &data,
 
       } else {
         // If we can decompose, then take only the components we want.
-        LQuaternionf want_quat = net_transform->get_quat();
+        LQuaternionf want_quat = orig_net_transform->get_quat();
         if ((_properties & P_rot) != 0) {
           want_quat = ref_transform->get_quat();
         }
 
-        LVecBase3f want_scale = net_transform->get_scale();
+        LVecBase3f want_scale = orig_net_transform->get_scale();
         const LVecBase3f &ref_scale = ref_transform->get_scale();
         if ((_properties & P_sx) != 0) {
           want_scale[0] = ref_scale[0];
@@ -220,12 +264,7 @@ cull_callback(CullTraverser *, CullTraverserData &data,
     }
   }
 
-  // Now compute the transform that will convert net_transform to
-  // want_transform.  This is inv(net_transform) * want_transform.
-  CPT(TransformState) compass_transform =
-    net_transform->invert_compose(want_transform);
-
-  node_transform = node_transform->compose(compass_transform);
+  return want_transform;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -102,11 +102,15 @@ public:
                      CPT(TransformState) &node_transform,
                      CPT(RenderState) &node_state) const;
 
+  INLINE bool has_net_transform() const;
+  CPT(TransformState) net_transform(const TransformState *orig_net_transform) const;
+
 private:
   static CPT(RenderEffects) return_new(RenderEffects *state);
   void determine_decal();
   void determine_show_bounds();
   void determine_cull_callback();
+  void determine_net_transform();
 
 private:
   typedef pset<const RenderEffects *, indirect_less<const RenderEffects *> > States;
@@ -144,6 +148,8 @@ private:
     F_has_show_bounds       = 0x0008,
     F_checked_cull_callback = 0x0010,
     F_has_cull_callback     = 0x0020,
+    F_checked_net_transform = 0x0040,
+    F_has_net_transform     = 0x0080,
   };
   int _flags;
 

@@ -31,6 +31,7 @@
 #include "lens.h"
 #include "perspectiveLens.h"
 #include "pointerTo.h"
+#include "compassEffect.h"
 
 TypeHandle GraphicsOutput::_type_handle;
 
@@ -626,6 +627,13 @@ make_cube_map(const string &name, int size, bool to_ram,
       size = min(max_dimension, size);
     }
   }
+
+  // Usually, we want the whole camera_rig to keep itself unrotated
+  // with respect to the world coordinate space, so the user can apply
+  // TexGenAttrib::M_world_cube_map to the objects on which the cube
+  // map texture is applied.  If for some reason the user doesn't want
+  // this behavior, he can take this effect off again.
+  camera_rig.node()->set_effect(CompassEffect::make(NodePath()));
 
   PT(Texture) tex = new Texture(name);
   tex->setup_cube_map();

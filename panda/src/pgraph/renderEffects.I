@@ -199,3 +199,21 @@ has_cull_callback() const {
   }
   return ((_flags & F_has_cull_callback) != 0);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderEffects::has_net_transform
+//       Access: Public
+//  Description: This function is provided as an optimization, to
+//               speed up the render-time checking for the existance
+//               of an effect with a compute_net_transform on this
+//               state.
+////////////////////////////////////////////////////////////////////
+INLINE bool RenderEffects::
+has_net_transform() const {
+  if ((_flags & F_checked_net_transform) == 0) {
+    // We pretend this function is const, even though it transparently
+    // modifies the internal net_transform cache.
+    ((RenderEffects *)this)->determine_net_transform();
+  }
+  return ((_flags & F_has_net_transform) != 0);
+}

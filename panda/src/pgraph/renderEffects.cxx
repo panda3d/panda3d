@@ -421,6 +421,29 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderEffects::net_transform
+//       Access: Public
+//  Description: Calls net_transform() on all effects.  You may check
+//               has_net_transform() first to see if any effects
+//               define this method to do anything useful.
+//
+//               The order in which the individual effects are applied
+//               is not defined, so if more than one effect applies a
+//               change to the transform on any particular node, you
+//               might get indeterminate results.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) RenderEffects::
+net_transform(const TransformState *orig_net_transform) const {
+  CPT(TransformState) net_transform = orig_net_transform;
+  Effects::const_iterator ei;
+  for (ei = _effects.begin(); ei != _effects.end(); ++ei) {
+    net_transform = (*ei)._effect->net_transform(net_transform);
+  }
+
+  return net_transform;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderEffects::get_num_states
 //       Access: Published, Static
 //  Description: Returns the total number of unique RenderEffects
@@ -568,6 +591,24 @@ determine_cull_callback() {
   for (ei = _effects.begin(); ei != _effects.end(); ++ei) {
     if ((*ei)._effect->has_cull_callback()) {
       _flags |= F_has_cull_callback;
+      return;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderEffects::determine_net_transform
+//       Access: Private
+//  Description: This is the private implementation of has_net_transform().
+////////////////////////////////////////////////////////////////////
+void RenderEffects::
+determine_net_transform() {
+  _flags |= F_checked_net_transform;
+
+  Effects::const_iterator ei;
+  for (ei = _effects.begin(); ei != _effects.end(); ++ei) {
+    if ((*ei)._effect->has_net_transform()) {
+      _flags |= F_has_net_transform;
       return;
     }
   }
