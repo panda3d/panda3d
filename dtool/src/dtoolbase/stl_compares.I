@@ -83,8 +83,6 @@ operator () (const Key &a, const Key &b) const {
   return (a != b && (*a).get_name() < (*b).get_name());
 }
 
-#ifdef HAVE_STL_HASH
-
 ////////////////////////////////////////////////////////////////////
 //     Function: integer_hash::add_hash
 //       Access: Public, Static
@@ -162,7 +160,7 @@ operator () (const Key &key) const {
 template<class Key, class Compare>
 INLINE size_t sequence_hash<Key, Compare>::
 add_hash(size_t hash, const Key &key) {
-  Key::const_iterator ki;
+  TYPENAME Key::const_iterator ki;
   for (ki = key.begin(); ki != key.end(); ++ki) {
     hash = (hash * 31) + (size_t)(*ki);
   }
@@ -190,5 +188,3 @@ INLINE size_t indirect_method_hash<Key, Compare>::
 operator () (const Key &key) const {
   return (*key).get_hash();
 }
-
-#endif  // HAVE_STL_HASH

@@ -24,8 +24,22 @@
 #include "nearly_zero.h"
 
 #ifdef HAVE_STL_HASH
-#include <hash_map>
-#include <hash_set>
+#include <hash_map>  // for hash_compare
+
+#define stl_hash_compare hash_compare
+
+#else
+
+#include <map>  // for less
+
+// This is declared for the cases in which we don't have STL_HASH
+// available--it's just a name to inherit from, but there's no need to
+// provide much functionality in the base class (since it won't
+// actually be used for hashing, just for comparing).
+template<class Key, class Compare = less<Key> >
+class stl_hash_compare : public Compare {
+};
+
 #endif  // HAVE_STL_HASH
 
 ////////////////////////////////////////////////////////////////////
@@ -95,8 +109,6 @@ public:
   INLINE bool operator () (const Key &a, const Key &b) const;
 };
 
-#ifdef HAVE_STL_HASH
-
 ////////////////////////////////////////////////////////////////////
 //       Class : integer_hash
 // Description : This is the default hash_compare class, which assumes
@@ -106,7 +118,7 @@ public:
 //               system-provided hash_compare.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare = less<Key> >
-class integer_hash : public hash_compare<Key, Compare> {
+class integer_hash : public stl_hash_compare<Key, Compare> {
 public:
   INLINE static size_t add_hash(size_t start, const Key &key);
 };
@@ -116,7 +128,7 @@ public:
 // Description : This hash_compare class hashes a float or a double.
 ////////////////////////////////////////////////////////////////////
 template<class Key>
-class floating_point_hash : public hash_compare<Key> {
+class floating_point_hash : public stl_hash_compare<Key> {
 public:
   INLINE floating_point_hash(Key threshold = get_nearly_zero_value((Key)0));
   INLINE size_t operator () (const Key &key) const;
@@ -132,11 +144,11 @@ public:
 //               methods that iterate through Key::value_type.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare = less<Key> >
-class sequence_hash : public hash_compare<Key, Compare> {
+class sequence_hash : public stl_hash_compare<Key, Compare> {
 public:
   INLINE size_t operator () (const Key &key) const;
   INLINE bool operator () (const Key &a, const Key &b) const {
-    return hash_compare<Key, Compare>::operator () (a, b);
+    return stl_hash_compare<Key, Compare>::operator () (a, b);
   }
   INLINE static size_t add_hash(size_t start, const Key &key);
 };
@@ -148,11 +160,11 @@ public:
 //               that returns a size_t.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare = less<Key> >
-class method_hash : public hash_compare<Key, Compare> {
+class method_hash : public stl_hash_compare<Key, Compare> {
 public:
   INLINE size_t operator () (const Key &key) const;
   INLINE bool operator () (const Key &a, const Key &b) const {
-    return hash_compare<Key, Compare>::operator () (a, b);
+    return stl_hash_compare<Key, Compare>::operator () (a, b);
   }
 };
 
@@ -164,35 +176,13 @@ public:
 //               a size_t.
 ////////////////////////////////////////////////////////////////////
 template<class Key, class Compare>
-class indirect_method_hash : public hash_compare<Key, Compare> {
+class indirect_method_hash : public stl_hash_compare<Key, Compare> {
 public:
   INLINE size_t operator () (const Key &key) const;
   INLINE bool operator () (const Key &a, const Key &b) const {
-    return hash_compare<Key, Compare>::operator () (a, b);
+    return stl_hash_compare<Key, Compare>::operator () (a, b);
   }
 };
-
-#else  // HAVE_STL_HASH
-
-// If the STL doesn't provide any hash methods, then all of the above
-// simply map to their Compare function.
-template<class Key, class Compare = less<Key> >
-class floating_point_hash : public Compare {
-};
-template<class Key, class Compare = less<Key> >
-class integer_hash : public Compare {
-};
-template<class Key, class Compare = less<Key> >
-class sequence_hash : public Compare {
-};
-template<class Key, class Compare = less<Key> >
-class method_hash : public Compare {
-};
-template<class Key, class Compare>
-class indirect_method_hash : public Compare {
-};
-
-#endif  // HAVE_STL_HASH
 
 #include "stl_compares.I"
 
