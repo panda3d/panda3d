@@ -16,8 +16,8 @@ SomethingToEggConverter::
 SomethingToEggConverter() {
   _egg_data = (EggData *)NULL;
   _owns_egg_data = false;
-  _tpc = PC_unchanged;
-  _mpc = PC_unchanged;
+  _tpc = PC_absolute;
+  _mpc = PC_absolute;
   _error = false;
 }
 
