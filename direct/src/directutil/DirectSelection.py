@@ -31,13 +31,15 @@ class SelectionRay:
         self.numEntries = self.cq.getNumEntries()
         return self.numEntries
 
-    def localHitPt(self, index):
+    def objectToHitPt(self, index):
         return self.cq.getEntry(index).getIntoIntersectionPoint()
 
-    def hitPt(self, index):
+    def camToHitPt(self, index):
+        # Get the specified entry
         entry = self.cq.getEntry(index)
         hitPt = entry.getIntoIntersectionPoint()
-        return entry.getWrtSpace().xformPoint(hitPt)
+        # Convert point from object local space to camera space
+        return entry.getInvWrtSpace().xformPoint(hitPt)
 
 """
 dd = loader.loadModel(r"I:\beta\toons\install\neighborhoods\donalds_dock")

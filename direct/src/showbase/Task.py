@@ -29,6 +29,7 @@ def getTimeFrame():
 class Task:
     def __init__(self, callback):
         self.__call__ = callback
+        self.uponDeath = None
         
     def setStartTimeFrame(self, startTime, startFrame):
         self.starttime = startTime
@@ -212,6 +213,8 @@ class TaskManager:
         except:
             pass
         # TODO: upon death
+        if task.uponDeath:
+            task.uponDeath(task)
 
     def removeTasksNamed(self, taskName):
         removedTasks = []
@@ -318,6 +321,7 @@ t = taskMgr.spawnTaskNamed(seq, 'doLater-fooLater')
 run()
 
 # tasks with state
+# Combined with uponDeath
 
 someValue = 1
 
@@ -329,9 +333,19 @@ def func(state):
         state.someValue = state.someValue + 1
         return Task.cont
 
+def deathFunc(state):
+    print 'Value at death: ', state.someValue
+
 task = Task.Task(func)
+
 # set task state here
 task.someValue = someValue
+
+# Use instance variable uponDeath to specify function
+# to perform on task removal
+# Default value of uponDeath is None
+task.uponDeath = deathFunc
+
 t = taskMgr.spawnTaskNamed(task, 'funcTask')
 run()
 """

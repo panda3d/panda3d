@@ -7,9 +7,13 @@ class DirectCameraControl(PandaObject):
         # Create the grid
         self.direct = direct
         self.defChan = direct.chanCenter
+        self.camera = self.defChan.camera
 	self.orthoViewRoll = 0.0
 	self.lastView = 0
         self.coa = Point3(0)
+        self.coaMarker = loader.loadModel('misc/sphere')
+        self.coaMarker.setColor(1,0,0)
+        self.coaMarkerPos = Point3(0)
 	self.relNodePath = render.attachNewNode(NamedNode('targetNode'))
         self.zeroBaseVec = VBase3(0)
         self.zeroVector = Vec3(0)
@@ -22,25 +26,50 @@ class DirectCameraControl(PandaObject):
 	self.initMouseY = chan.mouseY
 	# Where are we in the channel?
         if ((abs(self.initMouseX) < 0.9) & (abs(self.initMouseY) < 0.9)):
-            # Mouse is in central region
-            # First compute a hit point based on current mouse position
-            if(self.direct.iRay.pick(render, chan.mouseX, chan.mouseY)):
-                # Find hit point in camera's space
-                self.coa = self.direct.iRay.hitPt(0)
-                # Handle case of bad coa point (too close or too far)
-                self.coaDist = Vec3(self.coa - self.zeroPoint).length()
-                if ((self.coaDist < (1.1 * self.defChan.near)) |
-                    (self.coaDist > self.defChan.far)):
-                    # Put it out in front of the camera
+            # MOUSE IS IN CENTRAL REGION
+            if (self.direct.fShift):
+                # If shift key is pressed, just perform horiz and vert pan:
+                self.spawnHPPan()
+            else:
+                # Otherwise, check for a hit point based on current mouse position
+                # And then spawn task to determine mouse mode
+                numEntries = self.direct.iRay.pick(render,chan.mouseX,chan.mouseY)
+                if(numEntries):
+                    # Start off with first point
+                    minPt = 0
+                    # Find hit point in camera's space
+                    self.coa = self.direct.iRay.camToHitPt(minPt)
+                    self.coaDist = Vec3(self.coa - self.zeroPoint).length()
+                    # Check other intersection points, sorting them
+                    # TBD: Use TBS C++ function to do this
+                    if numEntries > 1:
+                        for i in range(1,numEntries):
+                            hitPt = self.direct.iRay.camToHitPt(i)
+                            dist = Vec3(hitPt - self.zeroPoint).length()
+                            if (dist < self.coaDist):
+                                self.coaDist = dist
+                                self.coa = hitPt
+                                minPt = i
+
+                    # Handle case of bad coa point (too close or too far)
+                    if ((self.coaDist < (1.1 * self.defChan.near)) |
+                        (self.coaDist > self.defChan.far)):
+                        # Put it out in front of the camera
+                        self.coa.set(0,10,0)
+                        self.coaDist = 10
+                else:
+                    # If no intersection point:
+                    # Put coa out in front of the camera
                     self.coa.set(0,10,0)
                     self.coaDist = 10
-            else:
-                # If no intersection point:
-                # Put coa out in front of the camera
-                self.coa.set(0,10,0)
-                self.coaDist = 10
-            # Now spawn task to determine mouse fly mode
-            self.determineMouseFlyMode()
+
+                # Place the marker in render space
+                self.coaMarker.setPos(self.camera,self.coa)
+                # Record this point for later use
+                self.coaMarkerPos = self.coaMarker.getPos()
+                # Now spawn task to determine mouse fly mode
+                self.determineMouseFlyMode()
+            # END MOUSE IN CENTRAL REGION
         else:
             # Mouse is in outer frame, spawn mouseRotateTask
             self.spawnMouseRotateTask()
@@ -92,14 +121,14 @@ class DirectCameraControl(PandaObject):
     def centerCamIn(self, chan,t):
         # Chan is a display region context
 	taskMgr.removeTasksNamed('manipulateCamera')
-	widgetToCam = self.direct.widget.getPos( chan.camera )
-	dist = Vec3(widgetToCam - self.zeroPoint).length()
+	markerToCam = self.coaMarker.getPos( chan.camera )
+	dist = Vec3(markerToCam - self.zeroPoint).length()
 	scaledCenterVec = self.centerVec * dist
-	delta = widgetToCam - scaledCenterVec
+	delta = markerToCam - scaledCenterVec
 	self.relNodePath.setPosHpr(chan.camera, Point3(0), Point3(0))
-	chan.camera.lerpPos(self.relNodePath,
-                            Point3(delta),
+	chan.camera.lerpPos(Point3(delta),
                             CAM_MOVE_DURATION,
+                            other = self.relNodePath,
                             blendType = 'easeInOut',
                             task = 'manipulateCamera')
 
@@ -107,7 +136,7 @@ class DirectCameraControl(PandaObject):
 	taskMgr.removeTasksNamed('manipulateCamera')
 	# Find a point zoom factor times the current separation
         # of the widget and cam
-	zoomPtToCam = self.direct.widget.getPos(chan.camera) * zoomFactor
+        zoomPtToCam = self.coaMarker.getPos(chan.camera) * zoomFactor
 	# Put a target nodePath there
 	self.relNodePath.setPos(chan.camera, zoomPtToCam)
 	# Move to that point
@@ -122,6 +151,13 @@ class DirectCameraControl(PandaObject):
 	taskMgr.removeTasksNamed('manipulateCamera')
         # Calc hprOffset
 	hprOffset = VBase3()
+
+        if view == 8:
+            # Try the next roll angle
+            self.orthoViewRoll = (self.orthoViewRoll + 90.0) % 360.0
+            # but use the last view
+            view = self.lastView
+        
         if view == 1:
             hprOffset.set(180., 0., 0.)
         elif view == 2:
@@ -137,8 +173,7 @@ class DirectCameraControl(PandaObject):
         elif view == 7:
             hprOffset.set(135., -35.264, 0.)
         # Position target
-	self.relNodePath.setPosHpr(self.direct.widget,
-                                   self.zeroBaseVec,
+	self.relNodePath.setPosHpr(self.coaMarker, self.zeroBaseVec,
                                    hprOffset)
 	# Scale center vec by current distance to target
 	offsetDistance = Vec3(chan.camera.getPos(self.relNodePath) - 
@@ -150,9 +185,11 @@ class DirectCameraControl(PandaObject):
                                    scaledCenterVec,
                                    self.zeroBaseVec)
 
-	# Start off with best view if change is to new view
-        if (view != self.lastView):
+        # Store this view for next time
+        # Reset orthoViewRoll if you change views
+        if view != self.lastView:
             self.orthoViewRoll = 0.0
+            
         self.lastView = view
 	chan.camera.lerpPosHpr(self.zeroPoint,
                                VBase3(0,0,self.orthoViewRoll),
@@ -161,40 +198,33 @@ class DirectCameraControl(PandaObject):
                                blendType = 'easeInOut',
                                task = 'manipulateCamera')
         
-        # Try another roll next time
-        self.orthoViewRoll = (self.orthoViewRoll + 90.0) % 360.0
-
     def swingCamAboutWidget(self, chan, degrees, t):
         # Remove existing camera manipulation task
 	taskMgr.removeTasksNamed('manipulateCamera')
 	
 	# Coincident with widget
-	self.relNodePath.setPos(self.direct.widget, self.zeroPoint)
+        self.relNodePath.setPos(self.coaMarker, self.zeroPoint)
 	# But aligned with render space
 	self.relNodePath.setHpr(self.zeroPoint)
 
-	parent = self.defChan.camera.getParent
+	parent = self.defChan.camera.getParent()
 	self.defChan.camera.wrtReparentTo(self.relNodePath)
 
-	self.relNodePath.lerpHpr(VBase3(degrees,0,0),
-                                 CAM_MOVE_DURATION,
-                                 blendType = 'easeInOut',
-                                 task = 'manipulateCamera')
-        # TODO: Convert this to an upon death
-        reparentTask = Task.Task(self.reparentCam)
-        reparentTask.parent = parent
-        reparentLater = Task.doLater(CAM_MOVE_DURATION,
-                                     reparentTask,
-                                     'manipulateCamera')
-        taskMgr.spawnTaskNamed(reparentLater, 'manipulateCamera')
+	manipTask = self.relNodePath.lerpHpr(VBase3(degrees,0,0),
+                                             CAM_MOVE_DURATION,
+                                             blendType = 'easeInOut',
+                                             task = 'manipulateCamera')
+        # Upon death, reparent Cam to parent
+        manipTask.parent = parent
+        manipTask.uponDeath = self.reparentCam
 
     def reparentCam(self, state):
         self.defChan.camera.wrtReparentTo(state.parent)
-        return Task.done
 
     def spawnHPanYZoom(self):
         # Negate vec to give it the correct sense for mouse motion below
-	targetVector = self.coa * -1
+	# targetVector = self.coa * -1
+        targetVector = self.coa * -1
         t = Task.Task(self.HPanYZoomTask)
         t.targetVector = targetVector
         taskMgr.spawnTaskNamed(t, 'manipulateCamera')
@@ -253,7 +283,7 @@ class DirectCameraControl(PandaObject):
         return Task.cont
 
     def spawnMouseRotateTask(self):
-	self.relNodePath.setPos(self.coa)
+	self.relNodePath.setPos(render, self.coaMarkerPos)
 	self.relNodePath.setHpr(self.defChan.camera, self.zeroPoint)
         t = Task.Task(self.mouseRotateTask)
 	t.wrtMat = self.defChan.camera.getMat( self.relNodePath )
@@ -284,6 +314,7 @@ class DirectCameraControl(PandaObject):
     def enableMouseFly(self):
 	self.enableMouseInteraction()
 	self.enableHotKeys()
+        self.coaMarker.reparentTo(render)
 
     def enableMouseInteraction(self):
 	# disable C++ fly interface
@@ -297,17 +328,19 @@ class DirectCameraControl(PandaObject):
 	self.accept('u', self.uprightCam, [self.defChan])
 	self.accept('c', self.centerCamIn, [self.defChan, 0.5])
 	self.accept('h', self.homeCam, [self.defChan])
-        for i in range(1,8):
+        for i in range(1,9):
             self.accept(`i`, self.SpawnMoveToView, [self.defChan, i])
 	self.accept('9', self.swingCamAboutWidget, [self.defChan, -90.0, t])
 	self.accept('0', self.swingCamAboutWidget, [self.defChan,  90.0, t])
-	self.accept('8', self.removeManipulateCameraTask)
+	self.accept('`', self.removeManipulateCameraTask)
 	self.accept('=', self.zoomCam, [self.defChan, 0.5, t])
 	self.accept('+', self.zoomCam, [self.defChan, 0.5, t])
 	self.accept('-', self.zoomCam, [self.defChan, -2.0, t])
 	self.accept('_', self.zoomCam, [self.defChan, -2.0, t])
 
     def disableMouseFly(self):
+        # Hide the marker
+        self.coaMarker.reparentTo(hidden)
 	# Accept middle mouse events
 	self.ignore('mouse2')
 	self.ignore('mouse2-up')
@@ -319,10 +352,9 @@ class DirectCameraControl(PandaObject):
 	self.ignore('=')
 	self.ignore('+')
 	self.ignore('-')
-	self.ignore('=')
+	self.ignore('_')
+        self.ignore('`')
 
     def removeManipulateCameraTask(self):
         taskMgr.removeTasksNamed('manipulateCamera')
-
-
 
