@@ -32,11 +32,11 @@ class DirectCameraControl(PandaObject):
             ['c', self.centerCamIn, 0.5],
             ['f', self.fitOnWidget],
             ['h', self.homeCam],
-            ['V', self.toggleMarkerVis],
+            ['shift-v', self.toggleMarkerVis],
             ['m', self.moveToFit],
             ['n', self.pickNextCOA],
             ['u', self.orbitUprightCam],
-            ['U', self.uprightCam],
+            ['shift-u', self.uprightCam],
             [`1`, self.spawnMoveToView, 1],
             [`2`, self.spawnMoveToView, 2],
             [`3`, self.spawnMoveToView, 3],
@@ -235,7 +235,8 @@ class DirectCameraControl(PandaObject):
             self.camManipRef.setPos(self.coaMarkerPos)
             self.camManipRef.setHpr(direct.camera, ZERO_POINT)
         else:
-            wrtMat = direct.camera.getMat( self.camManipRef )
+            wrtMat = Mat4()
+            wrtMat.assign(direct.camera.getMat( self.camManipRef ))
             self.camManipRef.setHpr(self.camManipRef,
                                     (-1 * deltaX * 180.0),
                                     (deltaY * 180.0),
@@ -252,7 +253,9 @@ class DirectCameraControl(PandaObject):
         t = Task.Task(self.mouseRollTask)
         t.coaCenter = getScreenXY(self.coaMarker)
         t.lastAngle = getCrankAngle(t.coaCenter)
-        t.wrtMat = direct.camera.getMat( self.camManipRef )
+        # Get a copy of the camera/manipRef offset matrix
+        t.wrtMat = Mat4()
+        t.wrtMat.assign(direct.camera.getMat( self.camManipRef ))
         taskMgr.add(t, 'manipulateCamera')
 
     def mouseRollTask(self, state):
@@ -260,23 +263,11 @@ class DirectCameraControl(PandaObject):
         angle = getCrankAngle(state.coaCenter)
         deltaAngle = angle - state.lastAngle
         state.lastAngle = angle
-        if deltaAngle != 0.0:
-            print deltaAngle
-        print 'cam Manip before'
-        print self.camManipRef.getMat()
         if base.config.GetBool('temp-hpr-fix',0):
             self.camManipRef.setHpr(self.camManipRef, 0, 0, deltaAngle)
         else:
             self.camManipRef.setHpr(self.camManipRef, 0, 0, -deltaAngle)
-        print 'cam Manip after'
-        print self.camManipRef.getMat()
-        print 'direct camera before'
-        print direct.camera.getMat()
         direct.camera.setMat(self.camManipRef, wrtMat)
-        print 'direct camera after'
-        print direct.camera.getMat()
-        print
-        print
         return Task.cont
 
     def lockCOA(self):
@@ -413,7 +404,8 @@ class DirectCameraControl(PandaObject):
         # Record undo point
         direct.pushUndo([direct.camera])
         # Transform camera z axis to render space
-        mCam2Render = direct.camera.getMat(render)
+        mCam2Render = Mat4()
+        mCam2Render.assign(direct.camera.getMat(render))
         zAxis = Vec3(mCam2Render.xformVec(Z_AXIS))
         zAxis.normalize()
         # Compute rotation angle needed to upright cam

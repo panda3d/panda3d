@@ -31,7 +31,7 @@ class DirectManipulationControl(PandaObject):
             ['>', self.objectHandles.multiplyScalingFactorBy, 2.0],
             [',', self.objectHandles.multiplyScalingFactorBy, 0.5],
             ['<', self.objectHandles.multiplyScalingFactorBy, 0.5],
-            ['F', self.objectHandles.growToFit],
+            ['shift-f', self.objectHandles.growToFit],
             ['i', self.plantSelectedNodePath],
             ]
 
@@ -98,7 +98,7 @@ class DirectManipulationControl(PandaObject):
                 self.hitPt.assign(hitPt)
                 self.hitPtDist = hitPtDist
                 # Find the node path from the node found above
-                nodePath = render.findAllPathsTo(node)[0]
+                nodePath = render.findPathTo(node)
                 # Select it
                 direct.select(nodePath, direct.fShift)
             else:

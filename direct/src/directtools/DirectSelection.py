@@ -408,10 +408,10 @@ class SelectionRay:
         for i in range(0,self.numEntries):
             entry = self.cq.getEntry(i)
             node = entry.getIntoNode()
-            nodePath = render.findAllPathsTo(node)[0]
+            nodePath = NodePath(node)
             # Don't pick hidden nodes
-            #if node.isHidden():
-            #pass
+            if nodePath.isHidden():
+                pass
             if fIgnoreCamera and (direct.camera in nodePath.getAncestry()):
                 # This avoids things parented to a camera.  Good idea?
                 pass
@@ -499,10 +499,10 @@ class SelectionRay:
         for i in range(0,numEntries):
             entry = self.cq.getEntry(i)
             node = entry.getIntoNode()
+            nodePath = NodePath(node)
             # Don't pick hidden nodes
-            # MRM: Doesn't work in new panda for GeomNodes
-            #if node.isHidden():
-            #pass
+            if nodePath.isHidden():
+                pass
             # Can pick unpickable, use the first visible node
             if fIntersectUnpickable:
                 self.cqIndex = i
