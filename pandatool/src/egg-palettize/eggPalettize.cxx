@@ -27,19 +27,23 @@ EggPalettize() : EggMultiFilter(true) {
   set_program_description
     ("egg-palettize attempts to pack several texture maps from various models "
      "together into one or more palette images, for improved rendering performance "
-     "and ease of texture management.  It can also resize textures on the fly, "
-     "whether or not they are actually placed on a palette.\n\n"
+     "and ease of texture management.  It can also resize textures and convert "
+     "them to another image file format, whether or not they are actually "
+     "placed on a palette, and can manage some "
+     "simple texture properties, like mipmapping and rendering "
+     "format.\n\n"
      
-     "egg-palettize reads and writes an AttributesFile, which contains instructions "
-     "from the user about resizing particular textures, as well as the complete "
-     "information necessary to reconstruct the palettization from past runs, "
-     "including references to other egg files that may share this palette.  This "
-     "is designed to allow multiple egg files to use the same palette, without "
-     "having to process them all at once.\n\n"
-     
-     "Note that it is not even necessary to specify any egg files at all on the "
-     "command line; egg-palettize can be run on an existing AttributesFiles by "
-     "itself to freshen up a palette when necessary.");
+     "egg-palettize reads a texture attributes file, usually named "
+     "textures.txa, which contains instructions from the user about "
+     "resizing particular textures.  Type egg-palettize -H for an "
+     "introduction to the syntax of this file.\n\n"
+
+     "The palettization information from previous runs is recorded in a file "
+     "named textures.boo (assuming the attributes file is named "
+     "textures.txa); a complete record of every egg file and every texture "
+     "that has been referenced is kept here.  This allows the program "
+     "to intelligently manage the multiple egg files that may reference "
+     "the textures in question.\n\n");
 
 
   clear_runlines();
@@ -64,7 +68,7 @@ EggPalettize() : EggMultiFilter(true) {
   add_option
     ("s", "", 0, 
      "Do not process anything, but report statistics on palette "
-     "and texture itilization.",
+     "and texture utilization.",
      &EggPalettize::dispatch_none, &_statistics_only);
 
   // We redefine -d using add_option() instead of redescribe_option()
@@ -81,8 +85,8 @@ EggPalettize() : EggMultiFilter(true) {
      "The directory in which to place all maps: generated palettes, "
      "as well as images which were not placed on palettes "
      "(but may have been resized).  If this contains the string %g, "
-     "this will be replaced with the \"dir\" string associated with a "
-     "palette group.",
+     "this will be replaced with the 'dir' string associated with a "
+     "palette group; see egg-palettize -H.",
      &EggPalettize::dispatch_string, &_got_map_dirname, &_map_dirname);
   add_option
     ("ds", "dirname", 0, 
@@ -138,11 +142,11 @@ EggPalettize() : EggMultiFilter(true) {
 
   add_option
     ("nolock", "", 0, 
-     "Don't attempt to lock the .pi file before rewriting it.  Use "
+     "Don't attempt to grab a file lock on the .txa file.  Use "
      "with extreme caution, as multiple processes running on the same "
-     ".pi file may overwrite each other.  Use this only if the lock "
+     ".txa file may overwrite each other.  Use this only if the lock "
      "cannot be achieved for some reason.",
-     &EggPalettize::dispatch_none, &_dont_lock_pi);
+     &EggPalettize::dispatch_none, &_dont_lock_txa);
   add_option
     ("H", "", 0, 
      "Describe the syntax of the attributes file.",

@@ -49,7 +49,7 @@ private:
   bool _optimal;
   bool _redo_all;
   bool _redo_eggs;
-  bool _dont_lock_pi;
+  bool _dont_lock_txa;
 
   bool _describe_input_file;
 };
