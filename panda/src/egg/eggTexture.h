@@ -143,7 +143,7 @@ private:
 
   Format _format;
   WrapMode _wrap_mode, _wrap_u, _wrap_v;
-  FilterType _minfilter, _magfilter, _magfilteralpha, _magfiltercolor;
+  FilterType _minfilter, _magfilter;
   int _anisotropic_degree;
   EnvType _env_type;
   int _flags;
