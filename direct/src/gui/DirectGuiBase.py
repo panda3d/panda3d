@@ -692,6 +692,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             ('borderWidth',    (.1,.1),      self.setBorderWidth),
             ('frameSize',      None,         self.setFrameSize),
             ('frameColor',     (.8,.8,.8,1), self.setFrameColor),
+            ('frameTexture',   None,         self.setFrameTexture),
             ('pad',            (0,0),        self.resetFrameSize),
             # Override button id (beware! your name may not be unique!)
             ('guiId',          None,         INITOPT),
@@ -953,6 +954,20 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
             else:
                 color = colors[i]
             self.frameStyle[i].setColor(color[0], color[1], color[2], color[3])
+        self.updateFrameStyle()
+
+    def setFrameTexture(self):
+        # this might be a single texture or a list of textures
+        textures = self['frameTexture']
+        if textures == None or isinstance(textures, Texture):
+            textures = (textures,)
+        for i in range(self['numStates']):
+            if i >= len(textures):
+                texture = textures[-1]
+            else:
+                texture = textures[i]
+            if texture:
+                self.frameStyle[i].setTexture(texture)
         self.updateFrameStyle()
 
     def setBorderWidth(self):
