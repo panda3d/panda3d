@@ -1,11 +1,11 @@
 """MultiTrack module: contains the MultiTrack class"""
 
-import Interval
-import Track
+from Interval import *
+from Track import *
 import ClockObject
 import Task
 
-class MultiTrack(Interval.Interval):
+class MultiTrack(Interval):
 
     multiTrackNum = 1
 
@@ -73,6 +73,6 @@ class MultiTrack(Interval.Interval):
     def printParams(self, indent=0):
 	""" printParams(indent)
 	"""
-	Interval.Interval.printParams(self, indent)
+	Interval.printParams(self, indent)
 	for t in self.tlist:
 	    t.printParams(indent+1)

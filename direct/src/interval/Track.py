@@ -1,13 +1,13 @@
 """Track module: contains the Track class"""
 
-import Interval
+from Interval import *
 import types
 
 PREVIOUS_END = 1
 PREVIOUS_START = 2
 TRACK_START = 3
 
-class Track(Interval.Interval):
+class Track(Interval):
 
     trackNum = 1
 
@@ -141,7 +141,7 @@ class Track(Interval.Interval):
 			    prev.setT(t)
 			return
 		    else:
-			#Interval.Interval.notify.warning(
+			#Interval.notify.warning(
 			#	'Track.setT(): state undefined at t: %f' % t)
 			return
 		elif (t0 <= t) and (t <= t0 + ival.getDuration()):
@@ -156,6 +156,6 @@ class Track(Interval.Interval):
     def printParams(self, indent=0):
 	""" printParams(indent)
 	"""
-	Interval.Interval.printParams(self, indent)
+	Interval.printParams(self, indent)
 	for i in self.ilist:	
 	    i[0].printParams(indent+1)

@@ -8,5 +8,5 @@ from PosHprInterval import *
 from SoundInterval import *
 from WaitInterval import *
 
-import Track
-import MultiTrack
+from Track import *
+from MultiTrack import *

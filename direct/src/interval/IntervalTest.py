@@ -17,7 +17,7 @@ mp.loadFile(Filename('phase_6/paths/dd-e-w'))
 
 # Set up the boat
 boatMopath = MopathInterval('boatpath', mp, boat)
-boatTrack = Track.Track([boatMopath], 'boattrack')
+boatTrack = Track([boatMopath], 'boattrack')
 BOAT_START = boatTrack.getIntervalStartTime('boatpath')
 BOAT_END = boatTrack.getIntervalEndTime('boatpath')
 
@@ -31,15 +31,15 @@ dockPos = PosHprInterval('dockpos', dock, dock.getPos(), dock.getHpr(), 1.0)
 dockUpTime = BOAT_END - dockLerp.getDuration()
 hpr2 = Vec3(90.0, 90.0, 90.0)
 dockLerp2 = LerpHprInterval('hpr-lerp', dock, hpr2, 3.0)
-dockTrack = Track.Track([dockLerp2, dockPos, dockLerp], 'docktrack')
+dockTrack = Track([dockLerp2, dockPos, dockLerp], 'docktrack')
 dockTrack.setIntervalStartTime('lerp', dockUpTime)
 dockTrack.setIntervalStartTime('hpr-lerp', BOAT_START)
 
 # Start the water sound 5 seconds after the boat starts moving
 waterStartTime = BOAT_START + 5.0
 waterSound = SoundInterval('watersound', sound)
-soundTrack = Track.Track([waterSound], 'soundtrack')
+soundTrack = Track([waterSound], 'soundtrack')
 soundTrack.setIntervalStartTime('watersound', waterStartTime)
 
-mtrack = MultiTrack.MultiTrack([boatTrack, dockTrack, soundTrack])
+mtrack = MultiTrack([boatTrack, dockTrack, soundTrack])
 mtrack.printParams()
