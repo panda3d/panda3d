@@ -19,7 +19,9 @@
     factoryParams.cxx factoryParams.h \
     globPattern.I globPattern.cxx \
     globPattern.h globalPointerRegistry.I globalPointerRegistry.cxx \
-    globalPointerRegistry.h ioPtaDatagramFloat.cxx ioPtaDatagramFloat.h \
+    globalPointerRegistry.h indirectCompareNames.I \
+    indirectCompareNames.h indirectCompareTo.I \
+    indirectCompareTo.h ioPtaDatagramFloat.cxx ioPtaDatagramFloat.h \
     ioPtaDatagramInt.cxx ioPtaDatagramInt.h ioPtaDatagramShort.cxx \
     ioPtaDatagramShort.h keyboardButton.cxx keyboardButton.h \
     lineStream.I lineStream.cxx lineStream.h lineStreamBuf.I \
@@ -51,7 +53,8 @@
     factoryBase.I factoryBase.h factoryParam.I factoryParam.h \
     factoryParams.I factoryParams.h \
     globPattern.I globPattern.h \
-    globalPointerRegistry.I globalPointerRegistry.h indirectCompareTo.I \
+    globalPointerRegistry.I globalPointerRegistry.h \
+    indirectCompareNames.I indirectCompareNames.h indirectCompareTo.I \
     indirectCompareTo.h ioPtaDatagramFloat.h ioPtaDatagramInt.h \
     ioPtaDatagramShort.h iterator_types.h keyboardButton.h lineStream.I \
     lineStream.h lineStreamBuf.I lineStreamBuf.h modifierButtons.I \

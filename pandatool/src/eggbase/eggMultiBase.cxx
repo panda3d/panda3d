@@ -97,9 +97,9 @@ append_command_comment(EggData &data) {
 //               information stored with each egg structure, by
 //               deriving from EggData.
 ////////////////////////////////////////////////////////////////////
-EggData *EggMultiBase::
+PT(EggData) EggMultiBase::
 read_egg(const Filename &filename) {
-  EggData *data = new EggData;
+  PT(EggData) data = new EggData;
 
   // First, we always try to resolve a filename from the current
   // directory.  This means a local filename will always be found
@@ -110,13 +110,11 @@ read_egg(const Filename &filename) {
 
   if (!data->read(local_filename)) {
     // Failure reading.
-    delete data;
     return (EggData *)NULL;
   }
 
   if (_force_complete) {
     if (!data->resolve_externals()) {
-      delete data;
       return (EggData *)NULL;
     }
   }

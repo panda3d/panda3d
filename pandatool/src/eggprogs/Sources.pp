@@ -20,3 +20,11 @@
     eggTextureCards.cxx eggTextureCards.h
 
 #end bin_target
+
+#begin noinst_bin_target
+  #define TARGET egg-topstrip
+
+  #define SOURCES \
+    eggTopstrip.cxx eggTopstrip.h
+
+#end noinst_bin_target

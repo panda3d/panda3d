@@ -166,10 +166,7 @@ build_joint_hierarchy(EggNode *egg_node, PartGroup *part) {
 	matd = LMatrix4d::ident_mat();
       }
 
-      LMatrix4f matf(matd(0,0), matd(0,1), matd(0,2), matd(0,3),
-		     matd(1,0), matd(1,1), matd(1,2), matd(1,3),
-		     matd(2,0), matd(2,1), matd(2,2), matd(2,3),
-		     matd(3,0), matd(3,1), matd(3,2), matd(3,3));
+      LMatrix4f matf = LCAST(float, matd);
 
       CharacterJoint *joint =
 	new CharacterJoint(part, egg_group->get_name(), matf);

@@ -10,9 +10,10 @@
 
 #include <programBase.h>
 #include <coordinateSystem.h>
+#include <eggData.h>
+#include <pointerTo.h>
 
 class Filename;
-class EggData;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : EggMultiBase
@@ -30,13 +31,13 @@ public:
 protected:
   void append_command_comment(EggData &_data);
 
-  virtual EggData *read_egg(const Filename &filename);
+  virtual PT(EggData) read_egg(const Filename &filename);
 
 protected:
   bool _got_coordinate_system;
   CoordinateSystem _coordinate_system;
 
-  typedef vector<EggData *> Eggs;
+  typedef vector<PT(EggData)> Eggs;
   Eggs _eggs;
 
   bool _force_complete;
