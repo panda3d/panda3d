@@ -21,13 +21,23 @@
 
     def pause(self):
         self.interrupt()
-        # Kill task
-        taskMgr.remove(self.getName() + '-play')
+        # Kill old task(s), including those from a similarly-named but
+        # different interval.
+        taskName = self.getName() + '-play'
+        oldTasks = taskMgr.getTasksNamed(taskName)
+        for task in oldTasks:
+            if hasattr(task, "interval"):
+                task.interval.interrupt()
+                taskMgr.remove(task)
         return self.getT()
 
     def resume(self):
         # Spawn task
-        taskMgr.add(self.__playTask, self.getName() + '-play')
+        import Task
+        taskName = self.getName() + '-play'
+        task = Task.Task(self.__playTask)
+        task.interval = self
+        taskMgr.add(task, taskName)
     
     def finish(self):
         # Nowadays, finish() will implicitly set the interval to its

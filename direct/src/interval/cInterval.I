@@ -143,7 +143,7 @@ recompute() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void CInterval::
 check_stopped(const char *method_name) const {
-  if (_state != S_initial && _state != S_final) {
+  if (_state == S_started) {
     interval_cat.warning()
       << get_name() << "." << method_name << "() called in state "
       << _state << ".\n";
