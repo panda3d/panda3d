@@ -515,6 +515,37 @@ void GuiListBox::set_priority(GuiItem* it, const GuiItem::Priority p) {
   _down_arrow->set_priority(it, p);
 }
 
+int GuiListBox::set_draw_order(int v) {
+  int o = _up_arrow->set_draw_order(v);
+  o = _down_arrow->set_draw_order(o);
+
+  ItemVector::iterator i;
+  ItemDeque::iterator j;
+
+  for (i=_top_stack.begin(); i!=_top_stack.end(); ++i) {
+    if (*i == _up_arrow)
+      continue;
+    if (*i == _down_arrow)
+      continue;
+    o = (*i)->set_draw_order(o);
+  }
+  for (i=_visible.begin(); i!=_visible.end(); ++i) {
+    if (*i == _up_arrow)
+      continue;
+    if (*i == _down_arrow)
+      continue;
+    o = (*i)->set_draw_order(o);
+  }
+  for (j=_bottom_stack.begin(); j!=_bottom_stack.end(); ++j) {
+    if (*j == _up_arrow)
+      continue;
+    if (*j == _down_arrow)
+      continue;
+    o = (*j)->set_draw_order(o);
+  }
+  return GuiBehavior::set_draw_order(o);
+}
+
 void GuiListBox::output(ostream& os) const {
   GuiBehavior::output(os);
   os << "  Listbox data:" << endl;
