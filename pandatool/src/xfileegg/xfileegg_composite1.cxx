@@ -1,5 +1,4 @@
 
-#include "config_xfile.cxx"
 #include "xFileAnimationSet.cxx"
 #include "xFileFace.cxx"
 #include "xFileMaker.cxx"
