@@ -81,12 +81,20 @@ def getDefaultRolloverSound():
             "phase_3/audio/sfx/GUI_rollover.mp3")
     return defaultRolloverSound
 
+def setDefaultRolloverSound(newSound):
+    global defaultRolloverSound
+    defaultRolloverSound = newSound
+
 def getDefaultClickSound():
     global defaultClickSound
     if defaultClickSound == None:
         defaultClickSound = base.loadSfx(
             "phase_3/audio/sfx/GUI_create_toon_fwd.mp3")
     return defaultClickSound
+
+def setDefaultClickSound(newSound):
+    global defaultClickSound
+    defaultClickSound = newSound
 
 def getDefaultFont():
     global defaultFont
