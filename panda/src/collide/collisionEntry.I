@@ -294,6 +294,46 @@ get_into_surface_normal() const {
   return _into_surface_normal;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::set_from_surface_normal
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionEntry::
+set_from_surface_normal(const LVector3f &normal) {
+  _from_surface_normal = normal;
+  _flags |= F_has_from_surface_normal;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::has_from_surface_normal
+//       Access: Public
+//  Description: Returns true if the detected collision knows the
+//               surface normal of the collided-into object at the
+//               point of the collision, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool CollisionEntry::
+has_from_surface_normal() const {
+  return (_flags & (F_has_into_surface_normal | F_has_from_surface_normal)) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::get_from_surface_normal
+//       Access: Public
+//  Description: Returns the surface normal of the collided-into
+//               object at the point of the collision, in the space of
+//               the collided-from object.  It is an error to call
+//               this if has_from_surface_normal() returns false.
+////////////////////////////////////////////////////////////////////
+INLINE const LVector3f &CollisionEntry::
+get_from_surface_normal() const {
+  nassertr(has_from_surface_normal(), _from_surface_normal);
+  if ((_flags & F_has_from_surface_normal) == 0) {
+    ((CollisionEntry *)this)->compute_from_surface_normal();
+  }
+  return _from_surface_normal;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::set_into_depth
@@ -332,4 +372,43 @@ INLINE float CollisionEntry::
 get_into_depth() const {
   nassertr(has_into_depth(), 0.0);
   return _into_depth;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::set_from_depth
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionEntry::
+set_from_depth(float depth) {
+  _from_depth = depth;
+  _flags |= F_has_from_depth;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::has_from_depth
+//       Access: Public
+//  Description: Returns true if the collision entry knows how "deep"
+//               the collision was from the collided-from object; that
+//               is, how far from the surface of the collided-from
+//               object the colliding object has penetrated.
+////////////////////////////////////////////////////////////////////
+INLINE bool CollisionEntry::
+has_from_depth() const {
+  return (_flags & F_has_from_depth) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::get_from_depth
+//       Access: Public
+//  Description: Returns how "deep" the collision was from the
+//               collided-from object; that is, how far from the
+//               surface of the collided-from object the colliding
+//               object has penetrated.  It is an error to call this
+//               if has_from_depth() returns false.
+////////////////////////////////////////////////////////////////////
+INLINE float CollisionEntry::
+get_from_depth() const {
+  nassertr(has_from_depth(), 0.0);
+  return _from_depth;
 }

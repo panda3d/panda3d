@@ -150,9 +150,15 @@ test_intersection_from_sphere(CollisionHandler *record,
   LPoint3f into_intersection_point = into_normal * (dist - from_radius);
   float into_depth = into_radius + from_radius - dist;
 
-  new_entry->set_into_surface_normal(into_normal * entry.get_inv_wrt_space());
-  new_entry->set_into_intersection_point(into_intersection_point * entry.get_inv_wrt_space());
+  new_entry->set_into_surface_normal(into_normal);
+  new_entry->set_into_intersection_point(into_intersection_point);
   new_entry->set_into_depth(into_depth);
+
+  // This is a bit of a hack.  This result is incorrect if there is a
+  // scale between the colliding object and this sphere.  We need to
+  // account for that scale, but to account for it correctly
+  // (especially including non-uniform scales) is rather complicated.
+  new_entry->set_from_depth(into_depth);
 
   record->add_entry(new_entry);
   return 1;

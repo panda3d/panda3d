@@ -78,11 +78,21 @@ PUBLISHED:
   INLINE bool has_into_surface_normal() const;
   INLINE const LVector3f &get_into_surface_normal() const;
 
+  INLINE void set_from_surface_normal(const LVector3f &normal);
+  INLINE bool has_from_surface_normal() const;
+  INLINE const LVector3f &get_from_surface_normal() const;
+
   INLINE void set_into_depth(float depth);
   INLINE bool has_into_depth() const;
   INLINE float get_into_depth() const;
 
+  INLINE void set_from_depth(float depth);
+  INLINE bool has_from_depth() const;
+  INLINE float get_from_depth() const;
+
 private:
+  void compute_from_surface_normal();
+
   CPT(CollisionSolid) _from;
   CPT(CollisionSolid) _into;
 
@@ -97,8 +107,10 @@ private:
   enum Flags {
     F_has_into_intersection_point = 0x0001,
     F_has_into_surface_normal     = 0x0002,
-    F_has_into_depth              = 0x0004,
-    F_has_from_velocity           = 0x0008,
+    F_has_from_surface_normal     = 0x0004,
+    F_has_into_depth              = 0x0008,
+    F_has_from_depth              = 0x0010,
+    F_has_from_velocity           = 0x0020,
   };
 
   int _flags;
@@ -106,7 +118,9 @@ private:
   LVector3f _from_velocity;
   LPoint3f _into_intersection_point;
   LVector3f _into_surface_normal;
+  LVector3f _from_surface_normal;
   float _into_depth;
+  float _from_depth;
 
 public:
   static TypeHandle get_class_type() {

@@ -64,3 +64,16 @@ operator = (const CollisionEntry &copy) {
   _into_surface_normal = copy._into_surface_normal;
   _into_depth = copy._into_depth;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::compute_from_surface_normal
+//       Access: Private
+//  Description: Computes the "from" surface normal by converting the
+//               "into" surface normal into the colliding object's
+//               space.
+////////////////////////////////////////////////////////////////////
+void CollisionEntry::
+compute_from_surface_normal() {
+  _from_surface_normal = get_into_surface_normal() * get_inv_wrt_space();
+  _flags |= F_has_from_surface_normal;
+}

@@ -117,8 +117,8 @@ handle_entries() {
           nassertr(entry != (CollisionEntry *)NULL, false);
           nassertr(from_node == entry->get_from_node(), false);
           
-          if (!entry->has_into_surface_normal() ||
-              !entry->has_into_depth()) {
+          if (!entry->has_from_surface_normal() ||
+              !entry->has_from_depth()) {
 #ifndef NDEBUG          
             if (collide_cat.is_debug()) {
               collide_cat.debug()
@@ -129,8 +129,8 @@ handle_entries() {
             
           } else {
             // Shove it just enough to clear the volume.
-            if (entry->get_into_depth() != 0.0f) {
-              LVector3f normal = entry->get_into_surface_normal();
+            if (entry->get_from_depth() != 0.0f) {
+              LVector3f normal = entry->get_from_surface_normal();
               if (_horizontal) {
                 normal[2] = 0.0f;
               }
@@ -141,7 +141,7 @@ handle_entries() {
 
               ShoveData sd;
               sd._vector = normal;
-              sd._length = entry->get_into_depth();
+              sd._length = entry->get_from_depth();
               sd._valid = true;
               sd._entry = entry;
               

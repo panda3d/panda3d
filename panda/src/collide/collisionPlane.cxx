@@ -141,11 +141,13 @@ test_intersection_from_sphere(CollisionHandler *record,
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LVector3f into_normal = get_normal() * entry.get_inv_wrt_space();
-  float into_depth = from_radius - dist;
+  LVector3f from_normal = get_normal() * entry.get_inv_wrt_space();
+  float from_depth = from_radius - dist;
 
-  new_entry->set_into_surface_normal(into_normal);
-  new_entry->set_into_depth(into_depth);
+  new_entry->set_into_surface_normal(get_normal());
+  new_entry->set_from_surface_normal(from_normal);
+  new_entry->set_from_depth(from_depth);
+  new_entry->set_into_intersection_point(from_center);
 
   record->add_entry(new_entry);
   return 1;
@@ -184,6 +186,7 @@ test_intersection_from_ray(CollisionHandler *record,
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
   LPoint3f into_intersection_point = from_origin + t * from_direction;
+  new_entry->set_into_surface_normal(get_normal());
   new_entry->set_into_intersection_point(into_intersection_point);
 
   record->add_entry(new_entry);
