@@ -14,3 +14,4 @@
 #include "test_pgraph.cxx"
 #include "textureAttrib.cxx"
 #include "transformState.cxx"
+#include "transparencyAttrib.cxx"

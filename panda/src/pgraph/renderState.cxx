@@ -18,6 +18,7 @@
 
 #include "renderState.h"
 #include "billboardAttrib.h"
+#include "transparencyAttrib.h"
 #include "cullBinManager.h"
 #include "config_pgraph.h"
 #include "bamReader.h"
@@ -865,7 +866,7 @@ determine_billboard() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_bin_index() {
-  string bin_name = "opaque";
+  string bin_name;
 
   /*
   const RenderAttrib *attrib = get_attrib(CullBinAttrib::get_class_type());
@@ -873,6 +874,28 @@ determine_bin_index() {
     const CullBinAttrib *bin_attrib = DCAST(CullBinAttrib, attrib);
   }
   */
+  {
+    // No explicit bin is specified; put in the in the default bin,
+    // either opaque or transparent, based on the transparency
+    // setting.
+    bin_name = "opaque";
+    const RenderAttrib *attrib = get_attrib(TransparencyAttrib::get_class_type());
+    if (attrib != (const RenderAttrib *)NULL) {
+      const TransparencyAttrib *trans = DCAST(TransparencyAttrib, attrib);
+      switch (trans->get_mode()) {
+      case TransparencyAttrib::M_alpha:
+      case TransparencyAttrib::M_alpha_sorted:
+      case TransparencyAttrib::M_binary:
+        // These transparency modes require special back-to-front sorting.
+        bin_name = "transparent";
+        break;
+
+      default:
+        break;
+      }
+    }
+  }
+
 
   CullBinManager *bin_manager = CullBinManager::get_global_ptr();
   _bin_index = bin_manager->find_bin(bin_name);

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "cullBinManager.h"
+#include "cullBinBackToFront.h"
 #include "cullBinUnsorted.h"
 #include "renderState.h"
 #include "cullResult.h"
@@ -198,7 +199,13 @@ make_new_bin(int bin_index, GraphicsStateGuardianBase *gsg) {
   nassertr(bin_index >= 0 && bin_index < (int)_bin_definitions.size(), NULL);
   nassertr(_bin_definitions[bin_index]._in_use, NULL);
 
-  return new CullBinUnsorted(gsg);
+  switch (_bin_definitions[bin_index]._type) {
+  case BT_back_to_front:
+    return new CullBinBackToFront(gsg);
+
+  default:
+    return new CullBinUnsorted(gsg);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

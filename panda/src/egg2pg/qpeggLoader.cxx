@@ -26,6 +26,7 @@
 #include "texturePool.h"
 #include "billboardAttrib.h"
 #include "cullFaceAttrib.h"
+#include "transparencyAttrib.h"
 #include "qpgeomNode.h"
 #include "string_utils.h"
 #include "eggPrimitive.h"
@@ -1044,31 +1045,29 @@ setup_bucket(BuilderBucket &bucket, PandaNode *parent,
     }
   }
 
-  /*
   switch (am) {
   case EggRenderMode::AM_on:
   case EggRenderMode::AM_blend:
-    bucket._trans.set_transition(new TransparencyTransition(TransparencyProperty::M_alpha));
+    bucket.add_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
     break;
 
   case EggRenderMode::AM_blend_no_occlude:
-    bucket._trans.set_transition(new TransparencyTransition(TransparencyProperty::M_alpha));
-    bucket._trans.set_transition(new DepthWriteTransition(DepthWriteTransition::off()));
+    bucket.add_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
+    //    bucket.add_attrib(new DepthWriteTransition(DepthWriteTransition::off()));
     break;
 
   case EggRenderMode::AM_ms:
-    bucket._trans.set_transition(new TransparencyTransition(TransparencyProperty::M_multisample));
+    bucket.add_attrib(TransparencyAttrib::make(TransparencyAttrib::M_multisample));
     break;
 
   case EggRenderMode::AM_ms_mask:
-    bucket._trans.set_transition(new TransparencyTransition(TransparencyProperty::M_multisample_mask));
+    bucket.add_attrib(TransparencyAttrib::make(TransparencyAttrib::M_multisample_mask));
     break;
 
   default:
-    //    bucket._trans.set_transition(new TransparencyTransition(TransparencyProperty::M_none));
+    bucket.add_attrib(TransparencyAttrib::make(TransparencyAttrib::M_none));
     break;
   }
-  */
 
   /*
   switch (dwm) {

@@ -12,6 +12,7 @@
     colorAttrib.h colorAttrib.I \
     config_pgraph.h \
     cullBin.h cullBin.I \
+    cullBinBackToFront.h cullBinBackToFront.I \
     cullBinManager.h cullBinManager.I \
     cullBinUnsorted.h cullBinUnsorted.I \
     cullFaceAttrib.h cullFaceAttrib.I \
@@ -32,7 +33,8 @@
     renderAttrib.h renderAttrib.I \
     renderState.h renderState.I \
     textureAttrib.h textureAttrib.I \
-    transformState.h transformState.I
+    transformState.h transformState.I \
+    transparencyAttrib.h transparencyAttrib.I
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
   #define INCLUDED_SOURCES \
@@ -42,6 +44,7 @@
     colorAttrib.cxx \
     config_pgraph.cxx \
     cullBin.cxx \
+    cullBinBackToFront.cxx \
     cullBinManager.cxx \
     cullBinUnsorted.cxx \
     cullFaceAttrib.cxx \
@@ -62,7 +65,8 @@
     renderAttrib.cxx \
     renderState.cxx \
     textureAttrib.cxx \
-    transformState.cxx
+    transformState.cxx \
+    transparencyAttrib.cxx
 
   #if $[DONT_COMBINE_PGRAPH]    
     #define SOURCES $[SOURCES] $[INCLUDED_SOURCES]
@@ -77,6 +81,7 @@
     colorAttrib.h colorAttrib.I \
     config_pgraph.h \
     cullBin.h cullBin.I \
+    cullBinBackToFront.h cullBinBackToFront.I \
     cullBinManager.h cullBinManager.I \
     cullBinUnsorted.h cullBinUnsorted.I \
     cullFaceAttrib.h cullFaceAttrib.I \
@@ -97,7 +102,8 @@
     renderAttrib.h renderAttrib.I \
     renderState.h renderState.I \
     textureAttrib.h textureAttrib.I \
-    transformState.h transformState.I
+    transformState.h transformState.I \
+    transparencyAttrib.h transparencyAttrib.I
 
   #define IGATESCAN all
 

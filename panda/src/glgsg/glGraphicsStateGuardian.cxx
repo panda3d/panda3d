@@ -67,6 +67,7 @@
 #include "polygonOffsetTransition.h"
 #include "textureAttrib.h"
 #include "cullFaceAttrib.h"
+#include "transparencyAttrib.h"
 #include "clockObject.h"
 #include "string_utils.h"
 #include "dcast.h"
@@ -3480,6 +3481,64 @@ issue_cull_face(const CullFaceAttrib *attrib) {
   default:
     glgsg_cat.error()
       << "invalid cull face mode " << (int)mode << endl;
+    break;
+  }
+  report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::issue_transparency
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+issue_transparency(const TransparencyAttrib *attrib) {
+  TransparencyAttrib::Mode mode = attrib->get_mode();
+
+  switch (mode) {
+  case TransparencyAttrib::M_none:
+    enable_multisample_alpha_one(false);
+    enable_multisample_alpha_mask(false);
+    enable_blend(false);
+    enable_alpha_test(false);
+    break;
+  case TransparencyAttrib::M_alpha:
+  case TransparencyAttrib::M_alpha_sorted:
+    // Should we really have an "alpha" and an "alpha_sorted" mode,
+    // like Performer does?  (The difference is that "alpha" is with
+    // the write to the depth buffer disabled.)  Or should we just use
+    // the separate depth write transition to control this?  Doing it
+    // implicitly requires a bit more logic here and in the state
+    // management; for now we require the user to explicitly turn off
+    // the depth write.
+    enable_multisample_alpha_one(false);
+    enable_multisample_alpha_mask(false);
+    enable_blend(true);
+    enable_alpha_test(false);
+    call_glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    break;
+  case TransparencyAttrib::M_multisample:
+    enable_multisample_alpha_one(true);
+    enable_multisample_alpha_mask(true);
+    enable_blend(false);
+    enable_alpha_test(false);
+    break;
+  case TransparencyAttrib::M_multisample_mask:
+    enable_multisample_alpha_one(false);
+    enable_multisample_alpha_mask(true);
+    enable_blend(false);
+    enable_alpha_test(false);
+    break;
+  case TransparencyAttrib::M_binary:
+    enable_multisample_alpha_one(false);
+    enable_multisample_alpha_mask(false);
+    enable_blend(false);
+    enable_alpha_test(true);
+    call_glAlphaFunc(GL_EQUAL, 1);
+    break;
+  default:
+    glgsg_cat.error()
+      << "invalid transparency mode " << (int)mode << endl;
     break;
   }
   report_errors();

@@ -23,6 +23,7 @@
 #include "colorAttrib.h"
 #include "cullFaceAttrib.h"
 #include "cullBin.h"
+#include "cullBinBackToFront.h"
 #include "cullBinUnsorted.h"
 #include "qpgeomNode.h"
 #include "qplensNode.h"
@@ -34,6 +35,7 @@
 #include "textureAttrib.h"
 #include "colorAttrib.h"
 #include "transformState.h"
+#include "transparencyAttrib.h"
 
 #include "dconfig.h"
 
@@ -66,6 +68,7 @@ init_libpgraph() {
   ColorAttrib::init_type();
   CullFaceAttrib::init_type();
   CullBin::init_type();
+  CullBinBackToFront::init_type();
   CullBinUnsorted::init_type();
   qpGeomNode::init_type();
   qpLensNode::init_type();
@@ -77,6 +80,7 @@ init_libpgraph() {
   TextureAttrib::init_type();
   ColorAttrib::init_type();
   TransformState::init_type();
+  TransparencyAttrib::init_type();
 
   BillboardAttrib::register_with_read_factory();
   ColorAttrib::register_with_read_factory();
@@ -87,4 +91,5 @@ init_libpgraph() {
   TextureAttrib::register_with_read_factory();
   ColorAttrib::register_with_read_factory();
   TransformState::register_with_read_factory();
+  TransparencyAttrib::register_with_read_factory();
 }
