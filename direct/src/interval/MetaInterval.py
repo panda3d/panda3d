@@ -265,16 +265,8 @@ class MetaInterval(CMetaInterval):
         # is TRACK_START.
         self.pushLevel(name, relTime, relTo)
         for tuple in list:
-            if isinstance(tuple, Interval.Interval) or \
-               isinstance(tuple, CInterval):
-                # Actually, it's not a tuple, but just an interval.
-                # In this case we fall back on the old default of
-                # assuming a sequential list of intervals.  This is a
-                # temporary feature for backward compatibility.
-                self.addInterval(tuple, 0.0, PREVIOUS_END)
-
-            elif isinstance(tuple, types.TupleType) or \
-                 isinstance(tuple, types.ListType):
+            if isinstance(tuple, types.TupleType) or \
+               isinstance(tuple, types.ListType):
                 relTime = tuple[0]
                 ival = tuple[1]
                 if len(tuple) >= 3:
@@ -567,14 +559,6 @@ class Track(MetaInterval):
         # this is the same as asking that the component is itself an
         # Interval.
 
-        #if isinstance(tuple, CInterval) or \
-        #   isinstance(tuple, Interval.Interval):
-        #    # Actually, it's not a tuple, but just an interval.
-        #    # In this case we fall back on the old default of
-        #    # assuming a sequential list of intervals.  This is a
-        #    # temporary feature for backward compatibility.
-        #    return 1
-
         if not (isinstance(tuple, types.TupleType) or \
                 isinstance(tuple, types.ListType)):
             # It's not a tuple.
@@ -602,10 +586,3 @@ class Track(MetaInterval):
 
         # Looks good.
         return 1
-        
-
-# Temporary for backward compatibility.
-#class MultiTrack(MetaInterval):
-#    def applyIvals(self, meta, relTime, relTo):
-#        meta.addParallel(self.ivals, self.getName(),
-#                         relTime, relTo, self.phonyDuration)

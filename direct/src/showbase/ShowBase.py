@@ -389,20 +389,12 @@ class ShowBase(DirectObject.DirectObject):
             name = 'window%s' % (self.nextWindowIndex)
             self.nextWindowIndex += 1
 
-        # Temporary try .. except for old Pandas.
         win = None
-        try:
-            if type == 'onscreen':
-                win = self.graphicsEngine.makeWindow(gsg, name, 0)
-            elif type == 'offscreen':
-                win = self.graphicsEngine.makeBuffer(
-                    gsg, name, 0, props.getXSize(), props.getYSize(), 0)
-        except:
-            if type == 'onscreen':
-                win = self.graphicsEngine.makeWindow(pipe, gsg)
-            elif type == 'offscreen':
-                win = self.graphicsEngine.makeBuffer(
-                    pipe, gsg, props.getXSize(), props.getYSize(), 0)
+        if type == 'onscreen':
+            win = self.graphicsEngine.makeWindow(gsg, name, 0)
+        elif type == 'offscreen':
+            win = self.graphicsEngine.makeBuffer(
+                gsg, name, 0, props.getXSize(), props.getYSize(), 0)
             
         if win == None:
             # Couldn't create a window!
@@ -514,12 +506,7 @@ class ShowBase(DirectObject.DirectObject):
 
     def isMainWindowOpen(self):
         if self.win != None:
-            # Temporary try .. except for old Pandas.
-            try:
-                valid = self.win.isValid()
-            except:
-                valid = self.win.isOpen()
-            return valid
+            return self.win.isValid()
         return 0
         
     def openMainWindow(self):
