@@ -25,6 +25,9 @@
 #include "pnmReader.h"
 #include "pnmWriter.h"
 
+#include <stdarg.h>  // for va_list
+
+
 #define TIFF_COLORMAP_MAXCOLORS 1024
 
 ////////////////////////////////////////////////////////////////////
@@ -73,6 +76,12 @@ public:
     virtual int write_data(xel *array, xelval *alpha);
   };
 
+private:
+  static void install_error_handlers();
+
+  static void tiff_warning(const char *module, const char *format, va_list ap);
+  static void tiff_error(const char *module, const char *format, va_list ap);
+  static bool _installed_error_handlers;
 
   // The TypedWritable interface follows.
 public:

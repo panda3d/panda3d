@@ -193,6 +193,7 @@ static void
 iostream_unmap(thandle_t, tdata_t, toff_t) {
 }
 
+bool PNMFileTypeTIFF::_installed_error_handlers = false;
 TypeHandle PNMFileTypeTIFF::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -287,6 +288,7 @@ matches_magic_number(const string &magic_number) const {
 PNMReader *PNMFileTypeTIFF::
 make_reader(istream *file, bool owns_file, const string &magic_number) {
   init_pnm();
+  install_error_handlers();
   return new Reader(this, file, owns_file, magic_number);
 }
 
@@ -300,9 +302,9 @@ make_reader(istream *file, bool owns_file, const string &magic_number) {
 PNMWriter *PNMFileTypeTIFF::
 make_writer(ostream *file, bool owns_file) {
   init_pnm();
+  install_error_handlers();
   return new Writer(this, file, owns_file);
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeTIFF::Reader::Constructor
@@ -871,6 +873,67 @@ write_data(xel *array, xelval *alpha) {
 
   return _y_size;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeTIFF::install_error_handlers
+//       Access: Private
+//  Description: Installs our personal error and warning message
+//               handlers if they have not already been installed.
+//               These methods are used to route the Tiff error
+//               messages through notify, so we can turn some of them
+//               off.
+////////////////////////////////////////////////////////////////////
+void PNMFileTypeTIFF::
+install_error_handlers() {
+  if (!_installed_error_handlers) {
+    TIFFSetWarningHandler(tiff_warning);
+    TIFFSetErrorHandler(tiff_error);
+    _installed_error_handlers = true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeTIFF::tiff_warning
+//       Access: Private, Static
+//  Description: This is our own warning handler.  It is called by the
+//               tiff library to issue a warning message.
+////////////////////////////////////////////////////////////////////
+void PNMFileTypeTIFF::
+tiff_warning(const char *, const char *format, va_list ap) {
+  static const int buffer_size = 1024;
+  char buffer[buffer_size];
+#ifdef WIN32_VC
+  vsprintf(buffer, format, ap);
+#else
+  vsnprintf(buffer, buffer_size, format, ap);
+#endif
+
+  // We ignore the module.  It seems generally useless to us.
+  pnmimage_tiff_cat.warning()
+    << buffer << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMFileTypeTIFF::tiff_error
+//       Access: Private, Static
+//  Description: This is our own error handler.  It is called by the
+//               tiff library to issue a error message.
+////////////////////////////////////////////////////////////////////
+void PNMFileTypeTIFF::
+tiff_error(const char *module, const char *format, va_list ap) {
+  static const int buffer_size = 1024;
+  char buffer[buffer_size];
+#ifdef WIN32_VC
+  vsprintf(buffer, format, ap);
+#else
+  vsnprintf(buffer, buffer_size, format, ap);
+#endif
+
+  // We ignore the module.  It seems generally useless to us.
+  pnmimage_tiff_cat.error()
+    << buffer << "\n";
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeTIFF::register_with_read_factory
