@@ -1181,8 +1181,12 @@ report_texmgr_stats() {
 
   if(!bTexStatsRetrievalImpossible) {
     hr = _pD3DDevice->CreateQuery(D3DQUERYTYPE_RESOURCEMANAGER, &pQuery);
-    hr = pQuery->Issue(D3DISSUE_END);
-    hr = pQuery->GetData((void*)&all_resource_stats,sizeof(D3DDEVINFO_RESOURCEMANAGER), 0);
+    if (hr == D3D_OK) {
+      hr = pQuery->Issue(D3DISSUE_END);
+    }
+    if (hr == D3D_OK) {
+      hr = pQuery->GetData((void*)&all_resource_stats,sizeof(D3DDEVINFO_RESOURCEMANAGER), 0);
+    }
     if (hr!=D3D_OK) {
       if (hr==S_FALSE) {
         static int PrintedMsg=2;
@@ -1194,6 +1198,7 @@ report_texmgr_stats() {
         }
       } else {
         dxgsg9_cat.error() << "GetInfo(RESOURCEMANAGER) failed to get tex stats: result = " << D3DERRORSTRING(hr);
+        bTexStatsRetrievalImpossible = true;
         return;
       }
     }
