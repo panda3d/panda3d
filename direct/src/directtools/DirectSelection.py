@@ -4,6 +4,9 @@ from DirectUtil import *
 from DirectGeometry import *
 from DirectSelection import *
 
+COA_ORIGIN = 0
+COA_CENTER = 1
+
 # MRM: To do: handle broken node paths in selected and deselected dicts
 class DirectNodePath(NodePath):
     # A node path augmented with info, bounding box, and utility methods
@@ -17,8 +20,11 @@ class DirectNodePath(NodePath):
         # Create matrix to hold the offset between the nodepath
         # and its center of action (COA)
         self.mCoa2Dnp = Mat4()
-        self.mCoa2Dnp.assign(Mat4.identMat())
-        #self.mCoa2Dnp.setRow(3, Vec4(center[0], center[1], center[2], 1))
+        if direct.coaMode == COA_ORIGIN:
+            self.mCoa2Dnp.assign(Mat4.identMat())
+        else:
+            self.mCoa2Dnp.assign(Mat4.identMat())
+            self.mCoa2Dnp.setRow(3, Vec4(center[0], center[1], center[2], 1))
         # Transform from nodePath to widget
         self.tDnp2Widget = TransformState.makeIdentity()
 

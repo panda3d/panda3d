@@ -144,12 +144,14 @@ c           center on hot point
 f           fit on hot point
 h           move camera to home (0,0,0)
 L           toggle hot point lock (if set, hot point stays in current location)
+n           select next possible camera COA (along last intersection ray)
 u           orbit upright cam about hot point
 U           upright cam
 `           kill camera move task
 
 # RENDER STYLE
 A           show all
+control-f   flash selected
 b           toggle backface
 l           toggle lights
 t           toggle texture
@@ -182,4 +184,5 @@ down        move selected object down (in screen space)
 up          move selected object up (in screen space)
 a           auto position snap point to selected object
 j           move selected object to snap point
-
+shift-s     place suit point
+shift-c     place battle cell

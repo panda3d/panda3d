@@ -38,6 +38,7 @@ class DirectSession(PandaObject):
         self.camera = base.cameraList[0]
         self.trueCamera = self.camera
         self.iRay = self.dr.iRay
+        self.coaMode = COA_ORIGIN
 
         self.cameraControl = DirectCameraControl()
         self.manipulationControl = DirectManipulationControl()
@@ -152,7 +153,7 @@ class DirectSession(PandaObject):
                           'shift', 'shift-up', 'alt', 'alt-up',
                           'page_up', 'page_down', 
                           '[', '{', ']', '}',
-                          'shift-a', 'b', 'l', 'shift-l', 'o', 'p', 'r',
+                          'shift-a', 'b', 'control-f', 'l', 'shift-l', 'o', 'p', 'r',
                           'shift-r', 's', 't', 'v', 'w']
         self.mouseEvents = ['mouse1', 'mouse1-up',
                             'shift-mouse1', 'shift-mouse1-up',
@@ -188,6 +189,8 @@ class DirectSession(PandaObject):
         __builtins__['cluster'] = self.cluster
             
     def enable(self):
+        if self.fEnabled:
+            return
         # Make sure old tasks are shut down
         self.disable()
         # Start all display region context tasks
@@ -372,6 +375,8 @@ class DirectSession(PandaObject):
             self.toggleWidgetVis()
         elif input == 'b':
             base.toggleBackface()
+        elif input == 'control-f':
+            self.flash(last)
         elif input == 'l':
             self.lights.toggle()
         elif input == 'shift-l':
@@ -748,6 +753,9 @@ class DirectSession(PandaObject):
 
     def toggleWidgetVis(self):
         self.widget.toggleWidget()
+
+    def setCOAMode(self, mode):
+        self.coaMode = mode
 
     def isEnabled(self):
         return self.fEnabled

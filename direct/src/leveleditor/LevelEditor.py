@@ -428,12 +428,15 @@ class LevelEditor(NodePath, PandaObject):
 
         # Used to store whatever edges and points are loaded in the level
         self.edgeDict = {}
+        self.np2EdgeDict = {}
         self.pointDict = {}
         self.point2edgeDict = {}
         self.cellDict = {}
 
         self.visitedPoints = []
         self.visitedEdges = []
+
+        self.zoneLabels = []
         
         # Initialize LevelEditor variables DNAData, DNAToplevel, NPToplevel
         # DNAParent, NPParent, groupNum, lastAngle
@@ -1126,6 +1129,19 @@ class LevelEditor(NodePath, PandaObject):
                     if DNAIsDerivedFrom(dnaNode, DNA_NODE):
                         # Update DNA
                         self.updatePose(dnaNode, nodePath)
+        elif newParent:
+            # See if this node path is a suit edge
+            suitEdge, oldVisGroup = self.np2EdgeDict.get(nodePath.id(), (None,None))
+            # And see if the new parent is a vis group
+            newVisGroupNP, newVisGroupDNA = self.findParentVisGroup(newParent)
+            if suitEdge and DNAClassEqual(newVisGroupDNA, DNA_VIS_GROUP):
+                # If so, remove suit edge from old vis group and add it to the new group
+                oldVisGroup.removeSuitEdge(suitEdge)
+                # Update suit edge to reflect new zone ID
+                suitEdge.setZoneId(newVisGroupDNA.getName())
+                newVisGroupDNA.addSuitEdge(suitEdge)
+                # Update np2EdgeDict to reflect changes
+                self.np2EdgeDict[nodePath.id()] = [suitEdge, newVisGroupDNA]
 
     def setActiveParent(self, nodePath = None):
         """ Set NPParent and DNAParent to node path and its DNA """
@@ -1200,6 +1216,7 @@ class LevelEditor(NodePath, PandaObject):
                             if oldEdgeLine:
                                 del self.edgeDict[edge]
                                 oldEdgeLine.reset()
+                                oldEdgeLine.removeNode()
                                 del oldEdgeLine
                                 newEdgeLine = self.drawSuitEdge(
                                     edge, self.NPParent)
@@ -1967,8 +1984,16 @@ class LevelEditor(NodePath, PandaObject):
             if pointOrCell and (type == 'suitPointMarker'):
                 print "Found suit point!", pointOrCell
                 self.selectedSuitPoint = pointOrCell
-            if pointOrCell and (type == 'battleCellMarker'):
+            elif pointOrCell and (type == 'battleCellMarker'):
                 print "Found battle cell!", pointOrCell
+            else:
+                if nodePath.getName() != 'suitEdge':
+                    suitEdge = self.findSuitEdge(nodePath.getParent())
+                    if suitEdge:
+                        # Yes, deselect currently selected node path
+                        direct.deselect(nodePath)
+                        # And select parent
+                        direct.select(suitEdge, direct.fShift)
 
         # Let others know that something new may be selected:
         for i in self.selectedNodePathHookHooks:
@@ -2011,6 +2036,19 @@ class LevelEditor(NodePath, PandaObject):
                 # Try parent
                 return self.findDNARoot(nodePath.getParent())
 
+    def findSuitEdge(self, nodePath):
+        """ Walk up a node path's ancestry looking for a suit edge """
+        # Check current node's name for suitEdge marker
+        if (nodePath.getName() == 'suitEdge'):
+            # Its a suitEdge
+            return nodePath
+        else:
+            # If reached the top: fail
+            if not nodePath.hasParent():
+                return None
+            else:
+                # Try parent
+                return self.findSuitEdge(nodePath.getParent())
 
     def findPointOrCell(self, nodePath):
         """
@@ -2767,6 +2805,11 @@ class LevelEditor(NodePath, PandaObject):
                            15, # arrow angle
                            1) # arrow length
         edgeLine.create()
+        # Add a clickable sphere
+        marker = self.suitPointMarker.copyTo(edgeLine)
+        marker.setName('suitEdgeMarker')
+        midPos = (relStartPos + relEndPos)/2.0
+        marker.setPos(midPos)
         # Adjust color of highlighted lines
         if edge in self.visitedEdges:
             NodePath.setColor(edgeLine,1,0,0,1)
@@ -2824,6 +2867,7 @@ class LevelEditor(NodePath, PandaObject):
                 edgeLine = self.drawSuitEdge(suitEdge, self.NPParent)
                 # Store the line in a dict so we can hide/show them
                 self.edgeDict[suitEdge] = edgeLine
+                self.np2EdgeDict[edgeLine.id()] = [suitEdge, self.DNAParent]
                 # Store the edge on each point in case we move the point
                 # we can update the edge
                 for point in [self.startSuitPoint, self.endSuitPoint]:
@@ -2846,7 +2890,7 @@ class LevelEditor(NodePath, PandaObject):
                     edgeLine = self.drawSuitEdge(suitEdge, self.NPParent)
                     # Store the line in a dict so we can hide/show them
                     self.edgeDict[suitEdge] = edgeLine
-                    
+                    self.np2EdgeDict[edgeLine.id()] = [suitEdge, self.DNAParent]
                     for point in [self.startSuitPoint, self.endSuitPoint]:
                         if self.point2edgeDict.has_key(point):
                             self.point2edgeDict[point].append(suitEdge)
@@ -2975,6 +3019,7 @@ class LevelEditor(NodePath, PandaObject):
                 edge = dnaVisGroup.getSuitEdge(i)
                 edgeLine = self.drawSuitEdge(edge, np)
                 self.edgeDict[edge] = edgeLine
+                self.np2EdgeDict[edgeLine.id()] = [edge, dnaVisGroup]
                 # Store the edge on each point in case we move the point
                 # we can update the edge
                 for point in [edge.getStartPoint(), edge.getEndPoint()]:
@@ -3001,6 +3046,7 @@ class LevelEditor(NodePath, PandaObject):
                 edgeLine.reset()
                 edgeLine.removeNode()
         self.edgeDict = {}
+        self.np2EdgeDict = {}
         for point, marker in self.pointDict.items():
             if not marker.isEmpty():
                 marker.removeNode()
@@ -3077,7 +3123,28 @@ class LevelEditor(NodePath, PandaObject):
         for visGroup in visGroups:
             np = visGroup[0]
             np.clearColor()
-    
+
+    def labelZones(self):
+        # Label each zone
+        # First clear out old labels if any
+        self.clearZoneLabels()
+        visGroups = self.getDNAVisGroups(self.NPToplevel)
+        import DirectGui
+        for np, dna in visGroups:
+            name = dna.getName()
+            label = DirectGui.DirectLabel(text = name,
+                                          parent = np.getParent(),
+                                          relief = None, scale = 3)
+            label.setBillboardPointEye(0)
+            center = np.getBounds().getCenter()
+            label.setPos(center[0], center[1], .1)
+            self.zoneLabels.append(label)
+
+    def clearZoneLabels(self):
+        for label in self.zoneLabels:
+            label.removeNode()
+        self.zoneLabels = []
+
     def getBlockFromName(self, name):
         block=name[2:name.find(':')]
         return block
@@ -4500,7 +4567,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         self.fUpdateSelected = 1
         # Handle to the toplevels hull
         hull = self.component('hull')
-        hull.geometry('400x515')
+        hull.geometry('400x625')
         
         balloon = self.balloon = Pmw.Balloon(hull)
         # Start with balloon help disabled
@@ -5166,6 +5233,24 @@ class LevelEditorPanel(Pmw.MegaToplevel):
 
         buttonFrame4.pack(fill = X, padx = 5)
         
+        buttonFrame = Frame(hull)
+        self.fLabel = IntVar()
+        self.fLabel.set(0)
+        self.labelButton = Checkbutton(buttonFrame,
+                                       text = 'Show Zone Labels',
+                                       width = 6,
+                                       variable = self.fLabel,
+                                       command = self.toggleZoneLabels)
+        self.labelButton.pack(side = LEFT, expand = 1, fill = X)
+
+        self.selectButton = Button(buttonFrame,
+                                   text = 'Place Selected',
+                                   width = 6,
+                                   command = lambda: last.place()
+                                   )
+        self.selectButton.pack(side = LEFT, expand = 1, fill = X)
+        buttonFrame.pack(fill = X)
+
         # Make sure input variables processed 
         self.initialiseoptions(LevelEditorPanel)
 
@@ -5190,6 +5275,12 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             self.levelEditor.showBattleCells()
         else:
             self.levelEditor.hideBattleCells()
+
+    def toggleZoneLabels(self):
+        if self.fLabel.get():
+            self.levelEditor.labelZones()
+        else:
+            self.levelEditor.clearZoneLabels()
 
     def toggleXyzSnap(self):
         direct.grid.setXyzSnap(self.fXyzSnap.get())
