@@ -194,7 +194,7 @@ add_polygon(const EggPolygon *egg_poly, EggMesherStrip::MesherOrigin origin) {
     for (ci = temp_group->begin(); ci != temp_group->end(); ++ci) {
       add_polygon(DCAST(EggPolygon, *ci), EggMesherStrip::MO_user);
     }
-    return true;
+    return result;
   }
 
   if (_vertex_pool == NULL) {

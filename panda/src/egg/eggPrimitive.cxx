@@ -388,7 +388,8 @@ unify_attributes(EggPrimitive::Shading shading) {
     {
       iterator pi;
       for (pi = begin(); pi != end(); ++pi) {
-        EggVertex *vertex = (*pi);
+        EggVertex *orig_vertex = (*pi);
+        PT(EggVertex) vertex = new EggVertex(*orig_vertex);
         if (vertex->has_normal()) {
           if (!has_normal()) {
             copy_normal(*vertex);
@@ -401,6 +402,11 @@ unify_attributes(EggPrimitive::Shading shading) {
           }
           vertex->clear_color();
         }
+
+        EggVertexPool *vertex_pool = orig_vertex->get_pool();
+        nassertv(vertex_pool != (EggVertexPool *)NULL);
+        vertex = vertex_pool->create_unique_vertex(*vertex);
+        replace(pi, vertex);
       }
     }
     break;
