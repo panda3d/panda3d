@@ -227,6 +227,29 @@ class FSM(DirectObject.DirectObject):
         return self.defaultFilter(request, args)
         
 
+    def setStateArray(self, stateArray):
+        """array of unique states to iterate through"""
+        self.stateArray = stateArray
+
+    def requestNext(self, *args):
+        """request the 'next' state in the predefined state array"""
+        assert (self.state in self.stateArray)
+
+        curIndex = self.stateArray.index(self.state)
+        newIndex = (curIndex + 1) % len(self.stateArray)
+
+        self.request(self.stateArray[newIndex], args)
+
+    def requestPrev(self, *args):
+        """request the 'previous' state in the predefined state array"""
+        assert (self.state in self.stateArray)
+
+        curIndex = self.stateArray.index(self.state)
+        newIndex = (curIndex - 1) % len(self.stateArray)
+
+        self.request(self.stateArray[newIndex], args)
+        
+
     def __setState(self, newState, *args):
         # Internal function to change unconditionally to the indicated
         # state.
@@ -246,7 +269,7 @@ class FSM(DirectObject.DirectObject):
         # Calls the appropriate enter or exit function when
         # transitioning between states, if it exists.
         assert(self.state == None)
-        
+
         func = getattr(self, name, None)
         if func:
             func(*args)
