@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "graphicsPipe.h"
+#include "winGraphicsWindow.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : WinGraphicsPipe
@@ -40,6 +41,10 @@ public:
   WinGraphicsPipe();
   virtual ~WinGraphicsPipe();
 
+private:
+  HINSTANCE _hUser32;
+  typedef BOOL (WINAPI *PFN_TRACKMOUSEEVENT)(LPTRACKMOUSEEVENT);
+  PFN_TRACKMOUSEEVENT _pfnTrackMouseEvent;
 
 public:
   static TypeHandle get_class_type() {
@@ -57,6 +62,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class WinGraphicsWindow;
 };
 
 #include "winGraphicsPipe.I"

@@ -107,10 +107,6 @@ private:
   bool _maximized;
   DEVMODE _fullscreen_display_mode;
 
-  static bool _got_dynamic_fns;
-  typedef BOOL (WINAPI *PFN_TRACKMOUSEEVENT)(LPTRACKMOUSEEVENT);
-  static PFN_TRACKMOUSEEVENT _pfnTrackMouseEvent;
-
   // This is used to remember the state of the keyboard when keyboard
   // focus is lost.
   static const int num_virtual_keys = 256;

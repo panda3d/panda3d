@@ -29,9 +29,6 @@
 
 TypeHandle WinGraphicsWindow::_type_handle;
 
-bool WinGraphicsWindow::_got_dynamic_fns = false;
-WinGraphicsWindow::PFN_TRACKMOUSEEVENT WinGraphicsWindow::_pfnTrackMouseEvent = NULL;
-
 bool WinGraphicsWindow::_loaded_custom_cursor;
 HCURSOR WinGraphicsWindow::_mouse_cursor;
 const char * const WinGraphicsWindow::_window_class_name = "WinGraphicsWindow";
@@ -72,19 +69,6 @@ WinGraphicsWindow(GraphicsPipe *pipe) :
   _tracking_mouse_leaving = false;
   _maximized = false;
   memset(_keyboard_state, 0, sizeof(BYTE) * num_virtual_keys);
-
-  if (!_got_dynamic_fns) {
-    // these fns arent defined on win95, so get dynamic ptrs to them
-    // to avoid ugly DLL loader failures on w95
-    HINSTANCE hUser32 = (HINSTANCE)LoadLibrary("user32.dll");
-    if (hUser32) {
-      _pfnTrackMouseEvent = 
-        (PFN_TRACKMOUSEEVENT)GetProcAddress(hUser32, "TrackMouseEvent");
-      FreeLibrary(hUser32);
-    }
-
-    _got_dynamic_fns = true;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -628,7 +612,10 @@ track_mouse_leaving(HWND hwnd) {
   // 3.0+) which emulates TrackMouseEvent on w95, but that requires
   // another 500K of memory to hold that DLL, which is lame just to
   // support w95, which probably has other issues anyway
-  if (_pfnTrackMouseEvent != NULL) {
+  WinGraphicsPipe *winpipe;
+  DCAST_INTO_V(winpipe, _pipe);
+
+  if (winpipe->_pfnTrackMouseEvent != NULL) {
     TRACKMOUSEEVENT tme = {
       sizeof(TRACKMOUSEEVENT),
       TME_LEAVE,
@@ -637,7 +624,7 @@ track_mouse_leaving(HWND hwnd) {
     };
 
     // tell win32 to post WM_MOUSELEAVE msgs
-    BOOL bSucceeded = _pfnTrackMouseEvent(&tme);  
+    BOOL bSucceeded = winpipe->_pfnTrackMouseEvent(&tme);  
     
     if ((!bSucceeded) && windisplay_cat.is_debug()) {
       windisplay_cat.debug()

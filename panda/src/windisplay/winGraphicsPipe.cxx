@@ -28,6 +28,15 @@ TypeHandle WinGraphicsPipe::_type_handle;
 ////////////////////////////////////////////////////////////////////
 WinGraphicsPipe::
 WinGraphicsPipe() {
+  // these fns arent defined on win95, so get dynamic ptrs to them
+  // to avoid ugly DLL loader failures on w95
+  _pfnTrackMouseEvent = NULL;
+
+  _hUser32 = (HINSTANCE)LoadLibrary("user32.dll");
+  if (_hUser32 != NULL) {
+    _pfnTrackMouseEvent = 
+      (PFN_TRACKMOUSEEVENT)GetProcAddress(_hUser32, "TrackMouseEvent");
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -37,4 +46,8 @@ WinGraphicsPipe() {
 ////////////////////////////////////////////////////////////////////
 WinGraphicsPipe::
 ~WinGraphicsPipe() {
+  if (_hUser32 != NULL) {
+    FreeLibrary(_hUser32);
+    _hUser32 = NULL;
+  }
 }
