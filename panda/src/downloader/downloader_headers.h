@@ -35,5 +35,6 @@
 #include <throw_event.h>
 
 #include "config_downloader.h"
+#include "download_utils.h"
 #pragma hdrstop
 
