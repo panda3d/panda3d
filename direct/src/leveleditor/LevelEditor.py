@@ -26,7 +26,8 @@ DEFAULT_COLORS = [
     Vec4(1,1,1,1),
     Vec4(0.75, 0.75, 0.75, 1.0 ),
     Vec4(0.5, 0.5, 0.5, 1.0),
-    Vec4(0.25, 0.25, 0.25, 1.0)]
+    Vec4(0.25, 0.25, 0.25, 1.0)
+    ]
 # The list of items with color attributes
 COLOR_TYPES = ['wall_color', 'window_color',
                'window_awning_color', 'sign_color', 'door_color',
@@ -3870,7 +3871,10 @@ class LevelStyleManager:
                 node = None
             if node:
                 # Add it to the window menu
-                path = node.instanceTo(newMenu)
+                # This instance was causing problems for dna nodes that were
+                # loaded as singletons, so I changed it to copyTo.
+                # path = node.instanceTo(newMenu)
+                path = node.copyTo(newMenu)
                 # Place menu nodes in a circle, offset each in X and Z
                 # by half node width/height
                 bounds = path.getBounds()
@@ -5117,7 +5121,11 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                 # Update panel info:
                 self.baselineString.set(DNAGetBaselineString(target))
                 self.fontMenu.selectitem(target.getCode())
-                self.addCurveFloater.set(target.getWidth())
+                try:
+                    val = 1.0/target.getWidth()
+                except ZeroDivisionError:
+                    val = 0.0
+                self.addCurveFloater.set(val)
                 self.addKernFloater.set(target.getKern())
                 self.addWiggleFloater.set(target.getWiggle())
                 self.addStumbleFloater.set(target.getStumble())
@@ -5325,7 +5333,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             try:
                 val=1.0/val
             except ZeroDivisionError:
-                val=0    
+                val=0.0    
             baseline.setWidth(val)
             baseline.setHeight(val)
             self.levelEditor.replaceSelected()
