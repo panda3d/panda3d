@@ -1,0 +1,73 @@
+// Filename: renderAttrib.I
+// Created by:  drose (21Feb02)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderAttrib::compose
+//       Access: Public
+//  Description: Returns a new RenderAttrib object that represents the
+//               composition of this attrib with the other attrib.  In
+//               most cases, this is the same as the other attrib; a
+//               compose b produces b.  Some kinds of attributes, like
+//               a TextureTransform, for instance, might produce a new
+//               result: a compose b produces c.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(RenderAttrib) RenderAttrib::
+compose(const RenderAttrib *other) const {
+  return compose_impl(other);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderAttrib::make_default
+//       Access: Public
+//  Description: Returns a different (or possibly the same)
+//               RenderAttrib pointer of the same type as this one
+//               that corresponds to whatever the standard default
+//               properties for render attributes of this type ought
+//               to be.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(RenderAttrib) RenderAttrib::
+make_default() const {
+  return return_new(make_default_impl());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderAttrib::compare_to
+//       Access: Public
+//  Description: Provides an arbitrary ordering among all unique
+//               RenderAttribs, so we can store the essentially
+//               different ones in a big set and throw away the rest.
+//
+//               This method is not needed outside of the RenderAttrib
+//               class because all equivalent RenderAttrib objects are
+//               guaranteed to share the same pointer; thus, a pointer
+//               comparison is always sufficient.
+////////////////////////////////////////////////////////////////////
+INLINE int RenderAttrib::
+compare_to(const RenderAttrib &other) const {
+  // First, we compare the types; if they are of different types then
+  // they sort differently.
+  TypeHandle type = get_type();
+  TypeHandle other_type = other.get_type();
+  if (type != other_type) {
+    return type.get_index() - other_type.get_index();
+  }
+
+  // We only call compare_to_impl() if they have the same type.
+  return compare_to_impl(&other);
+}
