@@ -128,7 +128,7 @@ main(int argc, char *argv[]) {
     }
 
     framework.enable_default_keys();
-    framework.get_event_handler().add_hook("shift-w", event_W, NULL);
+    framework.define_key("shift-w", "open a new window", event_W, NULL);
     framework.main_loop();
     framework.report_frame_rate(nout);
   }

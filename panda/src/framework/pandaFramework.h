@@ -51,6 +51,11 @@ public:
   INLINE const NodePath &get_data_root() const;
   INLINE EventHandler &get_event_handler();
 
+  void define_key(const string &event_name, 
+                  const string &description,
+                  EventHandler::EventCallbackFunction *function,
+                  void *data);
+
   INLINE void set_window_title(const string &title);
   virtual void get_default_window_props(WindowProperties &props);
 
@@ -125,6 +130,7 @@ protected:
   static void event_arrow_right(CPT_Event, void *data);
   static void event_S(CPT_Event, void *data);
   static void event_comma(CPT_Event, void *data);
+  static void event_question(CPT_Event event, void *data);
   static void event_window_event(CPT_Event, void *data);
 
 
@@ -161,6 +167,16 @@ private:
   bool _default_keys_enabled;
 
   bool _exit_flag;
+  
+  class KeyDefinition {
+  public:
+    string _event_name;
+    string _description;
+  };
+  typedef pvector<KeyDefinition> KeyDefinitions;
+  KeyDefinitions _key_definitions;
+
+  NodePath _help_text;
 };
 
 #include "pandaFramework.I"

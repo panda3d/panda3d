@@ -25,6 +25,7 @@
 #include "config_framework.h"
 #include "graphicsPipeSelection.h"
 #include "nodePathCollection.h"
+#include "textNode.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFramework::Constructor
@@ -139,6 +140,44 @@ get_default_pipe() {
     _made_default_pipe = true;
   }
   return _default_pipe;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::define_key
+//       Access: Public
+//  Description: Sets up a handler for the indicated key.  When the
+//               key is pressed in a window, the given callback will
+//               be called.  The description is a one-line description
+//               of the function of the key, for display to the user.
+////////////////////////////////////////////////////////////////////
+void PandaFramework::
+define_key(const string &event_name, const string &description,
+           EventHandler::EventCallbackFunction *function,
+           void *data) {
+  if (_event_handler.has_hook(event_name)) {
+    // If there is already a hook for the indicated keyname, we're
+    // most likely replacing a previous definition of a key.  Search
+    // for the old definition and remove it.
+    KeyDefinitions::iterator di;
+    di = _key_definitions.begin();
+    while (di != _key_definitions.end() && (*di)._event_name != event_name) {
+      ++di;
+    }
+    if (di != _key_definitions.end()) {
+      _key_definitions.erase(di);
+    }
+  }
+
+  // Now add a new hook for the keyname, and also add the new
+  // description.
+  _event_handler.add_hook(event_name, function, data);
+
+  if (!description.empty()) {
+    KeyDefinition keydef;
+    keydef._event_name = event_name;
+    keydef._description = description;
+    _key_definitions.push_back(keydef);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -621,25 +660,28 @@ make_default_pipe() {
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
 do_enable_default_keys() {
-  _event_handler.add_hook("escape", event_esc, this);
-  _event_handler.add_hook("q", event_esc, this);
-  _event_handler.add_hook("f", event_f, this);
-  _event_handler.add_hook("w", event_w, this);
-  _event_handler.add_hook("t", event_t, this);
-  _event_handler.add_hook("b", event_b, this);
-  _event_handler.add_hook("i", event_i, this);
-  _event_handler.add_hook("l", event_l, this);
-  _event_handler.add_hook("c", event_c, this);
-  _event_handler.add_hook("shift-c", event_C, this);
-  _event_handler.add_hook("shift-b", event_B, this);
-  _event_handler.add_hook("shift-l", event_L, this);
-  _event_handler.add_hook("h", event_h, this);
-  _event_handler.add_hook("arrow_up", event_arrow_up, this);
-  _event_handler.add_hook("arrow_down", event_arrow_down, this);
-  _event_handler.add_hook("arrow_left", event_arrow_left, this);
-  _event_handler.add_hook("arrow_right", event_arrow_right, this);
-  _event_handler.add_hook("shift-s", event_S, this);
-  _event_handler.add_hook(",", event_comma, this);
+  define_key("escape", "close window", event_esc, this);
+  define_key("q", "close window", event_esc, this);
+  define_key("f", "report frame rate", event_f, this);
+  define_key("w", "toggle wireframe mode", event_w, this);
+  define_key("t", "toggle texturing", event_t, this);
+  define_key("b", "toggle backface (double-sided) rendering", event_b, this);
+  define_key("i", "invert (reverse) single-sided faces", event_i, this);
+  define_key("l", "toggle lighting", event_l, this);
+  define_key("c", "recenter view on object", event_c, this);
+  define_key("shift-c", "toggle collision surfaces", event_C, this);
+  define_key("shift-b", "report bounding volume", event_B, this);
+  define_key("shift-l", "list hierarchy", event_L, this);
+  define_key("h", "highlight node", event_h, this);
+  define_key("arrow_up", "move highlight to parent", event_arrow_up, this);
+  define_key("arrow_down", "move highlight to child", event_arrow_down, this);
+  define_key("arrow_left", "move highlight to sibling", event_arrow_left, this);
+  define_key("arrow_right", "move highlight to sibling", event_arrow_right, this);
+  define_key("shift-s", "activate PStats", event_S, this);
+  define_key(",", "change background color", event_comma, this);
+  define_key("?", "", event_question, this);
+  define_key("shift-/", "", event_question, this);
+
   _event_handler.add_hook("window-event", event_window_event, this);
 }
 
@@ -997,6 +1039,59 @@ event_comma(CPT_Event event, void *) {
       
     default:
       wf->set_background_type((WindowFramework::BackgroundType)(wf->get_background_type() + 1));
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::event_question
+//       Access: Protected, Static
+//  Description: Default handler for ? key: show the available keys.
+////////////////////////////////////////////////////////////////////
+void PandaFramework::
+event_question(CPT_Event event, void *data) {
+  cerr << "got question\n";
+  PandaFramework *self = (PandaFramework *)data;
+  if (event->get_num_parameters() == 1) {
+    EventParameter param = event->get_parameter(0);
+    WindowFramework *wf;
+    DCAST_INTO_V(wf, param.get_ptr());
+
+    if (!self->_help_text.is_empty()) {
+      self->_help_text.remove_node();
+
+    } else {
+      // Build up a string to display.
+      ostringstream help;
+      KeyDefinitions::const_iterator ki;
+      for (ki = self->_key_definitions.begin(); 
+           ki != self->_key_definitions.end(); 
+           ++ki) {
+        const KeyDefinition &keydef = (*ki);
+        help << keydef._event_name << "\t" << keydef._description << "\n";
+      }
+
+      string help_text = help.str();
+
+      TextNode *text_node = new TextNode("text");
+      self->_help_text = NodePath(text_node);
+      text_node->set_text(help_text);
+      text_node->set_align(TextNode::A_left);
+      text_node->set_shadow_color(0.0f, 0.0f, 0.0f, 1.0f);
+      text_node->set_shadow(0.04f, 0.04f);
+
+      LVecBase4f frame = text_node->get_frame_actual();
+
+      float height = frame[3] - frame[2];
+      float scale = min(0.06, 1.8 / height);
+      self->_help_text.set_scale(scale);
+
+      float pos_scale = scale / -2.0;
+      self->_help_text.set_pos((frame[0] + frame[1]) * pos_scale,
+                               0.0,
+                               (frame[2] + frame[3]) * pos_scale);
+
+      self->_help_text.reparent_to(wf->get_aspect_2d());
     }
   }
 }
