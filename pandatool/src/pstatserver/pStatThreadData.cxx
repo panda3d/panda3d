@@ -18,9 +18,9 @@
 
 #include "pStatThreadData.h"
 
-#include <pStatFrameData.h>
-#include <pStatCollectorDef.h>
-#include <config_pstats.h>
+#include "pStatFrameData.h"
+#include "pStatCollectorDef.h"
+#include "config_pstats.h"
 
 
 PStatFrameData PStatThreadData::_null_frame;

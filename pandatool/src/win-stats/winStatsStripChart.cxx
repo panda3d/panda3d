@@ -70,18 +70,11 @@ WinStatsStripChart::
 ////////////////////////////////////////////////////////////////////
 void WinStatsStripChart::
 new_collector(int collector_index) {
-  if (is_title_unknown()) {
-    string window_title = get_title_text();
-    if (!is_title_unknown()) {
-      SetWindowText(_window, window_title.c_str());
-    }
-  }
-
   WinStatsGraph::new_collector(collector_index);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WinStatsStripChart::idle
+//     Function: WinStatsStripChart::new_data
 //       Access: Public, Virtual
 //  Description: Called as each frame's data is made available.  There
 //               is no gurantee the frames will arrive in order, or
@@ -91,6 +84,13 @@ new_collector(int collector_index) {
 ////////////////////////////////////////////////////////////////////
 void WinStatsStripChart::
 new_data(int thread_index, int frame_number) {
+  if (is_title_unknown()) {
+    string window_title = get_title_text();
+    if (!is_title_unknown()) {
+      SetWindowText(_window, window_title.c_str());
+    }
+  }
+
   if (!_pause) {
     update();
   }
