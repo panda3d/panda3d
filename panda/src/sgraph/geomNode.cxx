@@ -183,7 +183,27 @@ get_geom(int n) const {
 void GeomNode::
 remove_geom(int n) {
   nassertv(n >= 0 && n < get_num_geoms());
-  _geoms.erase(_geoms.begin() + n);
+  if (_geoms.get_ref_count() == 1) {
+    // The normal case; we own the only pointer to the array.
+    _geoms.erase(_geoms.begin() + n);
+
+  } else {
+    // Copy-on-write.
+    size_t num_geoms = _geoms.size();
+    Geoms new_geoms;
+    new_geoms.reserve(num_geoms - 1);
+    size_t i;
+    for (i = 0; i < n; i++) {
+      new_geoms.push_back(_geoms[i]);
+    }
+    for (i = n + 1; i < num_geoms; i++) {
+      new_geoms.push_back(_geoms[i]);
+    }
+    nassertv(new_geoms.size() == _geoms.size());
+    _geoms = new_geoms;
+    nassertv(_geoms.get_ref_count() == 1);
+  }
+
   mark_bound_stale();
 }
 
@@ -206,7 +226,19 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 int GeomNode::
 add_geom(dDrawable *geom) {
-  _geoms.push_back(geom);
+  if (_geoms.get_ref_count() == 1) {
+    // The normal case; we own the only pointer to the array.
+    _geoms.push_back(geom);
+  } else {
+    // Copy on write.
+    Geoms new_geoms(0);
+    if (_geoms.size() != 0) {
+      new_geoms.v() = _geoms.v();
+    }
+    _geoms = new_geoms;
+    _geoms.push_back(geom);
+  }
+
   mark_bound_stale();
   return _geoms.size() - 1;
 }
@@ -221,7 +253,21 @@ void GeomNode::
 add_geoms_from(const GeomNode *other) {
   const PT(dDrawable) *geoms_begin = &other->_geoms[0];
   const PT(dDrawable) *geoms_end = geoms_begin + other->_geoms.size();
-  _geoms.v().insert(_geoms.end(), geoms_begin, geoms_end);
+
+  if (_geoms.get_ref_count() == 1) {
+    // The normal case; we own the only pointer to the array.
+    _geoms.v().insert(_geoms.end(), geoms_begin, geoms_end);
+
+  } else {
+    // Copy on write.
+    Geoms new_geoms(0);
+    if (_geoms.size() != 0) {
+      new_geoms.v() = _geoms.v();
+    }
+    _geoms = new_geoms;
+    _geoms.v().insert(_geoms.end(), geoms_begin, geoms_end);
+  }
+
   mark_bound_stale();
 }
 
