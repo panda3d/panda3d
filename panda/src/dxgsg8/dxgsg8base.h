@@ -190,6 +190,7 @@ typedef struct {
       DWORD             MaxAvailVidMem;
       ushort            CardIDNum;  // adapter ID
       ushort            depth_buffer_bitdepth;  //GetSurfaceDesc is not reliable so must store this explicitly
+      bool              bCanDirectDisableColorWrites;  // if true, dont need blending for this
       bool              bIsLowVidMemCard;
       bool              bIsTNLDevice;
       bool              bCanUseHWVertexShaders;

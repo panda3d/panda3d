@@ -157,15 +157,13 @@ INLINE void DXGraphicsStateGuardian::
 set_color_writemask(UINT color_writemask) {
   if (_color_writemask != color_writemask) {
     _color_writemask = color_writemask;
-    if(scrn.d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_COLORWRITEENABLE) {
+    if(scrn.bCanDirectDisableColorWrites) {
         // only newer HW supports this rstate
         scrn.pD3DDevice->SetRenderState(D3DRS_COLORWRITEENABLE, (DWORD)color_writemask);
     } else {
+        // blending can only handle on/off
         assert((color_writemask==0x0)||(color_writemask==0xFFFFFFFF));
-        if(color_writemask==0x0) {
-            enable_blend(true);
-            call_dxBlendFunc(D3DBLEND_ZERO, D3DBLEND_ONE);
-        } else enable_blend(false);
+        set_blend_mode(_color_write_mode, _color_blend_mode, _transparency_mode);        
     }
   }
 }

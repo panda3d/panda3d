@@ -762,6 +762,8 @@ dx_init(HCURSOR hMouseCursor) {
         }
     }
 
+    scrn.bCanDirectDisableColorWrites=((scrn.d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_COLORWRITEENABLE)!=0);
+
     // Lighting, let's turn it off by default
     scrn.pD3DDevice->SetRenderState(D3DRS_LIGHTING, false);
 
@@ -4388,14 +4390,17 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
                ColorBlendAttrib::Mode color_blend_mode,
                TransparencyAttrib::Mode transparency_mode) {
 
-  // should never get here, since our dxgsg8 issue_color_write() should be called instead
-  nassertv(color_write_mode == _color_write_mode);
-#if 0
-  if(color_write_mode == ColorWriteAttrib::M_off) {
-    set_color_writemask(0x0);
+  if((color_write_mode == ColorWriteAttrib::M_off) && !scrn.bCanDirectDisableColorWrites) {
+    // need !scrn.bCanDirectDisableColorWrites guard because other issue_colorblend,issue_transp
+    // will come this way, and they should ignore the colorwriteattrib value since it's been 
+    // handled separately in set_color_writemask
+    enable_blend(true);
+    call_dxBlendFunc(D3DBLEND_ZERO, D3DBLEND_ONE);
     return;
   }
-#endif
+
+  // if ColorWriteAttrib::M_on, need to check other transp modes to see if they
+  // need blending before we use blending
 
   // Is there a color blend set?
   switch (color_blend_mode) {
