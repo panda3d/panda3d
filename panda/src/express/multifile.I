@@ -114,9 +114,7 @@ normalize_streampos(streampos fpos) const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE Multifile::Subfile::
-Subfile(const string &name) :
-  _name(name)
-{
+Subfile() {
   _index_start = 0;
   _data_start = 0;
   _data_length = 0;

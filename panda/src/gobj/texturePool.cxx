@@ -19,6 +19,7 @@
 #include "texturePool.h"
 #include "config_gobj.h"
 #include "config_util.h"
+#include "virtualFileSystem.h"
 
 
 TexturePool *TexturePool::_global_ptr = (TexturePool *)NULL;
@@ -35,8 +36,15 @@ ns_has_texture(Filename filename) {
     filename = fake_texture_image;
   }
 
-  filename.resolve_filename(get_texture_path());
-  filename.resolve_filename(get_model_path());
+  if (use_vfs) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    vfs->resolve_filename(filename, get_texture_path());
+    vfs->resolve_filename(filename, get_model_path());
+
+  } else {
+    filename.resolve_filename(get_texture_path());
+    filename.resolve_filename(get_model_path());
+  }
 
   Textures::const_iterator ti;
   ti = _textures.find(filename);
@@ -59,8 +67,15 @@ ns_load_texture(Filename filename) {
     filename = fake_texture_image;
   }
 
-  filename.resolve_filename(get_texture_path());
-  filename.resolve_filename(get_model_path());
+  if (use_vfs) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    vfs->resolve_filename(filename, get_texture_path());
+    vfs->resolve_filename(filename, get_model_path());
+
+  } else {
+    filename.resolve_filename(get_texture_path());
+    filename.resolve_filename(get_model_path());
+  }
 
   Textures::const_iterator ti;
   ti = _textures.find(filename);
@@ -93,11 +108,21 @@ ns_load_texture(Filename filename, Filename grayfilename) {
     return ns_load_texture(fake_texture_image);
   }
 
-  filename.resolve_filename(get_texture_path());
-  filename.resolve_filename(get_model_path());
+  if (use_vfs) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    vfs->resolve_filename(filename, get_texture_path());
+    vfs->resolve_filename(filename, get_model_path());
 
-  grayfilename.resolve_filename(get_texture_path());
-  grayfilename.resolve_filename(get_model_path());
+    vfs->resolve_filename(grayfilename, get_texture_path());
+    vfs->resolve_filename(grayfilename, get_model_path());
+
+  } else {
+    filename.resolve_filename(get_texture_path());
+    filename.resolve_filename(get_model_path());
+
+    grayfilename.resolve_filename(get_texture_path());
+    grayfilename.resolve_filename(get_model_path());
+  }
 
   Textures::const_iterator ti;
   ti = _textures.find(filename);

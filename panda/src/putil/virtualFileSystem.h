@@ -21,11 +21,15 @@
 
 #include "pandabase.h"
 
+#include "virtualFile.h"
 #include "filename.h"
+#include "pointerTo.h"
 #include "pmap.h"
+#include "config_util.h"
 
 class Multifile;
 class VirtualFileMount;
+class VirtualFileComposite;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : VirtualFileSystem
@@ -55,12 +59,25 @@ PUBLISHED:
   int unmount_point(const string &mount_point);
   int unmount_all();
 
-  bool chdir(const Filename &new_directory);
+  bool chdir(const string &new_directory);
   const Filename &get_cwd() const;
 
-  PT(VirtualFile) get_file(const Filename &file) const;
-  PT(VirtualFile) find_file(const Filename &file, 
+  PT(VirtualFile) get_file(const Filename &filename) const;
+  PT(VirtualFile) find_file(const Filename &filename, 
                             const DSearchPath &searchpath) const;
+  bool resolve_filename(Filename &filename,
+                        const DSearchPath &searchpath,
+                        const string &default_extension = string()) const;
+
+  INLINE bool exists(const Filename &filename) const;
+  INLINE bool is_directory(const Filename &filename) const;
+  INLINE bool is_regular_file(const Filename &filename) const;
+
+  INLINE bool read_file(const Filename &filename, Datagram &data) const;
+  INLINE istream *open_read_file(const Filename &filename) const;
+
+  INLINE void ls(const string &filename) const;
+  INLINE void ls_all(const string &filename) const;
 
   void write(ostream &out) const;
 

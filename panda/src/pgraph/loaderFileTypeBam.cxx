@@ -20,6 +20,7 @@
 #include "config_pgraph.h"
 #include "bamFile.h"
 
+#include "virtualFileSystem.h"
 #include "config_util.h"
 #include "dcast.h"
 
@@ -63,8 +64,14 @@ get_extension() const {
 ////////////////////////////////////////////////////////////////////
 void LoaderFileTypeBam::
 resolve_filename(Filename &path) const {
-  path.resolve_filename(get_bam_path());
-  path.resolve_filename(get_model_path());
+  if (use_vfs) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    vfs->resolve_filename(path, get_bam_path());
+    vfs->resolve_filename(path, get_model_path());
+  } else {
+    path.resolve_filename(get_bam_path());
+    path.resolve_filename(get_model_path());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -24,9 +24,10 @@
 #include "eggPoolUniquifier.h"
 #include "config_egg.h"
 
-#include <config_util.h>
-#include <string_utils.h>
-#include <dSearchPath.h>
+#include "config_util.h"
+#include "string_utils.h"
+#include "dSearchPath.h"
+#include "virtualFileSystem.h"
 
 extern int eggyyparse(void);
 #include "parserDefs.h"
@@ -45,15 +46,30 @@ TypeHandle EggData::_type_handle;
 ////////////////////////////////////////////////////////////////////
 bool EggData::
 resolve_egg_filename(Filename &egg_filename, const DSearchPath &searchpath) {
-  if (egg_filename.is_fully_qualified() && egg_filename.exists()) {
-    return true;
+  if (use_vfs) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+    if (egg_filename.is_fully_qualified() && vfs->exists(egg_filename)) {
+      return true;
+    }
+
+    vfs->resolve_filename(egg_filename, searchpath, "egg") ||
+      vfs->resolve_filename(egg_filename, get_egg_path(), "egg") ||
+      vfs->resolve_filename(egg_filename, get_model_path(), "egg");
+
+    return vfs->exists(egg_filename);
+
+  } else {
+    if (egg_filename.is_fully_qualified() && egg_filename.exists()) {
+      return true;
+    }
+
+    egg_filename.resolve_filename(searchpath, "egg") ||
+      egg_filename.resolve_filename(get_egg_path(), "egg") ||
+      egg_filename.resolve_filename(get_model_path(), "egg");
+    
+    return egg_filename.exists();
   }
-
-  egg_filename.resolve_filename(searchpath, "egg") ||
-    egg_filename.resolve_filename(get_egg_path(), "egg") ||
-    egg_filename.resolve_filename(get_model_path(), "egg");
-
-  return egg_filename.exists();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -76,19 +92,46 @@ read(Filename filename) {
     return false;
   }
 
-  filename.set_text();
-  set_egg_filename(filename);
+  if (use_vfs) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    
+    filename.set_text();
+    set_egg_filename(filename);
+    
+    istream *file = vfs->open_read_file(filename);
+    if (file == (istream *)NULL) {
+      egg_cat.error() << "Unable to open " << filename << "\n";
+      return false;
+    }
+    
+    egg_cat.info()
+      << "Reading " << filename << "\n";
 
-  ifstream file;
-  if (!filename.open_read(file)) {
-    egg_cat.error() << "Unable to open " << filename << "\n";
-    return false;
+    bool read_ok = read(*file);
+    delete file;
+    return read_ok;
+
+  } else {
+    if (!resolve_egg_filename(filename)) {
+      egg_cat.error()
+        << "Could not find " << filename << "\n";
+      return false;
+    }
+    
+    filename.set_text();
+    set_egg_filename(filename);
+    
+    ifstream file;
+    if (!filename.open_read(file)) {
+      egg_cat.error() << "Unable to open " << filename << "\n";
+      return false;
+    }
+    
+    egg_cat.info()
+      << "Reading " << filename << "\n";
+    
+    return read(file);
   }
-
-  egg_cat.info()
-    << "Reading " << filename << "\n";
-
-  return read(file);
 }
 
 

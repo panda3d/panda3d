@@ -11,6 +11,8 @@
 #include "cycleData.cxx"
 #include "cycleDataReader.cxx"
 #include "cycleDataWriter.cxx"
+#include "datagramInputFile.cxx"
+#include "datagramOutputFile.cxx"
 #include "factoryBase.cxx"
 #include "factoryParam.cxx"
 #include "factoryParams.cxx"

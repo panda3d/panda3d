@@ -20,6 +20,8 @@
     cycleData.h cycleData.I \
     cycleDataReader.h cycleDataReader.I \
     cycleDataWriter.h cycleDataWriter.I \
+    datagramInputFile.I datagramInputFile.h \
+    datagramOutputFile.I datagramOutputFile.h \
     drawMask.h \
     factoryBase.I factoryBase.h \
     factoryParam.I factoryParam.h factoryParams.I \
@@ -64,6 +66,7 @@
     cycleData.cxx \
     cycleDataReader.cxx \
     cycleDataWriter.cxx \
+    datagramInputFile.cxx datagramOutputFile.cxx \
     factoryBase.cxx \
     factoryParam.cxx factoryParams.cxx globPattern.cxx \
     globalPointerRegistry.cxx ioPtaDatagramFloat.cxx \
@@ -99,6 +102,8 @@
     cycleData.h cycleData.I \
     cycleDataReader.h cycleDataReader.I \
     cycleDataWriter.h cycleDataWriter.I \
+    datagramInputFile.I datagramInputFile.h \
+    datagramOutputFile.I datagramOutputFile.h \
     drawMask.h \
     factoryBase.I factoryBase.h factoryParam.I factoryParam.h \
     factoryParams.I factoryParams.h \

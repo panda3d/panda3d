@@ -22,6 +22,8 @@
 #include "virtualFileMountSystem.h"
 #include "dSearchPath.h"
 #include "dcast.h"
+#include "config_util.h"
+#include "executionEnvironment.h"
 
 VirtualFileSystem *VirtualFileSystem::_global_ptr = NULL;
 
@@ -239,9 +241,12 @@ unmount_all() {
 //               resolve relative pathnames in get_file() and/or
 //               find_file().  Returns true if successful, false
 //               otherwise.
+//
+//               This accepts a string rather than a Filename simply
+//               for programmer convenience from the Python prompt.
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileSystem::
-chdir(const Filename &new_directory) {
+chdir(const string &new_directory) {
   if (new_directory == "/") {
     // We can always return to the root.
     _cwd = new_directory;
@@ -274,11 +279,11 @@ get_cwd() const {
 //               the file if it is found, or NULL if it is not.
 ////////////////////////////////////////////////////////////////////
 PT(VirtualFile) VirtualFileSystem::
-get_file(const Filename &file) const {
-  nassertr(!file.empty(), NULL);
-  Filename pathname(file);
+get_file(const Filename &filename) const {
+  nassertr(!filename.empty(), NULL);
+  Filename pathname(filename);
   if (pathname.is_local()) {
-    pathname = Filename(_cwd, file);
+    pathname = Filename(_cwd, filename);
   }
   pathname.standardize();
   string strpath = pathname.get_fullpath().substr(1);
@@ -333,14 +338,14 @@ get_file(const Filename &file) const {
 //               found.
 ////////////////////////////////////////////////////////////////////
 PT(VirtualFile) VirtualFileSystem::
-find_file(const Filename &file, const DSearchPath &searchpath) const {
-  if (file.is_local()) {
-    return get_file(file);
+find_file(const Filename &filename, const DSearchPath &searchpath) const {
+  if (!filename.is_local()) {
+    return get_file(filename);
   }
 
   int num_directories = searchpath.get_num_directories();
   for (int i = 0; i < num_directories; i++) {
-    Filename match(searchpath.get_directory(i), file);
+    Filename match(searchpath.get_directory(i), filename);
     PT(VirtualFile) found_file = get_file(match);
     if (found_file != (VirtualFile *)NULL) {
       return found_file;
@@ -348,6 +353,58 @@ find_file(const Filename &file, const DSearchPath &searchpath) const {
   }
 
   return NULL;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::resolve_filename
+//       Access: Public
+//  Description: Searches the given search path for the filename.  If
+//               it is found, updates the filename to the full
+//               pathname found and returns true; otherwise, returns
+//               false.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileSystem::
+resolve_filename(Filename &filename,
+                 const DSearchPath &searchpath,
+                 const string &default_extension) const {
+  PT(VirtualFile) found;
+
+  if (filename.is_local()) {
+    found = find_file(filename.get_fullpath(), searchpath);
+
+    if (found.is_null()) {
+      // We didn't find it with the given extension; can we try the
+      // default extension?
+      if (filename.get_extension().empty() && !default_extension.empty()) {
+        Filename try_ext = filename;
+        try_ext.set_extension(default_extension);
+        found = find_file(try_ext.get_fullpath(), searchpath);
+      }
+    }
+
+  } else {
+    if (exists(filename)) {
+      // The full pathname exists.  Return true.
+      return true;
+
+    } else {
+      // The full pathname doesn't exist with the given extension;
+      // does it exist with the default extension?
+      if (filename.get_extension().empty() && !default_extension.empty()) {
+        Filename try_ext = filename;
+        try_ext.set_extension(default_extension);
+        found = get_file(try_ext);
+      }
+    }
+  }
+
+  if (!found.is_null()) {
+    filename = found->get_filename();
+    return true;
+  }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -383,7 +440,34 @@ VirtualFileSystem *VirtualFileSystem::
 get_global_ptr() {
   if (_global_ptr == (VirtualFileSystem *)NULL) {
     _global_ptr = new VirtualFileSystem;
+    
+    // Set up the default mounts.  First, there is always the root
+    // mount.
     _global_ptr->mount("/", "/", 0);
+
+    // Then, we add whatever mounts are listed in the Configrc file.
+    Config::ConfigTable::Symbol mounts;
+    config_util.GetAll("vfs-mount", mounts);
+    Config::ConfigTable::Symbol::iterator si;
+    for (si = mounts.begin(); si != mounts.end(); ++si) {
+      string mount_desc = (*si).Val();
+
+      // The last space marks the beginning of the mount point.
+      // Spaces before that are part of the system filename.
+      size_t space = mount_desc.rfind(' ');
+      if (space == string::npos) {
+        util_cat.warning()
+          << "No space in vfs-mount descriptor: " << mount_desc << "\n";
+
+      } else {
+        string fn = trim_right(mount_desc.substr(0, space));
+        fn = ExecutionEnvironment::expand_string(fn);
+        Filename physical_filename = Filename::from_os_specific(fn);
+
+        string mount_point = mount_desc.substr(space + 1);
+        _global_ptr->mount(physical_filename, mount_point, 0);
+      }
+    }
   }
 
   return _global_ptr;

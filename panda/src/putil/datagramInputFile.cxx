@@ -20,6 +20,8 @@
 #include "numeric_types.h"
 #include "datagramIterator.h"
 #include "profileTimer.h"
+#include "config_util.h"
+#include "virtualFileSystem.h"
 
 #include "datagramInputFile.h"
 
@@ -27,6 +29,37 @@
 #ifdef SKYLER_TIMER //[
   EXPCL_PANDAEXPRESS ProfileTimer Skyler_timer_file;
 #endif //]
+
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramInputFile::open
+//       Access: Public
+//  Description: Opens the indicated filename for reading.  Returns
+//               true if successful, false on failure.
+////////////////////////////////////////////////////////////////////
+bool DatagramInputFile::
+open(Filename filename) {
+  // DatagramInputFiles are always binary.
+  _read_first_datagram = false;
+  _error = false;
+  filename.set_binary();
+
+  if (use_vfs) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    PT(VirtualFile) file = vfs->get_file(filename);
+    if (file == (VirtualFile *)NULL) {
+      // No such file.
+      return false;
+    }
+    _in = file->open_read_file();
+    _owns_in = (_in != (istream *)NULL);
+    return _owns_in && !_in->fail();
+    
+  } else {
+    _in = &_in_file;
+    _owns_in = false;
+    return filename.open_read(_in_file);
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramInputFile::read_header
@@ -44,8 +77,8 @@ read_header(string &header, size_t num_bytes) {
   char *buffer = (char *)alloca(num_bytes);
   nassertr(buffer != (char *)NULL, false);
 
-  _in.read(buffer, num_bytes);
-  if (_in.fail() || _in.eof()) {
+  _in->read(buffer, num_bytes);
+  if (_in->fail() || _in->eof()) {
     return false;
   }
 
@@ -70,8 +103,8 @@ get_datagram(Datagram &data) {
   // First, get the size of the upcoming datagram.  We do this with
   // the help of a second datagram.
   char sizebuf[sizeof(PN_uint32)];
-  _in.read(sizebuf, sizeof(PN_uint32));
-  if (_in.fail() || _in.eof()) {
+  _in->read(sizebuf, sizeof(PN_uint32));
+  if (_in->fail() || _in->eof()) {
     #ifdef SKYLER_TIMER //[
       Skyler_timer_file.off("DatagramInputFile::get_datagram");
     #endif //]
@@ -86,8 +119,8 @@ get_datagram(Datagram &data) {
   char *buffer = new char[num_bytes];
   nassertr(buffer != (char *)NULL, false);
 
-  _in.read(buffer, num_bytes);
-  if (_in.fail() || _in.eof()) {
+  _in->read(buffer, num_bytes);
+  if (_in->fail() || _in->eof()) {
     _error = true;
     delete[] buffer;
     #ifdef SKYLER_TIMER //[
@@ -113,7 +146,7 @@ get_datagram(Datagram &data) {
 ////////////////////////////////////////////////////////////////////
 bool DatagramInputFile::
 is_eof() {
-  return _in.eof();
+  return _in->eof();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -124,7 +157,7 @@ is_eof() {
 ////////////////////////////////////////////////////////////////////
 bool DatagramInputFile::
 is_error() {
-  if (_in.fail()) {
+  if (_in->fail()) {
     _error = true;
   }
   return _error;

@@ -13,9 +13,8 @@
     checksumHashGenerator.I checksumHashGenerator.h circBuffer.I \
     circBuffer.h clockObject.I clockObject.h config_express.h \
     datagram.I datagram.h datagramGenerator.I \
-    datagramGenerator.h datagramInputFile.I datagramInputFile.h \
-    datagramIterator.I datagramIterator.h datagramOutputFile.I \
-    datagramOutputFile.h datagramSink.I datagramSink.h \
+    datagramGenerator.h \
+    datagramIterator.I datagramIterator.h datagramSink.I datagramSink.h \
     dcast.T dcast.h \
     error_utils.h \
     get_config_path.h hashGeneratorBase.I hashGeneratorBase.h \
@@ -51,8 +50,8 @@
   #define INCLUDED_SOURCES  \
     buffer.cxx checksumHashGenerator.cxx clockObject.cxx \
     config_express.cxx datagram.cxx datagramGenerator.cxx \
-    datagramInputFile.cxx datagramIterator.cxx \
-    datagramOutputFile.cxx datagramSink.cxx dcast.cxx error_utils.cxx \
+    datagramIterator.cxx \
+    datagramSink.cxx dcast.cxx error_utils.cxx \
     get_config_path.cxx \
     hashGeneratorBase.cxx hashVal.cxx indent.cxx \
     memoryInfo.cxx memoryUsage.cxx memoryUsagePointerCounts.cxx \
@@ -71,10 +70,9 @@
     bigEndian.h buffer.I buffer.h checksumHashGenerator.I  \
     checksumHashGenerator.h circBuffer.I circBuffer.h clockObject.I \
     clockObject.h config_express.h datagram.I datagram.h \
-    datagramGenerator.I datagramGenerator.h datagramInputFile.I \
-    datagramInputFile.h datagramIterator.I datagramIterator.h \
-    datagramOutputFile.I datagramOutputFile.h datagramSink.I \
-    datagramSink.h dcast.T dcast.h \
+    datagramGenerator.I datagramGenerator.h \
+    datagramIterator.I datagramIterator.h \
+    datagramSink.I datagramSink.h dcast.T dcast.h \
     error_utils.h get_config_path.h hashGeneratorBase.I \
     hashGeneratorBase.h hashVal.I hashVal.h \
     indent.I indent.h \

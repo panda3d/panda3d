@@ -24,6 +24,7 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "filename.h"
+#include "virtualFileSystem.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamFile::Constructor
@@ -58,11 +59,21 @@ open_read(const Filename &filename, bool report_errors) {
 
   Filename bam_filename(filename);
 
-  if (!bam_filename.exists()) {
-    if (report_errors) {
-      loader_cat.error() << "Could not find " << bam_filename << "\n";
+  if (use_vfs) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    if (!vfs->exists(bam_filename)) {
+      if (report_errors) {
+        loader_cat.error() << "Could not find " << bam_filename << "\n";
+      }
+      return false;
     }
-    return false;
+  } else {
+    if (!bam_filename.exists()) {
+      if (report_errors) {
+        loader_cat.error() << "Could not find " << bam_filename << "\n";
+      }
+      return false;
+    }
   }
 
   loader_cat.info() << "Reading " << bam_filename << "\n";

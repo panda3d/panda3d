@@ -57,7 +57,7 @@ PUBLISHED:
   void set_scale_factor(size_t scale_factor);
   INLINE size_t get_scale_factor() const;
 
-  bool add_subfile(const string &subfile_name, const Filename &filename);
+  string add_subfile(const string &subfile_name, const Filename &filename);
   bool flush();
   bool repack();
 
@@ -81,7 +81,7 @@ public:
   bool open_read(istream *multifile_stream);
   bool open_write(ostream *multifile_stream);
   bool open_read_write(iostream *multifile_stream);
-  bool add_subfile(const string &subfile_name, istream *subfile_data);
+  string add_subfile(const string &subfile_name, istream *subfile_data);
 
   bool extract_subfile_to(int index, ostream &out);
   istream *open_read_subfile(int index);
@@ -95,7 +95,7 @@ private:
 
   class Subfile {
   public:
-    INLINE Subfile(const string &name);
+    INLINE Subfile();
     INLINE bool operator < (const Subfile &other) const;
     streampos read_index(istream &read, streampos fpos,
                          Multifile *multfile);
@@ -122,7 +122,7 @@ private:
   INLINE streampos normalize_streampos(streampos fpos) const;
   streampos pad_to_streampos(streampos fpos);
 
-  bool add_new_subfile(Subfile *subfile);
+  string add_new_subfile(const string &subfile_name, Subfile *subfile);
   void clear_subfiles();
   bool read_index();
   bool write_header();

@@ -288,21 +288,21 @@ set_scale_factor(size_t scale_factor) {
 //               The file named by filename will be read and added to
 //               the Multifile at the next call to flush().
 //
-//               Returns true on success, false on failure.
+//               Returns the subfile name on success (it might have
+//               been modified slightly), or empty string on failure.
 ////////////////////////////////////////////////////////////////////
-bool Multifile::
+string Multifile::
 add_subfile(const string &subfile_name, const Filename &filename) {
-  nassertr(is_write_valid(), false);
+  nassertr(is_write_valid(), string());
 
   if (!filename.exists()) {
-    return false;
+    return string();
   }
-  Subfile *subfile = new Subfile(subfile_name);
-
+  Subfile *subfile = new Subfile;
   subfile->_source_filename = filename;
   subfile->_source_filename.set_binary();
 
-  return add_new_subfile(subfile);
+  return add_new_subfile(subfile_name, subfile);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -537,7 +537,8 @@ get_num_subfiles() const {
 ////////////////////////////////////////////////////////////////////
 int Multifile::
 find_subfile(const string &subfile_name) const {
-  Subfile find_subfile(subfile_name);
+  Subfile find_subfile;
+  find_subfile._name = subfile_name;
   Subfiles::const_iterator fi;
   fi = _subfiles.find(&find_subfile);
   if (fi == _subfiles.end()) {
@@ -561,7 +562,8 @@ has_directory(const string &subfile_name) const {
   if (!prefix.empty()) {
     prefix += '/';
   }
-  Subfile find_subfile(prefix);
+  Subfile find_subfile;
+  find_subfile._name = prefix;
   Subfiles::const_iterator fi;
   fi = _subfiles.upper_bound(&find_subfile);
   if (fi == _subfiles.end()) {
@@ -597,7 +599,8 @@ scan_directory(vector_string &contents, const string &subfile_name) const {
   if (!prefix.empty()) {
     prefix += '/';
   }
-  Subfile find_subfile(prefix);
+  Subfile find_subfile;
+  find_subfile._name = prefix;
   Subfiles::const_iterator fi;
   fi = _subfiles.upper_bound(&find_subfile);
 
@@ -818,16 +821,18 @@ open_read_write(iostream *multifile_stream) {
 //  Description: Adds a file on disk as a subfile to the Multifile.
 //               The indicated istream will be read and its contents
 //               added to the Multifile at the next call to flush().
+//
+//               Returns the subfile name on success (it might have
+//               been modified slightly), or empty string on failure.
 ////////////////////////////////////////////////////////////////////
-bool Multifile::
+string Multifile::
 add_subfile(const string &subfile_name, istream *subfile_data) {
-  nassertr(is_write_valid(), false);
+  nassertr(is_write_valid(), string());
 
-  Subfile *subfile = new Subfile(subfile_name);
-
+  Subfile *subfile = new Subfile;
   subfile->_source = subfile_data;
 
-  return add_new_subfile(subfile);
+  return add_new_subfile(subfile_name, subfile);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -930,12 +935,26 @@ pad_to_streampos(streampos fpos) {
 //  Description: Adds a newly-allocated Subfile pointer to the
 //               Multifile.
 ////////////////////////////////////////////////////////////////////
-bool Multifile::
-add_new_subfile(Subfile *subfile) {
+string Multifile::
+add_new_subfile(const string &subfile_name, Subfile *subfile) {
   if (_next_index != (streampos)0) {
     // If we're adding a Subfile to an already-existing Multifile, we
     // will eventually need to repack the file.
     _needs_repack = true;
+  }
+
+  // Normalize the Subfile name: eliminate ./, leading slash, etc.
+  Filename name = subfile_name;
+  name.standardize();
+  if (name.empty() || name == "/") {
+    // Invalid empty name.
+    return name;
+  }
+
+  if (name[0] == '/') {
+    subfile->_name = name.get_fullpath().substr(1);
+  } else {
+    subfile->_name = name;
   }
 
   pair<Subfiles::iterator, bool> insert_result = _subfiles.insert(subfile);
@@ -949,7 +968,7 @@ add_new_subfile(Subfile *subfile) {
   }
 
   _new_subfiles.push_back(subfile);
-  return true;
+  return subfile->_name;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1031,7 +1050,7 @@ read_index() {
   _last_index = 0;
   streampos index_forward;
 
-  Subfile *subfile = new Subfile("");
+  Subfile *subfile = new Subfile;
   index_forward = subfile->read_index(*_read, _next_index, this);
   while (index_forward != (streampos)0) {
     _last_index = _next_index;
@@ -1049,7 +1068,7 @@ read_index() {
     }
     _read->seekg(index_forward);
     _next_index = index_forward;
-    subfile = new Subfile("");
+    subfile = new Subfile;
     index_forward = subfile->read_index(*_read, _next_index, this);
   }
   if (subfile->is_index_invalid()) {

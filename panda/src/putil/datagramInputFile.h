@@ -34,7 +34,7 @@ class EXPCL_PANDAEXPRESS DatagramInputFile : public DatagramGenerator {
 public:
   INLINE DatagramInputFile();
 
-  INLINE bool open(Filename filename);
+  bool open(Filename filename);
 
   bool read_header(string &header, size_t num_bytes);
   virtual bool get_datagram(Datagram &data);
@@ -46,7 +46,9 @@ public:
 private:
   bool _read_first_datagram;
   bool _error;
-  ifstream _in;
+  ifstream _in_file;
+  istream *_in;
+  bool _owns_in;
 };
 
 #include "datagramInputFile.I"

@@ -21,6 +21,8 @@
 #include "loaderFileTypeRegistry.h"
 #include "config_pgraph.h"
 
+#include "config_util.h"
+#include "virtualFileSystem.h"
 #include "event.h"
 #include "pt_Event.h"
 #include "throw_event.h"
@@ -370,6 +372,8 @@ load_unknown_file_type(const Filename &filename) const {
     return (PandaNode *)NULL;
   }
 
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
   for (int i = 0; i < num_types; i++) {
     LoaderConsiderFile consider;
     consider._type = reg->get_type(i);
@@ -381,8 +385,14 @@ load_unknown_file_type(const Filename &filename) const {
       consider._type->resolve_filename(consider._path);
     }
 
-    if (consider._path.exists()) {
-      files.push_back(consider);
+    if (use_vfs) {
+      if (vfs->exists(consider._path)) {
+        files.push_back(consider);
+      }
+    } else {
+      if (consider._path.exists()) {
+        files.push_back(consider);
+      }
     }
   }
 
@@ -456,6 +466,8 @@ resolve_unknown_file_type(Filename &filename) const {
     return;
   }
 
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
   for (int i = 0; i < num_types; i++) {
     LoaderConsiderFile consider;
     consider._type = reg->get_type(i);
@@ -467,8 +479,14 @@ resolve_unknown_file_type(Filename &filename) const {
       consider._type->resolve_filename(consider._path);
     }
 
-    if (consider._path.exists()) {
-      files.push_back(consider);
+    if (use_vfs) {
+      if (vfs->exists(consider._path)) {
+        files.push_back(consider);
+      }
+    } else {
+      if (consider._path.exists()) {
+        files.push_back(consider);
+      }
     }
   }
 

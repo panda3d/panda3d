@@ -46,4 +46,6 @@ EXPCL_PANDA DSearchPath &get_texture_path();
 EXPCL_PANDA DSearchPath &get_sound_path();
 END_PUBLISH
 
+extern EXPCL_PANDA const bool use_vfs;
+
 #endif /* __CONFIG_UTIL_H__ */

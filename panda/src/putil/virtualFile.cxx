@@ -165,7 +165,7 @@ ls(ostream &out) const {
   CPT(VirtualFileList) contents = scan_directory();
   if (contents == NULL) {
     if (!is_directory()) {
-      out << get_filename() << " is not a directory.\n";
+      out << get_filename() << "\n";
     } else {
       out << get_filename() << " cannot be read.\n";
     }

@@ -68,6 +68,7 @@ is_regular_file(const Filename &file) const {
 istream *VirtualFileMountSystem::
 open_read_file(const Filename &file) const {
   Filename pathname(_physical_filename, file);
+  pathname.set_binary();
   ifstream *stream = new ifstream;
   if (!pathname.open_read(*stream)) {
     // Couldn't open the file for some reason.

@@ -26,21 +26,8 @@ INLINE DatagramInputFile::
 DatagramInputFile() {
   _error = true;
   _read_first_datagram = false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramInputFile::open
-//       Access: Public
-//  Description: Opens the indicated filename for reading.  Returns
-//               true if successful, false on failure.
-////////////////////////////////////////////////////////////////////
-INLINE bool DatagramInputFile::
-open(Filename filename) {
-  // DatagramInputFiles are always binary.
-  _read_first_datagram = false;
-  _error = false;
-  filename.set_binary();
-  return filename.open_read(_in);
+  _in = (istream *)NULL;
+  _owns_in = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -51,5 +38,10 @@ open(Filename filename) {
 ////////////////////////////////////////////////////////////////////
 INLINE void DatagramInputFile::
 close() {
-  _in.close();
+  _in_file.close();
+  if (_owns_in) {
+    delete _in;
+    _in = (istream *)NULL;
+    _owns_in = false;
+  }
 }

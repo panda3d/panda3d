@@ -94,12 +94,15 @@ add_directory(Multifile &multifile, const Filename &directory_name) {
       okflag = false;
 
     } else {
-      if (verbose) {
-        cout << subfile_name << "\n";
-      }
-      if (!multifile.add_subfile(subfile_name, subfile_name)) {
+      string new_subfile_name =
+        multifile.add_subfile(subfile_name, subfile_name);
+      if (new_subfile_name.empty()) {
         cerr << "Unable to add " << subfile_name << ".\n";
         okflag = false;
+      } else {
+        if (verbose) {
+          cout << new_subfile_name << "\n";
+        }
       }
     }
   }
@@ -140,12 +143,15 @@ add_files(int argc, char *argv[]) {
       okflag = false;
 
     } else {
-      if (verbose) {
-        cout << subfile_name << "\n";
-      }
-      if (!multifile.add_subfile(subfile_name, subfile_name)) {
+      string new_subfile_name =
+        multifile.add_subfile(subfile_name, subfile_name);
+      if (new_subfile_name.empty()) {
         cerr << "Unable to add " << subfile_name << ".\n";
         okflag = false;
+      } else {
+        if (verbose) {
+          cout << new_subfile_name << "\n";
+        }
       }
     }
   }
