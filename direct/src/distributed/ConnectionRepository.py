@@ -131,7 +131,7 @@ class ConnectionRepository(DirectObject.DirectObject):
 
             # Failed to connect.
             if failureCallback:
-                failureCallback(0, *failureArgs)
+                failureCallback(0, '', *failureArgs)
 
     def disconnect(self):
         """Closes the previously-established connection.
@@ -160,6 +160,10 @@ class ConnectionRepository(DirectObject.DirectObject):
             
             url = serverList[serverIndex]
             self.notify.info("Connecting to %s via HTTP interface." % (url.cStr()))
+            # Temporary test for old pandas.
+            if hasattr(ch, "preserveStatus"):
+                ch.preserveStatus()
+            
             ch.beginConnectTo(DocumentSpec(url))
             ch.spawnTask(name = 'connect-to-server',
                          callback = self.httpConnectCallback,
@@ -169,7 +173,8 @@ class ConnectionRepository(DirectObject.DirectObject):
         else:
             # No more servers to try; we have to give up now.
             if failureCallback:
-                failureCallback(ch.getStatusCode(), *failureArgs)
+                failureCallback(ch.getStatusCode(), ch.getStatusString(),
+                                *failureArgs)
 
     def checkHttp(self):
         # Creates an HTTPClient, if possible, if we don't have one
