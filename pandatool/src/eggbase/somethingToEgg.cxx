@@ -33,10 +33,8 @@ SomethingToEgg(const string &format_name,
 
   redescribe_option
     ("cs",
-     "Specify the coordinate system of the resulting egg file.  This may be "
-     "one of 'y-up', 'z-up', 'y-up-left', or 'z-up-left'.  The default "
-     "is the same coordinate system as the input " + _format_name +
-     " file, if this can be determined.");
+     "Specify the coordinate system of the input " + _format_name +
+     "file.  Normally, this can inferred from the file itself.");
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -905,6 +905,28 @@ dispatch_coordinate_system(const string &opt, const string &arg, void *var) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ProgramBase::dispatch_units
+//       Access: Protected, Static
+//  Description: Standard dispatch function for an option that takes
+//               one parameter, which is to be interpreted as a
+//               unit of distance measurement.  The data pointer is to
+//               a DistanceUnit variable.
+////////////////////////////////////////////////////////////////////
+bool ProgramBase::
+dispatch_units(const string &opt, const string &arg, void *var) {
+  DistanceUnit *ip = (DistanceUnit *)var;
+  (*ip) = string_distance_unit(arg);
+
+  if ((*ip) == DU_invalid) {
+    nout << "Invalid units for -" << opt << ": " << arg << "\n"
+	 << "Valid units are mm, cm, m, km, yd, ft, in, nmi, and mi.\n";
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ProgramBase::handle_help_option
 //       Access: Protected, Static
 //  Description: Called when the user enters '-h', this describes how

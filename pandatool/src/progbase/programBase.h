@@ -8,6 +8,8 @@
 
 #include <pandatoolbase.h>
 
+#include "distanceUnit.h"
+
 #include <filename.h>
 #include <vector_string.h>
 
@@ -80,6 +82,7 @@ protected:
   static bool dispatch_filename(const string &opt, const string &arg, void *var);
   static bool dispatch_search_path(const string &opt, const string &arg, void *var);
   static bool dispatch_coordinate_system(const string &opt, const string &arg, void *var);
+  static bool dispatch_units(const string &opt, const string &arg, void *var);
 
   static bool handle_help_option(const string &opt, const string &arg, void *);
 

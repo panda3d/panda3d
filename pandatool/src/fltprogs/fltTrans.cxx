@@ -77,22 +77,23 @@ run() {
   if (result != FE_ok) {
     nout << "Unable to read: " << result << "\n";
     exit(1);
-  } else {
-    if (header->check_version()) {
-      nout << "Version is " << header->get_flt_version() << "\n";
-    }
-
-    if (_got_new_version) {
-      header->set_flt_version(_new_version);
-    }
-
-    result = header->write_flt(get_output());
-    if (result != FE_ok) {
-      nout << "Unable to write: " << result << "\n";
-    } else {
-      nout << "Successfully written.\n";
-    }
   }
+
+  if (header->check_version()) {
+    nout << "Version is " << header->get_flt_version() << "\n";
+  }
+  
+  if (_got_new_version) {
+    header->set_flt_version(_new_version);
+  }
+  
+  result = header->write_flt(get_output());
+  if (result != FE_ok) {
+    nout << "Unable to write: " << result << "\n";
+    exit(1);
+  }
+  
+  nout << "Successfully written.\n";
 }
 
 

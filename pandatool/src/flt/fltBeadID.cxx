@@ -19,6 +19,28 @@ FltBeadID(FltHeader *header) : FltBead(header) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FltBeadID::get_id
+//       Access: Public
+//  Description: Returns the id (name) of this particular bead.  Each
+//               MultiGen bead will have a unique name.
+////////////////////////////////////////////////////////////////////
+const string &FltBeadID::
+get_id() const {
+  return _id;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltBeadID::set_id
+//       Access: Public
+//  Description: Changes the id (name) of this particular bead.  This
+//               should be a name that is unique to this bead.
+////////////////////////////////////////////////////////////////////
+void FltBeadID::
+set_id(const string &id) {
+  _id = id;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FltBeadID::output
 //       Access: Public
 //  Description: Writes a quick one-line description of the record, but
@@ -64,7 +86,9 @@ extract_record(FltRecordReader &reader) {
 bool FltBeadID::
 extract_ancillary(FltRecordReader &reader) {
   if (reader.get_opcode() == FO_long_id) {
-    _id = reader.get_iterator().get_remaining_bytes();
+    string s = reader.get_iterator().get_remaining_bytes();
+    size_t zero_byte = s.find('\0');
+    _id = s.substr(0, zero_byte);
     return true;
   }
 

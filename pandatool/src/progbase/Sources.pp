@@ -6,6 +6,7 @@
     linmath:c putil:c express:c panda:m pystub dtool
 
   #define SOURCES \
+    distanceUnit.cxx distanceUnit.h \
     programBase.I programBase.cxx programBase.h \
     withOutputFile.cxx withOutputFile.h \
     wordWrapStream.cxx \
@@ -13,6 +14,7 @@
     wordWrapStreamBuf.h
 
   #define INSTALL_HEADERS \
+    distanceUnit.h \
     programBase.I programBase.h \
     withOutputFile.h \
     wordWrapStream.h wordWrapStreamBuf.I \

@@ -70,21 +70,17 @@ run() {
     exit(1);
   }
 
-  // First, we build the egg file in the same coordinate system as
-  // Maya.
-  if (MGlobal::isYAxisUp()) {
-    _data.set_coordinate_system(CS_yup_right);
-  } else {
-    _data.set_coordinate_system(CS_zup_right);
+  if (!_got_coordinate_system) {
+    // Choose a suitable coordinate system matching Maya.
+    if (MGlobal::isYAxisUp()) {
+      _coordinate_system = CS_yup_right;
+    } else {
+      _coordinate_system = CS_zup_right;
+    }
   }
+  _data.set_coordinate_system(_coordinate_system);
 
   _maya.make_egg(_data);
-
-  // Then, if the user so requested, we convert the egg file to the
-  // desired output coordinate system.
-  if (_got_coordinate_system) {
-    _data.set_coordinate_system(_coordinate_system);
-  }
 
   write_egg_file();
 }
