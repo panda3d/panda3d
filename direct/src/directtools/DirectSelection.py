@@ -476,6 +476,10 @@ class SelectionQueue(CollisionHandlerQueue):
         # If dot product of collision point surface normal and
         # ray from camera to collision point is positive, we are
         # looking at the backface of the polygon
+        if not entry.hasFromSurfaceNormal():
+            # Well, no way to tell.  Assume we're not backfacing.
+            return 0
+        
         v = Vec3(entry.getFromIntersectionPoint())
         n = entry.getFromSurfaceNormal()
         # Convert to camera space for backfacing test
