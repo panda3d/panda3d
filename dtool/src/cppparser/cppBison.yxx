@@ -2186,7 +2186,7 @@ no_angle_bracket_const_expr:
 }
         | no_angle_bracket_const_expr '[' const_expr ']'
 {
-  $$ = new CPPExpression('[', $1, $3);;
+  $$ = new CPPExpression('[', $1, $3);
 }
         | no_angle_bracket_const_expr '(' const_expr_comma ')'
 {
