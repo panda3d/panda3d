@@ -2,7 +2,7 @@
   eggcharbase converter eggbase progbase
 #define OTHER_LIBS \
   egg:c pandaegg:m \
-  pnmimagetypes:c pnmimage:c linmath:c putil:c panda:m \
+  pnmimagetypes:c pnmimage:c mathutil:c linmath:c putil:c panda:m \
   express:c pandaexpress:m \
   dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
 #define UNIX_SYS_LIBS m
