@@ -121,10 +121,10 @@ init_keyboard_buttons() {
   ButtonRegistry::ptr()->register_button(_f11, "f11");
   ButtonRegistry::ptr()->register_button(_f12, "f12");
 
-  ButtonRegistry::ptr()->register_button(_left, "left");
-  ButtonRegistry::ptr()->register_button(_right, "right");
-  ButtonRegistry::ptr()->register_button(_up, "up");
-  ButtonRegistry::ptr()->register_button(_down, "down");
+  ButtonRegistry::ptr()->register_button(_left, "arrow_left");
+  ButtonRegistry::ptr()->register_button(_right, "arrow_right");
+  ButtonRegistry::ptr()->register_button(_up, "arrow_up");  // cannot name this 'up' since it conflicts with key-release name 'up'
+  ButtonRegistry::ptr()->register_button(_down, "arrow_down");  
   ButtonRegistry::ptr()->register_button(_page_up, "page_up");
   ButtonRegistry::ptr()->register_button(_page_down, "page_down");
   ButtonRegistry::ptr()->register_button(_home, "home");
