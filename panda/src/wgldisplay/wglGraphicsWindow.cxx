@@ -179,6 +179,14 @@ open_window() {
 
   // Initializes _colormap
   setup_colormap();
+
+  /*
+  wgldisplay_cat.error()
+    << "Artificially failing window.\n";
+  close_window();
+  return false;
+  */
+
   return true;
 }
 
