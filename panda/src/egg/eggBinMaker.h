@@ -249,7 +249,8 @@ public:
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggBinMaker : public EggObject {
 public:
-  EggBinMaker() { }
+  EggBinMaker();
+  ~EggBinMaker();
 
   int make_bins(EggGroupNode *root_group);
 

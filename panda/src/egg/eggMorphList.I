@@ -192,6 +192,17 @@ insert(const MorphType &value) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggMorphList::clear
+//       Access: Public
+//  Description: Empties the list of morphs.
+////////////////////////////////////////////////////////////////////
+template<class MorphType>
+INLINE void EggMorphList<MorphType>::
+clear() {
+  _morphs.clear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggMorphList::write
 //       Access: Public
 //  Description:

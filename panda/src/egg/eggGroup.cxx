@@ -19,6 +19,7 @@
 #include "eggGroup.h"
 #include "eggMiscFuncs.h"
 #include "eggVertexPool.h"
+#include "eggBin.h"
 #include "lexerDefs.h"
 
 #include <indent.h>
@@ -177,6 +178,11 @@ write(ostream &out, int indent_level) const {
   default:
     // invalid group type
     nassertv(false);
+  }
+
+  if (is_of_type(EggBin::get_class_type())) {
+    indent(out, indent_level + 2)
+      << "// Bin " << DCAST(EggBin, this)->get_bin_number() << "\n";
   }
 
   if (has_lod()) {

@@ -59,6 +59,7 @@ public:
   INLINE bool empty() const;
 
   pair<iterator, bool> insert(const MorphType &value);
+  INLINE void clear();
 
   void write(ostream &out, int indent_level) const;
 

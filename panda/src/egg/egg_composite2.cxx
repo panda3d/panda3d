@@ -3,6 +3,7 @@
 #include "eggParameters.cxx"
 #include "eggPoint.cxx"
 #include "eggPolygon.cxx"
+#include "eggPolysetMaker.cxx"
 #include "eggPoolUniquifier.cxx"
 #include "eggPrimitive.cxx"
 #include "eggRenderMode.cxx"

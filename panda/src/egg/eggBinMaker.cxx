@@ -49,6 +49,24 @@ operator ()(const EggNode *a, const EggNode *b) const {
   return _ebm->sorts_less(bin_number_a, a, b);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggBinMaker::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+EggBinMaker::
+EggBinMaker() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggBinMaker::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+EggBinMaker::
+~EggBinMaker() {
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggBinMaker::make_bins
@@ -122,7 +140,7 @@ get_bin_name(int) {
 void EggBinMaker::
 collect_nodes(EggGroupNode *group) {
   // We have to play games with this next iterator, because we might
-  // be destructively operation on the child list as we traverse it.
+  // be destructively operating on the child list as we traverse it.
   EggGroupNode::iterator i, next;
 
   bool first_in_group = true;

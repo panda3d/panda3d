@@ -116,12 +116,16 @@ has_color() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggAttributes::get_color
 //       Access: Public
-//  Description:
+//  Description: Returns the color set on this particular attribute.
+//               If there is no color set, returns white.
 ////////////////////////////////////////////////////////////////////
-INLINE const Colorf &EggAttributes::
+INLINE Colorf EggAttributes::
 get_color() const {
-  nassertr(has_color(), _color);
-  return _color;
+  if (has_color()) {
+    return _color;
+  } else {
+    return Colorf(1.0, 1.0, 1.0, 1.0);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

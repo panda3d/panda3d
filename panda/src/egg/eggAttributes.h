@@ -55,7 +55,7 @@ public:
   INLINE void clear_uv();
 
   INLINE bool has_color() const;
-  INLINE const Colorf &get_color() const;
+  INLINE Colorf get_color() const;
   INLINE void set_color(const Colorf &Color);
   INLINE void clear_color();
 
