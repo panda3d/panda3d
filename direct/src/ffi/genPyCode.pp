@@ -8,8 +8,6 @@
 // for the input.
 //
 
-#define hash #
-
 #define install_dir $[$[upcase $[PACKAGE]]_INSTALL]
 #define install_lib_dir $[or $[INSTALL_LIB_DIR],$[install_dir]/lib]
 #define install_bin_dir $[or $[INSTALL_BIN_DIR],$[install_dir]/bin]
