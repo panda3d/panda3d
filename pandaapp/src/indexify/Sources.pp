@@ -1,0 +1,21 @@
+#begin bin_target
+  #define USE_FREETYPE yes
+
+  #define TARGET indexify
+  #define OTHER_LIBS \
+    progbase \
+    pnmimage:c pnmimagetypes:c panda:m \
+    pystub
+
+  #define SOURCES \
+    default_index_icons.cxx default_index_icons.h \
+    default_font.cxx default_font.h \
+    indexImage.cxx indexImage.h \
+    indexParameters.cxx indexParameters.h \
+    indexify.cxx indexify.h \
+    photo.cxx photo.h \
+    rollDirectory.cxx rollDirectory.h \
+    textGlyph.cxx textGlyph.h \
+    textMaker.cxx textMaker.h
+
+#end bin_target

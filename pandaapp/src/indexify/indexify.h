@@ -1,0 +1,60 @@
+// Filename: indexify.h
+// Created by:  drose (03Apr02)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef INDEXIFY_H
+#define INDEXIFY_H
+
+#include "pandatoolbase.h"
+
+#include "programBase.h"
+#include "filename.h"
+#include "pvector.h"
+
+class RollDirectory;
+class TextMaker;
+
+////////////////////////////////////////////////////////////////////
+//       Class : Indexify
+// Description :
+////////////////////////////////////////////////////////////////////
+class Indexify : public ProgramBase {
+public:
+  Indexify();
+  virtual ~Indexify();
+
+protected:
+  virtual bool handle_args(Args &args);
+  virtual bool post_command_line();
+
+public:
+  void run();
+
+  string _front_title;
+  Filename _archive_dir;
+  Filename _roll_dir_root;
+  string _photo_extension;
+  Filename _font_filename;
+  bool _generate_icons;
+
+  typedef pvector<RollDirectory *> RollDirs;
+  RollDirs _roll_dirs;
+
+  TextMaker *_text_maker;
+};
+
+#endif
