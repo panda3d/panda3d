@@ -112,7 +112,7 @@ Indexify() {
      &Indexify::dispatch_none, &dummy_mode);
 
   add_option
-    ("fr", "", 0,
+    ("slide", "", 0,
      "Draw a frame, like a slide mount, around each thumbnail image.",
      &Indexify::dispatch_none, &draw_frames);
 
