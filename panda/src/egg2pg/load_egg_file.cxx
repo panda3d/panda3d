@@ -98,7 +98,7 @@ load_egg_file(const string &filename, CoordinateSystem cs) {
     return NULL;
   }
   okflag = loader._data.read(*istr);
-  delete istr;
+  vfs->close_read_file(istr);
 
   if (!okflag) {
     egg2pg_cat.error()

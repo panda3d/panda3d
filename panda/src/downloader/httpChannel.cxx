@@ -165,13 +165,38 @@ will_close_connection() const {
 //       Access: Public, Virtual
 //  Description: Opens the document for reading.  Returns a newly
 //               allocated istream on success (which you should
-//               eventually delete when you are done reading).
+//               pass to close_read_file() when you are done reading).
 //               Returns NULL on failure.  This may only be called
 //               once for a particular HTTPChannel.
 ////////////////////////////////////////////////////////////////////
 istream *HTTPChannel::
 open_read_file() const {
   return ((HTTPChannel *)this)->read_body();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::close_read_file
+//       Access: Public
+//  Description: Closes a file opened by a previous call to
+//               open_read_file().  This really just deletes the
+//               istream pointer, but it is recommended to use this
+//               interface instead of deleting it explicitly, to help
+//               work around compiler issues.
+////////////////////////////////////////////////////////////////////
+void HTTPChannel::
+close_read_file(istream *stream) const {
+  if (stream != (istream *)NULL) {
+    // For some reason--compiler bug in gcc 3.2?--explicitly deleting
+    // the stream pointer does not call the appropriate global delete
+    // function; instead apparently calling the system delete
+    // function.  So we call the delete function by hand instead.
+#ifndef NDEBUG
+    stream->~istream();
+    (*global_operator_delete)(stream);
+#else
+    delete stream;
+#endif
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

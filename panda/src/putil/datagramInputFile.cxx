@@ -86,7 +86,8 @@ void DatagramInputFile::
 close() {
   _in_file.close();
   if (_owns_in) {
-    delete _in;
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    vfs->close_read_file(_in);
   }
   _in = (istream *)NULL;
   _owns_in = false;

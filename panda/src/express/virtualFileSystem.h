@@ -84,6 +84,7 @@ PUBLISHED:
 
   INLINE string read_file(const Filename &filename) const;
   INLINE istream *open_read_file(const Filename &filename) const;
+  void close_read_file(istream *stream) const;
 
 public:
   INLINE bool read_file(const Filename &filename, string &result) const;

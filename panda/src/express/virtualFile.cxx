@@ -164,6 +164,31 @@ open_read_file() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::close_read_file
+//       Access: Public
+//  Description: Closes a file opened by a previous call to
+//               open_read_file().  This really just deletes the
+//               istream pointer, but it is recommended to use this
+//               interface instead of deleting it explicitly, to help
+//               work around compiler issues.
+////////////////////////////////////////////////////////////////////
+void VirtualFile::
+close_read_file(istream *stream) const {
+  if (stream != (istream *)NULL) {
+    // For some reason--compiler bug in gcc 3.2?--explicitly deleting
+    // the stream pointer does not call the appropriate global delete
+    // function; instead apparently calling the system delete
+    // function.  So we call the delete function by hand instead.
+#ifndef NDEBUG
+    stream->~istream();
+    (*global_operator_delete)(stream);
+#else
+    delete stream;
+#endif
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFile::read_file
 //       Access: Public
 //  Description: Fills up the indicated string with the contents of
@@ -201,7 +226,7 @@ read_file(string &result) const {
   result.assign(&result_vec[0], result_vec.size());
 
   bool failed = in->fail() && !in->eof();
-  delete in;
+  close_read_file(in);
 
   if (failed) {
     express_cat.info()

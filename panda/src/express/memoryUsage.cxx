@@ -259,13 +259,18 @@ operator_new_handler(size_t size) {
 
   if (_recursion_protect) {
     ptr = default_operator_new(size);
+    if (express_cat.is_spam()) {
+      express_cat.spam()
+        << "Allocating pointer " << (void *)ptr
+        << " during recursion protect.\n";
+    }
 
   } else {
     MemoryUsage *mu = get_global_ptr();
     if (mu->_track_memory_usage) {
       ptr = default_operator_new(size);
       get_global_ptr()->ns_record_void_pointer(ptr, size);
-      
+
     } else {
       _is_cpp_operator = true;
       ptr = default_operator_new(size);
@@ -288,6 +293,11 @@ operator_new_handler(size_t size) {
 void MemoryUsage::
 operator_delete_handler(void *ptr) {
   if (_recursion_protect) {
+    if (express_cat.is_spam()) {
+      express_cat.spam()
+        << "Deleting pointer " << (void *)ptr
+        << " during recursion protect.\n";
+    }
     default_operator_delete(ptr);
 
   } else {
@@ -605,6 +615,11 @@ ns_remove_pointer(ReferenceCount *ptr) {
 void MemoryUsage::
 ns_record_void_pointer(void *ptr, size_t size) {
   if (_track_memory_usage) {
+    if (express_cat.is_spam()) {
+      express_cat.spam()
+        << "Recording void pointer " << (void *)ptr << "\n";
+    }
+
     // We have to protect modifications to the table from recursive
     // calls by toggling _recursion_protect while we adjust it.
     _recursion_protect = true;
@@ -654,6 +669,11 @@ ns_record_void_pointer(void *ptr, size_t size) {
 void MemoryUsage::
 ns_remove_void_pointer(void *ptr) {
   if (_track_memory_usage) {
+    if (express_cat.is_spam()) {
+      express_cat.spam()
+        << "Removing void pointer " << (void *)ptr << "\n";
+    }
+
     Table::iterator ti;
     ti = _table.find(ptr);
     if (ti == _table.end()) {
@@ -677,7 +697,8 @@ ns_remove_void_pointer(void *ptr) {
 
     if ((info._flags & MemoryInfo::F_got_ref) != 0) {
       express_cat.error()
-        << "Pointer " << (void *)ptr << " did not destruct before being deleted!\n";
+        << "Pointer " << (void *)ptr
+        << " did not destruct before being deleted!\n";
     }
 
     info._flags &= ~MemoryInfo::F_got_void;

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmReader.h"
+#include "virtualFileSystem.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMReader::Destructor
@@ -26,7 +27,14 @@
 PNMReader::
 ~PNMReader() {
   if (_owns_file) {
-    delete _file;
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+    // We're assuming here that the file was opened via VFS.  That
+    // may not necessarily be the case, but we don't make that
+    // distinction.  However, at the moment at least, that
+    // distinction doesn't matter, since vfs->close_read_file()
+    // just deletes the file pointer anyway.
+    vfs->close_read_file(_file);
   }
   _file = (istream *)NULL;
 }

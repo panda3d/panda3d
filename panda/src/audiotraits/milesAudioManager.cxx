@@ -787,7 +787,7 @@ vfs_close_callback(U32 file_handle) {
     return;
   }
   istream *istr = (istream *)file_handle;
-  delete istr;
+  vfs->close_read_file(istr);
 }
 
 

@@ -54,6 +54,7 @@ PUBLISHED:
 
   INLINE string read_file() const;
   virtual istream *open_read_file() const;
+  void close_read_file(istream *stream) const;
 
 public:
   bool read_file(string &result) const;

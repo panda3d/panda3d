@@ -21,7 +21,6 @@
 #include "pnmFileType.h"
 #include "pnmReader.h"
 #include "config_pnmimage.h"
-#include "config_express.h"
 #include "virtualFileSystem.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -77,22 +76,9 @@ make_reader(const Filename &filename, PNMFileType *type) const {
     }
 
   } else {
-    if (use_vfs) {
-      VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-      owns_file = true;
-      file = vfs->open_read_file(filename);
-
-    } else {
-      ifstream *new_istream = new ifstream;
-      Filename actual_name = Filename::binary_filename(filename);
-      if (!actual_name.open_read(*new_istream)) {
-        delete new_istream;
-
-      } else {
-        owns_file = true;
-        file = new_istream;
-      }
-    }
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    owns_file = true;
+    file = vfs->open_read_file(filename);
   }
 
   if (file == (istream *)NULL) {
@@ -147,7 +133,14 @@ make_reader(istream *file, bool owns_file, const Filename &filename,
           << "Image file appears to be empty.\n";
       }
       if (owns_file) {
-        delete file;
+        VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+        // We're assuming here that the file was opened via VFS.  That
+        // may not necessarily be the case, but we don't make that
+        // distinction.  However, at the moment at least, that
+        // distinction doesn't matter, since vfs->close_read_file()
+        // just deletes the file pointer anyway.
+        vfs->close_read_file(file);
       }
       return NULL;
     }
@@ -204,14 +197,22 @@ make_reader(istream *file, bool owns_file, const Filename &filename,
         write_types(pnmimage_cat.error(false), 2);
     }
     if (owns_file) {
-      delete file;
+      VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+      // We're assuming here that the file was opened via VFS.  That
+      // may not necessarily be the case, but we don't make that
+      // distinction.  However, at the moment at least, that
+      // distinction doesn't matter, since vfs->close_read_file()
+      // just deletes the file pointer anyway.
+      vfs->close_read_file(file);
     }
     return NULL;
   }
 
   PNMReader *reader = type->make_reader(file, owns_file, magic_number);
   if (reader == NULL && owns_file) {
-    delete file;
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    vfs->close_read_file(file);
   }
 
   if (!reader->is_valid()) {

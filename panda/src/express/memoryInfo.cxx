@@ -142,6 +142,11 @@ update_type_handle(TypeHandle &destination, TypeHandle refined) {
 
   } else if (refined.is_derived_from(destination)) {
     // Updating with a more-specific type, no problem.
+    if (express_cat.is_spam()) {
+      express_cat.spam()
+        << "Updating pointer " << (void *)_ref_ptr << " from type "
+        << destination << " to type " << refined << "\n";
+    }
     destination = refined;
 
   } else {

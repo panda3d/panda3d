@@ -47,61 +47,32 @@ load_prc_file(const string &filename) {
 
   ConfigPageManager *cp_mgr = ConfigPageManager::get_global_ptr();
 
-  if (use_vfs) {
-    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    vfs->resolve_filename(path, cp_mgr->get_search_path()) ||
-      vfs->resolve_filename(path, get_model_path());
-
-    istream *file = vfs->open_read_file(path);
-    if (file == (istream *)NULL) {
-      util_cat.error()
-        << "Unable to open " << path << "\n";
-      return NULL;
-    }
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  vfs->resolve_filename(path, cp_mgr->get_search_path()) ||
+    vfs->resolve_filename(path, get_model_path());
+  
+  istream *file = vfs->open_read_file(path);
+  if (file == (istream *)NULL) {
+    util_cat.error()
+      << "Unable to open " << path << "\n";
+    return NULL;
+  }
+  
+  util_cat.info()
+    << "Reading " << path << "\n";
+  
+  ConfigPage *page = cp_mgr->make_explicit_page(path);
+  bool read_ok = page->read_prc(*file);
+  vfs->close_read_file(file);
+  
+  if (read_ok) {
+    return page;
     
-    util_cat.info()
-      << "Reading " << path << "\n";
-
-    ConfigPage *page = cp_mgr->make_explicit_page(path);
-    bool read_ok = page->read_prc(*file);
-    delete file;
-
-    if (read_ok) {
-      return page;
-
-    } else {
-      util_cat.info()
-        << "Unable to read " << path << "\n";
-      cp_mgr->delete_explicit_page(page);
-      return NULL;
-    }
-      
   } else {
-    path.resolve_filename(cp_mgr->get_search_path()) ||
-      path.resolve_filename(get_model_path());
-
-    ifstream file;
-    if (!path.open_read(file)) {
-      util_cat.error()
-        << "Unable to open " << path << "\n";
-      return NULL;
-    }
-    
     util_cat.info()
-      << "Reading " << path << "\n";
-
-    ConfigPage *page = cp_mgr->make_explicit_page(path);
-    bool read_ok = page->read_prc(file);
-
-    if (read_ok) {
-      return page;
-
-    } else {
-      util_cat.info()
-        << "Unable to read " << path << "\n";
-      cp_mgr->delete_explicit_page(page);
-      return NULL;
-    }
+      << "Unable to read " << path << "\n";
+    cp_mgr->delete_explicit_page(page);
+    return NULL;
   }
 }
 

@@ -808,28 +808,14 @@ load(const Filename& filename, size_t &size) const {
   istream *audioFile = NULL;
 
   Filename binary_filename = Filename::binary_filename(filename);
-  if (use_vfs) {
-    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
-    if (!vfs->exists(filename)) {
-      audio_error("File " << filename << " does not exist.");
-      return NULL;
-    }
-
-    audioFile = vfs->open_read_file(binary_filename);
-
-  } else {
-    if (!filename.exists()) {
-      audio_error("File " << filename << " does not exist.");
-      return NULL;
-    }
-
-    audioFile = new ifstream;
-    if (!binary_filename.open_read(*(ifstream *)audioFile)) {
-      delete audioFile;
-      audioFile = NULL;
-    }
+  if (!vfs->exists(filename)) {
+    audio_error("File " << filename << " does not exist.");
+    return NULL;
   }
+  
+  audioFile = vfs->open_read_file(binary_filename);
 
   if (audioFile == (istream *)NULL) {
     // Unable to open.
@@ -846,18 +832,18 @@ load(const Filename& filename, size_t &size) const {
   char *buffer = new char[size];
   if (buffer == NULL) {
     audio_error("out-of-memory error while loading "<<filename);
-    delete audioFile;
+    vfs->close_read_file(audioFile);
     return NULL;
   }
   audioFile->read(buffer, size);
   if (!(*audioFile)) {
     audio_error("Read error while loading "<<filename);
-    delete audioFile;
+    vfs->close_read_file(audioFile);
     delete [] buffer;
     return NULL;
   }
 
-  delete audioFile;
+  vfs->close_read_file(audioFile);
   return buffer;
 }
 

@@ -72,7 +72,7 @@ open_read_file(const Filename &file) const {
   ifstream *stream = new ifstream;
   if (!pathname.open_read(*stream)) {
     // Couldn't open the file for some reason.
-    delete stream;
+    close_read_file(stream);
     return NULL;
   }
 

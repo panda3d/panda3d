@@ -200,7 +200,7 @@ hash_file(const Filename &filename) {
     count = istr->gcount();
   }
 
-  delete istr;
+  vfs->close_read_file(istr);
   MD5_Final(md, &ctx);
 
   // Store the individual bytes as big-endian ints, from historical

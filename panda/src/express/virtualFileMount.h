@@ -51,6 +51,7 @@ public:
   virtual bool is_regular_file(const Filename &file) const=0;
 
   virtual istream *open_read_file(const Filename &file) const=0;
+  void close_read_file(istream *stream) const;
   virtual bool scan_directory(vector_string &contents, 
                               const Filename &dir) const=0;
 

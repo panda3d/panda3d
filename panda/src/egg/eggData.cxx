@@ -107,7 +107,7 @@ read(Filename filename, string display_name) {
       << "Reading " << display_name << "\n";
 
     bool read_ok = read(*file);
-    delete file;
+    vfs->close_read_file(file);
     return read_ok;
 
   } else {

@@ -576,6 +576,31 @@ get_global_ptr() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::close_read_file
+//       Access: Published
+//  Description: Closes a file opened by a previous call to
+//               open_read_file().  This really just deletes the
+//               istream pointer, but it is recommended to use this
+//               interface instead of deleting it explicitly, to help
+//               work around compiler issues.
+////////////////////////////////////////////////////////////////////
+void VirtualFileSystem::
+close_read_file(istream *stream) const {
+  if (stream != (istream *)NULL) {
+    // For some reason--compiler bug in gcc 3.2?--explicitly deleting
+    // the stream pointer does not call the appropriate global delete
+    // function; instead apparently calling the system delete
+    // function.  So we call the delete function by hand instead.
+#ifndef NDEBUG
+    stream->~istream();
+    (*global_operator_delete)(stream);
+#else
+    delete stream;
+#endif
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSystem::scan_mount_points
 //       Access: Public
 //  Description: Adds to names a list of all the mount points in use

@@ -24,7 +24,6 @@
 #include "config_xfile.h"
 #include "standard_templates.h"
 #include "zStream.h"
-#include "config_express.h"
 #include "virtualFileSystem.h"
 #include "dcast.h"
 
@@ -81,32 +80,17 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 bool XFile::
 read(Filename filename) {
-  ifstream in;
-
   filename.set_text();
-  if (use_vfs) {
-    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    istream *in = vfs->open_read_file(filename);
-    if (in == (istream *)NULL) {
-      xfile_cat.error()
-        << "Cannot open " << filename << " for reading.\n";
-      return false;
-    }
-    bool okflag = read(*in, filename);
-    delete in;
-    return okflag;
-
-  } else {
-    filename.open_read(in);
-
-    if (!in) {
-      xfile_cat.error()
-        << "Cannot open " << filename << " for reading.\n";
-      return false;
-    }
-    
-    return read(in, filename);
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  istream *in = vfs->open_read_file(filename);
+  if (in == (istream *)NULL) {
+    xfile_cat.error()
+      << "Cannot open " << filename << " for reading.\n";
+    return false;
   }
+  bool okflag = read(*in, filename);
+  vfs->close_read_file(in);
+  return okflag;
 }
 
 ////////////////////////////////////////////////////////////////////

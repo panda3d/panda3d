@@ -72,6 +72,7 @@ public:
 
   virtual bool is_regular_file() const;
   virtual istream *open_read_file() const;
+  void close_read_file(istream *stream) const;
 
   bool will_close_connection() const;
 
