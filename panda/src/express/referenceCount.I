@@ -70,14 +70,21 @@ ReferenceCount(const ReferenceCount &) {
 //               This copy assignment operator is protected because
 //               you almost never want to copy just a ReferenceCount
 //               object by itself, and it's probably a mistake if you
-//               try.
+//               try.  Instead, this should only be called from a
+//               derived class that implements this operator and then
+//               calls up the inheritance chain.
 ////////////////////////////////////////////////////////////////////
 INLINE void ReferenceCount::
 operator = (const ReferenceCount &) {
   nassertv(this != NULL);
 
   // If this assertion fails, our own pointer was recently deleted.
-  // Yikes!
+  // Possibly you used a real pointer instead of a PointerTo at some
+  // point, and the object was deleted when the PointerTo went out of
+  // scope.  Maybe you tried to create an automatic (local variable)
+  // instance of a class that derives from ReferenceCount.  Or maybe
+  // your headers are out of sync, and you need to make clean in
+  // direct or some higher tree.
   nassertv(_ref_count != -100);
 }
 
@@ -97,9 +104,12 @@ INLINE ReferenceCount::
   nassertv(this != NULL);
 
   // If this assertion fails, we're trying to delete an object that
-  // was just deleted.  Probably you've accidentally made a bitwise
-  // copy of a PointerTo, by forgetting to write a copy constructor
-  // for a class that contains PointerTo's.
+  // was just deleted.  Possibly you used a real pointer instead of a
+  // PointerTo at some point, and the object was deleted when the
+  // PointerTo went out of scope.  Maybe you tried to create an
+  // automatic (local variable) instance of a class that derives from
+  // ReferenceCount.  Or maybe your headers are out of sync, and you
+  // need to make clean in direct or some higher tree.
   nassertv(_ref_count != -100);
 
   // If this assertion fails, the reference counts are all screwed
@@ -166,12 +176,13 @@ INLINE int ReferenceCount::
 ref() const {
   nassertr(this != NULL, 0);
 
-  // If this assertion fails, we're trying to ref a pointer that was
-  // just deleted.  Probably you used a real pointer instead of a
+  // If this assertion fails, we're trying to delete an object that
+  // was just deleted.  Possibly you used a real pointer instead of a
   // PointerTo at some point, and the object was deleted when the
-  // PointerTo went out of scope.  Either that, or you forgot to
-  // define a copy constructor for a class that contains
-  // PointerTo's.
+  // PointerTo went out of scope.  Maybe you tried to create an
+  // automatic (local variable) instance of a class that derives from
+  // ReferenceCount.  Or maybe your headers are out of sync, and you
+  // need to make clean in direct or some higher tree.
   nassertr(_ref_count != -100, 0);
 
   // If this assertion fails, the reference counts are all screwed
@@ -211,12 +222,13 @@ INLINE int ReferenceCount::
 unref() const {
   nassertr(this != NULL, false);
 
-  // If this assertion fails, we're trying to unref a pointer that
-  // was just deleted.  Probably you used a real pointer instead of
-  // a PointerTo at some point, and the object was deleted when the
-  // PointerTo went out of scope.  Either that, or you forgot to
-  // define a copy constructor for a class that contains
-  // PointerTo's.
+  // If this assertion fails, we're trying to delete an object that
+  // was just deleted.  Possibly you used a real pointer instead of a
+  // PointerTo at some point, and the object was deleted when the
+  // PointerTo went out of scope.  Maybe you tried to create an
+  // automatic (local variable) instance of a class that derives from
+  // ReferenceCount.  Or maybe your headers are out of sync, and you
+  // need to make clean in direct or some higher tree.
   nassertr(_ref_count != -100, false);
 
   // If this assertion fails, the reference counts are all screwed
@@ -243,12 +255,13 @@ test_ref_count_integrity() const {
 #ifndef NDEBUG
   nassertv(this != NULL);
 
-  // If this assertion fails, we're trying to access a pointer that
-  // was just deleted.  Probably you used a real pointer instead of
-  // a PointerTo at some point, and the object was deleted when the
-  // PointerTo went out of scope.  Either that, or you forgot to
-  // define a copy constructor for a class that contains
-  // PointerTo's.
+  // If this assertion fails, we're trying to delete an object that
+  // was just deleted.  Possibly you used a real pointer instead of a
+  // PointerTo at some point, and the object was deleted when the
+  // PointerTo went out of scope.  Maybe you tried to create an
+  // automatic (local variable) instance of a class that derives from
+  // ReferenceCount.  Or maybe your headers are out of sync, and you
+  // need to make clean in direct or some higher tree.
   nassertv(_ref_count != -100);
 
   // If this assertion fails, the reference counts are all screwed
