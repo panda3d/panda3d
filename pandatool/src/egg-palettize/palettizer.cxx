@@ -218,6 +218,13 @@ process_command_line_eggs(bool force_texture_read) {
     egg_file->post_txa_file();
   }
 
+  // Now that all of our egg files are read in, build in all the cross
+  // links and back pointers and stuff.
+  EggFiles::const_iterator efi;
+  for (efi = _egg_files.begin(); efi != _egg_files.end(); ++efi) {
+    (*efi).second->build_cross_links();
+  }
+
   // Now match each of the textures mentioned in those egg files
   // against a line in the .txa file.
   CommandLineTextures::iterator ti;
@@ -233,13 +240,6 @@ process_command_line_eggs(bool force_texture_read) {
     texture->pre_txa_file();
     _txa_file.match_texture(texture);
     texture->post_txa_file();
-  }
-
-  // Now that all of our data is read in, build in all the cross links
-  // and back pointers and stuff.
-  EggFiles::const_iterator efi;
-  for (efi = _egg_files.begin(); efi != _egg_files.end(); ++efi) {
-    (*efi).second->build_cross_links();
   }
 
   // And now, assign each of the current set of textures to an
@@ -310,6 +310,12 @@ process_all(bool force_texture_read) {
     egg_file->post_txa_file();
   }
 
+  // Now that all of our egg files are read in, build in all the cross
+  // links and back pointers and stuff.
+  for (efi = _egg_files.begin(); efi != _egg_files.end(); ++efi) {
+    (*efi).second->build_cross_links();
+  }
+
   // Now match each of the textures in the world against a line in the
   // .txa file.
   Textures::iterator ti;
@@ -323,12 +329,6 @@ process_all(bool force_texture_read) {
     texture->pre_txa_file();
     _txa_file.match_texture(texture);
     texture->post_txa_file();
-  }
-
-  // Now that all of our data is read in, build in all the cross links
-  // and back pointers and stuff.
-  for (efi = _egg_files.begin(); efi != _egg_files.end(); ++efi) {
-    (*efi).second->build_cross_links();
   }
 
   // And now, assign each texture to an appropriate group or groups.

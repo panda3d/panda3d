@@ -87,6 +87,9 @@ private:
   void remove_old_dests(const Dests &a, const Dests &b);
   void copy_new_dests(const Dests &a, const Dests &b);
 
+  string get_source_key(const Filename &filename, 
+			const Filename &alpha_filename);
+
 private:
   TextureRequest _request;
   TextureProperties _pre_txa_properties;

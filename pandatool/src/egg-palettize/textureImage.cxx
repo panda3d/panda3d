@@ -9,6 +9,7 @@
 #include "eggFile.h"
 #include "paletteGroup.h"
 #include "texturePlacement.h"
+#include "filenameUnifier.h"
 
 #include <indent.h>
 #include <datagram.h>
@@ -377,7 +378,6 @@ is_surprise() const {
 }
 
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureImage::get_source
 //       Access: Public
@@ -389,7 +389,8 @@ is_surprise() const {
 ////////////////////////////////////////////////////////////////////
 SourceTextureImage *TextureImage::
 get_source(const Filename &filename, const Filename &alpha_filename) {
-  string key = filename.get_fullpath() + ":" + alpha_filename.get_fullpath();
+  string key = get_source_key(filename, alpha_filename);
+
   Sources::iterator si;
   si = _sources.find(key);
   if (si != _sources.end()) {
@@ -423,13 +424,65 @@ get_preferred_source() {
   }
 
   // Now examine all of the various source images available to us and
-  // pick the most suitable.
+  // pick the most suitable.  We base this on the following criteria:
 
-  // **** For now, we arbitrarily pick the first one.
-  if (!_sources.empty()) {
-    _preferred_source = (*_sources.begin()).second;
+  // (1) A suitable source image must be referenced by at least one
+  // egg file, unless no source images are referenced by any egg file.
+
+  // (2) A larger source image is preferable to a smaller one.
+
+  // (3) Given two source images of the same size, the more recent one
+  // is preferable.
+
+  // Are any source images referenced by an egg file?
+
+  bool any_referenced = false;
+  Sources::iterator si;
+  for (si = _sources.begin(); si != _sources.end() && !any_referenced; ++si) {
+    SourceTextureImage *source = (*si).second;
+    if (source->get_egg_count() > 0) {
+      any_referenced = true;
+    }
   }
 
+  SourceTextureImage *best = (SourceTextureImage *)NULL;
+  int best_size;
+
+  for (si = _sources.begin(); si != _sources.end() && !any_referenced; ++si) {
+    SourceTextureImage *source = (*si).second;
+
+    if (source->get_egg_count() > 0 || !any_referenced) {
+      // Rule (1) passes.
+
+      if (source->exists() && source->get_size()) {
+	int source_size = source->get_x_size() * source->get_y_size();
+	if (best == (SourceTextureImage *)NULL) {
+	  best = source;
+	  best_size = source_size;
+
+	} else if (source_size > best_size) {
+	  // Rule (2) passes.
+	  best = source;
+	  best_size = source_size;
+
+	} else if (source_size == best_size && 
+		   source->get_filename().compare_timestamps(best->get_filename()) > 0) {
+	  // Rule (3) passes.
+	  best = source;
+	  best_size = source_size;
+	}
+      }
+    }
+  }
+
+  if (best == (SourceTextureImage *)NULL && !_sources.empty()) {
+    // If we didn't pick any that pass, it must be that all of them
+    // are unreadable.  In this case, it really doesn't matter which
+    // one we pick.
+    best = (*_sources.begin()).second;
+  }
+
+  _preferred_source = best;
   return _preferred_source;
 }
 
@@ -881,6 +934,20 @@ copy_new_dests(const TextureImage::Dests &a, const TextureImage::Dests &b) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureImage::get_source_key
+//       Access: Private
+//  Description: Returns the key that a SourceTextureImage should be
+//               stored in, given its one or two filenames.
+////////////////////////////////////////////////////////////////////
+string TextureImage::
+get_source_key(const Filename &filename, const Filename &alpha_filename) {
+  Filename f = FilenameUnifier::make_bam_filename(filename);
+  Filename a = FilenameUnifier::make_bam_filename(alpha_filename);
+
+  return f.get_fullpath() + ":" + a.get_fullpath();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureImage::register_with_read_factory
 //       Access: Public, Static
 //  Description: Registers the current object as something that can be
@@ -976,18 +1043,20 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
   for (i = 0; i < _num_sources; i++) {
     SourceTextureImage *source;
     DCAST_INTO_R(source, plist[index], index);
-    string key = source->get_filename().get_fullpath() + ":" + 
-      source->get_alpha_filename().get_fullpath();
+    string key = get_source_key(source->get_filename(), 
+				source->get_alpha_filename());
 
-    _sources.insert(Sources::value_type(key, source));
+    bool inserted = _sources.insert(Sources::value_type(key, source)).second;
     index++;
+    nassertr(inserted, index);
   }
 
   for (i = 0; i < _num_dests; i++) {
     DestTextureImage *dest;
     DCAST_INTO_R(dest, plist[index], index);
-    _dests.insert(Dests::value_type(dest->get_filename(), dest));
+    bool inserted = _dests.insert(Dests::value_type(dest->get_filename(), dest)).second;
     index++;
+    nassertr(inserted, index);
   }
 
   return index;
@@ -1001,7 +1070,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
 //               allocate and return a new object with all the data
 //               read.
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* TextureImage::
+TypedWriteable *TextureImage::
 make_TextureImage(const FactoryParams &params) {
   TextureImage *me = new TextureImage;
   BamReader *manager;

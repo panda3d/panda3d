@@ -26,14 +26,18 @@ public:
 		     const Filename &alpha_filename);
 
   TextureImage *get_texture() const;
+
+  void increment_egg_count();
+  int get_egg_count() const;
   
   bool get_size();
   bool read_header();
 
 private:
+  TextureImage *_texture;
+  int _egg_count;
   bool _read_header;
   bool _successfully_read_header;
-  TextureImage *_texture;
 
   // The TypedWriteable interface follows.
 public:

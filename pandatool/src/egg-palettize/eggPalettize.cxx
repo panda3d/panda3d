@@ -358,14 +358,30 @@ run() {
     okflag = false;
   }
 
-  if (!state_file.open_write(state_filename) ||
+  // Make up a temporary filename to write the state file to, then
+  // move the state file into place.  We do this in case the user
+  // interrupts us (or we core dump) before we're done; that way we
+  // won't leave the state file incompletely written.
+  string dirname = state_filename.get_dirname();
+  if (dirname.empty()) {
+    dirname = ".";
+  }
+  char *name = tempnam(dirname.c_str(), "pi");
+  Filename temp_filename(name);
+
+  if (!state_file.open_write(temp_filename) ||
       !state_file.write_object(pal)) {
-    nout << "Unable to write palettization information to " << state_filename
+    nout << "Unable to write palettization information to " << temp_filename
 	 << "\n";
     exit(1);
   }
 
   state_file.close();
+  if (!temp_filename.rename_to(state_filename)) {
+    nout << "Unable to rename temporary file " << temp_filename << " to "
+	 << state_filename << "\n";
+    exit(1);
+  }
 
   if (!okflag) {
     exit(1);

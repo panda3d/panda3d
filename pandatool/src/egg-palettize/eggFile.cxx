@@ -7,6 +7,8 @@
 #include "textureImage.h"
 #include "paletteGroup.h"
 #include "texturePlacement.h"
+#include "textureReference.h"
+#include "sourceTextureImage.h"
 #include "palettizer.h"
 #include "filenameUnifier.h"
 
@@ -242,8 +244,9 @@ is_stale() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggFile::build_cross_links
 //       Access: Public
-//  Description: Calls TextureImage::note_egg_file() for each texture
-//               the egg file references, and
+//  Description: Calls TextureImage::note_egg_file() and
+//               SourceTextureImage::increment_egg_count() for each
+//               texture the egg file references, and
 //               PaletteGroup::increment_egg_count() for each palette
 //               group it wants.  This sets up some of the back
 //               references to support determining an ideal texture
@@ -265,6 +268,12 @@ build_cross_links() {
   Textures::const_iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     (*ti)->get_texture()->note_egg_file(this);
+
+    // Actually, this may count the same egg file multiple times for a
+    // particular SourceTextureImage, since a given texture may be
+    // reference multiples times within an egg file.  No harm done,
+    // however.
+    (*ti)->get_source()->increment_egg_count();
   }
 
   PaletteGroups::const_iterator gi;

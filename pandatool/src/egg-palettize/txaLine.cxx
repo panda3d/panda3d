@@ -322,7 +322,7 @@ match_texture(TextureImage *texture) const {
       break;
 
     case ST_scale:
-      if (source->get_size()) {
+      if (source != (SourceTextureImage *)NULL && source->get_size()) {
 	request._got_size = true;
 	request._x_size = (int)(source->get_x_size() * _scale / 100.0);
 	request._y_size = (int)(source->get_y_size() * _scale / 100.0);

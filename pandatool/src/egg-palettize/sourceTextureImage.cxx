@@ -5,6 +5,7 @@
 
 #include "sourceTextureImage.h"
 #include "textureImage.h"
+#include "filenameUnifier.h"
 
 #include <pnmImageHeader.h>
 #include <datagram.h>
@@ -24,6 +25,7 @@ SourceTextureImage::
 SourceTextureImage() {
   _texture = (TextureImage *)NULL;
 
+  _egg_count = 0;
   _read_header = false;
   _successfully_read_header = false;
 }
@@ -40,6 +42,7 @@ SourceTextureImage(TextureImage *texture, const Filename &filename,
 {
   _filename = filename;
   _alpha_filename = alpha_filename;
+  _egg_count = 0;
   _read_header = false;
   _successfully_read_header = false;
 }
@@ -53,6 +56,28 @@ SourceTextureImage(TextureImage *texture, const Filename &filename,
 TextureImage *SourceTextureImage::
 get_texture() const {
   return _texture;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SourceTextureImage::increment_egg_count
+//       Access: Public
+//  Description: Increments by one the number of egg files that are
+//               known to reference this SourceTextureImage.
+////////////////////////////////////////////////////////////////////
+void SourceTextureImage::
+increment_egg_count() {
+  _egg_count++;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SourceTextureImage::get_egg_count
+//       Access: Public
+//  Description: Returns the number of egg files that share this
+//               SourceTextureImage.
+////////////////////////////////////////////////////////////////////
+int SourceTextureImage::
+get_egg_count() const {
+  return _egg_count;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -105,7 +130,7 @@ read_header() {
   _properties._got_num_channels = true;
   _properties._num_channels = header.get_num_channels();
 
-  if (!_alpha_filename.empty()) {
+  if (!_alpha_filename.empty() && _alpha_filename.exists()) {
     // Assume if we have an alpha filename, that we have an additional
     // alpha channel.
     if (_properties._num_channels == 1 || _properties._num_channels == 3) {
@@ -144,6 +169,9 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   ImageFile::write_datagram(writer, datagram);
   writer->write_pointer(datagram, _texture);
 
+  // We don't store _egg_count; instead, we count these up again each
+  // session.
+
   // We don't store _read_header or _successfully_read_header in the
   // Bam file; these are transitory and we need to reread the image
   // header for each session (in case the image files change between
@@ -175,7 +203,7 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
 //               allocate and return a new object with all the data
 //               read.
 ////////////////////////////////////////////////////////////////////
-TypedWriteable* SourceTextureImage::
+TypedWriteable *SourceTextureImage::
 make_SourceTextureImage(const FactoryParams &params) {
   SourceTextureImage *me = new SourceTextureImage;
   BamReader *manager;
