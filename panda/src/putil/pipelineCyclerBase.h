@@ -29,8 +29,14 @@
 //       Class : PipelineCyclerBase
 // Description : This is the non-template part of the implementation
 //               of PipelineCycler.  See PipelineCycler.
+//
+//               We define this as a struct instead of a class to
+//               guarantee byte placement within the object, so that
+//               (particularly for the trivial implementation) the
+//               inherited struct's data is likely to be placed by the
+//               compiler at the "this" pointer.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PipelineCyclerBase {
+struct EXPCL_PANDA PipelineCyclerBase {
 public:
   INLINE PipelineCyclerBase(CycleData *initial_data, Pipeline *pipeline = NULL);
   INLINE PipelineCyclerBase(const PipelineCyclerBase &copy);
@@ -63,6 +69,16 @@ private:
   PT(CycleData) _data;
   Pipeline *_pipeline;
   short _read_count, _write_count;
+
+#else  // !DO_PIPELINING
+  // In a trivial implementation, we only need to store the CycleData
+  // pointer.  Actually, we don't even need to do that, if we're lucky
+  // and the compiler doesn't do anything funny with the struct
+  // layout.
+  #ifndef SIMPLE_STRUCT_POINTERS
+  CycleData *_data;
+  #endif  // SIMPLE_STRUCT_POINTERS
+
 #endif  // DO_PIPELINING
 };
 

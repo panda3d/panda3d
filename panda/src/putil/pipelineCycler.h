@@ -48,9 +48,15 @@
 //               same interface but with minimal runtime overhead.
 //               (Actually, this isn't true yet, but it will be one
 //               day.)
+//
+//               We define this as a struct instead of a class to
+//               guarantee byte placement within the object, so that
+//               (particularly for the trivial implementation) the
+//               inherited struct's data is likely to be placed by the
+//               compiler at the "this" pointer.
 ////////////////////////////////////////////////////////////////////
 template<class CycleDataType>
-class PipelineCycler : public PipelineCyclerBase {
+struct PipelineCycler : public PipelineCyclerBase {
 public:
   INLINE PipelineCycler(Pipeline *pipeline = NULL);
   INLINE PipelineCycler(const PipelineCycler<CycleDataType> &copy);

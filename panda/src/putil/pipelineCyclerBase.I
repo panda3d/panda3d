@@ -299,7 +299,11 @@ PipelineCyclerBase(CycleData *initial_data, Pipeline *) {
   // If this turns out not to be true on a particular platform, we
   // will have to store the pointer in this class, for a little bit of
   // extra overhead.
+#ifdef SIMPLE_STRUCT_POINTERS
   nassertv(initial_data == (CycleData *)this);
+#else
+  _data = initial_data;
+#endif  // SIMPLE_STRUCT_POINTERS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -339,7 +343,11 @@ INLINE PipelineCyclerBase::
 ////////////////////////////////////////////////////////////////////
 INLINE const CycleData *PipelineCyclerBase::
 read() const {
+#ifdef SIMPLE_STRUCT_POINTERS
   return (const CycleData *)this;
+#else
+  return _data;
+#endif  // SIMPLE_STRUCT_POINTERS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -381,7 +389,11 @@ release_read(const CycleData *) const {
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerBase::
 write() {
+#ifdef SIMPLE_STRUCT_POINTERS
   return (CycleData *)this;
+#else
+  return _data;
+#endif  // SIMPLE_STRUCT_POINTERS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -395,7 +407,11 @@ write() {
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerBase::
 elevate_read(const CycleData *) {
+#ifdef SIMPLE_STRUCT_POINTERS
   return (CycleData *)this;
+#else
+  return _data;
+#endif  // SIMPLE_STRUCT_POINTERS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -467,7 +483,11 @@ release_write_stage(int, CycleData *) {
 ////////////////////////////////////////////////////////////////////
 INLINE CycleData *PipelineCyclerBase::
 cheat() const {
+#ifdef SIMPLE_STRUCT_POINTERS
   return (CycleData *)this;
+#else
+  return _data;
+#endif  // SIMPLE_STRUCT_POINTERS
 }
 
 ////////////////////////////////////////////////////////////////////
