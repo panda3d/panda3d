@@ -22,6 +22,9 @@
 
 TypeHandle EventHandler::_type_handle;
 
+EventHandler *EventHandler::_global_event_handler = 0;
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EventHandler::Constructor
 //       Access: Public
@@ -54,6 +57,7 @@ process_events() {
 ////////////////////////////////////////////////////////////////////
 void EventHandler::
 dispatch_event(const CPT_Event &event) {
+  nassertv(!event.is_null());
   // Is the event name defined in the hook table?  It will be if
   // anyone has ever assigned a hook to this particular event name.
   Hooks::const_iterator hi;
@@ -66,10 +70,11 @@ dispatch_event(const CPT_Event &event) {
 
     Functions::const_iterator fi;
     for (fi = copy_functions.begin(); fi != copy_functions.end(); ++fi) {
-      if (event_cat.is_spam())
-    event_cat->spam() << "calling callback 0x" << (void*)(*fi)
+      if (event_cat.is_spam()) {
+        event_cat->spam() << "calling callback 0x" << (void*)(*fi)
               << " for event '" << event->get_name() << "'"
               << endl;
+      }
       (*fi)(event);
     }
   }
@@ -107,11 +112,9 @@ write(ostream &out) const {
     if ((*hi).first < (*cbhi).first) {
       write_hook(out, *hi);
       ++hi;
-
     } else if ((*cbhi).first < (*hi).first) {
       write_cbhook(out, *cbhi);
       ++cbhi;
-
     } else {
       write_hook(out, *hi);
       write_cbhook(out, *cbhi);
@@ -144,9 +147,12 @@ write(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 bool EventHandler::
 add_hook(const string &event_name, EventFunction *function) {
-  if (event_cat.is_debug())
+  if (event_cat.is_debug()) {
     event_cat.debug() << "adding hook for event '" << event_name
                << "' with function 0x" << (void*)function << endl;
+  }
+  assert(!event_name.empty());
+  assert(function);
   return _hooks[event_name].insert(function).second;
 }
 
@@ -164,6 +170,8 @@ add_hook(const string &event_name, EventFunction *function) {
 bool EventHandler::
 add_hook(const string &event_name, EventCallbackFunction *function,
          void *data) {
+  assert(!event_name.empty());
+  assert(function);
   return _cbhooks[event_name].insert(CallbackFunction(function, data)).second;
 }
 
@@ -175,6 +183,7 @@ add_hook(const string &event_name, EventCallbackFunction *function,
 ////////////////////////////////////////////////////////////////////
 bool EventHandler::
 has_hook(const string &event_name) const {
+  assert(!event_name.empty());
   Hooks::const_iterator hi;
   hi = _hooks.find(event_name);
   if (hi != _hooks.end()) {
@@ -204,6 +213,8 @@ has_hook(const string &event_name) const {
 ////////////////////////////////////////////////////////////////////
 bool EventHandler::
 remove_hook(const string &event_name, EventFunction *function) {
+  assert(!event_name.empty());
+  assert(function);
   return _hooks[event_name].erase(function) != 0;
 }
 
@@ -219,6 +230,8 @@ remove_hook(const string &event_name, EventFunction *function) {
 bool EventHandler::
 remove_hook(const string &event_name, EventCallbackFunction *function,
             void *data) {
+  assert(!event_name.empty());
+  assert(function);
   return _cbhooks[event_name].erase(CallbackFunction(function, data)) != 0;
 }
 
@@ -232,6 +245,17 @@ void EventHandler::
 remove_all_hooks() {
   _hooks.clear();
   _cbhooks.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EventHandler::make_global_event_handler
+//       Access: Protected, Static
+//  Description:
+////////////////////////////////////////////////////////////////////
+void EventHandler::
+make_global_event_handler(EventQueue *queue) {
+  assert(queue);
+  _global_event_handler = new EventHandler(queue);
 }
 
 

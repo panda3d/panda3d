@@ -39,7 +39,8 @@ class EventQueue;
 //
 //               This class is not necessary when the hooks are
 //               detected and processed entirely by the scripting
-//               language, e.g. via Scheme hooks.
+//               language, e.g. via Scheme hooks or the messenger
+//               in Python.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS EventHandler : public TypedObject {
 public:
@@ -55,6 +56,8 @@ PUBLISHED:
   virtual void dispatch_event(const CPT_Event &event);
 
   void write(ostream &out) const;
+
+  INLINE static EventHandler *get_global_event_handler(EventQueue *queue);
 
 public:
   bool add_hook(const string &event_name, EventFunction *function);
@@ -79,6 +82,9 @@ protected:
   CallbackHooks _cbhooks;
   EventQueue &_queue;
 
+  static EventHandler *_global_event_handler;
+  static void make_global_event_handler(EventQueue *queue);
+
 private:
   void write_hook(ostream &out, const Hooks::value_type &hook) const;
   void write_cbhook(ostream &out, const CallbackHooks::value_type &hook) const;
@@ -101,5 +107,7 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+#include "eventHandler.I"
 
 #endif
