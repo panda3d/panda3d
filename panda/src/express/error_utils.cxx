@@ -202,7 +202,7 @@ string handle_socket_error(void) {
   }
 
   char msgbuf[1024];
-  sprintf(msgbuf,"%d: %s",err,errmsg);
+  sprintf(msgbuf,"WSA errno %d, errno %d: %s",err,errno,errmsg);
   return string(msgbuf);
 #endif
 }
