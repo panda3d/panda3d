@@ -17,6 +17,7 @@
 #include <nodeRelation.h>
 #include <pointerTo.h>
 #include <eventHandler.h>
+#include <pt_NodeRelation.h>
 
 #include <set>
 
@@ -106,7 +107,7 @@ private:
   string _enter_pattern;
   string _leave_pattern;
 
-  PT(NodeRelation) _geometry;
+  PT_NodeRelation _geometry;
 
   EventHandler* _eh;
 

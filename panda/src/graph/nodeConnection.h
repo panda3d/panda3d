@@ -10,6 +10,11 @@
 
 #include "nodeRelation.h"
 #include "config_graph.h"
+#include "vector_PT_NodeRelation.h"
+#include "vector_NodeRelation_star.h"
+
+typedef vector_PT_NodeRelation DownRelationPointers;
+typedef vector_NodeRelation_star UpRelationPointers;
 
 
 ///////////////////////////////////////////////////////////////////
@@ -17,12 +22,8 @@
 // Description : This class represents the table, stored within each
 //               Node, of all the connected NodeRelations (arcs) of a
 //               particular graph type.
-//
-//               Node that this class is not exported from PANDA.DLL.
-//               You should use the get_parent()/get_child() interface
-//               to Node for code outside of PANDA.DLL.
 ////////////////////////////////////////////////////////////////////
-class NodeConnection {
+class EXPCL_PANDA NodeConnection {
 public:
   INLINE_GRAPH NodeConnection(TypeHandle graph_type = TypeHandle::none());
   INLINE_GRAPH ~NodeConnection();

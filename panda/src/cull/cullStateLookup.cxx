@@ -106,7 +106,7 @@ find_node(Node *node,
 //               CullStateSubtree is always returned.
 ////////////////////////////////////////////////////////////////////
 CullStateSubtree *CullStateLookup::
-get_subtree(const PT(NodeRelation) &arc, 
+get_subtree(const PT_NodeRelation &arc, 
 	    const AllTransitionsWrapper &trans,
 	    Node *top_subtree,
 	    UpdateSeq now) {

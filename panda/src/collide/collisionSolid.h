@@ -13,6 +13,8 @@
 #include <luse.h>
 #include <nodeRelation.h>
 #include <pointerTo.h>
+#include <node.h>
+#include <vector_PT_NodeRelation.h>
 
 class CollisionHandler;
 class CollisionEntry;
@@ -85,7 +87,7 @@ protected:
 
   virtual void recompute_viz(Node *parent)=0;
   
-  typedef vector< PT(NodeRelation) > VizArcs;
+  typedef vector_PT_NodeRelation VizArcs;
   VizArcs _solid_viz_arcs;
   VizArcs _wireframe_viz_arcs;
   VizArcs _other_viz_arcs;

@@ -134,8 +134,8 @@ private:
 
 protected:
   void attach();
-  PT(NodeRelation) detach();
-  PT(NodeRelation) detach_below();
+  PT(TypedWriteableReferenceCount) detach();
+  PT(TypedWriteableReferenceCount) detach_below();
 
 private:
   // We reference-count the child pointer, but not the parent pointer,
@@ -221,9 +221,6 @@ private:
 
 EXPCL_PANDA INLINE_GRAPH ostream &
 operator << (ostream &out, const NodeRelation &arc);
-
-typedef vector< PT(NodeRelation) > DownRelationPointers;
-typedef vector<NodeRelation *> UpRelationPointers;
 
 #include "nodeRelation.T"
 

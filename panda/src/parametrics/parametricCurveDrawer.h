@@ -10,6 +10,7 @@
 
 #include <lineSegs.h>
 #include <node.h>
+#include <vector_PT_NodeRelation.h>
 
 #include <typeHandle.h>
 
@@ -71,7 +72,7 @@ private:
   float _num_ticks;
   float _tick_scale;
 
-  typedef vector< PT(NodeRelation) > TickArcs;
+  typedef vector_PT_NodeRelation TickArcs;
   TickArcs _tick_arcs;
 
 public:

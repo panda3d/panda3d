@@ -9,6 +9,7 @@
 #include <pandabase.h>
 
 #include <namedNode.h>
+#include <pt_NodeRelation.h>
 #include <luse.h>
 
 #include <typedef.h>
@@ -129,7 +130,7 @@ private:
   typedef list<ParametricCurveDrawer *> DrawerList;
   DrawerList _drawers;
   ParametricCurveDrawer *_implicit_drawer;
-  PT(NodeRelation) _viz_arc;
+  PT_NodeRelation _viz_arc;
 
 // TypedWriteable stuff
 protected:

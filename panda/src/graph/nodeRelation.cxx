@@ -670,10 +670,14 @@ attach() {
 //               when its last reference count is removed, and it is
 //               generally a bad idea to destruct a class within its
 //               own method.
+
+//               It must be a PT(TypedWriteableReferenceCount), and
+//               not PT_NodeRelation, because of circularity problems
+//               trying to export the template class PT_NodeRelation.
 ////////////////////////////////////////////////////////////////////
-PT(NodeRelation) NodeRelation::
+PT(TypedWriteableReferenceCount) NodeRelation::
 detach() {
-  PT(NodeRelation) result = this;
+  PT(TypedWriteableReferenceCount) result = this;
 
   nassertr(_parent != (Node*)NULL, result);
   nassertr(_child != (Node*)NULL, result);
@@ -726,9 +730,9 @@ detach() {
 //               remove it from its parent's arc list, which is
 //               presumably about to be destroyed anyway.
 ////////////////////////////////////////////////////////////////////
-PT(NodeRelation) NodeRelation::
+PT(TypedWriteableReferenceCount) NodeRelation::
 detach_below() {
-  PT(NodeRelation) result = this;
+  PT(TypedWriteableReferenceCount) result = this;
 
   nassertr(_parent != (Node*)NULL, result);
   nassertr(_child != (Node*)NULL, result);

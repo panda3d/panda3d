@@ -12,6 +12,7 @@
 #include <namedNode.h>
 #include <nodeRelation.h>
 #include <pt_NamedNode.h>
+#include <pt_NodeRelation.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CharacterJoint
@@ -44,7 +45,7 @@ PUBLISHED:
   void clear_local_transforms();
 
 private:
-  typedef set< PT(NodeRelation) > ArcList;
+  typedef set< PT_NodeRelation > ArcList;
   ArcList _net_transform_arcs;
   ArcList _local_transform_arcs;
 

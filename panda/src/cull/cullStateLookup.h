@@ -11,6 +11,7 @@
 #include <geomNode.h>
 #include <pointerTo.h>
 #include <pt_Node.h>
+#include <pt_NodeRelation.h>
 
 #include <map>
 
@@ -42,7 +43,7 @@ public:
   CullState *find_node(Node *node, 
 		       const AllTransitionsWrapper &trans,
 		       UpdateSeq now);
-  CullStateSubtree *get_subtree(const PT(NodeRelation) &arc,
+  CullStateSubtree *get_subtree(const PT_NodeRelation &arc,
 				const AllTransitionsWrapper &trans,
 				Node *top_subtree,
 				UpdateSeq now);
@@ -63,7 +64,7 @@ private:
   typedef map<PT_Node,  PT(CullState) > CullStates;
   CullStates _cull_states;
 
-  typedef map<PT(NodeRelation), CullStateSubtree *> Subtrees;
+  typedef map<PT_NodeRelation, CullStateSubtree *> Subtrees;
   Subtrees _subtrees;
 };
 

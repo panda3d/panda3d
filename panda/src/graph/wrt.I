@@ -858,7 +858,8 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
       top_subtree = top_subtree_3;
     }
 
-    if (check_trans.compare_to(result) != 0) {
+    int compare = check_trans.compare_to(result);
+    if (compare != 0) {
       wrt_cat.warning()
 	<< "WRT subtree cache from " << *arc->get_child() << " to ";
       if (to == (Node *)NULL) {
@@ -874,6 +875,12 @@ cached_wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
 	<< "  should be:\n";
       check_trans.write(wrt_cat.warning(false), 4);
       result = check_trans;
+
+      /*
+      cerr << "Begin recheck.\n";
+      int num = check_trans.compare_to(result);
+      cerr << "Done recheck, result = " << num << "\n";
+      */
     }
   }
 #endif

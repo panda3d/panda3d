@@ -26,6 +26,7 @@
 #include <dftraverser.h>
 #include <bamFile.h>
 #include <materialPool.h>
+#include <pt_NodeRelation.h>
 
 #include <list>
 
@@ -884,7 +885,7 @@ remove_node() {
   nassertv(verify_connectivity());
   nassertv(has_arcs());
 
-  PT(NodeRelation) darc = arc();
+  PT_NodeRelation darc = arc();
 
   // Set the chain to stop here, so that any NodePaths sharing this
   // one will now begin at this "deleted" node.

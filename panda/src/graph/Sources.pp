@@ -47,9 +47,15 @@
     onOffTransition.I onOffTransition.cxx onOffTransition.h \
     onTransition.I onTransition.cxx onTransition.h pointerNameClass.h \
     pt_NamedNode.N pt_NamedNode.cxx pt_NamedNode.h pt_Node.N \
-    pt_Node.cxx pt_Node.h setTransitionHelpers.T \
+    pt_Node.cxx pt_Node.h \
+    pt_NodeRelation.cxx pt_NodeRelation.h \
+    setTransitionHelpers.T \
     setTransitionHelpers.h transitionDirection.h traverserVisitor.T \
-    traverserVisitor.h vector_PT_Node.cxx vector_PT_Node.h wrt.I \
+    traverserVisitor.h \
+    vector_PT_Node.cxx vector_PT_Node.h \
+    vector_PT_NodeRelation.cxx vector_PT_NodeRelation.h \
+    vector_NodeRelation_star.cxx vector_NodeRelation_star.h \
+    wrt.I \
     wrt.cxx wrt.h
 
   #define INSTALL_HEADERS \
@@ -79,9 +85,11 @@
     nullTransitionWrapper.h onAttribute.h onOffAttribute.I \
     onOffAttribute.h onOffTransition.I onOffTransition.h \
     onTransition.I onTransition.h pointerNameClass.h pt_NamedNode.h \
-    pt_Node.h setTransitionHelpers.T setTransitionHelpers.h \
+    pt_Node.h pt_NodeRelation.h \
+    setTransitionHelpers.T setTransitionHelpers.h \
     transitionDirection.h traverserVisitor.T traverserVisitor.h \
-    vector_PT_Node.h wrt.I wrt.h
+    vector_PT_Node.h vector_PT_NodeRelation.h vector_NodeRelation_star.h \
+    wrt.I wrt.h
 
   #define IGATESCAN all
 

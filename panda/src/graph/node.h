@@ -83,13 +83,11 @@ PUBLISHED:
   virtual void write(ostream &out, int indent_level = 0) const;
 
 public:
-  // We reference-count the child pointer, but not the parent pointer,
-  // to avoid circular reference counting.
+  // These members define the actual connection of arcs to the nodes.
+  // Generally, you should not monkey with them, unless you know what
+  // you're doing; the get_parent()/get_child() interface above is
+  // simpler to use.
 
-  // The following members are public to allow low-overhead traversal
-  // through the scene graph when necessary, but beware!  It is not
-  // safe to access these members directly outside of PANDA.DLL.
-  // Instead, use the get_parent()/get_child() interface, above.
   INLINE_GRAPH const NodeConnection &find_connection(TypeHandle graph_type) const;
   INLINE_GRAPH NodeConnection *update_connection(TypeHandle graph_type);
 

@@ -13,6 +13,7 @@
 
 #include <driveInterface.h>
 #include <pointerTo.h>
+#include <pt_NodeRelation.h>
 
 ///////////////////////////////////////////////////////////////////
 // 	 Class : CollisionHandlerPhysical
@@ -54,7 +55,7 @@ protected:
     void set_mat(const LMatrix4f &mat) const;
 
     PT(DriveInterface) _drive_interface;
-    PT(NodeRelation) _arc;
+    PT_NodeRelation _arc;
   };
 
   typedef map<PT(CollisionNode), ColliderDef> Colliders;
