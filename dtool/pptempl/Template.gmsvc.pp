@@ -417,7 +417,7 @@ $[install_igatedb_dir]/$[igatedb] : $[so_dir]/$[igatedb] $[so_dir]/stamp
 $[so_dir]/$[igatedb] : $[so_dir]/$[igateoutput]
 
 lib$[TARGET]_igatescan = $[igatescan]
-$[so_dir]/$[igateoutput] : $[sort $[patsubst ./%.h,%.h,./%.I,%.I,%,,$[dependencies $[igatescan]] $[igatescan:%=./%]]] $[so_dir]/stamp
+$[so_dir]/$[igateoutput] : $[sort $[patsubst %.h,%.h,%.I,%.I,%,,$[dependencies $[igatescan]] $[igatescan:%=./%]]] $[so_dir]/stamp
 	interrogate -od $[so_dir]/$[igatedb] -oc $[so_dir]/$[igateoutput] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
 
 #define target $[igateoutput:%.cxx=$[so_dir]/%.obj]
