@@ -1,0 +1,33 @@
+#! /bin/sh
+
+if [ "$1" = "-d" ]
+then
+    destdir=$2
+    debug_state="-d"
+else
+    destdir=$1
+    debug_state=""
+fi
+
+if [ "${destdir}" = "" ]
+then
+	echo "Usage: copyfiles [-d] destdir"
+	exit 1
+fi
+
+if [ ! -d ${destdir} ]
+then
+	echo "Error: destdir must be a directory"
+	exit 1
+fi
+
+for file in `printfiles $debug_state`
+do
+	if cp -R ${file} ${destdir}
+	then
+	    echo "copying ${file} to ${destdir}"
+	else
+	    echo "ERROR: could not find ${file}"
+	    exit 1
+	fi
+done

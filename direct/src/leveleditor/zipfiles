@@ -1,0 +1,42 @@
+#! /bin/sh
+
+if [ "$1" = "-d" ]
+then
+    #destdir=$2
+    destdir="levelEditor"
+    zipfile="levelEditor.zip"
+    debug_state="-d"
+else
+    #destdir=$1
+    destdir="levelEditor"
+    zipfile="levelEditor.zip"
+    debug_state=""
+fi
+
+if [ "${destdir}" = "" ]
+then
+    echo "Usage: zipfiles [-d]"
+    exit 1
+fi
+
+if [ -d ${destdir} ]
+then
+    echo "Removing ${destdir}"
+    rm -rf ${destdir}
+fi
+
+if mkdir ${destdir}
+then
+    if copyfiles ${debug_state} ${destdir}
+    then
+	if [ -f ${zipfile} ]
+	then
+	    rm ${zipfile}
+	fi
+	zip -r ${zipfile} ${destdir}
+	rm -rf ${destdir}
+	echo "Done creating ${zipfile}"
+    fi
+else
+    echo "ERROR: Could not mkdir ${destdir}"
+fi

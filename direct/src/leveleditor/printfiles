@@ -1,0 +1,102 @@
+#! /bin/sh
+
+# Configrc for running the show
+# This uses the executable system now, not the configrc
+echo $DIRECT/src/leveleditor/Configrc
+
+# Python files
+echo $WINTOOLS/bin/python.exe
+echo $WINTOOLS/sdk/python/Python-2.2/DLLs/python22.dll
+echo $WINTOOLS/sdk/python/Python-2.2/DLLs/_sre.pyd
+echo $WINTOOLS/sdk/python/Python-2.2/DLLs/_tkinter.pyd
+echo $WINTOOLS/sdk/python/Python-2.2/Lib/lib-tk
+echo $WINTOOLS/sdk/python/Python-2.2/Lib/Pmw
+echo $WINTOOLS/sdk/python/Python-2.2/Lib/linecache.py
+echo $WINTOOLS/sdk/python/Python-2.2/Lib/traceback.py
+echo $WINTOOLS/sdk/python/Python-2.2/Lib/__future__.py
+echo $WINTOOLS/sdk/python/Python-2.2/Lib/whrandom.py
+echo $WINTOOLS/sdk/python/Python-2.2/Lib/copy_reg.py
+echo $WINTOOLS/sdk/python/Python-2.2/Lib/copy.py
+echo $WINTOOLS/sdk/python/Python-2.2/Lib/fnmatch.py
+echo $WINTOOLS/sdk/python/Python-2.2/Lib/re.py
+echo $WINTOOLS/sdk/python/Python-2.2/Lib/sre.py
+echo $WINTOOLS/sdk/python/Python-2.2/Lib/sre_parse.py
+echo $WINTOOLS/sdk/python/Python-2.2/Lib/sre_constants.py
+echo $WINTOOLS/sdk/python/Python-2.2/Lib/sre_compile.py
+echo $WINTOOLS/sdk/python/Python-2.2/Lib/types.py
+echo $WINTOOLS/sdk/python/Python-2.2/Lib/string.py
+echo $WINTOOLS/sdk/python/Python-2.2/Lib/os.py
+echo $WINTOOLS/sdk/python/Python-2.2/Lib/site.py
+echo $WINTOOLS/sdk/python/Python-2.2/Lib/stat.py
+echo $WINTOOLS/sdk/python/Python-2.2/Lib/UserDict.py
+echo $WINTOOLS/sdk/python/Python-2.2/Lib/ntpath.py
+echo $WINTOOLS/sdk/python/Python-2.2/Lib/random.py
+echo $WINTOOLS/sdk/python/Python-2.2/Lib/getopt.py
+echo $WINTOOLS/sdk/python/Python-2.2/Lib/fpformat.py
+
+# Libraries
+echo $WINTOOLS/lib
+echo $WINTOOLS/sdk/rad/Miles6/redist/win32/Mss32.dll
+echo $WINTOOLS/sdk/rad/Miles6/redist/win32/Mp3dec.asi
+echo $DTOOL/lib/libdtool.dll
+echo $DTOOL/lib/libdtoolconfig.dll
+echo $PANDA/lib/libpandaexpress.dll
+echo $PANDA/lib/libpanda.dll
+echo $PANDA/lib/libpandaphysics.dll
+echo $PANDA/lib/libpandadx.dll
+echo $PANDA/lib/libpandagl.dll
+echo $PANDA/lib/libmiles_audio.dll
+echo $DIRECT/lib/libdirect.dll
+echo $TOONTOWN/lib/libtoontown.dll
+
+# Generated code for libpandaexpress
+printlib $DIRECT/lib/py libpandaexpress
+printlib $DIRECT/lib/py libpanda
+printlib $DIRECT/lib/py libpandaphysics
+printlib $DIRECT/lib/py libdirect
+printlib $DIRECT/lib/py libtoontown
+
+# DIRECT stuff
+printdir $DIRECT/src/actor .py
+printdir $DIRECT/src/cluster .py
+printdir $DIRECT/src/directbase .py
+printdir $DIRECT/src/directdevices .py
+printdir $DIRECT/src/directnotify .py
+printdir $DIRECT/src/directscripts .py
+printdir $DIRECT/src/directtools .py
+printdir $DIRECT/src/directutil .py
+printdir $DIRECT/src/distributed .py
+printdir $DIRECT/src/ffi/ .py
+printdir $DIRECT/src/fsm .py
+printdir $DIRECT/src/gui .py
+printdir $DIRECT/src/interval .py
+printdir $DIRECT/src/leveleditor .py
+echo $DIRECT/src/leveleditor/run.bat
+printdir $DIRECT/src/particles .py
+printdir $DIRECT/src/showbase .py
+printdir $DIRECT/src/task .py
+printdir $DIRECT/src/showbase .py
+printdir $DIRECT/src/tkpanels .py
+printdir $DIRECT/src/tkwidgets .py
+
+# Etc files
+echo $PANDA/etc/layout_db
+echo $PANDA/etc/setup_db
+echo $PANDA/etc/window_db
+
+# Generated code for libpanda
+echo $DIRECT/lib/py/PandaModules.py
+
+# Models, textures, audio
+echo $DMODELS/models
+echo $DMODELS/icons
+echo $DMODELS/maps
+echo $TTMODELS/phase_3
+echo $TTMODELS/phase_4
+echo $TTMODELS/phase_5
+echo $TTMODELS/phase_6
+echo $TTMODELS/phase_7
+echo $TTMODELS/phase_8
+
+
+

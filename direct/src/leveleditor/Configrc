@@ -1,0 +1,62 @@
+
+want-tk 1
+want-directtools 1
+level-editor-hoods TT
+style-path-prefix /i
+
+load-display pandadx
+chan-config-sanity-check #f
+multipass-viz none
+win-width 800
+win-height 600
+fullscreen 0
+sync-video #t
+
+# Configrc for running the level editor
+
+# model-path     $TTMODELS
+# sound-path     $TTMODELS
+dna-preload    phase_4/dna/storage.dna
+
+load-file-type toontown
+
+window-title Toontown
+win32-window-icon $TTMODELS/phase_3/models/gui/toontown.ico
+
+compress-channels #t
+text-encoding utf8
+
+# We must currently set this to avoid messing up some of
+# the suits' faces.
+egg-retesselate-coplanar	#f
+
+
+# Custom ObjectTypes for Toontown.
+# "barrier" means a vertical wall, with bitmask 0x01
+# "floor" means a horizontal floor, with bitmask 0x02
+# "camera-collide" means things that the camera should avoid, with bitmask 0x04
+egg-object-type-barrier         <Scalar> collide-mask { 0x01 } <Collide> { Polyset descend }
+egg-object-type-trigger         <Scalar> collide-mask { 0x01 } <Collide> { Polyset descend intangible }
+egg-object-type-sphere          <Scalar> collide-mask { 0x01 } <Collide> { Sphere descend }
+egg-object-type-trigger-sphere  <Scalar> collide-mask { 0x01 } <Collide> { Sphere descend intangible }
+egg-object-type-floor           <Scalar> collide-mask { 0x02 } <Collide> { Polyset descend }
+egg-object-type-camera-collide  <Scalar> collide-mask { 0x04 } <Collide> { Polyset descend }
+egg-object-type-camera-collide-sphere  <Scalar> collide-mask { 0x04 } <Collide> { Sphere descend }
+egg-object-type-camera-barrier  <Scalar> collide-mask { 0x05 } <Collide> { Polyset descend }
+egg-object-type-camera-barrier-sphere  <Scalar> collide-mask { 0x05 } <Collide> { Sphere descend }
+
+# The modelers occasionally put <ObjectType> { model } instead of
+# <Model> { 1 }.  Let's be accommodating.
+egg-object-type-model           <Model> { 1 }
+egg-object-type-dcs             <DCS> { 1 }
+
+# Define a "shadow" object type, so we can render all shadows in their
+# own bin and have them not fight with each other (or with other
+# transparent geometry).
+egg-object-type-shadow          <Scalar> bin { shadow } <Scalar> alpha { blend-no-occlude }
+cull-bin shadow 25 unsorted
+
+# The ID of the server that we are compatible with
+server-version sv1.0.13
+
+

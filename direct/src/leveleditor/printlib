@@ -1,0 +1,5 @@
+#! /bin/sh
+
+grep -l "CMODULE \[$2\]" $1/*.py
+
+
