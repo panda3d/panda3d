@@ -76,6 +76,9 @@ public:
   virtual int get_num_hw_channels();
   virtual HardwareChannel *get_hw_channel(GraphicsWindow *window, int index);
 
+  INLINE GraphicsDevice *get_device() const;
+  virtual PT(GraphicsDevice) make_device(void *scrn = NULL);
+
 protected:
   // The make_window() and make_gsg() interfaces on GraphicsPipe are
   // protected; don't try to call them directly.  Instead, use
@@ -94,8 +97,6 @@ protected:
 
 public:
 
-  virtual PT(GraphicsDevice) make_device(void *scrn = NULL);
-
   static TypeHandle get_class_type() {
     return _type_handle;
   }
@@ -108,7 +109,6 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-  INLINE GraphicsDevice *get_device() const;
 
 private:
   static TypeHandle _type_handle;

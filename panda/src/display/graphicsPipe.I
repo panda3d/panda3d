@@ -55,7 +55,7 @@ supports_fullscreen() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsPipe::get_display_width
-//       Access: Public
+//       Access: Published
 //  Description: Returns the width of the entire display, if it is
 //               known.  This may return 0.  This is not a guarantee
 //               that windows (particularly fullscreen windows) may
@@ -69,7 +69,7 @@ get_display_width() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsPipe::get_display_height
-//       Access: Public
+//       Access: Published
 //  Description: Returns the height of the entire display, if it is
 //               known.  This may return 0.  See the caveats for
 //               get_display_width().
