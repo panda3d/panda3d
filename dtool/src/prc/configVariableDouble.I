@@ -48,6 +48,24 @@ ConfigVariableDouble(const string &name, double default_value,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableDouble::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ConfigVariableDouble::
+ConfigVariableDouble(const string &name, const string &default_value, 
+                     const string &description, int flags) :
+#ifdef PRC_SAVE_DESCRIPTIONS
+  ConfigVariable(name, ConfigVariableCore::VT_double, description, flags)
+#else
+  ConfigVariable(name, ConfigVariableCore::VT_double, string(), flags)
+#endif
+{
+  _core->set_default_value(default_value);
+  _core->set_used();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableDouble::operator =
 //       Access: Published
 //  Description: Reassigns the variable's local value.

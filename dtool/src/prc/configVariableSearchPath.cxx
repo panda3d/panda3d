@@ -26,6 +26,7 @@
 ////////////////////////////////////////////////////////////////////
 const DSearchPath &ConfigVariableSearchPath::
 get_value() const {
+  nassertr(_core != (ConfigVariableCore *)NULL, _value);
   if (_value_stale || _value_seq != _core->get_value_seq()) {
     ((ConfigVariableSearchPath *)this)->reload_search_path();
   }
@@ -40,6 +41,7 @@ get_value() const {
 ////////////////////////////////////////////////////////////////////
 void ConfigVariableSearchPath::
 reload_search_path() {
+  nassertv(_core != (ConfigVariableCore *)NULL);
   _value.clear();
 
   _value.append_path(_prefix);

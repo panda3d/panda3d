@@ -41,6 +41,9 @@ public:
   INLINE ConfigVariableEnum(const string &name, EnumType default_value, 
                             const string &description = string(), 
                             int flags = 0);
+  INLINE ConfigVariableEnum(const string &name, const string &default_value, 
+                            const string &description = string(), 
+                            int flags = 0);
   INLINE ~ConfigVariableEnum();
 
   INLINE void operator = (EnumType value);

@@ -32,6 +32,8 @@ PUBLISHED:
   INLINE ConfigVariableBool(const string &name);
   INLINE ConfigVariableBool(const string &name, bool default_value,
                             const string &description = string(), int flags = 0);
+  INLINE ConfigVariableBool(const string &name, const string &default_value,
+                            const string &description = string(), int flags = 0);
 
   INLINE void operator = (bool value);
   INLINE operator bool () const;

@@ -49,6 +49,7 @@ INLINE ConfigVariableBase::
 ////////////////////////////////////////////////////////////////////
 INLINE const string &ConfigVariableBase::
 get_name() const {
+  nassertr(_core != (ConfigVariableCore *)NULL, *new string());
   return _core->get_name();
 }
 
@@ -61,6 +62,7 @@ get_name() const {
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigVariableBase::ValueType ConfigVariableBase::
 get_value_type() const {
+  nassertr(_core != (ConfigVariableCore *)NULL, VT_undefined);
   return _core->get_value_type();
 }
 
@@ -72,6 +74,7 @@ get_value_type() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const string &ConfigVariableBase::
 get_description() const {
+  nassertr(_core != (ConfigVariableCore *)NULL, *new string());
   return _core->get_description();
 }
 
@@ -86,6 +89,7 @@ get_description() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int ConfigVariableBase::
 get_flags() const {
+  nassertr(_core != (ConfigVariableCore *)NULL, 0);
   return _core->get_flags();
 }
 
@@ -105,6 +109,7 @@ get_flags() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariableBase::
 is_closed() const {
+  nassertr(_core != (ConfigVariableCore *)NULL, false);
   return _core->is_closed();
 }
 
@@ -125,6 +130,7 @@ is_closed() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int ConfigVariableBase::
 get_trust_level() const {
+  nassertr(_core != (ConfigVariableCore *)NULL, 0);
   return _core->get_trust_level();
 }
 
@@ -139,6 +145,7 @@ get_trust_level() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariableBase::
 is_dynamic() const {
+  nassertr(_core != (ConfigVariableCore *)NULL, false);
   return _core->is_dynamic();
 }
 
@@ -154,6 +161,7 @@ is_dynamic() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariableBase::
 clear_local_value() {
+  nassertr(_core != (ConfigVariableCore *)NULL, false);
   return _core->clear_local_value();
 }
 
@@ -166,6 +174,7 @@ clear_local_value() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariableBase::
 has_local_value() const {
+  nassertr(_core != (ConfigVariableCore *)NULL, false);
   return _core->has_local_value();
 }
 
@@ -178,6 +187,7 @@ has_local_value() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariableBase::
 has_value() const {
+  nassertr(_core != (ConfigVariableCore *)NULL, false);
   return _core->has_value();
 }
 
@@ -188,6 +198,7 @@ has_value() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void ConfigVariableBase::
 output(ostream &out) const {
+  nassertv(_core != (ConfigVariableCore *)NULL);
   _core->output(out);
 }
 
@@ -198,6 +209,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void ConfigVariableBase::
 write(ostream &out) const {
+  nassertv(_core != (ConfigVariableCore *)NULL);
   _core->write(out);
 }
 

@@ -33,6 +33,9 @@ PUBLISHED:
   INLINE ConfigVariableDouble(const string &name, double default_value,
                               const string &description = string(), 
                               int flags = 0);
+  INLINE ConfigVariableDouble(const string &name, const string &default_value,
+                              const string &description = string(), 
+                              int flags = 0);
 
   INLINE void operator = (double value);
   INLINE operator double () const;

@@ -69,6 +69,8 @@ operator const DSearchPath & () const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariableSearchPath::
 clear_local_value() {
+  nassertr(_core != (ConfigVariableCore *)NULL, false);
+
   bool any_to_clear = !_prefix.is_empty() || _postfix.is_empty();
   _prefix.clear();
   _postfix.clear();

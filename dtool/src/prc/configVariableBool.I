@@ -44,6 +44,20 @@ ConfigVariableBool(const string &name, bool default_value,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableBool::Constructor
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ConfigVariableBool::
+ConfigVariableBool(const string &name, const string &default_value, 
+                   const string &description, int flags) :
+  ConfigVariable(name, VT_bool, description, flags)
+{
+  _core->set_default_value(default_value);
+  _core->set_used();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableBool::operator =
 //       Access: Published
 //  Description: Reassigns the variable's local value.

@@ -75,6 +75,7 @@ INLINE ConfigVariable::
 ////////////////////////////////////////////////////////////////////
 INLINE const ConfigDeclaration *ConfigVariable::
 get_default_value() const {
+  nassertr(_core != (ConfigVariableCore *)NULL, NULL);
   return _core->get_default_value();
 }
 
@@ -86,6 +87,7 @@ get_default_value() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const string &ConfigVariable::
 get_string_value() const {
+  nassertr(_core != (ConfigVariableCore *)NULL, *new string());
   const ConfigDeclaration *decl = _core->get_declaration(0);
   return decl->get_string_value();
 }
@@ -100,6 +102,7 @@ get_string_value() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void ConfigVariable::
 set_string_value(const string &string_value) {
+  nassertv(_core != (ConfigVariableCore *)NULL);
   _core->make_local_value()->set_string_value(string_value);
 }
 
@@ -112,6 +115,7 @@ set_string_value(const string &string_value) {
 ////////////////////////////////////////////////////////////////////
 INLINE int ConfigVariable::
 get_num_words() const {
+  nassertr(_core != (ConfigVariableCore *)NULL, 0);
   const ConfigDeclaration *decl = _core->get_declaration(0);
   return decl->get_num_words();
 }
@@ -126,6 +130,7 @@ get_num_words() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariable::
 has_string_word(int n) const {
+  nassertr(_core != (ConfigVariableCore *)NULL, false);
   const ConfigDeclaration *decl = _core->get_declaration(0);
   return decl->has_string_word(n);
 }
@@ -138,6 +143,7 @@ has_string_word(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariable::
 has_bool_word(int n) const {
+  nassertr(_core != (ConfigVariableCore *)NULL, false);
   const ConfigDeclaration *decl = _core->get_declaration(0);
   return decl->has_bool_word(n);
 }
@@ -150,6 +156,7 @@ has_bool_word(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariable::
 has_int_word(int n) const {
+  nassertr(_core != (ConfigVariableCore *)NULL, false);
   const ConfigDeclaration *decl = _core->get_declaration(0);
   return decl->has_int_word(n);
 }
@@ -162,6 +169,7 @@ has_int_word(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariable::
 has_double_word(int n) const {
+  nassertr(_core != (ConfigVariableCore *)NULL, false);
   const ConfigDeclaration *decl = _core->get_declaration(0);
   return decl->has_double_word(n);
 }
@@ -175,6 +183,7 @@ has_double_word(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE string ConfigVariable::
 get_string_word(int n) const {
+  nassertr(_core != (ConfigVariableCore *)NULL, string());
   const ConfigDeclaration *decl = _core->get_declaration(0);
   return decl->get_string_word(n);
 }
@@ -188,6 +197,7 @@ get_string_word(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ConfigVariable::
 get_bool_word(int n) const {
+  nassertr(_core != (ConfigVariableCore *)NULL, false);
   const ConfigDeclaration *decl = _core->get_declaration(0);
   return decl->get_bool_word(n);
 }
@@ -201,6 +211,7 @@ get_bool_word(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int ConfigVariable::
 get_int_word(int n) const {
+  nassertr(_core != (ConfigVariableCore *)NULL, 0);
   const ConfigDeclaration *decl = _core->get_declaration(0);
   return decl->get_int_word(n);
 }
@@ -214,6 +225,7 @@ get_int_word(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE double ConfigVariable::
 get_double_word(int n) const {
+  nassertr(_core != (ConfigVariableCore *)NULL, 0.0);
   const ConfigDeclaration *decl = _core->get_declaration(0);
   return decl->get_double_word(n);
 }
@@ -226,6 +238,7 @@ get_double_word(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void ConfigVariable::
 set_string_word(int n, const string &value) {
+  nassertv(_core != (ConfigVariableCore *)NULL);
   _core->make_local_value()->set_string_word(n, value);
 }
 
@@ -237,6 +250,7 @@ set_string_word(int n, const string &value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void ConfigVariable::
 set_bool_word(int n, bool value) {
+  nassertv(_core != (ConfigVariableCore *)NULL);
   _core->make_local_value()->set_bool_word(n, value);
 }
 
@@ -248,6 +262,7 @@ set_bool_word(int n, bool value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void ConfigVariable::
 set_int_word(int n, int value) {
+  nassertv(_core != (ConfigVariableCore *)NULL);
   _core->make_local_value()->set_int_word(n, value);
 }
 
@@ -259,5 +274,6 @@ set_int_word(int n, int value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void ConfigVariable::
 set_double_word(int n, double value) {
+  nassertv(_core != (ConfigVariableCore *)NULL);
   _core->make_local_value()->set_double_word(n, value);
 }

@@ -33,6 +33,9 @@ PUBLISHED:
   INLINE ConfigVariableInt(const string &name, int default_value,
                            const string &description = string(), 
                            int flags = 0);
+  INLINE ConfigVariableInt(const string &name, const string &default_value,
+                           const string &description = string(), 
+                           int flags = 0);
 
   INLINE void operator = (int value);
   INLINE operator int () const;

@@ -56,6 +56,7 @@ ConfigVariableList(const string &name,
 ////////////////////////////////////////////////////////////////////
 INLINE int ConfigVariableList::
 get_num_values() const {
+  nassertr(_core != (ConfigVariableCore *)NULL, 0);
   return _core->get_num_trusted_references();
 }
 
@@ -66,6 +67,7 @@ get_num_values() const {
 ////////////////////////////////////////////////////////////////////
 INLINE string ConfigVariableList::
 get_string_value(int n) const {
+  nassertr(_core != (ConfigVariableCore *)NULL, string());
   const ConfigDeclaration *decl = _core->get_trusted_reference(n);
   if (decl != (ConfigDeclaration *)NULL) {
     return decl->get_string_value();
@@ -80,6 +82,7 @@ get_string_value(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int ConfigVariableList::
 get_num_unique_values() const {
+  nassertr(_core != (ConfigVariableCore *)NULL, 0);
   return _core->get_num_unique_references();
 }
 
@@ -90,6 +93,7 @@ get_num_unique_values() const {
 ////////////////////////////////////////////////////////////////////
 INLINE string ConfigVariableList::
 get_unique_value(int n) const {
+  nassertr(_core != (ConfigVariableCore *)NULL, string());
   const ConfigDeclaration *decl = _core->get_unique_reference(n);
   if (decl != (ConfigDeclaration *)NULL) {
     return decl->get_string_value();
