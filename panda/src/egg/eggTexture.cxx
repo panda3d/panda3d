@@ -349,8 +349,38 @@ sorts_less_than(const EggTexture &other, int eq) const {
 ////////////////////////////////////////////////////////////////////
 bool EggTexture::
 has_alpha_channel(int num_components) const {
-  return (num_components == 2 || num_components == 4 ||
-      (num_components == 1 && _format == F_alpha));
+  switch (_format) {
+  case F_red:
+  case F_green:
+  case F_blue:
+  case F_luminance:
+  case F_rgb:
+  case F_rgb12:
+  case F_rgb8:
+  case F_rgb5:
+  case F_rgb332:
+    // These formats never use alpha, regardless of the number of
+    // components we have.
+    return false;
+
+  case F_alpha:
+    // This format always uses alpha.
+    return true;
+
+  case F_luminance_alpha:
+  case F_luminance_alphamask:
+  case F_rgba:
+  case F_rgbm:
+  case F_rgba12:
+  case F_rgba8:
+  case F_rgba4:
+  case F_rgba5:
+  case F_unspecified:
+    // These formats use alpha if the image had alpha.
+    return (num_components == 2 || num_components == 4);
+  }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
