@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <notify.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderVertexTempl::Constructor
@@ -285,15 +284,9 @@ clear_pixel_size() {
 //               texcoords, etc.
 ////////////////////////////////////////////////////////////////////
 template <class VT, class NT, class TT, class CT>
-bool BuilderVertexTempl<VT, NT, TT, CT>::
+INLINE bool BuilderVertexTempl<VT, NT, TT, CT>::
 operator == (const BuilderVertexTempl<VT, NT, TT, CT> &other) const {
-  if (has_coord() && !(_coord == other._coord))
-    return false;
-
-  if (has_texcoord() && !(_texcoord == other._texcoord))
-    return false;
-
-  return BuilderAttribTempl<VT, NT, TT, CT>::operator == (other);
+  return compare_to(other) == 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -321,15 +314,36 @@ operator != (const BuilderVertexTempl<VT, NT, TT, CT> &other) const {
 //               etc.
 ////////////////////////////////////////////////////////////////////
 template <class VT, class NT, class TT, class CT>
-bool BuilderVertexTempl<VT, NT, TT, CT>::
+INLINE bool BuilderVertexTempl<VT, NT, TT, CT>::
 operator < (const BuilderVertexTempl<VT, NT, TT, CT> &other) const {
-  if (has_coord() && !(_coord == other._coord))
-    return _coord < other._coord;
+  return compare_to(other) < 0;
+}
 
-  if (has_texcoord() && !(_texcoord == other._texcoord))
-    return _texcoord < other._texcoord;
+////////////////////////////////////////////////////////////////////
+//     Function: BuilderVertexTempl::compare_to
+//       Access: Public
+//  Description: Returns a number less than zero if this vertex sorts
+//               before the indicated vertex, greater than zero if it
+//               sorts after, and zero if the vertices are equivalent.
+////////////////////////////////////////////////////////////////////
+template <class VT, class NT, class TT, class CT>
+int BuilderVertexTempl<VT, NT, TT, CT>::
+compare_to(const BuilderVertexTempl<VT, NT, TT, CT> &other) const {
+  if (has_coord()) {
+    int coord_compare = builder_compare(_coord, other._coord);
+    if (coord_compare != 0) {
+      return coord_compare;
+    }
+  }
 
-  return BuilderAttribTempl<VT, NT, TT, CT>::operator < (other);
+  if (has_texcoord()) {
+    int texcoord_compare = builder_compare(_texcoord, other._texcoord);
+    if (texcoord_compare != 0) {
+      return texcoord_compare;
+    }
+  }
+
+  return BuilderAttribTempl<VT, NT, TT, CT>::compare_to(other);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -345,7 +359,6 @@ output(ostream &out) const {
       out << get_coord();
     }
 
-    /*
     if (has_normal()) {
       out << " normal " << get_normal();
     }
@@ -361,7 +374,6 @@ output(ostream &out) const {
     if (has_pixel_size()) {
       out << " pixel_size " << get_pixel_size();
     }
-    */
   }
   return out;
 }

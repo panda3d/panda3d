@@ -10,7 +10,9 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx  $[TARGET]_composite2.cxx
 
   #define SOURCES \
-     builder.I builder.h builderAttrib.I builderAttrib.h  \
+     builder.I builder.h \
+     builder_compare.I builder_compare.h \
+     builderAttrib.I builderAttrib.h  \
      builderAttribTempl.I builderAttribTempl.h builderBucket.I  \
      builderBucket.h builderBucketNode.I builderBucketNode.h  \
      builderFuncs.I builderFuncs.h builderMisc.h  \
@@ -31,7 +33,9 @@
      config_builder.cxx mesher.cxx 
 
   #define INSTALL_HEADERS \
-    builder.I builder.h builderAttrib.I builderAttrib.h \
+    builder.I builder.h \
+    builder_compare.I builder_compare.h \
+    builderAttrib.I builderAttrib.h \
     builderAttribTempl.I builderAttribTempl.h builderBucket.I \
     builderBucket.h builderBucketNode.I builderBucketNode.h \
     builderNormalVisualizer.I builderNormalVisualizer.h \

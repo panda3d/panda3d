@@ -19,13 +19,14 @@
 #ifndef BUILDERVERTEXTEMPL_H
 #define BUILDERVERTEXTEMPL_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "builderTypes.h"
 #include "builderAttribTempl.h"
+#include "builder_compare.h"
 
+#include "notify.h"
 #include "pvector.h"
-
 
 /////////////////////////////////////////////////////////////////////
 //       Class : BuilderVertexTempl
@@ -68,9 +69,10 @@ public:
   INLINE BuilderVertexTempl &set_pixel_size(float s);
   INLINE BuilderVertexTempl &clear_pixel_size();
 
-  bool operator == (const BuilderVertexTempl &other) const;
+  INLINE bool operator == (const BuilderVertexTempl &other) const;
   INLINE bool operator != (const BuilderVertexTempl &other) const;
-  bool operator < (const BuilderVertexTempl &other) const;
+  INLINE bool operator < (const BuilderVertexTempl &other) const;
+  int compare_to(const BuilderVertexTempl &other) const;
 
   ostream &output(ostream &out) const;
 

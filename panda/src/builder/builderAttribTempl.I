@@ -242,13 +242,7 @@ clear_pixel_size() {
 template <class VT, class NT, class TT, class CT>
 INLINE bool BuilderAttribTempl<VT, NT, TT, CT>::
 operator == (const BuilderAttribTempl<VT, NT, TT, CT> &other) const {
-  if (has_normal() && !(_normal == other._normal))
-    return false;
-
-  if (has_color() && !(_color == other._color))
-    return false;
-
-  return true;
+  return compare_to(other) == 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -278,13 +272,34 @@ operator != (const BuilderAttribTempl<VT, NT, TT, CT> &other) const {
 template <class VT, class NT, class TT, class CT>
 INLINE bool BuilderAttribTempl<VT, NT, TT, CT>::
 operator < (const BuilderAttribTempl<VT, NT, TT, CT> &other) const {
-  if (has_normal() && !(_normal == other._normal))
-    return _normal < other._normal;
+  return compare_to(other) < 0;
+}
 
-  if (has_color() && !(_color == other._color))
-    return _color < other._color;
+////////////////////////////////////////////////////////////////////
+//     Function: BuilderAttribTempl::compare_to
+//       Access: Public
+//  Description: Returns a number less than zero if this object sorts
+//               before the indicated object, greater than zero if it
+//               sorts after, and zero if the objects are equivalent.
+////////////////////////////////////////////////////////////////////
+template <class VT, class NT, class TT, class CT>
+int BuilderAttribTempl<VT, NT, TT, CT>::
+compare_to(const BuilderAttribTempl<VT, NT, TT, CT> &other) const {
+  if (has_normal()) {
+    int normal_compare = builder_compare(_normal, other._normal);
+    if (normal_compare != 0) {
+      return normal_compare;
+    }
+  }
 
-  return false;
+  if (has_color()) {
+    int color_compare = builder_compare(_color, other._color);
+    if (color_compare != 0) {
+      return color_compare;
+    }
+  }
+
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -293,7 +308,7 @@ operator < (const BuilderAttribTempl<VT, NT, TT, CT> &other) const {
 //  Description: Formats the attribs for output in some sensible way.
 ////////////////////////////////////////////////////////////////////
 template <class VT, class NT, class TT, class CT>
-INLINE ostream &BuilderAttribTempl<VT, NT, TT, CT>::
+ostream &BuilderAttribTempl<VT, NT, TT, CT>::
 output(ostream &out) const {
   if (this!=NULL) {
     if (has_normal()) {

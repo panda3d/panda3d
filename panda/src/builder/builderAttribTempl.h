@@ -65,8 +65,9 @@ public:
   INLINE bool operator == (const BuilderAttribTempl &other) const;
   INLINE bool operator != (const BuilderAttribTempl &other) const;
   INLINE bool operator < (const BuilderAttribTempl &other) const;
+  int compare_to(const BuilderAttribTempl &other) const;
 
-  INLINE ostream &output(ostream &out) const;
+  ostream &output(ostream &out) const;
 
 protected:
   NType _normal;
