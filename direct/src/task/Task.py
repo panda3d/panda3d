@@ -87,12 +87,10 @@ class Task:
             # If the wakeTimes happen to be the same, just
             # sort them based on id
             else:
-                return cmp(self.id, other.id)
-        # Not sure what to do here, I guess we should just make sure it is
-        # not equal since it cannot be. Should it be less than or greater
-        # than? Not sure anybody will care.
+                return cmp(id(self), id(other))
+        # This is important for people doing a (task != None) and such.
         else:
-            return -1
+            return cmp(id(self), id(other))
 
     # According to the Python manual (3.3.1), if you define a cmp operator
     # you should also define a hash operator or your objects will not be
