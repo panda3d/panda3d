@@ -23,8 +23,8 @@
 
 #include "config_text.h"
 #include "textFont.h"
+#include "unicodeLatinMap.h"
 #include "pandaNode.h"
-
 #include "luse.h"
 
 class StringDecoder;
@@ -88,6 +88,11 @@ PUBLISHED:
   INLINE bool get_expand_amp() const;
 
   INLINE float get_line_height() const;
+
+  INLINE void set_small_caps(bool small_caps);
+  INLINE bool get_small_caps() const;
+  INLINE void set_small_caps_scale(float small_caps_scale);
+  INLINE float get_small_caps_scale() const;
 
   INLINE void set_slant(float slant);
   INLINE float get_slant() const;
@@ -182,6 +187,7 @@ PUBLISHED:
   INLINE void append_char(int character);
   INLINE int get_num_chars() const;
   INLINE int get_char(int index) const;
+  INLINE string get_text_as_ascii() const;
 
   INLINE float calc_width(int character) const;
   INLINE float calc_width(const string &line) const;
@@ -213,6 +219,7 @@ public:
   INLINE void set_wtext(const wstring &wtext);
   INLINE const wstring &get_wtext() const;
   INLINE void append_wtext(const wstring &text);
+  wstring get_wtext_as_ascii() const;
 
   INLINE float calc_width(const wstring &line) const;
   INLINE wstring wordwrap_to(const wstring &wtext, float wordwrap_width,
@@ -262,6 +269,42 @@ private:
                     LVector2f &ul, LVector2f &lr, int &num_rows);
 #endif  // CPPPARSER
 
+  enum CheesyPlacement {
+    CP_above,
+    CP_below,
+    CP_top,
+    CP_bottom,
+    CP_within,
+  };
+  enum CheesyTransform {
+    CT_none,
+    CT_mirror_x,
+    CT_mirror_y,
+    CT_rotate_90,
+    CT_tiny,
+    CT_tiny_mirror_x,
+    CT_tiny_rotate_90,
+  };
+
+  void get_character_glyphs(int character, TextFont *font,
+                            bool &got_glyph, const TextGlyph *&glyph,
+                            const TextGlyph *&second_glyph,
+                            UnicodeLatinMap::AccentType &accent_type,
+                            int &additional_flags,
+                            float &glyph_scale, float &advance_scale);
+
+  void tack_on_accent(UnicodeLatinMap::AccentType accent_type,
+                      const LPoint3f &min_vert, const LPoint3f &max_vert,
+                      const LPoint3f &centroid,
+                      TextFont *font, GeomNode *dest, 
+                      Geom *geom_array[], int &num_geoms);
+  void tack_on_accent(char accent_mark, CheesyPlacement placement,
+                      CheesyTransform transform,
+                      const LPoint3f &min_vert, const LPoint3f &max_vert,
+                      const LPoint3f &centroid,
+                      TextFont *font, GeomNode *dest, 
+                      Geom *geom_array[], int &num_geoms);
+
   PT(PandaNode) make_frame();
   PT(PandaNode) make_card();
   PT(PandaNode) make_card_with_border();
@@ -281,22 +324,23 @@ private:
   Colorf _card_color;
 
   enum Flags {
-    F_has_text_color   =  0x0001,
-    F_has_wordwrap     =  0x0002,
-    F_has_frame        =  0x0004,
-    F_frame_as_margin  =  0x0008,
-    F_has_card         =  0x0010,
-    F_card_as_margin   =  0x0020,
-    F_has_card_texture =  0x0040,
-    F_has_shadow       =  0x0080,
-    F_frame_corners    =  0x0100,
-    F_card_transp      =  0x0200,
-    F_has_card_border  =  0x0400,
-    F_expand_amp       =  0x0800,
-    F_got_text         =  0x1000,
-    F_got_wtext        =  0x2000,
-    F_needs_rebuild    =  0x4000,
-    F_needs_measure    =  0x8000,
+    F_has_text_color   =  0x00000001,
+    F_has_wordwrap     =  0x00000002,
+    F_has_frame        =  0x00000004,
+    F_frame_as_margin  =  0x00000008,
+    F_has_card         =  0x00000010,
+    F_card_as_margin   =  0x00000020,
+    F_has_card_texture =  0x00000040,
+    F_has_shadow       =  0x00000080,
+    F_frame_corners    =  0x00000100,
+    F_card_transp      =  0x00000200,
+    F_has_card_border  =  0x00000400,
+    F_expand_amp       =  0x00000800,
+    F_got_text         =  0x00001000,
+    F_got_wtext        =  0x00002000,
+    F_needs_rebuild    =  0x00004000,
+    F_needs_measure    =  0x00008000,
+    F_small_caps       =  0x00010000,
   };
 
   int _flags;
@@ -305,6 +349,7 @@ private:
   float _frame_width;
   float _card_border_size;
   float _card_border_uv_portion;
+  float _small_caps_scale;
 
   LVector2f _frame_ul, _frame_lr;
   LVector2f _card_ul, _card_lr;

@@ -162,9 +162,7 @@ write(ostream &out, int indent_level) const {
 //               printable glyph.
 ////////////////////////////////////////////////////////////////////
 bool StaticTextFont::
-get_glyph(int character, const TextGlyph *&glyph, float &glyph_scale) {
-  glyph_scale = 1.0f;
-
+get_glyph(int character, const TextGlyph *&glyph) {
   Glyphs::const_iterator gi = _glyphs.find(character);
   if (gi == _glyphs.end()) {
     // No definition for this character.

@@ -57,11 +57,6 @@ PUBLISHED:
   INLINE bool set_scale_factor(float scale_factor);
   INLINE float get_scale_factor() const;
 
-  INLINE void set_small_caps(bool small_caps);
-  INLINE bool get_small_caps() const;
-  INLINE void set_small_caps_scale(float small_caps_scale);
-  INLINE float get_small_caps_scale() const;
-
   INLINE void set_texture_margin(int texture_margin);
   INLINE int get_texture_margin() const;
   INLINE void set_poly_margin(float poly_margin);
@@ -91,8 +86,7 @@ PUBLISHED:
   virtual void write(ostream &out, int indent_level) const;
 
 public:
-  virtual bool get_glyph(int character, const TextGlyph *&glyph,
-                         float &glyph_scale);
+  virtual bool get_glyph(int character, const TextGlyph *&glyph);
 
 private:
   void initialize();
@@ -110,8 +104,6 @@ private:
   float _tex_pixels_per_unit;
   float _scale_factor;
   float _font_pixels_per_unit;
-  bool _small_caps;
-  float _small_caps_scale;
   int _texture_margin;
   float _poly_margin;
   int _page_x_size, _page_y_size;

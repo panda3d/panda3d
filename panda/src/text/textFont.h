@@ -65,8 +65,7 @@ public:
   wstring wordwrap_to(const wstring &text, float wordwrap_width,
                      bool preserve_trailing_whitespace);
 
-  virtual bool get_glyph(int character, const TextGlyph *&glyph,
-                         float &glyph_scale)=0;
+  virtual bool get_glyph(int character, const TextGlyph *&glyph)=0;
 
 protected:
   bool _is_valid;

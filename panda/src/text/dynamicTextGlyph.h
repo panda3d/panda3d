@@ -45,7 +45,6 @@ private:
 
 public:
   virtual ~DynamicTextGlyph();
-  virtual PT(Geom) get_geom() const;
 
   INLINE bool intersects(int x, int y, int x_size, int y_size) const;
   unsigned char *get_row(int y);

@@ -23,6 +23,7 @@
 #include "dynamicTextFont.h"
 #include "dynamicTextPage.h"
 #include "geomTextGlyph.h"
+#include "unicodeLatinMap.h"
 
 #include "dconfig.h"
 

@@ -23,6 +23,7 @@
 #include "fontPool.h"
 #include "default_font.h"
 #include "dynamicTextFont.h"
+#include "unicodeLatinMap.h"
 
 #include "compose_matrix.h"
 #include "geom.h"
@@ -54,6 +55,13 @@ PT(TextFont) TextNode::_default_font;
 bool TextNode::_loaded_default_font = false;
 TextNode::Encoding TextNode::_default_encoding;
 
+// This is the factor by which CP_tiny scales the character down.
+static const float tiny_accent_scale = 0.3f;
+
+// This is the factor by which the advance is reduced for the first
+// character of a two-character ligature.
+static const float ligature_advance_scale = 0.6f;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::Constructor
 //       Access: Published
@@ -70,6 +78,11 @@ TextNode(const string &name) : PandaNode(name) {
   _flags = (F_got_text | F_got_wtext);
   _align = A_left;
   _wordwrap_width = 1.0f;
+
+  if (text_small_caps) {
+    _flags |= F_small_caps;
+  }
+  _small_caps_scale = text_small_caps_scale;
 
   _text_color.set(1.0f, 1.0f, 1.0f, 1.0f);
   _frame_color.set(1.0f, 1.0f, 1.0f, 1.0f);
@@ -395,6 +408,49 @@ generate() {
   }
 
   return root;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::get_wtext_as_ascii
+//       Access: Published
+//  Description: Returns the text associated with the node, converted
+//               as nearly as possible to a fully-ASCII
+//               representation.  This means replacing accented
+//               letters with their unaccented ASCII equivalents.
+//
+//               It is possible that some characters in the string
+//               cannot be converted to ASCII.  (The string may
+//               involve symbols like the copyright symbol, for
+//               instance, or it might involve letters in some other
+//               alphabet such as Greek or Cyrillic, or even Latin
+//               letters like thorn or eth that are not part of the
+//               ASCII character set.)  In this case, as much of the
+//               string as possible will be converted to ASCII, and
+//               the nonconvertible characters will remain in their
+//               original form.
+////////////////////////////////////////////////////////////////////
+wstring TextNode::
+get_wtext_as_ascii() const {
+  get_wtext();
+  wstring result;
+  wstring::const_iterator si;
+  for (si = _wtext.begin(); si != _wtext.end(); ++si) {
+    wchar_t character = (*si);
+
+    const UnicodeLatinMap::Entry *map_entry = 
+      UnicodeLatinMap::look_up(character);
+    if (map_entry != NULL && map_entry->_ascii_equiv != 0) {
+      result += (wchar_t)map_entry->_ascii_equiv;
+      if (map_entry->_ascii_additional != 0) {
+        result += (wchar_t)map_entry->_ascii_additional;
+      }
+
+    } else {
+      result += character;
+    }
+  }
+
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -870,7 +926,8 @@ do_measure() {
   _ul3d = _ul3d * _transform;
   _lr3d = _lr3d * _transform;
 }
-
+  
+  
 #ifndef CPPPARSER  // interrogate has a bit of trouble with wstring.
 
 ////////////////////////////////////////////////////////////////////
@@ -895,10 +952,18 @@ assemble_row(wstring::iterator &si, const wstring::iterator &send,
 
     } else {
       // A printable character.
-
+      bool got_glyph;
       const TextGlyph *glyph;
+      const TextGlyph *second_glyph;
+      UnicodeLatinMap::AccentType accent_type;
+      int additional_flags;
       float glyph_scale;
-      if (!font->get_glyph(character, glyph, glyph_scale)) {
+      float advance_scale;
+      get_character_glyphs(character, font, 
+                           got_glyph, glyph, second_glyph, accent_type,
+                           additional_flags, glyph_scale, advance_scale);
+
+      if (!got_glyph) {
         text_cat.warning()
           << "No definition in " << font->get_name() 
           << " for character " << character;
@@ -910,35 +975,87 @@ assemble_row(wstring::iterator &si, const wstring::iterator &send,
           << "\n";
       }
 
+      // Build up a temporary array of the Geoms that go into this
+      // character.  Normally, there is only one Geom per character,
+      // but it may involve multiple Geoms if we need to add cheesy
+      // accents or ligatures.
+      static const int max_geoms = 10;
+      Geom *geom_array[max_geoms];
+      int num_geoms = 0;
+      int gi;
+
+      float advance = 0.0f;
+
       if (glyph != (TextGlyph *)NULL) {
         PT(Geom) char_geom = glyph->get_geom();
-        const RenderState *state = glyph->get_state();
-
         if (char_geom != (Geom *)NULL) {
-          LMatrix4f mat2 = LMatrix4f::scale_mat(glyph_scale);
-          mat2.set_row(3, LVector3f(xpos, 0.0f, 0.0f));
-          LMatrix4f xform = mat2 * mat;
+          dest->add_geom(char_geom, glyph->get_state());
+          geom_array[num_geoms++] = char_geom;
+        }
+        advance = glyph->get_advance() * advance_scale;
+      }
+      if (second_glyph != (TextGlyph *)NULL) {
+        PT(Geom) second_char_geom = second_glyph->get_geom();
+        if (second_char_geom != (Geom *)NULL) {
+          second_char_geom->transform_vertices(LMatrix4f::translate_mat(advance, 0.0f, 0.0f));
+          dest->add_geom(second_char_geom, second_glyph->get_state());
+          geom_array[num_geoms++] = second_char_geom;
+        }
+        advance += second_glyph->get_advance();
+      }
 
-          // Transform the vertices of the geom appropriately.  We
-          // assume the geom is non-indexed.
-          PTA_Vertexf coords;
-          PTA_ushort index;
-          char_geom->get_coords(coords, index);
-          PTA_Vertexf new_coords;
-          new_coords.reserve(coords.size());
-          PTA_Vertexf::const_iterator vi;
-          for (vi = coords.begin(); vi != coords.end(); ++vi) {
-            new_coords.push_back((*vi) * xform);
-          }
-          nassertr(new_coords.size() == coords.size(), false);
-          char_geom->set_coords(new_coords);
+      // Now compute the matrix that will transform the glyph (or
+      // glyphs) into position.
+      LMatrix4f glyph_xform = LMatrix4f::scale_mat(glyph_scale);
 
-          // Now add the geom to the destination node.
-          dest->add_geom(char_geom, state);
+      if (accent_type != UnicodeLatinMap::AT_none || additional_flags != 0) {
+        // If we have some special handling to perform, do so now.
+        // This will probably require the bounding volume of the
+        // glyph, so go get that.
+        LPoint3f min_vert, max_vert;
+        bool found_any = false;
+        for (gi = 0; gi < num_geoms; gi++) {
+          geom_array[gi]->calc_tight_bounds(min_vert, max_vert, found_any);
         }
 
-        xpos += glyph->get_advance() * glyph_scale;
+        if (found_any) {
+          LPoint3f centroid = (min_vert + max_vert) / 2.0f;
+          tack_on_accent(accent_type, min_vert, max_vert, centroid, 
+                         font, dest, geom_array, num_geoms);
+    
+          if ((additional_flags & UnicodeLatinMap::AF_turned) != 0) {
+            // Invert the character.  Should we also invert the accent
+            // mark, so that an accent that would have been above the
+            // glyph will now be below it?  That's what we do here,
+            // which is probably the right thing to do for n-tilde,
+            // but not for most of the rest of the accent marks.  For
+            // now we'll assume there are no characters with accent
+            // marks that also have the turned flag.
+
+            // We rotate the character around its centroid, which may
+            // not always be the right point, but it's the best we've
+            // got and it's probably pretty close.
+            LMatrix4f rotate =
+              LMatrix4f::translate_mat(-centroid) *
+              LMatrix4f::rotate_mat_normaxis(180.0f, LVecBase3f(0.0f, 1.0f, 0.0f)) *
+              LMatrix4f::translate_mat(centroid);
+            glyph_xform *= rotate;
+          }
+        }
       }
+
+      glyph_xform(3, 0) += xpos;
+      LMatrix4f net_xform = glyph_xform * mat;
+
+      // Finally, transform all the Geoms for this character into
+      // place.  Again, normally there is only one Geom per character;
+      // there will only be multiple Geoms if we have added accents or
+      // ligatures.
+      for (gi = 0; gi < num_geoms; gi++) {
+        geom_array[gi]->transform_vertices(net_xform);
+      }
+      
+      xpos += advance * glyph_scale;
     }
     ++si;
   }
@@ -1035,13 +1152,27 @@ measure_row(wstring::iterator &si, const wstring::iterator &send,
 
     } else {
       // A printable character.
-
+      bool got_glyph;
       const TextGlyph *glyph;
+      const TextGlyph *second_glyph;
+      UnicodeLatinMap::AccentType accent_type;
+      int additional_flags;
       float glyph_scale;
-      font->get_glyph(character, glyph, glyph_scale);
+      float advance_scale;
+      get_character_glyphs(character, font, 
+                           got_glyph, glyph, second_glyph, accent_type,
+                           additional_flags, glyph_scale, advance_scale);
+
+      float advance = 0.0f;
+
       if (glyph != (TextGlyph *)NULL) {
-        xpos += glyph->get_advance() * glyph_scale;
+        advance = glyph->get_advance() * advance_scale;
       }
+      if (second_glyph != (TextGlyph *)NULL) {
+        advance += second_glyph->get_advance();
+      }
+
+      xpos += advance * glyph_scale;
     }
     ++si;
   }
@@ -1091,6 +1222,356 @@ measure_text(wstring::iterator si, const wstring::iterator &send,
   lr[1] = posy + 0.8f * line_height;
 }
 #endif  // CPPPARSER
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::get_character_glyphs
+//       Access: Private
+//  Description: Looks up the glyph(s) from the font for the
+//               appropriate character.  If the desired glyph isn't
+//               available (especially in the case of an accented
+//               letter), tries to find a suitable replacement.
+//               Normally, only one glyph is returned per character,
+//               but in the case we have to simulate a missing
+//               ligature in the font, two glyphs might be returned.
+//
+//               All parameters except the first two are output
+//               parameters.  got_glyph is set true if the glyph (or
+//               an acceptable substitute) is successfully found,
+//               false otherwise; but even if it is false, glyph might
+//               still be non-NULL, indicating a stand-in glyph for a
+//               missing character.
+////////////////////////////////////////////////////////////////////
+void TextNode::
+get_character_glyphs(int character, TextFont *font,
+                     bool &got_glyph, const TextGlyph *&glyph,
+                     const TextGlyph *&second_glyph,
+                     UnicodeLatinMap::AccentType &accent_type,
+                     int &additional_flags,
+                     float &glyph_scale, float &advance_scale) {
+  got_glyph = false;
+  glyph = NULL;
+  second_glyph = NULL;
+  accent_type = UnicodeLatinMap::AT_none;
+  additional_flags = 0;
+  glyph_scale = 1.0f;
+  advance_scale = 1.0f;
+
+  // Maybe we should remap the character to something else--e.g. a
+  // small capital.
+  const UnicodeLatinMap::Entry *map_entry = 
+    UnicodeLatinMap::look_up(character);
+  if (map_entry != NULL) {
+    if (get_small_caps() && map_entry->_toupper_character != character) {
+      character = map_entry->_toupper_character;
+      map_entry = UnicodeLatinMap::look_up(character);
+      glyph_scale = get_small_caps_scale();
+    }
+  }
+  
+  got_glyph = font->get_glyph(character, glyph);
+  if (!got_glyph && map_entry != NULL && map_entry->_ascii_equiv != 0) {
+    // If we couldn't find the Unicode glyph, try the ASCII
+    // equivalent (without the accent marks).
+    got_glyph = font->get_glyph(map_entry->_ascii_equiv, glyph);
+    
+    if (!got_glyph && map_entry->_toupper_character != character) {
+      // If we still couldn't find it, try the uppercase
+      // equivalent.
+      character = map_entry->_toupper_character;
+      map_entry = UnicodeLatinMap::look_up(character);
+      if (map_entry != NULL) {
+        got_glyph = font->get_glyph(map_entry->_ascii_equiv, glyph);
+      }
+    }
+    
+    if (got_glyph) {
+      accent_type = map_entry->_accent_type;
+      additional_flags = map_entry->_additional_flags;
+      
+      bool got_second_glyph = false;
+      if (map_entry->_ascii_additional != 0) {
+        // There's another character, too--probably a ligature.
+        got_second_glyph = 
+          font->get_glyph(map_entry->_ascii_additional, second_glyph);
+      }
+      
+      if ((additional_flags & UnicodeLatinMap::AF_ligature) != 0 &&
+          got_second_glyph) {
+        // If we have two letters that are supposed to be in a
+        // ligature, just jam them together.
+        additional_flags &= ~UnicodeLatinMap::AF_ligature;
+        advance_scale = ligature_advance_scale;
+      }
+      
+      if ((additional_flags & UnicodeLatinMap::AF_smallcap) != 0) {
+        additional_flags &= ~UnicodeLatinMap::AF_smallcap;
+        glyph_scale = get_small_caps_scale();
+      }
+    }
+  }
+}
+  
+  
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::tack_on_accent
+//       Access: Private
+//  Description: This is a cheesy attempt to tack on an accent to an
+//               ASCII letter for which we don't have the appropriate
+//               already-accented glyph in the font.
+////////////////////////////////////////////////////////////////////
+void TextNode::
+tack_on_accent(UnicodeLatinMap::AccentType accent_type,
+               const LPoint3f &min_vert, const LPoint3f &max_vert,
+               const LPoint3f &centroid,
+               TextFont *font, GeomNode *dest, 
+               Geom *geom_array[], int &num_geoms) {
+  switch (accent_type) {
+  case UnicodeLatinMap::AT_grave:
+    // We use the slash as the grave and acute accents.  ASCII does
+    // have a grave accent character, but a lot of fonts put the
+    // reverse apostrophe there instead.  And some fonts (particularly
+    // fonts from mf) don't even do backslash.
+    tack_on_accent('/', CP_above, CT_tiny_mirror_x, min_vert, max_vert, centroid,
+                   font, dest, geom_array, num_geoms);
+    break;
+
+  case UnicodeLatinMap::AT_acute:
+    tack_on_accent('/', CP_above, CT_tiny, min_vert, max_vert, centroid,
+                   font, dest, geom_array, num_geoms);
+    break;
+
+  case UnicodeLatinMap::AT_breve:
+    tack_on_accent(')', CP_above, CT_tiny_rotate_90, min_vert, max_vert, centroid,
+                   font, dest, geom_array, num_geoms);
+    break;
+
+  case UnicodeLatinMap::AT_inverted_breve:
+    tack_on_accent('(', CP_above, CT_tiny_rotate_90, min_vert, max_vert, centroid,
+                   font, dest, geom_array, num_geoms);
+    break;
+
+  case UnicodeLatinMap::AT_circumflex:
+    tack_on_accent('^', CP_above, CT_none, min_vert, max_vert, centroid,
+                   font, dest, geom_array, num_geoms);
+    break;
+
+  case UnicodeLatinMap::AT_circumflex_below:
+    tack_on_accent('^', CP_below, CT_none, min_vert, max_vert, centroid,
+                   font, dest, geom_array, num_geoms);
+    break;
+
+  case UnicodeLatinMap::AT_caron:
+    tack_on_accent('^', CP_above, CT_mirror_y, min_vert, max_vert, centroid,
+                   font, dest, geom_array, num_geoms);
+    break;
+
+  case UnicodeLatinMap::AT_tilde:
+    tack_on_accent('~', CP_above, CT_none, min_vert, max_vert, centroid,
+                   font, dest, geom_array, num_geoms);
+    break;
+
+  case UnicodeLatinMap::AT_tilde_below:
+    tack_on_accent('~', CP_below, CT_none, min_vert, max_vert, centroid,
+                   font, dest, geom_array, num_geoms);
+    break;
+
+  case UnicodeLatinMap::AT_diaeresis:
+    tack_on_accent(':', CP_above, CT_rotate_90, min_vert, max_vert, centroid,
+                   font, dest, geom_array, num_geoms);
+    break;
+
+  case UnicodeLatinMap::AT_diaeresis_below:
+    tack_on_accent(':', CP_below, CT_rotate_90, min_vert, max_vert, centroid,
+                   font, dest, geom_array, num_geoms);
+    break;
+
+  case UnicodeLatinMap::AT_dot_above:
+    tack_on_accent('.', CP_above, CT_none, min_vert, max_vert, centroid,
+                   font, dest, geom_array, num_geoms);
+    break;
+
+  case UnicodeLatinMap::AT_dot_below:
+    tack_on_accent('.', CP_below, CT_none, min_vert, max_vert, centroid,
+                   font, dest, geom_array, num_geoms);
+    break;
+
+  case UnicodeLatinMap::AT_macron:
+    tack_on_accent('-', CP_above, CT_none, min_vert, max_vert, centroid,
+                   font, dest, geom_array, num_geoms);
+    break;
+
+  case UnicodeLatinMap::AT_line_below:
+    tack_on_accent('-', CP_below, CT_none, min_vert, max_vert, centroid,
+                   font, dest, geom_array, num_geoms);
+    break;
+
+  case UnicodeLatinMap::AT_ring_above:
+    tack_on_accent('o', CP_top, CT_tiny, min_vert, max_vert, centroid,
+                   font, dest, geom_array, num_geoms);
+    break;
+
+  case UnicodeLatinMap::AT_ring_below:
+    tack_on_accent('o', CP_bottom, CT_tiny, min_vert, max_vert, centroid,
+                   font, dest, geom_array, num_geoms);
+    break;
+
+  case UnicodeLatinMap::AT_cedilla:
+    tack_on_accent(',', CP_bottom, CT_none, min_vert, max_vert, centroid,
+                   font, dest, geom_array, num_geoms);
+    break;
+
+  case UnicodeLatinMap::AT_comma_below:
+    tack_on_accent(',', CP_below, CT_none, min_vert, max_vert, centroid,
+                   font, dest, geom_array, num_geoms);
+    break;
+
+  case UnicodeLatinMap::AT_ogonek:
+    tack_on_accent(',', CP_bottom, CT_mirror_x, min_vert, max_vert, centroid,
+                   font, dest, geom_array, num_geoms);
+    break;
+
+  case UnicodeLatinMap::AT_stroke:
+    tack_on_accent('/', CP_within, CT_none, min_vert, max_vert, centroid,
+                   font, dest, geom_array, num_geoms);
+    break;
+
+  default:
+    // There are lots of other crazy kinds of accents.  Forget 'em.
+    break;
+  }    
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::tack_on_accent
+//       Access: Private
+//  Description: Generates a cheesy accent mark above (or below, etc.)
+//               the character.
+////////////////////////////////////////////////////////////////////
+void TextNode::
+tack_on_accent(char accent_mark, TextNode::CheesyPlacement placement,
+               TextNode::CheesyTransform transform,
+               const LPoint3f &min_vert, const LPoint3f &max_vert,
+               const LPoint3f &centroid,
+               TextFont *font, GeomNode *dest, 
+               Geom *geom_array[], int &num_geoms) {
+  
+  TextGlyph *accent_glyph;
+  if (font->get_glyph(accent_mark, accent_glyph)) {
+    PT(Geom) accent_geom = accent_glyph->get_geom();
+    if (accent_geom != (Geom *)NULL) {
+      LPoint3f min_accent, max_accent;
+      bool found_any = false;
+      accent_geom->calc_tight_bounds(min_accent, max_accent, found_any);
+      if (found_any) {
+        float t, u;
+        LMatrix4f accent_mat;
+
+        switch (transform) {
+        case CT_none:
+          accent_mat = LMatrix4f::ident_mat();
+          break;
+
+        case CT_mirror_x:
+          accent_mat = LMatrix4f::scale_mat(-1.0f, 1.0f, 1.0f);
+          
+          t = -min_accent[0];
+          min_accent[0] = -max_accent[0];
+          max_accent[0] = t;
+          break;
+
+        case CT_mirror_y:
+          accent_mat = LMatrix4f::scale_mat(1.0f, -1.0f, 1.0f);
+          
+          t = -min_accent[2];
+          min_accent[2] = -max_accent[2];
+          max_accent[2] = t;
+          break;
+
+        case CT_rotate_90:
+          accent_mat =
+            LMatrix4f::rotate_mat_normaxis(90.0f, LVecBase3f(0.0f, 1.0f, 0.0f));
+          // rotate min, max
+          t = min_accent[0];
+          u = max_accent[0];
+          min_accent[0] = min_accent[2];
+          max_accent[0] = max_accent[2];
+          min_accent[2] = -u;
+          max_accent[2] = -t;
+          break;
+
+        case CT_tiny:
+          accent_mat = LMatrix4f::scale_mat(tiny_accent_scale);
+          min_accent *= tiny_accent_scale;
+          max_accent *= tiny_accent_scale;
+          break;
+
+        case CT_tiny_mirror_x:
+          accent_mat = LMatrix4f::scale_mat(-tiny_accent_scale, 1.0f, tiny_accent_scale);
+          
+          t = -min_accent[0] * tiny_accent_scale;
+          min_accent[0] = -max_accent[0] * tiny_accent_scale;
+          max_accent[0] = t;
+          break;
+
+        case CT_tiny_rotate_90:
+          accent_mat =
+            LMatrix4f::rotate_mat_normaxis(90.0f, LVecBase3f(0.0f, 1.0f, 0.0f)) *
+            LMatrix4f::scale_mat(tiny_accent_scale);
+
+          // rotate min, max
+          t = min_accent[0];
+          u = max_accent[0];
+          min_accent[0] = min_accent[2] * tiny_accent_scale;
+          max_accent[0] = max_accent[2] * tiny_accent_scale;
+          min_accent[2] = -u * tiny_accent_scale;
+          max_accent[2] = -t * tiny_accent_scale;
+          break;
+        }
+
+        LPoint3f accent_centroid = (min_accent + max_accent) / 2.0f;
+        float accent_height = max_accent[2] - min_accent[2];
+        LVector3f trans;
+        switch (placement) {
+        case CP_above:
+          // A little above the character.
+          trans.set(centroid[0] - accent_centroid[0], 0.0f,
+                    max_vert[2] - accent_centroid[2] + accent_height * 0.5);
+          break;
+
+        case CP_below:
+          // A little below the character.
+          trans.set(centroid[0] - accent_centroid[0], 0.0f,
+                    min_vert[2] - accent_centroid[2] - accent_height * 0.5);
+          break;
+
+        case CP_top:
+          // Touching the top of the character.
+          trans.set(centroid[0] - accent_centroid[0], 0.0f,
+                    max_vert[2] - accent_centroid[2]);
+          break;
+
+        case CP_bottom:
+          // Touching the bottom of the character.
+          trans.set(centroid[0] - accent_centroid[0], 0.0f,
+                    min_vert[2] - accent_centroid[2]);
+          break;
+
+        case CP_within:
+          // Centered within the character.
+          trans.set(centroid[0] - accent_centroid[0], 0.0f,
+                    centroid[2] - accent_centroid[2]);
+          break;
+        }
+
+        accent_mat.set_row(3, trans);
+        accent_geom->transform_vertices(accent_mat);
+
+        dest->add_geom(accent_geom, accent_glyph->get_state());
+        geom_array[num_geoms++] = accent_geom;
+      }
+    }
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::make_frame

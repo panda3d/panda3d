@@ -23,7 +23,8 @@
     stringDecoder.I stringDecoder.h \
     textFont.I textFont.h \
     textGlyph.I textGlyph.h \
-    textNode.I textNode.h textNode.cxx
+    textNode.I textNode.h textNode.cxx \
+    unicodeLatinMap.h
 
   #define INCLUDED_SOURCES \
     config_text.cxx \
@@ -35,7 +36,8 @@
     geomTextGlyph.cxx \
     stringDecoder.cxx \
     staticTextFont.cxx \
-    textFont.cxx textGlyph.cxx
+    textFont.cxx textGlyph.cxx \
+    unicodeLatinMap.cxx
 
   #define INSTALL_HEADERS \
     config_text.h \
@@ -48,9 +50,10 @@
     stringDecoder.I stringDecoder.h \
     textFont.I textFont.h \
     textGlyph.I textGlyph.h \
-    textNode.I textNode.h
+    textNode.I textNode.h \
+    unicodeLatinMap.h
+
 
   #define IGATESCAN all
 
 #end lib_target
-

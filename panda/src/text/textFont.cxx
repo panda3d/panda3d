@@ -78,14 +78,13 @@ calc_width(int character) {
   }
 
   const TextGlyph *glyph;
-  float glyph_scale;
-  get_glyph(character, glyph, glyph_scale);
+  get_glyph(character, glyph);
   if (glyph == (TextGlyph *)NULL) {
     // Unknown character.
     return 0.0f;
   }
 
-  return glyph->get_advance() * glyph_scale;
+  return glyph->get_advance();
 }
 
 ////////////////////////////////////////////////////////////////////

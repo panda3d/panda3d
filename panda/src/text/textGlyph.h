@@ -39,7 +39,7 @@ public:
   INLINE void operator = (const TextGlyph &copy);
   virtual ~TextGlyph();
 
-  virtual PT(Geom) get_geom() const;
+  INLINE PT(Geom) get_geom() const;
   INLINE const RenderState *get_state() const;
   INLINE float get_advance() const;
 

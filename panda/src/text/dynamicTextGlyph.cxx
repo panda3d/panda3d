@@ -36,22 +36,6 @@ DynamicTextGlyph::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextGlyph::get_geom
-//       Access: Public, Virtual
-//  Description: Returns a Geom that renders the particular glyph.
-////////////////////////////////////////////////////////////////////
-PT(Geom) DynamicTextGlyph::
-get_geom() const {
-  if (_geom == (Geom *)NULL) {
-    return _geom;
-  }
-
-  // A DynamicTextGlyph must make a copy of its GeomTextGlyph, so that
-  // it will increase the reference count properly.
-  return _geom->make_copy();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextGlyph::get_row
 //       Access: Public
 //  Description: Returns a pointer to the first byte in the pixel

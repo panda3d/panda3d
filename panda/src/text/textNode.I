@@ -203,6 +203,74 @@ get_line_height() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_small_caps
+//       Access: Published
+//  Description: Sets the small_caps flag.  When this is set,
+//               lowercase letters are generated as scaled-down
+//               versions of their uppercase equivalents.  This is
+//               particularly useful to set for fonts that do not have
+//               lowercase letters.
+//
+//               It is also a good idea to set this for a (dynamic)
+//               font that has already implemented lowercase letters
+//               as scaled-down versions of their uppercase
+//               equivalents, since without this flag the texture
+//               memory may needlessly duplicate equivalent glyphs for
+//               upper and lowercase letters.  Setting this flag
+//               causes the texture memory to share the mixed-case
+//               letters.
+//
+//               The amount by which the lowercase letters are scaled
+//               is specified by set_small_caps_scale().
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_small_caps(bool small_caps) {
+  if (small_caps) {
+    _flags |= F_small_caps;
+  } else {
+    _flags &= ~F_small_caps;
+  }
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::get_small_caps
+//       Access: Published
+//  Description: Returns the small_caps flag.  See set_small_caps().
+////////////////////////////////////////////////////////////////////
+INLINE bool TextNode::
+get_small_caps() const {
+  return (_flags & F_small_caps) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_small_caps_scale
+//       Access: Published
+//  Description: Sets the scale factor applied to lowercase letters
+//               from their uppercase equivalents, when the small_caps
+//               flag is in effect.  See set_small_caps().  Normally,
+//               this will be a number less than one.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_small_caps_scale(float small_caps_scale) {
+  _small_caps_scale = small_caps_scale;
+  invalidate_with_measure();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::get_small_caps_scale
+//       Access: Published
+//  Description: Returns the scale factor applied to lowercase letters
+//               from their uppercase equivalents, when the small_caps
+//               flag is in effect.  See set_small_caps() and
+//               set_small_caps_scale().
+////////////////////////////////////////////////////////////////////
+INLINE float TextNode::
+get_small_caps_scale() const {
+  return _small_caps_scale;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_slant
 //       Access: Published
 //  Description:
@@ -1154,6 +1222,30 @@ get_char(int index) const {
   get_wtext();
   nassertr(index >= 0 && index < (int)_wtext.length(), 0);
   return _wtext[index];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::get_text_as_ascii
+//       Access: Published
+//  Description: Returns the text associated with the node, converted
+//               as nearly as possible to a fully-ASCII
+//               representation.  This means replacing accented
+//               letters with their unaccented ASCII equivalents.
+//
+//               It is possible that some characters in the string
+//               cannot be converted to ASCII.  (The string may
+//               involve symbols like the copyright symbol, for
+//               instance, or it might involve letters in some other
+//               alphabet such as Greek or Cyrillic, or even Latin
+//               letters like thorn or eth that are not part of the
+//               ASCII character set.)  In this case, as much of the
+//               string as possible will be converted to ASCII, and
+//               the nonconvertible characters will remain encoded in
+//               the encoding specified by set_encoding().
+////////////////////////////////////////////////////////////////////
+INLINE string TextNode::
+get_text_as_ascii() const {
+  return encode_wtext(get_wtext_as_ascii());
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -325,18 +325,10 @@ write(ostream &out, int indent_level) const {
 //               printable glyph.
 ////////////////////////////////////////////////////////////////////
 bool DynamicTextFont::
-get_glyph(int character, const TextGlyph *&glyph, float &glyph_scale) {
+get_glyph(int character, const TextGlyph *&glyph) {
   if (!_is_valid) {
     glyph = (TextGlyph *)NULL;
     return false;
-  }
-
-  glyph_scale = 1.0f;
-  if (character < 128 && islower(character) && get_small_caps()) {
-    // If we have small_caps on, we implement lowercase letters by
-    // applying a scale to the corresponding uppercase letter.
-    glyph_scale = get_small_caps_scale();
-    character = toupper(character);
   }
 
   int glyph_index = FT_Get_Char_Index(_face, character);
@@ -368,8 +360,6 @@ initialize() {
   _point_size = text_point_size;
   _tex_pixels_per_unit = text_pixels_per_unit;
   _scale_factor = text_scale_factor;
-  _small_caps = text_small_caps;
-  _small_caps_scale = text_small_caps_scale;
 
   // We don't necessarily want to use mipmaps, since we don't want to
   // regenerate those every time the texture changes, but we probably

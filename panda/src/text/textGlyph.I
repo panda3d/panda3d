@@ -68,6 +68,24 @@ operator = (const TextGlyph &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextGlyph::get_geom
+//       Access: Public
+//  Description: Returns a Geom that renders the particular glyph.
+////////////////////////////////////////////////////////////////////
+INLINE PT(Geom) TextGlyph::
+get_geom() const {
+  if (_geom == (Geom *)NULL) {
+    return _geom;
+  }
+
+  // We always return a copy of the geom.  That will allow the caller
+  // to modify its vertices without fear of stomping on other copies;
+  // it is also critical for the DynamicTextGlyph, which depends on
+  // this behavior to properly count references to this glyph.
+  return _geom->make_copy();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextGlyph::get_state
 //       Access: Public
 //  Description: Returns the state in which the glyph should be

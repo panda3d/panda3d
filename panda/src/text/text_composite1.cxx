@@ -9,3 +9,4 @@
 #include "stringDecoder.cxx"
 #include "textFont.cxx"
 #include "textGlyph.cxx"
+#include "unicodeLatinMap.cxx"

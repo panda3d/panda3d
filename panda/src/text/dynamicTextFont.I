@@ -119,67 +119,6 @@ get_scale_factor() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::set_small_caps
-//       Access: Published
-//  Description: Sets the small_caps flag.  When this is set,
-//               lowercase letters are generated as scaled-down
-//               versions of their uppercase equivalents.  This is
-//               particularly useful to set for fonts that do not have
-//               lowercase letters.
-//
-//               It is also a good idea to set this for a font that
-//               has already implemented lowercase letters as
-//               scaled-down versions of their uppercase equivalents,
-//               since without this flag the texture memory may
-//               needlessly duplicate equivalent glyphs for upper and
-//               lowercase letters.  Setting this flag causes the
-//               texture memory to share the mixed-case letters.
-//
-//               The amount by which the lowercase letters are scaled
-//               is specified by set_small_caps_scale().
-////////////////////////////////////////////////////////////////////
-INLINE void DynamicTextFont::
-set_small_caps(bool small_caps) {
-  _small_caps = small_caps;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::get_small_caps
-//       Access: Published
-//  Description: Returns the small_caps flag.  See set_small_caps().
-////////////////////////////////////////////////////////////////////
-INLINE bool DynamicTextFont::
-get_small_caps() const {
-  return _small_caps;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::set_small_caps_scale
-//       Access: Published
-//  Description: Sets the scale factor applied to lowercase letters
-//               from their uppercase equivalents, when the small_caps
-//               flag is in effect.  See set_small_caps().  Normally,
-//               this will be a number less than one.
-////////////////////////////////////////////////////////////////////
-INLINE void DynamicTextFont::
-set_small_caps_scale(float small_caps_scale) {
-  _small_caps_scale = small_caps_scale;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DynamicTextFont::get_small_caps_scale
-//       Access: Published
-//  Description: Returns the scale factor applied to lowercase letters
-//               from their uppercase equivalents, when the small_caps
-//               flag is in effect.  See set_small_caps() and
-//               set_small_caps_scale().
-////////////////////////////////////////////////////////////////////
-INLINE float DynamicTextFont::
-get_small_caps_scale() const {
-  return _small_caps_scale;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextFont::set_texture_margin
 //       Access: Published
 //  Description: Sets the number of pixels of padding that is added

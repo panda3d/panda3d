@@ -20,27 +20,9 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextGlyph::Destructor
-//       Access: Public, Virtual
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 TextGlyph::
 ~TextGlyph() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextGlyph::get_geom
-//       Access: Public, Virtual
-//  Description: Returns a Geom that renders the particular glyph.
-////////////////////////////////////////////////////////////////////
-PT(Geom) TextGlyph::
-get_geom() const {
-  if (_geom == (Geom *)NULL) {
-    return _geom;
-  }
-
-  // We always return a copy of the geom.  That will allow the caller
-  // to modify its vertices without fear of stomping on other copies;
-  // it is also critical for the DynamicTextGlyph, which depends on
-  // this behavior to properly count references to this glyph.
-  return _geom->make_copy();
 }
