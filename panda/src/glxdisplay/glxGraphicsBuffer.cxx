@@ -22,15 +22,7 @@
 #include "glxGraphicsPipe.h"
 
 #include "graphicsPipe.h"
-#include "keyboardButton.h"
-#include "mouseButton.h"
 #include "glGraphicsStateGuardian.h"
-#include "clockObject.h"
-
-#include <errno.h>
-#include <sys/time.h>
-#include <X11/keysym.h>
-#include <X11/Xutil.h>
 
 TypeHandle glxGraphicsBuffer::_type_handle;
 
