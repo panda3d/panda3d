@@ -41,7 +41,8 @@ SpriteParticleRenderer(Texture *tex) :
   _animate_y_ratio(false),
   _animate_theta(false),
   _blend_method(PP_BLEND_LINEAR),
-  _pool_size(0)
+  _pool_size(0),
+  _source_type(ST_texture)
 {
   _sprite_primitive = new GeomSprite(tex);
   init_geoms();
