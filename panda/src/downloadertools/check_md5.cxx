@@ -32,7 +32,7 @@ usage() {
   cerr << 
     "\n"
     "Usage:\n\n"
-    "check_md5 [-d] [-i \"input string\"] [file1 file2 ...]\n"
+    "check_md5 [-q] [-d] [-i \"input string\"] [file1 file2 ...]\n"
     "check_md5 -h\n\n";
 }
 
@@ -45,12 +45,14 @@ help() {
 
     "An MD5 hash is a 128-bit value.  The output is presented as a 32-digit\n"
     "hexadecimal string by default, but with -d, it is presented as four\n"
-    "big-endian unsigned 32-bit decimal integers.\n\n";
+    "big-endian unsigned 32-bit decimal integers.  Normally the filename\n"
+    "of each file is printed along with the hash; -q suppresses this.\n\n";
 }
 
 void
-output_hash(const string &filename, const HashVal &hash, bool output_decimal) {
-  if (!filename.empty()) {
+output_hash(const string &filename, const HashVal &hash, 
+            bool output_decimal, bool suppress_filename) {
+  if (!suppress_filename && !filename.empty()) {
     cout << filename << " ";
   }
   if (output_decimal) {
@@ -66,11 +68,12 @@ int
 main(int argc, char *argv[]) {
   extern char *optarg;
   extern int optind;
-  const char *optstr = "i:dh";
+  const char *optstr = "i:dqh";
 
   bool got_input_string = false;
   string input_string;
   bool output_decimal = false;
+  bool suppress_filename = false;
 
   int flag = getopt(argc, argv, optstr);
 
@@ -83,6 +86,10 @@ main(int argc, char *argv[]) {
 
     case 'd':
       output_decimal = true;
+      break;
+
+    case 'q':
+      suppress_filename = true;
       break;
 
     case 'h':
@@ -106,7 +113,7 @@ main(int argc, char *argv[]) {
   if (got_input_string) {
     HashVal hash;
     hash.hash_string(input_string);
-    output_hash("", hash, output_decimal);
+    output_hash("", hash, output_decimal, true);
   }
 
   bool okflag = true;
@@ -123,7 +130,8 @@ main(int argc, char *argv[]) {
         cerr << "Unable to read " << source_file << "\n";
         okflag = false;
       } else {
-        output_hash(source_file.get_basename(), hash, output_decimal);
+        output_hash(source_file.get_basename(), hash, 
+                    output_decimal, suppress_filename);
       }
     }
   }
