@@ -12,9 +12,9 @@
 
 StitchImage::
 StitchImage(const string &name, const string &filename,
-	    StitchLens *lens, const LVecBase2d &size_pixels,
-	    const LVecBase2d &pixels_per_mm,
-	    const LVecBase2d &film_offset_mm) :
+            StitchLens *lens, const LVecBase2d &size_pixels,
+            const LVecBase2d &pixels_per_mm,
+            const LVecBase2d &film_offset_mm) :
   _lens(lens),
   _size_pixels(size_pixels),
   _pixels_per_mm(pixels_per_mm),
@@ -25,7 +25,7 @@ StitchImage(const string &name, const string &filename,
   _name(name)
 {
   _size_mm.set((_size_pixels[0] - 1.0) / _pixels_per_mm[0],
-	       (_size_pixels[1] - 1.0) / _pixels_per_mm[1]);
+               (_size_pixels[1] - 1.0) / _pixels_per_mm[1]);
 
   // There are several coordinate systems to talk about points on the
   // image.
@@ -177,11 +177,11 @@ close_layer(bool nonempty) {
       result = false;
     } else {
       if (nonempty) {
-	char buff[1024];
-	_layer_index++;
-	sprintf(buff, _filename.c_str(), _layer_index);
-	nout << "Writing layer " << _layer_name << " as " << buff << "\n";
-	result = _data->write(buff);
+        char buff[1024];
+        _layer_index++;
+        sprintf(buff, _filename.c_str(), _layer_index);
+        nout << "Writing layer " << _layer_name << " as " << buff << "\n";
+        result = _data->write(buff);
       }
     }
     clear_file();
@@ -191,9 +191,9 @@ close_layer(bool nonempty) {
       result = false;
     } else {
       if (nonempty) {
-	_layered_image->add_layer(_layer_name, LVector2d(0.0, 0.0),
-				  _data);
-	_data = NULL;
+        _layered_image->add_layer(_layer_name, LVector2d(0.0, 0.0),
+                                  _data);
+        _data = NULL;
       }
     }
   }
@@ -274,8 +274,8 @@ get_y_verts() const {
 LPoint2d StitchImage::
 get_grid_uv(int xv, int yv) {
   return LPoint2d((double)xv / (double)(_x_verts - 1),
-		  1.0 - (double)yv / (double)(_y_verts - 1));
-		  
+                  1.0 - (double)yv / (double)(_y_verts - 1));
+
 }
 
 LVector3d StitchImage::
@@ -322,14 +322,14 @@ reset_singularity_detected() {
 
 void StitchImage::
 draw_triangle(TriangleRasterizer &rast, const RasterizerVertex *v0, 
-	      const RasterizerVertex *v1, const RasterizerVertex *v2) {
+              const RasterizerVertex *v1, const RasterizerVertex *v2) {
   _lens->draw_triangle(rast, _mm_to_pixels, _size_mm[0], v0, v1, v2);
 }
 
 void StitchImage::
 pick_up_singularity(TriangleRasterizer &rast, StitchImage *input) {
   _lens->pick_up_singularity(rast, _mm_to_pixels, _pixels_to_mm, 
-			     _rotate, _size_mm[0], input);
+                             _rotate, _size_mm[0], input);
 }
 
 void StitchImage::

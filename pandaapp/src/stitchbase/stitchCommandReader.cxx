@@ -26,12 +26,12 @@ bool StitchCommandReader::
 handle_args(ProgramBase::Args &args) {
   if (args.empty()) {
     nout << "You must specify the stitch command file to read on the\n"
-	 << "command line.\n";
+         << "command line.\n";
     return false;
   }
   if (args.size() > 1) {
     nout << "You must specify only one stitch command file to read on the\n"
-	 << "command line.\n";
+         << "command line.\n";
     return false;
   }
 

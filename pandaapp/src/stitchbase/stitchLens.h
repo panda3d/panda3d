@@ -37,22 +37,22 @@ public:
   // something special if the triangle crosses a seam or singularity
   // in the lens' coordinate space.
   virtual void draw_triangle(TriangleRasterizer &rast,
-			     const LMatrix3d &mm_to_pixels,
-			     double width_mm,
-			     const RasterizerVertex *v0, 
-			     const RasterizerVertex *v1, 
-			     const RasterizerVertex *v2);
+                             const LMatrix3d &mm_to_pixels,
+                             double width_mm,
+                             const RasterizerVertex *v0, 
+                             const RasterizerVertex *v1, 
+                             const RasterizerVertex *v2);
 
   // This function is to be called after all triangles have been
   // drawn; it will draw pixel-by-pixel all the points within
   // _singularity_radius of any singularity points the lens may have
   // (these points were not draw by draw_triangle(), above).
   virtual void pick_up_singularity(TriangleRasterizer &rast, 
-				   const LMatrix3d &mm_to_pixels,
-				   const LMatrix3d &pixels_to_mm,
-				   const LMatrix3d &rotate,
-				   double width_mm,
-				   StitchImage *input);
+                                   const LMatrix3d &mm_to_pixels,
+                                   const LMatrix3d &pixels_to_mm,
+                                   const LMatrix3d &rotate,
+                                   double width_mm,
+                                   StitchImage *input);
 
   // This generates a StitchCommand that represents the given lens.
   virtual void make_lens_command(StitchCommand *parent)=0;

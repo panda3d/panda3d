@@ -44,33 +44,33 @@ execute() {
 
       Images::const_iterator ii;
       for (ii = _input_images.begin(); ii != _input_images.end(); ++ii) {
-	StitchImage *input = (*ii);
-	draw_image(output, input);
+        StitchImage *input = (*ii);
+        draw_image(output, input);
       }
 
       output->open_layer("points");
       bool shown_points = false;
       Stitchers::const_iterator si;
       for (si = _stitchers.begin(); si != _stitchers.end(); ++si) {
-	Stitcher *stitcher = (*si);
-	if (stitcher->_show_points && !stitcher->_loose_points.empty()) {
-	  draw_points(output, stitcher, stitcher->_point_color,
-		      stitcher->_point_radius);
-	  shown_points = true;
-	}
+        Stitcher *stitcher = (*si);
+        if (stitcher->_show_points && !stitcher->_loose_points.empty()) {
+          draw_points(output, stitcher, stitcher->_point_color,
+                      stitcher->_point_radius);
+          shown_points = true;
+        }
       }
       for (ii = _input_images.begin(); ii != _input_images.end(); ++ii) {
-	StitchImage *input = (*ii);
-	if (input->_show_points && !input->_points.empty()) {
-	  draw_points(output, input, input->_point_color,
-		      input->_point_radius);
-	  shown_points = true;
-	}
+        StitchImage *input = (*ii);
+        if (input->_show_points && !input->_points.empty()) {
+          draw_points(output, input, input->_point_color,
+                      input->_point_radius);
+          shown_points = true;
+        }
       }
       output->close_layer(shown_points);
       
       if (!output->close_output_file()) {
-	nout << "Error in writing.\n";
+        nout << "Error in writing.\n";
       }
     }
   }
@@ -78,7 +78,7 @@ execute() {
   
 void StitchImageRasterizer::
 draw_points(StitchImage *output, StitchImage *input,
-	    const Colord &color, double radius) {
+            const Colord &color, double radius) {
   StitchImage::Points::const_iterator pi;
   for (pi = input->_points.begin(); pi != input->_points.end(); ++pi) {
     LPoint2d to = output->project(input->extrude((*pi).second));
@@ -88,7 +88,7 @@ draw_points(StitchImage *output, StitchImage *input,
   
 void StitchImageRasterizer::
 draw_points(StitchImage *output, Stitcher *input,
-	    const Colord &color, double radius) {
+            const Colord &color, double radius) {
   Stitcher::LoosePoints::const_iterator pi;
   for (pi = input->_loose_points.begin(); 
        pi != input->_loose_points.end(); ++pi) {
@@ -138,14 +138,14 @@ draw_image(StitchImage *output, StitchImage *input) {
       // bounds.  If all three vertices of a triangle are out in the
       // same quadrant, then the entire triangle is out of bounds.
       _table[xi][yi]._visibility =
-	((to[0] < 0.0) |
-	 ((to[0] > 1.0) << 1) |
-	 ((to[1] < 0.0) << 2) |
-	 ((to[1] > 1.0) << 3) |
-	 ((from[0] < 0.0) << 4) |
-	 ((from[0] > 1.0) << 5) |
-	 ((from[1] < 0.0) << 6) |
-	 ((from[1] > 1.0) << 7));
+        ((to[0] < 0.0) |
+         ((to[0] > 1.0) << 1) |
+         ((to[1] < 0.0) << 2) |
+         ((to[1] > 1.0) << 3) |
+         ((from[0] < 0.0) << 4) |
+         ((from[0] > 1.0) << 5) |
+         ((from[1] < 0.0) << 6) |
+         ((from[1] > 1.0) << 7));
     }
   }
 
@@ -155,13 +155,13 @@ draw_image(StitchImage *output, StitchImage *input) {
   for (yi = 0; yi < y_verts - 1; yi++) {
     for (xi = 0; xi < x_verts - 1; xi++) {
       output->draw_triangle(rast,
-			    &_table[xi][yi],
-			    &_table[xi][yi + 1],
-			    &_table[xi + 1][yi + 1]);
+                            &_table[xi][yi],
+                            &_table[xi][yi + 1],
+                            &_table[xi + 1][yi + 1]);
       output->draw_triangle(rast,
-			    &_table[xi][yi],
-			    &_table[xi + 1][yi + 1],
-			    &_table[xi + 1][yi]);
+                            &_table[xi][yi],
+                            &_table[xi + 1][yi + 1],
+                            &_table[xi + 1][yi]);
     }
   }
   output->pick_up_singularity(rast, input);
@@ -173,7 +173,7 @@ draw_image(StitchImage *output, StitchImage *input) {
 
 void StitchImageRasterizer::
 draw_spot(StitchImage *output,
-	  const LPoint2d pixel_center, const Colord &color, double radius) {
+          const LPoint2d pixel_center, const Colord &color, double radius) {
   LPoint2d minp = pixel_center - LPoint2d(radius, radius);
   LPoint2d maxp = pixel_center + LPoint2d(radius, radius);
   
@@ -188,28 +188,28 @@ draw_spot(StitchImage *output,
   for (int yi = min_y; yi <= max_y; yi++) {
     if (yi >= 0 && yi < output->_data->get_y_size()) {
       for (int xi = min_x; xi <= max_x; xi++) {
-	if (xi >= 0 && xi < output->_data->get_x_size()) {
-	  // Check the coverage of the four points around the pixel, and
-	  // the pixel center.
-	  LPoint2d ul = pixel_center - LPoint2d(xi - 0.5, yi - 0.5);
-	  LPoint2d ll = pixel_center - LPoint2d(xi - 0.5, yi + 0.5);
-	  LPoint2d ur = pixel_center - LPoint2d(xi + 0.5, yi - 0.5);
-	  LPoint2d lr = pixel_center - LPoint2d(xi + 0.5, yi + 0.5);
-	  LPoint2d pc = pixel_center - LPoint2d(xi, yi);
-	  
-	  // Net coverage.
-	  int coverage =
-	    (dot(ul, ul) <= r2) +
-	    (dot(ll, ll) <= r2) +
-	    (dot(ur, ur) <= r2) +
-	    (dot(lr, lr) <= r2) +
-	    (dot(pc, pc) <= r2);
-	  
-	  if (coverage != 0) {
-	    output->_data->blend(xi, yi, color[0], color[1], color[2],
-				 color[3] * (double)coverage / 5.0);
-	  }
-	}
+        if (xi >= 0 && xi < output->_data->get_x_size()) {
+          // Check the coverage of the four points around the pixel, and
+          // the pixel center.
+          LPoint2d ul = pixel_center - LPoint2d(xi - 0.5, yi - 0.5);
+          LPoint2d ll = pixel_center - LPoint2d(xi - 0.5, yi + 0.5);
+          LPoint2d ur = pixel_center - LPoint2d(xi + 0.5, yi - 0.5);
+          LPoint2d lr = pixel_center - LPoint2d(xi + 0.5, yi + 0.5);
+          LPoint2d pc = pixel_center - LPoint2d(xi, yi);
+
+          // Net coverage.
+          int coverage =
+            (dot(ul, ul) <= r2) +
+            (dot(ll, ll) <= r2) +
+            (dot(ur, ur) <= r2) +
+            (dot(lr, lr) <= r2) +
+            (dot(pc, pc) <= r2);
+
+          if (coverage != 0) {
+            output->_data->blend(xi, yi, color[0], color[1], color[2],
+                                 color[3] * (double)coverage / 5.0);
+          }
+        }
       }
     }
   }

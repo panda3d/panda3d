@@ -13,7 +13,7 @@
 #include <programBase.h>
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : StitchCommandReader
+//       Class : StitchCommandReader
 // Description : This specialization of ProgramBase is intended for
 //               programs in this directory that read and process a
 //               stitch command file.

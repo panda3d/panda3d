@@ -26,10 +26,10 @@ class LayeredImage;
 class StitchImage {
 public:
   StitchImage(const string &name, const string &filename,
-	      StitchLens *lens, 
-	      const LVecBase2d &size_pixels,
-	      const LVecBase2d &pixels_per_mm,
-	      const LVecBase2d &film_offset_mm);
+              StitchLens *lens, 
+              const LVecBase2d &size_pixels,
+              const LVecBase2d &pixels_per_mm,
+              const LVecBase2d &film_offset_mm);
 
   bool has_name() const;
   string get_name() const;
@@ -81,16 +81,16 @@ public:
   // something special if the triangle crosses a seam or singularity
   // in the lens' coordinate space.
   void draw_triangle(TriangleRasterizer &rast,
-		     const RasterizerVertex *v0, 
-		     const RasterizerVertex *v1, 
-		     const RasterizerVertex *v2);
+                     const RasterizerVertex *v0, 
+                     const RasterizerVertex *v1, 
+                     const RasterizerVertex *v2);
 
   // This function is to be called after all triangles have been
   // drawn; it will draw pixel-by-pixel all the points within
   // _singularity_radius of any singularity points the lens may have
   // (these points were not draw by draw_triangle(), above).
   void pick_up_singularity(TriangleRasterizer &rast,
-			   StitchImage *input);
+                           StitchImage *input);
 
   void add_point(const string &name, const LPoint2d &pixel);
 

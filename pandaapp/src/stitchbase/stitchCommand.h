@@ -52,7 +52,7 @@ public:
   };
 
   StitchCommand(StitchCommand *parent = NULL, 
-		Command command = C_global);
+                Command command = C_global);
   ~StitchCommand();
 
   void clear();
@@ -80,7 +80,7 @@ public:
   StitchCommand *find_definition(const string &name);
 
   void process(StitchImageOutputter &outputter, Stitcher *stitcher,
-	       StitchFile &file);
+               StitchFile &file);
 
   void write(ostream &out, int indent) const;
 

@@ -12,7 +12,7 @@ is_right(const LVector2d &v1, const LVector2d &v2) {
 
 bool
 triangle_contains_point(const LPoint2d &p, const LPoint2d &v0,
-			const LPoint2d &v1, const LPoint2d &v2) {
+                        const LPoint2d &v1, const LPoint2d &v2) {
   // In the case of a triangle defined with points in counterclockwise
   // order, a point is interior to the triangle iff the point is not
   // right of each of the edges.
@@ -32,8 +32,8 @@ triangle_contains_point(const LPoint2d &p, const LPoint2d &v0,
 
 bool
 triangle_contains_circle(const LPoint2d &p, double radius,
-			 const LPoint2d &v0,
-			 const LPoint2d &v1, const LPoint2d &v2) {
+                         const LPoint2d &v0,
+                         const LPoint2d &v1, const LPoint2d &v2) {
   // This is a cheesy hack.  Instead of performing an actual
   // triangle-circle intersection test, we simply move the point
   // radius units closer to the centroid of the triangle, and test

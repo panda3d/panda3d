@@ -27,9 +27,9 @@ public:
   
 protected:
   void draw_points(StitchImage *output, StitchImage *input,
-		   const Colord &color, double radius);
+                   const Colord &color, double radius);
   void draw_points(StitchImage *output, Stitcher *input,
-		   const Colord &color, double radius);
+                   const Colord &color, double radius);
   void draw_image(StitchImage *output, StitchImage *input);
 
   typedef vector<StitchImage *> Images;
@@ -41,8 +41,8 @@ protected:
 
 protected:
   void draw_spot(StitchImage *output,
-		 const LPoint2d pixel_center, const Colord &color,
-		 double radius);
+                 const LPoint2d pixel_center, const Colord &color,
+                 double radius);
 };
 
 #endif

@@ -115,12 +115,12 @@ trim() {
     
     for (int y = 0; y < ysize; y++) {
       for (int x = 0; x < xsize; x++) {
-	if (_data->get_alpha_val(x, y) != 0) {
-	  top = min(top, y);
-	  left = min(left, x);
-	  bottom = max(bottom, y);
-	  right = max(right, x);
-	}
+        if (_data->get_alpha_val(x, y) != 0) {
+          top = min(top, y);
+          left = min(left, x);
+          bottom = max(bottom, y);
+          right = max(right, x);
+        }
       }
     }
 
@@ -159,7 +159,7 @@ LayeredImage::
 
 void LayeredImage::
 add_layer(const string &name, const LVector2d &offset,
-	  PNMImage *data) {
+          PNMImage *data) {
   _layers.push_back(Layer());
   Layer &l = _layers.back();
 
@@ -326,8 +326,8 @@ xcf_save_layer_props(const LayeredImage::Layer &layer) {
   xcf_save_prop(PROP_MODE, 0);
 
   xcf_save_prop(PROP_OFFSETS, 
-		(int32_t)layer._offset[0], 
-		(int32_t)layer._offset[1]);
+                (int32_t)layer._offset[0], 
+                (int32_t)layer._offset[1]);
   xcf_save_prop(PROP_END);
 }
 
@@ -712,10 +712,10 @@ xcf_save_tile(const LayeredImage::TileManager &tm, int level, int tile) {
     int i = 0;
     for (int y = yoff; y < yoff + ysize; y++) {
       for (int x = xoff; x < xoff + xsize; x++) {
-	array[i++] = tm._data->get_red_val(x, y);
-	array[i++] = tm._data->get_green_val(x, y);
-	array[i++] = tm._data->get_blue_val(x, y);
-	array[i++] = 255;
+        array[i++] = tm._data->get_red_val(x, y);
+        array[i++] = tm._data->get_green_val(x, y);
+        array[i++] = tm._data->get_blue_val(x, y);
+        array[i++] = 255;
       }
     }
     assert(i == size);
@@ -728,7 +728,7 @@ xcf_save_tile(const LayeredImage::TileManager &tm, int level, int tile) {
     int i = 0;
     for (int y = yoff; y < yoff + ysize; y++) {
       for (int x = xoff; x < xoff + xsize; x++) {
-	array[i++] = tm._data->get_channel_val(x, y, tm._channel);
+        array[i++] = tm._data->get_channel_val(x, y, tm._channel);
       }
     }
     assert(i == size);

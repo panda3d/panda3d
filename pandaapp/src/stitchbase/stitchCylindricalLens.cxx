@@ -45,7 +45,7 @@ get_hfov(double width_mm) const {
 double StitchCylindricalLens::
 get_vfov(double height_mm) const {
   return 2.0 * rad_2_deg(atan(height_mm / 
-			      (2.0 * get_focal_length(height_mm))));
+                              (2.0 * get_focal_length(height_mm))));
 }
 
 LVector3d StitchCylindricalLens::
@@ -54,8 +54,8 @@ extrude(const LPoint2d &point_mm, double width_mm) const {
 
   double fl = get_focal_length(width_mm);
   return LVector3d(sin(deg_2_rad(v2[0] * k / fl)) * fl,
-		   cos(deg_2_rad(v2[0] * k / fl)) * fl,
-		   v2[1]);
+                   cos(deg_2_rad(v2[0] * k / fl)) * fl,
+                   v2[1]);
 }
 
 
@@ -118,8 +118,8 @@ project_right(const LVector3d &vec, double width_mm) const {
 
 void StitchCylindricalLens::
 draw_triangle(TriangleRasterizer &rast, const LMatrix3d &mm_to_pixels,
-	      double width_mm, const RasterizerVertex *v0,
-	      const RasterizerVertex *v1, const RasterizerVertex *v2) {
+              double width_mm, const RasterizerVertex *v0,
+              const RasterizerVertex *v1, const RasterizerVertex *v2) {
   // A cylindrical lens has a seam at 180 and -180 degrees (regardless
   // of its field of view).  If the triangle crosses that seam, we'll
   // simply draw it twice: once at each side.
@@ -130,11 +130,11 @@ draw_triangle(TriangleRasterizer &rast, const LMatrix3d &mm_to_pixels,
   // quadrant IV.
 
   LVector2d xy0(dot(v0->_space, LVector3d::right()),
-		dot(v0->_space, LVector3d::forward()));
+                dot(v0->_space, LVector3d::forward()));
   LVector2d xy1(dot(v1->_space, LVector3d::right()),
-		dot(v1->_space, LVector3d::forward()));
+                dot(v1->_space, LVector3d::forward()));
   LVector2d xy2(dot(v2->_space, LVector3d::right()),
-		dot(v2->_space, LVector3d::forward()));
+                dot(v2->_space, LVector3d::forward()));
 
   if (xy0[1] >= 0.0 || xy1[1] >= 0.0 || xy2[1] >= 0.0) {
     // Some vertices are in quadrants I or II.

@@ -14,11 +14,11 @@
 // order.
 bool
 triangle_contains_point(const LPoint2d &p, const LPoint2d &v0,
-			const LPoint2d &v1, const LPoint2d &v2);
+                        const LPoint2d &v1, const LPoint2d &v2);
 
 bool
 triangle_contains_circle(const LPoint2d &p, double radius,
-			 const LPoint2d &v0,
-			 const LPoint2d &v1, const LPoint2d &v2);
+                         const LPoint2d &v0,
+                         const LPoint2d &v1, const LPoint2d &v2);
 
 #endif

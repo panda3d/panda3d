@@ -70,8 +70,8 @@ Image(StitchImage *image, int index, bool scale) :
 
     if (new_xsize != old_xsize || new_ysize != old_ysize) {
       nout << "Scaling " << image->get_name() << " from " 
-	   << old_xsize << " " << old_ysize << " to "
-	   << new_xsize << " " << new_ysize << "\n";
+           << old_xsize << " " << old_ysize << " to "
+           << new_xsize << " " << new_ysize << "\n";
       
       PNMImage *n = new PNMImage(new_xsize, new_ysize);
       n->quick_filter_from(*image->_data);
@@ -217,7 +217,7 @@ setup() {
 void StitchImageVisualizer::
 override_chan_cfg(ChanCfgOverrides &override) {
   override.setField(ChanCfgOverrides::Mask,
-		    ((unsigned int)(W_DOUBLE|W_DEPTH|W_MULTISAMPLE)));
+                    ((unsigned int)(W_DOUBLE|W_DEPTH|W_MULTISAMPLE)));
   override.setField(ChanCfgOverrides::Title, "Stitch");
 }
 
@@ -264,7 +264,7 @@ create_image_geometry(StitchImageVisualizer::Image &im) {
   for (int xi = 0; xi < x_verts; xi++) {
     for (int yi = 0; yi < y_verts; yi++) {
       LPoint2d uv = LPoint2d((double)xi / (double)(x_verts - 1),
-			     1.0 - (double)yi / (double)(y_verts - 1));
+                             1.0 - (double)yi / (double)(y_verts - 1));
       LVector3d p = im._image->extrude(uv);
 
       mesh._coords.push_back(LCAST(float, p) * scale);

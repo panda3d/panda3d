@@ -50,7 +50,7 @@ private:
   void feather_image(StitchImage *image);
 
   double try_match(StitchImage *image, LMatrix3d &rot,
-		   const MatchingPoints &mp, int zero, int one);
+                   const MatchingPoints &mp, int zero, int one);
 
   Images _images;
 

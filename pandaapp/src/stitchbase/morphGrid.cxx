@@ -40,7 +40,7 @@ contains_point(const LPoint2d &p, TableType from) const {
   }
 
   return triangle_contains_point(p, _v[0]->_p[from], _v[1]->_p[from],
-				 _v[2]->_p[from]);
+                                 _v[2]->_p[from]);
 }
 
 LPoint2d MorphGrid::Triangle::
@@ -65,9 +65,9 @@ recompute() {
   for (int i = 0; i < (int)TT_num; i++) {
     for (int a = 0; a < 2; a++) {
       _min_p[i][a] = min(min(_v[0]->_p[i][a], _v[1]->_p[i][a]), 
-			 _v[2]->_p[i][a]);
+                         _v[2]->_p[i][a]);
       _max_p[i][a] = max(max(_v[0]->_p[i][a], _v[1]->_p[i][a]), 
-			 _v[2]->_p[i][a]);
+                         _v[2]->_p[i][a]);
     }
   
     LPoint2d origin = _v[1]->_p[i];
@@ -75,8 +75,8 @@ recompute() {
     LVector2d xaxis = _v[2]->_p[i] - origin;
     
     _mat[i] = LMatrix3d(xaxis[0], xaxis[1], 0.0,
-			yaxis[0], yaxis[1], 0.0,
-			origin[0], origin[1], 1.0);
+                        yaxis[0], yaxis[1], 0.0,
+                        origin[0], origin[1], 1.0);
     
     _inv[i] = invert(_mat[i]);
   }
@@ -112,10 +112,10 @@ recompute() {
 
     for (int i = 0; i < (int)TT_num; i++) {
       for (int a = 0; a < 2; a++) {
-	_min_p[i][a] =
-	  min(_u._tri[0]->_min_p[i][a], _u._tri[1]->_min_p[i][a]);
-	_max_p[i][a] =
-	  max(_u._tri[0]->_max_p[i][a], _u._tri[1]->_max_p[i][a]);
+        _min_p[i][a] =
+          min(_u._tri[0]->_min_p[i][a], _u._tri[1]->_min_p[i][a]);
+        _max_p[i][a] =
+          max(_u._tri[0]->_max_p[i][a], _u._tri[1]->_max_p[i][a]);
       }
     }
   } else {
@@ -124,10 +124,10 @@ recompute() {
 
     for (int i = 0; i < (int)TT_num; i++) {
       for (int a = 0; a < 2; a++) {
-	_min_p[i][a] = 
-	  min(_u._tree[0]->_min_p[i][a], _u._tree[1]->_min_p[i][a]);
-	_max_p[i][a] =
-	  max(_u._tree[0]->_max_p[i][a], _u._tree[1]->_max_p[i][a]);
+        _min_p[i][a] = 
+          min(_u._tree[0]->_min_p[i][a], _u._tree[1]->_min_p[i][a]);
+        _max_p[i][a] =
+          max(_u._tree[0]->_max_p[i][a], _u._tree[1]->_max_p[i][a]);
       }
     }
   }
@@ -209,7 +209,7 @@ init(int x_verts, int y_verts) {
     _table[y].reserve(_x_verts);
     for (x = 0; x < _x_verts; x++) {
       LPoint2d p((double)x / (double)(_x_verts - 1),
-		 1.0 - (double)y / (double)(_y_verts - 1));
+                 1.0 - (double)y / (double)(_y_verts - 1));
       _table[y].push_back(Vertex(p));
     }
   }
@@ -221,11 +221,11 @@ init(int x_verts, int y_verts) {
   for (y = 0; y + 1 < _y_verts; y++) {
     for (x = 0; x + 1 < _x_verts; x++) {
       _triangles.push_back(Triangle(&_table[y][x],
-				    &_table[y + 1][x],
-				    &_table[y + 1][x + 1]));
+                                    &_table[y + 1][x],
+                                    &_table[y + 1][x + 1]));
       _triangles.push_back(Triangle(&_table[y][x],
-				    &_table[y + 1][x + 1],
-				    &_table[y][x + 1]));
+                                    &_table[y + 1][x + 1],
+                                    &_table[y][x + 1]));
     }
   }
   assert((int)_triangles.size() == num_tris);
@@ -248,7 +248,7 @@ init(int x_verts, int y_verts) {
     tree[y].reserve(x_tree);
     for (x = 0; x < x_tree; x++) {
       tree[y].push_back(new TriangleTree(&_triangles[i],
-					 &_triangles[i + 1]));
+                                         &_triangles[i + 1]));
       i += 2;
     }
   }
@@ -264,13 +264,13 @@ init(int x_verts, int y_verts) {
       tx = 0;
       int fx = 0;
       while (fx + 1 < x_tree) {
-	tree[y][tx++] = new TriangleTree(tree[y][fx], tree[y][fx + 1]);
-	fx += 2;
+        tree[y][tx++] = new TriangleTree(tree[y][fx], tree[y][fx + 1]);
+        fx += 2;
       }
       if (fx < x_tree) {
-	// One more odd element remaining, just copy it up.
-	tree[y][tx++] = tree[y][fx];
-	fx++;
+        // One more odd element remaining, just copy it up.
+        tree[y][tx++] = tree[y][fx];
+        fx++;
       }
       assert(fx == x_tree);
     }
@@ -282,13 +282,13 @@ init(int x_verts, int y_verts) {
       ty = 0;
       int fy = 0;
       while (fy + 1 < y_tree) {
-	tree[ty++][x] = new TriangleTree(tree[fy][x], tree[fy + 1][x]);
-	fy += 2;
+        tree[ty++][x] = new TriangleTree(tree[fy][x], tree[fy + 1][x]);
+        fy += 2;
       }
       if (fy < y_tree) {
-	// One more odd element remaining, just copy it up.
-	tree[ty++][x] = tree[fy][x];
-	fy++;
+        // One more odd element remaining, just copy it up.
+        tree[ty++][x] = tree[fy][x];
+        fy++;
       }
       assert(fy == y_tree);
     }
@@ -319,9 +319,9 @@ fill_alpha() {
   for (y = 0; y < _y_verts && !found_interior; y++) {
     for (x = 0; x < _x_verts && !found_interior; x++) {
       if (!_table[y][x]._over_another) {
-	// Here's one!
-	found_interior = true;
-	count_dist_from_interior(x, y, 0);
+        // Here's one!
+        found_interior = true;
+        count_dist_from_interior(x, y, 0);
       }
     }
   }
@@ -346,36 +346,36 @@ fill_alpha() {
   for (y = 0; y < _y_verts; y++) {
     for (x = 0; x < _x_verts; x++) {
       if (!_table[y][x]._over_another) {
-	_table[y][x]._alpha = 1.0;
+        _table[y][x]._alpha = 1.0;
 
       } else {
-	int dist_from_edge = 
-	  min(min(x, y), 
-	      min(_x_verts - 1 - x, _y_verts - 1 - y));
+        int dist_from_edge = 
+          min(min(x, y), 
+              min(_x_verts - 1 - x, _y_verts - 1 - y));
 
-	assert(_table[y][x]._dist_from_interior >= 0);
+        assert(_table[y][x]._dist_from_interior >= 0);
 
-	// We subtract one from dist_from_interior to give us a bit of
-	// comfort zone around the interior edge--we're not precisely
-	// sure where the actual edge is.
-	int dist_from_interior = 
-	  max(_table[y][x]._dist_from_interior - 1, 0);
+        // We subtract one from dist_from_interior to give us a bit of
+        // comfort zone around the interior edge--we're not precisely
+        // sure where the actual edge is.
+        int dist_from_interior = 
+          max(_table[y][x]._dist_from_interior - 1, 0);
 
-	// Now if dist_from_edge is 0, it must be transparent; if
-	// dist_from_interior is 0, it must be opaque.  Any other
-	// combination should be some value in between.
-	if (dist_from_interior == 0) {
-	  _table[y][x]._alpha = 1.0;
+        // Now if dist_from_edge is 0, it must be transparent; if
+        // dist_from_interior is 0, it must be opaque.  Any other
+        // combination should be some value in between.
+        if (dist_from_interior == 0) {
+          _table[y][x]._alpha = 1.0;
 
-	} else if (dist_from_edge == 0) {
-	  _table[y][x]._alpha = 0.0;
+        } else if (dist_from_edge == 0) {
+          _table[y][x]._alpha = 0.0;
 
-	} else {
-	  double ratio = (double)dist_from_interior /
-	    (double)(dist_from_interior + dist_from_edge);
-	  
-	  _table[y][x]._alpha = (cos(ratio * MathNumbers::pi) + 1.0) / 2.0;
-	}
+        } else {
+          double ratio = (double)dist_from_interior /
+            (double)(dist_from_interior + dist_from_edge);
+
+          _table[y][x]._alpha = (cos(ratio * MathNumbers::pi) + 1.0) / 2.0;
+        }
       }
     }
   }

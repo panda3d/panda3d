@@ -24,7 +24,7 @@ class PNMImage;
 class ChanCfgOverrides;
 
 class StitchImageVisualizer : public StitchImageOutputter,
-			      public GraphicsWindow::Callback {
+                              public GraphicsWindow::Callback {
 public:
   StitchImageVisualizer();
   virtual void add_input_image(StitchImage *image);

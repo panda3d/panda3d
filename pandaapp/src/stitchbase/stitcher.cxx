@@ -128,8 +128,8 @@ stitch() {
     for (ii = _images.begin(); ii != _images.end(); ++ii) {
       int score = score_image(*ii);
       if (score > max_score) {
-	max_score = score;
-	best_image = ii;
+        max_score = score;
+        best_image = ii;
       }
     }
     if (best_image == _images.end()) {
@@ -161,7 +161,7 @@ stitch() {
 
   if (!_images.empty()) {
     nout << "Not enough shared points; " << _images.size()
-	 << " images remain unstitched.\n";
+         << " images remain unstitched.\n";
   }
 
   nout << "Net score is " << net_stitch_score << "\n";
@@ -259,17 +259,17 @@ stitch_image(StitchImage *image) {
       best_j = 0;
     } else {
       for (int i = 0; i < (int)mp.size(); i++) {
-	for (int j = 0; j < (int)mp.size(); j++) {
-	  if (j != i) {
-	    LMatrix3d rot;
-	    double score = try_match(image, rot, mp, i, j);
-	    if (score < best_score || best_i == -1) {
-	      best_i = i;
-	      best_j = j;
-	      best_score = score;
-	    }
-	  }
-	}
+        for (int j = 0; j < (int)mp.size(); j++) {
+          if (j != i) {
+            LMatrix3d rot;
+            double score = try_match(image, rot, mp, i, j);
+            if (score < best_score || best_i == -1) {
+              best_i = i;
+              best_j = j;
+              best_score = score;
+            }
+          }
+        }
       }
     }
 
@@ -301,29 +301,29 @@ stitch_image(StitchImage *image) {
     int x, y;
     for (y = 0; y < y_verts; y++) {
       for (x = 0; x < x_verts; x++) {
-	LPoint2d p = image->get_grid_uv(x, y);
-	LVector2d offset(0.0, 0.0);
-	double net = 0.0;
-	
-	MatchingPoints::const_iterator cmi;
-	bool done = false;
-	for (cmi = mp.begin(); cmi != mp.end() && !done; ++cmi) {
-	  LVector2d v = p - (*cmi)._got_uv;
-	  double d = pow(dot(v, v), 0.1);
-	  if (d < 0.0001) {
-	    // This one is dead on; stop here and never mind.
-	    offset = (*cmi)._diff;
-	    net = 1.0;
-	    done = true;
-	  } else {
-	    double scale = 1.0 / d;
-	    offset += (*cmi)._diff * scale;
-	    net += scale;
-	  }
-	}
-	
-	offset /= net;
-	image->_morph._table[y][x]._p[MorphGrid::TT_out] += offset;
+        LPoint2d p = image->get_grid_uv(x, y);
+        LVector2d offset(0.0, 0.0);
+        double net = 0.0;
+
+        MatchingPoints::const_iterator cmi;
+        bool done = false;
+        for (cmi = mp.begin(); cmi != mp.end() && !done; ++cmi) {
+          LVector2d v = p - (*cmi)._got_uv;
+          double d = pow(dot(v, v), 0.1);
+          if (d < 0.0001) {
+            // This one is dead on; stop here and never mind.
+            offset = (*cmi)._diff;
+            net = 1.0;
+            done = true;
+          } else {
+            double scale = 1.0 / d;
+            offset += (*cmi)._diff * scale;
+            net += scale;
+          }
+        }
+
+        offset /= net;
+        image->_morph._table[y][x]._p[MorphGrid::TT_out] += offset;
       }
     }
     image->_morph.recompute();
@@ -335,7 +335,7 @@ stitch_image(StitchImage *image) {
     LVector3d va = normalize(LVector3d(image->extrude((*mi)._got_uv)));
     LVector3d vb = (*mi)._p->_space;
     nout << 1000.0 * (1.0 - dot(va, vb)) << " for " << (*mi)._p->_name 
-	 << "\n   at " << va << " vs. " << vb << "\n";
+         << "\n   at " << va << " vs. " << vb << "\n";
   }
   nout << "\n";
 
@@ -345,9 +345,9 @@ stitch_image(StitchImage *image) {
     (*mi)._diff = (*mi)._need_uv - (*mi)._got_uv;
     
     nout << (*mi)._p->_name
-	 << " "<< (*mi)._need_uv << " vs. " << (*mi)._got_uv
-	 << " diff is " << length((*mi)._diff * image->_uv_to_pixels)
-	 << " pixels\n";
+         << " "<< (*mi)._need_uv << " vs. " << (*mi)._got_uv
+         << " diff is " << length((*mi)._diff * image->_uv_to_pixels)
+         << " pixels\n";
   }
   */
 
@@ -363,8 +363,8 @@ stitch_image(StitchImage *image) {
       StitchPoint *sp = (*ppi).second;
       
       if (!sp->_space_known) {
-	LVector3d space = normalize(image->extrude(uv));
-	sp->set_space(space);
+        LVector3d space = normalize(image->extrude(uv));
+        sp->set_space(space);
       }
     }
   }
@@ -391,18 +391,18 @@ feather_image(StitchImage *image) {
       LVector3d space = image->get_grid_vector(x, y);
       Images::const_iterator ii;
       for (ii = _placed.begin(); 
-	   ii != _placed.end() && 
-	     !image->_morph._table[y][x]._over_another; 
-	   ++ii) {
-	StitchImage *other = (*ii);
-	if (other->_index < image->_index) {
-	  LPoint2d uv = other->project(space);
-	  if (uv[0] >= 0.0 && uv[0] <= 1.0 &&
-	      uv[1] >= 0.0 && uv[1] <= 1.0) {
-	    // This point is over the other image.
-	    image->_morph._table[y][x]._over_another = true;
-	  }
-	}
+           ii != _placed.end() && 
+             !image->_morph._table[y][x]._over_another; 
+           ++ii) {
+        StitchImage *other = (*ii);
+        if (other->_index < image->_index) {
+          LPoint2d uv = other->project(space);
+          if (uv[0] >= 0.0 && uv[0] <= 1.0 &&
+              uv[1] >= 0.0 && uv[1] <= 1.0) {
+            // This point is over the other image.
+            image->_morph._table[y][x]._over_another = true;
+          }
+        }
       }
     }
   }
@@ -413,7 +413,7 @@ feather_image(StitchImage *image) {
 
 double Stitcher::
 try_match(StitchImage *image, LMatrix3d &rot,
-	  const Stitcher::MatchingPoints &mp, int zero, int one) {
+          const Stitcher::MatchingPoints &mp, int zero, int one) {
 
   // Now rotate this image relative to the other so the first pair of
   // points exactly coincide.

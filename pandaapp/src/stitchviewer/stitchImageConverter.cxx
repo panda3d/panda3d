@@ -29,7 +29,7 @@ add_output_image(StitchImage *image) {
 void StitchImageConverter::
 override_chan_cfg(ChanCfgOverrides &override) {
   override.setField(ChanCfgOverrides::Mask,
-		    ((unsigned int)(W_DOUBLE|W_DEPTH|W_MULTISAMPLE)));
+                    ((unsigned int)(W_DOUBLE|W_DEPTH|W_MULTISAMPLE)));
   override.setField(ChanCfgOverrides::Title, "Stitch");
 
   LVecBase2d size = _output_image->get_size_pixels();
@@ -73,12 +73,12 @@ create_image_geometry(Image &im) {
   for (int xi = 0; xi < x_verts; xi++) {
     for (int yi = 0; yi < y_verts; yi++) {
       LVector2d uvd =
-	im._image->project(_output_image->get_grid_vector(xi, yi));
+        im._image->project(_output_image->get_grid_vector(xi, yi));
       LVector2f uvf(uvd);
 
       LVector3f p = LVector3f::rfu(2 * (double)xi / (double)(x_verts - 1) - 1,
-				   1.0,
-				   1 - 2 * (double)yi / (double)(y_verts - 1));
+                                   1.0,
+                                   1 - 2 * (double)yi / (double)(y_verts - 1));
       mesh._coords.push_back(p);
       mesh._texcoords.push_back(uvf);
     }
@@ -91,13 +91,13 @@ create_image_geometry(Image &im) {
   for (int xi = 0; xi < x_verts; xi++) {
     for (int yi = 0; yi < y_verts; yi++) {
       LVector2d uvd = 
-	_output_image->project(im._image->get_grid_vector(xi, yi));
+        _output_image->project(im._image->get_grid_vector(xi, yi));
 
       LVector3f p = LVector3f::rfu(2 * uvd[0] - 1,
-				   1.0,
-				   2 * uvd[1] - 1);
+                                   1.0,
+                                   2 * uvd[1] - 1);
       LPoint2f uvf((double)xi / (double)(x_verts - 1),
-		   1.0 - (double)yi / (double)(y_verts - 1));
+                   1.0 - (double)yi / (double)(y_verts - 1));
       mesh._coords.push_back(p);
       mesh._texcoords.push_back(uvf);
     }

@@ -26,7 +26,7 @@ public:
   ~LayeredImage();
 
   void add_layer(const string &name, const LVector2d &offset,
-		 PNMImage *data);
+                 PNMImage *data);
 
   bool write_file(const Filename &filename);
 
@@ -101,7 +101,7 @@ private:
   void xcf_save_prop(PropType prop_type, ...);
   void xcf_save_layer(const Layer &layer);
   void xcf_save_channel(const string &name, const PNMImage *image, 
-			int channel);
+                        int channel);
   void xcf_save_hierarchy(const PNMImage *image, int channel);
   void xcf_save_level(const TileManager &tm, int level);
   void xcf_save_tile(const TileManager &tm, int level, int tile);

@@ -135,7 +135,7 @@ input_chars(char *buffer, int &result, int max_size) {
       // Truncate it at the newline.
       char *end = strchr(current_line, '\n');
       if (end != NULL) {
-	*end = '\0';
+        *end = '\0';
       }
     }
 
@@ -215,7 +215,7 @@ eat_c_comment() {
     if (last_c == '/' && c == '*') {
       ostringstream errmsg;
       errmsg << "This comment contains a nested /* symbol at line "
-	     << line << ", column " << col-1 << "--possibly unclosed?";
+             << line << ", column " << col-1 << "--possibly unclosed?";
       stitchyywarning(errmsg);
     }
     last_c = c;

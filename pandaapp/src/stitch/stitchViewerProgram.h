@@ -11,7 +11,7 @@
 #include "stitchCommandReader.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : StitchViewerProgram
+//       Class : StitchViewerProgram
 // Description : A program to read a stitch command file, and draw a
 //               3-d representation of all of the input images.
 ////////////////////////////////////////////////////////////////////

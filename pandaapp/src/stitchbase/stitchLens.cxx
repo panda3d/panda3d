@@ -57,13 +57,13 @@ get_vfov(double height_mm) const {
 
 void StitchLens::
 draw_triangle(TriangleRasterizer &rast, const LMatrix3d &,
-	      double, const RasterizerVertex *v0,
-	      const RasterizerVertex *v1, const RasterizerVertex *v2) {
+              double, const RasterizerVertex *v0,
+              const RasterizerVertex *v1, const RasterizerVertex *v2) {
   rast.draw_triangle(v0, v1, v2);
 }
 
 void StitchLens::
 pick_up_singularity(TriangleRasterizer &, const LMatrix3d &, 
-		    const LMatrix3d &, const LMatrix3d &, 
-		    double, StitchImage *) {
+                    const LMatrix3d &, const LMatrix3d &, 
+                    double, StitchImage *) {
 }

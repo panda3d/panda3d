@@ -15,7 +15,7 @@ class StitchCommand;
 int stitchyyparse();
 
 void stitch_init_parser(istream &in, const string &filename,
-			StitchCommand *tos);
+                        StitchCommand *tos);
 
 // This structure holds the return value for each token.
 // Traditionally, this is a union, and is declared with the %union

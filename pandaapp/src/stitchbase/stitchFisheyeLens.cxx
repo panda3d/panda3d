@@ -77,8 +77,8 @@ extrude(const LPoint2d &point_mm, double width_mm) const {
   
   // And rotate this point around the Y axis.
   LVector3d result = LVector3d::rfu(p[0]*v2[1] + p[2]*v2[0],
-				    p[1],
-				    p[2]*v2[1] - p[0]*v2[0]);
+                                    p[1],
+                                    p[2]*v2[1] - p[0]*v2[0]);
   return result;
 }
 
@@ -92,7 +92,7 @@ project(const LVector3d &vec, double width_mm) const {
     
   // First, discard the distance by normalizing the vector.
   LVector3d v2 = normalize(vec * LMatrix4d::convert_mat(CS_default,
-							CS_zup_right));
+                                                        CS_zup_right));
     
   // Now, project the point into the XZ plane and measure its angle
   // to the Z axis.  This is the same angle it will have to the
@@ -120,8 +120,8 @@ project(const LVector3d &vec, double width_mm) const {
 
 void StitchFisheyeLens::
 draw_triangle(TriangleRasterizer &rast, const LMatrix3d &,
-	      double, const RasterizerVertex *v0,
-	      const RasterizerVertex *v1, const RasterizerVertex *v2) {
+              double, const RasterizerVertex *v0,
+              const RasterizerVertex *v1, const RasterizerVertex *v2) {
   // A fisheye lens has a singularity at 180 degrees--this point maps
   // to the entire outer rim of the circle.  Near this singularity,
   // small distances in space map to very large distances on the film,
@@ -147,22 +147,22 @@ draw_triangle(TriangleRasterizer &rast, const LMatrix3d &,
       dot(v1->_space, LVector3d::forward()) < 0.0 &&
       dot(v2->_space, LVector3d::forward()) < 0.0) {
     LPoint2d xz0(dot(v0->_space, LVector3d::right()),
-		 dot(v0->_space, LVector3d::up()));
+                 dot(v0->_space, LVector3d::up()));
     LPoint2d xz1(dot(v1->_space, LVector3d::right()),
-		 dot(v1->_space, LVector3d::up()));
+                 dot(v1->_space, LVector3d::up()));
     LPoint2d xz2(dot(v2->_space, LVector3d::right()),
-		 dot(v2->_space, LVector3d::up()));
+                 dot(v2->_space, LVector3d::up()));
 
     // This projection will reverse the vertex order.
     if (triangle_contains_circle(LPoint2d(0.0, 0.0), 
-				 _singularity_radius,
-				 xz0, xz2, xz1)) {
+                                 _singularity_radius,
+                                 xz0, xz2, xz1)) {
       // The triangle does cross the singularity!  Reject it.
       /*
       nout << "Rejecting:\n"
-	   << "   " << v0->_space << "\n"
-	   << "   " << v1->_space << "\n"
-	   << "   " << v2->_space << "\n\n";
+           << "   " << v0->_space << "\n"
+           << "   " << v1->_space << "\n"
+           << "   " << v2->_space << "\n\n";
       */
       _singularity_detected = 1;
       return;
@@ -174,10 +174,10 @@ draw_triangle(TriangleRasterizer &rast, const LMatrix3d &,
 
 void StitchFisheyeLens::
 pick_up_singularity(TriangleRasterizer &rast, 
-		    const LMatrix3d &mm_to_pixels,
-		    const LMatrix3d &pixels_to_mm,
-		    const LMatrix3d &rotate,
-		    double width_mm, StitchImage *input) {
+                    const LMatrix3d &mm_to_pixels,
+                    const LMatrix3d &pixels_to_mm,
+                    const LMatrix3d &rotate,
+                    double width_mm, StitchImage *input) {
   if (_singularity_detected) {
     nout << "Picking up singularity\n";
 
@@ -218,52 +218,52 @@ pick_up_singularity(TriangleRasterizer &rast,
 
       // Where are the left and right X pixels at this slice?
       if (yi <= inner_top_y) {
-	// This is the top slice of the ring: between the top of the
-	// outer circle and the top of the inner circle.
-	
-	LPoint2d pmm = LPoint2d(0.0, yi) * pixels_to_mm;
-	pmm[0] = sqrt(outer_mm * outer_mm - pmm[1] * pmm[1]);
-	
-	LPoint2d px = LPoint2d(-pmm[0], pmm[1]) * mm_to_pixels;
-	left_x_1 = max((int)floor(px[0]), 0);
-       	px = LPoint2d(pmm[0], pmm[1]) * mm_to_pixels;
-	right_x_1 = min((int)ceil(px[0]), xsize - 1);
+        // This is the top slice of the ring: between the top of the
+        // outer circle and the top of the inner circle.
 
-	right_x_2 = right_x_1;
-	left_x_2 = right_x_2 + 1;
+        LPoint2d pmm = LPoint2d(0.0, yi) * pixels_to_mm;
+        pmm[0] = sqrt(outer_mm * outer_mm - pmm[1] * pmm[1]);
+
+        LPoint2d px = LPoint2d(-pmm[0], pmm[1]) * mm_to_pixels;
+        left_x_1 = max((int)floor(px[0]), 0);
+        px = LPoint2d(pmm[0], pmm[1]) * mm_to_pixels;
+        right_x_1 = min((int)ceil(px[0]), xsize - 1);
+
+        right_x_2 = right_x_1;
+        left_x_2 = right_x_2 + 1;
 
       } else if (yi < inner_bot_y) {
-	// This is the inner section: within the inner circle area.
-	// We have both a left and a right section here.
-	
-	LPoint2d pmm = LPoint2d(0.0, yi) * pixels_to_mm;
-	pmm[0] = sqrt(outer_mm * outer_mm - pmm[1] * pmm[1]);
-	
-	LPoint2d px = LPoint2d(-pmm[0], pmm[1]) * mm_to_pixels;
-	left_x_1 = max((int)floor(px[0]), 0);
-       	px = LPoint2d(pmm[0], pmm[1]) * mm_to_pixels;
-	right_x_2 = min((int)ceil(px[0]), xsize - 1);
+        // This is the inner section: within the inner circle area.
+        // We have both a left and a right section here.
 
-	pmm[0] = sqrt(inner_mm * inner_mm - pmm[1] * pmm[1]);
-	px = LPoint2d(-pmm[0], pmm[1]) * mm_to_pixels;
-	right_x_1 = max((int)floor(px[0]), 0);
-       	px = LPoint2d(pmm[0], pmm[1]) * mm_to_pixels;
-	left_x_2 = min((int)ceil(px[0]), xsize - 1);
+        LPoint2d pmm = LPoint2d(0.0, yi) * pixels_to_mm;
+        pmm[0] = sqrt(outer_mm * outer_mm - pmm[1] * pmm[1]);
+
+        LPoint2d px = LPoint2d(-pmm[0], pmm[1]) * mm_to_pixels;
+        left_x_1 = max((int)floor(px[0]), 0);
+        px = LPoint2d(pmm[0], pmm[1]) * mm_to_pixels;
+        right_x_2 = min((int)ceil(px[0]), xsize - 1);
+
+        pmm[0] = sqrt(inner_mm * inner_mm - pmm[1] * pmm[1]);
+        px = LPoint2d(-pmm[0], pmm[1]) * mm_to_pixels;
+        right_x_1 = max((int)floor(px[0]), 0);
+        px = LPoint2d(pmm[0], pmm[1]) * mm_to_pixels;
+        left_x_2 = min((int)ceil(px[0]), xsize - 1);
 
       } else {
-	// This is the bottom slice of the ring: between the bottom of
-	// the inner circle and the bottom of the outer circle.
-	
-	LPoint2d pmm = LPoint2d(0.0, yi) * pixels_to_mm;
-	pmm[0] = sqrt(outer_mm * outer_mm - pmm[1] * pmm[1]);
-	
-	LPoint2d px = LPoint2d(-pmm[0], pmm[1]) * mm_to_pixels;
-	left_x_1 = max((int)floor(px[0]), 0);
-       	px = LPoint2d(pmm[0], pmm[1]) * mm_to_pixels;
-	right_x_1 = min((int)ceil(px[0]), xsize - 1);
+        // This is the bottom slice of the ring: between the bottom of
+        // the inner circle and the bottom of the outer circle.
 
-	right_x_2 = right_x_1;
-	left_x_2 = right_x_2 + 1;
+        LPoint2d pmm = LPoint2d(0.0, yi) * pixels_to_mm;
+        pmm[0] = sqrt(outer_mm * outer_mm - pmm[1] * pmm[1]);
+
+        LPoint2d px = LPoint2d(-pmm[0], pmm[1]) * mm_to_pixels;
+        left_x_1 = max((int)floor(px[0]), 0);
+        px = LPoint2d(pmm[0], pmm[1]) * mm_to_pixels;
+        right_x_1 = min((int)ceil(px[0]), xsize - 1);
+
+        right_x_2 = right_x_1;
+        left_x_2 = right_x_2 + 1;
 
       }
 
@@ -273,12 +273,12 @@ pick_up_singularity(TriangleRasterizer &rast,
       v0._uv = input->project(v0._space);
       
       for (xi = left_x_1; xi <= right_x_1; xi++) {
-	double last_u = v0._uv[0];
-	
-	v0._p.set(xi, yi);
-	v0._space = extrude(v0._p * pixels_to_mm, width_mm) * rotate;
-	v0._uv = input->project(v0._space);
-	rast.draw_pixel(&v0, fabs(v0._uv[0] - last_u));
+        double last_u = v0._uv[0];
+
+        v0._p.set(xi, yi);
+        v0._space = extrude(v0._p * pixels_to_mm, width_mm) * rotate;
+        v0._uv = input->project(v0._space);
+        rast.draw_pixel(&v0, fabs(v0._uv[0] - last_u));
       }
 
       // Project xi point 1 to determine the radius.
@@ -287,12 +287,12 @@ pick_up_singularity(TriangleRasterizer &rast,
       v0._uv = input->project(v0._space);
       
       for (xi = left_x_2; xi <= right_x_2; xi++) {
-	double last_u = v0._uv[0];
-	
-	v0._p.set(xi, yi);
-	v0._space = extrude(v0._p * pixels_to_mm, width_mm) * rotate;
-	v0._uv = input->project(v0._space);
-	rast.draw_pixel(&v0, fabs(v0._uv[0] - last_u));
+        double last_u = v0._uv[0];
+
+        v0._p.set(xi, yi);
+        v0._space = extrude(v0._p * pixels_to_mm, width_mm) * rotate;
+        v0._uv = input->project(v0._space);
+        rast.draw_pixel(&v0, fabs(v0._uv[0] - last_u));
       }
     }
   }

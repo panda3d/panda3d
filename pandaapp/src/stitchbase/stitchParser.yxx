@@ -21,7 +21,7 @@ static StitchCommand *parent;
 
 void
 stitch_init_parser(istream &in, const string &filename,
-		   StitchCommand *tos) {
+                   StitchCommand *tos) {
   stitch_init_lexer(in, filename);
   parent = tos;
   cstack.push_back(parent);
@@ -81,119 +81,119 @@ stitch_init_parser(istream &in, const string &filename,
 %%
 
 stitch_file:
-	commands
+        commands
 
 commands:
-	empty
-	| commands command
+        empty
+        | commands command
 {
   //  parent->add_nested($2);
 }
-	| commands KW_POINTS '{' points_list '}'
-	;
+        | commands KW_POINTS '{' points_list '}'
+        ;
 
 command:
-	group_command
+        group_command
 {
   parent = $1;
   cstack.push_back(parent);
 }
-	nested_commands
+        nested_commands
 {
   cstack.pop_back();
   parent = cstack.back();
 }
-	| simple_command ';'
+        | simple_command ';'
 {
   $$ = $1;
 }
-	;
+        ;
 
 nested_commands:
-	'{' commands '}'
-	| ';'
-	;
+        '{' commands '}'
+        | ';'
+        ;
 
 group_command:
-	KW_DEFINE name
+        KW_DEFINE name
 {
   $$ = new StitchCommand(parent, StitchCommand::C_define);
   $$->set_name($2);
 }
-	| KW_LENS optional_name
+        | KW_LENS optional_name
 {
   $$ = new StitchCommand(parent, StitchCommand::C_lens);
   $$->set_name($2);
 }
-	| KW_INPUT_IMAGE optional_name
+        | KW_INPUT_IMAGE optional_name
 {
   $$ = new StitchCommand(parent, StitchCommand::C_input_image);
   $$->set_name($2);
 }
-	| KW_OUTPUT_IMAGE optional_name
+        | KW_OUTPUT_IMAGE optional_name
 {
   $$ = new StitchCommand(parent, StitchCommand::C_output_image);
   $$->set_name($2);
 }
-	| KW_STITCH optional_name
+        | KW_STITCH optional_name
 {
   $$ = new StitchCommand(parent, StitchCommand::C_stitch);
   $$->set_name($2);
 }
-	| KW_USING
+        | KW_USING
 {
   cstack.push_back(new StitchCommand(parent, StitchCommand::C_using));
 }
-	using_list
+        using_list
 {
   $$ = cstack.back();
   cstack.pop_back();
 }
-	;
+        ;
 
 simple_command:
-	KW_PERSPECTIVE
+        KW_PERSPECTIVE
 {
   $$ = new StitchCommand(parent, StitchCommand::C_perspective);
 }
-	| KW_FISHEYE
+        | KW_FISHEYE
 {
   $$ = new StitchCommand(parent, StitchCommand::C_fisheye);
 }
-	| KW_CYLINDRICAL
+        | KW_CYLINDRICAL
 {
   $$ = new StitchCommand(parent, StitchCommand::C_cylindrical);
 }
-	| KW_PSPHERE
+        | KW_PSPHERE
 {
   $$ = new StitchCommand(parent, StitchCommand::C_psphere);
 }
-	| KW_FOCAL_LENGTH length
+        | KW_FOCAL_LENGTH length
 {
   $$ = new StitchCommand(parent, StitchCommand::C_focal_length);
   $$->set_length($2);
 }
-	| KW_FOV NUMBER
+        | KW_FOV NUMBER
 {
   $$ = new StitchCommand(parent, StitchCommand::C_fov);
   $$->set_number($2);
 }
-	| KW_SINGULARITY_TOLERANCE NUMBER
+        | KW_SINGULARITY_TOLERANCE NUMBER
 {
   $$ = new StitchCommand(parent, StitchCommand::C_singularity_tolerance);
   $$->set_number($2);
 }
-	| KW_RESOLUTION resolution
+        | KW_RESOLUTION resolution
 {
   $$ = new StitchCommand(parent, StitchCommand::C_resolution);
   $$->set_resolution($2);
 }
-	| KW_FILENAME STRING
+        | KW_FILENAME STRING
 {
   $$ = new StitchCommand(parent, StitchCommand::C_filename);
   $$->set_str($2);
 }
-	| KW_POINT name point
+        | KW_POINT name point
 {
   if ($<num_components>3 == 2) {
     $$ = new StitchCommand(parent, StitchCommand::C_point2d);
@@ -204,73 +204,73 @@ simple_command:
   }
   $$->set_name($2);
 }
-	| KW_SHOW_POINTS NUMBER color
+        | KW_SHOW_POINTS NUMBER color
 {
   $$ = new StitchCommand(parent, StitchCommand::C_show_points);
   $$->set_number($2);
   $$->set_color($3);
 }
-	| KW_IMAGE_SIZE vec2
+        | KW_IMAGE_SIZE vec2
 {
   $$ = new StitchCommand(parent, StitchCommand::C_image_size);
   $$->set_point2d((const LPoint2d &)$2);
 }
-	| KW_FILM_SIZE length_pair
+        | KW_FILM_SIZE length_pair
 {
   $$ = new StitchCommand(parent, StitchCommand::C_film_size);
   $$->set_length_pair((const LPoint2d &)$2);
 }
-	| KW_FILM_OFFSET length_pair
+        | KW_FILM_OFFSET length_pair
 {
   $$ = new StitchCommand(parent, StitchCommand::C_film_offset);
   $$->set_length_pair((const LPoint2d &)$2);
 }
-	| KW_GRID vec2
+        | KW_GRID vec2
 {
   $$ = new StitchCommand(parent, StitchCommand::C_grid);
   $$->set_point2d((const LPoint2d &)$2);
 }
-	| KW_UNTEXTURED_COLOR color
+        | KW_UNTEXTURED_COLOR color
 {
   $$ = new StitchCommand(parent, StitchCommand::C_untextured_color);
   $$->set_color((const Colord &)$2);
 }
-	| KW_HPR vec3
+        | KW_HPR vec3
 {
   $$ = new StitchCommand(parent, StitchCommand::C_hpr);
   $$->set_point3d((const LPoint3d &)$2);
 }
-	| KW_LAYERS
+        | KW_LAYERS
 {
   $$ = new StitchCommand(parent, StitchCommand::C_layers);
 }
-	| IDENTIFIER
+        | IDENTIFIER
 {
   $$ = new StitchCommand(parent, StitchCommand::C_user_command);
   if (!$$->add_using($1)) {
     yyerror("Undefined identifier " + $1);
   }
 }
-	;
+        ;
 
 using_list:
-	IDENTIFIER
+        IDENTIFIER
 {
   if (!cstack.back()->add_using($1)) {
     yyerror("Undefined identifier " + $1);
   }
 }
-	| using_list ',' IDENTIFIER	
+        | using_list ',' IDENTIFIER
 {
   if (!cstack.back()->add_using($3)) {
     yyerror("Undefined identifier " + $3);
   }
 }
-	;
+        ;
 
 points_list:
-	empty
-	| points_list name point ';'
+        empty
+        | points_list name point ';'
 {
   StitchCommand *cmd;
   if ($<num_components>3 == 2) {
@@ -283,141 +283,141 @@ points_list:
   cmd->set_name($2);
   //  parent->add_nested(cmd);
 }
-	;
+        ;
   
 
 length:
-	NUMBER length_units
+        NUMBER length_units
 {
   $$ = $1 * $2;   // convert to mm
 }
-	;
+        ;
 
 length_units:
-	KW_IN
+        KW_IN
 {
   $$ = 25.4;   // in to mm
 }
-	| KW_CM
+        | KW_CM
 {
   $$ = 10.0;   // cm to mm
 }
-	| KW_MM
+        | KW_MM
 {
   $$ = 1.0;
 }
-	;
+        ;
 
 
 resolution:
-	NUMBER resolution_units
+        NUMBER resolution_units
 {
   $$ = $1 * $2;    // convert to pixels per mm
 }
-	;
+        ;
 
 resolution_units:
-	KW_P '/' length_units
+        KW_P '/' length_units
 {
   $$ = 1.0 / $3;
 }
-	;
+        ;
 
 point:
-	'(' NUMBER NUMBER ')'
+        '(' NUMBER NUMBER ')'
 {
   $$.set($2, $3, 0.0, 0.0);
   $<num_components>$ = 2;
 }
-	| '(' NUMBER ',' NUMBER ')'
+        | '(' NUMBER ',' NUMBER ')'
 {
   $$.set($2, $4, 0.0, 0.0);
   $<num_components>$ = 2;
 }
-	| '(' NUMBER NUMBER NUMBER ')'
+        | '(' NUMBER NUMBER NUMBER ')'
 {
   $$.set($2, $3, $4, 0.0);
   $<num_components>$ = 3;
 }
-	| '(' NUMBER ',' NUMBER ',' NUMBER ')'
+        | '(' NUMBER ',' NUMBER ',' NUMBER ')'
 {
   $$.set($2, $4, $6, 0.0);
   $<num_components>$ = 3;
 }
-	;
+        ;
 
 vec2:
-	'(' NUMBER NUMBER ')'
+        '(' NUMBER NUMBER ')'
 {
   $$.set($2, $3, 0.0, 0.0);
   $<num_components>$ = 2;
 }
-	| '(' NUMBER ',' NUMBER ')'
+        | '(' NUMBER ',' NUMBER ')'
 {
   $$.set($2, $4, 0.0, 0.0);
   $<num_components>$ = 2;
 }
-	;
+        ;
 
-vec3:	'(' NUMBER NUMBER NUMBER ')'
+vec3:   '(' NUMBER NUMBER NUMBER ')'
 {
   $$.set($2, $3, $4, 0.0);
   $<num_components>$ = 3;
 }
-	| '(' NUMBER ',' NUMBER ',' NUMBER ')'
+        | '(' NUMBER ',' NUMBER ',' NUMBER ')'
 {
   $$.set($2, $4, $6, 0.0);
   $<num_components>$ = 3;
 }
-	;
+        ;
 
 length_pair:
-	'(' length length ')'
+        '(' length length ')'
 {
   $$.set($2, $3, 0.0, 0.0);
   $<num_components>$ = 2;
 }
-	| '(' length ',' length ')'
+        | '(' length ',' length ')'
 {
   $$.set($2, $4, 0.0, 0.0);
   $<num_components>$ = 2;
 }
-	;
+        ;
 
 color:
-	'(' NUMBER NUMBER NUMBER ')'
+        '(' NUMBER NUMBER NUMBER ')'
 {
   $$.set($2, $3, $4, 1.0);
   $<num_components>$ = 3;
 }
-	| '(' NUMBER ',' NUMBER ',' NUMBER ')'
+        | '(' NUMBER ',' NUMBER ',' NUMBER ')'
 {
   $$.set($2, $4, $6, 1.0);
   $<num_components>$ = 3;
 }
-	| '(' NUMBER NUMBER NUMBER NUMBER ')'
+        | '(' NUMBER NUMBER NUMBER NUMBER ')'
 {
   $$.set($2, $3, $4, $5);
   $<num_components>$ = 4;
 }
-	| '(' NUMBER ',' NUMBER ',' NUMBER ',' NUMBER ')'
+        | '(' NUMBER ',' NUMBER ',' NUMBER ',' NUMBER ')'
 {
   $$.set($2, $4, $6, $8);
   $<num_components>$ = 4;
 }
-	;
+        ;
 
 name:
-	IDENTIFIER
-	;
+        IDENTIFIER
+        ;
 
 optional_name:
-	IDENTIFIER
-	| empty
+        IDENTIFIER
+        | empty
 {
   $$ = "";
 }
-	;
+        ;
 
 empty:
-	;
+        ;

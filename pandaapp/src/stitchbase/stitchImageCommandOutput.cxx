@@ -41,8 +41,8 @@ execute() {
     Stitcher *stitcher = (*si);
     Stitcher::LoosePoints::const_iterator pi;
     for (pi = stitcher->_loose_points.begin();
-	 pi != stitcher->_loose_points.end();
-	 ++pi) {
+         pi != stitcher->_loose_points.end();
+         ++pi) {
       StitchCommand *cmd = new StitchCommand(&root, StitchCommand::C_point3d);
       cmd->set_name((*pi)->_name);
       cmd->set_point3d((*pi)->_space);

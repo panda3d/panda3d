@@ -59,7 +59,7 @@ project(const LVector3d &vec, double width_mm) const {
     return LPoint2d(r / 0.000001, u / 0.000001);
   } else {
     return LPoint2d(r / f * get_focal_length(width_mm), 
-		    u / f * get_focal_length(width_mm));
+                    u / f * get_focal_length(width_mm));
   }
 }
 

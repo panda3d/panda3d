@@ -278,7 +278,7 @@ get_str() const {
 
 void StitchCommand::
 process(StitchImageOutputter &outputter, Stitcher *stitcher,
-	StitchFile &file) {
+        StitchFile &file) {
   if (_command == C_input_image) {
     StitchImage *image = create_image();
 
@@ -303,8 +303,8 @@ process(StitchImageOutputter &outputter, Stitcher *stitcher,
     // Now add all of the stitched images to the outputter, in order.
     Stitcher::Images::const_iterator ii;
     for (ii = new_stitcher->_placed.begin();
-	 ii != new_stitcher->_placed.end();
-	 ++ii) {
+         ii != new_stitcher->_placed.end();
+         ++ii) {
       outputter.add_input_image(*ii);
     }
     outputter.add_stitcher(new_stitcher);
@@ -372,19 +372,19 @@ write(ostream &out, int indent_level) const {
       Commands::const_iterator ci;
       ci = _using.begin();
       if (ci != _using.end()) {
-	out << " " << (*ci)->_name;
-	++ci;
-	while (ci != _using.end()) {
-	  out << ", " << (*ci)->_name;
-	  ++ci;
-	}
+        out << " " << (*ci)->_name;
+        ++ci;
+        while (ci != _using.end()) {
+          out << ", " << (*ci)->_name;
+          ++ci;
+        }
       }
     }
     if (_params & P_nested) {
       out << " {\n";
       Commands::const_iterator ci;
       for (ci = _nested.begin(); ci != _nested.end(); ++ci) {
-	(*ci)->write(out, indent_level + 2);
+        (*ci)->write(out, indent_level + 2);
       }
       indent(out, indent_level) << "}\n";
     } else {
@@ -400,7 +400,7 @@ find_definition(const string &name) {
   Commands::const_iterator ci;
   for (ci = _nested.begin(); ci != _nested.end(); ++ci) {
     if (((*ci)->_command == C_define || (*ci)->_command == C_lens) && 
-	(*ci)->_name == name) {
+        (*ci)->_name == name) {
       return (*ci);
     }
   }
@@ -417,7 +417,7 @@ find_using_lens() {
     for (ci = _using.begin(); ci != _using.end(); ++ci) {
       StitchLens *lens = (*ci)->find_lens();
       if (lens != NULL) {
-	return lens;
+        return lens;
       }
     }
   }
@@ -496,7 +496,7 @@ find_using_command(Command command) {
     for (ci = _using.begin(); ci != _using.end(); ++ci) {
       StitchCommand *cmd = (*ci)->find_command(command);
       if (cmd != NULL) {
-	return cmd;
+        return cmd;
       }
     }
   }
@@ -584,7 +584,7 @@ create_image() {
   if (cmd != NULL) {
     LVecBase2d size_mm = cmd->get_point2d();
     resolution.set((size_pixels[0]-1) / size_mm[0],
-		   (size_pixels[1]-1) / size_mm[1]);
+                   (size_pixels[1]-1) / size_mm[1]);
   } else {
     cmd = find_command(C_resolution);
     if (cmd != NULL) {
@@ -600,7 +600,7 @@ create_image() {
 
   StitchImage *image = 
     new StitchImage(get_name(), filename, lens, size_pixels, resolution,
-		    film_offset_mm);
+                    film_offset_mm);
   image->setup_grid(50, 50);
 
   // Also look for points and other stuff.

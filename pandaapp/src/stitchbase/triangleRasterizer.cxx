@@ -9,10 +9,10 @@
 // Inline function declared up here for the forward reference.
 inline void TriangleRasterizer::
 filter_pixel(RGBColord &rgb, double &alpha,
-	     double s, double t,
-	     double dsdx, double dtdx, double dsdy, double dtdy) {
+             double s, double t,
+             double dsdx, double dtdx, double dsdy, double dtdy) {
   filter_pixel(rgb, alpha, s, t, 
-	       max(max(dsdx, dtdx), max(dsdy, dtdy)) / 2.0);
+               max(max(dsdx, dtdx), max(dsdy, dtdy)) / 2.0);
 }
 
 
@@ -36,8 +36,8 @@ TriangleRasterizer() {
 
 void TriangleRasterizer::
 draw_triangle(const RasterizerVertex *v0, 
-	      const RasterizerVertex *v1, 
-	      const RasterizerVertex *v2) {
+              const RasterizerVertex *v1, 
+              const RasterizerVertex *v2) {
   if ((v0->_visibility & v1->_visibility & v2->_visibility) != 0) {
     // All three vertices are out of bounds in the same direction, so
     // the triangle is completely out of bounds.  Don't bother trying
@@ -62,19 +62,19 @@ draw_triangle(const RasterizerVertex *v0,
 
     if (y0<=y1) {
       if (y1<=y2) {
-	vMin = v0;   vMid = v1;   vMax = v2;   /* y0<=y1<=y2 */
+        vMin = v0;   vMid = v1;   vMax = v2;   /* y0<=y1<=y2 */
       } else if (y2<=y0) {
-	vMin = v2;   vMid = v0;   vMax = v1;   /* y2<=y0<=y1 */
+        vMin = v2;   vMid = v0;   vMax = v1;   /* y2<=y0<=y1 */
       } else {
-	vMin = v0;   vMid = v2;   vMax = v1;   /* y0<=y2<=y1 */
+        vMin = v0;   vMid = v2;   vMax = v1;   /* y0<=y2<=y1 */
       }
     } else {
       if (y0<=y2) {
-	vMin = v1;   vMid = v0;   vMax = v2;   /* y1<=y0<=y2 */
+        vMin = v1;   vMid = v0;   vMax = v2;   /* y1<=y0<=y2 */
       } else if (y2<=y1) {
-	vMin = v2;   vMid = v1;   vMax = v0;   /* y2<=y1<=y0 */
+        vMin = v2;   vMid = v1;   vMax = v0;   /* y2<=y1<=y0 */
       } else {
-	vMin = v1;   vMid = v2;   vMax = v0;   /* y1<=y2<=y0 */
+        vMin = v1;   vMid = v2;   vMax = v0;   /* y1<=y2<=y0 */
       }
     }
   }
@@ -177,7 +177,7 @@ draw_triangle(const RasterizerVertex *v0,
     */
 
   {
-    int ltor;		/* true if scanning left-to-right */
+    int ltor;           /* true if scanning left-to-right */
 
     // For interpolating the alpha value.
     double dadx, dady;
@@ -298,173 +298,173 @@ draw_triangle(const RasterizerVertex *v0,
       FixedPoint ft, fdtOuter, fdtInner;
 
       for (subTriangle=0; subTriangle<=1; subTriangle++) {
-	Edge *eLeft, *eRight;
-	int setupLeft, setupRight;
-	int lines;
+        Edge *eLeft, *eRight;
+        int setupLeft, setupRight;
+        int lines;
 
-	if (subTriangle==0) {
-	  /* bottom half */
-	  if (ltor) {
-	    eLeft = &eMaj;
-	    eRight = &eBot;
-	    lines = eRight->_lines;
-	    setupLeft = 1;
-	    setupRight = 1;
-	  }
-	  else {
-	    eLeft = &eBot;
-	    eRight = &eMaj;
-	    lines = eLeft->_lines;
-	    setupLeft = 1;
-	    setupRight = 1;
-	  }
-	}
-	else {
-	  /* top half */
-	  if (ltor) {
-	    eLeft = &eMaj;
-	    eRight = &eTop;
-	    lines = eRight->_lines;
-	    setupLeft = 0;
-	    setupRight = 1;
-	  }
-	  else {
-	    eLeft = &eTop;
-	    eRight = &eMaj;
-	    lines = eLeft->_lines;
-	    setupLeft = 1;
-	    setupRight = 0;
-	  }
-	  if (lines==0) return;
-	}
+        if (subTriangle==0) {
+          /* bottom half */
+          if (ltor) {
+            eLeft = &eMaj;
+            eRight = &eBot;
+            lines = eRight->_lines;
+            setupLeft = 1;
+            setupRight = 1;
+          }
+          else {
+            eLeft = &eBot;
+            eRight = &eMaj;
+            lines = eLeft->_lines;
+            setupLeft = 1;
+            setupRight = 1;
+          }
+        }
+        else {
+          /* top half */
+          if (ltor) {
+            eLeft = &eMaj;
+            eRight = &eTop;
+            lines = eRight->_lines;
+            setupLeft = 0;
+            setupRight = 1;
+          }
+          else {
+            eLeft = &eTop;
+            eRight = &eMaj;
+            lines = eLeft->_lines;
+            setupLeft = 1;
+            setupRight = 0;
+          }
+          if (lines==0) return;
+        }
 
-	if (setupLeft && eLeft->_lines>0) {
-	  const RasterizerVertex *vLower;
-	  FixedPoint fsx = eLeft->_fsx;
-	  fx = FixedCeil(fsx);
-	  fError = fx - fsx - FIXED_ONE;
-	  fxLeftEdge = fsx - FIXED_EPSILON;
-	  fdxLeftEdge = eLeft->_fdxdy;
-	  fdxOuter = FixedFloor(fdxLeftEdge - FIXED_EPSILON);
-	  fdError = fdxOuter - fdxLeftEdge + FIXED_ONE;
-	  idxOuter = FixedToInt(fdxOuter);
-	  dxOuter = (double) idxOuter;
+        if (setupLeft && eLeft->_lines>0) {
+          const RasterizerVertex *vLower;
+          FixedPoint fsx = eLeft->_fsx;
+          fx = FixedCeil(fsx);
+          fError = fx - fsx - FIXED_ONE;
+          fxLeftEdge = fsx - FIXED_EPSILON;
+          fdxLeftEdge = eLeft->_fdxdy;
+          fdxOuter = FixedFloor(fdxLeftEdge - FIXED_EPSILON);
+          fdError = fdxOuter - fdxLeftEdge + FIXED_ONE;
+          idxOuter = FixedToInt(fdxOuter);
+          dxOuter = (double) idxOuter;
 
-	  fy = eLeft->_fsy;
-	  iy = FixedToInt(fy);
+          fy = eLeft->_fsy;
+          iy = FixedToInt(fy);
 
-	  adjx = (double)(fx - eLeft->_fx0);  /* SCALED! */
-	  adjy = eLeft->_adjy;		 /* SCALED! */
-	  
-	  vLower = eLeft->_v0;
-	  
-	  /*
-	   * Now we need the set of parameter (z, color, etc.) values at
-	   * the point (fx, fy).  This gives us properly-sampled parameter
-	   * values that we can step from pixel to pixel.  Furthermore,
-	   * although we might have intermediate results that overflow
-	   * the normal parameter range when we step temporarily outside
-	   * the triangle, we shouldn't overflow or underflow for any
-	   * pixel that's actually inside the triangle.
-	   */
-	  
-	  // Interpolate alpha
-	  fa = (FixedPoint)(vLower->_alpha * FIXED_SCALE + dadx * adjx + dady * adjy)
-	    + FIXED_HALF;
-	  fdaOuter = SignedFloatToFixed(dady + dxOuter * dadx);
-	  // Interpolate texture coordinates
-	  {
-	    double s0, t0;
-	    s0 = vLower->_uv[0] * twidth;
-	    fs = (FixedPoint)(s0 * FIXED_SCALE + dsdx * adjx + dsdy * adjy) + FIXED_HALF;
-	    fdsOuter = SignedFloatToFixed(dsdy + dxOuter * dsdx);
-	    t0 = vLower->_uv[1] * theight;
-	    ft = (FixedPoint)(t0 * FIXED_SCALE + dtdx * adjx + dtdy * adjy) + FIXED_HALF;
-	    fdtOuter = SignedFloatToFixed(dtdy + dxOuter * dtdx);
-	  }
-	  
-	} /*if setupLeft*/
-	
-	
-	if (setupRight && eRight->_lines>0) {
-	  fxRightEdge = eRight->_fsx - FIXED_EPSILON;
-	  fdxRightEdge = eRight->_fdxdy;
-	}
-	
-	if (lines==0) {
-	  continue;
-	}
+          adjx = (double)(fx - eLeft->_fx0);  /* SCALED! */
+          adjy = eLeft->_adjy;           /* SCALED! */
 
-	/* Rasterize setup */
-	fdaInner = fdaOuter + fdadx;
-	fdsInner = fdsOuter + fdsdx;
-	fdtInner = fdtOuter + fdtdx;
-	
-	while (lines>0) {
-	  if (iy >= 0 && iy < _output->get_y_size()) {
-	    /* initialize the span interpolants to the leftmost value */
-	    /* ff = fixed-pt fragment */
-	    FixedPoint ffa = fa;
-	    FixedPoint ffs = fs,  fft = ft;
+          vLower = eLeft->_v0;
 
-	    int left = FixedToInt(fxLeftEdge);
-	    int right = FixedToInt(fxRightEdge);
+          /*
+           * Now we need the set of parameter (z, color, etc.) values at
+           * the point (fx, fy).  This gives us properly-sampled parameter
+           * values that we can step from pixel to pixel.  Furthermore,
+           * although we might have intermediate results that overflow
+           * the normal parameter range when we step temporarily outside
+           * the triangle, we shouldn't overflow or underflow for any
+           * pixel that's actually inside the triangle.
+           */
 
-	    // Alpha
-	    {
-	      //	      FixedPoint ffaend = ffa+(right-left-1)*fdadx;
-	      //	      if (ffaend<0) ffa -= ffaend;
-	      //	      if (ffa<0) ffa = 0;
-	    }
+          // Interpolate alpha
+          fa = (FixedPoint)(vLower->_alpha * FIXED_SCALE + dadx * adjx + dady * adjy)
+            + FIXED_HALF;
+          fdaOuter = SignedFloatToFixed(dady + dxOuter * dadx);
+          // Interpolate texture coordinates
+          {
+            double s0, t0;
+            s0 = vLower->_uv[0] * twidth;
+            fs = (FixedPoint)(s0 * FIXED_SCALE + dsdx * adjx + dsdy * adjy) + FIXED_HALF;
+            fdsOuter = SignedFloatToFixed(dsdy + dxOuter * dsdx);
+            t0 = vLower->_uv[1] * theight;
+            ft = (FixedPoint)(t0 * FIXED_SCALE + dtdx * adjx + dtdy * adjy) + FIXED_HALF;
+            fdtOuter = SignedFloatToFixed(dtdy + dxOuter * dtdx);
+          }
 
-	    // Rasterize left to right at row iy.
-	    if (right > left) {
-	      ffs -= FIXED_HALF; /* off-by-one error? */        
-	      fft -= FIXED_HALF;
-	      ffa -= FIXED_HALF;
-	      for (int ix = left; ix < right; ix++) {
-		if (ix >= 0 && ix < _output->get_x_size()) {
-		  RGBColord rgb;
-		  double alpha;
-		  filter_pixel(rgb, alpha,
-			       FixedToFloat(ffs), FixedToFloat(fft),
-			       dsdx, dtdx, dsdy, dtdy);
-		  alpha *= FixedToFloat(ffa);
-		  _output->blend(ix, iy, rgb, alpha);
-		}
+        } /*if setupLeft*/
 
-		ffs += fdsdx;
-		fft += fdtdx;
-		ffa += fdadx;
-	      }
-	    }
-	  }
 
-	  /*
-	   * Advance to the next scan line.  Compute the
-	   * new edge coordinates, and adjust the
-	   * pixel-center x coordinate so that it stays
-	   * on or inside the major edge.
-	   */
-	  iy++;
-	  lines--;
+        if (setupRight && eRight->_lines>0) {
+          fxRightEdge = eRight->_fsx - FIXED_EPSILON;
+          fdxRightEdge = eRight->_fdxdy;
+        }
 
-	  fxLeftEdge += fdxLeftEdge;
-	  fxRightEdge += fdxRightEdge;
+        if (lines==0) {
+          continue;
+        }
 
-	  fError += fdError;
-	  if (fError >= 0) {
-	    fError -= FIXED_ONE;
+        /* Rasterize setup */
+        fdaInner = fdaOuter + fdadx;
+        fdsInner = fdsOuter + fdsdx;
+        fdtInner = fdtOuter + fdtdx;
 
-	    fa += fdaOuter;
-	    fs += fdsOuter;
-	    ft += fdtOuter;
-	  } else {
-	    fa += fdaInner;
-	    fs += fdsInner;
-	    ft += fdtInner;
-	  }
-	} /*while lines>0*/
+        while (lines>0) {
+          if (iy >= 0 && iy < _output->get_y_size()) {
+            /* initialize the span interpolants to the leftmost value */
+            /* ff = fixed-pt fragment */
+            FixedPoint ffa = fa;
+            FixedPoint ffs = fs,  fft = ft;
+
+            int left = FixedToInt(fxLeftEdge);
+            int right = FixedToInt(fxRightEdge);
+
+            // Alpha
+            {
+              //              FixedPoint ffaend = ffa+(right-left-1)*fdadx;
+              //              if (ffaend<0) ffa -= ffaend;
+              //              if (ffa<0) ffa = 0;
+            }
+
+            // Rasterize left to right at row iy.
+            if (right > left) {
+              ffs -= FIXED_HALF; /* off-by-one error? */        
+              fft -= FIXED_HALF;
+              ffa -= FIXED_HALF;
+              for (int ix = left; ix < right; ix++) {
+                if (ix >= 0 && ix < _output->get_x_size()) {
+                  RGBColord rgb;
+                  double alpha;
+                  filter_pixel(rgb, alpha,
+                               FixedToFloat(ffs), FixedToFloat(fft),
+                               dsdx, dtdx, dsdy, dtdy);
+                  alpha *= FixedToFloat(ffa);
+                  _output->blend(ix, iy, rgb, alpha);
+                }
+
+                ffs += fdsdx;
+                fft += fdtdx;
+                ffa += fdadx;
+              }
+            }
+          }
+
+          /*
+           * Advance to the next scan line.  Compute the
+           * new edge coordinates, and adjust the
+           * pixel-center x coordinate so that it stays
+           * on or inside the major edge.
+           */
+          iy++;
+          lines--;
+
+          fxLeftEdge += fdxLeftEdge;
+          fxRightEdge += fdxRightEdge;
+
+          fError += fdError;
+          if (fError >= 0) {
+            fError -= FIXED_ONE;
+
+            fa += fdaOuter;
+            fs += fdsOuter;
+            ft += fdtOuter;
+          } else {
+            fa += fdaInner;
+            fs += fdsInner;
+            ft += fdtInner;
+          }
+        } /*while lines>0*/
 
       } /* for subTriangle */
 
@@ -493,9 +493,9 @@ draw_pixel(const RasterizerVertex *v0, double radius) {
       filter_pixel(rgb, alpha, v0->_uv[0], v0->_uv[1], radius);
     } else {
       filter_pixel(rgb, alpha, 
-		   v0->_uv[0] * (_texture->get_x_size() - 1), 
-		   v0->_uv[1] * (_texture->get_y_size() - 1),
-		   radius * (_texture->get_x_size() - 1));
+                   v0->_uv[0] * (_texture->get_x_size() - 1), 
+                   v0->_uv[1] * (_texture->get_y_size() - 1),
+                   radius * (_texture->get_x_size() - 1));
     }
     alpha *= v0->_alpha;
     _output->blend(ix, iy, rgb, alpha);
@@ -504,11 +504,11 @@ draw_pixel(const RasterizerVertex *v0, double radius) {
 
 void TriangleRasterizer::
 filter_pixel(RGBColord &rgb, double &alpha,
-	     double s, double t, double radius) {
+             double s, double t, double radius) {
   if (_texture == NULL) {
     rgb.set(_untextured_color[0], 
-	    _untextured_color[1],
-	    _untextured_color[2]);
+            _untextured_color[1],
+            _untextured_color[2]);
     alpha = _untextured_color[3];
     return;
   }
@@ -522,7 +522,7 @@ filter_pixel(RGBColord &rgb, double &alpha,
   
   if (!_filter_output) {
     if (si >= 0 && si < _texture->get_x_size() &&
-	ti >= 0 && ti < _texture->get_y_size()) {
+        ti >= 0 && ti < _texture->get_y_size()) {
       rgb = _texture->get_xel(si, ti);
       alpha = 1.0;
     }
@@ -536,9 +536,9 @@ filter_pixel(RGBColord &rgb, double &alpha,
     for (int xr = -ri; xr <= ri; xr++) {
       int sii = si + xr;
       if (sii >= 0 && sii < _texture->get_x_size() &&
-	  tii >= 0 && tii < _texture->get_y_size()) {
-	rgb += _texture->get_xel(sii, tii);
-	num_visible++;
+          tii >= 0 && tii < _texture->get_y_size()) {
+        rgb += _texture->get_xel(sii, tii);
+        num_visible++;
       }
       num_total++;
     }

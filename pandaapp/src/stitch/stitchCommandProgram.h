@@ -11,7 +11,7 @@
 #include "stitchCommandReader.h"
 
 ////////////////////////////////////////////////////////////////////
-// 	 Class : StitchCommandProgram
+//       Class : StitchCommandProgram
 // Description : A program to read a stitch command file, process it
 //               without actually manipulating any images, and write
 //               the processed command file out.

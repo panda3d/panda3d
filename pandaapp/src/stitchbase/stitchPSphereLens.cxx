@@ -124,8 +124,8 @@ project_right(const LVector3d &vec, double width_mm) const {
 
 void StitchPSphereLens::
 draw_triangle(TriangleRasterizer &rast, const LMatrix3d &mm_to_pixels,
-	      double width_mm, const RasterizerVertex *v0,
-	      const RasterizerVertex *v1, const RasterizerVertex *v2) {
+              double width_mm, const RasterizerVertex *v0,
+              const RasterizerVertex *v1, const RasterizerVertex *v2) {
   // A PSphere lens has two singularities, at the north and south
   // poles, as well as a seam at 180 and -180 degrees.
 
@@ -133,11 +133,11 @@ draw_triangle(TriangleRasterizer &rast, const LMatrix3d &mm_to_pixels,
   // either pole, similar to the fisheye lens.
 
   LVector2d xy0(dot(v0->_space, LVector3d::right()),
-		dot(v0->_space, LVector3d::forward()));
+                dot(v0->_space, LVector3d::forward()));
   LVector2d xy1(dot(v1->_space, LVector3d::right()),
-		dot(v1->_space, LVector3d::forward()));
+                dot(v1->_space, LVector3d::forward()));
   LVector2d xy2(dot(v2->_space, LVector3d::right()),
-		dot(v2->_space, LVector3d::forward()));
+                dot(v2->_space, LVector3d::forward()));
 
   double z0 = dot(v0->_space, LVector3d::up());
   double z1 = dot(v0->_space, LVector3d::up());
@@ -147,8 +147,8 @@ draw_triangle(TriangleRasterizer &rast, const LMatrix3d &mm_to_pixels,
     // A triangle on the southern hemisphere.  This projection will
     // reverse the vertex order.
     if (triangle_contains_circle(LPoint2d(0.0, 0.0), 
-				 _singularity_radius,
-				 xy0, xy2, xy1)) {
+                                 _singularity_radius,
+                                 xy0, xy2, xy1)) {
       // The triangle does cross the singularity!  Reject it.
       _singularity_detected |= 1;
       return;
@@ -157,8 +157,8 @@ draw_triangle(TriangleRasterizer &rast, const LMatrix3d &mm_to_pixels,
     // A triangle on the northern hemisphere.  This projection will
     // preserve the vertex order.
     if (triangle_contains_circle(LPoint2d(0.0, 0.0), 
-				 _singularity_radius,
-				 xy0, xy1, xy2)) {
+                                 _singularity_radius,
+                                 xy0, xy1, xy2)) {
       // The triangle does cross the singularity!  Reject it.
       _singularity_detected |= 2;
       return;
@@ -206,10 +206,10 @@ draw_triangle(TriangleRasterizer &rast, const LMatrix3d &mm_to_pixels,
 
 void StitchPSphereLens::
 pick_up_singularity(TriangleRasterizer &rast, 
-		    const LMatrix3d &mm_to_pixels,
-		    const LMatrix3d &pixels_to_mm,
-		    const LMatrix3d &rotate,
-		    double width_mm, StitchImage *input) {
+                    const LMatrix3d &mm_to_pixels,
+                    const LMatrix3d &pixels_to_mm,
+                    const LMatrix3d &rotate,
+                    double width_mm, StitchImage *input) {
   if (_singularity_detected & 2) {
     nout << "Picking up north pole singularity\n";
     // Determine what the bottom y pixel is of the circle around the
@@ -237,12 +237,12 @@ pick_up_singularity(TriangleRasterizer &rast,
       v0._uv = input->project(v0._space);
       
       for (xi = 0; xi < xsize; xi++) {
-	double last_u = v0._uv[0];
-	
-	v0._p.set(xi, yi);
-	v0._space = extrude(v0._p * pixels_to_mm, width_mm) * rotate;
-	v0._uv = input->project(v0._space);
-	rast.draw_pixel(&v0, fabs(v0._uv[0] - last_u));
+        double last_u = v0._uv[0];
+
+        v0._p.set(xi, yi);
+        v0._space = extrude(v0._p * pixels_to_mm, width_mm) * rotate;
+        v0._uv = input->project(v0._space);
+        rast.draw_pixel(&v0, fabs(v0._uv[0] - last_u));
       }
     }
   }
@@ -273,12 +273,12 @@ pick_up_singularity(TriangleRasterizer &rast,
       v0._uv = input->project(v0._space);
       
       for (xi = 0; xi < xsize; xi++) {
-	double last_u = v0._uv[0];
-	
-	v0._p.set(xi, yi);
-	v0._space = extrude(v0._p * pixels_to_mm, width_mm) * rotate;
-	v0._uv = input->project(v0._space);
-	rast.draw_pixel(&v0, fabs(v0._uv[0] - last_u));
+        double last_u = v0._uv[0];
+
+        v0._p.set(xi, yi);
+        v0._space = extrude(v0._p * pixels_to_mm, width_mm) * rotate;
+        v0._uv = input->project(v0._space);
+        rast.draw_pixel(&v0, fabs(v0._uv[0] - last_u));
       }
     }
   }
