@@ -191,6 +191,9 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
         """show(self):
         Show everything and hang hooks
         """
+        if not self.panelSetup:
+            return 0
+
         NodePath.show(self)
 
         # show the buttons that are meant to be shown
@@ -206,6 +209,9 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
         """hide(self):
         Hide everything and remove hooks
         """
+        if not self.panelSetup:
+            return 0
+
         NodePath.hide(self)
 
         # hide the shown buttons and remove all hooks
@@ -240,6 +246,8 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
         will automatically be assigned for the button, and removed
         when cleanup() is called.
         """
+
+        assert self.panelSetup
 
         if label == None:
             label = name
@@ -290,6 +298,8 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
         
         """
 
+        assert self.panelSetup
+
         if drawOrder == None:
             drawOrder = self.panelDrawOrder + 10
         if font == None:
@@ -336,6 +346,7 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
         managed buttons along with it.
         
         """
+        assert self.panelSetup
         NodePath.setPos(self, x, y, z)
 
         for button in self.panelButtons:
