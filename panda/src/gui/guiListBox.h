@@ -16,6 +16,19 @@ private:
   typedef vector< PT(GuiItem) > ItemVector;
   typedef deque< PT(GuiItem) > ItemDeque;
 
+  class EXPCL_PANDA ListFunctor : public GuiBehavior::BehaviorFunctor {
+  protected:
+    GuiBehavior::BehaviorFunctor* _prev;
+    GuiListBox* _lb;
+  public:
+    ListFunctor(GuiListBox*, GuiBehavior::BehaviorFunctor*);
+    virtual ~ListFunctor(void);
+    virtual void doit(GuiBehavior*);
+    INLINE GuiBehavior::BehaviorFunctor* get_prev(void) { return _prev; }
+  };
+
+  friend ListFunctor;
+
   ItemVector _top_stack;
   ItemDeque _bottom_stack;
   ItemVector _visible;
@@ -24,7 +37,9 @@ private:
   PT(GuiItem) _up_arrow;
   PT(GuiItem) _down_arrow;
   unsigned int _n_visible;
-  EventHandler* _eh;
+
+  ListFunctor* _up_functor;
+  ListFunctor* _down_functor;
 
   INLINE GuiListBox(void);
   virtual void recompute_frame(void);

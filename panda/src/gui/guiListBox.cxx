@@ -7,6 +7,21 @@
 
 TypeHandle GuiListBox::_type_handle;
 
+GuiListBox::ListFunctor::ListFunctor(GuiListBox* box,
+				     GuiBehavior::BehaviorFunctor* func)
+  : _prev(func), _lb(box) {
+}
+
+GuiListBox::ListFunctor::~ListFunctor(void) {
+}
+
+void GuiListBox::ListFunctor::doit(GuiBehavior* b) {
+  if (b == this->_lb->_up_arrow)
+    this->_lb->scroll_up();
+  if (b == this->_lb->_down_arrow)
+    this->_lb->scroll_down();
+}
+
 void GuiListBox::recompute_frame(void) {
   GuiBehavior::recompute_frame();
   LVector3f p = _pos;
@@ -92,7 +107,9 @@ void GuiListBox::visible_patching(void) {
 
 GuiListBox::GuiListBox(const string& name, int N, GuiItem* up, GuiItem* down)
   : GuiBehavior(name), _arrow_top(false), _arrow_bottom(false), _up_arrow(up),
-    _down_arrow(down), _n_visible(N) {
+    _down_arrow(down), _n_visible(N),
+    _up_functor((GuiListBox::ListFunctor*)0L),
+    _down_functor((GuiListBox::ListFunctor*)0L) {
   if (N < 4) {
     gui_cat->warning() << "ListBoxes should have at least 4 visible slots"
 		       << endl;
@@ -235,16 +252,70 @@ void GuiListBox::set_pos(const LVector3f& p) {
   GuiBehavior::set_pos(p);
 }
 
+#include "guiButton.h"
+
 void GuiListBox::start_behavior(void) {
   GuiBehavior::start_behavior();
+  if (_mgr == (GuiManager*)0L)
+    return;
+  if (_up_arrow->is_of_type(GuiButton::get_class_type()) &&
+      _down_arrow->is_of_type(GuiButton::get_class_type())) {
+    GuiButton* up = DCAST(GuiButton, _up_arrow);
+    GuiButton* dn = DCAST(GuiButton, _down_arrow);
+    if (_up_functor != (GuiListBox::ListFunctor*)0L) {
+      up->set_behavior_functor(_up_functor->get_prev());
+      delete _up_functor;
+    }
+    _up_functor = new GuiListBox::ListFunctor(this,
+					      up->get_behavior_functor());
+    up->set_behavior_functor(_up_functor);
+    up->start_behavior();
+    if (_down_functor != (GuiListBox::ListFunctor*)0L) {
+      dn->set_behavior_functor(_down_functor->get_prev());
+      delete _down_functor;
+    }
+    _down_functor = new GuiListBox::ListFunctor(this,
+						dn->get_behavior_functor());
+    dn->set_behavior_functor(_down_functor);
+    dn->start_behavior();
+  } else
+    gui_cat->error() << "tried to run behavior on listbox '"
+		     << this->get_name()
+		     << "', but up and down arrows are not buttons" << endl;
 }
 
 void GuiListBox::stop_behavior(void) {
   GuiBehavior::stop_behavior();
+  if (_mgr == (GuiManager*)0L)
+    return;
+  if (_up_functor != (GuiListBox::ListFunctor*)0L) {
+    GuiButton* up = DCAST(GuiButton, _up_arrow);
+    up->set_behavior_functor(_up_functor->get_prev());
+    delete _up_functor;
+    _up_functor = (GuiListBox::ListFunctor*)0L;
+    up->stop_behavior();
+  }
+  if (_down_functor != (GuiListBox::ListFunctor*)0L) {
+    GuiButton* dn = DCAST(GuiButton, _down_arrow);
+    dn->set_behavior_functor(_down_functor->get_prev());
+    delete _down_functor;
+    _down_functor = (GuiListBox::ListFunctor*)0L;
+    dn->stop_behavior();
+  }
 }
 
 void GuiListBox::reset_behavior(void) {
   GuiBehavior::reset_behavior();
+  if (_mgr == (GuiManager*)0L)
+    return;
+  if (_up_functor != (GuiListBox::ListFunctor*)0L) {
+    GuiButton* up = DCAST(GuiButton, _up_arrow);
+    up->reset_behavior();
+  }
+  if (_down_functor != (GuiListBox::ListFunctor*)0L) {
+    GuiButton* dn = DCAST(GuiButton, _down_arrow);
+    dn->reset_behavior();
+  }
 }
 
 void GuiListBox::output(ostream& os) const {
