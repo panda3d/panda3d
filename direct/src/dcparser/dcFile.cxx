@@ -60,14 +60,23 @@ DCFile::
 ////////////////////////////////////////////////////////////////////
 void DCFile::
 clear() {
-  Classes::iterator ci;
-  for (ci = _classes.begin(); ci != _classes.end(); ++ci) {
-    delete (*ci);
+  Declarations::iterator di;
+  for (di = _declarations.begin(); di != _declarations.end(); ++di) {
+    delete (*di);
+  }
+  for (di = _things_to_delete.begin(); di != _things_to_delete.end(); ++di) {
+    delete (*di);
   }
   
   _classes.clear();
   _imports.clear();
   _things_by_name.clear();
+  _typedefs.clear();
+  _typedefs_by_name.clear();
+  _declarations.clear();
+  _things_to_delete.clear();
+
+  _all_objects_valid = true;
 }
 
 #ifdef WITHIN_PANDA
@@ -135,7 +144,17 @@ read(Filename filename) {
       return false;
     }
     bool okflag = read(*in, filename);
+
+    // For some reason--compiler bug in gcc 3.2?--explicitly deleting
+    // the in pointer does not call the appropriate global delete
+    // function; instead apparently calling the system delete
+    // function.  So we call the delete function by hand instead.
+#ifndef NDEBUG
+    (*global_operator_delete)(in);
+#else
     delete in;
+#endif
+
     return okflag;
   }
   filename.open_read(in);
@@ -465,6 +484,8 @@ add_class(DCClass *dclass) {
 
   if (!dclass->is_bogus_class()) {
     _declarations.push_back(dclass);
+  } else {
+    _things_to_delete.push_back(dclass);
   }
 
   return true;
@@ -552,7 +573,23 @@ add_typedef(DCTypedef *dtypedef) {
 
   if (!dtypedef->is_bogus_typedef() && !dtypedef->is_implicit_typedef()) {
     _declarations.push_back(dtypedef);
+  } else {
+    _things_to_delete.push_back(dtypedef);
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCFile::add_thing_to_delete
+//       Access: Public
+//  Description: Adds the indicated declaration to the list of
+//               declarations that are not reported with the file, but
+//               will be deleted when the DCFile object destructs.
+//               That is, transfers ownership of the indicated pointer
+//               to the DCFile.
+////////////////////////////////////////////////////////////////////
+void DCFile::
+add_thing_to_delete(DCDeclaration *decl) {
+  _things_to_delete.push_back(decl);
 }

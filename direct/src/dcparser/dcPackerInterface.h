@@ -85,6 +85,7 @@ public:
   INLINE bool has_fixed_byte_size() const;
   INLINE size_t get_fixed_byte_size() const;
   INLINE bool has_fixed_structure() const;
+  INLINE bool has_range_limits() const;
   INLINE size_t get_num_length_bytes() const;
 
   INLINE bool has_nested_fields() const;
@@ -123,7 +124,8 @@ public:
                              string &value, bool &pack_error, bool &range_error) const;
   virtual bool unpack_validate(const char *data, size_t length, size_t &p, 
                                bool &pack_error, bool &range_error) const;
-  virtual bool unpack_skip(const char *data, size_t length, size_t &p) const;
+  virtual bool unpack_skip(const char *data, size_t length, size_t &p,
+                           bool &pack_error) const;
 
   // These are the low-level interfaces for packing and unpacking
   // numbers from a buffer.  You're responsible for making sure the
@@ -167,6 +169,7 @@ protected:
   bool _has_fixed_byte_size;
   size_t _fixed_byte_size;
   bool _has_fixed_structure;
+  bool _has_range_limits;
   size_t _num_length_bytes;
   bool _has_nested_fields;
   int _num_nested_fields;

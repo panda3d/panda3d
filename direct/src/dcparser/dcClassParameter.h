@@ -32,7 +32,7 @@ class DCClass;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DIRECT DCClassParameter : public DCParameter {
 public:
-  DCClassParameter(DCClass *dclass);
+  DCClassParameter(const DCClass *dclass);
   DCClassParameter(const DCClassParameter &copy);
 
 PUBLISHED:
@@ -40,7 +40,7 @@ PUBLISHED:
   virtual DCParameter *make_copy() const;
   virtual bool is_valid() const;
 
-  DCClass *get_class() const;
+  const DCClass *get_class() const;
 
 public:
   virtual DCPackerInterface *get_nested_field(int n) const;
@@ -53,7 +53,7 @@ private:
   typedef pvector<DCPackerInterface *> Fields;
   Fields _nested_fields;
 
-  DCClass *_dclass;
+  const DCClass *_dclass;
 };
 
 #endif

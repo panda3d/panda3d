@@ -202,6 +202,7 @@ dclass_name:
 {
   DCClass *dclass = dc_file->get_class_by_name($1);
   if (dclass == (DCClass *)NULL) {
+    // Create a bogus class as a forward reference.
     dclass = new DCClass($1, false, true);
     dc_file->add_class(dclass);
   }
@@ -474,10 +475,14 @@ type_name:
 }
 	| dclass
 {
+  // This is an inline class definition.
+  dc_file->add_thing_to_delete($1);
   $$ = new DCClassParameter($1);
 }
 	| switch
 {
+  // This is an inline switch definition.
+  dc_file->add_thing_to_delete($1);
   $$ = new DCSwitchParameter($1);
 }
 	;

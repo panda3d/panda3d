@@ -378,6 +378,29 @@ SwitchCase(const string &name, const string &value) :
   _has_fixed_byte_size = true;
   _fixed_byte_size = 0;
   _has_fixed_structure = true;
+  _has_range_limits = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSwitch::SwitchCase::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+DCSwitch::SwitchCase::
+~SwitchCase() {
+  Fields::iterator fi = _fields.begin();
+  
+  // Be careful not to delete the _key_parameter, which is added to
+  // the beginning of each case.
+  nassertv(fi != _fields.end());
+  ++fi;
+
+  // But we do want to delete all of the other fields.
+  while (fi != _fields.end()) {
+    delete (*fi);
+    ++fi;
+  }
+  _fields.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -422,6 +445,9 @@ add_field(DCField *field) {
   }
   if (_has_fixed_structure) {
     _has_fixed_structure = field->has_fixed_structure();
+  }
+  if (!_has_range_limits) {
+    _has_range_limits = field->has_range_limits();
   }
   return true;
 }

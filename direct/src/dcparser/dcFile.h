@@ -74,6 +74,7 @@ public:
   void add_import_module(const string &import_module);
   void add_import_symbol(const string &import_symbol);
   bool add_typedef(DCTypedef *dtypedef);
+  void add_thing_to_delete(DCDeclaration *decl);
 
 private:
   typedef pvector<DCClass *> Classes;
@@ -100,6 +101,7 @@ private:
 
   typedef pvector<DCDeclaration *> Declarations;
   Declarations _declarations;
+  Declarations _things_to_delete;
 
   bool _all_objects_valid;
 };

@@ -22,6 +22,8 @@
 #include "dcindent.h"
 #include "dcmsgtypes.h"
 
+#include "dcClassParameter.h"
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DCClass::Constructor
 //       Access: Public

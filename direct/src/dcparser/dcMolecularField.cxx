@@ -102,6 +102,9 @@ add_atomic(DCAtomicField *atomic) {
   if (_has_fixed_structure) {
     _has_fixed_structure = atomic->has_fixed_structure();
   }
+  if (!_has_range_limits) {
+    _has_range_limits = atomic->has_range_limits();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

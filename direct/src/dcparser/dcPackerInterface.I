@@ -79,6 +79,19 @@ has_fixed_structure() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::has_range_limits
+//       Access: Public
+//  Description: Returns true if this field, or any sub-field of this
+//               field, has a limit imposed in the DC file on its
+//               legal values.  If this is false, then
+//               unpack_validate() is trivial.
+////////////////////////////////////////////////////////////////////
+INLINE bool DCPackerInterface::
+has_range_limits() const {
+  return _has_range_limits;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::get_num_length_bytes
 //       Access: Public
 //  Description: Returns the number of bytes that should be written

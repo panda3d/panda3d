@@ -603,12 +603,9 @@ unpack_skip() {
   if (_current_field == NULL) {
     _pack_error = true;
 
-  } else if (_current_field->has_fixed_byte_size()) {
-    _unpack_p += _current_field->get_fixed_byte_size();
-    advance();
-
   } else {
-    if (_current_field->unpack_skip(_unpack_data, _unpack_length, _unpack_p)) {
+    if (_current_field->unpack_skip(_unpack_data, _unpack_length, _unpack_p,
+                                    _pack_error)) {
       advance();
 
     } else {
@@ -657,7 +654,7 @@ pack_object(PyObject *object) {
     int size = PySequence_Size(object);
     bool is_instance = false;
 
-    DCClass *dclass = NULL;
+    const DCClass *dclass = NULL;
     const DCClassParameter *class_param = ((DCPackerInterface *)get_current_field())->as_class_parameter();
     if (class_param != (DCClassParameter *)NULL) {
       dclass = class_param->get_class();
@@ -794,7 +791,7 @@ unpack_object() {
     {
       const DCClassParameter *class_param = ((DCPackerInterface *)get_current_field())->as_class_parameter();
       if (class_param != (DCClassParameter *)NULL) {
-        DCClass *dclass = class_param->get_class();
+        const DCClass *dclass = class_param->get_class();
         if (dclass->has_class_def()) {
           // If we know what kind of class object this is and it has a
           // valid constructor, create the class object instead of
@@ -1095,7 +1092,7 @@ clear() {
 //               appropriate values from the class object and pack in.
 ////////////////////////////////////////////////////////////////////
 void DCPacker::
-pack_class_object(DCClass *dclass, PyObject *object) {
+pack_class_object(const DCClass *dclass, PyObject *object) {
   PyObject *str = PyObject_Str(object);
   cerr << "pack_class_object(" << dclass->get_name() << ", " 
        << PyString_AsString(str) << ")\n";
@@ -1122,7 +1119,7 @@ pack_class_object(DCClass *dclass, PyObject *object) {
 //               constructor, unpack it and fill in its values.
 ////////////////////////////////////////////////////////////////////
 PyObject *DCPacker::
-unpack_class_object(DCClass *dclass) {
+unpack_class_object(const DCClass *dclass) {
   PyObject *class_def = dclass->get_class_def();
   nassertr(class_def != (PyObject *)NULL, NULL);
 

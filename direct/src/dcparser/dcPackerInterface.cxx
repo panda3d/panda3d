@@ -31,6 +31,7 @@ DCPackerInterface(const string &name) :
   _has_fixed_byte_size = false;
   _fixed_byte_size = 0;
   _has_fixed_structure = false;
+  _has_range_limits = false;
   _num_length_bytes = 0;
   _has_nested_fields = false;
   _num_nested_fields = -1;
@@ -49,6 +50,7 @@ DCPackerInterface(const DCPackerInterface &copy) :
   _has_fixed_byte_size(copy._has_fixed_byte_size),
   _fixed_byte_size(copy._fixed_byte_size),
   _has_fixed_structure(copy._has_fixed_structure),
+  _has_range_limits(copy._has_range_limits),
   _num_length_bytes(copy._num_length_bytes),
   _has_nested_fields(copy._has_nested_fields),
   _num_nested_fields(copy._num_nested_fields),
@@ -284,7 +286,11 @@ unpack_string(const char *, size_t, size_t &, string &, bool &pack_error, bool &
 //               validate this field).
 ////////////////////////////////////////////////////////////////////
 bool DCPackerInterface::
-unpack_validate(const char *, size_t, size_t &, bool &, bool &) const {
+unpack_validate(const char *data, size_t length, size_t &p,
+                bool &pack_error, bool &) const {
+  if (!_has_range_limits) {
+    return unpack_skip(data, length, p, pack_error);
+  }
   return false;
 }
 
@@ -297,7 +303,15 @@ unpack_validate(const char *, size_t, size_t &, bool &, bool &) const {
 //               failure (e.g. we don't know how to skip this field).
 ////////////////////////////////////////////////////////////////////
 bool DCPackerInterface::
-unpack_skip(const char *, size_t, size_t &) const {
+unpack_skip(const char *data, size_t length, size_t &p,
+            bool &pack_error) const {
+  if (_has_fixed_byte_size) {
+    p += _fixed_byte_size;
+    if (p > length) {
+      pack_error = true;
+    }
+    return true;
+  }
   return false;
 }
 

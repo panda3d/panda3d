@@ -35,6 +35,8 @@ DCArrayParameter(DCParameter *element_type, const DCUnsignedIntRange &size) :
   _array_size = -1;
   if (_array_size_range.has_one_value()) {
     _array_size = _array_size_range.get_one_value();
+  } else {
+    _has_range_limits = true;
   }
 
   if (_array_size >= 0 && _element_type->has_fixed_byte_size()) {
@@ -46,6 +48,10 @@ DCArrayParameter(DCParameter *element_type, const DCUnsignedIntRange &size) :
     // We only need to store the length bytes if the array has a
     // variable size.
     _num_length_bytes = 2;
+  }
+
+  if (_element_type->has_range_limits()) {
+    _has_range_limits = true;
   }
 
   _has_nested_fields = true;

@@ -80,7 +80,8 @@ public:
                              string &value, bool &pack_error, bool &range_error) const;
   virtual bool unpack_validate(const char *data, size_t length, size_t &p, 
                                bool &pack_error, bool &range_error) const;
-  virtual bool unpack_skip(const char *data, size_t length, size_t &p) const;
+  virtual bool unpack_skip(const char *data, size_t length, size_t &p,
+                           bool &pack_error) const;
 
   virtual void output_instance(ostream &out, bool brief, const string &prename, 
                                const string &name, const string &postname) const;

@@ -78,6 +78,7 @@ private:
   class SwitchCase : public DCPackerInterface {
   public:
     SwitchCase(const string &name, const string &value);
+    ~SwitchCase();
     virtual DCPackerInterface *get_nested_field(int n) const;
 
     bool add_field(DCField *field);

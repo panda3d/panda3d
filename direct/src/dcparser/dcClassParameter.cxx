@@ -26,7 +26,7 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 DCClassParameter::
-DCClassParameter(DCClass *dclass) :
+DCClassParameter(const DCClass *dclass) :
   _dclass(dclass)
 {
   set_name(dclass->get_name());
@@ -44,7 +44,8 @@ DCClassParameter(DCClass *dclass) :
   if (_dclass->has_constructor()) {
     _nested_fields.push_back(_dclass->get_constructor());
   }
-  for (int i = 0 ; i < num_fields; i++) {
+  int i;
+  for (i = 0 ; i < num_fields; i++) {
     _nested_fields.push_back(_dclass->get_inherited_field(i));
   }
 
@@ -54,11 +55,13 @@ DCClassParameter(DCClass *dclass) :
   _has_fixed_byte_size = true;
   _fixed_byte_size = 0;
   _has_fixed_structure = true;
-  for (int i = 0; i < _num_nested_fields && _has_fixed_byte_size; i++) {
+  for (i = 0; i < _num_nested_fields; i++) {
     DCPackerInterface *field = get_nested_field(i);
     _has_fixed_byte_size = _has_fixed_byte_size && field->has_fixed_byte_size();
     _fixed_byte_size += field->get_fixed_byte_size();
     _has_fixed_structure = _has_fixed_structure && field->has_fixed_structure();
+
+    _has_range_limits = _has_range_limits || field->has_range_limits();
   }
 }
 
@@ -112,7 +115,7 @@ is_valid() const {
 //       Access: Published
 //  Description: Returns the class object this parameter represents.
 ////////////////////////////////////////////////////////////////////
-DCClass *DCClassParameter::
+const DCClass *DCClassParameter::
 get_class() const {
   return _dclass;
 }

@@ -312,6 +312,8 @@ set_range(const DCDoubleRange &range) {
   int num_ranges = range.get_num_ranges();
   int i;
 
+  _has_range_limits = (num_ranges != 0);
+
   switch (_type) {
   case ST_int8:
   case ST_int8array:
@@ -1713,7 +1715,10 @@ unpack_string(const char *data, size_t length, size_t &p, string &value,
 ////////////////////////////////////////////////////////////////////
 bool DCSimpleParameter::
 unpack_validate(const char *data, size_t length, size_t &p,
-                bool &pack_error, bool &range_error) const {
+                bool &pack_error, bool &range_error) const { 
+  if (!_has_range_limits) {
+    return unpack_skip(data, length, p, pack_error);
+  }
   switch (_type) {
   case ST_int8:
     {
@@ -1871,7 +1876,8 @@ unpack_validate(const char *data, size_t length, size_t &p,
 //               failure (e.g. we don't know how to skip this field).
 ////////////////////////////////////////////////////////////////////
 bool DCSimpleParameter::
-unpack_skip(const char *data, size_t length, size_t &p) const {
+unpack_skip(const char *data, size_t length, size_t &p, 
+            bool &pack_error) const {
   size_t string_length;
 
   switch (_type) {
@@ -1929,7 +1935,7 @@ unpack_skip(const char *data, size_t length, size_t &p) const {
   }
 
   if (p > length) {
-    return false;
+    pack_error = true;
   }
 
   return true;
@@ -2046,7 +2052,7 @@ generate_hash(HashGenerator &hashgen) const {
 ////////////////////////////////////////////////////////////////////
 DCSimpleParameter *DCSimpleParameter::
 create_nested_field(DCSubatomicType type, unsigned int divisor) {
-  DivisorMap divisor_map = _nested_field_map[type];
+  DivisorMap &divisor_map = _nested_field_map[type];
   DivisorMap::iterator di;
   di = divisor_map.find(divisor);
   if (di != divisor_map.end()) {

@@ -24,7 +24,9 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: DCTypedef::Constructor
 //       Access: Public
-//  Description:
+//  Description: The DCTypedef object becomes the owner of the
+//               supplied parameter pointer and will delete it upon
+//               destruction.
 ////////////////////////////////////////////////////////////////////
 DCTypedef::
 DCTypedef(DCParameter *parameter, bool implicit) :

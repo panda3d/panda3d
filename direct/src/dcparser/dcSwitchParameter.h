@@ -32,7 +32,7 @@ class DCSwitch;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DIRECT DCSwitchParameter : public DCParameter {
 public:
-  DCSwitchParameter(DCSwitch *dswitch);
+  DCSwitchParameter(const DCSwitch *dswitch);
   DCSwitchParameter(const DCSwitchParameter &copy);
 
 PUBLISHED:
@@ -40,7 +40,7 @@ PUBLISHED:
   virtual DCParameter *make_copy() const;
   virtual bool is_valid() const;
 
-  DCSwitch *get_switch() const;
+  const DCSwitch *get_switch() const;
 
 public:
   virtual DCPackerInterface *get_nested_field(int n) const;
@@ -55,7 +55,7 @@ public:
   virtual void generate_hash(HashGenerator &hashgen) const;
 
 private:
-  DCSwitch *_dswitch;
+  const DCSwitch *_dswitch;
 };
 
 #endif

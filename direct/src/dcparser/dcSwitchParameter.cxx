@@ -26,12 +26,13 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 DCSwitchParameter::
-DCSwitchParameter(DCSwitch *dswitch) :
+DCSwitchParameter(const DCSwitch *dswitch) :
   _dswitch(dswitch)
 {
   set_name(dswitch->get_name());
 
-  _has_fixed_byte_size = false;
+  _has_fixed_byte_size = true;
+  _fixed_byte_size = 0;
   _has_fixed_structure = false;
 
   // The DCSwitch presents just one nested field initially, which is
@@ -44,30 +45,27 @@ DCSwitchParameter(DCSwitch *dswitch) :
   _pack_type = PT_switch;
 
   DCParameter *key_parameter = dswitch->get_key_parameter();
-  if (key_parameter->has_fixed_byte_size()) {
-    // See if we have a fixed byte size for the overall switch.  This
-    // will be true only if all of the individual cases have the same
-    // fixed byte size.
-    int num_cases = _dswitch->get_num_cases();
-    _has_fixed_byte_size = true;
-    _fixed_byte_size = 0;
+  _has_fixed_byte_size = _has_fixed_byte_size && key_parameter->has_fixed_byte_size();
+  _has_range_limits = _has_range_limits || key_parameter->has_range_limits();
 
-    if (num_cases > 0) {
-      _fixed_byte_size = _dswitch->get_case(0)->get_fixed_byte_size();
-
-      for (int i = 0; i < num_cases && _has_fixed_byte_size; i++) {
-        const DCPackerInterface *dcase = _dswitch->get_case(i);
-        if (!dcase->has_fixed_byte_size() || 
-            dcase->get_fixed_byte_size() != _fixed_byte_size) {
-          
-          // Nope, we have a variable byte size.
-          _has_fixed_byte_size = false;
-        }
+  int num_cases = _dswitch->get_num_cases();
+  if (num_cases > 0) {
+    _fixed_byte_size = _dswitch->get_case(0)->get_fixed_byte_size();
+    
+    for (int i = 0; i < num_cases; i++) {
+      const DCPackerInterface *dcase = _dswitch->get_case(i);
+      if (!dcase->has_fixed_byte_size() || 
+          dcase->get_fixed_byte_size() != _fixed_byte_size) {
+        
+        // Nope, we have a variable byte size.
+        _has_fixed_byte_size = false;
       }
-    }
 
-    _fixed_byte_size += key_parameter->get_fixed_byte_size();
+      _has_range_limits = _has_range_limits || dcase->has_range_limits();
+    }
   }
+
+  _fixed_byte_size += key_parameter->get_fixed_byte_size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -119,7 +117,7 @@ is_valid() const {
 //       Access: Published
 //  Description: Returns the switch object this parameter represents.
 ////////////////////////////////////////////////////////////////////
-DCSwitch *DCSwitchParameter::
+const DCSwitch *DCSwitchParameter::
 get_switch() const {
   return _dswitch;
 }
