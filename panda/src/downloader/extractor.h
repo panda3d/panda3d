@@ -22,10 +22,11 @@
 class EXPCL_PANDAEXPRESS Extractor {
 PUBLISHED:
   enum ExtractorStatus {
-    ES_ok = 2,
-    ES_success = 1,
-    ES_error = -1,
-    ES_error_write = -2,
+    EX_ok = 2,
+    EX_success = 1,
+    EX_error_abort = -1,
+    EX_error_write = -2,
+    EX_error_empty = -3,
   };
 
   Extractor(void);

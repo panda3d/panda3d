@@ -22,11 +22,12 @@
 class EXPCL_PANDAEXPRESS Decompressor {
 PUBLISHED:
   enum DecompressStatus {
-    DS_ok = 2,
-    DS_success = 1,
-    DS_error = -1,
-    DS_error_write = -2,
-    DS_error_zlib = -3,
+    DC_ok = 2,
+    DC_success = 1,
+    DC_error_abort = -1,
+    DC_error_write = -2,
+    DC_error_read = -3,
+    DC_error_zlib = -4,
   };
 
   Decompressor(void);

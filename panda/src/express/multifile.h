@@ -25,6 +25,14 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Multifile {
 PUBLISHED:
+  enum MfileCode {
+    MF_ok = 2,
+    MF_success = 1,
+    MF_error_abort = -1,
+    MF_error_write = -2,
+    MF_error_empty = -3,
+  };
+
   enum Type {
     T_unknown,
     T_valid,
@@ -44,13 +52,13 @@ PUBLISHED:
 
   bool read(Filename &name);
   bool write(Filename name);
-  bool write(char *&start, int &size, const Filename &rel_path = "");
+  int write(char *&start, int &size, const Filename &rel_path = "");
   bool write_extract(char *&start, int &size, const Filename &rel_path = "");
   bool extract(const Filename &name, const Filename &rel_path = "");
   void extract_all(const Filename &rel_path = "");
 
   void reset(void);
-  bool parse_header(char *&start, int &size);
+  int parse_header(char *&start, int &size);
 
 private:
 
@@ -67,7 +75,7 @@ private:
     bool read_from_multifile(ifstream &read_stream);
     bool write(const Filename &rel_path);
     void write_to_multifile(ofstream &write_stream);
-    bool write(char *&start, int &size, const Filename &rel_path = "");
+    int write(char *&start, int &size, const Filename &rel_path = "");
     void reset(void);
 
   public:

@@ -89,6 +89,7 @@ initiate(Filename &source_file) {
       downloader_cat.debug()
         << "Decompressor::request_decompress() - Unknown file extension: ."
         << extension << endl; 
+      return DC_error_abort;
   }
   return initiate(source_file, dest_file);
 }
@@ -105,7 +106,7 @@ initiate(Filename &source_file, Filename &dest_file) {
     downloader_cat.error()
       << "Decompressor::run() - Decompression has already been initiated"
       << endl;
-    return DS_error;
+    return DC_error_abort;
   }
 
   // Open source file
@@ -115,7 +116,7 @@ initiate(Filename &source_file, Filename &dest_file) {
     downloader_cat.error()
       << "Decompressor::decompress() - Error opening source file: " 
       << _source_file << endl;
-    return false;
+    return DC_error_read;
   } 
 
   // Determine source file length
@@ -125,7 +126,7 @@ initiate(Filename &source_file, Filename &dest_file) {
     downloader_cat.warning()
       << "Decompressor::decompress() - Zero length file: "
       << source_file << endl;
-    return true;
+    return DC_error_read;
   }
   _read_stream.seekg(0, ios::beg);
 
@@ -135,7 +136,7 @@ initiate(Filename &source_file, Filename &dest_file) {
     downloader_cat.error()
       << "Decompressor::decompress() - Error opening dest file: " 
       << source_file << endl;
-    return false;
+    return DC_error_write;
   } 
 
   // Read from the source file into the first half of the buffer,
@@ -146,7 +147,7 @@ initiate(Filename &source_file, Filename &dest_file) {
   _source_buffer_length;
   _initiated = true;
   _decompressor = new ZDecompressor();
-  return DS_success;
+  return DC_success;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -182,7 +183,7 @@ run(void) {
     downloader_cat.error()
       << "Decompressor::run() - Decompression has not been initiated"
       << endl;
-    return DS_error;
+    return DC_error_abort;
   }
 
   // See if there is anything left in the source file
@@ -209,15 +210,15 @@ run(void) {
 			next_out, avail_out, dest_buffer, 
 			dest_buffer_length, _write_stream);
     if (ret == ZCompressorBase::S_error)
-      return DS_error_zlib;
+      return DC_error_zlib;
     if ((int)_decompressor->get_total_in() == _source_file_length &&
 	  avail_out == dest_buffer_length) {
       cleanup();
-      return DS_success;
+      return DC_success;
     }
   }
 
-  return DS_ok;
+  return DC_ok;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -232,7 +233,7 @@ decompress(Filename &source_file) {
     return false;
   for (;;) {
     ret = run();
-    if (ret == DS_success)
+    if (ret == DC_success)
       return true;
     else if (ret < 0)
       return false;
