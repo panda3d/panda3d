@@ -9,6 +9,7 @@
 #include "hashVal.h"
 
 #include <md5.h>
+#include <hex.h>
 #include <files.h>
 
 #include <string>
@@ -19,12 +20,44 @@ USING_NAMESPACE(std);
 static uint 
 read32(istream& is) {
   unsigned int ret = 0x0;
-  unsigned char b1, b2, b3, b4;
-  is >> b1;
-  is >> b2;
-  is >> b3;
-  is >> b4;
-  ret = (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
+  for (int i=0; i<8; ++i) {
+    char b;
+    int n = 0;
+    is >> b;
+    switch (b) {
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+      n = b - '0';
+      break;
+    case 'A':
+    case 'B':
+    case 'C':
+    case 'D':
+    case 'E':
+    case 'F':
+      n = b - 'A' + 10;
+      break;
+    case 'a':
+    case 'b':
+    case 'c':
+    case 'd':
+    case 'e':
+    case 'f':
+      n = b - 'a' + 10;
+      break;
+    default:
+      cerr << "illegal hex nibble '" << b << "'" << endl;
+    }
+    ret = (ret << 4) | (n & 0x0f);
+  }
   return ret;
 }
 
@@ -34,7 +67,8 @@ md5_a_file(const Filename &name, HashVal &ret) {
   MD5 md5;
 
   string fs = name.to_os_specific();
-  FileSource f(fs.c_str(), true, new HashFilter(md5, new FileSink(os)));
+  FileSource f(fs.c_str(), true,
+	       new HashFilter(md5, new HexEncoder(new FileSink(os))));
 
   istringstream is(os.str());
 
