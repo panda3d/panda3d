@@ -30,6 +30,7 @@ $[cdefine HAVE_NSPR]
 
 /* Define if we have OpenSSL installed.  */
 $[cdefine HAVE_SSL]
+$[cdefine SSL_097]
 
 /* Define if we have crypto++ installed.  */
 $[cdefine HAVE_CRYPTO]

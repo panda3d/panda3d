@@ -201,6 +201,8 @@
 #define SSL_LPATH /usr/local/ssl/lib
 #define SSL_LIBS ssl crypto
 #defer HAVE_SSL $[libtest $[SSL_LPATH],$[SSL_LIBS]]
+// Define this nonempty if your version of OpenSSL is 0.9.7 or better.
+#define SSL_097
 
 // Is Crypto++ installed, and where?
 #define CRYPTO_IPATH /usr/include/crypto++
