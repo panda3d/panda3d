@@ -206,7 +206,7 @@ INLINE void AudioManager::set_music_active(bool f) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool AudioManager::get_sfx_active(void) {
   get_ptr();
-  return AudioManager::_sfx_active;
+  return (AudioManager::_sfx_active && audio_is_active);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -216,7 +216,7 @@ INLINE bool AudioManager::get_sfx_active(void) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool AudioManager::get_music_active(void) {
   get_ptr();
-  return AudioManager::_music_active;
+  return (AudioManager::_music_active && audio_is_active);
 }
 
 ////////////////////////////////////////////////////////////////////
