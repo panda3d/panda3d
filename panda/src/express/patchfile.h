@@ -96,6 +96,7 @@ private:
                  PN_uint32 COPY_pos, PN_uint32 last_copy_pos,
                  PN_uint32 ADD_pos);
 
+  static const PN_uint32 _HASH_BITS;
   static const PN_uint32 _HASHTABLESIZE;
   static const PN_uint32 _DEFAULT_FOOTPRINT_LENGTH;
   static const PN_uint32 _NULL_VALUE;

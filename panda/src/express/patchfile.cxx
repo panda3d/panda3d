@@ -94,11 +94,12 @@ const PN_uint32 Patchfile::_magic_number = 0xfeebfaac;
 // To version 2 on 11/2/02 to store copy offsets as relative.
 const PN_uint16 Patchfile::_current_version = 2;
 
-const PN_uint32 Patchfile::_HASHTABLESIZE = PN_uint32(1) << 24;
+const PN_uint32 Patchfile::_HASH_BITS = 24;
+const PN_uint32 Patchfile::_HASHTABLESIZE = PN_uint32(1) << Patchfile::_HASH_BITS;
 const PN_uint32 Patchfile::_DEFAULT_FOOTPRINT_LENGTH = 9; // this produced the smallest patch file for libpanda.dll when tested, 12/20/2000
 const PN_uint32 Patchfile::_NULL_VALUE = PN_uint32(0) - 1;
 const PN_uint32 Patchfile::_MAX_RUN_LENGTH = (PN_uint32(1) << 16) - 1;
-const PN_uint32 Patchfile::_HASH_MASK = (PN_uint32(1) << 24) - 1;
+const PN_uint32 Patchfile::_HASH_MASK = (PN_uint32(1) << Patchfile::_HASH_BITS) - 1;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Patchfile::Constructor
@@ -543,9 +544,13 @@ calc_hash(const char *buffer) {
   for(int i = 0; i < (int)_footprint_length; i++) {
     // this is probably not such a good hash. to be replaced
     /// --> TRIED MD5, was not worth it for the execution-time hit on 800Mhz PC
-    hash_value ^= (*buffer) << ((i % _footprint_length) * 2);
+    hash_value ^= PN_uint32(*buffer) << ((i * 2) % Patchfile::_HASH_BITS);
     buffer++;
   }
+
+  // use the bits that overflowed past the end of the hash bit range
+  // (this is intended for _HASH_BITS == 24)
+  hash_value ^= (hash_value >> Patchfile::_HASH_BITS);
 
   //cout << hash_value << " ";
 
