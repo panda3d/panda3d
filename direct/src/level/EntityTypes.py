@@ -9,7 +9,7 @@ class Entity(EntityTypeDesc):
     attribs = (
         ('type', None),
         ('name', 'unnamed'),
-        ('comment', ''),
+        ('comment', '', 'string'),
         )
 
 class LevelMgr(Entity):
