@@ -28,8 +28,8 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_SHADER ShaderTransition : public ImmediateTransition {
 private:
-  //  typedef vector<PT(Shader)> Shaders;
-  typedef list<PT(Shader)> Shaders;
+  //  typedef vector< PT(Shader) > Shaders;
+  typedef list< PT(Shader) > Shaders;
   typedef map<TypeHandle, int> ShaderOrder;
   typedef map<PT(Shader), int> ShaderOverride;
   typedef set<TypeHandle> ShaderBlend;

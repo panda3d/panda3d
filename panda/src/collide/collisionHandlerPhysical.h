@@ -41,7 +41,7 @@ protected:
   virtual void handle_entries()=0;
 
 protected:
-  typedef vector<PT(CollisionEntry)> Entries;
+  typedef vector< PT(CollisionEntry) > Entries;
   typedef map<PT(CollisionNode), Entries> FromEntries;
   FromEntries _from_entries;
 

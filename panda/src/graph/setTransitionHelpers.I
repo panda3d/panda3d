@@ -102,7 +102,7 @@ tmap_merge_union(InputIterator1 first1, InputIterator1 last1,
       ++result;
     } else {
       PT(NodeAttribute) c = (*first1).second->merge((*first2).second);
-      *result = pair<TypeHandle, PT(NodeAttribute)>((*first1).first, c);
+      *result = pair<TypeHandle,  PT(NodeAttribute) >((*first1).first, c);
       ++first1;
       ++first2;
       ++result;
@@ -194,7 +194,7 @@ tmap_arc_compose(InputIterator1 first1, InputIterator1 last1,
       PT(NodeTransition) c = (*first1).second->compose((*first2).second);
       if (c != (NodeTransition *)NULL) {
 	c->added_to_arc(to_arc);
-	*result = pair<TypeHandle, PT(NodeTransition)>((*first1).first, c);
+	*result = pair<TypeHandle,  PT(NodeTransition) >((*first1).first, c);
 	++result;
       }
       ++first1;
@@ -334,7 +334,7 @@ tmap_invert_compose(InputIterator1 first1, InputIterator1 last1,
 						 (*first2).second);
       if (!ic.is_identity()) {
 	// Only bother to store the result if it's not identity.
-	*result = pair<TypeHandle, PT(NodeTransition)>((*first1).first, ic);
+	*result = pair<TypeHandle,  PT(NodeTransition) >((*first1).first, ic);
 	++result;
       }
       ++first1;
@@ -721,13 +721,13 @@ tmap_apply(InputIterator1 first1, InputIterator1 last1,
       ++first1;
       ++result;
     } else if ((*first2).first < (*first1).first) {
-      *result = pair<TypeHandle, PT(NodeAttribute)>
+      *result = pair<TypeHandle,  PT(NodeAttribute) >
 	((*first2).first, 
 	 NodeTransitionCacheEntry::apply(NULL, (*first2).second));
       ++first2;
       ++result;
     } else {
-      *result = pair<TypeHandle, PT(NodeAttribute)>
+      *result = pair<TypeHandle,  PT(NodeAttribute) >
 	((*first1).first, 
 	 NodeTransitionCacheEntry::apply((*first1).second, (*first2).second));
       ++first1;
@@ -743,7 +743,7 @@ tmap_apply(InputIterator1 first1, InputIterator1 last1,
   }
 
   while (first2 != last2) { 
-    *result = pair<TypeHandle, PT(NodeAttribute)>
+    *result = pair<TypeHandle,  PT(NodeAttribute) >
       ((*first2).first, 
        NodeTransitionCacheEntry::apply(NULL, (*first2).second));
     ++first2;

@@ -44,7 +44,7 @@ PUBLISHED:
   int compare_to(const NodeAttributes &other) const;
 
 private:
-  typedef map<TypeHandle, PT(NodeAttribute)> Attributes;
+  typedef map< TypeHandle, PT(NodeAttribute) > Attributes;
 public:
   // STL-like definitions to expose the map within NodeAttributes to
   // external adjustment.  Beware!  These are not safe to use outside

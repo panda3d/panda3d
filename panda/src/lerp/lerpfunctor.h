@@ -182,7 +182,7 @@ typedef SimpleQueryLerpFunctor<LVector4f> LVector4fQueryLerpFunctor;
 
 class EXPCL_PANDA MultiLerpFunctor : public LerpFunctor {
 private:
-  typedef set<PT(LerpFunctor)> Functors;
+  typedef set< PT(LerpFunctor) > Functors;
   Functors _funcs;
 public:
   MultiLerpFunctor(void) {}

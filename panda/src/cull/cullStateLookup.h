@@ -60,7 +60,7 @@ public:
   virtual void write(ostream &out, int indent_level = 0) const;
 
 private:
-  typedef map<PT_Node, PT(CullState)> CullStates;
+  typedef map<PT_Node,  PT(CullState) > CullStates;
   CullStates _cull_states;
 
   typedef map<PT(NodeRelation), CullStateSubtree *> Subtrees;

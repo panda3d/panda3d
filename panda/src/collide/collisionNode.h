@@ -59,7 +59,7 @@ private:
   CollideMask _into_collide_mask;
   bool _collide_geom;
 
-  typedef vector<PT(CollisionSolid)> Solids;
+  typedef vector< PT(CollisionSolid) > Solids;
   Solids _solids;
 
 public:

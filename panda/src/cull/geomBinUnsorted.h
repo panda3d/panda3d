@@ -39,7 +39,7 @@ public:
   virtual void write(ostream &out, int indent_level = 0) const;
 
 private:
-  typedef vector<PT(CullState)> CullStates;
+  typedef vector< PT(CullState) > CullStates;
   CullStates _cull_states;
 
 public:

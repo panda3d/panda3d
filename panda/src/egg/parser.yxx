@@ -48,7 +48,7 @@
 // and push it onto the stack.  At any given time, the top of the
 // stack is the EggObject we are currently scanning.
 
-typedef vector<PT(EggObject)> EggStack;
+typedef vector< PT(EggObject) > EggStack;
 static EggStack egg_stack;
 
 // There's one "top-level" egg node, which is where we should parent
@@ -59,17 +59,17 @@ static EggGroupNode *egg_top_node;
 
 // We need a table mapping vertex pool names to vertex pools.
 
-typedef map<string, PT(EggVertexPool)> VertexPools;
+typedef map<string,  PT(EggVertexPool) > VertexPools;
 static VertexPools vertex_pools;
 
 // And another one mapping texture names to textures.
 
-typedef map<string, PT(EggTexture)> Textures;
+typedef map<string,  PT(EggTexture) > Textures;
 static Textures textures;
 
 // And again for material names to materials.
 
-typedef map<string, PT(EggMaterial)> Materials;
+typedef map<string,  PT(EggMaterial) > Materials;
 static Materials materials;
 
 // We need to be able to save the index number requested for a vertex

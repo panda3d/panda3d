@@ -236,7 +236,7 @@ template<class Transition>
 INLINE bool 
 get_transition_into(Transition *&ptr, const NodeRelation *arc);
 
-typedef vector<PT(NodeRelation)> DownRelationPointers;
+typedef vector< PT(NodeRelation) > DownRelationPointers;
 typedef map<TypeHandle, DownRelationPointers> DownRelations;
 
 typedef vector<NodeRelation *> UpRelationPointers;

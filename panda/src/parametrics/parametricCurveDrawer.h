@@ -71,7 +71,7 @@ private:
   float _num_ticks;
   float _tick_scale;
 
-  typedef vector<PT(NodeRelation)> TickArcs;
+  typedef vector< PT(NodeRelation) > TickArcs;
   TickArcs _tick_arcs;
 
 public:

@@ -28,7 +28,7 @@
 class EggNode;
 class EggVertex;
 
-typedef set<PT(EggTexture)> EggTextures;
+typedef set< PT(EggTexture) > EggTextures;
 typedef map<Filename, EggTextures> EggTextureFilenames;
 
 

@@ -46,8 +46,8 @@ public:
 private:
   typedef vector<PTA_float> vector_Vfloat;
   typedef vector<PTA_Colorf> vector_Vcolorf;
-  typedef vector<PT(RenderRelation)> vector_relation;
-  typedef vector<PT(Texture)> vector_texture;
+  typedef vector< PT(RenderRelation) > vector_relation;
+  typedef vector< PT(Texture) > vector_texture;
 
   vector_texture _flares;
   PT(Texture) _blind;

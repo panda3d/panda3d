@@ -52,7 +52,7 @@ protected:
   virtual PT(GeomBin) detach();
 
 private:
-  typedef vector<PT(GeomBin)> SubBins;
+  typedef vector< PT(GeomBin) > SubBins;
   SubBins _sub_bins;
 
 public:

@@ -103,7 +103,7 @@ protected:
 private:
   // Some private type declarations.  These must be declared here so
   // we can declare the public iterator types, below.
-  typedef vector<PT(GraphicsWindow)> Windows;
+  typedef vector< PT(GraphicsWindow) > Windows;
   typedef vector<GraphicsPipe *> Pipes;
 
   Windows _windows;

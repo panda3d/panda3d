@@ -121,7 +121,7 @@ public:
     string _name;
   };
 
-  typedef vector<PT(FileRecord)> FileRecords;
+  typedef vector< PT(FileRecord) > FileRecords;
 
   class EXPCL_PANDAEXPRESS MultifileRecord : public ReferenceCount {
   public:
@@ -141,7 +141,7 @@ public:
     FileRecords _file_records;
   };
 
-  typedef vector<PT(MultifileRecord)> MultifileRecords;
+  typedef vector< PT(MultifileRecord) > MultifileRecords;
 
   class EXPCL_PANDAEXPRESS Db {
   public:

@@ -81,7 +81,7 @@ private:
   PT(CollisionHandler) _default_handler;
   TypeHandle _graph_type;
 
-  typedef map<PT(CollisionNode), PT(CollisionHandler)> Colliders;
+  typedef map<PT(CollisionNode),  PT(CollisionHandler) > Colliders;
   Colliders _colliders;
   typedef vector<CollisionNode *> OrderedColliders;
   OrderedColliders _ordered_colliders;

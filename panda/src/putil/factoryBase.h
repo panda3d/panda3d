@@ -75,7 +75,8 @@ private:
 
 private:
   // internal mechanics and bookkeeping
-#ifdef WIN32_VC
+
+#if defined(WIN32_VC) && !defined(__ICL)    //__ICL is Intel C++
   // Visual C++ seems to have a problem with building a map based on
   // BaseCreateFunc.  We'll have to typecast it on the way out.
   typedef map<TypeHandle, void *> Creators;

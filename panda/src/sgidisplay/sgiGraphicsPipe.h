@@ -35,7 +35,7 @@ public:
 
 protected:
 
-  typedef map<int, PT(sgiHardwareChannel)> Channels;
+  typedef map<int,  PT(sgiHardwareChannel) > Channels;
   Channels _hw_chans;
 
   virtual int get_num_hw_channels();

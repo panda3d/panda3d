@@ -45,7 +45,7 @@ private:
   // We define the list of children as a list and not a vector, so we
   // can avoid the bad iterator-invalidating properties of vectors as
   // we insert/delete elements.
-  typedef list<PT(EggNode)> Children;
+  typedef list< PT(EggNode) > Children;
 
   // Here begins the actual public interface to EggGroupNode.
 

@@ -292,7 +292,7 @@ server_add_file(string mfname, string fname) {
   PT(FileRecord) fr = new FileRecord(fname);
 
   // Find the multifile with mfname
-  vector<PT(MultifileRecord)>::iterator i = _server_db._mfile_records.begin();
+  vector< PT(MultifileRecord) >::iterator i = _server_db._mfile_records.begin();
   for(; i != _server_db._mfile_records.end(); ++i) {
     if (mfname == (*i)->_name) {
       (*i)->add_file_record(fr);
@@ -353,7 +353,7 @@ output(ostream &out) const {
       << "     size: " << _size    << endl
       << "   status: " << _status  << endl;
   out << "--------------------------------------------------" << endl;
-  vector<PT(FileRecord)>::const_iterator i = _file_records.begin();
+  vector< PT(FileRecord) >::const_iterator i = _file_records.begin();
   for(; i != _file_records.end(); ++i) {
     (*i)->output(out);
   }
@@ -389,7 +389,7 @@ get_file_name(int index) const {
 ////////////////////////////////////////////////////////////////////
 bool DownloadDb::MultifileRecord::
 file_exists(string fname) const {
-  vector<PT(FileRecord)>::const_iterator i = _file_records.begin();
+  vector< PT(FileRecord) >::const_iterator i = _file_records.begin();
   for(; i != _file_records.end(); ++i) {
     if (fname == (*i)->_name) {
       return true;
@@ -406,7 +406,7 @@ file_exists(string fname) const {
 ////////////////////////////////////////////////////////////////////
 PT(DownloadDb::FileRecord) DownloadDb::MultifileRecord::
 get_file_record_named(string fname) const {
-  vector<PT(FileRecord)>::const_iterator i = _file_records.begin();
+  vector< PT(FileRecord) >::const_iterator i = _file_records.begin();
   for(; i != _file_records.end(); ++i) {
     if (fname == (*i)->_name) {
       return (*i);
@@ -458,7 +458,7 @@ Db(void) {
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::Db::
 output(ostream &out) const {
-  vector<PT(MultifileRecord)>::const_iterator i = _mfile_records.begin();
+  vector< PT(MultifileRecord) >::const_iterator i = _mfile_records.begin();
   for(; i != _mfile_records.end(); ++i) {
     (*i)->output(out);
   }
@@ -492,7 +492,7 @@ get_multifile_name(int index) const {
 ////////////////////////////////////////////////////////////////////
 bool DownloadDb::Db::
 multifile_exists(string mfname) const {
-  vector<PT(MultifileRecord)>::const_iterator i = _mfile_records.begin();
+  vector< PT(MultifileRecord) >::const_iterator i = _mfile_records.begin();
   for(; i != _mfile_records.end(); ++i) {
     if (mfname == (*i)->_name) {
       return true;
@@ -508,7 +508,7 @@ multifile_exists(string mfname) const {
 ////////////////////////////////////////////////////////////////////
 PT(DownloadDb::MultifileRecord) DownloadDb::Db::
 get_multifile_record_named(string mfname) const {
-  vector<PT(MultifileRecord)>::const_iterator i = _mfile_records.begin();
+  vector< PT(MultifileRecord) >::const_iterator i = _mfile_records.begin();
   for(; i != _mfile_records.end(); ++i) {
     if (mfname == (*i)->_name) {
       return (*i);
@@ -756,7 +756,7 @@ write(ofstream &write_stream) {
   PN_int32 header_length;
 
   // Iterate over the multifiles writing them to the stream
-  vector<PT(MultifileRecord)>::const_iterator i = _mfile_records.begin();
+  vector< PT(MultifileRecord) >::const_iterator i = _mfile_records.begin();
   for(; i != _mfile_records.end(); ++i) {
     _datagram.clear();
     
@@ -795,7 +795,7 @@ write(ofstream &write_stream) {
 
     // Now iterate over this multifile's files writing them to the stream
     // Iterate over the multifiles writing them to the stream
-    vector<PT(FileRecord)>::const_iterator j = (*i)->_file_records.begin();
+    vector< PT(FileRecord) >::const_iterator j = (*i)->_file_records.begin();
     for(; j != (*i)->_file_records.end(); ++j) {
       // Clear the datagram before we jam a bunch of stuff on it
       _datagram.clear();

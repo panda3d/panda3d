@@ -63,7 +63,7 @@ private:
   GraphicsWindow *_window;
   bool _is_active;
 
-  typedef vector<PT(GraphicsLayer)> GraphicsLayers;
+  typedef vector< PT(GraphicsLayer) > GraphicsLayers;
   GraphicsLayers _layers;
 
 private:

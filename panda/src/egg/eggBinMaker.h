@@ -263,7 +263,7 @@ private:
   // Then we walk through that list and create a Bins/Nodes structure
   // for each group, which separates out the nodes into the individual
   // bins.
-  typedef vector<PT(EggNode)> Nodes;
+  typedef vector< PT(EggNode) > Nodes;
   typedef vector<Nodes> Bins;
 
   void collect_nodes(EggGroupNode *group);

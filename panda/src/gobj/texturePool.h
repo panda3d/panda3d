@@ -55,7 +55,7 @@ private:
   static TexturePool *get_ptr();
 
   static TexturePool *_global_ptr;
-  typedef map<string, PT(Texture)> Textures;
+  typedef map<string,  PT(Texture) > Textures;
   Textures _textures;
 };
 

@@ -30,14 +30,14 @@ class EXPCL_PANDAEGG EggTextureCollection {
 
 private:
   typedef map<PT(EggTexture), int> Textures;
-  typedef vector<PT(EggTexture)> OrderedTextures;
+  typedef vector< PT(EggTexture) > OrderedTextures;
 
 public:
   typedef OrderedTextures::const_iterator iterator;
   typedef iterator const_iterator;
   typedef OrderedTextures::size_type size_type;
 
-  typedef map<PT(EggTexture), PT(EggTexture)> TextureReplacement;
+  typedef map<PT(EggTexture),  PT(EggTexture) > TextureReplacement;
 
   // Here begins the actual public interface to EggTextureCollection.
 

@@ -58,7 +58,7 @@ public:
   // extracted into the local list so we can safely search for and
   // remove a particular token from the middle of the list (we can
   // only remove from the head of a circular buffer).
-  list<PT(TokenType)> _really_done;
+  list< PT(TokenType) > _really_done;
 };
 
 #include "tokenBoard.I"

@@ -36,7 +36,7 @@ PUBLISHED:
   CollisionEntry *get_entry(int n) const;
 
 private:
-  typedef vector<PT(CollisionEntry)> Entries;
+  typedef vector< PT(CollisionEntry) > Entries;
   Entries _entries;
 
 public:

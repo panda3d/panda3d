@@ -44,7 +44,7 @@ main(int argc, char *argv[]) {
   QueuedConnectionListener listener(&cm, 1);
   listener.add_connection(rendezvous);
 
-  typedef set<PT(Connection)> Clients;
+  typedef set< PT(Connection) > Clients;
   Clients clients;
 
   QueuedConnectionReader reader(&cm, 10);

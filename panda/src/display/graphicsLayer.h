@@ -69,7 +69,7 @@ private:
   GraphicsChannel *_channel;
   bool _is_active;
 
-  typedef vector<PT(DisplayRegion)> DisplayRegions;
+  typedef vector< PT(DisplayRegion) > DisplayRegions;
   DisplayRegions _display_regions;
 
 private:

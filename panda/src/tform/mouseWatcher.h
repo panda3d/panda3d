@@ -87,7 +87,7 @@ private:
 			   const MouseWatcherRegion *region,
 			   const string &button_name = string());
 
-  typedef set<PT(MouseWatcherRegion)> Regions;
+  typedef set< PT(MouseWatcherRegion) > Regions;
   Regions _regions;
 
   bool _has_mouse;

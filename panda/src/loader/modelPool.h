@@ -60,7 +60,7 @@ private:
   static ModelPool *get_ptr();
 
   static ModelPool *_global_ptr;
-  typedef map<string, PT(Node)> Models;
+  typedef map<string,  PT(Node) > Models;
   Models _models;
 };
 

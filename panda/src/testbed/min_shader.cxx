@@ -178,7 +178,7 @@ public:
   virtual ~Viztex(void);
   virtual void Flush(void);
 protected:
-  typedef std::list<PT(GraphicsWindow)> winlist;
+  typedef std::list< PT(GraphicsWindow) > winlist;
   typedef winlist::iterator winiter;
 
   winlist _wins;

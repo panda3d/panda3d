@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggNurbsSurface : public EggSurface {
 public:
-  typedef list<PT(EggNurbsCurve)> Curves;
+  typedef list< PT(EggNurbsCurve) > Curves;
   typedef Curves Loop;
   typedef list<Loop> Loops;
   typedef Loops Trim;

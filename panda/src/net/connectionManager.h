@@ -61,7 +61,7 @@ protected:
   void add_writer(ConnectionWriter *writer);
   void remove_writer(ConnectionWriter *writer);
 
-  typedef set<PT(Connection)> Connections;
+  typedef set< PT(Connection) > Connections;
   typedef set<ConnectionReader *> Readers;
   typedef set<ConnectionWriter *> Writers;
   Connections _connections;

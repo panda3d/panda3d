@@ -31,7 +31,7 @@ is_done_token(int id) {
   }
 
   // Now we can search really_done for our desired id.
-  list<PT(TokenType)>::iterator found;
+  list< PT(TokenType) >::iterator found;
   found = find_if(_really_done.begin(), _really_done.end(),
                   TokenMatch<TokenType>(id));
 
@@ -59,7 +59,7 @@ get_done_token(int id) {
   }
 
   // Now we can search really_done for our desired id.
-  list<PT(TokenType)>::iterator found;
+  list< PT(TokenType) >::iterator found;
   found = find_if(_really_done.begin(), _really_done.end(),
                   TokenMatch<TokenType>(id));
 

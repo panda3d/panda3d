@@ -72,7 +72,7 @@ PUBLISHED:
   string which_anim_playing() const;
 
 private:
-  typedef map<string, PT(AnimControl)> Controls;
+  typedef map<string,  PT(AnimControl) > Controls;
   Controls _controls;
   CPT_Event _stop_event;
   AnimControl *_last_started_control;

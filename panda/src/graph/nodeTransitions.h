@@ -49,7 +49,7 @@ public:
   void remove_all_from_arc(NodeRelation *arc);
 
 private:
-  typedef map<TypeHandle, PT(NodeTransition)> Transitions;
+  typedef map<TypeHandle, PT(NodeTransition) > Transitions;
 
 public:
   // STL-like definitions to allow read-only traversal of the

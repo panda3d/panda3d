@@ -104,8 +104,8 @@ private:
 
   AllAttributesWrapper _initial_state;
 
-  typedef map<string, PT(GeomBin)> ToplevelBins;
-  typedef multimap<int, PT(GeomBin)> SubBins;
+  typedef map<string,  PT(GeomBin) > ToplevelBins;
+  typedef multimap<int,  PT(GeomBin) > SubBins;
   ToplevelBins _toplevel_bins;
   SubBins _sub_bins;
   PT(GeomBin) _default_bin;

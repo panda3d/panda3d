@@ -93,7 +93,7 @@ private:
   void redraw();
 
 private:
-  typedef vector<PT(ParametricCurve)> ParametricCurves;
+  typedef vector< PT(ParametricCurve) > ParametricCurves;
   ParametricCurves _curves;
   typedef list<ParametricCurveDrawer *> DrawerList;
   DrawerList _drawers;

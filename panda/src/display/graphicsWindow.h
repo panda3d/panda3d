@@ -193,7 +193,7 @@ protected:
   void declare_channel(int index, GraphicsChannel *chan);
 
 private:
-  typedef vector<PT(GraphicsChannel)> Channels;
+  typedef vector< PT(GraphicsChannel) > Channels;
   Channels _channels;
 
 public:

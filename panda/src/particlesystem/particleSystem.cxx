@@ -541,8 +541,8 @@ public:
 };
 
 // returns 0 if OK, # of errors if not OK
-static int check_free_live_total_particles(vector<PT(SC_valuenamepair)> live_counts,
-  vector<PT(SC_valuenamepair)> dead_counts, vector<PT(SC_valuenamepair)> total_counts,
+static int check_free_live_total_particles(vector< PT(SC_valuenamepair) > live_counts,
+  vector< PT(SC_valuenamepair) > dead_counts, vector< PT(SC_valuenamepair) > total_counts,
   int print_all = 0) {
 
   int val = 0;
@@ -650,9 +650,9 @@ sanity_check() {
 
   ///////////////////////////////////////////////////////////////////
   // check the numbers of free particles, live particles, and total particles
-  vector<PT(SC_valuenamepair)> live_counts;
-  vector<PT(SC_valuenamepair)> dead_counts;
-  vector<PT(SC_valuenamepair)> total_counts;
+  vector< PT(SC_valuenamepair) > live_counts;
+  vector< PT(SC_valuenamepair) > dead_counts;
+  vector< PT(SC_valuenamepair) > total_counts;
 
   live_counts.push_back(new SC_valuenamepair(real_live_particle_count, "real_live_particle_count"));
 

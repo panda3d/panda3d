@@ -12,7 +12,7 @@
 
 class EXPCL_PANDA GuiCollection : public GuiItem {
 private:
-  typedef vector<PT(GuiItem)> Items;
+  typedef vector< PT(GuiItem) > Items;
 
   Items _items;
 

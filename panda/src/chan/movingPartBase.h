@@ -48,7 +48,7 @@ protected:
   virtual void pick_channel_index(list<int> &holes, int &next) const;
   virtual void bind_hierarchy(AnimGroup *anim, int channel_index);
 
-  typedef vector<PT(AnimChannelBase)> Channels;
+  typedef vector< PT(AnimChannelBase) > Channels;
   Channels _channels;
 
 public:

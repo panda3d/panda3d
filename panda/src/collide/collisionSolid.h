@@ -85,7 +85,7 @@ protected:
 
   virtual void recompute_viz(Node *parent)=0;
   
-  typedef vector<PT(NodeRelation)> VizArcs;
+  typedef vector< PT(NodeRelation) > VizArcs;
   VizArcs _solid_viz_arcs;
   VizArcs _wireframe_viz_arcs;
   VizArcs _other_viz_arcs;

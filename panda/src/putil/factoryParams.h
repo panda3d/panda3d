@@ -41,7 +41,7 @@ public:
   FactoryParam *get_param_of_type(TypeHandle type) const;
 
 private:
-  typedef vector<PT(TypedReferenceCount)> Params;
+  typedef vector< PT(TypedReferenceCount) > Params;
 
   Params _params;
 };

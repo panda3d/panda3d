@@ -81,7 +81,7 @@ private:
   ModifierButtons _mods;
   PT(Control) _default_control;
 
-  typedef map<TypeHandle, PT(Control)> FineControls;
+  typedef map<TypeHandle,  PT(Control) > FineControls;
 
   class Child {
   public:
