@@ -41,7 +41,15 @@ class URLSpec;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Downloader
-// Description :
+// Description : This object is used to manage downloading of data
+//               from an HTTP server as a background task within a
+//               single-threaded network application.  The class can
+//               download a small piece at a time when run() is called
+//               from time to time; it is designed to both limit time
+//               spent in the run() call as well as limiting network
+//               bandwidth utilized by the download, so that CPU
+//               cycles and bandwidth are still available to the
+//               application for other purposes.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Downloader {
 PUBLISHED:
@@ -57,6 +65,8 @@ PUBLISHED:
                 int first_byte, int last_byte, int total_bytes,
                 bool partial_content = true);
   int initiate(const string &file_name);
+  INLINE int get_file_size() const;
+
   int run(void);
 
   bool get_ramfile(Ramfile &rfile);
@@ -134,6 +144,8 @@ private:
   int _total_bytes_written;
   int _total_bytes_requested;
   bool _download_to_ram;
+
+  int _file_size;
 
   double _tlast;
   double _tfirst;

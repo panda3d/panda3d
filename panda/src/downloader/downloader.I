@@ -18,6 +18,26 @@
 
 #include "config_downloader.h"
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: Downloader::get_file_size
+//       Access: Published
+//  Description: Returns the size of the file currently being
+//               downloaded, in bytes, if it is known.  Returns 0 if
+//               the file size is not known.
+//
+//               After a call to initiate(), this will return 0; at
+//               some later point, when the first response from the
+//               server is read, it may return the actual size of the
+//               file if the server told us.  It is possible the
+//               server will not tell us the size of the file, in
+//               which case this will always return 0.
+////////////////////////////////////////////////////////////////////
+INLINE int Downloader::
+get_file_size() const {
+  return _file_size;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Downloader::set_frequency
 //       Access: Public

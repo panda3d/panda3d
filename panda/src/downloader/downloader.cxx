@@ -70,6 +70,8 @@ Downloader(void) {
   _total_bytes_written = 0;
   _total_bytes_requested = 0;
   _total_bytes_requested = 0;
+
+  _file_size = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -330,6 +332,9 @@ initiate(const string &file_name, Filename file_dest,
     return EU_error_abort;
   }
 
+  // The file size is zero until we hear otherwise from the server
+  _file_size = 0;
+
   // Connect to the server
   int connect_ret = connect_to_server();
   if (connect_ret < 0)
@@ -406,6 +411,9 @@ initiate(const string &file_name) {
     return EU_error_abort;
   }
 
+  // The file size is zero until we hear otherwise from the server
+  _file_size = 0;
+
   // Connect to the server
   int connect_ret = connect_to_server();
   if (connect_ret < 0)
@@ -444,7 +452,7 @@ initiate(const string &file_name) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Downloader::cleanup
-//       Access: Private
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Downloader::
@@ -852,26 +860,46 @@ parse_header(DownloadStatus *status) {
     // Look for content length and location
     size_t cpos = component.find(":");
     string tline = component.substr(0, cpos);
-    if (status->_partial_content == true && tline == "Content-Length") {
+    if (tline == "Content-Length") {
       tline = component.substr(cpos + 2, string::npos);
       int server_download_bytes = atoi(tline.c_str());
-      int client_download_bytes = status->_last_byte - status->_first_byte;
-      if (status->_first_byte == 0)
-        client_download_bytes += 1;
-      if (client_download_bytes != server_download_bytes) {
+      _file_size = server_download_bytes;
+
+      if (status->_partial_content) {
+        // Ensure that our expected content length matches what the
+        // server gives us.
+        int client_download_bytes = status->_last_byte - status->_first_byte;
+        if (status->_first_byte == 0)
+          client_download_bytes += 1;
+        if (client_download_bytes != server_download_bytes) {
+          downloader_cat.error()
+            << "Downloader::parse_header() - server size = "
+            << server_download_bytes << ", client size = "
+            << client_download_bytes << " ("
+            << status->_last_byte << "-" << status->_first_byte << ")" << endl;
+          return EU_error_abort;
+        }
+      }
+
+    } else if (tline == "Transfer-Encoding") {
+      // This code isn't designed to handle transfer encodings other
+      // than identity.  It will certainly fail if we ever get this.
+      string encoding = component.substr(cpos + 2);
+      if (encoding == "identity") {
+        // No problem.
+
+      } else {
         downloader_cat.error()
-          << "Downloader::parse_header() - server size = "
-          << server_download_bytes << ", client size = "
-          << client_download_bytes << " ("
-          << status->_last_byte << "-" << status->_first_byte << ")" << endl;
+          << "Non-identity transfer encoding specified by server!\n";
+        downloader_cat.error()
+          << component << "\n";
         return EU_error_abort;
       }
+
     } else if (redirect == true && tline == "Location") {
       tline = component.substr(cpos + 2, string::npos);
-      if (downloader_cat.is_debug())
-        downloader_cat.debug()
-          << "Downloader::parse_header() - file redirected to: "
-          << tline << endl;
+      downloader_cat.error()
+        << "Got redirect to " << tline << endl;
       return EU_error_abort;
     }
 
