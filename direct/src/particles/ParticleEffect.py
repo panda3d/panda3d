@@ -129,8 +129,11 @@ class ParticleEffect(NodePath):
         # Add a blank line
         f.write('\n')
 
-        # Save all the particles to file
+	# Make sure we start with a clean slate
 	f.write('self.particlesDict = {}\n')
+	f.write('self.forceGroupDict = {}\n')
+
+        # Save all the particles to file
 	num = 0
 	for p in self.particlesDict.values():
 	    target = 'p%d' % num 
@@ -140,7 +143,6 @@ class ParticleEffect(NodePath):
 	    f.write('self.addParticles(%s)\n' % target)
 
 	# Save all the forces to file
-	f.write('self.forceGroupDict = {}\n')
 	num = 0
 	for fg in self.forceGroupDict.values():
 	    target = 'f%d' % num
