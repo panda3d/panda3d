@@ -5,8 +5,8 @@ from DirectNotifyGlobal import *
 
 class Messenger:
 
-    notify = None
-    
+    notify = None    
+
     def __init__(self):
         """ __init__(self)
         One dictionary does it all. It has the following structure:
@@ -113,6 +113,32 @@ class Messenger:
         """
         self.dict.clear()
 
+        
+    def replaceMethod(self, oldMethod, newFunction):
+        import new
+        for entry in self.dict.items():
+            event, objectDict = entry
+            for objectEntry in objectDict.items():
+                object, params = objectEntry
+                method = params[0]
+                if (type(method) == types.MethodType):
+                    function = method.im_func
+                else:
+                    function = method
+                #print ('function: ' + `function` + '\n' +
+                #       'method: ' + `method` + '\n' +
+                #       'oldMethod: ' + `oldMethod` + '\n' +
+                #       'newFunction: ' + `newFunction` + '\n')
+                if (function == oldMethod):
+                    newMethod = new.instancemethod(newFunction,
+                                                   method.im_self,
+                                                   method.im_class)
+                    params[0] = newMethod
+                    # Found it retrun true
+                    return 1
+        # didnt find that method, return false
+        return 0
+    
     def toggleVerbose(self):
         Messenger.notify.setDebug(1 - Messenger.notify.getDebug())
 
@@ -149,18 +175,25 @@ class Messenger:
             acceptorDict = self.dict[event]
             str = str + 'Event: ' + event + '\n'
             for object in acceptorDict.keys():
-                method, extraArgs, persistent = acceptorDict[object]
+                function, extraArgs, persistent = acceptorDict[object]
                 if (type(object) == types.InstanceType):
                     className = object.__class__.__name__
                 else:
                     className = "Not a class"
-                methodName = method.__name__
+                functionName = function.__name__
                 str = (str + '\t' +
-                       'Acceptor:   ' + className + ' instance' + '\n\t' +
-                       'Method:     ' + methodName + '\n\t' +
-                       'Extra Args: ' + `extraArgs` + '\n\t' +
-                       'Persistent: ' + `persistent` + '\n\n'
-                       )
+                       'Acceptor:     ' + className + ' instance' + '\n\t' +
+                       'Function name:' + functionName + '\n\t' +
+                       'Extra Args:   ' + `extraArgs` + '\n\t' +
+                       'Persistent:   ' + `persistent` + '\n')
+                # If this is a class method, get its actual function
+                if (type(function) == types.MethodType):
+                    str = (str + '\t' +
+                           'Method:       ' + `function` + '\n\t' +
+                           'Function:     ' + `function.im_func` + '\n')
+                else:
+                    str = (str + '\t' +
+                           'Function:     ' + `function` + '\n')
         str = str + '='*50 + '\n'
         return str
 

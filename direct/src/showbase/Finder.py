@@ -52,7 +52,6 @@ def findClass(namespace, className):
 
 
 def rebindClass(builtins, filename):
-    tempClassName = 'py_temp_class'
     file = open(filename)
     lines = file.readlines()
     curLine = 0
@@ -96,7 +95,6 @@ def rebindClass(builtins, filename):
     # Make a temp file in the home directory to execfile from
     tmpfilename = os.path.join(os.getenv('HOME'), 'tmp_py_file')
     tmpfile = open(tmpfilename, 'w')
-#    newline = 'class ' + tempClassName + ':\012'
 
     # now write the class back to the file with the new class name
     for i in range(len(lines)):
@@ -132,6 +130,15 @@ def copyFuncs(fromClass, toClass):
     for key in fromClass.__dict__.keys():
         value = fromClass.__dict__[key]
         if (type(value) == types.FunctionType):
-            toClass.__dict__[key] = value
+            oldFunc = toClass.__dict__[key]
+            newFunc = value
+            # Look in the messenger to see if this old function pointer
+            # is stored, and update it to the new function pointer
+            replaceMessengerFunc(oldFunc, newFunc)
+            toClass.__dict__[key] = newFunc
 
-    
+def replaceMessengerFunc(oldFunc, newFunc):
+    res = messenger.replaceMethod(oldFunc, newFunc)
+    if res:
+        print ('messenger replaced function: ' + newFunc.__name__)
+
