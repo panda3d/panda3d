@@ -901,10 +901,10 @@ class Actor(PandaObject, NodePath):
         plays over ALL LODs"""
         if fromFrame == None:
             for control in self.getAnimControls(animName, partName):
-                control.play(restart)
+                control.play()
         else:
             for control in self.getAnimControls(animName, partName):
-                control.play(restart, fromFrame, toFrame)
+                control.play(fromFrame, toFrame)
 
     def loop(self, animName, restart=1, partName=None,
              fromFrame=None, toFrame=None):
