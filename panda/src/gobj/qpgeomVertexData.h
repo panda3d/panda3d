@@ -69,6 +69,7 @@ PUBLISHED:
   virtual ~qpGeomVertexData();
 
   INLINE const qpGeomVertexFormat *get_format() const;
+  INLINE qpGeomVertexArrayData::UsageHint get_usage_hint() const;
 
   int get_num_vertices() const;
   INLINE bool set_num_vertices(int n);
@@ -112,6 +113,7 @@ private:
 
 private:
   CPT(qpGeomVertexFormat) _format;
+  qpGeomVertexArrayData::UsageHint _usage_hint;
 
   typedef pvector< PT(qpGeomVertexArrayData) > Arrays;
 

@@ -2348,7 +2348,10 @@ release_geom(GeomContext *gc) {
 ////////////////////////////////////////////////////////////////////
 DataContext *CLP(GraphicsStateGuardian)::
 prepare_data(qpGeomVertexArrayData *data) {
-  cerr << "prepare_data\n";
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "prepare_data(" << (void *)data << ")\n";
+  }
 
   if (_supports_buffers) {
     CLP(DataContext) *gdc = new CLP(DataContext)(data);
@@ -2375,7 +2378,10 @@ prepare_data(qpGeomVertexArrayData *data) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 apply_data(DataContext *dc) {
-  cerr << "apply_data\n";
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "apply_data(" << (void *)dc->_data << ")\n";
+  }
 
   nassertv(_supports_buffers);
 
@@ -2404,7 +2410,10 @@ apply_data(DataContext *dc) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 release_data(DataContext *dc) {
-  cerr << "release_data\n";
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "release_data(" << (void *)dc->_data << ")\n";
+  }
 
   nassertv(_supports_buffers);
   

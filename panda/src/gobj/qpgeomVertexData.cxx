@@ -45,7 +45,8 @@ qpGeomVertexData() {
 qpGeomVertexData::
 qpGeomVertexData(const qpGeomVertexFormat *format,
                  qpGeomVertexArrayData::UsageHint usage_hint) :
-  _format(format)
+  _format(format),
+  _usage_hint(usage_hint)
 {
   nassertv(_format->is_registered());
 
@@ -263,7 +264,7 @@ convert_to(const qpGeomVertexFormat *new_format) const {
   PStatTimer timer(_munge_data_pcollector);
 
   PT(qpGeomVertexData) new_data = 
-    new qpGeomVertexData(new_format, qpGeomVertexArrayData::UH_client);
+    new qpGeomVertexData(new_format, get_usage_hint());
 
   pset<int> done_arrays;
 
@@ -299,7 +300,7 @@ convert_to(const qpGeomVertexFormat *new_format) const {
 
   // Now go back through and copy any data that's left over.
   for (i = 0; i < num_arrays; ++i) {
-    CPTA_uchar data = get_array(i)->get_data();
+    CPTA_uchar array_data = get_array(i)->get_data();
     const qpGeomVertexArrayFormat *array_format = _format->get_array(i);
     int num_data_types = array_format->get_num_data_types();
     for (int di = 0; di < num_data_types; ++di) {
@@ -308,10 +309,8 @@ convert_to(const qpGeomVertexFormat *new_format) const {
       int new_i = new_format->get_array_with(data_type->get_name());
       if (new_i >= 0 && done_arrays.count(new_i) == 0) {
         // The data type exists in the new format; we have to copy it.
-        PT(qpGeomVertexArrayData) new_array_data = new
-          qpGeomVertexArrayData(*get_array(i));
-        new_data->set_array(new_i, new_array_data);
-        PTA_uchar new_data = new_array_data->modify_data();
+        PTA_uchar new_array_data = 
+          new_data->modify_array(new_i)->modify_data();
 
         const qpGeomVertexArrayFormat *new_array_format = 
           new_format->get_array(new_i);
@@ -319,9 +318,9 @@ convert_to(const qpGeomVertexFormat *new_format) const {
           new_array_format->get_data_type(data_type->get_name());
 
         new_data_type->copy_records
-          (new_data + new_data_type->get_start(), 
+          (new_array_data + new_data_type->get_start(), 
            new_array_format->get_stride(),
-           data + data_type->get_start(), array_format->get_stride(),
+           array_data + data_type->get_start(), array_format->get_stride(),
            data_type, num_vertices);
       }
     }

@@ -29,6 +29,23 @@ get_format() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::get_usage_hint
+//       Access: Published
+//  Description: Returns the usage hint that was passed to the
+//               constructor, and which will be passed to each array
+//               data object created initially.  However, each
+//               individual array may be replaced with a different
+//               array object with an independent usage hint
+//               specified.
+//
+//               See GeomVertexArrayData::get_usage_hint().
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomVertexArrayData::UsageHint qpGeomVertexData::
+get_usage_hint() const {
+  return _usage_hint;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::set_num_vertices
 //       Access: Published
 //  Description: Sets the length of the array to n vertices in all of
