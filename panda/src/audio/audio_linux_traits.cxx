@@ -149,7 +149,7 @@ static void update_linux(void) {
     break;
   case 2:
     if (!initializing)
-      audio_cat->warning() << "audio buffers are being starved" << endl;
+      audio_cat->debug() << "audio buffers are being starved" << endl;
     mix_buffer(current_buffer);
     mix_buffer(back_buffer);
     initializing = false;
