@@ -36,13 +36,13 @@ class ShowBase:
 
         # Store dconfig variables
         self.wantTk = self.config.GetBool('want-tk', 0)
-        self.wantSound = self.config.GetBool('want-sound', 1)
-        if not self.wantSound:
+        self.wantAnySound = self.config.GetBool('want-sound', 1)
+        if not self.wantAnySound:
             AudioManager.setAllSoundActive(0)
         self.wantSfx = AudioManager.getSfxActive()
         self.wantMusic = AudioManager.getMusicActive()
         if not (self.wantSfx or self.wantMusic):
-            self.wantSound = None
+            self.wantAnySound = None
         self.wantDIRECT = self.config.GetBool('want-directtools', 0)
         self.wantStats = self.config.GetBool('want-stats', 0)
 
@@ -231,7 +231,7 @@ class ShowBase:
             PStatClient.getGlobalPstats().connect()
 
     def createAudioManager(self):
-        if self.wantSound:
+        if self.wantAnySound:
             AudioManager.spawnUpdate()
 
     def loadSfx(self, name):
