@@ -1281,7 +1281,7 @@ filter."
 			       (concat
 				(mapconcat 'identity py-which-args " ") " ")
 			       ))))
-    (switch-to-buffer-other-window
+    (switch-to-buffer ;; -other-window
      (apply 'make-comint py-which-bufname py-which-shell nil args))
     (make-local-variable 'comint-prompt-regexp)
     (setq comint-prompt-regexp "^>>> \\|^[.][.][.] \\|^(pdb) ")
@@ -1308,7 +1308,7 @@ filter."
 			       (concat
 				(mapconcat 'identity py-which-args " ") " ")
 			       ))))
-    (switch-to-buffer-other-window
+    (switch-to-buffer ;; -other-window
      (apply 'make-comint py-which-bufname pyd-which-shell nil args))
     (make-local-variable 'comint-prompt-regexp)
     (setq comint-prompt-regexp "^>>> \\|^[.][.][.] \\|^(pdb) ")
@@ -1337,7 +1337,7 @@ filter."
 			       (concat
 				(mapconcat 'identity py-which-args " ") " ")
 			       ))))
-    (switch-to-buffer-other-window
+    (switch-to-buffer ;; -other-window
      (apply 'make-comint py-which-bufname ppy-which-shell nil args))
     (make-local-variable 'comint-prompt-regexp)
     (setq comint-prompt-regexp "^>>> \\|^[.][.][.] \\|^(pdb) ")

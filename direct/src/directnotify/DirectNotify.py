@@ -47,20 +47,20 @@ class DirectNotify:
         """
         Check to see if this category has a dconfig variable
         to set the notify severity and then set that level. You cannot
-        set these until base.config is set.
+        set these until config is set.
         """
 
-        # We cannot check dconfig variables until base.config has been
-        # set. Once base.config is set in ShowBase.py, it tries to set
-        # all the levels again in case some were created before base.config
+        # We cannot check dconfig variables until config has been
+        # set. Once config is set in ShowBase.py, it tries to set
+        # all the levels again in case some were created before config
         # was created.
         try:
-            base.config
+            config
         except:
             return 0
         
         dconfigParam = ("notify-level-" + categoryName)
-        level = base.config.GetString(dconfigParam, "")
+        level = config.GetString(dconfigParam, "")
         if level:
             print ("Setting DirectNotify category: " + dconfigParam +
                    " to severity: " + level)

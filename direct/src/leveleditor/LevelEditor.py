@@ -15,8 +15,8 @@ if sys.argv[1:]:
 # If you do not run from the command line, we just load all of them
 # or you can hack this up for your own purposes.
 else:
-    # hoods = ['TT', 'DD', 'BR', 'DG', 'DL', 'MM']
-    hoods = ['BR' ]
+    hoods = ['TT', 'DD', 'BR', 'DG', 'DL', 'MM']
+    # hoods = ['DL' ]
 
 print "Loading LevelEditor for hoods: ", hoods
 

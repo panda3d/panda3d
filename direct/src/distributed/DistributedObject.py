@@ -1,9 +1,11 @@
 """DistributedObject module: contains the DistributedObject class"""
 
 from PandaObject import *
+from DirectNotifyGlobal import *
 
 class DistributedObject(PandaObject):
     """Distributed Object class:"""
+    notify = directNotify.newCategory("DistributedObject")
     def __init__(self, cr):
         try:
             self.DistributedObject_initialized
@@ -32,6 +34,13 @@ class DistributedObject(PandaObject):
             # object.
             self.deleteImminent = 0
         return None
+
+    def __del__(self):
+        """
+        For debugging purposes, this just prints out what got deleted
+        """
+        DistributedObject.notify.debug("Destructing: " + self.__class__.__name__ +
+                                       " id: " + str(self.doId))
 
     def setNeverDisable(self, bool):
         assert((bool == 1) or (bool == 0))
