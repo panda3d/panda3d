@@ -37,19 +37,31 @@
 ////////////////////////////////////////////////////////////////////
 class glxGraphicsStateGuardian : public GLGraphicsStateGuardian {
 public:
+#ifdef HAVE_GLXFBCONFIG
   glxGraphicsStateGuardian(const FrameBufferProperties &properties,
                            glxGraphicsStateGuardian *share_with,
-                           GLXContext context, GLXFBConfig fbconfig,
-                           XVisualInfo *visual, Display *display, int screen);
+                           GLXContext context, XVisualInfo *visual,
+                           Display *display, int screen,
+                           GLXFBConfig fbconfig);
+#else
+  glxGraphicsStateGuardian(const FrameBufferProperties &properties,
+                           glxGraphicsStateGuardian *share_with,
+                           GLXContext context, XVisualInfo *visual,
+                           Display *display, int screen);
+#endif  // HAVE_GLXFBCONFIG
+
   virtual ~glxGraphicsStateGuardian();
 
   bool glx_is_at_least_version(int major_version, int minor_version) const;
 
   GLXContext _context;
-  GLXFBConfig _fbconfig;
   XVisualInfo *_visual;
   Display *_display;
   int _screen;
+
+#ifdef HAVE_GLXFBCONFIG
+  GLXFBConfig _fbconfig;
+#endif  // HAVE_GLXFBCONFIG
 
 protected:
   virtual void get_gl_version();

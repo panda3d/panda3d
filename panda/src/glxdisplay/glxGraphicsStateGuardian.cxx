@@ -33,14 +33,20 @@ TypeHandle glxGraphicsStateGuardian::_type_handle;
 glxGraphicsStateGuardian::
 glxGraphicsStateGuardian(const FrameBufferProperties &properties,
                          glxGraphicsStateGuardian *share_with,
-                         GLXContext context, GLXFBConfig fbconfig,
-                         XVisualInfo *visual, Display *display, int screen) :
+                         GLXContext context, XVisualInfo *visual, 
+                         Display *display, int screen
+#ifdef HAVE_GLXFBCONFIG
+                         , GLXFBConfig fbconfig
+#endif  // HAVE_GLXFBCONFIG
+                         ) :
   GLGraphicsStateGuardian(properties),
   _context(context),
-  _fbconfig(fbconfig),
   _visual(visual),
   _display(display),
   _screen(screen)
+#ifdef HAVE_GLXFBCONFIG
+  , _fbconfig(fbconfig)
+#endif  // HAVE_GLXFBCONFIG
 {
   if (share_with != (glxGraphicsStateGuardian *)NULL) {
     _prepared_objects = share_with->get_prepared_objects();

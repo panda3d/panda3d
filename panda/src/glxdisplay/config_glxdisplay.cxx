@@ -47,7 +47,9 @@ init_libglxdisplay() {
   }
   initialized = true;
 
+#ifdef HAVE_GLXFBCONFIG
   glxGraphicsBuffer::init_type();
+#endif  // HAVE_GLXFBCONFIG
   glxGraphicsPipe::init_type();
   glxGraphicsWindow::init_type();
   glxGraphicsStateGuardian::init_type();

@@ -327,6 +327,12 @@ typedef struct {
 
 #ifndef GLX_VERSION_1_3
 #define GLX_VERSION_1_3 1
+  /* drose: If the system glx.h isn't at least version 1.3, it won't
+     have defined these types, so we need to do so here in order for
+     the following to compile. */
+typedef struct __GLXFBConfigRec *GLXFBConfig;    
+typedef XID GLXPbuffer;
+
 #ifdef GLX_GLXEXT_PROTOTYPES
 extern GLXFBConfig * glXGetFBConfigs (Display *, int, int *);
 extern GLXFBConfig * glXChooseFBConfig (Display *, int, const int *, int *);

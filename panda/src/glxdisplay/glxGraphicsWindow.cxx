@@ -525,11 +525,15 @@ open_window() {
 
   Window root_window = glx_pipe->get_root();
 
+#ifdef HAVE_GLXFBCONFIG
   if (glxgsg->_fbconfig != None) {
     setup_colormap(glxgsg->_fbconfig);
   } else {
     setup_colormap(visual_info);
   }
+#else
+  setup_colormap(visual_info);
+#endif  // HAVE_GLXFBCONFIG
 
   _event_mask =
     ButtonPressMask | ButtonReleaseMask |
@@ -681,6 +685,7 @@ set_wm_properties(const WindowProperties &properties) {
                   sizeof(protocols) / sizeof(Atom));
 }
 
+#ifdef HAVE_GLXFBCONFIG
 ////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsWindow::setup_colormap
 //       Access: Private
@@ -736,6 +741,7 @@ setup_colormap(GLXFBConfig fbconfig) {
       break;
   }
 }
+#endif  // HAVE_GLXFBCONFIG
 
 ////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsWindow::setup_colormap

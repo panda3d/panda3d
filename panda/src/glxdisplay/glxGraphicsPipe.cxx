@@ -186,15 +186,20 @@ make_gsg(const FrameBufferProperties &properties,
 
   FrameBufferProperties new_properties = properties;
   GLXContext context = NULL;
-
-  GLXFBConfig fbconfig = choose_fbconfig(new_properties);
   XVisualInfo *visual = NULL;
 
+#ifdef HAVE_GLXFBCONFIG
+  GLXFBConfig fbconfig = choose_fbconfig(new_properties);
   if (fbconfig != None) {
     context = 
       glXCreateNewContext(_display, fbconfig, GLX_RGBA_TYPE, share_context,
                           GL_TRUE);
+    if (context == NULL) {
+      fbconfig = None;
+    }
   }
+#endif  // HAVE_GLXFBCONFIG
+
   if (context == NULL) {
     // If we couldn't create a context with the fbconfig interface,
     // try falling back to the older XVisual interface.
@@ -202,7 +207,6 @@ make_gsg(const FrameBufferProperties &properties,
 
     if (visual != (XVisualInfo *)NULL) {
       context = glXCreateContext(_display, visual, None, GL_TRUE);
-      fbconfig = None;
     }
   }
 
@@ -212,6 +216,7 @@ make_gsg(const FrameBufferProperties &properties,
     return NULL;
   }
 
+#ifdef HAVE_GLXFBCONFIG
   if (visual == (XVisualInfo *)NULL) {
     // If we used the fbconfig to open the context, we still need to
     // get the associated XVisual.
@@ -222,7 +227,14 @@ make_gsg(const FrameBufferProperties &properties,
   // Now we can make a GSG.
   PT(glxGraphicsStateGuardian) gsg = 
     new glxGraphicsStateGuardian(new_properties, share_gsg, context, 
-                                 fbconfig, visual, _display, _screen);
+                                 visual, _display, _screen, fbconfig);
+
+#else
+  PT(glxGraphicsStateGuardian) gsg = 
+    new glxGraphicsStateGuardian(new_properties, share_gsg, context, 
+                                 visual, _display, _screen);
+#endif  // HAVE_GLXFBCONFIG
+
   return gsg.p();
 }
 
@@ -252,9 +264,14 @@ make_buffer(GraphicsStateGuardian *gsg, const string &name,
     return NULL;
   }
 
+#ifdef HAVE_GLXFBCONFIG
   return new glxGraphicsBuffer(this, gsg, name, x_size, y_size, want_texture);
+#else
+  return NULL;
+#endif  // HAVE_GLXFBCONFIG
 }
 
+#ifdef HAVE_GLXFBCONFIG
 ////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsPipe::choose_fbconfig
 //       Access: Private
@@ -471,7 +488,9 @@ choose_fbconfig(FrameBufferProperties &properties) const {
 
   return fbconfig;
 }
+#endif  // HAVE_GLXFBCONFIG
 
+#ifdef HAVE_GLXFBCONFIG
 ////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsPipe::try_for_fbconfig
 //       Access: Private
@@ -596,6 +615,7 @@ try_for_fbconfig(int framebuffer_mode,
 
   return fbconfig;
 }
+#endif  // HAVE_GLXFBCONFIG
 
 ////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsPipe::choose visual

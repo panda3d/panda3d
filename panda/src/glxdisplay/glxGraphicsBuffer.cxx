@@ -25,6 +25,10 @@
 #include "glgsg.h"
 #include "pStatTimer.h"
 
+#ifdef HAVE_GLXFBCONFIG
+// This whole class doesn't make sense unless we have the GLXFBConfig
+// and associated GLXPbuffer interfaces available.
+
 TypeHandle glxGraphicsBuffer::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -165,3 +169,6 @@ open_buffer() {
   _is_valid = true;
   return true;
 }
+
+
+#endif  // HAVE_GLXFBCONFIG

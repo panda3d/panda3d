@@ -55,7 +55,9 @@ protected:
 private:
   void set_wm_properties(const WindowProperties &properties);
 
+#ifdef HAVE_GLXFBCONFIG
   void setup_colormap(GLXFBConfig fbconfig);
+#endif  // HAVE_GLXFBCONFIG
   void setup_colormap(XVisualInfo *visual);
   void handle_keystroke(XKeyEvent &event);
   void handle_keypress(XKeyEvent &event);

@@ -32,8 +32,6 @@ typedef int Display;
 typedef int Window;
 typedef int XErrorEvent;
 typedef int XVisualInfo;
-typedef int GLXFBConfig;
-typedef int GLXPbuffer;
 typedef int Atom;
 typedef int Cursor;
 typedef int XIM;
@@ -42,9 +40,33 @@ typedef int XIC;
 #include <X11/Xlib.h>
 #include <GL/glx.h>
 
+#if defined(GLX_VERSION_1_3)
+  // If the system glx version is at least 1.3, then we know we have
+  // GLXFBConfig and GLXPbuffer.
+  #define HAVE_GLXFBCONFIG
+#endif
+
 // This must be included after we have included glgsg.h (which
-// includes gl.h).
+// includes gl.h), and after we have checked GLX_VERSION_1_3.  But we
+// must also include it before we redefine the GLXFBConfig types,
+// below.
 #include "glxext.h"
+
+#if !defined(HAVE_GLXFBCONFIG) && defined(GLX_SGIX_fbconfig) && defined(GLX_SGIX_pbuffer)
+  // If the system glx version isn't 1.3, but these were defined as
+  // extensions, we can work with that.
+  #define GLX_RGBA_TYPE GLX_RGBA_TYPE_SGIX
+  #define GLXFBConfig GLXFBConfigSGIX
+  #define GLXPbuffer GLXPbufferSGIX
+  #define glXChooseFBConfig glXChooseFBConfigSGIX
+  #define glXCreateNewContext glXCreateContextWithConfigSGIX
+  #define glXGetVisualFromFBConfig glXGetVisualFromFBConfigSGIX
+  #define glXGetFBConfigAttrib glXGetFBConfigAttribSGIX
+  #define glXCreatePbuffer glXCreateGLXPbufferSGIX
+  #define glXDestroyPbuffer glXDestroyGLXPbufferSGIX
+
+  #define HAVE_GLXFBCONFIG
+#endif
 
 #endif  // CPPPARSER
 
@@ -81,9 +103,11 @@ protected:
                                          int x_size, int y_size, bool want_texture);
 
 private:
+#ifdef HAVE_GLXFBCONFIG
   GLXFBConfig choose_fbconfig(FrameBufferProperties &properties) const;
   GLXFBConfig try_for_fbconfig(int framebuffer_mode,
                                int want_depth_bits, int want_color_bits) const;
+#endif
 
   XVisualInfo *choose_visual(FrameBufferProperties &properties) const;
   XVisualInfo *try_for_visual(int framebuffer_mode,
