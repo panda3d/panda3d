@@ -184,7 +184,7 @@ pause_all_interruptible() {
     int index = (*ni).second;
     const IntervalDef &def = _intervals[index];
     nassertr(def._interval != (CInterval *)NULL, num_paused);
-    if (!def._interval->get_interruptible()) {
+    if (def._interval->get_interruptible()) {
       // This interval may be interrupted.
       if (def._interval->get_state() == CInterval::S_started) {
         def._interval->priv_interrupt();
