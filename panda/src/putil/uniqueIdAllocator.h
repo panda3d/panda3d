@@ -53,7 +53,7 @@ PUBLISHED:
   ~UniqueIdAllocator();
   U32 allocate();
   void free(U32 index);
-  float percent_used() const;
+  float fraction_used() const;
   void output(ostream& os, bool verbose=false) const;
 
 public:

@@ -110,7 +110,7 @@ allocate() {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: 
+//     Function: free
 //       Access: 
 //  Description: Free an allocated index (index must be between _min
 //               and _max that were passed to the constructor).
@@ -134,19 +134,19 @@ free(U32 index) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: 
+//     Function: fraction_used
 //       Access: 
-//  Description: return what percentage of the pool is used.  The 
-//               range is 0 to 1.0, so 75% would be 0.75, for example.
+//  Description: return the decimal fraction of the pool that is used.
+//               The range is 0 to 1.0 (e.g. 75% would be 0.75).
 ////////////////////////////////////////////////////////////////////
 float UniqueIdAllocator::
-percent_used() const {
+fraction_used() const {
   return float(_size-_free)/_size;
 }
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: 
+//     Function: output
 //       Access: 
 //  Description: ...intended for debugging only.
 ////////////////////////////////////////////////////////////////////
