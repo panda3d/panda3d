@@ -91,7 +91,7 @@ class Loader:
         ModelPool.releaseModel(modelPath)
 
     # font loading funcs
-    def loadFont(self, modelPath, priority = 0):
+    def loadFont(self, modelPath, priority = 0, faceIndex = 0):
         """loadFont(self, string)
 
         This loads a special model that will be sent to a TextNode as
@@ -123,7 +123,7 @@ class Loader:
         else:
             # Otherwise, it must be a new-style, dynamic font.  Maybe
             # it's just a TTF file or something.
-            font = DynamicTextFont(fn)
+            font = DynamicTextFont(fn, faceIndex)
 
         return font
 
