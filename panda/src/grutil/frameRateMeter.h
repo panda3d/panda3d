@@ -41,7 +41,7 @@ class ClockObject;
 //               done, it creates a layer for itself and renders
 //               itself in the upper-right-hand corner.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_FRAMEWORK FrameRateMeter : public TextNode {
+class EXPCL_PANDA FrameRateMeter : public TextNode {
 PUBLISHED:
   FrameRateMeter(const string &name);
   virtual ~FrameRateMeter();
