@@ -39,12 +39,12 @@
         if (m == None):
             print "SpriteParticleRenderer: Couldn't find model: %s!" % modelName 
             return None
-        nodeName = self.renderer.getSourceNodeName()
+        nodeName = self.getSourceNodeName()
         np = m.find(nodeName)
         if np.isEmpty():
             print "SpriteParticleRenderer: Couldn't find node: %s!" % nodeName
             return None
-        self.renderer.setNodePath(np)
+        self.setFromNode(np)
         m.removeNode()
         
 
