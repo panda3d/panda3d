@@ -736,8 +736,8 @@ run_connecting_wait() {
     return false;
   }
 
-  if (downloader_cat.is_debug()) {
-    downloader_cat.debug()
+  if (downloader_cat.is_spam()) {
+    downloader_cat.spam()
       << "waiting to connect to " << _request.get_url().get_server_and_port() << ".\n";
   }
   fd_set wset;
@@ -1135,6 +1135,39 @@ run_setup_ssl() {
   _sbio = BIO_new_ssl(_client->get_ssl_ctx(), true);
   BIO_push(_sbio, *_bio);
 
+  SSL *ssl;
+  BIO_get_ssl(_sbio, &ssl);
+  nassertr(ssl != (SSL *)NULL, false);
+  string cipher_list = _client->get_cipher_list();
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug()
+      << "Setting ssl-cipher-list '" << cipher_list << "'\n";
+  }
+  int result = SSL_set_cipher_list(ssl, cipher_list.c_str());
+  if (result == 0) {
+    downloader_cat.error()
+      << "Invalid cipher list: '" << cipher_list << "'\n";
+#ifdef REPORT_OPENSSL_ERRORS
+    ERR_print_errors_fp(stderr);
+#endif
+    _state = S_failure;
+    return false;
+  }
+
+  if (downloader_cat.is_spam()) {
+    downloader_cat.spam()
+      << "SSL Ciphers available:\n";
+    const char *name;
+    int pri = 0;
+    name = SSL_get_cipher_list(ssl, pri);
+    while (name != NULL) {
+      downloader_cat.spam()
+        << "  " << pri + 1 << ". " << name << "\n";
+      pri++;
+      name = SSL_get_cipher_list(ssl, pri);
+    }
+  }
+
   if (downloader_cat.is_debug()) {
     downloader_cat.debug()
       << "performing SSL handshake\n";
@@ -1174,6 +1207,17 @@ run_ssl_handshake() {
 
   if (!_nonblocking) {
     SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
+  }
+
+  SSL_CIPHER *cipher = SSL_get_current_cipher(ssl);
+  if (cipher == (SSL_CIPHER *)NULL) {
+    downloader_cat.warning()
+      << "No current cipher on SSL connection.\n";
+  } else {
+    if (downloader_cat.debug()) {
+      downloader_cat.debug()
+        << "Using cipher " << SSL_CIPHER_get_name(cipher) << "\n";
+    }
   }
 
   // Now that we've made an SSL handshake, we can use the SSL bio to

@@ -69,3 +69,31 @@ get_verify_ssl() const {
   return _verify_ssl;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::set_cipher_list
+//       Access: Published
+//  Description: Specifies the set of ciphers that are to be made
+//               available for SSL connections.  This is a string as
+//               described in the ciphers(1) man page of the OpenSSL
+//               documentation (or see
+//               http://www.openssl.org/docs/apps/ciphers.html ).  If
+//               this is not specified, the default is provided by the
+//               Config file.  You may also specify "DEFAULT" to use
+//               the built-in OpenSSL default value.
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPClient::
+set_cipher_list(const string &cipher_list) {
+  _cipher_list = cipher_list;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::get_cipher_list
+//       Access: Published
+//  Description: Returns the set of ciphers as set by
+//               set_cipher_list().  See set_cipher_list().
+////////////////////////////////////////////////////////////////////
+INLINE const string &HTTPClient::
+get_cipher_list() const {
+  return _cipher_list;
+}
+

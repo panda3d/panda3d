@@ -98,6 +98,9 @@ PUBLISHED:
   INLINE void set_verify_ssl(VerifySSL verify_ssl);
   INLINE VerifySSL get_verify_ssl() const;
 
+  INLINE void set_cipher_list(const string &cipher_list);
+  INLINE const string &get_cipher_list() const;
+
   bool add_expected_server(const string &server_attributes);
   void clear_expected_servers();
 
@@ -141,6 +144,7 @@ private:
 
   HTTPEnum::HTTPVersion _http_version;
   VerifySSL _verify_ssl;
+  string _cipher_list;
 
   typedef pmap<string, string> Usernames;
   Usernames _usernames;

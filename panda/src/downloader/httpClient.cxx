@@ -109,6 +109,8 @@ HTTPClient() {
     set_username("*proxy", "", http_proxy_username);
   }
 
+  set_cipher_list(ssl_cipher_list);
+
   {
     // Also load in the general usernames.
     Config::ConfigTable::Symbol http_usernames;

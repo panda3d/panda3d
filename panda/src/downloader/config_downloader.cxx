@@ -78,6 +78,10 @@ config_downloader.GetBool("early-random-seed", true);
 const bool verify_ssl =
 config_downloader.GetBool("verify-ssl", true);
 
+// This is the default value for HTTPClient::set_cipher_list().
+const string ssl_cipher_list =
+config_downloader.GetString("ssl-cipher-list", "DEFAULT");
+
 // This specifies the proxy that we will contact for all HTTP
 // connections that don't specify otherwise.
 const string http_proxy =
