@@ -178,9 +178,9 @@ uninstall-lib$[TARGET] :
 #endif
 
 $[install_lib_dir]/lib$[TARGET].so : $[so_dir]/lib$[TARGET].so
-#define local $<
+#define local lib$[TARGET].so
 #define dest $[install_lib_dir]
-	$[INSTALL]
+	cd ./$[so_dir]; $[INSTALL]
 
 #if $[igatescan]
 // Now, some additional rules to build the interrogate file into the
@@ -196,9 +196,9 @@ $[install_lib_dir]/lib$[TARGET].so : $[so_dir]/lib$[TARGET].so
 #endif
 
 $[install_igatedb_dir]/$[igatedb] : $[so_dir]/$[igatedb]
-#define local $<
+#define local $[igatedb]
 #define dest $[install_igatedb_dir]
-	$[INSTALL]
+	cd ./$[so_dir]; $[INSTALL]
 
 lib$[TARGET]_igatescan = $[igatescan]
 $[so_dir]/$[igatedb] $[so_dir]/$[igateoutput] : $[filter-out .c .cxx,$[igatescan]]
@@ -206,7 +206,7 @@ $[so_dir]/$[igatedb] $[so_dir]/$[igateoutput] : $[filter-out .c .cxx,$[igatescan
 
 $[igateoutput:%.cxx=$[so_dir]/%.o] : $[so_dir]/$[igateoutput]
 #define target $@
-#define source $<
+#define source $[so_dir]/$[igateoutput]
 #define ipath . $[target_ipath]
 #define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED]
 	$[COMPILE_C++]
@@ -226,7 +226,7 @@ $[so_dir]/$[igatemout] : $(lib$[TARGET]_igatemscan)
 
 $[igatemout:%.cxx=$[so_dir]/%.o] : $[so_dir]/$[igatemout]
 #define target $@
-#define source $<
+#define source $[so_dir]/$[igatemout]
 #define ipath . $[target_ipath]
 #define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED]
 	$[COMPILE_C++]
@@ -280,9 +280,9 @@ uninstall-lib$[TARGET] :
 #endif
 
 $[install_lib_dir]/lib$[TARGET].a : $[st_dir]/lib$[TARGET].a
-#define local $<
+#define local lib$[TARGET].a
 #define dest $[install_lib_dir]
-	$[INSTALL]
+	cd ./$[st_dir]; $[INSTALL]
 
 #end static_lib_target
 
@@ -306,9 +306,9 @@ uninstall-$[TARGET] :
 #endif
 
 $[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
-#define local $<
+#define local $[TARGET]
 #define dest $[install_bin_dir]
-	$[INSTALL_PROG]
+	cd ./$[st_dir]; $[INSTALL_PROG]
 
 #end sed_bin_target
 
@@ -346,9 +346,9 @@ uninstall-$[TARGET] :
 #endif
 
 $[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
-#define local $<
+#define local $[TARGET]
 #define dest $[install_bin_dir]
-	$[INSTALL_PROG]
+	cd ./$[st_dir]; $[INSTALL_PROG]
 
 #end bin_target
 
@@ -371,14 +371,14 @@ $[st_dir]/$[TARGET] : $(bin_$[TARGET])
 
 #foreach file $[sort $[yxx_so_sources] $[yxx_st_sources]]
 $[patsubst %.yxx,%.cxx,$[file]] : $[file]
-	$[BISON] -y $[if $[YACC_PREFIX],-d --name-prefix=$[YACC_PREFIX]] $<
+	$[BISON] -y $[if $[YACC_PREFIX],-d --name-prefix=$[YACC_PREFIX]] $[file]
 	mv y.tab.c $@
 	mv y.tab.h $[patsubst %.yxx,%.h,$[file]]
 
 #end file
 #foreach file $[sort $[lxx_so_sources] $[lxx_st_sources]]
 $[patsubst %.lxx,%.cxx,$[file]] : $[file]
-	$[FLEX] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $<
+	$[FLEX] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $[file]
 	$[SED] '/#include <unistd.h>/d' lex.yy.c > $@
 	rm lex.yy.c
 
@@ -386,7 +386,7 @@ $[patsubst %.lxx,%.cxx,$[file]] : $[file]
 #foreach file $[sort $[c_so_sources]]
 $[patsubst %.c,$[so_dir]/%.o,$[file]] : $[file] $[dependencies $[file]]
 #define target $@
-#define source $<
+#define source $[file]
 #define ipath $[file_ipath]
 #define flags $[cflags] $[CFLAGS_SHARED]
 	$[COMPILE_C]
@@ -395,25 +395,25 @@ $[patsubst %.c,$[so_dir]/%.o,$[file]] : $[file] $[dependencies $[file]]
 #foreach file $[sort $[c_st_sources]]
 $[patsubst %.c,$[st_dir]/%.o,$[file]] : $[file] $[dependencies $[file]]
 #define target $@
-#define source $<
+#define source $[file]
 #define ipath $[file_ipath]
 #define flags $[cflags]
 	$[COMPILE_C]
 
 #end file
 #foreach file $[sort $[cxx_so_sources] $[yxx_so_sources] $[lxx_so_sources]]
-$[patsubst %.cxx %.lxx %.yxx,$[so_dir]/%.o,$[file]] : $[patsubst %.cxx %.lxx %.yxx,%.cxx,$[file]] $[dependencies $[file]]
+#define source $[patsubst %.cxx %.lxx %.yxx,%.cxx,$[file]]
+$[patsubst %.cxx %.lxx %.yxx,$[so_dir]/%.o,$[file]] : $[source] $[dependencies $[file]]
 #define target $@
-#define source $<
 #define ipath $[file_ipath]
 #define flags $[c++flags] $[CFLAGS_SHARED]
 	$[COMPILE_C++]
 
 #end file
 #foreach file $[sort $[cxx_st_sources] $[yxx_st_sources] $[lxx_st_sources]]
-$[patsubst %.cxx %.lxx %.yxx,$[st_dir]/%.o,$[file]] : $[patsubst %.cxx %.lxx %.yxx,%.cxx,$[file]] $[dependencies $[file]]
+#define source $[patsubst %.cxx %.lxx %.yxx,%.cxx,$[file]]
+$[patsubst %.cxx %.lxx %.yxx,$[st_dir]/%.o,$[file]] : $[source] $[dependencies $[file]]
 #define target $@
-#define source $<
 #define ipath $[file_ipath]
 #define flags $[c++flags]
 	$[COMPILE_C++]
@@ -424,35 +424,35 @@ $[patsubst %.cxx %.lxx %.yxx,$[st_dir]/%.o,$[file]] : $[patsubst %.cxx %.lxx %.y
 // data files.
 #foreach file $[install_scripts]
 $[install_bin_dir]/$[file] : $[file]
-#define local $<
+#define local $[file]
 #define dest $[install_bin_dir]
 	$[INSTALL_PROG]
 #end file
 
 #foreach file $[install_headers]
 $[install_headers_dir]/$[file] : $[file]
-#define local $<
+#define local $[file]
 #define dest $[install_headers_dir]
 	$[INSTALL]
 #end file
 
 #foreach file $[install_parser_inc]
 $[install_parser_inc_dir]/$[file] : $[file]
-#define local $<
+#define local $[file]
 #define dest $[install_parser_inc_dir]
 	$[INSTALL]
 #end file
 
 #foreach file $[install_data]
 $[install_data_dir]/$[file] : $[file]
-#define local $<
+#define local $[file]
 #define dest $[install_data_dir]
 	$[INSTALL]
 #end file
 
 #foreach file $[install_config]
 $[install_config_dir]/$[file] : $[file]
-#define local $<
+#define local $[file]
 #define dest $[install_config_dir]
 	$[INSTALL]
 #end file
@@ -518,35 +518,40 @@ uninstall : $[subdirs:%=uninstall-%]
 	rm -f $[install_headers_dir]/$[CONFIG_HEADER]
 #endif
 
+// Somehow, something in the cttools confuses some shells, so that
+// when we are attached, 'cd foo' doesn't work, but 'cd ./foo' does.
+// Weird.  We get around this by putting a ./ in front of each cd
+// target below.
+
 #formap dirname subdirs
 #define depends 
 $[dirname] : $[dirnames $[if $[build_directory],$[DIRNAME]],$[DEPEND_DIRS]]
-	cd $[PATH]; $(MAKE) all
+	cd ./$[PATH]; $(MAKE) all
 #end dirname
 
 #formap dirname subdirs
 test-$[dirname] :
-	cd $[PATH]; $(MAKE) test
+	cd ./$[PATH]; $(MAKE) test
 #end dirname
 
 #formap dirname subdirs
 clean-$[dirname] :
-	cd $[PATH]; $(MAKE) clean
+	cd ./$[PATH]; $(MAKE) clean
 #end dirname
 
 #formap dirname subdirs
 cleanall-$[dirname] :
-	cd $[PATH]; $(MAKE) cleanall
+	cd ./$[PATH]; $(MAKE) cleanall
 #end dirname
 
 #formap dirname subdirs
 install-$[dirname] : $[patsubst %,install-%,$[dirnames $[if $[build_directory],$[DIRNAME]],$[DEPEND_DIRS]]]
-	cd $[PATH]; $(MAKE) install
+	cd ./$[PATH]; $(MAKE) install
 #end dirname
 
 #formap dirname subdirs
 uninstall-$[dirname] :
-	cd $[PATH]; $(MAKE) uninstall
+	cd ./$[PATH]; $(MAKE) uninstall
 #end dirname
 
 #if $[ne $[CONFIG_HEADER],]
@@ -555,7 +560,7 @@ $[install_headers_dir] :
 	@test -d $[install_headers_dir] || mkdir -p $[install_headers_dir]
 
 $[install_headers_dir]/$[CONFIG_HEADER] : $[CONFIG_HEADER]
-#define local $<
+#define local $[CONFIG_HEADER]
 #define dest $[install_headers_dir]
 	$[INSTALL]
 #endif
