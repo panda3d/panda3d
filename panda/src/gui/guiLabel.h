@@ -121,6 +121,7 @@ PUBLISHED:
   int soft_set_draw_order(int);
   int set_draw_order(int);
   INLINE bool has_hard_draw_order(void) const;
+  INLINE int get_draw_order(void) const;
 
   void write(ostream&) const;
 

@@ -58,7 +58,7 @@ void GuiCollection::add_item(GuiItem* item) {
       found = true;
   if (!found)
     _items.push_back(item);
-  this->recompute();
+  // this->recompute();
 }
 
 void GuiCollection::remove_item(GuiItem* item) {
@@ -70,7 +70,7 @@ void GuiCollection::remove_item(GuiItem* item) {
     return;
   item->unmanage();
   _items.erase(i);
-  this->recompute();
+  // this->recompute();
 }
 
 void GuiCollection::manage(GuiManager* mgr, EventHandler& eh) {

@@ -219,7 +219,7 @@ void GuiManager::recompute_priorities(void) {
     _sorts.insert(*i);
   int p=this->_start_draw_order;
   for (SortSet::iterator j=_sorts.begin(); j!=_sorts.end(); ++j) {
-    if (!((*j)->has_hard_draw_order()))
+    if ((!((*j)->has_hard_draw_order())) && ((*j)->get_draw_order() != p))
       p = (*j)->soft_set_draw_order(p);
   }
   _next_draw_order = p;

@@ -12,6 +12,7 @@
 TypeHandle GuiLabel::_type_handle;
 
 void GuiLabel::recompute_transform(void) {
+  this->freeze();
   switch (_type) {
   case SIMPLE_TEXT:
     {
@@ -56,6 +57,7 @@ void GuiLabel::recompute_transform(void) {
 		       << (int)_type << ")" << endl;
   }
   set_properties();
+  this->thaw();
 }
 
 void GuiLabel::set_properties(void) {

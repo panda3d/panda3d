@@ -147,3 +147,7 @@ INLINE void GuiLabel::set_priority(GuiLabel* l, const PriorityType t) {
 INLINE bool GuiLabel::has_hard_draw_order(void) const {
   return _has_hard_pri;
 }
+
+INLINE int GuiLabel::get_draw_order(void) const {
+  return _hard_pri;
+}
