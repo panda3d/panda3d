@@ -5,16 +5,20 @@
   #define TARGET sgraph
   #define LOCAL_LIBS \
     gobj putil graph mathutil linmath
+    
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
 
   #define SOURCES \
-    camera.I camera.cxx camera.h config_sgraph.cxx config_sgraph.h \
-    geomNode.I geomNode.cxx geomNode.h geomTransformer.I \
-    geomTransformer.cxx geomTransformer.h modelNode.I modelNode.cxx \
-    modelNode.h modelRoot.I modelRoot.cxx modelRoot.h \
-    planeNode.I planeNode.cxx \
-    planeNode.h projectionNode.I projectionNode.cxx projectionNode.h \
-    renderTraverser.I renderTraverser.cxx renderTraverser.h \
-    switchNode.I switchNode.cxx switchNode.h
+     camera.I camera.h config_sgraph.h geomNode.I geomNode.h  \
+     geomTransformer.I geomTransformer.h modelNode.I modelNode.h  \
+     modelRoot.I modelRoot.h planeNode.I planeNode.h  \
+     projectionNode.I projectionNode.h renderTraverser.I  \
+     renderTraverser.h switchNode.I switchNode.h  
+
+  #define INCLUDED_SOURCES  \
+     camera.cxx config_sgraph.cxx geomNode.cxx geomTransformer.cxx  \
+     modelNode.cxx modelRoot.cxx planeNode.cxx projectionNode.cxx  \
+     renderTraverser.cxx switchNode.cxx 
 
   #define INSTALL_HEADERS \
     camera.I camera.h config_sgraph.h \
