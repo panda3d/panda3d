@@ -209,7 +209,7 @@ set_filename(const string &dirname, const string &basename) {
   }
 
   if (_properties._alpha_type != (PNMFileType *)NULL) {
-    _alpha_filename = _filename.get_fullpath_wo_extension() + "_a";
+    _alpha_filename = _filename.get_fullpath_wo_extension() + "_a.";
     _alpha_filename.set_extension
       (_properties._alpha_type->get_suggested_extension());
   }
