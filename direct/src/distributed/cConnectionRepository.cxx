@@ -142,9 +142,7 @@ check_datagram() {
       // structure, to support legacy code that expects to find it
       // there.
       if (_python_repository != (PyObject *)NULL) {
-          // Dave Needs to fix interage.. 
-        PyObject *value = PyInt_FromLong(_msg_sender);
-//        PyObject *value = PyLong_FromUnsignedLongLong(_msg_sender);
+        PyObject *value = PyLong_FromUnsignedLongLong(_msg_sender);
         PyObject_SetAttrString(_python_repository, "msgSender", value);
         Py_DECREF(value);
       }
