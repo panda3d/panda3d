@@ -6,7 +6,7 @@ import ParticleSystem
 import BaseParticleFactory
 import PointParticleFactory
 import ZSpinParticleFactory
-import OrientedParticleFactory
+#import OrientedParticleFactory
 import BaseParticleRenderer
 import PointParticleRenderer
 import LineParticleRenderer
