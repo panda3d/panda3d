@@ -88,6 +88,7 @@
 
 // Do we have <sys/types.h>?
 #define HAVE_SYS_TYPES_H 1
+#define HAVE_SYS_TIME_H
 
 // Do we have <unistd.h>?
 #define HAVE_UNISTD_H

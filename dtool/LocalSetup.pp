@@ -202,7 +202,10 @@ $[cdefine HAVE_SSTREAM]
 $[cdefine HAVE_NEW]
 
 /* Define if you have the <sys/types.h> header file.  */
-$[cdefine HAVE_SYS_TYPES]
+$[cdefine HAVE_SYS_TYPES_H]
+
+/* Define if you have the <sys/time.h> header file.  */
+$[cdefine HAVE_SYS_TIME_H]
 
 /* Define if you have the <unistd.h> header file.  */
 $[cdefine HAVE_UNISTD_H]
