@@ -18,8 +18,8 @@
 
 #include <crypto_utils.h>
 #include <hashVal.h>
-#include <errno.h>
 #include <string.h>
+#include "filename.h"
 
 int
 main(int argc, char *argv[]) {
@@ -38,20 +38,16 @@ main(int argc, char *argv[]) {
         cerr << usagestr << endl;
         return 0;
     }
-    source_file = argv[2];
+    source_file =  Filename::from_os_specific(argv[2]);
   } else {
-    source_file = argv[1];
+    source_file = Filename::from_os_specific(argv[1]);
   }
 
-  #ifdef WIN32_VC
-      if(_access(source_file.c_str(), 0) == -1) {  // does this exist on unix?
-          if(errno==ENOENT) {
-              cerr << usagestr << endl;
-              cerr << source_file << " not found!\n";
-              return -1;
-          }
-      }
-  #endif
+  if(!source_file.exists()) {
+       cerr << usagestr << endl;
+       cerr << source_file << " not found!\n";
+       return -1;
+  }
 
   HashVal hash;
   md5_a_file(source_file, hash);
