@@ -81,7 +81,11 @@ if __debug__:
                 to record (or None for unlimited).
             """
             self.label = label
-            self.trace = traceback.extract_stack(sys._getframe(1+start), limit=10)
+            if limit is not None:
+                self.trace = traceback.extract_stack(sys._getframe(1+start),
+                                                     limit=limit)
+            else:
+                self.trace = traceback.extract_stack(sys._getframe(1+start))
 
         def __str__(self):
             r = "Debug stack trace of %s (back %s frames):\n"%(
