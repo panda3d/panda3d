@@ -380,10 +380,10 @@ $[TAB] $[SHARED_LIB_C]
 #endif
 
 #if $[build_dlls]
-$[ODIR]/$[get_dllname $[TARGET]].lib : $[ODIR]/$[get_dllname $[TARGET]].dll
+$[ODIR]/$[get_dllname $[TARGET]].lib : $[ODIR]/$[get_dllname $[TARGET]].$[dlllib]
 #endif
 #if $[build_pdbs]
-$[ODIR]/$[get_dllname $[TARGET]].pdb : $[ODIR]/$[get_dllname $[TARGET]].dll
+$[ODIR]/$[get_dllname $[TARGET]].pdb : $[ODIR]/$[get_dllname $[TARGET]].$[dlllib]
 #endif
 
 #endif
@@ -392,7 +392,7 @@ $[ODIR]/$[get_dllname $[TARGET]].pdb : $[ODIR]/$[get_dllname $[TARGET]].dll
 // everything that goes along with it.
 #define installed_files \
     $[if $[build_it], \
-      $[if $[build_dlls],$[install_lib_dir]/$[get_dllname $[TARGET]].dll] \
+      $[if $[build_dlls],$[install_lib_dir]/$[get_dllname $[TARGET]].$[dlllib]] \
       $[install_lib_dir]/$[get_dllname $[TARGET]].lib \
       $[if $[and $[build_dlls],$[build_pdbs]],$[install_lib_dir]/$[get_dllname $[TARGET]].pdb] \
     ] \
@@ -410,8 +410,8 @@ $[TAB] rm -f $[sort $[installed_files]]
 #endif
 
 #if $[build_dlls]
-$[install_lib_dir]/$[get_dllname $[TARGET]].dll : $[ODIR]/$[get_dllname $[TARGET]].dll
-#define local $[get_dllname $[TARGET]].dll
+$[install_lib_dir]/$[get_dllname $[TARGET]].$[dlllib] : $[ODIR]/$[get_dllname $[TARGET]].$[dlllib]
+#define local $[get_dllname $[TARGET]].$[dlllib]
 #define dest $[install_lib_dir]
 $[TAB] cp -f $[ODIR]/$[local] $[dest]
 #endif
@@ -498,10 +498,10 @@ $[TAB] $[SHARED_LIB_C] $[COMPILED_RESOURCES]
 #endif
 
 #if $[build_dlls]
-$[ODIR]/$[get_dllname $[TARGET]].lib : $[ODIR]/$[get_dllname $[TARGET]].dll
+$[ODIR]/$[get_dllname $[TARGET]].lib : $[ODIR]/$[get_dllname $[TARGET]].$[dlllib]
 #endif
 #if $[build_pdbs]
-$[ODIR]/$[get_dllname $[TARGET]].pdb : $[ODIR]/$[get_dllname $[TARGET]].dll
+$[ODIR]/$[get_dllname $[TARGET]].pdb : $[ODIR]/$[get_dllname $[TARGET]].$[dlllib]
 #endif
 
 // this section is all very clunky and not generalized enough
