@@ -183,7 +183,7 @@ get_center() const {
 //       Access: Published
 //  Description: set the time taken to complete an LOD switch
 ////////////////////////////////////////////////////////////////////
-INLINE FadeLODNode::
+INLINE void FadeLODNode::
 set_fade_time(float t) {
   CDWriter cdata(_cycler);
   cdata->_fade_time = t;

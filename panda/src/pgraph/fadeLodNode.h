@@ -61,7 +61,7 @@ PUBLISHED:
   INLINE void set_center(const LPoint3f &center);
   INLINE const LPoint3f &get_center() const;
 
-  INLINE set_fade_time(float t);
+  INLINE void set_fade_time(float t);
   INLINE float get_fade_time() const;
 
 public:
