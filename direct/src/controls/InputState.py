@@ -73,7 +73,7 @@ class InputState(DirectObject.DirectObject):
     def set(self, name, isSet):
         assert(self.debugPrint("set(name=%s, isSet=%s)"%(name, isSet)))
         self.state[name] = isSet
-        # We change the name befor sending it because this may
+        # We change the name before sending it because this may
         # be the same name that messenger used to call InputState.set()
         # this avoids running in circles:
         messenger.send("InputState-%s"%(name,), [isSet])

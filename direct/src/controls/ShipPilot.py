@@ -245,6 +245,16 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         self.phys.addLinearForce(gravity)
         self.gravity = gravity
         
+        fn=ForceNode("ship buoyancy")
+        fnp=NodePath(fn)
+        #fnp.reparentTo(physicsActor)
+        fnp.reparentTo(render)
+        self.nodes.append(fnp)
+        buoyancy=LinearVectorForce(0.0, 0.0, 0.0)
+        fn.addForce(buoyancy)
+        self.phys.addLinearForce(buoyancy)
+        self.buoyancy = buoyancy
+        
         fn=ForceNode("ship keel")
         fnp=NodePath(fn)
         #fnp.reparentTo(physicsActor)
@@ -548,12 +558,13 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         #rotPhysToAvatar=Mat3.rotateMatNormaxis(self.avatarNodePath.getH(), Vec3.up())
         contact=self.actorNode.getContactVector()
         
-        # hack fix for falling through the floor:
-        if contact==Vec3.zero() and self.avatarNodePath.getZ()<-50.0:
-            # DCR: don't reset X and Y; allow player to move
-            self.reset()
-            self.avatarNodePath.setZ(50.0)
-            messenger.send("walkerIsOutOfWorld", [self.avatarNodePath])
+        depth=physObject.getPosition().getZ()
+        if depth < 0.0:
+            self.buoyancy.setVector(Vec3.zero())
+        else:
+            self.buoyancy.setVector(Vec3.zero())
+            physObject.setPosition(Point3(physObject.getPosition().getX(), physObject.getPosition().getY(), 0.0))
+            #self.buoyancy.setVector(Vec3(0, 0, -depth))
 
         # get the button states:
         forward = inputState.isSet("forward")
@@ -565,7 +576,6 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         slideRight = 0#inputState.isSet("slideRight")
         jump = inputState.isSet("jump")
         # Determine what the speeds are based on the buttons:
-        
         
         if 0:
             if not hasattr(self, "sailsDeployed"):
@@ -596,6 +606,13 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         self.__rotationSpeed=not slide and (
                 (turnLeft and self.ship.turnRate) or
                 (turnRight and -self.ship.turnRate))
+
+        if __debug__:
+            debugRunning = inputState.isSet("debugRunning")
+            if debugRunning:
+                self.__speed*=4.0
+                self.__slideSpeed*=4.0
+                self.__rotationSpeed*=1.25
 
 
         #*#
