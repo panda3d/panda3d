@@ -12,35 +12,35 @@ using namespace std;
 int _tmain(int argc, _TCHAR* argv[]) {
 	cout <<"UniqueIdAllocator Test"<<endl;
 	UniqueIdAllocator b=UniqueIdAllocator(2, 9);
-	b.print_to(cout, true);
-	b.allocate(); b.print_to(cout, true);
-	b.allocate(); b.print_to(cout, true);
-	b.allocate(); b.print_to(cout, true);
-	b.allocate(); b.print_to(cout, true);
-	b.allocate(); b.print_to(cout, true);
-	b.allocate(); b.print_to(cout, true);
-	b.free(2); b.print_to(cout, true);
-	b.free(3); b.print_to(cout, true);
-	b.free(4); b.print_to(cout, true);
-	b.free(5); b.print_to(cout, true);
-	b.allocate(); b.print_to(cout, true);
-	b.allocate(); b.print_to(cout, true);
-	b.allocate(); b.print_to(cout, true);
-	b.free(3); b.print_to(cout, true);
-	b.free(2); b.print_to(cout, true);
+	b.output(cout, true);
+	b.allocate(); b.output(cout, true);
+	b.allocate(); b.output(cout, true);
+	b.allocate(); b.output(cout, true);
+	b.allocate(); b.output(cout, true);
+	b.allocate(); b.output(cout, true);
+	b.allocate(); b.output(cout, true);
+	b.free(2); b.output(cout, true);
+	b.free(3); b.output(cout, true);
+	b.free(4); b.output(cout, true);
+	b.free(5); b.output(cout, true);
+	b.allocate(); b.output(cout, true);
+	b.allocate(); b.output(cout, true);
+	b.allocate(); b.output(cout, true);
+	b.free(3); b.output(cout, true);
+	b.free(2); b.output(cout, true);
 
-	b.allocate(); b.print_to(cout, true);
-	b.allocate(); b.print_to(cout, true);
-	b.allocate(); b.print_to(cout, true);
-	b.allocate(); b.print_to(cout, true);
-	b.allocate(); b.print_to(cout, true);
-	b.allocate(); b.print_to(cout, true);
-	b.allocate(); b.print_to(cout, true);
+	b.allocate(); b.output(cout, true);
+	b.allocate(); b.output(cout, true);
+	b.allocate(); b.output(cout, true);
+	b.allocate(); b.output(cout, true);
+	b.allocate(); b.output(cout, true);
+	b.allocate(); b.output(cout, true);
+	b.allocate(); b.output(cout, true);
 
-	b.free(4); b.print_to(cout, true);
-	b.free(3); b.print_to(cout, true);
+	b.free(4); b.output(cout, true);
+	b.free(3); b.output(cout, true);
 
-	b.allocate(); b.print_to(cout, true);
+	b.allocate(); b.output(cout, true);
 
 	return 0;
 }
