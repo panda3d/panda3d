@@ -97,6 +97,9 @@ typedef enum { NothingSet=0,NormalOnly,ColorOnly,Normal_Color,TexCoordOnly,
 // DX8's SW front-end has no limit on the number of lights, but HW is usually limited to 8
 #define DXGSG_MAX_LIGHTS 8
 
+// xform mat for vshader will usually be loaded at constant regs c4-c7
+#define VSHADER_XFORMMATRIX_CONSTANTREGNUMSTART 4
+
 static D3DMATRIX matIdentity;
 
 #define __D3DLIGHT_RANGE_MAX ((float)sqrt(FLT_MAX))  //for some reason this is missing in dx8 hdrs
@@ -236,6 +239,192 @@ set_color_clear_value(const Colorf& value) {
   _d3dcolor_clear_value =  Colorf_to_D3DCOLOR(value);
 }
 
+DXShaderHandle DXGraphicsStateGuardian::
+read_pixel_shader(string &filename) {
+    HRESULT hr;
+    DXShaderHandle hShader=NULL;
+    HANDLE hFile=NULL;
+    BYTE *pShaderBytes=NULL;
+    LPD3DXBUFFER pD3DXBuf_Constants=NULL,pD3DXBuf_CompiledShader=NULL,pD3DXBuf_CompilationErrors=NULL;
+
+    assert(scrn.pD3DDevice!=NULL);
+    assert(scrn.bCanUsePixelShaders);
+    bool bIsCompiledShader=(filename.find(".pso")!=string::npos);
+
+    if(bIsCompiledShader) {
+        hFile = CreateFile(filename.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
+        if(hFile == INVALID_HANDLE_VALUE) {
+            dxgsg_cat.error() << "Could not find shader file '"<< filename << "'\n";
+            return NULL;
+        }
+        
+        UINT BytesRead,FileSize = GetFileSize(hFile, NULL);
+        
+        pShaderBytes = new BYTE[FileSize];
+        if (pShaderBytes==NULL) {
+            dxgsg_cat.error() << "MemAlloc failed for shader file '"<< filename << "'\n";
+            goto exit_create_pshader;
+        }
+        
+        ReadFile(hFile, (void*)pShaderBytes, FileSize, (LPDWORD)&BytesRead, NULL);
+        assert(BytesRead==FileSize);
+    } else {
+        #if defined(NDEBUG) && !defined(COMPILE_TEXT_SHADERFILES)
+            // want to keep bulky d3dx shader assembler stuff out of publish build
+            dxgsg_cat.error() << "publish build only reads .vso compiled shaders!\n";
+            exit(1);
+        #else
+           // check for file existence
+           WIN32_FIND_DATA Junk;
+           HANDLE FindFileHandle = FindFirstFile(filename.c_str(),&Junk);
+           if ( FindFileHandle == INVALID_HANDLE_VALUE ) {
+                dxgsg_cat.error() << "Could not find shader file '"<< filename << "'\n";
+                return NULL;
+           } 
+           FindClose(FindFileHandle);
+
+           hr = D3DXAssembleShaderFromFile(filename.c_str(),D3DXASM_DEBUG,NULL,&pD3DXBuf_CompiledShader,&pD3DXBuf_CompilationErrors);
+           if(FAILED(hr)) {
+               dxgsg_cat.error() << "D3DXAssembleShader failed for '"<< filename << "' " << D3DERRORSTRING(hr);
+               if(pD3DXBuf_CompilationErrors!=NULL) {
+                   dxgsg_cat.error() << "Compilation Errors: " << (char*) pD3DXBuf_CompilationErrors->GetBufferPointer() << endl;
+               }
+               exit(1);
+           }
+           assert(pD3DXBuf_CompilationErrors==NULL);
+        #endif
+   }
+
+   hr = scrn.pD3DDevice->CreatePixelShader((DWORD*) ((pD3DXBuf_CompiledShader!=NULL) ? pD3DXBuf_CompiledShader->GetBufferPointer() : pShaderBytes), 
+                                     &hShader);
+   if (FAILED(hr)) {
+        dxgsg_cat.error() << "CreatePixelShader failed for '"<< filename << "' " << D3DERRORSTRING(hr);
+        hShader=NULL;
+   }
+   
+   assert(hShader!=NULL);   // NULL is invalid I hope
+
+   #ifdef _DEBUG
+      dxgsg_cat.debug() <<  "CreatePixelShader succeeded for "<< filename << endl;
+   #endif
+
+ exit_create_pshader:
+   SAFE_RELEASE(pD3DXBuf_CompiledShader);
+   if(hFile!=NULL)
+     CloseHandle(hFile);
+   SAFE_DELETE(pShaderBytes);
+   return hShader;
+}
+
+
+DXShaderHandle DXGraphicsStateGuardian::
+read_vertex_shader(string &filename) {
+#ifndef USE_VERTEX_SHADERS
+    return NULL;
+#else
+    HRESULT hr;
+    DXShaderHandle hShader=NULL;
+    HANDLE hFile=NULL;
+    BYTE *pShaderBytes=NULL;
+    LPD3DXBUFFER pD3DXBuf_Constants=NULL,pD3DXBuf_CompiledShader=NULL,pD3DXBuf_CompilationErrors=NULL;
+    #define VSDDECL_BUFSIZE 1024
+    UINT ShaderDeclHeader[VSDDECL_BUFSIZE];
+
+    // simple decl for posn + color
+    // need way to encode header decl with vsh files (stick in comment?)  (use ID3DXEffect files?)
+    UINT Predefined_DeclArray[] = {
+        D3DVSD_STREAM(0),
+        D3DVSD_REG(D3DVSDE_POSITION, D3DVSDT_FLOAT3 ),      // input register v0
+        D3DVSD_REG(D3DVSDE_DIFFUSE, D3DVSDT_D3DCOLOR ),     // input Register v5
+      //  D3DVSD_CONST(0,1),*(DWORD*)&c[0],*(DWORD*)&c[1],*(DWORD*)&c[2],*(DWORD*)&c[3], 
+    };
+
+    memcpy(ShaderDeclHeader,Predefined_DeclArray,sizeof(Predefined_DeclArray));
+
+    // need to append any compiled constants to instr array
+    UINT ShaderDeclHeader_UINTSize=sizeof(Predefined_DeclArray)/sizeof(UINT);
+
+    assert(scrn.pD3DDevice!=NULL);
+    bool bIsCompiledShader=(filename.find(".vso")!=string::npos);
+
+    if(bIsCompiledShader) {
+        hFile = CreateFile(filename.c_str(), GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
+        if(hFile == INVALID_HANDLE_VALUE) {
+            dxgsg_cat.error() << "Could not find shader file '"<< filename << "'\n";
+            return NULL;
+        }
+        
+        UINT BytesRead,FileSize = GetFileSize(hFile, NULL);
+        
+        pShaderBytes = new BYTE[FileSize];
+        if (pShaderBytes==NULL) {
+            dxgsg_cat.error() << "MemAlloc failed for shader file '"<< filename << "'\n";
+            goto exit_create_vshader;
+        }
+        
+        ReadFile(hFile, (void*)pShaderBytes, FileSize, (LPDWORD)&BytesRead, NULL);
+        assert(BytesRead==FileSize);
+    } else {
+        #if defined(NDEBUG) && !defined(COMPILE_TEXT_SHADERFILES)
+            // want to keep bulky d3dx shader assembler stuff out of publish build
+            dxgsg_cat.error() << "publish build only reads .vso compiled shaders!\n";
+            exit(1);
+        #else
+           // check for file existence
+           WIN32_FIND_DATA Junk;
+           HANDLE FindFileHandle = FindFirstFile(filename.c_str(),&Junk);
+           if ( FindFileHandle == INVALID_HANDLE_VALUE ) {
+                dxgsg_cat.error() << "Could not find shader file '"<< filename << "'\n";
+                return NULL;
+           } 
+           FindClose(FindFileHandle);
+
+           hr = D3DXAssembleShaderFromFile(filename.c_str(),D3DXASM_DEBUG,&pD3DXBuf_Constants,&pD3DXBuf_CompiledShader,&pD3DXBuf_CompilationErrors);
+           if(FAILED(hr)) {
+               dxgsg_cat.error() << "D3DXAssembleShader failed for '"<< filename << "' " << D3DERRORSTRING(hr);
+               if(pD3DXBuf_CompilationErrors!=NULL) {
+                   dxgsg_cat.error() << "Compilation Errors: " << (char*) pD3DXBuf_CompilationErrors->GetBufferPointer() << endl;
+               }
+               exit(1);
+           }
+           assert(pD3DXBuf_CompilationErrors==NULL);
+
+           if(pD3DXBuf_Constants!=NULL) {
+               // need to insert defined constants after shader decl
+               memcpy(&ShaderDeclHeader[ShaderDeclHeader_UINTSize],pD3DXBuf_Constants->GetBufferPointer(),pD3DXBuf_Constants->GetBufferSize());
+               ShaderDeclHeader_UINTSize+=pD3DXBuf_Constants->GetBufferSize()/sizeof(UINT);
+               pD3DXBuf_Constants->Release();
+           }
+        #endif
+   }
+
+   assert(VSDDECL_BUFSIZE >= (ShaderDeclHeader_UINTSize+1));
+   ShaderDeclHeader[ShaderDeclHeader_UINTSize]=D3DVSD_END();
+
+   UINT UsageFlags = (scrn.bCanUseHWVertexShaders ? 0x0 : D3DUSAGE_SOFTWAREPROCESSING);
+   hr = scrn.pD3DDevice->CreateVertexShader((DWORD*)ShaderDeclHeader,
+                                     (DWORD*) ((pD3DXBuf_CompiledShader!=NULL) ? pD3DXBuf_CompiledShader->GetBufferPointer() : pShaderBytes), 
+                                     &hShader, UsageFlags);
+   if (FAILED(hr)) {
+        dxgsg_cat.error() << "CreateVertexShader failed for '"<< filename << "' " << D3DERRORSTRING(hr);
+        hShader=NULL;
+   }
+   
+   assert(hShader!=NULL);   // NULL is invalid I hope
+
+   #ifdef _DEBUG
+      dxgsg_cat.debug() <<  "CreateVertexShader succeeded for "<< filename << endl;
+   #endif
+
+ exit_create_vshader:
+   SAFE_RELEASE(pD3DXBuf_CompiledShader);
+   if(hFile!=NULL)
+     CloseHandle(hFile);
+   SAFE_DELETE(pShaderBytes);
+   return hShader;
+#endif
+}
+
 void DXGraphicsStateGuardian::
 reset_panda_gsg(void) {
     GraphicsStateGuardian::reset();
@@ -275,6 +464,9 @@ DXGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
 
     _pStatMeterFont=NULL;
     _bShowFPSMeter = false;
+
+    _CurVertexShader = NULL;  // may persist across dx_init's?
+    _CurPixelShader = NULL;   // may persist across dx_init's?  (for dx8.1 but not dx8.0?)
 
     //    _max_light_range = __D3DLIGHT_RANGE_MAX;
 
@@ -711,6 +903,46 @@ dx_init(HCURSOR hMouseCursor) {
     dta->issue(this);
     dwa->issue(this);
     cfa->issue(this);
+
+    // initial test just allows 1 shader at a time, specified at init time
+    if((pdx_vertexshader_filename!=NULL) && (!pdx_vertexshader_filename->empty())) {
+        if((_CurVertexShader!=NULL)&&(!scrn.bIsDX81)) {
+            // for dx8.0, need to release and recreate shaders after Reset() has been called
+            hr = scrn.pD3DDevice->DeleteVertexShader(_CurVertexShader);
+            if(FAILED(hr))
+                dxgsg_cat.error() << "DeleteVertexShader failed!" << D3DERRORSTRING(hr);
+            _CurVertexShader=NULL;
+        }
+
+        // gets set in set_vertex_format()
+        if(_CurVertexShader==NULL) 
+           _CurVertexShader=read_vertex_shader(*pdx_vertexshader_filename);
+    }
+
+    // initial test just allows 1 shader at a time, specified at init time
+    if((pdx_pixelshader_filename!=NULL) && (!pdx_pixelshader_filename->empty())) {
+        if(!scrn.bCanUsePixelShaders) {
+            dxgsg_cat.error() << "HW doesnt support pixel shaders!\n";
+            exit(1);
+        }
+
+        if((_CurPixelShader!=NULL)&&(!scrn.bIsDX81)) {
+            // for dx8.0, need to release and recreate shaders after Reset() has been called
+            hr = scrn.pD3DDevice->DeletePixelShader(_CurPixelShader);
+            if(FAILED(hr))
+                dxgsg_cat.error() << "DeletePixelShader failed!" << D3DERRORSTRING(hr);
+            _CurPixelShader=NULL;
+        }
+
+        if(_CurPixelShader==NULL) 
+             _CurPixelShader=read_pixel_shader(*pdx_pixelshader_filename);
+
+        // just set it globally for testing.  this really should be an object attribute
+        // like current-texture is so it gets set and unset during traversal
+        hr = scrn.pD3DDevice->SetPixelShader(_CurPixelShader);
+        if(FAILED(hr))
+            dxgsg_cat.error() << "SetPixelShader failed!" << D3DERRORSTRING(hr);
+    }
 
     PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
 }
@@ -3382,8 +3614,23 @@ enable_texturing(bool val) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_transform(const TransformState *transform) {
-  scrn.pD3DDevice->SetTransform(D3DTS_WORLD,
-                                (D3DMATRIX*)transform->get_mat().get_data());
+  // if we're using ONLY vertex shaders, could get avoid calling SetTrans
+  D3DMATRIX *pMat = (D3DMATRIX*)transform->get_mat().get_data();
+  scrn.pD3DDevice->SetTransform(D3DTS_WORLD,pMat);
+
+#ifdef USE_VERTEX_SHADERS
+  if(_CurVertexShader!=NULL) {
+    // vertex shaders need access to the current xform matrix,
+    // so need to reset this vshader 'constant' every time view matrix changes
+      HRESULT hr =  scrn.pD3DDevice->SetVertexShaderConstant(VSHADER_XFORMMATRIX_CONSTANTREGNUMSTART, pMat, 4);
+      #ifdef _DEBUG
+      if(FAILED(hr)) {      
+        dxgsg_cat.error() << "SetVertexShader failed" << D3DERRORSTRING(hr);
+        exit(1);      
+      }
+      #endif
+  }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3393,7 +3640,7 @@ issue_transform(const TransformState *transform) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_tex_matrix(const TexMatrixAttrib *attrib) {
-  // Not implemented.
+  // Not implemented yet.
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3698,7 +3945,7 @@ begin_frame() {
               dxgsg_cat.debug() << "BeginScene returns DeviceLost\n";
           CheckCooperativeLevel();
     } else {
-        dxgsg_cat.error() << "BeginScene failed, unhandled error hr == " << D3DERRORSTRING(hr);
+        dxgsg_cat.error() << "BeginScene failed, unhandled error" << D3DERRORSTRING(hr);
         exit(1);
     }
     return;

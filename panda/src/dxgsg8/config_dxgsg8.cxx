@@ -107,6 +107,12 @@ const bool link_tristrips = config_dxgsg.GetBool("link-tristrips", false);
 // note:  offset currently disabled since it wasnt working properly
 DXDecalType dx_decal_type = GDT_mask;
 
+// Note: must be a ptr not a regular string because the init-string constructor for
+// a global/static string variable will run AFTER the dll static init fn
+// init_libdxgsg8(), which means the string will be reset to "" after we read it in
+string *pdx_vertexshader_filename=NULL;
+string *pdx_pixelshader_filename=NULL;
+
 static DXDecalType
 parse_decal_type(const string &type) {
   if (type == "mask") {
@@ -143,6 +149,19 @@ init_libdxgsg8() {
   string decal_type = config_dxgsg.GetString("dx-decal-type", "");
   if (!decal_type.empty()) {
     dx_decal_type = parse_decal_type(decal_type);
+  }
+
+  // dont try to take the & of a soon-to-be-gone stack var string, this must be on the heap!
+  pdx_vertexshader_filename = new string(config_dxgsg.GetString("dx-vertexshader-filename", ""));
+  if(pdx_vertexshader_filename->empty()) {
+      delete pdx_vertexshader_filename;
+      pdx_vertexshader_filename=NULL;
+  }
+
+  pdx_pixelshader_filename = new string(config_dxgsg.GetString("dx-pixelshader-filename", ""));
+  if(pdx_pixelshader_filename->empty()) {
+      delete pdx_pixelshader_filename;
+      pdx_pixelshader_filename=NULL;
   }
 
   DXGraphicsStateGuardian::init_type();

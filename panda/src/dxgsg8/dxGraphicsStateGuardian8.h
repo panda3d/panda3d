@@ -38,6 +38,8 @@
 #include "fog.h"
 #include "pointerToArray.h"
 
+//#define USE_VERTEX_SHADERS
+
 class Light;
 
 //#if defined(NOTIFY_DEBUG) || defined(DO_PSTATS)
@@ -304,6 +306,7 @@ protected:
   Texture::FilterType _CurTexMagFilter,_CurTexMinFilter;
   DWORD _CurTexAnisoDegree;
   Texture::WrapMode _CurTexWrapModeU,_CurTexWrapModeV;
+  DXShaderHandle _CurVertexShader,_CurPixelShader;
 
   LMatrix4f _current_projection_mat;
   int _projection_mat_stack_count;
@@ -333,6 +336,8 @@ public:
   INLINE void SetDXReady(bool status)  { _bDXisReady = status; }
   INLINE bool GetDXReady(void)  { return _bDXisReady;}
   void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyAttrib::Mode TexBlendMode,bool bJustEnable);
+  DXShaderHandle read_vertex_shader(string &filename);
+  DXShaderHandle read_pixel_shader(string &filename);
 
   void  dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled);
   void reset_panda_gsg(void);

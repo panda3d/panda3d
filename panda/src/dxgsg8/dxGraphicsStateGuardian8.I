@@ -202,12 +202,28 @@ enable_fog(bool val) {
 ////////////////////////////////////////////////////////////////////
 INLINE void DXGraphicsStateGuardian::
 set_vertex_format(DWORD NewFvfType) {
+#ifdef USE_VERTEX_SHADERS
+  if(_CurVertexShader!=NULL) {
+    // this needs optimization
+    HRESULT hr = scrn.pD3DDevice->SetVertexShader(_CurVertexShader);
+    #ifndef NDEBUG
+    if(FAILED(hr)) {
+           dxgsg_cat.error() << "SetVertexShader for custom vtx shader failed" << D3DERRORSTRING(hr);
+           exit(1);
+    }
+    #endif
+    _CurFVFType = NewFvfType;    
+    return;
+  }
+#endif
+
   if (_CurFVFType != NewFvfType) {
     _CurFVFType = NewFvfType;
+
     HRESULT hr = scrn.pD3DDevice->SetVertexShader(NewFvfType);
  #ifndef NDEBUG
     if(FAILED(hr)) {
-           dxgsg_cat.error() << "SetVertexShader(0x" << (void*)NewFvfType<<") failed, hr = " << D3DERRORSTRING(hr);
+           dxgsg_cat.error() << "SetVertexShader(0x" << (void*)NewFvfType<<") failed" << D3DERRORSTRING(hr);
            exit(1);
     }
  #endif

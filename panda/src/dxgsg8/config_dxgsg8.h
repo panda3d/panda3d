@@ -40,7 +40,8 @@ extern DWORD dx_multisample_antialiasing_level;
 extern bool dx_use_triangle_mipgen_filter;
 extern const char *D3DFormatStr(D3DFORMAT fmt);
 extern bool dx_use_dx_cursor;
-
+extern string *pdx_vertexshader_filename;
+extern string *pdx_pixelshader_filename;
 // debug flags we might want to use in full optimized build
 extern bool dx_ignore_mipmaps;
 extern bool dx_mipmap_everything;
