@@ -750,6 +750,8 @@ static void test13(GuiManager* mgr, Node* font) {
   lb1->add_item(s4);
   lb1->add_item(s5);
   lb1->thaw();
+  ub->manage(mgr, event_handler);
+  db->manage(mgr, event_handler);
   lb1->manage(mgr, event_handler);
   lb1->start_behavior();
 }
