@@ -715,6 +715,44 @@ is_const_ref_to_pointer_to_base(CPPType *type) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_pointer_to_PyObject
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is PyObject *.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_pointer_to_PyObject(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_pointer_to_PyObject(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_pointer:
+    return is_PyObject(type->as_pointer_type()->_pointing_at);
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_PyObject
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is PyObject.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_PyObject(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_const:
+    return is_PyObject(type->as_const_type()->_wrapped_around);
+
+  case CPPDeclaration::ST_extension:
+    return (type->get_local_name(&parser) == "PyObject");
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TypeManager::involves_unpublished
 //       Access: Public, Static
 //  Description: Returns true if the type is an unpublished type,

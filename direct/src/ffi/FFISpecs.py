@@ -47,7 +47,8 @@ class FunctionSpecification:
                     indent(file, nesting, 'assert((isinstance(' +
                            methodArgSpec.name + ', types.FloatType) or isinstance(' +
                            methodArgSpec.name + ', types.IntType)))\n')
-                else:
+
+                elif typeDesc.__class__ != FFITypes.PyObjectTypeDescriptor:
                     # Get the real return type (not derived)
                     if ((not typeDesc.isNested) and
                         # Do not put our own module in the import list

@@ -298,6 +298,12 @@ write_function_instance(ostream &out, InterfaceMaker::Function *func,
       format_specifiers += "s";
       parameter_list += ", &" + param_name;
 
+    } else if (TypeManager::is_pointer_to_PyObject(type)) {
+      out << "PyObject *" << param_name;
+      format_specifiers += "O";
+      parameter_list += ", &" + param_name;
+      pexpr_string = param_name;
+
     } else if (TypeManager::is_pointer(type)) {
       out << "int " << param_name;
       format_specifiers += "i";
@@ -409,6 +415,10 @@ pack_return_value(ostream &out, int indent_level,
     indent(out, indent_level)
       << "return PyString_FromString(" << return_expr << ");\n";
 
+  } else if (TypeManager::is_pointer_to_PyObject(type)) {
+    indent(out, indent_level)
+      << "return " << return_expr << ";\n";
+    
   } else if (TypeManager::is_pointer(type)) {
     indent(out, indent_level)
       << "return PyInt_FromLong((int)" << return_expr << ");\n";

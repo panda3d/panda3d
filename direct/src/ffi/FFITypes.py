@@ -108,6 +108,19 @@ class PrimitiveTypeDescriptor(BaseTypeDescriptor):
         """
         indent(file, nesting, 'return returnValue\n')
 
+class PyObjectTypeDescriptor(BaseTypeDescriptor):
+    """
+    This is a special type descriptor for a PyObject * parameter,
+    which means a natural Python object of any type, to be passed
+    through without molestation.
+    """
+    def __init__(self):
+        BaseTypeDescriptor.__init__(self)
+                
+    def generateReturnValueWrapper(self, classTypeDesc, file, userManagesMemory,
+                                   needsDowncast, nesting):
+        indent(file, nesting, 'return returnValue\n')
+
 
 
 class EnumTypeDescriptor(PrimitiveTypeDescriptor):

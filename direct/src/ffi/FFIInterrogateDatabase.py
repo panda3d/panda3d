@@ -362,15 +362,23 @@ class FFIInterrogateDatabase:
     def constructClassTypeDescriptor(self, typeIndex):
         if self.isDefinedType(typeIndex):
             return self.typeIndexMap[typeIndex]
+        typeName = FFIRename.classNameFromCppName(getTypeName(typeIndex))
+        if typeName == "PyObject":
+            # A special case: the PyObject type is really a native
+            # Python object, not to be molested--it's not really an
+            # FFI class object.
+            descriptor = FFITypes.PyObjectTypeDescriptor()
+            self.typeIndexMap[typeIndex] = descriptor
+            return descriptor
+            
         descriptor = FFITypes.ClassTypeDescriptor()
         self.typeIndexMap[typeIndex] = descriptor
         #descriptor.environment = self.environment
-        descriptor.foreignTypeName = FFIRename.classNameFromCppName(getTypeName(typeIndex))
+        descriptor.foreignTypeName = typeName
 
-        if (descriptor.foreignTypeName == "TypedObject"):
+        if (typeName == "TypedObject"):
             print "Found typed object descriptor"
             FFITypes.TypedObjectDescriptor = descriptor
-            
         
         descriptor.isNested = interrogate_type_is_nested(typeIndex)
         if descriptor.isNested:

@@ -77,6 +77,8 @@ public:
   static bool is_pointer_to_base(CPPType *type);
   static bool is_const_pointer_to_base(CPPType *type);
   static bool is_const_ref_to_pointer_to_base(CPPType *type);
+  static bool is_pointer_to_PyObject(CPPType *type);
+  static bool is_PyObject(CPPType *type);
   static bool involves_unpublished(CPPType *type);
   static bool involves_protected(CPPType *type);
 
