@@ -39,7 +39,8 @@ gl-allow-software-renderer #t
 # These specify where model files may be loaded from.  You probably
 # want to set this to a sensible path for yourself.  Note the use of
 # the Panda convention of forward slashes (instead of backslash)
-# separating directory names.
+# separating directory names.  (You may also use Windows-native paths
+# here if you prefer.)
 model-path  /i/alpha/player/install/tagmodels
 sound-path  /c/ttmodels
 

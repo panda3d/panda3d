@@ -4,3 +4,6 @@ Panda3D is a powerful rendering engine for SGI, Linux, Sun, and Windows.
 The core of the engine is in C++. Panda3D/DIRECT provides a Python
 scripting interface and utility code. Panda3D can be used with or without
 Python.
+
+Panda is a complex project and is not trivial to install.  Please read
+the INSTALL document in this directory before starting.
