@@ -142,7 +142,7 @@ cull_callback(qpCullTraverser *trav, CullTraverserData &data) {
 
     // Get the LOD center in camera space
     CPT(TransformState) rel_transform =
-      data._net_transform->invert_compose(trav->get_camera_transform());
+      trav->get_camera_transform()->invert_compose(data._net_transform);
     LPoint3f center = cdata->_lod._center * rel_transform->get_mat();
     
     // Determine which child to traverse
