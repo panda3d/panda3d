@@ -113,7 +113,8 @@ EggOptchar() {
 
   add_option
     ("keepall", "", 0,
-     "Keep all joints and sliders in the character.",
+     "Keep all joints and sliders in the character, except those named "
+     "explicitly by -drop.",
      &EggOptchar::dispatch_none, &_keep_all);
   
   add_option
@@ -428,7 +429,12 @@ determine_removed_components() {
       nassertv(user_data != (EggOptcharUserData *)NULL);
 
       const string &name = comp_data->get_name();
-      if (_keep_all || keep_names.find(name) != keep_names.end()) {
+      if (drop_names.find(name) != drop_names.end()) {
+        // Remove this component by user request.
+        names_used.insert(name);
+        user_data->_flags |= EggOptcharUserData::F_remove;
+
+      } else if (_keep_all || keep_names.find(name) != keep_names.end()) {
         // Keep this component.
         names_used.insert(name);
 
@@ -436,11 +442,6 @@ determine_removed_components() {
           // In fact, expose it.
           user_data->_flags |= EggOptcharUserData::F_expose;
         }
-
-      } else if (drop_names.find(name) != drop_names.end()) {
-        // Remove this component by user request.
-        names_used.insert(name);
-        user_data->_flags |= EggOptcharUserData::F_remove;
 
       } else {
         // Remove this component if it's unanimated or empty.
