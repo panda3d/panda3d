@@ -29,7 +29,7 @@ class AudioManager;
 
 class EXPCL_PANDA AudioSound : public TypedReferenceCount {
 PUBLISHED:
-  virtual ~AudioSound() {}
+  virtual ~AudioSound();
   
   // For best compatability, set the loop_count,
   // volume, and balance, prior to calling play().  You may
@@ -99,12 +99,9 @@ PUBLISHED:
   virtual SoundStatus status() const = 0;
 
 protected:
-  AudioSound() {
-    // Intentionally blank.
-  }
+  AudioSound();
 
   friend class AudioManager;
-
 
 public:
   static TypeHandle get_class_type() {
