@@ -481,7 +481,7 @@ init_dx(  LPDIRECTDRAW7     context,
         dxgsg_cat.error() << "device is missing some required texture blending capabilities, texture blending may not work properly! TextureOpCaps: 0x"<< (void*) _D3DDevDesc.dwTextureOpCaps << endl;
     }
 
-    if(_D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_FOGTABLE ) {
+    if(_D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_FOGTABLE) {
         // watch out for drivers that emulate per-pixel fog with per-vertex fog (Riva128, Matrox Millen G200)
         // some of these require gouraud-shading to be set to work, as if you were using vertex fog
         _doFogType=PerPixelFog;
@@ -1428,13 +1428,14 @@ draw_prim_setup(const Geom *geom) {
     // Otherwise we want flat shading for performance reasons.
 
    // Note on fogging:
-   // the fogging expression should really be (_doFogType==PerVertexFog)
-   // since GOURAUD shading should not be required for PerPixel fog, but the
-   // problem is some cards (Riva128,Matrox G200) emulate pixel fog with table fog
+   // the fogging expression should really be || (_fog_enabled && (_doFogType==PerVertexFog))
+   // instead of just || (_fog_enabled), since GOURAUD shading should not be required for PerPixel 
+   // fog, but the problem is some cards (Riva128,Matrox G200) emulate pixel fog with table fog
    // but dont force the shading mode to gouraud internally, so you end up with flat-shaded fog colors
    // (note, TNT does the right thing tho).  So I guess we must do gouraud shading for all fog rendering for now
+   // note that if _doFogType==None, _fog_enabled will always be false
 
-   if ((_perVertex & (PER_COLOR | (wants_normals() ? PER_NORMAL : 0))) || (_doFogType!=None)) 
+   if ((_perVertex & (PER_COLOR | (wants_normals() ? PER_NORMAL : 0))) || _fog_enabled)
         set_shademode(D3DSHADE_GOURAUD);
    else set_shademode(D3DSHADE_FLAT);
 
@@ -2111,21 +2112,41 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
     // rotating in the z.
     ////////////////////////////////////////////////////////////////////////////
 
-    _curFVFflags = D3DFVF_XYZ | (D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0)) ;
-    DWORD vertex_size = sizeof(float) * 2 + sizeof(D3DVALUE) * 3;
-
     D3DCOLOR CurColor;
-    bool bDoColor=TRUE;
-    if (color_overall) {
+
+    #if 0
+        //   not going to attempt this bDoColor optimization to use default white color in flat-shaded
+        //   mode anymore,  it just make the logic confusing below.  from now on, always have color in FVF
+    
+        _curFVFflags = D3DFVF_XYZ | (D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0)) ;
+        DWORD vertex_size = sizeof(float) * 2 + sizeof(D3DVALUE) * 3;
+
+        bool bDoColor=true;
+    
+        if (color_overall) {
+            GET_NEXT_COLOR();
+            CurColor = _curD3Dcolor;
+            bDoColor = (_curD3Dcolor != ~0);  // dont need to add color if it's all white
+        }
+    
+        if (bDoColor) {
+            _curFVFflags |= D3DFVF_DIFFUSE;
+            vertex_size+=sizeof(D3DCOLOR);
+        }
+    #else
+      _curFVFflags = D3DFVF_XYZ | (D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0)) | D3DFVF_DIFFUSE;
+      DWORD vertex_size = sizeof(float) * 2 + sizeof(D3DVALUE) * 3 + sizeof(D3DCOLOR);  
+
+      if (color_overall) {
         GET_NEXT_COLOR();
         CurColor = _curD3Dcolor;
-        bDoColor = (_curD3Dcolor != ~0);
-    }
+      }
+    #endif
 
-    if (bDoColor) {
-        _curFVFflags |= D3DFVF_DIFFUSE;
-        vertex_size+=sizeof(D3DCOLOR);
-    }
+    // see note on fog in draw_prim_setup
+    bool bUseGouraudShadedColor=_fog_enabled;
+
+    set_shademode(!_fog_enabled ? D3DSHADE_FLAT: D3DSHADE_GOURAUD);
 
     #ifdef _DEBUG
      nassertv(_pCurFvfBufPtr == NULL);   // make sure the storage pointer is clean.
@@ -2192,27 +2213,40 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
             ll.set(negx, negy, z);
         }
 
+        // can no longer assume flat-shaded (because of vtx fog), so always copy full color in there
+
+        /*********  LL vertex  **********/
+
         add_to_FVFBuf((void *)ll.get_data(), sizeof(D3DVECTOR));
-        if (bDoColor) {
-            if (!color_overall)  // otherwise its already been set globally
-                CurColor = pSpr->_c;
-            add_DWORD_to_FVFBuf(CurColor); // only need to cpy color on 1st vert, others are just empty ignored space
-        }
+        if (!color_overall)  // otherwise its already been set globally
+           CurColor = pSpr->_c;
+        add_DWORD_to_FVFBuf(CurColor); // only need to cpy color on 1st vert, others are just empty ignored space
         add_to_FVFBuf((void *)TexCrdSets[0], sizeof(float)*2);
 
+        /*********  LR vertex  **********/
+
         add_to_FVFBuf((void *)lr.get_data(), sizeof(D3DVECTOR));
-        if (bDoColor)
-            _pCurFvfBufPtr += sizeof(D3DCOLOR);  // flat shading, dont need to write color, just incr ptr
+
+        // if flat shading, dont need to write color for middle vtx, just incr ptr
+        if(bUseGouraudShadedColor)
+            *((DWORD *)_pCurFvfBufPtr) = (DWORD) CurColor; 
+        _pCurFvfBufPtr += sizeof(D3DCOLOR);  
+
         add_to_FVFBuf((void *)TexCrdSets[1], sizeof(float)*2);
 
+        /*********  UL vertex  **********/
+
         add_to_FVFBuf((void *)ul.get_data(), sizeof(D3DVECTOR));
-        if (bDoColor)
-            _pCurFvfBufPtr += sizeof(D3DCOLOR);  // flat shading, dont need to write color, just incr ptr
+        // if flat shading, dont need to write color for middle vtx, just incr ptr
+        if(bUseGouraudShadedColor)
+            *((DWORD *)_pCurFvfBufPtr) = (DWORD) CurColor; 
+        _pCurFvfBufPtr += sizeof(D3DCOLOR);
         add_to_FVFBuf((void *)TexCrdSets[2], sizeof(float)*2);
 
+        /*********  UR vertex  **********/
+
         add_to_FVFBuf((void *)ur.get_data(), sizeof(D3DVECTOR));
-        if (bDoColor)
-            add_DWORD_to_FVFBuf(CurColor);
+        add_DWORD_to_FVFBuf(CurColor);
         add_to_FVFBuf((void *)TexCrdSets[3], sizeof(float)*2);
 
         for (int ii=0;ii<QUADVERTLISTLEN;ii++) {
@@ -2408,7 +2442,8 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
         dps_data.position.lpvData = (VOID*)coords;
         dps_data.position.dwStride = sizeof(D3DVECTOR);
 
-        D3DSHADEMODE NeededShadeMode = (_doFogType!=None) ? D3DSHADE_GOURAUD : D3DSHADE_FLAT;
+        // see fog comment in draw_prim_setup
+        D3DSHADEMODE NeededShadeMode = (_fog_enabled) ? D3DSHADE_GOURAUD : D3DSHADE_FLAT;
 
         const DWORD dwVertsperPrim=3;
 

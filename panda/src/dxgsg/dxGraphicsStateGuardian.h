@@ -331,6 +331,7 @@ protected:
                 PerPixelFog=D3DRENDERSTATE_FOGTABLEMODE
                } DxgsgFogType;
   DxgsgFogType _doFogType;
+  bool _fog_enabled;
   int   _fog_mode;
   float _fog_start;
   float _fog_end;
@@ -358,7 +359,6 @@ protected:
   bool _depth_test_enabled;
   bool _depth_write_enabled;
   DWORD _old_colormaskval;
-  bool _fog_enabled;
   bool _alpha_test_enabled;
   int _decal_level;
 
