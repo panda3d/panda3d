@@ -377,9 +377,18 @@ def DNASetBaselineString(baseline, text):
     # This should allow inlined graphics to stay in place.
     # end of todo.
     DNARemoveAllChildrenOfClass(baseline, DNA_SIGN_TEXT);
-    for i in text:
+
+    # We can't just blindly iterate through the text, because it might
+    # be utf-8 encoded, meaning some characters are represented using
+    # multi-byte sequences.  Instead, create a TextNode and use it to
+    # iterate through the characters of the text.
+    t = TextNode('')
+    t.setText(text)
+    for i in range(t.getNumChars()):
+        ch = t.getEncodedChar(i)
+        print "adding ch: %s" % (ch)
         text=DNASignText("text")
-        text.setLetters(i)
+        text.setLetters(ch)
         baseline.add(text)
 
 
@@ -5381,7 +5390,8 @@ class LevelEditorPanel(Pmw.MegaToplevel):
             target=DNAGetChild(self.currentSignDNA, DNA_SIGN_BASELINE, index-1)
             if target:
                 # Update panel info:
-                self.baselineString.set(DNAGetBaselineString(target))
+                s = DNAGetBaselineString(target)
+                self.baselineString.set(s)
                 self.fontMenu.selectitem(target.getCode())
                 try:
                     val = 1.0/target.getWidth()
@@ -5436,7 +5446,7 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         #print self, a, b, mode, self.baselineString.get()
         baseline=self.currentBaselineDNA
         if baseline:
-            s=self.baselineString.get()
+            s = self.baselineString.get()
             self.setBaselineString(s)
 
     def addSignGraphic(self, code):
