@@ -44,9 +44,9 @@ public:
 
   static GraphicsPipe* make_wglGraphicsPipe(const FactoryParams &params);
 
-  static TypeHandle get_class_type(void);
-  static void init_type(void);
-  virtual TypeHandle get_type(void) const;
+  static TypeHandle get_class_type();
+  static void init_type();
+  virtual TypeHandle get_type() const;
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
 private:
@@ -55,7 +55,7 @@ private:
 
 protected:
 
-  wglGraphicsPipe(void);
+  wglGraphicsPipe();
   wglGraphicsPipe(const wglGraphicsPipe&);
   wglGraphicsPipe& operator=(const wglGraphicsPipe&);
 };

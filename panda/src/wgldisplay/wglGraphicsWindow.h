@@ -62,48 +62,48 @@ public:
   wglGraphicsWindow(GraphicsPipe* pipe);
   wglGraphicsWindow(GraphicsPipe* pipe,
              const GraphicsWindow::Properties& props);
-  virtual ~wglGraphicsWindow(void);
+  virtual ~wglGraphicsWindow();
 
   virtual bool supports_update() const;
-  virtual void update(void);
-  virtual void end_frame( void );
-  virtual void swap( void );
-  virtual int get_depth_bitwidth(void);
+  virtual void update();
+  virtual void end_frame();
+  virtual void swap();
+  virtual int get_depth_bitwidth();
 
   virtual TypeHandle get_gsg_type() const;
   static GraphicsWindow* make_wglGraphicsWindow(const FactoryParams &params);
 
 public:
-  virtual void make_current(void);
-  virtual void unmake_current(void);
+  virtual void make_current();
+  virtual void unmake_current();
 
-  INLINE bool mouse_entry_enabled(void) { return _mouse_entry_enabled; }
-  INLINE bool mouse_motion_enabled(void) { return _mouse_motion_enabled; }
-  INLINE bool mouse_passive_motion_enabled(void) {
+  INLINE bool mouse_entry_enabled() { return _mouse_entry_enabled; }
+  INLINE bool mouse_motion_enabled() { return _mouse_motion_enabled; }
+  INLINE bool mouse_passive_motion_enabled() {
     return _mouse_passive_motion_enabled;
   }
-//  void handle_reshape( int w, int h );
+//  void handle_reshape(int w, int h);
 
-  void handle_mouse_motion( int x, int y );
-  void handle_mouse_entry( int state );
-  void handle_keypress( ButtonHandle key, int x, int y );
-  void handle_keyrelease( ButtonHandle key );
+  void handle_mouse_motion(int x, int y);
+  void handle_mouse_entry(int state);
+  void handle_keypress(ButtonHandle key, int x, int y);
+  void handle_keyrelease(ButtonHandle key);
 
 protected:
 //  PIXELFORMATDESCRIPTOR* try_for_visual(wglGraphicsPipe *pipe,
 //                              int mask, int want_depth_bits = 1, int want_color_bits = 1);
 //  static void get_config(PIXELFORMATDESCRIPTOR* visual, int attrib, int *value);
-  int choose_visual(void);
-  virtual void config( void );
-  void setup_colormap(void);
+  int choose_visual();
+  virtual void config();
+  void setup_colormap();
 
   void enable_mouse_input(bool val);
   void enable_mouse_motion(bool val);
   void enable_mouse_passive_motion(bool val);
   void enable_mouse_entry(bool val);
 
-  void handle_reshape(void);
-  void process_events(void);
+  void handle_reshape();
+  void process_events();
 
 public:
   HWND              _mwindow;
@@ -141,29 +141,29 @@ private:
   string _extensions_str;
 
 public:
-  static TypeHandle get_class_type(void);
-  static void init_type(void);
-  virtual TypeHandle get_type(void) const;
+  static TypeHandle get_class_type();
+  static void init_type();
+  virtual TypeHandle get_type() const;
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
   LONG WINAPI window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   ButtonHandle lookup_key(WPARAM wparam) const;
   void DestroyMe(bool bAtExitFnCalled);
-  virtual void deactivate_window(void);
-  virtual void reactivate_window(void);
+  virtual void deactivate_window();
+  virtual void reactivate_window();
 
   virtual void resize(unsigned int xsize,unsigned int ysize);
   virtual unsigned int verify_window_sizes(unsigned int numsizes,unsigned int *dimen);
 
 protected:
-  virtual void do_close_window(void);
-  void check_for_color_cursor_support(void);
+  virtual void do_close_window();
+  void check_for_color_cursor_support();
 
 private:
   static TypeHandle _type_handle;
 };
 
-extern void set_global_parameters(void);
-extern void restore_global_parameters(void);
+extern void set_global_parameters();
+extern void restore_global_parameters();
 
 #endif
