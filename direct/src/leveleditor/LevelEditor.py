@@ -4441,7 +4441,7 @@ class DNAWallStyle:
             file.write('window_count: %s\n' % self['window_count'])
         if self['window_awning_texture']:
             writeAttributes(file, 'window_awning')
-        if self['door_single_texture']:
+        if self['door_texture']:
             writeAttributes(file, 'door')
         if self['door_awning_texture']:
             writeAttributes(file, 'door_awning')
