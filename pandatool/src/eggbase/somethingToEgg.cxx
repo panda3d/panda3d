@@ -279,9 +279,23 @@ post_command_line() {
     _make_rel_dir = _input_filename.get_dirname();
   }
 
-  if (_got_search_path && _append_to_sys_paths) {
-    get_texture_path().prepend_path(_search_path);
-    get_model_path().prepend_path(_search_path);
+  if (_append_to_sys_paths) {
+    DSearchPath &texture_path = get_texture_path();
+    DSearchPath &model_path = get_model_path();
+
+    // Prepend the source filename to the search paths.
+    Filename directory = _input_filename.get_dirname();
+    if (directory.empty()) {
+      directory = ".";
+    }
+    texture_path.prepend_directory(directory);
+    model_path.prepend_directory(directory);
+
+    // Then prepend whatever the user specified on the command line.
+    if (_got_search_path) {
+      texture_path.prepend_path(_search_path);
+      model_path.prepend_path(_search_path);
+    }
   }
 
   return EggConverter::post_command_line();

@@ -87,7 +87,7 @@ convert_path(const Filename &orig_filename, const DSearchPath &searchpath,
 
   case PC_absolute:
     result = as_found;
-    if (result.is_local()) {
+    if (!result.exists()) {
       nout << "Warning: file " << orig_filename << " not found.\n";
       return result;
     }
