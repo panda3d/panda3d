@@ -61,8 +61,8 @@ class ActorInterval(Interval):
         # Initialize superclass
 	Interval.__init__(self, name, duration, reverse=reverse)
         # Update stopEvent
+        self.stopEvent = id + '_stopEvent'
         if self.loop:
-            self.stopEvent = id + '_stopEvent'
             self.stopEventList = [self.stopEvent]
 
     def calcFrame(self, t):
@@ -116,7 +116,7 @@ class ActorInterval(Interval):
                 self.goToT(t)
                 # And start loop, restart flag says continue from current frame
                 self.actor.loop(self.animName, restart=0)
-                self.accept(self.stopEvent, self.actor.stop)
+                self.acceptOnce(self.stopEvent, self.actor.stop)
                 # Print debug information
                 self.notify.debug(
                     'updateFunc() - IVAL_INIT %s looping anim' %

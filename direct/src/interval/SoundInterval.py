@@ -44,10 +44,10 @@ class SoundInterval(Interval):
         # Initialize superclass
         Interval.__init__(self, name, duration)
         # Update stopEvent
+        self.stopEvent = id + '_stopEvent'
         if self.wantSound:
-            self.stopEvent = id + '_stopEvent'
             self.stopEventList = [self.stopEvent]
-        
+
     def updateFunc(self, t, event = IVAL_NONE):
         """ updateFunc(t, event)
         Go to time t
@@ -68,7 +68,8 @@ class SoundInterval(Interval):
             # Start sound
             AudioManager.play(self.sound, t, self.loop)
             # Accept event to kill sound
-            self.accept(self.stopEvent, lambda s = self: AudioManager.stop(s.sound))
+            self.acceptOnce(self.stopEvent,
+                        lambda s = self: AudioManager.stop(s.sound))
         # Print debug information
         self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t))
             
