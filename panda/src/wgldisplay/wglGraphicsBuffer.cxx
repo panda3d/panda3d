@@ -103,17 +103,42 @@ void wglGraphicsBuffer::
 begin_flip() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
     make_current();
+    glFinish();
 
     if (has_texture()) {
       // Use glCopyTexImage2D to copy the framebuffer to the texture.
       // This appears to be the only way to "render to a texture" in
       // OpenGL; there's no interface to make the offscreen buffer
       // itself be a texture.
-      DisplayRegion dr(_x_size, _y_size);
-      get_texture()->copy(_gsg, &dr, _gsg->get_render_buffer(RenderBuffer::T_back));
+      PT(DisplayRegion) dr = make_scratch_display_region(_x_size, _y_size);
+      get_texture()->copy(_gsg, dr, _gsg->get_render_buffer(RenderBuffer::T_back));
     }
 
     SwapBuffers(_window_dc);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsBuffer::process_events
+//       Access: Public, Virtual
+//  Description: Do whatever processing is necessary to ensure that
+//               the window responds to user events.  Also, honor any
+//               requests recently made via request_properties()
+//
+//               This function is called only within the window
+//               thread.
+////////////////////////////////////////////////////////////////////
+void wglGraphicsBuffer::
+process_events() {
+  GraphicsBuffer::process_events();
+
+  MSG msg;
+    
+  // Handle all the messages on the queue in a row.  Some of these
+  // might be for another window, but they will get dispatched
+  // appropriately.
+  while (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
+    process_1_event();
   }
 }
 
@@ -150,13 +175,14 @@ open_buffer() {
   // only are wgl extensions incredibly convoluted to get to, but the
   // pbuffer extension turned out not be supported on the Intel card I
   // tried it on, and crashed the driver for the nVidia card I tried
-  // it on.  And it's not even supported on the software reference
-  // implementation.  Not a good record.
+  // it on.  And it's not even supported on the Microsoft software
+  // reference implementation.  Not a good record.
 
   // In lieu of the pbuffer extension, it appears that rendering to a
-  // window that is simply never shown works fine.
+  // window that is hidden works fine on some drivers (although it
+  // doesn't work on other drivers).
 
-  DWORD window_style = WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+  DWORD window_style = WS_POPUP | WS_SYSMENU | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPEDWINDOW;
 
   RECT win_rect;
   SetRect(&win_rect, 0, 0, _x_size, _y_size);
@@ -182,6 +208,11 @@ open_buffer() {
     return false;
   }
 
+  ShowWindow(_window, SW_SHOWNORMAL);
+  if (!show_pbuffers) {
+    ShowWindow(_window, SW_HIDE);
+  }
+
   _window_dc = GetDC(_window);
 
   wglGraphicsStateGuardian *wglgsg;
@@ -195,7 +226,29 @@ open_buffer() {
   }
 
   _is_valid = true;
+
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsBuffer::process_1_event
+//       Access: Private, Static
+//  Description: Handles one event from the message queue.
+////////////////////////////////////////////////////////////////////
+void wglGraphicsBuffer::
+process_1_event() {
+  MSG msg;
+
+  if (!GetMessage(&msg, NULL, 0, 0)) {
+    // WM_QUIT received.  We need a cleaner way to deal with this.
+    //    DestroyAllWindows(false);
+    exit(msg.wParam);  // this will invoke AtExitFn
+  }
+
+  // Translate virtual key messages
+  TranslateMessage(&msg);
+  // Call window_proc
+  DispatchMessage(&msg);
 }
   
 ////////////////////////////////////////////////////////////////////
@@ -217,7 +270,7 @@ register_window_class() {
   // Clear before filling in window structure!
   ZeroMemory(&wc, sizeof(WNDCLASS));
   wc.style = CS_OWNDC;
-  wc.lpfnWndProc = DefWindowProc;
+  wc.lpfnWndProc = static_window_proc;
   wc.hInstance = instance;
   wc.lpszClassName = _window_class_name;
   
@@ -233,10 +286,89 @@ register_window_class() {
 //     Function: wglGraphicsBuffer::static_window_proc
 //       Access: Private, Static
 //  Description: This is attached to the window class for all
-//               WinGraphicsWindow windows; it is called to handle
+//               wglGraphicsBuffer windows; it is called to handle
 //               window events.
 ////////////////////////////////////////////////////////////////////
 LONG WINAPI wglGraphicsBuffer::
 static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   return DefWindowProc(hwnd, msg, wparam, lparam);
 }
+
+
+
+
+
+/*
+    if (wglgsg->_supports_pixel_format) {
+      // Get ready to query for a suitable pixel format that meets our
+      // minimum requirements.
+      static const int MAX_ATTRIBS = 128;
+      static const int MAX_PFORMATS = 128;
+      int iattributes[2*MAX_ATTRIBS];
+      float fattributes[2*MAX_ATTRIBS];
+      int nfattribs = 0;
+      int niattribs = 0;
+      // Attribute arrays must be "0" terminated--for simplicity, first
+    // just zero-out the array then fill from left to right.
+      for ( int a = 0; a < 2*MAX_ATTRIBS; a++ )
+        {
+          iattributes[a] = 0;
+          fattributes[a] = 0;
+        }
+      // Since we are trying to create a pbuffer, the pixel format we
+      // request (and subsequently use) must be "pbuffer capable".
+      iattributes[2*niattribs ] = WGL_DRAW_TO_PBUFFER_ARB;
+      iattributes[2*niattribs+1] = true;
+      niattribs++;
+      // We require a minimum of 24-bit depth.
+      iattributes[2*niattribs ] = WGL_DEPTH_BITS_ARB;
+      iattributes[2*niattribs+1] = 24;
+      niattribs++;
+      // We require a minimum of 8-bits for each R, G, B, and A.
+      iattributes[2*niattribs ] = WGL_RED_BITS_ARB;
+      iattributes[2*niattribs+1] = 8;
+      niattribs++;
+      iattributes[2*niattribs ] = WGL_GREEN_BITS_ARB;
+      iattributes[2*niattribs+1] = 8;
+      niattribs++;
+      iattributes[2*niattribs ] = WGL_BLUE_BITS_ARB;
+      iattributes[2*niattribs+1] = 8;
+      niattribs++;
+      iattributes[2*niattribs ] = WGL_ALPHA_BITS_ARB;
+      iattributes[2*niattribs+1] = 8;
+      niattribs++;
+      // Now obtain a list of pixel formats that meet these minimum
+      // requirements.
+      int pformat[MAX_PFORMATS];
+      memset(pformat, 0, sizeof(pformat));
+      unsigned int nformats = 0;
+      if (!wglgsg->_wglChoosePixelFormatARB(_window_dc, iattributes, fattributes,
+                                            MAX_PFORMATS, pformat, &nformats)) {
+        cerr << "pbuffer creation error: Couldn't find a suitable pixel format.\n";
+      } else {
+        cerr << "Found " << nformats << " formats, selecting " << pformat[0] << "\n";
+        pbformat = pformat[0];
+      }
+    }
+
+    HPBUFFERARB _pbuffer;
+    wglMakeCurrent(_window_dc, wglgsg->get_context(_window_dc));
+    wglgsg->reset_if_new();
+
+    cerr << "Creating pbuffer(" << _window_dc << ", " << wglgsg->get_pfnum()
+         << ", " << _x_size << ", " << _y_size << ", ...)\n";
+    int attrib_list[] = {
+      0,
+    };
+
+    HDC hdc = wglGetCurrentDC();
+    cerr << "current dc = " << hdc << " window dc = " << _window_dc << "\n";
+    _pbuffer = wglgsg->_wglCreatePbufferARB(hdc, pbformat, 
+                                            _x_size, _y_size, attrib_list);
+    cerr << "pbuffer = " << (void *)_pbuffer << "\n";
+
+    if (_pbuffer == NULL) {
+      wgldisplay_cat.error()
+        << "Attempt to create pbuffer failed.\n";
+    }
+*/

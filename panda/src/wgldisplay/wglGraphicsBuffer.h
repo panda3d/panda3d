@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "graphicsBuffer.h"
+#include "wglExtensions.h"
 
 #include <windows.h>
 
@@ -44,6 +45,7 @@ public:
   virtual void release_gsg();
 
   virtual void begin_flip();
+  virtual void process_events();
 
 protected:
   virtual void close_buffer();
@@ -51,6 +53,7 @@ protected:
 
 private:
   bool make_window();
+  static void process_1_event();
 
   static void register_window_class();
   static LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
