@@ -48,14 +48,14 @@ EggMakeFont() : EggWriter(true, false) {
     ("egg-mkfont uses the FreeType library to generate an egg file "
      "and a series of texture images from a font file "
      "input, such as a TTF file.  The resulting egg file "
-     "can be loaded in Panda as a StaticTextFont object for "
-     "rendering text, even if FreeType is not compiled into "
-     "the executing Panda.\n\n"
+     "can be loaded in Panda as a font for rendering text, even "
+     "if FreeType is not compiled into the executing Panda.\n\n"
 
-     "The generated egg file is normally run through egg-palettize "
-     "automatically as part of the generation process, which collects "
-     "the individual glyph textures into a small number of texture "
-     "maps.");
+     "egg-mkfont will normally run the generated egg file through "
+     "egg-palettize automatically as part of the generation process.  "
+     "This collects the individual glyph textures into a small number "
+     "of texture maps.  If you intend to run the font through egg-palettize "
+     "yourself later, you may choose to omit this step.");
 
   clear_runlines();
   add_runline("[opts] -o output.egg font");
@@ -189,7 +189,7 @@ EggMakeFont() : EggWriter(true, false) {
      &EggMakeFont::dispatch_string, NULL, &_output_palette_pattern);
 
   add_option
-    ("ps", "xsize,ysize", 0,
+    ("palsize", "xsize,ysize", 0,
      "Specify the size of the palette texture images.  This is used if "
      "-nopal is not specified.",
      &EggMakeFont::dispatch_int_pair, NULL, _palette_size);
