@@ -32,7 +32,7 @@ MouseWatcher::
 MouseWatcher(const string &name) : DataNode(name) {
   _has_mouse = false;
   _current_region = (MouseWatcherRegion *)NULL;
-  _button_down_region = (MouseWatcherRegion *)NULL;
+  _button_down = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -79,9 +79,6 @@ bool MouseWatcher::
 remove_region(MouseWatcherRegion *region) {
   if (region == _current_region) {
     _current_region = (MouseWatcherRegion *)NULL;
-  }
-  if (region == _button_down_region) {
-    _button_down_region = (MouseWatcherRegion *)NULL;
   }
   return _regions.erase(region) != 0;
 }
@@ -249,7 +246,11 @@ transmit_data(NodeAttributes &data) {
 
   _has_mouse = true;
 
-  set_current_region(get_over_region(_mouse));
+  if (!_button_down) {
+    // We don't change regions while we are holding down a
+    // button--only when all buttons are up.
+    set_current_region(get_over_region(_mouse));
+  }
 
   // Look for button events.
   const ButtonEventDataAttribute *b;
@@ -264,19 +265,25 @@ transmit_data(NodeAttributes &data) {
 
 	// There is some danger of losing button-up events here.  If
 	// more than one button goes down together, we won't detect
-	// both the of the button-up events properly.
+	// both of the button-up events properly.
 
-	if (_button_down_region != (MouseWatcherRegion *)NULL) {
-	  throw_event_pattern(_button_up_pattern, _button_down_region,
+	if (_current_region != (MouseWatcherRegion *)NULL) {
+	  throw_event_pattern(_button_up_pattern, _current_region,
 			      be._button.get_name());
 	}
-	_button_down_region = (MouseWatcherRegion *)NULL;
+	_button_down = false;
 	
       } else {
 	// Button down.
-	_button_down_region = _current_region;
+
+	if (_button_down) {
+	  // Clicking down a second button while still holding the
+	  // first button down does cause a change in regions.
+	  set_current_region(get_over_region(_mouse));
+	}
+	_button_down = true;
 	if (_current_region != (MouseWatcherRegion *)NULL) {
-	  throw_event_pattern(_button_down_pattern, _button_down_region,
+	  throw_event_pattern(_button_down_pattern, _current_region,
 			      be._button.get_name());
 	}
       }
@@ -284,15 +291,7 @@ transmit_data(NodeAttributes &data) {
   }
 
   bool suppress_below = false;
-
-  if (_button_down_region != (MouseWatcherRegion *)NULL) {
-    // We're currently holding down a button.  This is the effective
-    // region that determines whether we suppress below.
-    suppress_below = _button_down_region->get_suppress_below();
-
-  } else if (_current_region != (MouseWatcherRegion *)NULL) {
-    // We're not holding down a button, but we are within a region.
-    // Use this region to determine whether we suppress below.
+  if (_current_region != (MouseWatcherRegion *)NULL) {
     suppress_below = _current_region->get_suppress_below();
   }
 
