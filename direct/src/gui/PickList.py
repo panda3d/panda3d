@@ -42,7 +42,7 @@ class PickList(PandaObject.PandaObject):
 
         # ignore all the buttons
         for item in self.frame.getItems():
-            self.ignore(item.getGuiItem().getUpRolloverEvent())
+            self.ignore(item.getGuiItem().getUpEvent())
             self.ignore(item.getGuiItem().getUpRolloverEvent())
             self.ignore(item.getGuiItem().getDownRolloverEvent())
 
