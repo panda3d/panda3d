@@ -475,7 +475,7 @@ prepare_colliders(CollisionLevelState &level_state, const NodePath &root) {
     if (!cnode_path.is_same_graph(root)) {
       if ((*oci)._in_graph) {
         // Only report this warning once.
-        collide_cat.warning()
+        collide_cat.info()
           << "Collider " << cnode_path
           << " is not in scene graph.  Ignoring.\n";
         (*oci)._in_graph = false;
