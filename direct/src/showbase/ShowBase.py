@@ -36,6 +36,8 @@ class ShowBase:
         self.wantDIRECT = self.config.GetBool('want-directtools', 0)
         self.wantStats = self.config.GetBool('want-stats', 0)
 
+        taskMgr.taskTimerVerbose = self.config.GetBool('task-timer-verbose', 0)
+
         self.initialState = NodeAttributes()
         # Set a default "off color" (i.e. use poly color) for color transitions
         self.initialState.setAttribute(ColorTransition.getClassType(),
@@ -61,7 +63,7 @@ class ShowBase:
         # stores a CollisionTraverser pointer here, we'll traverse it
         # in the igloop task.
         self.cTrav = 0
-        
+
         # This is a list of cams associated with the display region's cameras
         self.camList = []
         for camera in self.cameraList:
@@ -131,7 +133,7 @@ class ShowBase:
 	# Particle manager
 	self.particleMgr = particleMgr
 	self.particleMgr.setFrameStepping(1)
-	self.particleMgrEnabled = 0 
+	self.particleMgrEnabled = 0
 
 	# Physics manager
 	self.physicsMgr = physicsMgr
@@ -166,8 +168,8 @@ class ShowBase:
 
     def disableParticles(self):
 	"""enableParticles(self)"""
-	self.particleMgrEnabled = 0 
-	self.physicsMgrEnabled = 0 
+	self.particleMgrEnabled = 0
+	self.physicsMgrEnabled = 0
 	self.taskMgr.removeTasksNamed('manager-update')
 
     def toggleParticles(self):
@@ -188,7 +190,7 @@ class ShowBase:
 	if (self.particleMgrEnabled == 1):
 	    self.particleMgr.doParticles(dt)
 	if (self.physicsMgrEnabled == 1):
-	    self.physicsMgr.doPhysics(dt)	
+	    self.physicsMgr.doPhysics(dt)
 	return Task.cont
 
     def createStats(self):
@@ -200,7 +202,7 @@ class ShowBase:
     def createAudioManager(self):
         if self.wantSound:
             AudioManager.spawnUpdate()
-            
+
     def createRootPanel(self):
         if self.wantTk:
             from TkGlobal import *
@@ -224,9 +226,9 @@ class ShowBase:
 
         # Finally, render the frame.
         self.win.update()
-        
+
         return Task.cont
-    
+
     def restart(self):
         self.shutdown()
         # give the igloop task a reasonably "late" priority,
@@ -330,7 +332,7 @@ class ShowBase:
 
         # If oobeMode was never set, set it to false and create the
         # structures we need to implement OOBE.
-        
+
         try:
             self.oobeMode
         except:
@@ -388,14 +390,14 @@ class ShowBase:
             mat = Mat4.translateMat(0, -10, 3) * base.camera.getMat(cameraParent)
             mat.invertInPlace()
             self.oobeTrackball.node().setMat(mat)
-            
+
             self.cam.reparentTo(self.oobeCameraTrackball)
             if not self.oobeVis.isEmpty():
                 self.oobeVis.reparentTo(self.camera)
             self.oobeMode = 1
-            
-        
-        
+
+
+
     def run(self):
         self.taskMgr.run()
 

@@ -96,7 +96,7 @@ def make_sequence(taskList):
             return done
         else:
             task = self.taskList[self.index]
-            # If this is a new task, set it's start time and frame
+            # If this is a new task, set its start time and frame
             if (self.index > self.prevIndex):
                 task.setStartTimeFrame(self.time, self.frame)
             self.prevIndex = self.index
@@ -258,6 +258,7 @@ class TaskManager:
         if (TaskManager.notify == None):
             TaskManager.notify = directNotify.newCategory("TaskManager")
         # TaskManager.notify.setDebug(1)
+        self.taskTimerVerbose = 0
 
     def stepping(value):
         self.stepping = value
@@ -347,25 +348,29 @@ class TaskManager:
         for task in self.taskList:
             task.setCurrentTimeFrame(self.currentTime, self.currentFrame)
 
-            # Run the task and check the return value
-            startTime = time.clock()
-            ret = task(task)
-            endTime = time.clock()
-
-            # Record the dt
-            dt = endTime - startTime
-            task.dt = dt
-            
-            # See if this is the new max
-            if dt > task.maxDt:
-                task.maxDt = dt
-            
-            # Record the running total of all dts so we can compute an average
-            task.runningTotal = task.runningTotal + dt
-            if (task.frame > 0):
-                task.avgDt = (task.runningTotal / task.frame)
+            if (self.taskTimerVerbose == 0):
+                # don't record timing info
+                ret = task(task)
             else:
-                task.avgDt = 0
+                # Run the task and check the return value
+                startTime = time.clock()
+                ret = task(task)
+                endTime = time.clock()
+
+                # Record the dt
+                dt = endTime - startTime
+                task.dt = dt
+
+                # See if this is the new max
+                if dt > task.maxDt:
+                    task.maxDt = dt
+
+                # Record the running total of all dts so we can compute an average
+                task.runningTotal = task.runningTotal + dt
+                if (task.frame > 0):
+                    task.avgDt = (task.runningTotal / task.frame)
+                else:
+                    task.avgDt = 0
 
             # See if the task is done
             if (ret == cont):
@@ -416,7 +421,7 @@ class TaskManager:
                                                method.im_self,
                                                method.im_class)
                 task.__call__ = newMethod
-                # Found it retrun true
+                # Found it return true
                 return 1
         return 0
 
@@ -437,17 +442,31 @@ class TaskManager:
         for task in self.taskList:
             totalDt = totalDt + task.dt
             totalAvgDt = totalAvgDt + task.avgDt
-            str = str + (task.name.ljust(taskNameWidth)
-                         + fpformat.fix(task.dt*1000, 2).rjust(dtWidth)
-                         + fpformat.fix(task.avgDt*1000, 2).rjust(dtWidth)
-                         + fpformat.fix(task.maxDt*1000, 2).rjust(dtWidth)
-                         + `task.getPriority()`.rjust(priorityWidth)
-                         + '\n')
+            if (self.taskTimerVerbose):
+                str = str + (task.name.ljust(taskNameWidth)
+                             + fpformat.fix(task.dt*1000, 2).rjust(dtWidth)
+                             + fpformat.fix(task.avgDt*1000, 2).rjust(dtWidth)
+                             + fpformat.fix(task.maxDt*1000, 2).rjust(dtWidth)
+                             + `task.getPriority()`.rjust(priorityWidth)
+                             + '\n')
+            else:
+                str = str + (task.name.ljust(taskNameWidth)
+                             + '----'.rjust(dtWidth)
+                             + '----'.rjust(dtWidth)
+                             + '----'.rjust(dtWidth)
+                             + `task.getPriority()`.rjust(priorityWidth)
+                             + '\n')
         str = str + '---------------------------------------------------------------\n'
-        str = str + ('total'.ljust(taskNameWidth)
-                     + fpformat.fix(totalDt*1000, 2).rjust(dtWidth)
-                     + fpformat.fix(totalAvgDt*1000, 2).rjust(dtWidth)
-                     + '\n')
+        if (self.taskTimerVerbose):
+            str = str + ('total'.ljust(taskNameWidth)
+                         + fpformat.fix(totalDt*1000, 2).rjust(dtWidth)
+                         + fpformat.fix(totalAvgDt*1000, 2).rjust(dtWidth)
+                         + '\n')
+        else:
+            str = str + ('total'.ljust(taskNameWidth)
+                         + '----'.rjust(dtWidth)
+                         + '----'.rjust(dtWidth)
+                         + '\n')
         return str
 
 
