@@ -498,3 +498,9 @@ test_intersection(CollisionHandler *record,
     record->add_entry(result);
   }
 }
+
+INLINE ostream &
+operator << (ostream &out, const CollisionEntry &entry) {
+  entry.output(out);
+  return out;
+}

@@ -18,6 +18,7 @@
 
 #include "collisionEntry.h"
 #include "dcast.h"
+#include "indent.h"
 
 TypeHandle CollisionEntry::_type_handle;
 
@@ -153,6 +154,63 @@ get_all(const NodePath &space, LPoint3f &surface_point,
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::output
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void CollisionEntry::
+output(ostream &out) const {
+  out << _from_node_path;
+  if (!_into_node_path.is_empty()) {
+    out << " into " << _into_node_path;
+  }
+  if (has_surface_point()) {
+    out << " at " << get_surface_point(NodePath());
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::write
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void CollisionEntry::
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level)
+    << "CollisionEntry:\n";
+  if (!_from_node_path.is_empty()) {
+    indent(out, indent_level + 2)
+      << "from " << _from_node_path << "\n";
+  }
+  if (!_into_node_path.is_empty()) {
+    indent(out, indent_level + 2)
+      << "into " << _into_node_path;
+    const ClipPlaneAttrib *cpa = get_into_clip_planes();
+    if (cpa != (ClipPlaneAttrib *)NULL) {
+      out << " (clipped)";
+    }
+    out << "\n";
+  }
+  if (has_surface_point()) {
+    indent(out, indent_level + 2)
+      << "at " << get_surface_point(NodePath()) << "\n";
+  }
+  if (has_surface_normal()) {
+    indent(out, indent_level + 2)
+      << "normal " << get_surface_normal(NodePath()) << "\n";
+  }
+  if (has_interior_point()) {
+    indent(out, indent_level + 2)
+      << "interior " << get_interior_point(NodePath()) 
+      << " (depth " 
+      << (get_interior_point(NodePath()) - get_surface_point(NodePath())).length() 
+      << ")\n";
+  }
+  indent(out, indent_level + 2)
+    << "respect_prev_transform = " << get_respect_prev_transform() << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -103,6 +103,9 @@ PUBLISHED:
   INLINE bool has_from_depth() const;
   INLINE float get_from_depth() const;
 
+  void output(ostream &out) const;
+  void write(ostream &out, int indent_level = 0) const;
+
 public:
   INLINE CPT(TransformState) get_wrt_space() const;
   INLINE CPT(TransformState) get_inv_wrt_space() const;
@@ -161,6 +164,8 @@ private:
 
   friend class CollisionTraverser;
 };
+
+INLINE ostream &operator << (ostream &out, const CollisionEntry &entry);
 
 #include "collisionEntry.I"
 
