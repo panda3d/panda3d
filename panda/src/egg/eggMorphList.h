@@ -37,9 +37,9 @@ private:
   typedef pvector<MorphType> Morphs;
 
 public:
-  typedef Morphs::iterator iterator;
-  typedef Morphs::const_iterator const_iterator;
-  typedef Morphs::size_type size_type;
+  typedef TYPENAME Morphs::iterator iterator;
+  typedef TYPENAME Morphs::const_iterator const_iterator;
+  typedef TYPENAME Morphs::size_type size_type;
 
   INLINE EggMorphList();
   INLINE EggMorphList(const EggMorphList<MorphType> &copy);

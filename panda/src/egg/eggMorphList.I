@@ -99,7 +99,7 @@ operator < (const EggMorphList<MorphType> &other) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
-INLINE EggMorphList<MorphType>::iterator EggMorphList<MorphType>::
+INLINE TYPENAME EggMorphList<MorphType>::iterator EggMorphList<MorphType>::
 begin() {
   return _morphs.begin();
 }
@@ -110,7 +110,7 @@ begin() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
-INLINE EggMorphList<MorphType>::const_iterator EggMorphList<MorphType>::
+INLINE TYPENAME EggMorphList<MorphType>::const_iterator EggMorphList<MorphType>::
 begin() const {
   return _morphs.begin();
 }
@@ -121,7 +121,7 @@ begin() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
-INLINE EggMorphList<MorphType>::iterator EggMorphList<MorphType>::
+INLINE TYPENAME EggMorphList<MorphType>::iterator EggMorphList<MorphType>::
 end() {
   return _morphs.end();
 }
@@ -132,7 +132,7 @@ end() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
-INLINE EggMorphList<MorphType>::const_iterator EggMorphList<MorphType>::
+INLINE TYPENAME EggMorphList<MorphType>::const_iterator EggMorphList<MorphType>::
 end() const {
   return _morphs.end();
 }
@@ -143,7 +143,7 @@ end() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
-INLINE EggMorphList<MorphType>::size_type EggMorphList<MorphType>::
+INLINE TYPENAME EggMorphList<MorphType>::size_type EggMorphList<MorphType>::
 size() const {
   return _morphs.size();
 }
@@ -171,7 +171,7 @@ empty() const {
 //               cannot export STL sets from a Windows DLL.
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
-pair<EggMorphList<MorphType>::iterator, bool> EggMorphList<MorphType>::
+pair<TYPENAME EggMorphList<MorphType>::iterator, bool> EggMorphList<MorphType>::
 insert(const MorphType &value) {
   pair<iterator, bool> result;
   Morphs::iterator mi;
