@@ -34,7 +34,7 @@ class ActorInterval(Interval.Interval):
     def __init__(self, actor, animName, loop=0, duration=None,
                  startTime=None, endTime=None,
                  startFrame=None, endFrame=None,
-                 playRate=1.0, name=None):
+                 playRate=1.0, name=None, forceUpdate=0):
         """__init__(name)
         """
         # Generate unique id
@@ -45,6 +45,7 @@ class ActorInterval(Interval.Interval):
         self.animName = animName
         self.controls = self.actor.getAnimControls(self.animName)
         self.loopAnim = loop
+        self.forceUpdate = forceUpdate
 
         # If no name specified, use id as name
         if (name == None):
@@ -125,7 +126,9 @@ class ActorInterval(Interval.Interval):
                 frame = max(min(absFrame, numFrames - 1), 0)
 
             control.pose(frame)
-            
+
+        if self.forceUpdate:
+            self.actor.update()
         self.state = CInterval.SStarted
         self.currT = t
 
@@ -142,6 +145,8 @@ class ActorInterval(Interval.Interval):
             else:
                 for control in self.controls:
                     control.pose(self.endFrame)
+            if self.forceUpdate:
+                self.actor.update()
 
         else:
             # Otherwise, the user-specified duration determines which
