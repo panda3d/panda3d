@@ -47,6 +47,7 @@ public:
   bool is_valid() const;
 
   bool read(const Filename &filename);
+  bool write(const Filename &filename);
   bool clear();
 
   DistanceUnit get_units();

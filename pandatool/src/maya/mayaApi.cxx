@@ -168,6 +168,36 @@ read(const Filename &filename) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MayaApi::write
+//       Access: Public
+//  Description: Writes the global model space to the indicated file.
+//               Returns true if successful, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool MayaApi::
+write(const Filename &filename) {
+  MFileIO::newFile(true);
+
+  maya_cat.info() << "Writing " << filename << "\n";
+  string os_filename = filename.to_os_specific();
+#ifdef WIN32
+  os_filename = back_to_front_slash(os_filename);
+#endif
+
+  const char *type = MFileIO::mayaBinary;
+  string extension = filename.get_extension();
+  if (extension == "ma") {
+    type = MFileIO::mayaAscii;
+  }
+
+  MStatus stat = MFileIO::saveAs(os_filename.c_str(), type, true);
+  if (!stat) {
+    stat.perror(filename.c_str());
+    return false;
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MayaApi::clear
 //       Access: Public
 //  Description: Resets the global model space to the empty state, for
