@@ -38,8 +38,39 @@ set_string_value(const string &key, const string &name, const string &value) {
   TextEncoder encoder;
   wstring wvalue = encoder.decode_text(value);
 
-  return do_set(key, name, REG_SZ, wvalue.data(),
-                wvalue.length() * sizeof(wchar_t));
+  bool okflag = true;
+
+  // Now convert the string to Windows' idea of the correct wide-char
+  // encoding, so we can store it in the registry.  This might well be
+  // the same string we just decoded from, but it might not.
+
+  // Windows likes to have a null character trailing the string (even
+  // though we also pass a length).
+  wvalue += (wchar_t)0;
+  int mb_result_len =
+    WideCharToMultiByte(CP_ACP, 0,
+                        wvalue.data(), wvalue.length(),
+                        NULL, 0,
+                        NULL, NULL);
+  if (mb_result_len == 0) {
+    express_cat.error()
+      << "Unable to convert " << value << " from Unicode to MultiByte form.\n";
+    return false;
+  }
+
+  char *mb_result = (char *)alloca(mb_result_len);
+  WideCharToMultiByte(CP_ACP, 0,
+                      wvalue.data(), wvalue.length(),
+                      mb_result, mb_result_len,
+                      NULL, NULL);
+
+  if (express_cat.is_debug()) {
+    express_cat.debug()
+      << "Converted '" << value << "' to '" << mb_result
+      << "' for storing in registry.\n";
+  }
+
+  return do_set(key, name, REG_SZ, mb_result, mb_result_len);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -106,11 +137,35 @@ get_string_value(const string &key, const string &name,
     return default_value;
   }
 
-  // Now we have a Unicode string stored in a string buffer.  Lame.
-  wstring wdata((wchar_t *)data.data(), (data.length() / sizeof(wchar_t)));
+  // Now we have to decode the MultiByte Unicode string, and re-encode
+  // it according to our own encoding.
+  
+  int wide_result_len =
+    MultiByteToWideChar(CP_ACP, 0,
+                        data.data(), data.length(),
+                        NULL, 0);
+  if (wide_result_len == 0) {
+    express_cat.error()
+      << "Unable to convert " << data << " from MultiByte to Unicode form.\n";
+    return data;
+  }
+
+  wchar_t *wide_result = (wchar_t *)alloca(wide_result_len * sizeof(wchar_t));
+  MultiByteToWideChar(CP_ACP, 0,
+                      data.data(), data.length(),
+                      wide_result, wide_result_len);
+
+  wstring wdata(wide_result, wide_result_len);
 
   TextEncoder encoder;
-  return encoder.encode_wtext(wdata);
+  string result = encoder.encode_wtext(wdata);
+
+  if (express_cat.is_debug()) {
+    express_cat.debug()
+      << "Converted '" << data << "' from registry to '" << result << "'\n";
+  }
+
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -162,19 +217,11 @@ do_set(const string &key, const string &name,
     return false;
   }
 
-  TextEncoder encoder;
-  wstring wname = encoder.decode_text(name);
-
   bool okflag = true;
 
-  // It's possible that making this direct call to RegSetValueExW()
-  // will cause this dll not to load on Win95.  It's difficult to test
-  // this hypothesis without having a Win95 machine available.  But
-  // since we're not officially supporting Win95 anymore, maybe I
-  // shouldn't even care.
   error =
-    RegSetValueExW(hkey, wname.c_str(), 0, data_type, 
-                   (CONST BYTE *)data, data_length);
+    RegSetValueEx(hkey, name.c_str(), 0, data_type, 
+                  (CONST BYTE *)data, data_length);
   if (error != ERROR_SUCCESS) {
     express_cat.error()
       << "Unable to set registry key " << key << " name " << name 
@@ -213,9 +260,6 @@ do_get(const string &key, const string &name, int &data_type, string &data) {
     return false;
   }
 
-  TextEncoder encoder;
-  wstring wname = encoder.decode_text(name);
-
   bool okflag = true;
 
   // We start with a 1K buffer; presumably that will be big enough
@@ -226,8 +270,8 @@ do_get(const string &key, const string &name, int &data_type, string &data) {
   DWORD dw_data_type;
 
   error =
-    RegQueryValueExW(hkey, wname.c_str(), 0, &dw_data_type, 
-                     (BYTE *)init_buffer, &buffer_size);
+    RegQueryValueEx(hkey, name.c_str(), 0, &dw_data_type, 
+                    (BYTE *)init_buffer, &buffer_size);
   if (error == ERROR_SUCCESS) {
     data_type = dw_data_type;
     if (data_type == REG_SZ || 
@@ -247,8 +291,8 @@ do_get(const string &key, const string &name, int &data_type, string &data) {
     // tells us.
     char *new_buffer = new char[buffer_size];
     error =
-      RegQueryValueExW(hkey, wname.c_str(), 0, &dw_data_type, 
-                       (BYTE *)new_buffer, &buffer_size);
+      RegQueryValueEx(hkey, name.c_str(), 0, &dw_data_type, 
+                      (BYTE *)new_buffer, &buffer_size);
     if (error == ERROR_SUCCESS) {
       data_type = dw_data_type;
       if (data_type == REG_SZ || 
