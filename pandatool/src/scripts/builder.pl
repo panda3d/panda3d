@@ -9,7 +9,7 @@ my $WIN_INSTALLDIR="\\\\dimbo\\panda\\win";
 
 # my $DEBUG_TREECOPY = 1;
 
-# my $DEBUG_GENERATE_PYTHON_CODE_ONLY = 1;  $ENV{'PANDA_OPTIMIZE'} ='3';
+# my $DEBUG_GENERATE_PYTHON_CODE_ONLY = 1;  $ENV{'PANDA_OPTIMIZE'} ='2';
 
 my $DONT_ARCHIVE_OLD_BUILDS = 0;
 
@@ -208,6 +208,27 @@ sub make_bsc_file() {
     &mychdir($CYGBLDROOT);
 }
 
+sub addpathsfromfile() {
+    my $dirname = shift;
+    my $envvarname = shift;
+
+    my $pathfile=$WINBLDROOT."\\".$dirname."\\src\\configfiles\\".$dirname.".pth";
+    if(!open(PTHFILE, $pathfile)) {
+       &logmsg("Couldn't open ".$pathfile."!");
+       exit(1);
+    }
+
+    my @filestrs=<PTHFILE>;
+    close(PTHFILE);
+    foreach my $i (@filestrs) {
+      chop($i);
+      $i =~ s/\//\\/g;  # switch fwdslash to backslsh
+#      print $i,"\n";
+      $ENV{$envvarname}.=";".$WINBLDROOT."\\".$dirname."\\".$i;
+    }
+
+}
+
 sub gen_python_code() {
 
     # ETC_PATH required by generatePythonCode
@@ -215,7 +236,12 @@ sub gen_python_code() {
     my $origpath=$ENV{'PATH'};
     $ENV{'PATH'}="/usr/lib:/c/python16:/bin:/contrib/bin:/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin:/home/builder/player/dtool/bin:/home/builder/player/dtool/lib:/home/builder/player/direct/bin:/home/builder/player/direct/lib::/home/builder/player/toontown/bin:/home/builder/player/toontown/lib:/home/builder/player/panda/lib:/home/builder/player/panda/bin:/usr/local/bin:.:/c/WINNT/system32:/c/WINNT:/c/WINNT/System32/Wbem:/c/bin:/c/PROGRA~1/TCL/bin:/mspsdk/Bin/:/mspsdk/Bin/WinNT:/mscommon/Tools/WinNT:/mscommon/MSDev98/Bin:/mscommon/Tools:/msvc98/bin::/usr/local/panda/bin:/home/builder/scripts";
     my $directsrcroot=$WINBLDROOT."\\direct\\src";
-    $ENV{'PYTHONPATH'}=$WINBLDROOT."\\panda\\lib;".$WINBLDROOT."\\direct\\lib;".$WINBLDROOT."\\toontown\\lib;".$WINBLDROOT."\\dtool\\lib;".$directsrcroot."\\leveleditor;".$directsrcroot."\\tkpanels;".$directsrcroot."\\tkwidgets;".$directsrcroot."\\directutil;".$directsrcroot."\\showbase;".$directsrcroot."\\distributed;".$directsrcroot."\\actor;".$directsrcroot."\\ffi;";
+
+    $ENV{'PYTHONPATH'}= $WINBLDROOT."\\panda\\lib;".$WINBLDROOT."\\dtool\\lib";
+    
+    &addpathsfromfile("direct","PYTHONPATH");
+    &addpathsfromfile("toontown","PYTHONPATH");
+
     $ENV{'TCSH_NO_CHANGEPATH'}='1';
 
     &logmsg($ENV{'PYTHONPATH'}."\n");
@@ -223,9 +249,10 @@ sub gen_python_code() {
     &mychdir($CYGBLDROOT."/direct/bin");
 
     $outputdir = $WINBLDROOT."\\direct\\lib\\py";
-    &mymkdir($outputdir);
-    $outputdir.= "\\Opt".$ENV{'PANDA_OPTIMIZE'}."-Win32";
-    &mymkdir($outputdir);
+#    &mymkdir($outputdir);
+#    $outputdir.= "\\Opt".$ENV{'PANDA_OPTIMIZE'}."-Win32";
+#    &mymkdir($outputdir);
+# now back to 1 build-type per tree
 
     my $genpyth_str;
     my $genargstr="-v -d";
