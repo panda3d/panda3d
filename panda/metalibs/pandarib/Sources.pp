@@ -12,7 +12,7 @@
 #define LOCAL_LIBS \
     ribgsg ribdisplay
 
-#define OTHER_LIBS interrogatedb dconfig dtoolutil dtoolbase
+#define OTHER_LIBS dtool
 
 #begin metalib_target
   #define TARGET pandarib

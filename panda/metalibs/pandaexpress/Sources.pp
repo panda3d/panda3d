@@ -8,7 +8,7 @@
 #define BUILDING_DLL BUILDING_PANDAEXPRESS
 
 #define LOCAL_LIBS downloader event ipc express pandabase
-#define OTHER_LIBS interrogatedb dconfig dtoolutil
+#define OTHER_LIBS dtool
 
 #begin metalib_target
   #define TARGET pandaexpress

@@ -10,7 +10,7 @@
 #define LOCAL_LIBS \
     physics particlesystem
 
-#define OTHER_LIBS interrogatedb dconfig dtoolutil dtoolbase
+#define OTHER_LIBS dtool
 
 #begin metalib_target
   #define TARGET pandaphysics

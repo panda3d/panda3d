@@ -14,9 +14,9 @@
     gsgmisc light linmath mathutil net pnm \
     pnmimagetypes pnmimage sgattrib sgmanip sgraph sgraphutil \
     switchnode text tform lerp loader putil effects \
-    audio pandabase
+    audio audio_load_midi audio_load_wav pandabase
 
-#define OTHER_LIBS interrogatedb dconfig dtoolutil dtoolbase
+#define OTHER_LIBS dtool
 
 #begin metalib_target
   #define TARGET panda
