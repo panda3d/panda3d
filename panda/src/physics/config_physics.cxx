@@ -23,7 +23,11 @@
 #include "angularIntegrator.h"
 #include "forceNode.h"
 #include "forces.h"
-#include <dconfig.h>
+#include "actorNode.h"
+#include "angularForce.h"
+#include "angularVectorForce.h"
+
+#include "dconfig.h"
 
 ConfigureDef(config_physics);
 NotifyCategoryDef(physics, "");
@@ -60,20 +64,23 @@ init_libphysics() {
   }
   initialized = true;
 
-  PhysicsObject::init_type();
-  Physical::init_type();
-  PhysicalNode::init_type();
-  ForceNode::init_type();
+  ActorNode::init_type();
+  AngularForce::init_type();
+  AngularVectorForce::init_type();
   BaseForce::init_type();
+  ForceNode::init_type();
+  LinearCylinderVortexForce::init_type();
+  LinearDistanceForce::init_type();
   LinearForce::init_type();
-  LinearVectorForce::init_type();
-  LinearRandomForce::init_type();
+  LinearFrictionForce::init_type();
   LinearJitterForce::init_type();
   LinearNoiseForce::init_type();
-  LinearDistanceForce::init_type();
+  LinearRandomForce::init_type();
   LinearSinkForce::init_type();
   LinearSourceForce::init_type();
-  LinearFrictionForce::init_type();
   LinearUserDefinedForce::init_type();
-  LinearCylinderVortexForce::init_type();
+  LinearVectorForce::init_type();
+  Physical::init_type();
+  PhysicalNode::init_type();
+  PhysicsObject::init_type();
 }
