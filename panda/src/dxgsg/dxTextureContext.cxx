@@ -26,7 +26,7 @@
 
 static const DWORD g_LowByteMask = 0x000000FF;
 
-#define FORCE_16bpp_1555
+//#define FORCE_16bpp_1555
 
 #define PANDA_ARGB_ORDER
 
