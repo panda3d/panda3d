@@ -10,11 +10,13 @@ class DirectScrolledList(DirectFrame):
         # Inherits from DirectFrame
         optiondefs = (
             # Define type of DirectGuiWidget
-            ('items',           [],        None),
-            ('command',         None,      None),
-            ('extraArgs',       [],        None),
-            ('numItemsVisible', 1,         self.setNumItemsVisible),
-            ('scrollSpeed',     8,         self.setScrollSpeed),
+            ('items',              [],        None),
+            ('command',            None,      None),
+            ('extraArgs',          [],        None),
+            ('itemMakeFunction',   None,      None),
+            ('itemMakeExtraArgs',  [],        None),
+            ('numItemsVisible',    1,         self.setNumItemsVisible),
+            ('scrollSpeed',        8,         self.setScrollSpeed),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
@@ -36,7 +38,8 @@ class DirectScrolledList(DirectFrame):
                                               DirectFrame, (self,),
                                               )
         for item in self["items"]:
-            item.reparentTo(self.itemFrame)
+            if item.__class__.__name__ != 'str':
+                item.reparentTo(self.itemFrame)
             
         self.initialiseoptions(DirectScrolledList)
         self.recordMaxHeight()
@@ -48,7 +51,8 @@ class DirectScrolledList(DirectFrame):
     def recordMaxHeight(self):
         self.maxHeight = 0.0
         for item in self["items"]:
-            self.maxHeight = max(self.maxHeight, item.getHeight())
+            if item.__class__.__name__ != 'str':
+                self.maxHeight = max(self.maxHeight, item.getHeight())
         
     def setScrollSpeed(self):
         # Items per second to move
@@ -96,14 +100,28 @@ class DirectScrolledList(DirectFrame):
 
         # Hide them all
         for item in self["items"]:
-            item.hide()
+            if item.__class__.__name__ != 'str':
+                item.hide()
+                
         # Then show the ones in range, and stack their positions 
         upperRange = min(len(self["items"]), self["numItemsVisible"])
         for i in range(self.index, self.index + upperRange):
             item = self["items"][i]
+            # If the item is a 'str', then it has not been created (scrolled list is 'as needed')
+            #  Therefore, use the the function given to make it or just make it a frame
+            if item.__class__.__name__ == 'str':
+                if self['itemMakeFunction']:
+                    # If there is a function to create the item
+                    item = apply(self['itemMakeFunction'], (item, i, self['itemMakeExtraArgs']))
+                else:
+                    item = DirectFrame(text = item)
+                # Then add the newly formed item back into the normal item list
+                self["items"][i] = item
+                item.reparentTo(self.itemFrame)
+                self.recordMaxHeight()
+                
             item.show()
             item.setPos(0,0, - (i - self.index) * self.maxHeight)
-
        
         if self['command']:
             # Pass any extra args to command
