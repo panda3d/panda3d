@@ -6,13 +6,179 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: ArcChain::ArcComponent::Constructor
 //       Access: Public
-//  Description: 
+//  Description: Constructs an ArcComponent that references a node.
+//               This kind of ArcComponent may *only* be at the head
+//               of the chain; i.e. _next must always be NULL.
+////////////////////////////////////////////////////////////////////
+INLINE ArcChain::ArcComponent::
+ArcComponent(Node *node) :
+  _next(NULL)
+{
+  nassertv(node != (Node *)NULL);
+  _p._node = node;
+  _p._node->ref();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ArcChain::ArcComponent::Constructor
+//       Access: Public
+//  Description: Constructs an ArcComponent that references an arc.
+//               This kind of ArcComponent must be in the middle or
+//               tail of the chain; it may not be at the head of the
+//               chain; i.e. _next must never be NULL.
 ////////////////////////////////////////////////////////////////////
 INLINE ArcChain::ArcComponent::
 ArcComponent(NodeRelation *arc, ArcComponent *next) :
-  _arc(arc),
   _next(next)
 {
+  nassertv(_next != (ArcComponent *)NULL);
+  nassertv(arc != (NodeRelation *)NULL);
+  _p._arc = arc;
+  _p._arc->ref();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ArcChain::ArcComponent::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ArcChain::ArcComponent::
+ArcComponent(const ArcComponent &copy) :
+  _next(copy._next)
+{
+  if (has_arc()) {
+    _p._arc = copy._p._arc;
+    _p._arc->ref();
+  } else {
+    _p._node = copy._p._node;
+    _p._node->ref();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ArcChain::ArcComponent::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void ArcChain::ArcComponent::
+operator = (const ArcComponent &copy) {
+  _next = copy._next;
+
+  if (has_arc()) {
+    _p._arc = copy._p._arc;
+    _p._arc->ref();
+  } else {
+    _p._node = copy._p._node;
+    _p._node->ref();
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ArcChain::ArcComponent::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE ArcChain::ArcComponent::
+~ArcComponent() {
+  if (has_arc()) {
+    _p._arc->unref();
+  } else {
+    _p._node->unref();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ArcChain::ArcComponent::has_arc
+//       Access: Public
+//  Description: Returns true if this component stores an arc, false
+//               if it stores a node.
+////////////////////////////////////////////////////////////////////
+INLINE bool ArcChain::ArcComponent::
+has_arc() const {
+  return (_next != (ArcComponent *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ArcChain::ArcComponent::get_arc
+//       Access: Public
+//  Description: Returns the arc referenced by this component.  It is
+//               an error to call this unless has_arc() has already
+//               returned true.
+////////////////////////////////////////////////////////////////////
+INLINE NodeRelation *ArcChain::ArcComponent::
+get_arc() const {
+  nassertr(has_arc(), (NodeRelation *)NULL);
+  return _p._arc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ArcChain::ArcComponent::get_node
+//       Access: Public
+//  Description: Returns the node referenced by this component.  If
+//               this component references a node (i.e. has_arc() is
+//               false), this will return that node; if the component
+//               references an arc (has_arc() is true), this will
+//               return the child node of the arc.
+////////////////////////////////////////////////////////////////////
+INLINE Node *ArcChain::ArcComponent::
+get_node() const {
+  if (has_arc()) {
+    return _p._arc->get_child();
+  } else {
+    return _p._node;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ArcChain::ArcComponent::is_top_node
+//       Access: Public
+//  Description: Returns true if this component represents the top
+//               node in the chain.  This is the one component at the
+//               top of the chain that represents a node; the rest of
+//               the chain represents arcs.
+////////////////////////////////////////////////////////////////////
+INLINE bool ArcChain::ArcComponent::
+is_top_node() const {
+  return (_next == (ArcComponent *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ArcChain::ArcComponent::is_top_arc
+//       Access: Public
+//  Description: Returns true if this component represents the top arc
+//               in the chain.  This is the component just below the
+//               top of the chain; the highest component in the chain
+//               that still represents an arc.
+////////////////////////////////////////////////////////////////////
+INLINE bool ArcChain::ArcComponent::
+is_top_arc() const {
+  return (_next != (ArcComponent *)NULL && _next->is_top_node());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ArcChain::ArcComponent::get_next
+//       Access: Public
+//  Description: Returns the next component in the chain.
+////////////////////////////////////////////////////////////////////
+INLINE ArcChain::ArcComponent *ArcChain::ArcComponent::
+get_next() const {
+  return _next;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ArcChain::ArcComponent::set_next
+//       Access: Public
+//  Description: Changes the next component in the chain.  This breaks
+//               the chain at this component and relinks it to another
+//               chain.
+////////////////////////////////////////////////////////////////////
+INLINE void ArcChain::ArcComponent::
+set_next(ArcComponent *next) {
+  nassertv(next != (ArcComponent *)NULL);
+  nassertv(_next != (ArcComponent *)NULL);
+
+  _next = next;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -37,7 +203,7 @@ ForwardIterator(ArcChain::ArcComponent *comp) : _comp(comp) {
 INLINE NodeRelation *ArcChain::ForwardIterator::
 operator * () const {
   nassertr(_comp != (ArcComponent *)NULL, NULL);
-  return _comp->_arc;
+  return _comp->get_arc();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -48,7 +214,13 @@ operator * () const {
 INLINE void ArcChain::ForwardIterator::
 operator ++() {
   nassertv(_comp != (ArcComponent *)NULL);
-  _comp = _comp->_next;
+  if (_comp->is_top_arc()) {
+    // We only visit arcs, not nodes.  When we reach the end of the
+    // list of arcs (i.e. the "top" arc), we stop.
+    _comp = (ArcComponent *)NULL;
+  } else {
+    _comp = _comp->get_next();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -74,10 +246,27 @@ operator != (const ArcChain::ForwardIterator &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ArcChain::Default Constructor
 //       Access: Public
-//  Description: 
+//  Description: This constructs an empty ArcChain with no nodes.  It
+//               cannot be extended, since you cannot add arcs without
+//               first specifying the top node.  Use the constructor
+//               that receives a node if you ever want to do anything
+//               with this chain.
 ////////////////////////////////////////////////////////////////////
 INLINE ArcChain::
 ArcChain() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ArcChain::Constructor
+//       Access: Public
+//  Description: This constructs an empty ArcChain with a single node.
+//               This chain may now be extended by repeatedly calling
+//               push_back() with each arc below that node in
+//               sequence.
+////////////////////////////////////////////////////////////////////
+INLINE ArcChain::
+ArcChain(Node *top_node) {
+  _head = new ArcComponent(top_node);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -102,6 +291,28 @@ operator = (const ArcChain &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ArcChain::has_node
+//       Access: Public
+//  Description: Returns true if there is at least a top node in the
+//               chain, or false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool ArcChain::
+has_node() const {
+  return (_head != (ArcComponent *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ArcChain::has_arcs
+//       Access: Public
+//  Description: Returns true if there are any arcs in the chain, or
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool ArcChain::
+has_arcs() const {
+  return (_head != (ArcComponent *)NULL && !_head->is_top_node());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ArcChain::begin
 //       Access: Public
 //  Description: Returns an iterator that can be used to traverse the
@@ -109,7 +320,11 @@ operator = (const ArcChain &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE ArcChain::const_iterator ArcChain::
 begin() const {
-  return ForwardIterator(_head);
+  if (empty()) {
+    return ForwardIterator();
+  } else {
+    return ForwardIterator(_head);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -128,11 +343,11 @@ end() const {
 //       Access: Public
 //  Description: Returns true if the list of arcs returned by begin()
 //               .. end() is empty (i.e. begin() == end()), false
-//               otherwise.
+//               otherwise.  This is the same as !has_arcs().
 ////////////////////////////////////////////////////////////////////
 INLINE bool ArcChain::
 empty() const {
-  return (_head == (ArcComponent *)NULL);
+  return (_head == (ArcComponent *)NULL || _head->is_top_node());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -142,6 +357,9 @@ empty() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void ArcChain::
 push_back(NodeRelation *arc) {
+  // It is invalid to push an arc onto a chain that does not already
+  // have at least a top node.
+  nassertv(_head != (ArcComponent *)NULL);
   _head = new ArcComponent(arc, _head);
 }
 
@@ -153,7 +371,10 @@ push_back(NodeRelation *arc) {
 INLINE void ArcChain::
 pop_back() {
   nassertv(_head != (ArcComponent *)NULL);
-  _head = _head->_next;
+  _head = _head->get_next();
+
+  // It is invalid to pop off the top node of the chain.
+  nassertv(_head != (ArcComponent *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -164,7 +385,7 @@ pop_back() {
 INLINE NodeRelation *ArcChain::
 back() const {
   nassertr(_head != (ArcComponent *)NULL, (NodeRelation *)NULL);
-  return _head->_arc;
+  return _head->get_arc();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -204,6 +425,26 @@ operator < (const ArcChain &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ArcChain::compare_to
+//       Access: Public
+//  Description: Returns a number less than zero if this ArcChain
+//               sorts before the other one, greater than zero if it
+//               sorts after, or zero if they are equivalent.
+//
+//               Two ArcChains are considered equivalent if they
+//               consist of exactly the same list of arcs in the same
+//               order.  Otherwise, they are different; different
+//               ArcChains will be ranked in a consistent but
+//               undefined ordering; the ordering is useful only for
+//               placing the ArcChains in a sorted container like an
+//               STL set.
+////////////////////////////////////////////////////////////////////
+INLINE int ArcChain::
+compare_to(const ArcChain &other) const {
+  return r_compare_to(_head, other._head);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ArcChain::output
 //       Access: Public
 //  Description: Writes a sensible description of the ArcChain to the
@@ -211,7 +452,7 @@ operator < (const ArcChain &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void ArcChain::
 output(ostream &out) const {
-  if (empty()) {
+  if (_head == (ArcComponent *)NULL) {
     out << "(empty)";
   } else {
     r_output(out, _head);

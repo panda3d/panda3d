@@ -5,6 +5,7 @@
 
 #include "factoryBase.h"
 #include "indent.h"
+#include "config_util.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FactoryBase::Constructor
@@ -42,6 +43,19 @@ make_instance(TypeHandle handle, const FactoryParams &params) {
     // Can't create an exact instance; try for a derived type.
     instance = make_instance_more_specific(handle, params);
   }
+
+#ifndef NDEBUG
+  if (util_cat.is_debug()) {
+    util_cat.debug()
+      << "make_instance(" << handle << ", params) returns "
+      << (void *)instance;
+    if (instance != (TypedObject *)NULL) {
+      util_cat.debug(false)
+	<< ", of type " << instance->get_type();
+    }
+    util_cat.debug(false) << "\n";
+  }
+#endif
   return instance;
 }
 
@@ -65,6 +79,19 @@ make_instance_more_general(TypeHandle handle, const FactoryParams &params) {
     handle = handle.get_parent_class(0);
     object = make_instance_exact(handle, params);
   }
+
+#ifndef NDEBUG
+  if (util_cat.is_debug()) {
+    util_cat.debug()
+      << "make_instance(" << handle << ", params) returns "
+      << (void *)object;
+    if (object != (TypedObject *)NULL) {
+      util_cat.debug(false)
+	<< ", of type " << object->get_type();
+    }
+    util_cat.debug(false) << "\n";
+  }
+#endif
 
   return object;
 }

@@ -40,6 +40,8 @@ private:
   void collect_statistics(Geom *geom);
   void collect_statistics(Texture *texture);
 
+  void consider_normals(const Normalf *norms, const ushort *nindex, int num);
+
   typedef map<Node *, int> Nodes;
   typedef map<Texture *, int> Textures;
 
@@ -73,6 +75,10 @@ public:
   int _num_triangles_in_fans;
 
   int _texture_bytes;
+
+  int _num_long_normals;
+  int _num_short_normals;
+  float _total_normal_length;
 
   TypeHandle _graph_type;
 };

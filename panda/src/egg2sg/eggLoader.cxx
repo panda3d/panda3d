@@ -286,7 +286,9 @@ make_nonindexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
   }
   
   if (egg_prim->has_normal()) {
-    bprim.set_normal(LCAST(float, egg_prim->get_normal() * mat));
+    Normald norm = egg_prim->get_normal() * mat;
+    norm.normalize();
+    bprim.set_normal(LCAST(float, norm));
   }
   if (egg_prim->has_color() && !egg_false_color) {
     bprim.set_color(egg_prim->get_color());
@@ -299,7 +301,9 @@ make_nonindexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
     BuilderVertex bvert(LCAST(float, egg_vert->get_pos3() * mat));
     
     if (egg_vert->has_normal()) {
-      bvert.set_normal(LCAST(float, egg_vert->get_normal() * mat));
+      Normald norm = egg_vert->get_normal() * mat;
+      norm.normalize();
+      bvert.set_normal(LCAST(float, norm));
     }
     if (egg_vert->has_color() && !egg_false_color) {
       bvert.set_color(egg_vert->get_color());

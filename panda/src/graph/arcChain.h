@@ -9,6 +9,7 @@
 #include <pandabase.h>
 
 #include "nodeRelation.h"
+#include "node.h"
 
 #include <pointerTo.h>
 #include <referenceCount.h>
@@ -45,10 +46,46 @@ protected:
   // copy the entire path by simply copying the head pointer, and we
   // can then append to or shorten our own path without affecting the
   // paths we're sharing ArcComponents with.  Very LISPy.
+
+  // Normally, an ArcChain represents a list of arcs from the root of
+  // some graph down to a leaf.  This kind of structure works pretty
+  // well because the ArcChain keeps a reference count to each arc,
+  // which in turn keeps a reference count to each child node.  This
+  // means each node in the chain is reference counted, *except* the
+  // top node.
+
+  // To ensure that we also reference count the top node, we allow
+  // each ArcComponent to store either a pointer to an arc or, if it
+  // is the last node in the chain (and *only* if it is the last node
+  // in the chain), a pointer to a node.  Thus, the last ArcComponent
+  // in the chain will store a reference-counting pointer to the
+  // chain's top node.
+
   class ArcComponent : public ReferenceCount {
   public:
+    INLINE ArcComponent(Node *node);
     INLINE ArcComponent(NodeRelation *arc, ArcComponent *next);
-    PT(NodeRelation) _arc;
+    INLINE ArcComponent(const ArcComponent &copy);
+    INLINE void operator = (const ArcComponent &copy);
+    INLINE ~ArcComponent();
+
+    INLINE bool has_arc() const;
+    INLINE NodeRelation *get_arc() const;
+    INLINE Node *get_node() const;
+    INLINE bool is_top_node() const;
+    INLINE bool is_top_arc() const;
+
+    INLINE ArcComponent *get_next() const;
+    INLINE void set_next(ArcComponent *next);
+
+  private:
+    union {
+      // These are plain pointers instead of PT's, because they are
+      // stored in a union.  We manage the reference counts by hand in
+      // the constructors and destructor.
+      NodeRelation *_arc;
+      Node *_node;
+    } _p;
     PT(ArcComponent) _next;
   };
 
@@ -73,8 +110,12 @@ public:
   typedef ForwardIterator const_iterator;
 
   INLINE ArcChain();
+  INLINE ArcChain(Node *top_node);
   INLINE ArcChain(const ArcChain &copy);
   INLINE void operator = (const ArcChain &copy);
+
+  INLINE bool has_node() const;
+  INLINE bool has_arcs() const;
 
   INLINE const_iterator begin() const;
   INLINE const_iterator end() const;
@@ -93,6 +134,7 @@ public:
 
 private:
   void r_output(ostream &out, ArcComponent *comp) const;
+  static int r_compare_to(const ArcComponent *a, const ArcComponent *v);
 };
 
 INLINE ostream &operator << (ostream &out, const ArcChain &arc_chain) {

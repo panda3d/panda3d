@@ -48,27 +48,6 @@ public:
 };
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::compare_to
-//       Access: Public
-//  Description: Returns a number less than zero if this NodePath
-//               sorts before the indicated NodePath in an arbitrary
-//               lexicographical comparision, greater than zero if
-//               this one sorts after the other one, or zero if the
-//               two NodePaths are equivalent.
-////////////////////////////////////////////////////////////////////
-int NodePath::
-compare_to(const NodePath &other) const {
-  if (_head == (ArcComponent *)NULL && other._head == (ArcComponent *)NULL) {
-    // If both are singletons, compare the pointers.
-    return _top_node - other._top_node;
-
-  } else {
-    // Otherwise, compare the arc chains.
-    return r_compare_to(_head, other._head);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NodePath::extend_by
 //       Access: Public
 //  Description: Appends a new child node onto the bottom end of the
@@ -89,8 +68,9 @@ extend_by(Node *dnode) {
   nassertr(dnode != (Node *)NULL, false);
   
   if (is_empty()) {
-    nassertr(_head == (ArcComponent *)NULL, false);
-    _top_node = dnode;
+    // Extending an empty NodePath by a single node is the same thing
+    // as creating a new NodePath with just the single node.
+    (*this) = NodePath(dnode, _graph_type);
     return true;
   }
 
@@ -119,24 +99,36 @@ extend_by(Node *dnode) {
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
-extend_by(NodeRelation *arc) {
+extend_by(NodeRelation *darc) {
   nassertr(verify_connectivity(), false);
-  nassertr(arc != (NodeRelation *)NULL, false);
+  nassertr(darc != (NodeRelation *)NULL, false);
 
   if (is_empty()) {
-    nassertr(_head == (ArcComponent *)NULL, false);
-    _top_node = arc->get_parent();
+    // If the NodePath is initially empty, we must start with its top
+    // node.
+    (*this) = NodePath(darc->get_parent(), darc->get_type());
   }
 
-  if (arc->get_parent() != node()) {
+  if (darc->get_parent() != node()) {
     if (sgmanip_cat.is_debug()) {
       sgmanip_cat.debug()
-	<< "Cannot extend " << *this << " by arc " << *arc << "\n";
+	<< "Cannot extend " << *this << " by arc " << *darc 
+	<< "; no connection.\n";
     }
     return false;
   }
 
-  _head = new ArcComponent(arc, _head);
+  if (darc->get_type() != get_graph_type() &&
+      darc->get_type() != NodeRelation::get_stashed_type()) {
+    if (sgmanip_cat.is_debug()) {
+      sgmanip_cat.debug()
+	<< "Cannot extend " << *this << " by arc " << *darc 
+	<< "; wrong graph type.\n";
+    }
+    return false;
+  }
+
+  _head = new ArcComponent(darc, _head);
 
   return true;
 }
@@ -239,22 +231,10 @@ void NodePath::
 shorten(int num_nodes) {
   nassertv(num_nodes >= 0 && num_nodes <= get_num_nodes());
 
-  if (is_singleton()) {
-    // A special case: shortening a singleton path by (presumably) one
-    // node.
-    _top_node = (Node *)NULL;
-    return;
-  }
-
   int count = num_nodes;
   while (count > 0) {
     nassertv(_head != (ArcComponent *)NULL);
-    if (_head->_next == (ArcComponent *)NULL) {
-      // If we're about to shorten the path to a singleton, identify
-      // the top node first.
-      _top_node = _head->_arc->get_parent();
-    }
-    _head = _head->_next;
+    _head = _head->get_next();
     count--;
   }
 }
@@ -267,7 +247,6 @@ shorten(int num_nodes) {
 void NodePath::
 clear() {
   _head.clear();
-  _top_node.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -311,8 +290,7 @@ get_siblings() const {
   NodePathCollection result;
   nassertr(verify_connectivity(), result);
   nassertr(has_arcs(), result);
-  nassertr(_head != (ArcComponent *)NULL, result);
-  NodeRelation *my_arc = _head->_arc;
+  NodeRelation *my_arc = arc();
   
   NodePath parent = *this;
   parent.shorten(1);
@@ -418,42 +396,33 @@ Node *NodePath::
 get_node(int index) const {
   nassertr(index >= 0 && index < get_num_nodes(), NULL);
 
-  if (index == 0) {
-    if (_head == (ArcComponent *)NULL) {
-      // A singleton or empty list.
-      return _top_node;
-    }
-    return _head->_arc->get_child();
-  }
-
   ArcComponent *comp = _head;
-  index--;
   while (index > 0) {
     // If this assertion fails, the index was out of range.
     nassertr(comp != (ArcComponent *)NULL, NULL);
-    comp = comp->_next;
+    comp = comp->get_next();
     index--;
   }
 
   // If this assertion fails, the index was out of range.
   nassertr(comp != (ArcComponent *)NULL, NULL);
-  return comp->_arc->get_parent();
+  return comp->get_node();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_num_arcs
+//     Function: NodePath::get_num_nodes
 //       Access: Public
-//  Description: Returns the number of arcs in the path.  This is
-//               always one less than the number of nodes (except for
+//  Description: Returns the number of nodes in the path.  This is
+//               always one more than the number of arcs (except for
 //               a completely empty path).
 ////////////////////////////////////////////////////////////////////
 int NodePath::
-get_num_arcs() const {
+get_num_nodes() const {
   int num = 0;
   ArcComponent *comp = _head;
   while (comp != (ArcComponent *)NULL) {
     num++;
-    comp = comp->_next;
+    comp = comp->get_next();
   }
   return num;
 }
@@ -474,13 +443,35 @@ get_arc(int index) const {
   while (index > 0) {
     // If this assertion fails, the index was out of range.
     nassertr(comp != (ArcComponent *)NULL, NULL);
-    comp = comp->_next;
+    comp = comp->get_next();
     index--;
   }
 
-  // If this assertion fails, the index was out of range.
+  // If either assertion fails, the index was out of range.
   nassertr(comp != (ArcComponent *)NULL, NULL);
-  return comp->_arc;
+  nassertr(comp->has_arc(), NULL);
+  return comp->get_arc();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_top_node
+//       Access: Public
+//  Description: Returns the top node of the path, or NULL if the path
+//               is empty.  This requires iterating through the path.
+////////////////////////////////////////////////////////////////////
+Node *NodePath::
+get_top_node() const {
+  if (is_empty()) {
+    return (Node *)NULL;
+  }
+
+  ArcComponent *comp = _head;
+  while (!comp->is_top_node()) {
+    comp = comp->get_next();
+    nassertr(comp != (ArcComponent *)NULL, NULL);
+  }
+
+  return comp->get_node();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -508,32 +499,42 @@ get_arc(int index) const {
 ////////////////////////////////////////////////////////////////////
 int NodePath::
 share_with(const NodePath &other) {
-  typedef list<ArcComponent *> Arcs;
-  Arcs other_arcs;
-  Arcs this_arcs;
+  typedef list<ArcComponent *> Comps;
+  Comps other_comps;
+  Comps this_comps;
 
   // First, we have to reverse the lists of this path and the other
   // path, so we can compare their initial subsets.
   ArcComponent *comp = other._head;
   while (comp != (ArcComponent *)NULL) {
-    other_arcs.push_front(comp);
-    comp = comp->_next;
+    other_comps.push_front(comp);
+    comp = comp->get_next();
   }
 
   comp = _head;
   while (comp != (ArcComponent *)NULL) {
-    this_arcs.push_front(comp);
-    comp = comp->_next;
+    this_comps.push_front(comp);
+    comp = comp->get_next();
   }
 
-  // Now determine how many arcs this and the other path have in
+  // Now determine how many components this and the other path have in
   // common.
   int in_common = 0;
-  Arcs::const_iterator oi = other_arcs.begin();
-  Arcs::const_iterator ti = this_arcs.begin();
-  while (oi != other_arcs.end() && 
-	 ti != this_arcs.end() && 
-	 (*oi)->_arc == (*ti)->_arc) {
+  Comps::const_iterator oi = other_comps.begin();
+  Comps::const_iterator ti = this_comps.begin();
+
+  // The first components in both chains should be the topnodes.
+  if (oi != other_comps.end() && 
+      ti != this_comps.end() && 
+      (*oi)->get_node() == (*ti)->get_node()) {
+    ++oi;
+    ++ti;
+    ++in_common;
+  }
+  // The remaining components are arcs.
+  while (oi != other_comps.end() && 
+	 ti != this_comps.end() && 
+	 (*oi)->get_arc() == (*ti)->get_arc()) {
     ++oi;
     ++ti;
     ++in_common;
@@ -541,16 +542,16 @@ share_with(const NodePath &other) {
 
   if (in_common > 0) {
     ArcComponent *dest;
-    if (oi == other_arcs.end()) {
+    if (oi == other_comps.end()) {
       dest = other._head;
     } else {
       dest = (*oi);
     }
 
-    if (ti == this_arcs.end()) {
+    if (ti == this_comps.end()) {
       _head = dest;
     } else {
-      (*ti)->_next = dest;
+      (*ti)->set_next(dest);
     }
   }
   
@@ -571,17 +572,21 @@ verify_connectivity() const {
 
   const ArcComponent *comp = _head;
   nassertr(comp != (const ArcComponent *)NULL, false);
+  nassertr(comp->has_arc(), false);
 
-  Node *parent = comp->_arc->get_parent();
-  Node *child = comp->_arc->get_child();
+  NodeRelation *darc = comp->get_arc();
+  Node *parent = darc->get_parent();
+  Node *child = darc->get_child();
   if (parent == (Node *)NULL || child == (Node *)NULL) {
     return false;
   }
 
-  comp = comp->_next;
-  while (comp != (const ArcComponent *)NULL) {
-    Node *next_parent = comp->_arc->get_parent();
-    Node *next_child = comp->_arc->get_child();
+  comp = comp->get_next();
+  nassertr(comp != (const ArcComponent *)NULL, false);
+  while (comp->has_arc()) {
+    NodeRelation *darc = comp->get_arc();
+    Node *next_parent = darc->get_parent();
+    Node *next_child = darc->get_child();
     if (next_parent == (Node *)NULL || next_child == (Node *)NULL) {
       return false;
     }
@@ -591,17 +596,15 @@ verify_connectivity() const {
 
     parent = next_parent;
     child = next_child;
-    comp = comp->_next;
+    comp = comp->get_next();
+    nassertr(comp != (const ArcComponent *)NULL, false);
   }
 
-  // We cannot insist that _top_node be correct, since it might have
-  // wandered, particularly if our parent path has changed without our
-  // knowledge.
-  /*
-    if (parent != _top_node) {
-      return false;
-    }
-  */
+  // Finally, verify the top node.
+  nassertr(comp->is_top_node(), false);
+  if (parent != comp->get_node()) {
+    return false;
+  }
 
   return true;
 }
@@ -631,35 +634,36 @@ amputate_badness() {
   ArcComponent *comp = _head;
   nassertr(comp != (ArcComponent *)NULL, false);
 
-  Node *parent = comp->_arc->get_parent();
-  Node *child = comp->_arc->get_child();
+  NodeRelation *darc = comp->get_arc();
+  Node *parent = darc->get_parent();
+  Node *child = darc->get_child();
   if (parent == (Node *)NULL || child == (Node *)NULL) {
     // Eek!  The bottom arc is broken!
-    _top_node = child;
     _head = (ArcComponent *)NULL;
     return false;
   }
 
   ArcComponent *prev = comp;
-  comp = comp->_next;
-  while (comp != (const ArcComponent *)NULL) {
-    Node *next_parent = comp->_arc->get_parent();
-    Node *next_child = comp->_arc->get_child();
+  comp = comp->get_next();
+  nassertr(comp != (const ArcComponent *)NULL, false);
+  while (comp->has_arc()) {
+    NodeRelation *darc = comp->get_arc();
+    Node *next_parent = darc->get_parent();
+    Node *next_child = darc->get_child();
+
     if (next_parent == (Node *)NULL || next_child == (Node *)NULL) {
-      prev->_next = (ArcComponent *)NULL;
-      _top_node = parent;
+      prev->set_next(new ArcComponent(parent));
       return false;
     }
     if (next_child != parent) {
-      prev->_next = (ArcComponent *)NULL;
-      _top_node = parent;
+      prev->set_next(new ArcComponent(parent));
       return false;
     }
 
     parent = next_parent;
     child = next_child;
     prev = comp;
-    comp = comp->_next;
+    comp = comp->get_next();
   }
 
   return true;
@@ -677,12 +681,6 @@ amputate_badness() {
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
 repair_connectivity(const NodePath &top) {
-  // If the only problem is the top node, we can fix that first.
-  reset_top_node();
-  if (verify_connectivity()) {
-    return true;
-  }
-
   nassertr(top.verify_connectivity(), false);
   
   NodePath new_path(*this);
@@ -728,18 +726,15 @@ void NodePath::
 reparent_to(const NodePath &other, int sort) {
   nassertv(other.verify_connectivity());
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   nassertv(!other.is_empty());
 
-  NodeRelation *arc = _head->_arc;
-
-  arc->change_parent(other.node(), sort);
+  NodeRelation *darc = arc();
+  darc->change_parent(other.node(), sort);
 
   // Move our head pointer to the bottom of the new chain.  This will
   // update our own path, as well as all paths that share the same
   // head pointer (i.e. all paths derived from this one).
-  _head->_next = other._head;
-  _top_node = other._top_node;
+  _head->set_next(other._head);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -755,7 +750,6 @@ void NodePath::
 wrt_reparent_to(const NodePath &other, int sort) {
   nassertv(other.verify_connectivity());
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   nassertv(!other.is_empty());
 
   LMatrix4f mat = get_mat(other);
@@ -805,7 +799,6 @@ instance_to(const NodePath &other, int sort) const {
 
   NodePath instance(*this);
   instance._head = new ArcComponent(darc, other._head);
-  instance._top_node = other._top_node;
   return instance;
 }
 
@@ -848,7 +841,6 @@ copy_to(const NodePath &other, int sort) const {
 
   NodePath instance(*this);
   instance._head = new ArcComponent(darc, other._head);
-  instance._top_node = other._top_node;
   return instance;
 }
 
@@ -899,11 +891,10 @@ void NodePath::
 remove_node() {
   nassertv(verify_connectivity());
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
 
-  PT(NodeRelation) arc = _head->_arc;
+  PT(NodeRelation) darc = arc();
   clear();
-  remove_arc(arc);
+  remove_arc(darc);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -934,19 +925,9 @@ as_string(int start_at_node) const {
   if (is_empty()) {
     // An empty path always returns an empty string.
     return string();
-
-  } else if (is_singleton()) {
-    // A singleton path is a special case.  We either return the name
-    // of the singleton, if start_at_node is 0, or the empty string in
-    // any other case.
-
-    if (start_at_node == 0) {
-      return format_node_name(_top_node);
-    }
-    return string();
   }
 
-  // In the normal case, we have at least one arc.  We must walk to
+  // In the normal case, we have at least one node.  We must walk to
   // the end of the list, then back up start_at_node times, and start
   // formatting names from there.
   string result;
@@ -1134,7 +1115,6 @@ write_bam_file(const string &filename) const {
 void NodePath::
 set_pos(const LVecBase3f &pos) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat = get_mat();
   mat.set_row(3, pos);
   set_mat(mat);
@@ -1143,7 +1123,6 @@ set_pos(const LVecBase3f &pos) {
 void NodePath::
 set_x(float x) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat = get_mat();
   mat(3, 0) = x;
   set_mat(mat);
@@ -1152,7 +1131,6 @@ set_x(float x) {
 void NodePath::
 set_y(float y) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat = get_mat();
   mat(3, 1) = y;
   set_mat(mat);
@@ -1161,7 +1139,6 @@ set_y(float y) {
 void NodePath::
 set_z(float z) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat = get_mat();
   mat(3, 2) = z;
   set_mat(mat);
@@ -1175,7 +1152,6 @@ set_z(float z) {
 LPoint3f NodePath::
 get_pos() const {
   nassertr(has_arcs(), LPoint3f(0.0, 0.0, 0.0));
-  nassertr(_head != (ArcComponent *)NULL, LPoint3f(0.0, 0.0, 0.0));
   LMatrix4f mat = get_mat();
   return mat.get_row3(3);
 }
@@ -1189,7 +1165,6 @@ get_pos() const {
 void NodePath::
 set_hpr(const LVecBase3f &hpr) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat = get_mat();
   LVecBase3f scale, old_hpr, pos;
   decompose_matrix(mat, scale, old_hpr, pos);
@@ -1200,7 +1175,6 @@ set_hpr(const LVecBase3f &hpr) {
 void NodePath::
 set_h(float h) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat = get_mat();
   LVecBase3f scale, old_hpr, pos;
   decompose_matrix(mat, scale, old_hpr, pos);
@@ -1212,7 +1186,6 @@ set_h(float h) {
 void NodePath::
 set_p(float p) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat = get_mat();
   LVecBase3f scale, old_hpr, pos;
   decompose_matrix(mat, scale, old_hpr, pos);
@@ -1239,7 +1212,6 @@ set_r(float r) {
 LVecBase3f NodePath::
 get_hpr() const { 
   nassertr(has_arcs(), LVecBase3f(0.0, 0.0, 0.0));
-  nassertr(_head != (ArcComponent *)NULL, LVecBase3f(0.0, 0.0, 0.0));
   LMatrix4f mat = get_mat();
   LVecBase3f scale, hpr, pos;
   decompose_matrix(mat, scale, hpr, pos);
@@ -1255,7 +1227,6 @@ get_hpr() const {
 void NodePath::
 set_scale(const LVecBase3f &sv3) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat = get_mat();
   LVecBase3f old_scale, hpr, pos;
   decompose_matrix(mat, old_scale, hpr, pos);
@@ -1266,7 +1237,6 @@ set_scale(const LVecBase3f &sv3) {
 void NodePath::
 set_sx(float sx) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat = get_mat();
   LVecBase3f old_scale, hpr, pos;
   decompose_matrix(mat, old_scale, hpr, pos);
@@ -1278,7 +1248,6 @@ set_sx(float sx) {
 void NodePath::
 set_sy(float sy) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat = get_mat();
   LVecBase3f old_scale, hpr, pos;
   decompose_matrix(mat, old_scale, hpr, pos);
@@ -1290,7 +1259,6 @@ set_sy(float sy) {
 void NodePath::
 set_sz(float sz) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat = get_mat();
   LVecBase3f old_scale, hpr, pos;
   decompose_matrix(mat, old_scale, hpr, pos);
@@ -1307,7 +1275,6 @@ set_sz(float sz) {
 LVecBase3f NodePath::
 get_scale() const {
   nassertr(has_arcs(), LVecBase3f(1.0, 1.0, 1.0));
-  nassertr(_head != (ArcComponent *)NULL, LVecBase3f(1.0, 1.0, 1.0));
   LMatrix4f mat = get_mat();
   LVecBase3f scale, hpr, pos;
   decompose_matrix(mat, scale, hpr, pos);
@@ -1323,7 +1290,6 @@ get_scale() const {
 void NodePath::
 set_color_scale(const LVecBase4f &sv4) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
 
 #ifndef NDEBUG
   if (_graph_type == DataRelation::get_class_type()) {
@@ -1333,19 +1299,20 @@ set_color_scale(const LVecBase4f &sv4) {
   }
 #endif
 
+  NodeRelation *darc = _head->get_arc();
   if (sv4[0] != 1 || sv4[1] != 1 || sv4[2] != 1) {
     LMatrix4f mat = LMatrix4f::scale_mat(sv4[0], sv4[1], sv4[2]);
-    _head->_arc->set_transition(new ColorMatrixTransition(mat));
+    darc->set_transition(new ColorMatrixTransition(mat));
   }
   else {
-    _head->_arc->clear_transition(ColorMatrixTransition::get_class_type());
+    darc->clear_transition(ColorMatrixTransition::get_class_type());
   }
 
   if (sv4[3] != 1) {
-    _head->_arc->set_transition(new AlphaTransformTransition(0, sv4[3]));
+    darc->set_transition(new AlphaTransformTransition(0, sv4[3]));
   }
   else {
-    _head->_arc->clear_transition(AlphaTransformTransition::get_class_type());
+    darc->clear_transition(AlphaTransformTransition::get_class_type());
   }
 }
 
@@ -1359,12 +1326,12 @@ set_color_scale(const LVecBase4f &sv4) {
 LVecBase4f NodePath::
 get_color_scale() const {
   nassertr(has_arcs(), LVecBase4f(1,1,1,1));
-  nassertr(_head != (ArcComponent *)NULL, LVecBase4f(1,1,1,1));
 
   LVecBase4f scale;
 
+  NodeRelation *darc = arc();
   const ColorMatrixTransition *ct;
-  if (!get_transition_into(ct, _head->_arc)) {
+  if (!get_transition_into(ct, darc)) {
     // No relative transform.
     scale[0] = 1;
     scale[1] = 1;
@@ -1380,7 +1347,7 @@ get_color_scale() const {
   }
 
   const AlphaTransformTransition *att;
-  if (!get_transition_into(att, _head->_arc)) {
+  if (!get_transition_into(att, darc)) {
     scale[3] = 1;
   }
   else {
@@ -1399,7 +1366,6 @@ get_color_scale() const {
 void NodePath::
 set_pos_hpr(const LVecBase3f &pos, const LVecBase3f &hpr) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat = get_mat();
   LVecBase3f scale, old_hpr, old_pos;
   decompose_matrix(mat, scale, old_hpr, old_pos);
@@ -1417,7 +1383,6 @@ void NodePath::
 set_pos_hpr_scale(const LVecBase3f &pos, const LVecBase3f &hpr,
 		  const LVecBase3f &scale) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat;
   compose_matrix(mat, scale, hpr, pos);
   set_mat(mat);
@@ -1431,7 +1396,6 @@ set_pos_hpr_scale(const LVecBase3f &pos, const LVecBase3f &hpr,
 void NodePath::
 set_mat(const LMatrix4f &mat) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
 
 #ifndef NDEBUG
   if (_graph_type == DataRelation::get_class_type()) {
@@ -1441,7 +1405,7 @@ set_mat(const LMatrix4f &mat) {
   }
 #endif
 
-  _head->_arc->set_transition(new TransformTransition(mat));
+  arc()->set_transition(new TransformTransition(mat));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1455,7 +1419,6 @@ set_mat(const LMatrix4f &mat) {
 void NodePath::
 look_at(const LPoint3f &point, const LVector3f &up) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
 
   LPoint3f pos = get_pos();
 
@@ -1475,7 +1438,6 @@ look_at(const LPoint3f &point, const LVector3f &up) {
 void NodePath::
 heads_up(const LPoint3f &point, const LVector3f &up) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
 
   LPoint3f pos = get_pos();
 
@@ -1494,7 +1456,6 @@ heads_up(const LPoint3f &point, const LVector3f &up) {
 void NodePath::
 set_pos(const NodePath &other, const LVecBase3f &pos) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat = get_mat(other);
   mat.set_row(3, pos);
   set_mat(other, mat);
@@ -1503,7 +1464,6 @@ set_pos(const NodePath &other, const LVecBase3f &pos) {
 void NodePath::
 set_x(const NodePath &other, float x) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat = get_mat(other);
   mat(3, 0) = x;
   set_mat(other, mat);
@@ -1512,7 +1472,6 @@ set_x(const NodePath &other, float x) {
 void NodePath::
 set_y(const NodePath &other, float y) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat = get_mat(other);
   mat(3, 1) = y;
   set_mat(other, mat);
@@ -1521,7 +1480,6 @@ set_y(const NodePath &other, float y) {
 void NodePath::
 set_z(const NodePath &other, float z) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat = get_mat(other);
   mat(3, 2) = z;
   set_mat(other, mat);
@@ -1536,7 +1494,6 @@ set_z(const NodePath &other, float z) {
 void NodePath::
 set_hpr(const NodePath &other, const LVecBase3f &hpr) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat = get_mat(other);
   LVecBase3f scale, old_hpr, pos;
   decompose_matrix(mat, scale, old_hpr, pos);
@@ -1547,7 +1504,6 @@ set_hpr(const NodePath &other, const LVecBase3f &hpr) {
 void NodePath::
 set_h(const NodePath &other, float h) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat = get_mat(other);
   LVecBase3f scale, old_hpr, pos;
   decompose_matrix(mat, scale, old_hpr, pos);
@@ -1559,7 +1515,6 @@ set_h(const NodePath &other, float h) {
 void NodePath::
 set_p(const NodePath &other, float p) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat = get_mat(other);
   LVecBase3f scale, old_hpr, pos;
   decompose_matrix(mat, scale, old_hpr, pos);
@@ -1571,7 +1526,6 @@ set_p(const NodePath &other, float p) {
 void NodePath::
 set_r(const NodePath &other, float r) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat = get_mat(other);
   LVecBase3f scale, old_hpr, pos;
   decompose_matrix(mat, scale, old_hpr, pos);
@@ -1589,7 +1543,6 @@ set_r(const NodePath &other, float r) {
 void NodePath::
 set_scale(const NodePath &other, const LVecBase3f &scale) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat = get_mat(other);
   LVecBase3f old_scale, hpr, pos;
   decompose_matrix(mat, old_scale, hpr, pos);
@@ -1600,7 +1553,6 @@ set_scale(const NodePath &other, const LVecBase3f &scale) {
 void NodePath::
 set_sx(const NodePath &other, float sx) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat = get_mat(other);
   LVecBase3f old_scale, hpr, pos;
   decompose_matrix(mat, old_scale, hpr, pos);
@@ -1612,7 +1564,6 @@ set_sx(const NodePath &other, float sx) {
 void NodePath::
 set_sy(const NodePath &other, float sy) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat = get_mat(other);
   LVecBase3f old_scale, hpr, pos;
   decompose_matrix(mat, old_scale, hpr, pos);
@@ -1624,7 +1575,6 @@ set_sy(const NodePath &other, float sy) {
 void NodePath::
 set_sz(const NodePath &other, float sz) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat = get_mat(other);
   LVecBase3f old_scale, hpr, pos;
   decompose_matrix(mat, old_scale, hpr, pos);
@@ -1667,7 +1617,6 @@ void NodePath::
 set_pos_hpr(const NodePath &other, const LVecBase3f &pos, 
 	    const LVecBase3f &hpr) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat = get_mat(other);
   LVecBase3f scale, old_hpr, old_pos;
   decompose_matrix(mat, scale, old_hpr, old_pos);
@@ -1687,7 +1636,6 @@ set_pos_hpr_scale(const NodePath &other,
 		  const LVecBase3f &pos, const LVecBase3f &hpr,
 		  const LVecBase3f &scale) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   LMatrix4f mat;
   compose_matrix(mat, scale, hpr, pos);
   set_mat(other, mat);
@@ -1703,7 +1651,6 @@ set_pos_hpr_scale(const NodePath &other,
 void NodePath::
 set_mat(const NodePath &other, const LMatrix4f &mat) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
 
 #ifndef NDEBUG
   if (_graph_type == DataRelation::get_class_type()) {
@@ -1715,18 +1662,22 @@ set_mat(const NodePath &other, const LMatrix4f &mat) {
 
   LMatrix4f new_mat;
 
+  NodeRelation *darc = arc();
+
   // First, we perform a wrt to the node's parent, to get the
   // conversion matrix.
   NodeTransitionWrapper ntw(TransformTransition::get_class_type());
+  ForwardIterator from = begin();
+  ++from;
+
   if (other.is_empty()) {
-    wrt(NULL,
-	_head->_arc->get_parent(), ForwardIterator(_head->_next), ForwardIterator(),
-	ntw, _graph_type);
+    wrt(NULL, darc->get_parent(), from, end(), ntw, _graph_type);
   } else {
-    wrt(other.node(), ForwardIterator(other._head), ForwardIterator(),
-	_head->_arc->get_parent(), ForwardIterator(_head->_next), ForwardIterator(),
+    wrt(other.node(), other.begin(), other.end(),
+	darc->get_parent(), from, end(),
 	ntw, _graph_type);
   }
+
   const TransformTransition *tt;
   if (!get_transition_into(tt, ntw)) {
     // No relative transform.
@@ -1735,7 +1686,7 @@ set_mat(const NodePath &other, const LMatrix4f &mat) {
     new_mat = mat * tt->get_matrix();
   }
 
-  _head->_arc->set_transition(new TransformTransition(new_mat));
+  darc->set_transition(new TransformTransition(new_mat));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1750,14 +1701,15 @@ get_mat(const NodePath &other) const {
   nassertr(!is_empty(), LMatrix4f::ident_mat());
 
   NodeTransitionWrapper ntw(TransformTransition::get_class_type());
+
   if (other.is_empty()) {
-    wrt(node(), ForwardIterator(_head), ForwardIterator(),
-	(Node *)NULL, ntw, _graph_type);
+    wrt(node(), begin(), end(), (Node *)NULL, ntw, _graph_type);
   } else {
-    wrt(node(), ForwardIterator(_head), ForwardIterator(),
-	other.node(), ForwardIterator(other._head), ForwardIterator(),
+    wrt(node(), begin(), end(),
+	other.node(), other.begin(), other.end(),
 	ntw, _graph_type);
   }
+
   const TransformTransition *tt;
   if (!get_transition_into(tt, ntw)) {
     // No relative transform.
@@ -1779,7 +1731,6 @@ get_mat(const NodePath &other) const {
 void NodePath::
 look_at(const NodePath &other, const LPoint3f &point, const LVector3f &up) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
 
   LPoint3f pos = get_pos();
 
@@ -1803,7 +1754,6 @@ look_at(const NodePath &other, const LPoint3f &point, const LVector3f &up) {
 void NodePath::
 heads_up(const NodePath &other, const LPoint3f &point, const LVector3f &up) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
 
   LPoint3f pos = get_pos();
 
@@ -1825,10 +1775,9 @@ heads_up(const NodePath &other, const LPoint3f &point, const LVector3f &up) {
 void NodePath::
 set_color(const Colorf &color, int priority) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
 
   ColorTransition *col_trans = new ColorTransition(color);
-  _head->_arc->set_transition(col_trans, priority);
+  arc()->set_transition(col_trans, priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1844,11 +1793,10 @@ set_color(const Colorf &color, int priority) {
 void NodePath::
 set_color_off(int priority) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
 
   ColorTransition *col_trans = 
     new ColorTransition(ColorTransition::off());
-  _head->_arc->set_transition(col_trans, priority);
+  arc()->set_transition(col_trans, priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1860,10 +1808,9 @@ set_color_off(int priority) {
 Colorf NodePath::
 get_color() const {
   nassertr(has_arcs(), false);
-  nassertr(_head != (ArcComponent *)NULL, false);
 
   const ColorTransition *ct;
-  if (get_transition_into(ct, _head->_arc)) {
+  if (get_transition_into(ct, arc())) {
     if (ct->is_on() && ct->is_real()) {
       return ct->get_color();
     }
@@ -1902,10 +1849,9 @@ get_color() const {
 void NodePath::
 set_bin(const string &bin_name, int draw_order, int priority) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
 
   GeomBinTransition *bin_trans = new GeomBinTransition(bin_name, draw_order);
-  _head->_arc->set_transition(bin_trans, priority);
+  arc()->set_transition(bin_trans, priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1918,10 +1864,9 @@ set_bin(const string &bin_name, int draw_order, int priority) {
 string NodePath::
 get_bin_name() const {
   nassertr(has_arcs(), string());
-  nassertr(_head != (ArcComponent *)NULL, string());
 
   const GeomBinTransition *bt;
-  if (get_transition_into(bt, _head->_arc)) {
+  if (get_transition_into(bt, arc())) {
     if (bt->is_on()) {
       return bt->get_bin();
     }
@@ -1941,10 +1886,9 @@ get_bin_name() const {
 int NodePath::
 get_bin_draw_order() const {
   nassertr(has_arcs(), 0);
-  nassertr(_head != (ArcComponent *)NULL, 0);
 
   const GeomBinTransition *bt;
-  if (get_transition_into(bt, _head->_arc)) {
+  if (get_transition_into(bt, arc())) {
     if (bt->is_on()) {
       return bt->get_draw_order();
     }
@@ -1962,11 +1906,10 @@ get_bin_draw_order() const {
 void NodePath::
 set_texture(Texture *tex, int priority) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   nassertv(tex != NULL);
 
   TextureTransition *tex_trans = new TextureTransition(tex);
-  _head->_arc->set_transition(tex_trans, priority);
+  arc()->set_transition(tex_trans, priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1982,11 +1925,10 @@ set_texture(Texture *tex, int priority) {
 void NodePath::
 set_texture_off(int priority) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
 
   TextureTransition *tex_trans = 
     new TextureTransition(TextureTransition::off());
-  _head->_arc->set_transition(tex_trans, priority);
+  arc()->set_transition(tex_trans, priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2002,10 +1944,9 @@ set_texture_off(int priority) {
 bool NodePath::
 has_texture() const {
   nassertr(has_arcs(), false);
-  nassertr(_head != (ArcComponent *)NULL, false);
 
   const TextureTransition *tt;
-  if (get_transition_into(tt, _head->_arc)) {
+  if (get_transition_into(tt, arc())) {
     return tt->is_on();
   }
 
@@ -2025,10 +1966,9 @@ has_texture() const {
 bool NodePath::
 has_texture_off() const {
   nassertr(has_arcs(), false);
-  nassertr(_head != (ArcComponent *)NULL, false);
 
   const TextureTransition *tt;
-  if (get_transition_into(tt, _head->_arc)) {
+  if (get_transition_into(tt, arc())) {
     return tt->is_off();
   }
 
@@ -2048,10 +1988,9 @@ has_texture_off() const {
 Texture *NodePath::
 get_texture() const {
   nassertr(has_arcs(), NULL);
-  nassertr(_head != (ArcComponent *)NULL, NULL);
 
   const TextureTransition *tt;
-  if (get_transition_into(tt, _head->_arc)) {
+  if (get_transition_into(tt, arc())) {
     if (tt->is_on()) {
       return tt->get_texture();
     }
@@ -2068,11 +2007,10 @@ get_texture() const {
 void NodePath::
 set_fog(Fog *fog, int priority) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
   nassertv(fog != NULL);
 
   FogTransition *fog_trans = new FogTransition(fog);
-  _head->_arc->set_transition(fog_trans, priority);
+  arc()->set_transition(fog_trans, priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2088,11 +2026,10 @@ set_fog(Fog *fog, int priority) {
 void NodePath::
 set_fog_off(int priority) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
 
   FogTransition *fog_trans = 
     new FogTransition(FogTransition::off());
-  _head->_arc->set_transition(fog_trans, priority);
+  arc()->set_transition(fog_trans, priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2108,10 +2045,9 @@ set_fog_off(int priority) {
 bool NodePath::
 has_fog() const {
   nassertr(has_arcs(), false);
-  nassertr(_head != (ArcComponent *)NULL, false);
 
   const FogTransition *tt;
-  if (get_transition_into(tt, _head->_arc)) {
+  if (get_transition_into(tt, arc())) {
     return tt->is_on();
   }
 
@@ -2131,10 +2067,9 @@ has_fog() const {
 bool NodePath::
 has_fog_off() const {
   nassertr(has_arcs(), false);
-  nassertr(_head != (ArcComponent *)NULL, false);
 
   const FogTransition *tt;
-  if (get_transition_into(tt, _head->_arc)) {
+  if (get_transition_into(tt, arc())) {
     return tt->is_off();
   }
 
@@ -2154,10 +2089,9 @@ has_fog_off() const {
 Fog *NodePath::
 get_fog() const {
   nassertr(has_arcs(), NULL);
-  nassertr(_head != (ArcComponent *)NULL, NULL);
 
   const FogTransition *tt;
-  if (get_transition_into(tt, _head->_arc)) {
+  if (get_transition_into(tt, arc())) {
     if (tt->is_on()) {
       return tt->get_fog();
     }
@@ -2174,9 +2108,8 @@ get_fog() const {
 void NodePath::
 set_render_mode_wireframe(int priority) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
 
-  _head->_arc->set_transition(new RenderModeTransition(RenderModeProperty::M_wireframe), priority);
+  arc()->set_transition(new RenderModeTransition(RenderModeProperty::M_wireframe), priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2189,11 +2122,10 @@ set_render_mode_wireframe(int priority) {
 void NodePath::
 set_render_mode_filled(int priority) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
 
   RenderModeTransition *rmt =
     new RenderModeTransition(RenderModeProperty::M_filled);
-  _head->_arc->set_transition(rmt, priority);
+  arc()->set_transition(rmt, priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2208,7 +2140,6 @@ set_render_mode_filled(int priority) {
 void NodePath::
 set_two_sided(bool two_sided, int priority) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
 
   CullFaceProperty::Mode mode =
     two_sided ? 
@@ -2216,7 +2147,7 @@ set_two_sided(bool two_sided, int priority) {
     CullFaceProperty::M_cull_clockwise;
 
   CullFaceTransition *cft = new CullFaceTransition(mode);
-  _head->_arc->set_transition(cft, priority);
+  arc()->set_transition(cft, priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2233,10 +2164,9 @@ set_two_sided(bool two_sided, int priority) {
 bool NodePath::
 get_two_sided() const {
   nassertr(has_arcs(), NULL);
-  nassertr(_head != (ArcComponent *)NULL, NULL);
 
   const CullFaceTransition *cft;
-  if (get_transition_into(cft, _head->_arc)) {
+  if (get_transition_into(cft, arc())) {
     return (cft->get_mode() == CullFaceProperty::M_cull_none);
   }
   return false;
@@ -2253,7 +2183,6 @@ get_two_sided() const {
 void NodePath::
 set_transparency(bool transparency, int priority) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
 
   TransparencyProperty::Mode mode =
     transparency ? 
@@ -2261,7 +2190,7 @@ set_transparency(bool transparency, int priority) {
     TransparencyProperty::M_none;
 
   TransparencyTransition *tt = new TransparencyTransition(mode);
-  _head->_arc->set_transition(tt, priority);
+  arc()->set_transition(tt, priority);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2278,10 +2207,9 @@ set_transparency(bool transparency, int priority) {
 bool NodePath::
 get_transparency() const {
   nassertr(has_arcs(), NULL);
-  nassertr(_head != (ArcComponent *)NULL, NULL);
 
   const TransparencyTransition *tt;
-  if (get_transition_into(tt, _head->_arc)) {
+  if (get_transition_into(tt, arc())) {
     return (tt->get_mode() != TransparencyProperty::M_none);
   }
   return false;
@@ -2305,8 +2233,8 @@ get_hidden_ancestor() const {
   if (!has_arcs()) {
     return NodePath();
   }
-  nassertr(_head != (ArcComponent *)NULL, NodePath());
-  if (_head->_arc->has_transition(PruneTransition::get_class_type())) {
+
+  if (arc()->has_transition(PruneTransition::get_class_type())) {
     return *this;
   }
 
@@ -2332,8 +2260,8 @@ get_stashed_ancestor() const {
   if (!has_arcs()) {
     return NodePath();
   }
-  nassertr(_head != (ArcComponent *)NULL, NodePath());
-  if (_head->_arc->get_graph_type() != _graph_type) {
+
+  if (arc()->get_graph_type() != _graph_type) {
     return *this;
   }
 
@@ -2381,9 +2309,7 @@ prepare_scene(GraphicsStateGuardianBase *gsg) {
 void NodePath::
 show_bounds() {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
-
-  _head->_arc->set_transition(new DrawBoundsTransition);
+  arc()->set_transition(new DrawBoundsTransition);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2395,9 +2321,7 @@ show_bounds() {
 void NodePath::
 hide_bounds() {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
-
-  _head->_arc->clear_transition(DrawBoundsTransition::get_class_type());
+  arc()->clear_transition(DrawBoundsTransition::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2412,9 +2336,10 @@ PT(BoundingVolume) NodePath::
 get_bounds() const {
   nassertr(has_arcs(), new BoundingSphere);
 
-  PT(BoundingVolume) bv = _head->_arc->get_bound().make_copy();
+  NodeRelation *darc = arc();
+  PT(BoundingVolume) bv = darc->get_bound().make_copy();
   if (bv->is_of_type(GeometricBoundingVolume::get_class_type()) &&
-      _head->_arc->has_transition(TransformTransition::get_class_type())) {
+      darc->has_transition(TransformTransition::get_class_type())) {
 
     // The bounding volume has already been transformed by the arc's
     // matrix.  We'd rather return a bounding volume in the node's
@@ -2442,53 +2367,6 @@ write_bounds(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::reset_top_node
-//       Access: Private
-//  Description: Recomputes the _top_node member to accurately reflect
-//               the top node of the chain.
-////////////////////////////////////////////////////////////////////
-void NodePath::
-reset_top_node() {
-  if (_head != (ArcComponent *)NULL) {
-    ArcComponent *comp = _head;
-    while (comp->_next != (ArcComponent *)NULL) {
-      comp = comp->_next;
-    }
-    
-    // This assertion should not fail unless there is a logic error in
-    // the above.
-    nassertv(comp != (ArcComponent *)NULL);
-    _top_node = comp->_arc->get_parent();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::r_compare_to
-//       Access: Private, Static
-//  Description: The recursive implementation of compare_to().  Returns
-//               < 0 if a sorts before b, > 0 if b sorts before a, or
-//               == 0 if they are equivalent.
-////////////////////////////////////////////////////////////////////
-int NodePath::
-r_compare_to(const ArcComponent *a, const ArcComponent *b) {
-  if (a == b) {
-    return 0;
-
-  } else if (a == (const ArcComponent *)NULL) {
-    return -1;
-
-  } else if (b == (const ArcComponent *)NULL) {
-    return 1;
-
-  } else if (a->_arc != b->_arc) {
-    return a->_arc - b->_arc;
-
-  } else {
-    return r_compare_to(a->_next, b->_next);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NodePath::r_extend
 //       Access: Private
 //  Description: The recursive implementation of extend_by(NodePath).
@@ -2497,14 +2375,15 @@ r_compare_to(const ArcComponent *a, const ArcComponent *b) {
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
 r_extend_by(const ArcComponent *other) {
-  if (other == (const ArcComponent *)NULL) {
-    return true;
+  if (other->is_top_node()) {
+    return (other->get_node() == node());
   }
-  if (!r_extend_by(other->_next)) {
+
+  if (!r_extend_by(other->get_next())) {
     return false;
   }
 
-  if (!extend_by(other->_arc)) {
+  if (!extend_by(other->get_arc())) {
     return false;
   }
 
@@ -2521,36 +2400,28 @@ int NodePath::
 r_as_string(const ArcComponent *comp, string &result, int skip_nodes) const {
   nassertr(comp != (const ArcComponent *)NULL, 0);
 
-  if (comp->_next == (const ArcComponent *)NULL) {
+  if (comp->get_next() == (const ArcComponent *)NULL) {
     // Here's the end of the chain.
-    if (skip_nodes == 0) {
-      // Skip no nodes; return the full name.
-      result = format_node_name(comp->_arc->get_parent());
-      result += format_arc_name(comp->_arc);
-      result += format_node_name(comp->_arc->get_child());
+    result = format_node_name(comp->get_node());
 
-    } else if (skip_nodes == 1) {
-      // Skip the first node.
-      result = format_node_name(comp->_arc->get_child());
-    }
-
-    return 2;
+    return 1;
 
   } else {
-    int nodes_before = r_as_string(comp->_next, result, skip_nodes);
+    int nodes_before = r_as_string(comp->get_next(), result, skip_nodes);
     if (skip_nodes <= nodes_before) {
       if (skip_nodes != nodes_before) {
 	// This is not the first node, so format a slash between the
 	// previous node and this node.
 
-	if (!(comp->_arc->get_child() == (Node *)NULL ||
-	      comp->_arc->get_parent() == comp->_next->_arc->get_child())) {
+	NodeRelation *darc = comp->get_arc();
+	if (!(darc->get_child() == (Node *)NULL ||
+	      darc->get_parent() == comp->get_next()->get_node())) {
 	  // Unless the path is broken here.  In this case, insert a
 	  // visual indication of the break.
-	  result += "/.../" + format_node_name(comp->_arc->get_parent());
+	  result += "/.../" + format_node_name(darc->get_parent());
 	}
-	result += format_arc_name(comp->_arc);
-	result += format_node_name(comp->_arc->get_child());
+	result += format_arc_name(darc);
+	result += format_node_name(darc->get_child());
       }
     }
     return nodes_before + 1;
@@ -2566,14 +2437,15 @@ void NodePath::
 r_write_transitions(const ArcComponent *comp,
 		    ostream &out, int indent_level) const {
   nassertv(comp != (const ArcComponent *)NULL);
-  nassertv(comp->_arc != (NodeRelation *)NULL);
+  nassertv(comp->has_arc());
 
-  if (comp->_next != (const ArcComponent *)NULL) {
-    r_write_transitions(comp->_next, out, indent_level);
+  if (!comp->is_top_arc()) {
+    r_write_transitions(comp->get_next(), out, indent_level);
   }
 
-  indent(out, indent_level) << *comp->_arc << "\n";
-  comp->_arc->write_transitions(out, indent_level + 2);
+  NodeRelation *darc = comp->get_arc();
+  indent(out, indent_level) << *darc << "\n";
+  darc->write_transitions(out, indent_level + 2);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2585,14 +2457,14 @@ void NodePath::
 r_get_net_transitions(const ArcComponent *comp, 
 		      AllTransitionsWrapper &trans) const {
   nassertv(comp != (const ArcComponent *)NULL);
-  nassertv(comp->_arc != (NodeRelation *)NULL);
+  nassertv(comp->has_arc());
 
-  if (comp->_next != (const ArcComponent *)NULL) {
-    r_get_net_transitions(comp->_next, trans);
+  if (!comp->is_top_arc()) {
+    r_get_net_transitions(comp->get_next(), trans);
   }
 
   AllTransitionsWrapper arc_trans;
-  arc_trans.extract_from(comp->_arc);
+  arc_trans.extract_from(comp->get_arc());
   trans.compose_in_place(arc_trans);
 }
 
@@ -2758,6 +2630,15 @@ r_list_descendants(ostream &out, int indent_level) const {
       NodePath next(*this);
       next.extend_by(arc);
       next.r_list_descendants(out, indent_level + 2);
+    }
+  }
+
+  if (_graph_type != NodeRelation::get_stashed_type()) {
+    // Also report the number of stashed nodes at this level.
+    dri = bottom_node->_children.find(NodeRelation::get_stashed_type());
+    if (dri != bottom_node->_children.end()) {
+      const DownRelationPointers &drp = (*dri).second;
+      indent(out, indent_level) << "(" << drp.size() << " stashed)\n";
     }
   }
 }

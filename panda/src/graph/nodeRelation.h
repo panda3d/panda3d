@@ -72,11 +72,11 @@ public:
   // instead, you should call remove_arc().
   virtual ~NodeRelation();
 
+PUBLISHED:
   void output(ostream &out) const;
   INLINE void output_transitions(ostream &out) const;
   INLINE void write_transitions(ostream &out, int indent = 0) const;
 
-PUBLISHED:
   INLINE Node *get_parent() const;
   INLINE Node *get_child() const;
   INLINE int get_sort() const;

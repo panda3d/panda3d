@@ -195,8 +195,9 @@ add_normal(const Normald &normal, const EggMorphNormalList &morphs,
   // call to begin_new_space().
   assert(_current_vc != NULL);
 
-  Normalf tn = LCAST(float, normal * transform);
-  int index = _current_vc->_nmap.add_value(tn, morphs, _norms);
+  Normald norm = normal * transform;
+  norm.normalize();
+  int index = _current_vc->_nmap.add_value(LCAST(float, norm), morphs, _norms);
   _current_vc->_nindex.insert(index);
 
   // Now create any morph sliders.

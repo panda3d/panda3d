@@ -24,23 +24,15 @@
 class EXPCL_PANDA NodePathBase : public ArcChain {
 public:
   INLINE NodePathBase(TypeHandle graph_type = RenderRelation::get_class_type());
+  INLINE NodePathBase(Node *top_node, TypeHandle graph_type = RenderRelation::get_class_type());
   INLINE NodePathBase(const ArcChain &chain, TypeHandle graph_type);
   INLINE NodePathBase(const NodePathBase &copy);
   INLINE void operator = (const NodePathBase &copy);
 
 protected:
   // Most of the interesting part of NodePathBase is inherited from
-  // ArcChain.  This gives us a sharable linked list of arcs.
-
-  // We also add an explicit pointer to the top node in the chain,
-  // mainly to allow us to define a NodePath containing a single node,
-  // even if the chain of arcs is empty.
-
-  // If the chain is nonempty, this might still be useful (int that it
-  // keeps a reference count to the top node), but this is problematic
-  // since it will not automatically update if our parent is changed
-  // without our knowledge.
-  PT_Node _top_node;
+  // ArcChain.  This gives us a sharable linked list of arcs, with a
+  // single node on top.
 
   TypeHandle _graph_type;
   static int _max_search_depth;

@@ -127,8 +127,9 @@ add_component(string str_component) {
 
   } else if (str_component == "**") {
     if ((flags & CF_stashed) != 0) {
-      sgmanip_cat.warning()
-	<< "@@** is ambiguous; use @@*/** or **/@@* instead.\n";
+      sgmanip_cat.error()
+	<< "@@** is undefined; use @@*/** or **/@@* instead.\n";
+      return false;
     }
     add_match_many(flags);
 

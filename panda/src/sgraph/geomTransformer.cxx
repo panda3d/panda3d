@@ -84,7 +84,9 @@ transform_vertices(Geom *geom, const LMatrix4f &mat) {
       new_norms.reserve(norms.size());
       PTA_Normalf::const_iterator ni;
       for (ni = norms.begin(); ni != norms.end(); ++ni) {
-	new_norms.push_back((*ni) * mat);
+	Normalf new_norm = (*ni) * mat;
+	new_norm.normalize();
+	new_norms.push_back(new_norm);
       }
       nassertr(new_norms.size() == norms.size(), false);
     }

@@ -5,61 +5,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::ForwardIterator::Constructor
-//       Access: Public
-//  Description: This is an STL-style iterator that can be used to
-//               traverse the full list of arcs in the NodePath.  Its
-//               primary purpose is as a parameter to wrt() so we can
-//               compute a correct relative wrt to the particular
-//               instance referenced by the NodePath.
-////////////////////////////////////////////////////////////////////
-INLINE NodePath::ForwardIterator::
-ForwardIterator(NodePath::ArcComponent *comp) : _comp(comp) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::ForwardIterator::Dereference Operator
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE NodeRelation *NodePath::ForwardIterator::
-operator * () const {
-  nassertr(_comp != (ArcComponent *)NULL, NULL);
-  return _comp->_arc;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::ForwardIterator::Increment Operator
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE void NodePath::ForwardIterator::
-operator ++() {
-  nassertv(_comp != (ArcComponent *)NULL);
-  _comp = _comp->_next;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::ForwardIterator::Equality Operator
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE bool NodePath::ForwardIterator::
-operator == (const NodePath::ForwardIterator &other) const {
-  return _comp == other._comp;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::ForwardIterator::Inequality Operator
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE bool NodePath::ForwardIterator::
-operator != (const NodePath::ForwardIterator &other) const {
-  return _comp != other._comp;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NodePath::Default Constructor
 //       Access: Public
 //  Description: Creates an empty NodePath.  This does not refer to
@@ -80,8 +25,7 @@ NodePath(TypeHandle graph_type) : NodePathBase(graph_type) {
 //               ordinary node pointer.
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath::
-NodePath(Node *top_node, TypeHandle graph_type) : NodePathBase(graph_type) {
-  _top_node = top_node;
+NodePath(Node *top_node, TypeHandle graph_type) : NodePathBase(top_node, graph_type) {
   nassertv(verify_connectivity());
 }
 
@@ -98,7 +42,6 @@ INLINE NodePath::
 NodePath(const ArcChain &chain, TypeHandle graph_type) :
   NodePathBase(chain, graph_type)
 {
-  reset_top_node();
   nassertv(verify_connectivity());
 }
 
@@ -148,6 +91,20 @@ operator == (const NodePath &other) const {
 INLINE bool NodePath::
 operator != (const NodePath &other) const {
   return !operator == (other);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::compare_to
+//       Access: Public
+//  Description: Returns a number less than zero if this NodePath
+//               sorts before the indicated NodePath in an arbitrary
+//               lexicographical comparision, greater than zero if
+//               this one sorts after the other one, or zero if the
+//               two NodePaths are equivalent.
+////////////////////////////////////////////////////////////////////
+INLINE int NodePath::
+compare_to(const NodePath &other) const {
+  return NodePathBase::compare_to(other);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -222,7 +179,7 @@ get_max_search_depth() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool NodePath::
 is_empty() const {
-  return (_head == (ArcComponent *)NULL && _top_node == (Node *)NULL);
+  return !ArcChain::has_node();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -233,7 +190,7 @@ is_empty() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool NodePath::
 is_singleton() const {
-  return (_head == (ArcComponent *)NULL && _top_node != (Node *)NULL);
+  return ArcChain::has_node() && !ArcChain::has_arcs();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -246,33 +203,20 @@ is_singleton() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool NodePath::
 has_arcs() const {
-  return (_head != (ArcComponent *)NULL);
+  return ArcChain::has_arcs();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_num_nodes
+//     Function: NodePath::get_num_arcs
 //       Access: Public
-//  Description: Returns the number of nodes in the path, including
-//               the top node.
+//  Description: Returns the number of arcs in the path.
 ////////////////////////////////////////////////////////////////////
 INLINE int NodePath::
-get_num_nodes() const {
-  if (is_empty()) {
+get_num_arcs() const {
+  if (!has_arcs()) {
     return 0;
   }
-  return get_num_arcs() + 1;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_top_node
-//       Access: Public
-//  Description: Returns the top node of the path, or NULL if the path
-//               is empty.
-////////////////////////////////////////////////////////////////////
-INLINE Node *NodePath::
-get_top_node() {
-  reset_top_node();
-  return _top_node;
+  return get_num_nodes() - 1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -283,11 +227,10 @@ get_top_node() {
 ////////////////////////////////////////////////////////////////////
 INLINE Node *NodePath::
 node() const {
-  if (_head == (ArcComponent *)NULL) {
-    // A singleton or empty list.
-    return _top_node;
+  if (is_empty()) {
+    return (Node *)NULL;
   }
-  return _head->_arc->get_child();
+  return _head->get_node();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -298,11 +241,11 @@ node() const {
 ////////////////////////////////////////////////////////////////////
 INLINE NodeRelation *NodePath::
 arc() const {
-  if (_head == (ArcComponent *)NULL) {
+  if (!has_arcs()) {
     // A singleton or empty list.
     return (NodeRelation *)NULL;
   }
-  return _head->_arc;
+  return _head->get_arc();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -676,9 +619,9 @@ get_sa() const {
 INLINE void NodePath::
 clear_color_scale() {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
-  _head->_arc->clear_transition(ColorMatrixTransition::get_class_type());
-  _head->_arc->clear_transition(AlphaTransformTransition::get_class_type());
+  NodeRelation *darc = arc();
+  darc->clear_transition(ColorMatrixTransition::get_class_type());
+  darc->clear_transition(AlphaTransformTransition::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -694,9 +637,9 @@ clear_color_scale() {
 INLINE bool NodePath::
 has_color_scale() const {
   nassertr(has_arcs(), false);
-  nassertr(_head != (ArcComponent *)NULL, false);
-  return _head->_arc->has_transition(ColorMatrixTransition::get_class_type()) ||
-         _head->_arc->has_transition(AlphaTransformTransition::get_class_type());
+  NodeRelation *darc = arc();
+  return darc->has_transition(ColorMatrixTransition::get_class_type()) ||
+         darc->has_transition(AlphaTransformTransition::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -734,8 +677,7 @@ set_pos_hpr_scale(float x, float y, float z, float h, float p, float r,
 INLINE void NodePath::
 clear_mat() {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
-  _head->_arc->clear_transition(TransformTransition::get_class_type());
+  arc()->clear_transition(TransformTransition::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -747,8 +689,7 @@ clear_mat() {
 INLINE bool NodePath::
 has_mat() const {
   nassertr(has_arcs(), false);
-  nassertr(_head != (ArcComponent *)NULL, false);
-  return _head->_arc->has_transition(TransformTransition::get_class_type());
+  return arc()->has_transition(TransformTransition::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -761,10 +702,9 @@ has_mat() const {
 INLINE LMatrix4f NodePath::
 get_mat() const {
   nassertr(has_arcs(), LMatrix4f::ident_mat());
-  nassertr(_head != (ArcComponent *)NULL, LMatrix4f::ident_mat());
 
   const TransformTransition *tt;
-  if (!get_transition_into(tt, _head->_arc)) {
+  if (!get_transition_into(tt, arc())) {
     // No relative transform.
     return LMatrix4f::ident_mat();
   }
@@ -1135,8 +1075,7 @@ set_color(float r, float g, float b, float a,
 INLINE void NodePath::
 clear_color() {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
-  _head->_arc->clear_transition(ColorTransition::get_class_type());
+  arc()->clear_transition(ColorTransition::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1148,8 +1087,7 @@ clear_color() {
 INLINE bool NodePath::
 has_color() const {
   nassertr(has_arcs(), false);
-  nassertr(_head != (ArcComponent *)NULL, false);
-  return _head->_arc->has_transition(ColorTransition::get_class_type());
+  return arc()->has_transition(ColorTransition::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1161,8 +1099,7 @@ has_color() const {
 INLINE void NodePath::
 clear_bin() {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
-  _head->_arc->clear_transition(TextureTransition::get_class_type());
+  arc()->clear_transition(TextureTransition::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1175,8 +1112,7 @@ clear_bin() {
 INLINE bool NodePath::
 has_bin() const {
   nassertr(has_arcs(), false);
-  nassertr(_head != (ArcComponent *)NULL, false);
-  return _head->_arc->has_transition(GeomBinTransition::get_class_type());
+  return arc()->has_transition(GeomBinTransition::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1191,8 +1127,7 @@ has_bin() const {
 INLINE void NodePath::
 clear_texture() {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
-  _head->_arc->clear_transition(TextureTransition::get_class_type());
+  arc()->clear_transition(TextureTransition::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1207,8 +1142,7 @@ clear_texture() {
 INLINE void NodePath::
 clear_fog() {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
-  _head->_arc->clear_transition(FogTransition::get_class_type());
+  arc()->clear_transition(FogTransition::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1222,8 +1156,7 @@ clear_fog() {
 INLINE void NodePath::
 clear_render_mode() {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
-  _head->_arc->clear_transition(RenderModeTransition::get_class_type());
+  arc()->clear_transition(RenderModeTransition::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1237,8 +1170,7 @@ clear_render_mode() {
 INLINE bool NodePath::
 has_render_mode() const {
   nassertr(has_arcs(), false);
-  nassertr(_head != (ArcComponent *)NULL, false);
-  return _head->_arc->has_transition(RenderModeTransition::get_class_type());
+  return arc()->has_transition(RenderModeTransition::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1255,8 +1187,7 @@ has_render_mode() const {
 INLINE void NodePath::
 clear_two_sided() {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
-  _head->_arc->clear_transition(CullFaceTransition::get_class_type());
+  arc()->clear_transition(CullFaceTransition::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1271,8 +1202,7 @@ clear_two_sided() {
 INLINE bool NodePath::
 has_two_sided() const {
   nassertr(has_arcs(), false);
-  nassertr(_head != (ArcComponent *)NULL, false);
-  return _head->_arc->has_transition(CullFaceTransition::get_class_type());
+  return arc()->has_transition(CullFaceTransition::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1284,9 +1214,7 @@ has_two_sided() const {
 INLINE void NodePath::
 set_billboard_axis() {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
-
-  _head->_arc->set_transition(new BillboardTransition(BillboardTransition::axis()));
+  arc()->set_transition(new BillboardTransition(BillboardTransition::axis()));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1300,9 +1228,7 @@ set_billboard_axis() {
 INLINE void NodePath::
 set_billboard_point_eye() {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
-
-  _head->_arc->set_transition(new BillboardTransition(BillboardTransition::point_eye()));
+  arc()->set_transition(new BillboardTransition(BillboardTransition::point_eye()));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1315,9 +1241,7 @@ set_billboard_point_eye() {
 INLINE void NodePath::
 set_billboard_point_world() {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
-
-  _head->_arc->set_transition(new BillboardTransition(BillboardTransition::point_world()));
+  arc()->set_transition(new BillboardTransition(BillboardTransition::point_world()));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1328,9 +1252,7 @@ set_billboard_point_world() {
 INLINE void NodePath::
 clear_billboard() {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
-
-  _head->_arc->clear_transition(BillboardTransition::get_class_type());
+  arc()->clear_transition(BillboardTransition::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1342,9 +1264,7 @@ clear_billboard() {
 INLINE bool NodePath::
 has_billboard() const {
   nassertr(has_arcs(), false);
-  nassertr(_head != (ArcComponent *)NULL, false);
-
-  return _head->_arc->has_transition(BillboardTransition::get_class_type());
+  return arc()->has_transition(BillboardTransition::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1361,8 +1281,7 @@ has_billboard() const {
 INLINE void NodePath::
 clear_transparency() {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
-  _head->_arc->clear_transition(TransparencyTransition::get_class_type());
+  arc()->clear_transition(TransparencyTransition::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1378,8 +1297,7 @@ clear_transparency() {
 INLINE bool NodePath::
 has_transparency() const {
   nassertr(has_arcs(), false);
-  nassertr(_head != (ArcComponent *)NULL, false);
-  return _head->_arc->has_transition(TransparencyTransition::get_class_type());
+  return arc()->has_transition(TransparencyTransition::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1396,9 +1314,7 @@ has_transparency() const {
 INLINE void NodePath::
 adjust_all_priorities(int adjustment) {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
-
-  r_adjust_all_priorities(_head->_arc, adjustment);
+  r_adjust_all_priorities(arc(), adjustment);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1412,9 +1328,7 @@ adjust_all_priorities(int adjustment) {
 INLINE void NodePath::
 show() {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
-
-  _head->_arc->clear_transition(PruneTransition::get_class_type());
+  arc()->clear_transition(PruneTransition::get_class_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1433,9 +1347,7 @@ show() {
 INLINE void NodePath::
 hide() {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
-
-  _head->_arc->set_transition(new PruneTransition);
+  arc()->set_transition(new PruneTransition);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1489,9 +1401,7 @@ is_hidden() const {
 INLINE void NodePath::
 stash() {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
-
-  _head->_arc->set_graph_type(NodeRelation::get_stashed_type());
+  arc()->set_graph_type(NodeRelation::get_stashed_type());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1502,9 +1412,7 @@ stash() {
 INLINE void NodePath::
 unstash() {
   nassertv(has_arcs());
-  nassertv(_head != (ArcComponent *)NULL);
-
-  _head->_arc->set_graph_type(_head->_arc->get_type());
+  arc()->set_graph_type(arc()->get_type());
 }
 
 ////////////////////////////////////////////////////////////////////

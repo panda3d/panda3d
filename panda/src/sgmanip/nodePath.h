@@ -122,7 +122,7 @@ PUBLISHED:
 
   INLINE bool operator == (const NodePath &other) const;
   INLINE bool operator != (const NodePath &other) const;
-  int compare_to(const NodePath &other) const;
+  INLINE int compare_to(const NodePath &other) const;
 
   INLINE void set_graph_type(TypeHandle graph_type);
   INLINE TypeHandle get_graph_type() const;
@@ -134,7 +134,7 @@ PUBLISHED:
   // Methods to extend or shorten a NodePath.
 
   bool extend_by(Node *dnode);
-  bool extend_by(NodeRelation *arc);
+  bool extend_by(NodeRelation *darc);
   bool extend_by(const NodePath &other);
   bool extend_by(const string &path);
   bool extend_down_to(Node *dnode);
@@ -148,13 +148,13 @@ PUBLISHED:
   INLINE bool is_empty() const;
   INLINE bool is_singleton() const;
   INLINE bool has_arcs() const;
-  INLINE int get_num_nodes() const;
+  int get_num_nodes() const;
   Node *get_node(int index) const;
 
-  int get_num_arcs() const;
+  INLINE int get_num_arcs() const;
   NodeRelation *get_arc(int index) const;
 
-  INLINE Node *get_top_node();
+  Node *get_top_node() const;
   INLINE Node *node() const;
   INLINE NodeRelation *arc() const;
 
@@ -458,21 +458,7 @@ PUBLISHED:
   void write_bounds(ostream &out) const;
 
 
-public:
-  // This is a supporting class for passing the list of arcs to wrt().
-  class ForwardIterator {
-  public:
-    INLINE ForwardIterator(ArcComponent *comp = NULL);
-    INLINE NodeRelation *operator * () const;
-    INLINE void operator ++();
-    INLINE bool operator == (const ForwardIterator &other) const;
-    INLINE bool operator != (const ForwardIterator &other) const;
-    ArcComponent *_comp;
-  };
-
 private:
-  void reset_top_node();
-  static int r_compare_to(const ArcComponent *a, const ArcComponent *v);
   bool r_extend_by(const ArcComponent *other);
   int r_as_string(const ArcComponent *comp, string &result, 
 		  int skip_nodes) const;

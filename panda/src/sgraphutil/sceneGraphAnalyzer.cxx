@@ -71,6 +71,10 @@ clear() {
   _num_triangles_in_fans = 0;
 
   _texture_bytes = 0;
+
+  _num_long_normals = 0;
+  _num_short_normals = 0;
+  _total_normal_length = 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -117,6 +121,13 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << _num_vertices << " vertices, " << _num_normals << " normals, "
     << _num_texcoords << " texture coordinates.\n";
+
+  if (_num_normals != 0) {
+    indent(out, indent_level)
+      << _num_long_normals << " normals are too long, " 
+      << _num_short_normals << " are too short.  Average normal length is "
+      << _total_normal_length / (float)_num_normals << "\n";
+  }
 
   indent(out, indent_level)
     << _num_tris << " triangles:\n";
@@ -268,21 +279,26 @@ collect_statistics(Geom *geom) {
 
   _num_vertices += num_verts;
 
-  switch (geom->get_binding(G_NORMAL)) {
+  PTA_Normalf norms;
+  GeomBindType nbind;
+  PTA_ushort nindex;
+  geom->get_normals(norms, nbind, nindex);
+
+  switch (nbind) {
   case G_OVERALL:
-    _num_normals++;
+    consider_normals(norms, nindex, 1);
     break;
 
   case G_PER_PRIM:
-    _num_normals += num_prims;
+    consider_normals(norms, nindex, num_prims);
     break;
 
   case G_PER_COMPONENT:
-    _num_normals += num_components;
+    consider_normals(norms, nindex, num_components);
     break;
 
   case G_PER_VERTEX:
-    _num_normals += num_verts;
+    consider_normals(norms, nindex, num_verts);
     break;
 
   case G_OFF:
@@ -381,3 +397,42 @@ collect_statistics(Texture *texture) {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphAnalyzer::consider_normals
+//       Access: Private
+//  Description: Examines the indicated set of normals.
+////////////////////////////////////////////////////////////////////
+void SceneGraphAnalyzer::
+consider_normals(const Normalf *norms, const ushort *nindex, int num) {
+  _num_normals += num;
+
+  if (nindex != (const ushort *)NULL) {
+    // An indexed array.
+    for (int i = 0; i < num; i++) {
+      const Normalf &norm = norms[nindex[i]];
+      float l = norm.length();
+      if (IS_THRESHOLD_EQUAL(l, 1.0, 0.01)) {
+	// This normal is close enough to unit length to be ok.
+      } else if (l > 1.0) {
+	_num_long_normals++;
+      } else { // l < 1.0
+	_num_short_normals++;
+      }
+      _total_normal_length += l;
+    }
+  } else {
+    // A nonindexed array.
+    for (int i = 0; i < num; i++) {
+      const Normalf &norm = norms[i];
+      float l = norm.length();
+      if (IS_THRESHOLD_EQUAL(l, 1.0, 0.01)) {
+	// This normal is close enough to unit length to be ok.
+      } else if (l > 1.0) {
+	_num_long_normals++;
+      } else { // l < 1.0
+	_num_short_normals++;
+      }
+      _total_normal_length += l;
+    }
+  }
+}

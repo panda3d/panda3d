@@ -54,10 +54,23 @@ FrustumCullTraverser(ArcChain &arc_chain, Node *root,
     }
   }
 
+  bool needs_top_node = !_arc_chain.has_node();
+  if (needs_top_node) {
+    // If the ArcChain supplied in is initially empty, put the root
+    // node in it.
+    _arc_chain = ArcChain(root);
+  }
+
   LevelState level_state(initial_level_state);
   traverse(root, _initial_render_state, level_state, local_frustum, false);
 
   _view_frustum = NULL;
+
+  if (needs_top_node) {
+    // Restore the ArcChain to its initial empty state (if that's what
+    // it was).
+    _arc_chain = ArcChain();
+  }
 }
 
 

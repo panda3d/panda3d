@@ -8,46 +8,6 @@
 #include "namedNode.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ArcChain::compare_to
-//       Access: Public
-//  Description: Returns a number less than zero if this ArcChain
-//               sorts before the other one, greater than zero if it
-//               sorts after, or zero if they are equivalent.
-//
-//               Two ArcChains are considered equivalent if they
-//               consist of exactly the same list of arcs in the same
-//               order.  Otherwise, they are different; different
-//               ArcChains will be ranked in a consistent but
-//               undefined ordering; the ordering is useful only for
-//               placing the ArcChains in a sorted container like an
-//               STL set.
-////////////////////////////////////////////////////////////////////
-int ArcChain::
-compare_to(const ArcChain &other) const {
-  ArcComponent *a = _head;
-  ArcComponent *b = other._head;
-
-  while (a != (ArcComponent *)NULL && b != (ArcComponent *)NULL) {
-    if (a < b) {
-      return -1;
-    } else if (a > b) {
-      return 1;
-    }
-
-    a = a->_next;
-    b = b->_next;
-  }
-
-  if (a < b) {
-    return -1;
-  } else if (a > b) {
-    return 1;
-  }
-
-  return 0;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: ArcChain::r_output
 //       Access: Private
 //  Description: The recursive implementation of output(), this writes
@@ -57,7 +17,7 @@ compare_to(const ArcChain &other) const {
 ////////////////////////////////////////////////////////////////////
 void ArcChain::
 r_output(ostream &out, ArcComponent *comp) const {
-  ArcComponent *next = comp->_next;
+  ArcComponent *next = comp->get_next();
   if (next != (ArcComponent *)NULL) {
     // This is not the head of the list; keep going up.
     r_output(out, next);
@@ -65,7 +25,7 @@ r_output(ostream &out, ArcComponent *comp) const {
   }
 
   // Now output this component.
-  Node *node = comp->_arc->get_child();
+  Node *node = comp->get_node();
   if (node->is_of_type(NamedNode::get_class_type())) {
     NamedNode *named_node = DCAST(NamedNode, node);
     if (named_node->has_name()) {
@@ -75,5 +35,37 @@ r_output(ostream &out, ArcComponent *comp) const {
     }
   } else {
     out << node->get_type();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ArcChain::r_compare_to
+//       Access: Private, Static
+//  Description: The recursive implementation of compare_to().  Returns
+//               < 0 if a sorts before b, > 0 if b sorts before a, or
+//               == 0 if they are equivalent.
+////////////////////////////////////////////////////////////////////
+int ArcChain::
+r_compare_to(const ArcComponent *a, const ArcComponent *b) {
+  if (a == b) {
+    return 0;
+
+  } else if (a == (const ArcComponent *)NULL) {
+    return -1;
+
+  } else if (b == (const ArcComponent *)NULL) {
+    return 1;
+
+  } else if (a->has_arc() != b->has_arc()) {
+    return a->has_arc() - b->has_arc();
+
+  } else if (a->has_arc() && (a->get_arc() != b->get_arc())) {
+    return a->get_arc() - b->get_arc();
+
+  } else if (!a->has_arc() && (a->get_node() != b->get_node())) {
+    return a->get_node() - b->get_node();
+
+  } else {
+    return r_compare_to(a->get_next(), b->get_next());
   }
 }
