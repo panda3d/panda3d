@@ -101,10 +101,11 @@ class DistributedObject(PandaObject):
             self.notify.error("Somebody decremented delayDelete for doId %s without incrementing"
                               % (self.doId))
         elif (self.delayDeleteCount == 0):
-            self.notify.debug("delayDeleteCount for doId %s now 0" % (self.doId))
+            assert(self.notify.debug("delayDeleteCount for doId %s now 0"
+                                     % (self.doId)))
             if self.deleteImminent:
-                self.notify.debug("delayDeleteCount for doId %s -- deleteImminent"
-                                  % (self.doId))
+                assert(self.notify.debug("delayDeleteCount for doId %s -- deleteImminent"
+                                         % (self.doId)))
                 self.disableAnnounceAndDelete()
         else:
             self.notify.debug("delayDeleteCount for doId %s now %s"
