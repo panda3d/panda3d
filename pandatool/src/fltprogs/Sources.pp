@@ -3,7 +3,8 @@
   #define LOCAL_LIBS cvscopy flt
 
   #define OTHER_LIBS \
-    dconfig:c dtool:m pystub
+    express:c pandaexpress:m \
+    dtoolutil:c dconfig:c dtool:m pystub
 
   #define SOURCES \
     fltCopy.cxx fltCopy.h

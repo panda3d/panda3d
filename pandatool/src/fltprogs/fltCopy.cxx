@@ -40,7 +40,7 @@ FltCopy() {
      "It may also be " 
      "repeated multiple times on the command line; each time it appears "
      "its named directories will be appended to the search path.",
-     &CVSCopy::dispatch_search_path, NULL, &_search_path);
+     &FltCopy::dispatch_search_path, NULL, &_search_path);
 }
 
 ////////////////////////////////////////////////////////////////////
