@@ -46,7 +46,7 @@ enum DCPackType {
   // but the PackType provides a bit of a semantic context.
   PT_array,
   PT_field,
-  PT_struct,
+  PT_class,
 };
 END_PUBLISH
 

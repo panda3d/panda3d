@@ -22,15 +22,17 @@
 #include "dcbase.h"
 #include "dcField.h"
 #include "dcPackerInterface.h"
+#include "dcDeclaration.h"
 
 class HashGenerator;
+class DCParameter;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DCClass
 // Description : Defines a particular DistributedClass as read from an
 //               input .dc file.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DIRECT DCClass : public DCPackerInterface {
+class EXPCL_DIRECT DCClass : public DCPackerInterface, public DCDeclaration {
 PUBLISHED:
   int get_number() const;
 
@@ -44,6 +46,14 @@ PUBLISHED:
   int get_num_inherited_fields() const;
   DCField *get_inherited_field(int n) const;
 
+  int get_num_parameters() const;
+  DCParameter *get_parameter(int n) const;
+  DCParameter *get_parameter_by_name(const string &name) const;
+
+  int get_num_inherited_parameters() const;
+  DCParameter *get_inherited_parameter(int n) const;
+
+  bool is_struct() const;
   bool is_bogus_class() const;
 
 #ifdef HAVE_PYTHON
@@ -72,17 +82,19 @@ PUBLISHED:
 #endif 
 
 public:
-  DCClass(const string &name, bool bogus_class = false);
+  DCClass(const string &name, bool is_struct, bool bogus_class);
   ~DCClass();
 
-  void write(ostream &out, bool brief, int indent_level) const;
+  virtual void write(ostream &out, bool brief, int indent_level) const;
   void generate_hash(HashGenerator &hash) const;
 
   bool add_field(DCField *field);
+  bool add_parameter(DCParameter *parameter);
   void add_parent(DCClass *parent);
   void set_number(int number);
 
 private:
+  bool _is_struct;
   bool _bogus_class;
   int _number;
 
@@ -94,6 +106,12 @@ private:
 
   typedef pmap<string, DCField *> FieldsByName;
   FieldsByName _fields_by_name;
+
+  typedef pvector<DCParameter *> Parameters;
+  Parameters _parameters;
+
+  typedef pmap<string, DCParameter *> ParametersByName;
+  ParametersByName _parameters_by_name;
 
 #ifdef HAVE_PYTHON
   PyObject *_class_def;

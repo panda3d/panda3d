@@ -122,6 +122,18 @@ output(ostream &out, bool brief) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCParameter::write
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void DCParameter::
+write(ostream &out, bool brief, int indent_level) const {
+  indent(out, indent_level);
+  output(out, brief);
+  out << ";\n";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCParameter::output_typedef_name
 //       Access: Public
 //  Description: Formats the instance like output_instance, but uses

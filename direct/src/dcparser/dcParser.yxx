@@ -10,6 +10,7 @@
 #include "dcClass.h"
 #include "dcAtomicField.h"
 #include "dcMolecularField.h"
+#include "dcClassParameter.h"
 #include "dcArrayParameter.h"
 #include "dcSimpleParameter.h"
 #include "dcTypedef.h"
@@ -63,6 +64,7 @@ dc_cleanup_parser() {
 %token <str> STRING HEX_STRING IDENTIFIER
 
 %token KW_DCLASS 
+%token KW_STRUCT 
 %token KW_FROM 
 %token KW_IMPORT 
 %token KW_TYPEDEF 
@@ -87,8 +89,6 @@ dc_cleanup_parser() {
 %token KW_UINT32ARRAY
 %token KW_UINT32UINT8ARRAY
 
-%token KW_MOL
-
 %token KW_REQUIRED
 %token KW_BROADCAST
 %token KW_P2P
@@ -105,11 +105,14 @@ dc_cleanup_parser() {
 %token START_DC
 %token START_PARAMETER_VALUE
 
+%type <u.flag> kw_struct_or_kw_dclass
 %type <u.dclass> dclass_name
 %type <u.atomic> atomic_name
 %type <u.subatomic> type_token
 %type <u.parameter> type_name
 %type <u.parameter> type_definition
+%type <u.parameter> named_parameter
+%type <u.parameter> unnamed_parameter
 %type <u.parameter> parameter
 %type <u.parameter> parameter_definition
 %type <str> import_identifier
@@ -131,9 +134,9 @@ dc:
         ;
 
 dclass:
-        KW_DCLASS IDENTIFIER 
+        kw_struct_or_kw_dclass IDENTIFIER 
 {
-  current_class = new DCClass($2);
+  current_class = new DCClass($2, $1, false);
   if (!dc_file->add_class(current_class)) {
     DCClass *old_class = dc_file->get_class_by_name(current_class->get_name());
     if (old_class->is_bogus_class()) {
@@ -146,12 +149,23 @@ dclass:
         dclass_derivation '{' dclass_fields '}'
         ;
 
+kw_struct_or_kw_dclass:
+	KW_STRUCT
+{
+  $$ = true;
+}
+	| KW_DCLASS
+{
+  $$ = false;
+}
+	;
+
 dclass_name:
         IDENTIFIER
 {
   DCClass *dclass = dc_file->get_class_by_name($1);
   if (dclass == (DCClass *)NULL) {
-    dclass = new DCClass($1, true);
+    dclass = new DCClass($1, false, true);
     dc_file->add_class(dclass);
   }
   
@@ -247,6 +261,16 @@ dclass_fields:
         | dclass_fields ';'
         | dclass_fields atomic_field
         | dclass_fields molecular_field
+        | dclass_fields unnamed_parameter ';'
+{
+  current_class->add_parameter($2);
+}
+        | dclass_fields named_parameter
+{
+  if (!current_class->add_parameter($2)) {
+    yyerror("Duplicate parameter name: " + $2->get_name());
+  }
+}
         ;
 
 atomic_field:
@@ -316,7 +340,7 @@ atomic_element:
 }
 	;
 
-parameter:
+named_parameter:
         type_definition
 {
   current_parameter = $1;
@@ -325,7 +349,15 @@ parameter:
 {
   $$ = $3;
 }
-        | type_definition
+	;
+
+unnamed_parameter:
+	type_definition
+	;
+
+parameter:
+        named_parameter
+        | unnamed_parameter
         ;
 
 type_name:
@@ -348,7 +380,16 @@ type_name:
 {
   DCTypedef *dtypedef = dc_file->get_typedef_by_name($1);
   if (dtypedef == (DCTypedef *)NULL) {
-    dtypedef = new DCTypedef($1);
+    // Maybe it's a class name.
+    DCClass *dclass = dc_file->get_class_by_name($1);
+    if (dclass != (DCClass *)NULL) {
+      // Create an implicit typedef for this.
+      dtypedef = new DCTypedef(new DCClassParameter(dclass), true);
+    } else {
+      // It's an undefined typedef.  Create a bogus forward reference.
+      dtypedef = new DCTypedef($1);
+    }
+
     dc_file->add_typedef(dtypedef);
   }
 

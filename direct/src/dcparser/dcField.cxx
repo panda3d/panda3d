@@ -282,3 +282,16 @@ generate_hash(HashGenerator &hashgen) const {
   // redundant.  However, the field name is significant.
   hashgen.add_string(_name);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::set_number
+//       Access: Public
+//  Description: Assigns the unique number to this field.  This is
+//               normally called only by the DCClass interface as the
+//               field is added.
+////////////////////////////////////////////////////////////////////
+void DCField::
+set_number(int number) {
+  _number = number;
+}
+

@@ -29,7 +29,8 @@ DCArrayParameter(DCParameter *element_type, int array_size) :
   _element_type(element_type),
   _array_size(array_size)
 {
-  set_name(element_type->get_name());
+  set_name(_element_type->get_name());
+  _element_type->set_name(string());
 
   if (_array_size >= 0 && _element_type->has_fixed_byte_size()) {
     _has_fixed_byte_size = true;
@@ -57,7 +58,7 @@ DCArrayParameter(const DCArrayParameter &copy) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCArrayParameter::Destructor
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 DCArrayParameter::

@@ -27,9 +27,10 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DCTypedef::
-DCTypedef(DCParameter *parameter) :
+DCTypedef(DCParameter *parameter, bool implicit) :
   _parameter(parameter),
   _bogus_typedef(false),
+  _implicit_typedef(implicit),
   _number(-1)
 {
 }
@@ -43,6 +44,7 @@ DCTypedef::
 DCTypedef(const string &name) :
   _parameter(new DCSimpleParameter(ST_invalid)),
   _bogus_typedef(true),
+  _implicit_typedef(false),
   _number(-1)
 {
   _parameter->set_name(name);
@@ -108,6 +110,18 @@ is_bogus_typedef() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCTypedef::is_implicit_typedef
+//       Access: Public
+//  Description: Returns true if the typedef has been flagged as an
+//               implicit typedef, meaning it was created for a
+//               DCClass that was referenced inline as a type.
+////////////////////////////////////////////////////////////////////
+bool DCTypedef::
+is_implicit_typedef() const {
+  return _implicit_typedef;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCTypedef::make_new_parameter
 //       Access: Public
 //  Description: Returns a newly-allocated DCParameter object that
@@ -135,7 +149,7 @@ set_number(int number) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCTypedef::write
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void DCTypedef::
@@ -153,4 +167,3 @@ write(ostream &out, bool brief, int indent_level) const {
   }
   out << "\n";
 }
-

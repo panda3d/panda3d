@@ -1202,7 +1202,7 @@ Uint32Uint8Type() {
   _uint8_type = new DCSimpleParameter(ST_uint8);
   _has_nested_fields = true;
   _num_nested_fields = 2;
-  _pack_type = PT_struct;
+  _pack_type = PT_class;
 }
 
 ////////////////////////////////////////////////////////////////////

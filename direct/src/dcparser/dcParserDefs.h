@@ -46,6 +46,7 @@ public:
   union U {
     PN_int64 integer;
     double real;
+    bool flag;
     DCClass *dclass;
     DCAtomicField *atomic;
     DCSubatomicType subatomic;

@@ -24,6 +24,7 @@
 
 class HashGenerator;
 class DCTypedef;
+class DCDeclaration;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DCFile
@@ -93,6 +94,9 @@ private:
 
   typedef pmap<string, DCTypedef *> TypedefsByName;
   TypedefsByName _typedefs_by_name;
+
+  typedef pvector<DCDeclaration *> Declarations;
+  Declarations _declarations;
 
   bool _all_objects_valid;
 };

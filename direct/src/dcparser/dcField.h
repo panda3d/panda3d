@@ -68,10 +68,10 @@ public:
   virtual void write(ostream &out, bool brief, int indent_level) const=0;
   virtual void generate_hash(HashGenerator &hash) const;
 
+  void set_number(int number);
+
 protected:
   int _number;
-
-  friend class DCClass;
 };
 
 #endif

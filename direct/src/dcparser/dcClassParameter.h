@@ -1,5 +1,5 @@
-// Filename: dcArrayParameter.h
-// Created by:  drose (17Jun04)
+// Filename: dcClassParameter.h
+// Created by:  drose (18Jun04)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,35 +16,33 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef DCARRAYPARAMETER_H
-#define DCARRAYPARAMETER_H
+#ifndef DCCLASSPARAMETER_H
+#define DCCLASSPARAMETER_H
 
 #include "dcbase.h"
 #include "dcParameter.h"
 
+class DCClass;
+
 ////////////////////////////////////////////////////////////////////
-//       Class : DCArrayParameter
-// Description : This represents an array of some other kind of
-//               object, meaning this parameter type accepts an
-//               arbitrary (or possibly fixed) number of nested
-//               fields, all of which are of the same type.
+//       Class : DCClassParameter
+// Description : This represents a class (or struct) object used as a
+//               parameter itself.  This means that all the fields of
+//               the class get packed into the message.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_DIRECT DCArrayParameter : public DCParameter {
+class EXPCL_DIRECT DCClassParameter : public DCParameter {
 public:
-  DCArrayParameter(DCParameter *element_type, int array_size = -1);
-  DCArrayParameter(const DCArrayParameter &copy);
-  virtual ~DCArrayParameter();
+  DCClassParameter(DCClass *dclass);
+  DCClassParameter(const DCClassParameter &copy);
 
 PUBLISHED:
-  virtual DCArrayParameter *as_array_parameter();
+  virtual DCClassParameter *as_class_parameter();
   virtual DCParameter *make_copy() const;
   virtual bool is_valid() const;
 
-  DCParameter *get_element_type() const;
-  int get_array_size() const;
+  DCClass *get_class() const;
 
 public:
-  virtual int calc_num_nested_fields(size_t length_bytes) const;
   virtual DCPackerInterface *get_nested_field(int n) const;
 
   virtual void output_instance(ostream &out, const string &prename, 
@@ -52,8 +50,8 @@ public:
   virtual void generate_hash(HashGenerator &hash) const;
 
 private:
-  DCParameter *_element_type;
-  int _array_size;
+  DCClass *_dclass;
+  int _num_fields;
 };
 
 #endif

@@ -1,5 +1,6 @@
 
 #include "dcParameter.cxx"
+#include "dcClassParameter.cxx"
 #include "dcArrayParameter.cxx"
 #include "dcSimpleParameter.cxx"
 #include "dcField.cxx"

@@ -234,21 +234,9 @@ write(ostream &out, bool brief) const {
     out << "\n";
   }
 
-  if (!_typedefs.empty()) {
-    Typedefs::const_iterator ti;
-    for (ti = _typedefs.begin(); ti != _typedefs.end(); ++ti) {
-      if (!(*ti)->is_bogus_typedef()) {
-        (*ti)->write(out, brief, 0);
-      }
-    }
-    out << "\n";
-  }
-
-  Classes::const_iterator ci;
-  for (ci = _classes.begin(); ci != _classes.end(); ++ci) {
-    if (!(*ci)->is_bogus_class()) {
-      (*ci)->write(out, brief, 0);
-    }
+  Declarations::const_iterator di;
+  for (di = _declarations.begin(); di != _declarations.end(); ++di) {
+    (*di)->write(out, brief, 0);
     out << "\n";
   }
 
@@ -452,6 +440,10 @@ add_class(DCClass *dclass) {
     _all_objects_valid = false;
   }
 
+  if (!dclass->is_bogus_class()) {
+    _declarations.push_back(dclass);
+  }
+
   return true;
 }
 
@@ -508,6 +500,10 @@ add_typedef(DCTypedef *dtypedef) {
 
   if (dtypedef->is_bogus_typedef()) {
     _all_objects_valid = false;
+  }
+
+  if (!dtypedef->is_bogus_typedef() && !dtypedef->is_implicit_typedef()) {
+    _declarations.push_back(dtypedef);
   }
 
   return true;

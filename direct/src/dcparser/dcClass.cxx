@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "dcClass.h"
+#include "dcParameter.h"
 #include "hashGenerator.h"
 #include "dcindent.h"
 #include "dcmsgtypes.h"
@@ -149,6 +150,109 @@ get_inherited_field(int n) const {
     n -= psize;
   }
   return get_field(n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCClass::get_num_parameters
+//       Access: Published
+//  Description: Returns the number of parameters defined directly in
+//               this class, ignoring inheritance.
+////////////////////////////////////////////////////////////////////
+int DCClass::
+get_num_parameters() const {
+  return _parameters.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCClass::get_parameter
+//       Access: Published
+//  Description: Returns the nth parameter in the class.  This is not
+//               necessarily the parameter with index n; this is the
+//               nth parameter defined in the class directly, ignoring
+//               inheritance.
+////////////////////////////////////////////////////////////////////
+DCParameter *DCClass::
+get_parameter(int n) const {
+  nassertr_always(n >= 0 && n < (int)_parameters.size(), NULL);
+  return _parameters[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCClass::get_parameter_by_name
+//       Access: Published
+//  Description: Returns a pointer to the DCParameter that shares the
+//               indicated name.  If the named parameter is not found
+//               in the current class, the parent classes will be
+//               searched, so the value returned may not actually be a
+//               parameter within this class.  Returns NULL if there
+//               is no such parameter defined.
+////////////////////////////////////////////////////////////////////
+DCParameter *DCClass::
+get_parameter_by_name(const string &name) const {
+  ParametersByName::const_iterator ni;
+  ni = _parameters_by_name.find(name);
+  if (ni != _parameters_by_name.end()) {
+    return (*ni).second;
+  }
+
+  // We didn't have such a parameter, so check our parents.
+  Parents::const_iterator pi;
+  for (pi = _parents.begin(); pi != _parents.end(); ++pi) {
+    DCParameter *result = (*pi)->get_parameter_by_name(name);
+    if (result != (DCParameter *)NULL) {
+      return result;
+    }
+  }
+
+  // Nobody knew what this parameter is.
+  return (DCParameter *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCClass::get_num_inherited_parameters
+//       Access: Published
+//  Description: Returns the total number of parameters defined in
+//               this class and all ancestor classes.
+////////////////////////////////////////////////////////////////////
+int DCClass::
+get_num_inherited_parameters() const {
+  if (!_parents.empty()) {
+    // This won't work for multiple dclass inheritance.
+    return _parents.front()->get_num_inherited_parameters() + get_num_parameters();
+  }
+  return get_num_parameters();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCClass::get_inherited_parameter
+//       Access: Published
+//  Description: Returns the nth parameter parameter in the class and
+//               all of its ancestors.
+////////////////////////////////////////////////////////////////////
+DCParameter *DCClass::
+get_inherited_parameter(int n) const {
+  if (!_parents.empty()) {
+    // This won't work for multiple dclass inheritance.
+    int psize = _parents.front()->get_num_inherited_parameters();
+    if (n < psize) {
+      return _parents.front()->get_inherited_parameter(n);
+    }
+
+    n -= psize;
+  }
+  return get_parameter(n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCClass::is_struct
+//       Access: Public
+//  Description: Returns true if the class has been identified with
+//               the "struct" keyword in the dc file, false if it was
+//               declared with "dclass".
+////////////////////////////////////////////////////////////////////
+bool DCClass::
+is_struct() const {
+  return _is_struct;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -523,8 +627,9 @@ ai_format_generate(PyObject *distobj, int do_id,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DCClass::
-DCClass(const string &name, bool bogus_class) : 
+DCClass(const string &name, bool is_struct, bool bogus_class) : 
   DCPackerInterface(name),
+  _is_struct(is_struct),
   _bogus_class(bogus_class)
 {
 #ifdef HAVE_PYTHON
@@ -551,14 +656,18 @@ DCClass::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCClass::write
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: Generates a parseable description of the object to
 //               the indicated output stream.
 ////////////////////////////////////////////////////////////////////
 void DCClass::
 write(ostream &out, bool brief, int indent_level) const {
-  indent(out, indent_level)
-    << "dclass " << _name;
+  indent(out, indent_level);
+  if (_is_struct) {
+    out << "struct " << _name;
+  } else {
+    out << "dclass " << _name;
+  }
 
   if (!_parents.empty()) {
     Parents::const_iterator pi = _parents.begin();
@@ -579,6 +688,15 @@ write(ostream &out, bool brief, int indent_level) const {
   Fields::const_iterator fi;
   for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
     (*fi)->write(out, brief, indent_level + 2);
+  }
+
+  if (!_fields.empty() && !_parameters.empty()) {
+    out << "\n";
+  }
+
+  Parameters::const_iterator pi;
+  for (pi = _parameters.begin(); pi != _parameters.end(); ++pi) {
+    (*pi)->write(out, brief, indent_level + 2);
   }
 
   indent(out, indent_level) << "};\n";
@@ -605,6 +723,14 @@ generate_hash(HashGenerator &hashgen) const {
   for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
     (*fi)->generate_hash(hashgen);
   }
+
+  if (!_parameters.empty()) {
+    hashgen.add_int(_parameters.size());
+    Parameters::const_iterator pi;
+    for (pi = _parameters.begin(); pi != _parameters.end(); ++pi) {
+      (*pi)->generate_hash(hashgen);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -619,14 +745,40 @@ generate_hash(HashGenerator &hashgen) const {
 bool DCClass::
 add_field(DCField *field) {
   bool inserted = _fields_by_name.insert
-    (FieldsByName::value_type(field->_name, field)).second;
+    (FieldsByName::value_type(field->get_name(), field)).second;
 
   if (!inserted) {
     return false;
   }
 
-  field->_number = get_num_inherited_fields();
+  field->set_number(get_num_inherited_fields());
   _fields.push_back(field);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCClass::add_parameter
+//       Access: Public
+//  Description: Adds the newly-allocated parameter to the class.  The
+//               class becomes the owner of the pointer and will
+//               delete it when it destructs.
+//
+//               The parameters are only useful for classes that will
+//               themselves be used as parameters; DistributedObjects
+//               in their own right cannot use free parameters.
+////////////////////////////////////////////////////////////////////
+bool DCClass::
+add_parameter(DCParameter *parameter) {
+  if (!parameter->get_name().empty()) {
+    bool inserted = _parameters_by_name.insert
+      (ParametersByName::value_type(parameter->get_name(), parameter)).second;
+    
+    if (!inserted) {
+      return false;
+    }
+  }
+
+  _parameters.push_back(parameter);
   return true;
 }
 

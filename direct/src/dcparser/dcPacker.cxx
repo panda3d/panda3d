@@ -532,10 +532,9 @@ unpack_and_format(ostream &out) {
         out << '(';
         break;
 
-      case PT_struct:
+      case PT_class:
       default:
         out << '{';
-        abort();
         break;
       }
 
@@ -558,7 +557,7 @@ unpack_and_format(ostream &out) {
         out << ')';
         break;
 
-      case PT_struct:
+      case PT_class:
       default:
         out << '}';
         break;

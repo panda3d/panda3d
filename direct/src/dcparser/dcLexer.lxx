@@ -350,6 +350,11 @@ REALNUM          ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   return KW_DCLASS;
 }
 
+"struct" {
+  accept();
+  return KW_STRUCT;
+}
+
 "from" {
   accept();
   return KW_FROM;
@@ -458,14 +463,6 @@ REALNUM          ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
 "uint32uint8array" {
   accept();
   return KW_UINT32UINT8ARRAY;
-}
-
-mol[0-9]+ {
-  // A molecular keyword.
-  accept();
-  dcyylval.u.integer = atoi(dcyytext + 3); 
-  dcyylval.str = dcyytext;
-  return KW_MOL; 
 }
 
 "required" {

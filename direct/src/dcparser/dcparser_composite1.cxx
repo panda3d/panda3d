@@ -3,6 +3,7 @@
 #include "hashGenerator.cxx"
 #include "dcAtomicField.cxx"
 #include "dcClass.cxx"
+#include "dcDeclaration.cxx"
 #include "dcPackData.cxx"
 #include "dcPacker.cxx"
 #include "dcPackerInterface.cxx"
