@@ -201,3 +201,35 @@ void GuiManager::recompute_priorities(void) {
   }
   _next_draw_order = p;
 }
+
+INLINE bool in_range(float x, float a, float b) {
+  return ((x >= a) && (x <= b));
+}
+
+INLINE bool overlap(GuiRegion* a, GuiRegion* b) {
+  LVector4f av = a->get_frame();
+  LVector4f bv = b->get_frame();
+
+  if (in_range(av[0], bv[0], bv[1]) ||
+      in_range(av[1], bv[0], bv[1]) ||
+      in_range(av[2], bv[2], bv[3]) ||
+      in_range(av[3], bv[2], bv[3]))
+    return true;
+  return false;
+}
+
+void GuiManager::sanity_check(void) const {
+  for (RegionSet::const_iterator i=_regions.begin(); i!=_regions.end(); ++i)
+    for (RegionSet::const_iterator j=_regions.begin(); j!=_regions.end(); ++j) {
+      if ((*i) == (*j))
+	continue;
+      if (overlap((*i), (*j)))
+	gui_cat->warning() << "GuiManager::sanity_check: overlapping regions '"
+			   << (*i)->get_name() << "' and '" << (*j)->get_name()
+			   << "'" << endl;
+      if ((*i)->get_name() == (*j)->get_name())
+	gui_cat->warning() << "GuiManager::sanity_check: regions with same "
+			   << "name '" << (*i)->get_name() << " 0x"
+			   << (void*)(*i) << " and 0x" << (void*)(*j) << endl;
+    }
+}

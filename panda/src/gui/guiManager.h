@@ -57,6 +57,8 @@ PUBLISHED:
   INLINE void set_next_draw_order(int);
   INLINE int get_start_draw_order(void) const;
   INLINE void set_start_draw_order(int);
+
+  void sanity_check(void) const;
 };
 
 #include "guiManager.I"
