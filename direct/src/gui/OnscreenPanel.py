@@ -18,6 +18,20 @@ def findPanel(uniqueName):
         return OnscreenPanel.AllPanels[uniqueName]
     return None
 
+def cleanupPanel(uniqueName):
+    """cleanupPanel(string uniqueName)
+
+    Cleans up (removes) the panel with the given uniqueName.  This
+    may be useful when some panels know about each other and know
+    that opening panel A should automatically close panel B, for
+    instance.
+    """
+        
+    if OnscreenPanel.AllPanels.has_key(uniqueName):
+        OnscreenPanel.AllPanels[uniqueName].cleanup()
+        del OnscreenPanel.AllPanels[uniqueName]
+
+
 class OnscreenPanel(PandaObject.PandaObject, NodePath):
     """OnscreenPanel:
 
@@ -37,19 +51,6 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
         NodePath.__init__(self, aspect2d.attachNewNode(panelName))
         NodePath.hide(self)
         
-    def cleanupPanel(self, uniqueName):
-        """cleanupPanel(self, string uniqueName)
-
-        Cleans up (removes) the panel with the given uniqueName.  This
-        may be useful when some panels know about each other and know
-        that opening panel A should automatically close panel B, for
-        instance.
-        """
-        
-        if OnscreenPanel.AllPanels.has_key(uniqueName):
-            OnscreenPanel.AllPanels[uniqueName].cleanup()
-            del OnscreenPanel.AllPanels[uniqueName]
-
     def makePanel(self,
                   rect = (-0.5, 0.5, -0.5, 0.5),
                   bg = (1, 1, 1, 1),
@@ -103,7 +104,7 @@ class OnscreenPanel(PandaObject.PandaObject, NodePath):
         # name.  We don't allow any two panels with the same name to
         # coexist.
         uniqueName = self.getUniqueName()
-        self.cleanupPanel(uniqueName)
+        cleanupPanel(uniqueName)
 
         # Store this panel in our map of all open panels.
         OnscreenPanel.AllPanels[uniqueName] = self

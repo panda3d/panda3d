@@ -30,7 +30,8 @@ class DialogBox(OnscreenPanel.OnscreenPanel):
         self.isLoaded = 0
 
         # initialize our OnscreenPanel essence
-        OnscreenPanel.OnscreenPanel.__init__(self, self.doneEvent)
+        # NOTE: all db's have the same name so we can kill tem easily
+        OnscreenPanel.OnscreenPanel.__init__(self, "globalDialog")
          
 	return None
 
@@ -62,7 +63,7 @@ class DialogBox(OnscreenPanel.OnscreenPanel):
 
         # make the panel
         self.makePanel(rect = (-0.5, 0.5, -0.4, 0.4),
-                       font = self.font,
+                       drawOrder = 32000, font = self.font,
                        bg = (0.8, 0.8, 0.8, 1.0))
         
 	# create a message
