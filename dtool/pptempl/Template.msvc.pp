@@ -188,10 +188,10 @@ clean :
 // dependency cache file.
 cleanall : clean
 #if $[yxx_so_sources] $[yxx_st_sources] $[lxx_so_sources] $[lxx_st_sources]
-	del /f $[patsubst %.yxx %.lxx,%.cxx,$[yxx_so_sources] $[yxx_st_sources] $[lxx_so_sources] $[lxx_st_sources]]
+	-del /f $[patsubst %.yxx %.lxx,%.cxx,$[yxx_so_sources] $[yxx_st_sources] $[lxx_so_sources] $[lxx_st_sources]]
 #endif
 #if $[ne $[DEPENDENCY_CACHE_FILENAME],]
-	del /f $[DEPENDENCY_CACHE_FILENAME]
+	-del /f $[DEPENDENCY_CACHE_FILENAME]
 #endif
 
 // Now, 'install' and 'uninstall'.  These simply copy files into the
@@ -221,9 +221,9 @@ cleanall : clean
 install : all $[install_targets]
 
 uninstall : $[active_target(metalib_target lib_target static_lib_target ss_lib_target):%=uninstall-lib%] $[active_target(bin_target):%=uninstall-%]
-#if $[installed_files]
-	del /f $[sort $[installed_files]]
-#endif
+#foreach file $[sort $[installed_files]]
+	-del /f $[file]
+#end file
 
 
 // We need a rule for each directory we might need to make.  This
@@ -328,9 +328,9 @@ $[so_dir]\lib$[TARGET]$[dllext].lib : $[so_dir]\lib$[TARGET]$[dllext].dll
 install-lib$[TARGET] : $[installed_files]
 
 uninstall-lib$[TARGET] :
-#if $[installed_files]
-	del /f $[sort $[installed_files]]
-#endif
+#foreach file $[sort $[installed_files]]
+	-del /f $[file]
+#end file
 
 $[install_lib_dir]\lib$[TARGET]$[dllext].dll : $[so_dir]\lib$[TARGET]$[dllext].dll
 #define local lib$[TARGET]$[dllext].dll
@@ -454,9 +454,9 @@ $[target] : $[sources]
 install-lib$[TARGET] : $[installed_files]
 
 uninstall-lib$[TARGET] :
-#if $[installed_files]
-	del /f $[sort $[installed_files]]
-#endif
+#foreach file $[sort $[installed_files]]
+	-del /f $[file]
+#end file
 
 $[install_lib_dir]\lib$[TARGET]$[dllext].lib : $[st_dir]\lib$[TARGET]$[dllext].lib
 #define local lib$[TARGET]$[dllext].lib
@@ -488,9 +488,9 @@ $[target] : $[source]
 install-$[TARGET] : $[installed_files]
 
 uninstall-$[TARGET] :
-#if $[installed_files]
-	del /f $[sort $[installed_files]]
-#endif
+#foreach file $[sort $[installed_files]]
+	-del /f $[file]
+#end file
 
 #define local $[TARGET]
 #define dest $[install_bin_dir]
@@ -536,9 +536,9 @@ $[target] : $[sources]
 install-$[TARGET] : $[installed_files]
 
 uninstall-$[TARGET] :
-#if $[installed_files]
-	del /f $[sort $[installed_files]]
-#endif
+#foreach file $[sort $[installed_files]]
+	-del /f $[file]
+#end file
 
 $[install_bin_dir]\$[TARGET].exe : $[st_dir]\$[TARGET].exe
 #define local $[TARGET].exe
@@ -598,7 +598,7 @@ $[target] : $[source]
 #define source lex.yy.c
 #define script /#include <unistd.h>/d
 	$[SED]
-	del $[source]
+	-del $[source]
 
 #end file
 
@@ -770,7 +770,7 @@ cleanall : $[subdirs:%=cleanall-%]
 install : $[if $[CONFIG_HEADER],$[install_headers_dir] $[install_headers_dir]\$[CONFIG_HEADER]] $[subdirs:%=install-%]
 uninstall : $[subdirs:%=uninstall-%]
 #if $[CONFIG_HEADER]
-	del /f $[install_headers_dir]\$[CONFIG_HEADER]
+	-del /f $[install_headers_dir]\$[CONFIG_HEADER]
 #endif
 
 #formap dirname subdirs
