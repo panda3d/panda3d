@@ -254,10 +254,11 @@ class Actor(PandaObject, NodePath):
         Actor cleanup function
         """
         self.stop()
-        del(self.__partBundleDict)
         self.__partBundleDict = None
-        del(self.__animControlDict)
         self.__animControlDict = None
+        self.__geomNode = None
+        self.__LODNode = None
+        self.__hasLOD = 0
         if not self.isEmpty():
             self.removeNode()
         
