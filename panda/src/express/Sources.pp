@@ -45,7 +45,7 @@
     pta_uchar.h referenceCount.I referenceCount.h \
     register_type.I register_type.h \
     reversedNumericData.I reversedNumericData.h \
-    selectIpcImpl.h \
+    selectThreadImpl.h \
     streamReader.I streamReader.h streamWriter.I streamWriter.h \
     subStream.I subStream.h subStreamBuf.h \
     threadDummyImpl.h threadDummyImpl.I thread.h thread.I threadImpl.h \
@@ -130,7 +130,7 @@
     profileTimer.h pta_uchar.h referenceCount.I referenceCount.h \
     register_type.I register_type.h \
     reversedNumericData.I reversedNumericData.h \
-    selectIpcImpl.h \
+    selectThreadImpl.h \
     streamReader.I streamReader.h streamWriter.I streamWriter.h \
     subStream.I subStream.h subStreamBuf.h \
     threadDummyImpl.h threadDummyImpl.I thread.h thread.I threadImpl.h \

@@ -17,9 +17,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "threadNsprImpl.h"
-#include "selectIpcImpl.h"
+#include "selectThreadImpl.h"
 
-#ifdef IPC_NSPR_IMPL
+#ifdef THREAD_NSPR_IMPL
 
 #include "pointerTo.h"
 #include "config_express.h"
@@ -35,8 +35,8 @@ bool ThreadNsprImpl::_got_pt_ptr_index = false;
 ////////////////////////////////////////////////////////////////////
 ThreadNsprImpl::
 ~ThreadNsprImpl() {
-  if (ipc_cat.is_debug()) {
-    ipc_cat.debug() << "Deleting thread " << _parent_obj->get_name() << "\n";
+  if (thread_cat.is_debug()) {
+    thread_cat.debug() << "Deleting thread " << _parent_obj->get_name() << "\n";
   }
 
   // If the thread object is destructing, it means the last pointer
@@ -70,7 +70,7 @@ ThreadNsprImpl::
     // make a thread unjoinable after it has been created, and a
     // thread can't join itself (can it?).
     if (_joinable) {
-      ipc_cat.warning()
+      thread_cat.warning()
         << "thread " << _parent_obj->get_name() << " was never joined.\n";
     }
     return;
@@ -90,8 +90,8 @@ ThreadNsprImpl::
 bool ThreadNsprImpl::
 start(ThreadPriority priority, bool global, bool joinable) {
   MutexHolder holder(_mutex);
-  if (ipc_cat.is_debug()) {
-    ipc_cat.debug() << "Starting thread " << _parent_obj->get_name() << "\n";
+  if (thread_cat.is_debug()) {
+    thread_cat.debug() << "Starting thread " << _parent_obj->get_name() << "\n";
   }
   nassertr(_thread == (PRThread *)NULL, false);
   _joinable = joinable;
@@ -103,7 +103,7 @@ start(ThreadPriority priority, bool global, bool joinable) {
     if (result == PR_SUCCESS) {
       _got_pt_ptr_index = true;
     } else {
-      ipc_cat.error()
+      thread_cat.error()
         << "Unable to associate Thread pointers with threads.\n";
       return false;
     }
@@ -181,8 +181,8 @@ root_func(void *data) {
   nassertv(result == PR_SUCCESS);
   parent_obj->thread_main();
 
-  if (ipc_cat.is_debug()) {
-    ipc_cat.debug()
+  if (thread_cat.is_debug()) {
+    thread_cat.debug()
       << "Terminating thread " << parent_obj->get_name() 
       << ", count = " << parent_obj->get_ref_count() << "\n";
   }
@@ -193,4 +193,4 @@ root_func(void *data) {
   unref_delete(parent_obj);
 }
 
-#endif  // IPC_NSPR_IMPL
+#endif  // THREAD_NSPR_IMPL

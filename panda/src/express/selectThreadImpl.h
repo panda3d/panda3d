@@ -1,4 +1,4 @@
-// Filename: selectIpcImpl.h
+// Filename: selectThreadImpl.h
 // Created by:  drose (09Aug02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,32 +16,32 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef SELECTIPCIMPL_H
-#define SELECTIPCIMPL_H
+#ifndef SELECTTHREADIMPL_H
+#define SELECTTHREADIMPL_H
 
 #include "pandabase.h"
 
 ////////////////////////////////////////////////////////////////////
 // This file decides which of the core implementations of the various
-// ipc (actually, threading) implementations we should use, based on
+// threading and locking implementations we should use, based on
 // platform and/or available libraries.
 ////////////////////////////////////////////////////////////////////
 
-#if !defined(HAVE_IPC)
+#if !defined(HAVE_THREADS)
 
-// With IPC disabled, use the do-nothing implementation.
-#define IPC_DUMMY_IMPL 1
+// With threading disabled, use the do-nothing implementation.
+#define THREAD_DUMMY_IMPL 1
 
 #elif defined(HAVE_NSPR)
 
 // If NSPR is available, use that.
-#define IPC_NSPR_IMPL 1
+#define THREAD_NSPR_IMPL 1
 
 #else
 
-// This is a configuration error.  For some reason, HAVE_IPC is
+// This is a configuration error.  For some reason, HAVE_THREADS is
 // defined but we don't have any way to implement it.
-#error No ipc implementation defined for platform.
+#error No thread implementation defined for platform.
 
 #endif
 

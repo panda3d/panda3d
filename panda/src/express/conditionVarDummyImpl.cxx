@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "selectIpcImpl.h"
+#include "selectThreadImpl.h"
 
-#ifdef IPC_DUMMY_IMPL
+#ifdef THREAD_DUMMY_IMPL
 
 #include "conditionVarDummyImpl.h"
 
-#endif  // IPC_DUMMY_IMPL
+#endif  // THREAD_DUMMY_IMPL

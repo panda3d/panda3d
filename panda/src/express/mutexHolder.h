@@ -40,7 +40,7 @@ private:
   INLINE void operator = (const MutexHolder &copy);
 
 private:
-#ifdef HAVE_IPC
+#ifdef HAVE_THREADS
   Mutex *_mutex;
 #endif
 };

@@ -20,14 +20,14 @@
 #define ATOMICADJUSTIMPL_H
 
 #include "pandabase.h"
-#include "selectIpcImpl.h"
+#include "selectThreadImpl.h"
 
-#if defined(IPC_DUMMY_IMPL)
+#if defined(THREAD_DUMMY_IMPL)
 
 #include "atomicAdjustDummyImpl.h"
 typedef AtomicAdjustDummyImpl AtomicAdjustImpl;
 
-#elif defined(IPC_NSPR_IMPL)
+#elif defined(THREAD_NSPR_IMPL)
 
 #include "atomicAdjustNsprImpl.h"
 typedef AtomicAdjustNsprImpl AtomicAdjustImpl;

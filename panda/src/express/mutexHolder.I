@@ -24,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE MutexHolder::
 MutexHolder(Mutex &mutex) {
-#ifdef HAVE_IPC
+#ifdef HAVE_THREADS
   _mutex = &mutex;
   _mutex->lock();
 #endif
@@ -43,7 +43,7 @@ MutexHolder(Mutex &mutex) {
 ////////////////////////////////////////////////////////////////////
 INLINE MutexHolder::
 MutexHolder(Mutex *&mutex) {
-#ifdef HAVE_IPC
+#ifdef HAVE_THREADS
   if (mutex == (Mutex *)NULL) {
     mutex = new Mutex;
   }
@@ -59,7 +59,7 @@ MutexHolder(Mutex *&mutex) {
 ////////////////////////////////////////////////////////////////////
 INLINE MutexHolder::
 ~MutexHolder() {
-#ifdef HAVE_IPC
+#ifdef HAVE_THREADS
   _mutex->release();
 #endif
 }

@@ -20,9 +20,9 @@
 #define THREADDUMMYIMPL_H
 
 #include "pandabase.h"
-#include "selectIpcImpl.h"
+#include "selectThreadImpl.h"
 
-#ifdef IPC_DUMMY_IMPL
+#ifdef THREAD_DUMMY_IMPL
 
 #include "notify.h"
 #include "threadPriority.h"
@@ -59,6 +59,6 @@ public:
 
 #include "threadDummyImpl.I"
 
-#endif // IPC_DUMMY_IMPL
+#endif // THREAD_DUMMY_IMPL
 
 #endif

@@ -20,9 +20,9 @@
 #define CONDITIONVARDUMMYIMPL_H
 
 #include "pandabase.h"
-#include "selectIpcImpl.h"
+#include "selectThreadImpl.h"
 
-#ifdef IPC_DUMMY_IMPL
+#ifdef THREAD_DUMMY_IMPL
 
 #include "notify.h"
 
@@ -46,6 +46,6 @@ public:
 
 #include "conditionVarDummyImpl.I"
 
-#endif  // IPC_DUMMY_IMPL
+#endif  // THREAD_DUMMY_IMPL
 
 #endif

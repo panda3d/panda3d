@@ -20,9 +20,9 @@
 #define THREADNSPRIMPL_H
 
 #include "pandabase.h"
-#include "selectIpcImpl.h"
+#include "selectThreadImpl.h"
 
-#ifdef IPC_NSPR_IMPL
+#ifdef THREAD_NSPR_IMPL
 
 #include "notify.h"
 #include "threadPriority.h"
@@ -65,6 +65,6 @@ private:
 
 #include "threadNsprImpl.I"
 
-#endif  // IPC_NSPR_IMPL
+#endif  // THREAD_NSPR_IMPL
 
 #endif

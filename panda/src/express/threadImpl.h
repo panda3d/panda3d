@@ -20,14 +20,14 @@
 #define THREADIMPL_H
 
 #include "pandabase.h"
-#include "selectIpcImpl.h"
+#include "selectThreadImpl.h"
 
-#if defined(IPC_DUMMY_IMPL)
+#if defined(THREAD_DUMMY_IMPL)
 
 #include "threadDummyImpl.h"
 typedef ThreadDummyImpl ThreadImpl;
 
-#elif defined(IPC_NSPR_IMPL)
+#elif defined(THREAD_NSPR_IMPL)
 
 #include "threadNsprImpl.h"
 typedef ThreadNsprImpl ThreadImpl;

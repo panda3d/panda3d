@@ -16,10 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "selectIpcImpl.h"
+#include "selectThreadImpl.h"
 
-#ifdef IPC_NSPR_IMPL
+#ifdef THREAD_NSPR_IMPL
 
 #include "mutexNsprImpl.h"
 
-#endif  // IPC_NSPR_IMPL
+#endif  // THREAD_NSPR_IMPL
