@@ -119,6 +119,53 @@ def make_sequence(taskList):
     task.index = 0
     return task
 
+def loop(*taskList):
+    return make_loop(taskList)
+
+def make_loop(taskList):
+    def func(self):
+        # If we got to the end of the list, this sequence is done
+        if (self.index >= len(self.taskList)):
+            TaskManager.notify.debug('sequence done, looping: ' + self.name)
+            self.index = 0
+            return cont
+        else:
+            task = self.taskList[self.index]
+            # If this is a new task, set it's start time and frame
+            if (self.index > self.prevIndex):
+                task.setStartTimeFrame(self.time, self.frame)
+            self.prevIndex = self.index
+
+            # Calculate this task's time since it started
+            task.setCurrentTimeFrame(self.time, self.frame)
+
+            # Execute the current task
+            ret = task(task)
+
+            # Check the return value from the task
+            # If this current task wants to continue,
+            # come back to it next frame
+            if (ret == cont):
+                return cont
+
+            # If this task is done, increment the index so that next frame
+            # we will start executing the next task on the list
+            elif (ret == done):
+                self.index = self.index + 1
+                return cont
+
+            # If this task wants to exit, the sequence exits
+            elif (ret == exit):
+                return exit
+
+    task = Task(func)
+    task.name = 'loop'
+    task.taskList = taskList
+    task.prevIndex = -1
+    task.index = 0
+    return task
+
+
 def makeSpawner(task, taskName, taskMgr):
     def func(self):
         self.taskMgr.spawnTaskNamed(self.task, self.taskName)
@@ -337,6 +384,14 @@ t = Task.sequence(Task.pause(1.0), Task.Task(seq1), Task.release(),
                   Task.pause(3.0), Task.Task(seq2))
 taskMgr.spawnTaskNamed(t, 'sequence')
 run()
+
+# If you want it to loop, make a loop
+t = Task.loop(Task.pause(1.0), Task.Task(seq1), Task.release(),
+              Task.pause(3.0), Task.Task(seq2))
+taskMgr.spawnTaskNamed(t, 'sequence')
+run()
+
+
 
 # timeline
 
