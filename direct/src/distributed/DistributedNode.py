@@ -46,37 +46,38 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath.NodePath):
             taskName = self.taskName("correctionPos")
             taskMgr.removeTasksNamed(taskName)
 
-    def setPos(self, x, y, z):
+    def setDRPos(self, x, y, z):
         if self.DeadReconing:
             self.Predictor.newTelemetry(Point3(x, y, z))
         else:
             NodePath.NodePath.setPos(self, x, y, z)
 
-    def setHpr(self, h, p, r):
+    def setDRHpr(self, h, p, r):
         NodePath.NodePath.setHpr(self, h, p, r)
 
-    def setPosHpr(self, x, y, z, h, p, r):
+    def setDRPosHpr(self, x, y, z, h, p, r):
         if self.DeadReconing:
             self.Predictor.newTelemetry(Point3(x, y, z))
+            NodePath.NodePath.setHpr(self, h, p, r)
         else:
             NodePath.NodePath.setPosHpr(self, x, y, z, h, p, r)
 
     def d_setDeadReconing(self, state):
         self.sendUpdate("setDeadReconing", [state])
 
-    def d_setPos(self, x, y, z):
-        self.sendUpdate("setPos", [x, y, z])
+    def d_setDRPos(self, x, y, z):
+        self.sendUpdate("setDRPos", [x, y, z])
 
-    def d_setHpr(self, h, p, r):
-        self.sendUpdate("setHpr", [h, p, r])
+    def d_setDRHpr(self, h, p, r):
+        self.sendUpdate("setDRHpr", [h, p, r])
 
-    def d_broadcastPosHpr(self):
+    def d_broadcastDRPosHpr(self):
         
-        self.d_setPosHpr(self.getX(), self.getY(), self.getZ(),
-                         self.getH(), self.getP(), self.getR())
+        self.d_setDRPosHpr(self.getX(), self.getY(), self.getZ(),
+                           self.getH(), self.getP(), self.getR())
 
-    def d_setPosHpr(self, x, y, z, h, p, r):
-        self.sendUpdate("setPosHpr", [x, y, z, h, p, r])
+    def d_setDRPosHpr(self, x, y, z, h, p, r):
+        self.sendUpdate("setDRPosHpr", [x, y, z, h, p, r])
 
     def correctPos(self, task):
         self.Corrector.newTarget(self.Predictor.getPos(),
@@ -84,3 +85,4 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath.NodePath):
         self.Corrector.step()
         NodePath.NodePath.setPos(self, self.Corrector.getPos())
         return Task.cont
+
