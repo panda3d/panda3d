@@ -265,7 +265,7 @@ handle_entries() {
           _current_velocity -= _gravity * dt;
           // Record the airborne height in case someone else needs it: 
           _airborne_height = -(max_height + _offset) + adjust;
-          assert(_airborne_height>=0.0f);
+          assert(_airborne_height >= -0.001f);
         }
 
         if (_airborne_height < 0.001f && _current_velocity < 0.001f) {
