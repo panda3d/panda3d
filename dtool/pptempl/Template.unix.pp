@@ -198,7 +198,7 @@ cleanall : clean
        $[if $[install_igatedb],$[install_igatedb_dir]] \
      ] \
      $[TARGET(metalib_target lib_target static_lib_target):%=install-lib%] \
-     $[TARGET(bin_target):%=install-%] \
+     $[TARGET(bin_target sed_bin_target):%=install-%] \
      $[installed_files]
 install : all $[install_targets]
 
