@@ -183,10 +183,10 @@ write(const Filename &filename) {
   os_filename = back_to_front_slash(os_filename);
 #endif
 
-  const char *type = MFileIO::mayaBinary;
+  const char *type = "mayaBinary";
   string extension = filename.get_extension();
   if (extension == "ma") {
-    type = MFileIO::mayaAscii;
+    type = "mayaAscii";
   }
 
   MStatus stat = MFileIO::saveAs(os_filename.c_str(), type, true);
