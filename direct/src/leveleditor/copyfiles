@@ -3,15 +3,17 @@
 if [ "$1" = "-d" ]
 then
     destdir=$2
+    printfilesCmd=$3
     debug_state="-d"
 else
     destdir=$1
+    printfilesCmd=$2
     debug_state=""
 fi
 
-if [ "${destdir}" = "" ]
+if [ "${destdir}" = "" -o "${printfilesCmd}" = "" ]
 then
-	echo "Usage: copyfiles [-d] destdir"
+	echo "Usage: copyfiles [-d] destdir printfilesCmd"
 	exit 1
 fi
 
@@ -21,7 +23,7 @@ then
 	exit 1
 fi
 
-for file in `printfiles $debug_state`
+for file in `$printfilesCmd $debug_state`
 do
 	if cp -R ${file} ${destdir}
 	then

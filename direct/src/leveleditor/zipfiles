@@ -27,7 +27,7 @@ fi
 
 if mkdir ${destdir}
 then
-    if copyfiles ${debug_state} ${destdir}
+    if copyfiles ${debug_state} ${destdir} printfiles
     then
 	if [ -f ${zipfile} ]
 	then

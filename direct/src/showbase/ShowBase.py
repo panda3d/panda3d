@@ -204,11 +204,12 @@ class ShowBase(DirectObject.DirectObject):
         self.transitions = Transitions.Transitions(self.loader)
 
         # Start Tk and DIRECT if specified by Configrc
-        self.startTk(self.config.GetBool('want-tk', 0))
+        fTk = self.config.GetBool('want-tk', 0)
         # Start DIRECT if specified in Configrc or in cluster mode
         fDirect = (self.config.GetBool('want-directtools', 0) or
                    (base.config.GetString("cluster-mode", '') != ''))
-        self.startDirect(fDirect)
+        # Set fWantTk to 0 to avoid starting Tk with this call
+        self.startDirect(fWantDirect = fDirect, fWantTk = fTk)
         # Start IGLOOP
         self.restart()
 
@@ -1198,9 +1199,11 @@ class ShowBase(DirectObject.DirectObject):
         self.wantTk = fWantTk
         if self.wantTk:
             import TkGlobal
+            taskMgr.remove('tkloop')
             TkGlobal.spawnTkLoop()
 
-    def startDirect(self, fWantDirect = 1):
+    def startDirect(self, fWantDirect = 1, fWantTk = 1):
+        self.startTk(fWantTk)
         self.wantDirect = fWantDirect
         if self.wantDirect:
             import DirectSession

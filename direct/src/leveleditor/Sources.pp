@@ -1,3 +1,3 @@
-// For now, since we are not installing Python files, this file can
-// remain empty.
 
+// Install scripts for building zipfiles (leveleditor and RobotToonManager)
+#define INSTALL_SCRIPTS printdir printlib copyfiles
