@@ -96,7 +96,7 @@ class ClientRepository(DirectObject.DirectObject):
         # Create a new distributed object, and put it in the dictionary
         distObj = self.generateWithRequiredFields(cdc, doId, di)
         # Call "generate" for the dist obj
-        distObj.generate()
+        #distObj.generate()
         return None
 
     def handleGenerateWithRequiredOther(self, di):
@@ -109,7 +109,7 @@ class ClientRepository(DirectObject.DirectObject):
         # Create a new distributed object, and put it in the dictionary
         distObj = self.generateWithRequiredOtherFields(cdc, doId, di)
         # Call "generate" for the distObj
-        distObj.generate()
+        #distObj.generate()
         return None
 
     def generateWithRequiredFields(self, cdc, doId, di):
@@ -117,6 +117,7 @@ class ClientRepository(DirectObject.DirectObject):
         if self.doId2do.has_key(doId):
             # If so, just update it.
             distObj = self.doId2do[doId]
+	    distObj.generate()
             distObj.updateRequiredFields(cdc, di)
 
         # Is it in the cache? If so, pull it out, put it in the dictionaries,
@@ -128,6 +129,7 @@ class ClientRepository(DirectObject.DirectObject):
             self.doId2do[doId] = distObj
             self.doId2cdc[doId] = cdc
             # and update it.
+	    distObj.generate()
             distObj.updateRequiredFields(cdc, di)
 
         # If it is not in the dictionary or the cache, then...
@@ -137,6 +139,7 @@ class ClientRepository(DirectObject.DirectObject):
             # Assign it an Id
             distObj.doId = doId
             # Update the required fields
+	    distObj.generate()
             distObj.updateRequiredFields(cdc, di)
             # Put the new do in both dictionaries
             self.doId2do[doId] = distObj
@@ -149,6 +152,7 @@ class ClientRepository(DirectObject.DirectObject):
         if self.doId2do.has_key(doId):
             # If so, just update it.
             distObj = self.doId2do[doId]
+	    distObj.generate()
             distObj.updateRequiredOtherFields(cdc, di)
 
         # Is it in the cache? If so, pull it out, put it in the dictionaries,
@@ -160,6 +164,7 @@ class ClientRepository(DirectObject.DirectObject):
             self.doId2do[doId] = distObj
             self.doId2cdc[doId] = cdc
             # and update it.
+	    distObj.generate()
             distObj.updateRequiredOtherFields(cdc, di)
 
         # If it is not in the dictionary or the cache, then...
@@ -169,6 +174,7 @@ class ClientRepository(DirectObject.DirectObject):
             # Assign it an Id
             distObj.doId = doId
             # Update the required fields
+	    distObj.generate()
             distObj.updateRequiredOtherFields(cdc, di)
             # Put the new do in both dictionaries
             self.doId2do[doId] = distObj
