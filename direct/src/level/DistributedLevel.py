@@ -59,7 +59,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
         # this dict stores entity reparents if the parent hasn't been
         # created yet
-        self.parent2ChildIds = {}
+        self.parent2pendingChildren = {}
 
         # if the AI sends us a full spec, it will be put here
         self.curSpec = None
@@ -165,7 +165,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # there should not be any pending reparents left at this point
         # TODO: is it possible for a local entity to be parented to a
         # distributed entity? I think so!
-        assert len(self.parent2ChildIds) == 0
+        assert len(self.parent2pendingChildren) == 0
         # make sure the zoneNums from the model match the zoneNums from
         # the zone entities
         modelZoneNums = self.zoneNums
@@ -291,7 +291,11 @@ class DistributedLevel(DistributedObject.DistributedObject,
         return self.zoneNum2node[zoneNum]
 
     def requestReparent(self, entity, parentId):
-        assert(entity.entId != parentId)
+        if __debug__:
+            # some things (like cogs) are not actually entities yet;
+            # they don't have an entId. Big deal, let it go through.
+            if hasattr(entity, 'entId'):
+                assert(entity.entId != parentId)
         parent = self.getEntity(parentId)
         if parent is not None:
             # parent has already been created
@@ -302,29 +306,27 @@ class DistributedLevel(DistributedObject.DistributedObject,
                 'entity %s requesting reparent to %s, not yet created' %
                 (entity, parentId))
 
-            entId = entity.entId
             entity.reparentTo(hidden)
 
             # if this parent doesn't already have another child pending,
             # do some setup
-            if not self.parent2ChildIds.has_key(parentId):
-                self.parent2ChildIds[parentId] = []
+            if not self.parent2pendingChildren.has_key(parentId):
+                self.parent2pendingChildren[parentId] = []
 
-                # do the reparent once the parent is initialized
+                # do the reparent(s) once the parent is initialized
                 def doReparent(parentId=parentId, self=self):
-                    assert self.parent2ChildIds.has_key(parentId)
+                    assert self.parent2pendingChildren.has_key(parentId)
                     parent=self.getEntity(parentId)
-                    for entId in self.parent2ChildIds[parentId]:
-                        entity=self.getEntity(entId)
+                    for child in self.parent2pendingChildren[parentId]:
                         DistributedLevel.notify.debug(
                             'performing pending reparent of %s to %s' %
-                            (entity, parent))
-                        entity.reparentTo(parent.getNodePath())
-                    del self.parent2ChildIds[parentId]
+                            (child, parent))
+                        child.reparentTo(parent.getNodePath())
+                    del self.parent2pendingChildren[parentId]
                     
                 self.accept(self.getEntityCreateEvent(parentId), doReparent)
 
-            self.parent2ChildIds[parentId].append(entId)
+            self.parent2pendingChildren[parentId].append(entity)
     
     def showZone(self, zoneNum):
         zone = self.zoneNum2node[zoneNum]
