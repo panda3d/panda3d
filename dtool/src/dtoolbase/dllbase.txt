@@ -8,6 +8,7 @@
 
 libpanda         0x60000000 0x006d0000
 libpandadx       0x61000000 0x00060000
+libpandadx8      0x61000000 0x00060000
 libpandagl       0x62000000 0x00050000
 libpandaexpress  0x60780000 0x000d0000
 libpandaphysics  0x60850000 0x00080000
@@ -24,6 +25,7 @@ libpandaegg      0x60ad0000 0x00190000
 
 libpanda_d       0x60000000 0x006f0000
 libpandadx_d     0x606f0000 0x00070000
+libpandadx8_d    0x606f0000 0x00070000
 libpandagl_d     0x60760000 0x00060000
 libpandaexpress_d 0x607c0000 0x000e0000
 libpandaphysics_d 0x608a0000 0x00090000
