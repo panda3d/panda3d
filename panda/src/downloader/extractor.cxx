@@ -130,7 +130,7 @@ cleanup(void) {
   delete _mfile;
   _mfile = NULL;
   _read_stream.close();
-  _source_file.unlink();
+#  _source_file.unlink();
   _initiated = false;
 }
 
