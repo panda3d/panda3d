@@ -2937,6 +2937,25 @@ flatten_strong() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::find_net_tag
+//       Access: Published
+//  Description: Returns the lowest ancestor of this node that
+//               contains a tag definition with the indicated key, if
+//               any, or an empty NodePath if no ancestor of this node
+//               contains this tag definition.  See set_tag().
+////////////////////////////////////////////////////////////////////
+NodePath NodePath::
+find_net_tag(const string &key) const {
+  if (is_empty()) {
+    return NodePath::not_found();
+  }
+  if (has_tag(key)) {
+    return *this;
+  }
+  return get_parent().find_net_tag(key);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::write_bam_file
 //       Access: Published
 //  Description: Writes the contents of this node and below out to a

@@ -523,6 +523,9 @@ PUBLISHED:
   INLINE string get_tag(const string &key) const;
   INLINE bool has_tag(const string &key) const;
   INLINE void clear_tag(const string &key);
+  INLINE string get_net_tag(const string &key) const;
+  INLINE bool has_net_tag(const string &key) const;
+  NodePath find_net_tag(const string &key) const;
 
   bool write_bam_file(const string &filename) const;
 
