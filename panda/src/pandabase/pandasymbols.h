@@ -126,6 +126,7 @@
 #define INLINE_GRAPH __forceinline
 #else
 #define INLINE_GRAPH
+#define DONT_INLINE_GRAPH
 #endif
 
 #else

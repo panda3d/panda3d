@@ -75,7 +75,7 @@ private:
   friend class OnAttribute;
 };
 
-#ifdef BUILDING_PANDA
+#ifndef DONT_INLINE_GRAPH
 #include "onTransition.I"
 #endif
 

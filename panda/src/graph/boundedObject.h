@@ -63,7 +63,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#ifdef BUILDING_PANDA
+#ifndef DONT_INLINE_GRAPH
 #include "boundedObject.I"
 #endif
 

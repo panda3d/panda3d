@@ -58,7 +58,7 @@ private:
 // or Namable) that NamedNode uses.
 EXPCL_PANDA INLINE_GRAPH ostream & operator << (ostream &out, const NamedNode &nod);
 
-#ifdef BUILDING_PANDA
+#ifndef DONT_INLINE_GRAPH
 #include "namedNode.I"
 #endif
 

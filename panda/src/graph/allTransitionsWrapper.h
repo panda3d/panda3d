@@ -119,7 +119,7 @@ INLINE_GRAPH ostream &operator << (ostream &out, const AllTransitionsWrapper &nt
 
 #include "allTransitionsWrapper.T"
 
-#ifdef BUILDING_PANDA
+#ifndef DONT_INLINE_GRAPH
 #include "allTransitionsWrapper.I"
 #endif
 

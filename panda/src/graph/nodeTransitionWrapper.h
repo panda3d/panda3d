@@ -84,7 +84,7 @@ private:
 
 INLINE_GRAPH ostream &operator << (ostream &out, const NodeTransitionWrapper &ntw);
 
-#ifdef BUILDING_PANDA
+#ifndef DONT_INLINE_GRAPH
 #include "nodeTransitionWrapper.I"
 #endif
 

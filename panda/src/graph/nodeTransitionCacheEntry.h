@@ -85,7 +85,7 @@ private:
 
 INLINE_GRAPH ostream &operator << (ostream &out, const NodeTransitionCacheEntry &e);
 
-#ifdef BUILDING_PANDA
+#ifndef DONT_INLINE_GRAPH
 #include "nodeTransitionCacheEntry.I"
 #endif
 

@@ -126,7 +126,7 @@ private:
 
 INLINE_GRAPH ostream &operator << (ostream &out, const NodeTransition &ntb);
 
-#ifdef BUILDING_PANDA
+#ifndef DONT_INLINE_GRAPH
 #include "nodeTransition.I"
 #endif
 

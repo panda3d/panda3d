@@ -83,7 +83,7 @@ INLINE_GRAPH ostream &operator << (ostream &out, const NodeAttributes &nas);
 
 #include "nodeAttributes.T"
 
-#ifdef BUILDING_PANDA
+#ifndef DONT_INLINE_GRAPH
 #include "nodeAttributes.I"
 #endif
 

@@ -95,7 +95,7 @@ private:
   friend class OnOffAttribute;
 };
 
-#ifdef BUILDING_PANDA
+#ifndef DONT_INLINE_GRAPH
 #include "onOffTransition.I"
 #endif
 

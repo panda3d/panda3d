@@ -42,7 +42,7 @@ public:
 
 INLINE_GRAPH ostream &operator << (ostream &out, const NullAttributeWrapper &naw);
 
-#ifdef BUILDING_PANDA
+#ifndef DONT_INLINE_GRAPH
 #include "nullAttributeWrapper.I"
 #endif
 

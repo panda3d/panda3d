@@ -139,7 +139,7 @@ private:
 
 INLINE_GRAPH ostream &operator << (ostream &out, const ArcChain &arc_chain);
 
-#ifdef BUILDING_PANDA
+#ifndef DONT_INLINE_GRAPH
 #include "arcChain.I"
 #endif
 

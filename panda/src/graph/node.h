@@ -149,7 +149,7 @@ find_arc(Node *parent, Node *child, TypeHandle graph_type);
 EXPCL_PANDA INLINE_GRAPH bool
 remove_child(Node *parent, Node *child, TypeHandle graph_type);
 
-#ifdef BUILDING_PANDA
+#ifndef DONT_INLINE_GRAPH
 #include "node.I"
 #endif
 

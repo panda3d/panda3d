@@ -101,7 +101,7 @@ private:
 
 INLINE_GRAPH ostream &operator << (ostream &out, const NodeAttribute &nab);
 
-#ifdef BUILDING_PANDA
+#ifndef DONT_INLINE_GRAPH
 #include "nodeAttribute.I"
 #endif
 

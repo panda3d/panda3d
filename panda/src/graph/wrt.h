@@ -128,7 +128,7 @@ wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
 	    TransitionWrapper &result, TypeHandle graph_type);
 
 
-#ifdef BUILDING_PANDA
+#ifndef DONT_INLINE_GRAPH
 #include "wrt.I"
 #endif
 

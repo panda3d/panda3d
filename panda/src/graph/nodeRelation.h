@@ -230,7 +230,7 @@ typedef map<TypeHandle, UpRelationPointers> UpRelations;
 
 #include "nodeRelation.T"
 
-#ifdef BUILDING_PANDA
+#ifndef DONT_INLINE_GRAPH
 #include "nodeRelation.I"
 #endif
 

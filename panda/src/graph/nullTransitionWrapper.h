@@ -77,7 +77,7 @@ public:
 
 INLINE_GRAPH ostream &operator << (ostream &out, const NullTransitionWrapper &ntw);
 
-#ifdef BUILDING_PANDA
+#ifndef DONT_INLINE_GRAPH
 #include "nullTransitionWrapper.I"
 #endif
 

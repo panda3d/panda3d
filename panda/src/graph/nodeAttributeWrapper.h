@@ -51,7 +51,7 @@ INLINE_GRAPH ostream &operator << (ostream &out, const NodeAttributeWrapper &naw
 
 #include "nodeAttributeWrapper.T"
 
-#ifdef BUILDING_PANDA
+#ifndef DONT_INLINE_GRAPH
 #include "nodeAttributeWrapper.I"
 #endif
 

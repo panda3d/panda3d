@@ -63,7 +63,7 @@ INLINE_GRAPH ostream &operator << (ostream &out, const AllAttributesWrapper &a);
 
 #include "allAttributesWrapper.T"
 
-#ifdef BUILDING_PANDA
+#ifndef DONT_INLINE_GRAPH
 #include "allAttributesWrapper.I"
 #endif
 

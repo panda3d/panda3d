@@ -63,7 +63,7 @@ private:
 friend class OnOffTransition;
 };
 
-#ifdef BUILDING_PANDA
+#ifndef DONT_INLINE_GRAPH
 #include "onOffAttribute.I"
 #endif
 
