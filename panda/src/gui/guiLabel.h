@@ -25,7 +25,7 @@ PUBLISHED:
   enum PriorityType { P_NONE, P_LOWER, P_HIGHER, P_HIGHEST };
 private:
   typedef map<GuiLabel*, PriorityType> PriorityMap;
-  enum LabelType { NONE, SIMPLE_TEXTURE, SIMPLE_TEXT, SIMPLE_CARD };
+  enum LabelType { NONE, SIMPLE_TEXTURE, SIMPLE_TEXT, SIMPLE_CARD, MODEL };
 
   LabelType _type;
   PT_Node _geom;
@@ -65,6 +65,7 @@ PUBLISHED:
   static GuiLabel* make_simple_text_label(const string&, Node*,
 					  Texture* = (Texture*)0L);
   static GuiLabel* make_simple_card_label(void);
+  static GuiLabel* make_model_label(Node*);
 
   int freeze();
   int thaw();

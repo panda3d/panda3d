@@ -29,6 +29,15 @@ void GuiLabel::recompute_transform(void) {
       _internal->set_transition(new TransformTransition(mat));
     }
     break;
+  case MODEL:
+    {
+      float w=_have_width?_scale*_width:_scale;
+      float h=_have_height?_scale*_height:_scale;
+      LMatrix4f mat = LMatrix4f::scale_mat(LVector3f::rfu(w, 1., h)) *
+	LMatrix4f::translate_mat(_pos);
+      _internal->set_transition(new TransformTransition(mat));
+    }
+    break;
   default:
     gui_cat->warning() << "recompute_transform on invalid label type ("
 		       << (int)_type << ")" << endl;
@@ -84,6 +93,7 @@ void GuiLabel::set_properties(void) {
     }
     break;
   case SIMPLE_TEXTURE:
+  case MODEL:
     _internal->set_transition(new ColorTransition(_foreground));
     break;
   case SIMPLE_CARD:
@@ -216,6 +226,16 @@ GuiLabel* GuiLabel::make_simple_card_label(void) {
   return ret;
 }
 
+GuiLabel* GuiLabel::make_model_label(Node* geom) {
+  GuiLabel* ret = new GuiLabel();
+  ret->_type = MODEL;
+  ret->_geom = new NamedNode("GUI label");
+  ret->_internal = new RenderRelation(ret->_geom, geom);
+  ret->_internal->set_transition(
+				new ColorTransition(Colorf(ret->_foreground)));
+  return ret;
+}
+
 int GuiLabel::freeze() {
   switch (_type) {
   case SIMPLE_TEXT:
@@ -300,11 +320,20 @@ void GuiLabel::get_extents(float& l, float& r, float& b, float& t) {
     }
     break;
   case SIMPLE_CARD:
+  case MODEL:
     {
+      // this really isn't correct for model, but will do until there is time
+      // or need for more
+      float x = _pos.dot(LVector3f::rfu(1., 0., 0.));
+      float y = _pos.dot(LVector3f::rfu(0., 0., 1.));
       l = _have_width?-(_width*0.5):-0.5;
       r = _have_width?(_width*0.5):0.5;
+      l += x;
+      r += x;
       b = _have_height?-(_height*0.5):-0.5;
       t = _have_height?(_height*0.5):0.5;
+      b += y;
+      t += y;
     }
     break;
   default:
@@ -366,6 +395,9 @@ void GuiLabel::set_text(const string& val) {
   case SIMPLE_CARD:
     gui_cat->warning() << "tried to set text on a card label" << endl;
     break;
+  case MODEL:
+    gui_cat->warning() << "tried to set text on a model label" << endl;
+    break;
   default:
     gui_cat->warning() << "trying to set text on an unknown label type ("
 		       << (int)_type << ")" << endl;
@@ -412,9 +444,8 @@ int GuiLabel::set_draw_order(int order) {
     }
     break;
   case SIMPLE_TEXTURE:
-    _arc->set_transition(new GeomBinTransition("fixed", order));
-    break;
   case SIMPLE_CARD:
+  case MODEL:
     _arc->set_transition(new GeomBinTransition("fixed", order));
     break;
   default:
