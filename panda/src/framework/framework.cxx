@@ -35,6 +35,7 @@
 #include <mouse.h>
 #include <mouseWatcher.h>
 #include <buttonThrower.h>
+#include <keyboardButton.h>
 #include <eventHandler.h>
 #include <throw_event.h>
 #include <camera.h>
@@ -1267,6 +1268,11 @@ int framework_main(int argc, char *argv[]) {
 
   // Create a ButtonThrower to throw events from the keyboard.
   PT(ButtonThrower) et = new ButtonThrower("kb-events");
+  ModifierButtons mods;
+  mods.add_button(KeyboardButton::shift());
+  mods.add_button(KeyboardButton::control());
+  mods.add_button(KeyboardButton::alt());
+  et->set_modifier_buttons(mods);
   new DataRelation(mouse_watcher, et);
 
   root = new NamedNode("root");
@@ -1509,23 +1515,23 @@ int framework_main(int argc, char *argv[]) {
   event_handler.add_hook("escape", event_esc);
   event_handler.add_hook("q", event_esc);
   event_handler.add_hook("f", event_f);
-  event_handler.add_hook("F", event_f_full);
+  event_handler.add_hook("shift-F", event_f_full);
   event_handler.add_hook("t", event_t);
   event_handler.add_hook("l", event_l);
   event_handler.add_hook("w", event_w);
   event_handler.add_hook("b", event_b);
-  event_handler.add_hook("R", event_R);
+  event_handler.add_hook("shift-R", event_R);
   event_handler.add_hook("`", event_grave);
   event_handler.add_hook("n", event_n);
   event_handler.add_hook("c", event_c);
-  event_handler.add_hook("D", event_D);
+  event_handler.add_hook("shift-D", event_D);
   event_handler.add_hook("g", event_g);
-  event_handler.add_hook("C", event_C);
-  event_handler.add_hook("N", event_N);
-  event_handler.add_hook("S", event_S);
-  event_handler.add_hook("A", event_A);
+  event_handler.add_hook("shift-C", event_C);
+  event_handler.add_hook("shift-N", event_N);
+  event_handler.add_hook("shift-S", event_S);
+  event_handler.add_hook("shift-A", event_A);
   event_handler.add_hook("p", event_p);
-  event_handler.add_hook("P", event_P);
+  event_handler.add_hook("shift-P", event_P);
 
 #ifdef USE_IPC
   event_handler.add_hook("x", event_x);
