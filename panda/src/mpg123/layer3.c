@@ -940,7 +940,9 @@ static int III_dequantize_sample(real xr[SBLIMIT][SSLIMIT],int *scf,
   if(part2remain > 0)
     getbits(part2remain);
   else if(part2remain < 0) {
+    /*
     fprintf(stderr,"mpg123: Can't rewind stream by %d bits!\n",-part2remain);
+    */
     return 1; /* -> error */
   }
   return 0;
