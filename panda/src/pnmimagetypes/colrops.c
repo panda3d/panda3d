@@ -58,7 +58,7 @@ int setcolrcor(double (*f)(double, double), double a2)
         mult = 1.0/256.0;
         for (i = 0; i <= MAXGSHIFT; i++) {
                 for (j = 0; j < 256; j++)
-                        g_bval[i][j] = 256.0 * (*f)((j+.5)*mult, a2);
+                        g_bval[i][j] = (BYTE) (256.0 * (*f)((j+.5)*mult, a2));
                 mult *= 0.5;
         }
         return(0);
@@ -79,7 +79,7 @@ int setcolrinv(double (*f)(double, double), double a2)
         i = 0;
         mult = 256.0;
         for (j = 255; j > 0; j--) {
-                while ((g_mant[j] = mult * (*f)(j/256.0, a2)) < 128) {
+                while ((g_mant[j] = (BYTE)(mult * (*f)(j/256.0, a2))) < 128) {
                         i++;
                         mult *= 2.0;
                 }

@@ -75,10 +75,10 @@ int fwritecolrs(register COLR *scanline, unsigned len, register FILE *fp)
         putc(len&255, fp);
                                         /* put components seperately */
         for (i = 0; i < 4; i++) {
-            for (j = 0; j < len; j += cnt) {    /* find next run */
-                for (beg = j; beg < len; beg += cnt) {
-                    for (cnt = 1; cnt < 127 && beg+cnt < len &&
-                            scanline[beg+cnt][i] == scanline[beg][i]; cnt++)
+            for (j = 0; j < (int)len; j += cnt) {    /* find next run */
+                for (beg = j; beg < (int)len; beg += cnt) {
+                    for (cnt = 1; cnt < 127 && ((beg+cnt) < (int)len) &&
+                            (scanline[beg+cnt][i] == scanline[beg][i]); cnt++)
                         ;
                     if (cnt >= MINRUN)
                         break;                  /* long enough */
@@ -254,10 +254,10 @@ setcolr(register COLR clr, double r, double g, double b)
 
         d = frexp(d, &e) * 255.9999 / d;
 
-        clr[RED] = r * d;
-        clr[GRN] = g * d;
-        clr[BLU] = b * d;
-        clr[EXP] = e + COLXS;
+        clr[RED] = (BYTE) (r * d);
+        clr[GRN] = (BYTE) (g * d);
+        clr[BLU] = (BYTE) (b * d);
+        clr[EXP] = (BYTE) (e) + COLXS;
 }
 
 
@@ -271,9 +271,9 @@ colr_color(register COLOR col, register COLR clr)
                 col[RED] = col[GRN] = col[BLU] = 0.0;
         else {
                 f = ldexp(1.0, (int)clr[EXP]-(COLXS+8));
-                col[RED] = (clr[RED] + 0.5)*f;
-                col[GRN] = (clr[GRN] + 0.5)*f;
-                col[BLU] = (clr[BLU] + 0.5)*f;
+                col[RED] = (float) ((clr[RED] + 0.5)*f);
+                col[GRN] = (float) ((clr[GRN] + 0.5)*f);
+                col[BLU] = (float) ((clr[BLU] + 0.5)*f);
         }
 }
 
