@@ -25,11 +25,36 @@ fi
 
 for file in `$printfilesCmd $debug_state`
 do
-	if cp -R ${file} ${destdir}
+	copyTo=${destdir}
+
+        moduleDir=`dirname ${file}`
+	srcDir=`dirname ${moduleDir}`
+        packageDir=`dirname ${srcDir}`
+
+        moduleDir=`basename ${moduleDir}`
+        srcDir=`basename ${srcDir}`
+        packageDir=`basename ${packageDir}`
+        
+        if [ `basename ${file} .py` != `basename ${file}` -o \
+             `basename ${file} .pyz` != `basename ${file}` ]; then
+            # The file is a Python file.  Is it in a src directory?
+            if [ ${srcDir} = src ]; then
+		copyPkg=${destdir}/${packageDir}
+                copyTo=${copyPkg}/${moduleDir}
+                (mkdir ${copyPkg}; touch ${copyPkg}/__init__.py) > /dev/null 2>&1
+                (mkdir ${copyTo}; touch ${copyTo}/__init__.py) > /dev/null 2>&1
+	    elif [ ${moduleDir} = pandac ]; then
+                copyTo=${destdir}/pandac
+                (mkdir ${copyTo}; touch ${copyTo}/__init__.py) > /dev/null 2>&1
+            fi
+        fi
+
+	if cp -R ${file} ${copyTo}
 	then
-	    echo "copying ${file} to ${destdir}"
+	    echo "copying ${file} to ${copyTo}"
 	else
 	    echo "ERROR: could not find ${file}"
 	    exit 1
 	fi
 done
+

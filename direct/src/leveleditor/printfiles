@@ -3,6 +3,7 @@
 # Configrc for running the show
 # This uses the executable system now, not the configrc
 echo $DIRECT/src/leveleditor/Configrc
+echo $DIRECT/src/leveleditor/run.bat
 
 # Python files
 echo $WINTOOLS/bin/python.exe
@@ -62,12 +63,20 @@ echo $DIRECT/lib/libdirect.dll
 echo $OTP/lib/libotp.dll
 echo $TOONTOWN/lib/libtoontown.dll
 
-# Generated code for libpandaexpress
-printlib $DIRECT/lib/py libpandaexpress
-printlib $DIRECT/lib/py libpanda
-printlib $DIRECT/lib/py libpandaphysics
-printlib $DIRECT/lib/py libdirect
-printlib $DIRECT/lib/py libtoontown
+# Generated code for libpanda
+printlib $DIRECT/lib/pandac libpanda
+printlib $DIRECT/lib/pandac libpandaphysics
+echo $DIRECT/lib/pandac/PandaModules.py
+echo $DIRECT/lib/pandac/PandaModules.pyz
+
+# Generated code for libdirect
+printlib $DIRECT/lib/pandac libdirect
+
+# Generated code for libotp
+printlib $DIRECT/lib/pandac libotp
+
+# Generated code for libtoontown
+printlib $DIRECT/lib/pandac libtoontown
 
 # DIRECT stuff
 printdir $DIRECT/src/actor .py
@@ -84,7 +93,6 @@ printdir $DIRECT/src/fsm .py
 printdir $DIRECT/src/gui .py
 printdir $DIRECT/src/interval .py
 printdir $DIRECT/src/leveleditor .py
-echo $DIRECT/src/leveleditor/run.bat
 printdir $DIRECT/src/particles .py
 printdir $DIRECT/src/showbase .py
 printdir $DIRECT/src/task .py
@@ -97,6 +105,3 @@ echo $PANDA/etc/layout_db
 echo $PANDA/etc/setup_db
 echo $PANDA/etc/window_db
 
-# Generated code for libpanda
-echo $DIRECT/lib/py/PandaModules.py
-echo $DIRECT/lib/py/PandaModules.pyz
