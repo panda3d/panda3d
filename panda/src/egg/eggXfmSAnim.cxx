@@ -24,6 +24,7 @@
 
 #include "indent.h"
 #include "compose_matrix.h"
+#include "dcast.h"
 
 #include <math.h>
 

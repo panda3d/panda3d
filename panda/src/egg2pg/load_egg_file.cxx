@@ -25,7 +25,7 @@
 
 static PT(PandaNode)
 load_from_loader(EggLoader &loader) {
-  loader._data.load_externals();
+  loader._data->load_externals();
 
   loader.build_graph();
 
@@ -85,9 +85,9 @@ load_egg_file(const string &filename, CoordinateSystem cs) {
 
 
   EggLoader loader;
-  loader._data.set_egg_filename(egg_filename);
-  loader._data.set_auto_resolve_externals(true);
-  loader._data.set_coordinate_system(cs);
+  loader._data->set_egg_filename(egg_filename);
+  loader._data->set_auto_resolve_externals(true);
+  loader._data->set_coordinate_system(cs);
 
   bool okflag;
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -97,7 +97,7 @@ load_egg_file(const string &filename, CoordinateSystem cs) {
       << "Could not open " << egg_filename << " for reading.\n";
     return NULL;
   }
-  okflag = loader._data.read(*istr);
+  okflag = loader._data->read(*istr);
   vfs->close_read_file(istr);
 
   if (!okflag) {
@@ -124,10 +124,10 @@ load_egg_data(EggData &data, CoordinateSystem cs) {
   children_holder.steal_children(data);
 
   EggLoader loader(data);
-  loader._data.steal_children(children_holder);
+  loader._data->steal_children(children_holder);
 
-  loader._data.set_auto_resolve_externals(true);
-  loader._data.set_coordinate_system(cs);
+  loader._data->set_auto_resolve_externals(true);
+  loader._data->set_coordinate_system(cs);
 
   return load_from_loader(loader);
 }

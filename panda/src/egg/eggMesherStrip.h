@@ -21,16 +21,18 @@
 
 #include "pandabase.h"
 #include "eggVertexPool.h"
+#include "eggPrimitive.h"
+#include "eggMesherEdge.h"
 #include "plist.h"
 
 class EggMesherEdge;
 
 ///////////////////////////////////////////////////////////////////
 //       Class : EggMesherStrip
-// Description : Represents a triangle strip in progress, as assembled
-//               by the mesher.  It might also represent a single
-//               polygon such as a triangle or quad, since that's how
-//               all triangle strips start out.
+// Description : Represents a triangle strip or quad strip in
+//               progress, as assembled by the mesher.  It might also
+//               represent a single polygon such as a triangle or
+//               quad, since that's how strips generally start out.
 ////////////////////////////////////////////////////////////////////
 class EggMesherStrip {
 public:

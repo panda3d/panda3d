@@ -228,6 +228,7 @@ egg:
         empty
         | egg node
 {
+  assert(!egg_stack.empty());
   DCAST(EggData, egg_stack.back())->add_child(DCAST(EggNode, $2));
 }
         ;
@@ -1713,7 +1714,6 @@ primitive_component_body:
  */
 primitive_body:
         empty
-        | primitive_body COMPONENT '{' primitive_component_body '}'
         | primitive_body COMPONENT integer '{' 
 {
   if (!egg_stack.back()->is_of_type(EggCompositePrimitive::get_class_type())) {
@@ -1723,17 +1723,17 @@ primitive_body:
     if ($3 < 0 || $3 >= comp->get_num_components()) {
       eggyyerror("Invalid component number");
     }
-    // We temporarily add an EggPolygon to the stack, just to receive
-    // the component attributes.
-    egg_stack.push_back(new EggPolygon);
   }
+  // We temporarily add an EggPolygon to the stack, just to receive
+  // the component attributes.
+  egg_stack.push_back(new EggPolygon);
 }
  	primitive_component_body '}'
 {
   PT(EggPrimitive) prim = DCAST(EggPrimitive, egg_stack.back());
   egg_stack.pop_back();
   PT(EggCompositePrimitive) comp = DCAST(EggCompositePrimitive, egg_stack.back());
-  comp->set_component($3, prim);
+  comp->set_component((int)$3, prim);
 }
         | primitive_body TREF '{' primitive_tref_body '}'
         | primitive_body TEXTURE '{' primitive_texture_body '}'

@@ -19,6 +19,8 @@
 #include "eggNameUniquifier.h"
 #include "eggNode.h"
 #include "eggGroupNode.h"
+#include "config_egg.h"
+#include "dcast.h"
 
 #include "notify.h"
 

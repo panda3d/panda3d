@@ -20,6 +20,7 @@
 #include "eggGroupNode.h"
 #include "config_egg.h"
 #include "eggTextureCollection.h"
+#include "dcast.h"
 
 #include <algorithm>
 
@@ -309,6 +310,7 @@ update_under(int depth_offset) {
     _vertex_to_node = NULL;
     _node_to_vertex = NULL;
   } else {
+    _parent->test_ref_count_integrity();
     depth = _parent->_depth + 1;
     _under_flags = _parent->_under_flags;
     _vertex_frame = _parent->_vertex_frame;

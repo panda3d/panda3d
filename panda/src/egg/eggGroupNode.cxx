@@ -35,6 +35,7 @@
 
 #include "dSearchPath.h"
 #include "deg_2_rad.h"
+#include "dcast.h"
 
 #include <algorithm>
 
@@ -282,6 +283,7 @@ get_next_child() {
 ////////////////////////////////////////////////////////////////////
 EggNode *EggGroupNode::
 add_child(EggNode *node) {
+  test_ref_count_integrity();
   PT(EggNode) ptnode = node;
   if (node->_parent != NULL) {
     node->_parent->remove_child(node);

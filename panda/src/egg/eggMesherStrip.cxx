@@ -19,7 +19,10 @@
 #include "eggMesherStrip.h"
 #include "eggMesherEdge.h"
 #include "eggPrimitive.h"
+#include "eggTriangleStrip.h"
 #include "eggPolygon.h"
+#include "dcast.h"
+#include "config_egg.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMesherStrip::Constructor
@@ -118,8 +121,6 @@ make_prim(const EggVertexPool *vertex_pool) {
     prim = new EggTriangleStrip;
     prim->copy_attributes(*_prims.front());
 
-    PrimType type = dest_type;
-
     // Now store all the vertices.  Each individual triangle's
     // attributes, if any, get applied to the third vertex of each
     // triangle.
@@ -140,7 +141,7 @@ make_prim(const EggVertexPool *vertex_pool) {
         // with the third completes a triangle.
         const EggAttributes *attrib = (*pi);
         ++pi;
-        //        prim->set_component(count - 2, *attrib);
+        DCAST(EggCompositePrimitive, prim)->set_component(count - 3, attrib);
       }
     }
 

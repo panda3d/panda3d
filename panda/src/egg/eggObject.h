@@ -32,19 +32,19 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggObject : public TypedReferenceCount {
 PUBLISHED:
-  INLINE EggObject();
-  INLINE EggObject(const EggObject &copy);
-  INLINE EggObject &operator = (const EggObject &copy);
+  EggObject();
+  EggObject(const EggObject &copy);
+  EggObject &operator = (const EggObject &copy);
 
   virtual ~EggObject();
 
-  INLINE void set_user_data(EggUserData *user_data);
-  INLINE EggUserData *get_user_data() const;
-  INLINE EggUserData *get_user_data(TypeHandle type) const;
-  INLINE bool has_user_data() const;
-  INLINE bool has_user_data(TypeHandle type) const;
-  INLINE void clear_user_data();
-  INLINE void clear_user_data(TypeHandle type);
+  void set_user_data(EggUserData *user_data);
+  EggUserData *get_user_data() const;
+  EggUserData *get_user_data(TypeHandle type) const;
+  bool has_user_data() const;
+  bool has_user_data(TypeHandle type) const;
+  void clear_user_data();
+  void clear_user_data(TypeHandle type);
 
 private:
   typedef pmap<TypeHandle, PT(EggUserData) > UserData;

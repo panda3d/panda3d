@@ -20,6 +20,7 @@
 #include "eggPrimitive.h"
 #include "eggGroupNode.h"
 #include "pt_EggTexture.h"
+#include "dcast.h"
 
 
 ////////////////////////////////////////////////////////////////////

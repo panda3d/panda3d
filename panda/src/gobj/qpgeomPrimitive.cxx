@@ -141,9 +141,10 @@ close_primitive() {
   if (num_vertices_per_primitive == 0) {
     // This is a complex primitive type like a triangle strip: each
     // primitive uses a different number of vertices.
-    if (cdata->_lengths.empty() || 
-        cdata->_lengths.back() != (int)cdata->_vertices.size()) {
+    if (cdata->_lengths.empty()) {
       cdata->_lengths.push_back((int)cdata->_vertices.size());
+    } else if (cdata->_lengths.back() != (int)cdata->_vertices.size()) {
+      cdata->_lengths.push_back((int)cdata->_vertices.size() - cdata->_lengths.back());
     }
 
   } else {

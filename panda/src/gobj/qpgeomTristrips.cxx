@@ -86,12 +86,17 @@ decompose_impl() {
   CPTA_ushort::const_iterator vi;
   vi = vertices.begin();
 
+  cerr << "starting vertices, size = " << vertices.size() << "\n";
+
   CPTA_int::const_iterator li;
   for (li = lengths.begin(); li != lengths.end(); ++li) {
     int length = (*li);
+    cerr << "length = " << length << "\n";
     nassertr(length >= 2, triangles.p());
+    nassertr(vi != vertices.end(), this);
     int v0 = (*vi);
     ++vi;
+    nassertr(vi != vertices.end(), this);
     int v1 = (*vi);
     ++vi;
     bool reversed = false;
@@ -107,6 +112,7 @@ decompose_impl() {
       }
       triangles->add_vertex(*vi);
       v0 = v1;
+      nassertr(vi != vertices.end(), this);
       v1 = *vi;
       triangles->close_primitive();
       ++vi;

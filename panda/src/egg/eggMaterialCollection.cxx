@@ -22,6 +22,7 @@
 #include "eggMaterial.h"
 
 #include "nameUniquifier.h"
+#include "dcast.h"
 
 #include <algorithm>
 

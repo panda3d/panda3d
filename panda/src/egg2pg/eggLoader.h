@@ -210,7 +210,7 @@ private:
 
 public:
   PT(PandaNode) _root;
-  EggData _data;
+  PT(EggData) _data;
   bool _error;
 
   friend class EggRenderState;

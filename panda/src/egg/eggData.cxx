@@ -305,8 +305,8 @@ set_coordinate_system(CoordinateSystem new_coordsys) {
 ////////////////////////////////////////////////////////////////////
 void EggData::
 write(ostream &out, int indent_level) const {
-  EggCoordinateSystem ecs(_coordsys);
-  ecs.write(out, indent_level);
+  PT(EggCoordinateSystem) ecs = new EggCoordinateSystem(_coordsys);
+  ecs->write(out, indent_level);
   EggGroupNode::write(out, indent_level);
   out << flush;
 }

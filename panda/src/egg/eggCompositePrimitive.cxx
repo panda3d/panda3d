@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "eggCompositePrimitive.h"
+#include "eggGroupNode.h"
 
 TypeHandle EggCompositePrimitive::_type_handle;
 
@@ -113,10 +114,10 @@ write_body(ostream &out, int indent_level) const {
   for (int i = 0; i < get_num_components(); i++) {
     const EggAttributes *attrib = get_component(i);
     if (attrib->compare_to(*this) != 0) {
-      indent(out, indent_level + 2)
+      indent(out, indent_level)
         << "<Component> " << i << " {\n";
-      attrib->write(out, indent_level + 4);
-      indent(out, indent_level + 2) << "}\n";
+      attrib->write(out, indent_level + 2);
+      indent(out, indent_level) << "}\n";
     }
   }
 }

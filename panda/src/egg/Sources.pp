@@ -73,7 +73,7 @@
      eggTriangleStrip.cxx \
      eggUserData.cxx \
      eggUtilities.cxx eggVertex.cxx eggVertexPool.cxx eggVertexUV.cxx \
-     eggXfmAnimData.cxx eggXfmSAnim.cxx xx xx pt_EggMaterial.cxx  \
+     eggXfmAnimData.cxx eggXfmSAnim.cxx pt_EggMaterial.cxx  \
      vector_PT_EggMaterial.cxx pt_EggTexture.cxx  \
      vector_PT_EggTexture.cxx pt_EggVertex.cxx  \
      vector_PT_EggVertex.cxx 

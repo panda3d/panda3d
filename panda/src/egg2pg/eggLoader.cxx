@@ -126,7 +126,8 @@ LODInstance(EggNode *egg_node) {
 EggLoader::
 EggLoader() {
   // We need to enforce whatever coordinate system the user asked for.
-  _data.set_coordinate_system(egg_coordinate_system);
+  _data = new EggData;
+  _data->set_coordinate_system(egg_coordinate_system);
   _error = false;
 }
 
@@ -137,7 +138,7 @@ EggLoader() {
 ////////////////////////////////////////////////////////////////////
 EggLoader::
 EggLoader(const EggData &data) :
-  _data(data)
+  _data(new EggData(data))
 {
   _error = false;
 }
@@ -157,11 +158,11 @@ build_graph() {
 
   // Then bin up the polysets and LOD nodes.
   EggBinner binner(*this);
-  binner.make_bins(&_data);
+  binner.make_bins(_data);
 
   // Now build up the scene graph.
-  _root = new ModelRoot(_data.get_egg_filename().get_basename());
-  make_node(&_data, _root);
+  _root = new ModelRoot(_data->get_egg_filename().get_basename());
+  make_node(_data, _root);
   _builder.build();
 
   reparent_decals();
@@ -735,7 +736,7 @@ void EggLoader::
 load_textures() {
   // First, collect all the textures that are referenced.
   EggTextureCollection tc;
-  tc.find_used_textures(&_data);
+  tc.find_used_textures(_data);
 
   EggTextureCollection::iterator ti;
   for (ti = tc.begin(); ti != tc.end(); ++ti) {

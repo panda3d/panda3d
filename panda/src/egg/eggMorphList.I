@@ -68,7 +68,7 @@ INLINE EggMorphList<MorphType>::
 template<class MorphType>
 INLINE bool EggMorphList<MorphType>::
 operator == (const EggMorphList<MorphType> &other) const {
-  return compare_to(other) == 0;
+  return (_morphs == other._morphs);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -79,7 +79,7 @@ operator == (const EggMorphList<MorphType> &other) const {
 template<class MorphType>
 INLINE bool EggMorphList<MorphType>::
 operator != (const EggMorphList<MorphType> &other) const {
-  return compare_to(other) != 0;
+  return (_morphs != other._morphs);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -90,18 +90,20 @@ operator != (const EggMorphList<MorphType> &other) const {
 template<class MorphType>
 INLINE bool EggMorphList<MorphType>::
 operator < (const EggMorphList<MorphType> &other) const {
-  return compare_to(other) < 0;
+  return (_morphs < other._morphs);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMorphList::compare_to
 //       Access: Public
-//  Description:
+//  Description: compare_to() compares a different space than the
+//               operator methods, which only check the morph's name.
+//               compare_to() compares the name and the value as well.
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
 int EggMorphList<MorphType>::
 compare_to(const EggMorphList<MorphType> &other) const {
-  if (_morphs.size() < other._morphs.size()) {
+  if (_morphs.size() != other._morphs.size()) {
     return (int)_morphs.size() - (int)other._morphs.size();
   }
   for (size_t i = 0; i < _morphs.size(); i++) {

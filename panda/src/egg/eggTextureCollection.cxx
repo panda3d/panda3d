@@ -21,6 +21,7 @@
 #include "eggPrimitive.h"
 #include "eggTexture.h"
 #include "pt_EggTexture.h"
+#include "dcast.h"
 
 #include "nameUniquifier.h"
 

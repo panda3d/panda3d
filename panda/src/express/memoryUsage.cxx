@@ -499,6 +499,7 @@ ns_update_type(ReferenceCount *ptr, TypeHandle type) {
       express_cat.error()
         << "Attempt to update type to " << type << " for unrecorded pointer "
         << (void *)ptr << "!\n";
+      nassertv(false);
       return;
     }
 

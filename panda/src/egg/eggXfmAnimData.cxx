@@ -26,6 +26,7 @@
 #include "luse.h"
 #include "lmatrix.h"
 #include "compose_matrix.h"
+#include "dcast.h"
 
 TypeHandle EggXfmAnimData::_type_handle;
 
