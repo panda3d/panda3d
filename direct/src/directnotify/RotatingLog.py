@@ -10,10 +10,10 @@ class RotatingLog:
     to a new file if the prior file is too large or after a time interval.
     """
     
-    def __init__(self, path="./log_file", timeInterval=24, megabyteLimit=1024):
+    def __init__(self, path="./log_file", hourInterval=24, megabyteLimit=1024):
         """
         path is a full or partial path with file name.
-        timeInterval is the number of hours at which to rotate the file.
+        hourInterval is the number of hours at which to rotate the file.
         megabyteLimit is the number of megabytes of file size the log
             may grow to, afterwhich the log is rotated.
         """
@@ -21,12 +21,22 @@ class RotatingLog:
         self.timeInterval=None
         self.timeLimit=None
         self.sizeLimit=None
-        if timeInterval is not None:
-            self.timeInterval=timeInterval*60*60
+        if hourInterval is not None:
+            self.timeInterval=hourInterval*60*60
             self.timeLimit=time.time()+self.timeInterval
         if megabyteLimit is not None:
             self.sizeLimit=megabyteLimit*1024*1024
 
+    def __del__(self):
+        self.close()
+
+    def close(self):
+        print "close"
+        if hasattr(self, "file"):
+            self.file.flush()
+            self.file.close()
+            del self.file
+    
     def shouldRotate(self):
         """
         Returns a bool about whether a new log file should
@@ -59,10 +69,7 @@ class RotatingLog:
         path=self.filePath()
         file=open(path, "a")
         if file:
-            if hasattr(self, "file"):
-                self.file.flush()
-                self.file.close()
-                del self.file
+            self.close()
             self.file=file
             if self.timeLimit is not None and time.time() > self.timeLimit:
                 self.timeLimit=time.time()+self.timeInterval
