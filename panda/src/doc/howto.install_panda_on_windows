@@ -56,7 +56,7 @@ Step 2: Install Cygwin (v1.0)
       > ln -s /bin/bash /usr/local/bin/bash
     - Connect the network drives:
       > net use f: "\\nufat\fat" /persistent:yes
-      > net use g: "\\nufat\bit" persistent:yes
+      > net use g: "\\nufat\bit" /persistent:yes
       > net use h: "\\dimbo\usr2" /persistent:yes
       > net use i: "\\nufat\big" /persistent:yes
       > net use j: "\\nufat\for" /persistent:yes
