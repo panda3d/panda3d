@@ -334,7 +334,7 @@ void GraphicsPipe::resolve_modules(void) {
     Filename dlname = Filename::dso_filename("lib" + (*i).Val() + ".so");
     display_cat.info()
       << "loading display module: " << dlname.to_os_specific() << endl;
-    void *tmp = load_dso(dlname.to_os_specific());
+    void *tmp = load_dso(dlname);
     if (tmp == (void*)0L) {
       display_cat.info()
 	<< "Unable to load: " << load_dso_error() << endl;
@@ -344,7 +344,7 @@ void GraphicsPipe::resolve_modules(void) {
     Filename dlname = Filename::dso_filename("lib" + (*i).Val() + ".so");
     display_cat.info()
       << "loading GSG module: " << dlname.to_os_specific() << endl;
-    void *tmp = load_dso(dlname.to_os_specific());
+    void *tmp = load_dso(dlname);
     if (tmp == (void*)0L) {
       display_cat.info()
 	<< "Unable to load: " << load_dso_error() << endl;

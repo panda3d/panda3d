@@ -27,7 +27,7 @@ int main(int argc, char** argv)
 	 Filename filename = argv[i];
 	 if (filename.get_extension() == ".so") {
 	   filename.set_type(Filename::T_dso);
-	   load_dso(filename.to_os_specific());
+	   load_dso(filename);
 	 }
       }
    if (task_list == (service_list*)0L) {
@@ -59,7 +59,7 @@ int main(int argc, char** argv)
 	    {
 	      Filename filename = message_to_main_thread->get_lib();
 	      filename.set_type(Filename::F_dso);
-	      load_dso(filename.to_os_specific());
+	      load_dso(filename);
 	    }
 	 case main_thread_message::RESCAN:
 	    for (j=task_list->begin(); j!=task_list->end(); ++j)

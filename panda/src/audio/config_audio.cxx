@@ -73,7 +73,7 @@ void audio_load_loaders(void) {
     Filename dlname = Filename::dso_filename("libaudio_load_" + (*i).Val() +
 					     ".so");
     audio_cat->info() << "loading '" << (*i).Val() << "' loader" << endl;
-    void* tmp = load_dso(dlname.to_os_specific());
+    void* tmp = load_dso(dlname);
     if (tmp == (void*)0L)
       audio_cat->info() << "unable to load: " << load_dso_error() << endl;
   }

@@ -36,7 +36,8 @@ load_dso_error()
 
 void *
 load_dso(const Filename &filename) {
-  return LoadLibrary(filename.to_os_specific().c_str());
+  string os_specific = filename.to_os_specific();
+  return LoadLibrary(os_specific.c_str());
 }
 
 string
@@ -71,7 +72,8 @@ load_dso(const Filename &filename) {
   enum DYLD_BOOL result;
   cerr << "_dyld_present() = " << _dyld_present() << endl;
   cerr << "_dyld_image_count() = " << _dyld_image_count() << endl;
-  result = NSAddLibrary(filename.to_os_specific().c_str());
+  string os_specific = filename.to_os_specific();
+  result = NSAddLibrary(os_specific().c_str());
   if (result == FALSE) {
     cerr << "Failed to load '" << filename << "'" << endl;
   }
@@ -117,7 +119,8 @@ load_dso_error() {
 
 void *
 load_dso(const Filename &filename) {
-  return dlopen(filename.to_os_specific().c_str(), RTLD_NOW);
+  string os_specific = filename.to_os_specific();
+  return dlopen(os_specific.c_str(), RTLD_NOW);
 }
 
 string

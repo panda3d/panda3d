@@ -229,7 +229,7 @@ load_file_types() {
       Filename dlname = Filename::dso_filename("lib" + (*ti).Val() + ".so");
       loader_cat.info()
 	<< "loading file type module: " << dlname.to_os_specific() << endl;
-      void *tmp = load_dso(dlname.to_os_specific());
+      void *tmp = load_dso(dlname);
       if (tmp == (void *)NULL) {
 	loader_cat.info()
 	  << "Unable to load: " << load_dso_error() << endl;

@@ -638,20 +638,22 @@ to_os_specific() const {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 exists() const {
+  string os_specific = to_os_specific();
+
 #ifdef WIN32_VC
   // Windows puts underscores in front of most of the function and
   // structure names it borrowed from Unix.  Embrace and extend.
   struct _stat this_buf;
   bool exists = false;
 
-  if (_stat(to_os_specific().c_str(), &this_buf) == 0) {
+  if (_stat(os_specific.c_str(), &this_buf) == 0) {
     exists = true;
   }
 #else  // WIN32_VC
   struct stat this_buf;
   bool exists = false;
 
-  if (stat(to_os_specific().c_str(), &this_buf) == 0) {
+  if (stat(os_specific.c_str(), &this_buf) == 0) {
     exists = true;
   }
 #endif
@@ -668,18 +670,20 @@ exists() const {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 is_regular_file() const {
+  string os_specific = to_os_specific();
+
 #ifdef WIN32_VC
   struct _stat this_buf;
   bool isreg = false;
 
-  if (_stat(to_os_specific().c_str(), &this_buf) == 0) {
+  if (_stat(os_specific.c_str(), &this_buf) == 0) {
     isreg = (this_buf.st_mode & _S_IFREG) != 0;
   }
 #else  // WIN32_VC
   struct stat this_buf;
   bool isreg = false;
 
-  if (stat(to_os_specific().c_str(), &this_buf) == 0) {
+  if (stat(os_specific.c_str(), &this_buf) == 0) {
     isreg = S_ISREG(this_buf.st_mode);
   }
 #endif
@@ -695,18 +699,20 @@ is_regular_file() const {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 is_directory() const {
+  string os_specific = to_os_specific();
+
 #ifdef WIN32_VC
   struct _stat this_buf;
   bool isdir = false;
 
-  if (_stat(to_os_specific().c_str(), &this_buf) == 0) {
+  if (_stat(os_specific.c_str(), &this_buf) == 0) {
     isdir = (this_buf.st_mode & _S_IFDIR) != 0;
   }
 #else  // WIN32_VC
   struct stat this_buf;
   bool isdir = false;
 
-  if (stat(to_os_specific().c_str(), &this_buf) == 0) {
+  if (stat(os_specific.c_str(), &this_buf) == 0) {
     isdir = S_ISDIR(this_buf.st_mode);
   }
 #endif
@@ -722,19 +728,21 @@ is_directory() const {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 is_executable() const {
-  if (exists()) {
 #ifdef WIN32_VC
-    // no access() in windows, but to our advantage executables can only
-    // end in .exe or .com
-    string stmp = to_os_specific();
-    stmp = stmp.substr(stmp.rfind(".") + 1);
-    if ((stmp == "exe") || (stmp == "com"))
-      return true;
-#else /* WIN32_VC */
-    if (access(to_os_specific().c_str(), X_OK) == 0)
-      return true;
-#endif /* WIN32_VC */
+  // no access() in windows, but to our advantage executables can only
+  // end in .exe or .com
+  string extension = get_extension();
+  if (extension == "exe" || extension == "com") {
+    return exists();
   }
+
+#else /* WIN32_VC */
+  string os_specific = to_os_specific();
+  if (access(os_specific.c_str(), X_OK) == 0) {
+    return true;
+  }
+#endif /* WIN32_VC */
+
   return false;
 }
 
@@ -756,33 +764,35 @@ int Filename::
 compare_timestamps(const Filename &other, 
 		   bool this_missing_is_old, 
 		   bool other_missing_is_old) const {
+  string os_specific = to_os_specific();
+  string other_os_specific = other.to_os_specific();
 
 #ifdef WIN32_VC
   struct _stat this_buf;
   bool this_exists = false;
 
-  if (_stat(to_os_specific().c_str(), &this_buf) == 0) {
+  if (_stat(os_specific.c_str(), &this_buf) == 0) {
     this_exists = true;
   }
 
   struct _stat other_buf;
   bool other_exists = false;
 
-  if (_stat(other.to_os_specific().c_str(), &other_buf) == 0) {
+  if (_stat(other_os_specific.c_str(), &other_buf) == 0) {
     other_exists = true;
   }
 #else  // WIN32_VC
   struct stat this_buf;
   bool this_exists = false;
 
-  if (stat(to_os_specific().c_str(), &this_buf) == 0) {
+  if (stat(os_specific.c_str(), &this_buf) == 0) {
     this_exists = true;
   }
 
   struct stat other_buf;
   bool other_exists = false;
 
-  if (stat(other.to_os_specific().c_str(), &other_buf) == 0) {
+  if (stat(other_os_specific.c_str(), &other_buf) == 0) {
     other_exists = true;
   }
 #endif
@@ -1037,8 +1047,9 @@ open_read(ifstream &stream) const {
   }
 #endif
 
+  string os_specific = to_os_specific();
   stream.clear();
-  stream.open(to_os_specific().c_str(), open_mode);
+  stream.open(os_specific.c_str(), open_mode);
   return (!stream.fail());
 }
 
@@ -1068,10 +1079,11 @@ open_write(ofstream &stream) const {
 #endif
 
   stream.clear();
+  string os_specific = to_os_specific();
 #ifdef WIN32_VC
-  stream.open(to_os_specific().c_str(), open_mode);
+  stream.open(os_specific.c_str(), open_mode);
 #else
-  stream.open(to_os_specific().c_str(), open_mode, 0666);
+  stream.open(os_specific.c_str(), open_mode, 0666);
 #endif
 
   return (!stream.fail());
@@ -1103,10 +1115,11 @@ open_append(ofstream &stream) const {
 #endif
 
   stream.clear();
+  string os_specific = to_os_specific();
 #ifdef WIN32_VC
-  stream.open(to_os_specific().c_str(), open_mode);
+  stream.open(os_specific.c_str(), open_mode);
 #else
-  stream.open(to_os_specific().c_str(), open_mode, 0666);
+  stream.open(os_specific.c_str(), open_mode, 0666);
 #endif
 
   return (!stream.fail());
@@ -1138,10 +1151,11 @@ open_read_write(fstream &stream) const {
 #endif
 
   stream.clear();
+  string os_specific = to_os_specific();
 #ifdef WIN32_VC
-  stream.open(to_os_specific().c_str(), open_mode);
+  stream.open(os_specific.c_str(), open_mode);
 #else
-  stream.open(to_os_specific().c_str(), open_mode, 0666);
+  stream.open(os_specific.c_str(), open_mode, 0666);
 #endif
 
   return (!stream.fail());
@@ -1159,20 +1173,20 @@ bool Filename::
 touch() const {
 #ifdef HAVE_UTIME_H
   // Most Unix systems can do this explicitly.
-  string filename = to_os_specific();
-  int result = utime(filename.c_str(), NULL);
+  string os_specific = to_os_specific();
+  int result = utime(os_specific.c_str(), NULL);
   if (result < 0) {
     if (errno == ENOENT) {
       // So the file doesn't already exist; create it.
-      int fd = creat(filename.c_str(), 0666);
+      int fd = creat(os_specific.c_str(), 0666);
       if (fd < 0) {
-	perror(filename.c_str());
+	perror(os_specific.c_str());
 	return false;
       }
       close(fd);
       return true;
     }
-    perror(filename.c_str());
+    perror(os_specific.c_str());
     return false;
   }
   return true;
@@ -1196,7 +1210,8 @@ touch() const {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 unlink() const {
-  return (::unlink(to_os_specific().c_str()) == 0);
+  string os_specific = to_os_specific();
+  return (::unlink(os_specific.c_str()) == 0);
 }
 
 
@@ -1210,8 +1225,10 @@ unlink() const {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 rename_to(const Filename &other) const {
-  return (rename(to_os_specific().c_str(), 
-		 other.to_os_specific().c_str()) == 0);
+  string os_specific = to_os_specific();
+  string other_os_specific = other.to_os_specific();
+  return (rename(os_specific.c_str(), 
+		 other_os_specific.c_str()) == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
