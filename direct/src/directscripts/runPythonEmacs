@@ -38,17 +38,25 @@ if [ "$WINTOOLS" ]; then
     WINTOOLS=`cygpath -w $WINTOOLS`
     export WINTOOLS
 fi
+if [ "$PANDATOOL" ]; then
+    PANDATOOL=`cygpath -w $PANDATOOL`
+    export PANDATOOL
+fi
+if [ "$PANDAAPP" ]; then
+    PANDAAPP=`cygpath -w $PANDAAPP`
+    export PANDAAPP
+fi
 
-# Panda does not like the colon in the de-cygpath version of the model trees
-#if [ "DMODELS" ]; then
-#    DMODELS=`cygpath -w $DMODELS`
-#    export DMODELS
-#fi
+# Panda will now tolerate the colon in the de-cygpath version of the model trees
+if [ "DMODELS" ]; then
+    DMODELS=`cygpath -w $DMODELS`
+    export DMODELS
+fi
 
-#if [ "$TTMODELS" ]; then
-#    TTMODELS=`cygpath -w $TTMODELS`
-#    export TTMODELS
-#fi
+if [ "$TTMODELS" ]; then
+    TTMODELS=`cygpath -w $TTMODELS`
+    export TTMODELS
+fi
 
 
 
