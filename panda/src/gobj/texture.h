@@ -48,8 +48,9 @@ public:
   Texture();
   ~Texture();
 
-  virtual bool read( const string& name );
-  virtual bool write( const string& name = "" ) const;
+  virtual bool read(const string& name);
+  virtual bool read(const string &name, const string &gray);
+  virtual bool write(const string& name = "") const;
 
   bool load( const PNMImage& pnmimage );
   bool store( PNMImage& pnmimage ) const;

@@ -86,6 +86,82 @@ bool Texture::read(const string& name)
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: read
+//       Access:
+//  Description: Combine a 3-component image with a grayscale image
+//		 to get a 4-component image
+////////////////////////////////////////////////////////////////////
+bool Texture::read(const string &name, const string &gray) {
+  PNMImage pnmimage;
+  if (!pnmimage.read(name)) {
+    gobj_cat.error()
+      << "Texture::read() - couldn't read: " << name << endl;
+    return false;
+  }
+
+  PNMImage grayimage;
+  if (!grayimage.read(gray)) {
+    gobj_cat.error()
+      << "Texture::read() - couldn't read: " << gray << endl;
+    return false;
+  }
+
+  int new_xsize, new_ysize;
+  int new_gxsize, new_gysize;
+  if (max_texture_dimension > 0 &&
+      (pnmimage.get_x_size() > max_texture_dimension ||
+       pnmimage.get_y_size() > max_texture_dimension)) {
+    new_xsize = min(pnmimage.get_x_size(), max_texture_dimension);
+    new_ysize = min(pnmimage.get_y_size(), max_texture_dimension);
+    gobj_cat.info()
+      << "Automatically rescaling " << name << " from " 
+      << pnmimage.get_x_size() << " by " << pnmimage.get_y_size() << " to "
+      << new_xsize << " by " << new_ysize << "\n";
+
+    PNMImage scaled(new_xsize, new_ysize, pnmimage.get_num_channels(),
+		    pnmimage.get_maxval(), pnmimage.get_type());
+    scaled.gaussian_filter_from(0.5, pnmimage);
+    pnmimage = scaled;
+  }
+
+  // Now do the same for the grayscale image
+  if (max_texture_dimension > 0 &&
+      (grayimage.get_x_size() > max_texture_dimension ||
+       grayimage.get_y_size() > max_texture_dimension)) {
+    new_gxsize = min(grayimage.get_x_size(), max_texture_dimension);
+    new_gysize = min(grayimage.get_y_size(), max_texture_dimension);
+    gobj_cat.info()
+      << "Automatically rescaling " << gray << " from " 
+      << grayimage.get_x_size() << " by " << grayimage.get_y_size() << " to "
+      << new_xsize << " by " << new_ysize << "\n";
+
+    PNMImage scaled(new_xsize, new_ysize, pnmimage.get_num_channels(),
+		    pnmimage.get_maxval(), pnmimage.get_type());
+    scaled.gaussian_filter_from(0.5, pnmimage);
+    pnmimage = scaled;
+  }
+
+  // Make sure the 2 images are the same size
+  if ((new_xsize != new_gxsize) || (new_ysize != new_gysize)) {
+    gobj_cat.error()
+      << "Texture::read() - grayscale image not the same size as original"
+      << endl;
+    return false;
+  }
+  
+  // Make the original image a 4-component image
+  pnmimage.add_alpha();
+  for (int x = 0; x < new_xsize; x++) {
+    for (int y = 0; y < new_ysize; y++) { 
+      pnmimage.set_alpha(x, y, grayimage.get_gray(x, y));
+    }
+  }
+
+  set_name(name);
+  return load(pnmimage);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: write 
 //       Access:
 //  Description:
