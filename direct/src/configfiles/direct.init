@@ -1,6 +1,3 @@
 ATTACH dmodels
 ATTACH panda
 MODREL ETC_PATH etc
-SEP PYTHONPATH ;
-# This is needed to find the site configuration file
-MODREL PYTHONPATH src/showbase

@@ -1,6 +1,4 @@
 MODREL ETC_PATH etc
-SEP PYTHONPATH ;
-MODREL PYTHONPATH lib
 DOCSH source $DTOOL/etc/dtool.alias
 DOCSH unsetenv LASTLOGIN
 DOCSH setenv OS_VER `uname -r`
