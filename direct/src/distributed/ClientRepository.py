@@ -9,6 +9,7 @@ import CRCache
 import ConnectionRepository
 import PythonUtil
 import ParentMgr
+import RelatedObjectMgr
 import time
 
 class ClientRepository(ConnectionRepository.ConnectionRepository):
@@ -31,6 +32,10 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         # create a parentMgr to handle distributed reparents
         # this used to be 'token2nodePath'
         self.parentMgr = ParentMgr.ParentMgr()
+
+        # The RelatedObjectMgr helps distributed objects find each
+        # other.
+        self.relatedObjectMgr = RelatedObjectMgr.RelatedObjectMgr(self)
 
     def setServerDelta(self, delta):
         """
