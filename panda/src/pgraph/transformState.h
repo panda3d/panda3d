@@ -66,7 +66,7 @@ public:
 
 PUBLISHED:
   static CPT(TransformState) make_identity();
-  INLINE static CPT(TransformState) make_invalid();
+  static CPT(TransformState) make_invalid();
   INLINE static CPT(TransformState) make_pos(const LVecBase3f &pos);
   INLINE static CPT(TransformState) make_hpr(const LVecBase3f &hpr);
   INLINE static CPT(TransformState) make_pos_hpr(const LVecBase3f &pos,
