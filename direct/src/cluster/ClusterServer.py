@@ -1,5 +1,3 @@
-"""ServerRepository module: contains the ServerRepository class"""
-
 from PandaModules import *
 from ClusterMsgs import *
 from MsgTypes import *

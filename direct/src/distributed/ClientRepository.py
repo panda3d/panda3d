@@ -53,7 +53,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         self.relatedObjectMgr.abortAllRequests()
 
     def sendDisconnect(self):
-        if self.tcpConn:
+        if self.isConnected():
             # Tell the game server that we're going:
             datagram = PyDatagram()
             # Add message type
@@ -287,8 +287,6 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         # Get the DO Id
         doId = di.getArg(STUint32)
         #print("Updating " + str(doId))
-        if self.rsDoReport:
-            self.rsUpdateObjs[doId] = self.rsUpdateObjs.get(doId, 0) + 1
         # Find the DO
             
         do = self.doId2do.get(doId)
@@ -398,8 +396,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         self.lastHeartbeat = globalClock.getRealTime()
         # This is important enough to consider flushing immediately
         # (particularly if we haven't run readerPollTask recently).
-        if self.tcpConn:
-            self.tcpConn.considerFlush()
+        self.considerFlush()
 
     def considerHeartbeat(self):
         """Send a heartbeat message if we haven't sent one recently."""

@@ -8,7 +8,7 @@
 #define BUILDING_DLL BUILDING_DIRECT
 
 #define COMPONENT_LIBS \
-  directbase dcparser showbase deadrec directd interval
+  directbase dcparser showbase deadrec directd interval distributed
 
 #define OTHER_LIBS \
   panda:m \

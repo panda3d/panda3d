@@ -6,7 +6,7 @@ from PyDatagram import PyDatagram
 
 import types
 
-class ConnectionRepository(DirectObject.DirectObject):
+class ConnectionRepository(DirectObject.DirectObject, CConnectionRepository):
     """
     This is a base class for things that know how to establish a
     connection (and exchange datagrams) with a gameserver.  This
@@ -19,6 +19,7 @@ class ConnectionRepository(DirectObject.DirectObject):
 
     def __init__(self, config):
         DirectObject.DirectObject.__init__(self)
+        CConnectionRepository.__init__(self)
 
         self.config = config
         
@@ -40,21 +41,10 @@ class ConnectionRepository(DirectObject.DirectObject):
         # proxy is in place, but the NSPR interface if we don't have a
         # proxy.
         self.connectMethod = self.config.GetString('connect-method', 'default')
-        
         self.connectHttp = None
         self.http = None
-        self.qcm = None
-        self.cw = None
 
-        self.tcpConn = None
         self.recorder = None
-
-        # Reader statistics
-        self.rsDatagramCount = 0
-        self.rsUpdateObjs = {}
-        self.rsLastUpdate = 0
-        self.rsDoReport = self.config.GetBool('reader-statistics', 0)
-        self.rsUpdateInterval = self.config.GetDouble('reader-statistics-interval', 10)
 
     def readDCFile(self, dcFileNames = None):
 
@@ -162,21 +152,21 @@ class ConnectionRepository(DirectObject.DirectObject):
         known.
         """
 
-        if self.recorder and self.recorder.isPlaying():
+##         if self.recorder and self.recorder.isPlaying():
 
-            # If we have a recorder and it's already in playback mode,
-            # don't actually attempt to connect to a gameserver since
-            # we don't need to.  Just let it play back the data.
-            self.notify.info("Not connecting to gameserver; using playback data instead.")
+##             # If we have a recorder and it's already in playback mode,
+##             # don't actually attempt to connect to a gameserver since
+##             # we don't need to.  Just let it play back the data.
+##             self.notify.info("Not connecting to gameserver; using playback data instead.")
 
-            self.connectHttp = 1
-            self.tcpConn = SocketStreamRecorder()
-            self.recorder.addRecorder('gameserver', self.tcpConn)
+##             self.connectHttp = 1
+##             self.tcpConn = SocketStreamRecorder()
+##             self.recorder.addRecorder('gameserver', self.tcpConn)
             
-            self.startReaderPollTask()
-            if successCallback:
-                successCallback(*successArgs)
-            return
+##             self.startReaderPollTask()
+##             if successCallback:
+##                 successCallback(*successArgs)
+##             return
 
         hasProxy = 0
         if self.checkHttp():
@@ -212,31 +202,10 @@ class ConnectionRepository(DirectObject.DirectObject):
                                      failureCallback, failureArgs)
 
         else:
-            if self.qcm == None:
-                self.qcm = QueuedConnectionManager()
-
-            if self.cw == None:
-                self.cw = ConnectionWriter(self.qcm, 0)
-                self.qcr = QueuedConnectionReader(self.qcm, 0)
-                minLag = self.config.GetFloat('min-lag', 0.)
-                maxLag = self.config.GetFloat('max-lag', 0.)
-                if minLag or maxLag:
-                    self.qcr.startDelay(minLag, maxLag)
-
-            # A big old 20 second timeout.
-            gameServerTimeoutMs = self.config.GetInt("game-server-timeout-ms",
-                                                     20000)
-
             # Try each of the servers in turn.
             for url in serverList:
                 self.notify.info("Connecting to %s via NSPR interface." % (url.cStr()))
-                self.tcpConn = self.qcm.openTCPClientConnection(
-                    url.getServer(), url.getPort(),
-                    gameServerTimeoutMs)
-
-                if self.tcpConn:
-                    self.tcpConn.setNoDelay(1)
-                    self.qcr.addConnection(self.tcpConn)
+                if self.tryConnectNspr(url):
                     self.startReaderPollTask()
                     if successCallback:
                         successCallback(*successArgs)
@@ -250,37 +219,31 @@ class ConnectionRepository(DirectObject.DirectObject):
         """Closes the previously-established connection.
         """
         self.notify.info("Closing connection to server.")
-        if self.tcpConn != None:
-            if self.connectHttp:
-                self.tcpConn.close()
-            else: 
-                self.qcm.closeConnection(self.tcpConn)
-            self.tcpConn = None
+        CConnectionRepository.disconnect(self)
         self.stopReaderPollTask()
                     
     def httpConnectCallback(self, ch, serverList, serverIndex,
                             successCallback, successArgs,
                             failureCallback, failureArgs):
         if ch.isConnectionReady():
-            self.tcpConn = ch.getConnection()
-            self.tcpConn.userManagesMemory = 1
+            self.setConnectionHttp(ch)
 
-            if self.recorder:
-                # If we have a recorder, we wrap the connect inside a
-                # SocketStreamRecorder, which will trap incoming data
-                # when the recorder is set to record mode.  (It will
-                # also play back data when the recorder is in playback
-                # mode, but in that case we never get this far in the
-                # code, since we just create an empty
-                # SocketStreamRecorder without actually connecting to
-                # the gameserver.)
-                stream = SocketStreamRecorder(self.tcpConn, 1)
-                self.recorder.addRecorder('gameserver', stream)
+##             if self.recorder:
+##                 # If we have a recorder, we wrap the connect inside a
+##                 # SocketStreamRecorder, which will trap incoming data
+##                 # when the recorder is set to record mode.  (It will
+##                 # also play back data when the recorder is in playback
+##                 # mode, but in that case we never get this far in the
+##                 # code, since we just create an empty
+##                 # SocketStreamRecorder without actually connecting to
+##                 # the gameserver.)
+##                 stream = SocketStreamRecorder(self.tcpConn, 1)
+##                 self.recorder.addRecorder('gameserver', stream)
 
-                # In this case, we pass ownership of the original
-                # connection to the SocketStreamRecorder object.
-                self.tcpConn.userManagesMemory = 0
-                self.tcpConn = stream
+##                 # In this case, we pass ownership of the original
+##                 # connection to the SocketStreamRecorder object.
+##                 self.tcpConn.userManagesMemory = 0
+##                 self.tcpConn = stream
             
             self.startReaderPollTask()
             if successCallback:
@@ -334,68 +297,17 @@ class ConnectionRepository(DirectObject.DirectObject):
         return Task.cont
 
     def readerPollOnce(self):
-        # we simulate the network plug being pulled by setting tcpConn
-        # to None; enforce that condition
-        if not self.tcpConn:
-            return 0
+        if self.checkDatagram():
+            dg = PyDatagram()
+            self.getDatagram(dg)
+            self.handleDatagram(dg)
+            return 1
 
-        # Make sure any recently-sent datagrams are flushed when the
-        # time expires, if we're in collect-tcp mode.
-        self.tcpConn.considerFlush()
-
-        if self.rsDoReport:
-            self.reportReaderStatistics()
-        
-        if self.connectHttp:
-            datagram = PyDatagram()
-            if self.tcpConn.receiveDatagram(datagram):
-                if self.rsDoReport:
-                    self.rsDatagramCount += 1
-                self.handleDatagram(datagram)
-                return 1
-
-            # Unable to receive a datagram: did we lose the connection?
-            if self.tcpConn.isClosed():
-                self.tcpConn = None
-                self.stopReaderPollTask()
-                self.lostConnection()
-            return 0
-        
-        else:
-            self.ensureValidConnection()
-            if self.qcr.dataAvailable():
-                datagram = NetDatagram()
-                if self.qcr.getData(datagram):
-                    if self.rsDoReport:
-                        self.rsDatagramCount += 1
-                    self.handleDatagram(datagram)
-                    return 1
-            return 0
-
-    def flush(self):
-        # Ensure the latest has been sent to the server.
-        if self.tcpConn:
-            self.tcpConn.flush()
-
-    def ensureValidConnection(self):
-        # Was the connection reset?
-        if self.connectHttp:
-            pass
-        else:
-            if self.qcm.resetConnectionAvailable():
-                resetConnectionPointer = PointerToConnection()
-                if self.qcm.getResetConnection(resetConnectionPointer):
-                    resetConn = resetConnectionPointer.p()
-                    self.qcm.closeConnection(resetConn)
-                    # if we've simulated a network plug pull, restore the
-                    # simulated plug
-                    self.restoreNetworkPlug()
-                    if self.tcpConn.this == resetConn.this:
-                        self.tcpConn = None
-                        self.stopReaderPollTask()
-                        self.lostConnection()
-                    else:
-                        self.notify.warning("Lost unknown connection.")
+        # Unable to receive a datagram: did we lose the connection?
+        if not self.isConnected():
+            self.stopReaderPollTask()
+            self.lostConnection()
+        return 0
 
     def lostConnection(self):
         # This should be overrided by a derived class to handle an
@@ -407,50 +319,22 @@ class ConnectionRepository(DirectObject.DirectObject):
         # inherit from it need to make their own handleDatagram method
         pass
 
-    def reportReaderStatistics(self):
-        now = globalClock.getRealTime()
-        if now - self.rsLastUpdate < self.rsUpdateInterval:
-            return
-
-        self.rsLastUpdate = now
-        self.notify.info("Received %s datagrams" % (self.rsDatagramCount))
-        if self.rsUpdateObjs:
-            self.notify.info("Updates: %s" % (self.rsUpdateObjs))
-
-        self.rsDatagramCount = 0
-        self.rsUpdateObjs = {}
-
     def send(self, datagram):
-        #if self.notify.getDebug():
-        #    print "ConnectionRepository sending datagram:"
-        #    datagram.dumpHex(ostream)
-
-        if not self.tcpConn:
-            self.notify.warning("Unable to send message after connection is closed.")
-            return
-
-        if self.connectHttp:
-            if not self.tcpConn.sendDatagram(datagram):
-                self.notify.warning("Could not send datagram.")
-        else:
-            self.cw.send(datagram, self.tcpConn)
+        self.sendDatagram(datagram)
 
 
     # debugging funcs for simulating a network-plug-pull
     def pullNetworkPlug(self):
-        self.restoreNetworkPlug()
         self.notify.warning('*** SIMULATING A NETWORK-PLUG-PULL ***')
-        self.hijackedTcpConn = self.tcpConn
-        self.tcpConn = None
+        self.setSimulatedDisconnect(1)
 
     def networkPlugPulled(self):
-        return hasattr(self, 'hijackedTcpConn')
+        return self.getSimulatedDisconnect()
 
     def restoreNetworkPlug(self):
         if self.networkPlugPulled():
             self.notify.info('*** RESTORING SIMULATED PULLED-NETWORK-PLUG ***')
-            self.tcpConn = self.hijackedTcpConn
-            del self.hijackedTcpConn
+            self.setSimulatedDisconnect(0)
 
     def doFind(self, str):
         """ returns list of distributed objects with matching str in value """

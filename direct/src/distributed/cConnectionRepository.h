@@ -1,0 +1,101 @@
+// Filename: cConnectionRepository.h
+// Created by:  drose (17May04)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef CCONNECTIONREPOSITORY_H
+#define CCONNECTIONREPOSITORY_H
+
+#include "directbase.h"
+#include "pointerTo.h"
+
+#ifdef HAVE_NSPR
+#include "queuedConnectionManager.h"
+#include "connectionWriter.h"
+#include "queuedConnectionReader.h"
+#include "connection.h"
+#endif
+
+class URLSpec;
+class HTTPChannel;
+class SocketStream;
+
+////////////////////////////////////////////////////////////////////
+//       Class : CConnectionRepository
+// Description : This class implements the C++ side of the
+//               ConnectionRepository object.  In particular, it
+//               manages the connection to the server once it has been
+//               opened (but does not open it directly).  It manages
+//               reading and writing datagrams on the connection and
+//               monitoring for unexpected disconnects as well as
+//               handling intentional disconnects.
+//
+//               Certain server messages, like field updates, are
+//               handled entirely within the C++ layer, while server
+//               messages that are not understood by the C++ layer are
+//               returned up to the Python layer for processing.
+////////////////////////////////////////////////////////////////////
+class EXPCL_DIRECT CConnectionRepository {
+PUBLISHED:
+  CConnectionRepository();
+  ~CConnectionRepository();
+
+#ifdef HAVE_SSL
+  void set_connection_http(HTTPChannel *channel);
+#endif
+#ifdef HAVE_NSPR
+  bool try_connect_nspr(const URLSpec &url);
+
+  INLINE QueuedConnectionManager &get_qcm();
+  INLINE ConnectionWriter &get_cw();
+  INLINE QueuedConnectionReader &get_qcr();
+#endif
+
+  bool check_datagram();
+  INLINE void get_datagram(Datagram &dg);
+  bool is_connected();
+
+  bool send_datagram(const Datagram &dg);
+
+  bool consider_flush();
+  bool flush();
+
+  void disconnect();
+
+  INLINE void set_simulated_disconnect(bool simulated_disconnect);
+  INLINE bool get_simulated_disconnect() const;
+
+private:
+  bool do_check_datagram();
+
+#ifdef HAVE_SSL
+  SocketStream *_http_conn;
+#endif
+
+#ifdef HAVE_NSPR
+  QueuedConnectionManager _qcm;
+  ConnectionWriter _cw;
+  QueuedConnectionReader _qcr;
+  PT(Connection) _nspr_conn;
+#endif
+
+  Datagram _dg;
+  bool _simulated_disconnect;
+};
+
+#include "cConnectionRepository.I"
+
+#endif  // CCONNECTIONREPOSITORY_H
