@@ -188,10 +188,12 @@ public:
   INLINE GraphicsWindow* get_window(void) const { return _win; }
 
 
-public:
+PUBLISHED:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
+
+public:
   static void init_type() {
     GraphicsStateGuardianBase::init_type();
     register_type(_type_handle, "GraphicsStateGuardian",
