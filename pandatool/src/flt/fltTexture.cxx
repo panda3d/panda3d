@@ -246,7 +246,7 @@ extract_record(FltRecordReader &reader) {
   } else {
     _orig_filename = iterator.get_fixed_string(200);
   }
-  _converted_filename = _header->convert_path(_orig_filename, get_texture_path());
+  _converted_filename = _header->convert_path(Filename::from_os_specific(_orig_filename), get_texture_path());
   _pattern_index = iterator.get_be_int32();
   _x_location = iterator.get_be_int32();
   _y_location = iterator.get_be_int32();

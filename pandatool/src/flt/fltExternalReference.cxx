@@ -120,7 +120,7 @@ extract_record(FltRecordReader &reader) {
       _bead_id = name.substr(open + 1, name.length() - open - 2);
     }
   }
-  _converted_filename = _header->convert_path(_orig_filename);
+  _converted_filename = _header->convert_path(Filename::from_os_specific(_orig_filename));
 
   check_remaining_size(iterator);
   return true;

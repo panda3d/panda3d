@@ -61,6 +61,14 @@ SomethingToEgg(const string &format_name,
      &SomethingToEgg::dispatch_none, &_noabs);
 
   add_option
+    ("noexist", "", 0,
+     "Don't treat it as an error if the input file references pathnames "
+     "(e.g. textures) that don't exist.  Normally, this will be flagged as "
+     "an error and the command aborted; with this option, an egg file will "
+     "be generated anyway, referencing pathnames that do not exist.",
+     &SomethingToEgg::dispatch_none, &_noexist);
+
+  add_option
     ("ignore", "", 0,
      "Ignore non-fatal errors and generate an egg file anyway.",
      &SomethingToEgg::dispatch_none, &_allow_errors);
@@ -209,7 +217,7 @@ apply_units_scale(EggData &data) {
 void SomethingToEgg::
 apply_parameters(SomethingToEggConverter &converter) {
   _path_replace->_noabs = _noabs;
-  _path_replace->_exists = true;
+  _path_replace->_exists = !_noexist;
   converter.set_path_replace(_path_replace);
 
   converter.set_animation_convert(_animation_convert);

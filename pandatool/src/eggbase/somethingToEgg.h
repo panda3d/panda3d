@@ -76,6 +76,7 @@ protected:
   bool _got_output_frame_rate;
 
   bool _merge_externals;
+  bool _noexist;
   bool _allow_errors;
 };
 
