@@ -626,8 +626,10 @@ WinMusic* WinMusic::load_midi(Filename filename) {
     return ret;
   }
   MULTI_TO_WIDE(fdesc.wszFileName, filename.to_os_specific().c_str());
-  fdesc.dwValidData = DMUS_OBJ_CLASS | DMUS_OBJ_FILENAME | DMUS_OBJ_FULLPATH;
-  //  fdesc.dwValidData = DMUS_OBJ_CLASS | DMUS_OBJ_FILENAME;
+  if (filename.is_local())
+    fdesc.dwValidData = DMUS_OBJ_CLASS | DMUS_OBJ_FILENAME;
+  else
+    fdesc.dwValidData = DMUS_OBJ_CLASS | DMUS_OBJ_FILENAME | DMUS_OBJ_FULLPATH;
   result = loader->GetObject(&fdesc, IID_IDirectMusicSegment2,
 			     (void**)&(ret->_music));
   if (FAILED(result)) {
