@@ -78,9 +78,9 @@ class TypedObject;
 //               time, should store a static TypeHandle object that
 //               can be queried through a static member function
 //               named get_class_type().  Most of the time, it is also
-//               desirable to inherit from TypedObject (defined
-//               below), which provides some virtual functions to
-//               return the TypeHandle for a particular instance.
+//               desirable to inherit from TypedObject, which provides
+//               some virtual functions to return the TypeHandle for a
+//               particular instance.
 //
 //               At its essence, a TypeHandle is simply a unique
 //               identifier that is assigned by the TypeRegistry.  The
