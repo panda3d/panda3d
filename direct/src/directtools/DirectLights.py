@@ -85,6 +85,7 @@ class DirectLights(NodePath):
             self.spotCount += 1
             light = Spotlight('spot-' + `self.spotCount`)
             light.setColor(VBase4(1))
+            light.setLens(PerspectiveLens())
         else:
             print 'Invalid light type'
             return None

@@ -615,10 +615,9 @@ class DirectSession(PandaObject):
         # Assemble group of changes
         undoGroup = []
         for nodePath in nodePathList:
-            pos = nodePath.getPos()
-            hpr = nodePath.getHpr()
-            scale = nodePath.getScale()
-            undoGroup.append([nodePath, pos,hpr,scale])
+            m = Mat4()
+            m.assign(nodePath.getMat())
+            undoGroup.append([nodePath, m])
         # Now record group
         self.undoList.append(undoGroup)
         # Truncate list
@@ -644,10 +643,9 @@ class DirectSession(PandaObject):
         # Assemble group of changes
         redoGroup = []
         for nodePath in nodePathList:
-            pos = nodePath.getPos()
-            hpr = nodePath.getHpr()
-            scale = nodePath.getScale()
-            redoGroup.append([nodePath, pos,hpr,scale])
+            m = Mat4()
+            m.assign(nodePath.getMat())
+            redoGroup.append([nodePath, m])
         # Now record redo group
         self.redoList.append(redoGroup)
         # Truncate list
@@ -676,7 +674,7 @@ class DirectSession(PandaObject):
             # Now undo xform for group
             for pose in undoGroup:
                 # Undo xform
-                pose[0].setPosHprScale(pose[1], pose[2], pose[3])
+                pose[0].setMat(pose[1])
             # Alert anyone who cares
             messenger.send('DIRECT_undo')
 
@@ -689,7 +687,7 @@ class DirectSession(PandaObject):
             self.pushUndo(nodePathList, fResetRedo = 0)
             # Redo xform
             for pose in redoGroup:
-                pose[0].setPosHprScale(pose[1], pose[2], pose[3])
+                pose[0].setMat(pose[1])
             # Alert anyone who cares
             messenger.send('DIRECT_redo')
 
