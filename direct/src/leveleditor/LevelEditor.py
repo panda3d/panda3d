@@ -49,6 +49,13 @@ class LevelEditor(NodePath, PandaObject):
 	# DNAStorage instance for storing level DNA info
 	self.dnaStore = DNAStorage()
 	loadDNAFile(self.dnaStore, 'phase_4/dna/storage.dna', CSDefault)
+        
+        # Load all the neighborhood specific storage files
+	loadDNAFile(self.dnaStore, 'phase_4/dna/storage_TT.dna', CSDefault)
+	loadDNAFile(self.dnaStore, 'phase_6/dna/storage_DD.dna', CSDefault)
+	loadDNAFile(self.dnaStore, 'phase_6/dna/storage_MM.dna', CSDefault)
+	loadDNAFile(self.dnaStore, 'phase_6/dna/storage_BR.dna', CSDefault)
+
 	# Top level DNA Data Object
 	self.groupParentDNA = self.levelObjectsDNA = DNAData('LevelObjects')
 	# Create top level node
