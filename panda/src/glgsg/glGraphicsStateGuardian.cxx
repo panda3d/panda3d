@@ -3928,14 +3928,17 @@ apply_texture_immediate(Texture *tex) {
   GLenum type = get_image_type(pb->get_image_type());
 
   uchar *image = pb->_image;
+  uchar *locally_allocated_image = (uchar *)NULL;
   if (!gl_supports_bgr) {
     // If the GL doesn't claim to support BGR, we may have to reverse
     // the byte ordering of the image.
     if (external_format == GL_RGB && pb->get_image_type() == PixelBuffer::T_unsigned_byte) {
-      image = (uchar *)alloca(num_pixels * 3);
+      locally_allocated_image = new uchar[num_pixels * 3];
+      image = locally_allocated_image;
       uchar_bgr_to_rgb(image, pb->_image, num_pixels);
     } else if (external_format == GL_RGBA && pb->get_image_type() == PixelBuffer::T_unsigned_byte) {
-      image = (uchar *)alloca(num_pixels * 4);
+      locally_allocated_image = new uchar[num_pixels * 4];
+      image = locally_allocated_image;
       uchar_bgra_to_rgba(image, pb->_image, num_pixels);
     }
   }
@@ -3963,18 +3966,23 @@ apply_texture_immediate(Texture *tex) {
 #ifndef NDEBUG
       if (gl_show_mipmaps) {
         build_phony_mipmaps(tex);
-        return true;
-      }
+      } else 
 #endif
-      gluBuild2DMipmaps(GL_TEXTURE_2D, internal_format,
-                        xsize, ysize,
-                        external_format, type, image);
+        {
+          gluBuild2DMipmaps(GL_TEXTURE_2D, internal_format,
+                            xsize, ysize,
+                            external_format, type, image);
 #ifndef NDEBUG
-      if (gl_save_mipmaps) {
-        save_mipmap_images(tex);
-      }
+          if (gl_save_mipmaps) {
+            save_mipmap_images(tex);
+          }
 #endif
+        }
       report_errors();
+
+      if (locally_allocated_image != (uchar *)NULL) {
+        delete[] locally_allocated_image;
+      }
       return true;
     }
   }
@@ -3984,6 +3992,10 @@ apply_texture_immediate(Texture *tex) {
                xsize, ysize, pb->get_border(),
                external_format, type, image);
   report_errors();
+
+  if (locally_allocated_image != (uchar *)NULL) {
+    delete[] locally_allocated_image;
+  }
   return true;
 }
 
