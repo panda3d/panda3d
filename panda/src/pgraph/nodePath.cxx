@@ -1457,7 +1457,7 @@ get_color() const {
   pgraph_cat.warning()
     << "get_color() called on " << *this << " which has no color set.\n";
 
-  return Colorf(0.0f, 0.0f, 0.0f, 0.0f);
+  return Colorf(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
