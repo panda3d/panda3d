@@ -384,11 +384,48 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
   }
 
   if (_is_valid) {
-    if (spp >= 1 && spp <= 4) {
-      _num_channels = spp;
+    unsigned short num_extra_samples;
+    unsigned short *extra_samples = NULL;
+
+    if (!TIFFGetField(tif, TIFFTAG_EXTRASAMPLES, &num_extra_samples, 
+                      &extra_samples)) {
+      num_extra_samples = 0;
+    }
+    _num_channels = spp - num_extra_samples;
+    unassoc_alpha_sample = 0;
+    assoc_alpha_sample = 0;
+
+    if (_num_channels == 1 || _num_channels == 3) {
+      // Look for an alpha channel in one of the extra samples, if
+      // any.
+      bool got_alpha = false;
+      for (unsigned short s = 0; s < num_extra_samples && !got_alpha; s++) {
+        if (extra_samples[s] == EXTRASAMPLE_UNASSALPHA) {
+          unassoc_alpha_sample = s + _num_channels;
+          _num_channels++;
+          got_alpha = true;
+
+        } else if (extra_samples[s] == EXTRASAMPLE_ASSOCALPHA) {
+          assoc_alpha_sample = s + _num_channels;
+          _num_channels++;
+          got_alpha = true;
+        }
+      }
+
+      // Unfortunately, Photoshop seems to write
+      // EXTRASAMPLE_UNSPECIFIED into the EXTRASAMPLES field for its
+      // alpha channels.  If we have exactly one extra channel and
+      // it's an UNSPECIFIED channel, assume it's meant to be alpha.
+      if (!got_alpha && num_extra_samples == 1 &&
+          extra_samples[0] == EXTRASAMPLE_UNSPECIFIED) {
+        unassoc_alpha_sample = _num_channels;
+        _num_channels++;
+      }
+
     } else {
       pnmimage_tiff_cat.error()
-        << "Cannot handle " << spp << "-channel image.\n";
+        << "Cannot handle " << spp << "-color image (with " 
+        << num_extra_samples << " extra channels).\n";
       _is_valid = false;
     }
   }
@@ -404,7 +441,7 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
     }
 
     _maxval = ( 1 << bps ) - 1;
-    if ( _maxval == 1 && spp == 1 ) {
+    if ( _maxval == 1 && _num_channels == 1 ) {
         if (pnmimage_tiff_cat.is_debug()) {
           pnmimage_tiff_cat.debug(false)
             << "monochrome\n";
@@ -561,7 +598,8 @@ read_row(xel *row_data, xelval *alpha_data) {
 
   unsigned char *buf = (unsigned char*) alloca((size_t)TIFFScanlineSize(tif));
   int col;
-  unsigned char sample;
+  xelval gray, sample;
+  xelval r, g, b;
 
   if ( TIFFReadScanline( tif, buf, current_row, 0 ) < 0 ) {
     pnmimage_tiff_cat.error()
@@ -570,6 +608,7 @@ read_row(xel *row_data, xelval *alpha_data) {
   }
 
   unsigned char *inP = buf;
+  unsigned s;
   int bitsleft = 8;
 
   switch ( photomet ) {
@@ -577,11 +616,21 @@ read_row(xel *row_data, xelval *alpha_data) {
     for ( col = 0; col < _x_size; ++col )
       {
         NEXTSAMPLE;
-        PPM_PUTB(row_data[col], sample);
-        if ( spp == 2 ) {
-          NEXTSAMPLE;  // Alpha channel
-          alpha_data[col] = sample;
+        gray = sample;
+
+        for (s = 1; s < spp; s++) {
+          NEXTSAMPLE;
+          if (s == unassoc_alpha_sample) {
+            alpha_data[col] = sample;
+
+          } else if (s == assoc_alpha_sample) {
+            alpha_data[col] = sample;
+            if (sample != 0) {
+              gray = (xelval)((float)gray * _maxval / (float)sample);
+            }
+          }
         }
+        PPM_PUTB(row_data[col], gray);
       }
     break;
 
@@ -589,12 +638,23 @@ read_row(xel *row_data, xelval *alpha_data) {
     for ( col = 0; col < _x_size; ++col )
       {
         NEXTSAMPLE;
-        sample = _maxval - sample;
-        PPM_PUTB(row_data[col], sample);
-        if ( spp == 2 ) {
-          NEXTSAMPLE;  // Alpha channel
-          alpha_data[col] = sample;
+        gray = _maxval - sample;
+        for (s = 1; s < spp; s++) {
+          NEXTSAMPLE;
+          sample = _maxval - sample;
+
+          if (s == unassoc_alpha_sample) {
+            alpha_data[col] = sample;
+
+          } else if (s == assoc_alpha_sample) {
+            alpha_data[col] = sample;
+            if (sample != 0) {
+              gray = (xelval)((float)gray * _maxval / (float)sample);
+            }
+          }
         }
+
+        PPM_PUTB(row_data[col], gray);
       }
     break;
 
@@ -603,28 +663,53 @@ read_row(xel *row_data, xelval *alpha_data) {
       {
         NEXTSAMPLE;
         row_data[col] = colormap[sample];
-        if ( spp == 2 ) {
-          NEXTSAMPLE;  // Alpha channel
-          alpha_data[col] = sample;
+
+        for (s = 1; s < spp; s++) {
+          NEXTSAMPLE;
+          if (s == unassoc_alpha_sample) {
+            alpha_data[col] = sample;
+
+          } else if (s == assoc_alpha_sample) {
+            alpha_data[col] = sample;
+            if (sample != 0) {
+              r = PPM_GETR(row_data[col]);
+              g = PPM_GETG(row_data[col]);
+              b = PPM_GETB(row_data[col]);
+              r = (xelval)((float)r * _maxval / (float)sample);
+              g = (xelval)((float)g * _maxval / (float)sample);
+              b = (xelval)((float)b * _maxval / (float)sample);
+              PPM_ASSIGN(row_data[col], r, g, b);
+            }
+          }
         }
       }
     break;
 
   case PHOTOMETRIC_RGB:
     for ( col = 0; col < _x_size; ++col ) {
-      xelval r, g, b;
-
       NEXTSAMPLE;
       r = sample;
       NEXTSAMPLE;
       g = sample;
       NEXTSAMPLE;
       b = sample;
-      PPM_ASSIGN(row_data[col], r, g, b);
-      if ( spp == 4 ) {
-        NEXTSAMPLE;  // Alpha channel
-        alpha_data[col] = sample;
+
+      for (s = 3; s < spp; s++) {
+        NEXTSAMPLE;
+        if (s == unassoc_alpha_sample) {
+          alpha_data[col] = sample;
+          
+        } else if (s == assoc_alpha_sample) {
+          alpha_data[col] = sample;
+          if (sample != 0) {
+            r = (xelval)((float)r * _maxval / (float)sample);
+            g = (xelval)((float)g * _maxval / (float)sample);
+            b = (xelval)((float)b * _maxval / (float)sample);
+          }
+        }
       }
+
+      PPM_ASSIGN(row_data[col], r, g, b);
     }
     break;
 

@@ -65,6 +65,7 @@ public:
   private:
     unsigned short photomet;
     unsigned short bps, spp;
+    unsigned short unassoc_alpha_sample, assoc_alpha_sample;
     xel colormap[TIFF_COLORMAP_MAXCOLORS];
 
     int current_row;
