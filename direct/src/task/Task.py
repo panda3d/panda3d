@@ -310,6 +310,14 @@ class TaskManager:
         # Didnt find any, return 0
         return 0
 
+    def getTasksNamed(self, taskName):
+        # Get the tasks with this name
+        tasks = self.nameDict.get(taskName, [])
+        # Filter out the tasks that have been removed
+        if tasks:
+            tasks = filter(lambda task: not task.isRemoved(), tasks)
+        return tasks
+
     def __doLaterProcessor(self, task):
         # Make a temp list of all the dolaters that expired this time
         # through so we can remove them after we are done with the
