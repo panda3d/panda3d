@@ -180,6 +180,7 @@ void ClearToBlack(HWND hWnd,GraphicsWindow::Properties &props) {
     FillRect(hDC,&clrRect,(HBRUSH)GetStockObject(BLACK_BRUSH));
 //          PatBlt(hDC,_props._xorg,_props._yorg,_props._xsize,_props._ysize,BLACKNESS);
     ReleaseDC(hWnd,hDC);
+    GdiFlush();
 }
 
 // fn exists so AtExitFn can call it without refcntr blowing up since its !=0
