@@ -780,18 +780,22 @@ rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
   FLOATTYPE axis_1 = axis._v.v._1;
   FLOATTYPE axis_2 = axis._v.v._2;
 
-  // Normalize the axis.
-  FLOATTYPE length_sq = axis_0 * axis_0 + axis_1 * axis_1 + axis_2 * axis_2;
-  #ifdef _DEBUG
-    nassertr(length_sq != 0.0, ident_mat());
-  #endif
-  FLOATTYPE recip_length = 1.0/csqrt(length_sq);
+  // Normalize the axis.  
   
-//  axis *= recip_length;
+  // hack check for prenormalization, only works for simple unit vecs, which
+  // is what we usually pass in anyway.  need to add flag parameter so caller
+  // can request normalization if needed
+  if((axis_0+axis_1+axis_2) != 1.0) {
+	  FLOATTYPE length_sq = axis_0 * axis_0 + axis_1 * axis_1 + axis_2 * axis_2;
+	  #ifdef _DEBUG
+	      nassertr(length_sq != 0.0, ident_mat());
+   	  #endif
+	  FLOATTYPE recip_length = 1.0/csqrt(length_sq);
 
-  axis_0 *= recip_length;
-  axis_1 *= recip_length;
-  axis_2 *= recip_length;  
+	  axis_0 *= recip_length;
+	  axis_1 *= recip_length;
+	  axis_2 *= recip_length;  
+  }
 
   FLOATTYPE angle_rad=deg_2_rad(angle);
   FLOATTYPE s,c;

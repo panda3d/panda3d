@@ -866,25 +866,26 @@ operator *= (FLOATTYPE scalar) {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator /= (FLOATTYPE scalar) {
-  _m.m._00 /= scalar;
-  _m.m._01 /= scalar;
-  _m.m._02 /= scalar;
-  _m.m._03 /= scalar;
+  FLOATTYPE recip_scalar = 1.0/scalar;
+  _m.m._00 *= recip_scalar;
+  _m.m._01 *= recip_scalar;
+  _m.m._02 *= recip_scalar;
+  _m.m._03 *= recip_scalar;
 
-  _m.m._10 /= scalar;
-  _m.m._11 /= scalar;
-  _m.m._12 /= scalar;
-  _m.m._13 /= scalar;
+  _m.m._10 *= recip_scalar;
+  _m.m._11 *= recip_scalar;
+  _m.m._12 *= recip_scalar;
+  _m.m._13 *= recip_scalar;
 
-  _m.m._20 /= scalar;
-  _m.m._21 /= scalar;
-  _m.m._22 /= scalar;
-  _m.m._23 /= scalar;
+  _m.m._20 *= recip_scalar;
+  _m.m._21 *= recip_scalar;
+  _m.m._22 *= recip_scalar;
+  _m.m._23 *= recip_scalar;
 
-  _m.m._30 /= scalar;
-  _m.m._31 /= scalar;
-  _m.m._32 /= scalar;
-  _m.m._33 /= scalar;
+  _m.m._30 *= recip_scalar;
+  _m.m._31 *= recip_scalar;
+  _m.m._32 *= recip_scalar;
+  _m.m._33 *= recip_scalar;
 
   return *this;
 }
@@ -1135,16 +1136,22 @@ rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
   FLOATTYPE axis_1 = axis._v.v._1;
   FLOATTYPE axis_2 = axis._v.v._2;
 
-  // Normalize the axis.
-  FLOATTYPE length_sq = axis_0 * axis_0 + axis_1 * axis_1 + axis_2 * axis_2;
-  // Cannot rotate about a zero-length axis.
-  nassertr(length_sq != 0.0, ident_mat());
-  FLOATTYPE recip_length = 1.0/csqrt(length_sq);
-//  axis *= recip_length;
+  // Normalize the axis.  
+  
+  // hack check for prenormalization, only works for simple unit vecs, which
+  // is what we usually pass in anyway.  need to add flag parameter so caller
+  // can request normalization if needed
+  if((axis_0+axis_1+axis_2) != 1.0) {
+	  FLOATTYPE length_sq = axis_0 * axis_0 + axis_1 * axis_1 + axis_2 * axis_2;
+	  #ifdef _DEBUG
+	      nassertr(length_sq != 0.0, ident_mat());
+   	  #endif
+	  FLOATTYPE recip_length = 1.0/csqrt(length_sq);
 
-  axis_0 *= recip_length;
-  axis_1 *= recip_length;
-  axis_2 *= recip_length;
+	  axis_0 *= recip_length;
+	  axis_1 *= recip_length;
+	  axis_2 *= recip_length;  
+  }
 
   FLOATTYPE angle_rad=deg_2_rad(angle);
   FLOATTYPE s,c;
