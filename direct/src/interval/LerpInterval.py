@@ -281,28 +281,14 @@ class LerpFunctionInterval(Interval):
         """
         # Note, this is temporary until blend functions get exposed
         import LerpBlendHelpers
-        def easeIn(t):
-            x = t*t
-            return ((3 * x) - (t * x)) * 0.5
-        def easeOut(t):
-            return ((3 * t) - (t * t * t)) * 0.5
-        def easeInOut(t):
-            x = t*t
-            return (3 * x) - (2 * t * x)
-        def noBlend(t):
-            return t
         if (blendType == "easeIn"):
-            #return LerpBlendHelpers.LerpBlendHelpers.easeIn
-            return easeIn
+            return LerpBlendHelpers.LerpBlendHelpers.easeIn
         elif (blendType == "easeOut"):
-            #return LerpBlendHelpers.LerpBlendHelpers.easeOut
-            return easeOut
+            return LerpBlendHelpers.LerpBlendHelpers.easeOut
         elif (blendType == "easeInOut"):
-            #return LerpBlendHelpers.LerpBlendHelpers.easeInOut
-            return easeInOut
+            return LerpBlendHelpers.LerpBlendHelpers.easeInOut
         elif (blendType == "noBlend"):
-            #return LerpBlendHelpers.LerpBlendHelpers.noBlend
-            return noBlend
+            return LerpBlendHelpers.LerpBlendHelpers.noBlend
         else:
             raise Exception(
 		'Error: LerpInterval.__getBlend: Unknown blend type')
