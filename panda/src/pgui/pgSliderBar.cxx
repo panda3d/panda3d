@@ -31,15 +31,24 @@ TypeHandle PGSliderBar::_type_handle;
 PGSliderBar::
 PGSliderBar(const string &name) :
   PGItem(name),
-  _slider("slider"),
+  //  _slider("slider"),
   _left("left"),
   _right("right")
 {
+  _slider = NULL;
   _range = 100.0;
+  // _value is a range from (-1 to +1) that represents slider
   _value = 0.0;
+  // _mapped_value is a mapping of (-1<->1) into (0<->1)
+  _mapped_value = 0.5*_value + 0.5;
+  // _update_position is mapping of _mapped_value wrt slider width
+  _update_position = 0.0; //will be set when _width is defined
   _speed = 0.05;
+  _scale = 0.05;
   _bar_state = -1;
   _update_slider = false;
+  _slider_only = true;
+  _negative_mapping = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,11 +70,12 @@ PGSliderBar(const PGSliderBar &copy) :
   PGItem(copy),
   _range(copy._range),
   _value(copy._value),
-  _slider(copy._slider),
+  //  _slider(copy._slider),
   _left(copy._left),
   _right(copy._right)
 {
   _bar_state = -1;
+  _slider = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -128,40 +138,49 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 ////////////////////////////////////////////////////////////////////
 void PGSliderBar::
 setup(float width, float height, float range) {
-  set_state(0);
-  clear_state_def(0);
+  //set_state(0);
+  //clear_state_def(0);
 
   _width = 0.5 * width; // quick reference to find the left and right max points
-  set_frame(-0.5f * width, 0.5f * width, -0.5f * height, 0.5f * height);
+  //set_frame(-0.5f * width, 0.5f * width, -0.5f * height, 0.5f * height);
+  set_range(range);
 
   NodePath current = NodePath(this);
-  _slider_button = current.attach_new_node(&_slider);
-  _slider.set_slider_bar(this);
-  _left_button = current.attach_new_node(&_left);
-  _left.set_slider_bar(this);
-  _right_button = current.attach_new_node(&_right);
-  _right.set_slider_bar(this);
-  _slider.setup(_slider.get_name());
-  _slider.set_drag_n_drop(true);
-  _left.setup(_left.get_name());
-  _right.setup(_right.get_name());
-  _slider_button.set_scale(0.5);
-  _slider_button.set_pos(0, 0, -0.25);
-  _left_button.set_scale(0.5);
-  _left_button.set_pos(-6.0, 0, -0.25);
-  _right_button.set_scale(0.5);
-  _right_button.set_pos(5.5, 0, -0.25);
+  if (!_slider) {
+    _slider = new PGSliderButton("slider");
+    _slider_button = current.attach_new_node(_slider);
+  }
+    
+  _slider->set_slider_bar(this);
+  _slider->setup(_slider->get_name());
+  _slider->set_drag_n_drop(true);
+  _slider_button.set_scale(_scale);
+  _slider_button.set_pos(0, 0, -_scale*0.5); // center it
+
+  // if left or right button to control slider desired, create them
+  if (!_slider_only) {
+    _left_button = current.attach_new_node(&_left);
+    _left.set_slider_bar(this);
+    _right_button = current.attach_new_node(&_right);
+    _right.set_slider_bar(this);
+    _left.setup(_left.get_name());
+    _right.setup(_right.get_name());
+    _left_button.set_scale(0.5);
+    _left_button.set_pos(-(_width+1), 0, -0.25);
+    _right_button.set_scale(0.5);
+    _right_button.set_pos((_width+0.5), 0, -0.25);
+  }
 
   PGFrameStyle style;
   style.set_width(0.05f, 0.05f);
 
   style.set_color(0.6f, 0.6f, 0.6f, 1.0f);
   style.set_type(PGFrameStyle::T_bevel_in);
-  set_frame_style(0, style);
+  //set_frame_style(0, style);
 
   style.set_color(0.8f, 0.8f, 0.8f, 1.0f);
   style.set_type(PGFrameStyle::T_bevel_out);
-  set_bar_style(style);
+  //set_bar_style(style);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -175,28 +194,27 @@ void PGSliderBar::
 press(const MouseWatcherParameter &param, bool background) {
   PGItem::press(param, background);
   //pgui_cat.info() << get_name() << "::" << param << endl;
-  //pgui_cat.info() << _slider.get_name() << "::" << _slider_button.get_x() << endl;
+  //pgui_cat.info() << _slider->get_name() << "::press:" << _slider_button.get_x() << endl;
 
   // translate the mouse param position into frame space
   LPoint2f mouse_point = param.get_mouse();
   LVector3f result(mouse_point[0], mouse_point[1], 0);
   result = get_frame_inv_xform().xform_point(result);
-  //pgui_cat.info() << "mouse_point: " << result << endl;
-  //_update_slider = true;
-  //_update_value = result[0];
-  _slider_button.set_x(result[0]);
+  _update_slider = true;
+  _update_position = result[0];
+  //_slider_button.set_x(result[0]);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PGSliderBar::drag
 //       Access: Public, Virtual
 //  Description: This is a hook function, called when the user 
-//               id trying to drag the slider button 
+//               is trying to drag the slider button 
 ////////////////////////////////////////////////////////////////////
 void PGSliderBar::
 drag(const MouseWatcherParameter &param) {
   //pgui_cat.info() << get_name() << "::" << param << endl;
-  //pgui_cat.info() << _slider.get_name() << "::" << _slider_button.get_x() << endl;
+  //pgui_cat.info() << _slider->get_name() << "::drag:" << _slider_button.get_x() << endl;
 
   // translate the mouse param position into frame space
   LPoint2f mouse_point = param.get_mouse();
@@ -207,10 +225,9 @@ drag(const MouseWatcherParameter &param) {
     result[0] = -_width;
   if (result[0] > _width)
     result[0] = _width;
-  //pgui_cat.info() << "mouse_point: " << result << endl;
-  //_update_slider = true;
-  //_update_value = result[0];
-  _slider_button.set_x(result[0]);
+  _update_slider = true;
+  _update_position = result[0];
+  //_slider_button.set_x(result[0]);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -223,25 +240,36 @@ void PGSliderBar::
 update() {
   int state = get_state();
 
-  // Handle left and right button presses
-  if (_left.is_button_down()) {
-    // move the slider to the left
-    float x = _slider_button.get_x() - _speed;
-    _slider_button.set_x(max(x, -_width));
+  // need left and right button input if they exist
+  if (!_slider_only) {
+    // Handle left and right button presses
+    if (_left.is_button_down()) {
+      // move the slider to the left
+      float x = _slider_button.get_x() - _speed;
+      _update_slider = true;
+      _update_position = max(x, -_width);
+      //_slider_button.set_x(max(x, -_width));
+    }
+    
+    if (_right.is_button_down()) {
+      // move the slider to the right
+      float x = _slider_button.get_x() + _speed;
+      _update_slider = true;
+      _update_position = min(x, _width);
+      //_slider_button.set_x(min(x, _width));
+    }
   }
 
-  if (_right.is_button_down()) {
-    // move the slider to the right
-    float x = _slider_button.get_x() + _speed;
-    _slider_button.set_x(min(x, _width));
-  }
-
-  /*
-  // press() and drag() update schedules this values that need to be applied
-  // here so that it keeps integrity of the update regardless of bar orientation
+  // press() and drag() update schedules this values that need to be
+  // applied here so that value of current slider position as a ratio
+  // of range can be updated
   if (_update_slider) {
-    _slider_button.set_x(_update_value);
+    //pgui_cat.info() << "mouse_point: " << _update_position << endl;
+    if (!_slider_button.is_empty())
+      _slider_button.set_x(_update_position);
+    _mapped_value = (_update_position + _width)/(2*_width);
+    _value = _negative_mapping ? ((_mapped_value-0.5)*2) : _mapped_value;
     _update_slider = false;
+    throw_event(get_click_event());
   }
-  */
 }

@@ -40,7 +40,8 @@ PUBLISHED:
 public:
 
   virtual void move(const MouseWatcherParameter &param);
-  
+  PGSliderButton(const PGSliderButton &copy);
+
 PUBLISHED:
 
   INLINE bool is_drag_n_drop();
@@ -48,6 +49,7 @@ PUBLISHED:
   INLINE void set_slider_bar(PGItem *item);
 
 public:
+  virtual PandaNode *make_copy() const;
   
   bool _drag_n_drop;
   PGItem *_slider_bar;

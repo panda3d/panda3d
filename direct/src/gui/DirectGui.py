@@ -17,5 +17,6 @@ from DirectLabel import *
 from DirectScrolledList import *
 from DirectDialog import *
 from DirectWaitBar import *
+from DirectSliderBar import *
 from DirectCheckButton import *
 from DirectOptionMenu import *

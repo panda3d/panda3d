@@ -47,7 +47,10 @@ get_range() const {
 INLINE void PGSliderBar:: 
 set_value(float value) {
   _value = value;
+  _mapped_value = _negative_mapping ? (_value*0.5 + 0.5) : _value;
+  _update_position = _width * (2*_mapped_value - 1);
   _bar_state = -1;
+  _update_slider = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,6 +61,28 @@ set_value(float value) {
 INLINE float PGSliderBar:: 
 get_value() const {
   return _value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar:get_mapped_value
+//       Access: Published
+//  Description: Returns the _mapped_value which is caluclated from 
+//               _value with negative_mapping bool
+////////////////////////////////////////////////////////////////////
+INLINE float PGSliderBar:: 
+get_mapped_value() const {
+  return _mapped_value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::get_update_position
+//       Access: Published
+//  Description: Returns the _update_position which is caluclated from 
+//               _mapped_value with width formula
+////////////////////////////////////////////////////////////////////
+INLINE float PGSliderBar:: 
+get_update_position() const {
+  return _update_position;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -81,13 +106,66 @@ get_speed() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGSliderBar::get_percent
+//     Function: PGSliderBar::set_scale
 //       Access: Published
-//  Description: Returns the percentage complete.
+//  Description: Sets the scale of the traugh image
+////////////////////////////////////////////////////////////////////
+INLINE void PGSliderBar:: 
+set_scale(float scale) {
+  _scale = scale/10;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::get_scale
+//       Access: Published
+//  Description: Returns the scale set on the traugh image
 ////////////////////////////////////////////////////////////////////
 INLINE float PGSliderBar:: 
-get_percent() const {
-  return (_value / _range) * 100.0f;
+get_scale() const {
+  return _scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::set_slider_only
+//       Access: Published
+//  Description: Sets _slider_only. True:only slider button desired.
+//               No left or right button to control slider needed.
+//               Else, the left and right slider buttons are shown.
+////////////////////////////////////////////////////////////////////
+INLINE void PGSliderBar:: 
+set_slider_only(bool value) {
+  _slider_only = value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::get_slider_only
+//       Access: Published
+//  Description: Returns what type of slider option set
+////////////////////////////////////////////////////////////////////
+INLINE bool PGSliderBar:: 
+get_slider_only() const {
+  return _slider_only;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::set_negative_mapping
+//       Access: Published
+//  Description: Sets _negative_mapping. True: slider will receive
+//               _value from -1 to +1 else, _value from 0 to + 1
+////////////////////////////////////////////////////////////////////
+INLINE void PGSliderBar:: 
+set_negative_mapping(bool value) {
+  _negative_mapping = value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::get_negative_mapping
+//       Access: Published
+//  Description: Returns what type of value range option set
+////////////////////////////////////////////////////////////////////
+INLINE bool PGSliderBar:: 
+get_negative_mapping() const {
+  return _negative_mapping;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -114,6 +192,17 @@ get_bar_style() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::get_click_event
+//       Access: Published
+//  Description: Returns the event name that will be thrown when the
+//               slider button is moved
+////////////////////////////////////////////////////////////////////
+INLINE string PGSliderBar::
+get_click_event() const {
+  return "updated-slider-" + get_id();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGSliderBar::get_slider_button
 //       Access: Published
 //  Description: Returns the slider button that is drawn on the
@@ -122,6 +211,18 @@ get_bar_style() const {
 INLINE NodePath PGSliderBar::
 get_slider_button() const {
   return _slider_button;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderBar::set_slider_button
+//       Access: Published
+//  Description: sets slider button that is drawn on the
+//               SliderBar to move the slider left or right 
+////////////////////////////////////////////////////////////////////
+INLINE void PGSliderBar::
+set_slider_button(NodePath &np, PGSliderButton *button) {
+  _slider_button = np;
+  _slider = button;
 }
 
 ////////////////////////////////////////////////////////////////////

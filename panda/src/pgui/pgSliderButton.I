@@ -25,7 +25,6 @@ INLINE bool PGSliderButton::
 is_drag_n_drop() {
   return _drag_n_drop;
 }
-  INLINE bool is_drag_n_drop();
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PGSliderButton::set_drag_n_drop

@@ -54,14 +54,25 @@ PUBLISHED:
 
   INLINE void set_value(float value);
   INLINE float get_value() const;
+  INLINE float get_mapped_value() const;
+  INLINE float get_update_position() const;
 
   INLINE void set_speed(float speed);
   INLINE float get_speed() const;
 
-  INLINE float get_percent() const;
+  INLINE void set_scale(float speed);
+  INLINE float get_scale() const;
+
+  INLINE void set_slider_only(bool value);
+  INLINE bool get_slider_only() const ;
+  INLINE void set_negative_mapping(bool value);
+  INLINE bool get_negative_mapping() const ;
 
   INLINE void set_bar_style(const PGFrameStyle &style);
   INLINE PGFrameStyle get_bar_style() const;
+  INLINE string get_click_event() const;
+
+  INLINE void set_slider_button(NodePath &np, PGSliderButton *button);
 
   INLINE NodePath get_slider_button() const;
   INLINE NodePath get_left_button() const;
@@ -70,14 +81,21 @@ PUBLISHED:
 private:
   void update();
 
+  bool _slider_only;
+  bool _negative_mapping;
   bool _update_slider;
-  float _update_value;
 
-  float _range, _value;
+  // These 3 variables control slider range
+  float _value;
+  float _mapped_value;
+  float _update_position;
+
+  float _range;
   float _speed, _width;
+  float _scale;
   int _bar_state;
   PGFrameStyle _bar_style;
-  PGSliderButton _slider;
+  PGSliderButton *_slider;
   PGSliderButton _left;
   PGSliderButton _right;
   NodePath _bar;

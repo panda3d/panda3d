@@ -865,6 +865,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         if self['frameSize']:
             # Use user specified bounds
             self.bounds = self['frameSize']
+            #print "%s bounds = %s" % (self.getName(),self.bounds)            
         else:
             if fClearFrame and (frameType != PGFrameStyle.TNone):
                 self.frameStyle[0].setType(PGFrameStyle.TNone)

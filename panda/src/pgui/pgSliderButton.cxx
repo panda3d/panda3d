@@ -51,6 +51,33 @@ PGSliderButton::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGSliderButton::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PGSliderButton::
+PGSliderButton(const PGSliderButton &copy) :
+  PGButton(copy),
+  _drag_n_drop(copy._drag_n_drop)
+  //  _slider_bar(copy._slider_bar)
+{
+  _slider_bar = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGSliderButton::make_copy
+//       Access: Public, Virtual
+//  Description: Returns a newly-allocated Node that is a shallow copy
+//               of this one.  It will be a different Node pointer,
+//               but its internal data may or may not be shared with
+//               that of the original Node.
+////////////////////////////////////////////////////////////////////
+PandaNode *PGSliderButton::
+make_copy() const {
+  return new PGSliderButton(*this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGSliderButton::move
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever the
