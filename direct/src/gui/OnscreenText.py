@@ -19,6 +19,7 @@ class OnscreenText(PandaObject, NodePath):
     def __init__(self, text = '',
                  style = Plain,
                  pos = (0, 0),
+                 roll = 0,
                  scale = None,
                  fg = None,
                  bg = None,
@@ -151,6 +152,7 @@ class OnscreenText(PandaObject, NodePath):
         # Save some of the parameters for posterity.
         self.scale = scale
         self.pos = pos
+        self.roll = roll
 
         if font == None:
             font = DirectGuiGlobals.getDefaultFont()
@@ -185,9 +187,7 @@ class OnscreenText(PandaObject, NodePath):
         # We'd rather do it here, on the text itself, rather than on
         # our NodePath, so we have one fewer transforms in the scene
         # graph.
-        mat = Mat4.scaleMat(
-            scale[0], 1, scale[1]) * Mat4.translateMat(pos[0], 0, pos[1])
-        textNode.setTransform(mat)
+        self.updateTransformMat()
 
         if drawOrder != None:
             textNode.setBin('fixed')
@@ -270,14 +270,20 @@ class OnscreenText(PandaObject, NodePath):
         Position the onscreen text in 2d screen space
         """
         self.pos = (x, y)
-        mat = Mat4.scaleMat(
-            self.scale[0],
-            1,
-            self.scale[1]) * Mat4.translateMat(self.pos[0], 0, self.pos[1])
-        self.textNode.setTransform(mat)
+        self.updateTransformMat()
 
     def getPos(self):
         return self.pos
+
+    def setRoll(self, roll):
+        """setRoll(self, float)
+        Rotate the onscreen text around the screen's normal
+        """
+        self.roll = roll
+        self.updateTransformMat()
+
+    def getRoll(self):
+        return self.roll
         
     def setScale(self, sx, sy = None):
         """setScale(self, float, float)
@@ -292,10 +298,14 @@ class OnscreenText(PandaObject, NodePath):
                 self.scale = (sx, sx)
         else:
             self.scale = (sx, sy)
-        mat = Mat4.scaleMat(
-            self.scale[0],
-            1,
-            self.scale[1]) * Mat4.translateMat(self.pos[0], 0, self.pos[1])
+        self.updateTransformMat()
+
+    def updateTransformMat(self):
+        mat = (
+            Mat4.scaleMat(self.scale[0],1,self.scale[1]) *
+            Mat4.rotateMat(self.roll, Vec3(0,-1,0)) *
+            Mat4.translateMat(self.pos[0], 0, self.pos[1])
+            )
         self.textNode.setTransform(mat)
 
     def getScale(self):
