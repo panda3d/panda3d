@@ -87,7 +87,7 @@ if [ "$PANDAAPP" ]; then
 fi
 
 # Panda will now tolerate the colon in the de-cygpath version of the model trees
-if [ "DMODELS" ]; then
+if [ "$DMODELS" ]; then
     if [ "$debug" ]; then echo "DMODELS   $DMODELS"; fi
     DMODELS=`cygpath -w $DMODELS`
     export DMODELS
