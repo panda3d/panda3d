@@ -195,6 +195,13 @@ private:
   PTAMap _pta_map;
   int _pta_id;
 
+  // This is used internally to record all of the new types created
+  // on-the-fly to satisfy bam requirements.  We keep track of this
+  // just so we can suppress warning messages from attempts to create
+  // objects of these types.
+  typedef pset<TypeHandle> NewTypes;
+  static NewTypes _new_types;
+
   int _file_major, _file_minor;
   static const int _cur_major;
   static const int _cur_minor;

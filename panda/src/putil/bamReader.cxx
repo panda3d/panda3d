@@ -29,6 +29,8 @@ WritableFactory *BamReader::_factory = (WritableFactory*)0L;
 BamReader *const BamReader::Null = (BamReader*)0L;
 WritableFactory *const BamReader::NullFactory = (WritableFactory*)0L;
 
+BamReader::NewTypes BamReader::_new_types;
+
 const int BamReader::_cur_major = _bam_major_ver;
 const int BamReader::_cur_minor = _bam_minor_ver;
 
@@ -365,6 +367,7 @@ read_handle(DatagramIterator &scan) {
     bam_cat.warning()
       << "Bam file contains objects of unknown type: " << type << "\n";
     new_type = true;
+    _new_types.insert(type);
   }
 
   // Now pick up the derivation information.
@@ -745,10 +748,25 @@ p_read_object() {
         << "Unable to create an object of type " << type << endl;
 
     } else if (object->get_type() != type) {
-      bam_cat.warning()
-        << "Attempted to create a " << type.get_name() \
-        << " but a " << object->get_type() \
-        << " was created instead." << endl;
+      if (_new_types.find(type) != _new_types.end()) {
+        // This was a type we hadn't heard of before, so it's not
+        // really surprising we didn't know how to create it.
+        // Suppress the warning (make it a debug statement instead).
+        if (bam_cat.is_debug()) {
+          bam_cat.warning()
+            << "Attempted to create a " << type.get_name() \
+            << " but a " << object->get_type() \
+            << " was created instead." << endl;
+        }
+
+      } else {
+        // This was a normal type that we should have known how to
+        // create.  Report the error.
+        bam_cat.warning()
+          << "Attempted to create a " << type.get_name() \
+          << " but a " << object->get_type() \
+          << " was created instead." << endl;
+      }
 
     } else {
       if (bam_cat.is_spam()) {
