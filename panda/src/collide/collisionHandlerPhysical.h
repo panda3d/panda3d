@@ -30,6 +30,7 @@ public:
   virtual void add_entry(CollisionEntry *entry);
   virtual void end_group();
 
+PUBLISHED:
   void add_collider(CollisionNode *node, DriveInterface *drive_interface);
   void add_collider(CollisionNode *node, NodeRelation *arc);
   bool remove_collider(CollisionNode *node);

@@ -28,7 +28,7 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, QueuedReturn<NetDatagram>);
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA QueuedConnectionReader : public ConnectionReader, 
 			       public QueuedReturn<NetDatagram> {
-public:
+PUBLISHED:
   QueuedConnectionReader(ConnectionManager *manager, int num_threads);
   virtual ~QueuedConnectionReader();
 

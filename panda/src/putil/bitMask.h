@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
 class BitMask {
-public:
+PUBLISHED:
   INLINE BitMask();
   INLINE BitMask(WordType init_value);
   INLINE BitMask(const BitMask<WordType, num_bits> &copy);

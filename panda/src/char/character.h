@@ -36,13 +36,17 @@ public:
 
   virtual bool safe_to_transform() const;
 
+PUBLISHED:
   INLINE CharacterJointBundle *get_bundle() const;
 
   INLINE ComputedVertices *get_computed_vertices() const;
   INLINE int get_num_parts() const;
   INLINE PartGroup *get_part(int n) const;
 
+public:
   virtual void app_traverse();
+
+PUBLISHED:
   void update();
 
 private:

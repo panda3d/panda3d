@@ -23,12 +23,13 @@
 
 class EXPCL_PANDA SequenceNode : public NamedNode, public TimedCycle
 {
-public:
+PUBLISHED:
   SequenceNode(const string &initial_name = "");
   SequenceNode(float switch_time, const string &initial_name = "");
 
   void set_switch_time(float switch_time);
 
+public:
   virtual bool sub_render(const AllAttributesWrapper &attrib,
 			  AllTransitionsWrapper &trans,
 			  GraphicsStateGuardianBase *gsgbase);

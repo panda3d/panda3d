@@ -28,7 +28,7 @@
 //               origin.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA Trackball : public DataNode {
-public:
+PUBLISHED:
 
   Trackball(const string &name = "");
   ~Trackball();

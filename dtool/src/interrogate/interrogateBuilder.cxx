@@ -317,6 +317,13 @@ write_code(ostream &out, InterrogateModuleDef *def) {
     out << "#include <Python.h>\n\n";
   }
 
+  if (generate_spam) {
+    out << "#include <config_interrogatedb.h>\n"
+	<< "#include <notifyCategoryProxy.h>\n\n"
+	<< "NotifyCategoryDecl(in_" << library_name << ", EXPCL_MISC, EXPTP_MISC);\n"
+	<< "NotifyCategoryDef(in_" << library_name << ", interrogatedb_cat);\n\n";
+  }
+
   // Now, define all of our wrappers.
 
   out << "extern \"C\" {\n\n";
@@ -2109,8 +2116,20 @@ define_method(CPPInstance *function, InterrogateType &itype,
     // The function is a template function, not a true function.
     return;
   }
+
+  // As a special kludgey extension, we consider a public static
+  // method called "get_class_type()" to be marked published, even if
+  // it is not.  This allows us to export all of the TypeHandle system
+  // stuff without having to specifically flag get_class_type() as
+  // published.
+  bool force_publish = false;
+  if (function->get_simple_name() == "get_class_type" &&
+      (function->_storage_class && CPPInstance::SC_static) != 0 &&
+      function->_vis <= V_public) {
+    force_publish = true;
+  }
   
-  if (function->_vis > min_vis) {
+  if (!force_publish && function->_vis > min_vis) {
     // The function is not marked to be exported.
     if ((ftype->_flags & CPPFunctionType::F_destructor) != 0) {
       itype._flags |= InterrogateType::F_private_destructor;

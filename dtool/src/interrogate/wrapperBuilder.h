@@ -112,6 +112,8 @@ protected:
 		       bool convert_result = true,
 		       const vector<string> &pexprs = vector<string>()) const;
 
+  void write_quoted_string(ostream &out, const string &str) const;
+
   bool _is_valid;
   bool _return_value_needs_management;
   FunctionIndex _return_value_destructor;

@@ -67,7 +67,7 @@ do_update(PartBundle *root, PartGroup *parent,
        ++bci) {
     AnimControl *control = (*bci);
     int channel_index = control->get_channel_index();
-    nassertv(channel_index >= 0 && channel_index < _channels.size());
+    nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
     AnimChannelBase *channel = _channels[channel_index];
     nassertv(channel != (AnimChannelBase*)0L);
 
@@ -124,7 +124,7 @@ pick_channel_index(list<int> &holes, int &next) const {
 
     int hole = (*ii);
     nassertv(hole >= 0 && hole < next);
-    if (hole < _channels.size() || 
+    if (hole < (int)_channels.size() || 
 	_channels[hole] != (AnimChannelBase *)NULL) {
       // We can't accept this hole; we're using it!
       holes.erase(ii);
@@ -133,9 +133,9 @@ pick_channel_index(list<int> &holes, int &next) const {
   }
 
   // Now do we have any more to restrict?
-  if (next < _channels.size()) {
+  if (next < (int)_channels.size()) {
     int i;
-    for (i = next; i < _channels.size(); i++) {
+    for (i = next; i < (int)_channels.size(); i++) {
       if (_channels[i] == (AnimChannelBase*)0L) {
 	// Here's a hole we do have.
 	holes.push_back(i);
@@ -157,7 +157,7 @@ pick_channel_index(list<int> &holes, int &next) const {
 ////////////////////////////////////////////////////////////////////
 void MovingPartBase::
 bind_hierarchy(AnimGroup *anim, int channel_index) {
-  while (_channels.size() <= channel_index) {
+  while ((int)_channels.size() <= channel_index) {
     _channels.push_back((AnimChannelBase*)0L);
   }
 

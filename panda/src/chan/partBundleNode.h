@@ -29,6 +29,7 @@ protected:
 public:
   virtual bool safe_to_flatten() const;
 
+PUBLISHED:
   INLINE PartBundle *get_bundle() const;
 
 private:

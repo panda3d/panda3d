@@ -25,7 +25,8 @@ private:
   INLINE MouseWatcherRegion* get_region(void) const;
 
   friend GuiManager;
-public:
+
+PUBLISHED:
   INLINE GuiRegion(const string&, float, float, float, float, bool);
   ~GuiRegion(void);
 
@@ -33,6 +34,7 @@ public:
 
   INLINE void set_region(float, float, float, float);
   INLINE LVector4f get_frame(void) const;
+
 public:
   // type interface
   static TypeHandle get_class_type(void) {

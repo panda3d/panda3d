@@ -52,7 +52,7 @@ add_path(const NodePath &node_path) {
   // inadvertently modify any of our brethren NodePathCollection
   // objects.
 
-  if (_node_paths.get_count() > 1) {
+  if (_node_paths.get_ref_count() > 1) {
     PTA(NodePathBase) old_node_paths = _node_paths;
     _node_paths = PTA(NodePathBase)(0);
     _node_paths.v() = old_node_paths.v();
@@ -87,7 +87,7 @@ remove_path(const NodePath &node_path) {
   // inadvertently modify any of our brethren NodePathCollection
   // objects.
 
-  if (_node_paths.get_count() > 1) {
+  if (_node_paths.get_ref_count() > 1) {
     PTA(NodePathBase) old_node_paths = _node_paths;
     _node_paths = PTA(NodePathBase)(0);
     _node_paths.v() = old_node_paths.v();

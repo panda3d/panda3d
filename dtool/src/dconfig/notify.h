@@ -30,7 +30,7 @@
 //               respected according to the wishes of the user.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOL Notify {
-public:
+PUBLISHED:
   Notify();
   ~Notify();
 

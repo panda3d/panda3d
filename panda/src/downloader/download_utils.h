@@ -10,8 +10,12 @@
 #include <filename.h>
 #include <typedef.h>
 
+BEGIN_PUBLISH
+
 EXPCL_PANDAEXPRESS ulong check_crc(Filename name);
 EXPCL_PANDAEXPRESS ulong check_adler(Filename name);
+
+END_PUBLISH
 
 #endif
 

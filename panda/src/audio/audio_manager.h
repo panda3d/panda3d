@@ -45,6 +45,7 @@ public:
   static void set_update_func(UpdateFunc*);
   static void set_shutdown_func(ShutdownFunc*);
 
+PUBLISHED:
   INLINE static void play(AudioSound*);
   INLINE static void stop(AudioSound*);
   INLINE static void set_loop(AudioSound*, bool);

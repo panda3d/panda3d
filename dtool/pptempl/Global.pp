@@ -676,6 +676,7 @@ Warning: Variable $[upcase $[tree]]_INSTALL is not set!
     $[filter -D%,$[C++FLAGS]] \
     $[INTERROGATE_OPTIONS] \
     $[if $[INTERROGATE_PYTHON_INTERFACE],-python] \
+    $[if $[<= $[OPTIMIZE], 1],-spam] \
     $[if $[INTERROGATE_C_INTERFACE],-c]
 
 

@@ -146,7 +146,7 @@ class DirectManipulationControl(PandaObject):
         pos = VBase3(0)
         hpr = VBase3(0)
         decomposeMatrix(self.direct.selected.last.mCoa2Dnp,
-                        VBase3(0), hpr, pos, getDefaultCoordinateSystem())
+                        VBase3(0), hpr, pos, CSDefault)
         # Create the task
         t = Task.Task(self.followSelectedNodePathTask)
         # Update state variables
@@ -363,7 +363,7 @@ class DirectManipulationControl(PandaObject):
         # And determine where the viewpoint is relative to widget
         pos = VBase3(0)
         decomposeMatrix(mWidget2Cam, VBase3(0), VBase3(0), pos,
-                        getDefaultCoordinateSystem())
+                        CSDefault)
         widgetDir = Vec3(pos)
         widgetDir.normalize()
         # Convert specified widget axis to view space
@@ -438,7 +438,7 @@ class DirectManipulationControl(PandaObject):
         mBase2NewBase = Mat4()
         mBase2NewBase.composeMatrix(
             UNIT_VEC, VBase3(h,p,r), ZERO_VEC,
-            getDefaultCoordinateSystem())
+            CSDefault)
         mBase2Widget = base.getMat(self.direct.widget)
         mWidget2Parent = self.direct.widget.getMat()
         # Compose the result
@@ -448,7 +448,7 @@ class DirectManipulationControl(PandaObject):
         # Extract and apply the hpr
         hpr = Vec3(0)
         decomposeMatrix(resultMat, VBase3(), hpr, VBase3(),
-                        getDefaultCoordinateSystem())
+                        CSDefault)
         self.direct.widget.setHpr(hpr)
 
     def rotate2D(self):
@@ -845,7 +845,7 @@ class ObjectHandles(NodePath,PandaObject):
         # And determine where the viewpoint is relative to widget
         lineOrigin = VBase3(0)
         decomposeMatrix(mCam2Widget, VBase3(0), VBase3(0), lineOrigin,
-                        getDefaultCoordinateSystem())
+                        CSDefault)
         # Now see where this hits the plane containing the 1D motion axis.
         # Pick the intersection plane most normal to the intersection ray
         # by comparing lineDir with plane normals.  The plane with the
@@ -892,7 +892,7 @@ class ObjectHandles(NodePath,PandaObject):
         # And determine where the viewpoint is relative to widget
         lineOrigin = VBase3(0)
         decomposeMatrix(mCam2NodePath, VBase3(0), VBase3(0), lineOrigin,
-                        getDefaultCoordinateSystem())
+                        CSDefault)
         
         # Next we find the vector from viewpoint to the widget through
         # the mouse's position on near plane.

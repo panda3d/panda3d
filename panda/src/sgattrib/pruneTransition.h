@@ -20,9 +20,10 @@
 //               invisible.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PruneTransition : public ImmediateTransition {
-public:
+PUBLISHED:
   INLINE PruneTransition();
 
+public:
   virtual NodeTransition *make_copy() const;
 
   virtual bool sub_render(NodeRelation *arc,

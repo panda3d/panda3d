@@ -21,13 +21,14 @@ class ProjectionNode;
 //               effects.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CollisionRay : public CollisionSolid {
-public:
+PUBLISHED:
   INLINE CollisionRay();
   INLINE CollisionRay(const LPoint3f &origin, const LVector3f &direction);
   INLINE CollisionRay(float ox, float oy, float oz, 
 		      float dx, float dy, float dz);
-  INLINE CollisionRay(const CollisionRay &copy);
 
+public:
+  INLINE CollisionRay(const CollisionRay &copy);
   virtual CollisionSolid *make_copy();
 
   virtual int
@@ -39,6 +40,7 @@ public:
 
   virtual void output(ostream &out) const;
 
+PUBLISHED:
   INLINE void set_origin(const LPoint3f &origin);
   INLINE void set_origin(float x, float y, float z);
   INLINE const LPoint3f &get_origin() const;

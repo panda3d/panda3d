@@ -115,7 +115,10 @@ app_traverse() {
 ////////////////////////////////////////////////////////////////////
 //     Function: Character::update
 //       Access: Public
-//  Description: 
+//  Description: Recalculates the character's joints and vertices for
+//               the current frame.  Normally this is performed
+//               automatically during the render and need not be
+//               called explicitly.
 ////////////////////////////////////////////////////////////////////
 void Character::
 update() {

@@ -21,10 +21,11 @@ class EXPCL_PANDA CollisionPlane : public CollisionSolid {
 protected:
   INLINE CollisionPlane();
 
-public:
+PUBLISHED:
   INLINE CollisionPlane(const Planef &plane);
   INLINE CollisionPlane(const CollisionPlane &copy);
 
+public:
   virtual CollisionSolid *make_copy();
 
   virtual int
@@ -33,9 +34,9 @@ public:
 		    const CollisionSolid *into) const;
 
   virtual void xform(const LMatrix4f &mat);
-
   virtual void output(ostream &out) const;
 
+PUBLISHED:
   INLINE LVector3f get_normal() const; 
   INLINE float dist_to_plane(const LPoint3f &point) const; 
 

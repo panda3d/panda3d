@@ -135,19 +135,6 @@ has_keyboard(int device) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::get_mouse_data
-//       Access: Public
-//  Description: Returns the MouseData associated with the nth input
-//               device.
-////////////////////////////////////////////////////////////////////
-INLINE const MouseData &GraphicsWindow::
-get_mouse_data(int device) const {
-  nassertr(device >= 0 && device < (int)_input_devices.size(), 
-	   *(new MouseData));
-  return _input_devices[device].get_mouse_data();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::get_modifier_buttons
 //       Access: Public
 //  Description: Returns the set of ModifierButtons currently being
@@ -173,6 +160,19 @@ INLINE void GraphicsWindow::
 set_modifier_buttons(int device, const ModifierButtons &mods) {
   nassertv(device >= 0 && device < (int)_input_devices.size());
   _input_devices[device].set_modifier_buttons(mods);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::get_mouse_data
+//       Access: Public
+//  Description: Returns the MouseData associated with the nth input
+//               device.
+////////////////////////////////////////////////////////////////////
+INLINE const MouseData &GraphicsWindow::
+get_mouse_data(int device) const {
+  nassertr(device >= 0 && device < (int)_input_devices.size(), 
+	   *(new MouseData));
+  return _input_devices[device].get_mouse_data();
 }
 
 ////////////////////////////////////////////////////////////////////

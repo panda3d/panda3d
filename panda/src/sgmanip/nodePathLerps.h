@@ -18,7 +18,8 @@ private:
   NodePath _node_path;
   NodePath _wrt_path;
   bool _is_wrt;
-public:
+
+PUBLISHED:
   PosLerpFunctor(NodePath np, LPoint3f start, LPoint3f end)
     : LPoint3fLerpFunctor(start, end), _node_path(np), _is_wrt(false) {}
   PosLerpFunctor(NodePath np, float sx, float sy, float sz, float ex, float ey,
@@ -32,10 +33,13 @@ public:
 		 float ez, NodePath wrt)
     : LPoint3fLerpFunctor(LPoint3f(sx, sy, sz), LPoint3f(ex, ey, ez)),
       _node_path(np), _is_wrt(true), _wrt_path(wrt) {}
+
+public:
   PosLerpFunctor(const PosLerpFunctor&);
   virtual ~PosLerpFunctor(void);
   PosLerpFunctor& operator=(const PosLerpFunctor&);
   virtual void operator()(float);
+
 public:
   // now for typehandle stuff
   static TypeHandle get_class_type(void) {
@@ -68,7 +72,8 @@ private:
   NodePath _node_path;
   NodePath _wrt_path;
   bool _is_wrt;
-public:
+
+PUBLISHED:
   HprLerpFunctor(NodePath np, LVecBase3f start, LVecBase3f end)
     : LVecBase3fLerpFunctor(start, end), _node_path(np), _is_wrt(false) {}
   HprLerpFunctor(NodePath np, float sx, float sy, float sz, float ex, float ey,
@@ -82,10 +87,13 @@ public:
 		 float ez, NodePath wrt)
     : LVecBase3fLerpFunctor(LVecBase3f(sx, sy, sz), LVecBase3f(ex, ey, ez)),
       _node_path(np), _is_wrt(true), _wrt_path(wrt) {}
+
+public:
   HprLerpFunctor(const HprLerpFunctor&);
   virtual ~HprLerpFunctor(void);
   HprLerpFunctor& operator=(const HprLerpFunctor&);
   virtual void operator()(float);
+
 public:
   // now for typehandle stuff
   static TypeHandle get_class_type(void) {
@@ -116,7 +124,8 @@ private:
   NodePath _node_path;
   NodePath _wrt_path;
   bool _is_wrt;
-public:
+
+PUBLISHED:
   ScaleLerpFunctor(NodePath np, LVecBase3f start, LVecBase3f end)
     : LVecBase3fLerpFunctor(start, end), _node_path(np), _is_wrt(false) {}
   ScaleLerpFunctor(NodePath np, float sx, float sy, float sz, float ex,
@@ -130,10 +139,13 @@ public:
 		   float ey, float ez, NodePath wrt)
     : LVecBase3fLerpFunctor(LVecBase3f(sx, sy, sz), LVecBase3f(ex, ey, ez)),
       _node_path(np), _is_wrt(true), _wrt_path(wrt) {}
+
+public:
   ScaleLerpFunctor(const ScaleLerpFunctor&);
   virtual ~ScaleLerpFunctor(void);
   ScaleLerpFunctor& operator=(const ScaleLerpFunctor&);
   virtual void operator()(float);
+
 public:
   // now for typehandle stuff
   static TypeHandle get_class_type(void) {
@@ -164,7 +176,8 @@ private:
   NodePath _node_path;
   NodePath _wrt_path;
   bool _is_wrt;
-public:
+
+PUBLISHED:
   ColorLerpFunctor(NodePath np, LVecBase4f start, LVecBase4f end)
     : LVecBase4fLerpFunctor(start, end), _node_path(np), _is_wrt(false) {}
   ColorLerpFunctor(NodePath np, float sr, float sg, float sb, float sa, 
@@ -177,10 +190,13 @@ public:
 		 float eb, float ea, NodePath wrt)
     : LVecBase4fLerpFunctor(LVecBase4f(sr, sg, sb, sa), LVecBase4f(er, eg, eb, ea)),
       _node_path(np), _is_wrt(true), _wrt_path(wrt) {}
+
+public:
   ColorLerpFunctor(const ColorLerpFunctor&);
   virtual ~ColorLerpFunctor(void);
   ColorLerpFunctor& operator=(const ColorLerpFunctor&);
   virtual void operator()(float);
+
 public:
   // now for typehandle stuff
   static TypeHandle get_class_type(void) {
@@ -218,7 +234,8 @@ private:
   LVecBase3f _hdiff_cache;
   NodePath _wrt_path;
   bool _is_wrt;
-public:
+
+PUBLISHED:
   PosHprLerpFunctor(NodePath np, LPoint3f pstart, LPoint3f pend,
 		    LVecBase3f hstart, LVecBase3f hend)
     : LerpFunctor(), _node_path(np), _pstart(pstart), _pend(pend),
@@ -243,10 +260,13 @@ public:
       _pend(pex, pey, pez), _pdiff_cache(_pend-_pstart),
       _hstart(hsx, hsy, hsz), _hend(hex, hey, hez),
       _hdiff_cache(_hend - _hstart), _is_wrt(true), _wrt_path(wrt) {}
+
+public:
   PosHprLerpFunctor(const PosHprLerpFunctor&);
   virtual ~PosHprLerpFunctor(void);
   PosHprLerpFunctor& operator=(const PosHprLerpFunctor&);
   virtual void operator()(float);
+
 public:
   // now for typehandle stuff
   static TypeHandle get_class_type(void) {
@@ -287,7 +307,8 @@ private:
   LVecBase3f _sdiff_cache;
   NodePath _wrt_path;
   bool _is_wrt;
-public:
+
+PUBLISHED:
   PosHprScaleLerpFunctor(NodePath np, LPoint3f pstart, LPoint3f pend,
 			 LVecBase3f hstart, LVecBase3f hend, LVecBase3f sstart,
 			 LVecBase3f send)
@@ -322,10 +343,13 @@ public:
       _hdiff_cache(_hend-_hstart), _sstart(ssx, ssy, ssz),
       _send(sex, sey, sez), _sdiff_cache(_send-_sstart), _is_wrt(true),
       _wrt_path(wrt) {}
+
+public:
   PosHprScaleLerpFunctor(const PosHprScaleLerpFunctor&);
   virtual ~PosHprScaleLerpFunctor(void);
   PosHprScaleLerpFunctor& operator=(const PosHprScaleLerpFunctor&);
   virtual void operator()(float);
+
 public:
   // now for typehandle stuff
   static TypeHandle get_class_type(void) {
@@ -356,7 +380,8 @@ private:
   NodePath _node_path;
   NodePath _wrt_path;
   bool _is_wrt;
-public:
+
+PUBLISHED:
   ColorScaleLerpFunctor(NodePath np, LVecBase4f start, LVecBase4f end)
     : LVecBase4fLerpFunctor(start, end), _node_path(np), _is_wrt(false) {}
   ColorScaleLerpFunctor(NodePath np, float sr, float sg, float sb, float sa, 
@@ -369,10 +394,13 @@ public:
 		 float eb, float ea, NodePath wrt)
     : LVecBase4fLerpFunctor(LVecBase4f(sr, sg, sb, sa), LVecBase4f(er, eg, eb, ea)),
       _node_path(np), _is_wrt(true), _wrt_path(wrt) {}
+
+public:
   ColorScaleLerpFunctor(const ColorScaleLerpFunctor&);
   virtual ~ColorScaleLerpFunctor(void);
   ColorScaleLerpFunctor& operator=(const ColorScaleLerpFunctor&);
   virtual void operator()(float);
+
 public:
   // now for typehandle stuff
   static TypeHandle get_class_type(void) {

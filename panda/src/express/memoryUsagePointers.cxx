@@ -145,7 +145,7 @@ add_entry(ReferenceCount *ptr, TypeHandle type, double age) {
   // We can't safly add pointers with a zero reference count.  They
   // might be statically-allocated or something, and if we try to add
   // them they'll try to destruct when the PointerTo later goes away.
-  if (ptr->get_count() != 0) {
+  if (ptr->get_ref_count() != 0) {
     _entries.push_back(Entry(ptr, type, age));
   }
 }

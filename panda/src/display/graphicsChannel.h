@@ -42,6 +42,7 @@ public:
   GraphicsChannel(GraphicsWindow *);
   virtual ~GraphicsChannel();
 
+PUBLISHED:
   GraphicsLayer *make_layer(int index = -1);
   int get_num_layers() const;
   GraphicsLayer *get_layer(int index) const;
@@ -51,8 +52,10 @@ public:
   GraphicsWindow *get_window() const;
   GraphicsPipe *get_pipe() const;
 
+public:
   virtual void window_resized(int x, int y);
 
+PUBLISHED:
   INLINE void set_active(bool active);
   INLINE bool is_active() const;
 

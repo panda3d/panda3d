@@ -51,6 +51,8 @@ write_wrapper(ostream &out, const string &wrapper_name) const {
   out << "PyObject *\n"
       << wrapper_name << "(PyObject *, PyObject *args) {\n";
 
+  write_spam_message(out);
+
   int pn;
 
   string format_specifiers;

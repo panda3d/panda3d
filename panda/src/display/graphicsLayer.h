@@ -44,6 +44,7 @@ protected:
 public:
   virtual ~GraphicsLayer();
 
+PUBLISHED:
   DisplayRegion *make_display_region();
   DisplayRegion *make_display_region(float l, float r,
 				     float b, float t);
@@ -57,8 +58,10 @@ public:
   GraphicsWindow *get_window() const;
   GraphicsPipe *get_pipe() const;
 
+public:
   void channel_resized(int x, int y);
 
+PUBLISHED:
   INLINE void set_active(bool active);
   INLINE bool is_active() const;
 

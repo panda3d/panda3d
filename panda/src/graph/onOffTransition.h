@@ -40,7 +40,7 @@ protected:
   INLINE OnOffTransition(const OnOffTransition &copy);
   INLINE void operator = (const OnOffTransition &copy);
 
-public:
+PUBLISHED:
   INLINE void set_identity();
   INLINE void set_on();
   INLINE void set_off();
@@ -49,6 +49,7 @@ public:
   INLINE bool is_on() const;
   INLINE bool is_off() const;
 
+public:
   virtual NodeTransition *compose(const NodeTransition *other) const;
   virtual NodeTransition *invert() const;
   virtual NodeAttribute *apply(const NodeAttribute *attrib) const;

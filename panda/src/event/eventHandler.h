@@ -34,11 +34,14 @@ public:
   typedef void EventFunction(CPT_Event);
   typedef void EventCallbackFunction(CPT(Event), void*);
 
+PUBLISHED:
   EventHandler(EventQueue *queue);
 
   void process_events();
+
   virtual void dispatch_event(const CPT_Event &event);
 
+public:
   bool add_hook(const string &event_name, EventFunction *function);
   bool add_hook(const string &event_name, EventCallbackFunction *function,
 		void*);

@@ -31,7 +31,7 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, QueuedReturn< PT(Connection) >);
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA QueuedConnectionManager : public ConnectionManager,
 				public QueuedReturn<PT(Connection)> {
-public:
+PUBLISHED:
   QueuedConnectionManager();
   ~QueuedConnectionManager();
 

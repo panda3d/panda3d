@@ -27,13 +27,25 @@ ConfigureFn(config_express) {
 }
 
 
-// Set this true to enable tracking of ReferenceCount pointer
-// allocation/deallcation via the MemoryUsage object.  This is
-// primarily useful for detecting memory leaks.  It has no effect when
-// compiling in NDEBUG mode.
+// Set leak-memory true to disable the actual deletion of
+// ReferenceCount-derived objects.  This is sometimes useful to track
+// a reference counting bug, since the formerly deleted objects will
+// still remain (with a reference count of -100) without being
+// overwritten with a newly-allocated object, and the assertion tests
+// in ReferenceCount may more accurately detect the first instance of
+// an error.
+bool
+get_leak_memory() {
+  static bool got_leak_memory = false;
+  static bool leak_memory;
 
-// This variable is no longer defined here; instead, it's a member of
-// MemoryUsage.
+  if (!got_leak_memory) {
+    leak_memory = config_express.GetBool("leak-memory", false);
+    got_leak_memory = true;
+  }
+  
+  return leak_memory;
+}
 
 //const bool track_memory_usage = config_express.GetBool("track-memory-usage", false);
 

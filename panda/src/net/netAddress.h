@@ -17,7 +17,7 @@
 //               be sent or to which a TCP socket may be bound.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA NetAddress {
-public:
+PUBLISHED:
   NetAddress();
   NetAddress(const PRNetAddr &addr);
 

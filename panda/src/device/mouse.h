@@ -47,11 +47,11 @@ const int MIN_MOVE = 2;
 //               otherwise, the events will be discarded.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA MouseAndKeyboard : public DataNode {
-public:
-	
+PUBLISHED:
   MouseAndKeyboard(GraphicsWindow *window, int device,
 		   const string& name = "");
 
+public:
   virtual void transmit_data(NodeAttributes &data);
 
 public:

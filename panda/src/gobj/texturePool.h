@@ -23,7 +23,7 @@
 //               unnecessarily.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TexturePool {
-public:
+PUBLISHED:
   // These functions take string parameters instead of Filenames
   // because that's somewhat more convenient to the scripting
   // language.

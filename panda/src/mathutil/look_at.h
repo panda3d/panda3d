@@ -27,6 +27,7 @@
 // functions that simply return the upper 3x3 part of the matrix, and
 // flavors that return the whole 4x4 matrix with a zero bottom row.
 
+BEGIN_PUBLISH
 
 // Flavors for float-type arithmetic.
 
@@ -86,6 +87,8 @@ INLINE void heads_up(LMatrix4d &mat, const LVector3d &fwd,
 		     CoordinateSystem cs);
 INLINE void look_at(LMatrix4d &mat, const LVector3d &fwd,
 		    CoordinateSystem cs);
+
+END_PUBLISH
 
 #include "look_at.I"
 

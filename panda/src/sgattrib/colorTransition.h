@@ -23,7 +23,7 @@
 //               otherwise, the primitive color shows through.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ColorTransition : public OnOffTransition {
-public:
+PUBLISHED:
   INLINE ColorTransition();
   INLINE ColorTransition(const Colorf &color);
   INLINE ColorTransition(float r, float g, float b, float a);
@@ -36,7 +36,8 @@ public:
 
   INLINE bool is_real() const;
   INLINE Colorf get_color() const;
-  
+
+public:  
   virtual NodeTransition *make_copy() const;
   virtual NodeAttribute *make_attrib() const;
 

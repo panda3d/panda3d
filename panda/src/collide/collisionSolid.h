@@ -43,9 +43,11 @@ public:
 
   virtual CollisionSolid *make_copy()=0;
 
+PUBLISHED:
   INLINE void set_tangible(bool tangible);
   INLINE bool is_tangible() const;
 
+public:
   virtual int
   test_intersection(CollisionHandler *record,
 		    const CollisionEntry &entry,
@@ -55,6 +57,7 @@ public:
 
   void update_viz(Node *parent);
 
+PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 

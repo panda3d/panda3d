@@ -24,7 +24,7 @@
 class EXPCL_DTOOL DSearchPath {
 public:
   class Results {
-  public:
+  PUBLISHED:
     Results();
     Results(const Results &copy);
     void operator = (const Results &copy);
@@ -40,7 +40,7 @@ public:
     friend class DSearchPath;
   };
 
-public:
+PUBLISHED:
   DSearchPath();
   DSearchPath(const string &path, const string &delimiters = ": \t\n");
   DSearchPath(const DSearchPath &copy);

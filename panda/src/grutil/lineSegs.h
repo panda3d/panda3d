@@ -26,7 +26,7 @@
 //               primarily as a visualization and editing tool.
 ////////////////////////////////////////////////////////////////////
 class LineSegs {
-public:
+PUBLISHED:
   LineSegs();
   ~LineSegs();
 

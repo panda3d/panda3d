@@ -21,12 +21,12 @@
 
   #define INSTALL_HEADERS \
     interrogate_interface.h interrogate_request.h \
-    vector_int.h
+    vector_int.h config_interrogatedb.h
 
 // These are temporary; they need not be installed in the future.  These are
 // necessary only when using template stopgap.
   #define INSTALL_HEADERS \
-    interrogate_interface.h interrogate_request.h \
+    $[INSTALL_HEADERS] \
     interrogateComponent.h interrogateComponent.I \
     interrogateType.h interrogateType.I \
     interrogateFunction.h interrogateFunction.I \
@@ -34,6 +34,6 @@
     interrogateManifest.h interrogateManifest.I \
     interrogateElement.h interrogateElement.I \
     interrogateDatabase.h interrogateDatabase.I \
-    indexRemapper.h vector_int.h
+    indexRemapper.h
 
 #end lib_target

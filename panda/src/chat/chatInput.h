@@ -25,8 +25,7 @@
 // Description : Reads keyboard input in as that of a chat.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ChatInput : public DataNode {
-
-public:
+PUBLISHED:
   ChatInput(TextNode* text_node, const string& name = "");
   void reset(void);
 

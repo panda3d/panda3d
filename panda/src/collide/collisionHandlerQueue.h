@@ -21,12 +21,14 @@
 //               e.g. for picking from the window.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CollisionHandlerQueue : public CollisionHandler {
-public:
+PUBLISHED:
   CollisionHandlerQueue();
 
+public:
   virtual void begin_group();
   virtual void add_entry(CollisionEntry *entry);
 
+PUBLISHED:
   void sort_entries();
 
   int get_num_entries() const;

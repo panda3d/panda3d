@@ -11,7 +11,7 @@
 #include <vector>
 
 class EXPCL_PANDA GuiFrame : public GuiItem {
-public:
+PUBLISHED:
   enum Packing { NONE, ABOVE, UNDER, LEFT, RIGHT, ALIGN_ABOVE, ALIGN_UNDER,
 		 ALIGN_LEFT, ALIGN_RIGHT };
 private:
@@ -71,7 +71,8 @@ private:
   INLINE GuiFrame(void);
   Boxes::iterator find_box(GuiItem*);
   virtual void recompute_frame(void);
-public:
+
+PUBLISHED:
   GuiFrame(const string&);
   ~GuiFrame(void);
 

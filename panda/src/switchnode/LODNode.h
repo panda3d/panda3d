@@ -23,13 +23,16 @@
 // Description : A node that implements level of detail
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA LODNode : public NamedNode {
-public:
+PUBLISHED:
   INLINE LODNode(const string &name = "");
+
+public:
   INLINE LODNode(const LODNode &copy);
 
   virtual Node *make_copy() const;
   virtual void xform(const LMatrix4f &mat);
 
+PUBLISHED:
   // The sense of in vs. out distances is as if the object were coming
   // towards you from far away: it switches "in" at the far distance,
   // and switches "out" at the close distance.  Thus, "in" should be
@@ -43,6 +46,7 @@ public:
   INLINE float get_in(int index) const;
   INLINE float get_out(int index) const;
 
+public:
   virtual void output(ostream &out) const;
 
   virtual bool sub_render(const AllAttributesWrapper &attrib,

@@ -10,10 +10,12 @@
 #include <typedReferenceCount.h>
 
 class LerpBlendType : public TypedReferenceCount {
-public:
+PUBLISHED:
   LerpBlendType(void) {}
-  LerpBlendType(const LerpBlendType&);
   virtual ~LerpBlendType(void);
+
+public:
+  LerpBlendType(const LerpBlendType&);
   LerpBlendType& operator=(const LerpBlendType&);
   virtual float operator()(float) = 0;
 public:
@@ -38,10 +40,12 @@ private:
 };
 
 class EaseInBlendType : public LerpBlendType {
-public:
+PUBLISHED:
   EaseInBlendType(void) {}
-  EaseInBlendType(const EaseInBlendType&);
   virtual ~EaseInBlendType(void);
+
+public:
+  EaseInBlendType(const EaseInBlendType&);
   EaseInBlendType& operator=(const EaseInBlendType&);
   virtual float operator()(float);
 public:
@@ -66,10 +70,12 @@ private:
 };
 
 class EaseOutBlendType : public LerpBlendType {
-public:
+PUBLISHED:
   EaseOutBlendType(void) {}
-  EaseOutBlendType(const EaseOutBlendType&);
   virtual ~EaseOutBlendType(void);
+
+public:
+  EaseOutBlendType(const EaseOutBlendType&);
   EaseOutBlendType& operator=(const EaseOutBlendType&);
   virtual float operator()(float);
 public:
@@ -94,10 +100,11 @@ private:
 };
 
 class EaseInOutBlendType : public LerpBlendType {
-public:
+PUBLISHED:
   EaseInOutBlendType(void) {}
-  EaseInOutBlendType(const EaseInOutBlendType&);
   virtual ~EaseInOutBlendType(void);
+public:
+  EaseInOutBlendType(const EaseInOutBlendType&);
   EaseInOutBlendType& operator=(const EaseInOutBlendType&);
   virtual float operator()(float);
 public:
@@ -122,10 +129,11 @@ private:
 };
 
 class NoBlendType : public LerpBlendType {
-public:
+PUBLISHED:
   NoBlendType(void) {}
-  NoBlendType(const NoBlendType&);
   virtual ~NoBlendType(void);
+public:
+  NoBlendType(const NoBlendType&);
   NoBlendType& operator=(const NoBlendType&);
   virtual float operator()(float);
 public:

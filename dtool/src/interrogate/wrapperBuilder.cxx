@@ -616,8 +616,62 @@ call_function(ostream &out, int indent_level, bool convert_result,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WrapperBuilder::write_spam_message
+//       Access: Protected
+//  Description: Generates the lines of code at the beginning of the
+//               wrapper function that output a message when the
+//               wrapper is called.  This is output only if -spam is
+//               specified on the command line.
+////////////////////////////////////////////////////////////////////
+void WrapperBuilder::
+write_spam_message(ostream &out) const {
+  if (generate_spam) {
+    out << "#ifndef NDEBUG\n"
+	<< "  if (in_" << library_name << "_cat.is_spam()) {\n"
+	<< "    in_" << library_name << "_cat.spam()\n"
+	<< "      << \"";
+    write_quoted_string(out, _description);
+    out << "\\n\";\n"
+	<< "  }\n"
+	<< "#endif\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WrapperBuilder::write_quoted_string
+//       Access: Protected
+//  Description: Writes the string to the given output stream, as if
+//               it were quoted within double quotes in a C program.
+//               Specifically, this escapes characters that need to be
+//               escaped, and otherwise leaves the string unchanged.
+////////////////////////////////////////////////////////////////////
+void WrapperBuilder::
+write_quoted_string(ostream &out, const string &str) const {
+  string::const_iterator si;
+  for (si = str.begin(); si != str.end(); ++si) {
+    switch (*si) {
+    case '\n':
+      out << "\\n";
+      break;
+
+    case '\t':
+      out << "\\t";
+      break;
+
+    case '\\':
+    case '"':
+      out << '\\';
+      // fall through
+
+    default:
+      out << *si;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WrapperBuilder::indent
-//       Access: Protected, Static
+//       Access: Public, Static
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 ostream &WrapperBuilder::

@@ -96,7 +96,7 @@ class AllTransitionsWrapper;
 //               exactly what a NodePath is.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA NodePath : public NodePathBase {
-public:
+PUBLISHED:
   INLINE NodePath(TypeHandle graph_type = RenderRelation::get_class_type());
   INLINE NodePath(Node *top_node, TypeHandle graph_type = RenderRelation::get_class_type());
   INLINE NodePath(NodeRelation *top_arc);

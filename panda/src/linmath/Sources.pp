@@ -8,7 +8,8 @@
   #define SOURCES \
     compose_matrix.I compose_matrix.cxx compose_matrix.h \
     config_linmath.cxx config_linmath.h coordinateSystem.cxx \
-    coordinateSystem.h ioPtaDatagramLinMath.I ioPtaDatagramLinMath.cxx \
+    coordinateSystem.h deg_2_rad.h \
+    ioPtaDatagramLinMath.I ioPtaDatagramLinMath.cxx \
     ioPtaDatagramLinMath.h lmatrix.cxx lmatrix.h luse.I luse.N luse.cxx \
     luse.h mathNumbers.cxx mathNumbers.h pta_Colorf.cxx pta_Colorf.h \
     pta_Normalf.cxx pta_Normalf.h pta_TexCoordf.cxx pta_TexCoordf.h \

@@ -40,7 +40,7 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, QueuedReturn<ConnectionListenerD
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA QueuedConnectionListener : public ConnectionListener,
 				 public QueuedReturn<ConnectionListenerData> {
-public:
+PUBLISHED:
   QueuedConnectionListener(ConnectionManager *manager, int num_threads);
   virtual ~QueuedConnectionListener();
 

@@ -32,6 +32,7 @@ public:
   virtual void update_internals(PartGroup *parent, bool self_changed,
 				bool parent_changed);
 
+PUBLISHED:
   bool add_net_transform(NodeRelation *arc);
   bool remove_net_transform(NodeRelation *arc);
   bool has_net_transform(NodeRelation *arc) const;

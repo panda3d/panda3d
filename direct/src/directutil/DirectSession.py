@@ -36,6 +36,9 @@ class DirectSession(PandaObject):
         self.fShift = 0
         self.in2DWidget = 0
 
+        self.mouseX = 0
+        self.mouseY = 0
+
         self.pos = VBase3()
         self.hpr = VBase3()
         self.scale = VBase3()
@@ -93,7 +96,7 @@ class DirectSession(PandaObject):
         mCoa2Render = state.dnp.mCoa2Dnp * state.dnp.getMat(render)
         decomposeMatrix(mCoa2Render,
                         self.scale,self.hpr,self.pos,
-                        getDefaultCoordinateSystem())
+                        CSDefault)
         self.widget.setPosHpr(self.pos,self.hpr)
         return Task.cont
 
@@ -253,7 +256,6 @@ class DisplayRegionContext(PandaObject):
         self.camera = camera
         self.cam = camera.getChild(0)
         self.camNode = self.cam.getNode(0)
-        self.mouseData = win.getMouseData(0)
         self.nearVec = Vec3(0)
         self.mouseX = 0.0
         self.mouseY = 0.0
@@ -297,12 +299,10 @@ class DisplayRegionContext(PandaObject):
         self.mouseLastX = self.mouseX
         self.mouseLastY = self.mouseY
         # Values for this frame
-        # Pixel coordinates of the mouse
-        self.mousePixelX = self.mouseData.getX()
-        self.mousePixelY = self.mouseData.getY()
         # This ranges from -1 to 1
-        self.mouseX = ((self.mousePixelX / float(self.width)) * 2.0) - 1.0
-        self.mouseY = ((self.mousePixelY / float(self.height)) * -2.0) + 1.0
+        if (base.mouseWatcher.node().hasMouse()):
+            self.mouseX = base.mouseWatcher.node().getMouseX()
+            self.mouseY = base.mouseWatcher.node().getMouseY()
         # Delta percent of window the mouse moved
         self.mouseDeltaX = self.mouseX - self.mouseLastX
         self.mouseDeltaY = self.mouseY - self.mouseLastY

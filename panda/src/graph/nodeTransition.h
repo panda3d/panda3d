@@ -50,9 +50,11 @@ public:
 
   INLINE int compare_to(const NodeTransition &other) const;
 
+PUBLISHED:
   INLINE void set_priority(int priority);
   INLINE int get_priority() const;
 
+public:
   virtual NodeTransition *make_copy() const=0;
   virtual NodeAttribute *make_attrib() const=0;
 

@@ -75,6 +75,7 @@ public:
   PartBundle(const string &name = "");
   virtual PartGroup *make_copy() const;
 
+PUBLISHED:
   void set_blend_type(BlendType bt);
   INLINE BlendType get_blend_type() const;
 
@@ -94,7 +95,7 @@ public:
  
   INLINE const ChannelBlend &get_blend_map() const;
 
-public:
+PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
 

@@ -125,13 +125,33 @@ prepare_delete() {
   _ref_count = -100;
 }
 
+#ifdef NDEBUG
 ////////////////////////////////////////////////////////////////////
-//     Function: ReferenceCount::get_count
+//     Function: ReferenceCount::unref_consider_delete
+//       Access: Public
+//  Description: This function is called by the global unref_delete()
+//               function.  This function unrefs the pointer and
+//               returns true if it should be deleted (i.e. the count
+//               has gone to zero), or false otherwise.  It doesn't
+//               delete itself because (a) a method cannot safely
+//               delete this, and (b) we don't have a virtual
+//               destructor anyway.  The decision of whether to delete
+//               is left up to unref_delete().
+////////////////////////////////////////////////////////////////////
+INLINE bool ReferenceCount::
+unref_consider_delete() {
+  unref();
+  return (get_ref_count() == 0);
+}
+#endif
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReferenceCount::get_ref_count
 //       Access: Public
 //  Description: Returns the current reference count.
 ////////////////////////////////////////////////////////////////////
 INLINE int ReferenceCount::
-get_count() const {
+get_ref_count() const {
   test_ref_count_integrity();
   return _ref_count;
 }
@@ -270,14 +290,8 @@ test_ref_count_integrity() const {
 template<class RefCountType>
 INLINE void
 unref_delete(RefCountType *ptr) {
-  ptr->unref();
-  if (ptr->get_count() == 0) {
+  if (((ReferenceCount *)ptr)->unref_consider_delete()) {
     delete ptr;
-
-    // If we're testing reference counts, it's sometimes useful to do
-    // the following instead of actually deleting the pointer:
-
-    // ptr->prepare_delete();
   }
 }
 

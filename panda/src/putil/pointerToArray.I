@@ -433,14 +433,14 @@ set_void_ptr(void* p)
   reassign((RefCountObj<vector<Element> > *)p);
 }
 ////////////////////////////////////////////////////////////////////
-//     Function: PointerToArray::get_count
+//     Function: PointerToArray::get_ref_count
 //       Access: Public
 //  Description: Returns the reference count of the underlying vector.
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE int PointerToArray<Element>::
-get_count() const {
-  return (_ptr == NULL) ? 0 : _ptr->get_count();
+get_ref_count() const {
+  return (_ptr == NULL) ? 0 : _ptr->get_ref_count();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -722,14 +722,14 @@ v() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConstPointerToArray::get_count
+//     Function: ConstPointerToArray::get_ref_count
 //       Access: Public
 //  Description: Returns the reference count of the underlying vector.
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE int ConstPointerToArray<Element>::
-get_count() const {
-  return (_ptr == NULL) ? 0 : _ptr->get_count();
+get_ref_count() const {
+  return (_ptr == NULL) ? 0 : _ptr->get_ref_count();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -16,8 +16,10 @@
 //               will be (almost?) all of them.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA NamedNode : public Node, public Namable {
-public:
+PUBLISHED:
   INLINE NamedNode(const string &initial_name = "");
+
+public:
   INLINE NamedNode(const NamedNode &copy);
   INLINE void operator = (const NamedNode &copy);
 

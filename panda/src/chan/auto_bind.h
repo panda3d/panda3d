@@ -13,6 +13,7 @@
 
 class Node;
 
+BEGIN_PUBLISH
 ////////////////////////////////////////////////////////////////////
 //     Function: auto_bind
 //  Description: Walks the scene graph or subgraph beginning at the
@@ -25,6 +26,7 @@ class Node;
 EXPCL_PANDA void
 auto_bind(Node *root_node, AnimControlCollection &controls,
 	  int hierarchy_match_flags = 0);
+END_PUBLISH
 
 #endif
 

@@ -27,7 +27,7 @@ private:
   NotifyCategory(const string &fullname, const string &basename, 
 		 NotifyCategory *parent);
   
-public:
+PUBLISHED:
   INLINE string get_fullname() const;
   INLINE string get_basename() const;
   INLINE NotifySeverity get_severity() const;

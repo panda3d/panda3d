@@ -70,6 +70,7 @@ public:
   virtual void
   transmit_data(NodeAttributes &data)=0;
 
+PUBLISHED:
   void set_spam_mode(bool flag);
   bool get_spam_mode() const;
 

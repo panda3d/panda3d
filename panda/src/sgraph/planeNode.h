@@ -24,13 +24,16 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PlaneNode : public NamedNode
 {
-public:
+PUBLISHED:
   INLINE PlaneNode(const string& name = "");
+
+public:
   INLINE PlaneNode(const PlaneNode &copy);
   INLINE void operator = (const PlaneNode &copy);
   
   virtual Node *make_copy() const;
 
+PUBLISHED:
   void set_plane(const Planef& plane);
   const Planef& get_plane(void) const;
 

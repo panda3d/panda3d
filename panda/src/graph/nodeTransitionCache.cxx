@@ -449,7 +449,7 @@ set_computed_verified(const NodeTransitionCache *a, UpdateSeq now) {
   }
 
   NodeTransitionCache *result = (NodeTransitionCache *)a;
-  if (a->get_count() > 1) {
+  if (a->get_ref_count() > 1) {
     // Copy-on-write.
     result = new NodeTransitionCache(*a);
   }

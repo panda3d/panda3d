@@ -20,8 +20,10 @@
 //               indicate the presence of a loaded model file.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ModelRoot : public ModelNode {
-public:
+PUBLISHED:
   INLINE ModelRoot(const string &name = "");
+
+public:
   INLINE ModelRoot(const ModelRoot &copy);
   INLINE void operator = (const ModelRoot &copy);
   

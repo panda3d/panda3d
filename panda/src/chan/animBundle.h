@@ -19,7 +19,7 @@
 //               channels in the hierarchy (which must all match).
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA AnimBundle : public AnimGroup {
-public:
+PUBLISHED:
   INLINE AnimBundle(const string &name, float fps, int num_frames);
 
   INLINE double get_base_frame_rate() const;

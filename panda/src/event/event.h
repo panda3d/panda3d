@@ -24,7 +24,7 @@ class EventReceiver;
 //               on the events (but not necessarily immediately).
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Event : public TypedReferenceCount, public Namable {
-public:
+PUBLISHED:
   Event(const string &event_name, EventReceiver *receiver = NULL);
   Event(const Event &copy);
   void operator = (const Event &copy);

@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////////
 template <class NumType>
 class LRotation : public LQuaternionBase<NumType> {
-public:
+PUBLISHED:
   INLINE LRotation();
   INLINE LRotation(const LQuaternionBase<NumType>&);
   INLINE LRotation(NumType, NumType, NumType, NumType);

@@ -36,8 +36,11 @@ class EXPCL_PANDA Node : public TypedWriteable, public BoundedObject,
 public:
   static Node* const Null;
 
+PUBLISHED:
   Node();
   Node(const Node &copy);
+
+public:
   void operator = (const Node &copy);
   virtual ~Node();
 
@@ -50,11 +53,13 @@ public:
 
   virtual void transform_changed(NodeRelation *arc);
 
+PUBLISHED:
   int get_num_parents(TypeHandle type) const;
   NodeRelation *get_parent(TypeHandle type, int index) const;
   int get_num_children(TypeHandle type) const;
   NodeRelation *get_child(TypeHandle type, int index) const;
 
+public:
   // These functions will be called when the node is visited during
   // the indicated traversal.
   virtual void app_traverse() { }
@@ -68,6 +73,7 @@ public:
 			  GraphicsStateGuardianBase *gsgbase);
   virtual bool has_sub_render() const;
 
+PUBLISHED:
   virtual void output(ostream &out) const;
 
   // We reference-count the child pointer, but not the parent pointer,

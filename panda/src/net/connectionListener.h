@@ -24,7 +24,7 @@ class NetAddress;
 //               QueuedConnectionListener.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ConnectionListener : public ConnectionReader {
-public:
+PUBLISHED:
   ConnectionListener(ConnectionManager *manager, int num_threads);
 
 protected:

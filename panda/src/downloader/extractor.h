@@ -23,13 +23,13 @@ class ExtractorToken;
 // Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Extractor : public AsyncUtility {
-public:
+PUBLISHED:
   Extractor(void);
   Extractor(PT(Buffer) buffer);
   virtual ~Extractor(void);
 
   int request_extract(const Filename &source_file,
-		 const string &event_name, const Filename &rel_path = "");
+		      const string &event_name, const Filename &rel_path = "");
 
   bool extract(Filename &source_file, const Filename &rel_path);
 

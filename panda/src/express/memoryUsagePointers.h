@@ -37,7 +37,7 @@
 //               even exist when compiled with NDEBUG.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS MemoryUsagePointers {
-public:
+PUBLISHED:
   MemoryUsagePointers();
   ~MemoryUsagePointers();
   

@@ -54,8 +54,8 @@
     vectorDataTransition.I vectorDataTransition.h
 
   #define IGATESCAN \
-    dataNode.cxx dataRelation.cxx \
-    dataGraphTraversal.cxx
+    dataNode.cxx dataNode.h dataRelation.cxx dataRelation.h \
+    dataGraphTraversal.cxx dataGraphTraversal.h
 
 #end lib_target
 

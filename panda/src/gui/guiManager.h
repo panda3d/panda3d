@@ -30,7 +30,8 @@ private:
   MouseWatcher* _watcher;
 
   INLINE GuiManager(MouseWatcher*, Node*);
-public:
+
+PUBLISHED:
   static GuiManager* get_ptr(GraphicsWindow*, MouseAndKeyboard*);
 
   void add_region(GuiRegion*);

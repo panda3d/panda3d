@@ -34,7 +34,7 @@ class glxDisplay;
 // Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GraphicsPipe : public TypedReferenceCount, public Namable {
-public:
+PUBLISHED:
   GraphicsPipe(const PipeSpecifier &spec);
   virtual ~GraphicsPipe();
 
@@ -54,6 +54,7 @@ public:
   static int get_num_pipes();
   static GraphicsPipe *get_pipe(int n);
 
+public:
   // This function's interface must be defined here even though we
   // know nothing about glx displays at this point.
   virtual glxDisplay *get_glx_display();

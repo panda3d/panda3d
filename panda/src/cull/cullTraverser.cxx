@@ -245,7 +245,7 @@ clean_out_old_states() {
     ++snext;
 
     CullState *cs = (*si);
-    if (cs->get_count() == 1 && cs->is_empty() && !cs->has_bin()) {
+    if (cs->get_ref_count() == 1 && cs->is_empty() && !cs->has_bin()) {
       // This CullState doesn't seem to be used anywhere else.
       _states.erase(si);
     }

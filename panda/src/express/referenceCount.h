@@ -41,14 +41,25 @@ protected:
   INLINE ~ReferenceCount();
 
 public:
+  // These functions are not part of the normal API, but they have to
+  // be public.  You shouldn't generally call these directly.
   INLINE void prepare_delete();
+#ifdef NDEBUG
+  // unref_consider_delete() is inline only if we are compiling
+  // NDEBUG.
+  INLINE bool unref_consider_delete();
+#else
+  bool unref_consider_delete();
+#endif
 
-  INLINE int get_count() const;
+PUBLISHED:
+  INLINE int get_ref_count() const;
   INLINE void ref() const;
   INLINE void unref() const;
 
   INLINE void test_ref_count_integrity() const;
 
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }

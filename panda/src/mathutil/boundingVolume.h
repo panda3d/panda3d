@@ -27,7 +27,7 @@ class BoundingLine;
 //               sort.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA BoundingVolume : public TypedReferenceCount {
-public:
+PUBLISHED:
   INLINE BoundingVolume();
   virtual BoundingVolume *make_copy() const=0;
 

@@ -36,7 +36,7 @@
 //               return the time for the current frame.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS ClockObject {
-public:
+PUBLISHED:
   enum Mode {
     M_normal,
     M_non_real_time,

@@ -31,7 +31,7 @@ protected:
     string _name;
   };
 
-public:
+PUBLISHED:
   bool register_button(ButtonHandle &button_handle, const string &name,
 		       char ascii_equivalent = '\0');
 

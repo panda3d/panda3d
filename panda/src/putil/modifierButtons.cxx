@@ -228,7 +228,7 @@ write(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void ModifierButtons::
 modify_button_list() {
-  if (_button_list.get_count() > 1) {
+  if (_button_list.get_ref_count() > 1) {
     PTA(ButtonHandle) old_list = _button_list;
     _button_list = PTA(ButtonHandle)(0);
 
@@ -238,5 +238,5 @@ modify_button_list() {
   }
 
   // Now we should be the only ones holding a count.
-  nassertv(_button_list.get_count() == 1);
+  nassertv(_button_list.get_ref_count() == 1);
 }

@@ -22,9 +22,11 @@
 //               arbitrary points on the line.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA BoundingLine : public GeometricBoundingVolume {
-public:
+PUBLISHED:
   INLINE BoundingLine();
   INLINE BoundingLine(const LPoint3f &a, const LPoint3f &b);
+
+public:
   virtual BoundingVolume *make_copy() const;
 
   virtual LPoint3f get_approx_center() const;
@@ -32,6 +34,7 @@ public:
 
   virtual void output(ostream &out) const;
 
+PUBLISHED:
   INLINE const LPoint3f &get_point_a() const;
   INLINE LPoint3f get_point_b() const;
 

@@ -23,8 +23,10 @@
 //               flag within an egg file.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ModelNode : public NamedNode {
-public:
+PUBLISHED:
   INLINE ModelNode(const string &name = "");
+
+public:
   INLINE ModelNode(const ModelNode &copy);
   INLINE void operator = (const ModelNode &copy);
   

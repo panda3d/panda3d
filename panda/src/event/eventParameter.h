@@ -26,7 +26,7 @@
 //               EventStoreValue template class, defined below.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS EventParameter {
-public:
+PUBLISHED:
   INLINE EventParameter(const TypedReferenceCount *ptr);
   INLINE EventParameter(int value);
   INLINE EventParameter(double value);

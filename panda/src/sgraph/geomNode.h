@@ -25,8 +25,10 @@ class AllAttributesWrapper;
 //               elements
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GeomNode : public NamedNode {
-public:
+PUBLISHED:
   GeomNode(const string &name = "");
+
+public:
   GeomNode(const GeomNode &copy);
   void operator = (const GeomNode &copy);
   virtual ~GeomNode();
@@ -34,11 +36,14 @@ public:
   virtual Node *make_copy() const;
   virtual void xform(const LMatrix4f &mat);
 
+PUBLISHED:
   void write(ostream &out, int indent_level = 0) const;
   void write_verbose(ostream &out) const;
 
+public:
   void draw(GraphicsStateGuardianBase *gsg);
 
+PUBLISHED:
   int get_num_geoms() const;
   dDrawable *get_geom(int n) const;
   void remove_geom(int n);

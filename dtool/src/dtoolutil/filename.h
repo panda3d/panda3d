@@ -37,7 +37,7 @@ class DSearchPath;
 //               fstream for reading or writing.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOL Filename {
-public:
+PUBLISHED:
   enum Type {
     // These type values must fit within the bits allocated for
     // F_type, below.
@@ -46,14 +46,15 @@ public:
     T_executable = 0x02,
     // Perhaps other types will be added later.
   };
-    
+
+public:    
   enum Flags {
     F_type            = 0x0f,
     F_binary          = 0x10,
     F_text            = 0x20,
   };
 
-public:
+PUBLISHED:
   INLINE Filename(const string &filename = "");
   INLINE Filename(const char *filename);
   INLINE Filename(const Filename &copy);

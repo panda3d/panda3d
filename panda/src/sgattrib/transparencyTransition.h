@@ -25,12 +25,13 @@
 //               less than 1).
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TransparencyTransition : public OnTransition {
-public:
+PUBLISHED:
   INLINE TransparencyTransition(TransparencyProperty::Mode mode);
 
   INLINE void set_mode(TransparencyProperty::Mode mode);
   INLINE TransparencyProperty::Mode get_mode() const;
-  
+
+public:  
   virtual NodeTransition *make_copy() const;
   virtual NodeAttribute *make_attrib() const;
 

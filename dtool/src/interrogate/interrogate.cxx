@@ -35,6 +35,7 @@ bool build_c_wrappers = false;
 bool build_python_wrappers = false;
 bool save_unique_names = false;
 bool no_database = false;
+bool generate_spam = false;
 CPPVisibility min_vis = V_published;
 string library_name;
 string module_name;
@@ -61,6 +62,7 @@ enum CommandOptions {
   CO_nodb,
   CO_longlong,
   CO_promiscuous,
+  CO_spam,
   CO_help,
 };
 
@@ -82,6 +84,7 @@ static struct option long_options[] = {
   { "nodb", no_argument, NULL, CO_nodb },
   { "longlong", required_argument, NULL, CO_longlong },
   { "promiscuous", no_argument, NULL, CO_promiscuous },
+  { "spam", no_argument, NULL, CO_spam },
   { "help", no_argument, NULL, CO_help },
   { NULL }
 };
@@ -233,7 +236,11 @@ void show_help() {
 
     << "  -promiscuous\n"
     << "        Export *all* public symbols, functions, and classes seen, even those\n"
-    << "        not explicitly marked to be published.\n\n";
+    << "        not explicitly marked to be published.\n\n"
+
+    << "  -spam\n"
+    << "        Generate wrapper functions that report each invocation to Notify.\n"
+    << "        This can sometimes be useful for tracking down bugs.\n\n";
 }
 
 // handle commandline -D options
@@ -354,6 +361,10 @@ main(int argc, char *argv[]) {
 
     case CO_promiscuous:
       min_vis = V_public;
+      break;
+
+    case CO_spam:
+      generate_spam = true;
       break;
 
     case 'h':

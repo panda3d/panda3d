@@ -18,7 +18,7 @@
 //               know the correct type and order of each element.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS DatagramIterator {
-public:
+PUBLISHED:
   DatagramIterator(const Datagram &datagram, size_t offset = 0);
 
   bool get_bool();

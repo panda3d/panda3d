@@ -25,7 +25,7 @@
 // Description : Specifies atmospheric fog parameters
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA Fog : public TypedReferenceCount {
-public:
+PUBLISHED:
   enum Mode {
     M_linear,                   // f = (end - z) / (end - start)
     M_exponential,              // f = e^(-density * z)

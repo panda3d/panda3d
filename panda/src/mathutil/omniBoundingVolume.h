@@ -16,8 +16,10 @@
 //               that fills all of space.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA OmniBoundingVolume : public GeometricBoundingVolume {
-public:
+PUBLISHED:
   INLINE OmniBoundingVolume();
+
+public:
   virtual BoundingVolume *make_copy() const;
 
   virtual LPoint3f get_approx_center() const;

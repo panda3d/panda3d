@@ -55,15 +55,25 @@ class ShowBase:
             self.camList.append( camera.find('**/+Camera') )
         # Set the default camera
         self.cam = self.camera.find('**/+Camera')
-        # Just one per window
+
+        # We create both a MouseAndKeyboard object and a MouseWatcher object
+        # for the window.  The MouseAndKeyboard generates mouse events and
+        # mouse button/keyboard events; the MouseWatcher passes them through
+        # unchanged when the mouse is not over a 2-d button, and passes
+        # nothing through when the mouse *is* over a 2-d button.  Therefore,
+        # objects that don't want to get events when the mouse is over a
+        # button, like the driveInterface, should be parented to
+        # mouseWatcher, while objects that want events in all cases, like the
+        # chat interface, should be parented to mak.
         self.mak = self.dataRoot.attachNewNode(MouseAndKeyboard(self.win, 0, 'mak'))
+        self.mouseWatcher = self.mak.attachNewNode(MouseWatcher('mouseWatcher'))
         self.trackball = self.dataUnused.attachNewNode(Trackball('trackball'))
         self.drive = self.dataUnused.attachNewNode(DriveInterface('drive'))
         self.mouse2cam = self.dataUnused.attachNewNode(Transform2SG('mouse2cam'))
         self.mouse2cam.node().setArc(self.camera.getBottomArc())
         self.useDrive()
 
-        self.buttonThrower = self.mak.attachNewNode(ButtonThrower())
+        self.buttonThrower = self.mouseWatcher.attachNewNode(ButtonThrower())
 
         if (ShowBase.notify == None):
             ShowBase.notify = directNotify.newCategory("ShowBase")
@@ -132,7 +142,7 @@ class ShowBase:
         # Update the mouseInterface to point to the drive
         self.mouseInterface = self.drive
         self.drive.node().reset()
-        self.drive.reparentTo(self.mak)
+        self.drive.reparentTo(self.mouseWatcher)
         # Hookup the drive to the camera
         self.mouse2cam.reparentTo(self.drive)
         # Set the height to a good eyeheight
@@ -147,7 +157,7 @@ class ShowBase:
         # Update the mouseInterface to point to the trackball
         self.mouseInterface = self.trackball
         # Hookup the trackball to the camera
-        self.trackball.reparentTo(self.mak)
+        self.trackball.reparentTo(self.mouseWatcher)
         self.mouse2cam.reparentTo(self.trackball)
         
     def run(self):

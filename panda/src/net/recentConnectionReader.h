@@ -26,7 +26,7 @@
 //               This class will always create one thread for itself.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA RecentConnectionReader : public ConnectionReader {
-public:
+PUBLISHED:
   RecentConnectionReader(ConnectionManager *manager);
   virtual ~RecentConnectionReader();
 

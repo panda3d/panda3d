@@ -30,7 +30,7 @@ class NetAddress;
 //               construction time and cannot be changed.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ConnectionWriter {
-public:
+PUBLISHED:
   ConnectionWriter(ConnectionManager *manager, int num_threads);
   ~ConnectionWriter();
 

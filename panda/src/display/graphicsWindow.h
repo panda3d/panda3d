@@ -93,6 +93,8 @@ public:
   virtual ~GraphicsWindow();
  
   INLINE const GraphicsWindow::Properties& get_properties() const;
+
+PUBLISHED:
   INLINE int get_width() const;
   INLINE int get_height() const;
   INLINE int get_xorg() const;
@@ -104,7 +106,8 @@ public:
  
   INLINE void set_frame_number(const int);
   INLINE int get_frame_number() const;
- 
+
+public: 
   virtual void resized(const int, const int);
  
   INLINE virtual void set_draw_callback(Callback *c);
@@ -123,21 +126,22 @@ public:
   virtual void make_current();
   virtual void unmake_current();
 
-public:
+PUBLISHED:
   // Mouse and keyboard routines
   INLINE int get_num_input_devices() const;
   INLINE string get_input_device_name(int device) const;
   INLINE bool has_pointer(int device) const;
   INLINE bool has_keyboard(int device) const;
 
-  INLINE const MouseData &get_mouse_data(int device) const;
   INLINE const ModifierButtons &get_modifier_buttons(int device) const;
   INLINE void set_modifier_buttons(int device, const ModifierButtons &mods);
 
+public:
+  INLINE const MouseData &get_mouse_data(int device) const;
   INLINE bool has_button_event(int device) const;
   INLINE ButtonEvent get_button_event(int device);
  
-public:
+PUBLISHED:
   // GUI glue methods
   virtual void flag_redisplay();
   virtual void register_draw_function(GraphicsWindow::vfn);
@@ -148,6 +152,7 @@ public:
   virtual bool supports_update() const;
   virtual void update();
  
+public:
   virtual void begin_frame();
   virtual void end_frame();
 

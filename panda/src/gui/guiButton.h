@@ -35,15 +35,19 @@ private:
   INLINE GuiButton(void);
   void switch_state(States);
   virtual void recompute_frame(void);
-public:
+
+PUBLISHED:
   GuiButton(const string&, GuiLabel*, GuiLabel*);
   GuiButton(const string&, GuiLabel*, GuiLabel*, GuiLabel*);
   GuiButton(const string&, GuiLabel*, GuiLabel*, GuiLabel*, GuiLabel*,
 	    GuiLabel*);
   virtual ~GuiButton(void);
 
+public:
   virtual void manage(GuiManager*, EventHandler&);
   virtual void unmanage(void);
+
+PUBLISHED:
   INLINE void enter(void);
   INLINE void exit(void);
   INLINE void up(void);
@@ -74,6 +78,7 @@ public:
   virtual void set_pos(const LVector3f&);
 
   virtual void output(ostream&) const;
+
 public:
   // type interface
   static TypeHandle get_class_type(void) {

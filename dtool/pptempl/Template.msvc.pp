@@ -361,7 +361,7 @@ $[install_igatedb_dir]\$[igatedb] : $[so_dir]\$[igatedb]
 	copy $[so_dir]\$[local] $[dest]
 
 lib$[TARGET]_igatescan = $[osfilename $[igatescan]]
-$[so_dir]\$[igatedb] $[so_dir]\$[igateoutput] : $[filter-out %.c %.cxx,$[igatescan]]
+$[so_dir]\$[igatedb] $[so_dir]\$[igateoutput] : $[sort $[patsubst ./%.h,%.h,./%.I,%.I,%,,$[dependencies $[igatescan]] $[igatescan:%=./%]]]
 // We use forward slash for interrogate because it prefers those.
 	interrogate -od $[so_dir]/$[igatedb] -oc $[so_dir]/$[igateoutput] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
 

@@ -52,7 +52,7 @@ class LevelEditor(NodePath, PandaObject):
 	# DNAStorage instance for storing level DNA info
 	self.dnaStore = DNAStorage()
 	loadDNAFile(self.dnaStore, 'dna/storage.dna',
-                    getDefaultCoordinateSystem())
+                    CSDefault)
         self.dnaOutputDir = 'ToontownCentral'
         self.dnaOutputFile = 'toontown_working.dna'
 
@@ -2239,7 +2239,7 @@ class LevelEditor(NodePath, PandaObject):
         self.dnaStore.resetDNAVisGroups()
 	# Now load in new file
 	self.groupParent = loadDNAFile(self.dnaStore, filename,
-                                       getDefaultCoordinateSystem())
+                                       CSDefault)
  	# Make sure the topmost level object gets put under level objects dna
  	self.groupParentDNA = self.dnaStore.findDNAGroup(
             self.groupParent.getBottomArc())

@@ -17,13 +17,14 @@
 //               GraphicsWindow.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA MouseData {
-public:
+PUBLISHED:
   MouseData();
 
   int get_x() const;
   int get_y() const;
   bool get_in_window() const;
 
+public:
   bool _in_window;
   int _xpos;
   int _ypos;

@@ -104,11 +104,13 @@ public:
  
   void operator = ( const Geom &copy );
   virtual Geom *make_copy() const=0;
- 
-  void print() const;
+
+PUBLISHED: 
+  void write(ostream &out) const;
   virtual void output(ostream &out) const;
-  void output_verbose(ostream &out) const;
- 
+  void write_verbose(ostream &out) const;
+
+public: 
   // From parent dDrawable
   virtual void draw(GraphicsStateGuardianBase *gsg) {
     dDrawable::draw(gsg); draw_immediate(gsg);

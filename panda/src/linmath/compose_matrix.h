@@ -30,6 +30,7 @@
 #include "lmatrix.h"
 #include "luse.h"
 
+BEGIN_PUBLISH
 
 EXPCL_PANDA void
 compose_matrix(LMatrix3f &mat,
@@ -88,6 +89,8 @@ decompose_matrix(const LMatrix4d &mat,
 		 CoordinateSystem cs = CS_default);
 INLINE bool decompose_matrix(const LMatrix4d &mat, double components[9],
 			     CoordinateSystem cs = CS_default);
+
+END_PUBLISH
 
 #include "compose_matrix.I"
 

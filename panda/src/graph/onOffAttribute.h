@@ -22,13 +22,14 @@ protected:
   INLINE OnOffAttribute(const OnOffAttribute &copy);
   INLINE void operator = (const OnOffAttribute &copy);
 
-public:
+PUBLISHED:
   INLINE void set_on();
   INLINE void set_off();
 
   INLINE bool is_on() const;
   INLINE bool is_off() const;
 
+public:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 

@@ -23,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 class LVector3 : public LVecBase3<NumType> {
-public:
+PUBLISHED:
   INLINE LVector3();
   INLINE LVector3(const LVecBase3<NumType> &copy);
   INLINE LVector3<NumType> &operator = (const LVecBase3<NumType> &copy);

@@ -723,7 +723,38 @@ involves_unpublished(CPPType *type) {
   case CPPDeclaration::ST_pointer:
     return involves_unpublished(type->as_pointer_type()->_pointing_at);
 
+  case CPPDeclaration::ST_struct:
+    // A struct type is unpublished only if all of its members are
+    // unpublished.
+    if (type->_declaration != (CPPTypeDeclaration *)NULL) {
+      if (type->_declaration->_vis <= min_vis) {
+	return false;
+      }
+    }
+    {
+      CPPScope *scope = type->as_struct_type()->_scope;
+    
+      bool any_exported = false;
+      CPPScope::Declarations::const_iterator di;
+      for (di = scope->_declarations.begin(); 
+	   di != scope->_declarations.end() && !any_exported; 
+	   ++di) {
+	if ((*di)->_vis <= min_vis) {
+	  any_exported = true;
+	}
+      }
+
+      return !any_exported;
+    }
+
   case CPPDeclaration::ST_function:
+    if (type->_declaration != (CPPTypeDeclaration *)NULL) {
+      if (type->_declaration->_vis <= min_vis) {
+	return false;
+      }
+    }
+    return true;
+    /*
     {
       CPPFunctionType *ftype = type->as_function_type();
       if (involves_unpublished(ftype->_return_type)) {
@@ -739,6 +770,7 @@ involves_unpublished(CPPType *type) {
       }
       return false;
     }
+    */
 
   default:
     if (type->_declaration != (CPPTypeDeclaration *)NULL) {

@@ -48,6 +48,8 @@ operator * (const LPoint3<NumType> &v, const LMatrix4<NumType> &m);
 // 'instantiations' of the above template functions on types float and
 // double.
 
+BEGIN_PUBLISH
+
 INLINE LVecBase3<float>
 operator * (const LVecBase3<float> &v, const LMatrix3<float> &m);
 INLINE LVector2<float>
@@ -73,6 +75,8 @@ INLINE LVector3<double>
 operator * (const LVector3<double> &v, const LMatrix4<double> &m);
 INLINE LPoint3<double>
 operator * (const LPoint3<double> &v, const LMatrix4<double> &m);
+
+END_PUBLISH
 
 #endif  // CPPPARSER
 

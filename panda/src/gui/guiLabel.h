@@ -46,7 +46,8 @@ private:
 
   void recompute_transform(void);
   void set_properties(void);
-public:
+
+PUBLISHED:
   INLINE GuiLabel(void);
   virtual ~GuiLabel(void);
 
@@ -77,6 +78,7 @@ public:
   INLINE Colorf get_background_color(void) const;
 
   INLINE void recompute(void);
+
 public:
   // type interface
   static TypeHandle get_class_type(void) {

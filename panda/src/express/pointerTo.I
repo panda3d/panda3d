@@ -261,7 +261,7 @@ INLINE void PointerToBase<T>::
 output(ostream &out) const {
   out << (void *)_ptr;
   if (_ptr != (To *)NULL) {
-    out << ":" << _ptr->get_count();
+    out << ":" << _ptr->get_ref_count();
   }
 }
 

@@ -38,7 +38,7 @@
 //               according to the mouse's known position.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA MouseWatcher : public DataNode {
-public:
+PUBLISHED:
   MouseWatcher(const string &name = "");
   ~MouseWatcher();
 

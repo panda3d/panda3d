@@ -13,7 +13,11 @@
 
 #include <luse.h>
 
+BEGIN_PUBLISH
+
 INLINE float distance(const LPoint3f &pos0, const LPoint3f &pos1);
+
+END_PUBLISH
 
 #include "mathHelpers.I"
 

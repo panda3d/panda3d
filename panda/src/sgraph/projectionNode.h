@@ -23,13 +23,16 @@
 // Description : A node that has a frustum
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ProjectionNode : public NamedNode {
-public:
+PUBLISHED:
   INLINE ProjectionNode(const string& name = "");
+
+public:
   INLINE ProjectionNode(const ProjectionNode &copy);
   INLINE void operator = (const ProjectionNode &copy);
 	
   virtual Node *make_copy() const;
-  
+
+PUBLISHED:  
   void set_projection( const Projection& projection );
   const Projection* get_projection( void ) const;
   

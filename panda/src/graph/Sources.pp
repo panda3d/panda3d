@@ -72,6 +72,7 @@
   #define TARGET test_graph
   #define LOCAL_LIBS \
     graph putil
+  #define OTHER_LIBS $[OTHER_LIBS] pystub
 
   #define SOURCES \
     test_graph.cxx
@@ -82,6 +83,7 @@
   #define TARGET test_graphRead
   #define LOCAL_LIBS \
     putil graph
+  #define OTHER_LIBS $[OTHER_LIBS] pystub
 
   #define SOURCES \
     test_graphRead.cxx
@@ -92,6 +94,7 @@
   #define TARGET test_graphWrite
   #define LOCAL_LIBS \
     graph putil
+  #define OTHER_LIBS $[OTHER_LIBS] pystub
 
   #define SOURCES \
     test_graphWrite.cxx

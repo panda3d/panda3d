@@ -111,6 +111,7 @@ public:
   INLINE bool operator < (const PointerToBase<To> &other) const;
 #endif  // CPPPARSER
 
+PUBLISHED:
   INLINE bool is_null() const;
   INLINE void clear();
 
@@ -131,14 +132,16 @@ INLINE ostream &operator <<(ostream &out, const PointerToBase<T> &pointer) {
 ////////////////////////////////////////////////////////////////////
 template <class T>
 class PointerTo : public PointerToBase<T> {
-public:
+PUBLISHED:
   INLINE PointerTo(To *ptr = (To *)NULL);
   INLINE PointerTo(const PointerTo<T> &copy);
 
+public:
   INLINE To &operator *() const;
   INLINE To *operator -> () const;
   INLINE operator PointerToBase<T>::To *() const;
 
+PUBLISHED:
   // When downcasting to a derived class from a PointerTo<BaseClass>,
   // C++ would normally require you to cast twice: once to an actual
   // BaseClass pointer, and then again to your desired pointer.  You
@@ -183,15 +186,17 @@ public:
 ////////////////////////////////////////////////////////////////////
 template <class T>
 class ConstPointerTo : public PointerToBase<T> {
-public:
+PUBLISHED:
   INLINE ConstPointerTo(const To *ptr = (const To *)NULL);
   INLINE ConstPointerTo(const PointerTo<T> &copy);
   INLINE ConstPointerTo(const ConstPointerTo<T> &copy);
 
+public:
   INLINE const To &operator *() const;
   INLINE const To *operator -> () const;
   INLINE operator const PointerToBase<T>::To *() const;
 
+PUBLISHED:
   INLINE const To *p() const;
 
   INLINE ConstPointerTo<T> &operator = (const To *ptr);

@@ -17,7 +17,7 @@
 //               NULL.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Namable {
-public:
+PUBLISHED:
   INLINE Namable(const string &initial_name = "");
   INLINE Namable(const Namable &copy);
   INLINE Namable &operator = (const Namable &other);

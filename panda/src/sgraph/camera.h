@@ -27,8 +27,10 @@ class DisplayRegion;
 // Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA Camera : public ProjectionNode {
-public:
+PUBLISHED:
   Camera(const string &name = "");
+
+public:
   Camera(const Camera &copy);
   void operator = (const Camera &copy);
   virtual ~Camera();
@@ -40,6 +42,7 @@ public:
   //virtual void output(ostream &out) const;
   virtual void config() { }
 
+PUBLISHED:
   INLINE void set_active(bool active);
   INLINE bool is_active() const;
 

@@ -67,6 +67,8 @@ write_wrapper(ostream &out, const string &wrapper_name) const {
   }
   out << ") {\n";
 
+  write_spam_message(out);
+
   string return_expr = call_function(out, 2);
   return_expr = manage_return_value(out, 2, return_expr);
   if (!return_expr.empty()) {

@@ -31,10 +31,12 @@ public:
 private:
   static NodeRelation *make_arc(const FactoryParams &params);
 
-public:
+PUBLISHED:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
+
+public:
   static void init_type() {
     NodeRelation::init_type();
     register_type(_type_handle, "DataRelation",

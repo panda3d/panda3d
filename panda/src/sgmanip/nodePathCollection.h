@@ -24,7 +24,7 @@ class NodePath;
 //               NodePaths::get_children).
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA NodePathCollection {
-public:
+PUBLISHED:
   NodePathCollection();
   NodePathCollection(const NodePathCollection &copy);
   void operator = (const NodePathCollection &copy);

@@ -17,7 +17,7 @@
 //               buttons which map to standard keyboard keys.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA KeyboardButton {
-public:
+PUBLISHED:
   static ButtonHandle ascii_key(char ascii_equivalent);
 
   static ButtonHandle space();
@@ -57,6 +57,7 @@ public:
   static ButtonHandle caps_lock();
   static ButtonHandle shift_lock();
 
+public:
   static void init_keyboard_buttons();
 };
 

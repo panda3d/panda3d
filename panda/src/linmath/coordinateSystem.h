@@ -12,6 +12,8 @@
 
 #include <string>
 
+BEGIN_PUBLISH
+
 enum CoordinateSystem {
   // The CS_default entry does not refer to a particular coordinate
   // system, but rather to the value stored in
@@ -29,6 +31,8 @@ enum CoordinateSystem {
   // system request.
   CS_invalid,
 };
+
+END_PUBLISH
 
 extern CoordinateSystem EXPCL_PANDA default_coordinate_system;
 

@@ -12,8 +12,12 @@
 
 class HashVal;
 
+BEGIN_PUBLISH
+
 EXPCL_PANDAEXPRESS void md5_a_file(const Filename &fname, HashVal &ret);
 EXPCL_PANDAEXPRESS void md5_a_buffer(uchar *buf, ulong len, HashVal &ret);
+
+END_PUBLISH
 
 #endif
 

@@ -20,7 +20,7 @@ class NodeRelation;
 //               attribute for a given arc of the scene graph.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA Transform2SG : public DataNode {
-public:
+PUBLISHED:
   Transform2SG(const string &name = "");
 
   void set_arc(NodeRelation *arc);

@@ -15,14 +15,17 @@
 //               (but see KeyboardButton and MouseButton).
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ButtonHandle {
-public:
+PUBLISHED:
   INLINE ButtonHandle();
+
+public:
   INLINE ButtonHandle(const ButtonHandle &copy);
  
   INLINE bool operator == (const ButtonHandle &other) const;
   INLINE bool operator != (const ButtonHandle &other) const;
   INLINE bool operator < (const ButtonHandle &other) const;
 
+PUBLISHED:
   string get_name() const;
   INLINE bool has_ascii_equivalent() const;
   INLINE char get_ascii_equivalent() const;

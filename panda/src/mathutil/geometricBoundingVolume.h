@@ -23,6 +23,7 @@ class EXPCL_PANDA GeometricBoundingVolume : public BoundingVolume {
 public:
   INLINE GeometricBoundingVolume();
 
+PUBLISHED:
   INLINE bool extend_by(const GeometricBoundingVolume *vol);
   INLINE bool extend_by(const LPoint3f &point);
 

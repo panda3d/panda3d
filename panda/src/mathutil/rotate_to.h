@@ -22,10 +22,14 @@
 #include "lmatrix.h"
 #include "luse.h"
 
+BEGIN_PUBLISH
+
 EXPCL_PANDA void rotate_to(LMatrix3f &mat, const LVector3f &a, const LVector3f &b);
 EXPCL_PANDA void rotate_to(LMatrix3d &mat, const LVector3d &a, const LVector3d &b);
 
 EXPCL_PANDA void rotate_to(LMatrix4f &mat, const LVector3f &a, const LVector3f &b);
 EXPCL_PANDA void rotate_to(LMatrix4d &mat, const LVector3d &a, const LVector3d &b);
+
+END_PUBLISH
 
 #endif

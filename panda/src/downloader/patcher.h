@@ -23,7 +23,7 @@ class PatcherToken;
 // Description : Applys a patch asynchronously
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Patcher : public AsyncUtility {
-public:
+PUBLISHED:
   Patcher(void);
   Patcher(PT(Buffer) buffer);
   virtual ~Patcher(void);

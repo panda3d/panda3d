@@ -23,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 class LMatrix4 {
-public:
+PUBLISHED:
   typedef const NumType *iterator;
   typedef const NumType *const_iterator;
 

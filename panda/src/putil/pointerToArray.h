@@ -142,7 +142,7 @@ public:
   INLINE void *get_void_ptr() const;
   INLINE void set_void_ptr(void* p);
 
-  INLINE int get_count() const;
+  INLINE int get_ref_count() const;
 
   // Reassignment is by pointer, not memberwise as with a vector.
   INLINE PointerToArray<Element> &
@@ -214,7 +214,7 @@ public:
   INLINE const Element *p() const;
   INLINE const vector<Element> &v() const;
 
-  INLINE int get_count() const;
+  INLINE int get_ref_count() const;
 
   // Reassignment is by pointer, not memberwise as with a vector.
   INLINE ConstPointerToArray<Element> &

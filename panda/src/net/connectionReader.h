@@ -44,7 +44,7 @@ class ConnectionManager;
 //               rather than read datagrams.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ConnectionReader {
-public:
+PUBLISHED:
   // The implementation here used to involve NSPR's multi-wait
   // interface, but that got too complicated to manage.  It turns out
   // to be difficult to protect against memory leaks caused by race

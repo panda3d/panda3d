@@ -32,9 +32,10 @@
 //               from the data and sends that matrix down the line
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TrackerTransform : public DataNode {
-public:
+PUBLISHED:
   TrackerTransform(const string &name = "");
 
+public:
   virtual void transmit_data(NodeAttributes &data);
 
 private:

@@ -56,10 +56,12 @@ private:
 public:
   virtual void write_datagram(BamWriter*, Datagram&) = 0;
 
-public:
+PUBLISHED:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
+
+public:
   static void init_type() {
     TypedWriteable::init_type();
     register_type(_type_handle, "WriteableConfigurable",

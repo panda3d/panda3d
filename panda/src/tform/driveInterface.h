@@ -26,7 +26,7 @@
 //               driving a vehicle.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DriveInterface : public DataNode {
-public:
+PUBLISHED:
   DriveInterface(const string &name = "");
   ~DriveInterface();
 

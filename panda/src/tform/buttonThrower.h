@@ -25,7 +25,7 @@
 //               call.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ButtonThrower : public DataNode {
-public:
+PUBLISHED:
   ButtonThrower(const string &name = "");
 
   void set_prefix(const string &prefix);

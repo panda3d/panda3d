@@ -17,9 +17,11 @@
 //               never an ellipsoid or other quadric.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA BoundingSphere : public FiniteBoundingVolume {
-public:
+PUBLISHED:
   INLINE BoundingSphere();
   INLINE BoundingSphere(const LPoint3f &center, float radius);
+
+public:
   virtual BoundingVolume *make_copy() const;
 
   virtual LPoint3f get_min() const;
@@ -30,6 +32,7 @@ public:
 
   virtual void output(ostream &out) const;
 
+PUBLISHED:
   INLINE const LPoint3f &get_center() const;
   INLINE float get_radius() const;
 

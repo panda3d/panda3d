@@ -122,7 +122,7 @@ write_verbose(ostream &out) const {
   for (gi = _geoms.begin(); gi != _geoms.end(); ++gi) {
     dDrawable *drawable = (*gi);
     if (drawable->is_of_type(Geom::get_class_type())) {
-      DCAST(Geom, drawable)->output_verbose(out);
+      DCAST(Geom, drawable)->write_verbose(out);
     } else {
       out << drawable->get_type() << "\n";
     }

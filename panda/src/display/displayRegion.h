@@ -30,7 +30,6 @@ class GraphicsPipe;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DisplayRegion : public ReferenceCount {
 public:
-
   DisplayRegion(GraphicsLayer *);
   DisplayRegion(GraphicsLayer *,
 		const float l, const float r,
@@ -38,6 +37,7 @@ public:
   DisplayRegion(int xsize, int ysize);
   virtual ~DisplayRegion();
 
+PUBLISHED:
   INLINE void get_dimensions(float &l, float &r, float &b, float &t) const;
   void set_dimensions(float l, float r, float b, float t);
 

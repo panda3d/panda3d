@@ -80,7 +80,7 @@ class TypedObject;
 //               type name may be retrieved for run-time display.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS TypeHandle {
-public:
+PUBLISHED:
   INLINE TypeHandle();
   INLINE TypeHandle(const TypeHandle &copy);
  
@@ -154,6 +154,7 @@ public:
 
   void record_derivation(TypeHandle child, TypeHandle parent);
 
+PUBLISHED:
   TypeHandle find_type(const string &name) const;
 
   string get_name(TypeHandle type, TypedObject *object) const;
@@ -284,7 +285,8 @@ public:
   INLINE TypedObject();
   INLINE TypedObject(const TypedObject &copy);
   INLINE void operator = (const TypedObject &copy);
- 
+
+PUBLISHED: 
   // A virtual destructor is just a good idea.
   virtual ~TypedObject();
 

@@ -407,14 +407,13 @@ config(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::print
+//     Function: Geom::write
 //       Access: Public
-//  Description: Writes the Geom information briefly to standard
-//               output.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 void Geom::
-print() const {
-  nout << *this << endl;
+write(ostream &out) const {
+  out << *this << endl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -647,14 +646,14 @@ describe_attr(ostream &out, const Geom *geom,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::output_verbose
+//     Function: Geom::write_verbose
 //       Access: Public
 //  Description: Writes to the indicated ostream a formatted picture
 //               of the contents of the Geom, in detail--but hopefully
 //               not too much detail.
 ////////////////////////////////////////////////////////////////////
 void Geom::
-output_verbose(ostream &out) const {
+write_verbose(ostream &out) const {
   GeomBindType bind_coords;
   GeomBindType bind_normals;
   GeomBindType bind_tcoords;

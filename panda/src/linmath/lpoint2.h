@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 class LPoint2 : public LVecBase2<NumType> {
-public:
+PUBLISHED:
   INLINE LPoint2();
   INLINE LPoint2(const LVecBase2<NumType> &copy);
   INLINE LPoint2<NumType> &operator = (const LVecBase2<NumType> &copy);

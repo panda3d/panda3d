@@ -35,6 +35,7 @@ class EXPCL_PANDA AnimControl : public ReferenceCount {
 public:
   AnimControl(PartBundle *part, AnimBundle *anim, int channel_index);
 
+PUBLISHED:
   void play(const CPT_Event &stop_event = NULL);
   void play(int from, int to, const CPT_Event &stop_event = NULL);
   void loop(bool restart);

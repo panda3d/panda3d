@@ -15,11 +15,12 @@
 // Description : A spherical collision volume or object.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CollisionSphere : public CollisionSolid {
-public:
+PUBLISHED:
   INLINE CollisionSphere(const LPoint3f &center, float radius);
   INLINE CollisionSphere(float cx, float cy, float cz, float radius);
-  INLINE CollisionSphere(const CollisionSphere &copy);
 
+public:
+  INLINE CollisionSphere(const CollisionSphere &copy);
   virtual CollisionSolid *make_copy();
 
   virtual int
@@ -31,6 +32,7 @@ public:
 
   virtual void output(ostream &out) const;
 
+PUBLISHED:
   INLINE void set_center(const LPoint3f &center);
   INLINE void set_center(float x, float y, float z);
   INLINE const LPoint3f &get_center() const;

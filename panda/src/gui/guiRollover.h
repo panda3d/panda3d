@@ -24,7 +24,8 @@ private:
 
   INLINE GuiRollover(void);
   virtual void recompute_frame(void);
-public:
+
+PUBLISHED:
   GuiRollover(const string&, GuiLabel*, GuiLabel*);
   virtual ~GuiRollover(void);
 
@@ -39,6 +40,7 @@ public:
   virtual void set_pos(const LVector3f&);
 
   virtual void output(ostream&) const;
+
 public:
   // type interface
   static TypeHandle get_class_type(void) {

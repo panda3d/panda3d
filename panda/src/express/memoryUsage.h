@@ -29,6 +29,7 @@ class EXPCL_PANDAEXPRESS MemoryUsage {
 public:
   INLINE static bool get_track_memory_usage();
 
+PUBLISHED:
 #if defined(__GNUC__) && !defined(NDEBUG)
   // There seems to be a problem with egcs-2.91.66: it gets confused
   // with too many nested inline functions, and sets the wrong pointer

@@ -22,15 +22,17 @@
 //               world and running into things.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CollisionNode : public NamedNode {
-public:
+PUBLISHED:
   CollisionNode(const string &name = "");
+
+public:
   CollisionNode(const CollisionNode &copy);
   void operator = (const CollisionNode &copy);
   virtual ~CollisionNode();
-
   virtual Node *make_copy() const;
   virtual void xform(const LMatrix4f &mat);
 
+PUBLISHED:
   INLINE void set_collide_mask(CollideMask mask);
   INLINE void set_from_collide_mask(CollideMask mask);
   INLINE void set_into_collide_mask(CollideMask mask);
@@ -45,6 +47,7 @@ public:
   INLINE void remove_solid(int n);
   INLINE int add_solid(CollisionSolid *solid);
 
+public:
   virtual void draw_traverse();
   virtual void output(ostream &out) const;
 

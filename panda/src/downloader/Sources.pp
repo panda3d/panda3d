@@ -13,6 +13,7 @@
     config_downloader.h downloadDb.I					\
     downloadDb.cxx downloadDb.h						\
     downloader.I downloader.cxx downloader.h extractor.cxx extractor.h	\
+    hashVal.cxx hashVal.I hashVal.h \
     patcher.cxx								\
     patcher.h
 
@@ -21,7 +22,7 @@
     zcompressor.h download_utils.cxx download_utils.h
 
   #define IF_CRYPTO_SOURCES \
-    crypto_utils.cxx crypto_utils.h hashVal.cxx hashVal.I hashVal.h
+    crypto_utils.cxx crypto_utils.h
 
   #define INSTALL_HEADERS					\
     downloader.h downloader.I					\

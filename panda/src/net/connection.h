@@ -24,7 +24,7 @@ class NetDatagram;
 //               output.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA Connection : public ReferenceCount {
-public:
+PUBLISHED:
   Connection(ConnectionManager *manager, PRFileDesc *socket);
   ~Connection();
 

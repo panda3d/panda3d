@@ -200,7 +200,7 @@ store_to_cache(NodeRelation *arc, Node *top_subtree) {
   if (arc->_net_transitions == (NodeTransitionCache *)NULL) {
     arc->_net_transitions = new NodeTransitionCache;
 
-  } else if (arc->_net_transitions->get_count() > 1) {
+  } else if (arc->_net_transitions->get_ref_count() > 1) {
     // Copy-on-write.
     arc->_net_transitions = new NodeTransitionCache(*arc->_net_transitions);
   }

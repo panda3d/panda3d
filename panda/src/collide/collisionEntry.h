@@ -35,6 +35,7 @@ public:
   CollisionEntry(const CollisionEntry &copy);
   void operator = (const CollisionEntry &copy);
 
+PUBLISHED:
   INLINE const CollisionSolid *get_from() const;
   INLINE bool has_into() const;
   INLINE const CollisionSolid *get_into() const;

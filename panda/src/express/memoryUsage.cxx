@@ -5,7 +5,7 @@
 
 #include "memoryUsage.h"
 #include "memoryUsagePointers.h"
-#include "clockObject.h"
+#include "trueClock.h"
 #include "typedReferenceCount.h"
 
 #ifndef NDEBUG
@@ -334,7 +334,7 @@ ns_record_pointer(ReferenceCount *ptr) {
     info._ptr = ptr;
     info._static_type = ReferenceCount::get_class_type();
     info._dynamic_type = ReferenceCount::get_class_type();
-    info._time = ClockObject::get_global_clock()->get_real_time();
+    info._time = TrueClock::get_ptr()->get_real_time();
     info._freeze_index = _freeze_index;
     info._reconsider_dynamic_type = true;
 
@@ -395,7 +395,7 @@ ns_remove_pointer(ReferenceCount *ptr) {
 
     MemoryInfo &info = (*ti).second;
     if (info._freeze_index == _freeze_index) {
-      double now = ClockObject::get_global_clock()->get_real_time();
+      double now = TrueClock::get_ptr()->get_real_time();
       _count--;
       _trend_types.add_info(info.get_type());
       _trend_ages.add_info(now - info._time);
@@ -427,7 +427,7 @@ ns_get_pointers(MemoryUsagePointers &result) {
   nassertv(_track_memory_usage);
   result.clear();
 
-  double now = ClockObject::get_global_clock()->get_real_time();
+  double now = TrueClock::get_ptr()->get_real_time();
   Table::iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
     MemoryInfo &info = (*ti).second;
@@ -449,7 +449,7 @@ ns_get_pointers_of_type(MemoryUsagePointers &result, TypeHandle type) {
   nassertv(_track_memory_usage);
   result.clear();
 
-  double now = ClockObject::get_global_clock()->get_real_time();
+  double now = TrueClock::get_ptr()->get_real_time();
   Table::iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
     MemoryInfo &info = (*ti).second;
@@ -476,7 +476,7 @@ ns_get_pointers_of_age(MemoryUsagePointers &result,
   nassertv(_track_memory_usage);
   result.clear();
 
-  double now = ClockObject::get_global_clock()->get_real_time();
+  double now = TrueClock::get_ptr()->get_real_time();
   Table::iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
     MemoryInfo &info = (*ti).second;
@@ -518,12 +518,12 @@ ns_get_pointers_with_zero_count(MemoryUsagePointers &result) {
   nassertv(_track_memory_usage);
   result.clear();
 
-  double now = ClockObject::get_global_clock()->get_real_time();
+  double now = TrueClock::get_ptr()->get_real_time();
   Table::iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
     MemoryInfo &info = (*ti).second;
     if (info._freeze_index == _freeze_index) {
-      if ((*ti).first->get_count() == 0) {
+      if ((*ti).first->get_ref_count() == 0) {
 	(*ti).first->ref();
 	result.add_entry((*ti).first, info.get_type(), now - info._time);
       }
@@ -591,7 +591,7 @@ ns_show_trend_types() {
 void MemoryUsage::
 ns_show_current_ages() {
   AgeHistogram hist;
-  double now = ClockObject::get_global_clock()->get_real_time();
+  double now = TrueClock::get_ptr()->get_real_time();
 
   Table::iterator ti;
   for (ti = _table.begin(); ti != _table.end(); ++ti) {

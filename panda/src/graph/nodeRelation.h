@@ -77,6 +77,7 @@ public:
   INLINE void output_transitions(ostream &out) const;
   INLINE void write_transitions(ostream &out, int indent = 0) const;
 
+PUBLISHED:
   INLINE Node *get_parent() const;
   INLINE Node *get_child() const;
   INLINE int get_sort() const;
@@ -101,6 +102,7 @@ public:
 
   INLINE int compare_transitions_to(const NodeRelation *arc) const;
 
+public:
   bool sub_render_trans(const AllAttributesWrapper &attrib,
 			AllTransitionsWrapper &trans,
 			GraphicsStateGuardianBase *gsgbase);

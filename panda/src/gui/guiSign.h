@@ -17,7 +17,8 @@ private:
 
   INLINE GuiSign(void);
   virtual void recompute_frame(void);
-public:
+
+PUBLISHED:
   GuiSign(const string&, GuiLabel*);
   ~GuiSign(void);
 
@@ -28,6 +29,7 @@ public:
   virtual void set_pos(const LVector3f&);
 
   virtual void output(ostream&) const;
+
 public:
   // type interface
   static TypeHandle get_class_type(void) {

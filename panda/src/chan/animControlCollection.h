@@ -27,7 +27,7 @@
 //               delete it, unbinding its animation).
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA AnimControlCollection {
-public:
+PUBLISHED:
   AnimControlCollection();
   ~AnimControlCollection();
 

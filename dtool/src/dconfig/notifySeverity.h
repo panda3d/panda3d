@@ -8,6 +8,7 @@
 
 #include <dtoolbase.h>
 
+BEGIN_PUBLISH
 enum NotifySeverity {
   NS_unspecified,  // Never used, a special case internally.
   NS_spam, 
@@ -17,6 +18,7 @@ enum NotifySeverity {
   NS_error,        // Specifically, a recoverable error.
   NS_fatal         // A nonrecoverable error--expect abort() or core dump.
 };
+END_PUBLISH
 
 EXPCL_DTOOL ostream &operator << (ostream &out, NotifySeverity severity);
 

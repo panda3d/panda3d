@@ -19,7 +19,8 @@ protected:
 
   INLINE GuiItem(void);
   virtual void recompute_frame(void) = 0;
-public:
+
+PUBLISHED:
   GuiItem(const string&);
   virtual ~GuiItem(void);
 

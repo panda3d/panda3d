@@ -61,10 +61,12 @@ protected:
   
   //virtual void fillin(TypedWriteable*, DatagramIterator&, BamReader *);
 
-public:
+PUBLISHED:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
+
+public:
   static void init_type() {
     TypedObject::init_type();
     Writeable::init_type();

@@ -26,7 +26,7 @@ class LoaderToken;
 //		 threading
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA Loader : public AsyncUtility {
-public:
+PUBLISHED:
   Loader();
   ~Loader();
 

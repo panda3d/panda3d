@@ -31,7 +31,7 @@ class DownloaderToken;
 // Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Downloader : public AsyncUtility {
-public:
+PUBLISHED:
   Downloader(void);
   Downloader(PT(Buffer) buffer);
   virtual ~Downloader(void);

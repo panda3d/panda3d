@@ -17,12 +17,13 @@
 //               buttons which map to standard mouse buttons.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA MouseButton {
-public:
+PUBLISHED:
   static ButtonHandle button(int button_number);
   static ButtonHandle one();
   static ButtonHandle two();
   static ButtonHandle three();
 
+public:
   static void init_mouse_buttons();
 };
 

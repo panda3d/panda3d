@@ -18,7 +18,7 @@
 //               kind of volume for its minimum and maximum extents.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA FiniteBoundingVolume : public GeometricBoundingVolume {
-public:
+PUBLISHED:
   virtual LPoint3f get_min() const=0;
   virtual LPoint3f get_max() const=0;
 

@@ -64,6 +64,7 @@ class Config {
       static ConfigString Get(const ConfigString sym);
       static ConfigTable::Symbol& GetAll(const ConfigString,
 					 ConfigTable::Symbol&);
+   PUBLISHED:
       static bool         GetBool(const ConfigString sym, bool def = false);
       static int          GetInt(const ConfigString sym, int def = 0);
       static float        GetFloat(const ConfigString sym, float def = 0.);

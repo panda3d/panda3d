@@ -21,7 +21,7 @@
 //               instance.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA AnimBundleNode : public NamedNode {
-public:
+PUBLISHED:
   INLINE AnimBundleNode(AnimBundle *bundle);
   INLINE AnimBundleNode(const AnimBundleNode &copy);
   INLINE void operator = (const AnimBundleNode &copy);

@@ -24,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 template<class Thing>
 class QueuedReturn {
-public:
+PUBLISHED:
   void set_max_queue_size(int max_size);
   int get_max_queue_size() const;
   int get_current_queue_size() const;

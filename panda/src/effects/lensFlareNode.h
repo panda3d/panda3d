@@ -21,7 +21,7 @@ class ClockObject;
 
 class EXPCL_PANDA LensFlareNode : public Node 
 {
-public:
+PUBLISHED:
   INLINE LensFlareNode(void);
   
   void add_flare(PT(Texture) flare, PTA_float scales, PTA_float offsets, 
@@ -37,6 +37,7 @@ public:
 
   INLINE void set_light_source(PT_Node source);
 
+public:
   virtual bool sub_render(const AllAttributesWrapper &attrib, AllTransitionsWrapper &trans, 
 			  GraphicsStateGuardianBase *gsgbase);
   virtual bool has_sub_render() const;

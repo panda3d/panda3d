@@ -26,7 +26,7 @@
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 class LMatrix3 {
-public:
+PUBLISHED:
   typedef const NumType *iterator;
   typedef const NumType *const_iterator;
 
@@ -66,13 +66,14 @@ public:
   INLINE const NumType *get_data() const;
   INLINE int get_num_components() const;
 
+public:
   INLINE iterator begin();
   INLINE iterator end();
 
   INLINE const_iterator begin() const;
   INLINE const_iterator end() const;
 
-
+PUBLISHED:
   bool operator == (const LMatrix3<NumType> &other) const;
   INLINE bool operator != (const LMatrix3<NumType> &other) const;
 

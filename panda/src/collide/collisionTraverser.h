@@ -30,7 +30,7 @@ class Geom;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CollisionTraverser : 
   public TraverserVisitor<NullTransitionWrapper, CollisionLevelState> {
-public:
+PUBLISHED:
   CollisionTraverser(TypeHandle graph_type = RenderRelation::get_class_type());
   ~CollisionTraverser();
 

@@ -33,7 +33,7 @@
 //               collection of data elements.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Datagram : public TypedObject {
-public:
+PUBLISHED:
   INLINE Datagram();
   INLINE Datagram(const void *data, size_t size);
   INLINE Datagram(const string &data);

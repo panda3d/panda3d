@@ -24,13 +24,15 @@
 //               triggered it.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CollisionHandlerEvent : public CollisionHandler {
-public:
+PUBLISHED:
   CollisionHandlerEvent();
 
+public:
   virtual void begin_group();
   virtual void add_entry(CollisionEntry *entry);
   virtual void end_group();
 
+PUBLISHED:
   INLINE void set_in_pattern(const string &pattern);
   INLINE string get_in_pattern() const;
   INLINE void set_out_pattern(const string &pattern);

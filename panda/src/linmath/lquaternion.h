@@ -18,7 +18,7 @@ protected:
   INLINE LQuaternionBase<NumType> 
     multiply(const LQuaternionBase<NumType>&) const;
 
-public:
+PUBLISHED:
   INLINE LQuaternionBase(void);
   INLINE LQuaternionBase(const LQuaternionBase<NumType> &);
   INLINE LQuaternionBase(NumType, NumType, NumType, NumType);
@@ -91,6 +91,7 @@ operator * (const LMatrix4<NumType> &m, const LQuaternionBase<NumType> &q);
 
 // pacify interrogate.
 #ifdef CPPPARSER
+BEGIN_PUBLISH
 INLINE LMatrix3<float>
 operator * (const LMatrix3<float> &m, const LQuaternionBase<float> &q);
 INLINE LMatrix4<float>
@@ -99,6 +100,7 @@ INLINE LMatrix3<double>
 operator * (const LMatrix3<double> &m, const LQuaternionBase<double> &q);
 INLINE LMatrix4<double>
 operator * (const LMatrix4<double> &m, const LQuaternionBase<double> &q);
+END_PUBLISH
 #endif
 
 // Cast to a different numeric type

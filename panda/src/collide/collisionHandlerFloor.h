@@ -21,7 +21,7 @@
 //               avatar's head.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CollisionHandlerFloor : public CollisionHandlerPhysical {
-public:
+PUBLISHED:
   CollisionHandlerFloor();
   virtual ~CollisionHandlerFloor();
 

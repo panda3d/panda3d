@@ -23,7 +23,8 @@ private:
   float _endt;
   float _delta;
   float _t;
-public:
+
+PUBLISHED:
   Lerp(LerpFunctor* func, float endt, LerpBlendType* blend);
   Lerp(LerpFunctor* func, float startt, float endt, LerpBlendType* blend);
   Lerp(const Lerp&);
@@ -38,6 +39,7 @@ public:
   LerpFunctor* get_functor(void) const;
   void set_end_event(std::string&);
   std::string get_end_event(void) const;
+
 public:
   // now for typehandle stuff
   static TypeHandle get_class_type(void) {
@@ -70,7 +72,8 @@ private:
 
   virtual void step(void);
   static void handle_event(CPT(Event), void*);
-public:
+
+PUBLISHED:
   AutonomousLerp(LerpFunctor* func, float endt, LerpBlendType* blend,
 		 EventHandler* handler);
   AutonomousLerp(LerpFunctor* func, float startt, float endt,
@@ -87,6 +90,7 @@ public:
   float get_t(void) const;
   void set_end_event(std::string&);
   std::string get_end_event(void) const;
+
 public:
   // now for typehandle stuff
   static TypeHandle get_class_type(void) {

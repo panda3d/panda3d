@@ -30,9 +30,10 @@
 //               instance decalling, while using the CullTraverser.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DirectRenderTransition : public ImmediateTransition {
-public:
+PUBLISHED:
   INLINE DirectRenderTransition();
-  
+
+public:  
   virtual NodeTransition *make_copy() const;
 
   virtual bool has_sub_render() const;

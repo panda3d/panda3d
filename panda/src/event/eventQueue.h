@@ -31,6 +31,7 @@ public:
   EventQueue();
   ~EventQueue();
 
+PUBLISHED:
   void queue_event(CPT_Event event);
 
   bool is_queue_empty() const;

@@ -117,6 +117,7 @@ typedef LQuaternionBase<double> LQuaterniond;
 typedef LRotation<double> LRotationd;
 typedef LOrientation<double> LOrientationd;
 
+/*
 // Now define explicit instantiations of the output operator functions
 // for interrogate's benefit.  These functions don't actually exist
 // anywhere, but interrogate can't know how to instantiate template
@@ -136,6 +137,7 @@ INLINE ostream &operator << (ostream &out, const LMatrix3d &mat);
 INLINE ostream &operator << (ostream &out, const LMatrix4d &mat);
 INLINE ostream &operator << (ostream &out, const LQuaterniond &q);
 #endif
+*/
 
 
 #endif

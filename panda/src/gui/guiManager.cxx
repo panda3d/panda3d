@@ -63,22 +63,22 @@ GuiManager* GuiManager::get_ptr(GraphicsWindow* w, MouseAndKeyboard* mak) {
       gui_cat->debug() << "found a MouseWatcher, don't have to make one"
 		       << endl;
     // now setup event triggers for the watcher
-    if (has_watcher)
+    if (has_watcher && !watcher->get_button_down_pattern().empty())
       gui_cat->warning() << "overwriting existing button down pattern '"
 			 << watcher->get_button_down_pattern()
 			 << "' with 'gui-%r-%b'" << endl;
     watcher->set_button_down_pattern("gui-%r-%b");
-    if (has_watcher)
+    if (has_watcher && !watcher->get_button_up_pattern().empty())
       gui_cat->warning() << "overwriting existing button up pattern '"
 			 << watcher->get_button_up_pattern()
 			 << "' with 'gui-%r-%b-up'" << endl;
     watcher->set_button_up_pattern("gui-%r-%b");
-    if (has_watcher)
+    if (has_watcher && !watcher->get_enter_pattern().empty())
       gui_cat->warning() << "overwriting existing enter pattern '"
 			 << watcher->get_enter_pattern()
 			 << "' with 'gui-in-%r'" << endl;
     watcher->set_enter_pattern("gui-in-%r");
-    if (has_watcher)
+    if (has_watcher && !watcher->get_leave_pattern().empty())
       gui_cat->warning() << "overwriting existing exit pattern '"
 			 << watcher->get_leave_pattern()
 			 << "' with 'gui-out-%r'" << endl;

@@ -27,7 +27,7 @@ class DatagramIterator;
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 class Plane {
-public:
+PUBLISHED:
   INLINE Plane(void);
   INLINE Plane(const Plane &copy);
   INLINE Plane(const LPoint3<NumType> &a, const LPoint3<NumType> &b,

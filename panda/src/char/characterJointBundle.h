@@ -26,8 +26,10 @@ protected:
 public:
   CharacterJointBundle(const string &name = "");
 
+PUBLISHED:
   INLINE Character *get_node() const;
 
+public:
   virtual PartGroup *make_copy() const;
 
   static void register_with_read_factory(void);

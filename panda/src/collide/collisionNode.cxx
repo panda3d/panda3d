@@ -100,7 +100,7 @@ xform(const LMatrix4f &mat) {
 
     // We may have to copy each of our solids as we transform them if
     // someone else is sharing their pointers.
-    if (solid->get_count() > 1) {
+    if (solid->get_ref_count() > 1) {
       solid = solid->make_copy();
       (*si) = solid;
     }

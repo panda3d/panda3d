@@ -27,7 +27,7 @@
 // Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Patchfile {
-public:
+PUBLISHED:
   Patchfile(void);
   Patchfile(PT(Buffer) buffer);
   ~Patchfile(void);

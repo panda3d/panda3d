@@ -99,7 +99,7 @@ PN_uint16 Patchfile::
 calc_hash(const char *buffer) {
   PN_uint16 hash_value = 0;
 
-  for(int i = 0; i < _footprint_length; i++) {
+  for(int i = 0; i < (int)_footprint_length; i++) {
     // this is probably not such a good hash. to be replaced
     hash_value ^= (*buffer) << (i % 8);
     buffer++;
@@ -368,7 +368,7 @@ build(Filename &file_orig, Filename &file_new) {
   }
 
   // are there still more bytes left in the new file?
-  if (ADD_offset != length_new) {
+  if ((int)ADD_offset != length_new) {
     // emit ADD for all remaining bytes
     emit_ADD(write_stream, length_new - ADD_offset, &buffer_new[ADD_offset]);
 
@@ -466,7 +466,7 @@ apply(Filename &patch, Filename &file) {
   {
     ///////////
     // read # of ADD bytes
-    nassertr(_buffer->get_length() >= sizeof(ADD_length), false);
+    nassertr(_buffer->get_length() >= (int)sizeof(ADD_length), false);
     patch_stream.read(_buffer->_buffer, sizeof(ADD_length));
     _datagram.clear();
     _datagram.append_data(_buffer->_buffer, sizeof(ADD_length));
@@ -478,7 +478,7 @@ apply(Filename &patch, Filename &file) {
       PN_uint32 bytes_left = ADD_length;
 
       while (bytes_left > 0) {
-        PN_uint32 bytes_this_time = (bytes_left < buflen) ? bytes_left : buflen;
+        PN_uint32 bytes_this_time = ((int)bytes_left < buflen) ? bytes_left : buflen;
         patch_stream.read(_buffer->_buffer, bytes_this_time);
         write_stream.write(_buffer->_buffer, bytes_this_time);
         bytes_left -= bytes_this_time;
@@ -487,7 +487,7 @@ apply(Filename &patch, Filename &file) {
 
     ///////////
     // read # of COPY bytes
-    nassertr(_buffer->get_length() >= sizeof(COPY_length), false);
+    nassertr(_buffer->get_length() >= (int)sizeof(COPY_length), false);
     patch_stream.read(_buffer->_buffer, sizeof(COPY_length));
     _datagram.clear();
     _datagram.append_data(_buffer->_buffer, sizeof(COPY_length));
@@ -497,7 +497,7 @@ apply(Filename &patch, Filename &file) {
     // if there are bytes to copy, read them from original file and write them to output
     if (0 != COPY_length) {
       // read copy offset
-      nassertr(_buffer->get_length() >= sizeof(COPY_offset), false);
+      nassertr(_buffer->get_length() >= (int)sizeof(COPY_offset), false);
       patch_stream.read(_buffer->_buffer, sizeof(COPY_offset));
       _datagram.clear();
       _datagram.append_data(_buffer->_buffer, sizeof(COPY_offset));
@@ -511,7 +511,7 @@ apply(Filename &patch, Filename &file) {
       PN_uint32 bytes_left = COPY_length;
 
       while (bytes_left > 0) {
-        PN_uint32 bytes_this_time = (bytes_left < buflen) ? bytes_left : buflen;
+        PN_uint32 bytes_this_time = ((int)bytes_left < buflen) ? bytes_left : buflen;
         origfile_stream.read(_buffer->_buffer, bytes_this_time);
         write_stream.write(_buffer->_buffer, bytes_this_time);
         bytes_left -= bytes_this_time;

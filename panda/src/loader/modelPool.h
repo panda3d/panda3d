@@ -33,7 +33,7 @@
 //               although it wouldn't be *too* difficult to add.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ModelPool {
-public:
+PUBLISHED:
   INLINE static bool has_model(const string &filename);
   INLINE static bool verify_model(const string &filename);
   INLINE static PT_Node load_model(const string &filename);

@@ -25,7 +25,7 @@
 //               extracted.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA LineStream : public ostream {
-public:
+PUBLISHED:
   INLINE LineStream();
 
   INLINE bool is_text_available() const;

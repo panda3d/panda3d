@@ -56,17 +56,21 @@ public:
 
   INLINE int compare_to(const NodeAttribute &other) const;
 
+PUBLISHED:
   INLINE void set_priority(int priority);
   INLINE int get_priority() const;
 
+public:
   virtual NodeAttribute *make_copy() const=0;
   virtual NodeAttribute *make_initial() const=0;
 
   virtual TypeHandle get_handle() const=0;
 
+PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
+public:
   virtual void issue(GraphicsStateGuardianBase *gsgbase);
 
 protected:

@@ -22,7 +22,7 @@ class DatagramIterator;
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 class LVecBase2 {
-public:
+PUBLISHED:
   typedef const NumType *iterator;
   typedef const NumType *const_iterator;
 
@@ -54,12 +54,14 @@ public:
   INLINE const NumType *get_data() const;
   INLINE int get_num_components() const;
 
+public:
   INLINE iterator begin();
   INLINE iterator end();
 
   INLINE const_iterator begin() const;
   INLINE const_iterator end() const;
 
+PUBLISHED:
   INLINE void fill(NumType fill_value);
   INLINE void set(NumType x, NumType y);
 

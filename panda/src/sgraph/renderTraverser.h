@@ -28,13 +28,16 @@ class EXPCL_PANDA RenderTraverser : public TypedReferenceCount {
 public:
   INLINE RenderTraverser(GraphicsStateGuardian *gsg, TypeHandle graph_type);
 
+PUBLISHED:
   INLINE GraphicsStateGuardian *get_gsg() const;
   INLINE TypeHandle get_graph_type() const;
-  
+
+public:  
   virtual void traverse(Node *root, 
 			const AllAttributesWrapper &initial_state,
 			const AllTransitionsWrapper &net_trans)=0;
 
+PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 

@@ -23,12 +23,15 @@ class NodeTransitionCache;
 //               value.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA NodeAttributes {
-public:
+PUBLISHED:
   NodeAttributes();
+
+public:
   NodeAttributes(const NodeAttributes &copy);
   void operator = (const NodeAttributes &copy);
   ~NodeAttributes();
 
+PUBLISHED:
   bool is_empty() const;
   PT(NodeAttribute) set_attribute(TypeHandle handle, NodeAttribute *attrib);
   PT(NodeAttribute) clear_attribute(TypeHandle handle);

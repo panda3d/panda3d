@@ -335,7 +335,7 @@ apply(const NodeAttribute *attrib) const {
     return result;
   }
 
-  if (result->get_count() > 1) {
+  if (result->get_ref_count() > 1) {
     // Copy on write.
     DCAST_INTO_R(result, result->make_copy(), NULL);
   }

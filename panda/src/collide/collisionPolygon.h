@@ -17,12 +17,14 @@
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CollisionPolygon : public CollisionPlane {
-public:
+PUBLISHED:
   INLINE CollisionPolygon(const LPoint3f &a, const LPoint3f &b,
 			  const LPoint3f &c);
   INLINE CollisionPolygon(const LPoint3f &a, const LPoint3f &b,
 			  const LPoint3f &c, const LPoint3f &d);
   INLINE CollisionPolygon(const LPoint3f *begin, const LPoint3f *end);
+
+public:
   CollisionPolygon(const CollisionPolygon &copy);
 
   virtual CollisionSolid *make_copy();

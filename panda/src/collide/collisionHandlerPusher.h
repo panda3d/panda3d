@@ -19,7 +19,7 @@
 //               collisions you can have.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CollisionHandlerPusher : public CollisionHandlerPhysical {
-public:
+PUBLISHED:
   CollisionHandlerPusher();
   virtual ~CollisionHandlerPusher();
 

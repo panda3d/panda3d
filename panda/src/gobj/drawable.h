@@ -50,10 +50,12 @@ public:
 protected:
   void fillin(DatagramIterator& scan, BamReader* manager);
 
-public:
+PUBLISHED:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
+
+public:
   static void init_type() {
     ReferenceCount::init_type();
     WriteableConfigurable::init_type();
@@ -63,9 +65,13 @@ public:
 		  WriteableConfigurable::get_class_type(),
 		  BoundedObject::get_class_type());
   }
+
+PUBLISHED: // Temporary kludge around ffi bug
   virtual TypeHandle get_type() const {
     return get_class_type();
   }
+
+public:
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
 

@@ -16,7 +16,7 @@
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 class LVector4 : public LVecBase4<NumType> {
-public:
+PUBLISHED:
   INLINE LVector4();
   INLINE LVector4(const LVecBase4<NumType> &copy);
   INLINE LVector4<NumType> &operator = (const LVecBase4<NumType> &copy);

@@ -24,7 +24,7 @@
 // Description : A file that contains a set of files. 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Multifile {
-public:
+PUBLISHED:
   enum Type {
     T_unknown,
     T_valid,

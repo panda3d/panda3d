@@ -17,7 +17,7 @@
 // Description : See ColorTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ColorAttribute : public OnOffAttribute {
-public:
+PUBLISHED:
   INLINE ColorAttribute();
 
   INLINE void set_on(const Colorf &color);
@@ -27,6 +27,7 @@ public:
   INLINE bool is_real() const;
   INLINE Colorf get_color() const;
 
+public:
   virtual TypeHandle get_handle() const;
   virtual NodeAttribute *make_copy() const;
   virtual NodeAttribute *make_initial() const;

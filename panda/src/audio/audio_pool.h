@@ -30,6 +30,7 @@ private:
 public:
   typedef AudioTraits::SoundClass* SoundLoadFunc(Filename);
 
+PUBLISHED:
   INLINE static bool has_sound(const string& filename);
   INLINE static bool verify_sound(const string& filename);
   INLINE static AudioSound* load_sound(const string& filename);

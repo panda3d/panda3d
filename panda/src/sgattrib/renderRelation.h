@@ -42,10 +42,12 @@ public:
 
   static TypedWriteable *make_RenderRelation(const FactoryParams &params);
 
-public:
+PUBLISHED:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
+
+public:
   static void init_type() {
     NodeRelation::init_type();
     register_type(_type_handle, "RenderRelation",

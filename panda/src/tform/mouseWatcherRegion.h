@@ -18,7 +18,7 @@
 //               on the screen for the MouseWatcher.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA MouseWatcherRegion : public ReferenceCount, public Namable {
-public:
+PUBLISHED:
   INLINE MouseWatcherRegion(const string &name, float left, float right,
 			    float bottom, float top);
   INLINE MouseWatcherRegion(const string &name, const LVecBase4f &frame);

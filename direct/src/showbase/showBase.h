@@ -28,6 +28,8 @@ typedef Config::Config<ConfigureGetConfig_config_showbase> ConfigShowbase;
 
 class CollisionTraverser;
 
+BEGIN_PUBLISH
+
 EXPCL_DIRECT PT(GraphicsPipe) make_graphics_pipe();
 EXPCL_DIRECT PT(GraphicsWindow) 
   make_graphics_window(GraphicsPipe *pipe, 
@@ -48,5 +50,6 @@ EXPCL_DIRECT void toggle_backface(NodeAttributes &initial_state);
 
 EXPCL_DIRECT ConfigShowbase &get_config_showbase();
 
+END_PUBLISH
 
 #endif

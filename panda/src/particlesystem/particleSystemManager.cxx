@@ -75,7 +75,7 @@ do_particles(float dt) {
     // update this system
     if (cur_ps->get_active_system_flag() == true) {
       //      cout << "  system " << cs++ << endl;
-      //      cout << "  count is: " << cur_ps->get_render_parent()->get_count() << endl;
+      //      cout << "  count is: " << cur_ps->get_render_parent()->get_ref_count() << endl;
       cur_ps->update(dt);
 
       // handle age

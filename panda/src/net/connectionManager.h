@@ -36,7 +36,7 @@ class ConnectionWriter;
 //               QueuedConnectionManager.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ConnectionManager {
-public:
+PUBLISHED:
   ConnectionManager();
   virtual ~ConnectionManager();
 
