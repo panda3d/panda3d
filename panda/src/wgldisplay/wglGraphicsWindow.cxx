@@ -264,8 +264,7 @@ static DWORD GetAvailVidMem() {
     DDSCAPS ddsCaps;
     DWORD dwTotal,dwFree;
     ZeroMemory(&ddsCaps,sizeof(DDSCAPS));
-    ddsCaps.dwCaps = DDSCAPS_VIDEOMEMORY; //set internally by DX anyway, dont think this any different than 0x0
-
+    ddsCaps.dwCaps = DDSCAPS_VIDEOMEMORY | DDSCAPS_LOCALVIDMEM;  // dont count AGP mem!
     if (FAILED(hr = pDD2->GetAvailableVidMem(&ddsCaps,&dwTotal,&dwFree))) {
         if (hr==DDERR_NODIRECTDRAWHW) {
            if (wgldisplay_cat.is_debug())
@@ -474,9 +473,6 @@ void wglGraphicsWindow::config() {
       _props._yorg = 0;
       _props._xsize = dwWidth;
       _props._ysize = dwHeight;
-
-       if (wgldisplay_cat.is_debug())
-           wgldisplay_cat.debug() << "set fullscreen mode at res (" << dwWidth << " X " << dwHeight << " X " << dwFullScreenBitDepth <<"), " << dm.dmDisplayFrequency  << "Hz\n";
   } else {
 
         RECT win_rect;
@@ -509,6 +505,9 @@ void wglGraphicsWindow::config() {
 
         SetForegroundWindow(_mwindow);
   }
+
+  wgldisplay_cat.info() << "opening " << _props._xsize << "x" << _props._ysize
+                        << (_props._fullscreen ? " fullscreen" : " regular") << " window\n";
 
   if (!_mwindow) {
         wgldisplay_cat.fatal() << "CreateWindow() failed!" << endl;
