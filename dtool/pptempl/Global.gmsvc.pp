@@ -101,8 +101,8 @@
   #define LINKER xilink
   #define LIBBER xilib
   #define COMMONFLAGS /Gi-
-//  #define OPTFLAGS /O3 /G6 /Qvc6 /Qipo /QaxW /Qvec_report1 
-  #define OPTFLAGS /O3 /G6 /Qvc6
+//  #define OPTFLAGS /O3 /G6 /Qvc6 /Qwd985 /Qipo /QaxW /Qvec_report1 
+  #define OPTFLAGS /O3 /G6 /Qvc6 /Qwd985
   #define DEBUGFLAGS /MDd /Zi $[BROWSEINFO_FLAG]
   #define RELEASEFLAGS /MD
   // We assume the Intel compiler installation dir is mounted as /ia32.
