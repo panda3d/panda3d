@@ -27,6 +27,7 @@
 #include "vector_float.h"
 #include "pvector.h"
 #include "nodePath.h"
+#include "referenceCount.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : NurbsCurveEvaluator
@@ -43,7 +44,7 @@
 //               eventually replace the whole ParametricCurve class
 //               hierarchy.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA NurbsCurveEvaluator {
+class EXPCL_PANDA NurbsCurveEvaluator : public ReferenceCount {
 PUBLISHED:
   NurbsCurveEvaluator();
   ~NurbsCurveEvaluator();

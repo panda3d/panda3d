@@ -43,12 +43,15 @@ public:
                    const LVecBase4f verts[], int num_vertices);
 
 PUBLISHED:
-  ~NurbsCurveResult();
+  INLINE ~NurbsCurveResult();
 
   INLINE float get_start_t() const;
   INLINE float get_end_t() const;
 
-  bool eval_point(float t, LPoint3f &point);
+  INLINE bool eval_point(float t, LPoint3f &point);
+  
+  INLINE int get_num_segments() const;
+  void eval_segment_point(int segment, float t, LPoint3f &point) const;
   
 private:
   int find_segment(float t);
@@ -59,8 +62,6 @@ private:
   int _last_segment;
   float _last_from;
   float _last_to;
-
-  friend class NurbsCurveEvaluator;
 };
 
 #include "nurbsCurveResult.I"

@@ -7,3 +7,4 @@
 #include "nurbsCurveResult.cxx"
 #include "nurbsMatrixVector.cxx"
 #include "nurbsVertex.cxx"
+#include "ropeNode.cxx"

@@ -55,36 +55,31 @@ NurbsCurveResult(const NurbsMatrixVector &basis, int order,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NurbsCurveResult::Destructor
+//     Function: NurbsCurveResult::eval_segment_point
 //       Access: Published
-//  Description:
+//  Description: Evaluates the point on the curve corresponding to the
+//               indicated value in parametric time within the
+//               indicated curve segment.  t should be in the range
+//               [0, 1].
+//
+//               The curve is internally represented as a number of
+//               connected (or possibly unconnected) piecewise
+//               continuous segments.  The exact number of segments
+//               for a particular curve depends on the knot vector,
+//               and is returned by get_num_segments().  Normally,
+//               eval_point() is used to evaluate a point along the
+//               continuous curve, but when you care more about local
+//               continuity, you can use eval_segment_point() to
+//               evaluate the points along each segment.
 ////////////////////////////////////////////////////////////////////
-NurbsCurveResult::
-~NurbsCurveResult() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NurbsCurveResult::eval_point
-//       Access: Published
-//  Description: Computes the point on the curve corresponding to the
-//               indicated value in parametric time.  Returns true if
-//               the t value is value, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool NurbsCurveResult::
-eval_point(float t, LPoint3f &point) {
-  int segment = find_segment(t);
-  if (segment == -1) {
-    return false;
-  }
-
-  t = _prod.scale_t(segment, t);
+void NurbsCurveResult::
+eval_segment_point(int segment, float t, LPoint3f &point) const {
   const LMatrix4f &mat = _prod.get_matrix(segment);
 
   float t2 = t*t;
   LVecBase4f tvec(t*t2, t2, t, 1.0f);
   LVecBase4f r = tvec * mat;
   point.set(r[0] / r[3], r[1] / r[3], r[2] / r[3]);
-  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
