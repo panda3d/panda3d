@@ -220,7 +220,7 @@ except NameError:
     loadDNAFile(DNASTORE, 'phase_4/dna/storage.dna', CSDefault, 1)
     loadDNAFile(DNASTORE, 'phase_5/dna/storage_town.dna', CSDefault, 1)
     loadDNAFile(DNASTORE, 'phase_5.5/dna/storage_estate.dna', CSDefault, 1)
-    loadDNAFile(DNASTORE, 'phase_5.5/dna/storage_house_interior.dna', CSDefault, 1)
+    # loadDNAFile(DNASTORE, 'phase_5.5/dna/storage_house_interior.dna', CSDefault, 1)
     # Load all the neighborhood specific storage files
     if 'TT' in hoods:
         loadDNAFile(DNASTORE, 'phase_4/dna/storage_TT.dna', CSDefault, 1)
