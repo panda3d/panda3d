@@ -30,6 +30,8 @@
 #include "texGenAttrib.h"
 #include "textureStage.h"
 #include "textureApplyAttrib.h"
+#include "antialiasAttrib.h"
+#include "renderModeAttrib.h"
 #include "pointerToArray.h"
 #include "fog.h"
 #include "graphicsWindow.h"
@@ -38,6 +40,7 @@
 #ifdef HAVE_CGGL
 #include "cgShader.h"
 #endif
+
 class PlaneNode;
 class Light;
 
@@ -112,6 +115,7 @@ public:
   virtual void issue_texture(const TextureAttrib *attrib);
   virtual void issue_material(const MaterialAttrib *attrib);
   virtual void issue_render_mode(const RenderModeAttrib *attrib);
+  virtual void issue_antialias(const AntialiasAttrib *);
   virtual void issue_rescale_normal(const RescaleNormalAttrib *attrib);
   virtual void issue_texture_apply(const TextureApplyAttrib *attrib);
   virtual void issue_color_write(const ColorWriteAttrib *attrib);
@@ -188,6 +192,11 @@ protected:
   INLINE void enable_multisample(bool val);
   INLINE void enable_line_smooth(bool val);
   INLINE void enable_point_smooth(bool val);
+  INLINE void enable_polygon_smooth(bool val);
+  INLINE void setup_antialias_line();
+  INLINE void setup_antialias_point();
+  INLINE void setup_antialias_polygon();
+
   INLINE void enable_scissor(bool val);
   INLINE void enable_stencil_test(bool val);
   INLINE void enable_multisample_alpha_one(bool val);
@@ -243,6 +252,7 @@ protected:
   bool _multisample_enabled;
   bool _line_smooth_enabled;
   bool _point_smooth_enabled;
+  bool _polygon_smooth_enabled;
   bool _scissor_enabled;
   bool _stencil_test_enabled;
   bool _multisample_alpha_one_enabled;
@@ -268,6 +278,8 @@ protected:
   bool _needs_tex_mat;
   CPT(TexGenAttrib) _current_tex_gen;
   bool _needs_tex_gen;
+  unsigned short _antialias_mode;
+  RenderModeAttrib::Mode _render_mode;
 
   CPT(DisplayRegion) _actual_display_region;
 #ifdef HAVE_CGGL

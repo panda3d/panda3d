@@ -25,6 +25,7 @@
 #include "renderState.h"
 #include "transformState.h"
 #include "texGenAttrib.h"
+#include "transparencyAttrib.h"
 #include "nodePathComponent.h"
 
 #include "pointerTo.h"
@@ -636,10 +637,15 @@ PUBLISHED:
   void clear_compass();
   bool has_compass() const;
 
-  void set_transparency(bool transparency, int priority = 0);
+  void set_transparency(TransparencyAttrib::Mode mode, int priority = 0);
   void clear_transparency();
   bool has_transparency() const;
-  bool get_transparency() const;
+  TransparencyAttrib::Mode get_transparency() const;
+
+  void set_antialias(unsigned short mode, int priority = 0);
+  void clear_antialias();
+  bool has_antialias() const;
+  unsigned short get_antialias() const;
 
   INLINE void adjust_all_priorities(int adjustment);
 

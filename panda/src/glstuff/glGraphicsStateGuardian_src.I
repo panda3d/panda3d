@@ -110,7 +110,6 @@ enable_line_smooth(bool val) {
     _line_smooth_enabled = val;
     if (val) {
       GLP(Enable)(GL_LINE_SMOOTH);
-      GLP(Hint)(GL_LINE_SMOOTH_HINT, GL_NICEST);
     } else {
       GLP(Disable)(GL_LINE_SMOOTH);
     }
@@ -128,9 +127,83 @@ enable_point_smooth(bool val) {
     _point_smooth_enabled = val;
     if (val) {
       GLP(Enable)(GL_POINT_SMOOTH);
-      GLP(Hint)(GL_POINT_SMOOTH_HINT, GL_NICEST);
     } else {
       GLP(Disable)(GL_POINT_SMOOTH);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::enable_polygon_smooth
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+enable_polygon_smooth(bool val) {
+  if (_polygon_smooth_enabled != val) {
+    _polygon_smooth_enabled = val;
+    if (val) {
+      GLP(Enable)(GL_POLYGON_SMOOTH);
+    } else {
+      GLP(Disable)(GL_POLYGON_SMOOTH);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::setup_antialias_line
+//       Access: Protected
+//  Description: Sets the appropriate antialiasing modes to render a
+//               series of line primitives, according to
+//               _antialias_mode.
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+setup_antialias_line() {
+  if (_antialias_mode == (unsigned short)AntialiasAttrib::M_best) {
+    // Lines supposedly look better using line smoothing, even if we
+    // have multisample available.
+    enable_multisample(false);
+    enable_line_smooth(true);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::setup_antialias_point
+//       Access: Protected
+//  Description: Sets the appropriate antialiasing modes to render a
+//               series of point primitives, according to
+//               _antialias_mode.
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+setup_antialias_point() {
+  if (_antialias_mode == (unsigned short)AntialiasAttrib::M_best) {
+    // Points supposedly look better using point smoothing, even if we
+    // have multisample available.
+    enable_multisample(false);
+    enable_point_smooth(true);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::setup_antialias_polygon
+//       Access: Protected
+//  Description: Sets the appropriate antialiasing modes to render a
+//               series of point primitives, according to
+//               _antialias_mode.
+////////////////////////////////////////////////////////////////////
+INLINE void CLP(GraphicsStateGuardian)::
+setup_antialias_polygon() {
+  if (_antialias_mode == (unsigned short)AntialiasAttrib::M_best) {
+    if (_render_mode == RenderModeAttrib::M_wireframe) {
+      // In wireframe mode, we're really drawing lines.
+      enable_multisample(false);
+      enable_line_smooth(true);
+
+    } else {
+      // For polygons, multisample is best if it's available, otherwise
+      // polygon smoothing will do.
+      enable_multisample(true);
+      enable_polygon_smooth(true);
     }
   }
 }

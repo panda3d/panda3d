@@ -38,9 +38,6 @@
 #include "colorWriteAttrib.h"
 #include "texMatrixAttrib.h"
 #include "texGenAttrib.h"
-#ifdef HAVE_CGGL
-#include "cgShaderAttrib.h"
-#endif
 #include "materialAttrib.h"
 #include "renderModeAttrib.h"
 #include "rescaleNormalAttrib.h"
@@ -56,6 +53,9 @@
 #include "string_utils.h"
 #ifdef DO_PSTATS
 #include "pStatTimer.h"
+#endif
+#ifdef HAVE_CGGL
+#include "cgShaderAttrib.h"
 #endif
 
 #include <algorithm>
@@ -438,19 +438,6 @@ reset() {
     _buffer_mask &= ~RenderBuffer::T_back;
   }
 
-#if 0
-  //Note 8/01: This is incorrect for mono displays, if stereo is not in use, we need
-  //           to use the GL_BACK constants and not the GL_BACK_LEFT ones, which
-  //           under the RenderBuffer flag schemes require both left and right flags set.
-
-  // Check to see if we have stereo (and therefore a right buffer).
-  GLboolean has_stereo;
-  GLP(GetBooleanv)(GL_STEREO, &has_stereo);
-  if (!has_stereo) {
-    _buffer_mask &= ~RenderBuffer::T_right;
-  }
-#endif
-
   // Set up the specific state values to GL's known initial values.
   GLP(FrontFace)(GL_CCW);
 
@@ -459,6 +446,7 @@ reset() {
   _multisample_enabled = false;
   _line_smooth_enabled = false;
   _point_smooth_enabled = false;
+  _polygon_smooth_enabled = false;
   _scissor_enabled = false;
   _stencil_test_enabled = false;
   _multisample_alpha_one_enabled = false;
@@ -475,11 +463,6 @@ reset() {
   _dithering_enabled = false;
 
   _texgen_forced_normal = false;
-
-  // Antialiasing.
-  enable_line_smooth(false);
-  enable_point_smooth(false);
-  enable_multisample(true);
 
 #ifdef HAVE_CGGL
   _cg_shader = (CgShader *)NULL;
@@ -508,6 +491,8 @@ reset() {
   _needs_tex_mat = false;
   _current_tex_gen = DCAST(TexGenAttrib, TexGenAttrib::make());
   _needs_tex_gen = false;
+  _antialias_mode = AntialiasAttrib::M_none;
+  _render_mode = RenderModeAttrib::M_filled;
 
   report_my_gl_errors();
 
@@ -770,6 +755,8 @@ draw_point(GeomPoint *geom, GeomContext *gc) {
   GLCAT.spam() << "draw_point()" << endl;
 #endif
 
+  setup_antialias_point();
+
   if (draw_display_list(gc)) {
     return;
   }
@@ -839,6 +826,8 @@ draw_line(GeomLine *geom, GeomContext *gc) {
 #ifdef GSG_VERBOSE
   GLCAT.spam() << "draw_line()" << endl;
 #endif
+
+  setup_antialias_line();
 
   if (draw_display_list(gc)) {
     return;
@@ -919,6 +908,8 @@ draw_linestrip(GeomLinestrip *geom, GeomContext *gc) {
 #ifdef GSG_VERBOSE
   GLCAT.spam() << "draw_linestrip()" << endl;
 #endif
+
+  setup_antialias_line();
 
   if (draw_display_list(gc)) {
     return;
@@ -1057,6 +1048,8 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
 #ifdef GSG_VERBOSE
   GLCAT.spam() << "draw_sprite()" << endl;
 #endif
+
+  setup_antialias_polygon();
 
   // get the array traversal set up.
   int nprims = geom->get_num_prims();
@@ -1299,6 +1292,8 @@ draw_polygon(GeomPolygon *geom, GeomContext *gc) {
   GLCAT.spam() << "draw_polygon()" << endl;
 #endif
 
+  setup_antialias_polygon();
+
   if (draw_display_list(gc)) {
     return;
   }
@@ -1386,6 +1381,8 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
   GLCAT.spam() << "draw_tri()" << endl;
 #endif
 
+  setup_antialias_polygon();
+
   if (draw_display_list(gc)) {
     return;
   }
@@ -1470,6 +1467,8 @@ draw_quad(GeomQuad *geom, GeomContext *gc) {
   GLCAT.spam() << "draw_quad()" << endl;
 #endif
 
+  setup_antialias_polygon();
+
   if (draw_display_list(gc)) {
     return;
   }
@@ -1552,6 +1551,8 @@ draw_tristrip(GeomTristrip *geom, GeomContext *gc) {
 #ifdef GSG_VERBOSE
   GLCAT.spam() << "draw_tristrip()" << endl;
 #endif
+
+  setup_antialias_polygon();
 
   if (draw_display_list(gc)) {
     return;
@@ -1663,6 +1664,8 @@ draw_trifan(GeomTrifan *geom, GeomContext *gc) {
   GLCAT.spam() << "draw_trifan()" << endl;
 #endif
 
+  setup_antialias_polygon();
+
   if (draw_display_list(gc)) {
     return;
   }
@@ -1767,6 +1770,8 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
 #ifdef GSG_VERBOSE
   GLCAT.spam() << "draw_sphere()" << endl;
 #endif
+
+  setup_antialias_polygon();
 
   if (draw_display_list(gc)) {
     return;
@@ -2527,9 +2532,9 @@ issue_material(const MaterialAttrib *attrib) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 issue_render_mode(const RenderModeAttrib *attrib) {
-  RenderModeAttrib::Mode mode = attrib->get_mode();
+  _render_mode = attrib->get_mode();
 
-  switch (mode) {
+  switch (_render_mode) {
   case RenderModeAttrib::M_filled:
     GLP(PolygonMode)(GL_FRONT_AND_BACK, GL_FILL);
     break;
@@ -2541,7 +2546,32 @@ issue_render_mode(const RenderModeAttrib *attrib) {
 
   default:
     GLCAT.error()
-      << "Unknown render mode " << (int)mode << endl;
+      << "Unknown render mode " << (int)_render_mode << endl;
+  }
+  report_my_gl_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::issue_antialias
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+issue_antialias(const AntialiasAttrib *attrib) {
+  _antialias_mode = attrib->get_mode();
+
+  if (_antialias_mode == AntialiasAttrib::M_best) {
+    // In this special mode, we must enable antialiasing on a
+    // case-by-case basis, because we enable it differently for
+    // polygons and for points and lines.
+
+  } else {
+    // Otherwise, explicitly enable or disable according to the bits
+    // that are set.
+    enable_line_smooth((_antialias_mode & AntialiasAttrib::M_line) != 0);
+    enable_point_smooth((_antialias_mode & AntialiasAttrib::M_point) != 0);
+    enable_polygon_smooth((_antialias_mode & AntialiasAttrib::M_polygon) != 0);
+    enable_multisample((_antialias_mode & AntialiasAttrib::M_multisample) != 0);
   }
   report_my_gl_errors();
 }

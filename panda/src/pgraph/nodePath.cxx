@@ -39,6 +39,7 @@
 #include "compassEffect.h"
 #include "showBoundsEffect.h"
 #include "transparencyAttrib.h"
+#include "antialiasAttrib.h"
 #include "texProjectorEffect.h"
 #include "lensNode.h"
 #include "materialPool.h"
@@ -4178,13 +4179,8 @@ has_compass() const {
 //               for alpha color to be rendered partially transparent.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_transparency(bool transparency, int priority) {
+set_transparency(TransparencyAttrib::Mode mode, int priority) {
   nassertv_always(!is_empty());
-
-  TransparencyAttrib::Mode mode =
-    transparency ?
-    TransparencyAttrib::M_alpha :
-    TransparencyAttrib::M_none;
 
   node()->set_attrib(TransparencyAttrib::make(mode), priority);
 }
@@ -4224,25 +4220,85 @@ has_transparency() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_transparency
 //       Access: Published
-//  Description: Returns true if transparent rendering has been
+//  Description: Returns the transparent rendering that has been
 //               specifically set on this node via set_transparency(), or
-//               false if nontransparent rendering has been specifically
+//               M_none if nontransparent rendering has been specifically
 //               set, or if nothing has been specifically set.  See
 //               also has_transparency().  This does not necessarily
 //               imply that the geometry will or will not be rendered
 //               transparent, as there may be other nodes that override.
 ////////////////////////////////////////////////////////////////////
-bool NodePath::
+TransparencyAttrib::Mode NodePath::
 get_transparency() const {
-  nassertr_always(!is_empty(), false);
+  nassertr_always(!is_empty(), TransparencyAttrib::M_none);
   const RenderAttrib *attrib =
     node()->get_attrib(TransparencyAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
     const TransparencyAttrib *ta = DCAST(TransparencyAttrib, attrib);
-    return (ta->get_mode() != TransparencyAttrib::M_none);
+    return ta->get_mode();
   }
 
-  return false;
+  return TransparencyAttrib::M_none;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_antialias
+//       Access: Published
+//  Description: Specifies the antialiasing type that should be
+//               applied at this node and below.  See AntialiasAttrib.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_antialias(unsigned short mode, int priority) {
+  nassertv_always(!is_empty());
+
+  node()->set_attrib(AntialiasAttrib::make(mode), priority);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_antialias
+//       Access: Published
+//  Description: Completely removes any antialias setting that
+//               may have been set on this node via set_antialias().
+////////////////////////////////////////////////////////////////////
+void NodePath::
+clear_antialias() {
+  nassertv_always(!is_empty());
+  node()->clear_attrib(AntialiasAttrib::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_antialias
+//       Access: Published
+//  Description: Returns true if an antialias setting has been
+//               explicitly mode on this particular node via
+//               set_antialias().  If this returns true, then
+//               get_antialias() may be called to determine what the
+//               setting was.
+////////////////////////////////////////////////////////////////////
+bool NodePath::
+has_antialias() const {
+  nassertr_always(!is_empty(), false);
+  return node()->has_attrib(AntialiasAttrib::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_antialias
+//       Access: Published
+//  Description: Returns the antialias setting that has been
+//               specifically set on this node via set_antialias(), or
+//               M_none if no setting has been made.
+////////////////////////////////////////////////////////////////////
+unsigned short NodePath::
+get_antialias() const {
+  nassertr_always(!is_empty(), AntialiasAttrib::M_none);
+  const RenderAttrib *attrib =
+    node()->get_attrib(AntialiasAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const AntialiasAttrib *ta = DCAST(AntialiasAttrib, attrib);
+    return ta->get_mode();
+  }
+
+  return AntialiasAttrib::M_none;
 }
 
 

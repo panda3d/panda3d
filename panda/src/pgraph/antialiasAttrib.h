@@ -1,5 +1,5 @@
-// Filename: transparencyAttrib.h
-// Created by:  drose (28Feb02)
+// Filename: antialiasAttrib.h
+// Created by:  drose (26Jan05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef TRANSPARENCYATTRIB_H
-#define TRANSPARENCYATTRIB_H
+#ifndef ANTIALIASATTRIB_H
+#define ANTIALIASATTRIB_H
 
 #include "pandabase.h"
 
@@ -26,39 +26,28 @@
 class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : TransparencyAttrib
-// Description : This controls the enabling of transparency.  Simply
-//               setting an alpha component to non-1 does not in
-//               itself make an object transparent; you must also
-//               enable transparency mode with a suitable
-//               TransparencyAttrib.  Similarly, it is wasteful to
-//               render an object with a TransparencyAttrib in
-//               effect unless you actually want it to be at least
-//               partially transparent (and it has alpha components
-//               less than 1).
+//       Class : AntialiasAttrib
+// Description : Specifies whether or how to enable antialiasing, if
+//               supported by the backend renderer.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA TransparencyAttrib : public RenderAttrib {
+class EXPCL_PANDA AntialiasAttrib : public RenderAttrib {
 PUBLISHED:
   enum Mode {
-    // The first two should be specifically 0 and 1, for historical
-    // reasons (NodePath::set_transparency() used to accept a boolean
-    // value, which corresponded to M_none or M_alpha).
-    M_none = 0,         // No transparency.
-    M_alpha = 1,        // Normal transparency, panda will sort back-to-front.
-    M_notused,          // Unused placeholder.  Do not use this.
-    M_multisample,      // Uses ms buffer, alpha values modified to 1.0.
-    M_multisample_mask, // Uses ms buffer, alpha values not modified.
-    M_binary,           // Only writes pixels with alpha >= 0.5.
-    M_dual,             // opaque parts first, then sorted transparent parts.
+    M_none        = 0x0000,
+    M_point       = 0x0001,
+    M_line        = 0x0002,
+    M_polygon     = 0x0004,
+    M_multisample = 0x0008,
+    M_best        = 0x001f,
   };
 
 private:
-  INLINE TransparencyAttrib(Mode mode = M_none);
+  INLINE AntialiasAttrib(unsigned short mode);
 
 PUBLISHED:
-  static CPT(RenderAttrib) make(Mode mode);
+  static CPT(RenderAttrib) make(unsigned short mode);
 
-  INLINE Mode get_mode() const;
+  INLINE unsigned short get_mode() const;
 
 public:
   virtual void issue(GraphicsStateGuardianBase *gsg) const;
@@ -66,10 +55,11 @@ public:
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;
+  virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
   virtual RenderAttrib *make_default_impl() const;
 
 private:
-  Mode _mode;
+  unsigned short _mode;
 
 public:
   static void register_with_read_factory();
@@ -85,7 +75,7 @@ public:
   }
   static void init_type() {
     RenderAttrib::init_type();
-    register_type(_type_handle, "TransparencyAttrib",
+    register_type(_type_handle, "AntialiasAttrib",
                   RenderAttrib::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -97,7 +87,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "transparencyAttrib.I"
+#include "antialiasAttrib.I"
 
 #endif
 

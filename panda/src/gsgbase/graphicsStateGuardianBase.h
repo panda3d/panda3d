@@ -60,6 +60,7 @@ class TextureAttrib;
 class LightAttrib;
 class MaterialAttrib;
 class RenderModeAttrib;
+class AntialiasAttrib;
 class RescaleNormalAttrib;
 class ColorBlendAttrib;
 class TextureApplyAttrib;
@@ -187,6 +188,7 @@ public:
   virtual void issue_light(const LightAttrib *) { }
   virtual void issue_material(const MaterialAttrib *) { }
   virtual void issue_render_mode(const RenderModeAttrib *) { }
+  virtual void issue_antialias(const AntialiasAttrib *) { }
   virtual void issue_rescale_normal(const RescaleNormalAttrib *) { }
   virtual void issue_texture_apply(const TextureApplyAttrib *) { }
   virtual void issue_color_write(const ColorWriteAttrib *) { }
