@@ -265,7 +265,7 @@ sub gen_python_code() {
        $genargstr="-O ".$genargstr;
     }
 
-    $genpyth_str.="generatePythonCode ".$genargstr." '".$outputdir."' -e '".$WINBLDROOT."\\direct\\src\\extensions' -i libdtool libpandaexpress libpanda libdirect libtoontown";
+    $genpyth_str.="generatePythonCode ".$genargstr." '".$outputdir."' -e '".$WINBLDROOT."\\direct\\src\\extensions' -i libdtoolconfig libdtool libpandaexpress libpanda libdirect libtoontown";
     
     &myexecstr($genpyth_str,"generate python code failed!!!","DO_LOG","NO_PANDA_ATTACH");
     
