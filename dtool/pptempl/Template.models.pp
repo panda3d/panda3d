@@ -587,7 +587,9 @@ $[TAB]rm -f $[files]
 
 all : egg pal repal $[subdirs]
 
-#define sub_targets egg flt lwo maya soft bam pal clean-bam clean-pal clean cleanall unpack-soft install-bam install-other install uninstall-bam uninstall-other uninstall
+install : all $[subdirs:%=install-%]
+
+#define sub_targets egg flt lwo maya soft bam pal clean-bam clean-pal clean cleanall unpack-soft install-bam install-other uninstall-bam uninstall-other uninstall
 
 // Define the rules to propogate these targets to the Makefile within
 // each directory.
@@ -660,7 +662,7 @@ $[TAB]cd ./$[RELDIR] && $(MAKE) all
 
 // Define the rules to propogate these targets to the Makefile within
 // each directory.
-#foreach target $[sub_targets]
+#foreach target install $[sub_targets]
   #formap dirname subdirs
 $[target]-$[dirname] :
 $[TAB]cd ./$[RELDIR] && $(MAKE) $[target]
