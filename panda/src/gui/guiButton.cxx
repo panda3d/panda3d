@@ -277,47 +277,29 @@ void GuiButton::recompute_frame(void) {
     _down_rollover->recompute();
   if (_inactive != (GuiLabel*)0L)
     _inactive->recompute();
-  GetExtents(_up, _down, _up_rollover, _down_rollover, _inactive, _left,
-	     _right, _bottom, _top);
-  if (_alt_root.is_null()) {
-    // adjust for graph transform
-    LVector3f sc = this->get_graph_scale();
-    LPoint3f p = this->get_graph_pos();
-    float x = sc.dot(LVector3f::rfu(1., 0., 0.));
-    _left *= x;
-    _right *= x;
-    float y = sc.dot(LVector3f::rfu(0., 0., 1.));
-    _bottom *= y;
-    _top *= y;
-    x = p.dot(LVector3f::rfu(1., 0., 0.));
-    _left += x;
-    _right += y;
-    y = p.dot(LVector3f::rfu(0., 0., 1.));
-    _bottom += y;
-    _top += y;
-  }
-  _rgn->set_region(_left, _right, _bottom, _top);
+  this->adjust_region();
 }
 
 void GuiButton::adjust_region(void) {
   GetExtents(_up, _down, _up_rollover, _down_rollover, _inactive, _left,
 	     _right, _bottom, _top);
+  gui_cat->debug() << "in adjust_region, base values (" << _left << ", "
+		   << _right << ", " << _bottom << ", " << _top << ")" << endl;
   if (_alt_root.is_null()) {
     // adjust for graph transform
-    LVector3f sc = this->get_graph_scale();
-    LPoint3f p = this->get_graph_pos();
-    float x = sc.dot(LVector3f::rfu(1., 0., 0.));
-    _left *= x;
-    _right *= x;
-    float y = sc.dot(LVector3f::rfu(0., 0., 1.));
-    _bottom *= y;
-    _top *= y;
-    x = p.dot(LVector3f::rfu(1., 0., 0.));
-    _left += x;
-    _right += y;
-    y = p.dot(LVector3f::rfu(0., 0., 1.));
-    _bottom += y;
-    _top += y;
+    LMatrix4f m;
+    this->get_graph_mat(m);
+    LVector3f ul = LVector3f::rfu(_left, 0., _top);
+    LVector3f lr = LVector3f::rfu(_right, 0., _bottom);
+    ul = m * ul;
+    lr = m * lr;
+    _left = ul.dot(LVector3f::rfu(1., 0., 0.));
+    _top = ul.dot(LVector3f::rfu(0., 0., 1.));
+    _right = lr.dot(LVector3f::rfu(1., 0., 0.));
+    _bottom = lr.dot(LVector3f::rfu(0., 0., 1.));
+    gui_cat->debug() << "childed to non-default node, current values ("
+		     << _left << ", " << _right << ", " << _bottom << ", "
+		     << _top << ")" << endl;
   }
   _rgn->set_region(_left, _right, _bottom, _top);
 }
@@ -643,6 +625,18 @@ void GuiButton::set_priority(GuiItem* i, const GuiItem::Priority p) {
       i->set_priority(_inactive, ((p==P_Low)?P_High:P_Low));
   }
   GuiBehavior::set_priority(i, p);
+}
+
+int GuiButton::set_draw_order(int v) {
+  int o = _up->set_draw_order(v);
+  o = _down->set_draw_order(o);
+  if (_up_rollover != (GuiLabel*)0L)
+    o = _up_rollover->set_draw_order(o);
+  if (_down_rollover != (GuiLabel*)0L)
+    o = _down_rollover->set_draw_order(o);
+  if (_inactive != (GuiLabel*)0L)
+    o = _inactive->set_draw_order(o);
+  return GuiBehavior::set_draw_order(o);
 }
 
 void GuiButton::output(ostream& os) const {

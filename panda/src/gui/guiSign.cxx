@@ -94,6 +94,11 @@ void GuiSign::set_priority(GuiItem* i, const GuiItem::Priority p) {
   GuiItem::set_priority(i, p);
 }
 
+int GuiSign::set_draw_order(int v) {
+  int o = _sign->set_draw_order(v);
+  return GuiItem::set_draw_order(o);
+}
+
 void GuiSign::output(ostream& os) const {
   GuiItem::output(os);
   os << "  Sign data:" << endl;

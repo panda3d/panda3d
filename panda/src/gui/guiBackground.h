@@ -39,6 +39,8 @@ PUBLISHED:
   INLINE void set_color(const Colorf&);
   INLINE Colorf get_color(void) const;
 
+  virtual int set_draw_order(int);
+
   virtual void output(ostream&) const;
 
   INLINE void reassert(void);

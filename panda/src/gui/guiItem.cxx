@@ -78,6 +78,10 @@ void GuiItem::set_priority(GuiItem* i, const GuiItem::Priority p) {
     _mgr->recompute_priorities();
 }
 
+int GuiItem::set_draw_order(int v) {
+  return v;
+}
+
 void GuiItem::output(ostream& os) const {
   os << "GuiItem (0x" << (void*)this << ")" << endl;
   os << "  name - '" << get_name() << "'" << endl;

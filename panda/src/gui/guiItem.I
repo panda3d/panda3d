@@ -10,18 +10,13 @@ INLINE GuiItem::GuiItem(void) : Namable("fubar"), _scale(1.), _scale_x(1.),
 
 #include <get_rel_pos.h>
 
-INLINE LVector3f GuiItem::get_graph_scale(void) {
-  if (_alt_root.is_null())
-    return LVector3f(1., 1., 1.);
+INLINE void GuiItem::get_graph_mat(LMatrix4f& m) {
+  if (_alt_root.is_null()) {
+    m = LMatrix4f::ident_mat();
+    return;
+  }
   // pass NULL for the 'to' to go to root
-  return get_rel_scale(_alt_root, (Node*)0L);
-}
-
-INLINE LPoint3f GuiItem::get_graph_pos(void) {
-  if (_alt_root.is_null())
-    return LPoint3f(0., 0., 0.);
-  // pass NULL for the 'to' to go to root
-  return get_rel_pos(_alt_root, (Node*)0L);
+  get_rel_mat(_alt_root, (Node*)0L, m);
 }
 
 INLINE float GuiItem::get_scale(void) const {

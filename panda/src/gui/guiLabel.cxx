@@ -625,6 +625,35 @@ bool GuiLabel::operator<(const GuiLabel& c) const {
 int GuiLabel::set_draw_order(int order) {
   int ret = order+1;
   this->freeze();
+  _has_hard_pri = true;
+  _hard_pri = order;
+  switch (_type) {
+  case SIMPLE_TEXT:
+    {
+      TextNode* n = DCAST(TextNode, _geom);
+      n->set_bin("fixed");
+      n->set_draw_order(order);
+      ret += 2;
+    }
+    break;
+  case SIMPLE_TEXTURE:
+  case SIMPLE_CARD:
+  case L_NULL:
+  case MODEL:
+    _arc->set_transition(new GeomBinTransition("fixed", order));
+    break;
+  default:
+    gui_cat->warning() << "trying to set draw order on an unknown label type ("
+		       << (int)_type << ")" << endl;
+  }
+  this->thaw();
+  return ret;
+}
+
+int GuiLabel::soft_set_draw_order(int order) {
+  int ret = order+1;
+  this->freeze();
+  _has_hard_pri = false;
   _hard_pri = order;
   switch (_type) {
   case SIMPLE_TEXT:

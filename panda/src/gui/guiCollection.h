@@ -38,6 +38,8 @@ PUBLISHED:
   virtual void set_priority(GuiLabel*, const Priority);
   virtual void set_priority(GuiItem*, const Priority);
 
+  virtual int set_draw_order(int);
+
   virtual void output(ostream&) const;
 public:
   // type interface

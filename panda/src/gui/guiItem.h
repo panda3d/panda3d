@@ -26,8 +26,7 @@ protected:
   virtual void recompute_frame(void) = 0;
   virtual void adjust_region(void);
 
-  INLINE LVector3f get_graph_scale(void);
-  INLINE LPoint3f get_graph_pos(void);
+  INLINE void get_graph_mat(LMatrix4f&);
 
 PUBLISHED:
   GuiItem(const string&);
@@ -61,6 +60,8 @@ PUBLISHED:
   INLINE Priority get_priority(void) const;
 
   INLINE void recompute(void);
+
+  virtual int set_draw_order(int) = 0;
 
   virtual void output(ostream&) const = 0;
 public:

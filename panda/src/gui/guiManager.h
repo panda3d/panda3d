@@ -34,6 +34,7 @@ private:
   typedef set<GuiLabel*, SortComp> SortSet;
   SortSet _sorts;
 
+  int _start_draw_order;
   int _next_draw_order;
 
   Node* _root;
@@ -54,6 +55,8 @@ PUBLISHED:
 
   INLINE int get_next_draw_order(void) const;
   INLINE void set_next_draw_order(int);
+  INLINE int get_start_draw_order(void) const;
+  INLINE void set_start_draw_order(int);
 };
 
 #include "guiManager.I"

@@ -129,6 +129,12 @@ void GuiBackground::set_priority(GuiItem* it, const GuiItem::Priority p) {
   GuiItem::set_priority(it, p);
 }
 
+int GuiBackground::set_draw_order(int v) {
+  int o = _bg->set_draw_order(v);
+  o = _item->set_draw_order(o);
+  return GuiItem::set_draw_order(o);
+}
+
 void GuiBackground::output(ostream& os) const {
   GuiItem::output(os);
   os << "  Background data:" << endl;

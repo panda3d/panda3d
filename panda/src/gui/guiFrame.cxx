@@ -382,6 +382,18 @@ void GuiFrame::set_priority(GuiItem* it, const GuiItem::Priority p) {
   }
 }
 
+int GuiFrame::set_draw_order(int v) {
+  int o;
+  bool first = true;
+  for (Boxes::iterator i=_items.begin(); i!=_items.end(); ++i)
+    if (first) {
+      first = false;
+      o = (*i).get_item()->set_draw_order(v);
+    } else
+      o = (*i).get_item()->set_draw_order(o);
+  return GuiItem::set_draw_order(o);
+}
+
 void GuiFrame::output(ostream& os) const {
   GuiItem::output(os);
   os << "  Frame data:" << endl;

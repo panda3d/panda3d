@@ -52,6 +52,7 @@ private:
   int _hard_pri;
   bool _highest_pri;
   bool _lowest_pri;
+  bool _has_hard_pri;
 
   INLINE Node* get_geometry(void) const;
   INLINE void set_arc(RenderRelation*);
@@ -114,7 +115,9 @@ PUBLISHED:
   // used for the priority system
   bool operator<(const GuiLabel&) const;
   INLINE void set_priority(GuiLabel*, const PriorityType);
+  int soft_set_draw_order(int);
   int set_draw_order(int);
+  INLINE bool has_hard_draw_order(void) const;
 
   void write(ostream&) const;
 

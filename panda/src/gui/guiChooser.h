@@ -68,6 +68,8 @@ PUBLISHED:
   virtual void stop_behavior(void);
   virtual void reset_behavior(void);
 
+  virtual int set_draw_order(int);
+
   virtual void output(ostream&) const;
 
   INLINE void set_loop(bool);

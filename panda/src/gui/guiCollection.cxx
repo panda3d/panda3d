@@ -131,6 +131,18 @@ void GuiCollection::set_priority(GuiItem* it, const GuiItem::Priority p) {
     (*i)->set_priority(it, p);
 }
 
+int GuiCollection::set_draw_order(int v) {
+  bool first = true;
+  int o;
+  for (Items::iterator i=_items.begin(); i!=_items.end(); ++i)
+    if (first) {
+      first = false;
+      o = (*i)->set_draw_order(v);
+    } else
+      o = (*i)->set_draw_order(o);
+  return GuiItem::set_draw_order(o);
+}
+
 void GuiCollection::output(ostream& os) const {
   GuiItem::output(os);
   os << "  Collection data:" << endl;

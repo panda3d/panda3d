@@ -63,45 +63,28 @@ void GuiRollover::recompute_frame(void) {
   GuiItem::recompute_frame();
   _off->recompute();
   _on->recompute();
-  GetExtents(_off, _on, _left, _right, _bottom, _top);
-  if (_alt_root.is_null()) {
-    // adjust for graph transform
-    LVector3f sc = this->get_graph_scale();
-    LPoint3f p = this->get_graph_pos();
-    float x = sc.dot(LVector3f::rfu(1., 0., 0.));
-    _left *= x;
-    _right *= x;
-    float y = sc.dot(LVector3f::rfu(0., 0., 1.));
-    _bottom *= y;
-    _top *= y;
-    x = p.dot(LVector3f::rfu(1., 0., 0.));
-    _left += x;
-    _right += y;
-    y = p.dot(LVector3f::rfu(0., 0., 1.));
-    _bottom += y;
-    _top += y;
-  }
-  _rgn->set_region(_left, _right, _bottom, _top);
+  this->adjust_region();
 }
 
 void GuiRollover::adjust_region(void) {
   GetExtents(_off, _on, _left, _right, _bottom, _top);
+  gui_cat->debug() << "in adjust_region, base values (" << _left << ", "
+		   << _right << ", " << _bottom << ", " << _top << ")" << endl;
   if (_alt_root.is_null()) {
     // adjust for graph transform
-    LVector3f sc = this->get_graph_scale();
-    LPoint3f p = this->get_graph_pos();
-    float x = sc.dot(LVector3f::rfu(1., 0., 0.));
-    _left *= x;
-    _right *= x;
-    float y = sc.dot(LVector3f::rfu(0., 0., 1.));
-    _bottom *= y;
-    _top *= y;
-    x = p.dot(LVector3f::rfu(1., 0., 0.));
-    _left += x;
-    _right += y;
-    y = p.dot(LVector3f::rfu(0., 0., 1.));
-    _bottom += y;
-    _top += y;
+    LMatrix4f m;
+    this->get_graph_mat(m);
+    LVector3f ul = LVector3f::rfu(_left, 0., _top);
+    LVector3f lr = LVector3f::rfu(_right, 0., _bottom);
+    ul = m * ul;
+    lr = m * lr;
+    _left = ul.dot(LVector3f::rfu(1., 0., 0.));
+    _top = ul.dot(LVector3f::rfu(0., 0., 1.));
+    _right = lr.dot(LVector3f::rfu(1., 0., 0.));
+    _bottom = lr.dot(LVector3f::rfu(0., 0., 1.));
+    gui_cat->debug() << "childed to non-default node, current values ("
+		     << _left << ", " << _right << ", " << _bottom << ", "
+		     << _top << ")" << endl;
   }
   _rgn->set_region(_left, _right, _bottom, _top);
 }
@@ -218,6 +201,12 @@ void GuiRollover::set_priority(GuiItem* i, const GuiItem::Priority p) {
     i->set_priority(_on, ((p==P_Low)?P_High:P_Low));
   }
   GuiItem::set_priority(i, p);
+}
+
+int GuiRollover::set_draw_order(int v) {
+  int o = _off->set_draw_order(v);
+  o = _on->set_draw_order(o);
+  return GuiItem::set_draw_order(o);
 }
 
 void GuiRollover::output(ostream& os) const {

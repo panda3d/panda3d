@@ -316,6 +316,14 @@ void GuiChooser::set_priority(GuiItem* it, const GuiItem::Priority p) {
   _next_button->set_priority(it, p);
 }
 
+int GuiChooser::set_draw_order(int v) {
+  int o = _prev_button->set_draw_order(v);
+  o = _next_button->set_draw_order(o);
+  for (ItemVector::iterator i=_items.begin(); i!=_items.end(); ++i)
+    o = (*i)->set_draw_order(o);
+  return GuiBehavior::set_draw_order(o);
+}
+
 void GuiChooser::output(ostream& os) const {
   GuiBehavior::output(os);
   os << "  Chooser data:" << endl;
