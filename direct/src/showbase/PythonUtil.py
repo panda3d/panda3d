@@ -313,6 +313,8 @@ def intersection(a, b):
     """
     intersection(list, list):
     """
+    if not a: return []
+    if not b: return []
     c = a + b
     d = []
     for i in c:

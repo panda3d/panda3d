@@ -55,8 +55,7 @@ class DistributedObject(PandaObject):
     #    """
     #    For debugging purposes, this just prints out what got deleted
     #    """
-    #    DistributedObject.notify.debug("Destructing: " + self.__class__.__name__ +
-    #                                   " id: " + str(self.doId))
+    #    print ("Destructing: " + self.__class__.__name__ + " id: " + str(self.doId))
     #    PandaObject.__del__(self)
 
     def setNeverDisable(self, bool):
