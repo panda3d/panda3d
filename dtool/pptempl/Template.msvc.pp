@@ -35,7 +35,12 @@
   #end file
 #end decygwin
 
-#define dtool_ver_dir_cyg $[DTOOL_INSTALL]/src/dtoolbase
+
+// cant use DTOOL_INSTALL since may not be attached
+//#define dtool_ver_dir_cyg $[DTOOL_INSTALL]/src/dtoolbase
+//#define dtool_ver_dir $[decygwin %,%,$[dtool_ver_dir_cyg]]
+
+#define dtool_ver_dir_cyg ../../../dtool/src/dtoolbase
 #define dtool_ver_dir $[decygwin %,%,$[dtool_ver_dir_cyg]]
 
 //////////////////////////////////////////////////////////////////////
