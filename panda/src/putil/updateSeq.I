@@ -240,7 +240,7 @@ output(ostream &out) const {
     break;
 
   default:
-    out << _seq;
+    out << (long unsigned int)_seq;
   }
 }
 
