@@ -53,9 +53,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         self.heartbeatStarted = 0
         self.lastHeartbeat = 0
         if wantOtpServer:
-            ##
-            ## Top level Interest Manager
-            ##
+            # Top level Interest Manager
             self._interestIdAssign = 1
             self._interests = {}
         
@@ -660,11 +658,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         self.considerHeartbeat()
     
     if wantOtpServer:
-        ##
-        ##
-        ## interest managment 
-        ##
-        ##
+        # interest managment 
         def addInterest(self, parentId, zoneId, description):
             """
             Part of the new otp-server code.
