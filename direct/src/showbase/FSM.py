@@ -32,7 +32,8 @@ class FSM(DirectObject):
         self.setFinalState(finalStateName)
 
 
-        #enter the initial state
+        # Enter the initial state.
+        # It is assumed that the initial state takes no arguments.
         self.__currentState = self.__initialState
         self.__enter(self.__initialState)
         
@@ -41,7 +42,7 @@ class FSM(DirectObject):
         return "FSM: name = %s \n states = %s \n initial = %s \n final = %s \n current = %s" % (self.__name, self.__states, self.__initialState, self.__finalState, self.__currentState)
 
 
-    #setters and getters
+    # setters and getters
     
     def getName(self):
         """getName(self)"""
@@ -88,45 +89,47 @@ class FSM(DirectObject):
         for state in self.__states:
             if (state.getName() == stateName):
                 return state
-        FSM.notify.warning("getStateNamed: no such state")
+        FSM.notify.warning("getStateNamed: " + str(stateName) + " no such state")
 
 
     # basic FSM functionality
     
-    def __exitCurrent(self):
+    def __exitCurrent(self, argList):
         """__exitCurrent(self)
         Exit the current state"""
         FSM.notify.info("exiting %s" % self.__currentState.getName())
+        self.__currentState.exit(argList)
         messenger.send(self.getName() + '_' +
                        self.__currentState.getName() + '_exited')
-        self.__currentState.exit()
         self.__currentState = None
                     
-    def __enter(self, aState):
+    def __enter(self, aState, argList=[]):
         """__enter(self, State)
         Enter a given state, if it exists"""
         if (aState in self.__states):
             self.__currentState = aState
-            aState.enter()
+            aState.enter(argList)
             messenger.send(self.getName() + '_' +
                            aState.getName() + '_entered')
             FSM.notify.info("entering %s" % aState.getName())
         else:
             FSM.notify.error("enter: no such state")
 
-    def __transition(self, aState):
-        """__transition(self, State)
+    def __transition(self, aState, enterArgList=[], exitArgList=[]):
+        """__transition(self, State, enterArgList, exitArgList)
         Exit currentState and enter given one"""
-        self.__exitCurrent()
-        self.__enter(aState)
+        self.__exitCurrent(exitArgList)
+        self.__enter(aState, enterArgList)
         
-    def request(self, aStateName):
+    def request(self, aStateName, enterArgList=[], exitArgList=[]):
         """request(self, string)
         Attempt transition from currentState to given one.
         Return true is transition exists to given state,
         false otherwise"""
         if (aStateName in self.__currentState.getTransitions()):
-            self.__transition(self.getStateNamed(aStateName))
+            self.__transition(self.getStateNamed(aStateName),
+                              enterArgList,
+                              exitArgList)
             return 1
         else:
             FSM.notify.info("no transition exists to %s" % aStateName)

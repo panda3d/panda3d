@@ -13,6 +13,7 @@ class ClientDistClass:
         self.allCDU = self.createAllCDU(self.allFields)
         self.number2CDU = self.createNumber2CDUDict(self.allCDU)
         self.name2CDU = self.createName2CDUDict(self.allCDU)
+        self.allRequiredCDU = self.listRequiredCDU(self.allCDU)
         return None
 
     def parseFields(self, dcClass):
@@ -38,6 +39,15 @@ class ClientDistClass:
         for i in allCDU:
             dict[i.name] = i
         return dict
+
+    def listRequiredCDU(self, allCDU):
+        requiredCDU = []
+        for i in allCDU:
+            atom = i.field.asAtomicField()
+            if atom:
+                if atom.isRequired():
+                    requiredCDU.append(i)
+        return requiredCDU
 
     def updateField(self, do, di):
         # Get the update field id

@@ -89,15 +89,15 @@ class State(DirectObject):
         Return true if state has child FSMs"""
         return(self.__FSMList != None)
 
-    def __enterChildren(self):
-        """__enterChildren(self)
+    def __enterChildren(self, argList):
+        """__enterChildren(self, argList)
         Enter all child FSMs"""
         if self.hasChildren():
             for fsm in self.__FSMList:
                 fsm.request((fsm.getInitialState()).getName())
 
-    def __exitChildren(self):
-        """__exitChildren(self)
+    def __exitChildren(self, argList):
+        """__exitChildren(self, argList)
         Exit all child FSMs"""
         if self.hasChildren():
             for fsm in self.__FSMList:
@@ -106,24 +106,24 @@ class State(DirectObject):
 
     # basic State functionality
     
-    def enter(self):
+    def enter(self, argList=[]):
         """enter(self)
         Call the enter function for this state"""
         if (self.__enterFunc != None):
-            apply(self.__enterFunc)
+            apply(self.__enterFunc, argList)
         
         #enter child FSMs
-        self.__enterChildren()
+        self.__enterChildren(argList)
         
-    def exit(self):
+    def exit(self, argList=[]):
         """exit(self)
         Call the exit function for this state"""
         #first exit child FSMs
-        self.__exitChildren()
+        self.__exitChildren(argList)
 
         #call exit function if it exists
         if (self.__exitFunc != None):
-            apply(self.__exitFunc)
+            apply(self.__exitFunc, argList)
         
     def __str__(self):
         """__str__(self)"""

@@ -8,9 +8,10 @@ import DirectNotifyGlobal
 import ClientDistClass
 # The repository must import all known types of Distributed Objects
 import DistributedObject
+import DistributedToon
+import DirectObject
 
-class ClientRepository:
-    defaultServerPort = 5150
+class ClientRepository(DirectObject.DirectObject):
     notify = DirectNotifyGlobal.directNotify.newCategory("ClientRepository")
 
     def __init__(self, dcFileName, AIClientFlag=0):
@@ -38,8 +39,7 @@ class ClientRepository:
             self.name2cdc[dcClass.getName()]=clientDistClass
         return None
 
-    def connect(self, serverName="localhost",
-                serverPort=defaultServerPort):
+    def connect(self, serverName, serverPort):
         self.qcm=QueuedConnectionManager()
         self.tcpConn = self.qcm.openTCPClientConnection(
             serverName, serverPort, 1000)
@@ -71,38 +71,26 @@ class ClientRepository:
         return availGetVal
 
     def handleDatagram(self, datagram):
-        di = DatagramIterator(datagram)
-        msgType = di.getArg(STUint16)
-
-        if msgType == LOGIN_RESPONSE:
-            self.handleLoginResponse(di)
-        elif msgType == ALL_OBJECT_GENERATE_WITH_REQUIRED:
-            self.handleGenerateWithRequired(di)
-        elif msgType == ALL_OBJECT_UPDATE_FIELD:
-            self.handleUpdateField(di)
-        else:
-            ClientRepository.notify.warning("We don't handle type: "
-                                            + str(msgType))
-        return None
-
-    def handleLoginResponse(self, di):
-        # Pull the security byte
-        secByte = di.getUint8()
-        # Print the byte
-        print ("Got login with security: " + chr(secByte))
+        # This class is meant to be pure virtual, and any classes that
+        # inherit from it need to make their own handleDatagram method
+        pass
 
     def handleGenerateWithRequired(self, di):
         # Get the class Id
-        classId = di.getArg(STUint8);
+        classId = di.getArg(STUint16);
         # Get the DO Id
         doId = di.getArg(STUint32)
         # Look up the cdc
         cdc = self.number2cdc[classId]
         # Create a new distributed object, and put it in the dictionary
-        distObj = self.generateWithRequiredFields(cdc, doId, di)
+        distObj = self.generateWithRequiredFields(cdc,
+                                                  eval(cdc.name + \
+                                                       "." + \
+                                                       cdc.name),
+                                                  doId, di)
         return None
 
-    def generateWithRequiredFields(self, cdc, doId, di):
+    def generateWithRequiredFields(self, cdc, constructor, doId, di):
         # Someday, this function will look in a cache of old distributed
         # objects to see if this object is in there, and pull it
         # out if necessary. For now, we'll just check to see if
@@ -114,10 +102,15 @@ class ClientRepository:
             ClientRepository.notify.warning("doId: " +
                                             str(doId) +
                                             " was generated again")
-            distObj = self.doId2do(doId)
+            distObj = self.doId2do[doId]
+            distObj.updateRequiredFields(cdc, di)
         else:
             # Construct a new one
-            distObj = eval(cdc.name + "." + cdc.name)(doId, di)
+            distObj = constructor()
+            # Assign it an Id
+            distObj.doId = doId
+            # Update the required fields
+            distObj.updateRequiredFields(cdc, di)
             # Put the new do in both dictionaries
             self.doId2do[doId] = distObj
             self.doId2cdc[doId] = cdc
@@ -136,19 +129,6 @@ class ClientRepository:
         # Let the cdc finish the job
         cdc.updateField(do, di)
         
-    def sendLoginMsg(self):
-        datagram = Datagram()
-        # Add message type
-        datagram.addUint16(1)
-        # Add swid
-        datagram.addString("1234567890123456789012345678901234")
-        # Add IP Address
-        datagram.addUint32(0)
-        # Add UDP port
-        datagram.addUint16(5150)
-        # Send the message
-        self.cw.send(datagram, self.tcpConn)
-
     def sendUpdate(self, do, fieldName, args):
         # Get the DO id
         doId = do.doId

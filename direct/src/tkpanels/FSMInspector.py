@@ -459,6 +459,17 @@ def enterState():
 
 def exitState():
     print 'exitState'
+<<<<<<< FSMInspector.py
+
+fsm = FSM.FSM('stopLight',
+          [ State.State('red', enterState, exitState, ['green']),
+            State.State('yellow', enterState, exitState, ['red']),
+            State.State('green', enterState, exitState, ['yellow']) ],
+          'red',
+          'red')
+import FSMInspector
+inspector = FSMInspector.FSMInspector(FSM = fsm, title = fsm.getName())
+=======
 
 # Note, the inspectorPos argument is optional, the inspector will
 # automagically position states on startup
@@ -526,5 +537,6 @@ from ShowBaseGlobal import *
 import FSMInspector
 inspector = FSMInspector.FSMInspector(fsm, title = fsm.getName())
 
+>>>>>>> 1.7
 """
 

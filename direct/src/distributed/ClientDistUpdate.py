@@ -1,11 +1,14 @@
 """ClientDistUpdate module: contains the ClientDistUpdate class"""
 
 import DirectNotifyGlobal
+import Avatar
+import DistributedToon
 
 class ClientDistUpdate:
     notify = DirectNotifyGlobal.directNotify.newCategory("ClientDistUpdate")
 
     def __init__(self, dcField):
+        self.field = dcField
         self.number = dcField.getNumber()
         self.name = dcField.getName()
         self.types = []
@@ -32,10 +35,11 @@ class ClientDistUpdate:
 
     def updateField(self, cdc, do, di):
         # Look up the class
-        aClass = eval(cdc.name)
+        #aClass = eval(cdc.name + "." + cdc.name)
         # Look up the function
-        assert(aClass.__dict__.has_key(self.name))
-        func = aClass.__dict__[self.name]
+        #assert(aClass.__dict__.has_key(self.name))
+        #func = aClass.__dict__[self.name]
+        func = eval(cdc.name + "." + cdc.name + "." + self.name)
         # Get the arguments into a list
         args = self.extractArgs(di)
         # Apply the function to the object with the arguments
@@ -45,7 +49,7 @@ class ClientDistUpdate:
     def extractArgs(self, di):
         args = []
         for i in self.types:
-            args.append(di.getArgs(i))
+            args.append(di.getArg(i))
         return args
 
     def addArgs(self, datagram, args):
