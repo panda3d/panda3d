@@ -479,7 +479,8 @@ class FFIInterrogateDatabase:
             for typeDesc in typeDescs:
                 funcSpec = FFISpecs.MethodSpecification()
                 funcSpec.name = FFIRename.methodNameFromCppName(
-                    interrogate_function_name(funcIndex))
+                    interrogate_function_name(funcIndex),
+                    getTypeName(typeIndex))
                 funcSpec.typeDescriptor = typeDesc
                 funcSpec.index = funcIndex
                 funcSpecs.append(funcSpec)
@@ -528,7 +529,8 @@ class FFIInterrogateDatabase:
                     for typeDesc in typeDescs:
                         funcSpec = FFISpecs.GlobalFunctionSpecification()
                         funcSpec.name = FFIRename.methodNameFromCppName(
-                            interrogate_function_name(funcIndex))
+                            interrogate_function_name(funcIndex),
+                            getTypeName(typeIndex))
                         funcSpec.typeDescriptor = typeDesc
                         funcSpec.index = funcIndex
                         # Here we look for the class in the first argument

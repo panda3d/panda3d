@@ -71,7 +71,8 @@ class LerpPosInterval(LerpNodePathInterval):
                                       node, other)
 
         # Check for functors in the input parameters.
-        if self.anyCallable(pos, startPos):
+        self.paramSetup = self.anyCallable(pos, startPos)
+        if self.paramSetup:
             self.endPos = pos
             self.startPos = startPos
             self.inPython = 1
@@ -80,10 +81,10 @@ class LerpPosInterval(LerpNodePathInterval):
             if startPos != None:
                 self.setStartPos(startPos)
 
-    def setT(self, t, event):
+    def setT(self, t, event = Interval.IVAL_NONE):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        if event == Interval.IVAL_INIT:
+        if self.paramSetup and event == Interval.IVAL_INIT:
             self.setupParam(self.setEndPos, self.endPos)
             self.setupParam(self.setStartPos, self.startPos)
         LerpNodePathInterval.setT(self, t, event)
@@ -96,7 +97,8 @@ class LerpHprInterval(LerpNodePathInterval):
                                       node, other)
 
         # Check for functors in the input parameters.
-        if self.anyCallable(hpr, startHpr):
+        self.paramSetup = self.anyCallable(hpr, startHpr)
+        if self.paramSetup:
             self.endHpr = hpr
             self.startHpr = startHpr
             self.inPython = 1
@@ -105,10 +107,10 @@ class LerpHprInterval(LerpNodePathInterval):
             if startHpr != None:
                 self.setStartHpr(startHpr)
 
-    def setT(self, t, event):
+    def setT(self, t, event = Interval.IVAL_NONE):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        if event == Interval.IVAL_INIT:
+        if self.paramSetup and event == Interval.IVAL_INIT:
             self.setupParam(self.setEndHpr, self.endHpr)
             self.setupParam(self.setStartHpr, self.startHpr)
         LerpNodePathInterval.setT(self, t, event)
@@ -119,7 +121,8 @@ class LerpScaleInterval(LerpNodePathInterval):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
                                       node, other)
         # Check for functors in the input parameters.
-        if self.anyCallable(scale, startScale):
+        self.paramSetup = self.anyCallable(scale, startScale)
+        if self.paramSetup:
             self.endScale = scale
             self.startScale = startScale
             self.inPython = 1
@@ -128,10 +131,10 @@ class LerpScaleInterval(LerpNodePathInterval):
             if startScale != None:
                 self.setStartScale(startScale)
 
-    def setT(self, t, event):
+    def setT(self, t, event = Interval.IVAL_NONE):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        if event == Interval.IVAL_INIT:
+        if self.paramSetup and event == Interval.IVAL_INIT:
             self.setupParam(self.setEndScale, self.endScale)
             self.setupParam(self.setStartScale, self.startScale)
         LerpNodePathInterval.setT(self, t, event)
@@ -143,7 +146,8 @@ class LerpPosHprInterval(LerpNodePathInterval):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
                                       node, other)
         # Check for functors in the input parameters.
-        if self.anyCallable(pos, startPos, hpr, startHpr):
+        self.paramSetup = self.anyCallable(pos, startPos, hpr, startHpr)
+        if self.paramSetup:
             self.endPos = pos
             self.startPos = startPos
             self.endHpr = hpr
@@ -157,10 +161,10 @@ class LerpPosHprInterval(LerpNodePathInterval):
             if startHpr != None:
                 self.setStartHpr(startHpr)
 
-    def setT(self, t, event):
+    def setT(self, t, event = Interval.IVAL_NONE):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        if event == Interval.IVAL_INIT:
+        if self.paramSetup and event == Interval.IVAL_INIT:
             self.setupParam(self.setEndPos, self.endPos)
             self.setupParam(self.setStartPos, self.startPos)
             self.setupParam(self.setEndHpr, self.endHpr)
@@ -175,7 +179,8 @@ class LerpHprScaleInterval(LerpNodePathInterval):
                                       node, other)
 
         # Check for functors in the input parameters.
-        if self.anyCallable(hpr, startHpr, scale, startScale):
+        self.paramSetup = self.anyCallable(hpr, startHpr, scale, startScale)
+        if self.paramSetup:
             self.endHpr = hpr
             self.startHpr = startHpr
             self.endScale = scale
@@ -189,10 +194,10 @@ class LerpHprScaleInterval(LerpNodePathInterval):
             if startScale != None:
                 self.setStartScale(startScale)
 
-    def setT(self, t, event):
+    def setT(self, t, event = Interval.IVAL_NONE):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        if event == Interval.IVAL_INIT:
+        if self.paramSetup and event == Interval.IVAL_INIT:
             self.setupParam(self.setEndHpr, self.endHpr)
             self.setupParam(self.setStartHpr, self.startHpr)
             self.setupParam(self.setEndScale, self.endScale)
@@ -206,7 +211,8 @@ class LerpPosHprScaleInterval(LerpNodePathInterval):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
                                       node, other)
         # Check for functors in the input parameters.
-        if self.anyCallable(pos, startPos, hpr, startHpr, scale, startScale):
+        self.paramSetup = self.anyCallable(pos, startPos, hpr, startHpr, scale, startScale)
+        if self.paramSetup:
             self.endPos = pos
             self.startPos = startPos
             self.endHpr = hpr
@@ -225,10 +231,10 @@ class LerpPosHprScaleInterval(LerpNodePathInterval):
             if startScale != None:
                 self.setStartScale(startScale)
 
-    def setT(self, t, event):
+    def setT(self, t, event = Interval.IVAL_NONE):
         # This function is only used if Python functors were passed in
         # for some of the input parameters.
-        if event == Interval.IVAL_INIT:
+        if self.paramSetup and event == Interval.IVAL_INIT:
             self.setupParam(self.setEndPos, self.endPos)
             self.setupParam(self.setStartPos, self.startPos)
             self.setupParam(self.setEndHpr, self.endHpr)

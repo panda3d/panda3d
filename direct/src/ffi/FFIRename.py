@@ -43,7 +43,8 @@ methodRenameDictionary = {
     'operator->'  : 'dereference',
     'operator<<=' : '__ilshift__',
     'operator>>=' : '__irshift__',
-    'print'       : 'Cprint'
+    'print'       : 'Cprint',
+    'CInterval.setT' : '__cSetT',
     }
     
 classRenameDictionary = {
@@ -124,7 +125,7 @@ def nonClassNameFromCppName(cppName):
     newName = checkKeyword(newName)
     return newName
 
-def methodNameFromCppName(cppName):
+def methodNameFromCppName(cppName, className = None):
     methodName = ''
     badChars = ' '
     nextCap = 0
@@ -138,9 +139,12 @@ def methodNameFromCppName(cppName):
             methodName = methodName + capitalize(char)
             nextCap = 0
         else:
-            methodName = methodName + char    
-    if methodRenameDictionary.has_key(methodName):
-        methodName = methodRenameDictionary[methodName]
+            methodName = methodName + char
+
+    if className != None:
+        methodName = methodRenameDictionary.get(className + '.' + methodName, methodName)
+    methodName = methodRenameDictionary.get(methodName, methodName)
+    
     # Mangle names that happen to be python keywords so they are not anymore
     methodName = checkKeyword(methodName)
     return methodName
