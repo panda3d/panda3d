@@ -62,13 +62,6 @@ if ( ! $?CTEMACS_OPTS ) setenv CTEMACS_OPTS ""
 if ( -e /usr/atria/bin ) set path = ( /usr/atria/bin $path )
 rehash
 
-if ( ! $?DTOOL ) setenv DTOOL /beta/player/bootstrap/dtool
-if ( $#argv == 0 ) then
-   source `$DTOOL/bin/ctattach.drv dtool default`
-else
-   source `$DTOOL/bin/ctattach.drv dtool $argv[1]`
-endif
-
 if ( ! $?PENV ) then
    if ( $OS == "Linux" ) then
       setenv PENV "Linux"
@@ -79,6 +72,13 @@ if ( ! $?PENV ) then
    else
       setenv PENV "SGI"
    endif
+endif
+
+if ( ! $?DTOOL ) setenv DTOOL /beta/player/bootstrap/dtool
+if ( $#argv == 0 ) then
+   source `$DTOOL/bin/ctattach.drv dtool default`
+else
+   source `$DTOOL/bin/ctattach.drv dtool $argv[1]`
 endif
 
 setenv CTEMACS_FOREHIGHLIGHT white

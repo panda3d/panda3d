@@ -80,7 +80,7 @@ while ( @arglist != () ) {
       &CTInstallScanMake( "$curdir/Makefile" ) ;
    }
 
-   $item = "$curdir/Makefile.tgtname" ;
+   $item = "$curdir/Makefile.$tgtname" ;
    if ( ! &CTCMMkelem( $item, $projname, $spec ) ) {
        die "Could not make a verioned element of the target makefile\n" ;
    }

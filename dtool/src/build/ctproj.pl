@@ -1,3 +1,5 @@
+require "$tool/inc/ctutils.pl" ;
+
 # return the root of the given project.
 sub CTProjRoot {
     local( $CTPRtmp ) = $_[0] ;
@@ -10,8 +12,7 @@ sub CTProjRoot {
 # input:
 #   $_[0] = project
 sub CTProjPkg {
-    local( $CTPPret ) = `pwd`;
-    chop $CTPPret;
+    local( $CTPPret ) = &CTUCurrDir() ;
     local( $CTPPtmp ) = $_[0] ;
     $CTPPtmp  =~ tr/a-z/A-Z/ ;
     $CTPPret =~ s/$ENV{ $CTPPtmp }// ;
@@ -25,8 +26,7 @@ sub CTProjPkg {
 sub CTProj {
    local( $CTPdir ) ;
    if ($_[0] eq "") {
-      $CTPdir = `pwd`;
-      chop $CTPdir;
+      $CTPdir = &CTUCurrDir() ;
    } else {
       # provided directory
       $CTPdir = $_[0] ;

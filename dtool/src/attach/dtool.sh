@@ -59,12 +59,6 @@ if [ -z "$DTOOL" ]; then
   export DTOOL
 fi
 
-if [ -z "$1" ]; then
-  source `$DTOOL/bin/ctattach.drv dtool default`
-else
-  source `$DTOOL/bin/ctattach.drv dtool $1`
-fi
-
 if [ -z "$PENV" ]; then
   if [ $OS = "Linux" ]; then
     PENV="Linux"
@@ -77,3 +71,9 @@ if [ -z "$PENV" ]; then
   fi
 fi
 export PENV
+
+if [ -z "$1" ]; then
+  source `$DTOOL/bin/ctattach.drv dtool default`
+else
+  source `$DTOOL/bin/ctattach.drv dtool $1`
+fi

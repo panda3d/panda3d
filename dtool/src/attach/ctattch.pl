@@ -171,26 +171,34 @@ sub CTAttachCompute {
       $spec = &CTResolveSpec( $_[0], $flav ) ;
       &CTUDebug( "spec line = '$spec'\n" ) ;
       if ( $spec ne "" ) {
-	 $root = &CTComputeRoot( $_[0], $flav, $spec ) ;
-	 &CTCMSetup( $_[0], $spec, $flav ) ;
-	 if ( -e $root ) {
-	    $done = 1 ;
-	 }
+         $root = &CTComputeRoot( $_[0], $flav, $spec ) ;
+         &CTCMSetup( $_[0], $spec, $flav ) ;
+         if ( -e $root ) {
+            $done = 1 ;
+         }
+      } else {
+         print STDERR "could not resolve '" . $flav . "'\n" ;
+         $done = 1 ;
       }
       if (( ! $done ) && $_[2] ) {
-	 if ( $flav eq "install" ) {
-	    # oh my! are we ever in trouble
-	    # want some sort of default, but couldn't get to what we wanted
-	    print STDERR "you are in a strange alien universe\n" ;
-	    $spec = "" ;
-	    $done = 1 ;
-	 } elsif ( $flav eq "release" ) {
-	    $flav = "install" ;
-	 } elsif ( $flav eq "ship" ) {
-	    $flav = "release" ;
-	 } else {
-	    $flav = "ship" ;
-	 }
+         if ( $flav eq "install" ) {
+            # oh my! are we ever in trouble
+            # want some sort of default, but couldn't get to what we wanted
+            print STDERR "you are in a strange alien universe\n" ;
+            $spec = "" ;
+            $done = 1 ;
+         } elsif ( $flav eq "release" ) {
+            $flav = "install" ;
+         } elsif ( $flav eq "ship" ) {
+            $flav = "release" ;
+         } else {
+            $flav = "ship" ;
+         }
+      } elsif ( ! $done ) {
+         $spec = "" ;
+         print STDERR "resolved '" . $flav . "' but '" . $root .
+             "' does not exist\n" ;
+         $done = 1 ;
       }
    }
 
@@ -450,6 +458,9 @@ sub CTAttachWriteScript {
 	       print OUTFILE "\n" ;
 	   } else {
 	       print OUTFILE "setenv $item \"$outval\"\n" ;
+               if ( $ctdebug ) {
+                   print OUTFILE "echo setting " . $item . " to '" . $outval . "'\n" ;
+               }
 	   }
        }
    }
@@ -457,14 +468,21 @@ sub CTAttachWriteScript {
    if ( $newenv{"CDPATH"} ne "" ) {
        if ( $shell_type ne "sh" ) {
 	   print OUTFILE "set cdpath = ( \$" . "CDPATH )\n" ;
+           if ( $ctdebug ) {
+               print OUTFILE "echo assigning cdpath\n" ;
+           }
        }
    }
    foreach $item ( keys %envdo ) {
       print OUTFILE $envdo{$item} . "\n" ;
+      if ( $ctdebug ) {
+        print OUTFILE "echo doing '" . $envdo{$item} . "'\n" ;
+      }
    }
    if (! $ctdebug) {
       print OUTFILE "rm -f $_[0]\n" ;
    } else {
+      print OUTFILE "echo end of script $_[0]\n" ;
       print STDERR "no self-destruct script '" . $_[0] . "'\n" ;
    }
    close( OUTFILE ) ;

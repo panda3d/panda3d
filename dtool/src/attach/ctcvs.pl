@@ -7,7 +7,7 @@
 sub CTCvsFormatComment {
     local( $ret ) = "" ;
     if ( $_[0] ne "" ) {
-	$ret = "-m " . $_[0] ;
+        $ret = "-m \"" . $_[0] . "\"" ;
     }
     $ret ;
 }

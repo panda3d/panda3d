@@ -26,7 +26,6 @@ sub CTCMSetup {
 	    print STDERR "CVS login failed given server line '" . $serve .
 		"'\n" ;
 	}
-	print STDERR "I don't know how to setup CVS stuff yet!!\n" ;
     }
     # no other types have any work that needs to be done at this time
 }

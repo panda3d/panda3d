@@ -22,7 +22,7 @@ sub CTAttachUsage {
 
 $tool = $ENV{"DTOOL"} ;
 if ( $tool eq "" ) {
-    die "$DTOOL environment must be set to use CTtools\n" ;
+    die "\$" . "DTOOL environment must be set to use CTtools\n" ;
 }
 
 require "$tool/inc/ctattch.pl" ;

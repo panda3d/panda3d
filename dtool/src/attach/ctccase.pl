@@ -149,7 +149,7 @@ sub CTCcaseFormatComment {
     if ( $_[0] eq "" ) {
 	$ret = "-nc" ;
     } else {
-	$ret = "-c " . $_[0] ;
+        $ret = "-c \"" . $_[0] . "\"" ;
     }
     $ret ;
 }
