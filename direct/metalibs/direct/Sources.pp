@@ -8,9 +8,13 @@
 #define BUILDING_DLL BUILDING_DIRECT
 
 #define COMPONENT_LIBS \
-   directbase dcparser showbase deadrec directd interval
+  directbase dcparser showbase deadrec directd interval
 
-#define OTHER_LIBS panda pandaexpress dtoolconfig dtool
+#define OTHER_LIBS \
+  panda:m \
+  pandaexpress:m \
+  interrogatedb:c dconfig:c dtoolconfig:m \
+  dtoolutil:c dtoolbase:c dtool:m
 
 #begin metalib_target
   #define TARGET direct

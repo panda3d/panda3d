@@ -1,7 +1,9 @@
-#define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
-                   dtoolutil:c dtoolbase:c dtool:m
 #define LOCAL_LIBS \
-    dcparser
+  dcparser
+#define OTHER_LIBS \
+  express:c \
+  interrogatedb:c dconfig:c dtoolconfig:m \
+  dtoolutil:c dtoolbase:c dtool:m
 #define C++FLAGS -DWITHIN_PANDA
 
 #begin bin_target
