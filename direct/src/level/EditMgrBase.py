@@ -22,7 +22,13 @@ class EditMgrBase(Entity.Entity):
                                               data['entType'],
                                               data['parentEntId'],
                                               )
+            # clear out the attrib, it shouldn't be kept in the spec
+            self.level.levelSpec.doSetAttrib(self.entId, 'insertEntity',
+                                             None)
 
         def setRemoveEntity(self, data):
             self.level.levelSpec.removeEntity(data['entId'],
                                               )
+            # clear out the attrib, it shouldn't be kept in the spec
+            self.level.levelSpec.doSetAttrib(self.entId, 'removeEntity',
+                                             None)

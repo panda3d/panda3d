@@ -30,7 +30,14 @@ class EditMgrAI(EditMgrBase.EditMgrBase):
             data.update({'entId': id})
             self.level.setAttribChange(self.entId, 'insertEntity', data)
 
+            # clear out the attrib, it shouldn't be kept in the spec
+            self.level.levelSpec.doSetAttrib(self.entId, 'requestNewEntity',
+                                             None)
+
         def getSpecSaveEvent(self):
             return 'requestSave-%s' % self.level.levelId
         def setRequestSave(self, data):
             messenger.send(self.getSpecSaveEvent())
+            # clear out the attrib, it shouldn't be kept in the spec
+            self.level.levelSpec.doSetAttrib(self.entId, 'requestSave',
+                                             None)
