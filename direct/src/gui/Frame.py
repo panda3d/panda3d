@@ -50,8 +50,12 @@ class Frame(DirectObject):
     def thaw(self):
         self.frame.thaw()
 
-    def manage(self):
-        self.frame.manage(guiMgr, base.eventMgr.eventHandler)
+    def manage(self, nodepath = aspect2d):
+        if nodepath:
+            self.frame.manage(guiMgr, base.eventMgr.eventHandler,
+                               nodepath.node())
+        else:
+            self.frame.manage(guiMgr, base.eventMgr.eventHandler)
         self.managed = 1
         
     def unmanage(self):

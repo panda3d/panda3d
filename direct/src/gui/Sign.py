@@ -63,9 +63,13 @@ class Sign(DirectObject):
         self.label.setWidth(width)
         
     # actions
-    def manage(self):
+    def manage(self, nodepath = aspect2d):
+        if nodepath:
+            self.sign.manage(guiMgr, base.eventMgr.eventHandler,
+                               nodepath.node())
+        else:
+            self.sign.manage(guiMgr, base.eventMgr.eventHandler)
         self.managed = 1
-        self.sign.manage(guiMgr, base.eventMgr.eventHandler)
 
     def unmanage(self):
         self.managed = 0

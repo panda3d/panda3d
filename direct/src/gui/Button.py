@@ -88,7 +88,7 @@ class Button(DirectObject):
         self.l3.thaw()
         self.button.thaw()
         
-    def manage(self, nodepath = None):
+    def manage(self, nodepath = aspect2d):
         if nodepath:
             self.button.manage(guiMgr, base.eventMgr.eventHandler,
                                nodepath.node())
