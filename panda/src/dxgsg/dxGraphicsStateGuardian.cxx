@@ -1134,8 +1134,6 @@ draw_linestrip(const GeomLinestrip* geom) {
 	    p_colr = D3DRGBA(p_color[0], p_color[1], p_color[2], p_color[3]);
 	    }
 
-	size_t vertex_size = draw_prim_setup(geom);
-
     int nVerts = *(plen++);
     nassertv(nVerts >= 2);
 

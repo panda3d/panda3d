@@ -99,9 +99,13 @@ write(ostream &out, int indent_level) const {
     << _num_instances << " instances).\n";
 
   indent(out, indent_level)
-    << _num_transforms << " transforms; "
-    << 100 * _num_arcs_with_transitions / _num_arcs 
-    << "% of arcs have some transition.\n";
+    << _num_transforms << " transforms";
+
+  if (_num_arcs != 0) {
+    out << "; " << 100 * _num_arcs_with_transitions / _num_arcs 
+	<< "% of arcs have some transition.";
+  }
+  out << "\n";
 
   indent(out, indent_level)
     << _num_geoms << " Geoms ";

@@ -3,6 +3,7 @@
 
 #begin lib_target
   #define TARGET express
+  #define USE_NSPR yes
   
   #define SOURCES							\
     bigEndian.I bigEndian.cxx bigEndian.h buffer.I buffer.cxx buffer.h	\
