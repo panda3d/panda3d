@@ -57,7 +57,7 @@ integrate(Physical *physical, LinearForceVector &forces,
   PhysicsObject::Vector::const_iterator current_object_iter;
   current_object_iter = physical->get_object_vector().begin();
   for (; current_object_iter != physical->get_object_vector().end();
-       current_object_iter++) {
+       ++current_object_iter) {
     PhysicsObject *current_object = *current_object_iter;
     
     // bail out if this object doesn't exist or doesn't want to be
