@@ -128,7 +128,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         cRayNode.setFromCollideMask(self.cRayBitMask)
         cRayNode.setIntoCollideMask(BitMask32.allOff())
 
-        if 1 or self.useLifter:
+        if 0 or self.useLifter:
             # set up floor collision mechanism
             self.lifter = CollisionHandlerFloor()
             self.lifter.setInPattern("enter%in")
@@ -271,7 +271,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.floorOffset = floorOffset = 7.0
 
         self.avatarNodePath = self.setupPhysics(avatarNodePath)
-        if 1 or self.useHeightRay:
+        if 0 or self.useHeightRay:
             #self.setupRay(floorBitmask, avatarRadius)
             self.setupRay(floorBitmask, 0.0)
         self.setupSphere(wallBitmask|floorBitmask, avatarRadius)
@@ -379,7 +379,7 @@ class PhysicsWalker(DirectObject.DirectObject):
     
     def placeOnFloor(self):
         """
-        Make a reasonable effor to place the avatar on the ground.
+        Make a reasonable effort to place the avatar on the ground.
         For example, this is useful when switching away from the 
         current walker.
         """
@@ -394,7 +394,11 @@ class PhysicsWalker(DirectObject.DirectObject):
         """
         assert(self.debugPrint("oneTimeCollide()"))
         tempCTrav = CollisionTraverser("oneTimeCollide")
-        tempCTrav.addCollider(self.cRayNodePath, self.lifter)
+        if self.useHeightRay:
+            if self.useLifter:
+                tempCTrav.addCollider(self.cRayNodePath, self.lifter)
+            else:
+                tempCTrav.addCollider(self.cRayNodePath, self.cRayQueue)
         tempCTrav.traverse(render)
 
     def handleAvatarControls(self, task):
@@ -403,9 +407,9 @@ class PhysicsWalker(DirectObject.DirectObject):
         """
         if __debug__:
             if self.wantAvatarPhysicsIndicator:
-                onScreenDebug.append("localToon pos = %s\n"%(base.localAvatar.getPos().pPrintValues(),))
-                onScreenDebug.append("localToon h = % 10.4f\n"%(base.localAvatar.getH(),))
-                onScreenDebug.append("localToon anim = %s\n"%(base.localAvatar.animFSM.getCurrentState().getName(),))
+                onScreenDebug.append("localAvatar pos = %s\n"%(base.localAvatar.getPos().pPrintValues(),))
+                onScreenDebug.append("localAvatar h = % 10.4f\n"%(base.localAvatar.getH(),))
+                onScreenDebug.append("localAvatar anim = %s\n"%(base.localAvatar.animFSM.getCurrentState().getName(),))
         #assert(self.debugPrint("handleAvatarControls(task=%s)"%(task,)))
         physObject=self.actorNode.getPhysicsObject()
         #rotAvatarToPhys=Mat3.rotateMatNormaxis(-self.avatarNodePath.getH(), Vec3.up())
@@ -533,7 +537,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         if 1:
             if (airborneHeight > self.avatarRadius*0.5
                     or physObject.getVelocity().getZ() > 0.0
-                    ): # Check stair angles before chaning this.
+                    ): # Check stair angles before changing this.
                 # ...the avatar is airborne (maybe a lot or a tiny amount).
                 self.isAirborne = 1
             else:
@@ -639,7 +643,7 @@ class PhysicsWalker(DirectObject.DirectObject):
 
             # update hpr:
             o=physObject.getOrientation()
-            r=LOrientationf()
+            r=LRotationf()
             r.setHpr(Vec3(rotation, 0.0, 0.0))
             physObject.setOrientation(o*r)
 
@@ -698,7 +702,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         assert self.collisionsActive
 
         if __debug__:
-            self.accept("control-f3", self.spawnTest) #*#
+            #self.accept("control-f3", self.spawnTest) #*#
             self.accept("f3", self.reset) # for debugging only.
 
         taskName = "AvatarControls-%s"%(id(self),)
