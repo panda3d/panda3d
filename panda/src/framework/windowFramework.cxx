@@ -642,7 +642,7 @@ load_default_model(const NodePath &parent) {
 
   // Get the default texture to apply to the triangle; it's compiled
   // into the code these days.
-  string rock_floor_string(rock_floor, rock_floor_len);
+  string rock_floor_string((const char *)rock_floor, rock_floor_len);
   istringstream rock_floor_strm(rock_floor_string);
   PNMImage rock_floor_pnm;
   if (rock_floor_pnm.read(rock_floor_strm, "rock-floor.rgb")) {
