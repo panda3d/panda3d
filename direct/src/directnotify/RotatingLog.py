@@ -36,13 +36,7 @@ class RotatingLog:
             self.file.flush()
             self.file.close()
             del self.file
-        if hasattr(self, "closed"):
-            del self.closed
-            del self.mode
-            del self.name
-            del self.softspace
-            #del self.encoding
-            #del self.newlines
+        self.closed = self.file.closed
 
     def shouldRotate(self):
         """
