@@ -83,9 +83,8 @@ public:
   virtual bool safe_to_transform() const;
   virtual void output(ostream &out) const;
 
-  CPT(TransformState) CompassEffect::
-  do_compass(const TransformState *net_transform,
-             const TransformState *node_transform) const;
+  CPT(TransformState) do_compass(const TransformState *net_transform,
+                                 const TransformState *node_transform) const;
 
 protected:
   virtual int compare_to_impl(const RenderEffect *other) const;
