@@ -265,7 +265,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # if no viz, listen to all the zones
         if not DistributedLevel.WantVisibility:
             zones = list(self.zoneNums)
-            zones.remove(0)
+            #zones.remove(0)
             self.sendSetZone(0, zones)
 
     def toonEnterZone(self, zoneNum):
@@ -318,3 +318,16 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
         self.curZoneNum = zoneNum
         self.curVisibleZoneNums = visibleZoneNums
+
+    if __debug__:
+        # level editing stuff
+        def setAttribChange(self, entId, attribName, valueStr):
+            try:
+                value = eval(valueStr)
+            except Exception, e:
+                print ('Exception in %s(%s, %s, %s):\n\t%s' %
+                       (lineInfo()[2], entId, attribName, valueStr, e))
+                raise e
+                
+            entity = self.getEntity(entId)
+            entity.handleAttribChange(attribName, value)
