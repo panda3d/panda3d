@@ -679,6 +679,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         self.highMark = 0
         self.actorNode.setContactVector(Vec3.zero())
         if __debug__:
+            contact=self.actorNode.getContactVector()
             onScreenDebug.add("priorParent po",
                 self.priorParent.getVector(self.actorNode.getPhysicsObject()).pPrintValues())
             onScreenDebug.add("highMark", "% 10.4f"%(self.highMark,))
