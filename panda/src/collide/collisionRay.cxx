@@ -23,12 +23,14 @@
 #include "qpcollisionEntry.h"
 #include "config_collide.h"
 #include "geom.h"
-#include "geomNode.h"
+#include "qpgeomNode.h"
 #include "geomLinestrip.h"
 #include "boundingLine.h"
-#include "lensNode.h"
 #include "qplensNode.h"
 #include "lens.h"
+
+#include "lensNode.h"
+#include "geomNode.h"
 
 TypeHandle CollisionRay::_type_handle;
 
@@ -218,4 +220,42 @@ recompute_viz(Node *parent) {
   GeomNode *viz = new GeomNode("viz-ray");
   viz->add_geom(ray);
   add_other_viz(parent, viz);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionRay::fill_viz_geom
+//       Access: Protected, Virtual
+//  Description: Fills the _viz_geom GeomNode up with Geoms suitable
+//               for rendering this solid.
+////////////////////////////////////////////////////////////////////
+void CollisionRay::
+fill_viz_geom() {
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "Recomputing viz for " << *this << "\n";
+  }
+
+  GeomLinestrip *ray = new GeomLinestrip;
+  PTA_Vertexf verts;
+  PTA_Colorf colors;
+  PTA_int lengths;
+  
+  #define NUM_POINTS 100
+  verts.reserve(NUM_POINTS);
+  colors.reserve(NUM_POINTS);
+
+  for (int i = 0; i < NUM_POINTS; i++) {
+    verts.push_back(_origin + (double)i * _direction);
+    colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f)+
+                     ((double)i / 100.0) * Colorf(0.0f, 0.0f, 0.0f, -1.0f));
+  }
+  ray->set_coords(verts);
+  ray->set_colors(colors, G_PER_VERTEX);
+
+  lengths.push_back(NUM_POINTS-1);
+  ray->set_lengths(lengths);
+
+  ray->set_num_prims(1);
+
+  _viz_geom->add_geom(ray, get_other_viz_state());
 }

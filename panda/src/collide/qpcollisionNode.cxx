@@ -19,6 +19,9 @@
 #include "collisionNode.h"
 #include "config_collide.h"
 
+#include "qpgeomNode.h"
+#include "cullTraverserData.h"
+#include "qpcullTraverser.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "bamReader.h"
@@ -194,13 +197,22 @@ has_cull_callback() const {
 //               visible, or false if it should be culled.
 ////////////////////////////////////////////////////////////////////
 bool qpCollisionNode::
-cull_callback(qpCullTraverser *, CullTraverserData &) {
-  /*
+cull_callback(qpCullTraverser *trav, CullTraverserData &data) {
+  // Append our collision vizzes to the drawing, even though they're
+  // not actually part of the scene graph.
   Solids::iterator si;
   for (si = _solids.begin(); si != _solids.end(); ++si) {
-    (*si)->update_viz(this);
+    CollisionSolid *solid = (*si);
+    PandaNode *node = solid->get_viz();
+    CullTraverserData next_data(data, node);
+
+    // We don't want to inherit the render state from above for these
+    // guys.
+    next_data._state = RenderState::make_empty();
+    trav->traverse(next_data);
   }
-  */
+
+  // Now carry on to render our child nodes.
   return true;
 }
 

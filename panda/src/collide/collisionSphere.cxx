@@ -434,6 +434,29 @@ recompute_viz(Node *parent) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionSphere::fill_viz_geom
+//       Access: Protected, Virtual
+//  Description: Fills the _viz_geom GeomNode up with Geoms suitable
+//               for rendering this solid.
+////////////////////////////////////////////////////////////////////
+void CollisionSphere::
+fill_viz_geom() {
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "Recomputing viz for " << *this << "\n";
+  }
+
+  GeomSphere *sphere = new GeomSphere;
+  PTA_Vertexf verts;
+  verts.push_back(_center);
+  verts.push_back(_center + LVector3f(_radius, 0.0f, 0.0f));
+  sphere->set_coords(verts);
+  sphere->set_num_prims(1);
+
+  _viz_geom->add_geom(sphere, get_solid_viz_state());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionSphere::intersects_line
 //       Access: Protected
 //  Description: Determine the point(s) of intersect of a parametric

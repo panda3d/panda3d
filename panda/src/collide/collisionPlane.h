@@ -81,6 +81,7 @@ protected:
                              const qpCollisionEntry &entry) const;
 
   virtual void recompute_viz(Node *parent);
+  virtual void fill_viz_geom();
 
 private:
   Planef _plane;

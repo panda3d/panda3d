@@ -27,15 +27,16 @@
 #include "config_collide.h"
 
 #include "pointerToArray.h"
-#include "geomNode.h"
+#include "qpgeomNode.h"
 #include "geom.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
-
 #include "omniBoundingVolume.h"
 #include "geomQuad.h"
+
+#include "geomNode.h"
 
 TypeHandle CollisionPlane::_type_handle;
 
@@ -355,6 +356,76 @@ recompute_viz(Node *parent) {
   viz->add_geom(quad);
   add_solid_viz(parent, viz);
   add_wireframe_viz(parent, viz);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPlane::fill_viz_geom
+//       Access: Protected, Virtual
+//  Description: Fills the _viz_geom GeomNode up with Geoms suitable
+//               for rendering this solid.
+////////////////////////////////////////////////////////////////////
+void CollisionPlane::
+fill_viz_geom() {
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "Recomputing viz for " << *this << "\n";
+  }
+
+  // Since we can't represent an infinite plane, we'll have to be
+  // satisfied with drawing a big polygon.  Choose four points on the
+  // plane to be the corners of the polygon.
+
+  // We must choose four points fairly reasonably spread apart on
+  // the plane.  We'll start with a center point and one corner
+  // point, and then use cross products to find the remaining three
+  // corners of a square.
+
+  // The center point will be on the axis with the largest
+  // coefficent.  The first corner will be diagonal in the other two
+  // dimensions.
+
+  LPoint3f cp;
+  LVector3f p1, p2, p3, p4;
+
+  LVector3f normal = get_normal();
+  float D = _plane._d;
+
+  if (fabs(normal[0]) > fabs(normal[1]) &&
+      fabs(normal[0]) > fabs(normal[2])) {
+    // X has the largest coefficient.
+    cp.set(-D / normal[0], 0.0f, 0.0f);
+    p1 = LPoint3f(-(normal[1] + normal[2] + D)/normal[0], 1.0f, 1.0f) - cp;
+
+  } else if (fabs(normal[1]) > fabs(normal[2])) {
+    // Y has the largest coefficient.
+    cp.set(0.0f, -D / normal[1], 0.0f);
+    p1 = LPoint3f(1.0f, -(normal[0] + normal[2] + D)/normal[1], 1.0f) - cp;
+
+  } else {
+    // Z has the largest coefficient.
+    cp.set(0.0f, 0.0f, -D / normal[2]);
+    p1 = LPoint3f(1.0f, 1.0f, -(normal[0] + normal[1] + D)/normal[2]) - cp;
+  }
+
+  p1.normalize();
+  p2 = cross(normal, p1);
+  p3 = cross(normal, p2);
+  p4 = cross(normal, p3);
+
+  static const double plane_scale = 10.0;
+
+  PTA_Vertexf verts;
+  verts.push_back(cp + p1 * plane_scale);
+  verts.push_back(cp + p2 * plane_scale);
+  verts.push_back(cp + p3 * plane_scale);
+  verts.push_back(cp + p4 * plane_scale);
+
+  GeomQuad *quad = new GeomQuad;
+  quad->set_coords(verts);
+  quad->set_num_prims(1);
+
+  _viz_geom->add_geom(quad, get_solid_viz_state());
+  _viz_geom->add_geom(quad, get_wireframe_viz_state());
 }
 
 ////////////////////////////////////////////////////////////////////

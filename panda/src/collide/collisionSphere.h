@@ -84,6 +84,7 @@ protected:
                                  const qpCollisionEntry &entry) const;
 
   virtual void recompute_viz(Node *parent);
+  virtual void fill_viz_geom();
 
   bool intersects_line(double &t1, double &t2,
                        const LPoint3f &from, const LVector3f &delta) const;

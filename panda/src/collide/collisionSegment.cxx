@@ -25,13 +25,14 @@
 #include "config_collide.h"
 
 #include "geom.h"
-#include "geomNode.h"
-#include "lensNode.h"
 #include "qplensNode.h"
+#include "qpgeomNode.h"
 #include "lens.h"
-
 #include "geomLine.h"
 #include "geometricBoundingVolume.h"
+
+#include "geomNode.h"
+#include "lensNode.h"
 
 TypeHandle CollisionSegment::_type_handle;
 
@@ -212,4 +213,31 @@ recompute_viz(Node *parent) {
   GeomNode *viz = new GeomNode("viz-segment");
   viz->add_geom(segment);
   add_other_viz(parent, viz);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSegment::fill_viz_geom
+//       Access: Protected, Virtual
+//  Description: Fills the _viz_geom GeomNode up with Geoms suitable
+//               for rendering this solid.
+////////////////////////////////////////////////////////////////////
+void CollisionSegment::
+fill_viz_geom() {
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "Recomputing viz for " << *this << "\n";
+  }
+
+  GeomLine *segment = new GeomLine;
+  PTA_Vertexf verts;
+  PTA_Colorf colors;
+  verts.push_back(_a);
+  verts.push_back(_b);
+  colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+  segment->set_coords(verts);
+  segment->set_colors(colors, G_OVERALL);
+
+  segment->set_num_prims(1);
+
+  _viz_geom->add_geom(segment, get_other_viz_state());
 }

@@ -24,20 +24,25 @@
 #include "collisionRay.h"
 #include "collisionSegment.h"
 
-#include <renderRelation.h>
-#include <geomNode.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
+#include "indent.h"
+#include "cullFaceAttrib.h"
+#include "colorAttrib.h"
+#include "renderModeAttrib.h"
+#include "transparencyAttrib.h"
+#include "qpgeomNode.h"
 
-#include <indent.h>
-#include <cullFaceTransition.h>
-#include <colorTransition.h>
-#include <renderModeTransition.h>
-#include <lightTransition.h>
-#include <transparencyTransition.h>
-#include <textureTransition.h>
+#include "renderRelation.h"
+#include "geomNode.h"
+#include "cullFaceTransition.h"
+#include "colorTransition.h"
+#include "renderModeTransition.h"
+#include "lightTransition.h"
+#include "transparencyTransition.h"
+#include "textureTransition.h"
 
 TypeHandle CollisionSolid::_type_handle;
 
@@ -49,6 +54,7 @@ TypeHandle CollisionSolid::_type_handle;
 CollisionSolid::
 CollisionSolid() {
   _viz_stale = true;
+  _viz_geom_stale = true;
   _tangible = true;
 }
 
@@ -63,6 +69,7 @@ CollisionSolid(const CollisionSolid &copy) :
 {
   // Actually, there's not a whole lot here we want to copy.
   _viz_stale = true;
+  _viz_geom_stale = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -87,6 +94,26 @@ update_viz(Node *parent) {
     recompute_viz(parent);
     _viz_stale = false;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::get_viz
+//       Access: Public
+//  Description: Returns a GeomNode that may be rendered to visualize
+//               the CollisionSolid.
+////////////////////////////////////////////////////////////////////
+qpGeomNode *CollisionSolid::
+get_viz() {
+  if (_viz_geom_stale) {
+    if (_viz_geom == (qpGeomNode *)NULL) {
+      _viz_geom = new qpGeomNode("viz");
+    } else {
+      _viz_geom->remove_all_geoms();
+    }
+    fill_viz_geom();
+    _viz_geom_stale = false;
+  }
+  return _viz_geom;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -330,3 +357,116 @@ add_other_viz(Node *parent, GeomNode *viz) {
 
   _other_viz_arcs.push_back(arc);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::fill_viz_geom
+//       Access: Protected, Virtual
+//  Description: Fills the _viz_geom GeomNode up with Geoms suitable
+//               for rendering this solid.
+////////////////////////////////////////////////////////////////////
+void CollisionSolid::
+fill_viz_geom() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::get_solid_viz_state
+//       Access: Protected
+//  Description: Returns a RenderState for rendering collision
+//               visualizations in solid.  This automatically returns
+//               the appropriate state according to the setting of
+//               _tangible.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) CollisionSolid::
+get_solid_viz_state() {
+  // Once someone asks for this pointer, we hold its reference count
+  // and never free it.
+  static CPT(RenderState) base_state = (const RenderState *)NULL;
+  if (base_state == (const RenderState *)NULL) {
+    base_state = RenderState::make
+      (CullFaceAttrib::make(CullFaceAttrib::M_cull_clockwise),
+       RenderModeAttrib::make(RenderModeAttrib::M_filled),
+       TransparencyAttrib::make(TransparencyAttrib::M_alpha));
+  }
+
+  if (_tangible) {
+    static CPT(RenderState) tangible_state = (const RenderState *)NULL;
+    if (tangible_state == (const RenderState *)NULL) {
+      tangible_state = base_state->add_attrib
+        (ColorAttrib::make_flat(Colorf(1.0f, 1.0f, 1.0f, 0.5f)));
+    }
+    return tangible_state;
+
+  } else {
+    static CPT(RenderState) intangible_state = (const RenderState *)NULL;
+    if (intangible_state == (const RenderState *)NULL) {
+      intangible_state = base_state->add_attrib
+        (ColorAttrib::make_flat(Colorf(1.0f, 0.3f, 0.5f, 0.5f)));
+    }
+    return intangible_state;
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::get_wireframe_viz_state
+//       Access: Protected
+//  Description: Returns a RenderState for rendering collision
+//               visualizations in wireframe.  This automatically returns
+//               the appropriate state according to the setting of
+//               _tangible.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) CollisionSolid::
+get_wireframe_viz_state() {
+  // Once someone asks for this pointer, we hold its reference count
+  // and never free it.
+  static CPT(RenderState) base_state = (const RenderState *)NULL;
+  if (base_state == (const RenderState *)NULL) {
+    base_state = RenderState::make
+      (CullFaceAttrib::make(CullFaceAttrib::M_cull_none),
+       RenderModeAttrib::make(RenderModeAttrib::M_wireframe),
+       TransparencyAttrib::make(TransparencyAttrib::M_none));
+  }
+
+  if (_tangible) {
+    static CPT(RenderState) tangible_state = (const RenderState *)NULL;
+    if (tangible_state == (const RenderState *)NULL) {
+      tangible_state = base_state->add_attrib
+        (ColorAttrib::make_flat(Colorf(0.0f, 0.0f, 1.0f, 1.0f)));
+    }
+    return tangible_state;
+
+  } else {
+    static CPT(RenderState) intangible_state = (const RenderState *)NULL;
+    if (intangible_state == (const RenderState *)NULL) {
+      intangible_state = base_state->add_attrib
+        (ColorAttrib::make_flat(Colorf(1.0f, 1.0f, 0.0f, 1.0f)));
+    }
+    return intangible_state;
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::get_other_viz_state
+//       Access: Protected
+//  Description: Returns a RenderState for rendering collision
+//               visualizations for things that are neither solid nor
+//               exactly wireframe, like rays and segments.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) CollisionSolid::
+get_other_viz_state() {
+  // Once someone asks for this pointer, we hold its reference count
+  // and never free it.
+  static CPT(RenderState) base_state = (const RenderState *)NULL;
+  if (base_state == (const RenderState *)NULL) {
+    base_state = RenderState::make
+      (CullFaceAttrib::make(CullFaceAttrib::M_cull_clockwise),
+       RenderModeAttrib::make(RenderModeAttrib::M_filled),
+       TransparencyAttrib::make(TransparencyAttrib::M_alpha));
+  }
+
+  // We don't bother to make a distinction here between tangible and
+  // intangible.
+  return base_state;
+}
+

@@ -29,13 +29,15 @@
 
 #include "boundingSphere.h"
 #include "pointerToArray.h"
-#include "geomNode.h"
+#include "qpgeomNode.h"
 #include "geom.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "geomPolygon.h"
+
+#include "geomNode.h"
 
 #include <algorithm>
 
@@ -695,6 +697,48 @@ recompute_viz(Node *parent) {
   viz->add_geom(polygon);
   add_solid_viz(parent, viz);
   add_wireframe_viz(parent, viz);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::fill_viz_geom
+//       Access: Protected, Virtual
+//  Description: Fills the _viz_geom GeomNode up with Geoms suitable
+//               for rendering this solid.
+////////////////////////////////////////////////////////////////////
+void CollisionPolygon::
+fill_viz_geom() {
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "Recomputing viz for " << *this << "\n";
+  }
+
+  if (_points.size() < 3) {
+    if (collide_cat.is_debug()) {
+      collide_cat.debug()
+        << "(Degenerate poly, ignoring.)\n";
+    }
+    return;
+  }
+
+  PTA_Vertexf verts;
+  Points::const_iterator pi;
+  for (pi = _points.begin(); pi != _points.end(); ++pi) {
+    verts.push_back(to_3d(*pi));
+  }
+  if (_reversed) {
+    reverse(verts.begin(), verts.end());
+  }
+
+  PTA_int lengths;
+  lengths.push_back(_points.size());
+
+  GeomPolygon *polygon = new GeomPolygon;
+  polygon->set_coords(verts);
+  polygon->set_num_prims(1);
+  polygon->set_lengths(lengths);
+
+  _viz_geom->add_geom(polygon, get_solid_viz_state());
+  _viz_geom->add_geom(polygon, get_wireframe_viz_state());
 }
 
 ////////////////////////////////////////////////////////////////////

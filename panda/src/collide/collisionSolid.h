@@ -24,8 +24,10 @@
 #include "typedWritableReferenceCount.h"
 #include "boundedObject.h"
 #include "luse.h"
-#include "nodeRelation.h"
 #include "pointerTo.h"
+#include "renderState.h"
+
+#include "nodeRelation.h"
 #include "node.h"
 #include "vector_PT_NodeRelation.h"
 
@@ -36,6 +38,7 @@ class qpCollisionEntry;
 class CollisionSphere;
 class Node;
 class GeomNode;
+class qpGeomNode;
 class CollisionNode;
 class qpCollisionNode;
 
@@ -79,6 +82,7 @@ public:
   virtual void xform(const LMatrix4f &mat)=0;
 
   void update_viz(Node *parent);
+  qpGeomNode *get_viz();
 
 PUBLISHED:
   virtual void output(ostream &out) const;
@@ -115,12 +119,20 @@ protected:
   void add_other_viz(Node *parent, GeomNode *viz);
 
   virtual void recompute_viz(Node *parent)=0;
+  virtual void fill_viz_geom();
+
+  CPT(RenderState) get_solid_viz_state();
+  CPT(RenderState) get_wireframe_viz_state();
+  CPT(RenderState) get_other_viz_state();
 
   typedef vector_PT_NodeRelation VizArcs;
   VizArcs _solid_viz_arcs;
   VizArcs _wireframe_viz_arcs;
   VizArcs _other_viz_arcs;
+  PT(qpGeomNode) _viz_geom;
   bool _viz_stale;
+
+  bool _viz_geom_stale;
   bool _tangible;
 
 public:

@@ -83,6 +83,7 @@ protected:
 
 protected:
   virtual void recompute_viz(Node *parent);
+  virtual void fill_viz_geom();
 
 private:
   LPoint3f _a, _b;

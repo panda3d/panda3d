@@ -60,4 +60,5 @@ is_tangible() const {
 INLINE void CollisionSolid::
 mark_viz_stale() {
   _viz_stale = true;
+  _viz_geom_stale = true;
 }
