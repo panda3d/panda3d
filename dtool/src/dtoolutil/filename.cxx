@@ -1251,6 +1251,7 @@ scan_directory(vector_string &contents) const {
     return false;
   }
 
+  errno = 0;
   struct dirent *d;
   d = readdir(root);
   while (d != (struct dirent *)NULL) {
