@@ -102,17 +102,20 @@ underflow() {
     gbump(-(int)buffer_size);
 
     size_t num_bytes = buffer_size;
-    size_t read_count = BIO_read(_source, gptr(), buffer_size);
 
-    if (read_count != num_bytes) {
+    // BIO_read might return -1 or -2 on eof or error, so we have to
+    // allow for negative numbers.
+    int read_count = BIO_read(_source, gptr(), buffer_size);
+
+    if (read_count != (int)num_bytes) {
       // Oops, we didn't read what we thought we would.
-      if (read_count == 0) {
+      if (read_count <= 0) {
         return EOF;
       }
 
       // Slide what we did read to the top of the buffer.
-      nassertr(read_count < num_bytes, EOF);
-      size_t delta = num_bytes - read_count;
+      nassertr(read_count < (int)num_bytes, EOF);
+      size_t delta = (int)num_bytes - read_count;
       memmove(gptr() + delta, gptr(), read_count);
       gbump(delta);
     }
