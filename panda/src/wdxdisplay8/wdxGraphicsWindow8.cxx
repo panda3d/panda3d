@@ -468,6 +468,48 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             handle_window_move(LOWORD(lparam), HIWORD(lparam) );
             return 0;
 
+#if 0
+            doesnt work yet
+
+        case WM_GETMINMAXINFO: {
+
+            // make sure window size doesnt go to zero
+            LPMINMAXINFO pInfo=(LPMINMAXINFO) lparam;
+            wdxdisplay_cat.spam() << "initial WM_GETMINMAXINFO:  MinX:" << pInfo->ptMinTrackSize.x << " MinY:" << pInfo->ptMinTrackSize.y << endl;
+
+            RECT client_rect;
+            GetClientRect( hwnd, &client_rect );
+
+            wdxdisplay_cat.spam() << "WM_GETMINMAXINFO: ClientRect: left: " << client_rect.left << " right: " << client_rect.right
+                                  << " top: " << client_rect.top << " bottom: " << client_rect.bottom << endl;
+
+
+            UINT client_ysize=RECT_YSIZE(client_rect);
+            UINT client_xsize=RECT_XSIZE(client_rect);
+
+            if(client_ysize==0) {
+                RECT wnd_rect;
+                GetWindowRect( hwnd, &wnd_rect );
+                wdxdisplay_cat.spam() << "WM_GETMINMAXINFO: WndRect: left: " << wnd_rect.left << " right: " << wnd_rect.right
+                                  << " top: " << wnd_rect.top << " bottom: " << wnd_rect.bottom << endl;
+
+                pInfo->ptMinTrackSize.y=RECT_YSIZE(wnd_rect)-client_ysize+2;
+            }
+
+            if(client_xsize==0) {
+                RECT wnd_rect;
+                GetWindowRect( hwnd, &wnd_rect );
+                pInfo->ptMinTrackSize.x=RECT_XSIZE(wnd_rect)-client_xsize+2;
+            }
+
+            if((client_ysize==0) || (client_xsize==0)) {
+               wdxdisplay_cat.spam() << "final WM_GETMINMAXINFO:  MinX:" << pInfo->ptMinTrackSize.x << " MinY:" << pInfo->ptMinTrackSize.y << endl;
+                return 0;
+            }
+            break;
+        }
+#endif
+
         case WM_EXITSIZEMOVE:
             #ifdef _DEBUG
               wdxdisplay_cat.spam()  << "WM_EXITSIZEMOVE received"  << endl;
@@ -668,10 +710,12 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 bool wdxGraphicsWindow::reset_device_resize_window(UINT new_xsize, UINT new_ysize) {
     DXScreenData *pScrn=&_dxgsg->scrn;
 
+    assert((new_xsize>0)&&(new_ysize>0));
+
     D3DPRESENT_PARAMETERS d3dpp;
     memcpy(&d3dpp,&pScrn->PresParams,sizeof(D3DPRESENT_PARAMETERS));
-    pScrn->PresParams.BackBufferWidth = new_xsize;
-    pScrn->PresParams.BackBufferHeight = new_ysize;
+    d3dpp.BackBufferWidth = new_xsize;
+    d3dpp.BackBufferHeight = new_ysize;
     HRESULT hr=_dxgsg->reset_d3d_device(&d3dpp);
 
     if(FAILED(hr)) {
@@ -912,8 +956,6 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
     wc.style      = CS_HREDRAW | CS_VREDRAW; //CS_OWNDC;
     wc.lpfnWndProc    = (WNDPROC) static_window_proc;
     wc.hInstance      = hProgramInstance;
-    wc.hCursor      = NULL;  // for DX8 we handle the cursor messages ourself
-
 
   // all this must be moved to dx_init, since we need to create DX surface 
     string windows_icon_filename = get_icon_filename().to_os_specific();
@@ -1005,9 +1047,11 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
     if(!_bLoadedCustomCursor) 
       _hMouseCursor = LoadCursor(NULL, DEFAULT_CURSOR);
 
+    // bugbug:  probably need to make 2 classes, one w/cursor and one w/NULL cursor for fullscrn to support mixed types
     if (!wc_registered) {
       // We only need to register the window class once per session.
-      wc.hCursor = NULL;  //_hMouseCursor;
+      wc.hCursor = (dx_full_screen ? NULL : _hMouseCursor);  // for windowed mode use the GDI cursor.  
+      // bugbug:  for fullscreen do we need to do a SetWindowLongNULL
       wc.hbrBackground  = (HBRUSH)GetStockObject(BLACK_BRUSH);
       wc.lpszMenuName   = NULL;
       wc.lpszClassName  = WDX_WINDOWCLASSNAME;
