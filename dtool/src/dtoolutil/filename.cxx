@@ -719,7 +719,7 @@ is_directory() const {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 is_executable() const {
-  if (!exists()) {
+  if (exists()) {
 #ifdef WIN32_VC
     // no access() in windows, but to our advantage executables can only
     // end in .exe or .com
