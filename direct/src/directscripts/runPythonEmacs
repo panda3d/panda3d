@@ -40,6 +40,11 @@ if [ "$OTP" ]; then
     OTP=`cygpath -w $OTP`
     export OTP
 fi
+if [ "$GATEWAY" ]; then
+    if [ "$debug" ]; then echo "GATEWAY    $GATEWAY"; fi
+    GATEWAY=`cygpath -w $GATEWAY`
+    export GATEWAY
+fi
 if [ "$TOONTOWN" ]; then
     if [ "$debug" ]; then echo "TOONTOWN  $TOONTOWN"; fi
     TOONTOWN=`cygpath -w $TOONTOWN`
