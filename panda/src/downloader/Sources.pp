@@ -26,13 +26,13 @@
     downloadDb.cxx downloader.cxx 
     
   #define IF_NET_COMBINED_SOURCES \ 
-    $[TARGET]_composite4.cxx        
+    $[TARGET]_composite3.cxx        
 
   #define IF_ZLIB_SOURCES \
     decompressor.h zcompressor.I zcompressor.h download_utils.h
     
   #define IF_ZLIB_COMBINED_SOURCES \    
-    $[TARGET]_composite3.cxx    
+    $[TARGET]_composite4.cxx    
     
   #define IF_ZLIB_INCLUDED_SOURCES \
     decompressor.cxx zcompressor.cxx download_utils.cxx
