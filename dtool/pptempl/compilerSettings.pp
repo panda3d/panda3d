@@ -46,8 +46,10 @@
   #define COMPILER cl
   #define LINKER link
   #define LIBBER lib
-  
-  #define DO_CROSSOBJ_OPT 1
+
+  #if $[eq $[NO_CROSSOBJ_OPT],]
+     #define DO_CROSSOBJ_OPT 1
+  #endif 
   
   #if $[DO_CROSSOBJ_OPT]
      #define OPT4FLAGS /GL
