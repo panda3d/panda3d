@@ -1,85 +1,81 @@
-/* A Bison parser, made from dcParser.yxx
+/* A Bison parser, made from stitchParser.yxx
    by GNU bison 1.35.  */
 
 #define YYBISON 1  /* Identify Bison output.  */
 
-#define yyparse dcyyparse
-#define yylex dcyylex
-#define yyerror dcyyerror
-#define yylval dcyylval
-#define yychar dcyychar
-#define yydebug dcyydebug
-#define yynerrs dcyynerrs
-# define	INTEGER	257
-# define	REAL	258
-# define	STRING	259
-# define	HEX_STRING	260
-# define	IDENTIFIER	261
-# define	KW_DCLASS	262
-# define	KW_INT8	263
-# define	KW_INT16	264
-# define	KW_INT32	265
-# define	KW_INT64	266
-# define	KW_UINT8	267
-# define	KW_UINT16	268
-# define	KW_UINT32	269
-# define	KW_UINT64	270
-# define	KW_FLOAT64	271
-# define	KW_STRING	272
-# define	KW_BLOB	273
-# define	KW_INT8ARRAY	274
-# define	KW_INT16ARRAY	275
-# define	KW_INT32ARRAY	276
-# define	KW_UINT8ARRAY	277
-# define	KW_UINT16ARRAY	278
-# define	KW_UINT32ARRAY	279
-# define	KW_UINT32UINT8ARRAY	280
-# define	KW_MOL	281
-# define	KW_REQUIRED	282
-# define	KW_BROADCAST	283
-# define	KW_P2P	284
-# define	KW_RAM	285
-# define	KW_DB	286
-# define	KW_CLSEND	287
-# define	KW_CLRECV	288
-# define	KW_OWNSEND	289
+#define yyparse stitchyyparse
+#define yylex stitchyylex
+#define yyerror stitchyyerror
+#define yylval stitchyylval
+#define yychar stitchyychar
+#define yydebug stitchyydebug
+#define yynerrs stitchyynerrs
+# define	NUMBER	257
+# define	NUMBER_FEET	258
+# define	NUMBER_INCHES	259
+# define	IDENTIFIER	260
+# define	STRING	261
+# define	KW_DEFINE	262
+# define	KW_LENS	263
+# define	KW_INPUT_IMAGE	264
+# define	KW_OUTPUT_IMAGE	265
+# define	KW_EYEPOINT	266
+# define	KW_PERSPECTIVE	267
+# define	KW_FISHEYE	268
+# define	KW_CYLINDRICAL	269
+# define	KW_PSPHERE	270
+# define	KW_FOCAL_LENGTH	271
+# define	KW_FOV	272
+# define	KW_SINGULARITY_TOLERANCE	273
+# define	KW_RESOLUTION	274
+# define	KW_FILENAME	275
+# define	KW_FADE	276
+# define	KW_POINT	277
+# define	KW_SHOW_POINTS	278
+# define	KW_IMAGE_SIZE	279
+# define	KW_FILM_SIZE	280
+# define	KW_FILM_OFFSET	281
+# define	KW_GRID	282
+# define	KW_UNTEXTURED_COLOR	283
+# define	KW_HPR	284
+# define	KW_POS	285
+# define	KW_RADIUS	286
+# define	KW_ANGLE	287
+# define	KW_HEIGHT	288
+# define	KW_LAYERS	289
+# define	KW_STITCH	290
+# define	KW_SCREEN	291
+# define	KW_POINTS	292
+# define	KW_USING	293
+# define	KW_IN	294
+# define	KW_MM	295
+# define	KW_FT	296
+# define	KW_CM	297
+# define	KW_P	298
 
-#line 6 "dcParser.yxx"
+#line 6 "stitchParser.yxx"
 
-#include "dcLexerDefs.h"
-#include "dcParserDefs.h"
-#include "dcFile.h"
-#include "dcClass.h"
-#include "dcAtomicField.h"
-#include "dcMolecularField.h"
 
-// Because our token type contains objects of type string, which
-// require correct copy construction (and not simply memcpying), we
-// cannot use bison's built-in auto-stack-grow feature.  As an easy
-// solution, we ensure here that we have enough yacc stack to start
-// with, and that it doesn't ever try to grow.
-#define YYINITDEPTH 1000
-#define YYMAXDEPTH 1000
-
-static DCFile *dc_file = (DCFile *)NULL;
-static DCClass *current_class = (DCClass *)NULL;
-static DCAtomicField *current_atomic = (DCAtomicField *)NULL;
-static DCMolecularField *current_molecular = (DCMolecularField *)NULL;
-static DCAtomicField::ElementType atomic_element;
+#include "stitchParserDefs.h"
+#include "stitchLexerDefs.h"
+#include "stitchCommand.h"
 
 ////////////////////////////////////////////////////////////////////
 // Defining the interface to the parser.
 ////////////////////////////////////////////////////////////////////
 
-void
-dc_init_parser(istream &in, const string &filename, DCFile &file) {
-  dc_file = &file;
-  dc_init_lexer(in, filename);
-}
+#define YYERROR_VERBOSE
+
+typedef vector<StitchCommand *> CommandStack;
+static CommandStack cstack;
+static StitchCommand *parent; 
 
 void
-dc_cleanup_parser() {
-  dc_file = (DCFile *)NULL;
+stitch_init_parser(istream &in, const string &filename,
+                   StitchCommand *tos) {
+  stitch_init_lexer(in, filename);
+  parent = tos;
+  cstack.push_back(parent);
 }
 
 #ifndef YYDEBUG
@@ -88,12 +84,12 @@ dc_cleanup_parser() {
 
 
 
-#define	YYFINAL		101
+#define	YYFINAL		160
 #define	YYFLAG		-32768
-#define	YYNTBASE	46
+#define	YYNTBASE	52
 
 /* YYTRANSLATE(YYLEX) -- Bison token number corresponding to YYLEX. */
-#define YYTRANSLATE(x) ((unsigned)(x) <= 289 ? yytranslate[x] : 71)
+#define YYTRANSLATE(x) ((unsigned)(x) <= 298 ? yytranslate[x] : 75)
 
 /* YYTRANSLATE[YYLEX] -- Bison token number corresponding to YYLEX. */
 static const char yytranslate[] =
@@ -102,15 +98,15 @@ static const char yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-      41,    42,    45,     2,    40,     2,     2,    43,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,    39,    36,
-       2,    44,     2,     2,     2,     2,     2,     2,     2,     2,
+      50,    51,     2,     2,    48,     2,     2,    49,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,    47,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,    37,     2,    38,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     2,     2,    45,     2,    46,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -126,44 +122,51 @@ static const char yytranslate[] =
        2,     2,     2,     2,     2,     2,     1,     3,     4,     5,
        6,     7,     8,     9,    10,    11,    12,    13,    14,    15,
       16,    17,    18,    19,    20,    21,    22,    23,    24,    25,
-      26,    27,    28,    29,    30,    31,    32,    33,    34,    35
+      26,    27,    28,    29,    30,    31,    32,    33,    34,    35,
+      36,    37,    38,    39,    40,    41,    42,    43,    44
 };
 
 #if YYDEBUG
 static const short yyprhs[] =
 {
-       0,     0,     2,     5,     8,     9,    17,    19,    21,    24,
-      26,    30,    32,    35,    38,    41,    42,    49,    51,    53,
-      55,    57,    61,    62,    66,    68,    72,    75,    79,    83,
-      87,    91,    97,    99,   102,   104,   106,   108,   112,   114,
-     116,   118,   120,   124,   128,   132,   134,   136,   138,   140,
-     142,   144,   146,   148,   150,   152,   154,   156,   158,   160,
-     162,   164,   166,   168,   170,   173,   176,   179,   182,   185,
-     188,   191,   194,   195,   200,   202,   206
+       0,     0,     2,     4,     7,    13,    14,    18,    21,    25,
+      27,    30,    33,    36,    39,    42,    45,    48,    49,    53,
+      55,    57,    59,    61,    64,    67,    70,    73,    76,    79,
+      83,    87,    90,    93,    96,    99,   102,   105,   108,   111,
+     114,   117,   119,   121,   123,   127,   129,   134,   137,   139,
+     141,   144,   146,   148,   150,   152,   154,   157,   161,   166,
+     172,   178,   186,   191,   197,   203,   211,   217,   225,   231,
+     239,   246,   256,   258,   260,   262
 };
 static const short yyrhs[] =
 {
-      70,     0,    46,    36,     0,    46,    47,     0,     0,     8,
-       7,    48,    50,    37,    52,    38,     0,     7,     0,    70,
-       0,    39,    51,     0,    49,     0,    51,    40,    49,     0,
-      70,     0,    52,    36,     0,    52,    53,     0,    52,    67,
-       0,     0,     7,    41,    54,    56,    42,    66,     0,     7,
-       0,    70,     0,    57,     0,    58,     0,    57,    40,    58,
-       0,     0,    65,    59,    60,     0,    70,     0,    60,    43,
-       3,     0,    60,     7,     0,    60,    44,     3,     0,    60,
-      44,     4,     0,    60,    44,     5,     0,    60,    44,     6,
-       0,    60,    44,    37,    61,    38,     0,    70,     0,    63,
-      62,     0,    70,     0,    40,     0,    64,     0,    63,    40,
-      64,     0,     3,     0,     4,     0,     5,     0,     6,     0,
-       3,    45,     3,     0,     4,    45,     3,     0,     6,    45,
-       3,     0,     9,     0,    10,     0,    11,     0,    12,     0,
-      13,     0,    14,     0,    15,     0,    16,     0,    17,     0,
-      18,     0,    19,     0,    20,     0,    21,     0,    22,     0,
-      23,     0,    24,     0,    25,     0,    26,     0,    70,     0,
-      66,    28,     0,    66,    29,     0,    66,    30,     0,    66,
-      31,     0,    66,    32,     0,    66,    33,     0,    66,    34,
-       0,    66,    35,     0,     0,     7,    39,    68,    69,     0,
-      55,     0,    69,    40,    55,     0,     0
+      53,     0,    74,     0,    53,    54,     0,    53,    38,    45,
+      61,    46,     0,     0,    57,    55,    56,     0,    59,    47,
+       0,    45,    53,    46,     0,    47,     0,     8,    72,     0,
+       9,    73,     0,    10,    73,     0,    11,    73,     0,    12,
+      73,     0,    36,    73,     0,    37,    73,     0,     0,    39,
+      58,    60,     0,    13,     0,    14,     0,    15,     0,    16,
+       0,    17,    62,     0,    18,     3,     0,    19,     3,     0,
+      20,    64,     0,    21,     7,     0,    22,     7,     0,    23,
+      72,    66,     0,    24,     3,    71,     0,    25,    67,     0,
+      26,    69,     0,    27,    69,     0,    28,    67,     0,    29,
+      71,     0,    30,    68,     0,    31,    70,     0,    32,    62,
+       0,    33,    67,     0,    34,    69,     0,    35,     0,     6,
+       0,     6,     0,    60,    48,     6,     0,    74,     0,    61,
+      72,    66,    47,     0,     3,    63,     0,     4,     0,     5,
+       0,     4,     5,     0,     3,     0,    40,     0,    43,     0,
+      41,     0,    42,     0,     3,    65,     0,    44,    49,    63,
+       0,    50,     3,     3,    51,     0,    50,     3,    48,     3,
+      51,     0,    50,     3,     3,     3,    51,     0,    50,     3,
+      48,     3,    48,     3,    51,     0,    50,     3,     3,    51,
+       0,    50,     3,    48,     3,    51,     0,    50,     3,     3,
+       3,    51,     0,    50,     3,    48,     3,    48,     3,    51,
+       0,    50,    62,    48,    62,    51,     0,    50,    62,    48,
+      62,    48,    62,    51,     0,    50,     3,     3,     3,    51,
+       0,    50,     3,    48,     3,    48,     3,    51,     0,    50,
+       3,     3,     3,     3,    51,     0,    50,     3,    48,     3,
+      48,     3,    48,     3,    51,     0,     6,     0,     6,     0,
+      74,     0,     0
 };
 
 #endif
@@ -172,14 +175,14 @@ static const short yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined. */
 static const short yyrline[] =
 {
-       0,    87,    89,    90,    93,    93,   105,   119,   121,   124,
-     131,   139,   141,   142,   143,   146,   146,   158,   174,   176,
-     179,   181,   184,   184,   196,   198,   202,   206,   212,   218,
-     224,   230,   240,   242,   245,   247,   250,   252,   255,   262,
-     268,   274,   280,   289,   298,   309,   314,   318,   322,   326,
-     330,   334,   338,   342,   346,   350,   354,   358,   362,   366,
-     370,   374,   378,   384,   386,   390,   394,   398,   402,   406,
-     410,   414,   420,   420,   432,   439,   452
+       0,    92,    96,    98,   102,   105,   105,   116,   122,   124,
+     127,   133,   138,   143,   148,   153,   158,   163,   163,   174,
+     179,   183,   187,   191,   196,   201,   206,   211,   216,   221,
+     232,   238,   243,   248,   253,   258,   263,   268,   273,   278,
+     283,   288,   292,   301,   308,   316,   318,   334,   339,   343,
+     347,   355,   362,   367,   371,   375,   382,   389,   396,   402,
+     407,   412,   419,   425,   432,   437,   444,   452,   460,   466,
+     471,   476,   483,   487,   489,   495
 };
 #endif
 
@@ -189,47 +192,48 @@ static const short yyrline[] =
 /* YYTNAME[TOKEN_NUM] -- String name of the token TOKEN_NUM. */
 static const char *const yytname[] =
 {
-  "$", "error", "$undefined.", "INTEGER", "REAL", "STRING", "HEX_STRING", 
-  "IDENTIFIER", "KW_DCLASS", "KW_INT8", "KW_INT16", "KW_INT32", 
-  "KW_INT64", "KW_UINT8", "KW_UINT16", "KW_UINT32", "KW_UINT64", 
-  "KW_FLOAT64", "KW_STRING", "KW_BLOB", "KW_INT8ARRAY", "KW_INT16ARRAY", 
-  "KW_INT32ARRAY", "KW_UINT8ARRAY", "KW_UINT16ARRAY", "KW_UINT32ARRAY", 
-  "KW_UINT32UINT8ARRAY", "KW_MOL", "KW_REQUIRED", "KW_BROADCAST", 
-  "KW_P2P", "KW_RAM", "KW_DB", "KW_CLSEND", "KW_CLRECV", "KW_OWNSEND", 
-  "';'", "'{'", "'}'", "':'", "','", "'('", "')'", "'/'", "'='", "'*'", 
-  "dc", "dclass", "@1", "dclass_name", "dclass_derivation", "base_list", 
-  "dclass_fields", "atomic_field", "@2", "atomic_name", "parameter_list", 
-  "nonempty_parameter_list", "atomic_element", "@3", 
-  "atomic_element_definition", "default_array", "maybe_comma", 
-  "default_array_def", "default_array_element", "type_token", 
-  "atomic_flags", "molecular_field", "@4", "molecular_atom_list", "empty", 0
+  "$", "error", "$undefined.", "NUMBER", "NUMBER_FEET", "NUMBER_INCHES", 
+  "IDENTIFIER", "STRING", "KW_DEFINE", "KW_LENS", "KW_INPUT_IMAGE", 
+  "KW_OUTPUT_IMAGE", "KW_EYEPOINT", "KW_PERSPECTIVE", "KW_FISHEYE", 
+  "KW_CYLINDRICAL", "KW_PSPHERE", "KW_FOCAL_LENGTH", "KW_FOV", 
+  "KW_SINGULARITY_TOLERANCE", "KW_RESOLUTION", "KW_FILENAME", "KW_FADE", 
+  "KW_POINT", "KW_SHOW_POINTS", "KW_IMAGE_SIZE", "KW_FILM_SIZE", 
+  "KW_FILM_OFFSET", "KW_GRID", "KW_UNTEXTURED_COLOR", "KW_HPR", "KW_POS", 
+  "KW_RADIUS", "KW_ANGLE", "KW_HEIGHT", "KW_LAYERS", "KW_STITCH", 
+  "KW_SCREEN", "KW_POINTS", "KW_USING", "KW_IN", "KW_MM", "KW_FT", 
+  "KW_CM", "KW_P", "'{'", "'}'", "';'", "','", "'/'", "'('", "')'", 
+  "stitch_file", "commands", "command", "@1", "nested_commands", 
+  "group_command", "@2", "simple_command", "using_list", "points_list", 
+  "length", "length_units", "resolution", "resolution_units", "point", 
+  "vec2", "vec3", "length_pair", "length_triple", "color", "name", 
+  "optional_name", "empty", 0
 };
 #endif
 
 /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives. */
 static const short yyr1[] =
 {
-       0,    46,    46,    46,    48,    47,    49,    50,    50,    51,
-      51,    52,    52,    52,    52,    54,    53,    55,    56,    56,
-      57,    57,    59,    58,    60,    60,    60,    60,    60,    60,
-      60,    60,    61,    61,    62,    62,    63,    63,    64,    64,
-      64,    64,    64,    64,    64,    65,    65,    65,    65,    65,
-      65,    65,    65,    65,    65,    65,    65,    65,    65,    65,
-      65,    65,    65,    66,    66,    66,    66,    66,    66,    66,
-      66,    66,    68,    67,    69,    69,    70
+       0,    52,    53,    53,    53,    55,    54,    54,    56,    56,
+      57,    57,    57,    57,    57,    57,    57,    58,    57,    59,
+      59,    59,    59,    59,    59,    59,    59,    59,    59,    59,
+      59,    59,    59,    59,    59,    59,    59,    59,    59,    59,
+      59,    59,    59,    60,    60,    61,    61,    62,    62,    62,
+      62,    62,    63,    63,    63,    63,    64,    65,    66,    66,
+      66,    66,    67,    67,    68,    68,    69,    70,    71,    71,
+      71,    71,    72,    73,    73,    74
 };
 
 /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN. */
 static const short yyr2[] =
 {
-       0,     1,     2,     2,     0,     7,     1,     1,     2,     1,
-       3,     1,     2,     2,     2,     0,     6,     1,     1,     1,
-       1,     3,     0,     3,     1,     3,     2,     3,     3,     3,
-       3,     5,     1,     2,     1,     1,     1,     3,     1,     1,
-       1,     1,     3,     3,     3,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     1,     2,     2,     2,     2,     2,     2,
-       2,     2,     0,     4,     1,     3,     0
+       0,     1,     1,     2,     5,     0,     3,     2,     3,     1,
+       2,     2,     2,     2,     2,     2,     2,     0,     3,     1,
+       1,     1,     1,     2,     2,     2,     2,     2,     2,     3,
+       3,     2,     2,     2,     2,     2,     2,     2,     2,     2,
+       2,     1,     1,     1,     3,     1,     4,     2,     1,     1,
+       2,     1,     1,     1,     1,     1,     2,     3,     4,     5,
+       5,     7,     4,     5,     5,     7,     5,     7,     5,     7,
+       6,     9,     1,     1,     1,     0
 };
 
 /* YYDEFACT[S] -- default rule to reduce with in state S when YYTABLE
@@ -237,76 +241,108 @@ static const short yyr2[] =
    error. */
 static const short yydefact[] =
 {
-      76,     0,     1,     0,     2,     3,     4,    76,     0,     0,
-       7,     6,     9,     8,    76,     0,     0,    11,    10,     0,
-      12,     5,    13,    14,    72,    15,     0,    76,    17,    74,
-      73,    45,    46,    47,    48,    49,    50,    51,    52,    53,
-      54,    55,    56,    57,    58,    59,    60,    61,    62,     0,
-      19,    20,    22,    18,     0,    76,     0,    76,    75,    16,
-      63,    21,    23,    24,    64,    65,    66,    67,    68,    69,
-      70,    71,    26,     0,     0,    25,    27,    28,    29,    30,
-      76,    38,    39,    40,    41,     0,    76,    36,    32,     0,
-       0,     0,    31,    35,    33,    34,    42,    43,    44,    37,
-       0,     0
+      75,     1,     2,    42,     0,    75,    75,    75,    75,    19,
+      20,    21,    22,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,    41,    75,    75,     0,    17,     3,     5,     0,    72,
+      10,    73,    11,    74,    12,    13,    14,    51,    48,    49,
+      23,    24,    25,     0,    26,    27,    28,     0,     0,     0,
+      31,     0,    32,    33,    34,     0,    35,     0,    36,     0,
+      37,    38,    39,    40,    15,    16,    75,     0,     0,     7,
+      52,    54,    55,    53,    47,    50,     0,    56,     0,    29,
+      30,     0,     0,     0,     0,     0,     0,    45,    43,    18,
+      75,     9,     6,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     4,     0,     0,     0,    57,     0,     0,
+      62,     0,     0,     0,     0,     0,     0,     0,     0,    44,
+       8,     0,    58,     0,    63,    66,     0,    68,     0,    64,
+       0,     0,    46,    60,     0,    59,    70,     0,     0,     0,
+       0,     0,    69,    65,    67,    61,     0,    71,     0,     0,
+       0
 };
 
 static const short yydefgoto[] =
 {
-       1,     5,     7,    12,     9,    13,    16,    22,    27,    29,
-      49,    50,    51,    57,    62,    85,    94,    86,    87,    52,
-      59,    23,    26,    30,     2
+     158,     1,    36,    78,   102,    37,    77,    38,    99,    96,
+      50,    84,    54,    87,    89,    60,    68,    62,    70,    66,
+      40,    42,    43
 };
 
 static const short yypact[] =
 {
-  -32768,     3,-32768,    -2,-32768,-32768,-32768,   -31,     2,   -27,
-  -32768,-32768,-32768,   -19,-32768,     2,    -5,-32768,-32768,   -35,
-  -32768,-32768,-32768,-32768,-32768,-32768,    15,    42,-32768,-32768,
-     -17,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
-  -32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,   -18,
-     -15,-32768,-32768,-32768,    15,-32768,    42,-32768,-32768,    52,
-  -32768,-32768,    -6,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
-  -32768,-32768,-32768,    23,     9,-32768,-32768,-32768,-32768,-32768,
-      13,   -16,   -13,-32768,   -11,   -10,    -4,-32768,-32768,    24,
-      27,    32,-32768,    13,-32768,-32768,-32768,-32768,-32768,-32768,
-      40,-32768
+  -32768,   145,-32768,-32768,    20,    23,    23,    23,    23,-32768,
+  -32768,-32768,-32768,    13,    27,    28,    32,    29,    33,    20,
+      36,    -8,    -7,    -7,    -8,    -5,    -4,    -3,    13,    -8,
+      -7,-32768,    23,    23,    11,-32768,-32768,-32768,    10,-32768,
+  -32768,-32768,-32768,-32768,-32768,-32768,-32768,   -20,    43,-32768,
+  -32768,-32768,-32768,    14,-32768,-32768,-32768,     9,    -5,    46,
+  -32768,    13,-32768,-32768,-32768,    57,-32768,    58,-32768,    13,
+  -32768,-32768,-32768,-32768,-32768,-32768,-32768,    56,   -13,-32768,
+  -32768,-32768,-32768,-32768,-32768,-32768,    15,-32768,    60,-32768,
+  -32768,     3,    17,     4,     6,    18,    -2,-32768,-32768,    19,
+  -32768,-32768,-32768,   -20,     7,    21,    65,    13,    66,    67,
+      68,    70,    13,-32768,     9,    69,   106,-32768,    -1,    71,
+  -32768,    25,    30,     2,    34,    35,    37,    39,    31,-32768,
+  -32768,    38,-32768,   -24,-32768,-32768,    40,-32768,    80,-32768,
+      85,    13,-32768,-32768,    87,-32768,-32768,   -23,    41,    42,
+      44,    91,-32768,-32768,-32768,-32768,    45,-32768,    97,    98,
+  -32768
 };
 
 static const short yypgoto[] =
 {
-  -32768,-32768,-32768,    26,-32768,-32768,-32768,-32768,-32768,   -12,
-  -32768,-32768,    -9,-32768,-32768,-32768,-32768,-32768,   -50,-32768,
-  -32768,-32768,-32768,-32768,    -7
+  -32768,     0,-32768,-32768,-32768,-32768,-32768,-32768,-32768,-32768,
+     -28,     8,-32768,-32768,   -12,   -10,-32768,   -15,-32768,    47,
+     -16,     5,     1
 };
 
 
-#define	YYLAST		87
+#define	YYLAST		184
 
 
 static const short yytable[] =
 {
-      10,    72,    19,   100,    24,     6,    25,    17,     8,    11,
-      14,     3,    76,    77,    78,    79,    81,    82,    83,    84,
-      53,    15,    28,    54,    55,    56,    75,    96,    92,    89,
-      97,    20,    90,    21,    91,    98,    93,    73,    74,     4,
-     101,    18,    58,    99,     0,     0,    80,    61,    60,     0,
-      63,    31,    32,    33,    34,    35,    36,    37,    38,    39,
-      40,    41,    42,    43,    44,    45,    46,    47,    48,     0,
-       0,     0,     0,    88,     0,     0,     0,     0,     0,    95,
-      64,    65,    66,    67,    68,    69,    70,    71
+      71,     2,   131,    57,    39,   136,   105,   108,    63,   110,
+     118,    44,    45,    46,    64,    73,    47,    48,    49,    72,
+      80,    81,    82,    83,   144,   151,    39,   145,   152,    41,
+      51,    52,   100,    92,   101,    53,    55,    74,    75,    58,
+      56,    95,    59,    61,   113,    65,    67,    69,    85,    91,
+     132,   106,   109,   137,   111,   119,    76,    79,    86,    88,
+      93,    94,    98,   104,   103,   107,   112,   115,   121,   123,
+     124,   125,   120,   126,   133,   129,   134,    97,   142,   122,
+     114,   135,   138,   147,   127,   140,   139,   141,   148,   143,
+     150,   146,   153,   154,   156,   155,   157,   159,   160,     0,
+     116,     2,   128,     0,     0,    90,     0,     0,     0,     0,
+       0,   117,     3,   149,     4,     5,     6,     7,     8,     9,
+      10,    11,    12,    13,    14,    15,    16,    17,    18,    19,
+      20,    21,    22,    23,    24,    25,    26,    27,    28,    29,
+      30,    31,    32,    33,    34,    35,     0,     0,     0,     0,
+       0,     3,   130,     4,     5,     6,     7,     8,     9,    10,
+      11,    12,    13,    14,    15,    16,    17,    18,    19,    20,
+      21,    22,    23,    24,    25,    26,    27,    28,    29,    30,
+      31,    32,    33,    34,    35
 };
 
 static const short yycheck[] =
 {
-       7,     7,     7,     0,    39,     7,    41,    14,    39,     7,
-      37,     8,     3,     4,     5,     6,     3,     4,     5,     6,
-      27,    40,     7,    40,    42,    40,     3,     3,    38,    45,
-       3,    36,    45,    38,    45,     3,    40,    43,    44,    36,
-       0,    15,    54,    93,    -1,    -1,    37,    56,    55,    -1,
-      57,     9,    10,    11,    12,    13,    14,    15,    16,    17,
-      18,    19,    20,    21,    22,    23,    24,    25,    26,    -1,
-      -1,    -1,    -1,    80,    -1,    -1,    -1,    -1,    -1,    86,
-      28,    29,    30,    31,    32,    33,    34,    35
+      28,     0,     3,    19,     6,     3,     3,     3,    23,     3,
+       3,     6,     7,     8,    24,    30,     3,     4,     5,    29,
+      40,    41,    42,    43,    48,    48,     6,    51,    51,     6,
+       3,     3,    45,    61,    47,     3,     7,    32,    33,     3,
+       7,    69,    50,    50,    46,    50,    50,    50,     5,     3,
+      51,    48,    48,    51,    48,    48,    45,    47,    44,    50,
+       3,     3,     6,     3,    49,    48,    48,    48,     3,     3,
+       3,     3,    51,     3,     3,     6,    51,    76,    47,   107,
+      96,    51,    48,     3,   112,    48,    51,    48,     3,    51,
+       3,    51,    51,    51,     3,    51,    51,     0,     0,    -1,
+     100,   100,   114,    -1,    -1,    58,    -1,    -1,    -1,    -1,
+      -1,   103,     6,   141,     8,     9,    10,    11,    12,    13,
+      14,    15,    16,    17,    18,    19,    20,    21,    22,    23,
+      24,    25,    26,    27,    28,    29,    30,    31,    32,    33,
+      34,    35,    36,    37,    38,    39,    -1,    -1,    -1,    -1,
+      -1,     6,    46,     8,     9,    10,    11,    12,    13,    14,
+      15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
+      25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
+      35,    36,    37,    38,    39
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
 #line 3 "/usr/share/bison/bison.simple"
@@ -1015,387 +1051,469 @@ yyreduce:
 
   switch (yyn) {
 
-case 4:
-#line 95 "dcParser.yxx"
+case 3:
+#line 99 "stitchParser.yxx"
 {
-  current_class = new DCClass;
-  current_class->_name = yyvsp[0].str;
-  if (!dc_file->add_class(current_class)) {
-    yyerror("Duplicate class name: " + current_class->_name);
-  }
+  //  parent->add_nested($2);
+}
+    break;
+case 5:
+#line 107 "stitchParser.yxx"
+{
+  parent = yyvsp[0].command;
+  cstack.push_back(parent);
 }
     break;
 case 6:
-#line 107 "dcParser.yxx"
+#line 112 "stitchParser.yxx"
 {
-  DCFile::ClassesByName::const_iterator ni;
-  ni = dc_file->_classes_by_name.find(yyvsp[0].str);
-  if (ni == dc_file->_classes_by_name.end()) {
-    yyerror("Unknown class: " + yyvsp[0].str);
-    yyval.u.dclass = (DCClass *)NULL;
-  } else {
-    yyval.u.dclass = (*ni).second;
-  }
+  cstack.pop_back();
+  parent = cstack.back();
 }
     break;
-case 9:
-#line 126 "dcParser.yxx"
+case 7:
+#line 117 "stitchParser.yxx"
 {
-  if (yyvsp[0].u.dclass != (DCClass *)NULL) {
-    current_class->_parents.push_back(yyvsp[0].u.dclass);
-  }
+  yyval.command = yyvsp[-1].command;
 }
     break;
 case 10:
-#line 132 "dcParser.yxx"
+#line 129 "stitchParser.yxx"
 {
-  if (yyvsp[0].u.dclass != (DCClass *)NULL) {
-    current_class->_parents.push_back(yyvsp[0].u.dclass);
-  }
+  yyval.command = new StitchCommand(parent, StitchCommand::C_define);
+  yyval.command->set_name(yyvsp[0].str);
+}
+    break;
+case 11:
+#line 134 "stitchParser.yxx"
+{
+  yyval.command = new StitchCommand(parent, StitchCommand::C_lens);
+  yyval.command->set_name(yyvsp[0].str);
+}
+    break;
+case 12:
+#line 139 "stitchParser.yxx"
+{
+  yyval.command = new StitchCommand(parent, StitchCommand::C_input_image);
+  yyval.command->set_name(yyvsp[0].str);
+}
+    break;
+case 13:
+#line 144 "stitchParser.yxx"
+{
+  yyval.command = new StitchCommand(parent, StitchCommand::C_output_image);
+  yyval.command->set_name(yyvsp[0].str);
+}
+    break;
+case 14:
+#line 149 "stitchParser.yxx"
+{
+  yyval.command = new StitchCommand(parent, StitchCommand::C_eyepoint);
+  yyval.command->set_name(yyvsp[0].str);
 }
     break;
 case 15:
-#line 148 "dcParser.yxx"
+#line 154 "stitchParser.yxx"
 {
-  current_atomic = new DCAtomicField;
-  current_atomic->_name = yyvsp[-1].str;
-  if (!current_class->add_field(current_atomic)) {
-    yyerror("Duplicate field name: " + current_atomic->_name);
-  }
+  yyval.command = new StitchCommand(parent, StitchCommand::C_stitch);
+  yyval.command->set_name(yyvsp[0].str);
+}
+    break;
+case 16:
+#line 159 "stitchParser.yxx"
+{
+  yyval.command = new StitchCommand(parent, StitchCommand::C_screen);
+  yyval.command->set_name(yyvsp[0].str);
 }
     break;
 case 17:
-#line 160 "dcParser.yxx"
+#line 164 "stitchParser.yxx"
 {
-  DCField *field = current_class->get_field_by_name(yyvsp[0].str);
-  yyval.u.atomic = (DCAtomicField *)NULL;
-  if (field == (DCField *)NULL) {
-    yyerror("Unknown field: " + yyvsp[0].str);
-  } else {
-    yyval.u.atomic = field->as_atomic_field();
-    if (yyval.u.atomic == (DCAtomicField *)NULL) {
-      yyerror("Not an atomic field: " + yyvsp[0].str);
-    }
-  }
+  cstack.push_back(new StitchCommand(parent, StitchCommand::C_using));
+}
+    break;
+case 18:
+#line 168 "stitchParser.yxx"
+{
+  yyval.command = cstack.back();
+  cstack.pop_back();
+}
+    break;
+case 19:
+#line 176 "stitchParser.yxx"
+{
+  yyval.command = new StitchCommand(parent, StitchCommand::C_perspective);
+}
+    break;
+case 20:
+#line 180 "stitchParser.yxx"
+{
+  yyval.command = new StitchCommand(parent, StitchCommand::C_fisheye);
+}
+    break;
+case 21:
+#line 184 "stitchParser.yxx"
+{
+  yyval.command = new StitchCommand(parent, StitchCommand::C_cylindrical);
 }
     break;
 case 22:
-#line 186 "dcParser.yxx"
+#line 188 "stitchParser.yxx"
 {
-  atomic_element = DCAtomicField::ElementType();
-  atomic_element._type = yyvsp[0].u.subatomic;
+  yyval.command = new StitchCommand(parent, StitchCommand::C_psphere);
 }
     break;
 case 23:
-#line 191 "dcParser.yxx"
+#line 192 "stitchParser.yxx"
 {
-  current_atomic->_elements.push_back(atomic_element);
+  yyval.command = new StitchCommand(parent, StitchCommand::C_focal_length);
+  yyval.command->set_length(yyvsp[0].number);
+}
+    break;
+case 24:
+#line 197 "stitchParser.yxx"
+{
+  yyval.command = new StitchCommand(parent, StitchCommand::C_fov);
+  yyval.command->set_number(yyvsp[0].number);
 }
     break;
 case 25:
-#line 199 "dcParser.yxx"
+#line 202 "stitchParser.yxx"
 {
-  atomic_element._divisor = yyvsp[0].u.integer;
+  yyval.command = new StitchCommand(parent, StitchCommand::C_singularity_tolerance);
+  yyval.command->set_number(yyvsp[0].number);
 }
     break;
 case 26:
-#line 203 "dcParser.yxx"
+#line 207 "stitchParser.yxx"
 {
-  atomic_element._name = yyvsp[0].str;
+  yyval.command = new StitchCommand(parent, StitchCommand::C_resolution);
+  yyval.command->set_resolution(yyvsp[0].number);
 }
     break;
 case 27:
-#line 207 "dcParser.yxx"
+#line 212 "stitchParser.yxx"
 {
-  if (!atomic_element.set_default_value(yyvsp[0].u.integer)) {
-    yyerror("Invalid default value: " + yyvsp[0].str);
-  }
+  yyval.command = new StitchCommand(parent, StitchCommand::C_filename);
+  yyval.command->set_str(yyvsp[0].str);
 }
     break;
 case 28:
-#line 213 "dcParser.yxx"
+#line 217 "stitchParser.yxx"
 {
-  if (!atomic_element.set_default_value(yyvsp[0].u.real)) {
-    yyerror("Invalid default value: " + yyvsp[0].str);
-  }
+  yyval.command = new StitchCommand(parent, StitchCommand::C_fade);
+  yyval.command->set_str(yyvsp[0].str);
 }
     break;
 case 29:
-#line 219 "dcParser.yxx"
+#line 222 "stitchParser.yxx"
 {
-  if (!atomic_element.set_default_value(yyvsp[0].str)) {
-    yyerror("Invalid default value: \"" + yyvsp[0].str + "\"");
+  if (yyvsp[0].num_components == 2) {
+    yyval.command = new StitchCommand(parent, StitchCommand::C_point2d);
+    yyval.command->set_point2d((const LPoint2d &)yyvsp[0].vec);
+  } else {
+    yyval.command = new StitchCommand(parent, StitchCommand::C_point3d);
+    yyval.command->set_point3d((const LPoint3d &)yyvsp[0].vec);
   }
+  yyval.command->set_name(yyvsp[-1].str);
 }
     break;
 case 30:
-#line 225 "dcParser.yxx"
+#line 233 "stitchParser.yxx"
 {
-  if (!atomic_element.set_default_value_literal(yyvsp[0].str)) {
-    yyerror("Invalid default hex string value");
-  }
+  yyval.command = new StitchCommand(parent, StitchCommand::C_show_points);
+  yyval.command->set_number(yyvsp[-1].number);
+  yyval.command->set_color(yyvsp[0].vec);
 }
     break;
 case 31:
-#line 231 "dcParser.yxx"
+#line 239 "stitchParser.yxx"
 {
-  if (!atomic_element.end_array()) {
-    yyerror("Array default value inappropriate");
-  } else {
-    atomic_element._has_default_value = true;
-  }
+  yyval.command = new StitchCommand(parent, StitchCommand::C_image_size);
+  yyval.command->set_point2d((const LPoint2d &)yyvsp[0].vec);
+}
+    break;
+case 32:
+#line 244 "stitchParser.yxx"
+{
+  yyval.command = new StitchCommand(parent, StitchCommand::C_film_size);
+  yyval.command->set_length_pair((const LPoint2d &)yyvsp[0].vec);
+}
+    break;
+case 33:
+#line 249 "stitchParser.yxx"
+{
+  yyval.command = new StitchCommand(parent, StitchCommand::C_film_offset);
+  yyval.command->set_length_pair((const LPoint2d &)yyvsp[0].vec);
+}
+    break;
+case 34:
+#line 254 "stitchParser.yxx"
+{
+  yyval.command = new StitchCommand(parent, StitchCommand::C_grid);
+  yyval.command->set_point2d((const LPoint2d &)yyvsp[0].vec);
+}
+    break;
+case 35:
+#line 259 "stitchParser.yxx"
+{
+  yyval.command = new StitchCommand(parent, StitchCommand::C_untextured_color);
+  yyval.command->set_color((const Colord &)yyvsp[0].vec);
+}
+    break;
+case 36:
+#line 264 "stitchParser.yxx"
+{
+  yyval.command = new StitchCommand(parent, StitchCommand::C_hpr);
+  yyval.command->set_point3d((const LPoint3d &)yyvsp[0].vec);
+}
+    break;
+case 37:
+#line 269 "stitchParser.yxx"
+{
+  yyval.command = new StitchCommand(parent, StitchCommand::C_pos);
+  yyval.command->set_point3d((const LPoint3d &)yyvsp[0].vec);
 }
     break;
 case 38:
-#line 257 "dcParser.yxx"
+#line 274 "stitchParser.yxx"
 {
-  if (!atomic_element.add_default_value(yyvsp[0].u.integer)) {
-    yyerror("Invalid default value: " + yyvsp[0].str);
-  }
+  yyval.command = new StitchCommand(parent, StitchCommand::C_radius);
+  yyval.command->set_number(yyvsp[0].number);
 }
     break;
 case 39:
-#line 263 "dcParser.yxx"
+#line 279 "stitchParser.yxx"
 {
-  if (!atomic_element.add_default_value(yyvsp[0].u.real)) {
-    yyerror("Invalid default value: " + yyvsp[0].str);
-  }
+  yyval.command = new StitchCommand(parent, StitchCommand::C_angle);
+  yyval.command->set_point2d((const LPoint2d &)yyvsp[0].vec);
 }
     break;
 case 40:
-#line 269 "dcParser.yxx"
+#line 284 "stitchParser.yxx"
 {
-  if (!atomic_element.add_default_value(yyvsp[0].str)) {
-    yyerror("Invalid default value: " + yyvsp[0].str);
-  }
+  yyval.command = new StitchCommand(parent, StitchCommand::C_height);
+  yyval.command->set_point2d((const LPoint2d &)yyvsp[0].vec);
 }
     break;
 case 41:
-#line 275 "dcParser.yxx"
+#line 289 "stitchParser.yxx"
 {
-  if (!atomic_element.add_default_value_literal(yyvsp[0].str)) {
-    yyerror("Invalid hex literal in default array");
-  }
+  yyval.command = new StitchCommand(parent, StitchCommand::C_layers);
 }
     break;
 case 42:
-#line 281 "dcParser.yxx"
+#line 293 "stitchParser.yxx"
 {
-  for (int i = 0; i < yyvsp[0].u.integer; i++) {
-    if (!atomic_element.add_default_value(yyvsp[-2].u.integer)) {
-      yyerror("Invalid default value: " + yyvsp[-2].str);
-      break;
-    }
+  yyval.command = new StitchCommand(parent, StitchCommand::C_user_command);
+  if (!yyval.command->add_using(yyvsp[0].str)) {
+    yyerror("Undefined identifier " + yyvsp[0].str);
   }
 }
     break;
 case 43:
-#line 290 "dcParser.yxx"
+#line 303 "stitchParser.yxx"
 {
-  for (int i = 0; i < yyvsp[0].u.integer; i++) {
-    if (!atomic_element.add_default_value(yyvsp[-2].u.real)) {
-      yyerror("Invalid default value: " + yyvsp[-2].str);
-      break;
-    }
+  if (!cstack.back()->add_using(yyvsp[0].str)) {
+    yyerror("Undefined identifier " + yyvsp[0].str);
   }
 }
     break;
 case 44:
-#line 299 "dcParser.yxx"
+#line 309 "stitchParser.yxx"
 {
-  for (int i = 0; i < yyvsp[0].u.integer; i++) {
-    if (!atomic_element.add_default_value_literal(yyvsp[-2].str)) {
-      yyerror("Invalid hex literal in default array");
-      break;
-    }
+  if (!cstack.back()->add_using(yyvsp[0].str)) {
+    yyerror("Undefined identifier " + yyvsp[0].str);
   }
-}
-    break;
-case 45:
-#line 311 "dcParser.yxx"
-{
-  yyval.u.subatomic = ST_int8;
 }
     break;
 case 46:
-#line 315 "dcParser.yxx"
+#line 319 "stitchParser.yxx"
 {
-  yyval.u.subatomic = ST_int16;
+  StitchCommand *cmd;
+  if (yyvsp[-1].num_components == 2) {
+    cmd = new StitchCommand(parent, StitchCommand::C_point2d);
+    cmd->set_point2d((const LPoint2d &)yyvsp[-1].vec);
+  } else {
+    cmd = new StitchCommand(parent, StitchCommand::C_point3d);
+    cmd->set_point3d((const LPoint3d &)yyvsp[-1].vec);
+  }
+  cmd->set_name(yyvsp[-2].str);
+  //  parent->add_nested(cmd);
 }
     break;
 case 47:
-#line 319 "dcParser.yxx"
+#line 336 "stitchParser.yxx"
 {
-  yyval.u.subatomic = ST_int32;
+  yyval.number = yyvsp[-1].number * yyvsp[0].number;
 }
     break;
 case 48:
-#line 323 "dcParser.yxx"
+#line 340 "stitchParser.yxx"
 {
-  yyval.u.subatomic = ST_int64;
+  yyval.number = yyvsp[0].number * 304.8;  // ft to mm
 }
     break;
 case 49:
-#line 327 "dcParser.yxx"
+#line 344 "stitchParser.yxx"
 {
-  yyval.u.subatomic = ST_uint8;
+  yyval.number = yyvsp[0].number * 25.4;  // in to mm
 }
     break;
 case 50:
-#line 331 "dcParser.yxx"
+#line 348 "stitchParser.yxx"
 {
-  yyval.u.subatomic = ST_uint16;
+  if (yyvsp[-1].number < 0.0) {
+    yyval.number = yyvsp[-1].number * 304.8 - yyvsp[0].number * 25.4;
+  } else {
+    yyval.number = yyvsp[-1].number * 304.8 + yyvsp[0].number * 25.4;
+  }
 }
     break;
 case 51:
-#line 335 "dcParser.yxx"
+#line 356 "stitchParser.yxx"
 {
-  yyval.u.subatomic = ST_uint32;
+  yyval.number = yyvsp[0].number;   // implicitly mm
 }
     break;
 case 52:
-#line 339 "dcParser.yxx"
+#line 364 "stitchParser.yxx"
 {
-  yyval.u.subatomic = ST_uint64;
+  yyval.number = 25.4;   // in to mm
 }
     break;
 case 53:
-#line 343 "dcParser.yxx"
+#line 368 "stitchParser.yxx"
 {
-  yyval.u.subatomic = ST_float64;
+  yyval.number = 10.0;   // cm to mm
 }
     break;
 case 54:
-#line 347 "dcParser.yxx"
+#line 372 "stitchParser.yxx"
 {
-  yyval.u.subatomic = ST_string;
+  yyval.number = 1.0;
 }
     break;
 case 55:
-#line 351 "dcParser.yxx"
+#line 376 "stitchParser.yxx"
 {
-  yyval.u.subatomic = ST_blob;
+  yyval.number = 304.8;  // ft to mm
 }
     break;
 case 56:
-#line 355 "dcParser.yxx"
+#line 384 "stitchParser.yxx"
 {
-  yyval.u.subatomic = ST_int8array;
+  yyval.number = yyvsp[-1].number * yyvsp[0].number;    // convert to pixels per mm
 }
     break;
 case 57:
-#line 359 "dcParser.yxx"
+#line 391 "stitchParser.yxx"
 {
-  yyval.u.subatomic = ST_int16array;
+  yyval.number = 1.0 / yyvsp[0].number;
 }
     break;
 case 58:
-#line 363 "dcParser.yxx"
+#line 398 "stitchParser.yxx"
 {
-  yyval.u.subatomic = ST_int32array;
+  yyval.vec.set(yyvsp[-2].number, yyvsp[-1].number, 0.0, 0.0);
+  yyval.num_components = 2;
 }
     break;
 case 59:
-#line 367 "dcParser.yxx"
+#line 403 "stitchParser.yxx"
 {
-  yyval.u.subatomic = ST_uint8array;
+  yyval.vec.set(yyvsp[-3].number, yyvsp[-1].number, 0.0, 0.0);
+  yyval.num_components = 2;
 }
     break;
 case 60:
-#line 371 "dcParser.yxx"
+#line 408 "stitchParser.yxx"
 {
-  yyval.u.subatomic = ST_uint16array;
+  yyval.vec.set(yyvsp[-3].number, yyvsp[-2].number, yyvsp[-1].number, 0.0);
+  yyval.num_components = 3;
 }
     break;
 case 61:
-#line 375 "dcParser.yxx"
+#line 413 "stitchParser.yxx"
 {
-  yyval.u.subatomic = ST_uint32array;
+  yyval.vec.set(yyvsp[-5].number, yyvsp[-3].number, yyvsp[-1].number, 0.0);
+  yyval.num_components = 3;
 }
     break;
 case 62:
-#line 379 "dcParser.yxx"
+#line 421 "stitchParser.yxx"
 {
-  yyval.u.subatomic = ST_uint32uint8array;
+  yyval.vec.set(yyvsp[-2].number, yyvsp[-1].number, 0.0, 0.0);
+  yyval.num_components = 2;
+}
+    break;
+case 63:
+#line 426 "stitchParser.yxx"
+{
+  yyval.vec.set(yyvsp[-3].number, yyvsp[-1].number, 0.0, 0.0);
+  yyval.num_components = 2;
 }
     break;
 case 64:
-#line 387 "dcParser.yxx"
+#line 433 "stitchParser.yxx"
 {
-  current_atomic->_flags |= DCAtomicField::F_required;
+  yyval.vec.set(yyvsp[-3].number, yyvsp[-2].number, yyvsp[-1].number, 0.0);
+  yyval.num_components = 3;
 }
     break;
 case 65:
-#line 391 "dcParser.yxx"
+#line 438 "stitchParser.yxx"
 {
-  current_atomic->_flags |= DCAtomicField::F_broadcast;
+  yyval.vec.set(yyvsp[-5].number, yyvsp[-3].number, yyvsp[-1].number, 0.0);
+  yyval.num_components = 3;
 }
     break;
 case 66:
-#line 395 "dcParser.yxx"
+#line 446 "stitchParser.yxx"
 {
-  current_atomic->_flags |= DCAtomicField::F_p2p;
+  yyval.vec.set(yyvsp[-3].number, yyvsp[-1].number, 0.0, 0.0);
+  yyval.num_components = 2;
 }
     break;
 case 67:
-#line 399 "dcParser.yxx"
+#line 454 "stitchParser.yxx"
 {
-  current_atomic->_flags |= DCAtomicField::F_ram;
+  yyval.vec.set(yyvsp[-5].number, yyvsp[-3].number, yyvsp[-1].number, 0.0);
+  yyval.num_components = 3;
 }
     break;
 case 68:
-#line 403 "dcParser.yxx"
+#line 462 "stitchParser.yxx"
 {
-  current_atomic->_flags |= DCAtomicField::F_db;
+  yyval.vec.set(yyvsp[-3].number, yyvsp[-2].number, yyvsp[-1].number, 1.0);
+  yyval.num_components = 3;
 }
     break;
 case 69:
-#line 407 "dcParser.yxx"
+#line 467 "stitchParser.yxx"
 {
-  current_atomic->_flags |= DCAtomicField::F_clsend;
+  yyval.vec.set(yyvsp[-5].number, yyvsp[-3].number, yyvsp[-1].number, 1.0);
+  yyval.num_components = 3;
 }
     break;
 case 70:
-#line 411 "dcParser.yxx"
+#line 472 "stitchParser.yxx"
 {
-  current_atomic->_flags |= DCAtomicField::F_clrecv;
+  yyval.vec.set(yyvsp[-4].number, yyvsp[-3].number, yyvsp[-2].number, yyvsp[-1].number);
+  yyval.num_components = 4;
 }
     break;
 case 71:
-#line 415 "dcParser.yxx"
+#line 477 "stitchParser.yxx"
 {
-  current_atomic->_flags |= DCAtomicField::F_ownsend;
-}
-    break;
-case 72:
-#line 422 "dcParser.yxx"
-{
-  current_molecular = new DCMolecularField;
-  current_molecular->_name = yyvsp[-1].str;
-  if (!current_class->add_field(current_molecular)) {
-    yyerror("Duplicate field name: " + current_molecular->_name);
-  }
+  yyval.vec.set(yyvsp[-7].number, yyvsp[-5].number, yyvsp[-3].number, yyvsp[-1].number);
+  yyval.num_components = 4;
 }
     break;
 case 74:
-#line 434 "dcParser.yxx"
+#line 490 "stitchParser.yxx"
 {
-  if (yyvsp[0].u.atomic != (DCAtomicField *)NULL) {
-    current_molecular->_fields.push_back(yyvsp[0].u.atomic);
-  }
-}
-    break;
-case 75:
-#line 440 "dcParser.yxx"
-{
-  if (yyvsp[0].u.atomic != (DCAtomicField *)NULL) {
-    current_molecular->_fields.push_back(yyvsp[0].u.atomic);
-    if (current_molecular->_fields[0]->_flags != yyvsp[0].u.atomic->_flags) {
-      yyerror("Mismatched flags in molecule between " + 
-              current_molecular->_fields[0]->_name + " and " +
-              yyvsp[0].u.atomic->_name);
-    }
-  }
+  yyval.str = "";
 }
     break;
 }
@@ -1631,4 +1749,4 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 454 "dcParser.yxx"
+#line 497 "stitchParser.yxx"

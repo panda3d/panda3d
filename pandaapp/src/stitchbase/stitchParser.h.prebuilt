@@ -1,0 +1,50 @@
+#ifndef BISON_Y_TAB_H
+# define BISON_Y_TAB_H
+
+# define	NUMBER	257
+# define	NUMBER_FEET	258
+# define	NUMBER_INCHES	259
+# define	IDENTIFIER	260
+# define	STRING	261
+# define	KW_DEFINE	262
+# define	KW_LENS	263
+# define	KW_INPUT_IMAGE	264
+# define	KW_OUTPUT_IMAGE	265
+# define	KW_EYEPOINT	266
+# define	KW_PERSPECTIVE	267
+# define	KW_FISHEYE	268
+# define	KW_CYLINDRICAL	269
+# define	KW_PSPHERE	270
+# define	KW_FOCAL_LENGTH	271
+# define	KW_FOV	272
+# define	KW_SINGULARITY_TOLERANCE	273
+# define	KW_RESOLUTION	274
+# define	KW_FILENAME	275
+# define	KW_FADE	276
+# define	KW_POINT	277
+# define	KW_SHOW_POINTS	278
+# define	KW_IMAGE_SIZE	279
+# define	KW_FILM_SIZE	280
+# define	KW_FILM_OFFSET	281
+# define	KW_GRID	282
+# define	KW_UNTEXTURED_COLOR	283
+# define	KW_HPR	284
+# define	KW_POS	285
+# define	KW_RADIUS	286
+# define	KW_ANGLE	287
+# define	KW_HEIGHT	288
+# define	KW_LAYERS	289
+# define	KW_STITCH	290
+# define	KW_SCREEN	291
+# define	KW_POINTS	292
+# define	KW_USING	293
+# define	KW_IN	294
+# define	KW_MM	295
+# define	KW_FT	296
+# define	KW_CM	297
+# define	KW_P	298
+
+
+extern YYSTYPE stitchyylval;
+
+#endif /* not BISON_Y_TAB_H */

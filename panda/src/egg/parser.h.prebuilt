@@ -1,83 +1,88 @@
-#define	NUMBER	257
-#define	STRING	258
-#define	BEZIERCURVE	259
-#define	BFACE	260
-#define	BILLBOARD	261
-#define	BILLBOARDCENTER	262
-#define	BUNDLE	263
-#define	CLOSED	264
-#define	COLLIDE	265
-#define	COMMENT	266
-#define	COORDSYSTEM	267
-#define	CV	268
-#define	DART	269
-#define	DNORMAL	270
-#define	DRGBA	271
-#define	DUV	272
-#define	DXYZ	273
-#define	DCS	274
-#define	DISTANCE	275
-#define	DTREF	276
-#define	DYNAMICVERTEXPOOL	277
-#define	EXTERNAL_FILE	278
-#define	FLIGHT	279
-#define	GROUP	280
-#define	HIP	281
-#define	INTANGENT	282
-#define	JOINT	283
-#define	KNOTS	284
-#define	INCLUDE	285
-#define	INSTANCE	286
-#define	LOOP	287
-#define	MATERIAL	288
-#define	MATRIX3	289
-#define	MATRIX4	290
-#define	MODEL	291
-#define	MREF	292
-#define	NORMAL	293
-#define	NURBSCURVE	294
-#define	NURBSSURFACE	295
-#define	OBJECTTYPE	296
-#define	ORDER	297
-#define	OUTTANGENT	298
-#define	POINTLIGHT	299
-#define	POLYGON	300
-#define	REF	301
-#define	RGBA	302
-#define	ROTATE	303
-#define	ROTX	304
-#define	ROTY	305
-#define	ROTZ	306
-#define	SANIM	307
-#define	SCALAR	308
-#define	SCALE	309
-#define	SEQUENCE	310
-#define	SHADING	311
-#define	SWITCH	312
-#define	SWITCHCONDITION	313
-#define	TABLE	314
-#define	TABLE_V	315
-#define	TEXLIST	316
-#define	TEXTURE	317
-#define	TLENGTHS	318
-#define	TRANSFORM	319
-#define	TRANSLATE	320
-#define	TREF	321
-#define	TRIM	322
-#define	TXT	323
-#define	UKNOTS	324
-#define	UV	325
-#define	VKNOTS	326
-#define	VERTEX	327
-#define	VERTEXANIM	328
-#define	VERTEXPOOL	329
-#define	VERTEXREF	330
-#define	XFMANIM	331
-#define	XFMSANIM	332
-#define	START_EGG	333
-#define	START_GROUP_BODY	334
-#define	START_TEXTURE_BODY	335
-#define	START_PRIMITIVE_BODY	336
+#ifndef BISON_Y_TAB_H
+# define BISON_Y_TAB_H
+
+# define	NUMBER	257
+# define	STRING	258
+# define	BEZIERCURVE	259
+# define	BFACE	260
+# define	BILLBOARD	261
+# define	BILLBOARDCENTER	262
+# define	BUNDLE	263
+# define	CLOSED	264
+# define	COLLIDE	265
+# define	COMMENT	266
+# define	COORDSYSTEM	267
+# define	CV	268
+# define	DART	269
+# define	DNORMAL	270
+# define	DRGBA	271
+# define	DUV	272
+# define	DXYZ	273
+# define	DCS	274
+# define	DISTANCE	275
+# define	DTREF	276
+# define	DYNAMICVERTEXPOOL	277
+# define	EXTERNAL_FILE	278
+# define	FLIGHT	279
+# define	GROUP	280
+# define	HIP	281
+# define	INTANGENT	282
+# define	JOINT	283
+# define	KNOTS	284
+# define	INCLUDE	285
+# define	INSTANCE	286
+# define	LOOP	287
+# define	MATERIAL	288
+# define	MATRIX3	289
+# define	MATRIX4	290
+# define	MODEL	291
+# define	MREF	292
+# define	NORMAL	293
+# define	NURBSCURVE	294
+# define	NURBSSURFACE	295
+# define	OBJECTTYPE	296
+# define	ORDER	297
+# define	OUTTANGENT	298
+# define	POINTLIGHT	299
+# define	POLYGON	300
+# define	REF	301
+# define	RGBA	302
+# define	ROTATE	303
+# define	ROTX	304
+# define	ROTY	305
+# define	ROTZ	306
+# define	SANIM	307
+# define	SCALAR	308
+# define	SCALE	309
+# define	SEQUENCE	310
+# define	SHADING	311
+# define	SWITCH	312
+# define	SWITCHCONDITION	313
+# define	TABLE	314
+# define	TABLE_V	315
+# define	TEXLIST	316
+# define	TEXTURE	317
+# define	TLENGTHS	318
+# define	TRANSFORM	319
+# define	TRANSLATE	320
+# define	TREF	321
+# define	TRIM	322
+# define	TXT	323
+# define	UKNOTS	324
+# define	UV	325
+# define	VKNOTS	326
+# define	VERTEX	327
+# define	VERTEXANIM	328
+# define	VERTEXPOOL	329
+# define	VERTEXREF	330
+# define	XFMANIM	331
+# define	XFMSANIM	332
+# define	START_EGG	333
+# define	START_GROUP_BODY	334
+# define	START_TEXTURE_BODY	335
+# define	START_PRIMITIVE_BODY	336
 
 
 extern YYSTYPE eggyylval;
+
+#endif /* not BISON_Y_TAB_H */

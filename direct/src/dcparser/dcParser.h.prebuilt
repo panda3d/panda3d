@@ -1,36 +1,41 @@
-#define	INTEGER	257
-#define	REAL	258
-#define	STRING	259
-#define	HEX_STRING	260
-#define	IDENTIFIER	261
-#define	KW_DCLASS	262
-#define	KW_INT8	263
-#define	KW_INT16	264
-#define	KW_INT32	265
-#define	KW_INT64	266
-#define	KW_UINT8	267
-#define	KW_UINT16	268
-#define	KW_UINT32	269
-#define	KW_UINT64	270
-#define	KW_FLOAT64	271
-#define	KW_STRING	272
-#define	KW_BLOB	273
-#define	KW_INT8ARRAY	274
-#define	KW_INT16ARRAY	275
-#define	KW_INT32ARRAY	276
-#define	KW_UINT8ARRAY	277
-#define	KW_UINT16ARRAY	278
-#define	KW_UINT32ARRAY	279
-#define	KW_UINT32UINT8ARRAY	280
-#define	KW_MOL	281
-#define	KW_REQUIRED	282
-#define	KW_BROADCAST	283
-#define	KW_P2P	284
-#define	KW_RAM	285
-#define	KW_DB	286
-#define	KW_CLSEND	287
-#define	KW_CLRECV	288
-#define	KW_OWNSEND	289
+#ifndef BISON_Y_TAB_H
+# define BISON_Y_TAB_H
+
+# define	INTEGER	257
+# define	REAL	258
+# define	STRING	259
+# define	HEX_STRING	260
+# define	IDENTIFIER	261
+# define	KW_DCLASS	262
+# define	KW_INT8	263
+# define	KW_INT16	264
+# define	KW_INT32	265
+# define	KW_INT64	266
+# define	KW_UINT8	267
+# define	KW_UINT16	268
+# define	KW_UINT32	269
+# define	KW_UINT64	270
+# define	KW_FLOAT64	271
+# define	KW_STRING	272
+# define	KW_BLOB	273
+# define	KW_INT8ARRAY	274
+# define	KW_INT16ARRAY	275
+# define	KW_INT32ARRAY	276
+# define	KW_UINT8ARRAY	277
+# define	KW_UINT16ARRAY	278
+# define	KW_UINT32ARRAY	279
+# define	KW_UINT32UINT8ARRAY	280
+# define	KW_MOL	281
+# define	KW_REQUIRED	282
+# define	KW_BROADCAST	283
+# define	KW_P2P	284
+# define	KW_RAM	285
+# define	KW_DB	286
+# define	KW_CLSEND	287
+# define	KW_CLRECV	288
+# define	KW_OWNSEND	289
 
 
 extern YYSTYPE dcyylval;
+
+#endif /* not BISON_Y_TAB_H */

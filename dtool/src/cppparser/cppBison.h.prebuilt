@@ -1,115 +1,118 @@
+#ifndef BISON_Y_TAB_H
+# define BISON_Y_TAB_H
+
 
 #ifndef YYLTYPE
-typedef
-  struct yyltype
-    {
-      int timestamp;
-      int first_line;
-      int first_column;
-      int last_line;
-      int last_column;
-      char *text;
-   }
-  yyltype;
+typedef struct yyltype
+{
+  int first_line;
+  int first_column;
 
-#define YYLTYPE yyltype
+  int last_line;
+  int last_column;
+} yyltype;
+
+# define YYLTYPE yyltype
+# define YYLTYPE_IS_TRIVIAL 1
 #endif
 
-#define	REAL	257
-#define	INTEGER	258
-#define	CHAR	259
-#define	STRING	260
-#define	SIMPLE_IDENTIFIER	261
-#define	IDENTIFIER	262
-#define	TYPENAME_IDENTIFIER	263
-#define	SCOPING	264
-#define	TYPEDEFNAME	265
-#define	ELLIPSIS	266
-#define	OROR	267
-#define	ANDAND	268
-#define	EQCOMPARE	269
-#define	NECOMPARE	270
-#define	LECOMPARE	271
-#define	GECOMPARE	272
-#define	LSHIFT	273
-#define	RSHIFT	274
-#define	POINTSAT_STAR	275
-#define	DOT_STAR	276
-#define	UNARY	277
-#define	UNARY_NOT	278
-#define	UNARY_NEGATE	279
-#define	UNARY_MINUS	280
-#define	UNARY_STAR	281
-#define	UNARY_REF	282
-#define	POINTSAT	283
-#define	SCOPE	284
-#define	PLUSPLUS	285
-#define	MINUSMINUS	286
-#define	TIMESEQUAL	287
-#define	DIVIDEEQUAL	288
-#define	MODEQUAL	289
-#define	PLUSEQUAL	290
-#define	MINUSEQUAL	291
-#define	OREQUAL	292
-#define	ANDEQUAL	293
-#define	XOREQUAL	294
-#define	LSHIFTEQUAL	295
-#define	RSHIFTEQUAL	296
-#define	TOKENPASTE	297
-#define	KW_BEGIN_PUBLISH	298
-#define	KW_BOOL	299
-#define	KW_CATCH	300
-#define	KW_CHAR	301
-#define	KW_CLASS	302
-#define	KW_CONST	303
-#define	KW_DELETE	304
-#define	KW_DOUBLE	305
-#define	KW_DYNAMIC_CAST	306
-#define	KW_ELSE	307
-#define	KW_END_PUBLISH	308
-#define	KW_ENUM	309
-#define	KW_EXTERN	310
-#define	KW_EXPLICIT	311
-#define	KW_PUBLISHED	312
-#define	KW_FALSE	313
-#define	KW_FLOAT	314
-#define	KW_FRIEND	315
-#define	KW_FOR	316
-#define	KW_GOTO	317
-#define	KW_IF	318
-#define	KW_INLINE	319
-#define	KW_INT	320
-#define	KW_LONG	321
-#define	KW_LONGLONG	322
-#define	KW_MUTABLE	323
-#define	KW_NAMESPACE	324
-#define	KW_NEW	325
-#define	KW_OPERATOR	326
-#define	KW_PRIVATE	327
-#define	KW_PROTECTED	328
-#define	KW_PUBLIC	329
-#define	KW_REGISTER	330
-#define	KW_RETURN	331
-#define	KW_SHORT	332
-#define	KW_SIGNED	333
-#define	KW_SIZEOF	334
-#define	KW_STATIC	335
-#define	KW_STATIC_CAST	336
-#define	KW_STRUCT	337
-#define	KW_TEMPLATE	338
-#define	KW_THROW	339
-#define	KW_TRUE	340
-#define	KW_TRY	341
-#define	KW_TYPEDEF	342
-#define	KW_TYPENAME	343
-#define	KW_UNION	344
-#define	KW_UNSIGNED	345
-#define	KW_USING	346
-#define	KW_VIRTUAL	347
-#define	KW_VOID	348
-#define	KW_VOLATILE	349
-#define	KW_WHILE	350
-#define	START_CPP	351
-#define	START_CONST_EXPR	352
-#define	START_TYPE	353
+# define	REAL	257
+# define	INTEGER	258
+# define	CHAR	259
+# define	STRING	260
+# define	SIMPLE_IDENTIFIER	261
+# define	IDENTIFIER	262
+# define	TYPENAME_IDENTIFIER	263
+# define	SCOPING	264
+# define	TYPEDEFNAME	265
+# define	ELLIPSIS	266
+# define	OROR	267
+# define	ANDAND	268
+# define	EQCOMPARE	269
+# define	NECOMPARE	270
+# define	LECOMPARE	271
+# define	GECOMPARE	272
+# define	LSHIFT	273
+# define	RSHIFT	274
+# define	POINTSAT_STAR	275
+# define	DOT_STAR	276
+# define	UNARY	277
+# define	UNARY_NOT	278
+# define	UNARY_NEGATE	279
+# define	UNARY_MINUS	280
+# define	UNARY_STAR	281
+# define	UNARY_REF	282
+# define	POINTSAT	283
+# define	SCOPE	284
+# define	PLUSPLUS	285
+# define	MINUSMINUS	286
+# define	TIMESEQUAL	287
+# define	DIVIDEEQUAL	288
+# define	MODEQUAL	289
+# define	PLUSEQUAL	290
+# define	MINUSEQUAL	291
+# define	OREQUAL	292
+# define	ANDEQUAL	293
+# define	XOREQUAL	294
+# define	LSHIFTEQUAL	295
+# define	RSHIFTEQUAL	296
+# define	TOKENPASTE	297
+# define	KW_BEGIN_PUBLISH	298
+# define	KW_BOOL	299
+# define	KW_CATCH	300
+# define	KW_CHAR	301
+# define	KW_CLASS	302
+# define	KW_CONST	303
+# define	KW_DELETE	304
+# define	KW_DOUBLE	305
+# define	KW_DYNAMIC_CAST	306
+# define	KW_ELSE	307
+# define	KW_END_PUBLISH	308
+# define	KW_ENUM	309
+# define	KW_EXTERN	310
+# define	KW_EXPLICIT	311
+# define	KW_PUBLISHED	312
+# define	KW_FALSE	313
+# define	KW_FLOAT	314
+# define	KW_FRIEND	315
+# define	KW_FOR	316
+# define	KW_GOTO	317
+# define	KW_IF	318
+# define	KW_INLINE	319
+# define	KW_INT	320
+# define	KW_LONG	321
+# define	KW_LONGLONG	322
+# define	KW_MUTABLE	323
+# define	KW_NAMESPACE	324
+# define	KW_NEW	325
+# define	KW_OPERATOR	326
+# define	KW_PRIVATE	327
+# define	KW_PROTECTED	328
+# define	KW_PUBLIC	329
+# define	KW_REGISTER	330
+# define	KW_RETURN	331
+# define	KW_SHORT	332
+# define	KW_SIGNED	333
+# define	KW_SIZEOF	334
+# define	KW_STATIC	335
+# define	KW_STATIC_CAST	336
+# define	KW_STRUCT	337
+# define	KW_TEMPLATE	338
+# define	KW_THROW	339
+# define	KW_TRUE	340
+# define	KW_TRY	341
+# define	KW_TYPEDEF	342
+# define	KW_TYPENAME	343
+# define	KW_UNION	344
+# define	KW_UNSIGNED	345
+# define	KW_USING	346
+# define	KW_VIRTUAL	347
+# define	KW_VOID	348
+# define	KW_VOLATILE	349
+# define	KW_WHILE	350
+# define	START_CPP	351
+# define	START_CONST_EXPR	352
+# define	START_TYPE	353
 
+
+#endif /* not BISON_Y_TAB_H */
