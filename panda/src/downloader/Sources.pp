@@ -21,14 +21,14 @@
     zcompressor.h download_utils.cxx download_utils.h
 
   #define IF_CRYPTO_SOURCES \
-    crypto_utils.cxx crypto_utils.h
+    crypto_utils.cxx crypto_utils.h hashVal.cxx hashVal.I hashVal.h
 
   #define INSTALL_HEADERS					\
     downloader.h downloader.I					\
     config_downloader.h zcompressor.I zcompressor.h		\
     asyncUtility.h asyncUtility.I decompressor.h		\
     extractor.h download_utils.h downloadDb.h downloadDb.I	\
-    patcher.h
+    hashVal.I hashVal.h patcher.h
 
   #define IGATESCAN all
 

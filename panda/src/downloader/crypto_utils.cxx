@@ -6,6 +6,7 @@
 // This file is compiled only if we have crypto++ installed.
 
 #include "crypto_utils.h"
+#include "hashVal.h"
 
 #include <md5.h>
 #include <files.h>

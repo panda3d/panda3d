@@ -1,0 +1,49 @@
+// Filename: hashVal.I
+// Created by:  drose (14Nov00)
+//
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: HashVal::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE HashVal::
+HashVal(void) {
+  hv[0] = hv[1] = hv[2] = hv[3] = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HashVal::operator ==
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool HashVal::
+operator == (const HashVal &other) const {
+  return (hv[0] == other.hv[0] && 
+	  hv[1] == other.hv[1] &&
+	  hv[2] == other.hv[2] &&
+	  hv[3] == other.hv[3]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HashVal::operator ==
+//       Access: Public
+//  Description: Returns the integer value of the indicated component.
+////////////////////////////////////////////////////////////////////
+INLINE uint HashVal::
+get_value(int val) const {
+  nassertr(val >= 0 && val < 4, 0);
+  return hv[val];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HashVal::output
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void HashVal::
+output(ostream &out) const {
+  out << "[" << hv[0] << " " << hv[1] << " " << hv[2] << " " << hv[3] << "]";
+}

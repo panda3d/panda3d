@@ -1,4 +1,5 @@
 #include <crypto_utils.h>
+#include <hashVal.h>
 
 int 
 main(int argc, char *argv[]) {

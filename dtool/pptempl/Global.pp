@@ -251,6 +251,14 @@
   $[if $[HAVE_NET],$[IF_NET_SOURCES]] \
   $[if $[HAVE_PYTHON],$[IF_PYTHON_SOURCES]]
 
+#defer all_sources \
+  $[SOURCES] \
+  $[IF_CRYPTO_SOURCES] \
+  $[IF_ZLIB_SOURCES] \
+  $[IF_IPC_SOURCES] \
+  $[IF_NET_SOURCES] \
+  $[IF_PYTHON_SOURCES]
+
 // This variable returns the set of sources that are to be
 // interrogated for the current target.
 #defer get_igatescan \
