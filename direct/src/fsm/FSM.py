@@ -64,6 +64,10 @@ class FSM(DirectObject):
         """setStates(self, State[])"""
         self.__states = states
 
+    def addState(self, state):
+	"""addState(state)"""
+	self.__states.append(state)
+
     def getInitialState(self):
         """getInitialState(self)"""
         return(self.__initialState)
