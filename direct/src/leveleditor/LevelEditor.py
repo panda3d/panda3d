@@ -1382,20 +1382,20 @@ class LevelEditor(NodePath, PandaObject):
     def createStyleSample(self, style, num):
         # Create a wall
         wall = DNAWall('wall')
-	wall.setCode(self.dnaStore.findCode(style['wallTexture']))
+	wall.setCode(style['wallTexture'])
 	wall.setColor(style['wallColor'])
         wall.setHeight(10.0)
         # Add its windows
 	windows = DNAWindows('windows')
         windows.setWindowCount(2)
-        windows.setCode(self.dnaStore.findCode(style['windowTexture']))
+        windows.setCode(style['windowTexture'])
         windows.setColor(style['windowColor'])
         wall.add(windows)
         # And a cornice if necessary
         corniceTexture = style['corniceTexture']
         if corniceTexture:
             cornice = DNACornice('cornice')
-            cornice.setCode(self.getDNACode(corniceTexture))
+            cornice.setCode(corniceTexture)
             cornice.setColor(style['corniceColor'])
             wall.add(cornice)
         # The final building
@@ -1808,7 +1808,7 @@ class LevelEditor(NodePath, PandaObject):
 
     def addLandmark(self, landmarkType):
 	newDNALandmarkBuilding = DNALandmarkBuilding(landmarkType + '_DNARoot')
-	newDNALandmarkBuilding.setCode(self.getDNACode(landmarkType))
+	newDNALandmarkBuilding.setCode(landmarkType)
 	newDNALandmarkBuilding.setPos(VBase3(0))
 	newDNALandmarkBuilding.setHpr(VBase3(0))
 	newDNADoor = self.createDoor(self.getDoorTexture())
@@ -1826,7 +1826,7 @@ class LevelEditor(NodePath, PandaObject):
 
     def addProp(self, newPropType):
 	newDNAProp = DNAProp(newPropType + '_DNARoot')
-	newDNAProp.setCode(self.getDNACode(newPropType))
+	newDNAProp.setCode(newPropType)
 	newDNAProp.setPos(VBase3(0))
 	newDNAProp.setHpr(VBase3(0))
 	# Now place new building in the world
@@ -1835,13 +1835,11 @@ class LevelEditor(NodePath, PandaObject):
 
     def addStreetModule(self, streetType):
 	newDNAStreet = DNAStreet(streetType + '_DNARoot')
-	newDNAStreet.setCode(self.getDNACode(streetType))
+	newDNAStreet.setCode(streetType)
 	newDNAStreet.setPos(VBase3(0))
 	newDNAStreet.setHpr(VBase3(0))
-	newDNAStreet.setStreetTexture(
-            self.getDNACode(self.attributeDictionary['streetTexture']))
-        newDNAStreet.setSidewalkTexture(
-            self.getDNACode(self.attributeDictionary['sidewalkTexture']))
+	newDNAStreet.setStreetTexture(self.attributeDictionary['streetTexture'])
+        newDNAStreet.setSidewalkTexture(self.attributeDictionary['sidewalkTexture'])
 	# Now place new building in the world
 	self.addDNAGroup(newDNAStreet)
 
@@ -1851,7 +1849,7 @@ class LevelEditor(NodePath, PandaObject):
 	# Pick a default window
 	newDNAWindows = DNAWindows()
 	self.setWindowTexture(self.getRandomWindowTexture())
-	newDNAWindows.setCode(self.getDNACode(self.getWindowTexture()))
+	newDNAWindows.setCode(self.getWindowTexture())
 	newDNAWindows.setWindowCount(self.getRandomNumWindows(height))
         colors = self.getWallColors()
 	newDNAWindows.setColor(colors[randint(0,len(colors) - 1)])
@@ -1860,14 +1858,14 @@ class LevelEditor(NodePath, PandaObject):
 
     def createCornice(self,dnaString):
 	newDNACornice = DNACornice()
-	newDNACornice.setCode(self.getDNACode(dnaString))
+	newDNACornice.setCode(dnaString)
         colors = self.getCorniceColors()
 	newDNACornice.setColor(colors[randint(0,len(colors) - 1)])
 	return newDNACornice
 
     def createDoor(self, dnaString):
 	newDNADoor = DNADoor()
-	newDNADoor.setCode(self.getDNACode(dnaString))
+	newDNADoor.setCode(dnaString)
         colors = self.getDoorColors()
 	newDNADoor.setColor(colors[randint(0,len(colors) - 1)])
 	return newDNADoor
@@ -1914,13 +1912,13 @@ class LevelEditor(NodePath, PandaObject):
 	# Create a new DNAWall using default attributes
 	# Create the DNA for this wall
 	newDNAWall = DNAWall()
-	newDNAWall.setCode(self.getDNACode(dnaString))
+	newDNAWall.setCode(dnaString)
 	newDNAWall.setHeight(height)
 	newDNAWall.setColor(self.getWallColor())
 	
 	# Pick a default window
 	newDNAWindows = DNAWindows()
-	newDNAWindows.setCode(self.getDNACode(self.getWindowTexture()))
+	newDNAWindows.setCode(self.getWindowTexture())
 	newDNAWindows.setWindowCount(1)
 	newDNAWindows.setColor(self.getWindowColor())
 	newDNAWall.add(newDNAWindows)
@@ -1929,7 +1927,7 @@ class LevelEditor(NodePath, PandaObject):
 
     def createWindows(self, numWindows):
 	newDNAWindows = DNAWindows()
-	newDNAWindows.setCode(self.getDNACode(self.getWindowTexture()))
+	newDNAWindows.setCode(self.getWindowTexture())
 	newDNAWindows.setWindowCount(numWindows)
 	newDNAWindows.setColor(self.getWindowColor())
 	return newDNAWindows
@@ -1962,12 +1960,6 @@ class LevelEditor(NodePath, PandaObject):
         # Not found
 	return None
 
-    def getDNACode(self, dnaString):
-	dnaCode = self.dnaStore.findCode(dnaString)
-        if dnaCode == 0:
-            print 'getDNACode Error!'
-	return dnaCode
-
     def getDNAGroup(self, aNodePath):
 	dict = self.getLevelObject(aNodePath)
         if dict:
@@ -1976,7 +1968,9 @@ class LevelEditor(NodePath, PandaObject):
             return None
 
     def getDNAString(self, aDNAObject):
-	return (self.dnaStore.findStringFromCode(aDNAObject.getCode()))
+	# return (self.dnaStore.findStringFromCode(aDNAObject.getCode()))
+        # Now the code is the string, there is no lookup anymore
+        return aDNAObject.getCode()
 
     def getDoor(self, aDNAGroup):
         for i in range(aDNAGroup.getNumChildren()):
@@ -2449,8 +2443,7 @@ class LevelEditor(NodePath, PandaObject):
             aDNACornice = self.getCornice(aDNAFlatBuilding)
             if not aDNACornice:
                 aDNACornice = DNACornice()
-                aDNACornice.setCode(
-                    self.dnaStore.findCode(style['corniceTexture']))
+                aDNACornice.setCode(style['corniceTexture'])
                 aDNACornice.setColor(style['corniceColor'])
                 lastWall = self.getLastWall(aDNAFlatBuilding)
                 lastWall.add(aDNACornice)
@@ -2460,14 +2453,14 @@ class LevelEditor(NodePath, PandaObject):
 	window.setWindowCount(numWindows)
 
     def setWallStyle(self, aDNAWall, style):
-	aDNAWall.setCode(self.dnaStore.findCode(style['wallTexture']))
+	aDNAWall.setCode(style['wallTexture'])
 	aDNAWall.setColor(style['wallColor'])
 	aDNAWindows = self.getWindow(aDNAWall, 0)
         # If the wall has windows:
         if aDNAWindows:
             aDNAWindows.setWindowCount(
                 self.getRandomNumWindows(aDNAWall.getHeight()))
-            aDNAWindows.setCode(self.dnaStore.findCode(style['windowTexture']))
+            aDNAWindows.setCode(style['windowTexture'])
             aDNAWindows.setColor(style['windowColor'])
 
     def setWallStyleNum(self, aDNAWall, styleNum):
@@ -2514,7 +2507,7 @@ class LevelEditor(NodePath, PandaObject):
             # Change the cornice type
             if aDNACornice:
                 # Change existing one
-                aDNACornice.setCode(self.dnaStore.findCode(dnaString))
+                aDNACornice.setCode(dnaString)
             else:
                 lastWall = self.getLastWall(aDNAGroup)
                 if lastWall:
@@ -2553,7 +2546,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.updateDoorTextureDNA(aDNADoor, dnaString)
 
     def updateDoorTextureDNA(self, aDNADoor ,dnaString):
-	aDNADoor.setCode(self.dnaStore.findCode(dnaString))
+	aDNADoor.setCode(dnaString)
 	# Replace object in levelObjects dictionary and scene graph
 	self.replaceLevelObjectNodePath(self.selectedLevelObject)
 	self.setDoorTexture(dnaString)
@@ -2634,7 +2627,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.updatePropDNA(aDNAProp,dnaString)
 
     def updatePropDNA(self, aDNAProp, dnaString):
-	aDNAProp.setCode(self.dnaStore.findCode(dnaString))
+	aDNAProp.setCode(dnaString)
         aDNAProp.setName(dnaString + '_DNARoot')
 	# Replace object in levelObjects dictionary and scene graph
 	self.replaceLevelObjectNodePath(self.selectedLevelObject)
@@ -2654,16 +2647,13 @@ class LevelEditor(NodePath, PandaObject):
 	self.updateStreetDNA(aDNAStreet,dnaString)
 
     def updateStreetDNA(self, aDNAStreet, dnaString):
-	aDNAStreet.setCode(self.dnaStore.findCode(dnaString))
+	aDNAStreet.setCode(dnaString)
         aDNAStreet.setName(dnaString + '_DNARoot')
-        aDNAStreet.setStreetTexture(
-            self.getDNACode(self.attributeDictionary['streetTexture']))
+        aDNAStreet.setStreetTexture(self.attributeDictionary['streetTexture'])
         if (string.find(dnaString, 'keyboard') >= 0):
-            aDNAStreet.setSidewalkTexture(
-                self.getDNACode('street_sidewalk_MM_keyboard_tex'))
+            aDNAStreet.setSidewalkTexture('street_sidewalk_MM_keyboard_tex')
         else:
-            aDNAStreet.setSidewalkTexture(
-                self.getDNACode(self.attributeDictionary['sidewalkTexture']))
+            aDNAStreet.setSidewalkTexture(self.attributeDictionary['sidewalkTexture'])
 	# Replace object in levelObjects dictionary and scene graph
 	self.replaceLevelObjectNodePath(self.selectedLevelObject)
 	self.setStreetType(dnaString)
@@ -2724,7 +2714,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.updateWallTextureDNA(aDNAWall, dnaString)
 
     def updateWallTextureDNA(self, aDNAWall, dnaString):
-	aDNAWall.setCode(self.dnaStore.findCode(dnaString))
+	aDNAWall.setCode(dnaString)
 	# Replace object in levelObjects dictionary and scene graph
 	self.replaceLevelObjectNodePath(self.selectedLevelObject)
 	self.setWallTexture(dnaString)
@@ -2765,7 +2755,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.updateWindowTextureDNA(aDNAWindow, dnaString)
 
     def updateWindowTextureDNA(self, aDNAWindow, dnaString):
-	aDNAWindow.setCode(self.dnaStore.findCode(dnaString))
+	aDNAWindow.setCode(dnaString)
 	# Replace object in levelObjects dictionary and scene graph
 	self.replaceLevelObjectNodePath(self.selectedLevelObject)
 	self.setWindowTexture(dnaString)
