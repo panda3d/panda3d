@@ -833,15 +833,7 @@ int wglGraphicsWindow::find_pixfmtnum(bool bLookforHW) {
           drvtype = Software;
       else if (pfd.dwFlags & PFD_GENERIC_ACCELERATED)
           drvtype = MCD;
-      else
-          drvtype = ICD;
-
-      // skip driver types we are not looking for
-      if((drvtype==Software) && bLookforHW)
-          continue;
-
-      if((drvtype!=Software) && !bLookforHW)
-          continue;
+      else drvtype = ICD;
 
   #if MY_OLD_ALGORITHM
         if ((pfd.dwFlags & PFD_GENERIC_ACCELERATED) && (pfd.dwFlags & PFD_GENERIC_FORMAT))
@@ -853,6 +845,15 @@ int wglGraphicsWindow::find_pixfmtnum(bool bLookforHW) {
            continue;  // skipping all SW fmts
          }
   #endif
+  
+         // skip driver types we are not looking for
+         if(bLookforHW) {
+             if(drvtype==Software) 
+                continue;
+         } else {
+             if(drvtype!=Software) 
+                 continue;
+         }
 
         if ((pfd.iPixelType == PFD_TYPE_COLORINDEX) && !(mask & W_INDEX))
             continue;
