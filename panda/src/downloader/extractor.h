@@ -41,7 +41,9 @@ PUBLISHED:
 
 private:
   void init(PT(Buffer) buffer);
+  void cleanup(void);
 
+  bool _initiated;
   PT(Buffer) _buffer;
 
   ifstream _read_stream;

@@ -91,12 +91,15 @@ private:
   bool parse_header(DownloadStatus *status);
   bool write_to_disk(DownloadStatus *status);
 
+  void cleanup(void);
+
 private:
   bool _connected;
   int _socket;
   string _server_name;
   struct sockaddr_in _sin;
 
+  bool _initiated;
   PT(Buffer) _buffer;
   int _disk_write_frequency;
   float _frequency;

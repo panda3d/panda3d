@@ -3,6 +3,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "config_downloader.h"
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Extractor::get_progress
 //       Access: Public
@@ -10,6 +12,12 @@
 ////////////////////////////////////////////////////////////////////
 INLINE float Extractor::
 get_progress(void) const {
+  if (_initiated == false) {
+    downloader_cat.warning()
+      << "Extractor::get_progress() - Extraction has not been initiated"
+      << endl;
+    return 0.0;
+  }
   nassertr(_source_file_length > 0, 0.0);
   return ((float)_total_bytes_read / (float)_source_file_length);
 }

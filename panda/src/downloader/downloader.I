@@ -85,6 +85,12 @@ get_disk_write_frequency(void) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int Downloader::
 get_bytes_written(void) const {
+  if (_initiated == false) {
+    downloader_cat.warning()
+      << "Downloader::get_bytes_per_second() - Download has not been "
+      << "initiated" << endl;
+    return 0.0;
+  }
   nassertr(_current_status != NULL, 0);
   return _current_status->_total_bytes_written;
 }
@@ -96,6 +102,12 @@ get_bytes_written(void) const {
 ////////////////////////////////////////////////////////////////////
 INLINE float Downloader::
 get_bytes_per_second(void) const {
+  if (_initiated == false) {
+    downloader_cat.warning()
+      << "Downloader::get_bytes_per_second() - Download has not been "
+      << "initiated" << endl;
+    return 0.0;
+  }
   nassertr(_tlast - _tfirst > 0.0, 0.0);
   nassertr(_current_status != NULL, 0.0);
   return (float)((double)_current_status->_total_bytes / (_tlast - _tfirst));

@@ -43,7 +43,9 @@ PUBLISHED:
 
 private:
   void init(PT(Buffer) buffer);
+  void cleanup(void);
 
+  bool _initiated;
   PT(Buffer) _buffer;
   int _half_buffer_length;
   Filename _temp_file_name;

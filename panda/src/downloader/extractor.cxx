@@ -43,6 +43,7 @@ Extractor(PT(Buffer) buffer) {
 ////////////////////////////////////////////////////////////////////
 void Extractor::
 init(PT(Buffer) buffer) {
+  _initiated = false;
   nassertv(!buffer.is_null());
   _buffer = buffer;
   _mfile = NULL;
@@ -55,8 +56,8 @@ init(PT(Buffer) buffer) {
 ////////////////////////////////////////////////////////////////////
 Extractor::
 ~Extractor(void) {
-  if (_mfile != NULL)
-    delete _mfile;
+  if (_initiated == true)
+    cleanup();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -66,6 +67,13 @@ Extractor::
 ////////////////////////////////////////////////////////////////////
 int Extractor::
 initiate(Filename &source_file, const Filename &rel_path) {
+
+  if (_initiated == true) {
+    downloader_cat.error()
+      << "Extractor::initiate() - Extraction has already been initiated" 
+      << endl;
+    return ES_error;
+  }
 
   // Open source file
   _source_file = source_file;
@@ -87,7 +95,30 @@ initiate(Filename &source_file, const Filename &rel_path) {
   _total_bytes_read = 0;
   _read_all_input = false;
   _handled_all_input = false;
+  _mfile = new Multifile();
+  _initiated = true;
   return ES_success;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Extractor::cleanup
+//       Access: Private 
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void Extractor::
+cleanup(void) {
+  if (_initiated == false) {
+    downloader_cat.error()
+      << "Extractor::cleanup() - Extraction has not been initiated" 
+      << endl;
+    return;
+  }
+
+  delete _mfile;
+  _mfile = NULL;
+  _read_stream.close();
+  _source_file.unlink();
+  _initiated = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -97,8 +128,12 @@ initiate(Filename &source_file, const Filename &rel_path) {
 ////////////////////////////////////////////////////////////////////
 int Extractor::
 run(void) {
-  if (_mfile == NULL)
-    _mfile = new Multifile;
+  if (_initiated == false) {
+    downloader_cat.error()
+      << "Extractor::run() - Extraction has not been initiated" 
+      << endl;
+    return ES_error;
+  }
 
   // See if there is anything left in the source file
   if (_read_all_input == false) {
@@ -116,10 +151,7 @@ run(void) {
 
   // Write to the out file
   if (_mfile->write(buffer_start, buffer_size, _rel_path) == true) {
-    _read_stream.close();
-    _source_file.unlink();
-    delete _mfile;
-    _mfile = NULL;
+    cleanup();
     return ES_success;
   }
   return ES_ok;

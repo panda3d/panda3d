@@ -63,6 +63,7 @@ Downloader(void) {
   _tfirst = 0.0;
   _tlast = 0.0;
   _got_any_data = false;
+  _initiated = false;
 
 #if defined(WIN32)
   WSAData mydata;
@@ -85,8 +86,8 @@ Downloader::
   if (_connected)
     disconnect_from_server();
   _buffer.clear();
-  if (_current_status != NULL)
-    delete _current_status;
+  if (_initiated == true)
+    cleanup();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -287,6 +288,13 @@ initiate(const string &file_name, Filename file_dest,
         int first_byte, int last_byte, int total_bytes,
         bool partial_content) {
 
+  if (_initiated == true) {
+    downloader_cat.error()
+      << "Downloader::initiate() - Download has already been initiated"
+      << endl;
+    return DS_error;
+  }
+
   // Connect to the server
   if (connect_to_server() == false)
     return DS_error_connect;
@@ -340,8 +348,6 @@ initiate(const string &file_name, Filename file_dest,
     return DS_error_connect;
 
   // Create a download status to maintain download progress information
-  if (_current_status != NULL)
-    delete _current_status;
   _current_status = new DownloadStatus(_buffer->_buffer,
                                 first_byte, last_byte, total_bytes,
 				partial_content);
@@ -349,8 +355,30 @@ initiate(const string &file_name, Filename file_dest,
   _tfirst = 0.0;
   _tlast = 0.0;
   _got_any_data = false;
-
+  _initiated = true;
   return DS_success;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Downloader::cleanup
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+void Downloader::
+cleanup(void) {
+  if (_initiated == false) {
+    downloader_cat.error()
+      << "Downloader::cleanup() - Download has not been initiated"
+      << endl;
+    return;
+  }
+
+  // The "Connection: close" line tells the server to close the 
+  // connection when the download is complete
+  _connected = false;
+  _dest_stream.close();
+  delete _current_status;
+  _initiated = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -360,9 +388,10 @@ initiate(const string &file_name, Filename file_dest,
 ////////////////////////////////////////////////////////////////////
 int Downloader::
 run(void) {
-  if (_current_status == NULL) {
+  if (_initiated == false) {
     downloader_cat.error()
-      << "Downloader::run() - Did not call initiate() first" << endl;
+      << "Downloader::run() - Download has not been initiated"
+      << endl;
     return DS_error;
   }
 
@@ -426,6 +455,8 @@ run(void) {
     fret = fast_receive(_socket, _current_status, _receive_size);
     if (fret == FR_eof || fret < 0)
       break;
+    else if (fret == FR_success)
+      _got_any_data = true;
   }
   _tlast = _clock.get_real_time();
 
@@ -436,10 +467,7 @@ run(void) {
         if (write_to_disk(_current_status) == false)
           return DS_error_write;
       }
-      _dest_stream.close();
-      // The "Connection: close" line tells the server to close the 
-      // connection when the download is complete
-      _connected = false;
+      cleanup();
       return DS_success;
     } else {
       if (downloader_cat.is_debug())

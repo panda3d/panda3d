@@ -50,6 +50,7 @@ Decompressor(PT(Buffer) buffer) {
 ////////////////////////////////////////////////////////////////////
 void Decompressor::
 init(PT(Buffer) buffer) {
+  _initiated = false;
   nassertv(!buffer.is_null());
   _half_buffer_length = buffer->get_length()/2; 
   _buffer = buffer;
@@ -68,6 +69,8 @@ init(PT(Buffer) buffer) {
 Decompressor::
 ~Decompressor(void) {
   _temp_file_name.unlink();
+  if (_initiated == true)
+    cleanup();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -97,6 +100,13 @@ initiate(Filename &source_file) {
 ////////////////////////////////////////////////////////////////////
 int Decompressor::
 initiate(Filename &source_file, Filename &dest_file) {
+
+  if (_initiated == true) {
+    downloader_cat.error()
+      << "Decompressor::run() - Decompression has already been initiated"
+      << endl;
+    return DS_error;
+  }
 
   // Open source file
   _source_file = source_file;
@@ -134,7 +144,31 @@ initiate(Filename &source_file, Filename &dest_file) {
   _total_bytes_read = 0;
   _read_all_input = false;
   _source_buffer_length;
-  return 1;
+  _initiated = true;
+  _decompressor = new ZDecompressor();
+  return DS_success;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Decompressor::cleanup
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+void Decompressor::
+cleanup(void) {
+  if (_initiated == false) {
+    downloader_cat.error()
+      << "Decompressor::cleanup() - Decompression has not been "
+      << "initiated" << endl;
+    return;
+  }
+
+  _initiated = false;
+  delete _decompressor;
+  _decompressor = NULL;
+  _read_stream.close();
+  _write_stream.close();
+  _source_file.unlink();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -144,8 +178,11 @@ initiate(Filename &source_file, Filename &dest_file) {
 ////////////////////////////////////////////////////////////////////
 int Decompressor::
 run(void) {
-  if (_decompressor == NULL) {
-    _decompressor = new ZDecompressor();
+  if (_initiated == false) {
+    downloader_cat.error()
+      << "Decompressor::run() - Decompression has not been initiated"
+      << endl;
+    return DS_error;
   }
 
   // See if there is anything left in the source file
@@ -180,11 +217,7 @@ run(void) {
       return DS_error_zlib;
     if ((int)_decompressor->get_total_in() == _source_file_length &&
 	  avail_out == dest_buffer_length) {
-      _read_stream.close();
-      _write_stream.close();
-      _source_file.unlink();
-      delete _decompressor;
-      _decompressor = NULL;
+      cleanup();
       return DS_success;
     }
   }
