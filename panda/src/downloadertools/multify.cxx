@@ -78,7 +78,6 @@ main(int argc, char *argv[]) {
     mfile.extract_all(rel_path);
 #else
     Extractor extor;
-    extor.set_frequency(0);
     extor.extract(dest_file, rel_path);
 #endif
   }

@@ -116,3 +116,23 @@ run(void) {
   }
   return ES_ok;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Extractor::extract
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool Extractor::
+extract(Filename &source_file, const Filename &rel_path) {
+  int ret = initiate(source_file, rel_path);
+  if (ret < 0)
+    return false;
+  for (;;) {
+    ret = run();
+    if (ret == ES_success)
+      return true;
+    if (ret < 0)
+      return false;
+  }
+  return false;
+}

@@ -35,6 +35,8 @@ PUBLISHED:
   int initiate(Filename &source_file, const Filename &rel_path = "");
   int run(void);
 
+  bool extract(Filename &source_file, const Filename &rel_path = "");
+
 private:
   void init(PT(Buffer) buffer);
 

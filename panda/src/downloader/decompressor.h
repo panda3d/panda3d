@@ -35,8 +35,9 @@ PUBLISHED:
 
   int initiate(Filename &source_file);
   int initiate(Filename &source_file, Filename &dest_file);
-
   int run(void);
+
+  bool decompress(Filename &source_file);
 
 private:
   void init(PT(Buffer) buffer);

@@ -175,3 +175,23 @@ run(void) {
 
   return DS_ok;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Decompressor::decompress
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool Decompressor::
+decompress(Filename &source_file) {
+  int ret = initiate(source_file);
+  if (ret < 0) 
+    return false;
+  for (;;) {
+    ret = run();
+    if (ret == DS_success)
+      return true;
+    else if (ret < 0)
+      return false;
+  }
+  return false;
+}
