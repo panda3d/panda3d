@@ -55,6 +55,7 @@ GraphicsEngine(Pipeline *pipeline) :
     display_cat.info()
       << "Using threading model " << _threading_model << "\n";
   }
+  _needs_sync = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -278,27 +279,14 @@ render_frame() {
   // threads tries to call any methods on the GraphicsEngine.  So
   // don't do that.
   MutexHolder holder(_lock);
+
+  if (_needs_sync) {
+    // Flip the windows from the previous frame, if necessary.
+    do_sync_frame();
+  }
   
-  // First, wait for all the threads to finish their current frame.
-  // Grabbing the mutex should achieve that.
+  // Grab each thread's mutex again after all windows have flipped.
   Threads::const_iterator ti;
-  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
-    RenderThread *thread = (*ti).second;
-    thread->_cv_mutex.lock();
-  }
-  
-  // Now signal all of our threads to flip the windows.
-  _app.do_flip(this);
-  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
-    RenderThread *thread = (*ti).second;
-    if (thread->_thread_state == TS_wait) {
-      thread->_thread_state = TS_do_flip;
-      thread->_cv.signal();
-    }
-    thread->_cv_mutex.release();
-  }
-  
-  // Grab the mutex again after all windows have flipped.
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     RenderThread *thread = (*ti).second;
     thread->_cv_mutex.lock();
@@ -319,7 +307,39 @@ render_frame() {
     }
     thread->_cv_mutex.release();
   }
+
+  // Some threads may still be drawing, so indicate that we have to
+  // wait for those threads before we can flip.
+  _needs_sync = true;
+
+  // But if we don't have any threads, go ahead and flip the frame
+  // now.  No point in waiting if we're single-threaded.
+  if (_threads.empty()) {
+    do_sync_frame();
+  }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::sync_frame
+//       Access: Published
+//  Description: Waits for all the threads that started drawing their
+//               last frame to finish drawing, and then flips all the
+//               windows.  It is not usually necessary to call this
+//               explicitly, unless you need to see the previous frame
+//               right away.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+sync_frame() {
+  // We hold the GraphicsEngine mutex while we wait for all of the
+  // threads.  Doing this puts us at risk for deadlock if any of the
+  // threads tries to call any methods on the GraphicsEngine.  So
+  // don't do that.
+  MutexHolder holder(_lock);
+  if (_needs_sync) {
+    do_sync_frame();
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::render_subframe
@@ -500,6 +520,36 @@ flip_windows(const GraphicsEngine::Windows &wlist) {
     GraphicsWindow *win = (*wi);
     win->end_flip();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::do_sync_frame
+//       Access: Private
+//  Description: The implementation of sync_frame().  We assume _lock
+//               is already held before this method is called.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+do_sync_frame() {
+  // First, wait for all the threads to finish their current frame.
+  // Grabbing the mutex should achieve that.
+  Threads::const_iterator ti;
+  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+    RenderThread *thread = (*ti).second;
+    thread->_cv_mutex.lock();
+  }
+  
+  // Now signal all of our threads to flip the windows.
+  _app.do_flip(this);
+  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+    RenderThread *thread = (*ti).second;
+    if (thread->_thread_state == TS_wait) {
+      thread->_thread_state = TS_do_flip;
+      thread->_cv.signal();
+    }
+    thread->_cv_mutex.release();
+  }
+
+  _needs_sync = false;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -63,9 +63,11 @@ PUBLISHED:
   void remove_all_windows();
 
   void render_frame();
+  void sync_frame();
+  
   void render_subframe(GraphicsStateGuardian *gsg, DisplayRegion *dr,
                        bool cull_sorting);
-  
+
 private:
   typedef pset< PT(GraphicsWindow) > Windows;
 
@@ -77,6 +79,7 @@ private:
 
   void process_events(const GraphicsEngine::Windows &wlist);
   void flip_windows(const GraphicsEngine::Windows &wlist);
+  void do_sync_frame();
 
   PT(SceneSetup) setup_scene(const NodePath &camera, 
                              GraphicsStateGuardian *gsg);
@@ -141,6 +144,7 @@ private:
   Threads _threads;
   string _threading_model;
 
+  bool _needs_sync;
   Mutex _lock;
 
   static PStatCollector _cull_pcollector;
