@@ -144,7 +144,7 @@ get_geom_node() {
 //               will return this new GeomNode which will be empty until
 //               the next call to draw().
 ////////////////////////////////////////////////////////////////////
-GeomNode *ParametricCurveDrawer::
+PT(GeomNode) ParametricCurveDrawer::
 detach_geom_node() {
   if (!_drawn) {
     draw();

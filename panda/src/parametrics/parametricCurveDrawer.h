@@ -42,7 +42,7 @@ PUBLISHED:
   ParametricCurveCollection *get_curves();
 
   GeomNode *get_geom_node();
-  GeomNode *detach_geom_node();
+  PT(GeomNode) detach_geom_node();
 
   void set_num_segs(float num_segs);
   float get_num_segs() const;
