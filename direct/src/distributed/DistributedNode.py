@@ -4,6 +4,7 @@ from ShowBaseGlobal import *
 from PandaModules import NodePath
 import DistributedObject
 import Task
+import types
 
 class DistributedNode(DistributedObject.DistributedObject, NodePath):
     """Distributed Node class:"""
@@ -13,6 +14,7 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
             self.DistributedNode_initialized
         except:
             self.DistributedNode_initialized = 1
+            self.gotStringParentToken = 0
             DistributedObject.DistributedObject.__init__(self, cr)
         return None
 
@@ -31,6 +33,7 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
 
     def generate(self):
         DistributedObject.DistributedObject.generate(self)
+        self.gotStringParentToken = 0
 
     def __cmp__(self, other):
         # DistributedNode inherits from NodePath, which inherits a
@@ -47,15 +50,36 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath):
     ### setParent ###
 
     def b_setParent(self, parentToken):
-        self.setParent(parentToken)
+        if type(parentToken) == types.StringType:
+            self.setParentStr(parentToken)
+        else:
+            self.setParent(parentToken)
         # it's important to call the local setParent first.
         self.d_setParent(parentToken)
 
     def d_setParent(self, parentToken):
-        self.sendUpdate("setParent", [parentToken])
+        if type(parentToken) == types.StringType:
+            self.sendUpdate("setParentStr", [parentToken])
+        else:
+            self.sendUpdate("setParent", [parentToken])
+
+    def setParentStr(self, parentTokenStr):
+        print 'setParentStr: %s' % parentTokenStr
+        print 'isGenerated: %s' % self.isGenerated()
+        self.do_setParent(parentTokenStr)
+        if len(parentTokenStr) > 0:
+            self.gotStringParentToken = 1
 
     def setParent(self, parentToken):
-        self.do_setParent(parentToken)
+        print 'setParent: %s' % parentToken
+        print 'isGenerated: %s' % self.isGenerated()
+        # if we are not yet generated and we just got a parent token
+        # as a string, ignore whatever value comes in here
+        justGotRequiredParentAsStr = ((not self.isGenerated()) and
+                                      self.gotStringParentToken)
+        if not justGotRequiredParentAsStr:
+            self.do_setParent(parentToken)
+        self.gotStringParentToken = 0
 
     def do_setParent(self, parentToken):
         """do_setParent(self, int parentToken)

@@ -12,8 +12,10 @@ class DistributedNodeAI(DistributedObjectAI.DistributedObjectAI):
     ### setParent ###
 
     def d_setParent(self, parentString):
-        self.sendUpdate("setParent", [parentString])
-        return None
+        if type(parentString) == type(''):
+            self.sendUpdate("setParentStr", [parentString])
+        else:
+            self.sendUpdate("setParent", [parentString])
 
     def setParent(self, parentString):
         pass
