@@ -126,6 +126,14 @@ def make_sequence(taskList):
     task.index = 0
     return task
 
+def resetSequenceOrLoop(task):
+    # Should this automatically be done as part of spawnTaskNamed?
+    # Or should one have to create a new task instance every time
+    # one wishes to spawn a task (currently sequences and loops can
+    # only be fired off once
+    task.index = 0
+    task.prevIndex = -1
+
 def loop(*taskList):
     return make_loop(taskList)
 
@@ -257,12 +265,6 @@ class TaskManager:
     def spawnTaskNamed(self, task, name):
         TaskManager.notify.debug('spawning task named: ' + name)
         task.name = name
-        # Reset task indicies (only applicable for sequences and loops)
-        # So same sequence or loop can be spawned multiple times
-        # MRM: Should we do this or should a new task instance have
-        # to be created every time you spawn a task?
-        task.index = 0
-        task.prevIndex = -1
         task.setStartTimeFrame(self.currentTime, self.currentFrame)
         # search back from the end of the list until we find a
         # task with a lower priority, or we hit the start of the list
