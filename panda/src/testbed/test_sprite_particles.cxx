@@ -79,7 +79,7 @@
 #if defined POINT_PARTICLE_RENDERER
   #define POINT_PARTICLE_RENDERER_POINT_SIZE    1.0f
 #elif defined SPRITE_PARTICLE_RENDERER
-  #define SPRITE_PARTICLE_RENDERER_TEXTURE_FILE       "rose.jpg"
+  #define SPRITE_PARTICLE_RENDERER_TEXTURE_FILE       "rock-floor.rgb"
   #define SPRITE_PARTICLE_RENDERER_COLOR              Colorf(1.0f, 1.0f, 1.0f, 1.0f)
 //  #define SPRITE_PARTICLE_RENDERER_X_SCALE_FLAG       true
 //  #define SPRITE_PARTICLE_RENDERER_Y_SCALE_FLAG       true
