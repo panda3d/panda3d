@@ -113,7 +113,7 @@ reassign(const PointerToBase<To> &copy) {
   // This double-casting is a bit of a cheat to get around the
   // inheritance issue--it's difficult to declare a template class to
   // be a friend.
-  reassign((To *)((const WeakPointerToBase<To> &)copy)._void_ptr);
+  reassign((To *)((const WeakPointerToBase<To> *)&copy)->_void_ptr);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -302,7 +302,7 @@ operator >= (const WeakPointerToBase<To> &other) const {
 template<class T>
 INLINE bool WeakPointerToBase<T>::
 operator == (const PointerToBase<To> &other) const {
-  return (To *)_void_ptr == (To *)((WeakPointerToBase<To> &)other)._void_ptr;
+  return (To *)_void_ptr == (To *)((WeakPointerToBase<To> *)&other)->_void_ptr;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -313,7 +313,7 @@ operator == (const PointerToBase<To> &other) const {
 template<class T>
 INLINE bool WeakPointerToBase<T>::
 operator != (const PointerToBase<To> &other) const {
-  return (To *)_void_ptr != (To *)((WeakPointerToBase<To> &)other)._void_ptr;
+  return (To *)_void_ptr != (To *)((WeakPointerToBase<To> *)&other)->_void_ptr;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -324,7 +324,7 @@ operator != (const PointerToBase<To> &other) const {
 template<class T>
 INLINE bool WeakPointerToBase<T>::
 operator > (const PointerToBase<To> &other) const {
-  return (To *)_void_ptr > (To *)((WeakPointerToBase<To> &)other)._void_ptr;
+  return (To *)_void_ptr > (To *)((WeakPointerToBase<To> *)&other)->_void_ptr;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -335,7 +335,7 @@ operator > (const PointerToBase<To> &other) const {
 template<class T>
 INLINE bool WeakPointerToBase<T>::
 operator <= (const PointerToBase<To> &other) const {
-  return (To *)_void_ptr <= (To *)((WeakPointerToBase<To> &)other)._void_ptr;
+  return (To *)_void_ptr <= (To *)((WeakPointerToBase<To> *)&other)->_void_ptr;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -346,7 +346,7 @@ operator <= (const PointerToBase<To> &other) const {
 template<class T>
 INLINE bool WeakPointerToBase<T>::
 operator >= (const PointerToBase<To> &other) const {
-  return (To *)_void_ptr >= (To *)((WeakPointerToBase<To> &)other)._void_ptr;
+  return (To *)_void_ptr >= (To *)((WeakPointerToBase<To> *)&other)->_void_ptr;
 }
 #endif  // WIN32_VC
 
@@ -380,7 +380,7 @@ operator < (const WeakPointerToBase<To> &other) const {
 template<class T>
 INLINE bool WeakPointerToBase<T>::
 operator < (const PointerToBase<To> &other) const {
-  return (To *)_void_ptr < (To *)((WeakPointerToBase<To> &)other)._void_ptr;
+  return (To *)_void_ptr < (To *)((WeakPointerToBase<To> *)&other)->_void_ptr;
 }
 
 #endif  // CPPPARSER
