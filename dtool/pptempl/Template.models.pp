@@ -284,7 +284,7 @@ $[TAB]egg2bam -kp -tp $[install_dir] $[EGG2BAM_OPTS] -o $[target] $[source]
 
 // Egg file installation.
 #forscopes install_egg
-  #foreach egg $[SOURCES]
+  #foreach egg $[notdir $[SOURCES]]
     #define local $[egg]
     #define sourcedir $[pal_egg_dir]
     #define dest $[install_model_dir]
@@ -297,9 +297,9 @@ $[TAB]cp $[sourcedir]/$[local] $[dest]
   #foreach egg $[UNPAL_SOURCES]
     #define local $[egg]
     #define dest $[install_model_dir]
-$[dest]/$[local] : $[source_prefix]$[local]
+$[dest]/$[notdir $[local]] : $[source_prefix]$[local]
 //      $[INSTALL]
-$[TAB]rm -f $[dest]/$[local]
+$[TAB]rm -f $[dest]/$[notdir $[local]]
 $[TAB]cp $[source_prefix]$[local] $[dest]
 
   #end egg
