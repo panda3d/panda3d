@@ -82,5 +82,7 @@ def planeIntersect (lineOrigin, lineDir, planeOrigin, normal):
     hitPt = lineDir * t
     return hitPt + lineOrigin
 
-def roundTo(value, divisor):
+def ROUND_TO(value, divisor):
     return round(value/float(divisor)) * divisor
+def ROUND_INT(val):
+    return int(round(val))

@@ -63,8 +63,8 @@ class DirectSession(PandaObject):
                             'mouse2', 'mouse2-up',
                             'mouse3', 'mouse3-up']
 
-    def select(self, nodePath):
-        dnp = self.selected.select(nodePath)
+    def select(self, nodePath, fMultiselect = 0):
+        dnp = self.selected.select(nodePath, fMultiselect)
         if dnp:
             messenger.send('preSelectNodePath', [dnp])
             # Update the readout
@@ -127,6 +127,8 @@ class DirectSession(PandaObject):
 	self.cameraControl.enableMouseFly()
         # Turn on object manipulation
         self.manipulationControl.enableManipulation()
+        # Make sure list of selected items is reset
+        self.selected.reset()
 	# Accept appropriate hooks
 	self.enableKeyEvents()
 	self.enableMouseEvents()
@@ -159,7 +161,7 @@ class DirectSession(PandaObject):
     def destroy(self):
 	self.disable()
 
-    def restart(self):
+    def reset(self):
 	self.enable()
 
     def enableActionEvents(self):

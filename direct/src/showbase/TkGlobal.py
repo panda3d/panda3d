@@ -9,7 +9,7 @@ def tkloop(self):
     # dooneevent will return 0 if there are no more events
     # waiting or 1 if there are still more.
     # DONT_WAIT tells tkinter not to block waiting for events
-    while tkinter.dooneevent(tkinter.DONT_WAIT):
+    while tkinter.dooneevent(tkinter.ALL_EVENTS | tkinter.DONT_WAIT):
         pass
     # Run forever
     return Task.cont
@@ -19,3 +19,5 @@ from TaskManagerGlobal import *
 
 # Spawn this task
 taskMgr.spawnTaskNamed(Task.Task(tkloop), "tkloop")
+
+

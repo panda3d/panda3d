@@ -2,7 +2,8 @@ from PandaObject import *
 from DirectGeometry import *
 
 MANIPULATION_MOVE_DELAY = 0.65
-VISIBLE_DISCS = ['x-disc-visible', 'y-disc-visible', 'z-disc-visible']
+UNPICKABLE = ['x-disc-visible', 'y-disc-visible', 'z-disc-visible',
+              'GridBack']
 
 class DirectManipulationControl(PandaObject):
     def __init__(self):
@@ -24,6 +25,7 @@ class DirectManipulationControl(PandaObject):
         self.fWidgetTop = 0
         self.fFreeManip = 1
         self.fScaling = 1
+        self.unpickable = UNPICKABLE
         self.mode = None
 
     def manipulationStart(self, chan):
@@ -102,7 +104,7 @@ class DirectManipulationControl(PandaObject):
                 # Is it a named node?, If so, see if it has a name
                 elif issubclass(node.__class__, NamedNode):
                     name = node.getName()
-                    if name in VISIBLE_DISCS:
+                    if name in self.unpickable:
                         pass
                     else:
                         index = i
@@ -119,7 +121,7 @@ class DirectManipulationControl(PandaObject):
                 # Find the node path from the node found above
                 nodePath = render.findPathDownTo(node)
                 # Select it
-                direct.select(nodePath)
+                direct.select(nodePath, direct.fShift)
             else:
                 direct.deselectAll()
         else:
@@ -136,11 +138,15 @@ class DirectManipulationControl(PandaObject):
         self.objectHandles.showAllHandles()
         self.objectHandles.hideGuides()
         # Restart followSelectedNodePath task
-        if direct.selected.last:
-            self.spawnFollowSelectedNodePathTask()
+        self.spawnFollowSelectedNodePathTask()
         messenger.send('manipulateObjectCleanup')
 
     def spawnFollowSelectedNodePathTask(self):
+        # If nothing selected, just return
+        if not direct.selected.last:
+            return
+        # Clear out old task to make sure
+        taskMgr.removeTasksNamed('followSelectedNodePath')
         # Where are the object handles relative to the selected object
         pos = VBase3(0)
         hpr = VBase3(0)
@@ -182,6 +188,14 @@ class DirectManipulationControl(PandaObject):
         self.ignore('.')
         self.ignore(',')
         self.ignore('F')
+
+    def addUnpickable(self, item):
+        if item not in self.unpickable:
+            self.unpickable.append(item)
+
+    def removeUnpickable(self, item):
+        if item in self.unpickable:
+            self.unpickable.remove(item)
 
     def removeManipulateObjectTask(self):
         taskMgr.removeTasksNamed('manipulateObject')
@@ -435,9 +449,8 @@ class DirectManipulationControl(PandaObject):
         # Compute widget2newWidget relative to base coordinate system
         mWidget2Base = direct.widget.getMat(base)
         mBase2NewBase = Mat4()
-        mBase2NewBase.composeMatrix(
-            UNIT_VEC, VBase3(h,p,r), ZERO_VEC,
-            CSDefault)
+        composeMatrix(mBase2NewBase, UNIT_VEC, VBase3(h,p,r), ZERO_VEC,
+                      CSDefault)
         mBase2Widget = base.getMat(direct.widget)
         mWidget2Parent = direct.widget.getMat()
         # Compose the result

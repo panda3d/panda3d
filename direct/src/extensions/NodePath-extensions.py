@@ -23,6 +23,15 @@
                 name = namedNodeName
         return name
 
+    def setName(self, name = '<noname>'):
+        """Returns the name of the bottom node if it exists, or <noname>"""
+        from PandaModules import *
+        # Get the bottom node
+        node = self.node()
+        # Is it a named node?, If so, see if it has a name
+        if issubclass(node.__class__, NamedNode):
+            node.setName(name)
+
     # For iterating over children
     def getChildrenAsList(self):
         """Converts a node path's child NodePathCollection into a list"""

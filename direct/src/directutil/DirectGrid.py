@@ -114,9 +114,9 @@ class DirectGrid(NodePath,PandaObject):
         # Snap if necessary
         if self.fXyzSnap:
             self.snapPos.set(
-                roundTo(self.snapPos[0], self.gridSpacing),
-                roundTo(self.snapPos[1], self.gridSpacing),
-                roundTo(self.snapPos[2], self.gridSpacing))
+                ROUND_TO(self.snapPos[0], self.gridSpacing),
+                ROUND_TO(self.snapPos[1], self.gridSpacing),
+                ROUND_TO(self.snapPos[2], self.gridSpacing))
             
 	# Move snap marker to this point
 	self.snapMarker.setPos(self.snapPos)
@@ -125,7 +125,7 @@ class DirectGrid(NodePath,PandaObject):
 	return self.snapPos
 
     def computeSnapAngle(self, angle):
-        return roundTo(angle, self.snapAngle)
+        return ROUND_TO(angle, self.snapAngle)
 
     def setSnapAngle(self, angle):
         self.snapAngle = angle

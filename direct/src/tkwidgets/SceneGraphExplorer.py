@@ -3,7 +3,6 @@ from Tkinter import *
 from Tree import *
 import Pmw
 
-
 class SceneGraphExplorer(Pmw.MegaWidget):
     "Graphical display of a scene graph"
     def __init__(self, root = render, parent = None, **kw):
@@ -52,6 +51,10 @@ class SceneGraphExplorer(Pmw.MegaWidget):
 
         # Check keywords and initialise options based on input values.
         self.initialiseoptions(SceneGraphExplorer)
+
+    def update(self):
+        """ Refresh scene graph explorer """
+        self._node.update()
 
     def mouse2Down(self, event):
         self._width = 1.0 * self._canvas.winfo_width()
@@ -112,9 +115,15 @@ class SceneGraphExplorerItem(TreeItem):
         return sublist
 
     def OnSelect(self):
-        messenger.send('SGEFlashNodePath', [self.nodePath])
+        messenger.send('SGENodePath_Flash', [self.nodePath])
 
     def MenuCommand(self, command):
-        messenger.send('SGE' + command + 'NodePath', [self.nodePath])
+        messenger.send('SGENodePath_' + command, [self.nodePath])
 
 
+def explore(nodePath):
+    tl = Toplevel()
+    tl.title('Explore: ' + nodePath.getName())
+    sge = SceneGraphExplorer(parent = tl, root = nodePath)
+    sge.pack(expand = 1, fill = 'both')
+    return sge

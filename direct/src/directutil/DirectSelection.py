@@ -2,7 +2,7 @@ from PandaObject import *
 from DirectGeometry import *
 from DirectSelection import *
 
-
+# MRM: To do: handle broken node paths in selected and deselected dicts
 class DirectNodePath(NodePath):
     # A node path augmented with info, bounding box, and utility methods
     def __init__(self, nodePath):
@@ -47,11 +47,15 @@ class DirectNodePath(NodePath):
 
 class SelectedNodePaths(PandaObject):
     def __init__(self):
+        self.reset()
+
+    def reset(self):
         self.selectedDict = {}
         self.deselectedDict = {}
         self.last = None
 
     def select(self, nodePath, fMultiSelect = 0):
+        """ Select the specified node path.  Multiselect as required """
 	# Do nothing if nothing selected
         if not nodePath:
             print 'Nothing selected!!'
@@ -60,21 +64,20 @@ class SelectedNodePaths(PandaObject):
 	# Reset selected objects and highlight if multiSelect is false
         if not fMultiSelect:
             self.deselectAll()
-
+        
         # Get this pointer
         id = nodePath.id()
         # First see if its already in the selected dictionary
-        dnp = self.selectedDict.get(id, None)
+        dnp = self.getSelectedDict(id)
         # If so, we're done
         if not dnp:
             # See if it is in the deselected dictionary
-            dnp = self.deselectedDict.get(id, None)
+            dnp = self.getDeselectedDict(id)
             if dnp:
-                # It has been previously selected:
-                # Show its bounding box
-                dnp.highlight()
                 # Remove it from the deselected dictionary
                 del(self.deselectedDict[id])
+                # Show its bounding box
+                dnp.highlight()
             else:
                 # Didn't find it, create a new selectedNodePath instance
                 dnp = DirectNodePath(nodePath)
@@ -87,10 +90,11 @@ class SelectedNodePaths(PandaObject):
         return dnp
 
     def deselect(self, nodePath):
+        """ Deselect the specified node path """
         # Get this pointer
         id = nodePath.id()
         # See if it is in the selected dictionary
-        dnp = self.selectedDict.get(id, None)
+        dnp = self.getSelectedDict(id)
         if dnp:
             # It was selected:
             # Hide its bounding box
@@ -101,30 +105,80 @@ class SelectedNodePaths(PandaObject):
             self.deselectedDict[id] = dnp
         return dnp
 
-    def selectedAsList(self):
-        list = []
-        for key in self.selectedDict.keys():
-            list.append(self.selectedDict[key])
-        return list
+    def getSelectedAsList(self):
+        """
+        Return a list of all selected node paths.  No verification of
+        connectivity is performed on the members of the list
+        """
+        return self.selectedDict.values()[:]
 
     def __getitem__(self,index):
-        return self.selectedAsList()[index]
+        return self.getSelectedAsList()[index]
 
-    def deselectedAsList(self):
-        list = []
-        for key in self.deselectedDict.keys():
-            list.append(self.deselectedDict[key])
-        return list
+    def getSelectedDict(self, id):
+        """
+        Search selectedDict for node path, try to repair broken node paths.
+        """
+        dnp = self.selectedDict.get(id, None)
+        if dnp:
+            # Found item in selected Dictionary, is it still valid?
+            if dnp.verifyConnectivity():
+                # Yes
+                return dnp
+            else:
+                # Not valid anymore, try to repair
+                if dnp.repairConnectivity(render):
+                    # Fixed, return node path
+                    return dnp
+                else:
+                    del(self.selectedDict[id])
+                    return None
+        else:
+            # Not in selected dictionary
+            return None
+
+    def getDeselectedAsList(self):
+        return self.deselectedDict.values()[:]
+
+    def getDeselectedDict(self, id):
+        """
+        Search deselectedDict for node path, try to repair broken node paths.
+        """
+        dnp = self.deselectedDict.get(id, None)
+        if dnp:
+            # Found item in deselected Dictionary, is it still valid?
+            if dnp.verifyConnectivity():
+                # Yes
+                return dnp
+            else:
+                # Not valid anymore, try to repair
+                if dnp.repairConnectivity(render):
+                    # Fixed, return node path
+                    return dnp
+                else:
+                    del(self.deselectedDict[id])
+                    return None
+        else:
+            # Not in deselected dictionary
+            return None
 
     def forEachSelectedNodePathDo(self, func):
-        duplicateKeys = self.selectedDict.keys()[:]
-        for key in duplicateKeys:
-            func(self.selectedDict[key])
+        """
+        Perform given func on selected node paths.  No node path
+        connectivity verification performed
+        """
+        selectedNodePaths = self.getSelectedAsList()
+        for nodePath in selectedNodePaths:
+            func(nodePath)
 
     def forEachDeselectedNodePathDo(self, func):
-        duplicateKeys = self.deselectedDict.keys()[:]
-        for key in duplicateKeys:
-            func(self.deselectedDict[key])
+        """
+        Perform given func on deselected node paths.  No node path
+        connectivity verification performed
+        """
+        deselectedNodePaths = self.getDeselectedAsList()
+        for nodePath in deselectedNodePaths:
+            func(nodePath)
 
     def getWrtAll(self):
         self.forEachSelectedNodePathDo(self.getWrt)
@@ -175,11 +229,11 @@ class SelectedNodePaths(PandaObject):
         # Get this pointer
         id = nodePath.id()
         # First check selected dict
-        dnp = self.selectedDict.get(id, None)
+        dnp = self.getSelectedDict(id)
         if dnp:
             return dnp
         # Otherwise return result of deselected search
-        return self.selectedDict.get(id, None)
+        return self.getDeselectedDict(id)
 
     def getNumSelected(self):
         return len(self.selectedDict.keys())

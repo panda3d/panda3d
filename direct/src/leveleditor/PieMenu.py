@@ -2,28 +2,29 @@ from PandaObject import *
 from DirectGeometry import *
 
 class PieMenu(NodePath, PandaObject):
-    def __init__(self, direct, menu, action = None, fUpdateOnlyOnChange = 1):
+    def __init__(self, visibleMenu, menuItems,
+                 action = None, fUpdateOnlyOnChange = 1):
         NodePath.__init__(self)
         # Create a toplevel node for aspect ratio scaling
         self.assign(hidden.attachNewNode(NamedNode('PieMenu')))
         # Attach the menu
-        self.menu = menu
-        # Try to flatten the menu (note, flattenStrong is too strong
+        self.visibleMenu = visibleMenu
+        # Try to flatten the visibleMenu (note, flattenStrong is too strong
         # for texture text
-        menu.flattenMedium()
-        self.menu.reparentTo(self)
+        self.visibleMenu.flattenMedium()
+        self.visibleMenu.reparentTo(self)
         # Initialize instance variables
-        self.direct = direct
-        self.numItems = self.menu.getNumChildren()
+        self.menuItems = menuItems
+        self.numItems = len(self.menuItems)
         self.degreesPerItem = 360.0/self.numItems
         self.itemOffset = self.degreesPerItem / 2.0
-        self.sfx = self.menu.getSx()
-        self.sfz = self.menu.getSz()
+        self.sfx = self.visibleMenu.getSx()
+        self.sfz = self.visibleMenu.getSz()
         # Record target and action
         self.action = action
         self.initialState = None
         # Marking lines
-        self.lines = LineNodePath(self.menu)
+        self.lines = LineNodePath(self.visibleMenu)
         self.lines.setColor(VBase4(1))
         self.lines.setThickness(1)
         # Set flags
@@ -43,15 +44,15 @@ class PieMenu(NodePath, PandaObject):
 	taskMgr.removeTasksNamed('pieMenuTask')
 
 	# Where did the user press the button?
-	self.originX = self.direct.chan.mouseX
-	self.originY = self.direct.chan.mouseY
+	self.originX = direct.chan.mouseX
+	self.originY = direct.chan.mouseY
 
 	# Pop up menu
 	self.reparentTo(render2d)
 	self.setPos(self.originX,0.0,self.originY)
         # Compensate for window aspect ratio
         self.setScale(1.0, 1.0,1.0)
-        #self.direct.chan.width/float(self.direct.chan.height))
+        #direct.chan.width/float(direct.chan.height))
 	# Start drawing the selection line
 	self.lines.reset()
 	self.lines.moveTo(0,0,0)
@@ -64,8 +65,8 @@ class PieMenu(NodePath, PandaObject):
         taskMgr.spawnTaskNamed(t, 'pieMenuTask')
 
     def pieMenuTask(self,state):
-        mouseX = self.direct.chan.mouseX
-        mouseY = self.direct.chan.mouseY
+        mouseX = direct.chan.mouseX
+        mouseY = direct.chan.mouseY
         deltaX = mouseX - self.originX
         deltaY = mouseY - self.originY
 
@@ -78,10 +79,10 @@ class PieMenu(NodePath, PandaObject):
             if self.fUpdateOnlyOnChange:
                 # Only do this when things change
                 if (self.currItem != -1):
-                    self.performAction(-1)
+                    self.performAction(self.initialState)
             else:
                 # Alway let use know mouse is in the center
-                self.performAction(-1)
+                self.performAction(self.initialState)
             self.currItem = -1
         else:
             # Outside of the center
@@ -95,9 +96,9 @@ class PieMenu(NodePath, PandaObject):
 
             if self.fUpdateOnlyOnChange:
                 if (self.currItem != newItem):
-                    self.performAction(newItem)
+                    self.performAction(self.menuItems[newItem])
             else:
-                self.performAction(newItem)
+                self.performAction(self.menuItems[newItem])
             self.currItem = newItem
         # Continue task
         return Task.cont
@@ -110,11 +111,6 @@ class PieMenu(NodePath, PandaObject):
 
     def setItemOffset(self,newOffset):
 	self.itemOffset = newOffset
-
-    def setNumItems(self,num):
-	self.numItems = num
-	self.degreesPerItem = 360.0 / self.numItems
-	self.itemOffset = self.degreesPerItem / 2.0
 
     def setUpdateOnlyOnChange(self,flag):
 	self.fUpdateOnlyOnChange = flag
