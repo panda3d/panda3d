@@ -19,6 +19,7 @@
      globalPointerRegistry.I globalPointerRegistry.h \
      indirectCompareNames.I indirectCompareNames.h \
      indirectCompareTo.I indirectCompareTo.h \
+     indirectLess.I indirectLess.h \
      ioPtaDatagramFloat.h ioPtaDatagramInt.h \
      ioPtaDatagramShort.h keyboardButton.h lineStream.I \
      lineStream.h lineStreamBuf.I lineStreamBuf.h \
@@ -64,7 +65,8 @@
     globPattern.I globPattern.h \
     globalPointerRegistry.I globalPointerRegistry.h \
     indirectCompareNames.I indirectCompareNames.h indirectCompareTo.I \
-    indirectCompareTo.h ioPtaDatagramFloat.h ioPtaDatagramInt.h \
+    indirectCompareTo.h indirectLess.I indirectLess.h \
+    ioPtaDatagramFloat.h ioPtaDatagramInt.h \
     ioPtaDatagramShort.h iterator_types.h keyboardButton.h lineStream.I \
     lineStream.h lineStreamBuf.I lineStreamBuf.h modifierButtons.I \
     modifierButtons.h mouseButton.h mouseData.h nameUniquifier.I \
