@@ -51,10 +51,14 @@ static void ReadChanConfigData(void) {
 
   DSearchPath path(chanconfig.GetString("ETC_PATH", "."));
 
-  Filename layoutfname = Filename::text_filename("layout_db");
+  string layoutdbfilename = chanconfig.GetString("layout-db-file","layout_db");
+  string windowdbfilename = chanconfig.GetString("window-db-file","window_db");
+  string setupdbfilename = chanconfig.GetString("setup-db-file","setup_db");
+
+  Filename layoutfname = Filename::text_filename(layoutdbfilename);
   if (!layoutfname.resolve_filename(path)) {
-    chancfg_cat->error()
-      << "Could not find " << layoutfname << " in " << path << "\n";
+    chancfg_cat->error() << "Could not find layoutdb file " << layoutfname << " in path " << path << "\n";
+    exit(1);
   } else {
     ifstream ifs;
     if (layoutfname.open_read(ifs)) {
@@ -65,13 +69,14 @@ static void ReadChanConfigData(void) {
     } else {
       chancfg_cat->error()
         << "Unable to read layout database " << layoutfname << "\n";
+      exit(1);
     }
   }
 
-  Filename setupfname = Filename::text_filename("setup_db");
+  Filename setupfname = Filename::text_filename(setupdbfilename);
   if (!setupfname.resolve_filename(path)) {
-    chancfg_cat->error()
-      << "Could not find " << setupfname << " in " << path << "\n";
+    chancfg_cat->error() << "Could not find setupdb file " << setupfname << " in path " << path << "\n"; 
+    exit(1);
   } else {
     ifstream ifs;
     if (setupfname.open_read(ifs)) {
@@ -82,13 +87,14 @@ static void ReadChanConfigData(void) {
     } else {
       chancfg_cat->error()
         << "Unable to read setup database " << setupfname << "\n";
+      exit(1);
     }
   }
 
-  Filename windowfname = Filename::text_filename("window_db");
+  Filename windowfname = Filename::text_filename(windowdbfilename);
   if (!windowfname.resolve_filename(path)) {
-    chancfg_cat->error()
-      << "Could not find " << windowfname << " in " << path << "\n";
+    chancfg_cat->error() << "Could not find windowdb file " << setupfname << " in path " << path << "\n"; 
+    exit(1);
   } else {
     ifstream ifs;
     if (windowfname.open_read(ifs)) {
@@ -99,6 +105,7 @@ static void ReadChanConfigData(void) {
     } else {
       chancfg_cat->error()
         << "Unable to read window database " << windowfname << "\n";
+      exit(1);
     }
   }
 }
