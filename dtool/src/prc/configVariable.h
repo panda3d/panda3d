@@ -39,7 +39,7 @@ class EXPCL_DTOOLCONFIG ConfigVariable : public ConfigVariableBase {
 protected:
   INLINE ConfigVariable(const string &name, ValueType type);
   INLINE ConfigVariable(const string &name, ValueType type,
-                        int flags, const string &description);
+                        const string &description, int flags);
 
 PUBLISHED:
   INLINE ConfigVariable(const string &name);

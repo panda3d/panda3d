@@ -37,8 +37,8 @@ ConfigVariable(const string &name, ConfigVariable::ValueType value_type) :
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigVariable::
 ConfigVariable(const string &name, ConfigVariable::ValueType value_type,
-               int flags, const string &description) :
-  ConfigVariableBase(name, value_type, flags, description)
+               const string &description, int flags) :
+  ConfigVariableBase(name, value_type, description, flags)
 {
 }
 

@@ -27,7 +27,7 @@
 ConfigVariableBase::
 ConfigVariableBase(const string &name, 
                    ConfigVariableBase::ValueType value_type,
-                   int flags, const string &description) :
+                   const string &description, int flags) :
   _core(ConfigVariableManager::get_global_ptr()->make_variable(name))
 {
   _core->set_value_type(value_type);

@@ -32,8 +32,7 @@ class EXPCL_DTOOLCONFIG ConfigVariableString : public ConfigVariable {
 PUBLISHED:
   INLINE ConfigVariableString(const string &name);
   INLINE ConfigVariableString(const string &name, string default_value,
-                              int flags = 0,
-                              const string &description = string());
+                              const string &description = string(), int flags = 0);
 
   INLINE void operator = (const string &value);
   INLINE operator string () const;

@@ -31,8 +31,7 @@ class EXPCL_DTOOLCONFIG ConfigVariableBool : public ConfigVariable {
 PUBLISHED:
   INLINE ConfigVariableBool(const string &name);
   INLINE ConfigVariableBool(const string &name, bool default_value,
-                            int flags = 0,
-                            const string &description = string());
+                            const string &description = string(), int flags = 0);
 
   INLINE void operator = (bool value);
   INLINE operator bool () const;

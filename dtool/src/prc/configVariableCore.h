@@ -49,11 +49,11 @@ public:
   INLINE bool is_used() const;
 
   INLINE ValueType get_value_type() const;
+  INLINE const string &get_description() const;
   INLINE int get_flags() const;
   INLINE bool is_closed() const;
   INLINE int get_trust_level() const;
   INLINE bool is_dynamic() const;
-  INLINE const string &get_description() const;
   INLINE const ConfigDeclaration *get_default_value() const;
 
   void set_value_type(ValueType value_type);
@@ -95,8 +95,8 @@ private:
   string _name;
   bool _is_used;
   ValueType _value_type;
-  int _flags;
   string _description;
+  int _flags;
   ConfigDeclaration *_default_value;
   ConfigDeclaration *_local_value;
 

@@ -34,5 +34,7 @@ enum NotifySeverity {
 END_PUBLISH
 
 EXPCL_DTOOLCONFIG ostream &operator << (ostream &out, NotifySeverity severity);
+EXPCL_DTOOLCONFIG istream &operator >> (istream &in, NotifySeverity &severity);
+
 
 #endif

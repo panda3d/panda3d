@@ -28,7 +28,7 @@
 Notify *Notify::_global_ptr = (Notify *)NULL;
 
 static ConfigVariableBool assert_abort
-("assert-abort", false, 0,
+("assert-abort", false,
  "Set this true to trigger a core dump and/or stack trace when the first assertion fails");
 
 
@@ -528,7 +528,7 @@ config_initialized() {
 
   if (_ostream_ptr == &cerr) {
     ConfigVariableString notify_output
-      ("notify-output", "", 0,
+      ("notify-output", "",
        "The filename to which to write all the output of notify");
 
     if (!notify_output.empty()) {

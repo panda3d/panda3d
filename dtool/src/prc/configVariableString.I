@@ -35,9 +35,9 @@ ConfigVariableString(const string &name) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigVariableString::
-ConfigVariableString(const string &name, string default_value, int flags,
-                     const string &description) :
-  ConfigVariable(name, VT_string, flags, description)
+ConfigVariableString(const string &name, string default_value, 
+                     const string &description, int flags) :
+  ConfigVariable(name, VT_string, description, flags)
 {
   _core->set_default_value(default_value);
   _core->set_used();

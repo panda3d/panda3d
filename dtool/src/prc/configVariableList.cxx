@@ -25,8 +25,8 @@
 ////////////////////////////////////////////////////////////////////
 ConfigVariableList::
 ConfigVariableList(const string &name, 
-                   int flags, const string &description) :
-  ConfigVariableBase(name, VT_list, flags, description)
+                   const string &description, int flags) :
+  ConfigVariableBase(name, VT_list, description, flags)
 {
   // A list variable implicitly defines a default value of the empty
   // string.  This is just to prevent the core variable from

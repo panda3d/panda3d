@@ -283,19 +283,28 @@ get_directory(int n) const {
 Filename DSearchPath::
 find_file(const Filename &filename) const {
   if (filename.is_local()) {
-    Directories::const_iterator di;
-    for (di = _directories.begin(); di != _directories.end(); ++di) {
-      Filename match((*di), filename);
-      if (match.exists()) {
-        if ((*di) == "." && filename.is_fully_qualified()) {
-          // A special case for the "." directory: to avoid prefixing
-          // an endless stream of ./ in front of files, if the
-          // filename already has a ./ prefixed
-          // (i.e. is_fully_qualified() is true), we don't
-          // prefix another one.
-          return filename;
-        } else {
-          return match;
+    if (_directories.empty()) {
+      // Let's say an empty search path is the same as a search path
+      // containing just ".".
+      if (filename.exists()) {
+        return filename;
+      }
+
+    } else {
+      Directories::const_iterator di;
+      for (di = _directories.begin(); di != _directories.end(); ++di) {
+        Filename match((*di), filename);
+        if (match.exists()) {
+          if ((*di) == "." && filename.is_fully_qualified()) {
+            // A special case for the "." directory: to avoid prefixing
+            // an endless stream of ./ in front of files, if the
+            // filename already has a ./ prefixed
+            // (i.e. is_fully_qualified() is true), we don't
+            // prefix another one.
+            return filename;
+          } else {
+            return match;
+          }
         }
       }
     }
@@ -322,21 +331,30 @@ find_all_files(const Filename &filename,
   int num_added = 0;
 
   if (filename.is_local()) {
-    Directories::const_iterator di;
-    for (di = _directories.begin(); di != _directories.end(); ++di) {
-      Filename match((*di), filename);
-      if (match.exists()) {
-        if ((*di) == "." && filename.is_fully_qualified()) {
-          // A special case for the "." directory: to avoid prefixing
-          // an endless stream of ./ in front of files, if the
-          // filename already has a ./ prefixed
-          // (i.e. is_fully_qualified() is true), we don't
-          // prefix another one.
-          results.add_file(filename);
-        } else {
-          results.add_file(match);
+    if (_directories.empty()) {
+      // Let's say an empty search path is the same as a search path
+      // containing just ".".
+      if (filename.exists()) {
+        results.add_file(filename);
+      }
+
+    } else {
+      Directories::const_iterator di;
+      for (di = _directories.begin(); di != _directories.end(); ++di) {
+        Filename match((*di), filename);
+        if (match.exists()) {
+          if ((*di) == "." && filename.is_fully_qualified()) {
+            // A special case for the "." directory: to avoid prefixing
+            // an endless stream of ./ in front of files, if the
+            // filename already has a ./ prefixed
+            // (i.e. is_fully_qualified() is true), we don't
+            // prefix another one.
+            results.add_file(filename);
+          } else {
+            results.add_file(match);
+          }
+          num_added++;
         }
-        num_added++;
       }
     }
   }

@@ -42,18 +42,18 @@ class EXPCL_DTOOLCONFIG ConfigVariableBase : public ConfigFlags {
 protected:
   INLINE ConfigVariableBase(const string &name, ValueType type);
   ConfigVariableBase(const string &name, ValueType type,
-                     int flags, const string &description);
+                     const string &description, int flags);
   INLINE ~ConfigVariableBase();
 
 PUBLISHED:
   INLINE const string &get_name() const;
 
   INLINE ValueType get_value_type() const;
+  INLINE const string &get_description() const;
   INLINE int get_flags() const;
   INLINE bool is_closed() const;
   INLINE int get_trust_level() const;
   INLINE bool is_dynamic() const;
-  INLINE const string &get_description() const;
 
   INLINE bool clear_local_value();
   INLINE bool has_local_value() const;

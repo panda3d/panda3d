@@ -17,8 +17,10 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "notifySeverity.h"
+#include "notify.h"
 
-ostream &operator << (ostream &out, NotifySeverity severity) {
+ostream &
+operator << (ostream &out, NotifySeverity severity) {
   switch (severity) {
   case NS_spam:
     return out << "spam";
@@ -43,4 +45,12 @@ ostream &operator << (ostream &out, NotifySeverity severity) {
   }
 
   return out << "**invalid severity**";
+}
+
+istream &
+operator >> (istream &in, NotifySeverity &severity) {
+  string word;
+  in >> word;
+  severity = Notify::string_severity(word);
+  return in;
 }

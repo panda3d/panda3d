@@ -207,3 +207,8 @@ INLINE ostream &NotifyCategory::
 fatal(bool prefix) const {
   return out(NS_fatal, prefix);
 }
+
+INLINE ostream &
+operator << (ostream &out, const NotifyCategory &cat) {
+  return out << cat.get_fullname();
+}

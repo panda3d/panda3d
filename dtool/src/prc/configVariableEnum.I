@@ -24,11 +24,9 @@
 ////////////////////////////////////////////////////////////////////
 template<class EnumType>
 INLINE ConfigVariableEnum<EnumType>::
-ConfigVariableEnum(const string &name, ParseFunc *func,
-                   EnumType default_value, int flags,
-                   const string &description) :
-  ConfigVariable(name, ConfigVariableCore::VT_enum, flags, description),
-  _func(func),
+ConfigVariableEnum(const string &name, EnumType default_value, 
+                   const string &description, int flags) :
+  ConfigVariable(name, ConfigVariableCore::VT_enum, description, flags),
   _value_seq(-1),
   _value(default_value),
   _got_default_value(true),
@@ -163,12 +161,16 @@ set_word(int n, EnumType value) {
 //     Function: ConfigVariableEnum::parse_string
 //       Access: Public, Virtual
 //  Description: Turns the string value into a value of the enumerated
-//               type by calling the parse function.
+//               type by invoking its predefined operator >> (istream)
+//               operator.
 ////////////////////////////////////////////////////////////////////
 template<class EnumType>
 INLINE EnumType ConfigVariableEnum<EnumType>::
 parse_string(const string &value) const {
-  return (*_func)(value);
+  istringstream strm(value);
+  EnumType result;
+  strm >> result;
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -176,8 +178,7 @@ parse_string(const string &value) const {
 //       Access: Public, Virtual
 //  Description: The format_enum() method assumes the enumerated type
 //               has a valid operator << (ostream) defined, which
-//               balances against the parse function passed to the
-//               constructor.
+//               balances against the operator >> (istream) operator.
 ////////////////////////////////////////////////////////////////////
 template<class EnumType>
 INLINE string ConfigVariableEnum<EnumType>::

@@ -28,7 +28,7 @@
 time_t NotifyCategory::_server_delta = 0;
 
 static ConfigVariableBool notify_timestamp
-("notify-timestamp", false, 0,
+("notify-timestamp", false,
  "Set true to output the date & time with each notify message.");
 
 ////////////////////////////////////////////////////////////////////
@@ -42,7 +42,8 @@ NotifyCategory(const string &fullname, const string &basename,
   _fullname(fullname),
   _basename(basename),
   _parent(parent),
-  _severity(get_config_name(), Notify::string_severity, NS_unspecified,
+  _severity(get_config_name(), NS_unspecified, 
+            "Default severity of this notify category", 
             ConfigVariable::F_dynamic)
 {
   if (_parent != (NotifyCategory *)NULL) {

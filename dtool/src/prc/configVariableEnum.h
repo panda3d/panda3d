@@ -30,21 +30,16 @@
 //               outside of C++ anyway.
 //
 //               This variable assumes that the enumerated type in
-//               question has an output operator defined that does the
-//               right thing (outputting a sensible string for the
-//               type).  It also requires a function that converts
-//               from the strings written by the output operator back
-//               to the type; this function pointer should be passed
-//               to the constructor.
+//               question has input and output stream operators
+//               defined that do the right thing (outputting a
+//               sensible string for the type, and converting a string
+//               to the correct value).
 ////////////////////////////////////////////////////////////////////
 template<class EnumType>
 class ConfigVariableEnum : public ConfigVariable {
 public:
-  typedef EnumType ParseFunc(const string &value);
-
-  ConfigVariableEnum(const string &name, ParseFunc *func,
-                     EnumType default_value, int flags = 0,
-                     const string &description = string());
+  ConfigVariableEnum(const string &name, EnumType default_value, 
+                     const string &description = string(), int flags = 0);
   INLINE ~ConfigVariableEnum();
 
   INLINE void operator = (EnumType value);
@@ -63,8 +58,6 @@ public:
 private:
   INLINE EnumType parse_string(const string &value) const;
   INLINE string format_enum(EnumType value) const;
-
-  ParseFunc *_func;
 
   int _value_seq;
   EnumType _value;

@@ -265,5 +265,11 @@ main(int argc, char *argv[]) {
     }
   }
 
+  if (interrogate_error_flag()) {
+    nout << "Error reading interrogate data.\n";
+    output_code_filename.unlink();
+    exit(1);
+  }
+
   return (0);
 }

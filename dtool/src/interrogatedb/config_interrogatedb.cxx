@@ -70,6 +70,5 @@ ConfigureFn(config_interrogatedb) {
 }
 
 ConfigVariableSearchPath interrogatedb_path
-("interrogatedb-path", 0,
- "The search path for interrogate's *.in files.");
+("interrogatedb-path", "The search path for interrogate's *.in files.");
 

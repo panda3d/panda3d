@@ -51,6 +51,17 @@ get_value_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableCore::get_description
+//       Access: Public
+//  Description: Returns the brief description of this variable, if
+//               it has been defined.
+////////////////////////////////////////////////////////////////////
+INLINE const string &ConfigVariableCore::
+get_description() const {
+  return _description;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableCore::get_flags
 //       Access: Public
 //  Description: Returns the flags value as set by set_flags().  This
@@ -115,18 +126,6 @@ get_trust_level() const {
 INLINE bool ConfigVariableCore::
 is_dynamic() const {
   return (_flags & F_dynamic) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableCore::get_description
-//       Access: Public
-//  Description: Returns the one-line description of this variable.
-//               If the variable has not yet been defined, this will
-//               be empty.
-////////////////////////////////////////////////////////////////////
-INLINE const string &ConfigVariableCore::
-get_description() const {
-  return _description;
 }
 
 ////////////////////////////////////////////////////////////////////

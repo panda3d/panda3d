@@ -25,8 +25,8 @@
 ////////////////////////////////////////////////////////////////////
 ConfigVariableSearchPath::
 ConfigVariableSearchPath(const string &name, 
-                   int flags, const string &description) :
-  ConfigVariableBase(name, VT_search_path, flags, description),
+                   const string &description, int flags) :
+  ConfigVariableBase(name, VT_search_path, description, flags),
   _value_seq(-1),
   _value_stale(true)
 {
@@ -63,9 +63,9 @@ reload_search_path() {
   _value.clear();
 
   _value.append_path(_prefix);
-  int num_declarations = _core->get_num_declarations();
-  for (int i = 0; i < num_declarations; i++) {
-    _value.append_directory(_core->get_declaration(i)->get_string_value());
+  int num_unique_references = _core->get_num_unique_references();
+  for (int i = 0; i < num_unique_references; i++) {
+    _value.append_directory(_core->get_unique_reference(i)->get_string_value());
   }
   _value.append_path(_postfix);
 

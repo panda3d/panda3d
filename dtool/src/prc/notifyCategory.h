@@ -93,9 +93,7 @@ private:
   friend class Notify;
 };
 
-INLINE ostream &operator << (ostream &out, const NotifyCategory &cat) {
-  return out << cat.get_fullname();
-}
+INLINE ostream &operator << (ostream &out, const NotifyCategory &cat);
 
 #include "notifyCategory.I"
 

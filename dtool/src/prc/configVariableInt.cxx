@@ -24,9 +24,9 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 ConfigVariableInt::
-ConfigVariableInt(const string &name, int default_value, int flags,
-                  const string &description) :
-  ConfigVariable(name, ConfigVariableCore::VT_int, flags, description)
+ConfigVariableInt(const string &name, int default_value, 
+                  const string &description, int flags) :
+  ConfigVariable(name, ConfigVariableCore::VT_int, description, flags)
 {
   ostringstream strm;
   strm << default_value;

@@ -31,8 +31,7 @@ class EXPCL_DTOOLCONFIG ConfigVariableDouble : public ConfigVariable {
 PUBLISHED:
   INLINE ConfigVariableDouble(const string &name);
   ConfigVariableDouble(const string &name, double default_value,
-                       int flags = 0,
-                       const string &description = string());
+                       const string &description = string(), int flags = 0);
 
   INLINE void operator = (double value);
   INLINE operator double () const;
