@@ -102,7 +102,7 @@ private:
   void compare_collider_to_solid(CollisionEntry &entry,
                                  const GeometricBoundingVolume *from_node_gbv,
                                  const GeometricBoundingVolume *solid_gbv);
-  void compare_collider_to_geom(CollisionEntry &entry, Geom *geom,
+  void compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
                                 const GeometricBoundingVolume *from_node_gbv,
                                 const GeometricBoundingVolume *solid_gbv);
 

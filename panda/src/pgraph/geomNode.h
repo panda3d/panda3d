@@ -56,7 +56,8 @@ public:
 
 PUBLISHED:
   INLINE int get_num_geoms() const;
-  INLINE Geom *get_geom(int n) const;
+  INLINE const Geom *get_geom(int n) const;
+  INLINE Geom *get_unique_geom(int n);
   INLINE const RenderState *get_geom_state(int n) const;
   INLINE void set_geom_state(int n, const RenderState *state);
 

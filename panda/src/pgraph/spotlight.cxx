@@ -23,6 +23,7 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "colorAttrib.h"
+#include "texture.h"
 #include "config_pgraph.h"
 
 TypeHandle Spotlight::_type_handle;

@@ -142,25 +142,6 @@ get_effect(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderEffects::get_billboard
-//       Access: Public
-//  Description: This function is provided as an optimization, to
-//               speed up the render-time checking for the existance
-//               of a BillboardEffect on this state.  It returns a
-//               pointer to the BillboardEffect, if there is one, or
-//               NULL if there is not.
-////////////////////////////////////////////////////////////////////
-INLINE const BillboardEffect *RenderEffects::
-get_billboard() const {
-  if ((_flags & F_checked_billboard) == 0) {
-    // We pretend this function is const, even though it transparently
-    // modifies the internal billboard cache.
-    ((RenderEffects *)this)->determine_billboard();
-  }
-  return _billboard;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: RenderEffects::has_decal
 //       Access: Public
 //  Description: This function is provided as an optimization, to
@@ -182,44 +163,6 @@ has_decal() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderEffects::get_compass
-//       Access: Public
-//  Description: This function is provided as an optimization, to
-//               speed up the render-time checking for the existance
-//               of a CompassEffect on this state.  It returns a
-//               pointer to the CompassEffect, if there is one, or
-//               NULL if there is not.
-////////////////////////////////////////////////////////////////////
-INLINE const CompassEffect *RenderEffects::
-get_compass() const {
-  if ((_flags & F_checked_compass) == 0) {
-    // We pretend this function is const, even though it transparently
-    // modifies the internal compass cache.
-    ((RenderEffects *)this)->determine_compass();
-  }
-  return _compass;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderEffects::get_polylight
-//       Access: Public
-//  Description: This function is provided as an optimization, to
-//               speed up the render-time checking for the existance
-//               of a PolylightEffect on this state.  It returns a
-//               pointer to the PolylightEffect, if there is one, or
-//               NULL if there is not.
-////////////////////////////////////////////////////////////////////
-INLINE const PolylightEffect *RenderEffects::
-get_polylight() const {
-  if ((_flags & F_checked_polylight) == 0) {
-    // We pretend this function is const, even though it transparently
-    // modifies the internal polylight cache.
-    ((RenderEffects *)this)->determine_polylight();
-  }
-  return _polylight;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: RenderEffects::has_show_bounds
 //       Access: Public
 //  Description: This function is provided as an optimization, to
@@ -238,4 +181,21 @@ has_show_bounds() const {
     ((RenderEffects *)this)->determine_show_bounds();
   }
   return ((_flags & F_has_show_bounds) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderEffects::has_cull_callback
+//       Access: Public
+//  Description: This function is provided as an optimization, to
+//               speed up the render-time checking for the existance
+//               of an effect with a cull_callback on this state.
+////////////////////////////////////////////////////////////////////
+INLINE bool RenderEffects::
+has_cull_callback() const {
+  if ((_flags & F_checked_cull_callback) == 0) {
+    // We pretend this function is const, even though it transparently
+    // modifies the internal cull_callback cache.
+    ((RenderEffects *)this)->determine_cull_callback();
+  }
+  return ((_flags & F_has_cull_callback) != 0);
 }

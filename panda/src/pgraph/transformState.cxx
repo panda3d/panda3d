@@ -23,6 +23,7 @@
 #include "datagramIterator.h"
 #include "indent.h"
 #include "compareTo.h"
+#include "config_pgraph.h"
 
 TransformState::States *TransformState::_states = NULL;
 CPT(TransformState) TransformState::_identity_state;

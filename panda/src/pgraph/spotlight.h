@@ -23,6 +23,8 @@
 
 #include "lightLensNode.h"
 
+class Texture;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : Spotlight
 // Description : A light originating from a single point in space, and

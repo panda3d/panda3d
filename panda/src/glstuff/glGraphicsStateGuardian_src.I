@@ -715,31 +715,6 @@ enable_stencil_test(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::enable_texturing
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void CLP(GraphicsStateGuardian)::
-enable_texturing(bool val) {
-  if (_texturing_enabled != val) {
-    _texturing_enabled = val;
-    if (val) {
-#ifdef GSG_VERBOSE
-      GLCAT.spam()
-        << "glEnable(GL_TEXTURE_2D)" << endl;
-#endif
-      GLP(Enable)(GL_TEXTURE_2D);
-    } else {
-#ifdef GSG_VERBOSE
-      GLCAT.spam()
-        << "glDisable(GL_TEXTURE_2D)" << endl;
-#endif
-      GLP(Disable)(GL_TEXTURE_2D);
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::enable_scissor
 //       Access:
 //  Description:

@@ -45,6 +45,12 @@ public:
   typedef TYPENAME VTX::TType TType;
   typedef TYPENAME VTX::CType CType;
   typedef TYPENAME VTX::Attrib DAttrib;
+  typedef pset<const TexCoordName *> TexCoordNames;
+  typedef TexCoordNames::const_iterator tcn_const_iterator;
+  typedef TexCoordNames::size_type tcn_size_type;
+
+  // This type is passed to fill_geom() for the texcoords.
+  typedef pmap<const TexCoordName *, PTA(TType) > TexCoordFill;
 
   INLINE BuilderPrimTempl();
   INLINE BuilderPrimTempl(const BuilderPrimTempl &copy);
@@ -78,7 +84,6 @@ public:
   // normal.
   INLINE bool has_vertex_normal() const;
   INLINE bool has_vertex_color() const;
-  INLINE bool has_vertex_texcoord() const;
   INLINE bool has_vertex_pixel_size() const;
 
   // has_component_normal() can only be true for aggregate primitive
@@ -96,8 +101,14 @@ public:
 
   INLINE bool has_any_normal() const;
   INLINE bool has_any_color() const;
-  INLINE bool has_any_texcoord() const;
   INLINE bool has_any_pixel_size() const;
+
+  // The following methods iterate through the list of texture
+  // coordinate names that all vertices in the primitive have in
+  // common.
+  INLINE tcn_const_iterator tcn_begin() const;
+  INLINE tcn_const_iterator tcn_end() const;
+  INLINE tcn_size_type tcn_size() const;
 
   INLINE BuilderPrimTempl &clear();
   INLINE BuilderPrimTempl &clear_vertices();
@@ -140,6 +151,7 @@ protected:
 
   Verts _verts;
   Components _components;
+  TexCoordNames _texcoord_names;
   BuilderPrimType _type;
   int _overall;
 };

@@ -23,6 +23,8 @@
 
 #include "renderAttrib.h"
 
+class FactoryParams;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : CullFaceAttrib
 // Description : Indicates which faces should be culled based on their

@@ -23,6 +23,7 @@
 #include "drawable.h"
 
 #include "vector_typedWritable.h"
+#include "ordered_vector.h"
 #include "pointerTo.h"
 #include "pointerToArray.h"
 #include "typedef.h"
@@ -33,12 +34,16 @@
 #include "pta_TexCoordf.h"
 #include "pta_ushort.h"
 #include "pta_int.h"
-#include "texture.h"
+#include "texCoordName.h"
+#include "textureStage.h"
+#include "pset.h"
 
 class Datagram;
 class DatagramIterator;
 class BamReader;
 class BamWriter;
+class GeomContext;
+class PreparedGraphicsObjects;
 
 ////////////////////////////////////////////////////////////////////
 // Defines
@@ -67,6 +72,11 @@ static const int num_GeomAttrTypes = 4;
 ostream &operator << (ostream &out, GeomBindType t);
 ostream &operator << (ostream &out, GeomAttrType t);
 
+// This is a totally arbitrary limit and may be increased almost
+// without penalty.  It is just used to control the static size of the
+// array stored in the MultiTexcoordIterator, below.
+static const int max_geom_texture_stages = 32;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : Geom
 // Description : Geometry parent class
@@ -92,6 +102,12 @@ public:
     const TexCoordf *_array;
     const ushort *_index;
   };
+  class MultiTexCoordIterator {
+  public:
+    int _num_stages;
+    TexCoordIterator _stages[max_geom_texture_stages];
+    int _stage_index[max_geom_texture_stages];
+  };
   class ColorIterator {
   public:
     const Colorf *_array;
@@ -112,84 +128,63 @@ public:
 
   Geom();
   Geom(const Geom &copy);
-  ~Geom();
+  virtual ~Geom();
 
   void operator = (const Geom &copy);
   virtual Geom *make_copy() const=0;
 
 PUBLISHED:
-  void write(ostream &out, int indent_level = 0) const;
-  virtual void output(ostream &out) const;
-  void write_verbose(ostream &out, int indent_level) const;
-
-public:
-  // From parent dDrawable
-  virtual void draw(GraphicsStateGuardianBase *gsg);
-
-  // From parent Configurable
-  virtual void config();
-
-  // Immediate mode drawing functions - issue graphics commands
-  virtual void draw_immediate(GraphicsStateGuardianBase *gsg, GeomContext *gc) = 0;
-  virtual void print_draw_immediate() const = 0;
-
-  void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
-                         bool &found_any) const;
-PUBLISHED:
   void transform_vertices(const LMatrix4f &mat);
 
   void set_coords(const PTA_Vertexf &coords,
-                   const PTA_ushort &vindex =
-                   PTA_ushort());
-  void set_coords(const PTA_Vertexf &coords,
-                   GeomBindType bind,
-                   const PTA_ushort &vindex =
-                   PTA_ushort());
-  void set_normals(const PTA_Normalf &norms,
-                   GeomBindType bind,
-                   const PTA_ushort &nindex =
-                   PTA_ushort());
-  void set_colors(const PTA_Colorf &colors,
-                  GeomBindType bind,
-                  const PTA_ushort &cindex =
-                  PTA_ushort());
-  void set_texcoords(const PTA_TexCoordf &texcoords,
-                     GeomBindType bind,
-                     const PTA_ushort &tindex =
-                     PTA_ushort());
+                  const PTA_ushort &vindex = PTA_ushort());
+  void set_coords(const PTA_Vertexf &coords, GeomBindType bind,
+                  const PTA_ushort &vindex = PTA_ushort());
+  void set_normals(const PTA_Normalf &norms, GeomBindType bind,
+                   const PTA_ushort &nindex = PTA_ushort());
+  void set_colors(const PTA_Colorf &colors, GeomBindType bind,
+                  const PTA_ushort &cindex = PTA_ushort());
+  void set_texcoords(const PTA_TexCoordf &texcoords, GeomBindType bind,
+                     const PTA_ushort &tindex = PTA_ushort());
+  void set_texcoords(const TexCoordName *name, const PTA_TexCoordf &texcoords,
+                     const PTA_ushort &tindex = PTA_ushort());
+  void remove_texcoords(const TexCoordName *name);
 
 public:
   // These can't be published because of the pass-by-reference
   // primitive types.
-  void get_coords(PTA_Vertexf &coords,
-                  GeomBindType &bind,
+  void get_coords(PTA_Vertexf &coords, GeomBindType &bind,
                   PTA_ushort &vindex) const;
 
-  void get_coords(PTA_Vertexf &coords,
-                  PTA_ushort &vindex) const;
+  void get_coords(PTA_Vertexf &coords, PTA_ushort &vindex) const;
 
-  void get_normals(PTA_Normalf &norms,
-                   GeomBindType &bind,
+  void get_normals(PTA_Normalf &norms, GeomBindType &bind,
                    PTA_ushort &nindex) const;
   void get_colors(PTA_Colorf &colors,
-                  GeomBindType &bind,
-                  PTA_ushort &cindex) const;
-  void get_texcoords(PTA_TexCoordf &texcoords,
-                     GeomBindType &bind,
+                  GeomBindType &bind, PTA_ushort &cindex) const;
+  void get_texcoords(PTA_TexCoordf &texcoords, GeomBindType &bind,
                      PTA_ushort &tindex) const;
+
 
 PUBLISHED:
   virtual bool is_dynamic() const;
 
   INLINE GeomBindType get_binding(int attr) const;
+  INLINE bool has_any_texcoords() const;
+  INLINE bool has_texcoords(const TexCoordName *name) const;
+
   INLINE PTA_Vertexf get_coords_array() const;
   INLINE PTA_Normalf get_normals_array() const;
   INLINE PTA_Colorf get_colors_array() const;
   INLINE PTA_TexCoordf get_texcoords_array() const;
+  INLINE PTA_TexCoordf get_texcoords_array(const TexCoordName *name) const;
+
   INLINE PTA_ushort get_coords_index() const;
   INLINE PTA_ushort get_normals_index() const;
   INLINE PTA_ushort get_colors_index() const;
   INLINE PTA_ushort get_texcoords_index() const;
+  INLINE PTA_ushort get_texcoords_index(const TexCoordName *name) const;
+  INLINE bool are_texcoords_indexed() const;
 
   void prepare(PreparedGraphicsObjects *prepared_objects);
 
@@ -213,7 +208,14 @@ PUBLISHED:
   virtual Geom *explode() const;
   virtual PTA_ushort get_tris() const;
 
+  void write(ostream &out, int indent_level = 0) const;
+  virtual void output(ostream &out) const;
+  void write_verbose(ostream &out, int indent_level) const;
+
 public:
+  typedef pvector< PT(TextureStage) > ActiveTextureStages;
+  typedef pset<TextureStage *> NoTexCoordStages;
+
   INLINE VertexIterator make_vertex_iterator() const;
   INLINE const Vertexf &get_next_vertex(VertexIterator &viterator) const;
 
@@ -222,6 +224,10 @@ public:
 
   INLINE TexCoordIterator make_texcoord_iterator() const;
   INLINE const TexCoordf &get_next_texcoord(TexCoordIterator &tciterator) const;
+  void setup_multitexcoord_iterator(MultiTexCoordIterator &iterator,
+                                    const ActiveTextureStages &active_stages,
+                                    const NoTexCoordStages &no_texcoords) const;
+  INLINE const TexCoordf &get_next_multitexcoord(MultiTexCoordIterator &tciterator, int n) const;
 
   INLINE ColorIterator make_color_iterator() const;
   INLINE const Colorf &get_next_color(ColorIterator &citerator) const;
@@ -230,6 +236,19 @@ public:
                            GraphicsStateGuardianBase *gsg);
   bool release(PreparedGraphicsObjects *prepared_objects);
   int release_all();
+
+  // From parent dDrawable
+  virtual void draw(GraphicsStateGuardianBase *gsg) const;
+
+  // From parent Configurable
+  virtual void config();
+
+  // Immediate mode drawing functions - issue graphics commands
+  virtual void draw_immediate(GraphicsStateGuardianBase *gsg, GeomContext *gc) = 0;
+  virtual void print_draw_immediate() const = 0;
+
+  void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
+                         bool &found_any) const;
 
 protected:
   void init();
@@ -240,25 +259,38 @@ protected:
   PTA_Vertexf _coords;
   PTA_Normalf _norms;
   PTA_Colorf _colors;
-  PTA_TexCoordf _texcoords;
 
   PTA_ushort _vindex;
   PTA_ushort _nindex;
   PTA_ushort _cindex;
-  PTA_ushort _tindex;
 
   int _numprims,_num_vertices;
   PTA_int _primlengths;
   enum GeomBindType _bind[num_GeomAttrTypes];
 
+  class TexCoordDef {
+  public:
+    PTA_TexCoordf _texcoords;
+    PTA_ushort _tindex;
+  };
+
+  typedef pmap<CPT(TexCoordName), TexCoordDef> TexCoordsByName;
+  TexCoordsByName _texcoords_by_name;
+
   // Functions to extract component values, one at a time.
   GetNextVertex *_get_vertex;
   GetNextNormal *_get_normal;
-  GetNextTexCoord *_get_texcoord;
   GetNextColor *_get_color;
+  GetNextTexCoord *_get_texcoord;
+
+  // temporary storage until complete_pointers fills in _texcoords_by_name's TexCoordName *
+  typedef pvector<TexCoordDef *> TexCoordDefSet;
+  TexCoordDefSet _temp_texcoord_set;
+
 
 private:
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
+  static int sum_lengths(const PTA_int &lengths);
 
   // A Geom keeps a list (actually, a map) of all the
   // PreparedGraphicsObjects tables that it has been prepared into.
@@ -276,6 +308,7 @@ private:
 public:
   //static void register_with_read_factory(void);
   virtual void write_datagram(BamWriter* manager, Datagram &me);
+  virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
 
   //static TypedWritable *make_Generic(const FactoryParams &params);
 

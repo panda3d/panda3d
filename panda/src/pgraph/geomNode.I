@@ -52,13 +52,39 @@ get_num_geoms() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::get_geom
 //       Access: Public
-//  Description: Returns the nth geom of the node.
+//  Description: Returns the nth geom of the node.  This object should
+//               not be modified, since the same object might be
+//               shared between multiple different GeomNodes, but see
+//               get_unique_geom().
 ////////////////////////////////////////////////////////////////////
-INLINE Geom *GeomNode::
+INLINE const Geom *GeomNode::
 get_geom(int n) const {
   CDReader cdata(_cycler);
   nassertr(n >= 0 && n < (int)cdata->_geoms.size(), NULL);
   return cdata->_geoms[n]._geom;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::get_unique_geom
+//       Access: Public
+//  Description: Returns the nth geom of the node, suitable for
+//               modifying it.  If the nth Geom has multiple reference
+//               counts to it, reassigns it to an identical copy
+//               first, and returns the new copy--this provides a
+//               "copy on write" that ensures that the Geom that is
+//               returned is unique to this GeomNode and is not shared
+//               with any other GeomNodes.
+////////////////////////////////////////////////////////////////////
+INLINE Geom *GeomNode::
+get_unique_geom(int n) {
+  CDWriter cdata(_cycler);
+  nassertr(n >= 0 && n < (int)cdata->_geoms.size(), NULL);
+  Geom *geom = cdata->_geoms[n]._geom;
+  if (geom->get_ref_count() > 1) {
+    geom = cdata->_geoms[n]._geom = geom->make_copy();
+  }
+
+  return geom;
 }
 
 ////////////////////////////////////////////////////////////////////

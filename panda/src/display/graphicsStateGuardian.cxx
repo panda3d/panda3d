@@ -81,6 +81,11 @@ GraphicsStateGuardian(const FrameBufferProperties &properties) {
   _closing_gsg = false;
   _active = true;
   _prepared_objects = new PreparedGraphicsObjects;
+
+  // Initially, we set this to 1 (the default--no multitexturing
+  // supported).  A derived GSG may set this differently if it
+  // supports multitexturing.
+  _max_texture_stages = 1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1148,6 +1153,18 @@ end_bind_clip_planes() {
 void GraphicsStateGuardian::
 set_blend_mode(ColorWriteAttrib::Mode, ColorBlendAttrib::Mode,
                TransparencyAttrib::Mode) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::finish_modify_state
+//       Access: Protected, Virtual
+//  Description: Called after the GSG state has been modified via
+//               modify_state() or set_state(), this hook is provided
+//               for the derived class to do any further state setup
+//               work.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+finish_modify_state() {
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -47,7 +47,6 @@ extern EXPCL_PANDAEGG CoordinateSystem egg_coordinate_system;
 extern EXPCL_PANDAEGG bool egg_ignore_mipmaps;
 extern EXPCL_PANDAEGG bool egg_ignore_filters;
 extern EXPCL_PANDAEGG bool egg_ignore_clamp;
-extern EXPCL_PANDAEGG bool egg_always_decal_textures;
 extern EXPCL_PANDAEGG bool egg_ignore_decals;
 extern EXPCL_PANDAEGG bool egg_flatten;
 extern EXPCL_PANDAEGG bool egg_flatten_siblings;

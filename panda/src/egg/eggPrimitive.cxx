@@ -45,8 +45,11 @@ determine_alpha_mode() {
 
   EggRenderMode *result = EggNode::determine_alpha_mode();
   if (result == (EggRenderMode *)NULL) {
-    if (has_texture() && get_texture()->get_alpha_mode() != AM_unspecified) {
-      result = get_texture();
+    int num_textures = get_num_textures();
+    for (int i = 0; i < num_textures && result == (EggRenderMode *)NULL; i++) {
+      if (get_texture(i)->get_alpha_mode() != AM_unspecified) {
+        result = get_texture(i);
+      }
     }
   }
   return result;
@@ -69,9 +72,11 @@ determine_depth_write_mode() {
 
   EggRenderMode *result = EggNode::determine_depth_write_mode();
   if (result == (EggRenderMode *)NULL) {
-    if (has_texture() &&
-        get_texture()->get_depth_write_mode() != DWM_unspecified) {
-      result = get_texture();
+    int num_textures = get_num_textures();
+    for (int i = 0; i < num_textures && result == (EggRenderMode *)NULL; i++) {
+      if (get_texture(i)->get_depth_write_mode() != DWM_unspecified) {
+        result = get_texture(i);
+      }
     }
   }
   return result;
@@ -94,9 +99,11 @@ determine_depth_test_mode() {
 
   EggRenderMode *result = EggNode::determine_depth_test_mode();
   if (result == (EggRenderMode *)NULL) {
-    if (has_texture() &&
-        get_texture()->get_depth_test_mode() != DTM_unspecified) {
-      result = get_texture();
+    int num_textures = get_num_textures();
+    for (int i = 0; i < num_textures && result == (EggRenderMode *)NULL; i++) {
+      if (get_texture(i)->get_depth_test_mode() != DTM_unspecified) {
+        result = get_texture(i);
+      }
     }
   }
   return result;
@@ -119,9 +126,11 @@ determine_visibility_mode() {
 
   EggRenderMode *result = EggNode::determine_visibility_mode();
   if (result == (EggRenderMode *)NULL) {
-    if (has_texture() &&
-        get_texture()->get_visibility_mode() != VM_unspecified) {
-      result = get_texture();
+    int num_textures = get_num_textures();
+    for (int i = 0; i < num_textures && result == (EggRenderMode *)NULL; i++) {
+      if (get_texture(i)->get_visibility_mode() != VM_unspecified) {
+        result = get_texture(i);
+      }
     }
   }
   return result;
@@ -144,8 +153,11 @@ determine_draw_order() {
 
   EggRenderMode *result = EggNode::determine_draw_order();
   if (result == (EggRenderMode *)NULL) {
-    if (has_texture() && get_texture()->has_draw_order()) {
-      result = get_texture();
+    int num_textures = get_num_textures();
+    for (int i = 0; i < num_textures && result == (EggRenderMode *)NULL; i++) {
+      if (get_texture(i)->has_draw_order()) {
+        result = get_texture(i);
+      }
     }
   }
   return result;
@@ -168,8 +180,11 @@ determine_bin() {
 
   EggRenderMode *result = EggNode::determine_bin();
   if (result == (EggRenderMode *)NULL) {
-    if (has_texture() && get_texture()->has_bin()) {
-      result = get_texture();
+    int num_textures = get_num_textures();
+    for (int i = 0; i < num_textures && result == (EggRenderMode *)NULL; i++) {
+      if (get_texture(i)->has_bin()) {
+        result = get_texture(i);
+      }
     }
   }
   return result;
@@ -184,7 +199,7 @@ determine_bin() {
 void EggPrimitive::
 copy_attributes(const EggPrimitive &other) {
   EggAttributes::operator = (other);
-  set_texture(other.get_texture());
+  _textures = other._textures;
   set_material(other.get_material());
   set_bface_flag(other.get_bface_flag());
 }
@@ -581,11 +596,9 @@ write_body(ostream &out, int indent_level) const {
   EggAttributes::write(out, indent_level);
   EggRenderMode::write(out, indent_level);
 
-  if (has_texture()) {
-    EggTexture *texture = get_texture();
-
-    // Make sure the texture is named.
-    nassertv(texture->has_name());
+  int num_textures = get_num_textures();
+  for (int i = 0; i < num_textures; i++) {
+    EggTexture *texture = get_texture(i);
 
     indent(out, indent_level) << "<TRef> { ";
     enquote_string(out, texture->get_name())
@@ -594,9 +607,6 @@ write_body(ostream &out, int indent_level) const {
 
   if (has_material()) {
     EggMaterial *material = get_material();
-
-    // Make sure the material is named.
-    nassertv(material->has_name());
 
     indent(out, indent_level) << "<MRef> { ";
     enquote_string(out, material->get_name())
@@ -726,15 +736,21 @@ r_flatten_transforms() {
 ////////////////////////////////////////////////////////////////////
 void EggPrimitive::
 r_apply_texmats(EggTextureCollection &textures) {
-  if (has_texture()) {
-    EggTexture *texture = get_texture();
-    if (texture->has_transform()) {
-      if (texture->transform_is_identity()) {
-        // Now, what's the point of a texture with an identity
-        // transform?
-        texture->clear_transform();
-        return;
-      }
+  Textures new_textures;
+  Textures::const_iterator ti;
+  for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
+    EggTexture *texture = (*ti);
+
+    if (!texture->has_transform()) {
+      new_textures.push_back(texture);
+
+    } else if (texture->transform_is_identity()) {
+      // Now, what's the point of a texture with an identity
+      // transform?
+      texture->clear_transform();
+      new_textures.push_back(texture);
+
+    } else {
 
       // We've got a texture with a matrix applied.  Save the matrix,
       // and get a new texture without the matrix.
@@ -743,7 +759,8 @@ r_apply_texmats(EggTextureCollection &textures) {
       new_texture.clear_transform();
       EggTexture *unique = textures.create_unique_texture(new_texture, ~0);
 
-      set_texture(unique);
+      new_textures.push_back(unique);
+      string uv_name = unique->get_uv_name();
 
       // Now apply the matrix to the vertex UV's.  Create new vertices
       // as necessary.
@@ -751,17 +768,22 @@ r_apply_texmats(EggTextureCollection &textures) {
       for (size_t i = 0; i < num_vertices; i++) {
         EggVertex *vertex = get_vertex(i);
 
-        if (vertex->has_uv()) {
-          EggVertexPool *pool = vertex->get_pool();
-
+        EggVertexUV *uv_obj = vertex->get_uv_obj(uv_name);
+        if (uv_obj != (EggVertexUV *)NULL) {
           EggVertex new_vertex(*vertex);
-          new_vertex.set_uv(vertex->get_uv() * mat);
+          PT(EggVertexUV) new_uv_obj = new EggVertexUV(*uv_obj);
+          new_uv_obj->set_uv(uv_obj->get_uv() * mat);
+          new_vertex.set_uv_obj(new_uv_obj);
+          
+          EggVertexPool *pool = vertex->get_pool();
           EggVertex *unique = pool->create_unique_vertex(new_vertex);
           unique->copy_grefs_from(*vertex);
-
+          
           set_vertex(i, unique);
         }
       }
     }
   }
+
+  _textures.swap(new_textures);
 }

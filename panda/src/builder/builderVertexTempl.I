@@ -60,7 +60,7 @@ INLINE BuilderVertexTempl<VT, NT, TT, CT> &BuilderVertexTempl<VT, NT, TT, CT>::
 operator = (const BuilderVertexTempl<VT, NT, TT, CT> &copy) {
   BuilderAttribTempl<VT, NT, TT, CT>::operator = (copy);
   _coord = copy._coord;
-  _texcoord = copy._texcoord;
+  _texcoords = copy._texcoords;
   _pixel_size = copy._pixel_size;
 
   return *this;
@@ -170,34 +170,9 @@ clear_normal() {
 ////////////////////////////////////////////////////////////////////
 template <class VT, class NT, class TT, class CT>
 INLINE bool BuilderVertexTempl<VT, NT, TT, CT>::
-has_texcoord() const {
-  return (_flags & BAF_texcoord) != 0;
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: BuilderVertexTempl::set_texcoord
-//       Access: Public
-//  Description: Resets the vertex's texture coordinate.
-////////////////////////////////////////////////////////////////////
-template <class VT, class NT, class TT, class CT>
-INLINE BuilderVertexTempl<VT, NT, TT, CT> &BuilderVertexTempl<VT, NT, TT, CT>::
-set_texcoord(const TType &t) {
-  _flags |= BAF_texcoord;
-  _texcoord = t;
-  return *this;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: BuilderVertexTempl::clear_texcoord
-//       Access: Public
-//  Description: Removes the vertex's texcoord.
-////////////////////////////////////////////////////////////////////
-template <class VT, class NT, class TT, class CT>
-INLINE BuilderVertexTempl<VT, NT, TT, CT> &BuilderVertexTempl<VT, NT, TT, CT>::
-clear_texcoord() {
-  _flags &= ~BAF_texcoord;
-  return *this;
+has_texcoord(const TexCoordName *name) const {
+  TYPENAME TexCoords::const_iterator ti = _texcoords.find(name);
+  return (ti != _texcoords.end());
 }
 
 
@@ -210,9 +185,70 @@ clear_texcoord() {
 ////////////////////////////////////////////////////////////////////
 template <class VT, class NT, class TT, class CT>
 INLINE TYPENAME BuilderVertexTempl<VT, NT, TT, CT>::TType BuilderVertexTempl<VT, NT, TT, CT>::
-get_texcoord() const {
-  nassertr(has_texcoord(), _texcoord);
-  return _texcoord;
+get_texcoord(const TexCoordName *name) const {
+  TYPENAME TexCoords::const_iterator ti = _texcoords.find(name);
+  nassertr(ti != _texcoords.end(), (*ti).second);
+  return (*ti).second;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: BuilderVertexTempl::set_texcoord
+//       Access: Public
+//  Description: Resets the vertex's texture coordinate.
+////////////////////////////////////////////////////////////////////
+template <class VT, class NT, class TT, class CT>
+INLINE BuilderVertexTempl<VT, NT, TT, CT> &BuilderVertexTempl<VT, NT, TT, CT>::
+set_texcoord(const TexCoordName *name, const TType &t) {
+  _texcoords[name] = t;
+  return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BuilderVertexTempl::clear_texcoord
+//       Access: Public
+//  Description: Removes the vertex's texcoord.
+////////////////////////////////////////////////////////////////////
+template <class VT, class NT, class TT, class CT>
+INLINE BuilderVertexTempl<VT, NT, TT, CT> &BuilderVertexTempl<VT, NT, TT, CT>::
+clear_texcoord(const TexCoordName *name) {
+  _texcoords.erase(name);
+  return *this;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BuilderVertexTempl::tc_begin
+//       Access: Public
+//  Description: Returns an iterator that can be used to walk through
+//               the set of TexCoord names and their definitions.
+////////////////////////////////////////////////////////////////////
+template <class VT, class NT, class TT, class CT>
+INLINE TYPENAME BuilderVertexTempl<VT, NT, TT, CT>::tc_const_iterator BuilderVertexTempl<VT, NT, TT, CT>::
+tc_begin() const {
+  return _texcoords.begin();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BuilderVertexTempl::tc_end
+//       Access: Public
+//  Description: Returns an iterator that can be used to walk through
+//               the set of TexCoord names and their definitions.
+////////////////////////////////////////////////////////////////////
+template <class VT, class NT, class TT, class CT>
+INLINE TYPENAME BuilderVertexTempl<VT, NT, TT, CT>::tc_const_iterator BuilderVertexTempl<VT, NT, TT, CT>::
+tc_end() const {
+  return _texcoords.end();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BuilderVertexTempl::tc_size
+//       Access: Public
+//  Description: Returns the number of TexCoord definitions.
+////////////////////////////////////////////////////////////////////
+template <class VT, class NT, class TT, class CT>
+INLINE TYPENAME BuilderVertexTempl<VT, NT, TT, CT>::tc_size_type BuilderVertexTempl<VT, NT, TT, CT>::
+tc_size() const {
+  return _texcoords.size();
 }
 
 
@@ -336,11 +372,28 @@ compare_to(const BuilderVertexTempl<VT, NT, TT, CT> &other) const {
     }
   }
 
-  if (has_texcoord()) {
-    int texcoord_compare = builder_compare(_texcoord, other._texcoord);
-    if (texcoord_compare != 0) {
-      return texcoord_compare;
+  TYPENAME TexCoords::const_iterator ai, bi;
+  ai = _texcoords.begin();
+  bi = other._texcoords.begin();
+  while (ai != _texcoords.end() && bi != other._texcoords.end()) {
+    if ((*ai).first < (*bi).first) {
+      return -1;
+    } else if ((*bi).first < (*ai).first) {
+      return 1;
+    } else {
+      int texcoord_compare = builder_compare((*ai).second, (*bi).second);
+      if (texcoord_compare != 0) {
+        return texcoord_compare;
+      }
     }
+    ++ai;
+    ++bi;
+  }
+  if (bi != other._texcoords.end()) {
+    return -1;
+  }
+  if (ai != _texcoords.end()) {
+    return 1;
   }
 
   return BuilderAttribTempl<VT, NT, TT, CT>::compare_to(other);
@@ -363,12 +416,14 @@ output(ostream &out) const {
       out << " normal " << get_normal();
     }
 
-    if (has_texcoord()) {
-      out << " texcoord " << get_texcoord();
-    }
-
     if (has_color()) {
       out << " color " << get_color();
+    }
+
+    TYPENAME TexCoords::const_iterator ti;
+    for (ti = _texcoords.begin(); ti != _texcoords.end(); ++ti) {
+      const TexCoordName *name = (*ti).first;
+      out << " texcoord \"" << name->get_name() << "\" " << (*ti).second;
     }
 
     if (has_pixel_size()) {

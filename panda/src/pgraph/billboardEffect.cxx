@@ -17,6 +17,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "billboardEffect.h"
+#include "cullTraverser.h"
+#include "cullTraverserData.h"
 #include "nodePath.h"
 #include "look_at.h"
 #include "bamReader.h"
@@ -95,15 +97,43 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardEffect::do_billboard
-//       Access: Public
-//  Description: Computes the appropriate transform to apply to the
-//               billboarded geometry, given its current net
-//               transform, and the camera's inverse net transform.
+//     Function: BillboardEffect::has_cull_callback
+//       Access: Public, Virtual
+//  Description: Should be overridden by derived classes to return
+//               true if cull_callback() has been defined.  Otherwise,
+//               returns false to indicate cull_callback() does not
+//               need to be called for this effect during the cull
+//               traversal.
 ////////////////////////////////////////////////////////////////////
-CPT(TransformState) BillboardEffect::
-do_billboard(const TransformState *net_transform,
-             const TransformState *camera_transform) const {
+bool BillboardEffect::
+has_cull_callback() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BillboardEffect::cull_callback
+//       Access: Public, Virtual
+//  Description: If has_cull_callback() returns true, this function
+//               will be called during the cull traversal to perform
+//               any additional operations that should be performed at
+//               cull time.  This may include additional manipulation
+//               of render state or additional visible/invisible
+//               decisions, or any other arbitrary operation.
+//
+//               At the time this function is called, the current
+//               node's transform and state have not yet been applied
+//               to the net_transform and net_state.  This callback
+//               may modify the node_transform and node_state to apply
+//               an effective change to the render state at this
+//               level.
+////////////////////////////////////////////////////////////////////
+void BillboardEffect::
+cull_callback(CullTraverser *trav, CullTraverserData &data,
+              CPT(TransformState) &node_transform,
+              CPT(RenderState) &) const {
+  CPT(TransformState) net_transform = data._net_transform->compose(node_transform);
+  const TransformState *camera_transform = trav->get_camera_transform();
+
   // Determine the relative transform to our camera (or other look_at
   // coordinate space).
   if (!_look_at.is_empty()) {
@@ -112,7 +142,7 @@ do_billboard(const TransformState *net_transform,
 
   if (net_transform->is_singular()) {
     // If we're under a singular transform, never mind.
-    return TransformState::make_identity();
+    return;
   }
 
   CPT(TransformState) rel_transform =
@@ -154,7 +184,7 @@ do_billboard(const TransformState *net_transform,
     rotate.set_row(3, translate);
   }
 
-  return TransformState::make_mat(rotate);
+  node_transform = node_transform->compose(TransformState::make_mat(rotate));
 }
 
 ////////////////////////////////////////////////////////////////////

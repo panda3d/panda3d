@@ -119,7 +119,8 @@ make_geom(int bitmap_top, int bitmap_left, float advance, float poly_margin,
   float uv_right = (float)(_x + poly_margin + tex_x_size) / _page->get_x_size();
 
   // Create a corresponding tristrip.
-  _geom = new GeomTextGlyph(this);
+  PT(Geom) geom = new GeomTextGlyph(this);
+  _geom = geom;
 
   // The above will increment our _geom_count to 1.  Reset it back
   // down to 0, since our own internal Geom doesn't count.
@@ -144,11 +145,11 @@ make_geom(int bitmap_top, int bitmap_left, float advance, float poly_margin,
   PTA_int lengths;
   lengths.push_back(4);
 
-  _geom->set_coords(coords);
-  _geom->set_texcoords(texcoords, G_PER_VERTEX);
-  _geom->set_colors(colors, G_OVERALL);
-  _geom->set_lengths(lengths);
-  _geom->set_num_prims(1);
+  geom->set_coords(coords);
+  geom->set_texcoords(texcoords, G_PER_VERTEX);
+  geom->set_colors(colors, G_OVERALL);
+  geom->set_lengths(lengths);
+  geom->set_num_prims(1);
 
   _state = RenderState::make(TextureAttrib::make(_page),
                              TransparencyAttrib::make(TransparencyAttrib::M_alpha));

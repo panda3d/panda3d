@@ -23,6 +23,8 @@
 
 #include "renderEffect.h"
 
+class FactoryParams;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : ShowBoundsEffect
 // Description : Applied to a GeomNode to cause a visible bounding

@@ -18,10 +18,14 @@
 
 #include "cullResult.h"
 #include "cullBinManager.h"
+#include "cullBinAttrib.h"
 #include "alphaTestAttrib.h"
+#include "depthWriteAttrib.h"
+#include "colorScaleAttrib.h"
 #include "transparencyAttrib.h"
 #include "renderState.h"
 #include "clockObject.h"
+#include "config_pgraph.h"
 
 // This value is used instead of 1.0 to represent the alpha level of a
 // pixel that is to be considered "opaque" for the purposes of M_dual.

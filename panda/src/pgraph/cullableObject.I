@@ -53,7 +53,7 @@ CullableObject(const CullTraverserData &data,
 //               with the indicated render state and transform.
 ////////////////////////////////////////////////////////////////////
 INLINE CullableObject::
-CullableObject(Geom *geom, const RenderState *state,
+CullableObject(const Geom *geom, const RenderState *state,
                const TransformState *transform,
                CullableObject *next) :
   _geom(geom),

@@ -29,10 +29,6 @@ ostream &operator << (ostream &out, BuilderAttribFlags baf) {
     out << space << "normal";
     space = " ";
   }
-  if (baf & BAF_texcoord) {
-    out << space << "texcoord";
-    space = " ";
-  }
   if (baf & BAF_color) {
     out << space << "color";
     space = " ";
@@ -59,10 +55,6 @@ ostream &operator << (ostream &out, BuilderAttribFlags baf) {
   }
   if (baf & BAF_vertex_normal) {
     out << space << "vertex_normal";
-    space = " ";
-  }
-  if (baf & BAF_vertex_texcoord) {
-    out << space << "vertex_texcoord";
     space = " ";
   }
   if (baf & BAF_vertex_color) {

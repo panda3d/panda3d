@@ -21,7 +21,6 @@
 //#define GSG_VERBOSE 1
 
 extern bool CLP(cheap_textures);
-extern bool CLP(always_decal_textures);
 extern bool CLP(ignore_clamp);
 extern bool CLP(ignore_filters);
 extern bool CLP(ignore_mipmaps);

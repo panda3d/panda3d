@@ -22,6 +22,7 @@
 #include "pandabase.h"
 #include "graphicsWindow.h"
 #include "graphicsPipe.h"
+#include "glgsg.h"
 
 class FrameBufferProperties;
 
@@ -41,19 +42,9 @@ typedef int XIC;
 #include <X11/Xlib.h>
 #include <GL/glx.h>
 
-#ifndef GLX_VERSION_1_3
-  // Pre-glx 1.3, these GLXFBConfig definitions might have been
-  // defined as SGI extensions.
-  #define GLX_RGBA_TYPE GLX_RGBA_TYPE_SGIX
-  #define GLXFBConfig GLXFBConfigSGIX
-  #define GLXPbuffer GLXPbufferSGIX
-  #define glXChooseFBConfig glXChooseFBConfigSGIX
-  #define glXCreateNewContext glXCreateContextWithConfigSGIX
-  #define glXGetVisualFromFBConfig glXGetVisualFromFBConfigSGIX
-  #define glXGetFBConfigAttrib glXGetFBConfigAttribSGIX
-  #define glXCreatePbuffer glXCreateGLXPbufferSGIX
-  #define glXDestroyPbuffer glXDestroyGLXPbufferSGIX
-#endif // GLX_VERSION_1_3
+// This must be included after we have included glgsg.h (which
+// includes gl.h).
+#include "glxext.h"
 
 #endif  // CPPPARSER
 

@@ -23,6 +23,8 @@
 
 #include "renderAttrib.h"
 
+class FactoryParams;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : DepthTestAttrib
 // Description : Enables or disables writing to the depth buffer.

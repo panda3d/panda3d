@@ -23,9 +23,11 @@
 
 #include "renderAttrib.h"
 
+class FactoryParams;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : RenderModeAttrib
-// Description : Enables or disables writing to the depth buffer.
+// Description : Specifies how polygons are to be drawn.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA RenderModeAttrib : public RenderAttrib {
 PUBLISHED:

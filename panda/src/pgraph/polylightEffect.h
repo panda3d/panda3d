@@ -65,6 +65,11 @@ PUBLISHED:
   INLINE LPoint3f get_effect_center()const;
 
 public:
+  virtual bool has_cull_callback() const;
+  virtual void cull_callback(CullTraverser *trav, CullTraverserData &data,
+                             CPT(TransformState) &node_transform,
+                             CPT(RenderState) &node_state) const;
+
   CPT(RenderAttrib) do_poly_light(const CullTraverserData *data, const TransformState *node_transform) const;
 
 protected:

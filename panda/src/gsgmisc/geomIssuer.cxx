@@ -36,6 +36,11 @@ issue_texcoord_noop(const Geom *, Geom::TexCoordIterator &,
 }
 
 static void
+issue_multitexcoord_noop(const Geom *, Geom::MultiTexCoordIterator &,
+                         GraphicsStateGuardianBase *) {
+}
+
+static void
 issue_color_noop(const Geom *, Geom::ColorIterator &, 
                  GraphicsStateGuardianBase *) {
 }
@@ -57,6 +62,7 @@ GeomIssuer() {
     _vertex_command[i] = issue_vertex_noop;
     _normal_command[i] = issue_normal_noop;
     _texcoord_command[i] = issue_texcoord_noop;
+    _multitexcoord_command[i] = issue_multitexcoord_noop;
     _color_command[i] = issue_color_noop;
   }
   _geom = NULL;
@@ -74,6 +80,10 @@ GeomIssuer() {
 //               places to either issue the component or do nothing,
 //               according to the requirements of the geom and of the
 //               current state of the gsg.
+//
+//               This constructor is deprecated; it only supports
+//               single-stage texturing.  Use the next constructor for
+//               multitexturing support.
 ////////////////////////////////////////////////////////////////////
 GeomIssuer::
 GeomIssuer(const Geom *geom,
@@ -105,5 +115,56 @@ GeomIssuer(const Geom *geom,
   // And ditto for colors.
   if (color != NULL && gsg->wants_colors()) {
     _color_command[geom->get_binding(G_COLOR)] = color;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomIssuer::Constructor
+//       Access: Public
+//  Description: This constructor supports switchably issuing
+//               multitexture calls.  If the MultiTexCoordIterator
+//               indicates that multitexturing is in use (e.g. texture
+//               coordinates are to be issued for any stage other than
+//               stage 0), then multi_texcoord() will be called for
+//               each issue_texcoord() call.  Otherwise,
+//               single_texcoord() will be called.
+////////////////////////////////////////////////////////////////////
+GeomIssuer::
+GeomIssuer(const Geom *geom,
+           GraphicsStateGuardianBase *gsg,
+           IssueVertex *vertex,
+           IssueNormal *normal,
+           IssueColor *color,
+           IssueMultiTexCoord *single_texcoord,
+           IssueMultiTexCoord *multi_texcoord,
+           const Geom::MultiTexCoordIterator &ti) {
+  memcpy(this, &noop_issuer, sizeof(GeomIssuer));
+  _geom = geom;
+  _gsg = gsg;
+
+  // Issue vertices by default (we might not want to if we're doing
+  // performance analysis)
+  if (vertex != NULL) {
+    _vertex_command[geom->get_binding(G_COORD)] = vertex;
+  }
+
+  // Issue normals only if we have them and the gsg says we should.
+  if (normal != NULL && gsg->wants_normals()) {
+    _normal_command[geom->get_binding(G_NORMAL)] = normal;
+  }
+
+  // And ditto for colors.
+  if (color != NULL && gsg->wants_colors()) {
+    _color_command[geom->get_binding(G_COLOR)] = color;
+  }
+
+  // Issue texcoords if we have them and the gsg wants them.
+  if ((single_texcoord != NULL && multi_texcoord != NULL) && 
+      ti._num_stages > 0 && gsg->wants_texcoords()) {
+    if (ti._num_stages > 1 || ti._stage_index[0] != 0) {
+      _multitexcoord_command[G_PER_VERTEX] = multi_texcoord;
+    } else {
+      _multitexcoord_command[G_PER_VERTEX] = single_texcoord;
+    }
   }
 }

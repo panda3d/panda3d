@@ -21,6 +21,7 @@
 
 #include "pta_float.h"
 #include "geom.h"
+#include "texture.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GeomSprite

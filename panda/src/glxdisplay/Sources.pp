@@ -15,7 +15,8 @@
     glxGraphicsPipe.I glxGraphicsPipe.cxx glxGraphicsPipe.h \
     glxGraphicsWindow.h glxGraphicsWindow.I glxGraphicsWindow.cxx \
     glxGraphicsStateGuardian.h glxGraphicsStateGuardian.I \
-    glxGraphicsStateGuardian.cxx
+    glxGraphicsStateGuardian.cxx \
+    glxext.h
 
   #define INSTALL_HEADERS \
     glxGraphicsBuffer.I glxGraphicsBuffer.h \

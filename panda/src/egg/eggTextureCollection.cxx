@@ -20,6 +20,7 @@
 #include "eggGroupNode.h"
 #include "eggPrimitive.h"
 #include "eggTexture.h"
+#include "pt_EggTexture.h"
 
 #include "nameUniquifier.h"
 
@@ -152,6 +153,13 @@ insert_textures(EggGroupNode *node, EggGroupNode::iterator position) {
 //               each time a texture reference is encountered.  This
 //               side effect is taken advantage of by
 //               remove_unused_textures().
+//
+//               And one more side effect: this function identifies
+//               the presence of multitexturing in the egg file, and
+//               calls multitexture_over() on each texture
+//               appropriately so that, after this call, you may
+//               expect get_multitexture_sort() to return a reasonable
+//               value for each texture.
 ////////////////////////////////////////////////////////////////////
 int EggTextureCollection::
 find_used_textures(EggNode *node) {
@@ -159,18 +167,37 @@ find_used_textures(EggNode *node) {
 
   if (node->is_of_type(EggPrimitive::get_class_type())) {
     EggPrimitive *primitive = DCAST(EggPrimitive, node);
-    if (primitive->has_texture()) {
-      EggTexture *tex = primitive->get_texture();
+
+    bool found_any_new = false;
+    int num_textures = primitive->get_num_textures();
+    for (int i = 0; i < num_textures; i++) {
+      EggTexture *tex = primitive->get_texture(i);
+
       Textures::iterator ti = _textures.find(tex);
       if (ti == _textures.end()) {
         // Here's a new texture!
         num_found++;
+        found_any_new = true;
         _textures.insert(Textures::value_type(tex, 1));
         _ordered_textures.push_back(tex);
       } else {
         // Here's a texture we'd already known about.  Increment its
         // usage count.
         (*ti).second++;
+      }
+
+      // Get the multitexture ordering right.
+      for (int j = 0; j < i; j++) {
+        // The return value of this function will be false if there is
+        // some cycle in the texture layout order; e.g. A layers over
+        // B on one primitive, but B layers over A on another
+        // primitive.  In that case the Egg Loader won't be able to
+        // assign a unique ordering between A and B, so it's probably
+        // an error worth reporting to the user--but we don't report
+        // it here, because this is a much lower-level function that
+        // gets called in other contexts too.  That means it doesn't
+        // get reported at all, but too bad.
+        tex->multitexture_over(primitive->get_texture(j));
       }
     }
 
@@ -252,7 +279,7 @@ int EggTextureCollection::
 collapse_equivalent_textures(int eq, EggTextureCollection::TextureReplacement &removed) {
   int num_collapsed = 0;
 
-  typedef pset<PT(EggTexture), UniqueEggTextures> Collapser;
+  typedef pset<PT_EggTexture, UniqueEggTextures> Collapser;
   UniqueEggTextures uet(eq);
   Collapser collapser(uet);
 
@@ -303,15 +330,22 @@ replace_textures(EggGroupNode *node,
     EggNode *child = *ci;
     if (child->is_of_type(EggPrimitive::get_class_type())) {
       EggPrimitive *primitive = DCAST(EggPrimitive, child);
-      if (primitive->has_texture()) {
-        PT(EggTexture) tex = primitive->get_texture();
+      EggPrimitive::Textures new_textures;
+      EggPrimitive::Textures::const_iterator ti;
+      for (ti = primitive->_textures.begin(); 
+           ti != primitive->_textures.end();
+           ++ti) {
+        PT_EggTexture tex = (*ti);
         TextureReplacement::const_iterator ri;
         ri = replace.find(tex);
         if (ri != replace.end()) {
           // Here's a texture we want to replace.
-          primitive->set_texture((*ri).second);
+          new_textures.push_back((*ri).second);
+        } else {
+          new_textures.push_back(tex);
         }
       }
+      primitive->_textures.swap(new_textures);
 
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
       EggGroupNode *group_child = DCAST(EggGroupNode, child);
@@ -365,7 +399,7 @@ bool EggTextureCollection::
 add_texture(EggTexture *texture) {
   nassertr(_textures.size() == _ordered_textures.size(), false);
 
-  PT(EggTexture) new_tex = texture;
+  PT_EggTexture new_tex = texture;
 
   Textures::const_iterator ti;
   ti = _textures.find(new_tex);
@@ -402,7 +436,7 @@ remove_texture(EggTexture *texture) {
   _textures.erase(ti);
 
   OrderedTextures::iterator oti;
-  PT(EggTexture) ptex = texture;
+  PT_EggTexture ptex = texture;
   oti = find(_ordered_textures.begin(), _ordered_textures.end(), ptex);
   nassertr(oti != _ordered_textures.end(), false);
 

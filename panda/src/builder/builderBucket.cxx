@@ -62,8 +62,9 @@ operator = (const BuilderBucket &copy) {
   set_name(copy.get_name());
   set_coords(copy._coords);
   set_normals(copy._normals);
-  set_texcoords(copy._texcoords);
   set_colors(copy._colors);
+
+  _texcoords = copy._texcoords;
 
   _node = copy._node;
   _hidden = copy._hidden;
@@ -171,10 +172,33 @@ operator < (const BuilderBucket &other) const {
     return _coords < other._coords;
   if (_normals != other._normals)
     return _normals < other._normals;
-  if (_texcoords != other._texcoords)
-    return _texcoords < other._texcoords;
   if (_colors != other._colors)
     return _colors < other._colors;
+
+  TexCoords::const_iterator ai, bi;
+  ai = _texcoords.begin();
+  bi = other._texcoords.begin();
+  while (ai != _texcoords.end() && bi != other._texcoords.end()) {
+    if ((*ai).first < (*bi).first) {
+      return true;
+    } else if ((*bi).first < (*ai).first) {
+      return false;
+    } else {
+      if ((*ai).second != (*bi).second) {
+        return (*ai).second < (*bi).second;
+      }
+    }
+
+    ++ai;
+    ++bi;
+  }
+
+  if (bi != other._texcoords.end()) {
+    return true;
+  }
+  if (ai != _texcoords.end()) {
+    return false;
+  }
 
   if (_state != other._state) {
     return _state < other._state;
@@ -209,8 +233,10 @@ output(ostream &out) const {
     out << "_normals = " << (void *)_normals << "\n";
   }
 
-  if (_texcoords != (TexCoordf *)NULL) {
-    out << "_texcoords = " << (void *)_texcoords << "\n";
+  TexCoords::const_iterator ti;
+  for (ti = _texcoords.begin(); ti != _texcoords.end(); ++ti) {
+    out << "_texcoords[\"" << (*ti).first << "\"] = " 
+        << (void *)(*ti).second << "\n";
   }
 
   if (_colors != (Colorf *)NULL) {

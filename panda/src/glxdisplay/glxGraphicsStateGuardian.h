@@ -24,6 +24,12 @@
 #include "glgsg.h"
 #include "glxGraphicsPipe.h"
 
+#include <GL/glx.h>
+
+// This must be included after we have included glgsg.h (which
+// includes gl.h).
+#include "glxext.h"
+
 ////////////////////////////////////////////////////////////////////
 //       Class : glxGraphicsStateGuardian
 // Description : A tiny specialization on GLGraphicsStateGuardian to
@@ -37,6 +43,8 @@ public:
                            XVisualInfo *visual, Display *display, int screen);
   virtual ~glxGraphicsStateGuardian();
 
+  bool glx_is_at_least_version(int major_version, int minor_version) const;
+
   GLXContext _context;
   GLXFBConfig _fbconfig;
   XVisualInfo *_visual;
@@ -44,7 +52,21 @@ public:
   int _screen;
 
 protected:
+  virtual void get_gl_version();
   virtual void get_extra_extensions();
+  virtual void *get_extension_func(const char *prefix, const char *name);
+
+private:
+  void *get_system_func(const char *name);
+  void show_glx_client_string(const string &name, int id);
+  void show_glx_server_string(const string &name, int id);
+
+
+  int _glx_version_major, _glx_version_minor;
+
+  void *_libgl_handle;
+  bool _checked_get_proc_address;
+  PFNGLXGETPROCADDRESSPROC _glxGetProcAddress;
 
 public:
   static TypeHandle get_class_type() {

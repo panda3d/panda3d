@@ -117,6 +117,42 @@ xform(const LMatrix4f &) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderEffect::has_cull_callback
+//       Access: Public, Virtual
+//  Description: Should be overridden by derived classes to return
+//               true if cull_callback() has been defined.  Otherwise,
+//               returns false to indicate cull_callback() does not
+//               need to be called for this effect during the cull
+//               traversal.
+////////////////////////////////////////////////////////////////////
+bool RenderEffect::
+has_cull_callback() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderEffect::cull_callback
+//       Access: Public, Virtual
+//  Description: If has_cull_callback() returns true, this function
+//               will be called during the cull traversal to perform
+//               any additional operations that should be performed at
+//               cull time.  This may include additional manipulation
+//               of render state or additional visible/invisible
+//               decisions, or any other arbitrary operation.
+//
+//               At the time this function is called, the current
+//               node's transform and state have not yet been applied
+//               to the net_transform and net_state.  This callback
+//               may modify the node_transform and node_state to apply
+//               an effective change to the render state at this
+//               level.
+////////////////////////////////////////////////////////////////////
+void RenderEffect::
+cull_callback(CullTraverser *, CullTraverserData &,
+              CPT(TransformState) &, CPT(RenderState) &) const {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderEffect::output
 //       Access: Published, Virtual
 //  Description: 

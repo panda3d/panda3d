@@ -25,6 +25,7 @@
 #include "luse.h"
 
 class GeomNode;
+class RenderState;
 
 ///////////////////////////////////////////////////////////////////
 //       Class : GeomTransformer

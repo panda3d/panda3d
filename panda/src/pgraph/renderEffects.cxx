@@ -396,6 +396,23 @@ write(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderEffects::cull_callback
+//       Access: Public
+//  Description: Calls cull_callback() on all effects.  You may check
+//               has_cull_callback() first to see if any effects
+//               define this method to do anything useful.
+////////////////////////////////////////////////////////////////////
+void RenderEffects::
+cull_callback(CullTraverser *trav, CullTraverserData &data,
+              CPT(TransformState) &node_transform,
+              CPT(RenderState) &node_state) const {
+  Effects::const_iterator ei;
+  for (ei = _effects.begin(); ei != _effects.end(); ++ei) {
+    (*ei)._effect->cull_callback(trav, data, node_transform, node_state);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderEffects::return_new
 //       Access: Private, Static
 //  Description: This function is used to share a common RenderEffects
@@ -433,22 +450,6 @@ return_new(RenderEffects *state) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderEffects::determine_billboard
-//       Access: Private
-//  Description: This is the private implementation of
-//               get_billboard().
-////////////////////////////////////////////////////////////////////
-void RenderEffects::
-determine_billboard() {
-  const RenderEffect *effect = get_effect(BillboardEffect::get_class_type());
-  _billboard = (const BillboardEffect *)NULL;
-  if (effect != (const RenderEffect *)NULL) {
-    _billboard = DCAST(BillboardEffect, effect);
-  }
-  _flags |= F_checked_billboard;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: RenderEffects::determine_decal
 //       Access: Private
 //  Description: This is the private implementation of has_decal().
@@ -463,38 +464,6 @@ determine_decal() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderEffects::determine_compass
-//       Access: Private
-//  Description: This is the private implementation of has_compass().
-////////////////////////////////////////////////////////////////////
-void RenderEffects::
-determine_compass() {
-  const RenderEffect *effect = get_effect(CompassEffect::get_class_type());
-  _compass = (const CompassEffect *)NULL;
-  if (effect != (const RenderEffect *)NULL) {
-    _compass = DCAST(CompassEffect, effect);
-  }
-  _flags |= F_checked_compass;
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderEffects::determine_polylight
-//       Access: Private
-//  Description: This is the private implementation of has_polylight().
-////////////////////////////////////////////////////////////////////
-void RenderEffects::
-determine_polylight() {
-  const RenderEffect *effect = get_effect(PolylightEffect::get_class_type());
-  _polylight = (const PolylightEffect *)NULL;
-  if (effect != (const RenderEffect *)NULL) {
-    _polylight = DCAST(PolylightEffect, effect);
-  }
-  _flags |= F_checked_polylight;
-}
-
-
-////////////////////////////////////////////////////////////////////
 //     Function: RenderEffects::determine_show_bounds
 //       Access: Private
 //  Description: This is the private implementation of has_show_bounds().
@@ -506,6 +475,24 @@ determine_show_bounds() {
     _flags |= F_has_show_bounds;
   }
   _flags |= F_checked_show_bounds;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderEffects::determine_cull_callback
+//       Access: Private
+//  Description: This is the private implementation of has_cull_callback().
+////////////////////////////////////////////////////////////////////
+void RenderEffects::
+determine_cull_callback() {
+  _flags |= F_checked_cull_callback;
+
+  Effects::const_iterator ei;
+  for (ei = _effects.begin(); ei != _effects.end(); ++ei) {
+    if ((*ei)._effect->has_cull_callback()) {
+      _flags |= F_has_cull_callback;
+      return;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -21,15 +21,17 @@
 
 #include "pandabase.h"
 
+#include "transformState.h"
+#include "renderState.h"
+
 #include "renderEffect.h"
 #include "typedWritableReferenceCount.h"
 #include "pointerTo.h"
 #include "indirectLess.h"
 #include "ordered_vector.h"
 
-class BillboardEffect;
-class CompassEffect;
-class PolylightEffect;
+class CullTraverser;
+class CullTraverserData;
 class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
@@ -89,19 +91,19 @@ PUBLISHED:
   void write(ostream &out, int indent_level) const;
 
 public:
-  INLINE const BillboardEffect *get_billboard() const;
   INLINE bool has_decal() const;
-  INLINE const CompassEffect *get_compass() const;
-  INLINE const PolylightEffect *get_polylight() const;
   INLINE bool has_show_bounds() const;
+
+  INLINE bool has_cull_callback() const;
+  void cull_callback(CullTraverser *trav, CullTraverserData &data,
+                     CPT(TransformState) &node_transform,
+                     CPT(RenderState) &node_state) const;
 
 private:
   static CPT(RenderEffects) return_new(RenderEffects *state);
-  void determine_billboard();
   void determine_decal();
-  void determine_compass();
-  void determine_polylight();
   void determine_show_bounds();
+  void determine_cull_callback();
 
 private:
   typedef pset<const RenderEffects *, IndirectLess<RenderEffects> > States;
@@ -132,22 +134,15 @@ private:
   typedef ov_set<Effect> Effects;
   Effects _effects;
 
-  // We cache the pointer to some critical effects stored in the
-  // state, if they exist.
-  const BillboardEffect *_billboard;
-  const CompassEffect *_compass;
-  const PolylightEffect *_polylight;
-
   enum Flags {
-    F_checked_billboard    = 0x0001,
-    F_checked_decal        = 0x0002,
-    F_has_decal            = 0x0004,
-    F_checked_show_bounds  = 0x0008,
-    F_has_show_bounds      = 0x0010,
-    F_checked_compass      = 0x0020,
-	F_checked_polylight    = 0x0040,
+    F_checked_decal         = 0x0001,
+    F_has_decal             = 0x0002,
+    F_checked_show_bounds   = 0x0004,
+    F_has_show_bounds       = 0x0008,
+    F_checked_cull_callback = 0x0010,
+    F_has_cull_callback     = 0x0020,
   };
-  short _flags;
+  int _flags;
 
 
 public:

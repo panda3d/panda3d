@@ -20,7 +20,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::get_pool
-//       Access: Public
+//       Access: Published
 //  Description: Returns the vertex pool this vertex belongs in.  This
 //               may be NULL if the vertex has not been added to a
 //               pool.
@@ -32,7 +32,7 @@ get_pool() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::is_forward_reference
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the vertex is a forward reference to
 //               some vertex that hasn't been defined yet.  In this
 //               case, the vertex may not have any properties filled
@@ -50,7 +50,7 @@ is_forward_reference() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::set_pos
-//       Access: Public
+//       Access: Published
 //  Description: Sets the vertex position.  This variant sets the
 //               vertex to a one-dimensional value.
 ////////////////////////////////////////////////////////////////////
@@ -63,7 +63,7 @@ set_pos(double pos) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::set_pos
-//       Access: Public
+//       Access: Published
 //  Description: Sets the vertex position.  This variant sets the
 //               vertex to a two-dimensional value.
 ////////////////////////////////////////////////////////////////////
@@ -76,7 +76,7 @@ set_pos(const LPoint2d &pos) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::set_pos
-//       Access: Public
+//       Access: Published
 //  Description: Sets the vertex position.  This variant sets the
 //               vertex to a three-dimensional value.
 ////////////////////////////////////////////////////////////////////
@@ -89,7 +89,7 @@ set_pos(const LPoint3d &pos) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::set_pos
-//       Access: Public
+//       Access: Published
 //  Description: Sets the vertex position.  This variant sets the
 //               vertex to a four-dimensional value.
 ////////////////////////////////////////////////////////////////////
@@ -102,7 +102,7 @@ set_pos(const LPoint4d &pos) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::set_pos4
-//       Access: Public
+//       Access: Published
 //  Description: This special flavor of set_pos() sets the vertex as a
 //               four-component value, but does not change the set
 //               number of dimensions.  It's handy for retrieving the
@@ -118,7 +118,7 @@ set_pos4(const LPoint4d &pos) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::get_num_dimensions
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of dimensions the vertex uses.
 //               Usually this will be 3, but it may be 1, 2, 3, or 4.
 ////////////////////////////////////////////////////////////////////
@@ -130,7 +130,7 @@ get_num_dimensions() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::get_pos1
-//       Access: Public
+//       Access: Published
 //  Description: Only valid if get_num_dimensions() returns 1.
 //               Returns the position as a one-dimensional value.
 ////////////////////////////////////////////////////////////////////
@@ -143,7 +143,7 @@ get_pos1() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::get_pos2
-//       Access: Public
+//       Access: Published
 //  Description: Only valid if get_num_dimensions() returns 2.
 //               Returns the position as a two-dimensional value.
 ////////////////////////////////////////////////////////////////////
@@ -156,7 +156,7 @@ get_pos2() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::get_pos3
-//       Access: Public
+//       Access: Published
 //  Description: Valid if get_num_dimensions() returns 3 or 4.
 //               Returns the position as a three-dimensional value.
 ////////////////////////////////////////////////////////////////////
@@ -170,7 +170,7 @@ get_pos3() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::get_pos4
-//       Access: Public
+//       Access: Published
 //  Description: This is always valid, regardless of the value of
 //               get_num_dimensions.  It returns the position as a
 //               four-dimensional value.  If the pos has fewer than
@@ -183,10 +183,107 @@ get_pos4() const {
   return _pos;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::has_uv
+//       Access: Published
+//  Description: Returns true if the vertex has an unnamed UV
+//               coordinate pair, false otherwise.
+//
+//               This is the more restrictive interface, and is
+//               generally useful only in the absence of
+//               multitexturing; see has_uv(name) for the interface
+//               that supports multitexturing.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggVertex::
+has_uv() const {
+  return has_uv("");
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::get_uv
+//       Access: Published
+//  Description: Returns the unnamed UV coordinate pair on the
+//               vertex.  It is an error to call this if has_uv() has
+//               returned false.
+//
+//               This is the more restrictive interface, and is
+//               generally useful only in the absence of
+//               multitexturing; see get_uv(name) for the interface
+//               that supports multitexturing.
+////////////////////////////////////////////////////////////////////
+INLINE const TexCoordd &EggVertex::
+get_uv() const {
+  nassertr(has_uv(), TexCoordd::zero());
+  return get_uv("");
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::set_uv
+//       Access: Published
+//  Description: Replaces the unnamed UV coordinate pair on the vertex
+//               with the indicated value.
+//
+//               This is the more restrictive interface, and is
+//               generally useful only in the absence of
+//               multitexturing; see set_uv(name, uv) for the
+//               interface that supports multitexturing.
+////////////////////////////////////////////////////////////////////
+INLINE void EggVertex::
+set_uv(const TexCoordd &uv) {
+  set_uv("", uv);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::clear_uv
+//       Access: Published
+//  Description: Removes all UV coordinate pairs from the vertex.
+////////////////////////////////////////////////////////////////////
+INLINE void EggVertex::
+clear_uv() {
+  _uv_map.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::uv_begin
+//       Access: Public
+//  Description: Returns an iterator that allows walking through the
+//               complete set of named UV's on the vertex.
+//
+//               This interface is not safe to use outside of
+//               PANDAEGG.DLL.
+////////////////////////////////////////////////////////////////////
+INLINE EggVertex::const_uv_iterator EggVertex::
+uv_begin() const {
+  return _uv_map.begin();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::uv_end
+//       Access: Public
+//  Description: Returns an iterator that allows walking through the
+//               complete set of named UV's on the vertex.
+//
+//               This interface is not safe to use outside of
+//               PANDAEGG.DLL.
+////////////////////////////////////////////////////////////////////
+INLINE EggVertex::const_uv_iterator EggVertex::
+uv_end() const {
+  return _uv_map.end();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::uv_size
+//       Access: Public
+//  Description: Returns the number of named UV's on the vertex.
+////////////////////////////////////////////////////////////////////
+INLINE EggVertex::uv_size_type EggVertex::
+uv_size() const {
+  return _uv_map.size();
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::get_index
-//       Access: Public
+//       Access: Published
 //  Description: Returns the index number of the vertex within its
 //               pool.
 ////////////////////////////////////////////////////////////////////
@@ -197,7 +294,7 @@ get_index() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::set_external_index
-//       Access: Public
+//       Access: Published
 //  Description: Sets a special index number that is associated with
 //               the EggVertex (but is not written to the egg file).
 //               This number is not interpreted by any egg code; it is
@@ -216,7 +313,7 @@ set_external_index(int external_index) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::get_external_index
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number set by set_external_index().  See
 //               set_external_index().
 ////////////////////////////////////////////////////////////////////

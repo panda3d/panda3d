@@ -60,8 +60,8 @@ set_normal_value(const BuilderN *array, ushort index) {
 //               assumes the array is the same one it's indexing on).
 ////////////////////////////////////////////////////////////////////
 INLINE void BuilderVertex::
-set_texcoord_value(const BuilderTC *array, ushort index) {
-  set_texcoord(array[index]);
+set_texcoord_value(const TexCoordName *name, const BuilderTC *array, ushort index) {
+  set_texcoord(name, array[index]);
 }
 
 
@@ -130,8 +130,8 @@ get_normal_value(const BuilderBucket &) const {
 //               get_coord_value().
 ////////////////////////////////////////////////////////////////////
 INLINE BuilderTC BuilderVertex::
-get_texcoord_value(const BuilderBucket &) const {
-  return get_texcoord();
+get_texcoord_value(const TexCoordName *name, const BuilderBucket &) const {
+  return get_texcoord(name);
 }
 
 
@@ -191,8 +191,8 @@ set_normal_value(const BuilderN *, ushort index) {
 //               assumes the array is the same one it's indexing on).
 ////////////////////////////////////////////////////////////////////
 INLINE void BuilderVertexI::
-set_texcoord_value(const BuilderTC *, ushort index) {
-  set_texcoord(index);
+set_texcoord_value(const TexCoordName *name,const BuilderTC *, ushort index) {
+  set_texcoord(name, index);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -259,9 +259,9 @@ get_normal_value(const BuilderBucket &bucket) const {
 //               get_coord_value().
 ////////////////////////////////////////////////////////////////////
 INLINE BuilderTC BuilderVertexI::
-get_texcoord_value(const BuilderBucket &bucket) const {
-  nassertr(bucket.get_texcoords() != (TexCoordf *)NULL, BuilderTC());
-  return bucket.get_texcoords()[get_texcoord()];
+get_texcoord_value(const TexCoordName *name, const BuilderBucket &bucket) const {
+  nassertr(bucket.get_texcoords(name) != (TexCoordf *)NULL, BuilderTC());
+  return bucket.get_texcoords(name)[get_texcoord(name)];
 }
 
 ////////////////////////////////////////////////////////////////////

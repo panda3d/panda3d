@@ -22,7 +22,11 @@
 #include "pandabase.h"
 
 #include "renderAttrib.h"
-#include "luse.h"
+#include "textureStage.h"
+#include "transformState.h"
+#include "pointerTo.h"
+
+class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TexMatrixAttrib
@@ -30,13 +34,29 @@
 //               rendered.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TexMatrixAttrib : public RenderAttrib {
-private:
-  INLINE TexMatrixAttrib(const LMatrix4f &mat);
+protected:
+  INLINE TexMatrixAttrib();
+  INLINE TexMatrixAttrib(const TexMatrixAttrib &copy);
+
+public:
+  virtual ~TexMatrixAttrib();
 
 PUBLISHED:
+  static CPT(RenderAttrib) make();
   static CPT(RenderAttrib) make(const LMatrix4f &mat);
+  static CPT(RenderAttrib) make(const TransformState *transform);
+  static CPT(RenderAttrib) make(TextureStage *stage, const TransformState *transform);
 
-  INLINE const LMatrix4f &get_mat() const;
+  CPT(RenderAttrib) add_stage(TextureStage *stage, const TransformState *transform) const;
+  CPT(RenderAttrib) remove_stage(TextureStage *stage) const;
+
+  bool is_empty() const;
+  bool has_stage(TextureStage *stage) const;
+
+  const LMatrix4f &get_mat() const;
+  const LMatrix4f &get_mat(TextureStage *stage) const;
+
+  CPT(TransformState) get_transform(TextureStage *stage) const;
 
 public:
   virtual void issue(GraphicsStateGuardianBase *gsg) const;
@@ -49,11 +69,19 @@ protected:
   virtual RenderAttrib *make_default_impl() const;
 
 private:
-  LMatrix4f _mat;
+  typedef pmap< PT(TextureStage), CPT(TransformState) > Stages;
+  Stages _stages;
+
+  // This element is only used during reading from a bam file.  It has
+  // no meaningful value any other time.
+  size_t _num_stages;
+
+  static CPT(RenderAttrib) _empty_attrib;
 
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
+  virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);

@@ -24,6 +24,8 @@
 #include "renderAttrib.h"
 #include "luse.h"
 
+class FactoryParams;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : DepthOffsetAttrib
 // Description : This is a special kind of attribute that instructs

@@ -42,7 +42,7 @@ public:
   INLINE CullableObject(const CullTraverserData &data,
                         GeomNode *geom_node, int i,
                         CullableObject *next = NULL);
-  INLINE CullableObject(Geom *geom, const RenderState *state,
+  INLINE CullableObject(const Geom *geom, const RenderState *state,
                         const TransformState *transform,
                         CullableObject *next = NULL);
     
@@ -66,7 +66,7 @@ PUBLISHED:
   INLINE static int get_num_ever_allocated();
 
 public:
-  PT(Geom) _geom;
+  CPT(Geom) _geom;
   CPT(RenderState) _state;
   CPT(TransformState) _transform;
   CullableObject *_next;

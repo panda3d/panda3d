@@ -23,6 +23,8 @@
 
 #include "renderEffect.h"
 
+class FactoryParams;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : DecalEffect
 // Description : Applied to a GeomNode to indicate that the children

@@ -280,7 +280,7 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Character::r_copy_char
 //       Access: Private
-//  Description: Recursively walks the scene graph hiernodehy below the
+//  Description: Recursively walks the scene graph hierarchy below the
 //               Character node, duplicating it while noting the
 //               orig:copy node mappings, and also updates any
 //               GeomNodes found.
@@ -297,7 +297,7 @@ r_copy_char(PandaNode *dest, const PandaNode *source,
     dest_gnode->remove_all_geoms();
     int num_geoms = source_gnode->get_num_geoms();
     for (int i = 0; i < num_geoms; i++) {
-      Geom *geom = source_gnode->get_geom(i);
+      const Geom *geom = source_gnode->get_geom(i);
       const RenderState *state = source_gnode->get_geom_state(i);
       dest_gnode->add_geom(copy_geom(geom, from), state);
     }
@@ -338,7 +338,7 @@ r_copy_char(PandaNode *dest, const PandaNode *source,
 //               returns the same Geom.
 ////////////////////////////////////////////////////////////////////
 PT(Geom) Character::
-copy_geom(Geom *source, const Character *from) {
+copy_geom(const Geom *source, const Character *from) {
   GeomBindType bind;
   PTA_ushort index;
 
@@ -347,7 +347,7 @@ copy_geom(Geom *source, const Character *from) {
   PTA_Colorf colors;
   PTA_TexCoordf texcoords;
 
-  PT(Geom) dest = source;
+  PT(Geom) dest = (Geom *)source;
 
   source->get_coords(coords, index);
   if ((coords != (void *)NULL) && (coords == (from->_cv._coords))) {

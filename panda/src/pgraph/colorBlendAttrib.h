@@ -23,6 +23,8 @@
 
 #include "renderAttrib.h"
 
+class FactoryParams;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : ColorBlendAttrib
 // Description : This specifies how colors are blended into the frame

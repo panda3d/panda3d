@@ -36,7 +36,7 @@ TypeHandle EggVertex::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EggVertex::
@@ -52,7 +52,7 @@ EggVertex() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::Copy constructor
-//       Access: Public
+//       Access: Published
 //  Description: Copies all properties of the vertex except its vertex
 //               pool, index number, and group membership.
 ////////////////////////////////////////////////////////////////////
@@ -62,7 +62,8 @@ EggVertex(const EggVertex &copy)
     _dxyzs(copy._dxyzs),
     _external_index(copy._external_index),
     _pos(copy._pos),
-    _num_dimensions(copy._num_dimensions)
+    _num_dimensions(copy._num_dimensions),
+    _uv_map(copy._uv_map)
 {
   _pool = NULL;
   _forward_reference = false;
@@ -74,7 +75,7 @@ EggVertex(const EggVertex &copy)
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::Copy assignment operator
-//       Access: Public
+//       Access: Published
 //  Description: Copies all properties of the vertex except its vertex
 //               pool, index number, and group membership.
 ////////////////////////////////////////////////////////////////////
@@ -82,10 +83,11 @@ EggVertex &EggVertex::
 operator = (const EggVertex &copy) {
   EggObject::operator = (copy);
   EggAttributes::operator = (copy);
+  _dxyzs = copy._dxyzs;
   _external_index = copy._external_index;
   _pos = copy._pos;
   _num_dimensions = copy._num_dimensions;
-  _dxyzs = copy._dxyzs;
+  _uv_map = copy._uv_map;
 
   test_pref_integrity();
   test_gref_integrity();
@@ -95,7 +97,7 @@ operator = (const EggVertex &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::Destructor
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EggVertex::
@@ -109,6 +111,91 @@ EggVertex::
   // referenced by a group or a primitive, for the same reason.
   nassertv(_gref.empty());
   nassertv(_pref.empty());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::has_uv
+//       Access: Published
+//  Description: Returns true if the vertex has the named UV
+//               coordinate pair, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggVertex::
+has_uv(const string &name) const {
+  UVMap::const_iterator ui = _uv_map.find(name);
+  return (ui != _uv_map.end());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::get_uv
+//       Access: Published
+//  Description: Returns the named UV coordinate pair on the vertex.
+//               vertex.  It is an error to call this if has_uv(name)
+//               returned false.
+////////////////////////////////////////////////////////////////////
+const TexCoordd &EggVertex::
+get_uv(const string &name) const {
+  UVMap::const_iterator ui = _uv_map.find(name);
+  nassertr(ui != _uv_map.end(), TexCoordd::zero());
+  return (*ui).second->get_uv();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::set_uv
+//       Access: Published
+//  Description: Sets the indicated UV coordinate pair on the vertex.
+//               This replaces any UV coordinate pair with the same
+//               name already on the vertex, but preserves UV morphs.
+////////////////////////////////////////////////////////////////////
+void EggVertex::
+set_uv(const string &name, const TexCoordd &uv) {
+  PT(EggVertexUV) &uv_obj = _uv_map[name];
+
+  if (uv_obj.is_null()) {
+    uv_obj = new EggVertexUV(name, uv);
+
+  } else {
+    uv_obj = new EggVertexUV(*uv_obj);
+    uv_obj->set_uv(uv);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::get_uv_obj
+//       Access: Published
+//  Description: Returns the named EggVertexUV object, which defines
+//               both the UV coordinate pair for this name and the UV
+//               morphs.
+////////////////////////////////////////////////////////////////////
+EggVertexUV *EggVertex::
+get_uv_obj(const string &name) const {
+  UVMap::const_iterator ui = _uv_map.find(name);
+  if (ui != _uv_map.end()) {
+    return (*ui).second;
+  }
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::set_uv_obj
+//       Access: Published
+//  Description: Sets the indicated EggVertexUV on the vertex.
+//               This replaces any UV coordinate pair with the same
+//               name already on the vertex, including UV morphs.
+////////////////////////////////////////////////////////////////////
+void EggVertex::
+set_uv_obj(EggVertexUV *uv) {
+  _uv_map[uv->get_name()] = uv;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggVertex::clear_uv
+//       Access: Published
+//  Description: Removes the named UV coordinate pair from the vertex,
+//               along with any UV morphs.
+///////////////////////////////////////////////////////////////////
+void EggVertex::
+clear_uv(const string &name) {
+  _uv_map.erase(name);
 }
 
 
@@ -142,7 +229,7 @@ INLINE ostream &operator << (ostream &out, const GroupRefEntry &gre) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::write
-//       Access: Public
+//       Access: Published
 //  Description: Writes the vertex to the indicated output stream in
 //               Egg format.
 ////////////////////////////////////////////////////////////////////
@@ -161,6 +248,11 @@ write(ostream &out, int indent_level) const {
     out << " " << _pos[i];
   }
   out << "\n";
+
+  UVMap::const_iterator ui;
+  for (ui = _uv_map.begin(); ui != _uv_map.end(); ++ui) {
+    (*ui).second->write(out, indent_level + 2);
+  }
 
   EggAttributes::write(out, indent_level+2);
 
@@ -189,7 +281,7 @@ write(ostream &out, int indent_level) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::sorts_less_than
-//       Access: Public
+//       Access: Published
 //  Description: An ordering operator to compare two vertices for
 //               sorting order.  This imposes an arbitrary ordering
 //               useful to identify unique vertices.
@@ -226,12 +318,39 @@ sorts_less_than(const EggVertex &other) const {
     return _dxyzs < other._dxyzs;
   }
 
+  // Merge-compare the uv maps.
+  UVMap::const_iterator ai, bi;
+  ai = _uv_map.begin();
+  bi = other._uv_map.end();
+  while (ai != _uv_map.end() && bi != other._uv_map.end()) {
+    if ((*ai).first < (*bi).first) {
+      return true;
+
+    } else if ((*bi).first < (*ai).first) {
+      return false;
+
+    } else {
+      int compare = (*ai).second->compare_to(*(*bi).second);
+      if (compare != 0) {
+        return compare < 0;
+      }
+    }
+    ++ai;
+    ++bi;
+  }
+  if (bi != _uv_map.end()) {
+    return true;
+  }
+  if (ai != _uv_map.end()) {
+    return false;
+  }
+
   return EggAttributes::sorts_less_than(other);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::get_num_local_coord
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of primitives that own this vertex
 //               whose vertices are interpreted to be in a local
 //               coordinate system.
@@ -252,7 +371,7 @@ get_num_local_coord() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::get_num_global_coord
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of primitives that own this vertex
 //               whose vertices are interpreted in the global
 //               coordinate system.
@@ -274,7 +393,7 @@ get_num_global_coord() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::transform
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Applies the indicated transformation matrix to the
 //               vertex.
 ////////////////////////////////////////////////////////////////////
@@ -344,7 +463,7 @@ gref_size() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::has_gref
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the indicated group references this
 //               vertex, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -355,7 +474,7 @@ has_gref(const EggGroup *group) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::copy_grefs_from
-//       Access: Public
+//       Access: Published
 //  Description: Copies all the group references from the other vertex
 //               onto this one.  This assigns the current vertex to
 //               exactly the same groups, with exactly the same
@@ -389,7 +508,7 @@ copy_grefs_from(const EggVertex &other) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::clear_grefs
-//       Access: Public
+//       Access: Published
 //  Description: Removes all group references from the vertex, so that
 //               it is not assigned to any group.
 ////////////////////////////////////////////////////////////////////
@@ -455,7 +574,7 @@ pref_size() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::has_pref
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of times the vertex appears in the
 //               indicated primitive, or 0 if it does not appear.
 ////////////////////////////////////////////////////////////////////
@@ -468,7 +587,7 @@ has_pref(const EggPrimitive *prim) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::test_gref_integrity
-//       Access: Public
+//       Access: Published
 //  Description: Verifies that the gref list is correct and that all
 //               the groups included actually exist and do reference
 //               the vertex.
@@ -491,7 +610,7 @@ test_gref_integrity() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::test_pref_integrity
-//       Access: Public
+//       Access: Published
 //  Description: Verifies that the pref list is correct and that all
 //               the primitives included actually exist and do
 //               reference the vertex.
@@ -517,7 +636,7 @@ test_pref_integrity() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::output
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void EggVertex::

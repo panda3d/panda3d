@@ -23,6 +23,7 @@
 
 #include "portalMask.h"
 #include "pandaNode.h"
+#include "nodePath.h"
 #include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////

@@ -36,7 +36,7 @@ INLINE EggPrimitive::
 EggPrimitive(const EggPrimitive &copy) :
   EggNode(copy),
   EggAttributes(copy),
-  _texture(copy._texture),
+  _textures(copy._textures),
   _material(copy._material),
   _bface(copy._bface)
 {
@@ -53,7 +53,7 @@ operator = (const EggPrimitive &copy) {
   EggNode::operator = (copy);
   EggAttributes::operator = (copy);
   copy_vertices(copy);
-  _texture = copy._texture;
+  _textures = copy._textures;
   _material = copy._material;
   _bface = copy._bface;
   return *this;
@@ -72,11 +72,74 @@ INLINE EggPrimitive::
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::set_texture
 //       Access: Published
-//  Description: Applies the indicated texture to the primitive.
+//  Description: Replaces the current list of textures with the
+//               indicated texture.
+//
+//               This method is deprecated and is used in support of
+//               single-texturing only.  New code should be written to
+//               use the multitexture variants instead.q
 ////////////////////////////////////////////////////////////////////
 INLINE void EggPrimitive::
 set_texture(EggTexture *texture) {
-  _texture = texture;
+  clear_texture();
+  add_texture(texture);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::has_texture
+//       Access: Published
+//  Description: Returns true if the primitive has any textures
+//               specified, false otherwise.
+//
+//               This method is deprecated and is used in support of
+//               single-texturing only.  New code should be written to
+//               use the multitexture variants instead.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggPrimitive::
+has_texture() const {
+  return get_num_textures() > 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::has_texture
+//       Access: Published
+//  Description: Returns true if the primitive has the particular
+//               indicated texture, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggPrimitive::
+has_texture(EggTexture *texture) const {
+  PT_EggTexture t = texture;
+  return (find(_textures.begin(), _textures.end(), t) != _textures.end());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::get_texture
+//       Access: Published
+//  Description: Returns the first texture on the primitive, if any,
+//               or NULL if there are no textures on the primitive.
+//
+//               This method is deprecated and is used in support of
+//               single-texturing only.  New code should be written to
+//               use the multitexture variants instead.
+////////////////////////////////////////////////////////////////////
+INLINE EggTexture *EggPrimitive::
+get_texture() const {
+  return has_texture() ? get_texture(0) : (EggTexture *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::add_texture
+//       Access: Published
+//  Description: Applies the indicated texture to the primitive.
+//
+//               Note that, in the case of multiple textures being
+//               applied to a single primitive, the order in which the
+//               textures are applied does not affect the rendering
+//               order; use EggTexture::set_sort() to specify that.
+////////////////////////////////////////////////////////////////////
+INLINE void EggPrimitive::
+add_texture(EggTexture *texture) {
+  _textures.push_back(texture);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -86,32 +149,32 @@ set_texture(EggTexture *texture) {
 ////////////////////////////////////////////////////////////////////
 INLINE void EggPrimitive::
 clear_texture() {
-  _texture = (EggTexture *)NULL;
+  _textures.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::get_num_textures
+//       Access: Published
+//  Description: Returns the number of textures applied to the
+//               primitive.
+////////////////////////////////////////////////////////////////////
+INLINE int EggPrimitive::
+get_num_textures() const {
+  return _textures.size();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::get_texture
 //       Access: Published
-//  Description: Returns a pointer to the applied texture, or NULL if
-//               there is no texture applied.
+//  Description: Returns the nth texture that has been applied to the
+//               primitive.
 ////////////////////////////////////////////////////////////////////
 INLINE EggTexture *EggPrimitive::
-get_texture() const {
-  return _texture;
+get_texture(int n) const {
+  nassertr(n >= 0 && n < (int)_textures.size(), NULL);
+  return _textures[n];
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggPrimitive::has_texture
-//       Access: Published
-//  Description: Returns true if the primitive is textured (and
-//               get_texture() will return a real pointer), false
-//               otherwise (and get_texture() will return NULL).
-////////////////////////////////////////////////////////////////////
-INLINE bool EggPrimitive::
-has_texture() const {
-  return _texture != (EggTexture*)NULL;
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::set_material

@@ -34,7 +34,7 @@ TextGlyph() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TextGlyph::
-TextGlyph(Geom *geom, const RenderState *state, float advance) :
+TextGlyph(const Geom *geom, const RenderState *state, float advance) :
   _geom(geom), _state(state), _advance(advance) 
 { 
   if (_state == (RenderState *)NULL) {
@@ -75,7 +75,7 @@ operator = (const TextGlyph &copy) {
 INLINE PT(Geom) TextGlyph::
 get_geom() const {
   if (_geom == (Geom *)NULL) {
-    return _geom;
+    return NULL;
   }
 
   // We always return a copy of the geom.  That will allow the caller

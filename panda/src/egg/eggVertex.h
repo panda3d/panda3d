@@ -24,10 +24,12 @@
 #include "eggObject.h"
 #include "eggAttributes.h"
 #include "eggMorphList.h"
+#include "eggVertexUV.h"
 
 #include "referenceCount.h"
 #include "luse.h"
 #include "pset.h"
+#include "iterator_types.h"
 
 class EggVertexPool;
 class EggGroup;
@@ -43,6 +45,11 @@ class EXPCL_PANDAEGG EggVertex : public EggObject, public EggAttributes {
 public:
   typedef pset<EggGroup *> GroupRef;
   typedef pmultiset<EggPrimitive *> PrimitiveRef;
+  typedef pmap< string, PT(EggVertexUV) > UVMap;
+
+  typedef second_of_pair_iterator<UVMap::const_iterator> uv_iterator;
+  typedef uv_iterator const_uv_iterator;
+  typedef UVMap::size_type uv_size_type;
 
 PUBLISHED:
   EggVertex();
@@ -74,6 +81,23 @@ PUBLISHED:
   INLINE Vertexd get_pos3() const;
   INLINE LPoint4d get_pos4() const;
 
+  INLINE bool has_uv() const;
+  INLINE const TexCoordd &get_uv() const;
+  INLINE void set_uv(const TexCoordd &texCoord);
+  INLINE void clear_uv();
+  bool has_uv(const string &name) const;
+  const TexCoordd &get_uv(const string &name) const;
+  void set_uv(const string &name, const TexCoordd &texCoord);
+  EggVertexUV *get_uv_obj(const string &name) const;
+  void set_uv_obj(EggVertexUV *vertex_uv);
+  void clear_uv(const string &name);
+
+public:
+  INLINE const_uv_iterator uv_begin() const;
+  INLINE const_uv_iterator uv_end() const;
+  INLINE uv_size_type uv_size() const;
+
+PUBLISHED:
   INLINE int get_index() const;
 
   INLINE void set_external_index(int external_index);
@@ -125,6 +149,8 @@ private:
   short _num_dimensions;
   GroupRef _gref;
   PrimitiveRef _pref;
+
+  UVMap _uv_map;
 
 public:
   static TypeHandle get_class_type() {

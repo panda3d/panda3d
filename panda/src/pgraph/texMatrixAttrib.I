@@ -19,22 +19,22 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TexMatrixAttrib::Constructor
-//       Access: Private
+//       Access: Protected
 //  Description: Use TexMatrixAttrib::make() to construct a new
 //               TexMatrixAttrib object.
 ////////////////////////////////////////////////////////////////////
 INLINE TexMatrixAttrib::
-TexMatrixAttrib(const LMatrix4f &mat) :
-  _mat(mat)
-{
+TexMatrixAttrib() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TexMatrixAttrib::get_mat
-//       Access: Published
-//  Description: Returns the UV transformation matrix.
+//     Function: TexMatrixAttrib::Copy Constructor
+//       Access: Protected
+//  Description: Use TexMatrixAttrib::make() to construct a new
+//               TexMatrixAttrib object.
 ////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &TexMatrixAttrib::
-get_mat() const {
-  return _mat;
+INLINE TexMatrixAttrib::
+TexMatrixAttrib(const TexMatrixAttrib &copy) :
+  _stages(copy._stages)
+{
 }

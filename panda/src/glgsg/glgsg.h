@@ -29,6 +29,7 @@
 #define GLP(name) gl##name
 #define GLUP(name) glu##name
 #define CLP(name) GL##name
+#define GLPREFIX_QUOTED "gl"
 #define CLASSPREFIX_QUOTED "GL"
 #define CONFIGOBJ config_glgsg
 #define GLCAT glgsg_cat

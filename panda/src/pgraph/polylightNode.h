@@ -27,6 +27,7 @@
 #include "pmap.h"
 #include "notify.h"
 #include "pandaNode.h"
+#include "colorAttrib.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PolylightNode

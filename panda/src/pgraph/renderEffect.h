@@ -21,11 +21,17 @@
 
 #include "pandabase.h"
 
+#include "transformState.h"
+#include "renderState.h"
+
 #include "typedWritableReferenceCount.h"
 #include "indirectCompareTo.h"
 #include "pointerTo.h"
 #include "pset.h"
 #include "luse.h"
+
+class CullTraverser;
+class CullTraverserData;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : RenderEffect
@@ -66,6 +72,11 @@ public:
   virtual bool safe_to_transform() const;
   virtual bool safe_to_combine() const;
   virtual CPT(RenderEffect) xform(const LMatrix4f &mat) const;
+
+  virtual bool has_cull_callback() const;
+  virtual void cull_callback(CullTraverser *trav, CullTraverserData &data,
+                             CPT(TransformState) &node_transform,
+                             CPT(RenderState) &node_state) const;
 
 PUBLISHED:
   virtual void output(ostream &out) const;

@@ -668,7 +668,7 @@ compare_collider_to_geom_node(CollisionEntry &entry,
     int num_geoms = gnode->get_num_geoms();
     for (int s = 0; s < num_geoms; s++) {
       entry._into = (CollisionSolid *)NULL;
-      Geom *geom = DCAST(Geom, gnode->get_geom(s));
+      const Geom *geom = DCAST(Geom, gnode->get_geom(s));
       if (geom != (Geom *)NULL) {
         const BoundingVolume &geom_bv = geom->get_bound();
         const GeometricBoundingVolume *geom_gbv = NULL;
@@ -716,7 +716,7 @@ compare_collider_to_solid(CollisionEntry &entry,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
-compare_collider_to_geom(CollisionEntry &entry, Geom *geom,
+compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
                          const GeometricBoundingVolume *from_node_gbv,
                          const GeometricBoundingVolume *geom_gbv) {
   bool within_geom_bounds = true;

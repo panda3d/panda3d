@@ -21,6 +21,7 @@
 
 #include "pandabase.h"
 #include "pointerToArray.h"
+#include "texture.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextureCollection

@@ -23,6 +23,8 @@
 
 #include "renderAttrib.h"
 
+class FactoryParams;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : TransparencyAttrib
 // Description : This controls the enabling of transparency.  Simply

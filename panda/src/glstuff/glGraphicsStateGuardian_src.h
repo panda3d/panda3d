@@ -25,6 +25,10 @@
 #include "displayRegion.h"
 #include "material.h"
 #include "depthTestAttrib.h"
+#include "textureAttrib.h"
+#include "texMatrixAttrib.h"
+#include "texGenAttrib.h"
+#include "textureStage.h"
 #include "textureApplyAttrib.h"
 #include "pointerToArray.h"
 #include "fog.h"
@@ -134,12 +138,13 @@ protected:
   static bool report_errors_loop(int line, const char *source_file, 
                                  GLenum error_code, int &error_count);
   void show_gl_string(const string &name, GLenum id);
-  void get_gl_version();
+  virtual void get_gl_version();
   void save_extensions(const char *extensions);
   virtual void get_extra_extensions();
   void report_extensions() const;
   bool has_extension(const string &extension) const;
   bool is_at_least_version(int major_version, int minor_version, int release_version = 0) const;
+  virtual void *get_extension_func(const char *prefix, const char *name);
 
   virtual bool slot_new_light(int light_id);
   virtual void enable_lighting(bool enable);
@@ -157,6 +162,8 @@ protected:
   virtual void set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
                               ColorBlendAttrib::Mode color_blend_mode,
                               TransparencyAttrib::Mode transparency_mode);
+
+  virtual void finish_modify_state();
 
   virtual void free_pointers();
   virtual PT(SavedFrameBuffer) save_frame_buffer(const RenderBuffer &buffer,
@@ -195,7 +202,6 @@ protected:
   INLINE void enable_multisample(bool val);
   INLINE void enable_line_smooth(bool val);
   INLINE void enable_point_smooth(bool val);
-  INLINE void enable_texturing(bool val);
   INLINE void enable_scissor(bool val);
   INLINE void enable_stencil_test(bool val);
   INLINE void enable_multisample_alpha_one(bool val);
@@ -230,7 +236,10 @@ protected:
   GLenum get_image_type(PixelBuffer::Type type);
   GLenum get_external_image_format(PixelBuffer::Format format);
   GLenum get_internal_image_format(PixelBuffer::Format format);
-  GLint get_texture_apply_mode_type(TextureApplyAttrib::Mode am) const;
+  GLint get_texture_apply_mode_type(TextureStage::Mode am) const;
+  GLint get_texture_combine_type(TextureStage::CombineMode cm) const;
+  GLint get_texture_src_type(TextureStage::CombineSource cs) const;
+  GLint get_texture_operand_type(TextureStage::CombineOperand co) const;
   GLenum get_fog_mode_type(Fog::Mode m) const;
 
   static CPT(RenderState) get_untextured_state();
@@ -279,7 +288,6 @@ protected:
   bool _line_smooth_enabled;
   bool _point_smooth_enabled;
   bool _scissor_enabled;
-  bool _texturing_enabled;
   bool _stencil_test_enabled;
   bool _multisample_alpha_one_enabled;
   bool _multisample_alpha_mask_enabled;
@@ -291,12 +299,19 @@ protected:
   int _decal_level;
 
   bool _dithering_enabled;
+  bool _texgen_forced_normal;
 
   int _max_lights;
   int _max_clip_planes;
 
   LMatrix4f _current_projection_mat;
   int _projection_mat_stack_count;
+  
+  CPT(TextureAttrib) _current_texture;
+  CPT(TexMatrixAttrib) _current_tex_mat;
+  bool _needs_tex_mat;
+  CPT(TexGenAttrib) _current_tex_gen;
+  bool _needs_tex_gen;
 
   CPT(DisplayRegion) _actual_display_region;
 #ifdef HAVE_CGGL
@@ -306,14 +321,21 @@ protected:
 #endif
 
   int _pass_number;
+  
+  int _error_count;
 
   int _gl_version_major, _gl_version_minor, _gl_version_release;
   pset<string> _extensions;
+
+public:
   bool _supports_bgr;
   bool _supports_multisample;
-  GLenum _edge_clamp;
 
-  int _error_count;
+  bool _supports_multitexture;
+  PFNGLACTIVETEXTUREPROC _glActiveTexture;
+  PFNGLMULTITEXCOORD2FVPROC _glMultiTexCoord2fv;
+
+  GLenum _edge_clamp;
 
 public:
   static GraphicsStateGuardian *

@@ -20,12 +20,16 @@
 #include "geomTransformer.h"
 #include "sceneGraphReducer.h"
 #include "accumulatedAttribs.h"
+#include "colorAttrib.h"
+#include "colorScaleAttrib.h"
+#include "texMatrixAttrib.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "indent.h"
 #include "pset.h"
+#include "config_pgraph.h"
 
 TypeHandle GeomNode::_type_handle;
 
@@ -284,7 +288,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
   const LMatrix4f &mat = next_transform->get_mat();
   int num_geoms = get_num_geoms();
   for (int i = 0; i < num_geoms; i++) {
-    Geom *geom = get_geom(i);
+    const Geom *geom = get_geom(i);
     Geom::VertexIterator vi = geom->make_vertex_iterator();
     int num_prims = geom->get_num_prims();
     

@@ -50,7 +50,7 @@ public:
   dDrawable();
   virtual ~dDrawable();
 
-  virtual void draw(GraphicsStateGuardianBase *);
+  virtual void draw(GraphicsStateGuardianBase *) const;
   virtual bool is_dynamic() const;
 
 protected:

@@ -40,6 +40,7 @@ class ComputedVertices;
 class CharacterMaker;
 class EggNode;
 class EggVertex;
+class TexCoordName;
 
 ///////////////////////////////////////////////////////////////////
 //       Class : ComputedVerticesMaker
@@ -73,7 +74,8 @@ public:
                  const LMatrix4d &transform);
   int add_normal(const Normald &normal, const EggMorphNormalList &morphs,
                  const LMatrix4d &transform);
-  int add_texcoord(const TexCoordd &texcoord,
+  int add_texcoord(const TexCoordName *name,
+                   const TexCoordd &texcoord,
                    const EggMorphTexCoordList &morphs,
                    const LMatrix3d &transform);
   int add_color(const Colorf &color, const EggMorphColorList &morphs);
@@ -87,19 +89,22 @@ public:
   PTA_Vertexf _coords;
   PTA_Normalf _norms;
   PTA_Colorf _colors;
-  PTA_TexCoordf _texcoords;
+
+  typedef pmap<const TexCoordName *, PTA_TexCoordf> TexCoords;
+  TexCoords _texcoords;
 
 protected:
   typedef pmap<int, LVector3f> VertexMorphList;
   typedef pmap<int, LVector3f> NormalMorphList;
   typedef pmap<int, LVector2f> TexCoordMorphList;
   typedef pmap<int, LVector4f> ColorMorphList;
+  typedef pmap<const TexCoordName *, TexCoordMorphList> TexCoordMorphMap;
   class MorphList {
   public:
     VertexMorphList _vmorphs;
     NormalMorphList _nmorphs;
-    TexCoordMorphList _tmorphs;
     ColorMorphList _cmorphs;
+    TexCoordMorphMap _tmorphs;
   };
 
   typedef pmap<string, MorphList> Morphs;
@@ -108,9 +113,16 @@ protected:
   typedef pset<int> Vertices;
 
   Vertices _cindex;
-  Vertices _tindex;
 
-  ComputedVerticesMakerTexCoordMap _tmap;
+  class TexCoordDef {
+  public:
+    Vertices _tindex;
+    ComputedVerticesMakerTexCoordMap _tmap;
+  };
+
+  typedef pmap<const TexCoordName *, TexCoordDef> TexCoordDefMap;
+  TexCoordDefMap _tdefmap;
+
   ComputedVerticesMakerColorMap _cmap;
 
 #ifdef WIN32_VC

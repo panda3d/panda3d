@@ -80,12 +80,12 @@ public:
 
   INLINE void set_coord_value(const BuilderV *array, ushort index);
   INLINE void set_normal_value(const BuilderN *array, ushort index);
-  INLINE void set_texcoord_value(const BuilderTC *array, ushort index);
+  INLINE void set_texcoord_value(const TexCoordName *name, const BuilderTC *array, ushort index);
   INLINE void set_color_value(const BuilderC *array, ushort index);
 
   INLINE BuilderV get_coord_value(const BuilderBucket &bucket) const;
   INLINE BuilderN get_normal_value(const BuilderBucket &bucket) const;
-  INLINE BuilderTC get_texcoord_value(const BuilderBucket &bucket) const;
+  INLINE BuilderTC get_texcoord_value(const TexCoordName *name, const BuilderBucket &bucket) const;
   INLINE BuilderC get_color_value(const BuilderBucket &bucket) const;
 
 };
@@ -111,12 +111,12 @@ public:
 
   INLINE void set_coord_value(const BuilderV *array, ushort index);
   INLINE void set_normal_value(const BuilderN *array, ushort index);
-  INLINE void set_texcoord_value(const BuilderTC *array, ushort index);
+  INLINE void set_texcoord_value(const TexCoordName *name, const BuilderTC *array, ushort index);
   INLINE void set_color_value(const BuilderC *array, ushort index);
 
   INLINE BuilderV get_coord_value(const BuilderBucket &bucket) const;
   INLINE BuilderN get_normal_value(const BuilderBucket &bucket) const;
-  INLINE BuilderTC get_texcoord_value(const BuilderBucket &bucket) const;
+  INLINE BuilderTC get_texcoord_value(const TexCoordName *name, const BuilderBucket &bucket) const;
   INLINE BuilderC get_color_value(const BuilderBucket &bucket) const;
 };
 

@@ -23,6 +23,8 @@
 
 #include "renderAttrib.h"
 
+class FactoryParams;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : ColorWriteAttrib
 // Description : Enables or disables writing to the color buffer.

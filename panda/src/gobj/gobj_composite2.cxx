@@ -16,3 +16,5 @@
 #include "texture.cxx"
 #include "textureContext.cxx"
 #include "texturePool.cxx"
+#include "texCoordName.cxx"
+#include "textureStage.cxx"

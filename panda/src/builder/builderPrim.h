@@ -93,8 +93,8 @@ public:
 
   static void fill_geom(Geom *geom, const PTA_BuilderV &v_array,
                         GeomBindType n_attr, const PTA_BuilderN &n_array,
-                        GeomBindType t_attr, const PTA_BuilderTC &t_array,
                         GeomBindType c_attr, const PTA_BuilderC &c_array,
+                        const TexCoordFill &texcoords,
                         const BuilderBucket &bucket,
                         int num_prims, int num_components, int num_verts);
 };
@@ -118,8 +118,8 @@ public:
 
   static void fill_geom(Geom *geom, const PTA_ushort &v_array,
                         GeomBindType n_attr, PTA_ushort n_array,
-                        GeomBindType t_attr, PTA_ushort t_array,
                         GeomBindType c_attr, PTA_ushort c_array,
+                        const TexCoordFill &texcoords,
                         const BuilderBucket &bucket,
                         int num_prims, int num_components, int num_verts);
 };

@@ -43,7 +43,6 @@ double egg_coplanar_threshold = config_egg2pg.GetDouble("egg-coplanar-threshold"
 bool egg_ignore_mipmaps = config_egg2pg.GetBool("egg-ignore-mipmaps", false);
 bool egg_ignore_filters = config_egg2pg.GetBool("egg-ignore-filters", false);
 bool egg_ignore_clamp = config_egg2pg.GetBool("egg-ignore-clamp", false);
-bool egg_always_decal_textures = config_egg2pg.GetBool("egg-always-decal-textures", false);
 bool egg_ignore_decals = config_egg2pg.GetBool("egg-ignore-decals", false);
 bool egg_flatten = config_egg2pg.GetBool("egg-flatten", true);
 

@@ -62,12 +62,14 @@ nonindexed_copy(const BuilderPrimTempl<BuilderVertexI> &copy,
       v.set_normal(cv.get_normal_value(bucket));
     }
 
-    if (cv.has_texcoord()) {
-      v.set_texcoord(cv.get_texcoord_value(bucket));
-    }
-
     if (cv.has_color()) {
       v.set_color(cv.get_color_value(bucket));
+    }
+    
+    BuilderVertexI::tc_const_iterator tci;
+    for (tci = cv.tc_begin(); tci != cv.tc_end(); ++tci) {
+      const TexCoordName *name = (*tci).first;
+      v.set_texcoord(name, cv.get_texcoord_value(name, bucket));
     }
 
     if (cv.has_pixel_size()) {
@@ -130,8 +132,8 @@ flatten_vertex_properties() {
 void BuilderPrim::
 fill_geom(Geom *geom, const PTA_BuilderV &v_array,
           GeomBindType n_attr, const PTA_BuilderN &n_array,
-          GeomBindType t_attr, const PTA_BuilderTC &t_array,
           GeomBindType c_attr, const PTA_BuilderC &c_array,
+          const BuilderPrim::TexCoordFill &texcoords,
           const BuilderBucket &, int, int, int) {
 
   // WARNING!  This is questionable practice.  We have a
@@ -145,12 +147,14 @@ fill_geom(Geom *geom, const PTA_BuilderV &v_array,
     geom->set_normals((PTA_Normalf &)n_array, n_attr);
   }
 
-  if (t_attr != G_OFF) {
-    geom->set_texcoords((PTA_TexCoordf &)t_array, t_attr);
-  }
-
   if (c_attr != G_OFF) {
     geom->set_colors((PTA_Colorf &)c_array, c_attr);
+  }
+
+  TexCoordFill::const_iterator tci;
+  for (tci = texcoords.begin(); tci != texcoords.end(); ++tci) {
+    const TexCoordName *name = (*tci).first;
+    geom->set_texcoords(name, (*tci).second);
   }
 }
 
@@ -179,23 +183,18 @@ flatten_vertex_properties() {
 void BuilderPrimI::
 fill_geom(Geom *geom, const PTA_ushort &v_array,
           GeomBindType n_attr, PTA_ushort n_array,
-          GeomBindType t_attr, PTA_ushort t_array,
           GeomBindType c_attr, PTA_ushort c_array,
+          const BuilderPrimI::TexCoordFill &texcoords,
           const BuilderBucket &bucket,
           int num_prims, int num_components, int num_verts) {
   PTA_Vertexf v_data = bucket.get_coords();
   PTA_Normalf n_data = bucket.get_normals();
-  PTA_TexCoordf t_data = bucket.get_texcoords();
   PTA_Colorf c_data = bucket.get_colors();
 
   // Make sure the data pointers are NULL if the attribute is off.
   if (n_attr == G_OFF) {
     n_data = NULL;
     n_array = NULL;
-  }
-  if (t_attr == G_OFF) {
-    t_data = NULL;
-    t_array = NULL;
   }
   if (c_attr == G_OFF) {
     c_data = NULL;
@@ -207,11 +206,6 @@ fill_geom(Geom *geom, const PTA_ushort &v_array,
     (n_attr==G_PER_COMPONENT) ? num_components :
     (n_attr==G_PER_PRIM) ? num_prims :
     (n_attr==G_OVERALL) ? 1 : 0;
-  int t_len =
-    (t_attr==G_PER_VERTEX) ? num_verts :
-    (t_attr==G_PER_COMPONENT) ? num_components :
-    (t_attr==G_PER_PRIM) ? num_prims :
-    (t_attr==G_OVERALL) ? 1 : 0;
   int c_len =
     (c_attr==G_PER_VERTEX) ? num_verts :
     (c_attr==G_PER_COMPONENT) ? num_components :
@@ -223,23 +217,12 @@ fill_geom(Geom *geom, const PTA_ushort &v_array,
       memcmp(v_array, n_array, sizeof(ushort) * n_len)==0) {
     n_array = v_array;
   }
-  if (t_attr != G_OFF) {
-    if (memcmp(v_array, t_array, sizeof(ushort) * t_len)==0) {
-      t_array = v_array;
-    } else if (t_len <= n_len &&
-               memcmp(n_array, t_array, sizeof(ushort) * t_len)==0) {
-      t_array = n_array;
-    }
-  }
   if (c_attr != G_OFF) {
     if (memcmp(v_array, c_array, sizeof(ushort) * c_len)==0) {
       c_array = v_array;
     } else if (c_len <= n_len &&
                memcmp(n_array, c_array, sizeof(ushort) * c_len)==0) {
       c_array = n_array;
-    } else if (c_len <= t_len &&
-               memcmp(t_array, c_array, sizeof(ushort) * c_len)==0) {
-      c_array = t_array;
     }
   }
 
@@ -249,12 +232,42 @@ fill_geom(Geom *geom, const PTA_ushort &v_array,
     geom->set_normals(n_data, n_attr, n_array);
   }
 
-  if (t_attr != G_OFF) {
-    geom->set_texcoords(t_data, t_attr, t_array);
-  }
-
   if (c_attr != G_OFF) {
     geom->set_colors(c_data, c_attr, c_array);
+  }
+
+  TexCoordFill::const_iterator tci;
+  for (tci = texcoords.begin(); tci != texcoords.end(); ++tci) {
+    const TexCoordName *name = (*tci).first;
+    PTA_ushort t_array = (*tci).second;
+
+    PTA_TexCoordf t_data = bucket.get_texcoords(name);
+    if (t_data != (TexCoordf *)NULL) {
+      int t_len = num_verts;
+
+      // Can we share the index list with some other property?
+      if (memcmp(v_array, t_array, sizeof(ushort) * t_len)==0) {
+        t_array = v_array;
+      } else if (t_len <= n_len &&
+                 memcmp(n_array, t_array, sizeof(ushort) * t_len)==0) {
+        t_array = n_array;
+      } else if (t_len <= c_len &&
+                 memcmp(c_array, t_array, sizeof(ushort) * t_len)==0) {
+        t_array = c_array;
+        
+      } else {
+        TexCoordFill::const_iterator tci2;
+        for (tci2 = texcoords.begin(); tci2 != tci; ++tci2) {
+          PTA_ushort t_array2 = (*tci).second;
+          if (memcmp(t_array2, t_array, sizeof(ushort) * t_len)==0) {
+            t_array = t_array2;
+            break;
+          }
+        }
+      }
+
+      geom->set_texcoords(name, t_data, t_array);
+    }
   }
 }
 

@@ -41,7 +41,7 @@
 //               are numeric and are monotonically increasing.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA UpdateSeq {
-public:
+PUBLISHED:
   INLINE UpdateSeq();
   INLINE static UpdateSeq initial();
   INLINE static UpdateSeq old();

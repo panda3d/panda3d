@@ -60,3 +60,36 @@ OSMesaGraphicsStateGuardian::
     _context = (OSMesaContext)NULL;
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: OSMesaGraphicsStateGuardian::get_extension_func
+//       Access: Public, Virtual
+//  Description: Returns the pointer to the GL extension function with
+//               the indicated name.  It is the responsibility of the
+//               caller to ensure that the required extension is
+//               defined in the OpenGL runtime prior to calling this;
+//               it is an error to call this for a function that is
+//               not defined.
+////////////////////////////////////////////////////////////////////
+void *OSMesaGraphicsStateGuardian::
+get_extension_func(const char *, const char *name) {
+#if (OSMESA_MAJOR_VERSION == 4 && OSMESA_MINOR_VERSION >= 1) || OSMESA_MAJOR_VERSION > 4
+  // If we've got at least OSMesa version 4.1, then we can use
+  // OSMesaGetProcAddress.
+
+  // We ignore the prefix and always use "gl", since that's what Mesa
+  // does (even if we compile with name mangling enabled to rename the
+  // Mesa functions to "mgl", they're still stored as "gl" in the
+  // OSMesaGetProcAddress() lookup table.
+  string fullname = string("gl") + string(name);
+  return OSMesaGetProcAddress(fullname.c_str());
+
+#else
+  // Otherwise, too bad.  No extension functions for you.  We could
+  // try to write code that would dig around in the system interface
+  // (using dlopen(), for instance) to find the extension functions,
+  // but why should we have to do that?  Just go get the latest Mesa,
+  // for goodness sakes!
+  return NULL;
+#endif
+}

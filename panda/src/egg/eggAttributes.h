@@ -25,6 +25,7 @@
 
 #include "typedObject.h"
 #include "luse.h"
+#include "notify.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggAttributes
@@ -49,11 +50,6 @@ PUBLISHED:
   INLINE void set_normal(const Normald &normal);
   INLINE void clear_normal();
 
-  INLINE bool has_uv() const;
-  INLINE const TexCoordd &get_uv() const;
-  INLINE void set_uv(const TexCoordd &texCoord);
-  INLINE void clear_uv();
-
   INLINE bool has_color() const;
   INLINE Colorf get_color() const;
   INLINE void set_color(const Colorf &Color);
@@ -65,19 +61,16 @@ PUBLISHED:
   void transform(const LMatrix4d &mat);
 
   EggMorphNormalList _dnormals;
-  EggMorphTexCoordList _duvs;
   EggMorphColorList _drgbas;
 
 private:
   enum Flags {
     F_has_normal = 0x001,
-    F_has_uv     = 0x002,
-    F_has_color  = 0x004,
+    F_has_color  = 0x002,
   };
 
   int _flags;
   Normald _normal;
-  TexCoordd _uv;
   Colorf _color;
 
 

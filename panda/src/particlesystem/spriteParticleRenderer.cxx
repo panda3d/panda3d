@@ -125,7 +125,7 @@ set_from_node(const NodePath &node_path) {
 
   // Now examine the UV's of the first Geom within the GeomNode.
   nassertv(gnode->get_num_geoms() > 0);
-  Geom *geom = gnode->get_geom(0);
+  const Geom *geom = gnode->get_geom(0);
 
   PTA_TexCoordf texcoords;
   GeomBindType bind;

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "compassEffect.h"
+#include "cullTraverserData.h"
 #include "config_pgraph.h"
 #include "nodePath.h"
 #include "bamReader.h"
@@ -103,19 +104,46 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CompassEffect::do_compass
-//       Access: Public
-//  Description: Computes the appropriate transform to rotate the node
-//               according to the reference node, or to the root
-//               transform if there is no reference node.
+//     Function: CompassEffect::has_cull_callback
+//       Access: Public, Virtual
+//  Description: Should be overridden by derived classes to return
+//               true if cull_callback() has been defined.  Otherwise,
+//               returns false to indicate cull_callback() does not
+//               need to be called for this effect during the cull
+//               traversal.
 ////////////////////////////////////////////////////////////////////
-CPT(TransformState) CompassEffect::
-do_compass(const TransformState *net_transform,
-           const TransformState *node_transform) const {
+bool CompassEffect::
+has_cull_callback() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CompassEffect::cull_callback
+//       Access: Public, Virtual
+//  Description: If has_cull_callback() returns true, this function
+//               will be called during the cull traversal to perform
+//               any additional operations that should be performed at
+//               cull time.  This may include additional manipulation
+//               of render state or additional visible/invisible
+//               decisions, or any other arbitrary operation.
+//
+//               At the time this function is called, the current
+//               node's transform and state have not yet been applied
+//               to the net_transform and net_state.  This callback
+//               may modify the node_transform and node_state to apply
+//               an effective change to the render state at this
+//               level.
+////////////////////////////////////////////////////////////////////
+void CompassEffect::
+cull_callback(CullTraverser *, CullTraverserData &data,
+              CPT(TransformState) &node_transform,
+              CPT(RenderState) &) const {
   if (_properties == 0) {
     // Nothing to do.
-    return TransformState::make_identity();
+    return;
   }
+
+  CPT(TransformState) net_transform = data._net_transform->compose(node_transform);
 
   // Compute the reference transform: our transform, as applied to the
   // reference node.
@@ -194,7 +222,10 @@ do_compass(const TransformState *net_transform,
 
   // Now compute the transform that will convert net_transform to
   // want_transform.  This is inv(net_transform) * want_transform.
-  return net_transform->invert_compose(want_transform);
+  CPT(TransformState) compass_transform =
+    net_transform->invert_compose(want_transform);
+
+  node_transform = node_transform->compose(compass_transform);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -25,6 +25,7 @@
 #include "eggNode.h"
 #include "eggGroup.h"
 #include "eggVertex.h"
+#include "texCoordName.h"
 
 #include <algorithm>
 
@@ -35,10 +36,9 @@
 ////////////////////////////////////////////////////////////////////
 ComputedVerticesMaker::
 ComputedVerticesMaker() {
-  _coords= PTA_Vertexf::empty_array(0);
-  _norms= PTA_Normalf::empty_array(0);
-  _colors= PTA_Colorf::empty_array(0);
-  _texcoords= PTA_TexCoordf::empty_array(0);
+  _coords = PTA_Vertexf::empty_array(0);
+  _norms = PTA_Normalf::empty_array(0);
+  _colors = PTA_Colorf::empty_array(0);
   _current_vc = NULL;
 }
 
@@ -242,17 +242,20 @@ add_normal(const Normald &normal, const EggMorphNormalList &morphs,
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMaker::add_texcoord
 //       Access: Public
-//  Description: Adds a texcoord value to the array (texture
+//  Description: Adds a texcoord value to the named array (texture
 //               coordinates are unrelated to the current transform
 //               space), and returns its index number within the
 //               array.
 ////////////////////////////////////////////////////////////////////
 int ComputedVerticesMaker::
-add_texcoord(const TexCoordd &texcoord, const EggMorphTexCoordList &morphs,
+add_texcoord(const TexCoordName *name,
+             const TexCoordd &texcoord, const EggMorphTexCoordList &morphs,
              const LMatrix3d &transform) {
+  TexCoordDef &def = _tdefmap[name];
+
   TexCoordf ttc = LCAST(float, texcoord * transform);
-  int index = _tmap.add_value(ttc, morphs, _texcoords);
-  _tindex.insert(index);
+  int index = def._tmap.add_value(ttc, morphs, _texcoords[name]);
+  def._tindex.insert(index);
 
   // Now create any morph sliders.
   EggMorphTexCoordList::const_iterator mli;
@@ -263,13 +266,14 @@ add_texcoord(const TexCoordd &texcoord, const EggMorphTexCoordList &morphs,
       MorphList &mlist = _morphs[morph.get_name()];
 
       // Have we already morphed this texcoord?
-      TexCoordMorphList::iterator vmi = mlist._tmorphs.find(index);
-      if (vmi != mlist._tmorphs.end()) {
+      TexCoordMorphList &tmorphs = mlist._tmorphs[name];
+      TexCoordMorphList::iterator vmi = tmorphs.find(index);
+      if (vmi != tmorphs.end()) {
         // Yes, we have.
         nassertr((*vmi).second.almost_equal(LCAST(float, offset), 0.001), index);
       } else {
         // No, we haven't yet; morph it now.
-        mlist._tmorphs[index] = LCAST(float, offset);
+        tmorphs[index] = LCAST(float, offset);
       }
     }
   }
@@ -373,7 +377,10 @@ make_computed_vertices(Character *character, CharacterMaker &char_maker) {
   character->_cv._coords = _coords;
   character->_cv._norms = _norms;
   character->_cv._colors = _colors;
-  character->_cv._texcoords = _texcoords;
+
+  // Temporary: the ComputedVertices object currently doesn't support
+  // multitexture.
+  character->_cv._texcoords = _texcoords[TexCoordName::get_default()];
 
   // Finally, add in all the morph definitions.
   Morphs::const_iterator mi;
@@ -414,20 +421,6 @@ make_computed_vertices(Character *character, CharacterMaker &char_maker) {
       }
     }
 
-    if (!mlist._tmorphs.empty()) {
-      comp_verts->_texcoord_morphs.push_back(ComputedVerticesMorphTexCoord());
-      ComputedVerticesMorphTexCoord &mv = comp_verts->_texcoord_morphs.back();
-      mv._slider_index = slider_index;
-
-      TexCoordMorphList::const_iterator vmi;
-      for (vmi = mlist._tmorphs.begin();
-           vmi != mlist._tmorphs.end();
-           ++vmi) {
-        mv._morphs.push_back(ComputedVerticesMorphValue2((*vmi).first,
-                                                         (*vmi).second));
-      }
-    }
-
     if (!mlist._cmorphs.empty()) {
       comp_verts->_color_morphs.push_back(ComputedVerticesMorphColor());
       ComputedVerticesMorphColor &mv = comp_verts->_color_morphs.back();
@@ -439,6 +432,26 @@ make_computed_vertices(Character *character, CharacterMaker &char_maker) {
            ++vmi) {
         mv._morphs.push_back(ComputedVerticesMorphValue4((*vmi).first,
                                                          (*vmi).second));
+      }
+    }
+
+    TexCoordMorphMap::const_iterator mmi;
+    for (mmi = mlist._tmorphs.begin(); mmi != mlist._tmorphs.end(); ++mmi) {
+      const TexCoordName *name = (*mmi).first;
+      const TexCoordMorphList &tmorphs = (*mmi).second;
+
+      // Temporary check: the ComputedVertices object currently
+      // doesn't support multitexture.
+      if (name == TexCoordName::get_default()) {
+        comp_verts->_texcoord_morphs.push_back(ComputedVerticesMorphTexCoord());
+        ComputedVerticesMorphTexCoord &mv = comp_verts->_texcoord_morphs.back();
+        mv._slider_index = slider_index;
+        
+        TexCoordMorphList::const_iterator vmi;
+        for (vmi = tmorphs.begin(); vmi != tmorphs.end(); ++vmi) {
+          mv._morphs.push_back(ComputedVerticesMorphValue2((*vmi).first,
+                                                           (*vmi).second));
+        }
       }
     }
   }
@@ -459,8 +472,9 @@ write(ostream &out) const {
       << _transforms.size() << " transform spaces, "
       << _coords.size() << " vertices, "
       << _norms.size() << " normals, "
-      << _texcoords.size() << " uvs, "
-      << _colors.size() << " colors.\n";
+      << _colors.size() << " colors, "
+      << _texcoords.size() << " named uv sets.\n";
+
   TransformSpaces::const_iterator tsi;
   for (tsi = _transforms.begin(); tsi != _transforms.end(); ++tsi) {
     const JointWeights &jw = (*tsi).first;

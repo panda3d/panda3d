@@ -22,7 +22,10 @@
 #include "nodePath.h"
 #include "pmap.h"
 #include "colorScaleAttrib.h"
+#include "cullTraverserData.h"
+
 #include <math.h>
+
 TypeHandle PolylightEffect::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -39,6 +42,50 @@ make() {
   effect->_effect_center = LPoint3f(0.0,0.0,0.0);
   return return_new(effect);
 }
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: PolylightEffect::has_cull_callback
+//       Access: Public, Virtual
+//  Description: Should be overridden by derived classes to return
+//               true if cull_callback() has been defined.  Otherwise,
+//               returns false to indicate cull_callback() does not
+//               need to be called for this effect during the cull
+//               traversal.
+////////////////////////////////////////////////////////////////////
+bool PolylightEffect::
+has_cull_callback() const {
+  return is_enabled();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PolylightEffect::cull_callback
+//       Access: Public, Virtual
+//  Description: If has_cull_callback() returns true, this function
+//               will be called during the cull traversal to perform
+//               any additional operations that should be performed at
+//               cull time.  This may include additional manipulation
+//               of render state or additional visible/invisible
+//               decisions, or any other arbitrary operation.
+//
+//               At the time this function is called, the current
+//               node's transform and state have not yet been applied
+//               to the net_transform and net_state.  This callback
+//               may modify the node_transform and node_state to apply
+//               an effective change to the render state at this
+//               level.
+////////////////////////////////////////////////////////////////////
+void PolylightEffect::
+cull_callback(CullTraverser *, CullTraverserData &data,
+              CPT(TransformState) &node_transform,
+              CPT(RenderState) &node_state) const {
+  if (is_enabled()) {
+    CPT(RenderAttrib) poly_light_attrib = do_poly_light(&data, node_transform); 
+    CPT(RenderState) poly_light_state = RenderState::make(poly_light_attrib);
+    node_state = node_state->compose(poly_light_state); 
+  }
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PolylightEffect::do_poly_light
 //       Access: Public

@@ -56,10 +56,8 @@ EggAttributes &EggAttributes::
 operator = (const EggAttributes &copy) {
   _flags = copy._flags;
   _normal = copy._normal;
-  _uv = copy._uv;
   _color = copy._color;
   _dnormals = copy._dnormals;
-  _duvs = copy._duvs;
   _drgbas = copy._drgbas;
   return *this;
 }
@@ -90,17 +88,6 @@ write(ostream &out, int indent_level) const {
       indent(out, indent_level) << "<Normal> {\n";
       indent(out, indent_level+2) << get_normal() << "\n";
       _dnormals.write(out, indent_level+2);
-      indent(out, indent_level) << "}\n";
-    }
-  }
-  if (has_uv()) {
-    if (_duvs.empty()) {
-      indent(out, indent_level)
-        << "<UV> { " << get_uv() << " }\n";
-    } else {
-      indent(out, indent_level) << "<UV> {\n";
-      indent(out, indent_level+2) << get_uv() << "\n";
-      _duvs.write(out, indent_level+2);
       indent(out, indent_level) << "}\n";
     }
   }
@@ -139,17 +126,6 @@ sorts_less_than(const EggAttributes &other) const {
     }
     if (_dnormals != other._dnormals) {
       return _dnormals < other._dnormals;
-    }
-  }
-
-  if (has_uv()) {
-    int compare =
-      _uv.compare_to(other._uv, egg_parameters->_uv_threshold);
-    if (compare != 0) {
-      return compare < 0;
-    }
-    if (_duvs != other._duvs) {
-      return _duvs < other._duvs;
     }
   }
 

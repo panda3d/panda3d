@@ -88,10 +88,12 @@
     spotlight.I spotlight.h \
     switchNode.I switchNode.h \
     texMatrixAttrib.I texMatrixAttrib.h \
+    texProjectorEffect.I texProjectorEffect.h \
     textureApplyAttrib.I textureApplyAttrib.h \
     textureAttrib.I textureAttrib.h \
     texGenAttrib.I texGenAttrib.h \
     textureCollection.I textureCollection.h \
+    textureStageCollection.I textureStageCollection.h \
     transformState.I transformState.h \
     transparencyAttrib.I transparencyAttrib.h \
     workingNodePath.I workingNodePath.h
@@ -152,7 +154,6 @@
     modelNode.cxx \
     modelPool.cxx \
     modelRoot.cxx \
-    nodePath.cxx \
     nodePathCollection.cxx \
     nodePathComponent.cxx \
     nodePathLerps.cxx \
@@ -177,10 +178,12 @@
     spotlight.cxx \
     switchNode.cxx \
     texMatrixAttrib.cxx \
+    texProjectorEffect.cxx \
     textureApplyAttrib.cxx \
     textureAttrib.cxx \
     texGenAttrib.cxx \
     textureCollection.cxx \
+    textureStageCollection.cxx \
     transformState.cxx \
     transparencyAttrib.cxx \
     workingNodePath.cxx
@@ -263,10 +266,12 @@
     spotlight.I spotlight.h \
     switchNode.I switchNode.h \
     texMatrixAttrib.I texMatrixAttrib.h \
+    texProjectorEffect.I texProjectorEffect.h \
     textureApplyAttrib.I textureApplyAttrib.h \
     textureAttrib.I textureAttrib.h \
     texGenAttrib.I texGenAttrib.h \
     textureCollection.I textureCollection.h \
+    textureStageCollection.I textureStageCollection.h \
     transformState.I transformState.h \
     transparencyAttrib.I transparencyAttrib.h \
     workingNodePath.I workingNodePath.h

@@ -25,6 +25,7 @@
 #include "colorScaleAttrib.h"
 #include "cullBinAttrib.h"
 #include "textureAttrib.h"
+#include "texMatrixAttrib.h"
 #include "materialAttrib.h"
 #include "lightAttrib.h"
 #include "polylightEffect.h"
@@ -38,6 +39,8 @@
 #include "compassEffect.h"
 #include "showBoundsEffect.h"
 #include "transparencyAttrib.h"
+#include "texProjectorEffect.h"
+#include "lensNode.h"
 #include "materialPool.h"
 #include "look_at.h"
 #include "plist.h"
@@ -45,6 +48,7 @@
 #include "geomNode.h"
 #include "sceneGraphReducer.h"
 #include "textureCollection.h"
+#include "textureStageCollection.h"
 #include "globPattern.h"
 #include "config_gobj.h"
 #include "bamFile.h"
@@ -560,18 +564,18 @@ output(ostream &out) const {
 //     Function: NodePath::get_state
 //       Access: Published
 //  Description: Returns the state changes that must be made to
-//               transition from the render state of this node to the
+//               transition to the render state of this node from the
 //               render state of the other node.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) NodePath::
 get_state(const NodePath &other) const {
   nassertr(_error_type == ET_ok && other._error_type == ET_ok, RenderState::make_empty());
 
-  if (is_empty()) {
-    return other.get_net_state();
-  }
   if (other.is_empty()) {
-    return get_net_state()->invert_compose(RenderState::make_empty());
+    return get_net_state();
+  }
+  if (is_empty()) {
+    return other.get_net_state()->invert_compose(RenderState::make_empty());
   }
     
   nassertr(verify_complete(), RenderState::make_empty());
@@ -591,7 +595,7 @@ get_state(const NodePath &other) const {
 
   CPT(RenderState) a_state = r_get_partial_state(_head, a_count);
   CPT(RenderState) b_state = r_get_partial_state(other._head, b_count);
-  return a_state->invert_compose(b_state);
+  return b_state->invert_compose(a_state);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -599,8 +603,8 @@ get_state(const NodePath &other) const {
 //       Access: Published
 //  Description: Sets the state object on this node, relative to
 //               the other node.  This computes a new state object
-//               that has the indicated value when seen relative to
-//               the other node.
+//               that will have the indicated value when seen from the
+//               other node.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_state(const NodePath &other, const RenderState *state) {
@@ -608,8 +612,12 @@ set_state(const NodePath &other, const RenderState *state) {
   nassertv_always(!is_empty());
 
   // First, we perform a wrt to the parent, to get the conversion.
-  NodePath parent = get_parent();
-  CPT(RenderState) rel_state = parent.get_state(other);
+  CPT(RenderState) rel_state;
+  if (has_parent()) {
+    rel_state = other.get_state(get_parent());
+  } else {
+    rel_state = other.get_state(NodePath());
+  }
 
   CPT(RenderState) new_state = rel_state->compose(state);
   set_state(new_state);
@@ -2404,29 +2412,103 @@ get_bin_draw_order() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_texture
 //       Access: Published
-//  Description: Sets the geometry at this level and below to render
-//               using the indicated texture.
+//  Description: Adds the indicated texture to the list of textures
+//               that will be rendered on the default texture stage.
+//
+//               This is the deprecated single-texture variant of this
+//               method; it is now superceded by set_texture() that
+//               accepts a stage and texture.  However, this method
+//               may be used in the presence of multitexture if you
+//               just want to adjust the default stage.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_texture(Texture *tex, int priority) {
   nassertv_always(!is_empty());
-  node()->set_attrib(TextureAttrib::make(tex), priority);
+  PT(TextureStage) stage = TextureStage::get_default();
+  set_texture(stage, tex, priority);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_texture
+//       Access: Published
+//  Description: Adds the indicated texture to the list of textures
+//               that will be rendered on the indicated multitexture
+//               stage.  If there are multiple texture stages
+//               specified (possibly on multiple different nodes at
+//               different levels), they will all be applied to
+//               geometry together, according to the stage
+//               specification set up in the TextureStage object.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_texture(TextureStage *stage, Texture *tex, int priority) {
+  nassertv_always(!is_empty());
+
+  const RenderAttrib *attrib =
+    node()->get_attrib(TextureAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    priority = max(priority,
+                   node()->get_state()->get_override(TextureAttrib::get_class_type()));
+    const TextureAttrib *tsa = DCAST(TextureAttrib, attrib);
+
+    // Modify the existing TextureAttrib to add the indicated
+    // texture.
+    node()->set_attrib(tsa->add_on_stage(stage, tex), priority);
+
+  } else {
+    // Create a new TextureAttrib for this node.
+    CPT(TextureAttrib) tsa = DCAST(TextureAttrib, TextureAttrib::make());
+    node()->set_attrib(tsa->add_on_stage(stage, tex), priority);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_texture_off
 //       Access: Published
 //  Description: Sets the geometry at this level and below to render
-//               using no texture.  This is normally the default, but
-//               it may be useful to use this to contradict
-//               set_texture() at a higher node level (or, with a
-//               priority, to override a set_texture() at a lower
-//               level).
+//               using no texture, on any stage.  This is different
+//               from not specifying a texture; rather, this
+//               specifically contradicts set_texture() at a higher
+//               node level (or, with a priority, overrides a
+//               set_texture() at a lower level).
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_texture_off(int priority) {
   nassertv_always(!is_empty());
-  node()->set_attrib(TextureAttrib::make_off(), priority);
+  node()->set_attrib(TextureAttrib::make_all_off(), priority);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_texture_off
+//       Access: Published
+//  Description: Sets the geometry at this level and below to render
+//               using no texture, on the indicated stage.  This is
+//               different from not specifying a texture; rather, this
+//               specifically contradicts set_texture() at a higher
+//               node level (or, with a priority, overrides a
+//               set_texture() at a lower level).
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_texture_off(TextureStage *stage, int priority) {
+  nassertv_always(!is_empty());
+
+  const RenderAttrib *attrib =
+    node()->get_attrib(TextureAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    priority = max(priority,
+                   node()->get_state()->get_override(TextureAttrib::get_class_type()));
+    const TextureAttrib *tsa = DCAST(TextureAttrib, attrib);
+
+    // Modify the existing TextureAttrib to add the indicated texture
+    // to the "off" list.  This also, incidentally, removes it from
+    // the "on" list if it is there.
+    node()->set_attrib(tsa->add_off_stage(stage), priority);
+
+  } else {
+    // Create a new TextureAttrib for this node that turns off the
+    // indicated stage.
+    CPT(TextureAttrib) tsa = DCAST(TextureAttrib, TextureAttrib::make());
+    node()->set_attrib(tsa->add_off_stage(stage), priority);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2445,6 +2527,33 @@ clear_texture() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_texture
+//       Access: Published
+//  Description: Removes any reference to the indicated texture stage
+//               from the NodePath.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+clear_texture(TextureStage *stage) {
+  nassertv_always(!is_empty());
+
+  const RenderAttrib *attrib =
+    node()->get_attrib(TextureAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    CPT(TextureAttrib) tsa = DCAST(TextureAttrib, attrib);
+    tsa = DCAST(TextureAttrib, tsa->remove_on_stage(stage));
+    tsa = DCAST(TextureAttrib, tsa->remove_off_stage(stage));
+
+    if (tsa->is_identity()) {
+      node()->clear_attrib(TextureAttrib::get_class_type());
+
+    } else {
+      int priority = node()->get_state()->get_override(TextureAttrib::get_class_type());
+      node()->set_attrib(tsa, priority);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::has_texture
 //       Access: Published
 //  Description: Returns true if a texture has been applied to this
@@ -2456,12 +2565,28 @@ clear_texture() {
 ////////////////////////////////////////////////////////////////////
 bool NodePath::
 has_texture() const {
+  return get_texture() != (Texture *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_texture
+//       Access: Published
+//  Description: Returns true if texturing has been specifically
+//               enabled on this particular node for the indicated
+//               stage.  This means that someone called
+//               set_texture() on this node with the indicated stage
+//               name, or the stage_name is the default stage_name,
+//               and someone called set_texture() on this node.
+////////////////////////////////////////////////////////////////////
+bool NodePath::
+has_texture(TextureStage *stage) const {
   nassertr_always(!is_empty(), false);
+
   const RenderAttrib *attrib =
     node()->get_attrib(TextureAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
     const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
-    return !ta->is_off();
+    return ta->has_on_stage(stage);
   }
 
   return false;
@@ -2470,7 +2595,7 @@ has_texture() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::has_texture_off
 //       Access: Published
-//  Description: Returns true if a texture has been specifically
+//  Description: Returns true if texturing has been specifically
 //               disabled on this particular node via
 //               set_texture_off(), false otherwise.  This is not the
 //               same thing as asking whether the geometry at this
@@ -2481,10 +2606,34 @@ bool NodePath::
 has_texture_off() const {
   nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
-    node()->get_attrib(ColorAttrib::get_class_type());
+    node()->get_attrib(TextureAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
     const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
-    return ta->is_off();
+    return ta->has_all_off();
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_texture_off
+//       Access: Published
+//  Description: Returns true if texturing has been specifically
+//               disabled on this particular node for the indicated
+//               stage.  This means that someone called
+//               set_texture_off() on this node with the indicated
+//               stage name, or that someone called set_texture_off()
+//               on this node to remove all stages.
+////////////////////////////////////////////////////////////////////
+bool NodePath::
+has_texture_off(TextureStage *stage) const {
+  nassertr_always(!is_empty(), false);
+
+  const RenderAttrib *attrib =
+    node()->get_attrib(TextureAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
+    return ta->has_off_stage(stage);
   }
 
   return false;
@@ -2493,10 +2642,10 @@ has_texture_off() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_texture
 //       Access: Published
-//  Description: Returns the texture that has been set on this
-//               particular node, or NULL if no texture has been set.
-//               This is not necessarily the texture that will be
-//               applied to the geometry at or below this level, as
+//  Description: Returns the base-level texture that has been set on
+//               this particular node, or NULL if no texture has been
+//               set.  This is not necessarily the texture that will
+//               be applied to the geometry at or below this level, as
 //               another texture at a higher or lower level may
 //               override.
 //
@@ -2516,6 +2665,444 @@ get_texture() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_texture
+//       Access: Published
+//  Description: Returns the texture that has been set on the
+//               indicated stage for this particular node, or NULL if
+//               no texture has been set for this stage.
+////////////////////////////////////////////////////////////////////
+Texture *NodePath::
+get_texture(TextureStage *stage) const {
+  nassertr_always(!is_empty(), NULL);
+  const RenderAttrib *attrib =
+    node()->get_attrib(TextureAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
+    return ta->get_on_texture(stage);
+  }
+
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_tex_transform
+//       Access: Published
+//  Description: Sets the texture matrix on the current node to the
+//               indicated transform for the given stage.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_tex_transform(TextureStage *stage, const TransformState *transform) {
+  nassertv_always(!is_empty());
+
+  const RenderAttrib *attrib =
+    node()->get_attrib(TexMatrixAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, attrib);
+
+    // Modify the existing TexMatrixAttrib to add the indicated
+    // stage.
+    node()->set_attrib(tma->add_stage(stage, transform));
+
+  } else {
+    // Create a new TexMatrixAttrib for this node.
+    node()->set_attrib(TexMatrixAttrib::make(stage, transform));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_tex_transform
+//       Access: Published
+//  Description: Removes all texture matrices from the current node.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+clear_tex_transform() {
+  nassertv_always(!is_empty());
+  node()->clear_attrib(TexMatrixAttrib::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_tex_transform
+//       Access: Published
+//  Description: Removes the texture matrix on the current node for
+//               the given stage.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+clear_tex_transform(TextureStage *stage) {
+  nassertv_always(!is_empty());
+
+  const RenderAttrib *attrib =
+    node()->get_attrib(TexMatrixAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    CPT(TexMatrixAttrib) tma = DCAST(TexMatrixAttrib, attrib);
+    tma = DCAST(TexMatrixAttrib, tma->remove_stage(stage));
+
+    if (tma->is_empty()) {
+      node()->clear_attrib(TexMatrixAttrib::get_class_type());
+
+    } else {
+      node()->set_attrib(tma);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_tex_transform
+//       Access: Published
+//  Description: Returns true if there is an explicit texture matrix
+//               on the current node for the given stage.
+////////////////////////////////////////////////////////////////////
+bool NodePath::
+has_tex_transform(TextureStage *stage) const {
+  nassertr_always(!is_empty(), false);
+
+  const RenderAttrib *attrib =
+    node()->get_attrib(TexMatrixAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, attrib);
+    return tma->has_stage(stage);
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_tex_transform
+//       Access: Published
+//  Description: Returns the texture matrix on the current node for the
+//               given stage, or identity transform if there is no
+//               explicit transform set for the given stage.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) NodePath::
+get_tex_transform(TextureStage *stage) const {
+  nassertr_always(!is_empty(), false);
+
+  const RenderAttrib *attrib =
+    node()->get_attrib(TexMatrixAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, attrib);
+    return tma->get_transform(stage);
+  }
+
+  return TransformState::make_identity();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_tex_transform
+//       Access: Published
+//  Description: Sets the texture matrix on the current node to the
+//               indicated transform for the given stage.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_tex_transform(const NodePath &other, TextureStage *stage, const TransformState *transform) {
+  nassertv(_error_type == ET_ok && other._error_type == ET_ok);
+  nassertv_always(!is_empty());
+
+  CPT(RenderState) state = get_state(other);
+  const RenderAttrib *attrib =
+    state->get_attrib(TexMatrixAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, attrib);
+
+    // Modify the existing TexMatrixAttrib to add the indicated
+    // stage.
+    state = state->add_attrib(tma->add_stage(stage, transform));
+
+  } else {
+    // Create a new TexMatrixAttrib for this node.
+    state = state->add_attrib(TexMatrixAttrib::make(stage, transform));
+  }
+
+  // Now compose that with our parent's state.
+  CPT(RenderState) rel_state;
+  if (has_parent()) {
+    rel_state = other.get_state(get_parent());
+  } else {
+    rel_state = other.get_state(NodePath());
+  }
+  CPT(RenderState) new_state = rel_state->compose(state);
+
+  // And apply only the TexMatrixAttrib to the current node, leaving
+  // the others unchanged.
+  node()->set_attrib(new_state->get_attrib(TexMatrixAttrib::get_class_type()));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_tex_transform
+//       Access: Published
+//  Description: Returns the texture matrix on the current node for the
+//               given stage, relative to the other node.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) NodePath::
+get_tex_transform(const NodePath &other, TextureStage *stage) const {
+  nassertr(_error_type == ET_ok && other._error_type == ET_ok, TransformState::make_identity());
+
+  CPT(RenderState) state = get_state(other);
+  const RenderAttrib *attrib =
+    state->get_attrib(TexMatrixAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, attrib);
+    return tma->get_transform(stage);
+  }
+
+  return TransformState::make_identity();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_tex_gen
+//       Access: Published
+//  Description: Enables automatic texture coordinate generation for
+//               the indicated texture stage.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_tex_gen(TextureStage *stage, TexGenAttrib::Mode mode, int priority) {
+  nassertv_always(!is_empty());
+
+  const RenderAttrib *attrib =
+    node()->get_attrib(TexGenAttrib::get_class_type());
+
+  CPT(TexGenAttrib) tga;
+
+  if (attrib != (const RenderAttrib *)NULL) {
+    priority = max(priority,
+                   node()->get_state()->get_override(TextureAttrib::get_class_type()));
+    tga = DCAST(TexGenAttrib, attrib);
+
+  } else {
+    tga = DCAST(TexGenAttrib, TexGenAttrib::make());
+  }
+
+  node()->set_attrib(tga->add_stage(stage, mode), priority);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_tex_gen
+//       Access: Published
+//  Description: Removes the texture coordinate generation mode from
+//               all texture stages on this node.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+clear_tex_gen() {
+  nassertv_always(!is_empty());
+  node()->clear_attrib(TexGenAttrib::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_tex_gen
+//       Access: Published
+//  Description: Disables automatic texture coordinate generation for
+//               the indicated texture stage.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+clear_tex_gen(TextureStage *stage) {
+  nassertv_always(!is_empty());
+
+  const RenderAttrib *attrib =
+    node()->get_attrib(TexGenAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    CPT(TexGenAttrib) tga = DCAST(TexGenAttrib, attrib);
+    tga = DCAST(TexGenAttrib, tga->remove_stage(stage));
+
+    if (tga->is_empty()) {
+      node()->clear_attrib(TexGenAttrib::get_class_type());
+
+    } else {
+      node()->set_attrib(tga);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_tex_gen
+//       Access: Published
+//  Description: Returns true if there is a mode for automatic texture
+//               coordinate generation on the current node for the
+//               given stage.
+////////////////////////////////////////////////////////////////////
+bool NodePath::
+has_tex_gen(TextureStage *stage) const {
+  nassertr_always(!is_empty(), false);
+
+  const RenderAttrib *attrib =
+    node()->get_attrib(TexGenAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const TexGenAttrib *tga = DCAST(TexGenAttrib, attrib);
+    return tga->has_stage(stage);
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_tex_gen
+//       Access: Published
+//  Description: Returns the texture coordinate generation mode for
+//               the given stage, or M_off if there is no explicit
+//               mode set for the given stage.
+////////////////////////////////////////////////////////////////////
+TexGenAttrib::Mode NodePath::
+get_tex_gen(TextureStage *stage) const {
+  nassertr_always(!is_empty(), TexGenAttrib::M_off);
+
+  const RenderAttrib *attrib =
+    node()->get_attrib(TexGenAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const TexGenAttrib *tga = DCAST(TexGenAttrib, attrib);
+    return tga->get_mode(stage);
+  }
+
+  return TexGenAttrib::M_off;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_tex_projector
+//       Access: Published
+//  Description: Establishes a TexProjectorEffect on this node, which
+//               can be used to establish projective texturing (but
+//               see also the NodePath::project_texture() convenience
+//               function), or it can be used to bind this node's
+//               texture transform to particular node's position in
+//               space, allowing a LerpInterval (for instance) to
+//               adjust this node's texture coordinates.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_tex_projector(TextureStage *stage, const NodePath &from, const NodePath &to) {
+  nassertv_always(!is_empty());
+
+  const RenderEffect *effect =
+    node()->get_effect(TexProjectorEffect::get_class_type());
+
+  CPT(TexProjectorEffect) tpe;
+
+  if (effect != (const RenderEffect *)NULL) {
+    tpe = DCAST(TexProjectorEffect, effect);
+
+  } else {
+    tpe = DCAST(TexProjectorEffect, TexProjectorEffect::make());
+  }
+
+  node()->set_effect(tpe->add_stage(stage, from, to));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_tex_projector
+//       Access: Published
+//  Description: Removes the TexProjectorEffect for the indicated
+//               stage from this node.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+clear_tex_projector(TextureStage *stage) {
+  nassertv_always(!is_empty());
+
+  const RenderEffect *effect =
+    node()->get_effect(TexProjectorEffect::get_class_type());
+  if (effect != (const RenderEffect *)NULL) {
+    CPT(TexProjectorEffect) tpe = DCAST(TexProjectorEffect, effect);
+    tpe = DCAST(TexProjectorEffect, tpe->remove_stage(stage));
+
+    if (tpe->is_empty()) {
+      node()->clear_effect(TexProjectorEffect::get_class_type());
+
+    } else {
+      node()->set_effect(tpe);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_tex_projector
+//       Access: Published
+//  Description: Removes the TexProjectorEffect for all stages from
+//               this node.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+clear_tex_projector() {
+  nassertv_always(!is_empty());
+  node()->clear_effect(TexProjectorEffect::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_tex_projector
+//       Access: Published
+//  Description: Returns true if this node has a TexProjectorEffect
+//               for the indicated stage, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool NodePath::
+has_tex_projector(TextureStage *stage) const {
+  nassertr_always(!is_empty(), false);
+
+  const RenderEffect *effect =
+    node()->get_effect(TexProjectorEffect::get_class_type());
+  if (effect != (const RenderEffect *)NULL) {
+    const TexProjectorEffect *tpe = DCAST(TexProjectorEffect, effect);
+    return tpe->has_stage(stage);
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_tex_projector_from
+//       Access: Published
+//  Description: Returns the "from" node associated with the
+//               TexProjectorEffect on the indicated stage.  The
+//               relative transform between the "from" and the "to"
+//               nodes is automatically applied to the texture
+//               transform each frame.
+////////////////////////////////////////////////////////////////////
+NodePath NodePath::
+get_tex_projector_from(TextureStage *stage) const {
+  nassertr_always(!is_empty(), NodePath::fail());
+
+  const RenderEffect *effect =
+    node()->get_effect(TexProjectorEffect::get_class_type());
+  if (effect != (const RenderEffect *)NULL) {
+    const TexProjectorEffect *tpe = DCAST(TexProjectorEffect, effect);
+    return tpe->get_from(stage);
+  }
+
+  return NodePath::not_found();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_tex_projector_to
+//       Access: Published
+//  Description: Returns the "to" node associated with the
+//               TexProjectorEffect on the indicated stage.  The
+//               relative transform between the "from" and the "to"
+//               nodes is automatically applied to the texture
+//               transform each frame.
+////////////////////////////////////////////////////////////////////
+NodePath NodePath::
+get_tex_projector_to(TextureStage *stage) const {
+  nassertr_always(!is_empty(), NodePath::fail());
+
+  const RenderEffect *effect =
+    node()->get_effect(TexProjectorEffect::get_class_type());
+  if (effect != (const RenderEffect *)NULL) {
+    const TexProjectorEffect *tpe = DCAST(TexProjectorEffect, effect);
+    return tpe->get_to(stage);
+  }
+
+  return NodePath::not_found();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::project_texture
+//       Access: Published
+//  Description: A convenience function to enable projective texturing
+//               at this node level and below, using the indicated
+//               NodePath (which should contain a LensNode) as the
+//               projector.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+project_texture(TextureStage *stage, Texture *tex, const NodePath &projector) {
+  nassertv(!projector.is_empty() && projector.node()->is_of_type(LensNode::get_class_type()));
+  set_texture(stage, tex);
+  set_tex_gen(stage, TexGenAttrib::M_world_position);
+  set_tex_projector(stage, NodePath(), projector);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::find_texture
 //       Access: Published
 //  Description: Returns the first texture found applied to geometry
@@ -2527,6 +3114,19 @@ Texture *NodePath::
 find_texture(const string &name) const {
   GlobPattern glob(name);
   return r_find_texture(node(), get_net_state(), glob);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::find_texture
+//       Access: Published
+//  Description: Returns the first texture found applied to geometry
+//               at this node or below that is assigned to the
+//               indicated texture stage.  Returns the texture if it
+//               is found, or NULL if it is not.
+////////////////////////////////////////////////////////////////////
+Texture *NodePath::
+find_texture(TextureStage *stage) const {
+  return r_find_texture(node(), stage);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2568,6 +3168,101 @@ find_all_textures(const string &name) const {
     Texture *texture = (*ti);
     if (glob.matches(texture->get_name())) {
       tc.add_texture(texture);
+    }
+  }
+  return tc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::find_all_textures
+//       Access: Published
+//  Description: Returns a list of a textures on geometry at
+//               this node and below that are assigned to the
+//               indicated texture stage.
+////////////////////////////////////////////////////////////////////
+TextureCollection NodePath::
+find_all_textures(TextureStage *stage) const {
+  Textures textures;
+  r_find_all_textures(node(), stage, textures);
+
+  TextureCollection tc;
+  Textures::iterator ti;
+  for (ti = textures.begin(); ti != textures.end(); ++ti) {
+    Texture *texture = (*ti);
+    tc.add_texture(texture);
+  }
+  return tc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::find_texture_stage
+//       Access: Published
+//  Description: Returns the first TextureStage found applied to
+//               geometry at this node or below that matches the
+//               indicated name (which may contain wildcards).
+//               Returns the TextureStage if it is found, or NULL if
+//               it is not.
+////////////////////////////////////////////////////////////////////
+TextureStage *NodePath::
+find_texture_stage(const string &name) const {
+  GlobPattern glob(name);
+  return r_find_texture_stage(node(), get_net_state(), glob);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::find_all_texture_stages
+//       Access: Published
+//  Description: Returns a list of a TextureStages applied to geometry
+//               at this node and below.
+////////////////////////////////////////////////////////////////////
+TextureStageCollection NodePath::
+find_all_texture_stages() const {
+  TextureStages texture_stages;
+  r_find_all_texture_stages(node(), get_net_state(), texture_stages);
+
+  TextureStageCollection tc;
+  TextureStages::iterator ti;
+  for (ti = texture_stages.begin(); ti != texture_stages.end(); ++ti) {
+    tc.add_texture_stage(*ti);
+  }
+  return tc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::unify_texture_stages
+//       Access: Published
+//  Description: Searches through all TextureStages at this node and
+//               below.  Any TextureStages that share the same name as
+//               the indicated TextureStage object are replaced with
+//               this object, thus ensuring that all geometry at this
+//               node and below with a particular TextureStage name is
+//               using the same TextureStage object.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+unify_texture_stages(TextureStage *stage) {
+  r_unify_texture_stages(node(), stage);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::find_all_texture_stages
+//       Access: Published
+//  Description: Returns a list of a TextureStages applied to geometry
+//               at this node and below that match the indicated name
+//               (which may contain wildcard characters).
+////////////////////////////////////////////////////////////////////
+TextureStageCollection NodePath::
+find_all_texture_stages(const string &name) const {
+  TextureStages texture_stages;
+  r_find_all_texture_stages(node(), get_net_state(), texture_stages);
+
+  GlobPattern glob(name);
+
+  TextureStageCollection tc;
+  TextureStages::iterator ti;
+  for (ti = texture_stages.begin(); ti != texture_stages.end(); ++ti) {
+    TextureStage *texture_stage = (*ti);
+    if (glob.matches(texture_stage->get_name())) {
+      tc.add_texture_stage(texture_stage);
     }
   }
   return tc;
@@ -4180,7 +4875,11 @@ r_force_recompute_bounds(PandaNode *node) {
 
     int num_geoms = gnode->get_num_geoms();
     for (int i = 0; i < num_geoms; i++) {
-      gnode->get_geom(i)->mark_bound_stale();
+      const Geom *geom = gnode->get_geom(i);
+      // It's ok to cast away the const modifier on this Geom pointer,
+      // since marking the bounding volume stale doesn't really change
+      // the Geom in any substantial way.
+      ((Geom *)geom)->mark_bound_stale();
     }
   }
 
@@ -4216,10 +4915,12 @@ r_find_texture(PandaNode *node, const RenderState *state,
         geom_state->get_attrib(TextureAttrib::get_class_type());
       if (attrib != (const RenderAttrib *)NULL) {
         const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
-        Texture *texture = ta->get_texture();
-        if (texture != (Texture *)NULL) {
-          if (glob.matches(texture->get_name())) {
-            return texture;
+        for (int i = 0; i < ta->get_num_on_stages(); i++) {
+          Texture *texture = ta->get_on_texture(ta->get_on_stage(i));
+          if (texture != (Texture *)NULL) {
+            if (glob.matches(texture->get_name())) {
+              return texture;
+            }
           }
         }
       }
@@ -4264,9 +4965,11 @@ r_find_all_textures(PandaNode *node, const RenderState *state,
         geom_state->get_attrib(TextureAttrib::get_class_type());
       if (attrib != (const RenderAttrib *)NULL) {
         const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
-        Texture *texture = ta->get_texture();
-        if (texture != (Texture *)NULL) {
-          textures.insert(texture);
+        for (int i = 0; i < ta->get_num_on_stages(); i++) {
+          Texture *texture = ta->get_on_texture(ta->get_on_stage(i));
+          if (texture != (Texture *)NULL) {
+            textures.insert(texture);
+          }
         }
       }
     }
@@ -4279,6 +4982,246 @@ r_find_all_textures(PandaNode *node, const RenderState *state,
     PandaNode *child = cr.get_child(i);
     CPT(RenderState) next_state = state->compose(child->get_state());
     r_find_all_textures(child, next_state, textures);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::r_find_texture
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+Texture * NodePath::
+r_find_texture(PandaNode *node, TextureStage *stage) const {
+  // Look for a TextureAttrib on the node.
+  const RenderAttrib *attrib =
+    node->get_attrib(TextureAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
+    if (ta->has_on_stage(stage)) {
+      return ta->get_on_texture(stage);
+    }
+  }
+
+  if (node->is_geom_node()) {
+    GeomNode *gnode;
+    DCAST_INTO_R(gnode, node, NULL);
+
+    int num_geoms = gnode->get_num_geoms();
+    for (int i = 0; i < num_geoms; i++) {
+      CPT(RenderState) geom_state = gnode->get_geom_state(i);
+
+      // Look for a TextureAttrib on the state.
+      const RenderAttrib *attrib =
+        geom_state->get_attrib(TextureAttrib::get_class_type());
+      if (attrib != (const RenderAttrib *)NULL) {
+        const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
+        if (ta->has_on_stage(stage)) {
+          return ta->get_on_texture(stage);
+        }
+      }
+    }
+  }
+
+  // Now consider children.
+  PandaNode::Children cr = node->get_children();
+  int num_children = cr.get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    PandaNode *child = cr.get_child(i);
+
+    Texture *result = r_find_texture(child, stage);
+    if (result != (Texture *)NULL) {
+      return result;
+    }
+  }
+
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::r_find_all_textures
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NodePath::
+r_find_all_textures(PandaNode *node, TextureStage *stage,
+                    NodePath::Textures &textures) const {
+  // Look for a TextureAttrib on the node.
+  const RenderAttrib *attrib =
+    node->get_attrib(TextureAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
+    if (ta->has_on_stage(stage)) {
+      textures.insert(ta->get_on_texture(stage));
+    }
+  }
+
+  if (node->is_geom_node()) {
+    GeomNode *gnode;
+    DCAST_INTO_V(gnode, node);
+
+    int num_geoms = gnode->get_num_geoms();
+    for (int i = 0; i < num_geoms; i++) {
+      CPT(RenderState) geom_state = gnode->get_geom_state(i);
+
+      // Look for a TextureAttrib on the state.
+      const RenderAttrib *attrib =
+        geom_state->get_attrib(TextureAttrib::get_class_type());
+      if (attrib != (const RenderAttrib *)NULL) {
+        const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
+        if (ta->has_on_stage(stage)) {
+          textures.insert(ta->get_on_texture(stage));
+        }
+      }
+    }
+  }
+
+  // Now consider children.
+  PandaNode::Children cr = node->get_children();
+  int num_children = cr.get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    PandaNode *child = cr.get_child(i);
+    r_find_all_textures(child, stage, textures);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::r_find_texture_stage
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+TextureStage * NodePath::
+r_find_texture_stage(PandaNode *node, const RenderState *state,
+                     const GlobPattern &glob) const {
+  if (node->is_geom_node()) {
+    GeomNode *gnode;
+    DCAST_INTO_R(gnode, node, NULL);
+
+    int num_geoms = gnode->get_num_geoms();
+    for (int i = 0; i < num_geoms; i++) {
+      CPT(RenderState) geom_state = 
+        state->compose(gnode->get_geom_state(i));
+
+      // Look for a TextureAttrib on the state.
+      const RenderAttrib *attrib =
+        geom_state->get_attrib(TextureAttrib::get_class_type());
+      if (attrib != (const RenderAttrib *)NULL) {
+        const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
+        for (int i = 0; i < ta->get_num_on_stages(); i++) {
+          TextureStage *texture_stage = ta->get_on_stage(i);
+          if (texture_stage != (TextureStage *)NULL) {
+            if (glob.matches(texture_stage->get_name())) {
+              return texture_stage;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Now consider children.
+  PandaNode::Children cr = node->get_children();
+  int num_children = cr.get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    PandaNode *child = cr.get_child(i);
+    CPT(RenderState) next_state = state->compose(child->get_state());
+
+    TextureStage *result = r_find_texture_stage(child, next_state, glob);
+    if (result != (TextureStage *)NULL) {
+      return result;
+    }
+  }
+
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::r_find_all_texture_stages
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NodePath::
+r_find_all_texture_stages(PandaNode *node, const RenderState *state,
+                          NodePath::TextureStages &texture_stages) const {
+  if (node->is_geom_node()) {
+    GeomNode *gnode;
+    DCAST_INTO_V(gnode, node);
+
+    int num_geoms = gnode->get_num_geoms();
+    for (int i = 0; i < num_geoms; i++) {
+      CPT(RenderState) geom_state = 
+        state->compose(gnode->get_geom_state(i));
+
+      // Look for a TextureAttrib on the state.
+      const RenderAttrib *attrib =
+        geom_state->get_attrib(TextureAttrib::get_class_type());
+      if (attrib != (const RenderAttrib *)NULL) {
+        const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
+        for (int i = 0; i < ta->get_num_on_stages(); i++) {
+          TextureStage *texture_stage = ta->get_on_stage(i);
+          if (texture_stage != (TextureStage *)NULL) {
+            texture_stages.insert(texture_stage);
+          }
+        }
+      }
+    }
+  }
+
+  // Now consider children.
+  PandaNode::Children cr = node->get_children();
+  int num_children = cr.get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    PandaNode *child = cr.get_child(i);
+    CPT(RenderState) next_state = state->compose(child->get_state());
+    r_find_all_texture_stages(child, next_state, texture_stages);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::r_unify_texture_stages
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NodePath::
+r_unify_texture_stages(PandaNode *node, TextureStage *stage) {
+  // Look for a TextureAttrib on the state.
+  const RenderAttrib *attrib =
+    node->get_attrib(TextureAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
+    CPT(RenderAttrib) new_attrib = ta->unify_texture_stages(stage);
+    if (new_attrib != ta) {
+      node->set_attrib(new_attrib);
+    }
+  }
+
+  if (node->is_geom_node()) {
+    GeomNode *gnode;
+    DCAST_INTO_V(gnode, node);
+
+    int num_geoms = gnode->get_num_geoms();
+    for (int i = 0; i < num_geoms; i++) {
+      CPT(RenderState) state = gnode->get_geom_state(i);
+
+      // Look for a TextureAttrib on the state.
+      const RenderAttrib *attrib =
+        state->get_attrib(TextureAttrib::get_class_type());
+      if (attrib != (const RenderAttrib *)NULL) {
+        const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
+        CPT(RenderAttrib) new_attrib = ta->unify_texture_stages(stage);
+        if (new_attrib != ta) {
+          CPT(RenderState) new_state = state->add_attrib(new_attrib);
+          gnode->set_geom_state(i, new_state);
+        }
+      }
+    }
+  }
+
+  // Now consider children.
+  PandaNode::Children cr = node->get_children();
+  int num_children = cr.get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    PandaNode *child = cr.get_child(i);
+    r_unify_texture_stages(child, stage);
   }
 }
 

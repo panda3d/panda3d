@@ -35,6 +35,8 @@
 #include "lmatrix.h"
 #include "indirectCompareTo.h"
 #include "textureAttrib.h"
+#include "textureStage.h"
+#include "texGenAttrib.h"
 #include "eggTransform3d.h"
 
 class EggNode;
@@ -81,9 +83,18 @@ private:
   class TextureDef {
   public:
     CPT(RenderAttrib) _texture;
-    CPT(RenderAttrib) _apply;
+    PT(TextureStage) _stage;
+    const EggTexture *_egg_tex;
   };
 
+  // This structure is used internally in setup_bucket().
+  typedef pvector<const TextureDef *> TexMatTextures;
+  typedef pmap<LMatrix3d, TexMatTextures> TexMatTransforms;
+  typedef pmap<CPT(TexCoordName), TexMatTransforms> TexMats;
+
+  // This structure is returned by setup_bucket().
+  typedef pmap<CPT(TexCoordName), const EggTexture *> BakeInUVs;
+  
   void make_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
                         const LMatrix4d &mat);
   void make_old_nurbs_curve(EggNurbsCurve *egg_curve, PandaNode *parent,
@@ -94,13 +105,13 @@ private:
   void load_textures();
   bool load_texture(TextureDef &def, const EggTexture *egg_tex);
   void apply_texture_attributes(Texture *tex, const EggTexture *egg_tex);
-  CPT(RenderAttrib) get_texture_apply_attributes(const EggTexture *egg_tex);
+  PT(TextureStage) make_texture_stage(const EggTexture *egg_tex);
 
   CPT(RenderAttrib) get_material_attrib(const EggMaterial *egg_mat,
                                         bool bface);
 
-  void setup_bucket(BuilderBucket &bucket, PandaNode *parent,
-                    EggPrimitive *egg_prim);
+  void setup_bucket(BuilderBucket &bucket, BakeInUVs &bake_in_uvs,
+                    PandaNode *parent, EggPrimitive *egg_prim);
 
   PandaNode *make_node(EggNode *egg_node, PandaNode *parent);
   PandaNode *make_node(EggPrimitive *egg_prim, PandaNode *parent);
@@ -145,6 +156,23 @@ private:
                              const string &object_type);
 
   CPT(TransformState) make_transform(const EggTransform3d *egg_transform);
+
+  static TextureStage::CombineMode 
+  get_combine_mode(const EggTexture *egg_tex, 
+                   EggTexture::CombineChannel channel);
+
+  static TextureStage::CombineSource
+  get_combine_source(const EggTexture *egg_tex, 
+                     EggTexture::CombineChannel channel, int n);
+
+  static TextureStage::CombineOperand
+  get_combine_operand(const EggTexture *egg_tex, 
+                      EggTexture::CombineChannel channel, int n);
+  static TexGenAttrib::Mode get_tex_gen(const EggTexture *egg_tex);
+
+  static CPT(RenderAttrib)
+  apply_tex_mat(CPT(RenderAttrib) tex_mat_attrib, 
+                TextureStage *stage, const EggTexture *egg_tex);
 
   Builder _builder;
 

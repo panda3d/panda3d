@@ -33,8 +33,10 @@
      eggTexture.h eggTextureCollection.I eggTextureCollection.h  \
      eggTransform3d.I eggTransform3d.h \
      eggUserData.I eggUserData.h \
-     eggUtilities.I eggUtilities.h eggVertex.I eggVertex.h  \
-     eggVertexPool.I eggVertexPool.h eggXfmAnimData.I  \
+     eggUtilities.I eggUtilities.h \
+     eggVertex.I eggVertex.h eggVertexPool.I eggVertexPool.h \
+     eggVertexUV.I eggVertexUV.h \
+     eggXfmAnimData.I  \
      eggXfmAnimData.h eggXfmSAnim.I eggXfmSAnim.h parserDefs.h  \
      parser.yxx lexerDefs.h lexer.lxx pt_EggMaterial.h  \
      vector_PT_EggMaterial.h pt_EggTexture.h  \
@@ -55,7 +57,7 @@
      eggTable.cxx eggTexture.cxx eggTextureCollection.cxx  \
      eggTransform3d.cxx \
      eggUserData.cxx \
-     eggUtilities.cxx eggVertex.cxx eggVertexPool.cxx  \
+     eggUtilities.cxx eggVertex.cxx eggVertexPool.cxx eggVertexUV.cxx \
      eggXfmAnimData.cxx eggXfmSAnim.cxx xx xx pt_EggMaterial.cxx  \
      vector_PT_EggMaterial.cxx pt_EggTexture.cxx  \
      vector_PT_EggTexture.cxx pt_EggVertex.cxx  \
@@ -84,7 +86,9 @@
     eggTransform3d.I eggTransform3d.h \
     eggUserData.I eggUserData.h \
     eggUtilities.I eggUtilities.h eggVertex.I eggVertex.h \
-    eggVertexPool.I eggVertexPool.h eggXfmAnimData.I eggXfmAnimData.h \
+    eggVertexPool.I eggVertexPool.h \
+    eggVertexUV.I eggVertexUV.h \
+    eggXfmAnimData.I eggXfmAnimData.h \
     eggXfmSAnim.I eggXfmSAnim.h \
     pt_EggMaterial.h vector_PT_EggMaterial.h \
     pt_EggTexture.h vector_PT_EggTexture.h \

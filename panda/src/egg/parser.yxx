@@ -13,6 +13,7 @@
 #include "eggGroup.h"
 #include "eggVertex.h"
 #include "eggVertexPool.h"
+#include "eggVertexUV.h"
 #include "eggPolygon.h"
 #include "eggPoint.h"
 #include "eggLine.h"
@@ -381,6 +382,7 @@ texture_body:
     } else {
       texture->set_magfilter(f);
     }
+
   } else if (cmp_nocase_uh(name, "anisotropic_degree") == 0) {
     texture->set_anisotropic_degree((int)value);
 
@@ -391,6 +393,155 @@ texture_body:
     } else {
       texture->set_env_type(e);
     }
+
+  } else if (cmp_nocase_uh(name, "combine-rgb") == 0) {
+    EggTexture::CombineMode cm = EggTexture::string_combine_mode(strval);
+    if (cm == EggTexture::CM_unspecified) {
+      eggyywarning("Unknown combine mode " + strval);
+    } else {
+      texture->set_combine_mode(EggTexture::CC_rgb, cm);
+    }
+
+  } else if (cmp_nocase_uh(name, "combine-rgb-source0") == 0) {
+    EggTexture::CombineSource cs = EggTexture::string_combine_source(strval);
+    if (cs == EggTexture::CS_unspecified) {
+      eggyywarning("Unknown combine source " + strval);
+    } else {
+      texture->set_combine_source(EggTexture::CC_rgb, 0, cs);
+    }
+
+  } else if (cmp_nocase_uh(name, "combine-rgb-operand0") == 0) {
+    EggTexture::CombineOperand co = EggTexture::string_combine_operand(strval);
+    if (co == EggTexture::CO_unspecified) {
+      eggyywarning("Unknown combine operand " + strval);
+    } else {
+      texture->set_combine_operand(EggTexture::CC_rgb, 0, co);
+    }
+
+  } else if (cmp_nocase_uh(name, "combine-rgb-source1") == 0) {
+    EggTexture::CombineSource cs = EggTexture::string_combine_source(strval);
+    if (cs == EggTexture::CS_unspecified) {
+      eggyywarning("Unknown combine source " + strval);
+    } else {
+      texture->set_combine_source(EggTexture::CC_rgb, 1, cs);
+    }
+
+  } else if (cmp_nocase_uh(name, "combine-rgb-operand1") == 0) {
+    EggTexture::CombineOperand co = EggTexture::string_combine_operand(strval);
+    if (co == EggTexture::CO_unspecified) {
+      eggyywarning("Unknown combine operand " + strval);
+    } else {
+      texture->set_combine_operand(EggTexture::CC_rgb, 1, co);
+    }
+
+  } else if (cmp_nocase_uh(name, "combine-rgb-source2") == 0) {
+    EggTexture::CombineSource cs = EggTexture::string_combine_source(strval);
+    if (cs == EggTexture::CS_unspecified) {
+      eggyywarning("Unknown combine source " + strval);
+    } else {
+      texture->set_combine_source(EggTexture::CC_rgb, 2, cs);
+    }
+
+  } else if (cmp_nocase_uh(name, "combine-rgb-operand2") == 0) {
+    EggTexture::CombineOperand co = EggTexture::string_combine_operand(strval);
+    if (co == EggTexture::CO_unspecified) {
+      eggyywarning("Unknown combine operand " + strval);
+    } else {
+      texture->set_combine_operand(EggTexture::CC_rgb, 2, co);
+    }
+
+  } else if (cmp_nocase_uh(name, "combine-alpha") == 0) {
+    EggTexture::CombineMode cm = EggTexture::string_combine_mode(strval);
+    if (cm == EggTexture::CM_unspecified) {
+      eggyywarning("Unknown combine mode " + strval);
+    } else {
+      texture->set_combine_mode(EggTexture::CC_alpha, cm);
+    }
+
+  } else if (cmp_nocase_uh(name, "combine-alpha-source0") == 0) {
+    EggTexture::CombineSource cs = EggTexture::string_combine_source(strval);
+    if (cs == EggTexture::CS_unspecified) {
+      eggyywarning("Unknown combine source " + strval);
+    } else {
+      texture->set_combine_source(EggTexture::CC_alpha, 0, cs);
+    }
+
+  } else if (cmp_nocase_uh(name, "combine-alpha-operand0") == 0) {
+    EggTexture::CombineOperand co = EggTexture::string_combine_operand(strval);
+    if (co == EggTexture::CO_unspecified) {
+      eggyywarning("Unknown combine operand " + strval);
+    } else {
+      texture->set_combine_operand(EggTexture::CC_alpha, 0, co);
+    }
+
+  } else if (cmp_nocase_uh(name, "combine-alpha-source1") == 0) {
+    EggTexture::CombineSource cs = EggTexture::string_combine_source(strval);
+    if (cs == EggTexture::CS_unspecified) {
+      eggyywarning("Unknown combine source " + strval);
+    } else {
+      texture->set_combine_source(EggTexture::CC_alpha, 1, cs);
+    }
+
+  } else if (cmp_nocase_uh(name, "combine-alpha-operand1") == 0) {
+    EggTexture::CombineOperand co = EggTexture::string_combine_operand(strval);
+    if (co == EggTexture::CO_unspecified) {
+      eggyywarning("Unknown combine operand " + strval);
+    } else {
+      texture->set_combine_operand(EggTexture::CC_alpha, 1, co);
+    }
+
+  } else if (cmp_nocase_uh(name, "combine-alpha-source2") == 0) {
+    EggTexture::CombineSource cs = EggTexture::string_combine_source(strval);
+    if (cs == EggTexture::CS_unspecified) {
+      eggyywarning("Unknown combine source " + strval);
+    } else {
+      texture->set_combine_source(EggTexture::CC_alpha, 2, cs);
+    }
+
+  } else if (cmp_nocase_uh(name, "combine-alpha-operand2") == 0) {
+    EggTexture::CombineOperand co = EggTexture::string_combine_operand(strval);
+    if (co == EggTexture::CO_unspecified) {
+      eggyywarning("Unknown combine operand " + strval);
+    } else {
+      texture->set_combine_operand(EggTexture::CC_alpha, 2, co);
+    }
+
+  } else if (cmp_nocase_uh(name, "tex_gen") == 0) {
+    EggTexture::TexGen tex_gen = EggTexture::string_tex_gen(strval);
+    if (tex_gen == EggTexture::TG_unspecified) {
+      eggyywarning("Unknown texture env type " + strval);
+    } else {
+      texture->set_tex_gen(tex_gen);
+    }
+
+  } else if (cmp_nocase_uh(name, "stage_name") == 0) {
+    texture->set_stage_name(strval);
+
+  } else if (cmp_nocase_uh(name, "priority") == 0) {
+    texture->set_priority((int)value);
+
+  } else if (cmp_nocase_uh(name, "blendr") == 0) {
+    Colorf color = texture->get_color();
+    color[0] = value;
+    texture->set_color(value);
+
+  } else if (cmp_nocase_uh(name, "blendg") == 0) {
+    Colorf color = texture->get_color();
+    color[1] = value;
+    texture->set_color(value);
+
+  } else if (cmp_nocase_uh(name, "blendb") == 0) {
+    Colorf color = texture->get_color();
+    color[2] = value;
+    texture->set_color(value);
+
+  } else if (cmp_nocase_uh(name, "blenda") == 0) {
+    Colorf color = texture->get_color();
+    color[3] = value;
+    texture->set_color(value);
+
+  } else if (cmp_nocase_uh(name, "uv_name") == 0) {
+    texture->set_uv_name(strval);
 
   } else if (cmp_nocase_uh(name, "alpha") == 0) {
     EggRenderMode::AlphaMode a = EggRenderMode::string_alpha_mode(strval);
@@ -725,7 +876,21 @@ vertex_body:
 {
   DCAST(EggVertex, egg_stack.back())->set_pos(LPoint4d($1, $2, $3, $4));
 }
-        | vertex_body UV '{' vertex_uv_body '}'
+        | vertex_body UV optional_name '{'
+{
+  EggVertex *vertex = DCAST(EggVertex, egg_stack.back());
+  EggVertexUV *uv = new EggVertexUV($3, TexCoordd::zero());
+  egg_stack.push_back(uv);
+  if (vertex->has_uv($3)) {
+    eggyywarning("Ignoring repeated UV name " + $3);
+  } else {
+    vertex->set_uv_obj(uv);
+  }
+}
+	 vertex_uv_body '}'
+{
+  egg_stack.pop_back();
+}
         | vertex_body NORMAL '{' vertex_normal_body '}'
         | vertex_body RGBA '{' vertex_color_body '}'
         | vertex_body DXYZ string '{' real real real '}'
@@ -757,19 +922,19 @@ vertex_body:
 vertex_uv_body:
         real real
 {
-  DCAST(EggVertex, egg_stack.back())->set_uv(TexCoordd($1, $2));
+  DCAST(EggVertexUV, egg_stack.back())->set_uv(TexCoordd($1, $2));
 }
         | vertex_uv_body DUV string '{' real real '}'
 {
-  bool inserted = DCAST(EggVertex, egg_stack.back())->_duvs.
+  bool inserted = DCAST(EggVertexUV, egg_stack.back())->_duvs.
     insert(EggMorphTexCoord($3, LVector2d($5, $6))).second;
   if (!inserted) {
     eggyywarning("Ignoring repeated morph name " + $3);
   }
 }
-        | vertex_uv_body DUV '{' string real real '}'
+       | vertex_uv_body DUV '{' string real real '}'
 {
-  bool inserted = DCAST(EggVertex, egg_stack.back())->_duvs.
+  bool inserted = DCAST(EggVertexUV, egg_stack.back())->_duvs.
     insert(EggMorphTexCoord($4, LVector2d($5, $6))).second;
   if (!inserted) {
     eggyywarning("Ignoring repeated morph name " + $4);
@@ -1724,7 +1889,7 @@ primitive_tref_body:
 {
   if ($1 != (EggTexture *)NULL) {
     EggTexture *texture = DCAST(EggTexture, $1);
-    DCAST(EggPrimitive, egg_stack.back())->set_texture(texture);
+    DCAST(EggPrimitive, egg_stack.back())->add_texture(texture);
   }
 }
         ;
@@ -1765,7 +1930,7 @@ primitive_texture_body:
   }
 
   nassertr(texture != NULL, 0);
-  DCAST(EggPrimitive, egg_stack.back())->set_texture(texture);
+  DCAST(EggPrimitive, egg_stack.back())->add_texture(texture);
 }
         ;
 

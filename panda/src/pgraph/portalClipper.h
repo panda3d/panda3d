@@ -32,6 +32,7 @@
 #include "drawMask.h"
 #include "typedObject.h"
 #include "pStatCollector.h"
+#include "config_pgraph.h"
 
 #include "geom.h"
 #include "geomPoint.h"

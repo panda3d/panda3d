@@ -201,8 +201,8 @@ collect_statistics(PandaNode *node, bool under_instance) {
       node->get_attrib(TextureAttrib::get_class_type());
     if (attrib != (RenderAttrib *)NULL) {
       const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
-      if (!ta->is_off()) {
-        collect_statistics(ta->get_texture());
+      for (int i = 0; i < ta->get_num_on_stages(); i++) {
+        collect_statistics(ta->get_on_texture(ta->get_on_stage(i)));
       }
     }      
   }
@@ -237,8 +237,8 @@ collect_statistics(GeomNode *geom_node) {
   _num_geoms += num_geoms;
 
   for (int i = 0; i < num_geoms; i++) {
-    Geom *geom = geom_node->get_geom(i);
-    collect_statistics(DCAST(Geom, geom));
+    const Geom *geom = geom_node->get_geom(i);
+    collect_statistics(geom);
 
     const RenderState *geom_state = geom_node->get_geom_state(i);
 
@@ -246,8 +246,8 @@ collect_statistics(GeomNode *geom_node) {
       geom_state->get_attrib(TextureAttrib::get_class_type());
     if (attrib != (RenderAttrib *)NULL) {
       const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
-      if (!ta->is_off()) {
-        collect_statistics(ta->get_texture());
+      for (int i = 0; i < ta->get_num_on_stages(); i++) {
+        collect_statistics(ta->get_on_texture(ta->get_on_stage(i)));
       }
     }      
   }
@@ -260,7 +260,7 @@ collect_statistics(GeomNode *geom_node) {
 //               statistics.
 ////////////////////////////////////////////////////////////////////
 void SceneGraphAnalyzer::
-collect_statistics(Geom *geom) {
+collect_statistics(const Geom *geom) {
   int num_prims;
   int num_verts;
   int num_components;

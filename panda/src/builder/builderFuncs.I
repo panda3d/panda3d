@@ -552,12 +552,15 @@ build_geoms(InputIterator first, InputIterator last,
   //
   //  5. If none of the above apply, the binding will be G_OVERALL.
   //
-  // An exception to the above is for texcoords, which is either G_OFF
-  // (by rule 1) or G_PER_VERTEX.
+  // Texcoords are an exception to the above, since they are either
+  // per vertex or not at all, and since there may be a different set
+  // of texcoords for each of a number of TexCoordName objects.
 
   GeomBindType bind_normals = G_OVERALL;
   GeomBindType bind_colors = G_OVERALL;
-  GeomBindType bind_texcoords = G_PER_VERTEX;
+
+  typedef pset<const TexCoordName *> TexCoordNames;
+  TexCoordNames texcoord_names;
 
   NType overall_normal(0);
   CType overall_color(0);
@@ -619,13 +622,15 @@ build_geoms(InputIterator first, InputIterator last,
       }
     }
 
-    // Texcoords.
-
-    // Test rule 1.
-    if (!(*i).has_any_texcoord()) {
-      bind_texcoords = G_OFF;
+    // Texcoords.  Get the union of all TexCoordNames defined on the
+    // prims.
+    TYPENAME PrimType::tcn_const_iterator tni;
+    for (tni = (*i).tcn_begin(); tni != (*i).tcn_end(); ++tni) {
+      const TexCoordName *name = (*tni);
+      texcoord_names.insert(name);
     }
   }
+
 
   // Determine the primitive type and build the lengths array, if needed.
   PTA_int lengths;
@@ -707,10 +712,16 @@ build_geoms(InputIterator first, InputIterator last,
   }
 
   // Now build up some arrays.
-  PTA(VType) coords=PTA(VType)::empty_array(0);
-  PTA(NType) normals=PTA(NType)::empty_array(0);
-  PTA(TType) texcoords=PTA(TType)::empty_array(0);
-  PTA(CType) colors=PTA(CType)::empty_array(0);
+  PTA(VType) coords = PTA(VType)::empty_array(0);
+  PTA(NType) normals = PTA(NType)::empty_array(0);
+  PTA(CType) colors = PTA(CType)::empty_array(0);
+
+  typedef TYPENAME PrimType::TexCoordFill TexCoordFill;
+  TexCoordFill texcoords;
+  TexCoordNames::const_iterator tni;
+  for (tni = texcoord_names.begin(); tni != texcoord_names.end(); ++tni) {
+    texcoords[*tni] = PTA(TType)::empty_array(0);
+  }
 
   int total_verts = 0;
   int total_components = 0;
@@ -727,11 +738,17 @@ build_geoms(InputIterator first, InputIterator last,
         if (bind_normals == G_PER_VERTEX) {
           normals.push_back((*i).get_vertex(v).get_normal());
         }
-        if (bind_texcoords == G_PER_VERTEX) {
-          texcoords.push_back((*i).get_vertex(v).get_texcoord());
-        }
         if (bind_colors == G_PER_VERTEX) {
           colors.push_back((*i).get_vertex(v).get_color());
+        }
+        TYPENAME TexCoordFill::iterator tci;
+        for (tci = texcoords.begin(); tci != texcoords.end(); ++tci) {
+          const TexCoordName *name = (*tci).first;
+          if ((*i).get_vertex(v).has_texcoord(name)) {
+            (*tci).second.push_back((*i).get_vertex(v).get_texcoord(name));
+          } else {
+            (*tci).second.push_back(TType());
+          }
         }
       }
 
@@ -772,8 +789,8 @@ build_geoms(InputIterator first, InputIterator last,
 
   PrimType::fill_geom(geom, coords,
                       bind_normals, normals,
-                      bind_texcoords, texcoords,
                       bind_colors, colors,
+                      texcoords,
                       bucket, num_prims,
                       total_components, total_verts);
 

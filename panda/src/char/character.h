@@ -73,7 +73,7 @@ private:
   virtual void r_copy_children(const PandaNode *from, InstanceMap &inst_map);
   void r_copy_char(PandaNode *dest, const PandaNode *source,
                    const Character *from, NodeMap &node_map);
-  PT(Geom) copy_geom(Geom *source, const Character *from);
+  PT(Geom) copy_geom(const Geom *source, const Character *from);
   void copy_node_pointers(const Character *from, const NodeMap &node_map);
 
   // These are the actual dynamic vertex pools for this Character's

@@ -72,13 +72,23 @@ sorts_less(int bin_number, const EggNode *a, const EggNode *b) {
   const EggPolygon *pb = DCAST(EggPolygon, b);
 
   if ((_properties & (P_has_texture | P_texture)) != 0) {
-    if (pa->has_texture() != pb->has_texture()) {
-      return ((int)pa->has_texture() < (int)pb->has_texture());
+    bool a_has_texture = (pa->get_num_textures() > 0);
+    bool b_has_texture = (pb->get_num_textures() > 0);
+    if (a_has_texture != b_has_texture) {
+      return ((int)a_has_texture < (int)b_has_texture);
     }
   }
   if ((_properties & (P_texture)) != 0) {
-    if (pa->has_texture()) {
-      return (pa->get_texture()->sorts_less_than(*pb->get_texture(), ~EggTexture::E_tref_name));
+    int num_textures = min(pa->get_num_textures(), pb->get_num_textures());
+    for (int i = 0; i < num_textures; i++) {
+      EggTexture *a_texture = pa->get_texture(i);
+      EggTexture *b_texture = pb->get_texture(i);
+      if (a_texture != b_texture) {
+        return (a_texture->sorts_less_than(*b_texture, ~EggTexture::E_tref_name));
+      }
+    }
+    if (pa->get_num_textures() != pb->get_num_textures()) {
+      return (pa->get_num_textures() < pb->get_num_textures());
     }
   }
   if ((_properties & (P_has_material | P_material)) != 0) {

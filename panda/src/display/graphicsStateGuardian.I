@@ -120,6 +120,26 @@ get_threading_model() const {
   return _threading_model;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_max_texture_stages
+//       Access: Published
+//  Description: Returns the maximum number of simultaneous textures
+//               that may be applied to geometry with multitexturing,
+//               as supported by this particular GSG.  If you exceed
+//               this number, the lowest-priority texture stages will
+//               not be applied.  Use TextureStage::set_priority() to
+//               adjust the relative importance of the different
+//               texture stages.
+//
+//               The value returned may not be meaningful until after
+//               the graphics context has been fully created (e.g. the
+//               window has been opened).
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsStateGuardian::
+get_max_texture_stages() const {
+  return _max_texture_stages;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::set_scene
@@ -228,6 +248,7 @@ modify_state(const RenderState *state) {
   }
 #endif
   _state = _state->issue_delta_modify(state, this);
+  finish_modify_state();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -251,6 +272,7 @@ set_state(const RenderState *state) {
   }
 #endif
   _state = _state->issue_delta_set(state, this);
+  finish_modify_state();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "loaderFileType.h"
+#include "config_pgraph.h"
 
 TypeHandle LoaderFileType::_type_handle;
 

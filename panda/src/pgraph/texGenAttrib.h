@@ -21,51 +21,82 @@
 
 #include "pandabase.h"
 
+#include "geom.h"
 #include "renderAttrib.h"
+#include "textureStage.h"
 #include "texture.h"
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TexGenAttrib
-// Description : Calculates new texture coordinates for reflection 
-//               and refraction maps. This attrib is used to get a
-//               water like surface.
+// Description : Computes texture coordinates for geometry
+//               automatically based on vertex position and/or normal.
+//               This can be used to implement reflection and/or
+//               refraction maps, for instance to make shiny surfaces,
+//               as well as other special effects such as projective
+//               texturing.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TexGenAttrib : public RenderAttrib {
-private:
 PUBLISHED:
   enum Mode {
-    M_spherical,
-    M_cubic,
-    M_nothing
+    M_off,
+    M_sphere_map,
+    M_cube_map,
+    M_world_position,
+    M_object_position,
+    M_eye_position,
   };
 
-private:
-  INLINE TexGenAttrib(Mode mode = M_nothing);
-
-PUBLISHED:
-  static CPT(RenderAttrib) make(Mode mode);
-  static CPT(RenderAttrib) make_off();
-
-  INLINE bool is_off() const;
-  INLINE Mode get_mode() const;
-  INLINE Texture *get_texture() const;
+protected:
+  INLINE TexGenAttrib();
+  INLINE TexGenAttrib(const TexGenAttrib &copy);
 
 public:
+  virtual ~TexGenAttrib();
+
+PUBLISHED:
+  static CPT(RenderAttrib) make();
+
+  CPT(RenderAttrib) add_stage(TextureStage *stage, Mode mode) const;
+  CPT(RenderAttrib) remove_stage(TextureStage *stage) const;
+
+  bool is_empty() const;
+  bool has_stage(TextureStage *stage) const;
+  Mode get_mode(TextureStage *stage) const;
+
+public:
+  INLINE const Geom::NoTexCoordStages &get_no_texcoords() const;
+
   virtual void issue(GraphicsStateGuardianBase *gsg) const;
   virtual void output(ostream &out) const;
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;
+  virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
+  virtual CPT(RenderAttrib) invert_compose_impl(const RenderAttrib *other) const;
   virtual RenderAttrib *make_default_impl() const;
 
 private:
-  Mode _mode;
-  PT(Texture) _texture;
+  typedef pmap<PT(TextureStage), Mode> Stages;
+  Stages _stages;
+
+  // This is a set of TextureStage pointers for which texture
+  // coordinates will not be needed from the Geom.  It's redundant;
+  // it's almost the same set that is listed in _stages, above.  It's
+  // just here as an optimization to pass to
+  // Geom::setup_multitexcoord_iterator() during rendering.
+  Geom::NoTexCoordStages _no_texcoords;
+
+  // This element is only used during reading from a bam file.  It has
+  // no meaningful value any other time.
+  pvector<Mode> _read_modes;
+
+  static CPT(RenderAttrib) _empty_attrib;
 
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
-  //virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
+  virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);

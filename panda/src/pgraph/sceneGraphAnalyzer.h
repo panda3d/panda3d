@@ -49,7 +49,7 @@ public:
 private:
   void collect_statistics(PandaNode *node, bool under_instance);
   void collect_statistics(GeomNode *geom_node);
-  void collect_statistics(Geom *geom);
+  void collect_statistics(const Geom *geom);
   void collect_statistics(Texture *texture);
 
   void consider_normals(const Normalf *norms, const unsigned short *nindex,

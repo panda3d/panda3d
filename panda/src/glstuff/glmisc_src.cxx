@@ -21,11 +21,6 @@
 // possible mode.
 bool CLP(cheap_textures) = CONFIGOBJ.GetBool("gl-cheap-textures", false);
 
-// Configure this true to ignore texture modes like modulate that
-// blend texture color with polygon color (a little cheaper for
-// software renderers).
-bool CLP(always_decal_textures) = CONFIGOBJ.GetBool("gl-always-decal-textures", false);
-
 // Configure this true to disable texture clamp mode (all textures
 // repeat, a little cheaper for software renderers).
 bool CLP(ignore_clamp) = CONFIGOBJ.GetBool("gl-ignore-clamp", false);

@@ -71,15 +71,14 @@ appear before they are referenced.
 
 <CoordinateSystem> { string }
 
-  This is a new kind of node introduced for the new player.  The old
-  player used a Y-up coordinate system, so all modeling was done with
-  Y-up and egg files used Y-up implicitly.  Since we have adopted a
-  Z-up coordinate system with the new player, it becomes necessary to
-  make a distinction.  The contents of this entry are either the
-  string "Y-up" or "Z-up" to indicate the coordinate system used in
-  the egg file; the egg loader will automatically make a conversion if
-  necessary.  By convention, this entry should only appear at the
-  beginning of the file.  If it is omitted, Y-up is assumed.
+  This entry indicates the coordinate system used in the egg file; the
+  egg loader will automatically make a conversion if necessary.  The
+  following strings are valid: Y-up, Z-up, Y-up-right, Z-up-right,
+  Y-up-left, or Z-up-left.  (Y-up is the same as Y-up-right, and Z-up
+  is the same as Z-up-right.)
+
+  By convention, this entry should only appear at the beginning of the
+  file.  If it is omitted, Y-up is assumed.
 
 
 <Texture> name { filename [scalars] }
@@ -154,6 +153,115 @@ appear before they are referenced.
 
       MODULATE
       DECAL
+      BLEND
+      REPLACE
+      ADD
+
+  <Scalar> combine-rgb { combine-mode }
+  <Scalar> combine-alpha { combine-mode }
+  <Scalar> combine-rgb-source0 { combine-source }
+  <Scalar> combine-rgb-operand0 { combine-operand }
+  <Scalar> combine-rgb-source1 { combine-source }
+  <Scalar> combine-rgb-operand1 { combine-operand }
+  <Scalar> combine-rgb-source2 { combine-source }
+  <Scalar> combine-rgb-operand2 { combine-operand }
+  <Scalar> combine-alpha-source0 { combine-source }
+  <Scalar> combine-alpha-operand0 { combine-operand }
+  <Scalar> combine-alpha-source1 { combine-source }
+  <Scalar> combine-alpha-operand1 { combine-operand }
+  <Scalar> combine-alpha-source2 { combine-source }
+  <Scalar> combine-alpha-operand2 { combine-operand }
+
+    These options replace the envtype and specify the texture combiner
+    mode, which is usually used for multitexturing.  This specifies
+    how the texture combines with the base color and/or the other
+    textures applied previously.  You must specify both an rgb and an
+    alpha combine mode.  Some combine-modes use one source/operand
+    pair, and some use all three; most use just two.
+
+    combine-mode may be one of:
+
+      REPLACE
+      MODULATE
+      ADD
+      ADD-SIGNED
+      INTERPOLATE
+      SUBTRACT
+      DOT3-RGB
+      DOT3-RGBA
+
+    combine-source may be one of:
+
+      TEXTURE
+      CONSTANT
+      PRIMARY-COLOR
+      PREVIOUS
+
+    combine-operand may be one of:
+
+      SRC-COLOR
+      ONE-MINUS-SRC-COLOR
+      SRC-ALPHA
+      ONE-MINUS-SRC-ALPHA
+
+    The default values if any of these are omitted are:
+      <Scalar> combine-rgb { modulate }
+      <Scalar> combine-alpha { modulate }
+      <Scalar> combine-rgb-source0 { previous }
+      <Scalar> combine-rgb-operand0 { src-color }
+      <Scalar> combine-rgb-source1 { texture }
+      <Scalar> combine-rgb-operand1 { src-color }
+      <Scalar> combine-rgb-source2 { constant }
+      <Scalar> combine-rgb-operand2 { src-alpha }
+      <Scalar> combine-alpha-source0 { previous }
+      <Scalar> combine-alpha-operand0 { src-alpha }
+      <Scalar> combine-alpha-source1 { texture }
+      <Scalar> combine-alpha-operand1 { src-alpha }
+      <Scalar> combine-alpha-source2 { constant }
+      <Scalar> combine-alpha-operand2 { src-alpha }
+
+  <Scalar> tex-gen { mode }
+
+    This specifies that texture coordinates for the primitives that
+    reference this texture should be dynamically computed at runtime,
+    for instance to apply a reflection map or some other effect.  The
+    valid values for mode are:
+
+      SPHERE_MAP
+      CUBE_MAP
+      WORLD_POSITION
+      OBJECT_POSITION
+      EYE_POSITION
+
+  <Scalar> stage-name { name }
+
+    Specifies the name of the TextureStage object that is created to
+    render this texture.  If this is omitted, a custom TextureStage is
+    created for this texture if it is required (e.g. because some
+    other multitexturing parameter has been specified), or the system
+    default TextureStage is used if multitexturing is not required.
+
+  <Scalar> priority { priority-value }
+
+    Specifies an integer sort value to rank this texture in priority
+    among other textures that are applied to the same geometry.  This
+    is only used to eliminate low-priority textures in case more
+    textures are requested for a particular piece of geometry than the
+    graphics hardware can render.
+
+  <Scalar> blendr { red-value }
+  <Scalar> blendg { green-value }
+  <Scalar> blendb { blue-value }
+  <Scalar> blenda { alpha-value }
+
+    Specifies a four-component color that is applied with the color in
+    case the envtype, above, is "blend".
+
+  <Scalar> uv-name { name }
+
+    Specifies the name of the texture coordinates that are to be
+    associated with this texture.  If this is omitted, the default
+    texture coordinates are used.
 
   <Scalar> alpha { alpha-type }
 
@@ -339,11 +447,16 @@ appear before they are referenced.
     (1 1 1 1).  The morph-list is an optional list of <DRGBA> entries.
 
 
-    <UV> { u v [morph-list] }
+    <UV> name { u v [morph-list] }
 
     This gives the texture coordinates of the vertex.  This must be
     specified if a texture is to be mapped onto this geometry.  As
     before, morph-list is an optional list of <DUV> entries.
+
+    Unlike the other kinds of attributes, there may be multiple sets
+    of UV's on each vertex, each with a unique name; this provides
+    support for multitexturing.  The name may be omitted to specify
+    the default UV's.
 
 
     In addition to the above, when the vertex serves as a control

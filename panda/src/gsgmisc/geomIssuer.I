@@ -57,6 +57,16 @@ issue_texcoord(GeomBindType bind, Geom::TexCoordIterator &i) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomIssuer::issue_texcoord
+//       Access: Public
+//  Description: Handles the case of multitexture coordinates.
+////////////////////////////////////////////////////////////////////
+INLINE void GeomIssuer::
+issue_texcoord(GeomBindType bind, Geom::MultiTexCoordIterator &i) {
+  _multitexcoord_command[bind](_geom, i, _gsg);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomIssuer::issue_color
 //       Access: Public
 //  Description: Uses the function pointers set up by the constructor

@@ -213,22 +213,6 @@ has_vertex_color() const {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BuilderPrimTempl::has_vertex_texcoord
-//       Access: Public
-//  Description: Returns true if each of the primitive's vertices has
-//               a texcoord value set.
-////////////////////////////////////////////////////////////////////
-template <class VTX>
-INLINE bool BuilderPrimTempl<VTX>::
-has_vertex_texcoord() const {
-  if ((_overall & BAF_overall_updated) == 0) {
-    ((BuilderPrimTempl<VTX> *)this)->update_overall_attrib();
-  }
-  return (_overall & BAF_vertex_texcoord)!=0;
-}
-
-
-////////////////////////////////////////////////////////////////////
 //     Function: BuilderPrimTempl::has_vertex_pixel_size
 //       Access: Public
 //  Description: Returns true if each of the primitive's vertices has
@@ -326,20 +310,6 @@ has_any_color() const {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BuilderPrimTempl::has_any_texcoord
-//       Access: Public
-//  Description: Returns true if the prim has a texcoord value set
-//               at any level.  Since texture coordinates can only be
-//               set on vertices, this is the same thing as
-//               has_vertex_texcoord().
-////////////////////////////////////////////////////////////////////
-template <class VTX>
-INLINE bool BuilderPrimTempl<VTX>::
-has_any_texcoord() const {
-  return has_vertex_texcoord();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: BuilderPrimTempl::has_any_pixel_size
 //       Access: Public
 //  Description: Returns true if the prim has a pixel_size value set
@@ -354,6 +324,43 @@ has_any_pixel_size() const {
     has_component_pixel_size();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BuilderPrimTempl::tcn_begin
+//       Access: Public
+//  Description: Returns an iterator that can be used to walk through
+//               the list of TexCoordNames that are common to all
+//               vertices on this primitive.
+////////////////////////////////////////////////////////////////////
+template <class VTX>
+INLINE TYPENAME BuilderPrimTempl<VTX>::tcn_const_iterator BuilderPrimTempl<VTX>::
+tcn_begin() const {
+  return _texcoord_names.begin();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BuilderPrimTempl::tcn_end
+//       Access: Public
+//  Description: Returns an iterator that can be used to walk through
+//               the list of TexCoordNames that are common to all
+//               vertices on this primitive.
+////////////////////////////////////////////////////////////////////
+template <class VTX>
+INLINE TYPENAME BuilderPrimTempl<VTX>::tcn_const_iterator BuilderPrimTempl<VTX>::
+tcn_end() const {
+  return _texcoord_names.end();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BuilderPrimTempl::tcn_size
+//       Access: Public
+//  Description: Returns the number of TexCoordNames that are common
+//               to all vertices on this primitive.
+////////////////////////////////////////////////////////////////////
+template <class VTX>
+INLINE TYPENAME BuilderPrimTempl<VTX>::tcn_size_type BuilderPrimTempl<VTX>::
+tcn_size() const {
+  return _texcoord_names.size();
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderPrimTempl::clear
@@ -713,7 +720,7 @@ sort_value() const {
   return
     ((has_vertex_normal() ? 1:0) << 5) |
     ((has_vertex_color() ? 1:0) << 4) |
-    ((has_any_texcoord() ? 1:0) << 3) |
+    ((!_texcoord_names.empty() ? 1:0) << 3) |
     ((has_any_normal() ? 1:0) << 2) |
     ((has_any_color() ? 1:0) << 1) |
     ((has_pixel_size() ? 1:0) << 0);
@@ -872,14 +879,25 @@ update_overall_attrib() {
 
   bool has_vertex_normal = false;
   bool has_vertex_color = false;
-  bool has_vertex_texcoord = false;
   bool has_vertex_pixel_size = false;
+
+  _texcoord_names.clear();
 
   int i;
   if (num_verts > 0) {
-    has_vertex_texcoord = true;
-    for (i = 0; i < num_verts && has_vertex_texcoord; i++) {
-      has_vertex_texcoord = get_vertex(i).has_texcoord();
+    // Get the intersection of TexCoordNames that are defined on all
+    // vertices.
+    const Vertex &vtx = get_vertex(0);
+    TYPENAME Vertex::tc_const_iterator tci;
+    for (tci = vtx.tc_begin(); tci != vtx.tc_end(); ++tci) {
+      const TexCoordName *name = (*tci).first;
+      bool has_texcoord = true;
+      for (i = 1; i < num_verts && has_texcoord; i++) {
+        has_texcoord = get_vertex(i).has_texcoord(name);
+      }
+      if (has_texcoord) {
+        _texcoord_names.insert(name);
+      }
     }
 
     if (get_vertex(0).has_normal()) {
@@ -1016,11 +1034,6 @@ update_overall_attrib() {
   } else if (has_color()) {
     // None of the above, but the prim itself has a color.
     _overall |= BAF_overall_color;
-  }
-
-  if (has_vertex_texcoord) {
-    // Each vertex has a texture coordinate.
-    _overall |= BAF_vertex_texcoord;
   }
 
   if (has_common_pixel_size) {

@@ -20,6 +20,7 @@
 #include "loaderFileType.h"
 #include "config_pgraph.h"
 
+#include "load_dso.h"
 #include "string_utils.h"
 #include "indent.h"
 

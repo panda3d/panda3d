@@ -39,7 +39,7 @@ typedef PTA_Colorf PTA_BuilderC;
 enum BuilderAttribFlags {
   BAF_coord                  = 0x00001,
   BAF_normal                 = 0x00002,
-  BAF_texcoord               = 0x00004,
+  //BAF_texcoord               = 0x00004,  No longer used.
   BAF_color                  = 0x00008,
   BAF_pixel_size             = 0x00010,
 
@@ -49,7 +49,7 @@ enum BuilderAttribFlags {
   BAF_overall_pixel_size     = 0x00800,
 
   BAF_vertex_normal          = 0x01000,
-  BAF_vertex_texcoord        = 0x02000,
+  //BAF_vertex_texcoord        = 0x02000,  No longer used.
   BAF_vertex_color           = 0x04000,
   BAF_vertex_pixel_size      = 0x08000,
 

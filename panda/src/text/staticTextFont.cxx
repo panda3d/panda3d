@@ -184,7 +184,7 @@ get_glyph(int character, const TextGlyph *&glyph) {
 //               those two Geoms.
 ////////////////////////////////////////////////////////////////////
 void StaticTextFont::
-find_character_gsets(PandaNode *root, Geom *&ch, GeomPoint *&dot,
+find_character_gsets(PandaNode *root, const Geom *&ch, const GeomPoint *&dot,
                      const RenderState *&state, const RenderState *net_state) {
   CPT(RenderState) next_net_state = net_state->compose(root->get_state());
 
@@ -192,7 +192,7 @@ find_character_gsets(PandaNode *root, Geom *&ch, GeomPoint *&dot,
     GeomNode *geode = DCAST(GeomNode, root);
 
     for (int i = 0; i < geode->get_num_geoms(); i++) {
-      dDrawable *geom = geode->get_geom(i);
+      const Geom *geom = geode->get_geom(i);
       if (geom->is_of_type(GeomPoint::get_class_type())) {
         dot = DCAST(GeomPoint, geom);
 
@@ -236,8 +236,8 @@ find_characters(PandaNode *root, const RenderState *net_state) {
 
   if (all_digits) {
     int character = atoi(name.c_str());
-    Geom *ch = NULL;
-    GeomPoint *dot = NULL;
+    const Geom *ch = NULL;
+    const GeomPoint *dot = NULL;
     const RenderState *state = NULL;
     find_character_gsets(root, ch, dot, state, next_net_state);
     if (dot != NULL) {
@@ -260,8 +260,8 @@ find_characters(PandaNode *root, const RenderState *net_state) {
     // The group "ds" is a special node that indicate's the font's
     // design size, or line height.
 
-    Geom *ch = NULL;
-    GeomPoint *dot = NULL;
+    const Geom *ch = NULL;
+    const GeomPoint *dot = NULL;
     const RenderState *state = NULL;
     find_character_gsets(root, ch, dot, state, next_net_state);
     if (dot != NULL) {
