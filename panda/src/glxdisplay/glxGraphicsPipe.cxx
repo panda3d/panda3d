@@ -184,6 +184,51 @@ make_gsg(const FrameBufferProperties &properties,
     share_context = share_gsg->_context;
   }
 
+  int frame_buffer_mode = properties.get_frame_buffer_mode();
+  bool hardware = ((frame_buffer_mode & FrameBufferProperties::FM_hardware) != 0);
+  bool software = ((frame_buffer_mode & FrameBufferProperties::FM_software) != 0);
+  // If the user specified neither hardware nor software frame buffer,
+  // he gets either one.
+  if (!hardware && !software) {
+    hardware = true;
+    software = true;
+  }
+
+  // There's no interface in GLX to query whether we have a software
+  // or a hardware rendering context.  Fortunately, there seems to be
+  // only one likely software GLX context, and that's Mesa; we will
+  // assume that any Mesa GLX context is software-based, and any other
+  // context is hardware-based.
+
+  // To determine whether we are using Mesa, we should strictly create
+  // a GL context, bind it to a window, and then examine the
+  // GL_RENDERER string, but as a cheesy shortcut to all of that hard
+  // work, we'll just check the X server's GLX_VERSION string to see
+  // if it contains "Mesa".
+
+  const char *glx_version = glXQueryServerString(_display, _screen, GLX_VERSION);
+  if (glx_version != NULL) {
+    if (strstr(glx_version, "Mesa") != NULL) {
+      // It's Mesa, therefore probably a software context.
+      if (!software) {
+        glxdisplay_cat.error()
+          << "Using GLX version " << glx_version << "; it is probably a software renderer.\n";
+        glxdisplay_cat.error()
+          << "To allow use of this display add FM_software to your frame buffer mode.\n";
+        return NULL;
+      }
+    } else {
+      // It's some other server, therefore probably a hardware context.
+      if (!hardware) {
+        glxdisplay_cat.error()
+          << "Using GLX version " << glx_version << "; it is probably hardware-accelerated.\n";
+        glxdisplay_cat.error()
+          << "To allow use of this display add FM_hardware to your frame buffer mode.\n";
+        return NULL;
+      }
+    }
+  }
+        
   FrameBufferProperties new_properties = properties;
   GLXContext context = NULL;
   XVisualInfo *visual = NULL;
@@ -285,7 +330,6 @@ make_buffer(GraphicsStateGuardian *gsg, const string &name,
 GLXFBConfig glxGraphicsPipe::
 choose_fbconfig(FrameBufferProperties &properties) const {
   int frame_buffer_mode = 0;
-
   if (properties.has_frame_buffer_mode()) {
     frame_buffer_mode = properties.get_frame_buffer_mode();
   }
