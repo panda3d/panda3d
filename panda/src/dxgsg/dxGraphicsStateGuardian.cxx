@@ -1874,6 +1874,9 @@ size_t DXGraphicsStateGuardian::
 draw_prim_setup(const Geom *geom) {
     //  Set the flags for the flexible vertex format and compute the bytes
     //  required to store a single vertex.
+    // Assumes _perVertex,_perPrim,_perComp flags are setup prior to entry
+    // (especially for shademode).  maybe should change this, since we usually
+    // get attr info anyway)
 
     #ifdef _DEBUG
       assert(geom->get_binding(G_COORD) != G_OFF);
@@ -1993,6 +1996,8 @@ draw_prim_setup(const Geom *geom) {
 void DXGraphicsStateGuardian::
 draw_prim_inner_loop(int nVerts, const Geom *geom, ushort perFlags) {
     Vertexf NextVert;
+
+    assert((_CurShadeMode==D3DSHADE_GOURAUD)==(geom->get_binding(G_COLOR)==G_PER_VERTEX));
 
     for(;nVerts > 0;nVerts--) {
          // coord info will always be _perVertex
@@ -2160,17 +2165,17 @@ draw_point(GeomPoint *geom, GeomContext *gc) {
     }
 #endif
 
+    _perVertex = 0x0; 
+    _perPrim = 0x0;
+    if (geom->get_binding(G_NORMAL) == G_PER_VERTEX) 
+        _perVertex |= PER_NORMAL;
+    if (geom->get_binding(G_COLOR) == G_PER_VERTEX) 
+        _perVertex |= PER_COLOR;
+
     // for Indexed Prims and mixed indexed/non-indexed prims, we will use old pipeline for now
     // need to add code to handle fully indexed mode (and handle cases with index arrays of different lengths,
     // values (may only be possible to handle certain cases without reverting to old pipeline)
     if (GeomVrtFmt!=FlatVerts) {
-        _perVertex = 0x0; 
-        _perPrim = 0x0;
-        if (geom->get_binding(G_NORMAL) == G_PER_VERTEX) 
-            _perVertex |= PER_NORMAL;
-        if (geom->get_binding(G_COLOR) == G_PER_VERTEX) 
-            _perVertex |= PER_COLOR;
-
         size_t vertex_size = draw_prim_setup(geom);
 
         nassertv(_pCurFvfBufPtr == NULL);    // make sure the storage pointer is clean.
@@ -3390,9 +3395,6 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 */  
 
     {
-
-        size_t vertex_size = draw_prim_setup(geom);
-
         // this is the old geom setup, it reformats every vtx into an output array passed to d3d
         _perVertex = 0x0;
         _perPrim = 0x0;
@@ -3440,6 +3442,9 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
                     break;
             }
         }
+
+        // draw_prim_setup() REQUIRES _perVertex, etc flags setup properly prior to call
+        size_t vertex_size = draw_prim_setup(geom);
 
         // iterate through the triangle primitives
 
@@ -4032,8 +4037,11 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
     if (bperPrimColor)
         ci = geom->make_color_iterator();
 
-    for (int i = 0; i < nprims; i++) {
+    _perVertex = 0x0;
+    _perPrim = 0x0;
+    _perComp = 0x0;
 
+    for (int i = 0; i < nprims; i++) {
         DWORD nVerts,nIndices;
         Vertexf center = geom->get_next_vertex(vi);
         Vertexf edge = geom->get_next_vertex(vi);
