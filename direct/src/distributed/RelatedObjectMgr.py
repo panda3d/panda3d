@@ -40,21 +40,25 @@ class RelatedObjectMgr(DirectObject.DirectObject):
         del self.pendingObjects
         self.ignoreAll()
 
-    def requestObjects(self, doIdList, callback,
+    def requestObjects(self, doIdList, allCallback = None, eachCallback = None,
                        timeout = None, timeoutCallback = None):
         """
-        Requests the indicated callback to be called when all the
-        objects in the doIdList are generated.  If all the objects
-        already exist, the callback is called immediately.  In either
-        case, the list of objects, in the order given in doIdList, is
-        passed to the callback.
+        Requests a callback to be called when the objects in the
+        doIdList are generated.  The allCallback will be called only
+        when all the objects have been generated (and it receives a
+        list of objects, in the order given in doIdList).  The
+        eachCallback is called as each object is generated, and
+        receives only the object itself.
+
+        If the objects already exist, the appropriate callback is
+        called immediately.
 
         If all of the objects are not generated within the indicated
         timeout time, the timeoutCallback is called instead, with the
         original doIdList as the parameter.  If the timeoutCallback is
-        None, then the original callback is called on timeout, with
-        the list of objects that have been generated so far, and None
-        for objects that have not been generated.
+        None, then allCallback is called on timeout, with the list of
+        objects that have been generated so far, and None for objects
+        that have not been generated.
 
         If any element of doIdList is None or 0, it is ignored, and
         None is passed in its place in the object list passed to the
@@ -69,11 +73,20 @@ class RelatedObjectMgr(DirectObject.DirectObject):
 
         # First, see if we have all of the objects already.
         objects, doIdsPending = self.__generateObjectList(doIdList)
+
+        # Call the eachCallback immediately on any objects we already
+        # have.
+        if eachCallback:
+            for object in objects:
+                if object:
+                    eachCallback(object)
+
         if len(doIdsPending) == 0:
             # All the objects exist, so just call the callback
             # immediately.
             assert(self.notify.debug("All objects already exist."))
-            callback(objects)
+            if allCallback:
+                allCallback(objects)
             return
 
         # Some objects don't exist yet, so start listening for them, and
@@ -92,7 +105,8 @@ class RelatedObjectMgr(DirectObject.DirectObject):
             
             RelatedObjectMgr.doLaterSequence += 1
 
-        tuple = (callback, timeoutCallback, doIdsPending, doIdList, doLaterName)
+        tuple = (allCallback, eachCallback, timeoutCallback,
+                 doIdsPending, doIdList, doLaterName)
 
         for doId in doIdsPending:
             pendingList = self.pendingObjects.get(doId)
@@ -117,7 +131,7 @@ class RelatedObjectMgr(DirectObject.DirectObject):
         is removed from the queue and no further callbacks will be called.
         """
         if tuple:
-            callback, timeoutCallback, doIdsPending, doIdList, doLaterName = tuple
+            allCallback, eachCallback, timeoutCallback, doIdsPending, doIdList, doLaterName = tuple
             assert(self.notify.debug("aborting request for %s (remaining: %s)" % (doIdList, doIdsPending)))
 
             if doLaterName:
@@ -125,7 +139,7 @@ class RelatedObjectMgr(DirectObject.DirectObject):
             self.__removePending(tuple, doIdsPending)
 
     def __timeoutExpired(self, tuple):
-        callback, timeoutCallback, doIdsPending, doIdList, doLaterName = tuple
+        allCallback, eachCallback, timeoutCallback, doIdsPending, doIdList, doLaterName = tuple
         assert(self.notify.debug("timeout expired for %s (remaining: %s)" % (doIdList, doIdsPending)))
 
         self.__removePending(tuple, doIdsPending)
@@ -134,7 +148,8 @@ class RelatedObjectMgr(DirectObject.DirectObject):
             timeoutCallback(doIdList)
         else:
             objects, doIdsPending = self.__generateObjectList(doIdList)
-            callback(objects)
+            if allCallback:
+                allCallback(objects)
 
     def __removePending(self, tuple, doIdsPending):
         # Removes all the pending events for the doIdsPending list.
@@ -170,7 +185,7 @@ class RelatedObjectMgr(DirectObject.DirectObject):
         del self.pendingObjects[doId]
 
         for tuple in pendingList:
-            callback, timeoutCallback, doIdsPending, doIdList, doLaterName = tuple
+            allCallback, eachCallback, timeoutCallback, doIdsPending, doIdList, doLaterName = tuple
 
             # Here we are depending on Python to unify this one list
             # across all objects that share it.  When we remove our
@@ -178,15 +193,19 @@ class RelatedObjectMgr(DirectObject.DirectObject):
             # from all the other references.
             doIdsPending.remove(doId)
 
+            if eachCallback:
+                eachCallback(object)
+
             if len(doIdsPending) == 0:
                 # That was the last doId on the list.  Call the
-                # callback!
+                # allCallback!
                 assert(self.notify.debug("All objects generated on list: %s" % (doIdList)))
                 if doLaterName:
                     taskMgr.remove(doLaterName)
             
                 objects, doIdsPending = self.__generateObjectList(doIdList)
-                callback(objects)
+                if allCallback:
+                    allCallback(objects)
 
             else:
                 assert(self.notify.debug("Objects still pending: %s" % (doIdsPending)))
@@ -205,3 +224,4 @@ class RelatedObjectMgr(DirectObject.DirectObject):
                 objects.append(None)
         
         return objects, doIdsPending
+
