@@ -2294,11 +2294,19 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
                 const Memlimres MemRes[] = {
                                              {       0,  640, 480},
                                              { 8000000,  800, 600},
+                #if 0
                                              {16000000, 1024, 768},
                                              {32000000, 1280,1024},  // 32MB+ cards will choose this
-
+                #else
+                                   // unfortunately the 32MB card perf varies greatly (TNT2-GF2),
+                                   // so we need to be conservative since frame rate difference
+                                   // can change from 15->30fps when going from 1280x1024->800x600
+                                   // on low-end 32mb cards
+                                             {16000000,  800, 600},
+                                             {32000000,  800, 600},  // 32MB+ cards will choose this
+                #endif
                                             // some monitors have trouble w/1600x1200, so dont pick this by deflt,
-                                            // even though 64MB cards should handle it
+                                            // even though 64MB cards should handle it				
                                              {64000000, 1280,1024}   // 64MB+ cards will choose this
                                            };
                 const NumResLims = (sizeof(MemRes)/sizeof(Memlimres));
