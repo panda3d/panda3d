@@ -89,10 +89,11 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         # entities
         def setAttribChange(self, entId, attribName, valueStr):
             value = eval(valueStr)
-            self.levelSpec.setAttribChange(entId, attribName, value)
-            # send a copy to the client-side level obj
+            # send a copy to the client-side level obj FIRST
+            # (it may be a message that creates an entity)
             self.sendUpdate('setAttribChange',
                             [entId, attribName, valueStr])
+            self.levelSpec.setAttribChange(entId, attribName, value)
 
             self.modified = 1
             self.scheduleSave()

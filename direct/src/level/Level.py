@@ -45,6 +45,8 @@ class Level:
         self.scenarioIndex = scenarioIndex
 
         self.levelSpec.setScenario(self.scenarioIndex)
+        if __debug__:
+            self.levelSpec.setLevel(self)
 
         # create some handy tables
 
@@ -57,14 +59,15 @@ class Level:
         # make sure the uberzone is there
         assert Level.UberZoneEntId in self.entType2ids['zone']
 
+        # this list contains the entIds of entities that we have actually
+        # created, in order of creation
+        self.createdEntIds = []
+
         # get an entity creator object
         self.entityCreator = self.createEntityCreator()
         # create all the entities
         # TODO: we should leave this to a subclass or the level user
         self.createAllEntities(priorityTypes=['levelMgr','zone'])
-
-        self.levelSpec.setAttribChangeEventName(self.getAttribChangeEvent())
-        self.accept(self.getAttribChangeEvent(), self.handleAttribChange)
 
         self.initialized = 1
 
@@ -72,16 +75,9 @@ class Level:
         return self.initialized
 
     def destroyLevel(self):
+        self.destroyAllEntities()
         self.initialized = 0
-        if hasattr(self, 'createdEntities'):
-            # destroy the entities in reverse order
-            while len(self.createdEntities) > 0:
-                entity = self.createdEntities.pop()
-                self.notify.debug('destroying %s entity %s' %
-                                  (self.getEntityType(entity.entId),
-                                   entity.entId))
-                entity.destroy()
-            del self.createdEntities
+        del self.createdEntIds
         if hasattr(self, 'entities'):
             del self.entities
         if hasattr(self, 'levelSpec'):
@@ -97,8 +93,6 @@ class Level:
         # this will be filled in as the entities are created and report in
         # this includes distributed objects on the client
         self.entities = {}
-        # this list contains the entities that we have actually created
-        self.createdEntities = []
 
         # get list of all entity types we need to create
         entTypes = self.entType2ids.keys()
@@ -117,6 +111,22 @@ class Level:
 
         self.onLevelPostCreate()
 
+    def destroyAllEntities(self):
+        # destroy the entities in reverse order
+        while len(self.createdEntIds) > 0:
+            entId = self.createdEntIds[-1]
+            entity = self.getEntity(entId)
+            if entity is not None:
+                self.notify.debug('destroying %s %s' % (
+                    self.getEntityType(entId), entId))
+                # this removes the entId from self.createdEntIds
+                # in order to support editor-based entity removal
+                entity.destroy()
+            else:
+                self.notify.warning('trying to destroy entity %s, but '
+                                    'it is already gone' % entId)
+                self.createdEntIds.pop()
+
     def createAllEntitiesOfType(self, entType):
         """creates all entities of a given type"""
         assert entType in self.entType2ids
@@ -129,7 +139,7 @@ class Level:
         self.onEntityTypePostCreate(entType)
 
     def createEntity(self, entId):
-        assert not self.entities.has_key(entId)
+        assert not entId in self.createdEntIds
         spec = self.levelSpec.getEntitySpec(entId)
         self.notify.debug('creating %s %s' % (spec['type'], entId))
         entity = self.entityCreator.createEntity(entId)
@@ -137,13 +147,13 @@ class Level:
         # it has all of its initial spec data; see 'initializeEntity'
         # below.
         if entity is not None:
-            self.createdEntities.append(entity)
+            self.createdEntIds.append(entId)
 
         # call the create handler
         # we used to do this in initializeEntity, but that did not
         # allow for additional initialization to be performed in
-        # derived entity __init__ funcs
-        # note that now DistributedEntity's are responsible for calling
+        # derived entity __init__ funcs before their presence was announced
+        # Note that now DistributedEntity's are responsible for calling
         # this for themselves
         self.onEntityCreate(entId)
 
@@ -163,7 +173,8 @@ class Level:
             entity.setAttribInit(key, value)
 
         # entity is initialized, add it to the list of entities
-        self.entities[entity.entId] = entity
+        assert not entId in self.entities
+        self.entities[entId] = entity
 
     def getEntity(self, entId):
         return self.entities.get(entId)
@@ -243,17 +254,48 @@ class Level:
         return 'entityDestroy-%s-%s' % (self.levelId, entId)
     def onEntityDestroy(self, entId):
         """Level is about to destroy this entity"""
+        assert entId in self.entities
         # send the entity-destroy event
         messenger.send(self.getEntityDestroyEvent(entId))
 
-    if __debug__:
-        def getAttribChangeEvent(self):
-            return 'attribChange-%s' % self.levelId
+        del self.entities[entId]
+        # if we created this entity, remove its entId from the
+        # createdEntIds list
+        if len(self.createdEntIds) > 0:
+            # most often, we are destroying the entities in reverse order
+            if entId == self.createdEntIds[-1]:
+                self.createdEntIds.pop()
+            elif entId in self.createdEntIds:
+                # this should only happen if someone deleted an entity
+                # with an editor
+                self.createdEntIds.remove(entId)
 
-        # This handler is called immediately after a new attribute value
-        # has been set in the level's spec.
+    if __debug__:
+        # the level generates these events when the spec changes
+        def getAttribChangeEventName(self):
+            return 'attribChange-%s' % self.levelId
+        def getInsertEntityEventName(self):
+            return 'insertEntity-%s' % self.levelId
+        def getRemoveEntityEventName(self):
+            return 'removeEntity-%s' % self.levelId
+        
+        # these handlers are called directly by our levelSpec
         def handleAttribChange(self, entId, attrib, value):
             entity = self.getEntity(entId)
             # the entity might be AI- or client-only
             if entity is not None:
                 entity.handleAttribChange(attrib, value)
+            messenger.send(self.getAttribChangeEventName(),
+                           [entId, attrib, value])
+
+        def handleEntityInsert(self, entId):
+            self.createEntity(entId)
+            messenger.send(self.getInsertEntityEventName(), [entId])
+
+        def handleEntityRemove(self, entId):
+            messenger.send(self.getRemoveEntityEventName(), [entId])
+            # if we didn't create it, don't destroy it (probably a distributed
+            # entity on the client; wait for AI to destroy it)
+            if entId in self.createdEntIds:
+                entity = self.getEntity(entId)
+                entity.destroy()

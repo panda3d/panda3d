@@ -25,6 +25,13 @@ class LevelMgr(Entity):
         ('modelFilename', None),
         )
 
+class EditMgr(Entity):
+    type = 'editMgr'
+    attribs = (
+        ('insertEntity', None),
+        ('removeEntity', None),
+        )
+
 class LogicGate(Entity):
     type = 'logicGate'
     attribs = (

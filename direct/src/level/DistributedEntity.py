@@ -28,7 +28,7 @@ class DistributedEntity(DistributedObject.DistributedObject, Entity.Entity):
         self.entId = entId
 
     def announceGenerate(self):
-        DistributedEntity.notify.debug('announceGenerate')
+        DistributedEntity.notify.debug('announceGenerate (%s)' % self.entId)
 
         # ask our level obj for our spec data
         level = toonbase.tcr.doId2do[self.levelDoId]
@@ -39,8 +39,9 @@ class DistributedEntity(DistributedObject.DistributedObject, Entity.Entity):
         DistributedObject.DistributedObject.announceGenerate(self)
 
     def disable(self):
-        DistributedEntity.notify.debug('disable')
+        DistributedEntity.notify.debug('disable (%s)' % self.entId)
         # stop things
+        self.destroy()
 
     def delete(self):
         DistributedEntity.notify.debug('delete')

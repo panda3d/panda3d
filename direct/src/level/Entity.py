@@ -28,6 +28,7 @@ class Entity(DirectObject):
     def destroy(self):
         self.level.onEntityDestroy(self.entId)
         del self.level
+        del self.entId
         
     def privGetSetter(self, attrib):
         setFuncName = 'set%s%s' % (string.upper(attrib[0]), attrib[1:])

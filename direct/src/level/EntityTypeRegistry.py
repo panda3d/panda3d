@@ -47,7 +47,7 @@ class EntityTypeRegistry:
             attribNames.append(desc.getName())
         return attribNames
 
-    def getAttribDescs(self, entityTypeName):
+    def getAttribDescDict(self, entityTypeName):
         """ returns dict of attribName -> attribDescriptor """
         assert entityTypeName in self.typeName2class
         # TODO: precompute this

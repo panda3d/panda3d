@@ -3,6 +3,7 @@
 import EntityCreatorBase
 import BasicEntities
 import DirectNotifyGlobal
+import EditMgr
 import LevelMgr
 import ZoneEntity
 
@@ -20,6 +21,7 @@ class EntityCreator(EntityCreatorBase.EntityCreatorBase):
         EntityCreatorBase.EntityCreatorBase.__init__(self, level)
         self.level = level
         self.privRegisterTypes({
+            'editMgr': EditMgr.EditMgr,
             'levelMgr': LevelMgr.LevelMgr,
             'logicGate': nothing,
             'nodepath': BasicEntities.NodePathEntity,

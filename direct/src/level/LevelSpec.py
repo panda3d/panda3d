@@ -45,7 +45,7 @@ class LevelSpec:
 
                     assert spec.has_key('type')
                     attribNames = entTypeReg.getAttribNames(spec['type'])
-                    attribDescs = entTypeReg.getAttribDescs(spec['type'])
+                    attribDescs = entTypeReg.getAttribDescDict(spec['type'])
 
                     # are there any unknown attribs in the spec?
                     for attrib in spec.keys():
@@ -119,6 +119,9 @@ class LevelSpec:
         return self.specDict['scenarios'][scenario][0]
 
     if __debug__:
+        def setLevel(self, level):
+            self.level = level
+
         def setAttribEditEventName(self, event):
             self.attribEditEventName = event
         def setAttribEdit(self, entId, attrib, value):
@@ -127,54 +130,79 @@ class LevelSpec:
             # with it
             messenger.send(self.attribEditEventName, [entId, attrib, value])
 
-        def setAttribChangeEventName(self, event):
-            self.attribChangeEventName = event
         def setAttribChange(self, entId, attrib, value):
             specDict = self.entId2specDict[entId]
             specDict[entId][attrib] = value
-            # locally broadcast the fact that this attribute value has
+            # let the level know that this attribute value has
             # officially changed
-            if self.attribChangeEventName is not None:
-                messenger.send(self.attribChangeEventName,
-                               [entId, attrib, value])
+            self.level.handleAttribChange(entId, attrib, value)
+
+        def insertEntity(self, entId, entType, parentEntId):
+            assert entId not in self.entId2specDict
+            globalEnts = self.privGetGlobalEntityDict()
+            self.entId2specDict[entId] = globalEnts
+
+            # create a new entity spec entry w/ default values
+            globalEnts[entId] = {}
+            spec = globalEnts[entId]
+            attribDescs = self.entTypeReg.getAttribDescDict(entType)
+            for name, desc in attribDescs.items():
+                spec[name] = desc.getDefaultValue()
+            spec['type'] = entType
+            if 'parent' in spec:
+                spec['parent'] = parentEntId
+
+            # notify the level
+            self.level.handleEntityInsert(entId)
+            
+        def removeEntity(self, entId):
+            assert entId in self.entId2specDict
+            # notify the level
+            self.level.handleEntityRemove(entId)
+            # remove the entity's spec
+            dict = self.entId2specDict[entId]
+            del dict[entId]
+            del self.entId2specDict[entId]
 
         def getSpecImportsModuleName(self):
             # name of module that should be imported by spec py file
             return 'SpecImports'
 
-        def saveToDisk(self, filename=None):
+        def saveToDisk(self, filename=None, createBackup=1):
             """returns zero on failure"""
             import os
 
             if filename is None:
                 filename = self.filename
 
-            # create a backup
-            try:
-                # does the file exist?
-                exists = 0
+            if createBackup:
+                # create a backup
                 try:
-                    os.stat(filename)
-                    exists = 1
-                except OSError:
-                    pass
-                if exists:
-                    def getBackupFilename(num, filename=filename):
-                        return '%s.%03i' % (filename, num)
-                    numBackups = 50
+                    # does the file exist?
+                    exists = 0
                     try:
-                        os.unlink(getBackupFilename(numBackups-1))
+                        os.stat(filename)
+                        exists = 1
                     except OSError:
                         pass
-                    for i in range(numBackups-1,0,-1):
+                    if exists:
+                        def getBackupFilename(num, filename=filename):
+                            return '%s.%03i' % (filename, num)
+                        numBackups = 100
                         try:
-                            os.rename(getBackupFilename(i-1),
-                                      getBackupFilename(i))
+                            os.unlink(getBackupFilename(numBackups-1))
                         except OSError:
                             pass
-                    os.rename(filename, getBackupFilename(0))
-            except OSError, e:
-                LevelSpec.notify.warning('error during backup: %s' % str(e))
+                        for i in range(numBackups-1,0,-1):
+                            try:
+                                os.rename(getBackupFilename(i-1),
+                                          getBackupFilename(i))
+                            except OSError:
+                                pass
+                        os.rename(filename, getBackupFilename(0))
+                except OSError, e:
+                    LevelSpec.notify.warning(
+                        'error during backup: %s' % str(e))
 
             retval = 1
             # wb to create a UNIX-format file
@@ -216,7 +244,7 @@ class LevelSpec:
                     result.extend(elements)
                     return result
    
-                firstTypes = ('levelMgr', 'zone',)
+                firstTypes = ('levelMgr', 'editMgr', 'zone',)
                 firstAttribs = ('type', 'name', 'comment', 'parent',
                                 'pos', 'x', 'y', 'z',
                                 'hpr', 'h', 'p', 'r',
