@@ -435,6 +435,7 @@ write_datagram(BamWriter *manager, Datagram &me)
   me.add_bool(has_pbuffer);
   if (has_pbuffer) {
     me.add_uint8(_pbuffer->get_format());
+    me.add_uint8(_pbuffer->get_num_components());
   }
 }
 
@@ -469,8 +470,17 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     bool has_pbuffer = scan.get_bool();
     if (has_pbuffer) {
       PixelBuffer::Format format = (PixelBuffer::Format)scan.get_uint8();
+      int num_components = -1;
+      if (scan.get_remaining_size() > 0) {
+	num_components = scan.get_uint8();
+      }
+
       if (_pbuffer != (PixelBuffer *)NULL) {
-	_pbuffer->set_format(format);
+	if (num_components == _pbuffer->get_num_components()) {
+	  // Only reset the format if the number of components hasn't
+	  // changed.
+	  _pbuffer->set_format(format);
+	}
       }
     }
   }

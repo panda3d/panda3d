@@ -63,6 +63,12 @@ bool textures_down_square = false;
 
 BamTextureMode bam_texture_mode;
 
+// Set this to enable a speedy-load mode where you don't care what the
+// world looks like, you just want it to load in minimal time.  This
+// causes all texture loads via the TexturePool to load the same
+// texture file, which will presumably only be loaded once.
+const string fake_texture_image = config_gobj.GetString("fake-texture-image", "");
+
 
 static BamTextureMode
 parse_texture_mode(const string &mode) {
@@ -93,7 +99,7 @@ ConfigureFn(config_gobj) {
 
   } else {
     textures_up_power_2 = false;
-    textures_down_power_2 = config_gobj.GetBool("textures-power-2", false);
+    textures_down_power_2 = config_gobj.GetBool("textures-power-2", true);
   }
 
   string textures_square = config_gobj.GetString("textures-square", "");

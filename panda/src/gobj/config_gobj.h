@@ -24,6 +24,7 @@ enum BamTextureMode {
   BTM_basename
 };
 extern EXPCL_PANDA BamTextureMode bam_texture_mode;
+extern EXPCL_PANDA const string fake_texture_image;
 
 #endif
 

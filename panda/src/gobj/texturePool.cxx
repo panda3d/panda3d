@@ -18,6 +18,10 @@ TexturePool *TexturePool::_global_ptr = (TexturePool *)NULL;
 ////////////////////////////////////////////////////////////////////
 bool TexturePool::
 ns_has_texture(Filename filename) {
+  if (!fake_texture_image.empty()) {
+    filename = fake_texture_image;
+  }
+
   filename.resolve_filename(get_texture_path());
   filename.resolve_filename(get_model_path());
 
@@ -38,6 +42,10 @@ ns_has_texture(Filename filename) {
 ////////////////////////////////////////////////////////////////////
 Texture *TexturePool::
 ns_load_texture(Filename filename) {
+  if (!fake_texture_image.empty()) {
+    filename = fake_texture_image;
+  }
+
   filename.resolve_filename(get_texture_path());
   filename.resolve_filename(get_model_path());
 
@@ -68,6 +76,10 @@ ns_load_texture(Filename filename) {
 ////////////////////////////////////////////////////////////////////
 Texture *TexturePool::
 ns_load_texture(Filename filename, Filename grayfilename) {
+  if (!fake_texture_image.empty()) {
+    return ns_load_texture(fake_texture_image);
+  }
+
   filename.resolve_filename(get_texture_path());
   filename.resolve_filename(get_model_path());
 
