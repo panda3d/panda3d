@@ -1,6 +1,19 @@
 // Filename: factory.h
 // Created by:  drose (08May00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef FACTORY_H
@@ -33,14 +46,14 @@ class Factory : public FactoryBase {
 public:
   typedef Type *CreateFunc(const FactoryParams &params);
 
-  INLINE Type *make_instance(TypeHandle handle, 
+  INLINE Type *make_instance(TypeHandle handle,
                              const FactoryParams &params = FactoryParams());
 
   INLINE Type *make_instance(const string &type_name,
                              const FactoryParams &params = FactoryParams());
 
   INLINE Type *
-  make_instance_more_general(TypeHandle handle, 
+  make_instance_more_general(TypeHandle handle,
                              const FactoryParams &params = FactoryParams());
 
   INLINE Type *

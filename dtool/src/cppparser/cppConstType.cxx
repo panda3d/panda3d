@@ -1,6 +1,19 @@
-// Filename: cppConstType.C
+// Filename: cppConstType.cxx
 // Created by:  drose (28Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -9,7 +22,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPConstType::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPConstType::
 CPPConstType(CPPType *wrapped_around) :
@@ -28,17 +41,17 @@ CPPConstType(CPPType *wrapped_around) :
 ////////////////////////////////////////////////////////////////////
 bool CPPConstType::
 is_fully_specified() const {
-  return CPPType::is_fully_specified() && 
+  return CPPType::is_fully_specified() &&
     _wrapped_around->is_fully_specified();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPConstType::substitute_decl
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPConstType::
-substitute_decl(CPPDeclaration::SubstDecl &subst, 
+substitute_decl(CPPDeclaration::SubstDecl &subst,
                 CPPScope *current_scope, CPPScope *global_scope) {
   SubstDecl::const_iterator si = subst.find(this);
   if (si != subst.end()) {
@@ -46,7 +59,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   }
 
   CPPConstType *rep = new CPPConstType(*this);
-  rep->_wrapped_around = 
+  rep->_wrapped_around =
     _wrapped_around->substitute_decl(subst, current_scope, global_scope)
     ->as_type();
 
@@ -114,7 +127,7 @@ is_equivalent(const CPPType &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPConstType::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPConstType::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
@@ -134,14 +147,14 @@ void CPPConstType::
 output_instance(ostream &out, int indent_level, CPPScope *scope,
                 bool complete, const string &prename,
                 const string &name) const {
-  _wrapped_around->output_instance(out, indent_level, scope, complete, 
+  _wrapped_around->output_instance(out, indent_level, scope, complete,
                                    "const " + prename, name);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPConstType::get_subtype
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration::SubType CPPConstType::
 get_subtype() const {
@@ -151,7 +164,7 @@ get_subtype() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPConstType::as_const_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPConstType *CPPConstType::
 as_const_type() {

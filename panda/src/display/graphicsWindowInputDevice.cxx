@@ -1,14 +1,27 @@
 // Filename: graphicsWindowInputDevice.cxx
 // Created by:  drose (24May00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "graphicsWindowInputDevice.h"
 #include <mouseButton.h>
 #include <keyboardButton.h>
 
-#define EXPCL EXPCL_PANDA 
-#define EXPTP EXPTP_PANDA 
+#define EXPCL EXPCL_PANDA
+#define EXPTP EXPTP_PANDA
 #define TYPE GraphicsWindowInputDevice
 #define NAME vector_GraphicsWindowInputDevice
 
@@ -74,7 +87,7 @@ pointer_and_keyboard(const string &name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindowInputDevice::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsWindowInputDevice::
 GraphicsWindowInputDevice(const GraphicsWindowInputDevice &copy) :
@@ -88,7 +101,7 @@ GraphicsWindowInputDevice(const GraphicsWindowInputDevice &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindowInputDevice::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
 operator = (const GraphicsWindowInputDevice &copy) {
@@ -101,7 +114,7 @@ operator = (const GraphicsWindowInputDevice &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindowInputDevice::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsWindowInputDevice::
 ~GraphicsWindowInputDevice() {

@@ -2,6 +2,19 @@
 // Created by:  drose (26Oct98)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef NODERELATION_H
 #define NODERELATION_H
@@ -128,8 +141,8 @@ public:
   INLINE_GRAPH static void register_with_factory();
 
 protected:
-  INLINE_GRAPH static Factory<NodeRelation> &get_factory(); 
- 
+  INLINE_GRAPH static Factory<NodeRelation> &get_factory();
+
 private:
   static NodeRelation *make_arc(const FactoryParams &params);
   static Factory<NodeRelation> *_factory;
@@ -177,8 +190,8 @@ private:
 
 public:
   static void register_with_read_factory(void);
-  virtual void write_datagram(BamWriter* manager, Datagram &me);  
-  virtual int complete_pointers(vector_typedWritable &plist, 
+  virtual void write_datagram(BamWriter* manager, Datagram &me);
+  virtual int complete_pointers(vector_typedWritable &plist,
                                 BamReader *manager);
 
   static TypedWritable *make_NodeRelation(const FactoryParams &params);
@@ -188,7 +201,7 @@ protected:
 
 private:
   //This value is only used for the process of re-construction
-  //from a binary source. DO NOT ACCESS.  The value is only 
+  //from a binary source. DO NOT ACCESS.  The value is only
   //guaranteed to be accurate during that process
   int _num_transitions;
 

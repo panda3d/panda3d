@@ -1,6 +1,19 @@
 // Filename: collisionHandlerFloor.cxx
 // Created by:  drose (04Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "collisionHandlerFloor.h"
@@ -15,7 +28,7 @@ TypeHandle CollisionHandlerFloor::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerFloor::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CollisionHandlerFloor::
 CollisionHandlerFloor() {
@@ -26,7 +39,7 @@ CollisionHandlerFloor() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerFloor::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CollisionHandlerFloor::
 ~CollisionHandlerFloor() {
@@ -54,7 +67,7 @@ handle_entries() {
       // it this CollisionHandler pointer--but they didn't tell us
       // about the node.
       collide_cat.error()
-        << "CollisionHandlerFloor doesn't know about " 
+        << "CollisionHandlerFloor doesn't know about "
         << *from_node << "\n";
 
     } else {
@@ -94,7 +107,7 @@ handle_entries() {
         }
 
         if (adjust < 0.0 && _max_velocity != 0.0) {
-          float max_adjust = 
+          float max_adjust =
             _max_velocity * ClockObject::get_global_clock()->get_dt();
           adjust = max(adjust, -max_adjust);
         }

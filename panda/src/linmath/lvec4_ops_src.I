@@ -1,38 +1,51 @@
 // Filename: lvec4_ops_src.I
 // Created by:  drose (08Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: scalar * LVecBase4
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVecBase4) 
+INLINE_LINMATH FLOATNAME(LVecBase4)
 operator * (FLOATTYPE scalar, const FLOATNAME(LVecBase4) &a) {
   return a * scalar;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: scalar * LPoint4
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LPoint4) 
+INLINE_LINMATH FLOATNAME(LPoint4)
 operator * (FLOATTYPE scalar, const FLOATNAME(LPoint4) &a) {
   return a * scalar;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: scalar * LVector4
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LVector4) 
+INLINE_LINMATH FLOATNAME(LVector4)
 operator * (FLOATTYPE scalar, const FLOATNAME(LVector4) &a) {
   return a * scalar;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: dot product of LVecBase4
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 
 INLINE_LINMATH FLOATTYPE
@@ -42,7 +55,7 @@ dot(const FLOATNAME(LVecBase4) &a, const FLOATNAME(LVecBase4) &b) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: length of a vector
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 
 INLINE_LINMATH FLOATTYPE

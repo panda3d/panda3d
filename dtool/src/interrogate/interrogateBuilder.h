@@ -1,6 +1,19 @@
 // Filename: interrogateBuilder.h
 // Created by:  drose (01Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef INTERROGATEBUILDER_H
@@ -56,7 +69,7 @@ public:
 private:
   typedef set<string> Commands;
   typedef map<string, string> CommandParams;
-  void insert_param_list(InterrogateBuilder::Commands &commands, 
+  void insert_param_list(InterrogateBuilder::Commands &commands,
                          const string &params);
 
   bool in_forcetype(const string &name) const;
@@ -75,7 +88,7 @@ private:
   void scan_struct_type(CPPStructType *type);
   void scan_enum_type(CPPEnumType *type);
   void scan_manifest(CPPManifest *manifest);
-  ElementIndex scan_element(CPPInstance *element, CPPStructType *struct_type, 
+  ElementIndex scan_element(CPPInstance *element, CPPStructType *struct_type,
                             CPPScope *scope);
 
   FunctionIndex get_getter(CPPType *expr_type, string expression,
@@ -93,9 +106,9 @@ private:
                const string &expression = string());
 
   void make_wrappers();
-  FunctionWrapperIndex 
-  get_wrapper(FunctionIndex function_index, 
-              WrapperBuilder *wbuilder, CPPInstance *function, 
+  FunctionWrapperIndex
+  get_wrapper(FunctionIndex function_index,
+              WrapperBuilder *wbuilder, CPPInstance *function,
               string description, CPPStructType *struct_type, CPPScope *scope,
               WrapperBuilder::Type wtype, const string &expression,
               int num_default_parameters);
@@ -112,14 +125,14 @@ private:
                              CPPScope *scope);
   void define_method(CPPFunctionGroup *fgroup, InterrogateType &itype,
                      CPPStructType *struct_type, CPPScope *scope);
-  void define_method(CPPInstance *function, InterrogateType &itype, 
+  void define_method(CPPInstance *function, InterrogateType &itype,
                      CPPStructType *struct_type, CPPScope *scope);
   void define_enum_type(InterrogateType &itype, CPPEnumType *cpptype);
-  void define_extension_type(InterrogateType &itype, 
+  void define_extension_type(InterrogateType &itype,
                              CPPExtensionType *cpptype);
 
   void hash_function_signature(WrapperBuilder *wbuilder);
-  string hash_string(const string &name, 
+  string hash_string(const string &name,
                      int additional_number = 0,
                      int shift_offset = 5);
 

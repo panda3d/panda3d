@@ -2,6 +2,19 @@
 // Created by:  drose (15Feb99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef RIBGRAPHICSSTATEGUARDIAN_H
 #define RIBGRAPHICSSTATEGUARDIAN_H
@@ -42,7 +55,7 @@ public:
   virtual void render_frame(const AllAttributesWrapper &initial_state);
   virtual void render_scene(Node *root, ProjectionNode *projnode,
                             const AllAttributesWrapper &initial_state);
-  virtual void render_subgraph(RenderTraverser *traverser, 
+  virtual void render_subgraph(RenderTraverser *traverser,
                                Node *subgraph, ProjectionNode *projnode,
                                const AllAttributesWrapper &initial_state,
                                const AllTransitionsWrapper &net_trans);
@@ -117,27 +130,27 @@ protected:
   virtual void restore_frame_buffer(SavedFrameBuffer *frame_buffer);
 
   void set_color(const RGBColorf &color);
- 
+
   void get_rib_stuff(Node *root, const AllAttributesWrapper &initial_state);
   void define_texture(const Texture *tex);
   void define_light(const Light *light);
   void write_light_color(const Colorf &color) const;
   void write_light_from(const Node *light) const;
   void write_light_to(const Node *light) const;
- 
+
   ostream &new_line(int extra_indent = 0) const;
   void reset_transform(const LMatrix4f &mat) const;
   void concat_transform(const LMatrix4f &mat) const;
- 
+
   void draw_simple_poly(const Geom *geom);
   void write_polygon(int num_verts);
- 
+
   static void get_color_and_intensity(const RGBColorf &input,
                                       RGBColorf &output,
                                       float &intensity);
 
   RGBColorf _current_color;
- 
+
   string _texture_directory;
   string _texture_extension;
   ostream *_output;
@@ -148,8 +161,8 @@ protected:
   LightIDs _light_ids;
   typedef vector<bool> EnabledLights;
   EnabledLights _enabled_lights;
- 
- 
+
+
 public:
   static GraphicsStateGuardian *
   make_RIBGraphicsStateGuardian(const FactoryParams &params);

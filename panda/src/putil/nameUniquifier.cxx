@@ -1,6 +1,19 @@
 // Filename: nameUniquifier.cxx
 // Created by:  drose (16Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "nameUniquifier.h"
@@ -13,7 +26,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: NameUniquifier::Constructor
 //       Access: Public
-//  Description: Creates a new NameUniquifier.  
+//  Description: Creates a new NameUniquifier.
 //
 //               The separator string is used to separate the original
 //               name (or supplied prefix) and the generated number
@@ -38,7 +51,7 @@ NameUniquifier(const string &separator,
 ////////////////////////////////////////////////////////////////////
 //     Function: NameUniquifier::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NameUniquifier::
 ~NameUniquifier() {

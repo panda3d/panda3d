@@ -1,6 +1,19 @@
 // Filename: materialTransition.cxx
 // Created by:  mike (06Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "materialTransition.h"
@@ -53,7 +66,7 @@ set_value_from(const OnOffTransition *other) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MaterialTransition::compare_values
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int MaterialTransition::
 compare_values(const OnOffTransition *other) const {
@@ -111,7 +124,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
 //     Function: MaterialTransition::complete_pointers
 //       Access: Public
 //  Description: Takes in a vector of pointes to TypedWritable
-//               objects that correspond to all the requests for 
+//               objects that correspond to all the requests for
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int MaterialTransition::
@@ -119,7 +132,7 @@ complete_pointers(vector_typedWritable &plist, BamReader *) {
   if (plist[0] == TypedWritable::Null) {
     if (sgattrib_cat.is_debug()) {
       sgattrib_cat->debug()
-    << get_type().get_name() << " received null Material," 
+    << get_type().get_name() << " received null Material,"
     << " turning off" << endl;
     }
     _value = (const Material *)NULL;

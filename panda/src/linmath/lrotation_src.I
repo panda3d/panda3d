@@ -1,12 +1,25 @@
 // Filename: lrotation_src.I
 // Created by:  frang, charles (23Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LRotation::Default Constructor
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LRotation)::
 FLOATNAME(LRotation)() {
@@ -15,20 +28,20 @@ FLOATNAME(LRotation)() {
 ////////////////////////////////////////////////////////////////////
 //     Function: LRotation::Copy Constructor
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LRotation)::
-FLOATNAME(LRotation)(const FLOATNAME(LQuaternion)& c) : 
+FLOATNAME(LRotation)(const FLOATNAME(LQuaternion)& c) :
   FLOATNAME(LQuaternion)(c) {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LRotation::Constructor
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LRotation)::
-FLOATNAME(LRotation)(FLOATTYPE r, FLOATTYPE i, FLOATTYPE j, FLOATTYPE k) : 
+FLOATNAME(LRotation)(FLOATTYPE r, FLOATTYPE i, FLOATTYPE j, FLOATTYPE k) :
   FLOATNAME(LQuaternion)(r, i, j, k) {
 }
 

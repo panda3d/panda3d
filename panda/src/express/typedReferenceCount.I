@@ -1,28 +1,41 @@
 // Filename: typedReferenceCount.I
 // Created by:  drose (25May00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypedReferenceCount::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TypedReferenceCount::
-TypedReferenceCount() { 
+TypedReferenceCount() {
   MemoryUsage::update_type(this, this);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypedReferenceCount::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TypedReferenceCount::
-TypedReferenceCount(const TypedReferenceCount &copy) : 
-  TypedObject(copy), 
-  ReferenceCount(copy) 
+TypedReferenceCount(const TypedReferenceCount &copy) :
+  TypedObject(copy),
+  ReferenceCount(copy)
 {
   MemoryUsage::update_type(this, this);
 }
@@ -30,7 +43,7 @@ TypedReferenceCount(const TypedReferenceCount &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: TypedReferenceCount::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TypedReferenceCount::
 operator = (const TypedReferenceCount &copy) {

@@ -1,12 +1,25 @@
 // Filename: graphicsWindowInputDevice.I
 // Created by:  drose (24May00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindowInputDevice::Default Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GraphicsWindowInputDevice::
 GraphicsWindowInputDevice() {
@@ -16,7 +29,7 @@ GraphicsWindowInputDevice() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindowInputDevice::get_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE string GraphicsWindowInputDevice::
 get_name() const {
@@ -26,7 +39,7 @@ get_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindowInputDevice::has_pointer
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsWindowInputDevice::
 has_pointer() const {
@@ -36,7 +49,7 @@ has_pointer() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindowInputDevice::has_keyboard
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsWindowInputDevice::
 has_keyboard() const {
@@ -81,9 +94,9 @@ set_pointer_out_of_window() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::operator == 
+//     Function: GraphicsWindowInputDevice::operator ==
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsWindowInputDevice::
 operator == (const GraphicsWindowInputDevice &) const {
@@ -91,9 +104,9 @@ operator == (const GraphicsWindowInputDevice &) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindowInputDevice::operator != 
+//     Function: GraphicsWindowInputDevice::operator !=
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsWindowInputDevice::
 operator != (const GraphicsWindowInputDevice &) const {
@@ -103,7 +116,7 @@ operator != (const GraphicsWindowInputDevice &) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindowInputDevice::operator <
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsWindowInputDevice::
 operator < (const GraphicsWindowInputDevice &) const {

@@ -1,6 +1,19 @@
-// Filename: cppIdentifier.C
+// Filename: cppIdentifier.cxx
 // Created by:  drose (26Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -16,7 +29,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPIdentifier::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPIdentifier::
 CPPIdentifier(const string &name, const CPPFile &file) : _file(file) {
@@ -27,7 +40,7 @@ CPPIdentifier(const string &name, const CPPFile &file) : _file(file) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPIdentifier::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPIdentifier::
 CPPIdentifier(const CPPNameComponent &name) {
@@ -38,7 +51,7 @@ CPPIdentifier(const CPPNameComponent &name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPIdentifier::add_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPIdentifier::
 add_name(const string &name) {
@@ -48,7 +61,7 @@ add_name(const string &name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPIdentifier::add_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPIdentifier::
 add_name(const CPPNameComponent &name) {
@@ -58,7 +71,7 @@ add_name(const CPPNameComponent &name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPIdentifier::Equivalence Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPIdentifier::
 operator == (const CPPIdentifier &other) const {
@@ -75,9 +88,9 @@ operator == (const CPPIdentifier &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CPPIdentifier::Nonequivalence Operator 
+//     Function: CPPIdentifier::Nonequivalence Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPIdentifier::
 operator != (const CPPIdentifier &other) const {
@@ -87,7 +100,7 @@ operator != (const CPPIdentifier &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPIdentifier::Ordering Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPIdentifier::
 operator < (const CPPIdentifier &other) const {
@@ -106,7 +119,7 @@ operator < (const CPPIdentifier &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPIdentifier::is_scoped
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPIdentifier::
 is_scoped() const {
@@ -117,7 +130,7 @@ is_scoped() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPIdentifier::get_simple_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string CPPIdentifier::
 get_simple_name() const {
@@ -127,7 +140,7 @@ get_simple_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPIdentifier::get_local_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string CPPIdentifier::
 get_local_name(CPPScope *scope) const {
@@ -143,7 +156,7 @@ get_local_name(CPPScope *scope) const {
     // Determine the scope of everything up until but not including the
     // last name.
     CPPScope *my_scope = get_scope(scope, NULL);
-    
+
     if (my_scope == NULL) {
       result = get_fully_scoped_name();
     } else if (my_scope == scope) {
@@ -162,7 +175,7 @@ get_local_name(CPPScope *scope) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPIdentifier::get_fully_scoped_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string CPPIdentifier::
 get_fully_scoped_name() const {
@@ -219,7 +232,7 @@ is_tbd() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPIdentifier::get_scope
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPScope *CPPIdentifier::
 get_scope(CPPScope *current_scope, CPPScope *global_scope,
@@ -263,7 +276,7 @@ get_scope(CPPScope *current_scope, CPPScope *global_scope,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPIdentifier::get_scope
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPScope *CPPIdentifier::
 get_scope(CPPScope *current_scope, CPPScope *global_scope,
@@ -339,7 +352,7 @@ find_type(CPPScope *current_scope, CPPScope *global_scope,
     if (type != NULL) {
       if (!type->is_incomplete() || force_instantiate) {
         type = type->instantiate(_names.back().get_templ(),
-                                 current_scope, global_scope, 
+                                 current_scope, global_scope,
                                  error_sink)->as_type();
 
         // If we ended up with another template, instantiate later.
@@ -380,9 +393,9 @@ find_type(CPPScope *current_scope, CPPScope *global_scope,
     if (is_fully_specified()) {
       // If our identifier fully specifies the instantiation, then
       // apply it.
-      CPPDeclaration *decl = 
+      CPPDeclaration *decl =
         type->instantiate(_names.back().get_templ(),
-                          current_scope, global_scope, 
+                          current_scope, global_scope,
                           error_sink);
       assert(decl != NULL);
       CPPType *new_type = decl->as_type();
@@ -398,7 +411,7 @@ find_type(CPPScope *current_scope, CPPScope *global_scope,
       type = CPPType::new_type(new CPPTBDType((CPPIdentifier *)this));
     }
     //    type->_file.replace_nearer(_file);
-  }    
+  }
   return type;
 }
 
@@ -406,7 +419,7 @@ find_type(CPPScope *current_scope, CPPScope *global_scope,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPIdentifier::find_symbol
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPIdentifier::
 find_symbol(CPPScope *current_scope, CPPScope *global_scope,
@@ -428,7 +441,7 @@ find_symbol(CPPScope *current_scope, CPPScope *global_scope,
         sym = CPPType::new_type(new CPPTBDType((CPPIdentifier *)this));
       } else {
         // Instantiate the symbol.
-        sym = sym->instantiate(_names.back().get_templ(), current_scope, 
+        sym = sym->instantiate(_names.back().get_templ(), current_scope,
                                global_scope, error_sink);
       }
     }
@@ -440,7 +453,7 @@ find_symbol(CPPScope *current_scope, CPPScope *global_scope,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPIdentifier::find_template
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPIdentifier::
 find_template(CPPScope *current_scope, CPPScope *global_scope,
@@ -455,7 +468,7 @@ find_template(CPPScope *current_scope, CPPScope *global_scope,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPIdentifier::find_scope
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPScope *CPPIdentifier::
 find_scope(CPPScope *current_scope, CPPScope *global_scope,
@@ -471,7 +484,7 @@ find_scope(CPPScope *current_scope, CPPScope *global_scope,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPIdentifier::substitute_decl
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPIdentifier *CPPIdentifier::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
@@ -500,7 +513,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPIdentifier::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPIdentifier::
 output(ostream &out, CPPScope *scope) const {
@@ -515,7 +528,7 @@ output(ostream &out, CPPScope *scope) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPIdentifier::output_local_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPIdentifier::
 output_local_name(ostream &out, CPPScope *scope) const {
@@ -529,7 +542,7 @@ output_local_name(ostream &out, CPPScope *scope) const {
     // Determine the scope of everything up until but not including the
     // last name.
     CPPScope *my_scope = get_scope(scope, NULL);
-    
+
     if (my_scope == NULL) {
       output_fully_scoped_name(out);
     } else {
@@ -541,7 +554,7 @@ output_local_name(ostream &out, CPPScope *scope) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPIdentifier::output_fully_scoped_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPIdentifier::
 output_fully_scoped_name(ostream &out) const {

@@ -1,6 +1,19 @@
-// Filename: interrogate_interface.C
+// Filename: interrogate_interface.cxx
 // Created by:  drose (31Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "interrogate_interface.h"
@@ -74,7 +87,7 @@ interrogate_element_scoped_name(ElementIndex element) {
 }
 
 ElementIndex
-interrogate_get_element_by_name(const char *element_name) { 
+interrogate_get_element_by_name(const char *element_name) {
   return InterrogateDatabase::get_ptr()->lookup_element_by_name(element_name);
 }
 

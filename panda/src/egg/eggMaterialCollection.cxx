@@ -1,6 +1,19 @@
 // Filename: eggMaterialCollection.cxx
 // Created by:  drose (30Apr01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggMaterialCollection.h"
@@ -15,7 +28,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMaterialCollection::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggMaterialCollection::
 EggMaterialCollection() {
@@ -24,7 +37,7 @@ EggMaterialCollection() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMaterialCollection::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggMaterialCollection::
 EggMaterialCollection(const EggMaterialCollection &copy) :
@@ -36,7 +49,7 @@ EggMaterialCollection(const EggMaterialCollection &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMaterialCollection::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggMaterialCollection &EggMaterialCollection::
 operator = (const EggMaterialCollection &copy) {
@@ -48,7 +61,7 @@ operator = (const EggMaterialCollection &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMaterialCollection::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggMaterialCollection::
 ~EggMaterialCollection() {
@@ -104,8 +117,8 @@ insert_materials(EggGroupNode *node) {
 EggGroupNode::iterator EggMaterialCollection::
 insert_materials(EggGroupNode *node, EggGroupNode::iterator position) {
   OrderedMaterials::iterator oti;
-  for (oti = _ordered_materials.begin(); 
-       oti != _ordered_materials.end(); 
+  for (oti = _ordered_materials.begin();
+       oti != _ordered_materials.end();
        ++oti) {
     EggMaterial *material = (*oti);
     position = node->insert(position, material);
@@ -163,7 +176,7 @@ find_used_materials(EggNode *node) {
 
   } else if (node->is_of_type(EggGroupNode::get_class_type())) {
     EggGroupNode *group = DCAST(EggGroupNode, node);
-    
+
     EggGroupNode::iterator ci;
     for (ci = group->begin(); ci != group->end(); ++ci) {
       EggNode *child = *ci;
@@ -246,8 +259,8 @@ collapse_equivalent_materials(int eq, EggMaterialCollection::MaterialReplacement
   // First, put all of the materials into the Collapser structure, to
   // find out the unique materials.
   OrderedMaterials::const_iterator oti;
-  for (oti = _ordered_materials.begin(); 
-       oti != _ordered_materials.end(); 
+  for (oti = _ordered_materials.begin();
+       oti != _ordered_materials.end();
        ++oti) {
     EggMaterial *tex = (*oti);
 
@@ -319,15 +332,15 @@ uniquify_mrefs() {
   NameUniquifier nu(".mref", "mref");
 
   OrderedMaterials::const_iterator oti;
-  for (oti = _ordered_materials.begin(); 
-       oti != _ordered_materials.end(); 
+  for (oti = _ordered_materials.begin();
+       oti != _ordered_materials.end();
        ++oti) {
     EggMaterial *tex = (*oti);
 
     tex->set_name(nu.add_name(tex->get_name()));
   }
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMaterialCollection::sort_by_mref
 //       Access: Public
@@ -412,8 +425,8 @@ create_unique_material(const EggMaterial &copy, int eq) {
   // This requires a complete linear traversal, not terribly
   // efficient.
   OrderedMaterials::const_iterator oti;
-  for (oti = _ordered_materials.begin(); 
-       oti != _ordered_materials.end(); 
+  for (oti = _ordered_materials.begin();
+       oti != _ordered_materials.end();
        ++oti) {
     EggMaterial *tex = (*oti);
     if (copy.is_equivalent_to(*tex, eq)) {
@@ -437,8 +450,8 @@ find_mref(const string &mref_name) const {
   // This requires a complete linear traversal, not terribly
   // efficient.
   OrderedMaterials::const_iterator oti;
-  for (oti = _ordered_materials.begin(); 
-       oti != _ordered_materials.end(); 
+  for (oti = _ordered_materials.begin();
+       oti != _ordered_materials.end();
        ++oti) {
     EggMaterial *tex = (*oti);
     if (tex->get_name() == mref_name) {

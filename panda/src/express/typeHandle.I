@@ -1,6 +1,19 @@
 // Filename: typeHandle.I
 // Created by:  drose (22Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "config_express.h"
@@ -24,22 +37,22 @@
 //               previously by another static initializer!
 ////////////////////////////////////////////////////////////////////
 INLINE TypeHandle::
-TypeHandle() { 
+TypeHandle() {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TypeHandle::
-TypeHandle(const TypeHandle &copy) : _index(copy._index) { 
+TypeHandle(const TypeHandle &copy) : _index(copy._index) {
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::Equality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool TypeHandle::
 operator == (const TypeHandle &other) const {
@@ -49,7 +62,7 @@ operator == (const TypeHandle &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::Inequality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool TypeHandle::
 operator != (const TypeHandle &other) const {
@@ -59,7 +72,7 @@ operator != (const TypeHandle &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::Ordering Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool TypeHandle::
 operator < (const TypeHandle &other) const {
@@ -278,7 +291,7 @@ register_dynamic_type(const string &name) {
 }
 INLINE TypeHandle
 register_dynamic_type(const string &name, TypeHandle parent1) {
-  TypeHandle type_handle = 
+  TypeHandle type_handle =
     TypeRegistry::ptr()->register_dynamic_type(name);
   TypeRegistry::ptr()->record_derivation(type_handle, parent1);
   return type_handle;
@@ -286,7 +299,7 @@ register_dynamic_type(const string &name, TypeHandle parent1) {
 INLINE TypeHandle
 register_dynamic_type(const string &name,
                       TypeHandle parent1, TypeHandle parent2) {
-  TypeHandle type_handle = 
+  TypeHandle type_handle =
     TypeRegistry::ptr()->register_dynamic_type(name);
   TypeRegistry::ptr()->record_derivation(type_handle, parent1);
   TypeRegistry::ptr()->record_derivation(type_handle, parent2);
@@ -296,7 +309,7 @@ INLINE TypeHandle
 register_dynamic_type(const string &name,
                       TypeHandle parent1, TypeHandle parent2,
                       TypeHandle parent3) {
-  TypeHandle type_handle = 
+  TypeHandle type_handle =
     TypeRegistry::ptr()->register_dynamic_type(name);
   TypeRegistry::ptr()->record_derivation(type_handle, parent1);
   TypeRegistry::ptr()->record_derivation(type_handle, parent2);
@@ -307,7 +320,7 @@ INLINE TypeHandle
 register_dynamic_type(const string &name,
                       TypeHandle parent1, TypeHandle parent2,
                       TypeHandle parent3, TypeHandle parent4) {
-  TypeHandle type_handle = 
+  TypeHandle type_handle =
     TypeRegistry::ptr()->register_dynamic_type(name);
   TypeRegistry::ptr()->record_derivation(type_handle, parent1);
   TypeRegistry::ptr()->record_derivation(type_handle, parent2);
@@ -324,7 +337,7 @@ register_dynamic_type(const string &name,
 //               support function for _dcast, below.
 ////////////////////////////////////////////////////////////////////
 template<class WantType>
-INLINE TypeHandle 
+INLINE TypeHandle
 _dcast_get_typehandle(WantType *) {
   TypeHandle handle = WantType::get_class_type();
   if (handle == TypeHandle::none()) {
@@ -353,7 +366,7 @@ _dcast(WantType *, TypedObject *ptr) {
 #ifndef NDEBUG
   TypeHandle want_handle = _dcast_get_typehandle((WantType *)0);
  #if defined(_DEBUG) && defined(_WIN32)
-  if ((ptr == (TypedObject *)NULL) || IsBadWritePtr(ptr,sizeof(TypedObject))) { 
+  if ((ptr == (TypedObject *)NULL) || IsBadWritePtr(ptr,sizeof(TypedObject))) {
  #else
   if (ptr == (TypedObject *)NULL) {
  #endif

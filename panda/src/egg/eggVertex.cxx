@@ -1,6 +1,19 @@
 // Filename: eggVertex.cxx
 // Created by:  drose (16Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggVertex.h"
@@ -24,7 +37,7 @@ TypeHandle EggVertex::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggVertex::
 EggVertex() {
@@ -42,7 +55,7 @@ EggVertex() {
 //               pool, index number, and group membership.
 ////////////////////////////////////////////////////////////////////
 EggVertex::
-EggVertex(const EggVertex &copy) 
+EggVertex(const EggVertex &copy)
   : EggObject(copy), EggAttributes(copy),
     _dxyzs(copy._dxyzs),
     _pos(copy._pos),
@@ -78,7 +91,7 @@ operator = (const EggVertex &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggVertex::
 ~EggVertex() {
@@ -153,7 +166,7 @@ write(ostream &out, int indent_level) const {
   if (!_gref.empty()) {
     // We need to build a list of group entries.
     set<GroupRefEntry> gre;
-    
+
     GroupRef::const_iterator gi;
     for (gi = _gref.begin(); gi != _gref.end(); ++gi) {
       gre.insert(GroupRefEntry(*gi, (*gi)->get_vertex_membership(this)));
@@ -405,7 +418,7 @@ test_pref_integrity() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertex::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void EggVertex::
 output(ostream &out) const {

@@ -1,6 +1,19 @@
-// Filename: cppNamespace.C
+// Filename: cppNamespace.cxx
 // Created by:  drose (16Nov99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -12,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPNamespace::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPNamespace::
 CPPNamespace(CPPIdentifier *ident, CPPScope *scope, const CPPFile &file) :
@@ -24,7 +37,7 @@ CPPNamespace(CPPIdentifier *ident, CPPScope *scope, const CPPFile &file) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPNamespace::get_simple_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string CPPNamespace::
 get_simple_name() const {
@@ -37,7 +50,7 @@ get_simple_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPNamespace::get_local_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string CPPNamespace::
 get_local_name(CPPScope *scope) const {
@@ -50,7 +63,7 @@ get_local_name(CPPScope *scope) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPNamespace::get_fully_scoped_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string CPPNamespace::
 get_fully_scoped_name() const {
@@ -63,7 +76,7 @@ get_fully_scoped_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPNamespace::get_scope
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPScope *CPPNamespace::
 get_scope() const {
@@ -73,7 +86,7 @@ get_scope() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPNamespace::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPNamespace::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
@@ -96,7 +109,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPNamespace::get_subtype
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration::SubType CPPNamespace::
 get_subtype() const {
@@ -106,7 +119,7 @@ get_subtype() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPNamespace::as_namespace
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPNamespace *CPPNamespace::
 as_namespace() {

@@ -1,6 +1,19 @@
 // Filename: get_rel_pos.cxx
 // Created by:  drose (18Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "get_rel_pos.h"
@@ -52,7 +65,7 @@ get_rel_rot_mat(const Node *node, const Node *relative_to,
 //  Description: Returns the relative scale between the indicated node
 //               and the other node.
 ////////////////////////////////////////////////////////////////////
-LVecBase3f 
+LVecBase3f
 get_rel_scale(const Node *node, const Node *relative_to,
               TypeHandle graph_type) {
   NodeTransitionWrapper ntw(TransformTransition::get_class_type());

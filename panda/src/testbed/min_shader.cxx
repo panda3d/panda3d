@@ -1,6 +1,19 @@
 // Filename: min_shader.cxx
 // Created by:  jason (28Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 //Shaders
@@ -332,7 +345,7 @@ void Tiledviz::Flush(void) {
 
     d = layer->get_dr(count);
     (*pbi)->draw(g, d, r);
-    
+
      ++count;
     if (count == layer->get_num_drs()) {
       count = 0;
@@ -412,7 +425,7 @@ void event_s(CPT_Event) {
 //       Access: Public
 //  Description: Toggle projected shadows
 ////////////////////////////////////////////////////////////////////
-void event_d(CPT_Event) 
+void event_d(CPT_Event)
 {
   static bool projtex_shadow_mode = false;
 
@@ -422,8 +435,8 @@ void event_d(CPT_Event)
     clear_shader(room_arc, proj_shadow);
     set_alt_trackball(NULL);
 
-  } 
-  else 
+  }
+  else
   {
     set_shader(room_arc, proj_shadow);
     set_alt_trackball(tex_spot_trackball);
@@ -436,15 +449,15 @@ void event_d(CPT_Event)
 //       Access: Public
 //  Description: Toggle planar reflection
 ////////////////////////////////////////////////////////////////////
-void event_r(CPT_Event) 
+void event_r(CPT_Event)
 {
   static bool plane_reflect_mode = false;
-    
+
   plane_reflect_mode = !plane_reflect_mode;
   if (!plane_reflect_mode) {
     // Set the normal mode on the render arc.
-    clear_shader(room_arc, preflect);  
-  } 
+    clear_shader(room_arc, preflect);
+  }
   else
   {
     // Set an override on the initial state.
@@ -531,7 +544,7 @@ void event_o(CPT_Event) {
 ////////////////////////////////////////////////////////////////////
 //     Function: setup_projtex
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void setup_projtex(void)
 {
@@ -566,25 +579,25 @@ void setup_projtex(void)
 #define DISPLAY_TEXPROJFRUST
 #ifdef DISPLAY_TEXPROJFRUST
   // Display a wireframe representation of the texture projector frustum
-  GeomLine* proj_geom = 
+  GeomLine* proj_geom =
         (GeomLine *)tex_proj->get_projection()->make_geometry();
   GeomNode* proj_geom_node = new GeomNode("proj_geometry");
   proj_geom_node->add_geom(proj_geom);
   RenderRelation *prr = new RenderRelation(tex_proj, proj_geom_node);
   LightTransition *plt = new LightTransition(LightTransition::all_off());
-  prr->set_transition(plt);  
+  prr->set_transition(plt);
 #endif
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: setup_spotlight
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void setup_spotlight(void)
 {
   // Create a projected texture spotlight shader
-  tex_proj_spot = new Spotlight("tex_proj_spotlight"); 
+  tex_proj_spot = new Spotlight("tex_proj_spotlight");
   //Push out the far clipping plane of the spotlight frustum
   Frustumf f;
   f.make_perspective(45.0f, 45.0f, f._fnear, 13);
@@ -619,13 +632,13 @@ void setup_spotlight(void)
 #ifdef DISPLAY_TEXPROJSPOTFRUST
   // Display a wireframe representation of the spotlight frustum
   Colorf color_red(1., 0., 0., 1.);
-  GeomLine* frust_geom = 
+  GeomLine* frust_geom =
         (GeomLine *)tex_proj_spot->get_projection()->make_geometry(color_red);
   GeomNode* frust_geom_node = new GeomNode("frustum_geometry");
   frust_geom_node->add_geom(frust_geom);
   RenderRelation *rr = new RenderRelation(tex_proj_spot, frust_geom_node);
   LightTransition *lt = new LightTransition(LightTransition::all_off());
-  rr->set_transition(lt);  
+  rr->set_transition(lt);
 #endif
 
 #define DISPLAY_SHAFT
@@ -639,7 +652,7 @@ void setup_spotlight(void)
 ////////////////////////////////////////////////////////////////////
 //     Function: setup_planar
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void setup_planar(void)
 {
@@ -653,7 +666,7 @@ void setup_planar(void)
 ////////////////////////////////////////////////////////////////////
 //     Function: setup_projshadow
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void setup_projshadow(void)
 {
@@ -673,25 +686,25 @@ void setup_projshadow(void)
 ////////////////////////////////////////////////////////////////////
 //     Function: setup_vizes
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void setup_vizes(void)
 {
   // and now for some multipass partial visualization
   Shader::Visualize* v = Shader::get_viz();
   std::string viztype = min_shader.GetString("multipass-viz", "none");
-  
- if (viztype == "old-style") 
+
+ if (viztype == "old-style")
   {
     PT(GraphicsWindow) w(main_win);
     v = new Oldviz(w);
-  } 
-  else if (viztype == "new-single") 
+  }
+  else if (viztype == "new-single")
   {
     PT(GraphicsPipe) p(((GraphicsPipe*)(main_win->get_pipe())));
     v = new Viztex(p);
-  } 
-  else if (viztype == "new-tile") 
+  }
+  else if (viztype == "new-tile")
   {
     PT(GraphicsPipe) p(((GraphicsPipe*)(main_win->get_pipe())));
     v = new Tiledviz(p);
@@ -752,7 +765,7 @@ void min_shader_keys(EventHandler &eh) {
   // Load the room file
   PT_NamedNode room = DCAST(NamedNode, loader.load_sync("big-room.egg"));
   if (room != (NamedNode *)NULL) {
-    room_arc = new RenderRelation(render, room, 20); 
+    room_arc = new RenderRelation(render, room, 20);
 
     sreflect->add_caster(room);
   }
@@ -774,15 +787,15 @@ void min_shader_keys(EventHandler &eh) {
   PT_NamedNode smiley = DCAST(NamedNode, loader.load_sync("smiley.egg"));
   if (jack != (NamedNode *)NULL) {
     smiley_arc = new RenderRelation(render, smiley);
-    
+
     proj_shadow->add_caster(smiley);
     preflect->add_caster(smiley);
   }
 
   // Load up a camera model to visualize our eyepoint.
-  PT_NamedNode camera_model = DCAST(NamedNode, loader.load_sync("camera.egg"));  
+  PT_NamedNode camera_model = DCAST(NamedNode, loader.load_sync("camera.egg"));
   if (camera_model != (NamedNode *)NULL) {
-    camera_model_arc = new RenderRelation(cameras, camera_model); 
+    camera_model_arc = new RenderRelation(cameras, camera_model);
 
     sreflect->add_caster(camera_model);
     proj_shadow->add_caster(camera_model);

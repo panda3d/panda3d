@@ -2,6 +2,19 @@
 // Created by:  drose (20Jan99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef EGGDATA_H
 #define EGGDATA_H
@@ -36,7 +49,7 @@ public:
   INLINE EggData(const EggData &copy);
   INLINE EggData &operator = (const EggData &copy);
 
-  static bool resolve_egg_filename(Filename &egg_filename, 
+  static bool resolve_egg_filename(Filename &egg_filename,
                                    const DSearchPath &searchpath = DSearchPath());
 
   bool read(Filename filename);
@@ -82,7 +95,7 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
- 
+
 private:
   static TypeHandle _type_handle;
 };

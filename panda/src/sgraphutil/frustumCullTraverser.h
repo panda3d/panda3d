@@ -1,6 +1,19 @@
 // Filename: frustumCullTraverser.h
 // Created by:  drose (14Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef FRUSTUMCULLTRAVERSER_H
@@ -37,23 +50,23 @@ public:
   typedef TYPENAME Visitor::TransitionWrapper TransitionWrapper;
   typedef TYPENAME Visitor::AttributeWrapper AttributeWrapper;
 
-  FrustumCullTraverser(ArcChain &arc_chain, Node *root, 
+  FrustumCullTraverser(ArcChain &arc_chain, Node *root,
                        const LMatrix4f &rel_from_camera, Visitor &visitor,
                        const AttributeWrapper &initial_render_state,
                        const LevelState &initial_level_state,
-                       GraphicsStateGuardian *gsg, 
+                       GraphicsStateGuardian *gsg,
                        TypeHandle graph_type);
 
 protected:
-  void traverse(NodeRelation *arc, 
+  void traverse(NodeRelation *arc,
                 AttributeWrapper render_state,
                 LevelState level_state,
-                PT(GeometricBoundingVolume) local_frustum, 
+                PT(GeometricBoundingVolume) local_frustum,
                 bool all_in);
-  void traverse(Node *node, 
+  void traverse(Node *node,
                 AttributeWrapper &render_state,
                 LevelState &level_state,
-                GeometricBoundingVolume *local_frustum, 
+                GeometricBoundingVolume *local_frustum,
                 bool all_in);
 
   ArcChain &_arc_chain;
@@ -72,13 +85,13 @@ protected:
 // Convenience function.
 template<class Visitor, class AttributeWrapper, class LevelState>
 INLINE void
-fc_traverse(ArcChain &arc_chain, Node *root, 
+fc_traverse(ArcChain &arc_chain, Node *root,
             const LMatrix4f &rel_from_camera, Visitor &visitor,
-            const AttributeWrapper &initial_render_state, 
+            const AttributeWrapper &initial_render_state,
             const LevelState &initial_level_state,
             GraphicsStateGuardian *gsg, TypeHandle graph_type) {
-  FrustumCullTraverser<Visitor, LevelState> 
-    fct(arc_chain, root, rel_from_camera, visitor, initial_render_state, 
+  FrustumCullTraverser<Visitor, LevelState>
+    fct(arc_chain, root, rel_from_camera, visitor, initial_render_state,
         initial_level_state, gsg, graph_type);
 }
 

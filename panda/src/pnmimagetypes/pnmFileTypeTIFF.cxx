@@ -1,6 +1,19 @@
 // Filename: pnmFileTypeTIFF.cxx
 // Created by:  drose (19Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileTypeTIFF.h"
@@ -118,7 +131,7 @@ TypeHandle PNMFileTypeTIFF::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeTIFF::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeTIFF::
 PNMFileTypeTIFF() {
@@ -227,10 +240,10 @@ make_writer(FILE *file, bool owns_file) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeTIFF::Reader::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeTIFF::Reader::
-Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) : 
+Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
   bool grayscale;
@@ -250,7 +263,7 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   tif = TIFFClientOpen("TIFF file", "r",
                        (thandle_t) _file,
                        StdioReadProc, StdioWriteProc,
-                       (TIFFSeekProc)StdioSeekProc, 
+                       (TIFFSeekProc)StdioSeekProc,
                        StdioCloseProc, StdioSizeProc,
                        StdioMapProc, StdioUnmapProc);
 
@@ -280,7 +293,7 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
       _is_valid = false;
     }
   }
- 
+
   if (_is_valid) {
     (void) TIFFGetField( tif, TIFFTAG_IMAGEWIDTH, &_x_size );
     (void) TIFFGetField( tif, TIFFTAG_IMAGELENGTH, &_y_size );
@@ -329,7 +342,7 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
           numcolors = _maxval + 1;
           if ( numcolors > TIFF_COLORMAP_MAXCOLORS ) {
             pnmimage_tiff_cat.error()
-              << "Cannot read TIFF file with " << numcolors 
+              << "Cannot read TIFF file with " << numcolors
               << " in colormap; max supported is " << TIFF_COLORMAP_MAXCOLORS << "\n";
             _is_valid = false;
           } else {
@@ -397,7 +410,7 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeTIFF::Reader::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeTIFF::Reader::
 ~Reader() {
@@ -470,7 +483,7 @@ read_row(xel *row_data, xelval *alpha_data) {
         }
       }
     break;
-    
+
   case PHOTOMETRIC_MINISWHITE:
     for ( col = 0; col < _x_size; ++col )
       {
@@ -483,7 +496,7 @@ read_row(xel *row_data, xelval *alpha_data) {
         }
       }
     break;
-    
+
   case PHOTOMETRIC_PALETTE:
     for ( col = 0; col < _x_size; ++col )
       {
@@ -495,11 +508,11 @@ read_row(xel *row_data, xelval *alpha_data) {
         }
       }
     break;
-    
+
   case PHOTOMETRIC_RGB:
     for ( col = 0; col < _x_size; ++col ) {
       xelval r, g, b;
-      
+
       NEXTSAMPLE;
       r = sample;
       NEXTSAMPLE;
@@ -510,16 +523,16 @@ read_row(xel *row_data, xelval *alpha_data) {
       if ( spp == 4 ) {
         NEXTSAMPLE;  // Alpha channel
         alpha_data[col] = sample;
-      }  
+      }
     }
     break;
-    
+
   default:
     pnmimage_tiff_cat.error()
       << "Internal error: unsupported photometric " << photomet << "\n";
     return false;
   }
-  
+
   current_row++;
   return true;
 }
@@ -528,7 +541,7 @@ read_row(xel *row_data, xelval *alpha_data) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeTIFF::Writer::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeTIFF::Writer::
 Writer(PNMFileType *type, FILE *file, bool owns_file) :
@@ -563,8 +576,8 @@ write_data(xel *array, xelval *alpha) {
   colorhist_vector chv;
   colorhash_table cht;
   unsigned short
-    red[TIFF_COLORMAP_MAXCOLORS], 
-    grn[TIFF_COLORMAP_MAXCOLORS], 
+    red[TIFF_COLORMAP_MAXCOLORS],
+    grn[TIFF_COLORMAP_MAXCOLORS],
     blu[TIFF_COLORMAP_MAXCOLORS];
   int row, colors, i;
   register int col;
@@ -626,13 +639,13 @@ write_data(xel *array, xelval *alpha) {
   tif = TIFFClientOpen("TIFF file", "w",
                        (thandle_t) _file,
                        StdioReadProc, StdioWriteProc,
-                       (TIFFSeekProc)StdioSeekProc, 
+                       (TIFFSeekProc)StdioSeekProc,
                        StdioCloseProc, StdioSizeProc,
                        StdioMapProc, StdioUnmapProc);
   if ( tif == NULL ) {
     return false;
   }
-  
+
   /* Figure out TIFF parameters. */
   switch ( get_color_type() ) {
   case CT_color:
@@ -690,13 +703,13 @@ write_data(xel *array, xelval *alpha) {
   TIFFSetField( tif, TIFFTAG_PHOTOMETRIC, photometric );
   TIFFSetField( tif, TIFFTAG_FILLORDER, tiff_fillorder );
   //TIFFSetField( tif, TIFFTAG_DOCUMENTNAME, "TIFF Image File");
-  TIFFSetField( tif, TIFFTAG_IMAGEDESCRIPTION, 
+  TIFFSetField( tif, TIFFTAG_IMAGEDESCRIPTION,
                 "Generated via pnmimage.\n" );
   TIFFSetField( tif, TIFFTAG_SAMPLESPERPIXEL, samplesperpixel );
   TIFFSetField( tif, TIFFTAG_ROWSPERSTRIP, tiff_rowsperstrip );
   /* TIFFSetField( tif, TIFFTAG_STRIPBYTECOUNTS, _y_size / tiff_rowsperstrip ); */
   TIFFSetField( tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG );
-  
+
   if ( chv == (colorhist_vector) 0 ) {
     cht = (colorhash_table) 0;
   } else {
@@ -707,7 +720,7 @@ write_data(xel *array, xelval *alpha) {
       blu[i] = (unsigned short) (PPM_GETB( chv[i].color ) * 65535L / _maxval);
     }
     TIFFSetField( tif, TIFFTAG_COLORMAP, red, grn, blu );
-    
+
     /* Convert color vector to color hash table, for fast lookup. */
     cht = ppm_colorhisttocolorhash( chv, colors );
     ppm_freecolorhist( chv );
@@ -752,7 +765,7 @@ write_data(xel *array, xelval *alpha) {
       register int bitshift;
       register unsigned char byte;
       register xelval s;
-      
+
       bigger_maxval = pm_bitstomaxval( bitspersample );
       bitshift = 8 - bitspersample;
       byte = 0;

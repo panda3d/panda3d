@@ -1,6 +1,19 @@
 // Filename: vrpnTrackerDevice.cxx
 // Created by:  drose (25Jan01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "vrpnTrackerDevice.h"
@@ -11,7 +24,7 @@ TypeHandle VrpnTrackerDevice::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: VrpnTrackerDevice::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 VrpnTrackerDevice::
 VrpnTrackerDevice(VrpnClient *client, const string &device_name,
@@ -27,7 +40,7 @@ VrpnTrackerDevice(VrpnClient *client, const string &device_name,
 ////////////////////////////////////////////////////////////////////
 //     Function: VrpnTrackerDevice::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 VrpnTrackerDevice::
 ~VrpnTrackerDevice() {

@@ -1,6 +1,19 @@
 // Filename: pnmFileType.cxx
 // Created by:  drose (15Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileType.h"
@@ -16,7 +29,7 @@ TypeHandle PNMFileType::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileType::Constructor
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileType::
 PNMFileType() {
@@ -25,7 +38,7 @@ PNMFileType() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileType::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileType::
 ~PNMFileType() {

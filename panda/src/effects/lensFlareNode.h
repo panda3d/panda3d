@@ -1,6 +1,19 @@
 // Filename: lensFlareNode.h
 // Created by:  jason (18Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef LENS_FLARE_NODE
@@ -19,12 +32,12 @@
 class GraphicsStateGuardian;
 class ClockObject;
 
-class EXPCL_PANDA LensFlareNode : public Node 
+class EXPCL_PANDA LensFlareNode : public Node
 {
 PUBLISHED:
   INLINE LensFlareNode(void);
-  
-  void add_flare(PT(Texture) flare, PTA_float scales, PTA_float offsets, 
+
+  void add_flare(PT(Texture) flare, PTA_float scales, PTA_float offsets,
                  PTA_float angle_scales, PTA_Colorf colors);
   void add_blind(PT(Texture) blind);
 
@@ -39,10 +52,10 @@ PUBLISHED:
 
 public:
   virtual bool sub_render(const AllAttributesWrapper &attrib,
-                          AllTransitionsWrapper &trans, 
+                          AllTransitionsWrapper &trans,
                           RenderTraverser *trav);
   virtual bool has_sub_render() const;
-  
+
 private:
   typedef vector<PTA_float> vector_Vfloat;
   typedef vector<PTA_Colorf> vector_Vcolorf;
@@ -71,8 +84,8 @@ private:
   /****Internal functions*****/
 
   //Sub-routines that are defined only for code cleanliness
-  void prepare_flares(const LVector3f &delta, const LPoint3f &light, const float &angle); 
-  void prepare_blind(const float &angle, const float &tnear); 
+  void prepare_flares(const LVector3f &delta, const LPoint3f &light, const float &angle);
+  void prepare_blind(const float &angle, const float &tnear);
 
   //All of the geometry for halos and blooms is created the same way.
   //Sparkle geometry is created differently because we cycle through
@@ -80,7 +93,7 @@ private:
 
   void set_geometry(GeomSprite *sprite, const PTA_float &geom_scales,
                     const PTA_float &geom_offsets, const PTA_float &geom_angle_scales,
-                    const PTA_Colorf &geom_colors, const LVector3f &delta, 
+                    const PTA_Colorf &geom_colors, const LVector3f &delta,
                     const LPoint3f &light, const float &angle);
 
 
@@ -91,8 +104,8 @@ private:
 
 public:
   static void register_with_read_factory();
-  virtual void write_datagram(BamWriter *manager, Datagram &me);  
-  virtual int complete_pointers(vector_typedWritable &plist, 
+  virtual void write_datagram(BamWriter *manager, Datagram &me);
+  virtual int complete_pointers(vector_typedWritable &plist,
                                 BamReader *manager);
 
   static TypedWritable *make_LensFlareNode(const FactoryParams &params);
@@ -125,10 +138,10 @@ private:
 
 #endif
 
-/***********OLD SPARKLE CODE.  LEFT IN CASE 
+/***********OLD SPARKLE CODE.  LEFT IN CASE
 public:
-  void add_sparkle(PT_Node source, PT(Texture) sparkle); 
-  void set_sparkles_attributes(PT_Node source, float angle_scale, vector_float scales, 
+  void add_sparkle(PT_Node source, PT(Texture) sparkle);
+  void set_sparkles_attributes(PT_Node source, float angle_scale, vector_float scales,
                                vector_float offsets, vector_Colorf colors);
   void set_sparkle_fps(float fps);
 
@@ -156,7 +169,7 @@ private:
   void prepare_sparkles(vector_relation &arcs, const vector_texture &sparkles,
                         const vector_float &scales, const vector_float &offsets,
                         const vector_Colorf &colors, const LVector3f &delta,
-                        const LPoint3f &light, const BoundingVolume &bound, int &old_sparkle); 
+                        const LPoint3f &light, const BoundingVolume &bound, int &old_sparkle);
 
   //Timing function to control sparkle animation
   int compute_current(int &current_sparkle, vector_texture sparkles);

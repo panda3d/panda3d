@@ -1,6 +1,19 @@
 // Filename: numericDataAttribute.I
 // Created by:  drose (27Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 /* okcircular */
@@ -13,7 +26,7 @@ TypeHandle NumericDataAttribute<NumType>::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: NumericDataAttribute::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 INLINE NumericDataAttribute<NumType>::
@@ -24,7 +37,7 @@ NumericDataAttribute() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NumericDataAttribute::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 INLINE NumericDataAttribute<NumType>::
@@ -36,7 +49,7 @@ NumericDataAttribute(NumType value) :
 ////////////////////////////////////////////////////////////////////
 //     Function: NumericDataAttribute::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 INLINE NumericDataAttribute<NumType>::
@@ -49,7 +62,7 @@ NumericDataAttribute(const NumericDataAttribute<NumType> &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: NumericDataAttribute::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 INLINE void NumericDataAttribute<NumType>::
@@ -61,7 +74,7 @@ operator = (const NumericDataAttribute<NumType> &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NumericDataAttribute::set_value
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 INLINE void NumericDataAttribute<NumType>::
@@ -72,7 +85,7 @@ set_value(NumType value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NumericDataAttribute::get_value
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 INLINE NumType NumericDataAttribute<NumType>::
@@ -84,7 +97,7 @@ get_value() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NumericDataAttribute::get_handle
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 TypeHandle NumericDataAttribute<NumType>::
@@ -95,7 +108,7 @@ get_handle() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NumericDataAttribute::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 void NumericDataAttribute<NumType>::
@@ -106,7 +119,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NumericDataAttribute::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 void NumericDataAttribute<NumType>::
@@ -117,7 +130,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NumericDataAttribute::internal_compare_to
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 int NumericDataAttribute<NumType>::

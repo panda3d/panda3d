@@ -1,6 +1,19 @@
 // Filename: boundingHexahedron.cxx
 // Created by:  drose (03Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "boundingHexahedron.h"
@@ -154,26 +167,26 @@ extend_by_point(const LPoint3f &) {
 bool BoundingHexahedron::
 extend_by_sphere(const BoundingSphere *) {
   mathutil_cat.error()
-    << "BoundingHexahedron::extend_by_sphere() called\n";  
+    << "BoundingHexahedron::extend_by_sphere() called\n";
   return false;
 }
 
 bool BoundingHexahedron::
 extend_by_hexahedron(const BoundingHexahedron *) {
   mathutil_cat.error()
-    << "BoundingHexahedron::extend_by_hexahedron() called\n";  
+    << "BoundingHexahedron::extend_by_hexahedron() called\n";
   return false;
 }
 
 bool BoundingHexahedron::
 around_points(const LPoint3f *, const LPoint3f *) {
   mathutil_cat.error()
-    << "BoundingHexahedron::around_points() called\n";  
+    << "BoundingHexahedron::around_points() called\n";
   return false;
 }
 
 bool BoundingHexahedron::
-around_spheres(const BoundingVolume **, 
+around_spheres(const BoundingVolume **,
                const BoundingVolume **) {
   mathutil_cat.error()
     << "BoundingHexahedron::around_spheres() called\n";
@@ -181,7 +194,7 @@ around_spheres(const BoundingVolume **,
 }
 
 bool BoundingHexahedron::
-around_hexahedrons(const BoundingVolume **, 
+around_hexahedrons(const BoundingVolume **,
                    const BoundingVolume **) {
   mathutil_cat.error()
     << "BoundingHexahedron::around_hexahedrons() called\n";
@@ -227,7 +240,7 @@ contains_lineseg(const LPoint3f &a, const LPoint3f &b) const {
         return IF_no_intersection;
       }
     }
-    
+
     // If there is no plane that both points are in front of, the
     // hexahedron may or may not contain the line segment.  For the
     // moment, we won't bother to check that more thoroughly, though.
@@ -259,7 +272,7 @@ contains_sphere(const BoundingSphere *sphere) const {
       // The sphere is not completely behind this plane, but some of
       // it is.
       result &= ~IF_all;
-    } 
+    }
   }
 
   return result;
@@ -269,13 +282,13 @@ int BoundingHexahedron::
 contains_hexahedron(const BoundingHexahedron *hexahedron) const {
   nassertr(!is_empty(), 0);
   nassertr(!hexahedron->is_empty(), 0);
-  
+
   // Check minmax.
   LPoint3f min1 = get_min();
   LPoint3f min2 = hexahedron->get_min();
   LPoint3f max1 = get_max();
   LPoint3f max2 = hexahedron->get_max();
-  
+
   if (min1[0] > max2[0] || min1[1] > max2[1] || min1[2] > max2[2] ||
       min2[0] > max1[0] || min2[1] > max1[1] || min2[2] > max1[2] ||
       max1[0] < min2[0] || max1[1] < min2[1] || max1[2] < min2[2] ||
@@ -316,7 +329,7 @@ set_planes() {
 
     nassertv(_planes[0].dist_to_plane(_centroid) < 0);
 
-  } else {    
+  } else {
     // No, a perfectly sane universe.
     _planes[1] = Planef(_points[0], _points[1], _points[5]);
     _planes[2] = Planef(_points[1], _points[2], _points[6]);

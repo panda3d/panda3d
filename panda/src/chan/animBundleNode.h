@@ -2,6 +2,19 @@
 // Created by:  drose (22Feb99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef ANIMBUNDLENODE_H
 #define ANIMBUNDLENODE_H
@@ -34,8 +47,8 @@ private:
 
 public:
   static void register_with_read_factory(void);
-  virtual void write_datagram(BamWriter* manager, Datagram &me);  
-  virtual int complete_pointers(vector_typedWritable &plist, 
+  virtual void write_datagram(BamWriter* manager, Datagram &me);
+  virtual int complete_pointers(vector_typedWritable &plist,
                                 BamReader *manager);
 
   static TypedWritable *make_AnimBundleNode(const FactoryParams &params);

@@ -1,6 +1,19 @@
-// Filename: multiTransition.I
+// Filename: multiTransition.T
 // Created by:  drose (23Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 /* okcircular */
@@ -12,7 +25,7 @@ TypeHandle MultiTransition<Property, NameClass>::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: MultiTransition::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
 MultiTransition<Property, NameClass>::
@@ -23,7 +36,7 @@ MultiTransition() {
 ////////////////////////////////////////////////////////////////////
 //     Function: MultiTransition::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
 MultiTransition<Property, NameClass>::
@@ -37,7 +50,7 @@ MultiTransition(const MultiTransition &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: MultiTransition::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
 void MultiTransition<Property, NameClass>::
@@ -108,7 +121,7 @@ set_default_dir(TransitionDirection dir) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MultiTransition::get_default_dir
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
 INLINE_GRAPH TransitionDirection MultiTransition<Property, NameClass>::
@@ -127,7 +140,7 @@ template<class Property, class NameClass>
 void MultiTransition<Property, NameClass>::
 set_identity(const Property &property) {
   _properties[property] = TD_identity;
-  state_changed();  
+  state_changed();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -141,7 +154,7 @@ template<class Property, class NameClass>
 void MultiTransition<Property, NameClass>::
 set_on(const Property &property) {
   _properties[property] = TD_on;
-  state_changed();  
+  state_changed();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -155,7 +168,7 @@ template<class Property, class NameClass>
 void MultiTransition<Property, NameClass>::
 set_off(const Property &property) {
   _properties[property] = TD_off;
-  state_changed();  
+  state_changed();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -287,7 +300,7 @@ compose(const NodeTransition *other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: MultiTransition::invert
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
 NodeTransition *MultiTransition<Property, NameClass>::
@@ -319,13 +332,13 @@ invert() const {
 template<class Property, class NameClass>
 NodeAttribute *MultiTransition<Property, NameClass>::
 apply(const NodeAttribute *attrib) const {
-  
+
   MultiAttribute<Property, NameClass> *result;
   if (attrib == (const NodeAttribute *)NULL) {
     DCAST_INTO_R(result, make_attrib(), NULL);
   } else {
     DCAST_INTO_R(result, (NodeAttribute *)attrib, NULL);
-  }    
+  }
 
   if (_priority < result->_priority || is_identity()) {
     // The priority is too low to affect the attribute, or we're
@@ -379,7 +392,7 @@ apply(const NodeAttribute *attrib) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: MultiTransition::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
 void MultiTransition<Property, NameClass>::
@@ -438,7 +451,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: MultiTransition::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
 void MultiTransition<Property, NameClass>::
@@ -482,7 +495,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: MultiTransition::internal_compare_to
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
 int MultiTransition<Property, NameClass>::
@@ -525,7 +538,7 @@ write_property(ostream &, const Property &, int) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: MultiTransition::size
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
 INLINE_GRAPH MultiTransition<Property, NameClass>::size_type MultiTransition<Property, NameClass>::

@@ -2,6 +2,19 @@
 // Created by:  drose (21Oct99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef CPPINSTANCEIDENTIFIER_H
 #define CPPINSTANCEIDENTIFIER_H
@@ -51,7 +64,7 @@ public:
 
   CPPScope *get_scope(CPPScope *current_scope, CPPScope *global_scope,
                       CPPPreprocessor *error_sink = NULL) const;
- 
+
   CPPIdentifier *_ident;
 
   class Modifier {

@@ -1,6 +1,19 @@
-// Filename: cppTypeProxy.C
+// Filename: cppTypeProxy.cxx
 // Created by:  drose (07Dec99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -10,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypeProxy::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPTypeProxy::
 CPPTypeProxy() :
@@ -183,7 +196,7 @@ output_instance(ostream &out, int indent_level, CPPScope *scope,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypeProxy::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPTypeProxy::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
@@ -198,7 +211,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypeProxy::get_subtype
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration::SubType CPPTypeProxy::
 get_subtype() const {
@@ -208,7 +221,7 @@ get_subtype() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypeProxy::as_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPType *CPPTypeProxy::
 as_type() {
@@ -221,7 +234,7 @@ as_type() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypeProxy::as_simple_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPSimpleType *CPPTypeProxy::
 as_simple_type() {
@@ -234,7 +247,7 @@ as_simple_type() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypeProxy::as_pointer_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPPointerType *CPPTypeProxy::
 as_pointer_type() {
@@ -247,7 +260,7 @@ as_pointer_type() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypeProxy::as_reference_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPReferenceType *CPPTypeProxy::
 as_reference_type() {
@@ -260,7 +273,7 @@ as_reference_type() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypeProxy::as_array_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPArrayType *CPPTypeProxy::
 as_array_type() {
@@ -273,7 +286,7 @@ as_array_type() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypeProxy::as_const_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPConstType *CPPTypeProxy::
 as_const_type() {
@@ -286,7 +299,7 @@ as_const_type() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypeProxy::as_function_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPFunctionType *CPPTypeProxy::
 as_function_type() {
@@ -299,7 +312,7 @@ as_function_type() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypeProxy::as_extension_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPExtensionType *CPPTypeProxy::
 as_extension_type() {
@@ -312,7 +325,7 @@ as_extension_type() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypeProxy::as_struct_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPStructType *CPPTypeProxy::
 as_struct_type() {
@@ -325,7 +338,7 @@ as_struct_type() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypeProxy::as_enum_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPEnumType *CPPTypeProxy::
 as_enum_type() {
@@ -338,7 +351,7 @@ as_enum_type() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypeProxy::as_tbd_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPTBDType *CPPTypeProxy::
 as_tbd_type() {
@@ -351,7 +364,7 @@ as_tbd_type() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypeProxy::as_type_proxy
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPTypeProxy *CPPTypeProxy::
 as_type_proxy() {

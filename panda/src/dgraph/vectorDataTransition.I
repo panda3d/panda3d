@@ -1,6 +1,19 @@
 // Filename: vectorDataTransition.I
 // Created by:  drose (25Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 /* okcircular */
@@ -12,7 +25,7 @@ TypeHandle VectorDataTransition<VecType, MatType>::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: VectorDataTransition::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class VecType, class MatType>
 INLINE VectorDataTransition<VecType, MatType>::
@@ -23,11 +36,11 @@ VectorDataTransition() {
 ////////////////////////////////////////////////////////////////////
 //     Function: VectorDataTransition::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class VecType, class MatType>
 INLINE VectorDataTransition<VecType, MatType>::
-VectorDataTransition(const MatType &matrix) : 
+VectorDataTransition(const MatType &matrix) :
   _matrix(matrix)
 {
 }
@@ -35,7 +48,7 @@ VectorDataTransition(const MatType &matrix) :
 ////////////////////////////////////////////////////////////////////
 //     Function: VectorDataTransition::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class VecType, class MatType>
 INLINE VectorDataTransition<VecType, MatType>::
@@ -48,7 +61,7 @@ VectorDataTransition(const VectorDataTransition<VecType, MatType> &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: VectorDataTransition::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class VecType, class MatType>
 INLINE void VectorDataTransition<VecType, MatType>::
@@ -72,7 +85,7 @@ is_identity() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: VectorDataTransition::set_matrix
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class VecType, class MatType>
 void VectorDataTransition<VecType, MatType>::
@@ -84,7 +97,7 @@ set_matrix(const MatType &matrix) {
 ////////////////////////////////////////////////////////////////////
 //     Function: VectorDataTransition::get_matrix
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class VecType, class MatType>
 const MatType &VectorDataTransition<VecType, MatType>::
@@ -129,7 +142,7 @@ compose(const NodeTransition *other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: VectorDataTransition::invert
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class VecType, class MatType>
 NodeTransition *VectorDataTransition<VecType, MatType>::
@@ -141,7 +154,7 @@ invert() const {
     PT(NodeTransition) c = make_copy();
     VectorDataTransition<VecType, MatType> *result;
     DCAST_INTO_R(result, c, NULL);
- 
+
     bool invertible = result->_matrix.invert_from(_matrix);
     if (!invertible) {
       return NULL;
@@ -180,7 +193,7 @@ apply(const NodeAttribute *attrib) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: VectorDataTransition::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class VecType, class MatType>
 void VectorDataTransition<VecType, MatType>::
@@ -191,7 +204,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: VectorDataTransition::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class VecType, class MatType>
 void VectorDataTransition<VecType, MatType>::
@@ -202,7 +215,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: VectorDataTransition::internal_compare_to
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class VecType, class MatType>
 int VectorDataTransition<VecType, MatType>::

@@ -1,6 +1,19 @@
 // Filename: pointerDataAttribute.I
 // Created by:  jason (07Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 /* okcircular */
@@ -15,7 +28,7 @@ PtrType* PointerDataAttribute<PtrType>::_null_ptr = (PtrType*)NULL;
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerDataAttribute::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class PtrType>
 INLINE PointerDataAttribute<PtrType>::
@@ -27,7 +40,7 @@ PointerDataAttribute() :
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerDataAttribute::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class PtrType>
 INLINE PointerDataAttribute<PtrType>::
@@ -39,7 +52,7 @@ PointerDataAttribute(PtrType* ptr) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerDataAttribute::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class PtrType>
 INLINE PointerDataAttribute<PtrType>::
@@ -51,7 +64,7 @@ PointerDataAttribute(const PointerDataAttribute<PtrType> &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerDataAttribute::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class PtrType>
 INLINE void PointerDataAttribute<PtrType>::
@@ -63,7 +76,7 @@ operator = (const PointerDataAttribute<PtrType> &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerDataAttribute::set_value
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class PtrType>
 void PointerDataAttribute<PtrType>::
@@ -74,7 +87,7 @@ set_value(PtrType* ptr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerDataAttribute::get_value
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class PtrType>
 PtrType* PointerDataAttribute<PtrType>::
@@ -86,7 +99,7 @@ get_value() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NumericDataAttribute::get_handle
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class PtrType>
 TypeHandle PointerDataAttribute<PtrType>::
@@ -97,7 +110,7 @@ get_handle() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerDataAttribute::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class PtrType>
 void PointerDataAttribute<PtrType>::
@@ -108,7 +121,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerDataAttribute::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class PtrType>
 void PointerDataAttribute<PtrType>::
@@ -119,7 +132,7 @@ write(ostream &out, int indent_level) const {
 ///////////////////////////////////////////////////////////////////
 //     Function: PointerDataAttribute::internal_compare_to
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class PtrType>
 int PointerDataAttribute<PtrType>::

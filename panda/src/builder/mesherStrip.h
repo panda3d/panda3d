@@ -2,6 +2,19 @@
 // Created by:  drose (16Sep97)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef MESHERSTRIP_H
 #define MESHERSTRIP_H
@@ -62,7 +75,7 @@ public:
                           bool will_reverse_back, BuilderPrimType type);
   static bool convex_quad(Edge *common_edge, MesherStrip &front,
                           MesherStrip &back, const BuilderBucket &bucket);
- 
+
   int count_neighbors() const;
   ostream &show_neighbors(ostream &out) const;
 

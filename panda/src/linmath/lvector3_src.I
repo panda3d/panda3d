@@ -1,13 +1,26 @@
 // Filename: lvector3_src.I
 // Created by:  drose (24Sep99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::Default Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3)::
 FLOATNAME(LVector3)() {
@@ -16,7 +29,7 @@ FLOATNAME(LVector3)() {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3)::
 FLOATNAME(LVector3)(const FLOATNAME(LVecBase3) &copy) : FLOATNAME(LVecBase3)(copy) {
@@ -25,7 +38,7 @@ FLOATNAME(LVector3)(const FLOATNAME(LVecBase3) &copy) : FLOATNAME(LVecBase3)(cop
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3) &FLOATNAME(LVector3)::
 operator = (const FLOATNAME(LVecBase3) &copy) {
@@ -36,7 +49,7 @@ operator = (const FLOATNAME(LVecBase3) &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::Copy Fill Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3) &FLOATNAME(LVector3)::
 operator = (FLOATTYPE fill_value) {
@@ -47,22 +60,22 @@ operator = (FLOATTYPE fill_value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3)::
 FLOATNAME(LVector3)(FLOATTYPE fill_value) :
-  FLOATNAME(LVecBase3)(fill_value) 
+  FLOATNAME(LVecBase3)(fill_value)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3)::
-FLOATNAME(LVector3)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z) : 
-  FLOATNAME(LVecBase3)(x, y, z) 
+FLOATNAME(LVector3)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z) :
+  FLOATNAME(LVecBase3)(x, y, z)
 {
 }
 
@@ -109,7 +122,7 @@ unit_z() {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::unary -
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 operator - () const {
@@ -119,7 +132,7 @@ operator - () const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::vector + vecbase
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVector3)::
 operator + (const FLOATNAME(LVecBase3) &other) const {
@@ -129,7 +142,7 @@ operator + (const FLOATNAME(LVecBase3) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::vector + vector
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 operator + (const FLOATNAME(LVector3) &other) const {
@@ -139,7 +152,7 @@ operator + (const FLOATNAME(LVector3) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::vector - vecbase
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVector3)::
 operator - (const FLOATNAME(LVecBase3) &other) const {
@@ -149,7 +162,7 @@ operator - (const FLOATNAME(LVecBase3) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::vector - vector
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 operator - (const FLOATNAME(LVector3) &other) const {
@@ -202,7 +215,7 @@ normalize() {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::cross
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 cross(const FLOATNAME(LVecBase3) &other) const {
@@ -212,7 +225,7 @@ cross(const FLOATNAME(LVecBase3) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::operator * scalar
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 operator * (FLOATTYPE scalar) const {
@@ -222,7 +235,7 @@ operator * (FLOATTYPE scalar) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::operator / scalar
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
 operator / (FLOATTYPE scalar) const {
@@ -346,7 +359,7 @@ rfu(FLOATTYPE right_v, FLOATTYPE fwd_v, FLOATTYPE up_v,
     CoordinateSystem cs) {
 
   /*  return forward(cs) * fwd_v + up(cs) * up_v + right(cs) * right_v; */
-  
+
   // fast implementation of above for axis-aligned coordinate systems
 
 
@@ -359,17 +372,17 @@ rfu(FLOATTYPE right_v, FLOATTYPE fwd_v, FLOATTYPE up_v,
     vz = -fwd_v;
     vy = up_v;
     break;
-    
+
   case CS_yup_left:
     vz = fwd_v;
     vy = up_v;
     break;
-    
+
   case CS_zup_right:
     vy = fwd_v;
     vz = up_v;
     break;
-    
+
   case CS_zup_left:
     vy = -fwd_v;
     vz = up_v;

@@ -1,12 +1,25 @@
 // Filename: nodeAttributes.I
 // Created by:  drose (21Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributes::size
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeAttributes::size_type NodeAttributes::
 size() const {
@@ -16,7 +29,7 @@ size() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributes::begin
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeAttributes::iterator NodeAttributes::
 begin() {
@@ -26,7 +39,7 @@ begin() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributes::end
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeAttributes::iterator NodeAttributes::
 end() {
@@ -36,7 +49,7 @@ end() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributes::begin
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeAttributes::const_iterator NodeAttributes::
 begin() const {
@@ -46,7 +59,7 @@ begin() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributes::end
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeAttributes::const_iterator NodeAttributes::
 end() const {
@@ -56,10 +69,10 @@ end() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributes::insert
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeAttributes::iterator NodeAttributes::
-insert(NodeAttributes::iterator position, 
+insert(NodeAttributes::iterator position,
        const NodeAttributes::value_type &x) {
   return _attributes.insert(position, x);
 }
@@ -67,7 +80,7 @@ insert(NodeAttributes::iterator position,
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributes::erase
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NodeAttributes::
 erase(NodeAttributes::iterator position) {

@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "chatInput.h"
 
@@ -43,15 +52,15 @@ ChatInput(TextNode* text_node, const string& name) : DataNode(name) {
 //               does not reset the max_chars setting.
 ////////////////////////////////////////////////////////////////////
 void ChatInput::
-reset() { 
-  _str = "";  
+reset() {
+  _str = "";
   _text_node->set_text(_str);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ChatInput::transmit_data
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ChatInput::
 transmit_data(NodeAttributes &data) {
@@ -103,7 +112,7 @@ init_type(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: append 
+//     Function: append
 //       Access: Public
 //  Description: Appends the indicated string to the end of the
 //               currently typed string, as if it were typed by the
@@ -136,7 +145,7 @@ append_character(char ch) {
 
   string text = _str + ch;
   if (_text_node->has_wordwrap()) {
-    text = 
+    text =
       _text_node->wordwrap_to(text, _text_node->get_wordwrap());
   }
 

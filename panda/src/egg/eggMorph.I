@@ -1,17 +1,30 @@
 // Filename: eggMorph.I
 // Created by:  drose (29Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMorph::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Parameter>
 INLINE EggMorph<Parameter>::
-EggMorph(const string &name, const Parameter &offset) 
+EggMorph(const string &name, const Parameter &offset)
   : Namable(name), _offset(offset) {
 }
 
@@ -20,7 +33,7 @@ EggMorph(const string &name, const Parameter &offset)
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMorph::set_offset
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Parameter>
 INLINE void EggMorph<Parameter>::
@@ -32,7 +45,7 @@ set_offset(const Parameter &offset) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMorph::get_offset
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Parameter>
 INLINE const Parameter &EggMorph<Parameter>::
@@ -44,7 +57,7 @@ get_offset() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMorph::Ordering operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Parameter>
 INLINE bool EggMorph<Parameter>::
@@ -56,7 +69,7 @@ operator < (const EggMorph<Parameter> &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMorph::Equality operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Parameter>
 INLINE bool EggMorph<Parameter>::
@@ -67,7 +80,7 @@ operator == (const EggMorph<Parameter> &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMorph::Inequality operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Parameter>
 INLINE bool EggMorph<Parameter>::
@@ -78,7 +91,7 @@ operator != (const EggMorph<Parameter> &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMorphVertex output operator
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ostream &operator << (ostream &out, const EggMorphVertex &m) {
   return out << "<Dxyz> " << m.get_name() << " { " << m.get_offset() << " }";
@@ -88,7 +101,7 @@ INLINE ostream &operator << (ostream &out, const EggMorphVertex &m) {
 /*
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMorphNormal output operator
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ostream &operator << (ostream &out, const EggMorphNormal &m) {
   return out << "<DNormal> " << m.get_name() << " { " << m.get_offset() << " }";
@@ -98,7 +111,7 @@ INLINE ostream &operator << (ostream &out, const EggMorphNormal &m) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMorphTexCoord output operator
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ostream &operator << (ostream &out, const EggMorphTexCoord &m) {
   return out << "<Duv> " << m.get_name() << " { " << m.get_offset() << " }";
@@ -107,7 +120,7 @@ INLINE ostream &operator << (ostream &out, const EggMorphTexCoord &m) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMorphColor output operator
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ostream &operator << (ostream &out, const EggMorphColor &m) {
   return out << "<Drgba> " << m.get_name() << " { " << m.get_offset() << " }";

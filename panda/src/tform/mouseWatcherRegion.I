@@ -1,13 +1,26 @@
 // Filename: mouseWatcherRegion.I
 // Created by:  drose (13Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcherRegion::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE MouseWatcherRegion::
 MouseWatcherRegion(const string &name, float left, float right,
@@ -23,7 +36,7 @@ MouseWatcherRegion(const string &name, float left, float right,
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcherRegion::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE MouseWatcherRegion::
 MouseWatcherRegion(const string &name, const LVecBase4f &frame) :
@@ -38,7 +51,7 @@ MouseWatcherRegion(const string &name, const LVecBase4f &frame) :
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcherRegion::set_frame
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void MouseWatcherRegion::
 set_frame(float left, float right, float bottom, float top) {
@@ -48,7 +61,7 @@ set_frame(float left, float right, float bottom, float top) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcherRegion::set_frame
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void MouseWatcherRegion::
 set_frame(const LVecBase4f &frame) {
@@ -59,7 +72,7 @@ set_frame(const LVecBase4f &frame) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcherRegion::get_frame
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const LVecBase4f &MouseWatcherRegion::
 get_frame() const {

@@ -1,12 +1,25 @@
 // Filename: eggNurbsSurface.I
 // Created by:  drose (15Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggNurbsSurface::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggNurbsSurface::
 EggNurbsSurface(const string &name) : EggSurface(name) {
@@ -17,10 +30,10 @@ EggNurbsSurface(const string &name) : EggSurface(name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggNurbsSurface::Copy constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggNurbsSurface::
-EggNurbsSurface(const EggNurbsSurface &copy) : 
+EggNurbsSurface(const EggNurbsSurface &copy) :
   EggSurface(copy),
   _u_knots(copy._u_knots),
   _v_knots(copy._v_knots),
@@ -32,7 +45,7 @@ EggNurbsSurface(const EggNurbsSurface &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: EggNurbsSurface::Copy assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggNurbsSurface &EggNurbsSurface::
 operator = (const EggNurbsSurface &copy) {

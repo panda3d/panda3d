@@ -1,6 +1,19 @@
-// Filename: setTransitionHelpers.I
+// Filename: setTransitionHelpers.T
 // Created by:  drose (25Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "nodeTransitionCacheEntry.h"
@@ -71,7 +84,7 @@ tmap_override_union(InputIterator1 first1, InputIterator1 last1,
     ++result;
   }
 
-  while (first2 != last2) { 
+  while (first2 != last2) {
     *result = *first2;
     ++first2;
     ++result;
@@ -115,7 +128,7 @@ tmap_merge_union(InputIterator1 first1, InputIterator1 last1,
     ++result;
   }
 
-  while (first2 != last2) { 
+  while (first2 != last2) {
     *result = *first2;
     ++first2;
     ++result;
@@ -160,7 +173,7 @@ tmap_arc_union(InputIterator1 first1, InputIterator1 last1,
     ++result;
   }
 
-  while (first2 != last2) { 
+  while (first2 != last2) {
     (*first2).second->added_to_arc(to_arc);
     *result = *first2;
     ++first2;
@@ -171,7 +184,7 @@ tmap_arc_union(InputIterator1 first1, InputIterator1 last1,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: tmap_arc_compose
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 OutputIterator
@@ -208,7 +221,7 @@ tmap_arc_compose(InputIterator1 first1, InputIterator1 last1,
     ++result;
   }
 
-  while (first2 != last2) { 
+  while (first2 != last2) {
     (*first2).second->added_to_arc(to_arc);
     *result = *first2;
     ++first2;
@@ -219,7 +232,7 @@ tmap_arc_compose(InputIterator1 first1, InputIterator1 last1,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: tmap_arc_compose
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class InputIterator1, class InputIterator2, class OutputIterator>
 OutputIterator
@@ -253,7 +266,7 @@ tmap_arc_compose(InputIterator1 first1, InputIterator1 last1,
     ++result;
   }
 
-  while (first2 != last2) { 
+  while (first2 != last2) {
     *result = *first2;
     ++first2;
     ++result;
@@ -284,7 +297,7 @@ tmap_compose(InputIterator1 first1, InputIterator1 last1,
       ++result;
     } else {
       *result = pair<TypeHandle, NodeTransitionCacheEntry>
-        ((*first1).first, 
+        ((*first1).first,
          NodeTransitionCacheEntry::compose((*first1).second, (*first2).second));
       ++first1;
       ++first2;
@@ -298,7 +311,7 @@ tmap_compose(InputIterator1 first1, InputIterator1 last1,
     ++result;
   }
 
-  while (first2 != last2) { 
+  while (first2 != last2) {
     *result = *first2;
     ++first2;
     ++result;
@@ -349,7 +362,7 @@ tmap_invert_compose(InputIterator1 first1, InputIterator1 last1,
     ++result;
   }
 
-  while (first2 != last2) { 
+  while (first2 != last2) {
     *result = *first2;
     ++first2;
     ++result;
@@ -389,39 +402,39 @@ tmap_cached_compose_not_1(InputIterator2 &first2, InputIterator3 &first3,
     OUTPUT_CC_ELEM("2", (*first2).first);
 
     *result = pair<TypeHandle, NodeTransitionCacheEntry>
-      ((*first2).first, 
+      ((*first2).first,
        NodeTransitionCacheEntry::cached_compose
        (NodeTransitionCacheEntry(),
-        (*first2).second, 
+        (*first2).second,
         NodeTransitionCacheEntry(),
         now));
     ++first2;
     ++result;
-    
+
   } else if ((*first3).first < (*first2).first) {
     // Here's an element in list 3 that is not lists 2 or 1.
     OUTPUT_CC_ELEM("3", (*first3).first);
 
     *result = pair<TypeHandle, NodeTransitionCacheEntry>
-      ((*first3).first, 
+      ((*first3).first,
        NodeTransitionCacheEntry::cached_compose
        (NodeTransitionCacheEntry(),
         NodeTransitionCacheEntry(),
-        (*first3).second, 
+        (*first3).second,
         now));
     ++first3;
     ++result;
-    
+
   } else {  // (*first2).first == (*first3).first
     // Here's an element in lists 2 and 3 that is not in list 1.
     OUTPUT_CC_ELEM("2, 3", (*first2).first);
 
     *result = pair<TypeHandle, NodeTransitionCacheEntry>
-      ((*first2).first, 
+      ((*first2).first,
        NodeTransitionCacheEntry::cached_compose
        (NodeTransitionCacheEntry(),
-        (*first2).second, 
-        (*first3).second, 
+        (*first2).second,
+        (*first3).second,
         now));
     ++first2;
     ++first3;
@@ -447,39 +460,39 @@ tmap_cached_compose_not_2(InputIterator1 &first1, InputIterator3 &first3,
     OUTPUT_CC_ELEM("1", (*first1).first);
 
     *result = pair<TypeHandle, NodeTransitionCacheEntry>
-      ((*first1).first, 
+      ((*first1).first,
        NodeTransitionCacheEntry::cached_compose
-       ((*first1).second, 
+       ((*first1).second,
         NodeTransitionCacheEntry(),
         NodeTransitionCacheEntry(),
         now));
     ++first1;
     ++result;
-    
+
   } else if ((*first3).first < (*first1).first) {
     // Here's an element in list 3 that is not lists 1 or 2.
     OUTPUT_CC_ELEM("3", (*first3).first);
 
     *result = pair<TypeHandle, NodeTransitionCacheEntry>
-      ((*first3).first, 
+      ((*first3).first,
        NodeTransitionCacheEntry::cached_compose
        (NodeTransitionCacheEntry(),
         NodeTransitionCacheEntry(),
-        (*first3).second, 
+        (*first3).second,
         now));
     ++first3;
     ++result;
-    
+
   } else {  // (*first1).first == (*first3).first
     // Here's an element in lists 1 and 3 that is not in list 2.
     OUTPUT_CC_ELEM("1, 3", (*first1).first);
 
     *result = pair<TypeHandle, NodeTransitionCacheEntry>
-      ((*first1).first, 
+      ((*first1).first,
        NodeTransitionCacheEntry::cached_compose
        ((*first1).second,
         NodeTransitionCacheEntry(),
-        (*first3).second, 
+        (*first3).second,
         now));
     ++first1;
     ++first3;
@@ -504,35 +517,35 @@ tmap_cached_compose_not_3(InputIterator1 &first1, InputIterator2 &first2,
     OUTPUT_CC_ELEM("1", (*first1).first);
 
     *result = pair<TypeHandle, NodeTransitionCacheEntry>
-      ((*first1).first, 
+      ((*first1).first,
        NodeTransitionCacheEntry::cached_compose
-       ((*first1).second, 
+       ((*first1).second,
         NodeTransitionCacheEntry(),
         NodeTransitionCacheEntry(),
         now));
     ++first1;
     ++result;
-    
+
   } else if ((*first2).first < (*first1).first) {
     // Here's an element in list 2 that is not lists 1 or 3.
     OUTPUT_CC_ELEM("2", (*first2).first);
 
     *result = pair<TypeHandle, NodeTransitionCacheEntry>
-      ((*first2).first, 
+      ((*first2).first,
        NodeTransitionCacheEntry::cached_compose
        (NodeTransitionCacheEntry(),
-        (*first2).second, 
+        (*first2).second,
         NodeTransitionCacheEntry(),
         now));
     ++first2;
     ++result;
-    
+
   } else {  // (*first1).first == (*first2).first
     // Here's an element in lists 1 and 2 that is not in list 3.
     OUTPUT_CC_ELEM("1, 2", (*first1).first);
 
     *result = pair<TypeHandle, NodeTransitionCacheEntry>
-      ((*first1).first, 
+      ((*first1).first,
        NodeTransitionCacheEntry::cached_compose
        ((*first1).second,
         (*first2).second,
@@ -552,7 +565,7 @@ tmap_cached_compose_not_3(InputIterator1 &first1, InputIterator2 &first2,
 //               is already known to be in both lists 1 and 2, and may
 //               or may not also be in list 3.
 ////////////////////////////////////////////////////////////////////
-template<class InputIterator1, class InputIterator2, class InputIterator3, 
+template<class InputIterator1, class InputIterator2, class InputIterator3,
   class OutputIterator>
 void
 tmap_cached_compose_12(InputIterator1 &first1, InputIterator2 &first2,
@@ -563,7 +576,7 @@ tmap_cached_compose_12(InputIterator1 &first1, InputIterator2 &first2,
     OUTPUT_CC_ELEM("1, 2", (*first1).first);
 
     *result = pair<TypeHandle, NodeTransitionCacheEntry>
-      ((*first1).first, 
+      ((*first1).first,
        NodeTransitionCacheEntry::cached_compose
        ((*first1).second,
         (*first2).second,
@@ -572,13 +585,13 @@ tmap_cached_compose_12(InputIterator1 &first1, InputIterator2 &first2,
     ++first1;
     ++first2;
     ++result;
-    
+
   } else if ((*first3).first < (*first1).first) {
     // Here's an element in list 3 that is not lists 1 or 2.
     OUTPUT_CC_ELEM("3", (*first3).first);
 
     *result = pair<TypeHandle, NodeTransitionCacheEntry>
-      ((*first3).first, 
+      ((*first3).first,
        NodeTransitionCacheEntry::cached_compose
        (NodeTransitionCacheEntry(),
         NodeTransitionCacheEntry(),
@@ -586,13 +599,13 @@ tmap_cached_compose_12(InputIterator1 &first1, InputIterator2 &first2,
         now));
     ++first3;
     ++result;
-    
+
   } else {  // (*first1).first == (*first3).first
     // Here's an element in lists 1, 2, and 3.
     OUTPUT_CC_ELEM("1, 2, 3", (*first1).first);
-    
+
     *result = pair<TypeHandle, NodeTransitionCacheEntry>
-      ((*first1).first, 
+      ((*first1).first,
        NodeTransitionCacheEntry::cached_compose
        ((*first1).second,
         (*first2).second,
@@ -659,9 +672,9 @@ tmap_cached_compose(InputIterator1 first1, InputIterator1 last1,
     OUTPUT_CC_ELEM("1", (*first1).first);
 
     *result = pair<TypeHandle, NodeTransitionCacheEntry>
-      ((*first1).first, 
+      ((*first1).first,
        NodeTransitionCacheEntry::cached_compose
-       ((*first1).second, 
+       ((*first1).second,
         NodeTransitionCacheEntry(),
         NodeTransitionCacheEntry(),
         now));
@@ -674,10 +687,10 @@ tmap_cached_compose(InputIterator1 first1, InputIterator1 last1,
     OUTPUT_CC_ELEM("2", (*first2).first);
 
     *result = pair<TypeHandle, NodeTransitionCacheEntry>
-      ((*first2).first, 
+      ((*first2).first,
        NodeTransitionCacheEntry::cached_compose
        (NodeTransitionCacheEntry(),
-        (*first2).second, 
+        (*first2).second,
         NodeTransitionCacheEntry(),
         now));
     ++first2;
@@ -689,11 +702,11 @@ tmap_cached_compose(InputIterator1 first1, InputIterator1 last1,
     OUTPUT_CC_ELEM("3", (*first3).first);
 
     *result = pair<TypeHandle, NodeTransitionCacheEntry>
-      ((*first3).first, 
+      ((*first3).first,
        NodeTransitionCacheEntry::cached_compose
        (NodeTransitionCacheEntry(),
         NodeTransitionCacheEntry(),
-        (*first3).second, 
+        (*first3).second,
         now));
     ++first3;
     ++result;
@@ -722,13 +735,13 @@ tmap_apply(InputIterator1 first1, InputIterator1 last1,
       ++result;
     } else if ((*first2).first < (*first1).first) {
       *result = pair<TypeHandle,  PT(NodeAttribute) >
-        ((*first2).first, 
+        ((*first2).first,
          NodeTransitionCacheEntry::apply(NULL, (*first2).second));
       ++first2;
       ++result;
     } else {
       *result = pair<TypeHandle,  PT(NodeAttribute) >
-        ((*first1).first, 
+        ((*first1).first,
          NodeTransitionCacheEntry::apply((*first1).second, (*first2).second));
       ++first1;
       ++first2;
@@ -742,9 +755,9 @@ tmap_apply(InputIterator1 first1, InputIterator1 last1,
     ++result;
   }
 
-  while (first2 != last2) { 
+  while (first2 != last2) {
     *result = pair<TypeHandle,  PT(NodeAttribute) >
-      ((*first2).first, 
+      ((*first2).first,
        NodeTransitionCacheEntry::apply(NULL, (*first2).second));
     ++first2;
     ++result;
@@ -813,7 +826,7 @@ tmap_equiv_trans(InputIterator1 first1, InputIterator1 last1,
     ++first1;
   }
 
-  while (first2 != last2) { 
+  while (first2 != last2) {
     if (!(*first2).second.is_identity()) {
       return false;
     }
@@ -866,7 +879,7 @@ tmap_equiv_attr(InputIterator1 first1, InputIterator1 last1,
     ++first1;
   }
 
-  while (first2 != last2) { 
+  while (first2 != last2) {
     if ((*first2).second != (NodeAttribute *)NULL) {
       return false;
     }
@@ -915,7 +928,7 @@ tmap_compare_cache(InputIterator1 first1, InputIterator1 last1,
     ++first1;
   }
 
-  while (first2 != last2) { 
+  while (first2 != last2) {
     if (!(*first2).second.is_identity()) {
       // list2 is longer.
       return 1;
@@ -974,7 +987,7 @@ tmap_compare_trans(InputIterator1 first1, InputIterator1 last1,
     ++first1;
   }
 
-  while (first2 != last2) { 
+  while (first2 != last2) {
     if ((*first2).second != (NodeTransition *)NULL) {
       // list2 is longer.
       return 1;
@@ -1033,7 +1046,7 @@ tmap_compare_attr(InputIterator1 first1, InputIterator1 last1,
     ++first1;
   }
 
-  while (first2 != last2) { 
+  while (first2 != last2) {
     if ((*first2).second != (NodeAttribute *)NULL) {
       // list2 is longer.
       return 1;

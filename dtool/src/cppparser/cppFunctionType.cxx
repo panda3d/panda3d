@@ -1,6 +1,19 @@
-// Filename: cppFunctionType.C
+// Filename: cppFunctionType.cxx
 // Created by:  drose (21Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -12,13 +25,13 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPFunctionType::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPFunctionType::
 CPPFunctionType(CPPType *return_type, CPPParameterList *parameters,
                 int flags) :
   CPPType(CPPFile()),
-  _return_type(return_type), 
+  _return_type(return_type),
   _parameters(parameters),
   _flags(flags)
 {
@@ -38,10 +51,10 @@ CPPFunctionType(CPPType *return_type, CPPParameterList *parameters,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPFunctionType::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPFunctionType::
-CPPFunctionType(const CPPFunctionType &copy) : 
+CPPFunctionType(const CPPFunctionType &copy) :
   CPPType(copy),
   _return_type(copy._return_type),
   _parameters(copy._parameters),
@@ -53,7 +66,7 @@ CPPFunctionType(const CPPFunctionType &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPFunctionType::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPFunctionType::
 operator = (const CPPFunctionType &copy) {
@@ -74,7 +87,7 @@ operator = (const CPPFunctionType &copy) {
 ////////////////////////////////////////////////////////////////////
 bool CPPFunctionType::
 is_fully_specified() const {
-  return CPPType::is_fully_specified() && 
+  return CPPType::is_fully_specified() &&
     _return_type->is_fully_specified() &&
     _parameters->is_fully_specified();
 }
@@ -82,7 +95,7 @@ is_fully_specified() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPFunctionType::substitute_decl
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPFunctionType::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
@@ -93,11 +106,11 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   }
 
   CPPFunctionType *rep = new CPPFunctionType(*this);
-  rep->_return_type = 
+  rep->_return_type =
     _return_type->substitute_decl(subst, current_scope, global_scope)
     ->as_type();
 
-  rep->_parameters = 
+  rep->_parameters =
     _parameters->substitute_decl(subst, current_scope, global_scope);
 
   if (rep->_return_type == _return_type &&
@@ -122,7 +135,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
 CPPType *CPPFunctionType::
 resolve_type(CPPScope *current_scope, CPPScope *global_scope) {
   CPPType *rtype = _return_type->resolve_type(current_scope, global_scope);
-  CPPParameterList *params = 
+  CPPParameterList *params =
     _parameters->resolve_type(current_scope, global_scope);
 
   if (rtype != _return_type || params != _parameters) {
@@ -153,7 +166,7 @@ is_tbd() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPFunctionType::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPFunctionType::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
@@ -223,10 +236,10 @@ output_instance(ostream &out, int indent_level, CPPScope *scope,
 
   } else {
     if (prename.empty()) {
-      _return_type->output_instance(out, indent_level, scope, complete, 
+      _return_type->output_instance(out, indent_level, scope, complete,
                                     "", prename + name + str);
     } else {
-      _return_type->output_instance(out, indent_level, scope, complete, 
+      _return_type->output_instance(out, indent_level, scope, complete,
                                     "", "(" + prename + name + ")" + str);
     }
   }
@@ -251,8 +264,8 @@ get_num_default_parameters() const {
   const CPPParameterList::Parameters &params = _parameters->_parameters;
   CPPParameterList::Parameters::const_reverse_iterator pi;
   int count = 0;
-  for (pi = params.rbegin(); 
-       pi != params.rend() && (*pi)->_initializer != (CPPExpression *)NULL; 
+  for (pi = params.rbegin();
+       pi != params.rend() && (*pi)->_initializer != (CPPExpression *)NULL;
        ++pi) {
     count++;
   }
@@ -263,7 +276,7 @@ get_num_default_parameters() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPFunctionType::get_subtype
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration::SubType CPPFunctionType::
 get_subtype() const {
@@ -273,7 +286,7 @@ get_subtype() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPFunctionType::as_function_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPFunctionType *CPPFunctionType::
 as_function_type() {

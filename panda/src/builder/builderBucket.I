@@ -1,6 +1,19 @@
 // Filename: builderBucket.I
 // Created by:  drose (09Sep97)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -20,7 +33,7 @@ set_coords(const PTA_Vertexf &coords) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderBucket::get_coords
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PTA_Vertexf BuilderBucket::
 get_coords() const {
@@ -44,7 +57,7 @@ set_normals(const PTA_Normalf &normals) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderBucket::get_normals
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PTA_Normalf BuilderBucket::
 get_normals() const {
@@ -68,7 +81,7 @@ set_texcoords(const PTA_TexCoordf &texcoords) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderBucket::get_texcoords
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PTA_TexCoordf BuilderBucket::
 get_texcoords() const {
@@ -92,7 +105,7 @@ set_colors(const PTA_Colorf &colors) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderBucket::get_colors
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PTA_Colorf BuilderBucket::
 get_colors() const {

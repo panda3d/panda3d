@@ -1,6 +1,19 @@
 // Filename: memoryUsage.cxx
 // Created by:  drose (25May00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "memoryUsage.h"
@@ -25,7 +38,7 @@ double MemoryUsage::AgeHistogram::_cutoff[MemoryUsage::AgeHistogram::num_buckets
   10.0,
   60.0,
 };
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsage::MemoryInfo::get_type
 //       Access: Public
@@ -57,7 +70,7 @@ get_type() {
 
   return type;
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsage::MemoryInfo::determine_dynamic_type
 //       Access: Public
@@ -85,24 +98,24 @@ determine_dynamic_type() {
       // we are being called within the destructor or constructor of
       // this object.
       TypeHandle got_type = _typed_ptr->get_type();
-      
+
       if (got_type == TypeHandle::none()) {
         express_cat.warning()
           << "Found an unregistered type in a " << _static_type
           << " pointer:\n"
-          << "Check derived types of " << _static_type 
+          << "Check derived types of " << _static_type
           << " and make sure that all are being initialized.\n";
         _dynamic_type = _static_type;
         _reconsider_dynamic_type = false;
         return;
       }
-      
+
       update_type_handle(_dynamic_type, got_type);
     }
   }
 }
 
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsage::MemoryInfo::update_type_handle
 //       Access: Public
@@ -114,20 +127,20 @@ void MemoryUsage::MemoryInfo::
 update_type_handle(TypeHandle &destination, TypeHandle refined) {
   if (refined == TypeHandle::none()) {
     express_cat.error()
-      << "Attempt to update type of " << (void *)_ptr 
-      << "(type is " << get_type()  
+      << "Attempt to update type of " << (void *)_ptr
+      << "(type is " << get_type()
       << ") to an undefined type!\n";
-    
+
   } else if (destination == refined) {
     // Updating with the same type, no problem.
-    
+
   } else if (destination.is_derived_from(refined)) {
     // Updating with a less-specific type, no problem.
-    
+
   } else if (refined.is_derived_from(destination)) {
     // Updating with a more-specific type, no problem.
     destination = refined;
-    
+
   } else {
     express_cat.error()
       << "Pointer " << (void *)_ptr << " previously indicated as type "
@@ -200,7 +213,7 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsage::AgeHistogram::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 MemoryUsage::AgeHistogram::
 AgeHistogram() {
@@ -227,10 +240,10 @@ add_info(double age) {
 void MemoryUsage::AgeHistogram::
 show() const {
   for (int i = 0; i < num_buckets - 1; i++) {
-    nout << _cutoff[i] << " to " << _cutoff[i + 1] << " seconds old : " 
+    nout << _cutoff[i] << " to " << _cutoff[i + 1] << " seconds old : "
          << _counts[i] << " pointers.\n";
   }
-  nout << _cutoff[num_buckets - 1] << " seconds old and up : " 
+  nout << _cutoff[num_buckets - 1] << " seconds old and up : "
        << _counts[num_buckets - 1] << " pointers.\n";
 }
 
@@ -321,14 +334,14 @@ remove_pointer(ReferenceCount *ptr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsage::Constructor
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 MemoryUsage::
 MemoryUsage() {
   // We must get this here instead of in config_express.cxx, because we
   // need to know it at static init time, and who knows when the code
   // in config_express will be executed.
-  _track_memory_usage = 
+  _track_memory_usage =
     config_express.GetBool("track-memory-usage", false);
 
   _freeze_index = 0;
@@ -395,7 +408,7 @@ ns_update_type(ReferenceCount *ptr, TypeHandle type) {
     Table::iterator ti;
     ti = _table.find(ptr);
     if (ti == _table.end()) {
-      express_cat.error() 
+      express_cat.error()
         << "Attempt to update type to " << type << " for unrecorded pointer "
         << (void *)ptr << "!\n";
       return;
@@ -423,7 +436,7 @@ ns_update_type(ReferenceCount *ptr, TypedObject *typed_ptr) {
     Table::iterator ti;
     ti = _table.find(ptr);
     if (ti == _table.end()) {
-      express_cat.error() 
+      express_cat.error()
         << "Attempt to update type to " << typed_ptr->get_type()
         << " for unrecorded pointer "
         << (void *)ptr << "!\n";
@@ -469,7 +482,7 @@ ns_remove_pointer(ReferenceCount *ptr) {
       _trend_types.add_info(info.get_type());
       _trend_ages.add_info(now - info._time);
     }
-    
+
     _table.erase(ti);
   }
 }
@@ -501,7 +514,7 @@ ns_get_pointers(MemoryUsagePointers &result) {
   for (ti = _table.begin(); ti != _table.end(); ++ti) {
     MemoryInfo &info = (*ti).second;
     if (info._freeze_index == _freeze_index) {
-      result.add_entry(info._ptr, info._typed_ptr, info.get_type(), 
+      result.add_entry(info._ptr, info._typed_ptr, info.get_type(),
                        now - info._time);
     }
   }
@@ -542,7 +555,7 @@ ns_get_pointers_of_type(MemoryUsagePointers &result, TypeHandle type) {
 //               of the indicated number of seconds ago.
 ////////////////////////////////////////////////////////////////////
 void MemoryUsage::
-ns_get_pointers_of_age(MemoryUsagePointers &result, 
+ns_get_pointers_of_age(MemoryUsagePointers &result,
                        double from, double to) {
   nassertv(_track_memory_usage);
   result.clear();
@@ -553,7 +566,7 @@ ns_get_pointers_of_age(MemoryUsagePointers &result,
     MemoryInfo &info = (*ti).second;
     if (info._freeze_index == _freeze_index) {
       double age = now - info._time;
-      if ((age >= from && age <= to) || 
+      if ((age >= from && age <= to) ||
           (age >= to && age <= from)) {
         result.add_entry(info._ptr, info._typed_ptr, info.get_type(), age);
       }
@@ -567,7 +580,7 @@ ns_get_pointers_of_age(MemoryUsagePointers &result,
 //  Description: Fills the indicated MemoryUsagePointers with the set
 //               of all currently active pointers (that is, pointers
 //               allocated since the last call to freeze(), and not
-//               yet freed) that have a zero reference count.  
+//               yet freed) that have a zero reference count.
 //
 //               Generally, an undeleted pointer with a zero reference
 //               count means its reference count has never been

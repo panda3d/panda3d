@@ -1,6 +1,19 @@
-// Filename: cppUsing.C
+// Filename: cppUsing.cxx
 // Created by:  drose (16Nov99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -10,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPUsing::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPUsing::
 CPPUsing(CPPIdentifier *ident, bool full_namespace, const CPPFile &file) :
@@ -22,7 +35,7 @@ CPPUsing(CPPIdentifier *ident, bool full_namespace, const CPPFile &file) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPUsing::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPUsing::
 output(ostream &out, int, CPPScope *, bool) const {
@@ -36,7 +49,7 @@ output(ostream &out, int, CPPScope *, bool) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPUsing::get_subtype
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration::SubType CPPUsing::
 get_subtype() const {
@@ -46,7 +59,7 @@ get_subtype() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPUsing::as_using
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPUsing *CPPUsing::
 as_using() {

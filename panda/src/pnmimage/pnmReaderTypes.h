@@ -1,6 +1,19 @@
 // Filename: pnmReaderTypes.h
 // Created by:  drose (14Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef PNMREADERTYPES_H
@@ -38,7 +51,7 @@ public:
     long start;     /* offset in file */
     long length;    /* length of compressed scanline */
   } TabEntry;
- 
+
   TabEntry *table;
   long table_start;
   int current_row;
@@ -142,9 +155,9 @@ public:
   }
 
   unsigned long pos;
- 
+
   unsigned long offBits;
- 
+
   unsigned short  cBitCount;
   int             indexed;
   int             classv;

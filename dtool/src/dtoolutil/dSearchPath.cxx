@@ -1,6 +1,19 @@
-// Filename: dSearchPath.C
+// Filename: dSearchPath.cxx
 // Created by:  drose (01Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "dSearchPath.h"
@@ -11,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: DSearchPath::Results::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DSearchPath::Results::
 Results() {
@@ -20,7 +33,7 @@ Results() {
 ////////////////////////////////////////////////////////////////////
 //     Function: DSearchPath::Results::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DSearchPath::Results::
 Results(const DSearchPath::Results &copy) :
@@ -31,7 +44,7 @@ Results(const DSearchPath::Results &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: DSearchPath::Results::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DSearchPath::Results::
 operator = (const DSearchPath::Results &copy) {
@@ -41,7 +54,7 @@ operator = (const DSearchPath::Results &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DSearchPath::Results::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DSearchPath::Results::
 ~Results() {
@@ -90,7 +103,7 @@ DSearchPath() {
 ////////////////////////////////////////////////////////////////////
 //     Function: DSearchPath::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DSearchPath::
 DSearchPath(const string &path, const string &delimiters) {
@@ -100,7 +113,7 @@ DSearchPath(const string &path, const string &delimiters) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DSearchPath::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DSearchPath::
 DSearchPath(const DSearchPath &copy) :
@@ -111,7 +124,7 @@ DSearchPath(const DSearchPath &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: DSearchPath::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DSearchPath::
 operator = (const DSearchPath &copy) {
@@ -121,7 +134,7 @@ operator = (const DSearchPath &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DSearchPath::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DSearchPath::
 ~DSearchPath() {
@@ -269,7 +282,7 @@ find_file(const Filename &filename) const {
 //               any.  Returns the number of matches found.
 ////////////////////////////////////////////////////////////////////
 int DSearchPath::
-find_all_files(const Filename &filename, 
+find_all_files(const Filename &filename,
                DSearchPath::Results &results) const {
   results._files.clear();
 
@@ -287,7 +300,7 @@ find_all_files(const Filename &filename,
 ////////////////////////////////////////////////////////////////////
 //     Function: DSearchPath::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DSearchPath::
 output(ostream &out, const string &separator) const {
@@ -305,7 +318,7 @@ output(ostream &out, const string &separator) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DSearchPath::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DSearchPath::
 write(ostream &out, int indent_level) const {

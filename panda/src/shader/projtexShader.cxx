@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "projtexShader.h"
 #include "config_shader.h"
@@ -34,14 +43,14 @@ TypeHandle ProjtexShader::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 ProjtexShader::ProjtexShader(Texture* texture,
-                             ColorBlendProperty::Mode mode) 
+                             ColorBlendProperty::Mode mode)
   : FrustumShader(), _blend(mode)
 {
   set_texture(texture);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ProjtexShader::config 
+//     Function: ProjtexShader::config
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -53,7 +62,7 @@ void ProjtexShader::config(void)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ProjtexShader::apply 
+//     Function: ProjtexShader::apply
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -106,8 +115,8 @@ apply(Node *node, const AllAttributesWrapper &init_state,
   LMatrix4f tex_mat, proj_mat;
   const PerspectiveProjection *pp = DCAST(PerspectiveProjection, projection);
   proj_mat = pp->get_projection_mat();
-  tex_mat = model_mat * proj_mat * 
-    LMatrix4f::scale_mat(LVector3f(0.5,0.5,1)) * 
+  tex_mat = model_mat * proj_mat *
+    LMatrix4f::scale_mat(LVector3f(0.5,0.5,1)) *
     LMatrix4f::translate_mat(LVector3f(0.5,0.5,0));
 
   TexMatrixTransition *tm = new TexMatrixTransition;
@@ -122,17 +131,17 @@ apply(Node *node, const AllAttributesWrapper &init_state,
     //Probably should move the brains for determing blending out to
     //shader transition
 
-    // Set a color blend mode that assumes this is a second pass over 
+    // Set a color blend mode that assumes this is a second pass over
     // textured geometry
     ColorBlendTransition *cb = new ColorBlendTransition(_blend);
     trans.set_transition(cb);
 
-    TextureApplyTransition *ta = 
+    TextureApplyTransition *ta =
       new TextureApplyTransition(TextureApplyProperty::M_decal);
     trans.set_transition(ta);
 
     // Set the depth test to M_equal (? Or should this be M_none?)
-    DepthTestTransition *dta = 
+    DepthTestTransition *dta =
       new DepthTestTransition(DepthTestProperty::M_equal);
     trans.set_transition(dta);
   }

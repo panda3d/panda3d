@@ -2,6 +2,19 @@
 // Created by:  mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ZCompressorBase::get_total_in
@@ -40,10 +53,10 @@ reset(void) {
 ////////////////////////////////////////////////////////////////////
 INLINE void ZCompressorBase::
 reset_stream(z_stream *strm) const {
-  strm->next_in = Z_NULL;  
+  strm->next_in = Z_NULL;
   strm->avail_in = 0;
   strm->total_in = 0;
-  strm->next_out = Z_NULL;  
+  strm->next_out = Z_NULL;
   strm->avail_out = 0;
   strm->total_out = 0;
   strm->zalloc = Z_NULL;
@@ -58,7 +71,7 @@ reset_stream(z_stream *strm) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void ZCompressorBase::
-put_stream(z_stream *strm, char *next_in, int avail_in, char *next_out, 
+put_stream(z_stream *strm, char *next_in, int avail_in, char *next_out,
         int avail_out) const {
   strm->next_in = (uchar *)next_in;
   strm->avail_in = (ulong)avail_in;

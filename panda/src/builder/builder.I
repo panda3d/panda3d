@@ -1,9 +1,22 @@
 // Filename: builder.I
 // Created by:  drose (09Sep97)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
-  
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Builder::add_prim
@@ -18,12 +31,12 @@
 //               instance, a polygon with two vertices).
 ////////////////////////////////////////////////////////////////////
 INLINE bool Builder::
-add_prim(const BuilderBucket &bucket, 
+add_prim(const BuilderBucket &bucket,
          const BuilderPrim &prim) {
   add_bucket(bucket);
   return ((BuilderBucketNode &)(*_bi)).add_prim(prim);
 }
-  
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Builder::add_prim
@@ -38,12 +51,12 @@ add_prim(const BuilderBucket &bucket,
 //               instance, a polygon with two vertices).
 ////////////////////////////////////////////////////////////////////
 INLINE bool Builder::
-add_prim(const BuilderBucket &bucket, 
+add_prim(const BuilderBucket &bucket,
          const BuilderPrimI &prim) {
   add_bucket(bucket);
   return ((BuilderBucketNode &)(*_bi)).add_prim(prim);
 }
-  
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Builder::add_prim_nonindexed
@@ -62,7 +75,7 @@ add_prim(const BuilderBucket &bucket,
 //               the user's selection.
 ////////////////////////////////////////////////////////////////////
 INLINE bool Builder::
-add_prim_nonindexed(const BuilderBucket &bucket, 
+add_prim_nonindexed(const BuilderBucket &bucket,
                     const BuilderPrimI &prim) {
   add_bucket(bucket);
   return ((BuilderBucketNode &)(*_bi)).add_prim_nonindexed(prim);

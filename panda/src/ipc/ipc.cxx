@@ -1,6 +1,19 @@
 // Filename: ipc.cxx
 // Created by:  frang (06Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "ipc_condition.h"
@@ -31,7 +44,7 @@ base_thread::mutex* base_thread::_next_id_mutex = base_thread::mutex::Null;
 
 int base_thread::_next_id = 0;
 
-void* base_thread::thread_wrapper(void* data) 
+void* base_thread::thread_wrapper(void* data)
 {
    base_thread* me = (base_thread *) data;
 
@@ -39,24 +52,24 @@ void* base_thread::thread_wrapper(void* data)
 
    // now invoke the thread functin with the given argument
 
-   if (me->_fn_void != NULL) 
+   if (me->_fn_void != NULL)
    {
      (*me->_fn_void)(me->_thread_arg);
      base_thread::exit();
    }
 
-   if (me->_fn_ret != NULL) 
+   if (me->_fn_ret != NULL)
    {
      void* return_value = (*me->_fn_ret)(me->_thread_arg);
      base_thread::exit(return_value);
    }
 
-   if (me->_detached) 
+   if (me->_detached)
    {
      me->run(me->_thread_arg);
      base_thread::exit();
-   } 
-   else 
+   }
+   else
    {
      void* return_value = me->run_undetached(me->_thread_arg);
      base_thread::exit(return_value);

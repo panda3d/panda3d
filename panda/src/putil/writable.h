@@ -1,6 +1,20 @@
 // Filename: writable.h
 // Created by:  jason (08Jun00)
 //
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef __WRITABLE_
 #define __WRITABLE_
@@ -32,7 +46,7 @@ public:
 
   //The essential virtual function interface to define
   //how any writable object, writes itself to a datagram
-  virtual void write_datagram(BamWriter *manager, Datagram &me) = 0; 
+  virtual void write_datagram(BamWriter *manager, Datagram &me) = 0;
 
   //This function is the interface through which BamReader is
   //able to pass the completed object references into each
@@ -44,7 +58,7 @@ public:
   //Return the number of pointers read.  This is useful for when
   //a parent reads in a variable number of pointers, so the child
   //knows where to start reading from.
-  //virtual int complete_pointers(vector_typedWritable &plist, 
+  //virtual int complete_pointers(vector_typedWritable &plist,
   //                              BamReader *manager) {}
 
 
@@ -57,7 +71,7 @@ protected:
   //This interface function is written here, as a suggestion
   //for a function to write in any class that will have children
   //that are also Writable.  To encourage code re-use
-  
+
   //virtual void fillin(DatagramIterator& scan, BamReader *manager);
 
 public:

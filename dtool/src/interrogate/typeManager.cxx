@@ -1,6 +1,19 @@
-// Filename: typeManager.C
+// Filename: typeManager.cxx
 // Created by:  drose (14Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "typeManager.h"
@@ -74,7 +87,7 @@ is_assignable(CPPType *type) {
     // it.  Concrete structure objects are not assignable, and so they
     // don't get setters synthesized for them.  If you want a setter,
     // write it yourself.
-    
+
     // We'll make an exception for basic_string<char>, however, since
     // this is nearly an atomic type.
     if (is_basic_string_char(type)) {
@@ -364,7 +377,7 @@ is_char(CPPType *type) {
     {
       CPPSimpleType *simple_type = type->as_simple_type();
       if (simple_type != (CPPSimpleType *)NULL) {
-        return 
+        return
           simple_type->_type == CPPSimpleType::T_char &&
           simple_type->_flags == 0;
       }
@@ -421,7 +434,7 @@ is_basic_string_char(CPPType *type) {
 
   return false;
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeManager::is_const_basic_string_char
 //       Access: Public, Static
@@ -472,7 +485,7 @@ is_bool(CPPType *type) {
     {
       CPPSimpleType *simple_type = type->as_simple_type();
       if (simple_type != (CPPSimpleType *)NULL) {
-        return 
+        return
           simple_type->_type == CPPSimpleType::T_bool;
       }
     }
@@ -504,7 +517,7 @@ is_integer(CPPType *type) {
     {
       CPPSimpleType *simple_type = type->as_simple_type();
       if (simple_type != (CPPSimpleType *)NULL) {
-        return 
+        return
           (simple_type->_type == CPPSimpleType::T_bool ||
            simple_type->_type == CPPSimpleType::T_char ||
            simple_type->_type == CPPSimpleType::T_int);
@@ -535,7 +548,7 @@ is_float(CPPType *type) {
     {
       CPPSimpleType *simple_type = type->as_simple_type();
       if (simple_type != (CPPSimpleType *)NULL) {
-        return 
+        return
           (simple_type->_type == CPPSimpleType::T_float ||
            simple_type->_type == CPPSimpleType::T_double);
       }
@@ -558,7 +571,7 @@ bool TypeManager::
 is_void(CPPType *type) {
   CPPSimpleType *simple_type = type->as_simple_type();
   if (simple_type != (CPPSimpleType *)NULL) {
-    return 
+    return
       simple_type->_type == CPPSimpleType::T_void &&
       simple_type->_flags == 0;
   }
@@ -733,11 +746,11 @@ involves_unpublished(CPPType *type) {
     }
     {
       CPPScope *scope = type->as_struct_type()->_scope;
-    
+
       bool any_exported = false;
       CPPScope::Declarations::const_iterator di;
-      for (di = scope->_declarations.begin(); 
-           di != scope->_declarations.end() && !any_exported; 
+      for (di = scope->_declarations.begin();
+           di != scope->_declarations.end() && !any_exported;
            ++di) {
         if ((*di)->_vis <= min_vis) {
           any_exported = true;
@@ -760,7 +773,7 @@ involves_unpublished(CPPType *type) {
       if (involves_unpublished(ftype->_return_type)) {
         return true;
       }
-      const CPPParameterList::Parameters &params = 
+      const CPPParameterList::Parameters &params =
         ftype->_parameters->_parameters;
       CPPParameterList::Parameters::const_iterator pi;
       for (pi = params.begin(); pi != params.end(); ++pi) {
@@ -807,7 +820,7 @@ involves_protected(CPPType *type) {
       if (involves_protected(ftype->_return_type)) {
         return true;
       }
-      const CPPParameterList::Parameters &params = 
+      const CPPParameterList::Parameters &params =
         ftype->_parameters->_parameters;
       CPPParameterList::Parameters::const_iterator pi;
       for (pi = params.begin(); pi != params.end(); ++pi) {
@@ -1109,7 +1122,7 @@ get_function_signature(CPPInstance *function,
 
   out << function->get_local_name(&parser) << "(";
 
-  const CPPParameterList::Parameters &params = 
+  const CPPParameterList::Parameters &params =
     ftype->_parameters->_parameters;
   CPPParameterList::Parameters::const_iterator pi;
 
@@ -1159,7 +1172,7 @@ has_protected_destructor(CPPType *type) {
   }
 
   CPPScope *scope = struct_type->get_scope();
-  
+
   // Look for the destructor.
   CPPScope::Declarations::const_iterator di;
   for (di = scope->_declarations.begin();

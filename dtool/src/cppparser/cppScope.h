@@ -2,6 +2,19 @@
 // Created by:  drose (21Oct99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef CPPSCOPE_H
 #define CPPSCOPE_H
@@ -52,7 +65,7 @@ public:
   CPPScope *get_parent_scope() const;
 
   virtual void add_declaration(CPPDeclaration *decl, CPPScope *global_scope,
-                               CPPPreprocessor *preprocessor, 
+                               CPPPreprocessor *preprocessor,
                                const cppyyltype &pos);
   virtual void add_enum_value(CPPInstance *inst);
   virtual void define_extension_type(CPPExtensionType *type);

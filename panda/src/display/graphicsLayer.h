@@ -1,6 +1,19 @@
 // Filename: graphicsLayer.h
 // Created by:  drose (18Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef GRAPHICSLAYER_H
@@ -48,7 +61,7 @@ PUBLISHED:
   DisplayRegion *make_display_region();
   DisplayRegion *make_display_region(float l, float r,
                                      float b, float t);
-  
+
   int get_num_drs() const;
   DisplayRegion *get_dr(int index) const;
   void remove_dr(int index);
@@ -91,7 +104,7 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
- 
+
 private:
   static TypeHandle _type_handle;
 

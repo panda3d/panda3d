@@ -1,7 +1,19 @@
-
 // Filename: nodePath.h
 // Created by:  drose (05Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef NODEPATH_H
@@ -197,7 +209,7 @@ PUBLISHED:
   NodePathCollection get_children() const;
   INLINE int get_num_children() const;
   INLINE NodePath get_child(int n) const;
-  
+
   INLINE bool has_parent() const;
   INLINE NodePath get_parent() const;
 
@@ -252,7 +264,7 @@ PUBLISHED:
   // according to the arc above the bottom node.  In general, it is
   // valid to call these only if !is_empty() && !is_singleton().
 
-  
+
   // Methods that get and set the matrix transform: pos, hpr, scale,
   // in the local coordinate system.  These affect the transform at
   // the bottom level only.
@@ -288,14 +300,14 @@ PUBLISHED:
   INLINE float get_sy() const;
   INLINE float get_sz() const;
 
-  INLINE void set_pos_hpr(float x, float y, float z, 
+  INLINE void set_pos_hpr(float x, float y, float z,
                           float h, float p, float r);
-  void set_pos_hpr(const LVecBase3f &pos, 
+  void set_pos_hpr(const LVecBase3f &pos,
                    const LVecBase3f &hpr);
-  INLINE void set_pos_hpr_scale(float x, float y, float z, 
+  INLINE void set_pos_hpr_scale(float x, float y, float z,
                                 float h, float p, float r,
                                 float sx, float sy, float sz);
-  void set_pos_hpr_scale(const LVecBase3f &pos, 
+  void set_pos_hpr_scale(const LVecBase3f &pos,
                          const LVecBase3f &hpr,
                          const LVecBase3f &scale);
 
@@ -371,43 +383,43 @@ PUBLISHED:
   INLINE float get_sy(const NodePath &other) const;
   INLINE float get_sz(const NodePath &other) const;
 
-  INLINE void set_pos_hpr(const NodePath &other, 
-                          float x, float y, float z, 
+  INLINE void set_pos_hpr(const NodePath &other,
+                          float x, float y, float z,
                           float h, float p, float r);
-  void set_pos_hpr(const NodePath &other, 
-                   const LVecBase3f &pos, 
+  void set_pos_hpr(const NodePath &other,
+                   const LVecBase3f &pos,
                    const LVecBase3f &hpr);
-  INLINE void set_pos_hpr_scale(const NodePath &other, 
-                                float x, float y, float z, 
+  INLINE void set_pos_hpr_scale(const NodePath &other,
+                                float x, float y, float z,
                                 float h, float p, float r,
                                 float sx, float sy, float sz);
-  void set_pos_hpr_scale(const NodePath &other, 
-                         const LVecBase3f &pos, 
+  void set_pos_hpr_scale(const NodePath &other,
+                         const LVecBase3f &pos,
                          const LVecBase3f &hpr,
                          const LVecBase3f &scale);
 
   void set_mat(const NodePath &other, const LMatrix4f &mat);
   LMatrix4f get_mat(const NodePath &other) const;
 
-  INLINE void look_at(const NodePath &other, 
+  INLINE void look_at(const NodePath &other,
                       float x, float y, float z);
-  void look_at(const NodePath &other, 
+  void look_at(const NodePath &other,
                const LPoint3f &point = LPoint3f(0.0, 0.0, 0.0),
                const LVector3f &up = LVector3f::up());
-  INLINE void heads_up(const NodePath &other, 
+  INLINE void heads_up(const NodePath &other,
                        float x, float y, float z);
-  void heads_up(const NodePath &other, 
+  void heads_up(const NodePath &other,
                 const LPoint3f &point = LPoint3f(0.0, 0.0, 0.0),
                 const LVector3f &up = LVector3f::up());
 
-  INLINE void look_at_preserve_scale(const NodePath &other, 
+  INLINE void look_at_preserve_scale(const NodePath &other,
                                      float x, float y, float z);
-  void look_at_preserve_scale(const NodePath &other, 
+  void look_at_preserve_scale(const NodePath &other,
                               const LPoint3f &point = LPoint3f(0.0, 0.0, 0.0),
                               const LVector3f &up = LVector3f::up());
-  INLINE void heads_up_preserve_scale(const NodePath &other, 
+  INLINE void heads_up_preserve_scale(const NodePath &other,
                                       float x, float y, float z);
-  void heads_up_preserve_scale(const NodePath &other, 
+  void heads_up_preserve_scale(const NodePath &other,
                                const LPoint3f &point = LPoint3f(0.0, 0.0, 0.0),
                                const LVector3f &up = LVector3f::up());
 
@@ -420,7 +432,7 @@ PUBLISHED:
 
   INLINE float get_distance(const NodePath &other) const;
 
-  
+
   // Methods that affect appearance of geometry: color, texture, etc.
   // These affect the state at the bottom level only.
 
@@ -437,31 +449,31 @@ PUBLISHED:
   INLINE bool has_bin() const;
   string get_bin_name() const;
   int get_bin_draw_order() const;
-  
+
   void set_texture(Texture *tex, int priority = 0);
   void set_texture_off(int priority = 0);
   INLINE void clear_texture();
   bool has_texture() const;
   bool has_texture_off() const;
   Texture *get_texture() const;
-  
+
   void set_material(Material *tex, int priority = 0);
   INLINE void clear_material();
   bool has_material() const;
   PT(Material) get_material() const;
-  
+
   void set_fog(Fog *fog, int priority = 0);
   void set_fog_off(int priority = 0);
   INLINE void clear_fog();
   bool has_fog() const;
   bool has_fog_off() const;
   Fog *get_fog() const;
-  
+
   void set_render_mode_wireframe(int priority = 0);
   void set_render_mode_filled(int priority = 0);
   INLINE void clear_render_mode();
   INLINE bool has_render_mode() const;
-  
+
   void set_two_sided(bool two_sided, int priority = 0);
   INLINE void clear_two_sided();
   INLINE bool has_two_sided() const;
@@ -476,7 +488,7 @@ PUBLISHED:
   INLINE void clear_billboard();
   INLINE bool has_billboard() const;
 
-  void set_transparency(bool transparency, int priority = 0); 
+  void set_transparency(bool transparency, int priority = 0);
   INLINE void clear_transparency();
   INLINE bool has_transparency() const;
   bool get_transparency() const;
@@ -505,23 +517,23 @@ PUBLISHED:
 
 private:
   bool r_extend_by(const ArcComponent *other);
-  int r_as_string(const ArcComponent *comp, string &result, 
+  int r_as_string(const ArcComponent *comp, string &result,
                   int skip_nodes) const;
   void r_write_transitions(const ArcComponent *comp,
                            ostream &out, int indent_level) const;
-  void r_get_net_transitions(const ArcComponent *comp, 
+  void r_get_net_transitions(const ArcComponent *comp,
                              AllTransitionsWrapper &trans) const;
   string format_node_name(Node *dnode) const;
   string format_arc_name(NodeRelation *arc) const;
 
-  void find_matches(NodePathCollection &result, 
+  void find_matches(NodePathCollection &result,
                     const string &approx_path_str,
                     int max_matches) const;
-  void find_matches(NodePathCollection &result, 
+  void find_matches(NodePathCollection &result,
                     FindApproxPath &approx_path,
                     int max_matches) const;
   void r_find_matches(NodePathCollection &result,
-                      const FindApproxLevel &level, 
+                      const FindApproxLevel &level,
                       int max_matches, int num_levels_remaining) const;
 
   void r_list_descendants(ostream &out, int indent_level) const;
@@ -541,7 +553,7 @@ public:
     register_type(_type_handle, "NodePath",
                   NodePathBase::get_class_type());
   }
-  
+
 private:
   static TypeHandle _type_handle;
 

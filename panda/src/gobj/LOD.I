@@ -2,13 +2,26 @@
 // Created by:  mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #include <math.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LODSwitch::Default Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE LODSwitch::
 LODSwitch() {
@@ -17,7 +30,7 @@ LODSwitch() {
 ////////////////////////////////////////////////////////////////////
 //     Function: LODSwitch::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE LODSwitch::
 LODSwitch(float in, float out) {
@@ -27,7 +40,7 @@ LODSwitch(float in, float out) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LODSwitch::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE LODSwitch::
 LODSwitch(const LODSwitch &copy) :
@@ -39,7 +52,7 @@ LODSwitch(const LODSwitch &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: LODSwitch::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void LODSwitch::
 operator = (const LODSwitch &copy) {
@@ -88,7 +101,7 @@ set_range(float in, float out) {
   // We actually store the square of the switching distances.  This
   // makes the LOD computation a little simpler.
   _in = in * in;
-  _out = out * out; 
+  _out = out * out;
 }
 
 ////////////////////////////////////////////////////////////////////

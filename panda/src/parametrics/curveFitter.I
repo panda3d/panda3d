@@ -1,28 +1,41 @@
 // Filename: curveFitter.I
 // Created by:  drose (04Mar01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CurveFitter::DataPoint::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CurveFitter::DataPoint::
-DataPoint() : 
+DataPoint() :
   _t(0.0),
   _xyz(0.0, 0.0, 0.0),
   _hpr(0.0, 0.0, 0.0),
   _tangent(0.0, 0.0, 0.0),
-  _hpr_tangent(0.0, 0.0, 0.0) 
+  _hpr_tangent(0.0, 0.0, 0.0)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CurveFitter::DataPoint::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CurveFitter::DataPoint::
 output(ostream &out) const {
@@ -33,7 +46,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CurveFitter::DataPoint::operator <
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool CurveFitter::DataPoint::
 operator < (const DataPoint &other) const {

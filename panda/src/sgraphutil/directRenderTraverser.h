@@ -2,6 +2,19 @@
 // Created by:  drose (18Feb99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef DIRECTRENDERTRAVERSER_H
 #define DIRECTRENDERTRAVERSER_H
@@ -33,24 +46,24 @@ class NodeAttributes;
 //               however, view-frustum culling is performed.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DirectRenderTraverser :
-  public RenderTraverser, 
+  public RenderTraverser,
   public TraverserVisitor<AllTransitionsWrapper, DirectRenderLevelState> {
 public:
   DirectRenderTraverser(GraphicsStateGuardian *gsg, TypeHandle graph_type,
                         const ArcChain &arc_chain = ArcChain());
   virtual ~DirectRenderTraverser();
 
-  virtual void traverse(Node *root, 
+  virtual void traverse(Node *root,
                         const AllAttributesWrapper &initial_state,
                         const AllTransitionsWrapper &net_trans);
 
-public:  
+public:
   // These methods, from parent class TraverserVisitor, define the
   // behavior of the DirectRenderTraverser as it traverses the graph.
   // Normally you would never call these directly.
   bool reached_node(Node *node, AllAttributesWrapper &render_state,
                     DirectRenderLevelState &level_state);
-  
+
   bool forward_arc(NodeRelation *arc, AllTransitionsWrapper &trans,
                    AllAttributesWrapper &pre, AllAttributesWrapper &post,
                    DirectRenderLevelState &level_state);
@@ -76,7 +89,7 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
- 
+
 private:
   static TypeHandle _type_handle;
 };

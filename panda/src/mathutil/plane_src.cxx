@@ -2,6 +2,19 @@
 // Created by:  drose (03Apr01)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
@@ -19,7 +32,7 @@ get_reflection_mat(void) const {
   FLOATTYPE cc = _c * _c; FLOATTYPE cd = _c * _d;
 
   return FLOATNAME(LMatrix4)(  1-2*aa,  -2*ab,  -2*ac,     0,
-                              -2*ab, 1-2*bb,  -2*bc,     0, 
+                              -2*ab, 1-2*bb,  -2*bc,     0,
                               -2*ac,  -2*bc, 1-2*cc,     0,
                               -2*ad,  -2*bd,  -2*cd,     1  );
 }

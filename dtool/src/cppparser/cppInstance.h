@@ -2,6 +2,19 @@
 // Created by:  drose (19Oct99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef CPPINSTANCE_H
 #define CPPINSTANCE_H
@@ -40,7 +53,7 @@ public:
     SC_mutable      = 0x200,
 
     // This bit is only set by CPPStructType::check_virtual().
-    SC_inherited_virtual = 0x400, 
+    SC_inherited_virtual = 0x400,
   };
 
   CPPInstance(CPPType *type, const string &name, int storage_class = 0);

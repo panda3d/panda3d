@@ -1,12 +1,25 @@
 // Filename: cullState.I
 // Created by:  drose (14Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullState::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CullState::
 CullState(const AllTransitionsWrapper &trans) :
@@ -20,7 +33,7 @@ CullState(const AllTransitionsWrapper &trans) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CullState::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CullState::
 ~CullState() {
@@ -37,7 +50,7 @@ INLINE CullState::
 ////////////////////////////////////////////////////////////////////
 //     Function: CullState::compare_to
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int CullState::
 compare_to(const CullState &other) const {
@@ -47,7 +60,7 @@ compare_to(const CullState &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CullState::mark_verified
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CullState::
 mark_verified(Node *node, UpdateSeq now) {
@@ -117,7 +130,7 @@ is_empty() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CullState::count_current_nodes
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int CullState::
 count_current_nodes() const {
@@ -206,7 +219,7 @@ get_bin() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CullState::geom_size
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CullState::geom_size_type CullState::
 geom_size() const {
@@ -216,7 +229,7 @@ geom_size() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CullState::geom_begin
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CullState::geom_iterator CullState::
 geom_begin() const {
@@ -226,7 +239,7 @@ geom_begin() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CullState::geom_end
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CullState::geom_iterator CullState::
 geom_end() const {
@@ -236,7 +249,7 @@ geom_end() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CullState::direct_size
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CullState::direct_size_type CullState::
 direct_size() const {
@@ -246,7 +259,7 @@ direct_size() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CullState::direct_begin
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CullState::direct_iterator CullState::
 direct_begin() const {
@@ -256,7 +269,7 @@ direct_begin() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CullState::direct_end
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CullState::direct_iterator CullState::
 direct_end() const {

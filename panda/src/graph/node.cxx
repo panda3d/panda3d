@@ -1,6 +1,20 @@
 // Filename: node.cxx
 // Created by:  drose (27Oct98)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #include "node.h"
 #include "nodeRelation.h"
@@ -19,7 +33,7 @@ Node* const Node::Null = (Node*)0L;
 ////////////////////////////////////////////////////////////////////
 //     Function: Node::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Node::
 Node() {
@@ -47,7 +61,7 @@ Node(const Node &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: Node::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Node::
 operator = (const Node &copy) {
@@ -228,10 +242,10 @@ get_child(TypeHandle type, int index) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Node::sub_render
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool Node::
-sub_render(const AllAttributesWrapper &, AllTransitionsWrapper &, 
+sub_render(const AllAttributesWrapper &, AllTransitionsWrapper &,
            RenderTraverser *) {
   return true;
 }
@@ -264,7 +278,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Node::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Node::
 write(ostream &out, int indent_level) const {
@@ -376,16 +390,16 @@ r_copy_subgraph(TypeHandle graph_type, Node::InstanceMap &inst_map) const {
 //               function.
 ////////////////////////////////////////////////////////////////////
 void Node::
-r_copy_children(const Node *from, TypeHandle graph_type, 
+r_copy_children(const Node *from, TypeHandle graph_type,
                 Node::InstanceMap &inst_map) {
-  const DownRelationPointers &drp = 
+  const DownRelationPointers &drp =
     from->find_connection(graph_type).get_down();
   DownRelationPointers::const_iterator drpi;
   for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
     NodeRelation *source_arc = (*drpi);
     Node *source_child = source_arc->get_child();
     nassertv(source_child != (Node *)NULL);
-    
+
     Node *dest_child;
 
     // Check to see if we have already copied this child.  If we
@@ -400,12 +414,12 @@ r_copy_children(const Node *from, TypeHandle graph_type,
       dest_child = source_child->r_copy_subgraph(graph_type, inst_map);
       inst_map[source_child] = dest_child;
     }
-    
-    NodeRelation *dest_arc = 
+
+    NodeRelation *dest_arc =
       NodeRelation::create_typed_arc(graph_type, this, dest_child);
     nassertv(dest_arc != (NodeRelation *)NULL);
     nassertv(dest_arc->is_exact_type(graph_type));
-    
+
     dest_arc->copy_transitions_from(source_arc);
   }
 }
@@ -456,7 +470,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
 //     Function: Node::complete_pointers
 //       Access: Public
 //  Description: Takes in a vector of pointers to TypedWritable
-//               objects that correspond to all the requests for 
+//               objects that correspond to all the requests for
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int Node::
@@ -472,7 +486,7 @@ complete_pointers(vector_typedWritable &plist, BamReader *manager) {
     // loaded.
 
     graph_cat.warning()
-      << "Unable to reliably load bam version " 
+      << "Unable to reliably load bam version "
       << manager->get_file_major_ver() << "."
       << manager->get_file_minor_ver() << "\n";
 
@@ -560,7 +574,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
       if (i < max_node_graphs) {
         _connections[i].set_graph_type(type);
-      
+
         DownRelationPointers &drp = _connections[i].get_down();
         int num_arcs = scan.get_uint16();
         while (num_arcs > 0) {

@@ -1,13 +1,26 @@
 // Filename: eggXfmSAnim.I
 // Created by:  drose (19Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmSAnim::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggXfmSAnim::
 EggXfmSAnim(const string &name, CoordinateSystem cs) : EggGroupNode(name) {
@@ -19,11 +32,11 @@ EggXfmSAnim(const string &name, CoordinateSystem cs) : EggGroupNode(name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmSAnim::Copy constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggXfmSAnim::
-EggXfmSAnim(const EggXfmSAnim &copy) 
-  : EggGroupNode(copy), 
+EggXfmSAnim(const EggXfmSAnim &copy)
+  : EggGroupNode(copy),
     _fps(copy._fps),
     _has_fps(copy._has_fps),
     _order(copy._order),
@@ -34,7 +47,7 @@ EggXfmSAnim(const EggXfmSAnim &copy)
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmSAnim::Copy assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggXfmSAnim &EggXfmSAnim::
 operator = (const EggXfmSAnim &copy) {
@@ -51,7 +64,7 @@ operator = (const EggXfmSAnim &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmSAnim::set_fps
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggXfmSAnim::
 set_fps(double fps) {
@@ -63,7 +76,7 @@ set_fps(double fps) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmSAnim::clear_fps
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggXfmSAnim::
 clear_fps() {
@@ -73,7 +86,7 @@ clear_fps() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmSAnim::has_fps
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggXfmSAnim::
 has_fps() const {
@@ -94,7 +107,7 @@ get_fps() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmSAnim::set_order
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggXfmSAnim::
 set_order(const string &order) {
@@ -104,7 +117,7 @@ set_order(const string &order) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmSAnim::clear_order
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggXfmSAnim::
 clear_order() {
@@ -114,17 +127,17 @@ clear_order() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmSAnim::has_order
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggXfmSAnim::
 has_order() const {
   return !_order.empty();
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmSAnim::get_order
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const string &EggXfmSAnim::
 get_order() const {

@@ -1,6 +1,19 @@
 // Filename: computedVerticesMakerEntity.I
 // Created by:  drose (02Mar99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <math.h>
@@ -8,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMakerEntity::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class ValueType, class MorphType>
 INLINE ComputedVerticesMakerEntity<ValueType, MorphType>::
@@ -19,7 +32,7 @@ ComputedVerticesMakerEntity(const ValueType &value, const MorphType &morphs)
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMakerEntity::Ordering operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class ValueType, class MorphType>
 bool ComputedVerticesMakerEntity<ValueType, MorphType>::

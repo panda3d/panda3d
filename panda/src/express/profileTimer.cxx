@@ -1,4 +1,20 @@
-// ProfileTimer.cxx
+// Filename: profileTimer.cxx
+// Created by:  
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 #include "profileTimer.h"
 #include <map>
 using namespace std;
@@ -102,19 +118,19 @@ consolidateTo(ostream &out) const {
     entries[te._tag]+=te._time;
   }
   out << "-------------------------------------------------------------------\n"
-    << "Profile Timing of " << _name 
+    << "Profile Timing of " << _name
     << "\n\n"; // ...should print data and time too.
   double total=0;
   {
   map<string, double>::const_iterator i=entries.begin();
   for (;i!=entries.end(); ++i) {
-    out << "  " << setw(50) << i->first << ": " 
+    out << "  " << setw(50) << i->first << ": "
     << setiosflags(ios::fixed) << setprecision(6) << setw(10) << i->second << "\n";
     total+=i->second;
   }
   }
-  out << "\n                       [Total Time: " 
-    << setiosflags(ios::fixed) << setprecision(6) << total 
+  out << "\n                       [Total Time: "
+    << setiosflags(ios::fixed) << setprecision(6) << total
     << " seconds]\n"
     << "-------------------------------------------------------------------\n";
   out << endl;
@@ -132,25 +148,25 @@ printAllTo(ostream &out) {
 void ProfileTimer::
 printTo(ostream &out) const {
   out << "-------------------------------------------------------------------\n"
-    << "Profile Timing of " << _name 
+    << "Profile Timing of " << _name
     << "\n\n"; // ...should print data and time too.
   double total=0;
   int i;
   for (i=0; i<_entryCount; ++i) {
     TimerEntry& te=_entries[i];
-    out << "  " << setw(50) << te._tag << ": " 
+    out << "  " << setw(50) << te._tag << ": "
     << setiosflags(ios::fixed) << setprecision(6) << setw(10) << te._time << "\n";
     total+=te._time;
   }
-  out << "\n                       [Total Time: " 
-    << setiosflags(ios::fixed) << setprecision(6) << total 
+  out << "\n                       [Total Time: "
+    << setiosflags(ios::fixed) << setprecision(6) << total
     << " seconds]\n"
     << "-------------------------------------------------------------------\n";
   out << endl;
 }
 
 ProfileTimer::AutoTimer::AutoTimer(ProfileTimer& profile, const char* tag) :
-    _profile(profile) {  
+    _profile(profile) {
   _tag=tag;
   if (_profile._autoTimerCount) {
     // ...this is a nested call to another AutoTimer.

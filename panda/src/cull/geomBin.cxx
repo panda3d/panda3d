@@ -1,6 +1,19 @@
 // Filename: geomBin.cxx
 // Created by:  drose (07Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "geomBin.h"
@@ -21,7 +34,7 @@ TypeHandle GeomBin::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBin::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomBin::
 ~GeomBin() {
@@ -170,7 +183,7 @@ clear_traverser() {
     detach();
     _traverser = (CullTraverser *)NULL;
   }
-  
+
   return keep;
 }
 
@@ -276,7 +289,7 @@ PT(GeomBin) GeomBin::
 detach() {
   nassertr(_is_attached, NULL);
   nassertr(_traverser != (CullTraverser *)NULL, NULL);
-    
+
   PT(GeomBin) keep = this;
 
   if (!has_parent()) {
@@ -292,7 +305,7 @@ detach() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBin::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomBin::
 output(ostream &out) const {
@@ -302,7 +315,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBin::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomBin::
 write(ostream &out, int indent_level) const {
@@ -316,7 +329,7 @@ write(ostream &out, int indent_level) const {
 //               was previously associated; presumably because a
 //               change in the scene's initial attributes as resulted
 //               in the indicated CullState switching to a new bin.
-//               
+//
 //               Since the initial attributes will remain constant
 //               throughout a given frame, this function will only be
 //               called for GeomBins that save CullStates between

@@ -1,6 +1,19 @@
-// Filename: cppTypeDeclaration.C
+// Filename: cppTypeDeclaration.cxx
 // Created by:  drose (14Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -25,12 +38,12 @@ CPPTypeDeclaration(CPPType *type) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypeDeclaration::substitute_decl
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPTypeDeclaration::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
                 CPPScope *current_scope, CPPScope *global_scope) {
-  CPPDeclaration *decl = 
+  CPPDeclaration *decl =
     CPPInstance::substitute_decl(subst, current_scope, global_scope);
   assert(decl != NULL);
   if (decl->as_type_declaration()) {
@@ -43,7 +56,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypeDeclaration::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPTypeDeclaration::
 output(ostream &out, int indent_level, CPPScope *scope, bool) const {
@@ -53,7 +66,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypeDeclaration::get_subtype
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration::SubType CPPTypeDeclaration::
 get_subtype() const {
@@ -63,7 +76,7 @@ get_subtype() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypeDeclaration::as_type_declaration
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPTypeDeclaration *CPPTypeDeclaration::
 as_type_declaration() {

@@ -2,6 +2,19 @@
 // Created by:  jns (07Feb00)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef CONNECTIONMANAGER_H
 #define CONNECTIONMANAGER_H
@@ -51,11 +64,11 @@ PUBLISHED:
   bool close_connection(const PT(Connection) &connection);
 
   static string get_host_name();
- 
+
 protected:
   void new_connection(const PT(Connection) &connection);
   virtual void connection_reset(const PT(Connection) &connection)=0;
- 
+
   void add_reader(ConnectionReader *reader);
   void remove_reader(ConnectionReader *reader);
   void add_writer(ConnectionWriter *writer);

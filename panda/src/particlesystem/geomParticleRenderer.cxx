@@ -2,6 +2,19 @@
 // Created by:  charles (05Jul00)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #include "geomParticleRenderer.h"
 #include "baseParticle.h"
@@ -155,7 +168,7 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
                         alpha_scalar=get_user_alpha();
                 } else {
                         alpha_scalar = cur_particle->get_parameterized_age();
-                        if (_alpha_mode == PR_ALPHA_OUT) 
+                        if (_alpha_mode == PR_ALPHA_OUT)
                                 alpha_scalar = 1.0f - alpha_scalar;
         }
 

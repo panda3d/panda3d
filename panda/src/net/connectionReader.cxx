@@ -1,6 +1,19 @@
 // Filename: connectionReader.cxx
 // Created by:  drose (08Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "connectionReader.h"
@@ -25,11 +38,11 @@ static const PRUint32 max_timeout_ms = 100;
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionReader::SocketInfo::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ConnectionReader::SocketInfo::
 SocketInfo(const PT(Connection) &connection) :
-  _connection(connection) 
+  _connection(connection)
 {
   _busy = false;
   _error = false;
@@ -38,7 +51,7 @@ SocketInfo(const PT(Connection) &connection) :
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionReader::SocketInfo::is_udp
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool ConnectionReader::SocketInfo::
 is_udp() const {
@@ -48,7 +61,7 @@ is_udp() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionReader::SocketInfo::get_socket
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PRFileDesc *ConnectionReader::SocketInfo::
 get_socket() const {
@@ -88,14 +101,14 @@ ConnectionReader(ConnectionManager *manager, int num_threads) :
   PR_Lock(_startup_mutex);
 
   for (int i = 0; i < num_threads; i++) {
-    PRThread *thread = 
+    PRThread *thread =
       PR_CreateThread(PR_USER_THREAD,
                       thread_start, (void *)this,
                       PR_PRIORITY_NORMAL,
                       PR_GLOBAL_THREAD, // Since thread will mostly do I/O.
-                      PR_JOINABLE_THREAD, 
+                      PR_JOINABLE_THREAD,
                       0);  // Select a suitable stack size.
-    
+
     nassertv(thread != (PRThread *)NULL);
     _threads.push_back(thread);
   }
@@ -108,7 +121,7 @@ ConnectionReader(ConnectionManager *manager, int num_threads) :
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionReader::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ConnectionReader::
 ~ConnectionReader() {
@@ -332,7 +345,7 @@ shutdown() {
     if (result != PR_SUCCESS) {
       pprerror("PR_Interrupt");
     }
-    
+
     result = PR_JoinThread(*ti);
     if (result != PR_SUCCESS) {
       pprerror("PR_JoinThread");
@@ -369,7 +382,7 @@ finish_socket(SocketInfo *sinfo) {
   // future polls.
   sinfo->_busy = false;
   _reexamine_sockets = true;
-  
+
   // However, someone might be already blocking on an
   // earlier-established PR_Poll() that doesn't involve this socket.
   // That complicates things.  It means we'll have to wake that thread
@@ -402,14 +415,14 @@ process_incoming_data(SocketInfo *sinfo) {
   if (sinfo->is_udp()) {
     process_incoming_udp_data(sinfo);
   } else {
-    process_incoming_tcp_data(sinfo); 
-  }   
+    process_incoming_tcp_data(sinfo);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionReader::process_incoming_udp_data
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ConnectionReader::
 process_incoming_udp_data(SocketInfo *sinfo) {
@@ -444,7 +457,7 @@ process_incoming_udp_data(SocketInfo *sinfo) {
   // Now we must decode the header to determine how big the datagram
   // is.  This means we must have read at least a full header.
   if (bytes_read < datagram_udp_header_size) {
-    net_cat.error() 
+    net_cat.error()
       << "Did not read entire header, discarding UDP datagram.\n";
     finish_socket(sinfo);
     return;
@@ -468,7 +481,7 @@ process_incoming_udp_data(SocketInfo *sinfo) {
 
   // And now do whatever we need to do to process the datagram.
   if (!header.verify_datagram(datagram)) {
-    net_cat.error() 
+    net_cat.error()
       << "Ignoring invalid UDP datagram.\n";
   } else {
     datagram.set_connection(sinfo->_connection);
@@ -480,7 +493,7 @@ process_incoming_udp_data(SocketInfo *sinfo) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionReader::process_incoming_tcp_data
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ConnectionReader::
 process_incoming_tcp_data(SocketInfo *sinfo) {
@@ -498,7 +511,7 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
   // First, we have to read the first datagram_tcp_header_size bytes.
   while (header_bytes_read < datagram_tcp_header_size) {
     PRInt32 bytes_read =
-      PR_Recv(socket, buffer + header_bytes_read, 
+      PR_Recv(socket, buffer + header_bytes_read,
               datagram_tcp_header_size - header_bytes_read, 0,
               PR_INTERVAL_NO_TIMEOUT);
 
@@ -552,17 +565,17 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
 
   while (!_shutdown && (int)datagram.get_length() < size) {
     PRInt32 bytes_read;
-    
+
     bytes_read =
-      PR_Recv(socket, buffer, 
-              min((PRInt32)read_buffer_size, 
+      PR_Recv(socket, buffer,
+              min((PRInt32)read_buffer_size,
                   (PRInt32)(size - datagram.get_length())),
               0, PR_INTERVAL_NO_TIMEOUT);
     PRInt8 *dp = buffer;
-    
+
     if (bytes_read < 0) {
       PRErrorCode errcode = PR_GetError();
-      if (errcode == PR_CONNECT_RESET_ERROR 
+      if (errcode == PR_CONNECT_RESET_ERROR
 #ifdef PR_SOCKET_SHUTDOWN_ERROR
           || errcode == PR_SOCKET_SHUTDOWN_ERROR
           || errcode == PR_CONNECT_ABORTED_ERROR
@@ -578,7 +591,7 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
       }
       finish_socket(sinfo);
       return;
-      
+
     } else if (bytes_read == 0) {
       // The socket was closed.  Report that and return.
       if (_manager != (ConnectionManager *)NULL) {
@@ -587,7 +600,7 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
       finish_socket(sinfo);
       return;
     }
-    
+
     PRInt32 datagram_bytes =
       min(bytes_read, (PRInt32)(size - datagram.get_length()));
     datagram.append_data(dp, datagram_bytes);
@@ -647,7 +660,7 @@ thread_run() {
 
   // First determine our own thread index.
   PR_Lock(_startup_mutex);
-  Threads::const_iterator ti = 
+  Threads::const_iterator ti =
     find(_threads.begin(), _threads.end(), PR_GetCurrentThread());
 
   nassertv(ti != _threads.end());
@@ -657,7 +670,7 @@ thread_run() {
   PR_Unlock(_startup_mutex);
 
   while (!_shutdown) {
-    SocketInfo *sinfo = 
+    SocketInfo *sinfo =
       get_next_available_socket(PR_INTERVAL_NO_TIMEOUT,
                                 current_thread_index);
     if (sinfo != (SocketInfo *)NULL) {
@@ -680,12 +693,12 @@ thread_run() {
 //               PR_INTERVAL_NO_WAIT.
 ////////////////////////////////////////////////////////////////////
 ConnectionReader::SocketInfo *ConnectionReader::
-get_next_available_socket(PRIntervalTime timeout, 
+get_next_available_socket(PRIntervalTime timeout,
                           PRInt32 current_thread_index) {
   // Go to sleep on the select() mutex.  This guarantees that only one
   // thread is in this function at a time.
   PR_Lock(_select_mutex);
-  
+
   int num_sockets = _polled_sockets.size();
   nassertr(num_sockets == (int)_poll.size(), NULL);
 
@@ -696,7 +709,7 @@ get_next_available_socket(PRIntervalTime timeout,
       nassertr(_next_index < num_sockets, NULL);
       int i = _next_index;
       _next_index++;
-      
+
       if (_poll[i].out_flags != 0) {
         _num_results--;
         SocketInfo *sinfo = _polled_sockets[i];
@@ -709,7 +722,7 @@ get_next_available_socket(PRIntervalTime timeout,
           PR_Sleep(PR_INTERVAL_NO_WAIT);
           return sinfo;
 
-        } else if ((_poll[i].out_flags & 
+        } else if ((_poll[i].out_flags &
                     (PR_POLL_ERR | PR_POLL_NVAL | PR_POLL_HUP)) != 0) {
           // Something bad happened to this socket.  Tell the
           // ConnectionManager to drop it.
@@ -728,7 +741,7 @@ get_next_available_socket(PRIntervalTime timeout,
 
       // Ok, no results from previous PR_Poll() calls.  Prepare to set
       // up for a new poll.
-      
+
       // First, report to anyone else who cares that we're the thread
       // about to do the poll.  That way, if any new sockets come
       // available while we're polling, we can service them.
@@ -747,7 +760,7 @@ get_next_available_socket(PRIntervalTime timeout,
       _next_index = 0;
 
       if (!_shutdown) {
-        PRIntervalTime poll_timeout = 
+        PRIntervalTime poll_timeout =
           PR_MillisecondsToInterval(max_timeout_ms);
         if (timeout != PR_INTERVAL_NO_TIMEOUT) {
           poll_timeout = min(timeout, poll_timeout);
@@ -783,7 +796,7 @@ get_next_available_socket(PRIntervalTime timeout,
     // Repeat the above until we (a) find a socket with actual noise
     // on it, or (b) return from PR_Poll() with no sockets available.
   } while (!_shutdown && _num_results > 0);
-  
+
   PR_Unlock(_select_mutex);
   return (SocketInfo *)NULL;
 }

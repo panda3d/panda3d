@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "glxGraphicsWindow.h"
 #include "glxDisplay.h"
@@ -39,7 +48,7 @@ const char* glxGraphicsWindow::_glx_extensions = NULL;
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-glxGraphicsWindow::glxGraphicsWindow( GraphicsPipe* pipe ) : 
+glxGraphicsWindow::glxGraphicsWindow( GraphicsPipe* pipe ) :
         GraphicsWindow( pipe )
 {
   config();
@@ -50,7 +59,7 @@ glxGraphicsWindow::glxGraphicsWindow( GraphicsPipe* pipe ) :
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-glxGraphicsWindow::glxGraphicsWindow( GraphicsPipe* pipe, const 
+glxGraphicsWindow::glxGraphicsWindow( GraphicsPipe* pipe, const
         GraphicsWindow::Properties& props ) : GraphicsWindow( pipe, props )
 {
   config();
@@ -61,7 +70,7 @@ glxGraphicsWindow::glxGraphicsWindow( GraphicsPipe* pipe, const
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-glxGraphicsWindow::~glxGraphicsWindow(void) 
+glxGraphicsWindow::~glxGraphicsWindow(void)
 {
   // The GL context is already gone.  Don't try to destroy it again;
   // that will cause a seg fault on exit.
@@ -78,7 +87,7 @@ glxGraphicsWindow::~glxGraphicsWindow(void)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: glx_supports 
+//     Function: glx_supports
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -95,7 +104,7 @@ bool glxGraphicsWindow::glx_supports(const char* extension)
   glXQueryVersion(_display, &major, &minor);
   if ((major == 1 && minor >= 1) || (major > 1)) {
     if (!_glx_extensions) {
-      _glx_extensions = 
+      _glx_extensions =
         glXQueryExtensionsString(_display, glx->get_screen());
     }
     start = _glx_extensions;
@@ -141,7 +150,7 @@ try_for_visual(glxDisplay *glx, int mask,
   } else {
     want_color_component_bits = max(want_color_bits / 3, 1);
   }
-      
+
 
   attrib_list[n++] = GLX_RGBA;
   attrib_list[n++] = GLX_RED_SIZE;
@@ -259,7 +268,7 @@ void glxGraphicsWindow::choose_visual(void)
 
     bool special_size_request =
       (want_depth_bits != 1 || want_color_bits != 1);
-    
+
     // We try to be smart about choosing a close match for the visual.
     // First, we'll eliminate some of the more esoteric options one at
     // a time, then two at a time, and finally we'll try just the bare
@@ -275,11 +284,11 @@ void glxGraphicsWindow::choose_visual(void)
     if (_visual == NULL) {
       // Ok, not good enough.  Now try to eliminate options, but keep
       // as many bits as we asked for.
-      
+
       // This array keeps the bitmasks of options that we pull out of
       // the requested mask, in order.
-      
-      static const int strip_properties[] = { 
+
+      static const int strip_properties[] = {
         // One esoteric option removed.
         W_MULTISAMPLE,
         W_STENCIL,
@@ -358,7 +367,7 @@ void glxGraphicsWindow::choose_visual(void)
     int render_mode, double_buffer, stereo, red_size, green_size, blue_size,
       alpha_size, ared_size, agreen_size, ablue_size, aalpha_size,
       depth_size, stencil_size;
-    
+
     glXGetConfig(_display, _visual, GLX_RGBA, &render_mode);
     glXGetConfig(_display, _visual, GLX_DOUBLEBUFFER, &double_buffer);
     glXGetConfig(_display, _visual, GLX_STEREO, &stereo);
@@ -387,7 +396,7 @@ void glxGraphicsWindow::choose_visual(void)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: config 
+//     Function: config
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -417,12 +426,12 @@ void glxGraphicsWindow::config( void )
   wa.background_pixmap = None;
   wa.border_pixel = 0;
   wa.colormap = _colormap;
-  wa.event_mask = _event_mask; 
+  wa.event_mask = _event_mask;
   wa.do_not_propagate_mask = 0;
 
   _xwindow = XCreateWindow(_display, glx->get_root(),
         _props._xorg, _props._yorg, _props._xsize, _props._ysize, 0,
-        _visual->depth, InputOutput, _visual->visual, attrib_mask, &wa); 
+        _visual->depth, InputOutput, _visual->visual, attrib_mask, &wa);
   if (!_xwindow) {
     glxdisplay_cat.fatal()
       << "glxGraphicsWindow::config() - failed to create Xwindow" << endl;
@@ -497,7 +506,7 @@ void glxGraphicsWindow::config( void )
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: setup_colormap 
+//     Function: setup_colormap
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -508,10 +517,10 @@ void glxGraphicsWindow::setup_colormap(void)
   visual_class = _visual->c_class;
 #else
   visual_class = _visual->class;
-#endif  
+#endif
   glxDisplay *glx = _pipe->get_glx_display();
   nassertv(glx != (glxDisplay *)NULL);
-  
+
   switch (visual_class) {
     case PseudoColor:
       rc = glXGetConfig(_display, _visual, GLX_RGBA, &is_rgb);
@@ -529,13 +538,13 @@ void glxGraphicsWindow::setup_colormap(void)
     case TrueColor:
     case DirectColor:
       _colormap = XCreateColormap(_display, glx->get_root(),
-        _visual->visual, AllocNone); 
+        _visual->visual, AllocNone);
       break;
     case StaticColor:
     case StaticGray:
     case GrayScale:
       _colormap = XCreateColormap(_display, glx->get_root(),
-        _visual->visual, AllocNone); 
+        _visual->visual, AllocNone);
       break;
     default:
       glxdisplay_cat.error()
@@ -609,7 +618,7 @@ void glxGraphicsWindow::setup_properties(void)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: end_frame 
+//     Function: end_frame
 //       Access:
 //  Description: Swaps the front and back buffers.
 ////////////////////////////////////////////////////////////////////
@@ -645,9 +654,9 @@ void glxGraphicsWindow::end_frame( void )
     // these seem to be good for default font
     glRasterPos2f(_props._xsize-75,_props._ysize-20);
 
-    // set up for a string-drawing display list call 
+    // set up for a string-drawing display list call
     glListBase(FONT_BITMAP_OGLDISPLAYLISTNUM);
- 
+
     // draw a string using font display lists.  chars index their
     // corresponding displist name
     glCallLists(strlen(fps_msg), GL_UNSIGNED_BYTE, fps_msg);
@@ -671,7 +680,7 @@ void glxGraphicsWindow::end_frame( void )
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: handle_reshape 
+//     Function: handle_reshape
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -728,7 +737,7 @@ handle_keyrelease(ButtonHandle key, int, int) {
 }
 
 ButtonHandle glxGraphicsWindow::
-lookup_key(XEvent event) { 
+lookup_key(XEvent event) {
   // First, get the string key name.  If it fits in one character, it
   // must be the ASCII equivalent for the key.
   char tmp[1];
@@ -743,203 +752,203 @@ lookup_key(XEvent event) {
   KeySym ks = XLookupKeysym((XKeyEvent *)&event, 0);
 
   switch (ks) {
-  case XK_BackSpace: 
+  case XK_BackSpace:
     return KeyboardButton::backspace();
-  case XK_Tab: 
+  case XK_Tab:
     return KeyboardButton::tab();
-  case XK_Return: 
+  case XK_Return:
     return KeyboardButton::enter();
-  case XK_Escape: 
+  case XK_Escape:
     return KeyboardButton::escape();
-  case XK_space: 
+  case XK_space:
     return KeyboardButton::space();
-  case XK_exclam: 
+  case XK_exclam:
     return KeyboardButton::ascii_key('!');
-  case XK_quotedbl: 
+  case XK_quotedbl:
     return KeyboardButton::ascii_key('"');
-  case XK_numbersign: 
+  case XK_numbersign:
     return KeyboardButton::ascii_key('#');
-  case XK_dollar: 
+  case XK_dollar:
     return KeyboardButton::ascii_key('$');
-  case XK_percent: 
+  case XK_percent:
     return KeyboardButton::ascii_key('%');
-  case XK_ampersand: 
+  case XK_ampersand:
     return KeyboardButton::ascii_key('&');
   case XK_apostrophe: // == XK_quoteright
     return KeyboardButton::ascii_key('\'');
-  case XK_parenleft: 
+  case XK_parenleft:
     return KeyboardButton::ascii_key('(');
-  case XK_parenright: 
+  case XK_parenright:
     return KeyboardButton::ascii_key(')');
-  case XK_asterisk: 
+  case XK_asterisk:
     return KeyboardButton::ascii_key('*');
-  case XK_plus: 
+  case XK_plus:
     return KeyboardButton::ascii_key('+');
-  case XK_comma: 
+  case XK_comma:
     return KeyboardButton::ascii_key(',');
-  case XK_minus: 
+  case XK_minus:
     return KeyboardButton::ascii_key('-');
-  case XK_period: 
+  case XK_period:
     return KeyboardButton::ascii_key('.');
-  case XK_slash: 
+  case XK_slash:
     return KeyboardButton::ascii_key('/');
-  case XK_0: 
+  case XK_0:
     return KeyboardButton::ascii_key('0');
-  case XK_1: 
+  case XK_1:
     return KeyboardButton::ascii_key('1');
-  case XK_2: 
+  case XK_2:
     return KeyboardButton::ascii_key('2');
-  case XK_3: 
+  case XK_3:
     return KeyboardButton::ascii_key('3');
-  case XK_4: 
+  case XK_4:
     return KeyboardButton::ascii_key('4');
-  case XK_5: 
+  case XK_5:
     return KeyboardButton::ascii_key('5');
-  case XK_6: 
+  case XK_6:
     return KeyboardButton::ascii_key('6');
-  case XK_7: 
+  case XK_7:
     return KeyboardButton::ascii_key('7');
-  case XK_8: 
+  case XK_8:
     return KeyboardButton::ascii_key('8');
-  case XK_9: 
+  case XK_9:
     return KeyboardButton::ascii_key('9');
-  case XK_colon: 
+  case XK_colon:
     return KeyboardButton::ascii_key(':');
-  case XK_semicolon: 
+  case XK_semicolon:
     return KeyboardButton::ascii_key(';');
-  case XK_less: 
+  case XK_less:
     return KeyboardButton::ascii_key('<');
-  case XK_equal: 
+  case XK_equal:
     return KeyboardButton::ascii_key('=');
-  case XK_greater: 
+  case XK_greater:
     return KeyboardButton::ascii_key('>');
-  case XK_question: 
+  case XK_question:
     return KeyboardButton::ascii_key('?');
-  case XK_at: 
+  case XK_at:
     return KeyboardButton::ascii_key('@');
-  case XK_A: 
+  case XK_A:
     return KeyboardButton::ascii_key('A');
-  case XK_B: 
+  case XK_B:
     return KeyboardButton::ascii_key('B');
-  case XK_C: 
+  case XK_C:
     return KeyboardButton::ascii_key('C');
-  case XK_D: 
+  case XK_D:
     return KeyboardButton::ascii_key('D');
-  case XK_E: 
+  case XK_E:
     return KeyboardButton::ascii_key('E');
-  case XK_F: 
+  case XK_F:
     return KeyboardButton::ascii_key('F');
-  case XK_G: 
+  case XK_G:
     return KeyboardButton::ascii_key('G');
-  case XK_H: 
+  case XK_H:
     return KeyboardButton::ascii_key('H');
-  case XK_I: 
+  case XK_I:
     return KeyboardButton::ascii_key('I');
-  case XK_J: 
+  case XK_J:
     return KeyboardButton::ascii_key('J');
-  case XK_K: 
+  case XK_K:
     return KeyboardButton::ascii_key('K');
-  case XK_L: 
+  case XK_L:
     return KeyboardButton::ascii_key('L');
-  case XK_M: 
+  case XK_M:
     return KeyboardButton::ascii_key('M');
-  case XK_N: 
+  case XK_N:
     return KeyboardButton::ascii_key('N');
-  case XK_O: 
+  case XK_O:
     return KeyboardButton::ascii_key('O');
-  case XK_P: 
+  case XK_P:
     return KeyboardButton::ascii_key('P');
-  case XK_Q: 
+  case XK_Q:
     return KeyboardButton::ascii_key('Q');
-  case XK_R: 
+  case XK_R:
     return KeyboardButton::ascii_key('R');
-  case XK_S: 
+  case XK_S:
     return KeyboardButton::ascii_key('S');
-  case XK_T: 
+  case XK_T:
     return KeyboardButton::ascii_key('T');
-  case XK_U: 
+  case XK_U:
     return KeyboardButton::ascii_key('U');
-  case XK_V: 
+  case XK_V:
     return KeyboardButton::ascii_key('V');
-  case XK_W: 
+  case XK_W:
     return KeyboardButton::ascii_key('W');
-  case XK_X: 
+  case XK_X:
     return KeyboardButton::ascii_key('X');
-  case XK_Y: 
+  case XK_Y:
     return KeyboardButton::ascii_key('Y');
-  case XK_Z: 
+  case XK_Z:
     return KeyboardButton::ascii_key('Z');
-  case XK_bracketleft: 
+  case XK_bracketleft:
     return KeyboardButton::ascii_key('[');
-  case XK_backslash: 
+  case XK_backslash:
     return KeyboardButton::ascii_key('\\');
-  case XK_bracketright: 
+  case XK_bracketright:
     return KeyboardButton::ascii_key(']');
-  case XK_asciicircum: 
+  case XK_asciicircum:
     return KeyboardButton::ascii_key('^');
-  case XK_underscore: 
+  case XK_underscore:
     return KeyboardButton::ascii_key('_');
   case XK_grave: // == XK_quoteleft
     return KeyboardButton::ascii_key('`');
-  case XK_a: 
+  case XK_a:
     return KeyboardButton::ascii_key('a');
-  case XK_b: 
+  case XK_b:
     return KeyboardButton::ascii_key('b');
-  case XK_c: 
+  case XK_c:
     return KeyboardButton::ascii_key('c');
-  case XK_d: 
+  case XK_d:
     return KeyboardButton::ascii_key('d');
-  case XK_e: 
+  case XK_e:
     return KeyboardButton::ascii_key('e');
-  case XK_f: 
+  case XK_f:
     return KeyboardButton::ascii_key('f');
-  case XK_g: 
+  case XK_g:
     return KeyboardButton::ascii_key('g');
-  case XK_h: 
+  case XK_h:
     return KeyboardButton::ascii_key('h');
-  case XK_i: 
+  case XK_i:
     return KeyboardButton::ascii_key('i');
-  case XK_j: 
+  case XK_j:
     return KeyboardButton::ascii_key('j');
-  case XK_k: 
+  case XK_k:
     return KeyboardButton::ascii_key('k');
-  case XK_l: 
+  case XK_l:
     return KeyboardButton::ascii_key('l');
-  case XK_m: 
+  case XK_m:
     return KeyboardButton::ascii_key('m');
-  case XK_n: 
+  case XK_n:
     return KeyboardButton::ascii_key('n');
-  case XK_o: 
+  case XK_o:
     return KeyboardButton::ascii_key('o');
-  case XK_p: 
+  case XK_p:
     return KeyboardButton::ascii_key('p');
-  case XK_q: 
+  case XK_q:
     return KeyboardButton::ascii_key('q');
-  case XK_r: 
+  case XK_r:
     return KeyboardButton::ascii_key('r');
-  case XK_s: 
+  case XK_s:
     return KeyboardButton::ascii_key('s');
-  case XK_t: 
+  case XK_t:
     return KeyboardButton::ascii_key('t');
-  case XK_u: 
+  case XK_u:
     return KeyboardButton::ascii_key('u');
-  case XK_v: 
+  case XK_v:
     return KeyboardButton::ascii_key('v');
-  case XK_w: 
+  case XK_w:
     return KeyboardButton::ascii_key('w');
-  case XK_x: 
+  case XK_x:
     return KeyboardButton::ascii_key('x');
-  case XK_y: 
+  case XK_y:
     return KeyboardButton::ascii_key('y');
-  case XK_z: 
+  case XK_z:
     return KeyboardButton::ascii_key('z');
-  case XK_braceleft: 
+  case XK_braceleft:
     return KeyboardButton::ascii_key('{');
-  case XK_bar: 
+  case XK_bar:
     return KeyboardButton::ascii_key('|');
-  case XK_braceright: 
+  case XK_braceright:
     return KeyboardButton::ascii_key('}');
-  case XK_asciitilde: 
+  case XK_asciitilde:
     return KeyboardButton::ascii_key('~');
   case XK_F1:
     return KeyboardButton::f1();
@@ -1017,7 +1026,7 @@ lookup_key(XEvent event) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: interruptible_xnextevent  
+//     Function: interruptible_xnextevent
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -1027,7 +1036,7 @@ int glxGraphicsWindow::interruptible_xnextevent(Display* display, XEvent* event)
   if (XPending(display)) {
     XNextEvent(display, event);
     return 1;
-  } else 
+  } else
     return 0;
 }
 
@@ -1161,7 +1170,7 @@ void glxGraphicsWindow::process_event(XEvent event)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: process_events 
+//     Function: process_events
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -1189,7 +1198,7 @@ void glxGraphicsWindow::process_events(void)
           XEvent ahead;
           while (XEventsQueued(_display, QueuedAfterReading) > 0) {
             XPeekEvent(_display, &ahead);
-            if (ahead.type != Expose || 
+            if (ahead.type != Expose ||
                 ahead.xexpose.window != event.xexpose.window) {
               break;
             }
@@ -1241,7 +1250,7 @@ void glxGraphicsWindow::process_events(void)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: idle_wait 
+//     Function: idle_wait
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -1288,7 +1297,7 @@ void glxGraphicsWindow::update(void)
   // Always ask for a redisplay for now
   call_draw_callback(true);
 
-  if (_idle_callback) 
+  if (_idle_callback)
     idle_wait();
   else
     process_events();
@@ -1297,7 +1306,7 @@ void glxGraphicsWindow::update(void)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: enable_mouse_input 
+//     Function: enable_mouse_input
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -1314,7 +1323,7 @@ void glxGraphicsWindow::enable_mouse_input(bool val)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: enable_mouse_motion 
+//     Function: enable_mouse_motion
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -1328,7 +1337,7 @@ void glxGraphicsWindow::enable_mouse_motion(bool val)
     add_event_mask(input_mask);
     add_event_mask(motion_mask);
   }
-  else if (_mouse_motion_enabled == true && val == false) { 
+  else if (_mouse_motion_enabled == true && val == false) {
     remove_event_mask(motion_mask);
     if (_mouse_input_enabled == false)
       remove_event_mask(input_mask);
@@ -1415,7 +1424,7 @@ make_GlxGraphicsWindow(const FactoryParams &params) {
   }
 
   GraphicsPipe *pipe = pipe_param->get_pipe();
-  
+
   GraphicsWindow::WindowProps *props_param;
   if (!get_param_into(props_param, params)) {
     return new glxGraphicsWindow(pipe);

@@ -1,6 +1,19 @@
 // Filename: lmatrix3_src.h
 // Created by:  drose (29Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
@@ -75,7 +88,7 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATNAME(LVecBase2)
   xform_point(const FLOATNAME(LVecBase2) &v) const;
- 
+
   INLINE_LINMATH FLOATNAME(LVecBase2)
   xform_vec(const FLOATNAME(LVecBase2) &v) const;
 
@@ -93,7 +106,7 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator -= (const FLOATNAME(LMatrix3) &other);
 
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator *= (const FLOATNAME(LMatrix3) &other);
-  
+
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator *= (FLOATTYPE scalar);
   INLINE_LINMATH FLOATNAME(LMatrix3) &operator /= (FLOATTYPE scalar);
 
@@ -125,12 +138,12 @@ PUBLISHED:
     rotate_mat(FLOATTYPE angle);
   static INLINE_LINMATH FLOATNAME(LMatrix3)
     scale_mat(const FLOATNAME(LVecBase2) &scale);
-  static INLINE_LINMATH FLOATNAME(LMatrix3) 
+  static INLINE_LINMATH FLOATNAME(LMatrix3)
     scale_mat(FLOATTYPE sx, FLOATTYPE sy);
 
   // The following named constructors return 3x3 matrices suitable for
   // scale/rotate transforms in 3-d coordinate space.
-  static INLINE_LINMATH FLOATNAME(LMatrix3) 
+  static INLINE_LINMATH FLOATNAME(LMatrix3)
     rotate_mat(FLOATTYPE angle,
                FLOATNAME(LVecBase3) axis,
                CoordinateSystem cs = CS_default);
@@ -138,7 +151,7 @@ PUBLISHED:
     rotate_mat_normaxis(FLOATTYPE angle,
                         const FLOATNAME(LVecBase3) &axis,
                         CoordinateSystem cs = CS_default);
-  
+
   static INLINE_LINMATH FLOATNAME(LMatrix3)
     scale_mat(const FLOATNAME(LVecBase3) &scale);
   static INLINE_LINMATH FLOATNAME(LMatrix3)
@@ -148,11 +161,11 @@ PUBLISHED:
   // parameter, because it would be ambiguous whether we mean a 2-d or
   // a 3-d scale.
 
-  bool almost_equal(const FLOATNAME(LMatrix3) &other, 
+  bool almost_equal(const FLOATNAME(LMatrix3) &other,
                     FLOATTYPE threshold) const;
 
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LMatrix3) &other) const;
-  
+
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
 
@@ -187,7 +200,7 @@ public:
     return _type_handle;
   }
   static void init_type();
- 
+
 private:
   static TypeHandle _type_handle;
 };

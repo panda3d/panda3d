@@ -1,6 +1,19 @@
 // Filename: displayRegion.cxx
 // Created by:  cary (10Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "displayRegion.h"
@@ -13,11 +26,11 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
 DisplayRegion(GraphicsLayer *layer) :
-  _l(0.), _r(1.), _b(0.), _t(1.), 
+  _l(0.), _r(1.), _b(0.), _t(1.),
   _layer(layer),
   _active(true)
 {
@@ -26,7 +39,7 @@ DisplayRegion(GraphicsLayer *layer) :
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
 DisplayRegion(GraphicsLayer *layer, const float l,
@@ -45,7 +58,7 @@ DisplayRegion(GraphicsLayer *layer, const float l,
 //               typically for rendering a temporary pass.
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
-DisplayRegion(int xsize, int ysize) : 
+DisplayRegion(int xsize, int ysize) :
   _l(0.), _r(1.), _b(0.), _t(1.),
   _pl(0), _pr(xsize), _pb(0), _pt(ysize),
   _layer((GraphicsLayer *)0L),
@@ -56,7 +69,7 @@ DisplayRegion(int xsize, int ysize) :
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::Copy Constructor
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
 DisplayRegion(const DisplayRegion&) {
@@ -67,7 +80,7 @@ DisplayRegion(const DisplayRegion&) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::Copy Assignment Operator
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DisplayRegion &DisplayRegion::
 operator=(const DisplayRegion&) {
@@ -79,7 +92,7 @@ operator=(const DisplayRegion&) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
 ~DisplayRegion() {
@@ -170,11 +183,11 @@ set_camera(const PT(Camera) &camera) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 output(ostream &out) const {
-  out << "DisplayRegion(" << _l << " " << _r << " " << _b << " " << _t 
-      << ")=pixels(" << _pl << " " << _pr << " " << _pb << " " << _pt 
+  out << "DisplayRegion(" << _l << " " << _r << " " << _b << " " << _t
+      << ")=pixels(" << _pl << " " << _pr << " " << _pb << " " << _pt
       << ")";
 }

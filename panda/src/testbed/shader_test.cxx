@@ -1,3 +1,21 @@
+// Filename: shader_test.cxx
+// Created by:  
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
 #include <eventHandler.h>
 #include <projtexShader.h>
 #include <shaderTransition.h>
@@ -286,7 +304,7 @@ void Tiledviz::Flush(void) {
     //no longer exist.
     //JMC: Added call to get_dr
 #ifdef SHADER_VERBOSE
-    indent(nout, _level) << "Getting display region " << count 
+    indent(nout, _level) << "Getting display region " << count
                          << " from graphics layer"  << endl;
 #endif
     d = layer->get_dr(count);
@@ -545,7 +563,7 @@ void shader_keys(EventHandler &eh) {
 #define DISPLAY_TEXPROJFRUST
 #ifdef DISPLAY_TEXPROJFRUST
   // Display a wireframe representation of the texture projector frustum
-  GeomLine* proj_geom = 
+  GeomLine* proj_geom =
         (GeomLine *)tex_proj->get_projection()->make_geometry();
   GeomNode* proj_geom_node = new GeomNode("proj_geometry");
   //JMC: Removed _drawable_vector.push_back call and added add_geom
@@ -553,11 +571,11 @@ void shader_keys(EventHandler &eh) {
   proj_geom_node->add_geom(proj_geom);
   RenderRelation *prr = new RenderRelation(tex_proj, proj_geom_node);
   LightTransition *plt = new LightTransition(LightTransition::all_off());
-  prr->set_transition(plt);  
+  prr->set_transition(plt);
 #endif
 
   // Create a projected texture spotlight shader
-  tex_proj_spot = new Spotlight("tex_proj_spotlight"); 
+  tex_proj_spot = new Spotlight("tex_proj_spotlight");
   spot_arc = new RenderRelation(render, tex_proj_spot, 10);
 
   // Create a trackball to spin this around.
@@ -585,7 +603,7 @@ void shader_keys(EventHandler &eh) {
 #ifdef DISPLAY_TEXPROJSPOTFRUST
   // Display a wireframe representation of the spotlight frustum
   Colorf color_red(1., 0., 0., 1.);
-  GeomLine* frust_geom = 
+  GeomLine* frust_geom =
         (GeomLine *)tex_proj_spot->get_projection()->make_geometry(color_red);
   GeomNode* frust_geom_node = new GeomNode("frustum_geometry");
   //JMC: Removed _drawable_vector.push_back call and added add_geom
@@ -593,7 +611,7 @@ void shader_keys(EventHandler &eh) {
   frust_geom_node->add_geom(frust_geom);
   RenderRelation *rr = new RenderRelation(tex_proj_spot, frust_geom_node);
   LightTransition *lt = new LightTransition(LightTransition::all_off());
-  rr->set_transition(lt);  
+  rr->set_transition(lt);
 #endif
 
 #ifdef DISPLAY_SHAFT
@@ -636,8 +654,8 @@ void shader_keys(EventHandler &eh) {
   // Load the room file
   PT_NamedNode room = loader.load_sync("big-room.egg");
   if (room != (NamedNode *)NULL) {
-    room_arc = new RenderRelation(render, room, 20); 
- 
+    room_arc = new RenderRelation(render, room, 20);
+
     sreflect->add_caster(room);
     new RenderRelation(room, plane_node);
   }
@@ -659,8 +677,8 @@ void shader_keys(EventHandler &eh) {
   // Load up a camera model to visualize our eyepoint.
   PT_NamedNode camera_model = loader.load_sync("camera.egg");
   if (camera_model != (NamedNode *)NULL) {
-    camera_model_arc = new RenderRelation(cameras, camera_model); 
- 
+    camera_model_arc = new RenderRelation(cameras, camera_model);
+
     sreflect->add_caster(camera_model);
     proj_shadow->add_caster(camera_model);
     preflect->add_caster(camera_model);

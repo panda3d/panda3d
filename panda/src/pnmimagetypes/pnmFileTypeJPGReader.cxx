@@ -1,6 +1,19 @@
 // Filename: pnmFileTypeJPGReader.cxx
 // Created by:  mike (19Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileTypeJPG.h"
@@ -10,10 +23,10 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeJPG::Reader::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeJPG::Reader::
-Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) : 
+Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
   // Put the magic number bytes back into the file
@@ -60,12 +73,12 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeJPG::Reader::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeJPG::Reader::
 ~Reader(void) {
   jpeg_destroy_decompress(&_cinfo);
-} 
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeJPG::Reader::read_data
@@ -92,7 +105,7 @@ read_data(xel *array, xelval *) {
    * output image dimensions available, as well as the output colormap
    * if we asked for color quantization.
    * In this example, we need to make an output work buffer of the right size.
-   */ 
+   */
   /* JSAMPLEs per row in output buffer */
   row_stride = _cinfo.output_width * _cinfo.output_components;
   /* Make a one-row-high sample array that will go away when done with image */
@@ -130,7 +143,7 @@ read_data(xel *array, xelval *) {
         PPM_ASSIGN(array[x], red, grn, blu);
       }
       x++;
-    } 
+    }
   }
 
   /* Step 7: Finish decompression */

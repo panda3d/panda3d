@@ -1,3 +1,21 @@
+// Filename: text_test.cxx
+// Created by:  
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
 #include <eventHandler.h>
 #include <chancfg.h>
 #include <textNode.h>
@@ -34,7 +52,7 @@ void text_keys(EventHandler& eh) {
   eh.add_hook("s", event_s);
 
   text_node = new TextNode("text_node");
-  PT_NamedNode font = loader.load_sync("cmr12"); 
+  PT_NamedNode font = loader.load_sync("cmr12");
   text_node->set_font(font.p());
   text_node->set_wordwrap(20.0);
   text_node->set_card_as_margin(0.25, 0.25, 0.25, 0.25);
@@ -45,15 +63,15 @@ void text_keys(EventHandler& eh) {
   tex->read("/beta/toons/textures/smGreyButtonUp.rgb");
   text_node->set_card_texture( tex );
   text_node->set_card_border(0.1, 0.1);
-  text_node->set_text( textStr ); 
-  text_node->set_text_color( 0.0, 0.0, 0.0, 1.0 ); 
+  text_node->set_text( textStr );
+  text_node->set_text_color( 0.0, 0.0, 0.0, 1.0 );
   if (text_node->has_card_texture())
     nout << "I've got a texture!" << "\n";
   else
     nout << "I don't have a texture..." << "\n";
   nout << "text is " << text_node->get_width() << " by "
        << text_node->get_height() << "\n";
-  
+
   new RenderRelation(egg_root, text_node);
 }
 

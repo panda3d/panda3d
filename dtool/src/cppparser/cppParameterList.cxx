@@ -1,15 +1,19 @@
-// Filename: cppParameterList.C
+// Filename: cppParameterList.cxx
 // Created by:  drose (21Oct99)
-// 
+//
 ////////////////////////////////////////////////////////////////////
-// Copyright (C) 1992,93,94,95,96,97  Walt Disney Imagineering, Inc.
-// 
-// These  coded  instructions,  statements,  data   structures   and
-// computer  programs contain unpublished proprietary information of
-// Walt Disney Imagineering and are protected by  Federal  copyright
-// law.  They may  not be  disclosed to third  parties  or copied or
-// duplicated in any form, in whole or in part,  without  the  prior
-// written consent of Walt Disney Imagineering Inc.
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -19,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPParameterList::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPParameterList::
 CPPParameterList() {
@@ -53,7 +57,7 @@ is_equivalent(const CPPParameterList &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPParameterList::Equality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPParameterList::
 operator == (const CPPParameterList &other) const {
@@ -74,7 +78,7 @@ operator == (const CPPParameterList &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPParameterList::Inequality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPParameterList::
 operator != (const CPPParameterList &other) const {
@@ -84,7 +88,7 @@ operator != (const CPPParameterList &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPParameterList::Ordering Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPParameterList::
 operator < (const CPPParameterList &other) const {
@@ -140,7 +144,7 @@ is_fully_specified() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPParameterList::substitute_decl
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPParameterList *CPPParameterList::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
@@ -148,7 +152,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   CPPParameterList *rep = new CPPParameterList;
   bool any_changed = false;
   for (int i = 0; i < (int)_parameters.size(); i++) {
-    CPPInstance *inst = 
+    CPPInstance *inst =
       _parameters[i]->substitute_decl(subst, current_scope, global_scope)
       ->as_instance();
     if (inst != _parameters[i]) {

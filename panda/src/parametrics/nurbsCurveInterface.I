@@ -1,13 +1,26 @@
 // Filename: nurbsCurveInterface.I
 // Created by:  drose (02Mar01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveInterface::append_cv
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int NurbsCurveInterface::
 append_cv(float x, float y, float z) {
@@ -17,7 +30,7 @@ append_cv(float x, float y, float z) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveInterface::append_cv
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int NurbsCurveInterface::
 append_cv(const LVecBase3f &v) {
@@ -27,7 +40,7 @@ append_cv(const LVecBase3f &v) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveInterface::append_cv
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int NurbsCurveInterface::
 append_cv(const LVecBase4f &v) {

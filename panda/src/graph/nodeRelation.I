@@ -1,6 +1,19 @@
 // Filename: nodeRelation.I
 // Created by:  drose (30Sep99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
@@ -19,7 +32,7 @@ remove_arc(NodeRelation *arc) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeRelation::output_transitions
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NodeRelation::
 output_transitions(ostream &out) const {
@@ -29,7 +42,7 @@ output_transitions(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeRelation::write_transitions
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NodeRelation::
 write_transitions(ostream &out, int indent_level) const {

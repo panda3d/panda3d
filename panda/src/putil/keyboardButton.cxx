@@ -1,6 +1,19 @@
 // Filename: keyboardButton.cxx
 // Created by:  drose (01Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "keyboardButton.h"
@@ -235,7 +248,7 @@ ButtonHandle KeyboardButton::
 shift_lock() {
   return _shift_lock;
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: KeyboardButton::init_keyboard_buttons
 //       Access: Public, Static
@@ -263,7 +276,7 @@ init_keyboard_buttons() {
   ButtonRegistry::ptr()->register_button(_f10, "f10");
   ButtonRegistry::ptr()->register_button(_f11, "f11");
   ButtonRegistry::ptr()->register_button(_f12, "f12");
-  
+
   ButtonRegistry::ptr()->register_button(_left, "left");
   ButtonRegistry::ptr()->register_button(_right, "right");
   ButtonRegistry::ptr()->register_button(_up, "up");

@@ -1,6 +1,19 @@
 // Filename: computedVerticesMaker.cxx
 // Created by:  drose (01Mar99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "computedVerticesMaker.h"
@@ -18,7 +31,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMaker::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ComputedVerticesMaker::
 ComputedVerticesMaker() :
@@ -92,7 +105,7 @@ add_vertex_joints(EggVertex *vertex, EggNode *object) {
     if (egg_joint->is_of_type(EggGroup::get_class_type())) {
       egg_group = DCAST(EggGroup, egg_joint);
     }
-    while (egg_group != (EggGroup *)NULL && 
+    while (egg_group != (EggGroup *)NULL &&
            egg_group->get_group_type() != EggGroup::GT_joint &&
            egg_group->get_dart_type() == EggGroup::DT_none) {
       nassertv(egg_group->get_parent() != (EggGroupNode *)NULL);
@@ -104,7 +117,7 @@ add_vertex_joints(EggVertex *vertex, EggNode *object) {
     }
 
     add_joint(egg_joint, 1.0);
-    
+
   } else {
     // This vertex belongs in the joint or joints that reference it.
     EggVertex::GroupRef::const_iterator gri;
@@ -327,7 +340,7 @@ make_computed_vertices(Character *character, CharacterMaker &char_maker) {
       ComputedVertices::VertexTransform new_vt;
       new_vt._joint_index = joint_index;
       new_vt._effect = (float)weight;
-      
+
       // This will either insert the VertexTransform into the set and
       // return its newly-created iterator, or it will return the
       // iterator referring to the previously-inserted VertexTransform
@@ -341,9 +354,9 @@ make_computed_vertices(Character *character, CharacterMaker &char_maker) {
         (ComputedVertices::VertexTransform &)*vti;
 
       // Now add in all the vertices and normals.
-      copy(vc._vindex.begin(), vc._vindex.end(), 
+      copy(vc._vindex.begin(), vc._vindex.end(),
            back_inserter(insert_vt._vindex));
-      copy(vc._nindex.begin(), vc._nindex.end(), 
+      copy(vc._nindex.begin(), vc._nindex.end(),
            back_inserter(insert_vt._nindex));
     }
   }
@@ -351,7 +364,7 @@ make_computed_vertices(Character *character, CharacterMaker &char_maker) {
   // Ok, now we have the set of all VertexTransforms.  Create a
   // ComputedVertices object that reflects this.
   ComputedVertices *comp_verts = new ComputedVertices;
-  copy(transforms.begin(), transforms.end(), 
+  copy(transforms.begin(), transforms.end(),
        back_inserter(comp_verts->_transforms));
 
   character->_cv._coords = _coords;
@@ -426,7 +439,7 @@ make_computed_vertices(Character *character, CharacterMaker &char_maker) {
       }
     }
   }
-  
+
   comp_verts->make_orig(character);
   return comp_verts;
 }
@@ -435,11 +448,11 @@ make_computed_vertices(Character *character, CharacterMaker &char_maker) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMaker::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ComputedVerticesMaker::
 write(ostream &out) const {
-  out << "ComputedVerticesMaker, " 
+  out << "ComputedVerticesMaker, "
       << _transforms.size() << " transform spaces, "
       << _coords.size() << " vertices, "
       << _norms.size() << " normals, "
@@ -458,7 +471,7 @@ write(ostream &out) const {
   for (mi = _morphs.begin(); mi != _morphs.end(); ++mi) {
     const string &name = (*mi).first;
     const MorphList &mlist = (*mi).second;
-    out << name << " morphs " 
+    out << name << " morphs "
         << mlist._vmorphs.size() << " vertices, "
         << mlist._nmorphs.size() << " normals, "
         << mlist._tmorphs.size() << " uvs, and "
@@ -470,7 +483,7 @@ write(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMaker::JointWeights::Ordering operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool ComputedVerticesMaker::JointWeights::
 operator < (const JointWeights &other) const {
@@ -506,7 +519,7 @@ operator < (const JointWeights &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMaker::JointWeights::normalize_weights
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ComputedVerticesMaker::JointWeights::
 normalize_weights() {
@@ -531,7 +544,7 @@ normalize_weights() {
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMaker::JointWeights::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ComputedVerticesMaker::JointWeights::
 output(ostream &out) const {

@@ -1,6 +1,19 @@
 // Filename: planarSlider.cxx
 // Created by:  drose (10Jan00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "planarSlider.h"
@@ -24,7 +37,7 @@ TypeHandle PlanarSlider::_transform_type;
 ////////////////////////////////////////////////////////////////////
 //     Function: PlanarSlider::Constructor
 //       Access: Public, Scheme
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PlanarSlider::
 PlanarSlider(const string &name) : DataNode(name) {
@@ -120,7 +133,7 @@ set_mouse_pos(const LPoint2f &mouse_pos) {
   _mouse_pos.set(max(min(mouse_pos[0], 1.0f), -1.0f),
                  max(min(mouse_pos[1], 1.0f), -1.0f));
 
-  LMatrix4f mat = 
+  LMatrix4f mat =
     _inverse_mat *
     LMatrix4f::translate_mat(LVector3f::rfu(_mouse_pos[0],
                                             _mouse_pos[1],
@@ -130,7 +143,7 @@ set_mouse_pos(const LPoint2f &mouse_pos) {
 
   _transform->set_value(mat);
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PlanarSlider::get_mouse_pos
 //       Access: Public, Scheme
@@ -145,7 +158,7 @@ get_mouse_pos() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PlanarSlider::transmit_data
 //       Access: Public
-//  Description: Convert mouse data into a planarSlider matrix 
+//  Description: Convert mouse data into a planarSlider matrix
 ////////////////////////////////////////////////////////////////////
 void PlanarSlider::
 transmit_data(NodeAttributes &data) {
@@ -157,7 +170,7 @@ transmit_data(NodeAttributes &data) {
 
   // Now look for a mouse position.
   const NodeAttribute *xyz = data.get_attribute(_xyz_type);
-  
+
   if (xyz != (NodeAttribute *)NULL) {
     if (_mods.is_any_down()) {
       LVecBase3f p = DCAST(Vec3DataAttribute, xyz)->get_value();

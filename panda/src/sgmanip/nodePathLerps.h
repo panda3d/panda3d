@@ -1,6 +1,19 @@
 // Filename: nodePathLerps.h
 // Created by:  frang (01Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef __NODEPATHLERPS_H__
@@ -182,7 +195,7 @@ private:
 PUBLISHED:
   ColorLerpFunctor(NodePath np, LVecBase4f start, LVecBase4f end)
     : LVecBase4fLerpFunctor(start, end), _node_path(np), _is_wrt(false) {}
-  ColorLerpFunctor(NodePath np, float sr, float sg, float sb, float sa, 
+  ColorLerpFunctor(NodePath np, float sr, float sg, float sb, float sa,
                 float er, float eg, float eb, float ea) : LVecBase4fLerpFunctor(LVecBase4f(sr, sg, sb, sa),
                                                  LVecBase4f(er, eg, eb, ea)), _node_path(np), _is_wrt(false) {}
   ColorLerpFunctor(NodePath np, LVecBase4f start, LVecBase4f end, NodePath wrt)
@@ -294,7 +307,7 @@ private:
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PosHprScaleLerpFunctor
-// Description : Class for Lerping between position, orientation, 
+// Description : Class for Lerping between position, orientation,
 //               and scale
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PosHprScaleLerpFunctor : public LerpFunctor {
@@ -390,7 +403,7 @@ private:
 PUBLISHED:
   ColorScaleLerpFunctor(NodePath np, LVecBase4f start, LVecBase4f end)
     : LVecBase4fLerpFunctor(start, end), _node_path(np), _is_wrt(false) {}
-  ColorScaleLerpFunctor(NodePath np, float sr, float sg, float sb, float sa, 
+  ColorScaleLerpFunctor(NodePath np, float sr, float sg, float sb, float sa,
                 float er, float eg, float eb, float ea) : LVecBase4fLerpFunctor(LVecBase4f(sr, sg, sb, sa),
                                                  LVecBase4f(er, eg, eb, ea)), _node_path(np), _is_wrt(false) {}
   ColorScaleLerpFunctor(NodePath np, LVecBase4f start, LVecBase4f end, NodePath wrt)

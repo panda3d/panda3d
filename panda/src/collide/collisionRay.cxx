@@ -1,6 +1,19 @@
 // Filename: collisionRay.cxx
 // Created by:  drose (22Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "collisionRay.h"
@@ -21,7 +34,7 @@ TypeHandle CollisionRay::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionRay::make_copy
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CollisionSolid *CollisionRay::
 make_copy() {
@@ -31,7 +44,7 @@ make_copy() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionRay::test_intersection
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CollisionRay::
 test_intersection(CollisionHandler *record, const CollisionEntry &entry,
@@ -68,7 +81,7 @@ get_collision_origin() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionRay::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionRay::
 output(ostream &out) const {
@@ -106,7 +119,7 @@ set_projection(ProjectionNode *camera, const LPoint2f &point) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionRay::recompute_bound
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionRay::
 recompute_bound() {
@@ -134,7 +147,7 @@ recompute_viz(Node *parent) {
   PTA_Colorf colors;
   for (int i = 0; i < 100; i++) {
     verts.push_back(_origin + (double)i * _direction);
-    colors.push_back(Colorf(1.0, 1.0, 1.0, 1.0) + 
+    colors.push_back(Colorf(1.0, 1.0, 1.0, 1.0) +
                      ((double)i / 100.0) * Colorf(0.0, 0.0, 0.0, -1.0));
   }
   ray->set_coords(verts, G_PER_VERTEX);

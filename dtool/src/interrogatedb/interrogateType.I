@@ -1,13 +1,26 @@
 // Filename: interrogateType.I
 // Created by:  drose (31Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE InterrogateType::
 InterrogateType(InterrogateModuleDef *def) :
@@ -23,7 +36,7 @@ InterrogateType(InterrogateModuleDef *def) :
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE InterrogateType::
 InterrogateType(const InterrogateType &copy) {
@@ -45,7 +58,7 @@ is_global() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::has_scoped_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateType::
 has_scoped_name() const {
@@ -55,7 +68,7 @@ has_scoped_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::get_scoped_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const string &InterrogateType::
 get_scoped_name() const {
@@ -65,7 +78,7 @@ get_scoped_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::has_true_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateType::
 has_true_name() const {
@@ -75,7 +88,7 @@ has_true_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::get_true_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const string &InterrogateType::
 get_true_name() const {
@@ -85,7 +98,7 @@ get_true_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::has_comment
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateType::
 has_comment() const {
@@ -95,7 +108,7 @@ has_comment() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::get_comment
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const string &InterrogateType::
 get_comment() const {
@@ -127,7 +140,7 @@ get_outer_class() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::is_atomic
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateType::
 is_atomic() const {
@@ -137,7 +150,7 @@ is_atomic() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::get_atomic_token
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE AtomicToken InterrogateType::
 get_atomic_token() const {
@@ -147,7 +160,7 @@ get_atomic_token() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::is_unsigned
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateType::
 is_unsigned() const {
@@ -157,7 +170,7 @@ is_unsigned() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::is_signed
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateType::
 is_signed() const {
@@ -167,7 +180,7 @@ is_signed() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::is_long
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateType::
 is_long() const {
@@ -177,7 +190,7 @@ is_long() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::is_longlong
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateType::
 is_longlong() const {
@@ -187,7 +200,7 @@ is_longlong() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::is_short
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateType::
 is_short() const {
@@ -197,7 +210,7 @@ is_short() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::is_wrapped
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateType::
 is_wrapped() const {
@@ -207,7 +220,7 @@ is_wrapped() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::is_pointer
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateType::
 is_pointer() const {
@@ -217,7 +230,7 @@ is_pointer() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::is_const
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateType::
 is_const() const {
@@ -227,7 +240,7 @@ is_const() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::get_wrapped_type
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TypeIndex InterrogateType::
 get_wrapped_type() const {
@@ -237,7 +250,7 @@ get_wrapped_type() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::is_enum
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateType::
 is_enum() const {
@@ -247,7 +260,7 @@ is_enum() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::number_of_enum_values
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int InterrogateType::
 number_of_enum_values() const {
@@ -257,7 +270,7 @@ number_of_enum_values() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::get_enum_value_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const string &InterrogateType::
 get_enum_value_name(int n) const {
@@ -270,7 +283,7 @@ get_enum_value_name(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::get_enum_value_scoped_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const string &InterrogateType::
 get_enum_value_scoped_name(int n) const {
@@ -283,7 +296,7 @@ get_enum_value_scoped_name(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::get_enum_value
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int InterrogateType::
 get_enum_value(int n) const {
@@ -296,7 +309,7 @@ get_enum_value(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::is_struct
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateType::
 is_struct() const {
@@ -306,7 +319,7 @@ is_struct() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::is_class
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateType::
 is_class() const {
@@ -316,7 +329,7 @@ is_class() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::is_union
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateType::
 is_union() const {
@@ -326,7 +339,7 @@ is_union() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::is_fully_defined
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateType::
 is_fully_defined() const {
@@ -349,7 +362,7 @@ is_unpublished() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::number_of_constructors
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int InterrogateType::
 number_of_constructors() const {
@@ -359,7 +372,7 @@ number_of_constructors() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::get_constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE FunctionIndex InterrogateType::
 get_constructor(int n) const {
@@ -373,7 +386,7 @@ get_constructor(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::has_destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateType::
 has_destructor() const {
@@ -383,7 +396,7 @@ has_destructor() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::destructor_is_inherited
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateType::
 destructor_is_inherited() const {
@@ -393,7 +406,7 @@ destructor_is_inherited() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::get_destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE FunctionIndex InterrogateType::
 get_destructor() const {
@@ -403,7 +416,7 @@ get_destructor() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::number_of_elements
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int InterrogateType::
 number_of_elements() const {
@@ -413,7 +426,7 @@ number_of_elements() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::get_element
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ElementIndex InterrogateType::
 get_element(int n) const {
@@ -427,7 +440,7 @@ get_element(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::number_of_methods
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int InterrogateType::
 number_of_methods() const {
@@ -437,7 +450,7 @@ number_of_methods() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::get_method
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE FunctionIndex InterrogateType::
 get_method(int n) const {
@@ -451,7 +464,7 @@ get_method(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::number_of_casts
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int InterrogateType::
 number_of_casts() const {
@@ -461,7 +474,7 @@ number_of_casts() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::get_cast
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE FunctionIndex InterrogateType::
 get_cast(int n) const {
@@ -475,7 +488,7 @@ get_cast(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::number_of_derivations
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int InterrogateType::
 number_of_derivations() const {
@@ -485,7 +498,7 @@ number_of_derivations() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::get_derivation
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TypeIndex InterrogateType::
 get_derivation(int n) const {
@@ -499,7 +512,7 @@ get_derivation(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::derivation_has_upcast
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateType::
 derivation_has_upcast(int n) const {
@@ -513,7 +526,7 @@ derivation_has_upcast(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::derivation_get_upcast
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TypeIndex InterrogateType::
 derivation_get_upcast(int n) const {
@@ -527,7 +540,7 @@ derivation_get_upcast(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::derivation_downcast_is_impossible
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateType::
 derivation_downcast_is_impossible(int n) const {
@@ -541,7 +554,7 @@ derivation_downcast_is_impossible(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::derivation_has_downcast
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateType::
 derivation_has_downcast(int n) const {
@@ -555,7 +568,7 @@ derivation_has_downcast(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::derivation_get_downcast
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TypeIndex InterrogateType::
 derivation_get_downcast(int n) const {
@@ -569,7 +582,7 @@ derivation_get_downcast(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::number_of_nested_types
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int InterrogateType::
 number_of_nested_types() const {
@@ -579,7 +592,7 @@ number_of_nested_types() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::get_nested_type
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TypeIndex InterrogateType::
 get_nested_type(int n) const {

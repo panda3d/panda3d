@@ -2,9 +2,22 @@
 // Created by:  mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Buffer::get_length 
+//     Function: Buffer::get_length
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -14,7 +27,7 @@ get_length(void) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Ramfile::constructor 
+//     Function: Ramfile::constructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////

@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "sgiHardwareChannel.h"
 #include "sgiGraphicsPipe.h"
@@ -17,7 +26,7 @@
 TypeHandle sgiHardwareChannel::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Constructor 
+//     Function: Constructor
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -38,10 +47,10 @@ sgiHardwareChannel::sgiHardwareChannel( GraphicsWindow* window, int id ) :
 
     XSGIvcChannelInfo* channel_info = (XSGIvcChannelInfo *)_channel_info;
 
-    XSGIvcQueryChannelInfo( (Display *)sgipipe->get_display(), 
+    XSGIvcQueryChannelInfo( (Display *)sgipipe->get_display(),
         sgipipe->get_screen(), _id, &channel_info );
     if ( channel_info->active ) {
-      int screeny = DisplayHeight( (Display *)sgipipe->get_display(), 
+      int screeny = DisplayHeight( (Display *)sgipipe->get_display(),
                                    sgipipe->get_screen() );
       _xsize = channel_info->source.width;
       _ysize = channel_info->source.height;

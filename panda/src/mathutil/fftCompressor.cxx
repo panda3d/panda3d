@@ -1,6 +1,19 @@
 // Filename: fftCompressor.cxx
 // Created by:  drose (11Dec00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "fftCompressor.h"
@@ -70,7 +83,7 @@ is_compression_available() {
 //               user's Configrc file, rather than the single quality
 //               dial.  Quality 101 or higher means to generate
 //               lossless output (this is the default if libfftw is
-//               not available).  
+//               not available).
 //
 //               Quality 102 writes all four components of quaternions
 //               to the output file, rather than just three, quality
@@ -101,7 +114,7 @@ set_quality(int quality) {
     _fft_exponent = fft_exponent;
 
   } else if (_quality < 40) {
-    // 0 - 40 : 
+    // 0 - 40 :
     //   fft-offset 1.0 - 0.001
     //   fft-factor 1.0
     //   fft-exponent 4.0
@@ -188,7 +201,7 @@ write_reals(Datagram &datagram, const float *array, int length) {
   // If we don't have FFTW, we shouldn't get here.
   nassertv(false);
 
-#else 
+#else
 
   if (length == 0) {
     // Special case: do nothing.
@@ -200,7 +213,7 @@ write_reals(Datagram &datagram, const float *array, int length) {
     datagram.add_float32(array[0]);
     return;
   }
-    
+
   // Normal case: FFT the array, and write that out.
   double *data = (double *)alloca(length * sizeof(double));
   int i;
@@ -234,7 +247,7 @@ write_reals(Datagram &datagram, const float *array, int length) {
 
     if (a == 0.0) {
       num_width = RW_0;
-      
+
     } else if (a <= max_range_8) {
       num_width = RW_8;
 
@@ -304,7 +317,7 @@ write_hprs(Datagram &datagram, const LVecBase3f *array, int length) {
   if (_quality >= 103) {
     // If quality level is 103, we convert hpr to a table of matrices.
     // This is just for debugging.
-    vector_float 
+    vector_float
       m00, m01, m02,
       m10, m11, m12,
       m20, m21, m22;
@@ -478,7 +491,7 @@ read_reals(DatagramIterator &di, vector_float &array) {
 
   if (_quality > 100) {
     array.reserve(array.size() + length);
- 
+
     // Special case: lossless output.
     for (int i = 0; i < length; i++) {
       array.push_back(di.get_float32());
@@ -549,7 +562,7 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
     // quat.  This is just for debugging.
     vector_float h, p, r;
     bool okflag = true;
-    okflag = 
+    okflag =
       read_reals(di, h) &&
       read_reals(di, p) &&
       read_reals(di, r);
@@ -566,12 +579,12 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
   if (_quality >= 103) {
     // If quality level is 103, we read in a table of 3x3 rotation
     // matrices.  This is just for debugging.
-    vector_float 
+    vector_float
       m00, m01, m02,
       m10, m11, m12,
       m20, m21, m22;
     bool okflag = true;
-    okflag = 
+    okflag =
       read_reals(di, m00) &&
       read_reals(di, m01) &&
       read_reals(di, m02) &&
@@ -614,7 +627,7 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
   }
 #endif
 
-  okflag = 
+  okflag =
     okflag &&
     read_reals(di, qi) &&
     read_reals(di, qj) &&
@@ -622,7 +635,7 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
 
   if (okflag) {
     nassertr(qi.size() == qj.size() && qj.size() == qk.size(), false);
-    
+
     array.reserve(array.size() + qi.size());
     for (int i = 0; i < (int)qi.size(); i++) {
       LOrientationf rot;
@@ -631,7 +644,7 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
       float qr2 = 1.0 - (qi[i] * qi[i] + qj[i] * qj[i] + qk[i] * qk[i]);
       float qr1 = qr2 < 0.0 ? 0.0 : sqrtf(qr2);
 
-      rot.set(qr1, qi[i], qj[i], qk[i]); 
+      rot.set(qr1, qi[i], qj[i], qk[i]);
 
 #ifndef NDEBUG
       if (_quality >= 102) {
@@ -640,7 +653,7 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
 
         if (!IS_THRESHOLD_EQUAL(qr[i], qr1, 0.001)) {
           mathutil_cat.warning()
-            << "qr[" << i << "] = " << qr[i] << ", qr1 = " << qr1 
+            << "qr[" << i << "] = " << qr[i] << ", qr1 = " << qr1
             << ", diff is " << qr1 - qr[i] << "\n";
         }
       } else
@@ -653,7 +666,7 @@ read_hprs(DatagramIterator &di, vector_LVecBase3f &array) {
       LVecBase3f scale, hpr;
       bool success = decompose_matrix(mat, scale, hpr);
       nassertr(success, false);
-      
+
       array.push_back(hpr);
     }
   }
@@ -675,15 +688,15 @@ void FFTCompressor::
 free_storage() {
 #ifdef HAVE_FFTW
   RealPlans::iterator pi;
-  for (pi = _real_compress_plans.begin(); 
+  for (pi = _real_compress_plans.begin();
        pi != _real_compress_plans.end();
        ++pi) {
     rfftw_destroy_plan((*pi).second);
   }
   _real_compress_plans.clear();
 
-  for (pi = _real_decompress_plans.begin(); 
-       pi != _real_decompress_plans.end(); 
+  for (pi = _real_decompress_plans.begin();
+       pi != _real_decompress_plans.end();
        ++pi) {
     rfftw_destroy_plan((*pi).second);
   }
@@ -718,16 +731,16 @@ write_run(Datagram &datagram, FFTCompressor::RunWidth run_width,
       // careful, however, not to accidentally write a byte that looks
       // like an RW_double flag.
       datagram.add_uint8((int)run_width | run.size());
-      
+
     } else {
       // Otherwise, write zero as the length, to indicate that we'll
       // write the actual length in the following 16-bit word.
       datagram.add_uint8(run_width);
-      
+
       // Assuming, of course, that the length fits within 16 bits.
       nassertr(run.size() < 65536, 0);
       nassertr(run.size() != 0, 0);
-      
+
       datagram.add_uint16(run.size());
     }
   }
@@ -860,7 +873,7 @@ get_scale_factor(int i, int length) const {
   int k = (i < m) ? i : length - i;
   nassertr(k >= 0 && k < m, 1.0);
 
-  return _fft_offset + 
+  return _fft_offset +
     _fft_factor * pow((double)(m-1 - k) / (double)(m-1), _fft_exponent);
 }
 

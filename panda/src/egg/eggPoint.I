@@ -1,6 +1,19 @@
 // Filename: eggPoint.I
 // Created by:  drose (15Dec99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -8,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPoint::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggPoint::
 EggPoint(const string &name) : EggPrimitive(name) {
@@ -17,7 +30,7 @@ EggPoint(const string &name) : EggPrimitive(name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPoint::Copy constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggPoint::
 EggPoint(const EggPoint &copy) : EggPrimitive(copy) {
@@ -26,7 +39,7 @@ EggPoint(const EggPoint &copy) : EggPrimitive(copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPoint::Copy assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggPoint &EggPoint::
 operator = (const EggPoint &copy) {

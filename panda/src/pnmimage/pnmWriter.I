@@ -1,13 +1,26 @@
 // Filename: pnmWriter.I
 // Created by:  drose (16Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMWriter::Constructor
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMWriter::
 PNMWriter(PNMFileType *type, FILE *file, bool owns_file) :
@@ -31,7 +44,7 @@ get_type() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMWriter::set_color_type
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMWriter::
 set_color_type(ColorType type) {
@@ -41,7 +54,7 @@ set_color_type(ColorType type) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMWriter::set_num_channels
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMWriter::
 set_num_channels(int num_channels) {
@@ -52,7 +65,7 @@ set_num_channels(int num_channels) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMWriter::set_maxval
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMWriter::
 set_maxval(xelval maxval) {
@@ -62,7 +75,7 @@ set_maxval(xelval maxval) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMWriter::set_x_size
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMWriter::
 set_x_size(int x_size) {
@@ -73,7 +86,7 @@ set_x_size(int x_size) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMWriter::set_y_size
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMWriter::
 set_y_size(int y_size) {

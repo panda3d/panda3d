@@ -1,6 +1,19 @@
 // Filename: pnmWriterTypes.h
 // Created by:  drose (14Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef PNMWRITERTYPES_H
@@ -60,7 +73,7 @@ protected:
   void BuildScanline(ScanLine output[], xel *row_data, xelval *alpha_data);
   ScanElem *Compress(ScanElem *temp, ScanLine &output);
   int RLECompress(ScanElem *inbuf, int size);
- 
+
   TabEntry *table;
   long table_start;
   int current_row;

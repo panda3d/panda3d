@@ -1,12 +1,25 @@
 // Filename: onOffAttribute.I
 // Created by:  drose (20Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OnOffAttribute::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH OnOffAttribute::
 OnOffAttribute(bool is_on) {
@@ -16,7 +29,7 @@ OnOffAttribute(bool is_on) {
 ////////////////////////////////////////////////////////////////////
 //     Function: OnOffAttribute::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH OnOffAttribute::
 OnOffAttribute(const OnOffAttribute &copy) :
@@ -28,7 +41,7 @@ OnOffAttribute(const OnOffAttribute &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: OnOffAttribute::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void OnOffAttribute::
 operator = (const OnOffAttribute &copy) {

@@ -1,12 +1,25 @@
 // Filename: clipPlaneAttribute.I
 // Created by:  drose (23Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ClipPlaneAttribute::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ClipPlaneAttribute::
 ClipPlaneAttribute() {
@@ -15,7 +28,7 @@ ClipPlaneAttribute() {
 ////////////////////////////////////////////////////////////////////
 //     Function: ClipPlaneAttribute::set_on
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void ClipPlaneAttribute::
 set_on(const PT(PlaneNode) &property) {
@@ -25,7 +38,7 @@ set_on(const PT(PlaneNode) &property) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ClipPlaneAttribute::set_off
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void ClipPlaneAttribute::
 set_off(const PT(PlaneNode) &property) {
@@ -35,7 +48,7 @@ set_off(const PT(PlaneNode) &property) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ClipPlaneAttribute::is_on
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool ClipPlaneAttribute::
 is_on(const PT(PlaneNode) &property) const {
@@ -45,7 +58,7 @@ is_on(const PT(PlaneNode) &property) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ClipPlaneAttribute::is_off
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool ClipPlaneAttribute::
 is_off(const PT(PlaneNode) &property) const {

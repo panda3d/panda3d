@@ -1,6 +1,19 @@
-// Filename: cppPreprocessor.C
+// Filename: cppPreprocessor.cxx
 // Created by:  drose (22Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -66,7 +79,7 @@ trim_blanks(const string &str) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::InputFile::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPPreprocessor::InputFile::
 InputFile() {
@@ -80,7 +93,7 @@ InputFile() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::InputFile::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPPreprocessor::InputFile::
 ~InputFile() {
@@ -92,7 +105,7 @@ CPPPreprocessor::InputFile::
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::InputFile::open
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPPreprocessor::InputFile::
 open(const CPPFile &file) {
@@ -101,19 +114,19 @@ open(const CPPFile &file) {
   _file = file;
   ifstream *in = new ifstream;
   _in = in;
-  
+
   return _file._filename.open_read(*in);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::InputFile::connect_input
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPPreprocessor::InputFile::
 connect_input(const string &input) {
   assert(_in == NULL);
-  
+
   _input = input;
   _in = new istringstream(_input);
   return !_in->fail();
@@ -122,13 +135,13 @@ connect_input(const string &input) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::InputFile::get
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CPPPreprocessor::InputFile::
 get() {
   assert(_in != NULL);
   int c = _in->get();
-  
+
   // Quietly skip over embedded carriage-return characters.  We
   // shouldn't see any of these unless there was some DOS-to-Unix file
   // conversion problem.
@@ -146,7 +159,7 @@ get() {
       _col_number = 1;
     }
     break;
-  
+
   default:
     if (!_lock_position) {
       _col_number++;
@@ -159,7 +172,7 @@ get() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPPreprocessor::
 CPPPreprocessor() {
@@ -207,7 +220,7 @@ get_verbose() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::copy_filepos
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
 copy_filepos(const CPPPreprocessor &other) {
@@ -220,7 +233,7 @@ copy_filepos(const CPPPreprocessor &other) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::get_file
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPFile CPPPreprocessor::
 get_file() const {
@@ -233,7 +246,7 @@ get_file() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::get_line_number
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CPPPreprocessor::
 get_line_number() const {
@@ -246,7 +259,7 @@ get_line_number() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::get_col_number
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CPPPreprocessor::
 get_col_number() const {
@@ -259,7 +272,7 @@ get_col_number() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::get_next_token
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPToken CPPPreprocessor::
 get_next_token() {
@@ -379,7 +392,7 @@ get_next_token0() {
             return token;
           }
           _saved_tokens.push_back(token);
-          return CPPToken(SCOPING, first_line, first_col, first_file, 
+          return CPPToken(SCOPING, first_line, first_col, first_file,
                           name, result);
         }
 
@@ -394,7 +407,7 @@ get_next_token0() {
         // indentifier wants template instantiation, assume the angle
         // bracket begins the instantiation and call yacc recursively to
         // parse the template parameters.
-        CPPDeclaration *decl = 
+        CPPDeclaration *decl =
           ident->find_template(current_scope, global_scope);
         if (decl != NULL) {
           ident->_names.back().set_templ
@@ -409,12 +422,12 @@ get_next_token0() {
 
     int token_type = IDENTIFIER;
     CPPDeclaration *decl = ident->find_symbol(current_scope, global_scope);
-    if (decl != NULL && 
+    if (decl != NULL &&
         (decl->as_typedef() != NULL || decl->as_type() != NULL)) {
       token_type = TYPENAME_IDENTIFIER;
     }
 
-    return CPPToken(token_type, first_line, first_col, first_file, 
+    return CPPToken(token_type, first_line, first_col, first_file,
                     name, result);
   }
 
@@ -425,7 +438,7 @@ get_next_token0() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::warning
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
 warning(const string &message, int line, int col, CPPFile file) {
@@ -447,7 +460,7 @@ warning(const string &message, int line, int col, CPPFile file) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::error
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
 error(const string &message, int line, int col, CPPFile file) {
@@ -475,7 +488,7 @@ error(const string &message, int line, int col, CPPFile file) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::get_warning_count
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CPPPreprocessor::
 get_warning_count() const {
@@ -485,7 +498,7 @@ get_warning_count() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::get_error_count
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CPPPreprocessor::
 get_error_count() const {
@@ -532,7 +545,7 @@ get_comment_before(int line, CPPFile file) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::init_cpp
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPPreprocessor::
 init_cpp(const CPPFile &file) {
@@ -546,7 +559,7 @@ init_cpp(const CPPFile &file) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::init_const_expr
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPPreprocessor::
 init_const_expr(const string &expr) {
@@ -559,7 +572,7 @@ init_const_expr(const string &expr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::init_type
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPPreprocessor::
 init_type(const string &type) {
@@ -572,7 +585,7 @@ init_type(const string &type) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::push_file
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPPreprocessor::
 push_file(const CPPFile &file) {
@@ -581,7 +594,7 @@ push_file(const CPPFile &file) {
 #endif
   _files.push_back(InputFile());
   InputFile &infile = _files.back();
-  
+
   if (infile.open(file)) {
     // Record the fact that we opened the file for the benefit of user
     // code.
@@ -602,12 +615,12 @@ push_file(const CPPFile &file) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::push_string
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPPreprocessor::
 push_string(const string &input, bool lock_position) {
 #ifdef CPP_VERBOSE_LEX
-  cerr << "Pushing to string \"" << input 
+  cerr << "Pushing to string \"" << input
        << "\"\nlock_position = " << lock_position << "\n";
 #endif
   CPPFile first_file = get_file();
@@ -616,8 +629,8 @@ push_string(const string &input, bool lock_position) {
 
   _files.push_back(InputFile());
   InputFile &infile = _files.back();
-  
-  if (infile.connect_input(input)) { 
+
+  if (infile.connect_input(input)) {
     if (lock_position) {
       infile._file = first_file;
       infile._line_number = first_line;
@@ -637,7 +650,7 @@ push_string(const string &input, bool lock_position) {
   _files.pop_back();
   return false;
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::parse_expr
 //       Access: Protected
@@ -650,7 +663,7 @@ push_string(const string &input, bool lock_position) {
 //               of this function defined for CPPParser.
 ////////////////////////////////////////////////////////////////////
 CPPExpression *CPPPreprocessor::
-parse_expr(const string &input_expr, CPPScope *current_scope, 
+parse_expr(const string &input_expr, CPPScope *current_scope,
            CPPScope *global_scope) {
   // Get a copy of the expression string we can modify.
   string expr = input_expr;
@@ -710,7 +723,7 @@ parse_expr(const string &input_expr, CPPScope *current_scope,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::internal_get_next_token
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPToken CPPPreprocessor::
 internal_get_next_token() {
@@ -889,7 +902,7 @@ internal_get_next_token() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::skip_whitespace
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CPPPreprocessor::
 skip_whitespace(int c) {
@@ -915,7 +928,7 @@ skip_whitespace(int c) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::skip_comment
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CPPPreprocessor::
 skip_comment(int c) {
@@ -941,14 +954,14 @@ skip_comment(int c) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::skip_c_comment
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CPPPreprocessor::
 skip_c_comment(int c) {
   if (_save_comments) {
     CPPCommentBlock *comment = new CPPCommentBlock;
     _comments.push_back(comment);
-    
+
     comment->_file = get_file();
     comment->_line_number = get_line_number();
     comment->_last_line = get_line_number();
@@ -970,16 +983,16 @@ skip_c_comment(int c) {
         c = get();
       }
     }
-    
-    warning("Comment is unterminated", 
-            comment->_line_number, comment->_col_number, 
+
+    warning("Comment is unterminated",
+            comment->_line_number, comment->_col_number,
             comment->_file);
 
   } else {
     CPPFile first_file = get_file();
     int first_line_number = get_line_number();
     int first_col_number = get_col_number() - 2;
-    
+
     while (c != EOF) {
       if (c == '*') {
         c = get();
@@ -990,19 +1003,19 @@ skip_c_comment(int c) {
         c = get();
       }
     }
-    
-    warning("Comment is unterminated", 
-            first_line_number, first_col_number, 
+
+    warning("Comment is unterminated",
+            first_line_number, first_col_number,
             first_file);
   }
-  
+
   return c;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::skip_cpp_comment
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CPPPreprocessor::
 skip_cpp_comment(int c) {
@@ -1021,7 +1034,7 @@ skip_cpp_comment(int c) {
     } else {
       // Otherwise, this begins a new comment block.
       comment = new CPPCommentBlock;
-      
+
       comment->_file = get_file();
       comment->_line_number = get_line_number();
       comment->_last_line = get_line_number();
@@ -1031,12 +1044,12 @@ skip_cpp_comment(int c) {
 
       _comments.push_back(comment);
     }
-    
+
     while (c != EOF && c != '\n') {
       comment->_comment += c;
       c = get();
     }
-    
+
     comment->_comment += '\n';
     comment->_last_line = get_line_number();
 
@@ -1054,7 +1067,7 @@ skip_cpp_comment(int c) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::process_directive
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CPPPreprocessor::
 process_directive(int c) {
@@ -1107,7 +1120,7 @@ process_directive(int c) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::get_preprocessor_command
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CPPPreprocessor::
 get_preprocessor_command(int c, string &command) {
@@ -1133,7 +1146,7 @@ get_preprocessor_command(int c, string &command) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::get_preprocessor_args
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CPPPreprocessor::
 get_preprocessor_args(int c, string &args) {
@@ -1168,10 +1181,10 @@ get_preprocessor_args(int c, string &args) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::handle_define_directive
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
-handle_define_directive(const string &args, int first_line, 
+handle_define_directive(const string &args, int first_line,
                         int first_col, const CPPFile &first_file) {
   if (args.empty()) {
     warning("Ignoring empty #define directive",
@@ -1192,10 +1205,10 @@ handle_define_directive(const string &args, int first_line,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::handle_undef_directive
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
-handle_undef_directive(const string &args, int first_line, 
+handle_undef_directive(const string &args, int first_line,
                        int first_col, const CPPFile &first_file) {
   if (args.empty()) {
     warning("Ignoring empty #undef directive",
@@ -1211,7 +1224,7 @@ handle_undef_directive(const string &args, int first_line,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::handle_ifdef_directive
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
 handle_ifdef_directive(const string &args, int, int, const CPPFile &) {
@@ -1220,15 +1233,15 @@ handle_ifdef_directive(const string &args, int, int, const CPPFile &) {
     // The macro is defined.  We continue.
     return;
   }
-  
+
   // The macro is undefined.  Skip stuff.
   skip_false_if_block(true);
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::handle_ifndef_directive
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
 handle_ifndef_directive(const string &args, int, int, const CPPFile &) {
@@ -1237,19 +1250,19 @@ handle_ifndef_directive(const string &args, int, int, const CPPFile &) {
     // The macro is undefined.  We continue.
     return;
   }
-  
+
   // The macro is defined.  Skip stuff.
   skip_false_if_block(true);
 }
 
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::handle_if_directive
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
-handle_if_directive(const string &args, int first_line, 
+handle_if_directive(const string &args, int first_line,
                     int first_col, const CPPFile &first_file) {
   CPPExpression *expr = parse_expr(args, global_scope, global_scope);
 
@@ -1272,7 +1285,7 @@ handle_if_directive(const string &args, int first_line,
     // The expression result is true.  We continue.
     return;
   }
-  
+
   // The expression result is false.  Skip stuff.
   skip_false_if_block(true);
 }
@@ -1280,16 +1293,16 @@ handle_if_directive(const string &args, int first_line,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::handle_include_directive
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
-handle_include_directive(const string &args, int first_line, 
+handle_include_directive(const string &args, int first_line,
                          int first_col, const CPPFile &first_file) {
   bool okflag = false;
   Filename filename;
   Filename filename_as_referenced;
   bool angle_quotes = false;
-  
+
   if (!args.empty()) {
     if (args[0] == '"' && args[args.size() - 1] == '"') {
       filename = args.substr(1, args.size() - 2);
@@ -1321,14 +1334,14 @@ handle_include_directive(const string &args, int first_line,
   // Now look for the filename.  If we didn't use angle quotes, look
   // first in the current directory.
   bool found_file = false;
-  CPPFile::Source source = CPPFile::S_none; 
+  CPPFile::Source source = CPPFile::S_none;
 
   if (okflag) {
     if (!angle_quotes) {
       found_file = filename.exists();
       source = CPPFile::S_local;
     }
-    
+
     // Now look for it on the include path.
     if (!found_file && filename.resolve_filename(_system_include_path)) {
       found_file = true;
@@ -1339,7 +1352,7 @@ handle_include_directive(const string &args, int first_line,
       found_file = true;
       source = CPPFile::S_alternate;
     }
-    
+
     if (!found_file) {
       warning("Cannot find " + filename.get_fullpath(),
               first_line, first_col, first_file);
@@ -1355,14 +1368,14 @@ handle_include_directive(const string &args, int first_line,
             first_line, first_col, first_file);
   }
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::handle_error_directive
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
-handle_error_directive(const string &args, int first_line, 
+handle_error_directive(const string &args, int first_line,
                        int first_col, const CPPFile &first_file) {
   error(args, first_line, first_col, first_file);
 }
@@ -1427,7 +1440,7 @@ skip_false_if_block(bool consider_elifs) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::get_quoted_char
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPToken CPPPreprocessor::
 get_quoted_char(int c) {
@@ -1448,7 +1461,7 @@ get_quoted_char(int c) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::get_quoted_string
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPToken CPPPreprocessor::
 get_quoted_string(int c) {
@@ -1462,7 +1475,7 @@ get_quoted_string(int c) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::get_identifier
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPToken CPPPreprocessor::
 get_identifier(int c) {
@@ -1470,7 +1483,7 @@ get_identifier(int c) {
   int first_line = get_line_number();
   int first_col = get_col_number();
   string name(1, (char)c);
-  
+
   c = get();
   while (c != EOF && (isalnum(c) || c == '_')) {
     name += c;
@@ -1512,12 +1525,12 @@ get_identifier(int c) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::expand_manifest
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPToken CPPPreprocessor::
 expand_manifest(const CPPManifest *manifest) {
   vector_string args;
-  
+
   if (manifest->_has_parameters) {
     // Hmm, we're expecting arguments.
     extract_manifest_args(manifest->_name, manifest->_num_parameters, args);
@@ -1542,10 +1555,10 @@ expand_manifest(const CPPManifest *manifest) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::extract_manifest_args
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
-extract_manifest_args(const string &name, int num_args, 
+extract_manifest_args(const string &name, int num_args,
                       vector_string &args) {
   CPPFile first_file = get_file();
   int first_line = get_line_number();
@@ -1610,7 +1623,7 @@ extract_manifest_args(const string &name, int num_args,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::expand_defined_function
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
 expand_defined_function(string &expr, size_t q, size_t &p) {
@@ -1637,7 +1650,7 @@ expand_defined_function(string &expr, size_t q, size_t &p) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::expand_manifest_inline
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
 expand_manifest_inline(string &expr, size_t q, size_t &p,
@@ -1656,10 +1669,10 @@ expand_manifest_inline(string &expr, size_t q, size_t &p,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::extract_manifest_args_inline
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
-extract_manifest_args_inline(const string &name, int num_args, 
+extract_manifest_args_inline(const string &name, int num_args,
                              vector_string &args,
                              const string &expr, size_t &p) {
   // Skip whitespace till paren.
@@ -1711,14 +1724,14 @@ extract_manifest_args_inline(const string &name, int num_args,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::get_number
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPToken CPPPreprocessor::
 get_number(int c, int c2) {
   CPPFile first_file = get_file();
   int first_line = get_line_number();
   int first_col = get_col_number();
-  
+
   string num(1, (char)c);
   bool leading_zero = (c == '0');
   bool decimal_point = (c == '.');
@@ -1820,7 +1833,7 @@ get_number(int c, int c2) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::check_keyword
 //       Access: Private, Static
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CPPPreprocessor::
 check_keyword(const string &name) {
@@ -1828,14 +1841,14 @@ check_keyword(const string &name) {
   if (name == "bool") return KW_BOOL;
   if (name == "catch") return KW_CATCH;
   if (name == "char") return KW_CHAR;
-  if (name == "class") return KW_CLASS; 
-  if (name == "const") return KW_CONST; 
+  if (name == "class") return KW_CLASS;
+  if (name == "const") return KW_CONST;
   if (name == "delete") return KW_DELETE;
   if (name == "double") return KW_DOUBLE;
   if (name == "dynamic_cast") return KW_DYNAMIC_CAST;
   if (name == "else") return KW_ELSE;
   if (name == "__end_publish") return KW_END_PUBLISH;
-  if (name == "enum") return KW_ENUM; 
+  if (name == "enum") return KW_ENUM;
   if (name == "extern") return KW_EXTERN;
   if (name == "explicit") return KW_EXPLICIT;
   if (name == "__published") return KW_PUBLISHED;
@@ -1862,16 +1875,16 @@ check_keyword(const string &name) {
   if (name == "sizeof") return KW_SIZEOF;
   if (name == "static") return KW_STATIC;
   if (name == "static_cast") return KW_STATIC_CAST;
-  if (name == "struct") return KW_STRUCT; 
+  if (name == "struct") return KW_STRUCT;
   if (name == "template") return KW_TEMPLATE;
   if (name == "throw") return KW_THROW;
   if (name == "true") return KW_TRUE;
   if (name == "try") return KW_TRY;
-  if (name == "typedef") return KW_TYPEDEF; 
+  if (name == "typedef") return KW_TYPEDEF;
   if (name == "typename") return KW_TYPENAME;
-  if (name == "union") return KW_UNION; 
+  if (name == "union") return KW_UNION;
   if (name == "unsigned") return KW_UNSIGNED;
-  if (name == "using") return KW_USING; 
+  if (name == "using") return KW_USING;
   if (name == "virtual") return KW_VIRTUAL;
   if (name == "void") return KW_VOID;
   if (name == "volatile") return KW_VOLATILE;
@@ -1887,7 +1900,7 @@ check_keyword(const string &name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::scan_quoted
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string CPPPreprocessor::
 scan_quoted(int c) {
@@ -2008,7 +2021,7 @@ should_ignore_preprocessor() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::get
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CPPPreprocessor::
 get() {
@@ -2023,7 +2036,7 @@ get() {
   }
 
   int c = _files.back().get();
-  
+
   while (c == EOF && !_files.empty()) {
 #ifdef CPP_VERBOSE_LEX
     cerr << "End of input stream, restoring to previous input\n";
@@ -2050,7 +2063,7 @@ get() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPreprocessor::unget
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPreprocessor::
 unget(int c) {
@@ -2090,7 +2103,7 @@ nested_parse_template_instantiation(CPPTemplateScope *scope) {
   }
 
   CPPTemplateParameterList *actual_params = new CPPTemplateParameterList;
-  
+
   for (pi = formal_params._parameters.begin();
        pi != formal_params._parameters.end() && !_angle_bracket_found;
        ++pi) {

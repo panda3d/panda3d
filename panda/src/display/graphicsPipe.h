@@ -3,6 +3,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 #ifndef GRAPHICSPIPE_H
 #define GRAPHICSPIPE_H
 //
@@ -107,7 +119,7 @@ private:
   typedef vector<GraphicsPipe *> Pipes;
 
   Windows _windows;
- 
+
   static PipeFactory *_factory;
   static Pipes *_all_pipes;
   INLINE static Pipes &get_all_pipes();
@@ -127,10 +139,10 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
- 
+
 private:
   static TypeHandle _type_handle;
- 
+
   // this is so it can call get_hw_channel
   friend class GraphicsWindow;
 };

@@ -1,6 +1,19 @@
 // Filename: curveFitter.h
 // Created by:  drose (17Sep98)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef CURVEFITTER_H
@@ -21,7 +34,7 @@ class ClassicNurbsCurve;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CurveFitter
-// Description : 
+// Description :
 ////////////////////////////////////////////////////////////////////
 class CurveFitter {
 PUBLISHED:
@@ -48,7 +61,7 @@ PUBLISHED:
   void compute_tangents(float scale);
   PT(ParametricCurveCollection) make_hermite() const;
   PT(ParametricCurveCollection) make_nurbs() const;
-  
+
   void output(ostream &out) const;
   void write(ostream &out) const;
 
@@ -58,14 +71,14 @@ public:
     INLINE DataPoint();
     INLINE void output(ostream &out) const;
     INLINE bool operator < (const DataPoint &other) const;
-    
+
     float _t;
     LVecBase3f _xyz;
     LVecBase3f _hpr;
     LVecBase3f _tangent;
     LVecBase3f _hpr_tangent;
   };
-  
+
   typedef vector<DataPoint> Data;
   Data _data;
 
@@ -79,7 +92,7 @@ public:
   static void init_type() {
     register_type(_type_handle, "CurveFitter");
   }
- 
+
 private:
   static TypeHandle _type_handle;
 };

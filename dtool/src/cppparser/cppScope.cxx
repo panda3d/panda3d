@@ -1,6 +1,19 @@
-// Filename: cppScope.C
+// Filename: cppScope.cxx
 // Created by:  drose (21Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -26,7 +39,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPScope::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPScope::
 CPPScope(CPPScope *parent_scope,
@@ -45,7 +58,7 @@ CPPScope(CPPScope *parent_scope,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPScope::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPScope::
 ~CPPScope() {
@@ -89,7 +102,7 @@ get_parent_scope() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPScope::set_current_vis
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPScope::
 set_current_vis(CPPVisibility current_vis) {
@@ -99,7 +112,7 @@ set_current_vis(CPPVisibility current_vis) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPScope::get_current_vis
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPVisibility CPPScope::
 get_current_vis() const {
@@ -109,7 +122,7 @@ get_current_vis() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPScope::add_declaration
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPScope::
 add_declaration(CPPDeclaration *decl, CPPScope *global_scope,
@@ -133,7 +146,7 @@ add_declaration(CPPDeclaration *decl, CPPScope *global_scope,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPScope::add_enum_value
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPScope::
 add_enum_value(CPPInstance *inst) {
@@ -148,7 +161,7 @@ add_enum_value(CPPInstance *inst) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPScope::define_extension_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPScope::
 define_extension_type(CPPExtensionType *type) {
@@ -199,7 +212,7 @@ define_extension_type(CPPExtensionType *type) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPScope::define_namespace
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPScope::
 define_namespace(CPPNamespace *scope) {
@@ -211,13 +224,13 @@ define_namespace(CPPNamespace *scope) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPScope::add_using
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPScope::
 add_using(CPPUsing *using_decl, CPPScope *global_scope,
           CPPPreprocessor *error_sink) {
   if (using_decl->_full_namespace) {
-    CPPScope *scope = 
+    CPPScope *scope =
       using_decl->_ident->find_scope(this, global_scope);
     if (scope != NULL) {
       _using.insert(scope);
@@ -265,8 +278,8 @@ is_fully_specified() const {
   }
 
   Declarations::const_iterator di;
-  for (di = _declarations.begin(); 
-       di != _declarations.end() && specified; 
+  for (di = _declarations.begin();
+       di != _declarations.end() && specified;
        ++di) {
     if (!(*di)->is_fully_specified()) {
       specified = false;
@@ -283,7 +296,7 @@ is_fully_specified() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPScope::instantiate
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPScope *CPPScope::
 instantiate(const CPPTemplateParameterList *actual_params,
@@ -291,10 +304,10 @@ instantiate(const CPPTemplateParameterList *actual_params,
             CPPPreprocessor *error_sink) const {
   CPPScope *this_scope = (CPPScope *)this;
 
-  if (_parent_scope == NULL || 
+  if (_parent_scope == NULL ||
       _parent_scope->as_template_scope() == NULL) {
     if (error_sink != NULL) {
-      error_sink->warning("Ignoring template parameters for scope " + 
+      error_sink->warning("Ignoring template parameters for scope " +
                           get_local_name());
     }
     return this_scope;
@@ -333,7 +346,7 @@ instantiate(const CPPTemplateParameterList *actual_params,
     //    scope = new CPPScope(current_scope, name, V_public);
     scope = new CPPScope(_parent_scope, name, V_public);
     copy_substitute_decl(scope, subst, global_scope);
-    
+
     // Also define any new template parameter types, in case we
     // "instantiated" this scope with another template parameter.
     CPPTemplateParameterList::Parameters::const_iterator pi;
@@ -351,7 +364,7 @@ instantiate(const CPPTemplateParameterList *actual_params,
       }
     }
   }
-    
+
   // Finally, record this particular instantiation for future
   // reference, so we don't have to do this again.
   ((CPPScope *)this)->_instantiations.insert(Instantiations::value_type(actual_params, scope));
@@ -362,7 +375,7 @@ instantiate(const CPPTemplateParameterList *actual_params,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPScope::substitute_decl
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPScope *CPPScope::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
@@ -388,7 +401,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
     // scope has template parameters--then we must first remove any of
     // the template parameters from the subst list.  These will later
     // get substituted properly during instantiation.
-    const CPPTemplateParameterList &p = 
+    const CPPTemplateParameterList &p =
       _parent_scope->as_template_scope()->_parameters;
 
     CPPDeclaration::SubstDecl new_subst = subst;
@@ -413,7 +426,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPScope::find_type
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPType *CPPScope::
 find_type(const string &name, bool recurse) const {
@@ -433,8 +446,8 @@ find_type(const string &name, bool recurse) const {
 
   if (_struct_type != NULL) {
     CPPStructType::Derivation::const_iterator di;
-    for (di = _struct_type->_derivation.begin(); 
-         di != _struct_type->_derivation.end(); 
+    for (di = _struct_type->_derivation.begin();
+         di != _struct_type->_derivation.end();
          ++di) {
       CPPStructType *st = (*di)._base->as_struct_type();
       if (st != NULL) {
@@ -456,7 +469,7 @@ find_type(const string &name, bool recurse) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPScope::find_type
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPType *CPPScope::
 find_type(const string &name, CPPDeclaration::SubstDecl &subst,
@@ -479,12 +492,12 @@ find_type(const string &name, CPPDeclaration::SubstDecl &subst,
 
   if (_struct_type != NULL) {
     CPPStructType::Derivation::const_iterator di;
-    for (di = _struct_type->_derivation.begin(); 
-         di != _struct_type->_derivation.end(); 
+    for (di = _struct_type->_derivation.begin();
+         di != _struct_type->_derivation.end();
          ++di) {
       CPPStructType *st = (*di)._base->as_struct_type();
       if (st != NULL) {
-        CPPType *type = st->_scope->find_type(name, subst, global_scope, 
+        CPPType *type = st->_scope->find_type(name, subst, global_scope,
                                               false);
         if (type != NULL) {
           return type;
@@ -503,7 +516,7 @@ find_type(const string &name, CPPDeclaration::SubstDecl &subst,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPScope::find_scope
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPScope *CPPScope::
 find_scope(const string &name, bool recurse) const {
@@ -521,8 +534,8 @@ find_scope(const string &name, bool recurse) const {
 
   } else if (_struct_type != NULL) {
     CPPStructType::Derivation::const_iterator di;
-    for (di = _struct_type->_derivation.begin(); 
-         di != _struct_type->_derivation.end(); 
+    for (di = _struct_type->_derivation.begin();
+         di != _struct_type->_derivation.end();
          ++di) {
       CPPStructType *st = (*di)._base->as_struct_type();
       if (st != NULL) {
@@ -556,7 +569,7 @@ find_scope(const string &name, bool recurse) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPScope::find_scope
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPScope *CPPScope::
 find_scope(const string &name, CPPDeclaration::SubstDecl &subst,
@@ -575,7 +588,7 @@ find_scope(const string &name, CPPDeclaration::SubstDecl &subst,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPScope::find_symbol
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPScope::
 find_symbol(const string &name, bool recurse) const {
@@ -616,8 +629,8 @@ find_symbol(const string &name, bool recurse) const {
 
   if (_struct_type != NULL) {
     CPPStructType::Derivation::const_iterator di;
-    for (di = _struct_type->_derivation.begin(); 
-         di != _struct_type->_derivation.end(); 
+    for (di = _struct_type->_derivation.begin();
+         di != _struct_type->_derivation.end();
          ++di) {
       CPPStructType *st = (*di)._base->as_struct_type();
       if (st != NULL) {
@@ -639,7 +652,7 @@ find_symbol(const string &name, bool recurse) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPScope::find_template
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPScope::
 find_template(const string &name, bool recurse) const {
@@ -659,8 +672,8 @@ find_template(const string &name, bool recurse) const {
 
   if (_struct_type != NULL) {
     CPPStructType::Derivation::const_iterator di;
-    for (di = _struct_type->_derivation.begin(); 
-         di != _struct_type->_derivation.end(); 
+    for (di = _struct_type->_derivation.begin();
+         di != _struct_type->_derivation.end();
          ++di) {
       CPPStructType *st = (*di)._base->as_struct_type();
       if (st != NULL) {
@@ -682,7 +695,7 @@ find_template(const string &name, bool recurse) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPScope::get_simple_name
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string CPPScope::
 get_simple_name() const {
@@ -697,7 +710,7 @@ get_simple_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPScope::get_local_name
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string CPPScope::
 get_local_name(CPPScope *scope) const {
@@ -708,7 +721,7 @@ get_local_name(CPPScope *scope) const {
   */
 
   if (scope != NULL && _parent_scope != NULL && _parent_scope != scope) {
-    return _parent_scope->get_local_name(scope) + "::" + 
+    return _parent_scope->get_local_name(scope) + "::" +
       _name.get_name_with_templ();
   } else {
     return _name.get_name_with_templ();
@@ -718,7 +731,7 @@ get_local_name(CPPScope *scope) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPScope::get_fully_scoped_name
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string CPPScope::
 get_fully_scoped_name() const {
@@ -729,7 +742,7 @@ get_fully_scoped_name() const {
   */
 
   if (_parent_scope != NULL) {
-    return _parent_scope->get_fully_scoped_name() + "::" + 
+    return _parent_scope->get_fully_scoped_name() + "::" +
       _name.get_name_with_templ();
   } else {
     return _name.get_name_with_templ();
@@ -739,7 +752,7 @@ get_fully_scoped_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPScope::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPScope::
 output(ostream &out, CPPScope *scope) const {
@@ -754,7 +767,7 @@ output(ostream &out, CPPScope *scope) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPScope::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPScope::
 write(ostream &out, int indent_level, CPPScope *scope) const {
@@ -800,7 +813,7 @@ get_template_scope() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPScope::as_template_scope
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPTemplateScope *CPPScope::
 as_template_scope() {
@@ -830,8 +843,8 @@ copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
     if (_struct_type->_ident != (CPPIdentifier *)NULL) {
       native_scope = _struct_type->_ident->_native_scope;
     }
-    to_scope->_struct_type = 
-      new CPPStructType(_struct_type->_type, 
+    to_scope->_struct_type =
+      new CPPStructType(_struct_type->_type,
                         new CPPIdentifier(to_scope->_name),
                         native_scope, to_scope, _struct_type->_file);
     to_scope->_struct_type->_incomplete = false;
@@ -842,7 +855,7 @@ copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
          di != _struct_type->_derivation.end();
          ++di) {
       CPPStructType::Base b = (*di);
-      b._base = 
+      b._base =
         (*di)._base->substitute_decl(subst, to_scope, global_scope)->as_type();
       to_scope->_struct_type->_derivation.push_back(b);
       if (b._base != (*di)._base) {
@@ -850,10 +863,10 @@ copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
       }
     }
   }
-  
+
   Declarations::const_iterator di;
   for (di = _declarations.begin(); di != _declarations.end(); ++di) {
-    CPPDeclaration *decl = 
+    CPPDeclaration *decl =
       (*di)->substitute_decl(subst, to_scope, global_scope);
     to_scope->_declarations.push_back(decl);
     if (decl != (*di)) {
@@ -865,7 +878,7 @@ copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
   for (ei = _structs.begin(); ei != _structs.end(); ++ei) {
     string name = (*ei).first;
     CPPType *source_type = (*ei).second;
-    CPPDeclaration *decl = 
+    CPPDeclaration *decl =
       source_type->substitute_decl(subst, to_scope, global_scope);
     assert(decl != NULL);
     CPPType *new_type = decl->as_type();
@@ -878,7 +891,7 @@ copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
   for (ei = _classes.begin(); ei != _classes.end(); ++ei) {
     string name = (*ei).first;
     CPPType *source_type = (*ei).second;
-    CPPDeclaration *decl = 
+    CPPDeclaration *decl =
       source_type->substitute_decl(subst, to_scope, global_scope);
     assert(decl != NULL);
     CPPType *new_type = decl->as_type();
@@ -887,11 +900,11 @@ copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
     if (new_type != source_type) {
       anything_changed = true;
     }
-  } 
+  }
   for (ei = _unions.begin(); ei != _unions.end(); ++ei) {
     string name = (*ei).first;
     CPPType *source_type = (*ei).second;
-    CPPDeclaration *decl = 
+    CPPDeclaration *decl =
       source_type->substitute_decl(subst, to_scope, global_scope);
     assert(decl != NULL);
     CPPType *new_type = decl->as_type();
@@ -904,7 +917,7 @@ copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
   for (ei = _enums.begin(); ei != _enums.end(); ++ei) {
     string name = (*ei).first;
     CPPType *source_type = (*ei).second;
-    CPPDeclaration *decl = 
+    CPPDeclaration *decl =
       source_type->substitute_decl(subst, to_scope, global_scope);
     assert(decl != NULL);
     CPPType *new_type = decl->as_type();
@@ -925,10 +938,10 @@ copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
     }
 
     CPPFunctionGroup::Instances::const_iterator ii;
-    for (ii = fgroup->_instances.begin(); 
+    for (ii = fgroup->_instances.begin();
          ii != fgroup->_instances.end();
          ++ii) {
-      CPPInstance *inst = 
+      CPPInstance *inst =
         (*ii)->substitute_decl(subst, to_scope, global_scope)->as_instance();
       to_fgroup->_instances.push_back(inst);
       if (inst != (*ii)) {
@@ -936,10 +949,10 @@ copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
       }
     }
   }
-    
+
   Typedefs::const_iterator ti;
   for (ti = _typedefs.begin(); ti != _typedefs.end(); ++ti) {
-    CPPTypedef *td = 
+    CPPTypedef *td =
       (*ti).second->substitute_decl(subst, to_scope, global_scope)->as_typedef();
     to_scope->_typedefs.insert(Typedefs::value_type((*ti).first, td));
     if (td != (*ti).second) {
@@ -948,14 +961,14 @@ copy_substitute_decl(CPPScope *to_scope, CPPDeclaration::SubstDecl &subst,
   }
   Variables::const_iterator vi;
   for (vi = _variables.begin(); vi != _variables.end(); ++vi) {
-    CPPInstance *inst = 
+    CPPInstance *inst =
       (*vi).second->substitute_decl(subst, to_scope, global_scope)->as_instance();
     to_scope->_variables.insert(Variables::value_type((*vi).first, inst));
     if (inst != (*vi).second) {
       anything_changed = true;
     }
   }
-  
+
   Templates::const_iterator tmi;
   for (tmi = _templates.begin(); tmi != _templates.end(); ++tmi) {
     CPPDeclaration *decl =
@@ -992,7 +1005,7 @@ handle_declaration(CPPDeclaration *decl, CPPScope *global_scope) {
     if (!name.empty() && def->get_scope(this, global_scope) == this) {
       // Don't add a new template definition if we already had one
       // by the same name in another scope.
-      
+
       if (find_template(name) == NULL) {
         _templates.insert(Templates::value_type(name, def));
       }
@@ -1036,7 +1049,7 @@ handle_declaration(CPPDeclaration *decl, CPPScope *global_scope) {
         // to the _variables member.
         _variables[name] = inst;
       }
-    
+
       if (inst->is_template()) {
         // Don't add a new template definition if we already had one
         // by the same name in another scope.
@@ -1047,7 +1060,7 @@ handle_declaration(CPPDeclaration *decl, CPPScope *global_scope) {
 
         /*
         if (inst->_type->as_function_type() == NULL ||
-            (inst->_type->as_function_type()->_flags & 
+            (inst->_type->as_function_type()->_flags &
              CPPFunctionType::F_constructor) == 0) {
           _templates.insert(Templates::value_type(name, inst));
         }

@@ -1,13 +1,26 @@
 // Filename: eggCurve.I
 // Created by:  drose (15Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggCurve::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggCurve::
 EggCurve(const string &name) : EggPrimitive(name) {
@@ -18,10 +31,10 @@ EggCurve(const string &name) : EggPrimitive(name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggCurve::Copy constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggCurve::
-EggCurve(const EggCurve &copy) : 
+EggCurve(const EggCurve &copy) :
   EggPrimitive(copy),
   _subdiv(copy._subdiv),
   _type(copy._type)
@@ -31,7 +44,7 @@ EggCurve(const EggCurve &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: EggCurve::Copy assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggCurve &EggCurve::
 operator = (const EggCurve &copy) {

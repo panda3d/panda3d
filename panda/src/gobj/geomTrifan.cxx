@@ -1,6 +1,19 @@
 // Filename: geomTrifan.cxx
 // Created by:  charles (13Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <datagram.h>
@@ -121,7 +134,7 @@ print_draw_immediate( void ) const
         }
 
         nout << "BeginGfx()" << endl;
-  
+
         for ( j = *(plen++); j > 0; j-- )
         {
             // Draw per vertex
@@ -218,7 +231,7 @@ explode() const {
 
   int num_tris = 0;
   int num_prims = get_num_prims();
-  
+
   for (int i = 0; i < num_prims; i++) {
     // Get per-primitive values
     Colorf per_trifan_color;
@@ -258,7 +271,7 @@ explode() const {
         f3color[v] = get_next_color(ci);
       }
     }
-    
+
     // Now fill each triangle.  Each vertex from this point on defines
     // a new triangle.
     for (v = 2; v < num_verts; v++) {
@@ -280,7 +293,7 @@ explode() const {
       } else if (get_binding(G_NORMAL) == G_PER_COMPONENT) {
         normals.push_back(get_next_normal(ni));
       }
-      
+
       // Per-vertex attributes.
       if (get_binding(G_COORD) == G_PER_VERTEX) {
         f3vertex[2] = get_next_vertex(vi);
@@ -311,11 +324,11 @@ explode() const {
 
   Geom *tris = new GeomTri;
   tris->set_coords(coords, get_binding(G_COORD));
-  tris->set_normals(normals, 
+  tris->set_normals(normals,
                     get_binding(G_NORMAL) == G_PER_COMPONENT ?
                     G_PER_PRIM : get_binding(G_NORMAL));
   tris->set_texcoords(texcoords, get_binding(G_TEXCOORD));
-  tris->set_colors(colors, 
+  tris->set_colors(colors,
                    get_binding(G_COLOR) == G_PER_COMPONENT ?
                    G_PER_PRIM : get_binding(G_COLOR));
   tris->set_num_prims(num_tris);
@@ -345,7 +358,7 @@ get_tris() const {
   tris.reserve(num_tris * 3);
 
   int k = 0;
-  
+
   for (int i = 0; i < _numprims; i++) {
     ushort v0, v1, v2;
     if (_vindex.empty()) {

@@ -2,6 +2,19 @@
 // Created by:  mike (19Jan99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef SHADERTRANSITION_H
 #define SHADERTRANSITION_H
@@ -10,7 +23,7 @@
 
 #include "shader.h"
 
-#include <immediateTransition.h> 
+#include <immediateTransition.h>
 #include <pointerTo.h>
 #include <nodeRelation.h>
 
@@ -64,7 +77,7 @@ public:
 private:
   bool must_blend();
 
-public:  
+public:
   virtual NodeTransition *make_copy() const;
 
   virtual bool sub_render(NodeRelation *arc,

@@ -1,6 +1,19 @@
 // Filename: cullTraverser.I
 // Created by:  drose (13Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "cullStateSubtree.h"
@@ -20,7 +33,7 @@
 INLINE void CullTraverser::
 draw_geom(GeomNode *geom_node, const AllAttributesWrapper &initial_state) {
   if (cull_cat.is_spam()) {
-    cull_cat.spam() 
+    cull_cat.spam()
       << "Drawing " << *geom_node << " with state: " << initial_state << "\n";
   }
   nassertv(geom_node != (GeomNode *)NULL);
@@ -52,12 +65,12 @@ draw_geom(const ArcChain &arc_chain, const AllAttributesWrapper &initial_state) 
 //               indicated node, and including all nested nodes below.
 ////////////////////////////////////////////////////////////////////
 INLINE void CullTraverser::
-draw_direct(const ArcChain &arc_chain, 
+draw_direct(const ArcChain &arc_chain,
             const AllAttributesWrapper &initial_state) {
   nassertv(!arc_chain.empty());
   Node *node = arc_chain.back()->get_child();
   if (cull_cat.is_spam()) {
-    cull_cat.spam() 
+    cull_cat.spam()
       << "Drawing " << *node << " in direct mode.\n";
   }
   nassertv(node != (Node *)NULL);
@@ -106,16 +119,16 @@ find_bin_state(const AllTransitionsWrapper &trans) {
     if (result.second) {
       // The insert succeeded, so the CullState was not there
       // previously.
-      cull_cat.spam() 
+      cull_cat.spam()
         << "Created CullState " << (void *)cs << " for:\n";
       trans.write(cull_cat.spam(false), 2);
     } else {
       CullState *found_cs = *result.first;
-      cull_cat.spam() 
+      cull_cat.spam()
         << "Found existing CullState " << (void *)found_cs
         << " which has:\n";
       found_cs->get_transitions().write(cull_cat.spam(false), 2);
-      cull_cat.spam(false) 
+      cull_cat.spam(false)
         << "for:\n";
       trans.write(cull_cat.spam(false), 2);
     }
@@ -128,7 +141,7 @@ find_bin_state(const AllTransitionsWrapper &trans) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::backward_arc
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CullTraverser::
 backward_arc(NodeRelation *arc, NullTransitionWrapper &,

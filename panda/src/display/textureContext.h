@@ -2,6 +2,19 @@
 // Created by:  drose (07Oct99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef TEXTURECONTEXT_H
 #define TEXTURECONTEXT_H
@@ -35,7 +48,7 @@ public:
   // both own their TextureContexts!  That would create a circular
   // reference count.
   Texture *_texture;
- 
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -49,7 +62,7 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
- 
+
 private:
   static TypeHandle _type_handle;
 };

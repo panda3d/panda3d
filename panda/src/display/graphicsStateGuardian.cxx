@@ -1,6 +1,19 @@
 // Filename: graphicsStateGuardian.cxx
 // Created by:  drose (02Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "graphicsStateGuardian.h"
@@ -62,7 +75,7 @@ TypeHandle GraphicsStateGuardian::GsgWindow::force_init_type(void) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsStateGuardian::
 GraphicsStateGuardian(GraphicsWindow *win) {
@@ -75,7 +88,7 @@ GraphicsStateGuardian(GraphicsWindow *win) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsStateGuardian::
 ~GraphicsStateGuardian() {
@@ -99,7 +112,7 @@ release_all_textures() {
        ti != temp.end();
        ++ti) {
     release_texture(*ti);
-  } 
+  }
 
   // Now that we've released all of the textures, the
   // _prepared_textures list should have completely emptied itself.
@@ -149,7 +162,7 @@ void GraphicsStateGuardian::
 set_state(const NodeAttributes &new_state, bool complete) {
   if (gsg_cat.is_debug()) {
     gsg_cat.debug() << "\n";
-    gsg_cat.debug() 
+    gsg_cat.debug()
       << "Frame " << ClockObject::get_global_clock()->get_frame_count()
       << ", setting to (complete = " << complete << ")\n";
     new_state.write(gsg_cat.debug(false), 10);
@@ -191,7 +204,7 @@ set_state(const NodeAttributes &new_state, bool complete) {
 
         if (gsg_cat.is_debug()) {
           gsg_cat.debug()
-            << "Unissuing attrib " << *(*current_i).second 
+            << "Unissuing attrib " << *(*current_i).second
             << " (previously set, not now)\n";
         }
         record_state_change((*current_i).first);
@@ -220,7 +233,7 @@ set_state(const NodeAttributes &new_state, bool complete) {
 
           if (gsg_cat.is_debug()) {
             gsg_cat.debug()
-              << "Unissuing attrib " << *(*current_i).second 
+              << "Unissuing attrib " << *(*current_i).second
               << " (previously set, now NULL)\n";
           }
           record_state_change((*current_i).first);
@@ -275,9 +288,9 @@ set_state(const NodeAttributes &new_state, bool complete) {
           << "Issuing new attrib " << *(*new_i).second << "\n";
       }
       record_state_change((*new_i).first);
-      
+
       (*new_i).second->issue(this);
-      
+
       // And store the new value.
       _state.insert(_state.end(), *new_i);
     }
@@ -291,19 +304,19 @@ set_state(const NodeAttributes &new_state, bool complete) {
 
       if (gsg_cat.is_debug()) {
         gsg_cat.debug()
-          << "Unissuing attrib " << *(*current_i).second 
+          << "Unissuing attrib " << *(*current_i).second
           << " (previously set, end of list)\n";
       }
       record_state_change((*current_i).first);
-      
+
       // If we're in the "complete state" model, that means this
       // attribute should now get the default initial value.
       PT(NodeAttribute) initial = (*current_i).second->make_initial();
       initial->issue(this);
-      
+
       NodeAttributes::iterator erase_i = current_i;
       ++current_i;
-      
+
       _state.erase(erase_i);
     }
   }
@@ -391,7 +404,7 @@ enable_frame_clear(bool clear_color, bool clear_depth) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::wants_normals
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
 wants_normals() const {
@@ -401,7 +414,7 @@ wants_normals() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::wants_texcoords
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
 wants_texcoords() const {
@@ -411,7 +424,7 @@ wants_texcoords() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::wants_colors
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
 wants_colors() const {
@@ -555,7 +568,7 @@ traverse_prepared_textures(bool (*pertex_callbackfn)(TextureContext *,void *),vo
     bool bResult=(*pertex_callbackfn)(*ti,callback_arg);
     if(!bResult)
       return;
-  } 
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -3,6 +3,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 #ifndef MATERIAL_H
 #define MATERIAL_H
 //
@@ -49,7 +61,7 @@ PUBLISHED:
 
   INLINE float get_shininess() const;
   INLINE void set_shininess(float shininess);
-  
+
   INLINE bool get_local() const;
   INLINE void set_local(bool local);
   INLINE bool get_twoside() const;
@@ -60,7 +72,7 @@ PUBLISHED:
   INLINE bool operator < (const Material &other) const;
 
   int compare_to(const Material &other) const;
-  
+
   void output(ostream &out) const;
   void write(ostream &out, int indent) const;
 
@@ -83,7 +95,7 @@ private:
 
 public:
   static void register_with_read_factory();
-  virtual void write_datagram(BamWriter *manager, Datagram &me);  
+  virtual void write_datagram(BamWriter *manager, Datagram &me);
 
 protected:
   static TypedWritable *make_Material(const FactoryParams &params);

@@ -1,6 +1,19 @@
 // Filename: eggData.cxx
 // Created by:  drose (20Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggData.h"
@@ -147,7 +160,7 @@ int EggData::
 collapse_equivalent_textures() {
   EggTextureCollection textures;
   textures.find_used_textures(this);
-  return 
+  return
     textures.collapse_equivalent_textures(~EggTexture::E_tref_name, this);
 }
 
@@ -165,7 +178,7 @@ int EggData::
 collapse_equivalent_materials() {
   EggMaterialCollection materials;
   materials.find_used_materials(this);
-  return 
+  return
     materials.collapse_equivalent_materials(~EggMaterial::E_mref_name, this);
 }
 
@@ -213,7 +226,7 @@ set_coordinate_system(CoordinateSystem new_coordsys) {
   if (new_coordsys == CS_default) {
     new_coordsys = default_coordinate_system;
   }
-  if (new_coordsys != _coordsys && 
+  if (new_coordsys != _coordsys &&
       (_coordsys != CS_default && _coordsys != CS_invalid)) {
     // Time to convert the data.
     r_transform(LMatrix4d::convert_mat(_coordsys, new_coordsys),

@@ -1,6 +1,19 @@
 // Filename: deferredArcProperty.cxx
 // Created by:  drose (04Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "deferredArcProperty.h"
@@ -10,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: DeferredArcProperty::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DeferredArcProperty::
 DeferredArcProperty() {
@@ -20,7 +33,7 @@ DeferredArcProperty() {
 ////////////////////////////////////////////////////////////////////
 //     Function: DeferredArcProperty::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DeferredArcProperty::
 DeferredArcProperty(const DeferredArcProperty &copy) :
@@ -33,7 +46,7 @@ DeferredArcProperty(const DeferredArcProperty &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: DeferredArcProperty::Copy Assignment
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DeferredArcProperty::
 operator = (const DeferredArcProperty &copy) {
@@ -85,6 +98,6 @@ apply_to_node(Node *node) {
     if ((_flags & F_has_into_collide_mask) != 0) {
       cnode->set_into_collide_mask(_into_collide_mask);
     }
-  }    
+  }
 }
 

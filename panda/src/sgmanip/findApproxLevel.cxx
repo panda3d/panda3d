@@ -1,6 +1,19 @@
 // Filename: findApproxLevel.cxx
 // Created by:  drose (18Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "findApproxLevel.h"
@@ -33,17 +46,17 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FindApproxLevelEntry::consider_node
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void FindApproxLevelEntry::
-consider_node(NodePathCollection &result, FindApproxLevel &next_level, 
+consider_node(NodePathCollection &result, FindApproxLevel &next_level,
               int max_matches, TypeHandle graph_type) const {
   nassertv(_i < _approx_path.get_num_components());
 
   if (_approx_path.is_component_match_many(_i)) {
     // Match any number, zero or more, levels of nodes.  This is the
     // tricky case that requires this whole nutty breadth-first thing.
-    
+
     // This means we must reconsider our own entry with the next path
     // entry, before we consider the next entry--this supports
     // matching zero levels of nodes.
@@ -79,7 +92,7 @@ consider_node(NodePathCollection &result, FindApproxLevel &next_level,
     }
   }
 
-  if (_approx_path.return_stashed() && 
+  if (_approx_path.return_stashed() &&
       next_graph_type != NodeRelation::get_stashed_type()) {
     // If the approx path allows us to return stashed nodes, and we
     // didn't just traverse the list of stashed nodes, then traverse
@@ -89,7 +102,7 @@ consider_node(NodePathCollection &result, FindApproxLevel &next_level,
     int num_children = bottom_node->get_num_children(next_graph_type);
     for (int i = 0; i < num_children; i++) {
       NodeRelation *child_arc = bottom_node->get_child(next_graph_type, i);
-      
+
       consider_next_step(result, child_arc, next_level, max_matches, graph_type);
       if (max_matches > 0 && result.get_num_paths() >= max_matches) {
         return;
@@ -112,9 +125,9 @@ consider_node(NodePathCollection &result, FindApproxLevel &next_level,
 ////////////////////////////////////////////////////////////////////
 void FindApproxLevelEntry::
 consider_next_step(NodePathCollection &result,
-                   NodeRelation *arc, FindApproxLevel &next_level, 
+                   NodeRelation *arc, FindApproxLevel &next_level,
                    int max_matches, TypeHandle graph_type) const {
-  if (!_approx_path.return_hidden() && 
+  if (!_approx_path.return_hidden() &&
       arc->has_transition(PruneTransition::get_class_type())) {
     // If the approx path does not allow us to return hidden nodes,
     // and this arc has indeed been hidden, then stop here.
@@ -130,7 +143,7 @@ consider_next_step(NodePathCollection &result,
   if (_approx_path.is_component_match_many(_i)) {
     // Match any number, zero or more, levels of nodes.  This is the
     // tricky case that requires this whole nutty breadth-first thing.
-    
+
     // And now we just add the next entry without incrementing its
     // path entry.
     next_level.add_entry(next);

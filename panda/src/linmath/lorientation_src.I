@@ -1,12 +1,25 @@
-// Filename: lorientation_src.h
+// Filename: lorientation_src.I
 // Created by:  frang, charles (23Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LOrientation::Default Constructor
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LOrientation)::
 FLOATNAME(LOrientation)() {
@@ -15,7 +28,7 @@ FLOATNAME(LOrientation)() {
 ////////////////////////////////////////////////////////////////////
 //     Function: LOrientation::Copy Constructor
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LOrientation)::
 FLOATNAME(LOrientation)(const FLOATNAME(LQuaternion)& c) :
@@ -25,7 +38,7 @@ FLOATNAME(LOrientation)(const FLOATNAME(LQuaternion)& c) :
 ////////////////////////////////////////////////////////////////////
 //     Function: LOrientation::Constructor
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LOrientation)::
 FLOATNAME(LOrientation)(FLOATTYPE r, FLOATTYPE i, FLOATTYPE j, FLOATTYPE k) :

@@ -1,6 +1,19 @@
 // Filename: characterMaker.cxx
 // Created by:  drose (23Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "characterMaker.h"
@@ -21,7 +34,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterMaker::Construtor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CharacterMaker::
 CharacterMaker(EggGroup *root, EggLoader &loader)
@@ -37,7 +50,7 @@ CharacterMaker(EggGroup *root, EggLoader &loader)
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterMaker::make_node
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Character *CharacterMaker::
 make_node() {
@@ -126,7 +139,7 @@ create_slider(const string &name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterMaker::make_bundle
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CharacterJointBundle *CharacterMaker::
 make_bundle() {
@@ -145,7 +158,7 @@ make_bundle() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterMaker::build_hierarchy
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CharacterMaker::
 build_joint_hierarchy(EggNode *egg_node, PartGroup *part) {
@@ -181,7 +194,7 @@ build_joint_hierarchy(EggNode *egg_node, PartGroup *part) {
 
       part = joint;
     }
-    
+
     EggGroup::const_iterator ci;
     for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
       build_joint_hierarchy((*ci), part);
@@ -218,7 +231,7 @@ parent_joint_nodes(PartGroup *part) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterMaker::make_geometry
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CharacterMaker::
 make_geometry(EggNode *egg_node) {
@@ -253,15 +266,15 @@ make_geometry(EggNode *egg_node) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterMaker::make_static_primitive
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CharacterMaker::
 make_static_primitive(EggPrimitive *egg_primitive, EggGroupNode *prim_home) {
   NamedNode *node = part_to_node(egg_to_part(prim_home));
-  
+
   // We need this funny transform to convert from the coordinate
   // space of the original vertices to that of the new joint node.
-  LMatrix4d transform = 
+  LMatrix4d transform =
     egg_primitive->get_vertex_frame() *
     prim_home->get_node_frame_inv();
 
@@ -271,13 +284,13 @@ make_static_primitive(EggPrimitive *egg_primitive, EggGroupNode *prim_home) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterMaker::make_dynamic_primitive
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CharacterMaker::
 make_dynamic_primitive(EggPrimitive *egg_primitive, EggGroupNode *prim_home) {
   NamedNode *node = part_to_node(egg_to_part(prim_home));
-  
-  LMatrix4d transform = 
+
+  LMatrix4d transform =
     egg_primitive->get_vertex_frame() *
     prim_home->get_node_frame_inv();
 
@@ -288,7 +301,7 @@ make_dynamic_primitive(EggPrimitive *egg_primitive, EggGroupNode *prim_home) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterMaker::determine_primitive_home
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroupNode *CharacterMaker::
 determine_primitive_home(EggPrimitive *egg_primitive) {
@@ -350,7 +363,7 @@ determine_primitive_home(EggPrimitive *egg_primitive) {
   if (home->is_of_type(EggGroup::get_class_type())) {
     egg_group = DCAST(EggGroup, home);
   }
-  while (egg_group != (EggGroup *)NULL && 
+  while (egg_group != (EggGroup *)NULL &&
          egg_group->get_group_type() != EggGroup::GT_joint &&
          egg_group->get_dart_type() == EggGroup::DT_none) {
     nassertr(egg_group->get_parent() != (EggGroupNode *)NULL, NULL);

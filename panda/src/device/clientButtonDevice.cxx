@@ -1,6 +1,19 @@
 // Filename: clientButtonDevice.cxx
 // Created by:  drose (26Jan01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "clientButtonDevice.h"
@@ -12,7 +25,7 @@ TypeHandle ClientButtonDevice::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: ClientButtonDevice::Constructor
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ClientButtonDevice::
 ClientButtonDevice(ClientBase *client, const string &device_name):
@@ -64,7 +77,7 @@ ensure_button_index(int index) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ClientButtonDevice::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ClientButtonDevice::
 output(ostream &out) const {
@@ -76,7 +89,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ClientButtonDevice::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ClientButtonDevice::
 write(ostream &out, int indent_level) const {

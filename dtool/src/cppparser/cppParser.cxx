@@ -1,6 +1,19 @@
-// Filename: cppParser.C
+// Filename: cppParser.cxx
 // Created by:  drose (19Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -17,7 +30,7 @@ bool cppparser_output_class_keyword = true;
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPParser::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPParser::
 CPPParser() : CPPScope((CPPScope *)NULL, CPPNameComponent(""), V_public) {
@@ -41,7 +54,7 @@ is_fully_specified() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPParser::parse_file
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPParser::
 parse_file(const string &filename) {
@@ -53,7 +66,7 @@ parse_file(const string &filename) {
 
   return get_error_count() == 0;
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPParser::parse_expr
 //       Access: Public
@@ -65,7 +78,7 @@ CPPExpression *CPPParser::
 parse_expr(const string &expr) {
   return CPPPreprocessor::parse_expr(expr, this, this);
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPParser::parse_type
 //       Access: Public

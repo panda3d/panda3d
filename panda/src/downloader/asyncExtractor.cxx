@@ -1,10 +1,19 @@
-// Filename: extractor.cxx
+// Filename: asyncExtractor.cxx
 // Created by:  mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "asyncExtractor.h"
 #include "config_downloader.h"
@@ -25,7 +34,7 @@
 ////////////////////////////////////////////////////////////////////
 class ExtractorToken : public ReferenceCount {
 public:
-  INLINE ExtractorToken(uint id, const Filename &source_file, 
+  INLINE ExtractorToken(uint id, const Filename &source_file,
                         const string &event_name,
                         const Filename &rel_path) {
     _id = id;
@@ -62,7 +71,7 @@ Extractor(PT(Buffer) buffer) : AsyncUtility() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Extractor::Constructor
-//       Access: Private 
+//       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Extractor::
@@ -88,7 +97,7 @@ Extractor::
 ////////////////////////////////////////////////////////////////////
 //     Function: Extractor::request_extract
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int Extractor::
 request_extract(const Filename &source_file, const string &event_name,
@@ -140,7 +149,7 @@ request_extract(const Filename &source_file, const string &event_name,
     }
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
-        << "Extract requested for file: " << source_file << endl; 
+        << "Extract requested for file: " << source_file << endl;
     }
 
     tok = new ExtractorToken(_next_token++, source_file, event_name,
@@ -182,7 +191,7 @@ process_request() {
 
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
-          << "Extractor::process_request() - extract complete for " 
+          << "Extractor::process_request() - extract complete for "
           << tok->_source_file << "\n";
       }
     }
@@ -204,10 +213,10 @@ extract(Filename &source_file, const Filename &rel_path) {
   source_file.set_binary();
   if (!source_file.open_read(read_stream)) {
     downloader_cat.error()
-      << "Extractor::extract() - Error opening source file: " 
+      << "Extractor::extract() - Error opening source file: "
       << source_file << endl;
     return false;
-  } 
+  }
 
   // Determine source file length
   read_stream.seekg(0, ios::end);
@@ -237,7 +246,7 @@ extract(Filename &source_file, const Filename &rel_path) {
 
     // Write to the out file
     char *start = _buffer->_buffer;
-    int size = source_buffer_length; 
+    int size = source_buffer_length;
     if (mfile.write_extract(start, size, rel_path) == true)
       handled_all_input = true;
 

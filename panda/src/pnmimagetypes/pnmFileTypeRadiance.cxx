@@ -1,6 +1,19 @@
 // Filename: pnmFileTypeRadiance.cxx
 // Created by:  drose (17Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileTypeRadiance.h"
@@ -39,7 +52,7 @@ static const int COLR_MAX = 255;
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeRadiance::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeRadiance::
 PNMFileTypeRadiance() {
@@ -146,10 +159,10 @@ make_writer(FILE *file, bool owns_file) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeRadiance::Reader::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeRadiance::Reader::
-Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) : 
+Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
   setcolrgam(radiance_gamma_correction);
@@ -175,7 +188,7 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
 
   if (pnmimage_radiance_cat.is_debug()) {
     pnmimage_radiance_cat.debug()
-      << "Reading Radiance image: " << _x_size << " by " << _y_size 
+      << "Reading Radiance image: " << _x_size << " by " << _y_size
       << " pixels.\n"
       << "gamma correction is " << radiance_gamma_correction
       << ", brightness adjustment is " << radiance_brightness_adjustment
@@ -221,13 +234,13 @@ read_row(xel *row_data, xelval *) {
   if (freadcolrs(scanin, _x_size, _file) < 0) {
     return false;
   }
-  
+
   if (radiance_brightness_adjustment) {
     shiftcolrs(scanin, _x_size, radiance_brightness_adjustment);
   }
-  
+
   colrs_gambs(scanin, _x_size);      /* gamma correction */
-  
+
   for (x = 0; x < _x_size; x++) {
     PPM_ASSIGN(row_data[x], scanin[x][RED], scanin[x][GRN], scanin[x][BLU]);
   }
@@ -239,7 +252,7 @@ read_row(xel *row_data, xelval *) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeRadiance::Writer::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeRadiance::Writer::
 Writer(PNMFileType *type, FILE *file, bool owns_file) :

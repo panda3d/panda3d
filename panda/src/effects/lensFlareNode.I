@@ -1,12 +1,25 @@
 // Filename: lensFlareNode.I
 // Created by:  jason (01Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LensFlareNode::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE LensFlareNode::
 LensFlareNode(void) :
@@ -18,7 +31,7 @@ LensFlareNode(void) :
 ////////////////////////////////////////////////////////////////////
 //     Function: LensFlareNode::set_texel_scale
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void LensFlareNode::
 set_texel_scale(float texel_to_world)
@@ -29,7 +42,7 @@ set_texel_scale(float texel_to_world)
 ////////////////////////////////////////////////////////////////////
 //     Function: LensFlareNode::set_global_scale
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void LensFlareNode::
 set_global_scale(float scale)
@@ -40,7 +53,7 @@ set_global_scale(float scale)
 ////////////////////////////////////////////////////////////////////
 //     Function: LensFlareNode::set_blind_falloff
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void LensFlareNode::
 set_blind_falloff(float fall_off)
@@ -51,7 +64,7 @@ set_blind_falloff(float fall_off)
 ////////////////////////////////////////////////////////////////////
 //     Function: LensFlareNode::set_flare_falloff
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void LensFlareNode::
 set_flare_falloff(float fall_off)
@@ -62,7 +75,7 @@ set_flare_falloff(float fall_off)
 ////////////////////////////////////////////////////////////////////
 //     Function: LensFlareNode::set_light
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void LensFlareNode::
 set_light_source(PT_Node light)

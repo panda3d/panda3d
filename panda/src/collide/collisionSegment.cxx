@@ -1,6 +1,19 @@
 // Filename: collisionSegment.cxx
 // Created by:  drose (30Jan01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "collisionSegment.h"
@@ -21,7 +34,7 @@ TypeHandle CollisionSegment::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSegment::make_copy
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CollisionSolid *CollisionSegment::
 make_copy() {
@@ -31,7 +44,7 @@ make_copy() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSegment::test_intersection
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CollisionSegment::
 test_intersection(CollisionHandler *record, const CollisionEntry &entry,
@@ -68,7 +81,7 @@ get_collision_origin() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSegment::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionSegment::
 output(ostream &out) const {
@@ -112,7 +125,7 @@ set_projection(ProjectionNode *camera, const LPoint2f &point) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSegment::recompute_bound
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionSegment::
 recompute_bound() {

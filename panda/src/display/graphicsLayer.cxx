@@ -1,10 +1,19 @@
 // Filename: graphicsLayer.cxx
 // Created by:  drose (18Apr00)
-// 
-////////////////////////////////////////////////////////////////////
 //
 ////////////////////////////////////////////////////////////////////
-// Includes
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "graphicsLayer.h"
 #include "graphicsChannel.h"
@@ -23,7 +32,7 @@ TypeHandle GraphicsLayer::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsLayer::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsLayer::
 GraphicsLayer() {
@@ -34,11 +43,11 @@ GraphicsLayer() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsLayer::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsLayer::
 GraphicsLayer(GraphicsChannel *channel)
-  : _channel(channel) 
+  : _channel(channel)
 {
   _is_active = true;
 }
@@ -46,7 +55,7 @@ GraphicsLayer(GraphicsChannel *channel)
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsLayer::Copy Constructor
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GraphicsLayer::
 GraphicsLayer(const GraphicsLayer&) {
@@ -57,7 +66,7 @@ GraphicsLayer(const GraphicsLayer&) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsLayer::Copy Assignment Operator
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GraphicsLayer &GraphicsLayer::
 operator=(const GraphicsLayer&) {
@@ -69,7 +78,7 @@ operator=(const GraphicsLayer&) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsLayer::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsLayer::
 ~GraphicsLayer() {
@@ -78,7 +87,7 @@ GraphicsLayer::
   // pointers do.  However, we do need to zero out their pointers to
   // us.
   DisplayRegions::iterator dri;
-  for (dri = _display_regions.begin(); 
+  for (dri = _display_regions.begin();
        dri != _display_regions.end();
        ++dri) {
     (*dri)->_layer = NULL;
@@ -222,7 +231,7 @@ channel_resized(int x, int y) {
   // Since a layer always fills the whole channel, when the channel
   // resizes so does the layer, by the same amount.
   DisplayRegions::iterator dri;
-  for (dri = _display_regions.begin(); 
+  for (dri = _display_regions.begin();
        dri != _display_regions.end();
        ++dri) {
     (*dri)->compute_pixels(x, y);

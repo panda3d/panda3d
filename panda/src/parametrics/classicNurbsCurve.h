@@ -1,6 +1,19 @@
 // Filename: classicNurbsCurve.h
 // Created by:  drose (27Feb98)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef CLASSICNURBSCURVE_H
@@ -82,7 +95,7 @@ public:
 
 protected:
   virtual int append_cv_impl(const LVecBase4f &v);
-  virtual bool format_egg(ostream &out, const string &name, 
+  virtual bool format_egg(ostream &out, const string &name,
                           const string &curve_type, int indent_level) const;
 
   int find_cv(float t);
@@ -106,7 +119,7 @@ public:
 
 protected:
   static TypedWritable *make_ClassicNurbsCurve(const FactoryParams &params);
-  virtual void write_datagram(BamWriter *manager, Datagram &me);  
+  virtual void write_datagram(BamWriter *manager, Datagram &me);
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
@@ -127,7 +140,7 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
- 
+
 private:
   static TypeHandle _type_handle;
   static TypeHandle _orig_type_handle;

@@ -1,6 +1,19 @@
 // Filename: findApproxPath.cxx
 // Created by:  drose (18Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "findApproxPath.h"
@@ -68,7 +81,7 @@ matches(NodeRelation *arc) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FindApproxPath::Component::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void FindApproxPath::Component::
 output(ostream &out) const {
@@ -162,17 +175,17 @@ add_flags(const string &str_flags) {
     case 'h':
       _return_hidden = on;
       break;
-      
+
     case 's':
       _return_stashed = on;
       break;
-      
+
     default:
       sgmanip_cat.error()
         << "Invalid control flag string: " << str_flags << "\n";
       return false;
     }
-    
+
     ++pi;
   }
 
@@ -243,7 +256,7 @@ add_component(string str_component) {
 ////////////////////////////////////////////////////////////////////
 //     Function: FindApproxPath::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void FindApproxPath::
 output(ostream &out) const {

@@ -1,6 +1,19 @@
 // Filename: connectionManager.cxx
 // Created by:  jns (07Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "connectionManager.h"
@@ -20,7 +33,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionManager::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ConnectionManager::
 ConnectionManager() {
@@ -30,7 +43,7 @@ ConnectionManager() {
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionManager::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ConnectionManager::
 ~ConnectionManager() {
@@ -81,7 +94,7 @@ open_UDP_connection(int port) {
       PR_Close(socket);
       return PT(Connection)();
     }
-    
+
     net_cat.info()
       << "Creating UDP connection for port " << port << "\n";
   } else {
@@ -160,14 +173,14 @@ open_TCP_client_connection(const NetAddress &address, int timeout_ms) {
     return PT(Connection)();
   }
 
-  PRStatus result = PR_Connect(socket, address.get_addr(), 
+  PRStatus result = PR_Connect(socket, address.get_addr(),
                                PR_MillisecondsToInterval(timeout_ms));
   if (result != PR_SUCCESS) {
     if (PR_GetError() != PR_CONNECT_RESET_ERROR) {
       pprerror("PR_Connect");
     }
     net_cat.info()
-      << "Unable to open TCP connection to server " 
+      << "Unable to open TCP connection to server "
       << address.get_ip_string() << " on port " << address.get_port() << "\n";
     PR_Close(socket);
     return PT(Connection)();
@@ -196,7 +209,7 @@ open_TCP_client_connection(const string &hostname, int port,
   if (!address.set_host(hostname, port)) {
     return PT(Connection)();
   }
-  
+
   return open_TCP_client_connection(address, timeout_ms);
 }
 

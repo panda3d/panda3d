@@ -1,6 +1,19 @@
-// Filename: cppPointerType.C
+// Filename: cppPointerType.cxx
 // Created by:  drose (19Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -11,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPointerType::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPPointerType::
 CPPPointerType(CPPType *pointing_at) :
@@ -30,14 +43,14 @@ CPPPointerType(CPPType *pointing_at) :
 ////////////////////////////////////////////////////////////////////
 bool CPPPointerType::
 is_fully_specified() const {
-  return CPPType::is_fully_specified() && 
+  return CPPType::is_fully_specified() &&
     _pointing_at->is_fully_specified();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPointerType::substitute_decl
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPPointerType::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
@@ -48,7 +61,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   }
 
   CPPPointerType *rep = new CPPPointerType(*this);
-  rep->_pointing_at = 
+  rep->_pointing_at =
     _pointing_at->substitute_decl(subst, current_scope, global_scope)
     ->as_type();
 
@@ -116,13 +129,13 @@ is_equivalent(const CPPType &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPointerType::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPPointerType::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
   _pointing_at->output(out, indent_level, scope, complete);
   CPPFunctionType *ftype = _pointing_at->as_function_type();
-  if (ftype != NULL && 
+  if (ftype != NULL &&
       ((ftype->_flags & CPPFunctionType::F_method_pointer) != 0)) {
     // We have to output pointers-to-method with a scoping before the
     // '*'.
@@ -147,21 +160,21 @@ output_instance(ostream &out, int indent_level, CPPScope *scope,
   string star = "*";
 
   CPPFunctionType *ftype = _pointing_at->as_function_type();
-  if (ftype != NULL && 
+  if (ftype != NULL &&
       ((ftype->_flags & CPPFunctionType::F_method_pointer) != 0)) {
     // We have to output pointers-to-method with a scoping before the
     // '*'.
     star = ftype->_class_owner->get_fully_scoped_name() + "::*";
   }
 
-  _pointing_at->output_instance(out, indent_level, scope, complete, 
+  _pointing_at->output_instance(out, indent_level, scope, complete,
                                 star + prename, name);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPointerType::get_subtype
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration::SubType CPPPointerType::
 get_subtype() const {
@@ -171,7 +184,7 @@ get_subtype() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPPointerType::as_pointer_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPPointerType *CPPPointerType::
 as_pointer_type() {

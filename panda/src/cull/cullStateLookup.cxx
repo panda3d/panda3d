@@ -1,6 +1,19 @@
 // Filename: cullStateLookup.cxx
 // Created by:  drose (07Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "cullStateLookup.h"
@@ -106,7 +119,7 @@ find_node(Node *node,
 //               CullStateSubtree is always returned.
 ////////////////////////////////////////////////////////////////////
 CullStateSubtree *CullStateLookup::
-get_subtree(const PT_NodeRelation &arc, 
+get_subtree(const PT_NodeRelation &arc,
             const AllTransitionsWrapper &trans,
             Node *top_subtree,
             UpdateSeq now) {
@@ -123,7 +136,7 @@ get_subtree(const PT_NodeRelation &arc,
       cull_cat.spam()
         << "No entry for the arc; creating new one.\n";
     }
-    CullStateSubtree *subtree = 
+    CullStateSubtree *subtree =
       new CullStateSubtree(this, trans, top_subtree, now);
     _subtrees.insert(Subtrees::value_type(arc, subtree));
     return subtree;
@@ -164,7 +177,7 @@ clean_out_old_nodes() {
     ++csnext;
 
     CullState *cs = (*csi).second;
-    if (!cs->has_bin() && cs->is_empty() && 
+    if (!cs->has_bin() && cs->is_empty() &&
         cs->get_empty_frames_count() > 100) {
       _cull_states.erase(csi);
     }
@@ -217,7 +230,7 @@ compose_trans(const AllTransitionsWrapper &from,
 ////////////////////////////////////////////////////////////////////
 //     Function: CullStateLookup::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CullStateLookup::
 write(ostream &out, int indent_level) const {

@@ -1,6 +1,19 @@
 // Filename: pixelBuffer.I
 // Created by:  drose (05Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -31,8 +44,8 @@ PixelBuffer(void) : ImageBuffer()
 ////////////////////////////////////////////////////////////////////
 INLINE PixelBuffer::
 PixelBuffer(int xsize, int ysize, int components, int component_width,
-            Type type, Format format) : 
-  ImageBuffer() 
+            Type type, Format format) :
+  ImageBuffer()
 {
   _xsize = xsize;
   _ysize = ysize;
@@ -47,12 +60,12 @@ PixelBuffer(int xsize, int ysize, int components, int component_width,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PixelBuffer::Copy Constructor 
+//     Function: PixelBuffer::Copy Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PixelBuffer::
-PixelBuffer(const PixelBuffer &copy) : 
+PixelBuffer(const PixelBuffer &copy) :
   _xsize(copy._xsize),
   _ysize(copy._ysize),
   _xorg(copy._xorg),
@@ -67,7 +80,7 @@ PixelBuffer(const PixelBuffer &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PixelBuffer::Copy Assignment Operator 
+//     Function: PixelBuffer::Copy Assignment Operator
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -92,7 +105,7 @@ operator = (const PixelBuffer &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE PixelBuffer PixelBuffer::
 rgb_buffer(int xsize, int ysize) {
-  return PixelBuffer(xsize, ysize, 3, sizeof(uchar), T_unsigned_byte, 
+  return PixelBuffer(xsize, ysize, 3, sizeof(uchar), T_unsigned_byte,
                      F_rgb);
 }
 
@@ -103,7 +116,7 @@ rgb_buffer(int xsize, int ysize) {
 ////////////////////////////////////////////////////////////////////
 INLINE PixelBuffer PixelBuffer::
 rgba_buffer(int xsize, int ysize) {
-  return PixelBuffer(xsize, ysize, 4, sizeof(uchar), T_unsigned_byte, 
+  return PixelBuffer(xsize, ysize, 4, sizeof(uchar), T_unsigned_byte,
                      F_rgba);
 }
 
@@ -114,7 +127,7 @@ rgba_buffer(int xsize, int ysize) {
 ////////////////////////////////////////////////////////////////////
 INLINE PixelBuffer PixelBuffer::
 depth_buffer(int xsize, int ysize) {
-  return PixelBuffer(xsize, ysize, 1, sizeof(float), T_float, 
+  return PixelBuffer(xsize, ysize, 1, sizeof(float), T_float,
                      F_depth_component);
 }
 
@@ -125,12 +138,12 @@ depth_buffer(int xsize, int ysize) {
 ////////////////////////////////////////////////////////////////////
 INLINE PixelBuffer PixelBuffer::
 stencil_buffer(int xsize, int ysize) {
-  return PixelBuffer(xsize, ysize, 1, sizeof(uchar), T_unsigned_byte, 
+  return PixelBuffer(xsize, ysize, 1, sizeof(uchar), T_unsigned_byte,
                      F_stencil_index);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PixelBuffer::Destructor 
+//     Function: PixelBuffer::Destructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////

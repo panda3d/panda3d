@@ -1,6 +1,19 @@
 // Filename: writableParam.h
 // Created by:  jason (13Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef WRITABLEPARAM_H
@@ -15,7 +28,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : WritableParam
-// Description : The specific derivation of FactoryParam that 
+// Description : The specific derivation of FactoryParam that
 //               contains the information needed by a TypedWritable
 //               object.  Simply contains a Datagram for the object
 //               to construct itself from.

@@ -1,6 +1,19 @@
 // Filename: allAttributesWrapper.h
 // Created by:  drose (21Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef ALLATTRIBUTESWRAPPER_H
@@ -17,7 +30,7 @@ class AllTransitionsWrapper;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AllAttributesWrapper
-// Description : 
+// Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA AllAttributesWrapper {
 public:
@@ -28,7 +41,7 @@ public:
   INLINE_GRAPH AllAttributesWrapper(const NodeAttributes &attrib);
   INLINE_GRAPH AllAttributesWrapper(const AllAttributesWrapper &copy);
   INLINE_GRAPH void operator = (const AllAttributesWrapper &copy);
-  INLINE_GRAPH static AllAttributesWrapper 
+  INLINE_GRAPH static AllAttributesWrapper
   init_from(const AllTransitionsWrapper &trans);
   INLINE_GRAPH ~AllAttributesWrapper();
 
@@ -48,7 +61,7 @@ public:
 
   INLINE_GRAPH void make_initial();
   void apply_in_place(const AllTransitionsWrapper &trans);
-  void apply_from(const AllAttributesWrapper &other, 
+  void apply_from(const AllAttributesWrapper &other,
                   const AllTransitionsWrapper &trans);
   NodeAttributes *apply(const AllTransitionsWrapper &trans) const;
 

@@ -1,6 +1,19 @@
 // Filename: builderPrimTempl.I
 // Created by:  drose (11Sep97)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <notify.h>
@@ -10,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderPrimTempl::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template <class VTX>
 INLINE BuilderPrimTempl<VTX>::
@@ -22,7 +35,7 @@ BuilderPrimTempl() {
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderPrimTempl::Copy constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template <class VTX>
 INLINE BuilderPrimTempl<VTX>::
@@ -34,7 +47,7 @@ BuilderPrimTempl(const BuilderPrimTempl<VTX> &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderPrimTempl::Copy assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template <class VTX>
 INLINE BuilderPrimTempl<VTX> &BuilderPrimTempl<VTX>::
@@ -576,7 +589,7 @@ get_vertex(int n) const {
   return _verts[n];
 }
 
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderPrimTempl::add_component
 //       Access: Public
@@ -771,7 +784,7 @@ is_valid() const {
   switch (get_type()) {
   case BPT_poly:
     return num_verts >= 3;
-  
+
   case BPT_point:
     return num_verts >= 1;
 
@@ -784,7 +797,7 @@ is_valid() const {
   case BPT_tristrip:
   case BPT_trifan:
     return num_verts >= 3;
-   
+
   case BPT_quad:
     return num_verts == 4;
 
@@ -838,7 +851,7 @@ void BuilderPrimTempl<VTX>::
 update_overall_attrib() {
   int num_verts = get_num_verts();
   int num_components = get_num_components();
-  
+
   NType common_normal;
   CType common_color;
   float common_pixel_size;
@@ -870,7 +883,7 @@ update_overall_attrib() {
 
       for (i = 1; i < num_verts; i++) {
         Vertex &vertex = get_vertex(i);
-        has_vertex_normal = 
+        has_vertex_normal =
           (has_vertex_normal && vertex.has_normal());
         if (!vertex.has_normal() ||
             !(vertex.get_normal() == common_normal)) {
@@ -885,7 +898,7 @@ update_overall_attrib() {
 
       for (i = 1; i < num_verts; i++) {
         Vertex &vertex = get_vertex(i);
-        has_vertex_color = 
+        has_vertex_color =
           (has_vertex_color && vertex.has_color());
         if (!vertex.has_color() ||
             !(vertex.get_color() == common_color)) {
@@ -900,9 +913,9 @@ update_overall_attrib() {
 
       for (i = 1; i < num_verts; i++) {
         Vertex &vertex = get_vertex(i);
-        has_vertex_pixel_size = 
+        has_vertex_pixel_size =
           (has_vertex_pixel_size && vertex.has_pixel_size());
-        if (!vertex.has_pixel_size() || 
+        if (!vertex.has_pixel_size() ||
             !(vertex.get_pixel_size() == common_pixel_size)) {
           has_common_pixel_size = false;
         }
@@ -918,7 +931,7 @@ update_overall_attrib() {
 
       for (i = 1; i < num_components; i++) {
         DAttrib &component = get_component(i);
-        has_component_normal = 
+        has_component_normal =
           (has_component_normal && component.has_normal());
         if (!component.has_normal() ||
             !(component.get_normal() == common_normal)) {
@@ -933,7 +946,7 @@ update_overall_attrib() {
 
       for (i = 1; i < num_components; i++) {
         DAttrib &component = get_component(i);
-        has_component_color = 
+        has_component_color =
           (has_component_color && component.has_color());
         if (!component.has_color() ||
             !(component.get_color() == common_color)) {
@@ -948,7 +961,7 @@ update_overall_attrib() {
 
       for (i = 1; i < num_components; i++) {
         DAttrib &component = get_component(i);
-        has_component_pixel_size = 
+        has_component_pixel_size =
           (has_component_pixel_size && component.has_pixel_size());
         if (!component.has_pixel_size() ||
             !(component.get_pixel_size() == common_pixel_size)) {
@@ -959,7 +972,7 @@ update_overall_attrib() {
   }
 
   _overall = BAF_overall_updated;
-  
+
   if (has_common_normal) {
     // The primitive has one overall normal, or each of the vertices
     // has the same normal.
@@ -978,8 +991,8 @@ update_overall_attrib() {
     // Well, none of the above, but the prim itself has a normal.
     _overall |= BAF_overall_normal;
   }
-    
-  
+
+
   if (has_common_color) {
     // The primitive has one overall color, or each of the vertices
     // has the same color.
@@ -1003,7 +1016,7 @@ update_overall_attrib() {
     // Each vertex has a texture coordinate.
     _overall |= BAF_vertex_texcoord;
   }
-  
+
   if (has_common_pixel_size) {
     // The primitive has one overall pixel size, or each of the vertices
     // has the same pixel size.

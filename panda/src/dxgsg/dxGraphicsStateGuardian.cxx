@@ -1,6 +1,19 @@
 // Filename: dxGraphicsStateGuardian.cxx
 // Created by:  mike (02Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <pandabase.h>
@@ -76,7 +89,7 @@
 //#define PRINT_TEXSTATS
 
 //const int VERT_BUFFER_SIZE = (8*1024L);
-// For sparkle particles, we can have 4 vertices per sparkle, and a 
+// For sparkle particles, we can have 4 vertices per sparkle, and a
 // particle pool size of 1024 particles
 
 const int VERT_BUFFER_SIZE = (32*6*1024L);
@@ -106,7 +119,7 @@ static D3DMATRIX matIdentity;
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DXGraphicsStateGuardian::
 DXGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
@@ -155,7 +168,7 @@ DXGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DXGraphicsStateGuardian::
 ~DXGraphicsStateGuardian() {
@@ -181,12 +194,12 @@ reset() {
     GraphicsStateGuardian::reset();
     _buffer_mask = 0;
 
-    // All implementations have the following buffers. 
+    // All implementations have the following buffers.
     _buffer_mask = (RenderBuffer::T_color |
                     RenderBuffer::T_depth |
-                    RenderBuffer::T_back  
+                    RenderBuffer::T_back
 //                  RenderBuffer::T_stencil |
-//                  RenderBuffer::T_accum 
+//                  RenderBuffer::T_accum
                     );
 
     _current_projection_mat = LMatrix4f::ident_mat();
@@ -198,15 +211,15 @@ reset() {
 
     // Set up our clear values to invalid values, so the glClear* calls
     // will be made initially.
-    _clear_color_red = -1.0f; 
+    _clear_color_red = -1.0f;
     _clear_color_green = -1.0f;
-    _clear_color_blue = -1.0f; 
+    _clear_color_blue = -1.0f;
     _clear_color_alpha = -1.0f;
     _clear_depth = -1.0f;
     _clear_stencil = -1;
     _clear_accum_red = -1.0f;
     _clear_accum_green = -1.0f;
-    _clear_accum_blue = -1.0f; 
+    _clear_accum_blue = -1.0f;
     _clear_accum_alpha = -1.0f;
     _line_width = 1.0f;
     _point_size = 1.0f;
@@ -252,7 +265,7 @@ HRESULT CALLBACK EnumTexFmtsCallback( LPDDPIXELFORMAT pddpf, VOID* param ) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::reset
 //       Access: Public, Virtual
-//  Description: Handles initialization which assumes that DX has already been 
+//  Description: Handles initialization which assumes that DX has already been
 //               set up.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
@@ -312,7 +325,7 @@ init_dx(  LPDIRECTDRAW7     context,
 #if(DIRECT3D_VERSION < 0x700)
         dx_decal_type = GDT_mask;
 #else
-        dx_decal_type = GDT_blend;      
+        dx_decal_type = GDT_blend;
 #endif
     }
 
@@ -324,7 +337,7 @@ init_dx(  LPDIRECTDRAW7     context,
 #if(DIRECT3D_VERSION < 0x700)
     dx_decal_type = GDT_mask;
 #else
-    dx_decal_type = GDT_blend;      
+    dx_decal_type = GDT_blend;
 #endif
 #endif
 
@@ -505,7 +518,7 @@ clear(const RenderBuffer &buffer) {
         dxgsg_cat.error()
         << "dxGSG::clear_buffer failed:  Clear returned " << ConvD3DErrorToString(hr) << endl;
     /*  The following line will cause the background to always clear to a medium red
-    _color_clear_value[0] = .5;           
+    _color_clear_value[0] = .5;
     /*  The following lines will cause the background color to cycle from black to red.
     _color_clear_value[0] += .001;
      if (_color_clear_value[0] > 1.0f) _color_clear_value[0] = 0.0f;
@@ -571,9 +584,9 @@ prepare_display_region() {
     GLsizei width = GLsizei(w);
     GLsizei height = GLsizei(h);
 #ifdef WBD_GL_MODE
-    call_glScissor( x, y, width, height );    
+    call_glScissor( x, y, width, height );
     call_glViewport( x, y, width, height );
-#else 
+#else
     if ( _scissor_x != x || _scissor_y != y ||
             _scissor_width != width || _scissor_height != height )
         {
@@ -591,7 +604,7 @@ prepare_display_region() {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: set_clipper 
+//     Function: set_clipper
 //       Access:
 //  Description: Useless in DX at the present time
 ////////////////////////////////////////////////////////////////////
@@ -607,7 +620,7 @@ void DXGraphicsStateGuardian::set_clipper(RECT cliprect) {
     /* The cliprect we receive is normalized so that (0,0) means the upper left of
        the client portion of the window.
         At least, I think that's true, and the following code assumes that.
-        So we must adjust the clip region by offsetting it to the origin of the 
+        So we must adjust the clip region by offsetting it to the origin of the
         view rectangle.
     */
     clip_rect = cliprect;       // store the normalized clip rect
@@ -678,7 +691,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
 
     if (_clear_buffer_type != 0) {
       // First, clear the entire window.
-      PT(DisplayRegion) win_dr = 
+      PT(DisplayRegion) win_dr =
         _win->make_scratch_display_region(_win->get_width(), _win->get_height());
       clear(get_render_buffer(_clear_buffer_type), win_dr);
     }
@@ -699,7 +712,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
                             Camera *cam = dr->get_camera();
 
                             // For each display region, render from the camera's view.
-                            if (dr->is_active() && cam != (Camera *)NULL && 
+                            if (dr->is_active() && cam != (Camera *)NULL &&
                                 cam->is_active() && cam->get_scene() != (Node *)NULL) {
                                 DisplayRegionStack old_dr = push_display_region(dr);
                                 prepare_display_region();
@@ -707,11 +720,11 @@ render_frame(const AllAttributesWrapper &initial_state) {
                                 pop_display_region(old_dr);
                             }
                         }
-                    }       //      if (layer->is_active()) 
+                    }       //      if (layer->is_active())
                 }
-            }       //      if (chan->is_active()) 
+            }       //      if (chan->is_active())
         }
-    }   //  for (int c = 0; c < max_channel_index; c++) 
+    }   //  for (int c = 0; c < max_channel_index; c++)
 
     // Now we're done with the frame processing.  Clean up.
 
@@ -738,7 +751,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
         // ideal--there may be a better way.  Maybe if the lights were just
         // more aware of whether their parameters or positions have changed
         // at all?
-    } 
+    }
 
     if(dx_show_fps_meter) {
          PStatTimer timer(_win->_show_fps_pcollector);
@@ -774,7 +787,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
          _cur_frame_count++;  // only used by fps meter right now
     }
 
-    _win->end_frame();  
+    _win->end_frame();
 
     show_frame();
 
@@ -861,7 +874,7 @@ report_texmgr_stats() {
   ZeroMemory(&tminfo, sizeof(tminfo));
   hr = _d3dDevice->GetInfo(D3DDEVINFOID_TEXTUREMANAGER,
                            &tminfo, sizeof(tminfo));
-  
+
   // Quietly ignore an error in GetInfo().
   if (hr == D3D_OK) {
     _texmgrmem_total_pcollector.set_level(tminfo.dwTotalBytes);
@@ -884,7 +897,7 @@ render_scene(Node *root, ProjectionNode *projnode,
 #ifdef GSG_VERBOSE
     _pass_number = 0;
     dxgsg_cat.debug()
-    << "begin scene - - - - - - - - - - - - - - - - - - - - - - - - -" 
+    << "begin scene - - - - - - - - - - - - - - - - - - - - - - - - -"
     << endl;
 #endif
     _current_root_node = root;
@@ -894,7 +907,7 @@ render_scene(Node *root, ProjectionNode *projnode,
 
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug()
-    << "done scene  - - - - - - - - - - - - - - - - - - - - - - - - -" 
+    << "done scene  - - - - - - - - - - - - - - - - - - - - - - - - -"
     << endl;
 #endif
 }
@@ -918,7 +931,7 @@ render_subgraph(RenderTraverser *traverser,
     LMatrix4f old_projection_mat = _current_projection_mat;
 
     // d3d is left-handed coord system
-    LMatrix4f projection_mat = 
+    LMatrix4f projection_mat =
     projnode->get_projection()->get_projection_mat(CS_yup_left);
 
 #if 0
@@ -928,7 +941,7 @@ render_subgraph(RenderTraverser *traverser,
     _current_projection_mat = projection_mat;
     _projection_mat_stack_count++;
 
-#ifdef _DEBUG 
+#ifdef _DEBUG
    {
       static bool bPrintedMsg=false;
 
@@ -945,7 +958,7 @@ render_subgraph(RenderTraverser *traverser,
 #endif
 
     // We load the projection matrix directly.
-    HRESULT res = 
+    HRESULT res =
     _d3dDevice->SetTransform(D3DTRANSFORMSTATE_PROJECTION,
                              (LPD3DMATRIX) _current_projection_mat.get_data());
 
@@ -958,7 +971,7 @@ render_subgraph(RenderTraverser *traverser,
     if (_coordinate_system != CS_yup_left) {
         // Now we build the coordinate system conversion into the
         // modelview matrix (as described in the paragraph above).
-        modelview_mat = modelview_mat * 
+        modelview_mat = modelview_mat *
                         LMatrix4f::convert_mat(_coordinate_system, CS_yup_left);
     }
 
@@ -992,12 +1005,12 @@ render_subgraph(RenderTraverser *traverser,
 //               render process.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-render_subgraph(RenderTraverser *traverser, Node *subgraph, 
+render_subgraph(RenderTraverser *traverser, Node *subgraph,
                 const AllAttributesWrapper &initial_state,
                 const AllTransitionsWrapper &net_trans) {
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug()
-    << "begin subgraph (pass " << ++_pass_number 
+    << "begin subgraph (pass " << ++_pass_number
     << ") - - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
 #endif
     activate();
@@ -1007,8 +1020,8 @@ render_subgraph(RenderTraverser *traverser, Node *subgraph,
 
 #ifdef GSG_VERBOSE
     dxgsg_cat.debug()
-    << "end subgraph (pass " << _pass_number 
-    << ") - - - - - - - - - - - - - - - - - - - - - - - - -" 
+    << "end subgraph (pass " << _pass_number
+    << ") - - - - - - - - - - - - - - - - - - - - - - - - -"
     << endl;
 #endif
 }
@@ -1091,14 +1104,14 @@ draw_prim_setup(const Geom *geom) {
 
 ////////
 
-    vi = geom->make_vertex_iterator();  
-    p_flags = D3DFVF_XYZ;   
-    size_t vertex_size = sizeof(D3DVALUE) * 3;  
+    vi = geom->make_vertex_iterator();
+    p_flags = D3DFVF_XYZ;
+    size_t vertex_size = sizeof(D3DVALUE) * 3;
 
     if ((geom->get_binding(G_COLOR) != G_OFF) || _issued_color_enabled) {
         ci = geom->make_color_iterator();
-        p_flags |= D3DFVF_DIFFUSE;   
-        vertex_size += sizeof(D3DCOLOR);  
+        p_flags |= D3DFVF_DIFFUSE;
+        vertex_size += sizeof(D3DCOLOR);
 
         if (geom->get_binding(G_COLOR) == G_OVERALL) {
             GET_NEXT_COLOR();
@@ -1114,8 +1127,8 @@ draw_prim_setup(const Geom *geom) {
 
     if (geom->get_binding(G_NORMAL) != G_OFF) {
         ni = geom->make_normal_iterator();
-        p_flags |= D3DFVF_NORMAL;  
-        vertex_size += sizeof(D3DVALUE) * 3;  
+        p_flags |= D3DFVF_NORMAL;
+        vertex_size += sizeof(D3DVALUE) * 3;
 
         if (geom->get_binding(G_NORMAL) == G_OVERALL)
             p_normal = geom->get_next_normal(ni);    // set overall normal if there is one
@@ -1200,7 +1213,7 @@ draw_prim_inner_loop(int nVerts, const Geom *geom, DWORD perFlags) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_point
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_point(const GeomPoint *geom) {
@@ -1313,7 +1326,7 @@ draw_point(const GeomPoint *geom) {
             dps_data.diffuse.dwStride = sizeof(D3DCOLOR);
 
             // Geom nodes store floats for colors, drawprim requires ARGB dwords
-            // BUGBUG: eventually this hack every-frame all-colors conversion needs 
+            // BUGBUG: eventually this hack every-frame all-colors conversion needs
             // to be done only once as part of a vertex buffer
 
             if(_color_transform_enabled || _alpha_transform_enabled) {
@@ -1322,7 +1335,7 @@ draw_point(const GeomPoint *geom) {
                     transform_color(colors[i],RGBA_color);
                     add_DWORD_to_FVFBuf(RGBA_color);
                 }
-            } else 
+            } else
              for (int i=0;i<nPrims;i++) {
                 Colorf out_color=colors[i];
                 add_DWORD_to_FVFBuf(Colorf_to_D3DCOLOR(out_color));
@@ -1344,7 +1357,7 @@ draw_point(const GeomPoint *geom) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_line
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_line(const GeomLine* geom) {
@@ -1439,7 +1452,7 @@ draw_line(const GeomLine* geom) {
 
     HRESULT hr;
 
-    if (_tmp_fvf == NULL) 
+    if (_tmp_fvf == NULL)
         hr = _d3dDevice->DrawPrimitive(D3DPT_LINELIST, p_flags, _pFvfBufBasePtr, nPrims*2, NULL);
     else {
         hr = _d3dDevice->DrawPrimitive(D3DPT_LINELIST, p_flags, _tmp_fvf, nPrims*2, NULL);
@@ -1579,7 +1592,7 @@ draw_linestrip(const GeomLinestrip* geom) {
 
 
 // this class exists because an alpha sort is necessary for correct
-// sprite rendering, and we can't simply sort the vertex arrays as 
+// sprite rendering, and we can't simply sort the vertex arrays as
 // each vertex may or may not have corresponding information in the
 // x/y texel-world-ratio and rotation arrays.
 typedef struct {
@@ -1598,14 +1611,14 @@ public:
 
 // this struct exists because the STL can sort faster than i can.
 struct draw_sprite_vertex_less {
-    INLINE bool operator ()(const WrappedSpriteSortPtr& v0, 
+    INLINE bool operator ()(const WrappedSpriteSortPtr& v0,
                             const WrappedSpriteSortPtr& v1) const {
         return v0.z > v1.z; // reversed from gl
     }
 };
 /*
 struct draw_sprite_vertex_less {
-  INLINE bool operator ()(const WrappedSprite& v0, 
+  INLINE bool operator ()(const WrappedSprite& v0,
               const WrappedSprite& v1) const {
     return v0._v[2] > v1._v[2]; // reversed from gl
   }
@@ -1615,7 +1628,7 @@ struct draw_sprite_vertex_less {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_sprite
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_sprite(const GeomSprite *geom) {
@@ -1625,12 +1638,12 @@ draw_sprite(const GeomSprite *geom) {
     // of sprites all facing the screen.  Performing the billboard math
     // for ~1000 sprites is way too slow.  Ideally, we want one
     // matrix transformation that will handle everything, and this is
-    // just about what ends up happening. We're getting the front-facing 
+    // just about what ends up happening. We're getting the front-facing
     // effect by setting up a new frustum (of the same z-depth as the
     // current one) that is very small in x and y.  This way regularly
     // rendered triangles that might not be EXACTLY facing the camera
     // will certainly look close enough.  Then, we transform to camera-space
-    // by hand and apply the inverse frustum to the transformed point.  
+    // by hand and apply the inverse frustum to the transformed point.
     // For some cracked out reason, this actually works.
 
 
@@ -1758,7 +1771,7 @@ draw_sprite(const GeomSprite *geom) {
     vector< WrappedSpriteSortPtr > sorted_sprite_vector;
     vector< WrappedSpriteSortPtr >::iterator sorted_vec_iter;
 
-    WrappedSprite *SpriteArray = new WrappedSprite[nprims];  
+    WrappedSprite *SpriteArray = new WrappedSprite[nprims];
 
     //BUGBUG: could we use _fvfbuf for this to avoid perframe alloc?
     // alternately, alloc once when retained mode becomes available
@@ -1828,7 +1841,7 @@ draw_sprite(const GeomSprite *geom) {
     if (color_overall == true) {
         GET_NEXT_COLOR();
         CurColor = p_colr;
-        bDoColor = (p_colr != ~0); 
+        bDoColor = (p_colr != ~0);
     }
 
     if (bDoColor) {
@@ -1939,7 +1952,7 @@ draw_sprite(const GeomSprite *geom) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_polygon
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_polygon(const GeomPolygon *geom) {
@@ -1959,7 +1972,7 @@ draw_polygon(const GeomPolygon *geom) {
        Geom *gp=dynamic_cast<Geom *>(geom);  doesnt work
        draw_linestrip(gp);
    }
-*/   
+*/
 
     draw_multitri(geom, D3DPT_TRIANGLEFAN);
 
@@ -1980,7 +1993,7 @@ draw_polygon(const GeomPolygon *geom) {
 
     // If we have per-vertex colors or normals, we need smooth shading.
     // Otherwise we want flat shading for performance reasons.
-    if (geom->get_binding(G_COLOR) == G_PER_VERTEX || 
+    if (geom->get_binding(G_COLOR) == G_PER_VERTEX ||
         geom->get_binding(G_NORMAL) == G_PER_VERTEX) {
         call_glShadeModel(GL_SMOOTH);
     } else {
@@ -1989,7 +2002,7 @@ draw_polygon(const GeomPolygon *geom) {
 
     // Draw overall
     issuer.issue_color(G_OVERALL, ci);
-    issuer.issue_normal(G_OVERALL, ni); 
+    issuer.issue_normal(G_OVERALL, ni);
 
     for (int i = 0; i < nprims; i++) {
         // Draw per primitive
@@ -2020,7 +2033,7 @@ draw_polygon(const GeomPolygon *geom) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_tri
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_tri(const GeomTri *geom) {
@@ -2137,7 +2150,7 @@ draw_tri(const GeomTri *geom) {
 
 #ifdef _DEBUG
             nassertv(geom->get_num_vertices_per_prim()==3);
-            nassertv( nPrims*dwVertsPerPrim*sizeof(D3DVECTOR) <= D3DMAXNUMVERTICES*sizeof(WORD)); 
+            nassertv( nPrims*dwVertsPerPrim*sizeof(D3DVECTOR) <= D3DMAXNUMVERTICES*sizeof(WORD));
             if (NormalBinding==G_PER_VERTEX)
                 nassertv(norms.size()>=nPrims*dwVertsPerPrim);
 #endif
@@ -2166,7 +2179,7 @@ draw_tri(const GeomTri *geom) {
                 // copy the one global color in, set stride to 0
                 *pExpandedNormalArray=norms[0];
                 dps_data.normal.lpvData = (VOID*)pExpandedNormalArray;
-                dps_data.normal.dwStride = 0; 
+                dps_data.normal.dwStride = 0;
             }
         }
 
@@ -2201,7 +2214,7 @@ draw_tri(const GeomTri *geom) {
                 // must use tmp array to expand per-prim info to per-vert info
 
                 // Geom nodes store floats for colors, drawprim requires ARGB dwords
-                // BUGBUG: eventually this hack every-frame all-colors conversion needs 
+                // BUGBUG: eventually this hack every-frame all-colors conversion needs
                 // to be done only once as part of a vertex buffer
 
                 if (NeededShadeMode!=D3DSHADE_FLAT) {
@@ -2223,7 +2236,7 @@ draw_tri(const GeomTri *geom) {
                             *(pOutColor+1) = newcolr;
                             *(pOutColor+2) = newcolr;
                         }
-                    } 
+                    }
                 } else {
                     // dont write 2nd,3rd colors in output buffer, these are not used in flat shading
                     // MAKE SURE ShadeMode never set to GOURAUD after this!
@@ -2236,7 +2249,7 @@ draw_tri(const GeomTri *geom) {
                         for (int i=0;i<nPrims;i++,pInColor++,pOutColor+=dwVertsPerPrim) {
                             transform_color(*pInColor,*pOutColor);
                         }
-                    } 
+                    }
                 }
             } else if (ColorBinding==G_PER_VERTEX) {
                 NeededShadeMode = D3DSHADE_GOURAUD;
@@ -2252,7 +2265,7 @@ draw_tri(const GeomTri *geom) {
                         for (int i=0;i<cNumColors;i++,pInColor++,pOutColor++) {
                             transform_color(*pInColor,*pOutColor);
                         }
-                    } 
+                    }
             } else {
 #ifdef _DEBUG
                 nassertv(ColorBinding==G_OVERALL);
@@ -2302,8 +2315,8 @@ draw_tri(const GeomTri *geom) {
 #if 0
     // test triangle for me to dbg experiments only
     float vert_buf[15] = {
-        0.0f, 0.0f, 0.0f,  0.0f, 0.0f, 
-        33.0, 0.0f, 0.0f,  0.0f, 2.0, 
+        0.0f, 0.0f, 0.0f,  0.0f, 0.0f,
+        33.0, 0.0f, 0.0f,  0.0f, 2.0,
         0.0f, 0.0f, 33.0,  2.0, 0.0f
     };
 
@@ -2320,7 +2333,7 @@ draw_tri(const GeomTri *geom) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_quad
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_quad(const GeomQuad *geom) {
@@ -2355,7 +2368,7 @@ draw_quad(const GeomQuad *geom) {
 
     // If we have per-vertex colors or normals, we need smooth shading.
     // Otherwise we want flat shading for performance reasons.
-    if (geom->get_binding(G_COLOR) == G_PER_VERTEX || 
+    if (geom->get_binding(G_COLOR) == G_PER_VERTEX ||
         geom->get_binding(G_NORMAL) == G_PER_VERTEX) {
         call_glShadeModel(GL_SMOOTH);
     } else {
@@ -2364,7 +2377,7 @@ draw_quad(const GeomQuad *geom) {
 
     // Draw overall
     issuer.issue_color(G_OVERALL, ci);
-    issuer.issue_normal(G_OVERALL, ni); 
+    issuer.issue_normal(G_OVERALL, ni);
 
     glBegin(GL_QUADS);
 
@@ -2389,7 +2402,7 @@ draw_quad(const GeomQuad *geom) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_tristrip
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_tristrip(const GeomTristrip *geom) {
@@ -2405,7 +2418,7 @@ draw_tristrip(const GeomTristrip *geom) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_trifan
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_trifan(const GeomTrifan *geom) {
@@ -2525,7 +2538,7 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE trilisttype) {
             // handles first triangle strip/fan
             if (perComp & PER_COLOR) {
                 GET_NEXT_COLOR();
-            } 
+            }
             if (perComp & PER_NORMAL)
                 p_normal = geom->get_next_normal(ni);   // set primitive normal if there is one.
 
@@ -2574,7 +2587,7 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 #ifdef _DEBUG
             nassertv(geom->get_num_more_vertices_than_components()==2);
             nassertv(NormalBinding!=G_PER_COMPONENT); // makes no sense, unimplementable for strips since normals always shared across tris
-            nassertv( cTotalVerts*sizeof(D3DVECTOR) <= D3DMAXNUMVERTICES*sizeof(WORD)); 
+            nassertv( cTotalVerts*sizeof(D3DVECTOR) <= D3DMAXNUMVERTICES*sizeof(WORD));
             if(NormalBinding==G_PER_VERTEX)
                 nassertv(norms.size()>=cTotalVerts);
 #endif
@@ -2604,7 +2617,7 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE trilisttype) {
                 // copy the one global color in, set stride to 0
                 *pExpandedNormalArray=norms[0];
                 dps_data.normal.lpvData = (VOID*)pExpandedNormalArray;
-                dps_data.normal.dwStride = 0; 
+                dps_data.normal.dwStride = 0;
             }
         }
 
@@ -2729,7 +2742,7 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 
                 if(!(_color_transform_enabled || _alpha_transform_enabled)) {
                   COMPONENT_COLOR_COPY_LOOPS(COLOR_CONVERT_COPY_STMT);
-                } else {   
+                } else {
                   COMPONENT_COLOR_COPY_LOOPS(COLOR_CONVERT_XFORM_STMT);
                 }
             } else {
@@ -2777,10 +2790,10 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE trilisttype) {
             hr = _d3dDevice->DrawPrimitiveStrided(trilisttype, fvf_flags, &dps_data, cCurNumStripVerts, NULL);
             TestDrawPrimFailure(DrawPrimStrided,hr,_pDD);
 
-            dps_data.position.lpvData = (VOID*)(((char*) dps_data.position.lpvData) + cCurNumStripVerts*dps_data.position.dwStride); 
+            dps_data.position.lpvData = (VOID*)(((char*) dps_data.position.lpvData) + cCurNumStripVerts*dps_data.position.dwStride);
             dps_data.diffuse.lpvData = (VOID*)(((char*) dps_data.diffuse.lpvData) + cCurNumStripVerts*dps_data.diffuse.dwStride);
-            dps_data.normal.lpvData = (VOID*)(((char*) dps_data.normal.lpvData) + cCurNumStripVerts*dps_data.normal.dwStride); 
-            dps_data.textureCoords[0].lpvData = (VOID*)(((char*) dps_data.textureCoords[0].lpvData) + cCurNumStripVerts*dps_data.textureCoords[0].dwStride); 
+            dps_data.normal.lpvData = (VOID*)(((char*) dps_data.normal.lpvData) + cCurNumStripVerts*dps_data.normal.dwStride);
+            dps_data.textureCoords[0].lpvData = (VOID*)(((char*) dps_data.textureCoords[0].lpvData) + cCurNumStripVerts*dps_data.textureCoords[0].dwStride);
         }
 
         _pCurFvfBufPtr = NULL;
@@ -2796,7 +2809,7 @@ draw_multitri(const Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 void DXGraphicsStateGuardian::
 GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
                void *pIndexSpace,DWORD dwIndexSpaceByteSize,
-               D3DVECTOR *pCenter, float fRadius, 
+               D3DVECTOR *pCenter, float fRadius,
                DWORD wNumRings, DWORD wNumSections, float sx, float sy, float sz,
                DWORD *pNumVertices,DWORD *pNumIndices,DWORD fvfFlags,DWORD dwVertSize) {
 
@@ -2807,9 +2820,9 @@ GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
 #define M_PI 3.1415926f   // probably should get this from mathNumbers.h instead
 
     nassertv(wNumRings>=2 && wNumSections>=2);
-    wNumRings--;  // wNumRings indicates number of vertex rings (not tri-rings). 
+    wNumRings--;  // wNumRings indicates number of vertex rings (not tri-rings).
                   // gluSphere 'stacks' arg for 1 vert ring is 2, so convert to our '1'.
-    wNumSections++;  // to make us equiv to gluSphere 
+    wNumSections++;  // to make us equiv to gluSphere
 
     //Figure out needed space for the triangles and vertices.
     DWORD dwNumVertices,dwNumIndices,dwNumTriangles;
@@ -2830,7 +2843,7 @@ GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
 
     dwNumIndices = *pNumIndices = dwNumTriangles*3;
 
-    D3DVERTEX* pvVertices = (D3DVERTEX*) pVertexSpace;  
+    D3DVERTEX* pvVertices = (D3DVERTEX*) pVertexSpace;
     WORD *pwIndices = (WORD *) pIndexSpace;
 
     nassertv(dwNumVertices*dwVertSize < VERT_BUFFER_SIZE);
@@ -2851,7 +2864,7 @@ GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
     if(fvfFlags & D3DFVF_DIFFUSE)                                 \
         add_DWORD_to_FVFBuf(p_colr);                              \
     if(fvfFlags & D3DFVF_TEXCOUNT_MASK)                           \
-        add_to_FVFBuf((void *)texCoords, sizeof(TexCoordf));   
+        add_to_FVFBuf((void *)texCoords, sizeof(TexCoordf));
 
 #ifdef DBG_GENSPHERE
     int nvs_written=0;
@@ -2874,7 +2887,7 @@ GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
 
     if (DOTEXTURING) {
         // numRings already includes 1st and last rings for this case
-        dtheta = (float)(M_PI / (wNumRings-1));     //Angle between each ring (ignore 2 fake rings)  
+        dtheta = (float)(M_PI / (wNumRings-1));     //Angle between each ring (ignore 2 fake rings)
         theta = 0.0f;
     } else {
         dtheta = (float)(M_PI / (wNumRings + 1));   //Angle between each ring
@@ -2910,7 +2923,7 @@ GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
 
             if (DONORMAL) {
                 // this is wrong normal for the non-spherical case (i think you need to multiply by 1/scale factor per component)
-                vNormal = Normalize(D3DVECTOR( x*inv_radius, y*inv_radius, z*inv_radius )); 
+                vNormal = Normalize(D3DVECTOR( x*inv_radius, y*inv_radius, z*inv_radius ));
                 add_to_FVFBuf((void *)&vNormal, sizeof(D3DVECTOR));
             }
 
@@ -2919,7 +2932,7 @@ GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
 
             if (DOTEXTURING) {
                 texCoords[0] = 1.0f - phi*reciprocal_2PI;
-                add_to_FVFBuf((void *)texCoords, sizeof(TexCoordf));   
+                add_to_FVFBuf((void *)texCoords, sizeof(TexCoordf));
             }
 
             phi += dphi;
@@ -3014,10 +3027,10 @@ GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
 
 #ifdef DBG_GENSPHERE
     if (DOTEXTURING) {
-        assert(CurFinalTriIndex == dwNumTriangles); 
+        assert(CurFinalTriIndex == dwNumTriangles);
         assert(base_index == dwNumIndices);
     } else {
-        assert(CurFinalTriIndex == dwNumTriangles-wNumSections); 
+        assert(CurFinalTriIndex == dwNumTriangles-wNumSections);
         assert(base_index == dwNumIndices-wNumSections*3);
     }
 
@@ -3030,7 +3043,7 @@ GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_sphere
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_sphere(const GeomSphere *geom) {
@@ -3074,7 +3087,7 @@ draw_sphere(const GeomSphere *geom) {
 
         GenerateSphere(_pCurFvfBufPtr, VERT_BUFFER_SIZE,
                        _index_buf, D3DMAXNUMVERTICES,
-                       (D3DVECTOR *)&center, fRadius, 
+                       (D3DVECTOR *)&center, fRadius,
                        SPHERE_NUMSTACKS, SPHERE_NUMSLICES,
                        1.0f, 1.0f, 1.0f,  // no scaling factors, do a sphere not ellipsoid
                        &nVerts,&nIndices,p_flags,vertex_size);
@@ -3090,7 +3103,7 @@ draw_sphere(const GeomSphere *geom) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::issue_color_transform
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_color_transform(const ColorMatrixAttribute *attrib) {
@@ -3106,7 +3119,7 @@ issue_color_transform(const ColorMatrixAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::issue_alpha_transform
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_alpha_transform(const AlphaTransformAttribute *attrib) {
@@ -3168,7 +3181,7 @@ prepare_texture(Texture *tex) {
 void DXGraphicsStateGuardian::
 apply_texture(TextureContext *tc) {
     if (tc==NULL) {
-        return;  // use enable_texturing to disable/enable 
+        return;  // use enable_texturing to disable/enable
     }
   add_to_texture_record(tc);
 
@@ -3179,7 +3192,7 @@ apply_texture(TextureContext *tc) {
     // Note: if this code changes, make sure to change initialization SetTSS code in init_dx as well
     // so DX TSS renderstate matches dxgsg state
 
-    DXTextureContext *dtc = DCAST(DXTextureContext, tc);  
+    DXTextureContext *dtc = DCAST(DXTextureContext, tc);
 
     if( _pCurTexContext == dtc) {
         return;  // tex already set (and possible problem in state-sorting?)
@@ -3239,11 +3252,11 @@ apply_texture(TextureContext *tc) {
     FT_nearest,FT_linear,FT_nearest_mipmap_nearest,FT_linear_mipmap_nearest,
     FT_nearest_mipmap_linear, FT_linear_mipmap_linear, };
 */
- static D3DTEXTUREMINFILTER PandaToD3DMinType[8] = 
+ static D3DTEXTUREMINFILTER PandaToD3DMinType[8] =
     {D3DTFN_POINT,D3DTFN_LINEAR,D3DTFN_POINT,D3DTFN_LINEAR,D3DTFN_POINT,D3DTFN_LINEAR};
- static D3DTEXTUREMIPFILTER PandaToD3DMipType[8] = 
+ static D3DTEXTUREMIPFILTER PandaToD3DMipType[8] =
     {D3DTFP_NONE,D3DTFP_NONE,D3DTFP_POINT,D3DTFP_POINT,D3DTFP_LINEAR,D3DTFP_LINEAR};
- 
+
     ft=tex->get_minfilter();
 
     if ((ft!=_CurTexMinFilter)||(aniso_degree!=_CurTexAnisoDegree)) {
@@ -3306,7 +3319,7 @@ apply_texture(TextureContext *tc) {
         _CurTexAnisoDegree = aniso_degree;
     }
 
-    // bugbug:  does this handle the case of untextured geometry? 
+    // bugbug:  does this handle the case of untextured geometry?
     //          we dont see this bug cause we never mix textured/untextured
 
     _d3dDevice->SetTexture(0, dtc->_surface );
@@ -3400,7 +3413,7 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr) {
 
 
     bind_texture(tc);
-    glCopyTexImage2D( GL_TEXTURE_2D, tex->get_level(), 
+    glCopyTexImage2D( GL_TEXTURE_2D, tex->get_level(),
                       get_internal_image_format(pb->get_format()),
                       pb->get_xorg(), pb->get_yorg(),
                       pb->get_xsize(), pb->get_ysize(), pb->get_border() );
@@ -3425,7 +3438,7 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr, const RenderBuffer &rb
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_texture
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_texture(TextureContext *tc, const DisplayRegion *dr) {
@@ -3454,7 +3467,7 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr) {
     TextureApplyAttribute *taa = new TextureApplyAttribute;
     taa->set_mode(TextureApplyProperty::M_decal);
 
-    state.set_attribute(LightTransition::get_class_type(), 
+    state.set_attribute(LightTransition::get_class_type(),
                         new LightAttribute);
     state.set_attribute(ColorMaskTransition::get_class_type(),
                         new ColorMaskAttribute);
@@ -3511,7 +3524,7 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_texture
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_texture(TextureContext *tc, const DisplayRegion *dr, const RenderBuffer &rb) {
@@ -3555,7 +3568,7 @@ texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb, 
+texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
                         const DisplayRegion *dr) {
     nassertv(tc != NULL && pb != NULL && dr != NULL);
     activate();
@@ -3579,7 +3592,7 @@ texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::copy_pixel_buffer
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
@@ -3599,8 +3612,8 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 
 /*
     set_pack_alignment(1);
-    glReadPixels( pb->get_xorg() + xo, pb->get_yorg() + yo, 
-                  pb->get_xsize(), pb->get_ysize(), 
+    glReadPixels( pb->get_xorg() + xo, pb->get_yorg() + yo,
+                  pb->get_xsize(), pb->get_ysize(),
                   get_external_image_format(pb->get_format()),
                   get_image_type(pb->get_image_type()),
                   pb->_image.p() );
@@ -3618,7 +3631,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
-copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr, 
+copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
                   const RenderBuffer &rb) {
     set_read_buffer(rb);
     copy_pixel_buffer(pb, dr);
@@ -3627,7 +3640,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::draw_pixel_buffer
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
@@ -3645,20 +3658,20 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
     prepare_display_region();
 
     NodeAttributes state(na);
-    state.set_attribute(LightTransition::get_class_type(), 
+    state.set_attribute(LightTransition::get_class_type(),
                         new LightAttribute);
-    state.set_attribute(TextureTransition::get_class_type(), 
+    state.set_attribute(TextureTransition::get_class_type(),
                         new TextureAttribute);
-    state.set_attribute(TransformTransition::get_class_type(), 
+    state.set_attribute(TransformTransition::get_class_type(),
                         new TransformAttribute);
-    state.set_attribute(ColorBlendTransition::get_class_type(), 
+    state.set_attribute(ColorBlendTransition::get_class_type(),
                         new ColorBlendAttribute);
-    state.set_attribute(StencilTransition::get_class_type(), 
+    state.set_attribute(StencilTransition::get_class_type(),
                         new StencilAttribute);
 
 
     switch (pb->get_format()) {
-        case PixelBuffer::F_depth_component: 
+        case PixelBuffer::F_depth_component:
             {
                 ColorMaskAttribute *cma = new ColorMaskAttribute;
                 cma->set_mask(0);
@@ -3713,28 +3726,28 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
     << "glDrawPixels(" << pb->get_xsize() << ", " << pb->get_ysize()
     << ", ";
     switch (get_external_image_format(pb->get_format())) {
-        case GL_DEPTH_COMPONENT: 
-            dxgsg_cat.debug(false) << "GL_DEPTH_COMPONENT, "; 
-            break; 
+        case GL_DEPTH_COMPONENT:
+            dxgsg_cat.debug(false) << "GL_DEPTH_COMPONENT, ";
+            break;
         case GL_RGB:
-            dxgsg_cat.debug(false) << "GL_RGB, "; 
+            dxgsg_cat.debug(false) << "GL_RGB, ";
             break;
-        case GL_RGBA: 
-            dxgsg_cat.debug(false) << "GL_RGBA, "; 
+        case GL_RGBA:
+            dxgsg_cat.debug(false) << "GL_RGBA, ";
             break;
-        default: 
+        default:
             dxgsg_cat.debug(false) << "unknown, ";
             break;
     }
     switch (get_image_type(pb->get_image_type())) {
-        case GL_UNSIGNED_BYTE: 
-            dxgsg_cat.debug(false) << "GL_UNSIGNED_BYTE, "; 
+        case GL_UNSIGNED_BYTE:
+            dxgsg_cat.debug(false) << "GL_UNSIGNED_BYTE, ";
             break;
         case GL_float:
             dxgsg_cat.debug(false) << "GL_float, ";
             break;
-        default: 
-            dxgsg_cat.debug(false) << "unknown, "; 
+        default:
+            dxgsg_cat.debug(false) << "unknown, ";
             break;
     }
     dxgsg_cat.debug(false)
@@ -3742,7 +3755,7 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 #endif
 
     glRasterPos2i( pb->get_xorg(), pb->get_yorg() );
-    glDrawPixels( pb->get_xsize(), pb->get_ysize(), 
+    glDrawPixels( pb->get_xsize(), pb->get_ysize(),
                   get_external_image_format(pb->get_format()),
                   get_image_type(pb->get_image_type()),
                   pb->_image.p() );
@@ -3813,24 +3826,24 @@ apply_fog(Fog *fog) {
                 float fog_start,fog_end;
                 fog->get_range(fog_start,fog_end);
 
-                _d3dDevice->SetRenderState( D3DRENDERSTATE_FOGSTART, 
+                _d3dDevice->SetRenderState( D3DRENDERSTATE_FOGSTART,
                             *((LPDWORD) (&fog_start)) );
-                _d3dDevice->SetRenderState( D3DRENDERSTATE_FOGEND, 
+                _d3dDevice->SetRenderState( D3DRENDERSTATE_FOGEND,
                             *((LPDWORD) (&fog_end)) );
             }
             break;
         case Fog::M_exponential:
         case Fog::M_exponential_squared:
             {
-                float fog_density = fog->get_density();   
-                _d3dDevice->SetRenderState( D3DRENDERSTATE_FOGDENSITY, 
+                float fog_density = fog->get_density();
+                _d3dDevice->SetRenderState( D3DRENDERSTATE_FOGDENSITY,
                             *((LPDWORD) (&fog_density)) );
             }
             break;
     }
 
     Colorf  fog_colr = fog->get_color();
-    _d3dDevice->SetRenderState(D3DRENDERSTATE_FOGCOLOR, 
+    _d3dDevice->SetRenderState(D3DRENDERSTATE_FOGCOLOR,
                    D3DRGBA(fog_colr[0], fog_colr[1], fog_colr[2], 0.0f));
 }
 
@@ -3892,7 +3905,7 @@ void DXGraphicsStateGuardian::apply_light( PointLight* light ) {
     << "glPopMatrix()" << endl;
 #endif
 
-#else 
+#else
     D3DCOLORVALUE black;
     black.r = black.g = black.b = black.a = 0.0f;
     D3DLIGHT7  alight;
@@ -3946,9 +3959,9 @@ void DXGraphicsStateGuardian::apply_light( DirectionalLight* light ) {
     glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
     glLightfv(id, GL_SPECULAR, light->get_specular().get_data());
 
-    // Position needs to specify x, y, z, and w 
+    // Position needs to specify x, y, z, and w
     // w == 0 implies light is at infinity
-    LPoint3f dir = get_rel_forward( light, _current_root_node, 
+    LPoint3f dir = get_rel_forward( light, _current_root_node,
                                     _coordinate_system );
     LPoint4f pos( -dir[0], -dir[1], -dir[2], 0 );
     glLightfv( id, GL_POSITION, pos.get_data() );
@@ -4036,17 +4049,17 @@ void DXGraphicsStateGuardian::apply_light( Spotlight* light ) {
     LPoint4f fpos( pos[0], pos[1], pos[2], 1 );
     glLightfv( id, GL_POSITION, fpos.get_data() );
 
-    glLightfv( id, GL_SPOT_DIRECTION, 
+    glLightfv( id, GL_SPOT_DIRECTION,
                get_rel_forward( light, _current_projection_node,
                                 _coordinate_system ).get_data() );
     glLightf( id, GL_SPOT_EXPONENT, light->get_exponent() );
-    glLightf( id, GL_SPOT_CUTOFF, 
+    glLightf( id, GL_SPOT_CUTOFF,
               light->get_cutoff_angle() );
-    glLightf( id, GL_CONSTANT_ATTENUATION, 
+    glLightf( id, GL_CONSTANT_ATTENUATION,
               light->get_constant_attenuation() );
-    glLightf( id, GL_LINEAR_ATTENUATION, 
+    glLightf( id, GL_LINEAR_ATTENUATION,
               light->get_linear_attenuation() );
-    glLightf( id, GL_QUADRATIC_ATTENUATION, 
+    glLightf( id, GL_QUADRATIC_ATTENUATION,
               light->get_quadratic_attenuation() );
 
     glPopMatrix();
@@ -4070,7 +4083,7 @@ void DXGraphicsStateGuardian::apply_light( Spotlight* light ) {
                         (get_rel_pos( light, _current_root_node ).get_data());
 
     alight.dvDirection = *(D3DVECTOR *)
-                         (get_rel_forward( light, _current_root_node, _coordinate_system).get_data()); 
+                         (get_rel_forward( light, _current_root_node, _coordinate_system).get_data());
 
     alight.dvRange =  D3DLIGHT_RANGE_MAX;
     alight.dvFalloff =  1.0f;
@@ -4083,7 +4096,7 @@ void DXGraphicsStateGuardian::apply_light( Spotlight* light ) {
 
     HRESULT res = _d3dDevice->SetLight(_cur_light_id, &alight);
 
-#endif              // WBD_GL_MODE 
+#endif              // WBD_GL_MODE
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4092,13 +4105,13 @@ void DXGraphicsStateGuardian::apply_light( Spotlight* light ) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::apply_light( AmbientLight* light ) {
-    _cur_ambient_light = _cur_ambient_light + light->get_color(); 
+    _cur_ambient_light = _cur_ambient_light + light->get_color();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::issue_transform
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_transform(const TransformAttribute *attrib) {
@@ -4142,7 +4155,7 @@ issue_transform(const TransformAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::issue_matrix
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_tex_matrix(const TexMatrixAttribute *attrib) {
@@ -4168,7 +4181,7 @@ issue_tex_matrix(const TexMatrixAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::issue_color
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_color(const ColorAttribute *attrib) {
@@ -4185,7 +4198,7 @@ issue_color(const ColorAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::issue_texture
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_texture(const TextureAttribute *attrib) {
@@ -4295,7 +4308,7 @@ issue_fog(const FogAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::issue_render_mode
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_render_mode(const RenderModeAttribute *attrib) {
@@ -4365,7 +4378,7 @@ void DXGraphicsStateGuardian::issue_light(const LightAttribute *attrib ) {
             }
         }
 
-        // See if there are any unbound light ids 
+        // See if there are any unbound light ids
         if (_cur_light_id == -1) {
             for (i = 0; i < _max_lights; i++) {
                 if (_available_light_ids[i] == NULL) {
@@ -4377,7 +4390,7 @@ void DXGraphicsStateGuardian::issue_light(const LightAttribute *attrib ) {
         }
 
         // If there were no unbound light ids, see if we can replace
-        // a currently unused but previously bound id 
+        // a currently unused but previously bound id
         if (_cur_light_id == -1) {
             for (i = 0; i < _max_lights; i++) {
                 if (attrib->is_off(_available_light_ids[i])) {
@@ -4470,8 +4483,8 @@ void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode Tex
 /*class TextureApplyProperty {
   enum Mode {
     M_modulate,M_decal,M_blend,M_replace,M_add};
-*/  
-    static D3DTEXTUREOP TexBlendColorOp1[/* TextureApplyProperty::Mode maxval*/ 10] = 
+*/
+    static D3DTEXTUREOP TexBlendColorOp1[/* TextureApplyProperty::Mode maxval*/ 10] =
     {D3DTOP_MODULATE,D3DTOP_BLENDTEXTUREALPHA,D3DTOP_MODULATE,D3DTOP_SELECTARG1,D3DTOP_ADD};
 
     //if bCanJustEnable, then we only need to make sure ColorOp is turned on and set properly
@@ -4485,7 +4498,7 @@ void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode Tex
 
     switch (TexBlendMode) {
 
-        case TextureApplyProperty::M_modulate: 
+        case TextureApplyProperty::M_modulate:
             // emulates GL_MODULATE glTexEnv mode
             // want to multiply tex-color*pixel color to emulate GL modulate blend (see glTexEnv)
             _d3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
@@ -4503,14 +4516,14 @@ void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode Tex
             _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1 );
             _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE );
 
-            break;           
-        case TextureApplyProperty::M_replace: 
+            break;
+        case TextureApplyProperty::M_replace:
             _d3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
 
             _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP,   D3DTOP_SELECTARG1 );
             _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
-            break;           
-        case TextureApplyProperty::M_add: 
+            break;
+        case TextureApplyProperty::M_add:
             _d3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE );
             _d3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_DIFFUSE );
 
@@ -4519,15 +4532,15 @@ void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode Tex
             _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE );
             _d3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE );
 
-            break;           
-        case TextureApplyProperty::M_blend: 
+            break;
+        case TextureApplyProperty::M_blend:
             dxgsg_cat.error()
             << "Impossible to emulate GL_BLEND in DX exactly " << (int) TexBlendMode << endl;
 /*
            // emulate GL_BLEND glTexEnv
 
            GL requires 2 independent operations on 3 input vars for this mode
-           DX texture pipeline requires re-using input of last stage on each new op, so I dont think 
+           DX texture pipeline requires re-using input of last stage on each new op, so I dont think
            exact emulation is possible
            _d3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP,   D3DTOP_MODULATE );
            _d3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_TEXTURE | D3DTA_COMPLEMENT );
@@ -4563,7 +4576,7 @@ void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode Tex
 INLINE void DXGraphicsStateGuardian::
 enable_texturing(bool val) {
 //  if (_texturing_enabled == val) {  // this check is mostly for internal gsg calls, panda already screens out redundant state changes
-//        return;        
+//        return;
 //  }
 
     _texturing_enabled = val;
@@ -4644,13 +4657,13 @@ issue_depth_write(const DepthWriteAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_stencil(const StencilAttribute *attrib) {
-  
+
   StencilProperty::Mode mode = attrib->get_mode();
 
 #if 1
   if (mode != StencilProperty::M_none) {
-    dxgsg_cat.error() << "stencil buffering unimplemented for DX GSG renderer!!!\n";    
-    // to implement stenciling, need to change wdxGraphicsWindow to create a stencil 
+    dxgsg_cat.error() << "stencil buffering unimplemented for DX GSG renderer!!!\n";
+    // to implement stenciling, need to change wdxGraphicsWindow to create a stencil
     // z-buffer or maybe do a SetRenderTarget on a new zbuffer
   }
 
@@ -4778,7 +4791,7 @@ issue_clip_plane(const ClipPlaneAttribute *attrib) {
         }
     }
 
-    // Disable all unused clip planes 
+    // Disable all unused clip planes
     for (i = 0; i < _max_clip_planes; i++) {
         if (_cur_clip_plane_enabled[i] == false)
             enable_clip_plane(i, false);
@@ -4803,7 +4816,7 @@ issue_transparency(const TransparencyAttribute *attrib ) {
             enable_blend(false);
             enable_alpha_test(false);
             break;
-        case TransparencyProperty::M_alpha: 
+        case TransparencyProperty::M_alpha:
         case TransparencyProperty::M_alpha_sorted:
             // Should we really have an "alpha" and an "alpha_sorted" mode,
             // like Performer does?  (The difference is that "alpha" is with
@@ -4857,7 +4870,7 @@ issue_linesmooth(const LinesmoothAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::wants_normals
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool DXGraphicsStateGuardian::
 wants_normals() const {
@@ -4867,7 +4880,7 @@ wants_normals() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::wants_texcoords
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool DXGraphicsStateGuardian::
 wants_texcoords() const {
@@ -4924,7 +4937,7 @@ begin_decal(GeomNode *base_geom) {
         base_geom->draw(this);
         _d3dDevice->SetRenderState(D3DRENDERSTATE_ZBIAS, POLYGON_OFFSET_MULTIPLIER * _decal_level); // _decal_level better not be higher than 8!
     } else
-#endif  
+#endif
     {
         if (_decal_level > 1)
             base_geom->draw(this);  // If we're already decaling, just draw the geometry.
@@ -4961,7 +4974,7 @@ end_decal(GeomNode *base_geom) {
         // Restore the Zbias offset.
         _d3dDevice->SetRenderState(D3DRENDERSTATE_ZBIAS, POLYGON_OFFSET_MULTIPLIER * _decal_level); // _decal_level better not be higher than 8!
     } else
-#endif  
+#endif
     {  // for GDT_mask
         if (_decal_level == 0) {
             // Now we need to re-render the base geometry with the depth write
@@ -5003,7 +5016,7 @@ end_decal(GeomNode *base_geom) {
 /*
       DepthWriteAttribute *depth_write;
       if (get_attribute_into(depth_write, _state,
-                 DepthWriteTransition::get_class_type())) 
+                 DepthWriteTransition::get_class_type()))
             issue_depth_write(depth_write);
 
      ColorMaskAttribute *color_mask;
@@ -5013,22 +5026,22 @@ end_decal(GeomNode *base_geom) {
     } else {
 
       glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    }            
-*/            
+    }
+*/
 
             if (dx_decal_type == GDT_blend) {
                 enable_blend(was_blend);
                 if (was_blend)
                     call_dxBlendFunc(old_blend_source_func, old_blend_dest_func);
             }
-#if(DIRECT3D_VERSION < 0x700)           
+#if(DIRECT3D_VERSION < 0x700)
             else {
                 _d3dDevice->SetRenderState(D3DRENDERSTATE_PLANEMASK,0xFFFFFFFF);  // this is unlikely to work due to poor driver support
             }
 #endif
 
             enable_texturing(was_textured);
-            _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, _depth_write_enabled); 
+            _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, _depth_write_enabled);
         }
     }
 }
@@ -5046,7 +5059,7 @@ compute_distance_to(const LPoint3f &point) const {
     // In the case of a DXGraphicsStateGuardian, we know that the
     // modelview matrix already includes the relative transform from the
     // camera, as well as a to-y-up conversion.  Thus, the distance to
-    // the camera plane is simply the +z distance.  (negative of gl compute_distance_to, 
+    // the camera plane is simply the +z distance.  (negative of gl compute_distance_to,
     // since d3d uses left-hand coords)
 
     return point[2];
@@ -5108,7 +5121,7 @@ set_draw_buffer(const RenderBuffer &rb) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::set_read_buffer
 //       Access: Protected
-//  Description: Vestigial analog of glReadBuffer 
+//  Description: Vestigial analog of glReadBuffer
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 set_read_buffer(const RenderBuffer &rb) {
@@ -5146,7 +5159,7 @@ get_texture_wrap_mode(Texture::WrapMode wm) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::get_depth_func_type
 //       Access: Protected
-//  Description: Maps from the depth func modes to gl version 
+//  Description: Maps from the depth func modes to gl version
 ////////////////////////////////////////////////////////////////////
 INLINE D3DCMPFUNC DXGraphicsStateGuardian::
 get_depth_func_type(DepthTestProperty::Mode m) const {
@@ -5282,7 +5295,7 @@ save_frame_buffer(const RenderBuffer &buffer,
 
     if (buffer._buffer_type & RenderBuffer::T_depth) {
         // Save the depth buffer.
-        sfb->_depth = 
+        sfb->_depth =
         new PixelBuffer(PixelBuffer::depth_buffer(dr->get_pixel_width(),
                                                   dr->get_pixel_height()));
         copy_pixel_buffer(sfb->_depth, dr, buffer);
@@ -5358,7 +5371,7 @@ void DXGraphicsStateGuardian::init_type(void) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: dx_cleanup
-//  Description: Clean up the DirectX environment.  
+//  Description: Clean up the DirectX environment.
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 dx_cleanup() {
@@ -5446,7 +5459,7 @@ dx_setup_after_resize(RECT viewrect, HWND mwindow) {
     }
 
     // Create a clipper object which handles all our clipping for cases when
-    // our window is partially obscured by other windows. 
+    // our window is partially obscured by other windows.
     LPDIRECTDRAWCLIPPER Clipper;
 
     if (FAILED(hr = _pDD->CreateClipper( 0, &Clipper, NULL ))) {
@@ -5475,7 +5488,7 @@ dx_setup_after_resize(RECT viewrect, HWND mwindow) {
 
     PRINTVIDMEM(_pDD,&ddsd_back.ddsCaps,"resize zbuffer surf");
 
-    // Recreate and attach a z-buffer. 
+    // Recreate and attach a z-buffer.
     if (FAILED(hr = _pDD->CreateSurface( &ddsd_zbuf, &_zbuf, NULL ))) {
         dxgsg_cat.fatal() << "DXGraphicsStateGuardian::resize() - CreateSurface failed for Z buffer: result = " << ConvD3DErrorToString(hr) << endl;
         exit(1);
@@ -5505,7 +5518,7 @@ dx_setup_after_resize(RECT viewrect, HWND mwindow) {
 }
 
 bool refill_tex_callback(TextureContext *tc,void *void_dxgsg_ptr) {
-     DXTextureContext *dtc = DCAST(DXTextureContext, tc);  
+     DXTextureContext *dtc = DCAST(DXTextureContext, tc);
 //   DXGraphicsStateGuardian *dxgsg = (DXGraphicsStateGuardian *)void_dxgsg_ptr;
 
      // Re-fill the contents of textures and vertex buffers
@@ -5536,7 +5549,7 @@ HRESULT DXGraphicsStateGuardian::RestoreAllVideoSurfaces(void) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: show_frame 
+//     Function: show_frame
 //       Access:
 //       Description:   Repaint primary buffer from back buffer
 ////////////////////////////////////////////////////////////////////
@@ -5554,7 +5567,7 @@ void DXGraphicsStateGuardian::show_frame(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: show_full_screen_frame 
+//     Function: show_full_screen_frame
 //       Access:
 //       Description:   Repaint primary buffer from back buffer
 ////////////////////////////////////////////////////////////////////
@@ -5564,71 +5577,71 @@ void DXGraphicsStateGuardian::show_full_screen_frame(void) {
   if(hr == DDERR_SURFACELOST || hr == DDERR_SURFACEBUSY) {
     //full screen app has been switched away
     HRESULT hr;
-    
+
     // TestCooperativeLevel returns DD_OK: If the current mode is same as the one which the App set.
     // The following error is returned only for exclusivemode apps.
     // DDERR_NOEXCLUSIVEMODE: Some other app took exclusive mode.
     hr = _pDD->TestCooperativeLevel();
-    
+
     while(hr == DDERR_NOEXCLUSIVEMODE) {
       // This means that mode changes had taken place, surfaces
       // were lost but still we are in the original mode, so we
       // simply restore all surfaces and keep going.
       _dx_ready = FALSE;
-      
+
 #ifdef _DEBUG
       dxgsg_cat.spam() << "DXGraphicsStateGuardian:: no exclusive mode, waiting...\n";
 #endif
-      
+
       Sleep( 500 ); // Dont consume CPU.
       throw_event("PandaPaused");   // throw panda event to invoke network-only processing
-      
+
       _win->process_events();
       hr = _pDD->TestCooperativeLevel();
     }
-    
+
     if(FAILED(hr)) {
-      dxgsg_cat.error() << "DXGraphicsStateGuardian::unexpected return code from TestCoopLevel: " << ConvD3DErrorToString(hr) << endl;   
+      dxgsg_cat.error() << "DXGraphicsStateGuardian::unexpected return code from TestCoopLevel: " << ConvD3DErrorToString(hr) << endl;
       return;
     }
-    
+
 #ifdef _DEBUG
     dxgsg_cat.debug() << "DXGraphicsStateGuardian:: regained exclusive mode, refilling surfs...\n";
 #endif
-    
+
     RestoreAllVideoSurfaces();
-    
+
 #ifdef _DEBUG
     dxgsg_cat.debug() << "DXGraphicsStateGuardian:: refill done...\n";
 #endif
-    
+
     _dx_ready = TRUE;
-    
+
     return;  // need to re-render scene before we can display it
   }
-  
+
   if(hr != DD_OK) {
     dxgsg_cat.error() << "DXGraphicsStateGuardian::show_frame() - Flip failed w/unexpected error code: " << ConvD3DErrorToString(hr) << endl;
     exit(1);
   }
 }
-  
+
 ////////////////////////////////////////////////////////////////////
-//     Function: show_windowed_frame 
+//     Function: show_windowed_frame
 //       Access:
 //       Description:   Repaint primary buffer from back buffer  (windowed mode only)
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::show_windowed_frame(void) {
   DX_DECLARE_CLEAN(DDBLTFX, bltfx);
-  
+
   bltfx.dwDDFX |= DDBLTFX_NOTEARING;
   HRESULT hr = _pri->Blt( &_view_rect, _back,  NULL, DDBLT_DDFX | DDBLT_WAIT, &bltfx );
-  
+
   if(FAILED(hr)) {
     if(hr == DDERR_SURFACELOST || hr == DDERR_SURFACEBUSY) {
-      
+
       HRESULT hr;
-      
+
             // TestCooperativeLevel returns DD_OK: If the current mode is same as the one which the App set.
             // The following two errors are returned to NORMALMODE (windowed)apps only.
             //
@@ -5640,40 +5653,40 @@ void DXGraphicsStateGuardian::show_windowed_frame(void) {
                 // This means that mode changes had taken place, surfaces
                 // were lost but still we are in the original mode, so we
                 // simply restore all surfaces and keep going.
-        
+
         _dx_ready = FALSE;
-        
+
 #ifdef _DEBUG
         dxgsg_cat.spam() << "DXGraphicsStateGuardian:: another app has exclusive mode, waiting...\n";
 #endif
-        
+
         Sleep( 500 );   // Dont consume CPU.
         throw_event("PandaPaused");   // throw panda event to invoke network-only processing
-        
+
         hr = _pDD->TestCooperativeLevel();
       }
-      
+
       if(hr==DDERR_WRONGMODE) {
                 // This means that the desktop mode has changed
                 // need to destroy all of dx stuff and recreate everything back again, which is a big hit
-        dxgsg_cat.error() << "DXGraphicsStateGuardian:: detected display mode change in TestCoopLevel, must recreate all DDraw surfaces, D3D devices, this is not handled yet.  " << ConvD3DErrorToString(hr) << endl;   
+        dxgsg_cat.error() << "DXGraphicsStateGuardian:: detected display mode change in TestCoopLevel, must recreate all DDraw surfaces, D3D devices, this is not handled yet.  " << ConvD3DErrorToString(hr) << endl;
         exit(1);
         return;
       }
-      
+
       if(FAILED(hr)) {
-        dxgsg_cat.error() << "DXGraphicsStateGuardian::unexpected return code from TestCoopLevel: " << ConvD3DErrorToString(hr) << endl;   
+        dxgsg_cat.error() << "DXGraphicsStateGuardian::unexpected return code from TestCoopLevel: " << ConvD3DErrorToString(hr) << endl;
         return;
       }
-      
+
 #ifdef _DEBUG
       dxgsg_cat.debug() << "DXGraphicsStateGuardian:: other app relinquished exclusive mode, refilling surfs...\n";
 #endif
-      RestoreAllVideoSurfaces();  
+      RestoreAllVideoSurfaces();
 #ifdef _DEBUG
       dxgsg_cat.debug() << "DXGraphicsStateGuardian:: refill done...\n";
 #endif
-      
+
       _dx_ready = TRUE;
       return;    // need to re-render scene before we can display it
     } else {
@@ -5681,7 +5694,7 @@ void DXGraphicsStateGuardian::show_windowed_frame(void) {
       exit(1);
     }
   }
-  
+
   // right now, we force sync to v-blank (time from now up to vblank
   // is wasted) this keeps calling processes from trying to render
   // more frames than the refresh rate since (as implemented right

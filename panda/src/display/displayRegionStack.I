@@ -1,6 +1,19 @@
 // Filename: displayRegionStack.I
 // Created by:  drose (06Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -8,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegionStack::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE DisplayRegionStack::
 DisplayRegionStack() {
@@ -18,7 +31,7 @@ DisplayRegionStack() {
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegionStack::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE DisplayRegionStack::
 ~DisplayRegionStack() {
@@ -27,19 +40,19 @@ INLINE DisplayRegionStack::
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegionStack::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE DisplayRegionStack::
 DisplayRegionStack(const DisplayRegionStack &copy) :
   _display_region(copy._display_region),
-  _stack_level(copy._stack_level) 
+  _stack_level(copy._stack_level)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegionStack::Copy Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void DisplayRegionStack::
 operator =(const DisplayRegionStack &copy) {

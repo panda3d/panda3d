@@ -2,6 +2,19 @@
 // Created by:  frang (09Nov99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef INTERROGATE_INTERFACE_H
 #define INTERROGATE_INTERFACE_H
@@ -488,7 +501,7 @@ EXPCL_DTOOLCONFIG FunctionIndex interrogate_type_get_upcast(TypeIndex type, int 
 // Although it is always possible to upcast a pointer to a base class,
 // it is not always possible to downcast from a base class to the
 // derived class (particularly in the presence of virtual
-// inheritance).  If interrogate_type_derivation_downcast_is_impossible() 
+// inheritance).  If interrogate_type_derivation_downcast_is_impossible()
 // returns true, forget it.  Otherwise, downcasting works the same
 // way as upcasting.  (Of course, it is the caller's responsibility to
 // guarantee that the pointer actually represents an object of the

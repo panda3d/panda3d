@@ -3,6 +3,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 #ifndef MOUSE_H
 #define MOUSE_H
 //
@@ -58,16 +70,16 @@ public:
   PT(Vec3DataAttribute) _pixel_xyz;
   PT(Vec3DataAttribute) _xyz;
   PT(ButtonEventDataAttribute) _button_events;
-  
+
   static TypeHandle _mods_type;
   static TypeHandle _pixel_xyz_type;
   static TypeHandle _xyz_type;
   static TypeHandle _button_events_type;
-  
+
 protected:
   PT(GraphicsWindow) _window;
   int _device;
-  
+
 public:
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -1,6 +1,19 @@
 // Filename: clientDevice.cxx
 // Created by:  drose (25Jan01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "clientDevice.h"
@@ -13,10 +26,10 @@ TypeHandle ClientDevice::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: ClientDevice::Constructor
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ClientDevice::
-ClientDevice(ClientBase *client, TypeHandle device_type, 
+ClientDevice(ClientBase *client, TypeHandle device_type,
              const string &device_name) :
   _client(client),
   _device_type(device_type),
@@ -50,7 +63,7 @@ ClientDevice::
 //       Access: Public
 //  Description: Disconnects the ClientDevice from its ClientBase
 //               object.  The device will stop receiving
-//               updates.  
+//               updates.
 //
 //               Normally, you should not need to call this explicitly
 //               (and it is probably a mistake to do so); it will
@@ -91,7 +104,7 @@ poll() {
 ////////////////////////////////////////////////////////////////////
 //     Function: ClientDevice::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ClientDevice::
 output(ostream &out) const {
@@ -101,7 +114,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ClientDevice::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ClientDevice::
 write(ostream &out, int indent_level) const {

@@ -1,6 +1,19 @@
 // Filename: nullTransitionWrapper.h
 // Created by:  drose (22Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef NULLTRANSITIONWRAPPER_H
@@ -46,7 +59,7 @@ public:
   INLINE_GRAPH NullTransitionWrapper(const NullTransitionWrapper &copy);
   INLINE_GRAPH void operator = (const NullTransitionWrapper &copy);
 
-  INLINE_GRAPH static NullTransitionWrapper 
+  INLINE_GRAPH static NullTransitionWrapper
   init_from(const NullTransitionWrapper &other);
   INLINE_GRAPH static NullTransitionWrapper
   init_from(const NullAttributeWrapper &attrib);
@@ -67,7 +80,7 @@ public:
   INLINE_GRAPH bool is_cache_verified(UpdateSeq now) const;
   INLINE_GRAPH void set_computed_verified(UpdateSeq now);
 
-  INLINE_GRAPH void cached_compose(const NullTransitionWrapper &cache, 
+  INLINE_GRAPH void cached_compose(const NullTransitionWrapper &cache,
                              const NullTransitionWrapper &value,
                              UpdateSeq now);
 

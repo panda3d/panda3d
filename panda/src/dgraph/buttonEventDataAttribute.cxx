@@ -1,6 +1,19 @@
 // Filename: buttonEventDataAttribute.cxx
 // Created by:  drose (27Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "buttonEventDataAttribute.h"
@@ -31,7 +44,7 @@ update_mods(ModifierButtons &mods) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonEventDataAttribute::make_copy
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NodeAttribute *ButtonEventDataAttribute::
 make_copy() const {
@@ -41,7 +54,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonEventDataAttribute::make_initial
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NodeAttribute *ButtonEventDataAttribute::
 make_initial() const {
@@ -51,7 +64,7 @@ make_initial() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonEventDataAttribute::get_handle
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 TypeHandle ButtonEventDataAttribute::
 get_handle() const {
@@ -81,7 +94,7 @@ merge(const NodeAttribute *other) const {
   } else {
     // We have to create a new data attribute that includes both sets
     // of buttons.
-    ButtonEventDataAttribute *new_attrib = 
+    ButtonEventDataAttribute *new_attrib =
       new ButtonEventDataAttribute(*this);
 
     new_attrib->_buttons.insert(new_attrib->_buttons.end(),
@@ -93,7 +106,7 @@ merge(const NodeAttribute *other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonEventDataAttribute::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ButtonEventDataAttribute::
 output(ostream &out) const {
@@ -109,7 +122,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonEventDataAttribute::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ButtonEventDataAttribute::
 write(ostream &out, int indent_level) const {
@@ -119,7 +132,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonEventDataAttribute::internal_compare_to
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int ButtonEventDataAttribute::
 internal_compare_to(const NodeAttribute *other) const {
@@ -132,7 +145,7 @@ internal_compare_to(const NodeAttribute *other) const {
   else if (lexicographical_compare(_buttons.begin(), _buttons.end(),
                                 ot->_buttons.begin(), ot->_buttons.end()))
     return -1;
-  else 
+  else
     return 1;
 #else
   return lexicographical_compare_3way(_buttons.begin(), _buttons.end(),

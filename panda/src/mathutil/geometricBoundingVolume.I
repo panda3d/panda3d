@@ -1,12 +1,25 @@
 // Filename: geometricBoundingVolume.I
 // Created by:  drose (07Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeometricBoundingVolume::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL GeometricBoundingVolume::
 GeometricBoundingVolume() {
@@ -41,9 +54,9 @@ extend_by(const LPoint3f &point) {
 //               indicated.
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL bool GeometricBoundingVolume::
-around(const GeometricBoundingVolume **first, 
+around(const GeometricBoundingVolume **first,
        const GeometricBoundingVolume **last) {
-  return BoundingVolume::around((const BoundingVolume **)first, 
+  return BoundingVolume::around((const BoundingVolume **)first,
                                 (const BoundingVolume **)last);
 }
 

@@ -2,6 +2,19 @@
 // Created by:  drose (23Oct98)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef POINTERTO_H
 #define POINTERTO_H
@@ -149,7 +162,7 @@ PUBLISHED:
   // your code look a bit cleaner.
 
   // e.g. instead of (MyType *)(BaseClass *)ptr, use (MyType *)ptr.p()
- 
+
   // If your base class is a derivative of TypedObject, you might want
   // to use the DCAST macro defined in typedObject.h instead,
   // e.g. DCAST(MyType, ptr).  This provides a clean downcast that

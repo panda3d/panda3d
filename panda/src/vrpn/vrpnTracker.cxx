@@ -1,6 +1,19 @@
 // Filename: vrpnTracker.cxx
 // Created by:  drose (25Jan01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "vrpnTracker.h"
@@ -15,7 +28,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: VrpnTracker::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 VrpnTracker::
 VrpnTracker(const string &tracker_name, vrpn_Connection *connection) :
@@ -31,7 +44,7 @@ VrpnTracker(const string &tracker_name, vrpn_Connection *connection) :
 ////////////////////////////////////////////////////////////////////
 //     Function: VrpnTracker::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 VrpnTracker::
 ~VrpnTracker() {
@@ -64,7 +77,7 @@ unmark(VrpnTrackerDevice *device) {
     vrpn_cat.debug() << *this << " unmarking " << *device << "\n";
   }
 
-  Devices::iterator di = 
+  Devices::iterator di =
     find(_devices.begin(), _devices.end(), device);
 
   if (di != _devices.end()) {
@@ -75,7 +88,7 @@ unmark(VrpnTrackerDevice *device) {
 ////////////////////////////////////////////////////////////////////
 //     Function: VrpnTracker::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void VrpnTracker::
 output(ostream &out) const {
@@ -85,11 +98,11 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: VrpnTracker::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void VrpnTracker::
 write(ostream &out, int indent_level) const {
-  indent(out, indent_level) 
+  indent(out, indent_level)
     << get_tracker_name() << " ("
     << _devices.size() << " devices)\n";
 }
@@ -146,7 +159,7 @@ vrpn_velocity_callback(void *userdata, const vrpn_TRACKERVELCB info) {
       device->lock();
       device->_data.set_time(VrpnClient::convert_to_secs(info.msg_time));
       device->_data.set_pos(LPoint3f(info.vel[0], info.vel[1], info.vel[2]));
-      device->_data.set_orient(LOrientationf(info.vel_quat[0], info.vel_quat[1], 
+      device->_data.set_orient(LOrientationf(info.vel_quat[0], info.vel_quat[1],
                                              info.vel_quat[2], info.vel_quat[3]));
       device->_data.set_dt(info.vel_quat_dt);
       device->unlock();
@@ -177,7 +190,7 @@ vrpn_acceleration_callback(void *userdata, const vrpn_TRACKERACCCB info) {
       device->lock();
       device->_data.set_time(VrpnClient::convert_to_secs(info.msg_time));
       device->_data.set_pos(LPoint3f(info.acc[0], info.acc[1], info.acc[2]));
-      device->_data.set_orient(LOrientationf(info.acc_quat[0], info.acc_quat[1], 
+      device->_data.set_orient(LOrientationf(info.acc_quat[0], info.acc_quat[1],
                                              info.acc_quat[2], info.acc_quat[3]));
       device->_data.set_dt(info.acc_quat_dt);
       device->unlock();

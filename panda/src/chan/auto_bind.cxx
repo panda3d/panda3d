@@ -1,6 +1,19 @@
 // Filename: auto_bind.cxx
 // Created by:  drose (23Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "auto_bind.h"
@@ -29,7 +42,7 @@ typedef map<string, PartNodes> Parts;
 // Description : This is a traverser visitor that locates bundle nodes
 //               and adds them to their respective maps.
 ////////////////////////////////////////////////////////////////////
-class CollectNodes : 
+class CollectNodes :
   public TraverserVisitor<NullTransitionWrapper, NullLevelState> {
 public:
   bool reached_node(Node *node, const NullAttributeWrapper &,
@@ -60,7 +73,7 @@ public:
 ////////////////////////////////////////////////////////////////////
 static void
 bind_anims(const PartNodes &parts, const AnimNodes &anims,
-           AnimControlCollection &controls, 
+           AnimControlCollection &controls,
            int hierarchy_match_flags) {
 
   PartNodes::const_iterator pni;
@@ -77,7 +90,7 @@ bind_anims(const PartNodes &parts, const AnimNodes &anims,
           << "Attempting to bind " << *part << " to " << *anim << "\n";
       }
 
-      PT(AnimControl) control = 
+      PT(AnimControl) control =
         part->bind_anim(anim, hierarchy_match_flags);
       string name = anim->get_name();
       if (control != (AnimControl *)NULL) {
@@ -102,7 +115,7 @@ bind_anims(const PartNodes &parts, const AnimNodes &anims,
         } else {
           chan_cat.info()
             << "Bind succeeded, index "
-            << control->get_channel_index() << "; accessible as " 
+            << control->get_channel_index() << "; accessible as "
             << name << "\n";
         }
       }
@@ -144,7 +157,7 @@ void auto_bind(Node *root_node, AnimControlCollection &controls,
 
     } else {
       // But here we have (at least one) match!
-      bind_anims((*pi).second, (*ai).second, controls, 
+      bind_anims((*pi).second, (*ai).second, controls,
                  hierarchy_match_flags);
       ++pi;
 

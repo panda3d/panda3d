@@ -1,6 +1,19 @@
 // Filename: interrogateDatabase.I
 // Created by:  drose (01Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -27,7 +40,7 @@ check_latest() {
 INLINE TypeIndex InterrogateDatabase::
 lookup_type_by_name(const string &name) {
   check_latest();
-  return lookup(name, _types_by_name, LT_type_name, 
+  return lookup(name, _types_by_name, LT_type_name,
                 &InterrogateDatabase::freshen_types_by_name);
 }
 
@@ -41,7 +54,7 @@ lookup_type_by_name(const string &name) {
 INLINE TypeIndex InterrogateDatabase::
 lookup_type_by_scoped_name(const string &name) {
   check_latest();
-  return lookup(name, _types_by_scoped_name, LT_type_scoped_name, 
+  return lookup(name, _types_by_scoped_name, LT_type_scoped_name,
                 &InterrogateDatabase::freshen_types_by_scoped_name);
 }
 
@@ -55,7 +68,7 @@ lookup_type_by_scoped_name(const string &name) {
 INLINE TypeIndex InterrogateDatabase::
 lookup_type_by_true_name(const string &name) {
   check_latest();
-  return lookup(name, _types_by_true_name, LT_type_true_name, 
+  return lookup(name, _types_by_true_name, LT_type_true_name,
                 &InterrogateDatabase::freshen_types_by_true_name);
 }
 
@@ -69,7 +82,7 @@ lookup_type_by_true_name(const string &name) {
 INLINE ManifestIndex InterrogateDatabase::
 lookup_manifest_by_name(const string &name) {
   check_latest();
-  return lookup(name, _manifests_by_name, LT_manifest_name, 
+  return lookup(name, _manifests_by_name, LT_manifest_name,
                 &InterrogateDatabase::freshen_manifests_by_name);
 }
 
@@ -83,7 +96,7 @@ lookup_manifest_by_name(const string &name) {
 INLINE ElementIndex InterrogateDatabase::
 lookup_element_by_name(const string &name) {
   check_latest();
-  return lookup(name, _elements_by_name, LT_element_name, 
+  return lookup(name, _elements_by_name, LT_element_name,
                 &InterrogateDatabase::freshen_elements_by_name);
 }
 
@@ -97,6 +110,6 @@ lookup_element_by_name(const string &name) {
 INLINE ElementIndex InterrogateDatabase::
 lookup_element_by_scoped_name(const string &name) {
   check_latest();
-  return lookup(name, _elements_by_scoped_name, LT_element_scoped_name, 
+  return lookup(name, _elements_by_scoped_name, LT_element_scoped_name,
                 &InterrogateDatabase::freshen_elements_by_scoped_name);
 }

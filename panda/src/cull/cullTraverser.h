@@ -1,6 +1,19 @@
 // Filename: cullTraverser.h
 // Created by:  drose (07Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef CULLTRAVERSER_H
@@ -33,8 +46,8 @@ class AllTransitionsWrapper;
 //               the geometry by state and adding it to individual
 //               GeomBins, and then renders the GeomBins in sequence.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CullTraverser : 
-  public RenderTraverser, 
+class EXPCL_PANDA CullTraverser :
+  public RenderTraverser,
   public TraverserVisitor<NullTransitionWrapper, CullLevelState> {
 public:
   CullTraverser(GraphicsStateGuardian *gsg, TypeHandle graph_type,
@@ -51,7 +64,7 @@ PUBLISHED:
 
 public:
 
-  virtual void traverse(Node *root, 
+  virtual void traverse(Node *root,
                         const AllAttributesWrapper &initial_state,
                         const AllTransitionsWrapper &net_trans);
 
@@ -68,14 +81,14 @@ private:
   void draw();
   void clean_out_old_states();
 
-  void add_geom_node(GeomNode *node, 
+  void add_geom_node(GeomNode *node,
                      const AllTransitionsWrapper &trans,
                      const CullLevelState &level_state);
-  void add_direct_node(Node *node, 
+  void add_direct_node(Node *node,
                        const AllTransitionsWrapper &trans,
                        const CullLevelState &level_state);
 
-  INLINE CullStateLookup *add_instance(NodeRelation *arc, 
+  INLINE CullStateLookup *add_instance(NodeRelation *arc,
                                        const AllTransitionsWrapper &trans,
                                        Node *top_subtree,
                                        const CullLevelState &level_state);
@@ -83,7 +96,7 @@ private:
   INLINE CullState *find_bin_state(const AllTransitionsWrapper &trans);
 
 
-public:  
+public:
   // These methods, from parent class TraverserVisitor, define the
   // behavior of the RenderTraverser as it traverses the graph.
   // Normally you would never call these directly.
@@ -91,7 +104,7 @@ public:
                    NullAttributeWrapper &pre, NullAttributeWrapper &post,
                    CullLevelState &level_state);
 
-  INLINE void 
+  INLINE void
   backward_arc(NodeRelation *arc, NullTransitionWrapper &trans,
                NullAttributeWrapper &pre, NullAttributeWrapper &post,
                const CullLevelState &level_state);
@@ -131,7 +144,7 @@ public:
   static PStatCollector _cull_bins_unsorted_pcollector;
   static PStatCollector _cull_bins_fixed_pcollector;
   static PStatCollector _cull_bins_btf_pcollector;
-  
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -145,7 +158,7 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
- 
+
 private:
   static TypeHandle _type_handle;
 

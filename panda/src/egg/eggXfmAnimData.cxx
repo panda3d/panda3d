@@ -1,6 +1,19 @@
 // Filename: eggXfmAnimData.cxx
 // Created by:  drose (19Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggXfmAnimData.h"
@@ -25,7 +38,7 @@ TypeHandle EggXfmAnimData::_type_handle;
 ////////////////////////////////////////////////////////////////////
 EggXfmAnimData::
 EggXfmAnimData(const EggXfmSAnim &convert_from)
-  : EggAnimData(convert_from.get_name()) 
+  : EggAnimData(convert_from.get_name())
 {
   if (convert_from.has_order()) {
     set_order(convert_from.get_order());
@@ -69,7 +82,7 @@ EggXfmAnimData(const EggXfmSAnim &convert_from)
   }
 }
 
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmAnimData::get_value
 //       Access: Public
@@ -91,39 +104,39 @@ get_value(int row, LMatrix4d &mat) const {
     case 'i':
       scale[0] = value;
       break;
-      
+
     case 'j':
       scale[1] = value;
       break;
-      
+
     case 'k':
       scale[2] = value;
       break;
-      
+
     case 'h':
       hpr[0] = value;
       break;
-      
+
     case 'p':
       hpr[1] = value;
       break;
-      
+
     case 'r':
       hpr[2] = value;
       break;
-      
+
     case 'x':
       translate[0] = value;
       break;
-      
+
     case 'y':
       translate[1] = value;
       break;
-      
+
     case 'z':
       translate[2] = value;
       break;
-      
+
     default:
       // The contents string contained an invalid letter.
       nassertv(false);
@@ -144,7 +157,7 @@ get_value(int row, LMatrix4d &mat) const {
 void EggXfmAnimData::
 write(ostream &out, int indent_level) const {
   write_header(out, indent_level, "<Xfm$Anim>");
-    
+
   if (has_fps()) {
     indent(out, indent_level + 2)
       << "<Scalar> fps { " << get_fps() << " }\n";
@@ -166,7 +179,7 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level + 2) << "}\n";
   indent(out, indent_level) << "}\n";
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmAnimData::r_transform
 //       Access: Protected, Virtual
@@ -206,7 +219,7 @@ r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
 
     if (!result) {
       egg_cat.error()
-        << "Transform from " << _coordsys << " to " << to_cs 
+        << "Transform from " << _coordsys << " to " << to_cs
         << " failed!\n";
       LVector3d scale, hpr, trans;
       bool d = decompose_matrix(orig_mat, scale, hpr, trans, _coordsys);

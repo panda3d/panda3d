@@ -1,6 +1,19 @@
 // Filename: wrapperBuilder.h
 // Created by:  drose (01Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef WRAPPERBUILDER_H
@@ -110,7 +123,7 @@ protected:
   string get_parameter_expr(int n, const vector_string &pexprs) const;
 
   string get_call_str(const vector_string &pexprs = vector_string()) const;
-  string call_function(ostream &out, int indent_level, 
+  string call_function(ostream &out, int indent_level,
                        bool convert_result = true,
                        const vector_string &pexprs = vector_string()) const;
 

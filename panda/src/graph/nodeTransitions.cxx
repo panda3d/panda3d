@@ -1,6 +1,19 @@
 // Filename: nodeTransitions.cxx
 // Created by:  drose (20Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "nodeTransitions.h"
@@ -11,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitions::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NodeTransitions::
 NodeTransitions() {
@@ -20,7 +33,7 @@ NodeTransitions() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitions::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NodeTransitions::
 NodeTransitions(const NodeTransitions &copy) :
@@ -31,7 +44,7 @@ NodeTransitions(const NodeTransitions &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitions::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodeTransitions::
 operator = (const NodeTransitions &copy) {
@@ -41,7 +54,7 @@ operator = (const NodeTransitions &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitions::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NodeTransitions::
 ~NodeTransitions() {
@@ -218,7 +231,7 @@ compose_transitions_from(const NodeTransitions &other,
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitions::compare_to
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int NodeTransitions::
 compare_to(const NodeTransitions &other) const {
@@ -274,7 +287,7 @@ remove_all_from_arc(NodeRelation *arc) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitions::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodeTransitions::
 output(ostream &out) const {
@@ -294,7 +307,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitions::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodeTransitions::
 write(ostream &out, int indent_level) const {

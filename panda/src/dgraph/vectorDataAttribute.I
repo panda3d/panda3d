@@ -1,6 +1,19 @@
 // Filename: vectorDataAttribute.I
 // Created by:  drose (27Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 /* okcircular */
@@ -12,7 +25,7 @@ TypeHandle VectorDataAttribute<VecType, MatType>::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: VectorDataAttribute::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class VecType, class MatType>
 INLINE VectorDataAttribute<VecType, MatType>::
@@ -23,19 +36,19 @@ VectorDataAttribute() {
 ////////////////////////////////////////////////////////////////////
 //     Function: VectorDataAttribute::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class VecType, class MatType>
 INLINE VectorDataAttribute<VecType, MatType>::
 VectorDataAttribute(const VecType &value) :
-  _value(value) 
+  _value(value)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: VectorDataAttribute::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class VecType, class MatType>
 INLINE VectorDataAttribute<VecType, MatType>::
@@ -48,7 +61,7 @@ VectorDataAttribute(const VectorDataAttribute<VecType, MatType> &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: VectorDataAttribute::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class VecType, class MatType>
 INLINE void VectorDataAttribute<VecType, MatType>::
@@ -60,7 +73,7 @@ operator = (const VectorDataAttribute<VecType, MatType> &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: VectorDataAttribute::set_value
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class VecType, class MatType>
 INLINE void VectorDataAttribute<VecType, MatType>::
@@ -71,7 +84,7 @@ set_value(const VecType &value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: VectorDataAttribute::get_value
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class VecType, class MatType>
 INLINE const VecType &VectorDataAttribute<VecType, MatType>::
@@ -83,7 +96,7 @@ get_value() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: VectorDataAttribute::get_handle
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class VecType, class MatType>
 TypeHandle VectorDataAttribute<VecType, MatType>::
@@ -94,7 +107,7 @@ get_handle() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: VectorDataAttribute::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class VecType, class MatType>
 void VectorDataAttribute<VecType, MatType>::
@@ -105,7 +118,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: VectorDataAttribute::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class VecType, class MatType>
 void VectorDataAttribute<VecType, MatType>::
@@ -116,7 +129,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: VectorDataAttribute::internal_compare_to
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class VecType, class MatType>
 int VectorDataAttribute<VecType, MatType>::

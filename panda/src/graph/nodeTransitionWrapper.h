@@ -1,6 +1,19 @@
 // Filename: nodeTransitionWrapper.h
 // Created by:  drose (20Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef NODETRANSITIONWRAPPER_H
@@ -45,7 +58,7 @@ public:
   INLINE_GRAPH NodeTransitionWrapper(const NodeTransitionWrapper &copy);
   INLINE_GRAPH void operator = (const NodeTransitionWrapper &copy);
 
-  INLINE_GRAPH static NodeTransitionWrapper 
+  INLINE_GRAPH static NodeTransitionWrapper
   init_from(const NodeTransitionWrapper &other);
   static NodeTransitionWrapper init_from(const NodeAttributeWrapper &attrib);
 
@@ -69,7 +82,7 @@ public:
   INLINE_GRAPH bool is_cache_verified(UpdateSeq as_of) const;
   INLINE_GRAPH void set_computed_verified(UpdateSeq now);
 
-  INLINE_GRAPH void cached_compose(const NodeTransitionWrapper &cache, 
+  INLINE_GRAPH void cached_compose(const NodeTransitionWrapper &cache,
                              const NodeTransitionWrapper &value,
                              UpdateSeq now);
 

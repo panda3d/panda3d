@@ -1,6 +1,19 @@
 // Filename: builderProperties.cxx
 // Created by:  drose (17Sep97)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "builderProperties.h"
@@ -76,7 +89,7 @@ output(ostream &out) const {
     out << "Subdivide polygons into tris.\n";
   }
   if (_consider_fans) {
-    out << "Look for possible triangle fans with max per-triangle angle of " 
+    out << "Look for possible triangle fans with max per-triangle angle of "
         << _max_tfan_angle << " degrees.\n";
     if (_min_tfan_tris==0) {
       out << "Do not create tfans";
@@ -90,7 +103,7 @@ output(ostream &out) const {
     }
   }
 }
-  
+
 
 
 ////////////////////////////////////////////////////////////////////

@@ -1,6 +1,19 @@
 // Filename: eggLoader.cxx
 // Created by:  drose (21Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <pandabase.h>
@@ -87,16 +100,16 @@ LODInstance(EggNode *egg_node, RenderRelation *arc) {
   EggGroup *egg_group = DCAST(EggGroup, egg_node);
   assert(egg_group->has_lod());
   const EggSwitchCondition &sw = egg_group->get_lod();
-  
+
   // For now, this is the only kind of switch condition there is.
   _d = DCAST(EggSwitchConditionDistance, &sw);
 }
 
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggLoader::
 EggLoader() {
@@ -104,11 +117,11 @@ EggLoader() {
   _data.set_coordinate_system(egg_coordinate_system);
   _error = false;
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggLoader::
 EggLoader(const EggData &data) :
@@ -117,11 +130,11 @@ EggLoader(const EggData &data) :
   _error = false;
 }
 
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::build_graph
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
 build_graph() {
@@ -146,7 +159,7 @@ build_graph() {
   apply_deferred_arcs(_root);
 }
 
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::reparent_decals
 //       Access: Public
@@ -166,10 +179,10 @@ reparent_decals() {
 
     // First, search for the GeomNode.
     GeomNode *geom = NULL;
-    int num_children = 
+    int num_children =
       node->get_num_children(RenderRelation::get_class_type());
     for (int i = 0; i < num_children; i++) {
-      NodeRelation *child_arc = 
+      NodeRelation *child_arc =
         node->get_child(RenderRelation::get_class_type(), i);
       nassertv(child_arc != (NodeRelation *)NULL);
       Node *child = child_arc->get_child();
@@ -179,7 +192,7 @@ reparent_decals() {
         if (geom != (GeomNode *)NULL) {
           // Oops, too many GeomNodes.
           egg2sg_cat.error()
-            << "Decal onto " << node->get_name() 
+            << "Decal onto " << node->get_name()
             << " uses base geometry with multiple states.\n";
           _error = true;
         }
@@ -199,7 +212,7 @@ reparent_decals() {
       // list.
       int i = 0;
       while (i < num_children) {
-        NodeRelation *child_arc = 
+        NodeRelation *child_arc =
           node->get_child(RenderRelation::get_class_type(), i);
         nassertv(child_arc != (NodeRelation *)NULL);
         Node *child = child_arc->get_child();
@@ -215,7 +228,7 @@ reparent_decals() {
     }
   }
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::reset_directs
 //       Access: Public
@@ -241,7 +254,7 @@ reset_directs() {
     GeomNode *geom = NULL;
     NodeRelation *child_arc = NULL;
 
-    int num_children = 
+    int num_children =
       node->get_num_children(RenderRelation::get_class_type());
     for (int i = 0; i < num_children && geom == (GeomNode *)NULL; i++) {
       child_arc = node->get_child(RenderRelation::get_class_type(), i);
@@ -266,7 +279,7 @@ reset_directs() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::make_nonindexed_primitive
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
 make_nonindexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
@@ -287,7 +300,7 @@ make_nonindexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
   if (egg_prim->is_of_type(EggPoint::get_class_type())) {
     bprim.set_type(BPT_point);
   }
-  
+
   if (egg_prim->has_normal()) {
     Normald norm = egg_prim->get_normal() * mat;
     norm.normalize();
@@ -302,7 +315,7 @@ make_nonindexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
   for (vi = egg_prim->begin(); vi != egg_prim->end(); ++vi) {
     EggVertex *egg_vert = *vi;
     BuilderVertex bvert(LCAST(float, egg_vert->get_pos3() * mat));
-    
+
     if (egg_vert->has_normal()) {
       Normald norm = egg_vert->get_normal() * mat;
       norm.normalize();
@@ -317,14 +330,14 @@ make_nonindexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
     }
     if (egg_vert->has_uv()) {
       TexCoordd uv = egg_vert->get_uv();
-      if (egg_prim->has_texture() && 
+      if (egg_prim->has_texture() &&
           egg_prim->get_texture()->has_transform()) {
         // If we have a texture matrix, apply it.
         uv = uv * egg_prim->get_texture()->get_transform();
       }
       bvert.set_texcoord(LCAST(float, uv));
     }
-    
+
     bprim.add_vertex(bvert);
   }
 
@@ -333,14 +346,14 @@ make_nonindexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
   if (!egg_prim->has_color() && !has_vert_color && !egg_false_color) {
     bprim.set_color(Colorf(1.0, 1.0, 1.0, 1.0));
   }
-  
+
   _builder.add_prim(bucket, bprim);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::make_indexed_primitive
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
 make_indexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
@@ -405,7 +418,7 @@ make_indexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
     _comp_verts_maker.mark_space();
 
     int vindex =
-      _comp_verts_maker.add_vertex(egg_vert->get_pos3(), 
+      _comp_verts_maker.add_vertex(egg_vert->get_pos3(),
                                    egg_vert->_dxyzs, mat);
     BuilderVertexI bvert(vindex);
 
@@ -432,7 +445,7 @@ make_indexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
       TexCoordd uv = egg_vert->get_uv();
       LMatrix3d mat;
 
-      if (egg_prim->has_texture() && 
+      if (egg_prim->has_texture() &&
           egg_prim->get_texture()->has_transform()) {
         // If we have a texture matrix, apply it.
         mat = egg_prim->get_texture()->get_transform();
@@ -456,14 +469,14 @@ make_indexed_primitive(EggPrimitive *egg_prim, NamedNode *parent,
                                   EggMorphColorList());
     bprim.set_color(cindex);
   }
-  
+
   _builder.add_prim(bucket, bprim);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::load_textures
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
 load_textures() {
@@ -504,7 +517,7 @@ load_textures() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::load_texture
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool EggLoader::
 load_texture(TextureDef &def, const EggTexture *egg_tex) {
@@ -528,7 +541,7 @@ load_texture(TextureDef &def, const EggTexture *egg_tex) {
     }
   }
 
-  PT(TextureApplyTransition) apply = 
+  PT(TextureApplyTransition) apply =
     new TextureApplyTransition(TextureApplyProperty::M_modulate);
 
   apply_texture_attributes(tex, egg_tex);
@@ -544,7 +557,7 @@ load_texture(TextureDef &def, const EggTexture *egg_tex) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::apply_texture_attributes
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
 apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
@@ -602,7 +615,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
   case EggTexture::FT_nearest:
     tex->set_minfilter(Texture::FT_nearest);
     break;
-    
+
   case EggTexture::FT_linear:
     if (egg_ignore_filters) {
       egg2sg_cat.warning()
@@ -612,7 +625,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
       tex->set_minfilter(Texture::FT_linear);
     }
     break;
-    
+
   case EggTexture::FT_nearest_mipmap_nearest:
     if (egg_ignore_filters) {
       egg2sg_cat.warning()
@@ -626,7 +639,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
       tex->set_minfilter(Texture::FT_nearest_mipmap_nearest);
     }
     break;
-    
+
   case EggTexture::FT_linear_mipmap_nearest:
     if (egg_ignore_filters) {
       egg2sg_cat.warning()
@@ -640,7 +653,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
       tex->set_minfilter(Texture::FT_linear_mipmap_nearest);
     }
     break;
-    
+
   case EggTexture::FT_nearest_mipmap_linear:
     if (egg_ignore_filters) {
       egg2sg_cat.warning()
@@ -654,7 +667,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
       tex->set_minfilter(Texture::FT_nearest_mipmap_linear);
     }
     break;
-    
+
   case EggTexture::FT_linear_mipmap_linear:
     if (egg_ignore_filters) {
       egg2sg_cat.warning()
@@ -684,7 +697,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
   case EggTexture::FT_nearest_mipmap_linear:
     tex->set_magfilter(Texture::FT_nearest);
     break;
-    
+
   case EggTexture::FT_linear:
   case EggTexture::FT_linear_mipmap_nearest:
   case EggTexture::FT_linear_mipmap_linear:
@@ -772,7 +785,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
       }
       break;
     case EggTexture::F_rgb8:
-    case EggTexture::F_rgba8:  
+    case EggTexture::F_rgba8:
       // We'll quietly accept RGBA8 for a 3-component texture, since
       // flt2egg generates these for 3-component as well as for
       // 4-component textures.
@@ -836,7 +849,7 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::apply_texture_apply_attributes
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
 apply_texture_apply_attributes(TextureApplyTransition *apply,
@@ -849,7 +862,7 @@ apply_texture_apply_attributes(TextureApplyTransition *apply,
     case EggTexture::ET_modulate:
       apply->set_mode(TextureApplyProperty::M_modulate);
       break;
-      
+
     case EggTexture::ET_decal:
       apply->set_mode(TextureApplyProperty::M_decal);
       break;
@@ -909,7 +922,7 @@ get_material_transition(const EggMaterial *egg_mat, bool bface) {
   }
 
   mat->set_twoside(bface);
-  
+
   // Now get a global Material pointer, shared with other models.
   const Material *shared_mat = MaterialPool::get_material(mat);
 
@@ -924,10 +937,10 @@ get_material_transition(const EggMaterial *egg_mat, bool bface) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::setup_bucket
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
-setup_bucket(BuilderBucket &bucket, NamedNode *parent, 
+setup_bucket(BuilderBucket &bucket, NamedNode *parent,
              EggPrimitive *egg_prim) {
   bucket._node = parent;
   bucket._mesh = egg_mesh;
@@ -995,7 +1008,7 @@ setup_bucket(BuilderBucket &bucket, NamedNode *parent,
   bucket._trans.set_transition(new TextureTransition(TextureTransition::off()));
   if (egg_prim->has_texture()) {
     PT(EggTexture) egg_tex = egg_prim->get_texture();
-    
+
     const TextureDef &def = _textures[egg_tex];
     if (def._texture != (TextureTransition *)NULL) {
       bucket._trans.set_transition(def._texture);
@@ -1020,7 +1033,7 @@ setup_bucket(BuilderBucket &bucket, NamedNode *parent,
                                                      egg_prim->get_bface_flag());
     bucket._trans.set_transition(mt);
   }
-    
+
 
   // Also check the color of the primitive to see if we should assume
   // alpha based on the alpha values specified in the egg file.
@@ -1031,7 +1044,7 @@ setup_bucket(BuilderBucket &bucket, NamedNode *parent,
       }
     }
     EggPrimitive::const_iterator vi;
-    for (vi = egg_prim->begin(); 
+    for (vi = egg_prim->begin();
          !implicit_alpha && vi != egg_prim->end();
          ++vi) {
       if ((*vi)->has_color()) {
@@ -1040,7 +1053,7 @@ setup_bucket(BuilderBucket &bucket, NamedNode *parent,
         }
       }
     }
-    
+
     if (implicit_alpha) {
       am = EggRenderMode::AM_on;
     }
@@ -1121,7 +1134,7 @@ setup_bucket(BuilderBucket &bucket, NamedNode *parent,
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::make_node
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 RenderRelation *EggLoader::
 make_node(EggNode *egg_node, NamedNode *parent) {
@@ -1134,7 +1147,7 @@ make_node(EggNode *egg_node, NamedNode *parent) {
   } else if (egg_node->is_of_type(EggGroup::get_class_type())) {
     return make_node(DCAST(EggGroup, egg_node), parent);
   } else if (egg_node->is_of_type(EggTable::get_class_type())) {
-    return make_node(DCAST(EggTable, egg_node), parent); 
+    return make_node(DCAST(EggTable, egg_node), parent);
   } else if (egg_node->is_of_type(EggGroupNode::get_class_type())) {
     return make_node(DCAST(EggGroupNode, egg_node), parent);
   }
@@ -1145,7 +1158,7 @@ make_node(EggNode *egg_node, NamedNode *parent) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::make_node (EggNurbsCurve)
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 RenderRelation *EggLoader::
 make_node(EggNurbsCurve *egg_curve, NamedNode *parent) {
@@ -1153,7 +1166,7 @@ make_node(EggNurbsCurve *egg_curve, NamedNode *parent) {
   assert(!parent->is_of_type(GeomNode::get_class_type()));
 
   PT(ParametricCurve) curve;
-  
+
   if (egg_load_classic_nurbs_curves) {
     curve = new ClassicNurbsCurve;
   } else {
@@ -1187,7 +1200,7 @@ make_node(EggNurbsCurve *egg_curve, NamedNode *parent) {
     _error = true;
     return (RenderRelation *)NULL;
   }
-    
+
   for (int i = 0; i < num_knots; i++) {
     nurbs->set_knot(i, egg_curve->get_knot(i));
   }
@@ -1223,7 +1236,7 @@ make_node(EggNurbsCurve *egg_curve, NamedNode *parent) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::make_node (EggPrimitive)
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 RenderRelation *EggLoader::
 make_node(EggPrimitive *egg_prim, NamedNode *parent) {
@@ -1235,11 +1248,11 @@ make_node(EggPrimitive *egg_prim, NamedNode *parent) {
   }
   return (RenderRelation *)NULL;
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::make_node (EggBin)
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 RenderRelation *EggLoader::
 make_node(EggBin *egg_bin, NamedNode *parent) {
@@ -1293,7 +1306,7 @@ make_node(EggBin *egg_bin, NamedNode *parent) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::make_node (EggGroup)
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 RenderRelation *EggLoader::
 make_node(EggGroup *egg_group, NamedNode *parent) {
@@ -1330,7 +1343,7 @@ make_node(EggGroup *egg_group, NamedNode *parent) {
 
       string egg_syntax =
         config_egg2sg.GetString("egg-object-type-" + objecttype, "none");
-      
+
       if (egg_syntax == "none") {
         // It wasn't defined in a config file.  Maybe it's built in?
 
@@ -1376,7 +1389,7 @@ make_node(EggGroup *egg_group, NamedNode *parent) {
       if (!egg_syntax.empty()) {
         if (!egg_group->parse_egg(egg_syntax)) {
           egg2sg_cat.error()
-            << "Error while parsing definition for ObjectType " 
+            << "Error while parsing definition for ObjectType "
             << objecttype << "\n";
           _error = true;
         }
@@ -1394,7 +1407,7 @@ make_node(EggGroup *egg_group, NamedNode *parent) {
     // A collision group: create collision geometry.
     node = new CollisionNode;
     node->set_name(egg_group->get_name());
-    
+
     make_collision_solids(egg_group, egg_group, (CollisionNode *)node);
     if ((egg_group->get_collide_flags() & EggGroup::CF_keep) != 0) {
       // If we also specified to keep the geometry, continue the
@@ -1412,12 +1425,12 @@ make_node(EggGroup *egg_group, NamedNode *parent) {
     }
     return arc;
 
-  } else if (egg_group->get_switch_flag() && 
+  } else if (egg_group->get_switch_flag() &&
              egg_group->get_switch_fps() != 0.0) {
     // Create a sequence node.
     node = new SequenceNode(1.0 / egg_group->get_switch_fps());
     node->set_name(egg_group->get_name());
-    
+
     EggGroup::const_iterator ci;
     for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
       make_node(*ci, node);
@@ -1429,7 +1442,7 @@ make_node(EggGroup *egg_group, NamedNode *parent) {
     node->set_name(egg_group->get_name());
 
     DCAST(ModelNode, node)->set_preserve_transform(egg_group->get_dcs_flag());
-    
+
     EggGroup::const_iterator ci;
     for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
       make_node(*ci, node);
@@ -1439,7 +1452,7 @@ make_node(EggGroup *egg_group, NamedNode *parent) {
     // A normal group; just create a normal node, and traverse.
     node = new NamedNode;
     node->set_name(egg_group->get_name());
-    
+
     EggGroup::const_iterator ci;
     for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
       make_node(*ci, node);
@@ -1490,7 +1503,7 @@ create_group_arc(EggGroup *egg_group, NamedNode *parent, NamedNode *node) {
 
   if (egg_group->get_decal_flag()) {
     if (egg_ignore_decals) {
-      egg2sg_cat.error() 
+      egg2sg_cat.error()
         << "Ignoring decal flag on " << egg_group->get_name() << "\n";
       _error = true;
     }
@@ -1527,7 +1540,7 @@ create_group_arc(EggGroup *egg_group, NamedNode *parent, NamedNode *node) {
   if (egg_group->has_collide_mask()) {
     def._from_collide_mask = egg_group->get_collide_mask();
     def._into_collide_mask = egg_group->get_collide_mask();
-    def._flags |= 
+    def._flags |=
       DeferredArcProperty::F_has_from_collide_mask |
       DeferredArcProperty::F_has_into_collide_mask;
   }
@@ -1543,14 +1556,14 @@ create_group_arc(EggGroup *egg_group, NamedNode *parent, NamedNode *node) {
   if (def._flags != 0) {
     _deferred_arcs[arc] = def;
   }
-  
+
   return arc;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::make_node (EggTable)
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 RenderRelation *EggLoader::
 make_node(EggTable *egg_table, NamedNode *parent) {
@@ -1571,7 +1584,7 @@ make_node(EggTable *egg_table, NamedNode *parent) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggLoader::make_node (EggGroupNode)
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 RenderRelation *EggLoader::
 make_node(EggGroupNode *egg_group, NamedNode *parent) {
@@ -1595,7 +1608,7 @@ make_node(EggGroupNode *egg_group, NamedNode *parent) {
 //               below.
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
-make_collision_solids(EggGroup *start_group, EggGroup *egg_group, 
+make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
                       CollisionNode *cnode) {
   if (egg_group->get_cs_type() != EggGroup::CST_none) {
     start_group = egg_group;
@@ -1609,8 +1622,8 @@ make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
 
   case EggGroup::CST_inverse_sphere:
     // These aren't presently supported.
-    egg2sg_cat.error() 
-      << "Not presently supported: <Collide> { " 
+    egg2sg_cat.error()
+      << "Not presently supported: <Collide> { "
       << egg_group->get_cs_type() << " }\n";
     _error = true;
     break;
@@ -1684,7 +1697,7 @@ make_collision_polygon(EggGroup *egg_group, CollisionNode *cnode,
     EggGroup::const_iterator ci;
     for (ci = geom_group->begin(); ci != geom_group->end(); ++ci) {
       if ((*ci)->is_of_type(EggPolygon::get_class_type())) {
-        create_collision_polygons(cnode, DCAST(EggPolygon, *ci), 
+        create_collision_polygons(cnode, DCAST(EggPolygon, *ci),
                                   egg_group, flags);
       }
     }
@@ -1705,7 +1718,7 @@ make_collision_polyset(EggGroup *egg_group, CollisionNode *cnode,
     EggGroup::const_iterator ci;
     for (ci = geom_group->begin(); ci != geom_group->end(); ++ci) {
       if ((*ci)->is_of_type(EggPolygon::get_class_type())) {
-        create_collision_polygons(cnode, DCAST(EggPolygon, *ci), 
+        create_collision_polygons(cnode, DCAST(EggPolygon, *ci),
                                   egg_group, flags);
       }
     }
@@ -1759,7 +1772,7 @@ make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
 
     if (num_vertices > 0) {
       center /= (double)num_vertices;
-      
+
       // And the furthest vertex determines the radius.
       double radius2 = 0.0;
       for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
@@ -1778,7 +1791,7 @@ make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
       }
 
       float radius = sqrtf(radius2);
-      CollisionSphere *cssphere = 
+      CollisionSphere *cssphere =
         new CollisionSphere(LCAST(float, center), radius);
       apply_collision_flags(cssphere, flags);
       cnode->add_solid(cssphere);
@@ -1793,8 +1806,8 @@ make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
 //               appropriate, based on the settings of the given
 //               CollideFlags.
 ////////////////////////////////////////////////////////////////////
-void EggLoader:: 
-apply_collision_flags(CollisionSolid *solid, 
+void EggLoader::
+apply_collision_flags(CollisionSolid *solid,
                       EggGroup::CollideFlags flags) {
   if ((flags & EggGroup::CF_intangible) != 0) {
     solid->set_tangible(false);
@@ -1859,10 +1872,10 @@ create_collision_plane(EggPolygon *egg_poly, EggGroup *parent_group) {
   if (!egg_poly->empty()) {
     EggPolygon::const_iterator vi;
     vi = egg_poly->begin();
-    
+
     Vertexd vert = (*vi)->get_pos3();
     vertices.push_back(LCAST(float, vert));
-    
+
     Vertexd last_vert = vert;
     ++vi;
     while (vi != egg_poly->end()) {
@@ -1870,7 +1883,7 @@ create_collision_plane(EggPolygon *egg_poly, EggGroup *parent_group) {
       if (!vert.almost_equal(last_vert)) {
         vertices.push_back(LCAST(float, vert));
       }
-      
+
       last_vert = vert;
       ++vi;
     }
@@ -1891,8 +1904,8 @@ create_collision_plane(EggPolygon *egg_poly, EggGroup *parent_group) {
 //               CollisionNode.
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
-create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly, 
-                          EggGroup *parent_group, 
+create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
+                          EggGroup *parent_group,
                           EggGroup::CollideFlags flags) {
 
   PT(EggGroup) group = new EggGroup;
@@ -1920,10 +1933,10 @@ create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
     if (!poly->empty()) {
       EggPolygon::const_iterator vi;
       vi = poly->begin();
-      
+
       Vertexd vert = (*vi)->get_pos3();
       vertices.push_back(LCAST(float, vert));
-      
+
       Vertexd last_vert = vert;
       ++vi;
       while (vi != poly->end()) {
@@ -1940,7 +1953,7 @@ create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
     if (vertices.size() >= 3) {
       const Vertexf *vertices_begin = &vertices[0];
       const Vertexf *vertices_end = vertices_begin + vertices.size();
-      CollisionPolygon *cspoly = 
+      CollisionPolygon *cspoly =
         new CollisionPolygon(vertices_begin, vertices_end);
       apply_collision_flags(cspoly, flags);
       cnode->add_solid(cspoly);

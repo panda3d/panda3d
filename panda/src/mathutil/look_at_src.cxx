@@ -1,6 +1,19 @@
-// Filename: lookAt.cxx
+// Filename: look_at_src.cxx
 // Created by:  drose (25Apr97)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 INLINE_MATHUTIL FLOATNAME(LMatrix3)
@@ -46,7 +59,7 @@ make_z_mat(const FLOATNAME(LVector2) &z) {
 //               vectors are not perpendicular.
 ////////////////////////////////////////////////////////////////////
 void
-heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd, 
+heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
          const FLOATNAME(LVector3) &up, CoordinateSystem cs) {
   if (cs == CS_default) {
     cs = default_coordinate_system;
@@ -66,11 +79,11 @@ heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     } else {
       y /= csqrt(d);
     }
-    
+
     // x is the up vector rotated into the YZ plane.  Its angle to the Z
     // axis is the amount to rotate about the X axis to bring the up
     // vector to the Z axis.
-    
+
     FLOATNAME(LVector2) x(up[1], up[0]*y[0]+up[2]*y[1]);
     d = dot(x, x);
     if (d==0.0f) {
@@ -78,13 +91,13 @@ heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     } else {
       x /= csqrt(d);
     }
-    
+
     // Now apply both rotations to the forward vector.  This will rotate
     // the forward vector by the same amount we would have had to rotate
     // the up vector to bring it to the Z axis.  If the vectors were
     // perpendicular, this will put the forward vector somewhere in the
     // XY plane.
-    
+
     // z is the projection of the newly rotated fwd vector into the XY
     // plane.  Its angle to the Y axis is the amount to rotate about the
     // Z axis in order to bring the fwd vector to the Y axis.
@@ -96,15 +109,15 @@ heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     } else {
       z /= csqrt(d);
     }
-    
+
     // Now build the net rotation matrix.
     if (cs == CS_zup_right) {
-      mat = 
+      mat =
         make_z_mat(z) *
         make_x_mat(x) *
         make_y_mat(y);
     } else { // cs == CS_zup_left
-      mat = 
+      mat =
         make_z_mat(z) *
         make_x_mat(-x) *
         make_y_mat(-y);
@@ -156,12 +169,12 @@ heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
 
     // Now build the net rotation matrix.
     if (cs == CS_yup_right) {
-      mat = 
+      mat =
         make_y_mat(y) *
         make_xi_mat(-x) *
         make_z_mat(-z);
     } else { // cs == CS_yup_left
-      mat = 
+      mat =
         make_y_mat(y) *
         make_xi_mat(x) *
         make_z_mat(z);
@@ -182,7 +195,7 @@ heads_up(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
 //               up vectors are not perpendicular.
 ////////////////////////////////////////////////////////////////////
 void
-look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd, 
+look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
         const FLOATNAME(LVector3) &up, CoordinateSystem cs) {
   if (cs == CS_default) {
     cs = default_coordinate_system;
@@ -194,7 +207,7 @@ look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     // z is the projection of the forward vector into the XY plane.  Its
     // angle to the Y axis is the amount to rotate about the Z axis to
     // bring the forward vector into the YZ plane.
-    
+
     FLOATNAME(LVector2) z(fwd[0], fwd[1]);
     FLOATTYPE d = dot(z, z);
     if (d==0.0f) {
@@ -206,7 +219,7 @@ look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     // x is the forward vector rotated into the YZ plane.  Its angle to
     // the Y axis is the amount to rotate about the X axis to bring the
     // forward vector to the Y axis.
-    
+
     FLOATNAME(LVector2) x(fwd[0]*z[0] + fwd[1]*z[1], fwd[2]);
     d = dot(x, x);
     if (d==0.0f) {
@@ -214,13 +227,13 @@ look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     } else {
       x /= csqrt(d);
     }
-    
+
     // Now apply both rotations to the up vector.  This will rotate
     // the up vector by the same amount we would have had to rotate
     // the forward vector to bring it to the Y axis.  If the vectors were
     // perpendicular, this will put the up vector somewhere in the
     // XZ plane.
-    
+
     // y is the projection of the newly rotated up vector into the XZ
     // plane.  Its angle to the Z axis is the amount to rotate about the
     // Y axis in order to bring the up vector to the Z axis.
@@ -251,7 +264,7 @@ look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     // y is the projection of the up vector into the XZ plane.  Its
     // angle to the Z axis is the amount to rotate about the Y axis to
     // bring the up vector into the YZ plane.
-    
+
     FLOATNAME(LVector2) y(fwd[0], fwd[2]);
     FLOATTYPE d = dot(y, y);
     if (d==0.0f) {
@@ -259,11 +272,11 @@ look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     } else {
       y /= csqrt(d);
     }
-    
+
     // x is the up vector rotated into the YZ plane.  Its angle to the Z
     // axis is the amount to rotate about the X axis to bring the up
     // vector to the Z axis.
-    
+
     FLOATNAME(LVector2) x(fwd[1], fwd[0]*y[0]+fwd[2]*y[1]);
     d = dot(x, x);
     if (d==0.0f) {
@@ -277,7 +290,7 @@ look_at(FLOATNAME(LMatrix3) &mat, const FLOATNAME(LVector3) &fwd,
     // the up vector to bring it to the Z axis.  If the vectors were
     // perpendicular, this will put the forward vector somewhere in the
     // XY plane.
-    
+
     // z is the projection of the newly rotated fwd vector into the XY
     // plane.  Its angle to the Y axis is the amount to rotate about the
     // Z axis in order to bring the fwd vector to the Y axis.

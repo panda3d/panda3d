@@ -1,6 +1,19 @@
 // Filename: pnmImage.h
 // Created by:  drose (14Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef PNMIMAGE_H
@@ -136,9 +149,9 @@ public:
   INLINE void set_channel(int x, int y, int channel, double value);
 
   INLINE double get_bright(int x, int y) const;
-  INLINE double get_bright(int x, int y, double rc, double gc, 
+  INLINE double get_bright(int x, int y, double rc, double gc,
                            double bc) const;
-  INLINE double get_bright(int x, int y, double rc, double gc, 
+  INLINE double get_bright(int x, int y, double rc, double gc,
                            double bc, double ac) const;
 
   INLINE void blend(int x, int y, const RGBColord &val, double alpha);
@@ -151,20 +164,20 @@ public:
   INLINE xel *operator [] (int y);
   INLINE const xel *operator [] (int y) const;
 
-  
+
   void copy_sub_image(const PNMImage &copy, int xto, int yto,
                       int xfrom = 0, int yfrom = 0,
                       int x_size = -1, int y_size = -1);
 
   // The bodies for the non-inline *_filter() functions can be found
   // in the file pnm-image-filter.cxx.
- 
+
   INLINE void box_filter(double radius = 1.0);
   INLINE void gaussian_filter(double radius = 1.0);
 
   void box_filter_from(double radius, const PNMImage &copy);
   void gaussian_filter_from(double radius, const PNMImage &copy);
-  void quick_filter_from(const PNMImage &copy, 
+  void quick_filter_from(const PNMImage &copy,
                          int xborder = 0, int yborder = 0);
 
 private:

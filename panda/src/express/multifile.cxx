@@ -2,19 +2,18 @@
 // Created by:  mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
-// Copyright (C) 1992,93,94,95,96,97,98  
-// Walt Disney Imagineering, Inc.
 //
-// These  coded  instructions,  statements,  data   structures   and
-// computer  programs contain unpublished proprietary information of
-// Walt Disney Imagineering and are protected by  Federal  copyright
-// law.  They may  not be  disclosed to third  parties  or copied or
-// duplicated in any form, in whole or in part,  without  the  prior
-// written consent of Walt Disney Imagineering Inc.
-////////////////////////////////////////////////////////////////////
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include <pandabase.h>
 #include "multifile.h"
@@ -104,7 +103,7 @@ parse_header_length(char *&start, int &size) {
   size -= (_header_length_buf_length - bytes_so_far);
 
   DatagramIterator di(_datagram);
-  _header_length = di.get_int32(); 
+  _header_length = di.get_int32();
 
   express_cat.debug()
     << "Multifile::Memfile::parse_header_length() - header length: "
@@ -120,7 +119,7 @@ parse_header_length(char *&start, int &size) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Multifile::Memfile::parse_header
 //       Access: Public
-//  Description: Returns true when a complete header has been parsed. 
+//  Description: Returns true when a complete header has been parsed.
 //               Advances the start pointer to the end of the header.
 ////////////////////////////////////////////////////////////////////
 bool Multifile::Memfile::
@@ -194,10 +193,10 @@ read(const Filename &name) {
         sizeof(_buffer_length);
   _name = name;
 
-  // Determine the length of the file  
+  // Determine the length of the file
   read_stream.seekg(0, ios::end);
   _buffer_length = read_stream.tellg();
-  _buffer = new char[_buffer_length]; 
+  _buffer = new char[_buffer_length];
 
   // Read the file
   read_stream.seekg(0, ios::beg);
@@ -298,7 +297,7 @@ write_to_multifile(ofstream &write_stream) {
 //     Function: Multifile::Memfile::write
 //       Access: Public
 //  Description: Returns true when the memfile has been parsed and
-//               written to disk. 
+//               written to disk.
 //               Advances the start pointer as it writes.
 ////////////////////////////////////////////////////////////////////
 int Multifile::Memfile::
@@ -434,7 +433,7 @@ parse_header(char *&start, int &size) {
     PN_uint32 magic_number = di.get_uint32();
     if (magic_number != _magic_number) {
       express_cat.error()
-        << "Multifile::parse_header() - Invalid magic number: " 
+        << "Multifile::parse_header() - Invalid magic number: "
         << magic_number << " (" << _magic_number << ")" << endl;
       return EU_error_abort;
     }
@@ -466,10 +465,10 @@ bool Multifile::
 add(const Filename &name) {
   Memfile *mfile = new Memfile;
   if (mfile->read(name)) {
-    _files.push_back(mfile); 
+    _files.push_back(mfile);
     return true;
   }
-  return false; 
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -540,7 +539,7 @@ read(Filename &name) {
   // Read all the Memfiles
   for (int i = 0; i < _num_mfiles; i++) {
     Memfile *mfile = new Memfile;
-    mfile->read_from_multifile(read_stream); 
+    mfile->read_from_multifile(read_stream);
     _files.push_back(mfile);
   }
 
@@ -587,7 +586,7 @@ write(Filename name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Multifile::write
 //       Access: Public
-//  Description: Returns true when all the memfiles have been 
+//  Description: Returns true when all the memfiles have been
 //               written.
 //               Advances the start pointer as it writes.
 ////////////////////////////////////////////////////////////////////
@@ -625,7 +624,7 @@ write(char *&start, int &size, const Filename &rel_path) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Multifile::write_extract
 //       Access: Public
-//  Description: Returns true when entire Multifile has been 
+//  Description: Returns true when entire Multifile has been
 //               extracted to disk files.
 ////////////////////////////////////////////////////////////////////
 bool Multifile::

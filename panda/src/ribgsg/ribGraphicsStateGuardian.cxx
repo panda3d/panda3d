@@ -1,6 +1,19 @@
 // Filename: ribGraphicsStateGuardian.cxx
 // Created by:  drose (15Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "ribGraphicsStateGuardian.h"
@@ -68,7 +81,7 @@ issue_normal_rib(const Geom *geom, Geom::NormalIterator &ni) {
 static void
 issue_texcoord_rib(const Geom *geom, Geom::TexCoordIterator &ti) {
   // We need to reverse the V coordinate for RIB.
-  static LMatrix3f 
+  static LMatrix3f
     texmat(1.0, 0.0, 0.0,
            0.0, -1.0, 0.0,
            0.0, 1.0, 1.0);
@@ -76,7 +89,7 @@ issue_texcoord_rib(const Geom *geom, Geom::TexCoordIterator &ti) {
 }
 
 static void
-issue_color_rib(const Geom *geom, Geom::ColorIterator &ci, 
+issue_color_rib(const Geom *geom, Geom::ColorIterator &ci,
                 const GraphicsStateGuardianBase *) {
   // RIB only cares about three-component color, so we have to convert
   // the four-component color attribute to three-component color here.
@@ -86,14 +99,14 @@ issue_color_rib(const Geom *geom, Geom::ColorIterator &ci,
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 RIBGraphicsStateGuardian::
 RIBGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
   reset();
-  
+
   // Create a default RenderTraverser.
-  _render_traverser = 
+  _render_traverser =
     new DirectRenderTraverser(this, RenderRelation::get_class_type());
 
   _texture_directory = "maps";
@@ -175,7 +188,7 @@ clear(const RenderBuffer &, const DisplayRegion* ) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::prepare_display_region
-//       Access: Public 
+//       Access: Public
 //  Description: Prepare a display region for rendering (set up
 //               scissor region and viewport)
 ////////////////////////////////////////////////////////////////////
@@ -212,7 +225,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
               Camera *cam = dr->get_camera();
 
               // For each display region, render from the camera's view.
-              if (dr->is_active() && cam != (Camera *)NULL && 
+              if (dr->is_active() && cam != (Camera *)NULL &&
                   cam->is_active() && cam->get_scene() != (Node *)NULL) {
                 DisplayRegionStack old_dr = push_display_region(dr);
                 prepare_display_region();
@@ -246,7 +259,7 @@ render_scene(Node *root, ProjectionNode *projnode,
              const AllAttributesWrapper &initial_state) {
   _current_root_node = root;
 
-  render_subgraph(_render_traverser, root, projnode, 
+  render_subgraph(_render_traverser, root, projnode,
                   initial_state, AllTransitionsWrapper());
 }
 
@@ -260,7 +273,7 @@ render_scene(Node *root, ProjectionNode *projnode,
 //               process.
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
-render_subgraph(RenderTraverser *traverser, 
+render_subgraph(RenderTraverser *traverser,
                 Node *subgraph, ProjectionNode *projnode,
                 const AllAttributesWrapper &initial_state,
                 const AllTransitionsWrapper &net_trans) {
@@ -280,7 +293,7 @@ render_subgraph(RenderTraverser *traverser,
 
   const Projection *projection = projnode->get_projection();
   if (projection->is_of_type(PerspectiveProjection::get_class_type())) {
-    const PerspectiveProjection &pp = 
+    const PerspectiveProjection &pp =
       *DCAST(PerspectiveProjection, projection);
     const Frustumf &frustum = pp.get_frustum();
 
@@ -322,7 +335,7 @@ render_subgraph(RenderTraverser *traverser,
   new_line() << "Format " << width << " " << height << " "
              << (float)height * frame_aspect / (float)width << "\n";
   new_line() << "FrameAspectRatio " << frame_aspect << "\n";
-  
+
   new_line() << "Sides 1\n";
   new_line() << "Color [ 1 1 1 ]\n";
 
@@ -360,7 +373,7 @@ render_subgraph(RenderTraverser *traverser,
 //               render process.
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
-render_subgraph(RenderTraverser *traverser, 
+render_subgraph(RenderTraverser *traverser,
                 Node *subgraph,
                 const AllAttributesWrapper &initial_state,
                 const AllTransitionsWrapper &net_trans) {
@@ -372,7 +385,7 @@ render_subgraph(RenderTraverser *traverser,
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::wants_normals
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool RIBGraphicsStateGuardian::
 wants_normals() const {
@@ -382,7 +395,7 @@ wants_normals() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::wants_texcoords
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool RIBGraphicsStateGuardian::
 wants_texcoords() const {
@@ -392,7 +405,7 @@ wants_texcoords() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::wants_colors
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool RIBGraphicsStateGuardian::
 wants_colors() const {
@@ -430,7 +443,7 @@ compute_distance_to(const LPoint3f &point) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::draw_point
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 draw_point(const GeomPoint *) {
@@ -439,7 +452,7 @@ draw_point(const GeomPoint *) {
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::draw_line
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 draw_line(const GeomLine *) {
@@ -448,7 +461,7 @@ draw_line(const GeomLine *) {
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::draw_sprite
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 draw_sprite(const GeomSprite *) {
@@ -457,7 +470,7 @@ draw_sprite(const GeomSprite *) {
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::draw_polygon
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 draw_polygon(const GeomPolygon *geom) {
@@ -467,7 +480,7 @@ draw_polygon(const GeomPolygon *geom) {
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::draw_tri
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 draw_tri(const GeomTri *geom) {
@@ -477,7 +490,7 @@ draw_tri(const GeomTri *geom) {
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::draw_quad
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 draw_quad(const GeomQuad *geom) {
@@ -487,7 +500,7 @@ draw_quad(const GeomQuad *geom) {
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::draw_tristrip
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 draw_tristrip(const GeomTristrip *geom) {
@@ -499,7 +512,7 @@ draw_tristrip(const GeomTristrip *geom) {
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::draw_trifan
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 draw_trifan(const GeomTrifan *geom) {
@@ -511,7 +524,7 @@ draw_trifan(const GeomTrifan *geom) {
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::draw_sphere
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 draw_sphere(const GeomSphere *) {
@@ -521,7 +534,7 @@ draw_sphere(const GeomSphere *) {
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::prepare_texture
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 TextureContext *RIBGraphicsStateGuardian::
 prepare_texture(Texture *tex) {
@@ -540,7 +553,7 @@ prepare_texture(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::apply_texture
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 apply_texture(TextureContext *) {
@@ -549,7 +562,7 @@ apply_texture(TextureContext *) {
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::release_texture
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 release_texture(TextureContext *tc) {
@@ -569,7 +582,7 @@ release_texture(TextureContext *tc) {
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::copy_texture
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 copy_texture(TextureContext *, const DisplayRegion *) {
@@ -587,7 +600,7 @@ copy_texture(TextureContext *, const DisplayRegion *, const RenderBuffer &) {
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::draw_texture
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 draw_texture(TextureContext *, const DisplayRegion *) {
@@ -605,7 +618,7 @@ draw_texture(TextureContext *, const DisplayRegion *, const RenderBuffer &) {
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::copy_pixel_buffer
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 copy_pixel_buffer(PixelBuffer *, const DisplayRegion *) {
@@ -624,7 +637,7 @@ copy_pixel_buffer(PixelBuffer *, const DisplayRegion *, const RenderBuffer &) {
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::draw_pixel_buffer
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 draw_pixel_buffer(PixelBuffer *, const DisplayRegion *,
@@ -644,7 +657,7 @@ draw_pixel_buffer(PixelBuffer *, const DisplayRegion *, const RenderBuffer &,
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::issue_transform
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 issue_transform(const TransformAttribute *attrib) {
@@ -655,7 +668,7 @@ issue_transform(const TransformAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::issue_color
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 issue_color(const ColorAttribute *attrib) {
@@ -668,13 +681,13 @@ issue_color(const ColorAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::issue_texture
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 issue_texture(const TextureAttribute *attrib) {
   if (attrib->is_off()) {
     // If no textures are enabled, we can use the nontextured shader.
-    new_line() 
+    new_line()
       << "Surface \"plastic\"\n";
 
   } else {
@@ -699,7 +712,7 @@ issue_texture(const TextureAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::issue_light
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
 issue_light(const LightAttribute *attrib) {
@@ -735,11 +748,11 @@ issue_light(const LightAttribute *attrib) {
       LightIDs::const_iterator ii = _light_ids.find(light);
       assert(ii != _light_ids.end());
       int id = (*ii).second;
-      
+
       if (!_enabled_lights[id]) {
         new_line() << "Illuminate " << id << " 1\n";
       }
-      
+
       // We'll temporarily set the enabled flag to false, even
       // though we've just activated the light.  This is so we can
       // later identify the lights we need to turn off.
@@ -854,7 +867,7 @@ set_color(const RGBColorf &color) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::get_rib_stuff
-//       Access: Protected 
+//       Access: Protected
 //  Description: Traverses the scene graph to identify any textures
 //               or lights, or anything that we need to define up
 //               front in RIB.
@@ -869,7 +882,7 @@ get_rib_stuff(Node *root, const AllAttributesWrapper &initial_state) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::define_texture
-//       Access: Protected 
+//       Access: Protected
 //  Description: Called by the RibStuffTraverser (initiated above),
 //               this defines a single texture object in the RIB file
 //               if it has not already been defined.
@@ -886,7 +899,7 @@ define_texture(const Texture *tex) {
 
     rib_name = image_filename;
     rib_name.set_extension("tx");
-    
+
     new_line() << "MakeTexture \"" << image_filename << "\"\n";
     new_line(12) << "\"" << rib_name << "\"";
 
@@ -908,7 +921,7 @@ define_texture(const Texture *tex) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::define_light
-//       Access: Protected 
+//       Access: Protected
 //  Description: Called by the RibStuffTraverser (initiated above),
 //               this defines a single light object in the RIB file
 //               if it has not already been defined.
@@ -947,7 +960,7 @@ define_light(const Light *light) {
       write_light_color(slight->get_color());
       write_light_from(slight);
       write_light_to(slight);
-      (*_output) 
+      (*_output)
         << " \"coneangle\" " << deg_2_rad(slight->get_cutoff_angle())
         << "\n";
 
@@ -965,7 +978,7 @@ define_light(const Light *light) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::write_light_color
-//       Access: Protected 
+//       Access: Protected
 //  Description: Called by define_light() to write out a single
 //               light's color and intensity values.
 ////////////////////////////////////////////////////////////////////
@@ -981,7 +994,7 @@ write_light_color(const Colorf &color) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::write_light_from
-//       Access: Protected 
+//       Access: Protected
 //  Description: Called by define_light() to write out a single
 //               light's position.
 ////////////////////////////////////////////////////////////////////
@@ -994,7 +1007,7 @@ write_light_from(const Node *light) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::write_light_to
-//       Access: Protected 
+//       Access: Protected
 //  Description: Called by define_light() to write out a single
 //               light's direction.
 ////////////////////////////////////////////////////////////////////
@@ -1009,7 +1022,7 @@ write_light_to(const Node *light) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::new_line
-//       Access: Protected 
+//       Access: Protected
 //  Description: Beins a new line of output at the current indenting
 //               level.  (Does not actually issue the newline
 //               character, however).
@@ -1021,7 +1034,7 @@ new_line(int extra_indent) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::reset_transform
-//       Access: Protected 
+//       Access: Protected
 //  Description: Outputs an RiTransform command with the given
 //               transformation matrix, which resets the current
 //               transformation to that specified.
@@ -1030,17 +1043,17 @@ void RIBGraphicsStateGuardian::
 reset_transform(const LMatrix4f &mat) const {
   new_line() << "Transform [ " << mat(0,0) << " " << mat(0,1) << " "
              << mat(0,2) << " " << mat(0,3) << "\n";
-  new_line(12) << mat(1,0) << " " << mat(1,1) << " " 
+  new_line(12) << mat(1,0) << " " << mat(1,1) << " "
                << mat(1,2) << " " << mat(1,3) << "\n";
-  new_line(12) << mat(2,0) << " " << mat(2,1) << " " 
+  new_line(12) << mat(2,0) << " " << mat(2,1) << " "
                << mat(2,2) << " " << mat(2,3) << "\n";
-  new_line(12) << mat(3,0) << " " << mat(3,1) << " " 
+  new_line(12) << mat(3,0) << " " << mat(3,1) << " "
                << mat(3,2) << " " << mat(3,3) << " ]\n";
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsStateGuardian::concat_transform
-//       Access: Protected 
+//       Access: Protected
 //  Description: Outputs an RiTransform command with the given
 //               transformation matrix, which composes the specified
 //               matrix with the current transformation.
@@ -1049,11 +1062,11 @@ void RIBGraphicsStateGuardian::
 concat_transform(const LMatrix4f &mat) const {
   new_line() << "ConcatTransform [ " << mat(0,0) << " " << mat(0,1) << " "
              << mat(0,2) << " " << mat(0,3) << "\n";
-  new_line(18) << mat(1,0) << " " << mat(1,1) << " " 
+  new_line(18) << mat(1,0) << " " << mat(1,1) << " "
                << mat(1,2) << " " << mat(1,3) << "\n";
-  new_line(18) << mat(2,0) << " " << mat(2,1) << " " 
+  new_line(18) << mat(2,0) << " " << mat(2,1) << " "
                << mat(2,2) << " " << mat(2,3) << "\n";
-  new_line(18) << mat(3,0) << " " << mat(3,1) << " " 
+  new_line(18) << mat(3,0) << " " << mat(3,1) << " "
                << mat(3,2) << " " << mat(3,3) << " ]\n";
 }
 
@@ -1081,7 +1094,7 @@ draw_simple_poly(const Geom *geom) {
                     issue_normal_rib,
                     issue_texcoord_rib,
                     issue_color_rib);
-  
+
   for (int i = 0; i < nprims; i++) {
     // First, for each primitive, we build up the various polygon
     // attributes in our global arrays.
@@ -1095,15 +1108,15 @@ draw_simple_poly(const Geom *geom) {
     if (geom->get_binding(G_NORMAL) == G_OVERALL) {
       ni = geom->make_normal_iterator();
     }
-    
+
     // Draw overall
     issuer.issue_color(G_OVERALL, ci);
     issuer.issue_normal(G_OVERALL, ni);
-    
+
     // Draw per primitive
     issuer.issue_color(G_PER_PRIM, ci);
     issuer.issue_normal(G_PER_PRIM, ni);
-    
+
     for (int j = 0; j < geom->get_length(i); j++) {
       // Draw per vertex
       issuer.issue_color(G_PER_VERTEX, ci);
@@ -1124,7 +1137,7 @@ draw_simple_poly(const Geom *geom) {
 //               described by the global rib_* arrays.
 ////////////////////////////////////////////////////////////////////
 void RIBGraphicsStateGuardian::
-write_polygon(int num_verts) {    
+write_polygon(int num_verts) {
   if (num_verts < 3) {
     return;
   }
@@ -1169,7 +1182,7 @@ write_polygon(int num_verts) {
 
   if (!rib_colors.empty()) {
     assert(rib_colors.size() == num_verts);
-    
+
     write_long_list(*_output, _indent_level,
                     rib_colors.rbegin(), rib_colors.rend(),
                     "       \"Cs\" ", "            ", 72);

@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "pixelBuffer.h"
 #include "config_gobj.h"
@@ -15,7 +24,7 @@
 TypeHandle PixelBuffer::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: config 
+//     Function: config
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -105,7 +114,7 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
   default:
     // Eh?
     nassertr(false, false);
-    _format = F_rgb;    
+    _format = F_rgb;
   };
 
   bool has_alpha = pnmimage.has_alpha();
@@ -117,7 +126,7 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
     _type = T_unsigned_byte;
     _image = PTA_uchar(_xsize * _ysize * _components);
     int idx = 0;
-    
+
     for (int j = _ysize-1; j >= 0; j--) {
       for (int i = 0; i < _xsize; i++) {
         if (is_grayscale) {
@@ -139,7 +148,7 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
     _type = T_unsigned_short;
     _image = PTA_uchar(_xsize * _ysize * _components * 2);
     int idx = 0;
-    
+
     for (int j = _ysize-1; j >= 0; j--) {
       for (int i = 0; i < _xsize; i++) {
         if (is_grayscale) {
@@ -163,7 +172,7 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
     _image = PTA_uchar(_xsize * _ysize * _components);
     int idx = 0;
     double scale = 255.0 / (double)maxval;
-    
+
     for (int j = _ysize-1; j >= 0; j--) {
       for (int i = 0; i < _xsize; i++) {
         if (is_grayscale) {
@@ -187,7 +196,7 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
     _image = PTA_uchar(_xsize * _ysize * _components * 2);
     int idx = 0;
     double scale = 65535.0 / (double)maxval;
-    
+
     for (int j = _ysize-1; j >= 0; j--) {
       for (int i = 0; i < _xsize; i++) {
         if (is_grayscale) {
@@ -257,7 +266,7 @@ store(PNMImage &pnmimage) const {
       }
     }
     return true;
-  }    
+  }
 
   gobj_cat.error()
     << "Couldn't write image for " << get_name()
@@ -266,7 +275,7 @@ store(PNMImage &pnmimage) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: copy 
+//     Function: copy
 //       Access:
 //  Description: Deep copy of pixel buffer
 ////////////////////////////////////////////////////////////////////
@@ -282,7 +291,7 @@ copy(const PixelBuffer *pb) {
   _format = pb->_format;
   _image = PTA_uchar(0);
   if (!pb->_image.empty())
-    _image.v() = pb->_image.v(); 
+    _image.v() = pb->_image.v();
 }
 
 void PixelBuffer::copy(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr) {

@@ -1,6 +1,19 @@
 // Filename: eggTextureCollection.cxx
 // Created by:  drose (15Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggTextureCollection.h"
@@ -15,7 +28,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTextureCollection::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggTextureCollection::
 EggTextureCollection() {
@@ -24,7 +37,7 @@ EggTextureCollection() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTextureCollection::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggTextureCollection::
 EggTextureCollection(const EggTextureCollection &copy) :
@@ -36,7 +49,7 @@ EggTextureCollection(const EggTextureCollection &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTextureCollection::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggTextureCollection &EggTextureCollection::
 operator = (const EggTextureCollection &copy) {
@@ -48,7 +61,7 @@ operator = (const EggTextureCollection &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTextureCollection::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggTextureCollection::
 ~EggTextureCollection() {
@@ -104,8 +117,8 @@ insert_textures(EggGroupNode *node) {
 EggGroupNode::iterator EggTextureCollection::
 insert_textures(EggGroupNode *node, EggGroupNode::iterator position) {
   OrderedTextures::iterator oti;
-  for (oti = _ordered_textures.begin(); 
-       oti != _ordered_textures.end(); 
+  for (oti = _ordered_textures.begin();
+       oti != _ordered_textures.end();
        ++oti) {
     EggTexture *texture = (*oti);
     position = node->insert(position, texture);
@@ -163,7 +176,7 @@ find_used_textures(EggNode *node) {
 
   } else if (node->is_of_type(EggGroupNode::get_class_type())) {
     EggGroupNode *group = DCAST(EggGroupNode, node);
-    
+
     EggGroupNode::iterator ci;
     for (ci = group->begin(); ci != group->end(); ++ci) {
       EggNode *child = *ci;
@@ -246,8 +259,8 @@ collapse_equivalent_textures(int eq, EggTextureCollection::TextureReplacement &r
   // First, put all of the textures into the Collapser structure, to
   // find out the unique textures.
   OrderedTextures::const_iterator oti;
-  for (oti = _ordered_textures.begin(); 
-       oti != _ordered_textures.end(); 
+  for (oti = _ordered_textures.begin();
+       oti != _ordered_textures.end();
        ++oti) {
     EggTexture *tex = (*oti);
 
@@ -319,15 +332,15 @@ uniquify_trefs() {
   NameUniquifier nu(".tref", "tref");
 
   OrderedTextures::const_iterator oti;
-  for (oti = _ordered_textures.begin(); 
-       oti != _ordered_textures.end(); 
+  for (oti = _ordered_textures.begin();
+       oti != _ordered_textures.end();
        ++oti) {
     EggTexture *tex = (*oti);
 
     tex->set_name(nu.add_name(tex->get_name()));
   }
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTextureCollection::sort_by_tref
 //       Access: Public
@@ -412,8 +425,8 @@ create_unique_texture(const EggTexture &copy, int eq) {
   // This requires a complete linear traversal, not terribly
   // efficient.
   OrderedTextures::const_iterator oti;
-  for (oti = _ordered_textures.begin(); 
-       oti != _ordered_textures.end(); 
+  for (oti = _ordered_textures.begin();
+       oti != _ordered_textures.end();
        ++oti) {
     EggTexture *tex = (*oti);
     if (copy.is_equivalent_to(*tex, eq)) {
@@ -437,8 +450,8 @@ find_tref(const string &tref_name) const {
   // This requires a complete linear traversal, not terribly
   // efficient.
   OrderedTextures::const_iterator oti;
-  for (oti = _ordered_textures.begin(); 
-       oti != _ordered_textures.end(); 
+  for (oti = _ordered_textures.begin();
+       oti != _ordered_textures.end();
        ++oti) {
     EggTexture *tex = (*oti);
     if (tex->get_name() == tref_name) {
@@ -460,8 +473,8 @@ find_filename(const Filename &filename) const {
   // This requires a complete linear traversal, not terribly
   // efficient.
   OrderedTextures::const_iterator oti;
-  for (oti = _ordered_textures.begin(); 
-       oti != _ordered_textures.end(); 
+  for (oti = _ordered_textures.begin();
+       oti != _ordered_textures.end();
        ++oti) {
     EggTexture *tex = (*oti);
     if (tex->get_filename() == filename) {

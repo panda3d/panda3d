@@ -1,6 +1,19 @@
 // Filename: ioPtaDatagramShort.cxx
 // Created by:  jason (26Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <pandabase.h>
@@ -12,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: IoPtaDatagramShort::write_datagram
 //       Access: Public, Static
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void IoPtaDatagramShort::
 write_datagram(Datagram &dest, CPTA_ushort array)
@@ -27,7 +40,7 @@ write_datagram(Datagram &dest, CPTA_ushort array)
 ////////////////////////////////////////////////////////////////////
 //     Function: IoPtaDatagramShort::read_datagram
 //       Access: Public, Static
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PTA_ushort IoPtaDatagramShort::
 read_datagram(DatagramIterator &source)

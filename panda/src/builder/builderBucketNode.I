@@ -1,6 +1,19 @@
 // Filename: builderBucketNode.I
 // Created by:  drose (10Sep97)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -8,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderBucketNode::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE BuilderBucketNode::
 BuilderBucketNode(BuilderBucket *bucket) : _bucket(bucket) {
@@ -18,7 +31,7 @@ BuilderBucketNode(BuilderBucket *bucket) : _bucket(bucket) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderBucketNode::Copy constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE BuilderBucketNode::
 BuilderBucketNode(const BuilderBucketNode &copy) {
@@ -29,7 +42,7 @@ BuilderBucketNode(const BuilderBucketNode &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderBucketNode::Copy assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void BuilderBucketNode::
 operator = (const BuilderBucketNode &copy) {
@@ -64,7 +77,7 @@ INLINE BuilderBucket *BuilderBucketNode::
 get_bucket() const {
   return _bucket;
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderBucketNode::Ordering operator
 //       Access: Public
@@ -77,8 +90,8 @@ INLINE bool BuilderBucketNode::
 operator < (const BuilderBucketNode &other) const {
   return (*_bucket) < (*other._bucket);
 }
-  
-  
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderBucketNode::Equivalence operator
 //       Access: Public
@@ -87,14 +100,14 @@ operator < (const BuilderBucketNode &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool BuilderBucketNode::
 operator == (const BuilderBucketNode &other) const {
-  return !((*_bucket) < (*other._bucket) || 
+  return !((*_bucket) < (*other._bucket) ||
            (*other._bucket) < (*_bucket));
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderBucketNode::Nonequivalence operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool BuilderBucketNode::
 operator != (const BuilderBucketNode &other) const {

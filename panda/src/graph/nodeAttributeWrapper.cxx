@@ -1,6 +1,19 @@
 // Filename: nodeAttributeWrapper.cxx
 // Created by:  drose (20Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "nodeAttributeWrapper.h"
@@ -34,7 +47,7 @@ apply_in_place(const NodeTransitionWrapper &trans) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributeWrapper::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodeAttributeWrapper::
 output(ostream &out) const {
@@ -48,7 +61,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributeWrapper::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodeAttributeWrapper::
 write(ostream &out, int indent_level) const {

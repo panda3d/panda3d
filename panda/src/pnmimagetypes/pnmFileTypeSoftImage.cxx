@@ -1,6 +1,19 @@
 // Filename: pnmFileTypeSoftImage.cxx
 // Created by:  drose (17Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileTypeSoftImage.h"
@@ -44,7 +57,7 @@ read_float(FILE *file) {
   }
 }
 
-inline unsigned short 
+inline unsigned short
 read_ushort(FILE *file) {
   unsigned short x;
   return pm_readbigshort(file, (short *)&x)==0 ? x : 0;
@@ -73,7 +86,7 @@ write_float(FILE *file, float x) {
 }
 
 static int
-read_channel_pkt(FILE *file, 
+read_channel_pkt(FILE *file,
                  int &chained, int &size, int &type, int &channel) {
   chained = read_uchar(file);
   size = read_uchar(file);
@@ -133,7 +146,7 @@ read_rgba(xel *row_data, xelval *alpha_data, FILE *file, int x, int repeat) {
     repeat--;
   }
 }
-    
+
 
 static int
 read_scanline(xel *row_data, xelval *alpha_data, int cols, FILE *file,
@@ -192,7 +205,7 @@ read_scanline(xel *row_data, xelval *alpha_data, int cols, FILE *file,
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeSoftImage::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeSoftImage::
 PNMFileTypeSoftImage() {
@@ -301,10 +314,10 @@ make_writer(FILE *file, bool owns_file) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeSoftImage::Reader::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeSoftImage::Reader::
-Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) : 
+Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
   if (!read_magic_number(_file, magic_number, 4)) {
@@ -328,7 +341,7 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
     _is_valid = false;
     return;
   }
-  
+
   // skip version number
   read_float(_file);
 
@@ -368,13 +381,13 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   } else if (channel == RGB_CHANNEL) {
     // Three components in the first part: RGB.
     soft_color = rgb;
-    
+
     if (chained) {
       if (!read_channel_pkt(_file, chained, size, alpha_ctype, channel)) {
         _is_valid = false;
         return;
       }
-      
+
       if (channel == ALPHA_CHANNEL) {
         // Alpha component in the second part: RGBA.
         soft_color = rgb_a;
@@ -386,7 +399,7 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   case rgb:
     _num_channels = 3;
     break;
-    
+
   case rgba:
   case rgb_a:
     _num_channels = 4;
@@ -451,14 +464,14 @@ read_row(xel *row_data, xelval *alpha_data) {
       return false;
     }
     break;
-    
+
   case rgba:
     if (!read_scanline(row_data, alpha_data, _x_size, _file,
                        read_rgba, rgb_ctype)) {
       return false;
     }
     break;
-    
+
   case rgb_a:
     if (!read_scanline(row_data, alpha_data, _x_size, _file,
                        read_rgb, rgb_ctype)) {
@@ -479,7 +492,7 @@ read_row(xel *row_data, xelval *alpha_data) {
 
 
 static void
-write_channel_pkt(FILE *file, 
+write_channel_pkt(FILE *file,
                  int chained, int size, int type, int channel) {
   write_uchar(file, chained);
   write_uchar(file, size);
@@ -528,7 +541,7 @@ write_diff(xel *row_data, xelval *alpha_data, FILE *file,
            int tox, int length) {
   if (length>0) {
     nassertv(length<=128);
-    
+
     write_uchar(file, length-1);
     while (length>0) {
       length--;
@@ -544,18 +557,18 @@ write_same(xel *row_data, xelval *alpha_data, FILE *file,
            int tox, int length) {
   if (length==1) {
     write_diff(row_data, alpha_data, file, write_data, tox, length);
-    
+
   } else if (length>0) {
     if (length<128) {
       write_uchar(file, length+127);
     } else {
       write_uchar(file, 128);
       write_ushort(file, length);
-    } 
+    }
     write_data(row_data, alpha_data, file, tox);
   }
 }
-  
+
 
 static void
 write_scanline(xel *row_data, xelval *alpha_data, int cols, FILE *file,
@@ -609,7 +622,7 @@ write_scanline(xel *row_data, xelval *alpha_data, int cols, FILE *file,
         int excess = run_length - 128;
         write_diff(row_data, alpha_data, file, write_data, x-excess-1, 128);
         run_length = excess;
-      
+
       } else if (run_length > 2 &&
                  compare_data(row_data, alpha_data, x, x-1) &&
                  compare_data(row_data, alpha_data, x, x-2)) {
@@ -650,7 +663,7 @@ write_scanline(xel *row_data, xelval *alpha_data, int cols, FILE *file,
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeSoftImage::Writer::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeSoftImage::Writer::
 Writer(PNMFileType *type, FILE *file, bool owns_file) :
@@ -735,15 +748,15 @@ bool PNMFileTypeSoftImage::Writer::
 write_row(xel *row_data, xelval *alpha_data) {
   if (is_grayscale()) {
     write_scanline(row_data, alpha_data, _x_size, _file, compare_gray, write_gray);
-    
+
   } else {
     write_scanline(row_data, alpha_data, _x_size, _file, compare_rgb, write_rgb);
   }
-  
+
   if (has_alpha()) {
     write_scanline(row_data, alpha_data, _x_size, _file, compare_alpha, write_alpha);
   }
-  
+
   return !ferror(_file);
 }
 

@@ -1,6 +1,19 @@
 // Filename: geomSprite.I
 // Created by:  charles (18Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
@@ -9,8 +22,8 @@
 // Description :
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomSprite::
-set_texture(Texture *tex) { 
-  _texture = tex; 
+set_texture(Texture *tex) {
+  _texture = tex;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -19,8 +32,8 @@ set_texture(Texture *tex) {
 // Description :
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *GeomSprite::
-get_texture(void) const { 
-  return _texture; 
+get_texture(void) const {
+  return _texture;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -29,8 +42,8 @@ get_texture(void) const {
 // Description :
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomSprite::
-set_alpha_disable(bool a) { 
-  _alpha_disable = a; 
+set_alpha_disable(bool a) {
+  _alpha_disable = a;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -39,8 +52,8 @@ set_alpha_disable(bool a) {
 // Description :
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomSprite::
-get_alpha_disable(void) const { 
-  return _alpha_disable; 
+get_alpha_disable(void) const {
+  return _alpha_disable;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -50,7 +63,7 @@ get_alpha_disable(void) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomSprite::
 set_x_texel_ratio(PTA_float x_texel_ratio, GeomBindType x_bind_type) {
-  _x_texel_ratio = x_texel_ratio; 
+  _x_texel_ratio = x_texel_ratio;
   _x_bind_type = x_bind_type;
 }
 

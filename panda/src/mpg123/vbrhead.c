@@ -1,6 +1,20 @@
-/*
- * This checks for the VBR Header defined by Xing(tm)
- */
+/* Filename: vbrhead.c
+ * Created by:  
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ * PANDA 3D SOFTWARE
+ * Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+ *
+ * All use of this software is subject to the terms of the Panda 3d
+ * Software license.  You should have received a copy of this license
+ * along with this source code; you will also find a current copy of
+ * the license at http://www.panda3d.org/license.txt .
+ *
+ * To contact the maintainers of this program write to
+ * panda3d@yahoogroups.com .
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "mpg123.h"
 
@@ -15,7 +29,7 @@ static unsigned long get32bits(unsigned char *buf) {
     return ret;
 }
 
-int getVBRHeader(struct vbrHeader *head,unsigned char *buf, struct frame *fr) 
+int getVBRHeader(struct vbrHeader *head,unsigned char *buf, struct frame *fr)
 {
     int ssize;
 
@@ -31,20 +45,20 @@ int getVBRHeader(struct vbrHeader *head,unsigned char *buf, struct frame *fr)
     buf += ssize;
 
     if(( buf[0] != 'X' ) || ( buf[1] != 'i' ) ||
-       ( buf[2] != 'n' ) || ( buf[3] != 'g' ) ) 
+       ( buf[2] != 'n' ) || ( buf[3] != 'g' ) )
         return 0;
     buf+=4;
-    
+
     head->flags = get32bits(buf);
     buf+=4;
-    
+
     if(head->flags & VBR_FRAMES_FLAG) {
         head->frames = get32bits(buf);
         buf += 4;
     }
 
     if(head->flags & VBR_BYTES_FLAG) {
-        head->bytes  = get32bits(buf); 
+        head->bytes  = get32bits(buf);
         buf += 4;
     }
 

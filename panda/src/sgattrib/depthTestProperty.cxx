@@ -1,6 +1,19 @@
 // Filename: depthTestProperty.cxx
 // Created by:  drose (22Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "depthTestProperty.h"
@@ -30,7 +43,7 @@ operator << (ostream &out, DepthTestProperty::Mode mode) {
 
   case DepthTestProperty::M_not_equal:
     return out << "not_equal";
- 
+
   case DepthTestProperty::M_greater_equal:
     return out << "greater_equal";
 
@@ -66,7 +79,7 @@ read_datagram(DatagramIterator &source) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DepthTestProperty::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DepthTestProperty::
 output(ostream &out) const {

@@ -1,13 +1,26 @@
 // Filename: builderPrim.I
 // Created by:  drose (11Jan01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderPrim::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE BuilderPrim::
 BuilderPrim() {
@@ -16,7 +29,7 @@ BuilderPrim() {
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderPrim::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE BuilderPrim::
 BuilderPrim(const BuilderPrim &copy) :
@@ -26,18 +39,18 @@ BuilderPrim(const BuilderPrim &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderPrim::Copy Assignment
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE BuilderPrim &BuilderPrim::
 operator = (const BuilderPrim &copy) {
-  BuilderPrimTempl<BuilderVertex>::operator = (copy);  
+  BuilderPrimTempl<BuilderVertex>::operator = (copy);
   return *this;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderPrimI::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE BuilderPrimI::
 BuilderPrimI() {
@@ -46,7 +59,7 @@ BuilderPrimI() {
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderPrimI::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE BuilderPrimI::
 BuilderPrimI(const BuilderPrimI &copy) :
@@ -56,10 +69,10 @@ BuilderPrimI(const BuilderPrimI &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderPrimI::Copy Assignment
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE BuilderPrimI &BuilderPrimI::
 operator = (const BuilderPrimI &copy) {
-  BuilderPrimTempl<BuilderVertexI>::operator = (copy);  
+  BuilderPrimTempl<BuilderVertexI>::operator = (copy);
   return *this;
 }

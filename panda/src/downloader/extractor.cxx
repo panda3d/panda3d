@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "extractor.h"
 #include "config_downloader.h"
@@ -41,7 +50,7 @@ Extractor(PT(Buffer) buffer) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Extractor::Constructor
-//       Access: Private 
+//       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Extractor::
@@ -66,14 +75,14 @@ Extractor::
 ////////////////////////////////////////////////////////////////////
 //     Function: Extractor::initiate
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int Extractor::
 initiate(Filename &source_file, const Filename &rel_path) {
 
   if (_initiated == true) {
     downloader_cat.error()
-      << "Extractor::initiate() - Extraction has already been initiated" 
+      << "Extractor::initiate() - Extraction has already been initiated"
       << endl;
     return EU_error_abort;
   }
@@ -83,10 +92,10 @@ initiate(Filename &source_file, const Filename &rel_path) {
   _source_file.set_binary();
   if (!_source_file.open_read(_read_stream)) {
     downloader_cat.error()
-      << "Extractor::extract() - Error opening source file: " 
+      << "Extractor::extract() - Error opening source file: "
       << _source_file << " : " << strerror(errno) << endl;
     return get_write_error();
-  } 
+  }
 
   _rel_path = rel_path;
 
@@ -105,14 +114,14 @@ initiate(Filename &source_file, const Filename &rel_path) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Extractor::cleanup
-//       Access: Private 
-//  Description: 
+//       Access: Private
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Extractor::
 cleanup(void) {
   if (_initiated == false) {
     downloader_cat.error()
-      << "Extractor::cleanup() - Extraction has not been initiated" 
+      << "Extractor::cleanup() - Extraction has not been initiated"
       << endl;
     return;
   }
@@ -127,13 +136,13 @@ cleanup(void) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Extractor::run
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int Extractor::
 run(void) {
   if (_initiated == false) {
     downloader_cat.error()
-      << "Extractor::run() - Extraction has not been initiated" 
+      << "Extractor::run() - Extraction has not been initiated"
       << endl;
     return EU_error_abort;
   }
@@ -169,7 +178,7 @@ run(void) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Extractor::extract
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool Extractor::
 extract(Filename &source_file, const Filename &rel_path) {

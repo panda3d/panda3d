@@ -2,6 +2,19 @@
 // Created by:  drose (18Feb00)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef FINDAPPROXLEVEL_H
 #define FINDAPPROXLEVEL_H
@@ -34,10 +47,10 @@ public:
 
   INLINE bool next_is_stashed() const;
 
-  void consider_node(NodePathCollection &result, FindApproxLevel &next_level, 
+  void consider_node(NodePathCollection &result, FindApproxLevel &next_level,
                      int max_matches, TypeHandle graph_type) const;
   void consider_next_step(NodePathCollection &result,
-                          NodeRelation *arc, FindApproxLevel &next_level, 
+                          NodeRelation *arc, FindApproxLevel &next_level,
                           int max_matches, TypeHandle graph_type) const;
   INLINE bool is_solution() const;
 

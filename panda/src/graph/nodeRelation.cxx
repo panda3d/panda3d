@@ -1,6 +1,20 @@
 // Filename: nodeRelation.cxx
 // Created by:  drose (26Oct98)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #include "nodeRelation.h"
 #include "node.h"
@@ -202,7 +216,7 @@ static bool
 internal_insert_arc(ArcList &alist, NodeRelation *arc) {
   nassertr(arc != (NodeRelation *)NULL, false);
 
-  TYPENAME ArcList::iterator position = 
+  TYPENAME ArcList::iterator position =
     find_insert_position(alist.begin(), alist.end(), arc);
   nassertr(position >= alist.begin() && position <= alist.end(), false);
 
@@ -235,7 +249,7 @@ static bool
 internal_remove_arc(ArcList &alist, NodeRelation *arc) {
   nassertr(arc != (NodeRelation *)NULL, false);
 
-  TYPENAME ArcList::iterator position = 
+  TYPENAME ArcList::iterator position =
     find_arc(alist.begin(), alist.end(), arc);
   nassertr(position >= alist.begin() && position <= alist.end(), false);
   nassertr(position != alist.end(), false);
@@ -270,7 +284,7 @@ internal_remove_arc(ArcList &alist, NodeRelation *arc) {
 ////////////////////////////////////////////////////////////////////
 NodeRelation::
 NodeRelation(Node *parent, Node *to, int sort, TypeHandle graph_type) :
-  _parent(parent), _child(to), _sort(sort), 
+  _parent(parent), _child(to), _sort(sort),
   _graph_type(graph_type), _num_transitions(0)
 {
   _top_subtree = NULL;
@@ -326,7 +340,7 @@ operator = (const NodeRelation &) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeRelation::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NodeRelation::
 ~NodeRelation() {
@@ -470,7 +484,7 @@ void NodeRelation::
 copy_transitions_from(const NodeTransitions &trans) {
   if (!trans.is_empty()) {
     _transitions.copy_transitions_from(trans, this);
-  
+
     // Now mark that *all* transitions have changed, even though many
     // of them might not have, because we're not really sure.
     _net_transitions.clear();
@@ -495,7 +509,7 @@ void NodeRelation::
 compose_transitions_from(const NodeTransitions &trans) {
   if (!trans.is_empty()) {
     _transitions.compose_transitions_from(trans, this);
-  
+
     // Now mark that *all* transitions have changed, even though many
     // of them might not have, because we're not really sure.
     _net_transitions.clear();
@@ -614,21 +628,21 @@ attach() {
 
   if (parent_connection == (NodeConnection *)NULL) {
     graph_cat.error()
-      << "Attempt to attach " << _parent << " simultaneously to more than " 
+      << "Attempt to attach " << _parent << " simultaneously to more than "
       << max_node_graphs << " different graph types.\n";
     nassertv(false);
   }
 
   if (child_connection == (NodeConnection *)NULL) {
     graph_cat.error()
-      << "Attempt to attach " << _child << " simultaneously to more than " 
+      << "Attempt to attach " << _child << " simultaneously to more than "
       << max_node_graphs << " different graph types.\n";
     nassertv(false);
   }
 
   DownRelationPointers &parent_list = parent_connection->get_down();
   UpRelationPointers &child_list = child_connection->get_up();
-  
+
   bool inserted_one = internal_insert_arc(parent_list, this);
   bool inserted_two = internal_insert_arc(child_list, this);
   nassertv(inserted_one && inserted_two);
@@ -818,7 +832,7 @@ recompute_bound() {
 
   child_volumes.push_back(&node->get_bound());
 
-  const DownRelationPointers &drp = 
+  const DownRelationPointers &drp =
     node->find_connection(_graph_type).get_down();
   DownRelationPointers::const_iterator drpi;
   for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
@@ -827,7 +841,7 @@ recompute_bound() {
 
   const BoundingVolume **child_begin = &child_volumes[0];
   const BoundingVolume **child_end = child_begin + child_volumes.size();
-  bool success = 
+  bool success =
     _bound->around(child_begin, child_end);
 
 
@@ -882,7 +896,7 @@ write_datagram(BamWriter *manager, Datagram &me)
 //     Function: NodeRelation::complete_pointers
 //       Access: Public
 //  Description: Takes in a vector of pointers to TypedWritable
-//               objects that correspond to all the requests for 
+//               objects that correspond to all the requests for
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int NodeRelation::
@@ -923,8 +937,8 @@ complete_pointers(vector_typedWritable &plist, BamReader *manager) {
     //at old code
     if (plist[i] == TypedWritable::Null)
     {
-      graph_cat->warning() 
-        << get_type().get_name() 
+      graph_cat->warning()
+        << get_type().get_name()
         << ": Ignoring null Transition" << endl;
     }
     else
@@ -1033,7 +1047,7 @@ get_type() const {
 TypeHandle NodeRelation::
 force_init_type() {
   init_type();
-  return get_class_type(); 
+  return get_class_type();
 }
 
 ////////////////////////////////////////////////////////////////////

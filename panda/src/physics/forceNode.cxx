@@ -1,6 +1,19 @@
 // Filename: forceNode.cxx
 // Created by:  charles (02Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "forceNode.h"
@@ -68,7 +81,7 @@ void ForceNode::
 add_forces_from(const ForceNode &other) {
   vector< PT(BaseForce) >::iterator last = _forces.end() - 1;
 
-  _forces.insert(_forces.end(), 
+  _forces.insert(_forces.end(),
                  other._forces.begin(), other._forces.end());
 
   for (; last != _forces.end(); last++)

@@ -1,13 +1,26 @@
 // Filename: datagramIterator.I
 // Created by:  drose (08May01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramIterator::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE DatagramIterator::
 DatagramIterator() :
@@ -19,7 +32,7 @@ DatagramIterator() :
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramIterator::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE DatagramIterator::
 DatagramIterator(const Datagram &datagram, size_t offset) :
@@ -32,7 +45,7 @@ DatagramIterator(const Datagram &datagram, size_t offset) :
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramIterator::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE DatagramIterator::
 DatagramIterator(const DatagramIterator &copy) :
@@ -44,7 +57,7 @@ DatagramIterator(const DatagramIterator &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramIterator::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void DatagramIterator::
 operator = (const DatagramIterator &copy) {
@@ -55,7 +68,7 @@ operator = (const DatagramIterator &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramIterator::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE DatagramIterator::
 ~DatagramIterator() {

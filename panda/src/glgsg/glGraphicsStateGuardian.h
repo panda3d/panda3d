@@ -2,6 +2,19 @@
 // Created by:  drose (02Feb99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef GLGRAPHICSSTATEGUARDIAN_H
 #define GLGRAPHICSSTATEGUARDIAN_H
@@ -65,7 +78,7 @@ public:
   virtual void render_frame(const AllAttributesWrapper &initial_state);
   virtual void render_scene(Node *root, ProjectionNode *projnode,
                             const AllAttributesWrapper &initial_state);
-  virtual void render_subgraph(RenderTraverser *traverser, 
+  virtual void render_subgraph(RenderTraverser *traverser,
                                Node *subgraph, ProjectionNode *projnode,
                                const AllAttributesWrapper &initial_state,
                                const AllTransitionsWrapper &net_trans);
@@ -248,7 +261,7 @@ protected:
   void build_phony_mipmaps(Texture *tex);
   void build_phony_mipmap_level(int level, int xsize, int ysize);
 #endif
-  
+
   GLclampf _clear_color_red, _clear_color_green, _clear_color_blue,
     _clear_color_alpha;
   GLclampd _clear_depth;

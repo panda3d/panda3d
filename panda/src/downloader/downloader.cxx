@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "downloader.h"
 #include "config_downloader.h"
@@ -30,7 +39,7 @@ const int MAX_RECEIVE_BYTES = 16384;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Downloader::Constructor
-//       Access: Published 
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Downloader::
@@ -142,7 +151,7 @@ connect_to_server(void) {
     return get_network_error();
   }
 
-  if (connect(_socket, (struct sockaddr *)&_sin, sizeof(_sin)) == 
+  if (connect(_socket, (struct sockaddr *)&_sin, sizeof(_sin)) ==
                                                         SOCKET_ERROR) {
     downloader_cat.error()
       << "Downloader::connect_to_server() - connect() failed: "
@@ -201,7 +210,7 @@ safe_send(int socket, const char *data, int length, long timeout) {
       return EU_error_network_timeout;
     } else if (sret == -1) {
       downloader_cat.error()
-        << "Downloader::safe_send() - error: " << handle_socket_error() 
+        << "Downloader::safe_send() - error: " << handle_socket_error()
         << endl;
       return get_network_error();
     }
@@ -210,7 +219,7 @@ safe_send(int socket, const char *data, int length, long timeout) {
       bytes += ret;
     else {
       downloader_cat.error()
-        << "Downloader::safe_send() - error: " << handle_socket_error() 
+        << "Downloader::safe_send() - error: " << handle_socket_error()
         << endl;
       return get_network_error();
     }
@@ -245,7 +254,7 @@ fast_receive(int socket, DownloadStatus *status, int rec_size) {
     return EU_network_no_data;
   } else if (sret == -1) {
     downloader_cat.error()
-      << "Downloader::fast_receive() - select() error: " 
+      << "Downloader::fast_receive() - select() error: "
       << handle_socket_error() << endl;
     return get_network_error();
   }
@@ -254,7 +263,7 @@ fast_receive(int socket, DownloadStatus *status, int rec_size) {
     return EU_eof;
   } else if (ret == -1) {
     downloader_cat.error()
-      << "Downloader::fast_receive() - recv() error: " 
+      << "Downloader::fast_receive() - recv() error: "
       << handle_socket_error() << endl;
     return get_network_error();
   }
@@ -417,7 +426,7 @@ cleanup(void) {
     return;
   }
 
-  // The "Connection: close" line tells the server to close the 
+  // The "Connection: close" line tells the server to close the
   // connection when the download is complete
   disconnect_from_server();
   _dest_stream.close();
@@ -457,7 +466,7 @@ run(void) {
   if (_tfirst == 0.0) {
     _tfirst = t0;
   }
-  if (t0 - _tlast < _frequency) 
+  if (t0 - _tlast < _frequency)
     return EU_ok;
 
   // Recompute the buffer size if necessary
@@ -508,7 +517,7 @@ run(void) {
     int remain = (int)fmod((double)_receive_size, (double)MAX_RECEIVE_BYTES);
     if (downloader_cat.is_debug())
       downloader_cat.debug()
-        << "Downloader::run() - fast connection - repeat: " << repeat 
+        << "Downloader::run() - fast connection - repeat: " << repeat
         << " remain: " << remain << endl;
     // Make multiple requests at once but do not exceed MAX_RECEIVE_BYTES
     // for any single request
@@ -577,7 +586,7 @@ run_to_ram(void) {
   if (_tfirst == 0.0) {
     _tfirst = t0;
   }
-  if (t0 - _tlast < _frequency) 
+  if (t0 - _tlast < _frequency)
     return EU_ok;
 
   // Recompute the buffer size if necessary
@@ -607,7 +616,7 @@ run_to_ram(void) {
     _tfirst = t0;
     _current_status->_total_bytes = 0;
 
-  } else if (_current_status->_bytes_in_buffer + _receive_size > 
+  } else if (_current_status->_bytes_in_buffer + _receive_size >
                                                 ((unsigned int)_disk_buffer_size)) {
 
     // Flush the current buffer if the next request would overflow it
@@ -628,7 +637,7 @@ run_to_ram(void) {
     int remain = (int)fmod((double)_receive_size, (double)MAX_RECEIVE_BYTES);
     if (downloader_cat.is_debug())
       downloader_cat.debug()
-        << "Downloader::run_to_ram() - fast connection - repeat: " << repeat 
+        << "Downloader::run_to_ram() - fast connection - repeat: " << repeat
         << " remain: " << remain << endl;
     // Make multiple requests at once but do not exceed MAX_RECEIVE_BYTES
     // for any single request
@@ -975,7 +984,7 @@ get_ramfile(Ramfile &rfile) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Downloader::DownloadStatus::
-DownloadStatus(char *buffer, int first_byte, int last_byte, 
+DownloadStatus(char *buffer, int first_byte, int last_byte,
                                 int total_bytes, bool partial_content) {
   _first_line_complete = false;
   _header_is_complete = false;

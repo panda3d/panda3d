@@ -1,6 +1,19 @@
-// Filename: builderFuncs.cxx
+// Filename: builderFuncs.I
 // Created by:  drose (09Sep97)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "builderPrim.h"
@@ -28,7 +41,7 @@ struct DecompVtx {
 ////////////////////////////////////////////////////////////////////
 template <class PrimType, class OutputIterator>
 static bool
-decomp_concave(const PrimType &prim, BuilderBucket &bucket, 
+decomp_concave(const PrimType &prim, BuilderBucket &bucket,
                OutputIterator result,
                int asum, int x, int y) {
 #define VX(p, c)    p->coord[c]
@@ -43,7 +56,7 @@ decomp_concave(const PrimType &prim, BuilderBucket &bucket,
 
   int num_verts = prim.get_num_verts();
   nassertr(num_verts >= 3, false);
-  
+
   /* Make linked list of verts */
   vert = (DecompVtx *) alloca(sizeof(DecompVtx));
   vert->index = 0;
@@ -73,9 +86,9 @@ decomp_concave(const PrimType &prim, BuilderBucket &bucket,
 
   while (p0 != p2->next) {
     /* Polygon is self-intersecting so punt */
-    if (chek && 
-        m[0] == p0 && 
-        m[1] == p1 && 
+    if (chek &&
+        m[0] == p0 &&
+        m[1] == p1 &&
         m[2] == p2) {
 
       //      builder_cat.info() << "Could not decompose concave polygon!";
@@ -88,9 +101,9 @@ decomp_concave(const PrimType &prim, BuilderBucket &bucket,
     b[0] = VX(p2, x) - VX(p1, x);
     a[2] = VX(p0, y) - VX(p1, y);
     b[2] = VX(p1, x) - VX(p0, x);
-    
+
     csum = ((b[0] * a[2] - b[2] * a[0] >= 0.0) ? 1 : 0);
-    
+
     if (csum ^ asum) {
       /* current angle is concave */
       p0 = p1;
@@ -102,19 +115,19 @@ decomp_concave(const PrimType &prim, BuilderBucket &bucket,
       xmin = (VX(p0, x) < VX(p1, x)) ? VX(p0, x) : VX(p1, x);
       if (xmin > VX(p2, x))
         xmin = VX(p2, x);
-      
+
       xmax = (VX(p0, x) > VX(p1, x)) ? VX(p0, x) : VX(p1, x);
       if (xmax < VX(p2, x))
         xmax = VX(p2, x);
-      
+
       ymin = (VX(p0, y) < VX(p1, y)) ? VX(p0, y) : VX(p1, y);
       if (ymin > VX(p2, y))
         ymin = VX(p2, y);
-      
+
       ymax = (VX(p0, y) > VX(p1, y)) ? VX(p0, y) : VX(p1, y);
       if (ymax < VX(p2, y))
         ymax = VX(p2, y);
-      
+
       for (init = 1, t0 = p2->next; t0 != p0; t0 = t0->next) {
         if (VX(t0, x) >= xmin && VX(t0, x) <= xmax &&
             VX(t0, y) >= ymin && VX(t0, y) <= ymax) {
@@ -140,7 +153,7 @@ decomp_concave(const PrimType &prim, BuilderBucket &bucket,
           }
         }
       }
-      
+
       if (t0 != p0) {
         p0 = p1;
         p1 = p2;
@@ -186,12 +199,12 @@ decomp_concave(const PrimType &prim, BuilderBucket &bucket,
 ////////////////////////////////////////////////////////////////////
 template <class PrimType, class OutputIterator>
 static bool
-triangulate_poly(const PrimType &prim, BuilderBucket &bucket, 
+triangulate_poly(const PrimType &prim, BuilderBucket &bucket,
                  OutputIterator result) {
   BuilderV p0, p1, as;
   float dx1, dy1, dx2, dy2, max;
   int i, flag, asum, csum, index, x, y, v0, v1, v, even;
-  
+
   // First see if the polygon is just a triangle
   int num_verts = prim.get_num_verts();
   if (num_verts == 3) {
@@ -245,12 +258,12 @@ triangulate_poly(const PrimType &prim, BuilderBucket &bucket,
     x = 0;
     y = 1;
     break;
-    
+
   case 1:
     x = 0;
     y = 2;
     break;
-    
+
   case 2:
     x = 1;
     y = 2;
@@ -258,7 +271,7 @@ triangulate_poly(const PrimType &prim, BuilderBucket &bucket,
   }
 
   /* concave check */
-  p0 = prim.get_vertex(0).get_coord_value(bucket); 
+  p0 = prim.get_vertex(0).get_coord_value(bucket);
   p1 = prim.get_vertex(1).get_coord_value(bucket);
   dx1 = p1[x] - p0[x];
   dy1 = p1[y] - p0[y];
@@ -287,10 +300,10 @@ triangulate_poly(const PrimType &prim, BuilderBucket &bucket,
   v0 = 0;
   v1 = 1;
   v = num_verts - 1;
-  
+
   even = 1;
-  
-  /* 
+
+  /*
    * Convert to triangles only. Do not fan out from a single vertex
    * but zigzag into triangle strip.
    */
@@ -318,10 +331,10 @@ triangulate_poly(const PrimType &prim, BuilderBucket &bucket,
       v1 = v;
       v = v0 - 1;
     }
-    
+
     even = !even;
   }
-  
+
   return true;
 }
 
@@ -334,7 +347,7 @@ triangulate_poly(const PrimType &prim, BuilderBucket &bucket,
 ////////////////////////////////////////////////////////////////////
 template <class PrimType, class OutputIterator>
 static bool
-expand_polys(PrimType &prim, BuilderBucket &, 
+expand_polys(PrimType &prim, BuilderBucket &,
              OutputIterator result) {
   switch (prim.get_num_verts()) {
   case 0:
@@ -353,7 +366,7 @@ expand_polys(PrimType &prim, BuilderBucket &,
   default:
     prim.set_type(BPT_poly);
   }
-  
+
   *result++ = prim;
   return true;
 }
@@ -366,7 +379,7 @@ expand_polys(PrimType &prim, BuilderBucket &,
 ////////////////////////////////////////////////////////////////////
 template <class PrimType, class OutputIterator>
 static bool
-expand_points(const PrimType &prim, BuilderBucket &, 
+expand_points(const PrimType &prim, BuilderBucket &,
               OutputIterator result) {
   // Each vertex goes in its own primitive.
 
@@ -388,7 +401,7 @@ expand_points(const PrimType &prim, BuilderBucket &,
 ////////////////////////////////////////////////////////////////////
 template <class PrimType, class OutputIterator>
 static bool
-expand_lines(const PrimType &prim, BuilderBucket &, 
+expand_lines(const PrimType &prim, BuilderBucket &,
              OutputIterator result) {
   // Each line segment goes in its own primitive.  This breaks up the
   // linestrips already defined; we'll re-strip them later if the
@@ -606,12 +619,12 @@ build_geoms(InputIterator first, InputIterator last,
     geom = new GeomPolygon;
     want_lengths = true;
     break;
-    
+
   case BPT_tristrip:
     geom = new GeomTristrip;
     want_lengths = true;
     break;
-    
+
   case BPT_trifan:
     geom = new GeomTrifan;
     want_lengths = true;
@@ -650,12 +663,12 @@ build_geoms(InputIterator first, InputIterator last,
       num_prims++;
     }
   }
-  
+
   if (num_prims==0) {
     builder_cat.error() << "All primitives were invalid!\n";
     return 0;
   }
-  
+
   if (want_lengths) {
     lengths = PTA_int(num_prims);
     j = 0;
@@ -706,7 +719,7 @@ build_geoms(InputIterator first, InputIterator last,
           colors.push_back((*i).get_component(c).get_color());
         }
       }
-      
+
       if (bind_normals == G_PER_PRIM) {
         normals.push_back((*i).get_normal());
       }
@@ -726,11 +739,11 @@ build_geoms(InputIterator first, InputIterator last,
   // Now add all the stuff to our Geom.
 
   geom->set_num_prims(num_prims);
-  
+
   if (lengths != (int *)NULL) {
     geom->set_lengths(lengths);
   }
-  
+
   PrimType::fill_geom(geom, coords,
                       bind_normals, normals,
                       bind_texcoords, texcoords,
@@ -756,7 +769,7 @@ build_geoms(InputIterator first, InputIterator last,
   if (new_geom != (Geom *)NULL) {
     geom_node->add_geom(new_geom);
   }
-  
+
   return 1;
 }
 

@@ -1,6 +1,19 @@
 // Filename: rotate_to_src.cxx
 // Created by:  drose (04Nov99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
@@ -10,7 +23,7 @@
 //               normalized.
 ////////////////////////////////////////////////////////////////////
 static void
-_rotate_to(FLOATNAME(LMatrix3) &mat, 
+_rotate_to(FLOATNAME(LMatrix3) &mat,
            const FLOATNAME(LVector3) &a, const FLOATNAME(LVector3) &b) {
   FLOATTYPE cos_theta = a.dot(b);
 
@@ -28,7 +41,7 @@ _rotate_to(FLOATNAME(LMatrix3) &mat,
       FLOATNAME(LVector3) lca(0., 0., 0.);
       lca[absa[0]<=absa[1] ? absa[0]<=absa[2] ? 0 : 2
          : absa[1]<=absa[2] ? 1 : 2] = 1.0f;
-      
+
       axis = normalize(a.cross(lca));
     } else {
       mat = FLOATNAME(LMatrix3)::ident_mat();
@@ -43,7 +56,7 @@ _rotate_to(FLOATNAME(LMatrix3) &mat,
   FLOATTYPE x = axis[0];
   FLOATTYPE y = axis[1];
   FLOATTYPE z = axis[2];
-    
+
   FLOATTYPE t = 1.0f - cos_theta;
 
   mat(0, 0) = t * x * x + cos_theta;

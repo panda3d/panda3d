@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "glutGraphicsWindow.h"
 #include "glutGraphicsPipe.h"
@@ -34,7 +43,7 @@ glutGraphicsWindow* glutGraphicsWindow::_global_window;
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-glutGraphicsWindow::glutGraphicsWindow( GraphicsPipe* pipe ) : 
+glutGraphicsWindow::glutGraphicsWindow( GraphicsPipe* pipe ) :
         GraphicsWindow( pipe )
 {
     _global_window = this;
@@ -46,7 +55,7 @@ glutGraphicsWindow::glutGraphicsWindow( GraphicsPipe* pipe ) :
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-glutGraphicsWindow::glutGraphicsWindow( GraphicsPipe* pipe, const 
+glutGraphicsWindow::glutGraphicsWindow( GraphicsPipe* pipe, const
         GraphicsWindow::Properties& props ) : GraphicsWindow( pipe, props )
 {
     _global_window = this;
@@ -62,7 +71,7 @@ glutGraphicsWindow::~glutGraphicsWindow(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: config 
+//     Function: config
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -73,12 +82,12 @@ void glutGraphicsWindow::config( void )
   glutInitWindowSize( _props._xsize, _props._ysize );
   _handle = glutCreateWindow( _props._title.c_str() );
   glutReshapeFunc( glut_handle_reshape );
-  
+
   // Mouse callbacks
   glutMouseFunc( glut_handle_mouse_input );
   glutMotionFunc( glut_handle_mouse_motion );
   glutPassiveMotionFunc( glut_handle_mouse_motion );
-  
+
   // Keyboard callbacks
   glutKeyboardFunc( glut_handle_ascii_keyboard_input );
   glutSpecialFunc( glut_handle_special_keyboard_input );
@@ -93,7 +102,7 @@ void glutGraphicsWindow::config( void )
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: end_frame 
+//     Function: end_frame
 //       Access:
 //  Description: Swaps the front and back buffers.
 ////////////////////////////////////////////////////////////////////
@@ -108,7 +117,7 @@ void glutGraphicsWindow::end_frame( void )
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: handle_reshape 
+//     Function: handle_reshape
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -123,7 +132,7 @@ void glutGraphicsWindow::handle_reshape( int w, int h )
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void glutGraphicsWindow::handle_mouse_input( int button, int state, 
+void glutGraphicsWindow::handle_mouse_input( int button, int state,
         int x, int y )
 {
   _input_devices[0].set_pointer_in_window(x, y);
@@ -284,7 +293,7 @@ make_GlutGraphicsWindow(const FactoryParams &params) {
   }
 
   GraphicsPipe *pipe = pipe_param->get_pipe();
-  
+
   GraphicsWindow::WindowProps *props_param;
   if (!get_param_into(props_param, params)) {
     return new glutGraphicsWindow(pipe);

@@ -1,6 +1,19 @@
 // Filename: cullFaceProperty.cxx
 // Created by:  drose (23Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "cullFaceProperty.h"
@@ -29,7 +42,7 @@ operator << (ostream &out, CullFaceProperty::Mode mode) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CullFaceProperty::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CullFaceProperty::
 output(ostream &out) const {
@@ -43,7 +56,7 @@ output(ostream &out) const {
 //               this object to a Datagram
 ////////////////////////////////////////////////////////////////////
 void CullFaceProperty::
-write_datagram(Datagram &destination) 
+write_datagram(Datagram &destination)
 {
   destination.add_uint8(_mode);
 }
@@ -55,7 +68,7 @@ write_datagram(Datagram &destination)
 //               this object out of a Datagram
 ////////////////////////////////////////////////////////////////////
 void CullFaceProperty::
-read_datagram(DatagramIterator &source) 
+read_datagram(DatagramIterator &source)
 {
   _mode = (enum Mode) source.get_uint8();
 }

@@ -1,6 +1,19 @@
 // Filename: chancfg.cxx
 // Created by:  cary (02Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "chancfg.h"
@@ -229,7 +242,7 @@ void ChanEval(GraphicsWindow* win, WindowItem& W, LayoutItem& L, SVec& S,
       }
       ChanViewport v2(ChanScaleViewport(v, (*k).getViewport()));
       PT(GraphicsLayer) layer = chan->make_layer();
-      PT(DisplayRegion) dr = 
+      PT(DisplayRegion) dr =
     layer->make_display_region(v2.left(), v2.right(),
                    v2.bottom(), v2.top());
       if (want_cameras && camera_node != (Node *)NULL) {
@@ -258,7 +271,7 @@ void ChanEval(GraphicsWindow* win, WindowItem& W, LayoutItem& L, SVec& S,
 
     // take care of the orientation
     PT(TransformTransition) orient;
-      
+
     switch ((*k).getOrientation()) {
     case SetupItem::Up:
       break;
@@ -379,7 +392,7 @@ PT(GraphicsWindow) ChanConfig(GraphicsPipe* pipe, std::string cfg,
 
   // make channels and display regions
   ChanViewport V(0., 1., 0., 1.);
-  ChanEval(win, W, L, S, V, W.getChanOffset()+1, sizeX, sizeY, 
+  ChanEval(win, W, L, S, V, W.getChanOffset()+1, sizeX, sizeY,
        camera_node, render, want_cameras);
 
   // sanity check
@@ -433,7 +446,7 @@ PT(GraphicsWindow) ChanConfig(GraphicsPipe* pipe, std::string cfg,
       }
     }
   }
-    
+
   return win;
 }
 

@@ -1,6 +1,19 @@
 // Filename: queuedConnectionListener.cxx
 // Created by:  drose (09Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "queuedConnectionListener.h"
@@ -9,7 +22,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: QueuedConnectionListener::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 QueuedConnectionListener::
 QueuedConnectionListener(ConnectionManager *manager, int num_threads) :
@@ -20,7 +33,7 @@ QueuedConnectionListener(ConnectionManager *manager, int num_threads) :
 ////////////////////////////////////////////////////////////////////
 //     Function: QueuedConnectionListener::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 QueuedConnectionListener::
 ~QueuedConnectionListener() {
@@ -64,7 +77,7 @@ new_connection_available() {
 //               QueuedConnectionListener).
 ////////////////////////////////////////////////////////////////////
 bool QueuedConnectionListener::
-get_new_connection(PT(Connection) &rendezvous, 
+get_new_connection(PT(Connection) &rendezvous,
                    NetAddress &address,
                    PT(Connection) &new_connection) {
   ConnectionListenerData result;
@@ -92,8 +105,8 @@ get_new_connection(PT(Connection) &new_connection) {
   NetAddress address;
   return get_new_connection(rendezvous, address, new_connection);
 }
-  
-  
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: QueuedConnectionListener::connection_opened
 //       Access: Protected, Virtual
@@ -103,16 +116,16 @@ get_new_connection(PT(Connection) &new_connection) {
 //               for later retrieval by get_new_connection().
 ////////////////////////////////////////////////////////////////////
 void QueuedConnectionListener::
-connection_opened(const PT(Connection) &rendezvous, 
+connection_opened(const PT(Connection) &rendezvous,
                   const NetAddress &address,
                   const PT(Connection) &new_connection) {
   ConnectionListenerData nc;
   nc._rendezvous = rendezvous;
   nc._address = address;
   nc._new_connection = new_connection;
-  
+
   if (!enqueue_thing(nc)) {
-    net_cat.error() 
+    net_cat.error()
       << "QueuedConnectionListener queue full!\n";
   }
 }

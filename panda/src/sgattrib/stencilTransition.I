@@ -1,15 +1,28 @@
 // Filename: stencilTransition.I
 // Created by:  drose (23Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StencilTransition::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE StencilTransition::
-StencilTransition(StencilProperty::Mode mode, 
+StencilTransition(StencilProperty::Mode mode,
                   StencilProperty::Action action) :
   _value(mode, action)
 {
@@ -18,7 +31,7 @@ StencilTransition(StencilProperty::Mode mode,
 ////////////////////////////////////////////////////////////////////
 //     Function: StencilTransition::set_mode
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void StencilTransition::
 set_mode(StencilProperty::Mode mode) {
@@ -29,7 +42,7 @@ set_mode(StencilProperty::Mode mode) {
 ////////////////////////////////////////////////////////////////////
 //     Function: StencilTransition::get_mode
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE StencilProperty::Mode StencilTransition::
 get_mode() const {
@@ -39,7 +52,7 @@ get_mode() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: StencilTransition::set_action
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void StencilTransition::
 set_action(StencilProperty::Action action) {
@@ -50,7 +63,7 @@ set_action(StencilProperty::Action action) {
 ////////////////////////////////////////////////////////////////////
 //     Function: StencilTransition::get_action
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE StencilProperty::Action StencilTransition::
 get_action() const {

@@ -2,6 +2,19 @@
 // Created by:  drose (01Mar99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef COMPUTEDVERTICES_H
 #define COMPUTEDVERTICES_H
@@ -47,8 +60,8 @@ private:
     Vertices _nindex;
     INLINE bool operator < (const VertexTransform &other) const;
   public:
-    void write_datagram(Datagram &dest);  
-    void read_datagram(DatagramIterator &source);  
+    void write_datagram(Datagram &dest);
+    void read_datagram(DatagramIterator &source);
   };
 
   typedef vector<VertexTransform> VertexTransforms;
@@ -71,7 +84,7 @@ private:
 
 public:
   static void register_with_read_factory(void);
-  virtual void write_datagram(BamWriter* manager, Datagram &me);  
+  virtual void write_datagram(BamWriter* manager, Datagram &me);
 
   static TypedWritable *make_ComputedVertices(const FactoryParams &params);
 

@@ -1,6 +1,19 @@
 // Filename: baseIntegrator.cxx
 // Created by:  charles (11Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "baseIntegrator.h"
@@ -36,7 +49,7 @@ BaseIntegrator::
 //               Physical doesn't have to wrt.
 ////////////////////////////////////////////////////////////////////
 void BaseIntegrator::
-precompute_linear_matrices(Physical *physical, 
+precompute_linear_matrices(Physical *physical,
                            const vector< PT(LinearForce) > &forces) {
   // make sure the physical's in the scene graph, somewhere.
   PhysicalNode *physical_node = physical->get_physical_node();
@@ -65,7 +78,7 @@ precompute_linear_matrices(Physical *physical,
     _precomputed_linear_matrices[index++] = current_xform;
   }
 
-  const vector< PT(LinearForce) > &force_vector = 
+  const vector< PT(LinearForce) > &force_vector =
     physical->get_linear_forces();
 
   // tally the local xforms
@@ -87,7 +100,7 @@ precompute_linear_matrices(Physical *physical,
 //               Physical doesn't have to wrt.
 ////////////////////////////////////////////////////////////////////
 void BaseIntegrator::
-precompute_angular_matrices(Physical *physical, 
+precompute_angular_matrices(Physical *physical,
                             const vector< PT(AngularForce) > &forces) {
   // make sure the physical's in the scene graph, somewhere.
   PhysicalNode *physical_node = physical->get_physical_node();
@@ -116,7 +129,7 @@ precompute_angular_matrices(Physical *physical,
     _precomputed_angular_matrices[index++] = current_xform;
   }
 
-  const vector< PT(AngularForce) > &force_vector = 
+  const vector< PT(AngularForce) > &force_vector =
     physical->get_angular_forces();
 
   // tally the local xforms

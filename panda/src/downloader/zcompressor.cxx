@@ -1,5 +1,18 @@
-/// Filename: zcompressor.cxx
+// Filename: zcompressor.cxx
 // Created by:  mike (09Jan97)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
 
@@ -70,8 +83,8 @@ compress(char *&next_in, int &avail_in, char *&next_out, int &avail_out,
 ////////////////////////////////////////////////////////////////////
 int ZCompressor::
 compress_to_stream(char *&next_in, int &avail_in, char *&next_out,
-                int &avail_out, char *out_buffer, 
-                int out_buffer_length, ofstream &write_stream, 
+                int &avail_out, char *out_buffer,
+                int out_buffer_length, ofstream &write_stream,
                 bool finish) {
   int ret = compress(next_in, avail_in, next_out, avail_out, finish);
   if (ret == S_error)
@@ -118,7 +131,7 @@ ZDecompressor::
 ////////////////////////////////////////////////////////////////////
 //     Function: ZDecompressor::decompress
 //       Access: Public
-//  Description: Decompress from next_in into next_out until avail_in 
+//  Description: Decompress from next_in into next_out until avail_in
 //               is 0 or avail_out is 0 or an error occurs.
 ////////////////////////////////////////////////////////////////////
 int ZDecompressor::
@@ -137,12 +150,12 @@ decompress(char *&next_in, int &avail_in, char *&next_out, int &avail_out,
 ////////////////////////////////////////////////////////////////////
 //     Function: ZDecompressor::decompress_to_stream
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int ZDecompressor::
 decompress_to_stream(char *&next_in, int &avail_in, char *&next_out,
-                int &avail_out, char *out_buffer, 
-                int out_buffer_length, ostream &write_stream, 
+                int &avail_out, char *out_buffer,
+                int out_buffer_length, ostream &write_stream,
                 bool finish) {
   int ret = decompress(next_in, avail_in, next_out, avail_out, finish);
   if (ret == S_error)

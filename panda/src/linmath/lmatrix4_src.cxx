@@ -1,6 +1,19 @@
 // Filename: lmatrix4_src.cxx
 // Created by:  drose (15Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 TypeHandle FLOATNAME(LMatrix4)::_type_handle;
@@ -136,28 +149,28 @@ almost_equal(const FLOATNAME(LMatrix4) &other, FLOATTYPE threshold) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(LMatrix4)::
 output(ostream &out) const {
-  out << "[ " 
+  out << "[ "
       << MAYBE_ZERO(_m.m._00) << " "
-      << MAYBE_ZERO(_m.m._01) << " " 
+      << MAYBE_ZERO(_m.m._01) << " "
       << MAYBE_ZERO(_m.m._02) << " "
       << MAYBE_ZERO(_m.m._03)
       << " ] [ "
       << MAYBE_ZERO(_m.m._10) << " "
-      << MAYBE_ZERO(_m.m._11) << " " 
+      << MAYBE_ZERO(_m.m._11) << " "
       << MAYBE_ZERO(_m.m._12) << " "
       << MAYBE_ZERO(_m.m._13)
       << " ] [ "
       << MAYBE_ZERO(_m.m._20) << " "
-      << MAYBE_ZERO(_m.m._21) << " " 
+      << MAYBE_ZERO(_m.m._21) << " "
       << MAYBE_ZERO(_m.m._22) << " "
       << MAYBE_ZERO(_m.m._23)
       << " ] [ "
       << MAYBE_ZERO(_m.m._30) << " "
-      << MAYBE_ZERO(_m.m._31) << " " 
+      << MAYBE_ZERO(_m.m._31) << " "
       << MAYBE_ZERO(_m.m._32) << " "
       << MAYBE_ZERO(_m.m._33)
       << " ]";
@@ -166,31 +179,31 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(LMatrix4)::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << MAYBE_ZERO(_m.m._00) << " "
-    << MAYBE_ZERO(_m.m._01) << " " 
+    << MAYBE_ZERO(_m.m._01) << " "
     << MAYBE_ZERO(_m.m._02) << " "
     << MAYBE_ZERO(_m.m._03)
     << "\n";
   indent(out, indent_level)
     << MAYBE_ZERO(_m.m._10) << " "
-    << MAYBE_ZERO(_m.m._11) << " " 
+    << MAYBE_ZERO(_m.m._11) << " "
     << MAYBE_ZERO(_m.m._12) << " "
     << MAYBE_ZERO(_m.m._13)
     << "\n";
   indent(out, indent_level)
     << MAYBE_ZERO(_m.m._20) << " "
-    << MAYBE_ZERO(_m.m._21) << " " 
+    << MAYBE_ZERO(_m.m._21) << " "
     << MAYBE_ZERO(_m.m._22) << " "
     << MAYBE_ZERO(_m.m._23)
     << "\n";
   indent(out, indent_level)
     << MAYBE_ZERO(_m.m._30) << " "
-    << MAYBE_ZERO(_m.m._31) << " " 
+    << MAYBE_ZERO(_m.m._31) << " "
     << MAYBE_ZERO(_m.m._32) << " "
     << MAYBE_ZERO(_m.m._33)
     << "\n";
@@ -349,7 +362,7 @@ read_datagram(DatagramIterator &scan) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::init_type
 //       Access: Public, Static
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(LMatrix4)::
 init_type() {

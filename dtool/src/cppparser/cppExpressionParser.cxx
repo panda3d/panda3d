@@ -1,6 +1,19 @@
-// Filename: cppExpressionParser.C
+// Filename: cppExpressionParser.cxx
 // Created by:  drose (25Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -10,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpressionParser::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPExpressionParser::
 CPPExpressionParser(CPPScope *current_scope, CPPScope *global_scope) :
@@ -23,7 +36,7 @@ CPPExpressionParser(CPPScope *current_scope, CPPScope *global_scope) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpressionParser::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPExpressionParser::
 ~CPPExpressionParser() {
@@ -32,7 +45,7 @@ CPPExpressionParser::
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpressionParser::parse_expr
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPExpressionParser::
 parse_expr(const string &expr) {
@@ -49,7 +62,7 @@ parse_expr(const string &expr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpressionParser::parse_expr
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPExpressionParser::
 parse_expr(const string &expr, const CPPPreprocessor &filepos) {
@@ -68,7 +81,7 @@ parse_expr(const string &expr, const CPPPreprocessor &filepos) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpressionParser::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPExpressionParser::
 output(ostream &out) const {

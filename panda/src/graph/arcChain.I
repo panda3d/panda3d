@@ -1,6 +1,19 @@
 // Filename: arcChain.I
 // Created by:  drose (05Jan01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
@@ -43,7 +56,7 @@ ArcComponent(NodeRelation *arc, ArcComponent *next) :
 ////////////////////////////////////////////////////////////////////
 //     Function: ArcChain::ArcComponent::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH ArcChain::ArcComponent::
 ArcComponent(const ArcComponent &copy) :
@@ -66,7 +79,7 @@ ArcComponent(const ArcComponent &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: ArcChain::ArcComponent::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH ArcChain::ArcComponent::
 ~ArcComponent() {
@@ -190,7 +203,7 @@ ForwardIterator(ArcChain::ArcComponent *comp) : _comp(comp) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ArcChain::ForwardIterator::Dereference Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeRelation *ArcChain::ForwardIterator::
 operator * () const {
@@ -201,7 +214,7 @@ operator * () const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ArcChain::ForwardIterator::Increment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void ArcChain::ForwardIterator::
 operator ++() {
@@ -218,7 +231,7 @@ operator ++() {
 ////////////////////////////////////////////////////////////////////
 //     Function: ArcChain::ForwardIterator::Equality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH bool ArcChain::ForwardIterator::
 operator == (const ArcChain::ForwardIterator &other) const {
@@ -228,7 +241,7 @@ operator == (const ArcChain::ForwardIterator &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ArcChain::ForwardIterator::Inequality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH bool ArcChain::ForwardIterator::
 operator != (const ArcChain::ForwardIterator &other) const {
@@ -269,7 +282,7 @@ ArcChain(Node *top_node) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ArcChain::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH ArcChain::
 ArcChain(const ArcChain &copy) :
@@ -280,7 +293,7 @@ ArcChain(const ArcChain &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: ArcChain::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void ArcChain::
 operator = (const ArcChain &copy) {

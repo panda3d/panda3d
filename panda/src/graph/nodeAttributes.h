@@ -1,6 +1,19 @@
 // Filename: nodeAttributes.h
 // Created by:  drose (20Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef NODEATTRIBUTES_H
@@ -65,7 +78,7 @@ public:
 public:
   INLINE_GRAPH void apply_in_place(const NodeTransitionCache &trans);
   INLINE_GRAPH NodeAttributes *apply(const NodeTransitionCache &trans) const;
-  void apply_from(const NodeAttributes &other, 
+  void apply_from(const NodeAttributes &other,
                   const NodeTransitionCache &trans);
 
   void merge_from(const NodeAttributes &a, const NodeAttributes &b);

@@ -1,6 +1,19 @@
 // Filename: eggAttributes.I
 // Created by:  drose (16Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <notify.h>
@@ -9,7 +22,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: EggAttributes::has_normal
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggAttributes::
 has_normal() const {
@@ -19,7 +32,7 @@ has_normal() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggAttributes::get_normal
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const Normald &EggAttributes::
 get_normal() const {
@@ -30,7 +43,7 @@ get_normal() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggAttributes::set_normal
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggAttributes::
 set_normal(const Normald &normal) {
@@ -41,7 +54,7 @@ set_normal(const Normald &normal) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggAttributes::clear_normal
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggAttributes::
 clear_normal() {
@@ -51,7 +64,7 @@ clear_normal() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggAttributes::has_uv
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggAttributes::
 has_uv() const {
@@ -61,7 +74,7 @@ has_uv() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggAttributes::get_uv
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const TexCoordd &EggAttributes::
 get_uv() const {
@@ -72,7 +85,7 @@ get_uv() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggAttributes::set_uv
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggAttributes::
 set_uv(const TexCoordd &uv) {
@@ -83,7 +96,7 @@ set_uv(const TexCoordd &uv) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggAttributes::clear_uv
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggAttributes::
 clear_uv() {
@@ -93,7 +106,7 @@ clear_uv() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggAttributes::has_color
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggAttributes::
 has_color() const {
@@ -103,7 +116,7 @@ has_color() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggAttributes::get_color
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const Colorf &EggAttributes::
 get_color() const {
@@ -114,7 +127,7 @@ get_color() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggAttributes::
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggAttributes::
 set_color(const Colorf &color) {
@@ -125,7 +138,7 @@ set_color(const Colorf &color) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggAttributes::
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggAttributes::
 clear_color() {

@@ -1,10 +1,19 @@
-// Filename: dCamera.cxx
+// Filename: camera.cxx
 // Created by:  mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include <pandabase.h>
 #include "camera.h"
@@ -20,32 +29,32 @@ TypeHandle Camera::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: Camera::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Camera::
-Camera(const string &name) : 
-  ProjectionNode(name), 
-  _active(true) 
-{ 
+Camera(const string &name) :
+  ProjectionNode(name),
+  _active(true)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Camera::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Camera::
-Camera(const Camera &copy) : 
-  ProjectionNode(copy), 
+Camera(const Camera &copy) :
+  ProjectionNode(copy),
   _active(copy._active),
   _scene(copy._scene)
-{ 
+{
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Camera::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Camera::
 operator = (const Camera &copy) {
@@ -93,12 +102,12 @@ bool Camera::
 safe_to_transform() const {
   return false;
 }
- 
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Camera::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Camera::
 ~Camera(void) {

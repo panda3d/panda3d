@@ -1,6 +1,20 @@
 // Filename: test_bam.h
 // Created by:  jason (12Jun00)
 //
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 
 #include <pandabase.h>
@@ -24,13 +38,13 @@ public:
   void write_datagram(BamWriter*, Datagram&);
 
   static TypedWritable *make_person(const FactoryParams &params);
-  virtual int complete_pointers(vector_typedWritable &plist, 
+  virtual int complete_pointers(vector_typedWritable &plist,
                                 BamReader *manager);
 protected:
   void fillin(Person*,DatagramIterator&,BamReader*);
 public:
   enum sex {
-    MALE, 
+    MALE,
     FEMALE
   };
 
@@ -47,7 +61,7 @@ private:
 
 public:
   Person(void) {}
-  Person(const string &name, const sex Gender) : 
+  Person(const string &name, const sex Gender) :
      _name(name), myGender(Gender), _bro((Person*)NULL), _sis((Person*)NULL) {
 
   }
@@ -79,7 +93,7 @@ public:
   void write_datagram(BamWriter*, Datagram&);
 
   static TypedWritable *make_parent(const FactoryParams &params);
-  virtual int complete_pointers(vector_typedWritable &plist, 
+  virtual int complete_pointers(vector_typedWritable &plist,
                                 BamReader *manager);
 protected:
   void fillin(Parent*,DatagramIterator&,BamReader*);
@@ -125,7 +139,7 @@ public:
   void write_datagram(BamWriter*, Datagram&);
 
   static TypedWritable *make_child(const FactoryParams &params);
-  virtual int complete_pointers(vector_typedWritable &plist, 
+  virtual int complete_pointers(vector_typedWritable &plist,
                                 BamReader *manager);
 protected:
   void fillin(Child*,DatagramIterator&,BamReader*);

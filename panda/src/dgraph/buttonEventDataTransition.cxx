@@ -1,6 +1,19 @@
 // Filename: buttonEventDataTransition.cxx
 // Created by:  drose (09Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "buttonEventDataTransition.h"
@@ -11,7 +24,7 @@ TypeHandle ButtonEventDataTransition::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonEventDataTransition::make_copy
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NodeTransition *ButtonEventDataTransition::
 make_copy() const {
@@ -21,7 +34,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonEventDataTransition::make_attrib
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NodeAttribute *ButtonEventDataTransition::
 make_attrib() const {
@@ -48,7 +61,7 @@ compose(const NodeTransition *) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonEventDataTransition::invert
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NodeTransition *ButtonEventDataTransition::
 invert() const {
@@ -72,7 +85,7 @@ apply(const NodeAttribute *attrib) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonEventDataTransition::internal_compare_to
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int ButtonEventDataTransition::
 internal_compare_to(const NodeTransition *) const {

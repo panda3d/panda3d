@@ -1,6 +1,19 @@
 // Filename: allTransitionsWrapper.I
 // Created by:  drose (21Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "nodeRelation.h"
@@ -8,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: AllTransitionsWrapper::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH AllTransitionsWrapper::
 AllTransitionsWrapper() {
@@ -17,7 +30,7 @@ AllTransitionsWrapper() {
 ////////////////////////////////////////////////////////////////////
 //     Function: AllTransitionsWrapper::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH AllTransitionsWrapper::
 AllTransitionsWrapper(const AllTransitionsWrapper &copy) :
@@ -29,7 +42,7 @@ AllTransitionsWrapper(const AllTransitionsWrapper &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: AllTransitionsWrapper::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void AllTransitionsWrapper::
 operator = (const AllTransitionsWrapper &copy) {
@@ -40,7 +53,7 @@ operator = (const AllTransitionsWrapper &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: AllTransitionsWrapper::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH AllTransitionsWrapper::
 ~AllTransitionsWrapper() {
@@ -79,7 +92,7 @@ init_from(const AllAttributesWrapper &) {
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH bool AllTransitionsWrapper::
 is_empty() const {
-  return 
+  return
     (_cache == (NodeTransitionCache *)NULL) ||
     _cache->is_empty();
 }
@@ -208,7 +221,7 @@ is_identity() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: AllTransitionsWrapper::compare_to
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH int AllTransitionsWrapper::
 compare_to(const AllTransitionsWrapper &other) const {
@@ -290,7 +303,7 @@ compose_in_place(const AllTransitionsWrapper &other) {
 ////////////////////////////////////////////////////////////////////
 //     Function: AllTransitionsWrapper::invert_in_place
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void AllTransitionsWrapper::
 invert_in_place() {
@@ -363,7 +376,7 @@ store_to_cache(NodeRelation *arc, Node *top_subtree) {
 INLINE_GRAPH void AllTransitionsWrapper::
 store_to_cache_partial(NodeRelation *arc, Node *top_subtree) {
   arc->_top_subtree = top_subtree;
-  arc->_net_transitions = 
+  arc->_net_transitions =
     NodeTransitionCache::c_union(arc->_net_transitions, _cache);
 
   if (wrt_cat.is_spam()) {
@@ -382,7 +395,7 @@ INLINE_GRAPH bool AllTransitionsWrapper::
 is_cache_verified(UpdateSeq as_of) const {
   if (wrt_cat.is_spam()) {
     wrt_cat.spam()
-      << "AllTransitionsWrapper::is_cache_verified(" << as_of 
+      << "AllTransitionsWrapper::is_cache_verified(" << as_of
       << "), _all_verified = " << _all_verified << ", result = "
       << (as_of <= _all_verified) << "\n";
   }
@@ -413,7 +426,7 @@ set_computed_verified(UpdateSeq now) {
 //               and stores the result in this wrapper.
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void AllTransitionsWrapper::
-cached_compose(const AllTransitionsWrapper &cache, 
+cached_compose(const AllTransitionsWrapper &cache,
                const AllTransitionsWrapper &value,
                UpdateSeq now) {
   _cache = NodeTransitionCache::cached_compose(_cache, cache._cache,
@@ -424,7 +437,7 @@ cached_compose(const AllTransitionsWrapper &cache,
 ////////////////////////////////////////////////////////////////////
 //     Function: AllTransitionsWrapper::size
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH AllTransitionsWrapper::size_type AllTransitionsWrapper::
 size() const {
@@ -437,7 +450,7 @@ size() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: AllTransitionsWrapper::begin
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH AllTransitionsWrapper::const_iterator AllTransitionsWrapper::
 begin() const {
@@ -450,7 +463,7 @@ begin() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: AllTransitionsWrapper::end
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH AllTransitionsWrapper::const_iterator AllTransitionsWrapper::
 end() const {

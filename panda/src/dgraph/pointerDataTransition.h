@@ -1,6 +1,19 @@
 // Filename: pointerDataTransition.h
 // Created by:  jason (07Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef POINTERDATATRANSITION_H
@@ -52,8 +65,8 @@ public:
   }
   static void init_type() {
     NodeTransition::init_type();
-    register_type(_type_handle, 
-                  string("PointerDataTransition<") + 
+    register_type(_type_handle,
+                  string("PointerDataTransition<") +
                   get_type_handle(PtrType).get_name() + ">",
                   NodeTransition::get_class_type());
   }

@@ -1,6 +1,19 @@
 // Filename: linearNoiseForce.cxx
 // Created by:  charles (13Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <stdlib.h>
@@ -117,7 +130,7 @@ get_child_vector(const PhysicsObject *po) {
   LVector3f temp0, temp1, temp2, temp3;
 
   // x direction
-  temp0 = vlerp(cubic_x, get_lattice_entry(p), 
+  temp0 = vlerp(cubic_x, get_lattice_entry(p),
                 get_lattice_entry(p[0] + 1.0f, p[1], p[2]));
 
   temp1 = vlerp(cubic_x, get_lattice_entry(p[0], p[1], p[2] + 1.0f),

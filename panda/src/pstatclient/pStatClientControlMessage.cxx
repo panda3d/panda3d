@@ -1,6 +1,19 @@
 // Filename: pStatClientControlMessage.cxx
 // Created by:  drose (09Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "config_pstats.h"
@@ -13,7 +26,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatClientControlMessage::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PStatClientControlMessage::
 PStatClientControlMessage() {
@@ -72,7 +85,7 @@ bool PStatClientControlMessage::
 decode(const Datagram &datagram, PStatClientVersion *version) {
   DatagramIterator source(datagram);
   _type = (Type)source.get_uint8();
-  
+
   switch (_type) {
   case T_hello:
     _client_hostname = source.get_string();

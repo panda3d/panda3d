@@ -1,6 +1,19 @@
 // Filename: buttonRegistry.cxx
 // Created by:  drose (01Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "buttonRegistry.h"
@@ -31,7 +44,7 @@ ButtonRegistry *ButtonRegistry::_global_pointer = NULL;
 ////////////////////////////////////////////////////////////////////
 bool ButtonRegistry::
 register_button(ButtonHandle &button_handle, const string &name,
-                char ascii_equivalent) { 
+                char ascii_equivalent) {
   NameRegistry::iterator ri;
   ri = _name_registry.find(name);
 
@@ -49,7 +62,7 @@ register_button(ButtonHandle &button_handle, const string &name,
           << ascii_equivalent << "\n";
       }
     }
-    
+
 #ifdef NOTIFY_DEBUG
     // This code runs at static init time, so cannot use the
     // util_cat.is_spam() syntax.
@@ -58,13 +71,13 @@ register_button(ButtonHandle &button_handle, const string &name,
         << "Registering button " << name << "\n";
     }
 #endif
-    
+
     if (index == -1) {
       // It's not an ASCII equivalent; make up a new number.
       index = _handle_registry.size();
       _handle_registry.push_back(NULL);
     }
-    
+
     ButtonHandle new_handle;
     new_handle._index = index;
 
@@ -78,7 +91,7 @@ register_button(ButtonHandle &button_handle, const string &name,
 
   RegistryNode *rnode = (*ri).second;
   nassertr(rnode->_name == (*ri).first, false);
-  nassertr(rnode->_handle._index >= 0 && 
+  nassertr(rnode->_handle._index >= 0 &&
            rnode->_handle._index < (int)_handle_registry.size(), false);
   nassertr(_handle_registry[rnode->_handle._index] == rnode, false);
   nassertr(rnode->_handle._index != 0, false);
@@ -133,7 +146,7 @@ find_ascii_button(char ascii_equivalent) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonRegistry::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ButtonRegistry::
 write(ostream &out) const {
@@ -160,7 +173,7 @@ write(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonRegistry::Constructor
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ButtonRegistry::
 ButtonRegistry() {
@@ -190,7 +203,7 @@ init_global_pointer() {
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonRegistry::look_up
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ButtonRegistry::RegistryNode *ButtonRegistry::
 look_up(ButtonHandle handle) const {
@@ -199,7 +212,7 @@ look_up(ButtonHandle handle) const {
   if (handle._index < 0 ||
       handle._index >= (int)_handle_registry.size()) {
     util_cat->fatal()
-      << "Invalid ButtonHandle index " << handle._index 
+      << "Invalid ButtonHandle index " << handle._index
       << "!  Is memory corrupt?\n";
     return (RegistryNode *)NULL;
   }

@@ -1,6 +1,19 @@
 // Filename: graphicsWindowInputDevice.h
 // Created by:  drose (24May00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef GRAPHICSWINDOWINPUTDEVICE_H
@@ -67,7 +80,7 @@ private:
     IDF_has_keyboard   = 0x02
   };
   typedef deque<ButtonEvent> ButtonEvents;
-  
+
   string _name;
   int _flags;
   MouseData _mouse_data;
@@ -76,8 +89,8 @@ private:
 
 #include "graphicsWindowInputDevice.I"
 
-#define EXPCL EXPCL_PANDA 
-#define EXPTP EXPTP_PANDA 
+#define EXPCL EXPCL_PANDA
+#define EXPTP EXPTP_PANDA
 #define TYPE GraphicsWindowInputDevice
 #define NAME vector_GraphicsWindowInputDevice
 

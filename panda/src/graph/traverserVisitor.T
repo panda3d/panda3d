@@ -1,6 +1,19 @@
-// Filename: traverserVisitor.I
+// Filename: traverserVisitor.T
 // Created by:  drose (20Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -13,7 +26,7 @@
 ////////////////////////////////////////////////////////////////////
 template<class TW, class LevelState>
 INLINE_GRAPH bool TraverserVisitor<TW, LevelState>::
-reached_node(Node *, 
+reached_node(Node *,
              TraverserVisitor<TW, LevelState>::AttributeWrapper &,
              LevelState &) {
   return true;
@@ -28,10 +41,10 @@ reached_node(Node *,
 //               pruned and not reach the destination node.
 ////////////////////////////////////////////////////////////////////
 template<class TW, class LevelState>
-INLINE_GRAPH bool TraverserVisitor<TW, LevelState>:: 
-forward_arc(NodeRelation *, 
+INLINE_GRAPH bool TraverserVisitor<TW, LevelState>::
+forward_arc(NodeRelation *,
             TraverserVisitor<TW, LevelState>::TransitionWrapper &,
-            TraverserVisitor<TW, LevelState>::AttributeWrapper &, 
+            TraverserVisitor<TW, LevelState>::AttributeWrapper &,
             TraverserVisitor<TW, LevelState>::AttributeWrapper &,
             LevelState &) {
   return true;
@@ -49,9 +62,9 @@ forward_arc(NodeRelation *,
 ////////////////////////////////////////////////////////////////////
 template<class TW, class LevelState>
 INLINE_GRAPH void TraverserVisitor<TW, LevelState>::
-backward_arc(NodeRelation *, 
+backward_arc(NodeRelation *,
              TraverserVisitor<TW, LevelState>::TransitionWrapper &,
-             TraverserVisitor<TW, LevelState>::AttributeWrapper &, 
+             TraverserVisitor<TW, LevelState>::AttributeWrapper &,
              TraverserVisitor<TW, LevelState>::AttributeWrapper &,
              const LevelState &) {
 }

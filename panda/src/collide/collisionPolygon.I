@@ -1,12 +1,25 @@
 // Filename: collisionPolygon.I
 // Created by:  drose (25Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionPolygon::
 CollisionPolygon(const LPoint3f &a, const LPoint3f &b,
@@ -21,7 +34,7 @@ CollisionPolygon(const LPoint3f &a, const LPoint3f &b,
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionPolygon::
 CollisionPolygon(const LPoint3f &a, const LPoint3f &b,
@@ -38,7 +51,7 @@ CollisionPolygon(const LPoint3f &a, const LPoint3f &b,
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionPolygon::
 CollisionPolygon(const LPoint3f *begin, const LPoint3f *end) {
@@ -48,7 +61,7 @@ CollisionPolygon(const LPoint3f *begin, const LPoint3f *end) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionPolygon::
 CollisionPolygon(void) {

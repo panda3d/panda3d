@@ -1,6 +1,19 @@
 // Filename: bitMask.I
 // Created by:  drose (08Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 template<class WordType, int num_bits>
@@ -9,7 +22,7 @@ TypeHandle BitMask<WordType, num_bits>::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
 INLINE BitMask<WordType, num_bits>::
@@ -21,7 +34,7 @@ BitMask() :
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
 INLINE BitMask<WordType, num_bits>::
@@ -33,7 +46,7 @@ BitMask(WordType init_value) :
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
 INLINE BitMask<WordType, num_bits>::
@@ -45,7 +58,7 @@ BitMask(const BitMask<WordType, num_bits> &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
 INLINE void BitMask<WordType, num_bits>::
@@ -113,7 +126,7 @@ bit(int index) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
 INLINE BitMask<WordType, num_bits>::
@@ -212,7 +225,7 @@ extract(int low_bit, int size) const {
 template<class WordType, int num_bits>
 INLINE void BitMask<WordType, num_bits>::
 store(WordType value, int low_bit, int size) {
-  WordType mask = 
+  WordType mask =
     BitMask<WordType, num_bits>::lower_on(size)._word << low_bit;
   _word = (_word & ~mask) | ((value << low_bit) & mask);
 }
@@ -334,7 +347,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator ==
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
 INLINE bool BitMask<WordType, num_bits>::
@@ -345,7 +358,7 @@ operator == (const BitMask<WordType, num_bits> &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator !=
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
 INLINE bool BitMask<WordType, num_bits>::
@@ -393,7 +406,7 @@ compare_to(const BitMask<WordType, num_bits> &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator &
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
 INLINE BitMask<WordType, num_bits> BitMask<WordType, num_bits>::
@@ -406,7 +419,7 @@ operator & (const BitMask<WordType, num_bits> &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator |
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
 INLINE BitMask<WordType, num_bits> BitMask<WordType, num_bits>::
@@ -419,7 +432,7 @@ operator | (const BitMask<WordType, num_bits> &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator ^
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
 INLINE BitMask<WordType, num_bits> BitMask<WordType, num_bits>::
@@ -432,7 +445,7 @@ operator ^ (const BitMask<WordType, num_bits> &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator ~
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
 INLINE BitMask<WordType, num_bits> BitMask<WordType, num_bits>::
@@ -445,7 +458,7 @@ operator ~ () const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator <<
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
 INLINE BitMask<WordType, num_bits> BitMask<WordType, num_bits>::
@@ -458,7 +471,7 @@ operator << (int shift) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator >>
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
 INLINE BitMask<WordType, num_bits> BitMask<WordType, num_bits>::
@@ -471,7 +484,7 @@ operator >> (int shift) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator &=
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
 INLINE void BitMask<WordType, num_bits>::
@@ -482,7 +495,7 @@ operator &= (const BitMask<WordType, num_bits> &other) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator |=
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
 INLINE void BitMask<WordType, num_bits>::
@@ -493,7 +506,7 @@ operator |= (const BitMask<WordType, num_bits> &other) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator ^=
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
 INLINE void BitMask<WordType, num_bits>::
@@ -504,7 +517,7 @@ operator ^= (const BitMask<WordType, num_bits> &other) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator <<=
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
 INLINE void BitMask<WordType, num_bits>::
@@ -515,7 +528,7 @@ operator <<= (int shift) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator >>=
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
 INLINE void BitMask<WordType, num_bits>::
@@ -537,7 +550,7 @@ generate_hash(ChecksumHashGenerator &hash) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMask::init_type
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class WordType, int num_bits>
 void BitMask<WordType, num_bits>::

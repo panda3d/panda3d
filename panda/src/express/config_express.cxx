@@ -1,6 +1,19 @@
 // Filename: config_express.cxx
 // Created by:  cary (04Jan00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "config_express.h"
@@ -43,7 +56,7 @@ get_leak_memory() {
     leak_memory = config_express.GetBool("leak-memory", false);
     got_leak_memory = true;
   }
-  
+
   return leak_memory;
 }
 
@@ -64,7 +77,7 @@ get_never_destruct() {
     never_destruct = config_express.GetBool("never-destruct", false);
     got_never_destruct = true;
   }
-  
+
   return never_destruct;
 }
 
@@ -81,7 +94,7 @@ get_use_high_res_clock() {
     use_high_res_clock = config_express.GetBool("use-high-res-clock", true);
     got_use_high_res_clock = true;
   }
-  
+
   return use_high_res_clock;
 }
 

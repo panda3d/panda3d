@@ -1,13 +1,26 @@
 // Filename: eggRenderMode.I
 // Created by:  drose (20Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggRenderMode::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggRenderMode::
 EggRenderMode() {
@@ -22,7 +35,7 @@ EggRenderMode() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggRenderMode::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggRenderMode::
 EggRenderMode(const EggRenderMode &copy) {
@@ -32,7 +45,7 @@ EggRenderMode(const EggRenderMode &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggRenderMode::Copy assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggRenderMode &EggRenderMode::
 operator = (const EggRenderMode &copy) {
@@ -228,7 +241,7 @@ clear_bin() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggRenderMode::Inequality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggRenderMode::
 operator != (const EggRenderMode &other) const {

@@ -1,6 +1,19 @@
-// Filename: classicNurbsCurve.C
+// Filename: classicNurbsCurve.cxx
 // Created by:  drose (27Feb98)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "classicNurbsCurve.h"
@@ -27,7 +40,7 @@ static const LVecBase3f zero = LVecBase3f(0.0, 0.0, 0.0);
 ////////////////////////////////////////////////////////////////////
 //     Function: ClassicNurbsCurve::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ClassicNurbsCurve::
 ClassicNurbsCurve() {
@@ -43,9 +56,9 @@ ClassicNurbsCurve() {
 ClassicNurbsCurve::
 ClassicNurbsCurve(const ParametricCurve &pc) {
   _order = 4;
-  
+
   if (!pc.convert_to_nurbs(this)) {
-    parametrics_cat->warning() 
+    parametrics_cat->warning()
       << "Cannot make a NURBS from the indicated curve.\n";
   }
 }
@@ -78,7 +91,7 @@ ClassicNurbsCurve(int order, int num_cvs,
 ////////////////////////////////////////////////////////////////////
 //     Function: ClassicNurbsCurve::Destructor
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ClassicNurbsCurve::
 ~ClassicNurbsCurve() {
@@ -102,7 +115,7 @@ set_order(int order) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ClassicNurbsCurve::get_order
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int ClassicNurbsCurve::
 get_order() const {
@@ -112,7 +125,7 @@ get_order() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ClassicNurbsCurve::get_num_cvs
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int ClassicNurbsCurve::
 get_num_cvs() const {
@@ -366,7 +379,7 @@ rebuild_curveseg(int rtype0, float t0, const LVecBase4f &v0,
     for (c = 0; c < 4; c++) {
       static const LVecBase4f zero(0.0, 0.0, 0.0, 0.0);
       const LVecBase4f &s = (c < _order) ? _cvs[c+cv]._p : zero;
-      
+
       G.set_col(c, s);
     }
   }
@@ -429,7 +442,7 @@ stitch(const ParametricCurve *a, const ParametricCurve *b) {
 
   // First, translate curve B to move its first CV to curve A's last
   // CV.
-  LVecBase3f point_offset = 
+  LVecBase3f point_offset =
     na->get_cv_point(na->get_num_cvs() - 1) - nb->get_cv_point(0);
   int num_b_cvs = nb->get_num_cvs();
   for (int i = 0; i < num_b_cvs; i++) {
@@ -485,7 +498,7 @@ convert_to_nurbs(ParametricCurve *nc) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ClassicNurbsCurve::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ClassicNurbsCurve::
 write(ostream &out, int indent_level) const {

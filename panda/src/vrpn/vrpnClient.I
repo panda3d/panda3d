@@ -1,6 +1,19 @@
 // Filename: vrpnClient.I
 // Created by:  jason (04Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -59,7 +72,7 @@ convert_to_secs(struct timeval msg_time) {
 ////////////////////////////////////////////////////////////////////
 //     Function: VrpnClient::constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE VrpnClient::
 VrpnClient(const string &server) :
@@ -72,7 +85,7 @@ VrpnClient(const string &server) :
 //     Function: VrpnClient::tracker_position
 //       Access: Private
 //  Description: Stores the latest position information as sent by
-//               the tracker (for the particular sensor we have 
+//               the tracker (for the particular sensor we have
 //               interest in)
 ////////////////////////////////////////////////////////////////////
 INLINE void VrpnClient::
@@ -88,14 +101,14 @@ tracker_position(const string &tracker, const vrpn_TRACKERCB info) {
 //     Function: VrpnClient::tracker_velocity
 //       Access: Private
 //  Description: Stores the latest velocity information as sent by
-//               the tracker (for the particular sensor we have 
+//               the tracker (for the particular sensor we have
 //               interest in)
 ////////////////////////////////////////////////////////////////////
 INLINE void VrpnClient::
 tracker_velocity(const string &tracker, const vrpn_TRACKERVELCB info) {
   double vtime = convert_to_secs(info.msg_time);
   LPoint3f vel(info.vel[0], info.vel[1], info.vel[2]);
-  LVector4f vquat(info.vel_quat[0], info.vel_quat[1], 
+  LVector4f vquat(info.vel_quat[0], info.vel_quat[1],
                   info.vel_quat[2], info.vel_quat[3]);
   float dt = info.vel_quat_dt;
 
@@ -105,14 +118,14 @@ tracker_velocity(const string &tracker, const vrpn_TRACKERVELCB info) {
 //     Function: VrpnClient::tracker_acceleration
 //       Access: Private
 //  Description: Stores the latest acceleration information as sent by
-//               the tracker (for the particular sensor we have 
+//               the tracker (for the particular sensor we have
 //               interest in)
 ////////////////////////////////////////////////////////////////////
 INLINE void VrpnClient::
 tracker_acceleration(const string &tracker, const vrpn_TRACKERACCCB info) {
   double atime = convert_to_secs(info.msg_time);
   LPoint3f acc(info.acc[0], info.acc[1], info.acc[2]);
-  LVector4f aquat(info.acc_quat[0], info.acc_quat[1], 
+  LVector4f aquat(info.acc_quat[0], info.acc_quat[1],
                   info.acc_quat[2], info.acc_quat[3]);
   float dt = info.acc_quat_dt;
 

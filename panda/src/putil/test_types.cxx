@@ -1,6 +1,19 @@
 // Filename: test_types.cxx
 // Created by:  drose (23Oct98)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "typedObject.h"
@@ -115,7 +128,7 @@ public:
   static void init_type() {
     ThatThingie::init_type();
     TheOtherThingie::init_type();
-    register_type(_type_handle, "WhatAThingie", 
+    register_type(_type_handle, "WhatAThingie",
                   ThatThingie::get_class_type(),
                   TheOtherThingie::get_class_type());
   }
@@ -161,31 +174,31 @@ main() {
        << "\nthing_2 of type " << thing_2->get_type()
        << "\nthing_3 of type " << thing_3->get_type()
 
-       << "\n\nthing_1 is ThisThingie : " 
+       << "\n\nthing_1 is ThisThingie : "
        << thing_1->is_of_type(ThisThingie::get_class_type())
-       << "\nthing_1 is ThatThingie : " 
+       << "\nthing_1 is ThatThingie : "
        << thing_1->is_of_type(ThatThingie::get_class_type())
-       << "\nthing_1 is TheOtherThingie : " 
+       << "\nthing_1 is TheOtherThingie : "
        << thing_1->is_of_type(TheOtherThingie::get_class_type())
-       << "\nthing_1 is WhatAThingie : " 
+       << "\nthing_1 is WhatAThingie : "
        << thing_1->is_of_type(WhatAThingie::get_class_type())
 
-       << "\n\nthing_2 is ThisThingie : " 
+       << "\n\nthing_2 is ThisThingie : "
        << thing_2->is_of_type(ThisThingie::get_class_type())
-       << "\nthing_2 is ThatThingie : " 
+       << "\nthing_2 is ThatThingie : "
        << thing_2->is_of_type(ThatThingie::get_class_type())
-       << "\nthing_2 is TheOtherThingie : " 
+       << "\nthing_2 is TheOtherThingie : "
        << thing_2->is_of_type(TheOtherThingie::get_class_type())
-       << "\nthing_2 is WhatAThingie : " 
+       << "\nthing_2 is WhatAThingie : "
        << thing_2->is_of_type(WhatAThingie::get_class_type())
 
-       << "\n\nthing_3 is ThisThingie : " 
+       << "\n\nthing_3 is ThisThingie : "
        << thing_3->is_of_type(ThisThingie::get_class_type())
-       << "\nthing_3 is ThatThingie : " 
+       << "\nthing_3 is ThatThingie : "
        << thing_3->is_of_type(ThatThingie::get_class_type())
-       << "\nthing_3 is TheOtherThingie : " 
+       << "\nthing_3 is TheOtherThingie : "
        << thing_3->is_of_type(TheOtherThingie::get_class_type())
-       << "\nthing_3 is WhatAThingie : " 
+       << "\nthing_3 is WhatAThingie : "
        << thing_3->is_of_type(WhatAThingie::get_class_type())
        << "\n\n";
 
@@ -231,7 +244,7 @@ main() {
   ((WhatAThingie *)thing_3.p())->hello();
 
   nout << "\n";
-  
+
   // Testing RefCountProxy.
 
   RefCountProxy<int> x = 10;

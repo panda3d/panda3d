@@ -1,13 +1,26 @@
 // Filename: builderAttribTempl.I
 // Created by:  drose (17Sep97)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderAttribTempl::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template <class VT, class NT, class TT, class CT>
 INLINE BuilderAttribTempl<VT, NT, TT, CT>::
@@ -19,7 +32,7 @@ BuilderAttribTempl() {
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderAttribTempl::Copy constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template <class VT, class NT, class TT, class CT>
 INLINE BuilderAttribTempl<VT, NT, TT, CT>::
@@ -31,7 +44,7 @@ BuilderAttribTempl(const BuilderAttribTempl &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderAttribTempl::Copy assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template <class VT, class NT, class TT, class CT>
 INLINE BuilderAttribTempl<VT, NT, TT, CT> &BuilderAttribTempl<VT, NT, TT, CT>::
@@ -286,7 +299,7 @@ output(ostream &out) const {
     if (has_normal()) {
       out << " normal " << get_normal();
     }
-    
+
     if (has_color()) {
       out << " color " << get_color();
     }

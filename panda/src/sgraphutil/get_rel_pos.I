@@ -1,6 +1,19 @@
 // Filename: get_rel_pos.I
 // Created by:  drose (18Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <transformTransition.h>
@@ -57,7 +70,7 @@ get_rel_mat(const Node *node, const Node *relative_to,
 //               system) to the the indicated node, relative to
 //               another node (such as render).
 ////////////////////////////////////////////////////////////////////
-INLINE LVector3f 
+INLINE LVector3f
 get_rel_up(const Node *node, const Node *relative_to,
            CoordinateSystem cs) {
   LMatrix4f mat;
@@ -72,7 +85,7 @@ get_rel_up(const Node *node, const Node *relative_to,
 //               system) to the the indicated node, relative to
 //               another node (such as render).
 ////////////////////////////////////////////////////////////////////
-INLINE LVector3f 
+INLINE LVector3f
 get_rel_right(const Node *node, const Node *relative_to,
               CoordinateSystem cs) {
   LMatrix4f mat;
@@ -87,7 +100,7 @@ get_rel_right(const Node *node, const Node *relative_to,
 //               system) to the the indicated node, relative to
 //               another node (such as render).
 ////////////////////////////////////////////////////////////////////
-INLINE LVector3f 
+INLINE LVector3f
 get_rel_forward(const Node *node, const Node *relative_to,
                 CoordinateSystem cs) {
   LMatrix4f mat;
@@ -102,7 +115,7 @@ get_rel_forward(const Node *node, const Node *relative_to,
 //               system) to the the indicated node, relative to
 //               another node (such as render).
 ////////////////////////////////////////////////////////////////////
-INLINE LVector3f 
+INLINE LVector3f
 get_rel_down(const Node *node, const Node *relative_to,
              CoordinateSystem cs) {
   LMatrix4f mat;
@@ -117,7 +130,7 @@ get_rel_down(const Node *node, const Node *relative_to,
 //               system) to the the indicated node, relative to
 //               another node (such as render).
 ////////////////////////////////////////////////////////////////////
-INLINE LVector3f 
+INLINE LVector3f
 get_rel_left(const Node *node, const Node *relative_to,
              CoordinateSystem cs) {
   LMatrix4f mat;
@@ -132,7 +145,7 @@ get_rel_left(const Node *node, const Node *relative_to,
 //               system) to the the indicated node, relative to
 //               another node (such as render).
 ////////////////////////////////////////////////////////////////////
-INLINE LVector3f 
+INLINE LVector3f
 get_rel_back(const Node *node, const Node *relative_to,
              CoordinateSystem cs) {
   LMatrix4f mat;

@@ -1,12 +1,25 @@
 // Filename: nodeTransition.I
 // Created by:  drose (20Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransition::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeTransition::
 NodeTransition() {
@@ -16,7 +29,7 @@ NodeTransition() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransition::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeTransition::
 NodeTransition(const NodeTransition &copy) :
@@ -29,7 +42,7 @@ NodeTransition(const NodeTransition &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransition::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NodeTransition::
 operator = (const NodeTransition &copy) {
@@ -41,7 +54,7 @@ operator = (const NodeTransition &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransition::Equality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH bool NodeTransition::
 operator == (const NodeTransition &other) const {
@@ -51,7 +64,7 @@ operator == (const NodeTransition &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransition::Inequality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH bool NodeTransition::
 operator != (const NodeTransition &other) const {
@@ -61,7 +74,7 @@ operator != (const NodeTransition &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransition::Inequality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH bool NodeTransition::
 operator < (const NodeTransition &other) const {
@@ -71,7 +84,7 @@ operator < (const NodeTransition &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransition::Inequality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH bool NodeTransition::
 operator <= (const NodeTransition &other) const {
@@ -81,7 +94,7 @@ operator <= (const NodeTransition &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransition::Inequality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH bool NodeTransition::
 operator > (const NodeTransition &other) const {
@@ -91,7 +104,7 @@ operator > (const NodeTransition &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransition::Inequality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH bool NodeTransition::
 operator >= (const NodeTransition &other) const {
@@ -118,7 +131,7 @@ compare_to(const NodeTransition &other) const {
   TypeHandle other_handle = other.get_handle();
 
   if (my_handle != other_handle) {
-    return 
+    return
       (my_handle < other_handle) ? -1 : 1;
 
   } else if (_priority != other._priority) {

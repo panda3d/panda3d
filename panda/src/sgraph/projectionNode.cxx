@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "projectionNode.h"
 #include <frustum.h>
@@ -32,7 +41,7 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: set_projection 
+//     Function: set_projection
 //       Access: Public
 //  Description: Sets up the ProjectionNode using a copy of the
 //               indicated Projection.  If the original Projection is
@@ -45,7 +54,7 @@ set_projection(const Projection &projection) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: share_projection 
+//     Function: share_projection
 //       Access: Public
 //  Description: This is similar to set_projection(), but the
 //               Projection is assigned by pointer.  If the original
@@ -58,7 +67,7 @@ share_projection(Projection *projection) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: get_projection 
+//     Function: get_projection
 //       Access: Public
 //  Description: Returns a pointer to particular Projection associated
 //               with this ProjectionNode.
@@ -99,7 +108,7 @@ is_in_view(const LPoint3f &pos) {
 //               assuming it represents a perspective frustum.
 ////////////////////////////////////////////////////////////////////
 void ProjectionNode::
-get_perspective_params(float &yfov, float &aspect, float &cnear, 
+get_perspective_params(float &yfov, float &aspect, float &cnear,
                        float &cfar) const {
   if (_projection->get_type() == PerspectiveProjection::get_class_type()) {
     PerspectiveProjection *proj = DCAST(PerspectiveProjection, _projection);
@@ -114,7 +123,7 @@ get_perspective_params(float &yfov, float &aspect, float &cnear,
 //               assuming it represents a perspective frustum.
 ////////////////////////////////////////////////////////////////////
 void ProjectionNode::
-get_perspective_params(float &xfov, float &yfov, float &aspect, float &cnear, 
+get_perspective_params(float &xfov, float &yfov, float &aspect, float &cnear,
                        float &cfar) const {
   if (_projection->get_type() == PerspectiveProjection::get_class_type()) {
     PerspectiveProjection *proj = DCAST(PerspectiveProjection, _projection);

@@ -1,13 +1,26 @@
 // Filename: eggFilenameNode.I
 // Created by:  drose (11Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggFilenameNode::Default constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggFilenameNode::
 EggFilenameNode() {
@@ -16,10 +29,10 @@ EggFilenameNode() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggFilenameNode::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggFilenameNode::
-EggFilenameNode(const string &node_name, const Filename &filename) : 
+EggFilenameNode(const string &node_name, const Filename &filename) :
   EggNode(node_name),
   _filename(filename)
 {
@@ -28,7 +41,7 @@ EggFilenameNode(const string &node_name, const Filename &filename) :
 ////////////////////////////////////////////////////////////////////
 //     Function: EggFilenameNode::Copy constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggFilenameNode::
 EggFilenameNode(const EggFilenameNode &copy) :
@@ -40,7 +53,7 @@ EggFilenameNode(const EggFilenameNode &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: EggFilenameNode::Copy assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggFilenameNode &EggFilenameNode::
 operator = (const EggFilenameNode &copy) {
@@ -62,7 +75,7 @@ get_filename() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggFilenameNode::set_filename
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggFilenameNode::
 set_filename(const Filename &filename) {

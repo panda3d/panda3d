@@ -1,6 +1,19 @@
 // Filename: event.cxx
 // Created by:  drose (08Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "event.h"
@@ -11,7 +24,7 @@ TypeHandle Event::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: Event::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Event::
 Event(const string &event_name, EventReceiver *receiver) :
@@ -23,10 +36,10 @@ Event(const string &event_name, EventReceiver *receiver) :
 ////////////////////////////////////////////////////////////////////
 //     Function: Event::Copy constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Event::
-Event(const Event &copy) : 
+Event(const Event &copy) :
   _parameters(copy._parameters),
   _receiver(copy._receiver),
   _name(copy._name)
@@ -36,7 +49,7 @@ Event(const Event &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: Event::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Event::
 operator = (const Event &copy) {
@@ -48,7 +61,7 @@ operator = (const Event &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Event::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Event::
 ~Event() {
@@ -57,7 +70,7 @@ Event::
 ////////////////////////////////////////////////////////////////////
 //     Function: Event::add_parameter
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Event::
 add_parameter(const EventParameter &obj) {
@@ -68,7 +81,7 @@ add_parameter(const EventParameter &obj) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Event::get_num_parameters
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int Event::
 get_num_parameters() const {
@@ -78,7 +91,7 @@ get_num_parameters() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Event::get_parameter
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EventParameter Event::
 get_parameter(int n) const {
@@ -90,7 +103,7 @@ get_parameter(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Event::has_receiver
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool Event::
 has_receiver() const {
@@ -100,7 +113,7 @@ has_receiver() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Event::get_receiver
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EventReceiver *Event::
 get_receiver() const {
@@ -110,7 +123,7 @@ get_receiver() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Event::set_receiver
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Event::
 set_receiver(EventReceiver *receiver) {
@@ -120,7 +133,7 @@ set_receiver(EventReceiver *receiver) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Event::clear_receiver
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Event::
 clear_receiver() {
@@ -130,9 +143,9 @@ clear_receiver() {
 ////////////////////////////////////////////////////////////////////
 //     Function: Event::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Event::
 output(ostream &out) const {
   out << get_name();
-}    
+}

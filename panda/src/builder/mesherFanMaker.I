@@ -1,6 +1,19 @@
 // Filename: mesherFanMaker.I
 // Created by:  drose (21Sep97)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 /* okcircular */
@@ -125,7 +138,7 @@ compute_angle() const {
   for (ei = _edges.begin(); ei != _edges.end(); ++ei) {
     Normalf v1 = (*ei)->_a->get_coord_value(*_bucket) - v0;
     Normalf v2 = (*ei)->_b->get_coord_value(*_bucket) - v0;
-    
+
     v1 = normalize(v1);
     v2 = normalize(v2);
     angle += acos(dot(v1, v2));
@@ -168,7 +181,7 @@ build() {
 
     Strips::iterator si, last_si;
     Edges::iterator ei, last_ei;
-    
+
     // First, rotate the fan so it begins at a seam.  We do this so we
     // won't be left out with part of one piece at the beginning and
     // also at the end.
@@ -215,13 +228,13 @@ build() {
     Strip new_fan;
     new_fan._type = BPT_trifan;
     new_fan._verts.push_back(_vertex);
-    
+
     new_fan._verts.push_back(_edges.front()->_a);
     Edges::iterator ei;
     for (ei = _edges.begin(); ei != _edges.end(); ++ei) {
       new_fan._verts.push_back((*ei)->_b);
     }
-    
+
     Strips::iterator si;
     for (si = _strips.begin(); si != _strips.end(); ++si) {
       new_fan._prims.splice(new_fan._prims.end(), (*si)->_prims);
@@ -229,7 +242,7 @@ build() {
       (*si)->_verts.clear();
       (*si)->_status = MS_dead;
     }
-    
+
     // If we'd built our list of edges and strips right, this sum should
     // come out so that there are two more vertices than triangles in
     // the new fan.
@@ -251,7 +264,7 @@ unroll(Strips::iterator strip_begin, Strips::iterator strip_end,
        Edges::iterator edge_begin, Edges::iterator edge_end) {
   Edges::iterator ei;
   Strips::iterator si;
-  
+
   int num_tris = 0;
   for (ei = edge_begin; ei != edge_end; ++ei) {
     num_tris++;
@@ -263,7 +276,7 @@ unroll(Strips::iterator strip_begin, Strips::iterator strip_end,
   }
 
   Prim poly;
-  
+
   // Now we build an n-sided polygon.  We'll decompose it into tris
   // in a second.
   poly.set_type(BPT_poly);
@@ -278,11 +291,11 @@ unroll(Strips::iterator strip_begin, Strips::iterator strip_end,
     poly.add_vertex(*_vertex);
     poly.add_vertex(*(*edge_begin)->_a);
   }
-  
+
   for (ei = edge_begin; ei != edge_end; ++ei) {
     poly.add_vertex(*(*ei)->_b);
   }
-  
+
   int result = true;
 
   if (_bucket->_show_quads) {
@@ -297,7 +310,7 @@ unroll(Strips::iterator strip_begin, Strips::iterator strip_end,
     if (result) {
       // Now add each triangle back into the mesher.
       vector<Prim>::iterator ti;
-      
+
       for (ti = tris.begin(); ti != tris.end(); ++ti) {
         _mesher->add_prim(*ti);
       }
@@ -331,7 +344,7 @@ output(ostream &out) const {
     out << " " << *_edges.back()->_b;
   }
   out << " ]";
-  
+
   if (_planar) {
     out << " (planar)";
   }

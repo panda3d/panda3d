@@ -1,6 +1,19 @@
 // Filename: eggPrimitive.I
 // Created by:  drose (16Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <algorithm>
@@ -8,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggPrimitive::
 EggPrimitive(const string &name): EggNode(name) {
@@ -18,15 +31,15 @@ EggPrimitive(const string &name): EggNode(name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::Copy constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggPrimitive::
 EggPrimitive(const EggPrimitive &copy) :
-  EggNode(copy), 
-  EggAttributes(copy), 
+  EggNode(copy),
+  EggAttributes(copy),
   _texture(copy._texture),
   _material(copy._material),
-  _bface(copy._bface) 
+  _bface(copy._bface)
 {
   copy_vertices(copy);
 }
@@ -34,7 +47,7 @@ EggPrimitive(const EggPrimitive &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::Copy assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggPrimitive &EggPrimitive::
 operator = (const EggPrimitive &copy) {
@@ -50,7 +63,7 @@ operator = (const EggPrimitive &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggPrimitive::
 ~EggPrimitive() {
@@ -175,7 +188,7 @@ get_bface_flag() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::begin
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggPrimitive::iterator EggPrimitive::
 begin() const {
@@ -185,7 +198,7 @@ begin() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::end
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggPrimitive::iterator EggPrimitive::
 end() const {
@@ -195,7 +208,7 @@ end() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::rbegin
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggPrimitive::reverse_iterator EggPrimitive::
 rbegin() const {
@@ -205,7 +218,7 @@ rbegin() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::rend
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggPrimitive::reverse_iterator EggPrimitive::
 rend() const {
@@ -215,7 +228,7 @@ rend() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::empty
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggPrimitive::
 empty() const {
@@ -225,7 +238,7 @@ empty() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::size
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggPrimitive::size_type EggPrimitive::
 size() const {
@@ -247,7 +260,7 @@ operator [] (int index) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::insert
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggPrimitive::iterator EggPrimitive::
 insert(iterator position, EggVertex *x) {
@@ -261,7 +274,7 @@ insert(iterator position, EggVertex *x) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::erase
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggPrimitive::iterator EggPrimitive::
 erase(iterator position) {
@@ -293,7 +306,7 @@ replace(iterator position, EggVertex *x) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::clear
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggPrimitive::
 clear() {

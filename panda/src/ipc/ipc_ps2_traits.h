@@ -1,6 +1,19 @@
 // Filename: ipc_ps2_traits.h
-// created by:  charles (07jun00)
-// 
+// Created by:  
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef __ipc_ps2_traits_h__
@@ -24,7 +37,7 @@
 // are NOT tasked out when they're banging a while loop.  If a thread is waiting
 // for a variable, but not sleeping, deadlock.
 
-class EXPCL_PANDAEXPRESS ipc_traits 
+class EXPCL_PANDAEXPRESS ipc_traits
   {
   public:
 
@@ -153,7 +166,7 @@ class EXPCL_PANDAEXPRESS ipc_traits
         INLINE condition_class(mutex_class *m) : _mutex(m) {}
         INLINE ~condition_class(void) {}
 
-        INLINE void wait(void) 
+        INLINE void wait(void)
         {
           WaitingThread waiting_thread;
           SemaParam sp;
@@ -189,7 +202,7 @@ class EXPCL_PANDAEXPRESS ipc_traits
           return -1;
         }
 
-        INLINE void signal(void) 
+        INLINE void signal(void)
         {
           WaitingThread first_in_line = waiting_thread_list.front();
           waiting_thread_list.pop_front();
@@ -199,7 +212,7 @@ class EXPCL_PANDAEXPRESS ipc_traits
           SignalSema(first_in_line.semaphore_id);
         }
 
-        INLINE void broadcast(void) 
+        INLINE void broadcast(void)
         {
           list<WaitingThread>::iterator begin = waiting_thread_list.begin();
           list<WaitingThread>::iterator end = waiting_thread_list.end();
@@ -304,13 +317,13 @@ class EXPCL_PANDAEXPRESS ipc_traits
           DeleteThread(GetThreadId());
         }
 
-        INLINE void manual_init(void) 
+        INLINE void manual_init(void)
         {
           m_thread_id = GetThreadId();
           set_priority(1);
         }
 
-        INLINE void start_pre(void *(*fn)(void *), const bool, const int pri) 
+        INLINE void start_pre(void *(*fn)(void *), const bool, const int pri)
         {
           _fn = fn;
           m_priority = priority_map(pri);
@@ -349,8 +362,8 @@ class EXPCL_PANDAEXPRESS ipc_traits
         INLINE void start_post(const bool det, const int) {}
         INLINE void *back_ptr(void) { return _b_ptr; }
 
-        static INLINE void exit(void *) 
-        { 
+        static INLINE void exit(void *)
+        {
           int id = GetThreadId();
 
           vector<pointer_lookup>::iterator cur;
@@ -372,13 +385,13 @@ class EXPCL_PANDAEXPRESS ipc_traits
 
         INLINE void join(void **status) {}
 
-        INLINE void set_priority(const int pri) 
+        INLINE void set_priority(const int pri)
         {
           m_priority = priority_map(pri);
           ChangeThreadPriority(m_thread_id, m_priority);
         }
 
-        static INLINE thread_class *self(void) 
+        static INLINE thread_class *self(void)
         {
           int id, result;
 
@@ -388,7 +401,7 @@ class EXPCL_PANDAEXPRESS ipc_traits
           id = GetThreadId();
 
           for (cur = thread_addr_vector.begin(); cur != thread_addr_vector.end();
-               cur++) 
+               cur++)
           {
             if ((*cur).thread_id == id)
               return (*cur).thread_ptr;
@@ -397,7 +410,7 @@ class EXPCL_PANDAEXPRESS ipc_traits
           return NULL;
         }
 
-        static INLINE void yield(void) 
+        static INLINE void yield(void)
         {
           int id, result, priority;
           struct ThreadParam thread_param;

@@ -1,6 +1,19 @@
 // Filename: material.I
 // Created by:  mike (05Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -26,7 +39,7 @@ Material(const Material &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Material::Destructor 
+//     Function: Material::Destructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -35,7 +48,7 @@ INLINE Material::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Material::has_ambient 
+//     Function: Material::has_ambient
 //       Access: Public
 //  Description: Returns true if the ambient color has been explicitly
 //               set for this material, false otherwise.
@@ -46,7 +59,7 @@ has_ambient() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Material::get_ambient 
+//     Function: Material::get_ambient
 //       Access: Public
 //  Description: Returns the ambient color setting, if it has been
 //               set.  Returns (0,0,0,0) if the ambient color has not
@@ -68,7 +81,7 @@ clear_ambient() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Material::has_diffuse 
+//     Function: Material::has_diffuse
 //       Access: Public
 //  Description: Returns true if the diffuse color has been explicitly
 //               set for this material, false otherwise.
@@ -101,7 +114,7 @@ clear_diffuse() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Material::has_specular 
+//     Function: Material::has_specular
 //       Access: Public
 //  Description: Returns true if the specular color has been explicitly
 //               set for this material, false otherwise.
@@ -134,7 +147,7 @@ clear_specular() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Material::has_emission 
+//     Function: Material::has_emission
 //       Access: Public
 //  Description: Returns true if the emission color has been explicitly
 //               set for this material, false otherwise.

@@ -2,6 +2,19 @@
 // Created by:  mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #include <pandabase.h>
 #include "material.h"
@@ -22,7 +35,7 @@ TypeHandle Material::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: Material::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Material::
 operator = (const Material &copy) {
@@ -145,7 +158,7 @@ compare_to(const Material &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Material::output 
+//     Function: Material::output
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -164,13 +177,13 @@ output(ostream &out) const {
   if (has_emission()) {
     out << " e(" << get_emission() << ")";
   }
-  out << " s" << get_shininess() 
-      << " l" << get_local() 
+  out << " s" << get_shininess()
+      << " l" << get_local()
       << " t" << get_twoside();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Material::write 
+//     Function: Material::write
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////

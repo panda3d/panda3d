@@ -1,5 +1,20 @@
 // Filename: config_dxgsg.cxx
 // Created by:  drose (06Oct99)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #include "config_dxgsg.h"
 #include "dxGraphicsStateGuardian.h"
@@ -16,7 +31,7 @@ NotifyCategoryDef(dxgsg, ":display:gsg");
 // cannot be enabled when the player is compiled in NDEBUG mode.
 bool dx_show_transforms = config_dxgsg.GetBool("dx-show-transforms", false);
 
-//  Configure this to TRUE if you want DirectX to control the entire screen, 
+//  Configure this to TRUE if you want DirectX to control the entire screen,
 //  If false, it will just blit into a window.
 bool dx_full_screen = config_dxgsg.GetBool("dx-full-screen", false);
 

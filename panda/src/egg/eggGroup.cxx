@@ -1,6 +1,19 @@
 // Filename: eggGroup.cxx
 // Created by:  drose (16Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggGroup.h"
@@ -18,7 +31,7 @@ TypeHandle EggGroup::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroup::
 EggGroup(const string &name) : EggGroupNode(name) {
@@ -31,7 +44,7 @@ EggGroup(const string &name) : EggGroupNode(name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroup::
 EggGroup(const EggGroup &copy) {
@@ -41,7 +54,7 @@ EggGroup(const EggGroup &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::Copy assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroup &EggGroup::
 operator = (const EggGroup &copy) {
@@ -81,7 +94,7 @@ operator = (const EggGroup &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroup::
 ~EggGroup() {
@@ -91,7 +104,7 @@ EggGroup::
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::set_group_type
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void EggGroup::
 set_group_type(GroupType type) {
@@ -171,7 +184,7 @@ write(ostream &out, int indent_level) const {
   }
 
   if (get_billboard_type() != BT_none) {
-    indent(out, indent_level + 2) 
+    indent(out, indent_level + 2)
       << "<Billboard> { " << get_billboard_type() << " }\n";
   }
 
@@ -193,21 +206,21 @@ write(ostream &out, int indent_level) const {
   }
 
   if (has_collide_mask()) {
-    indent(out, indent_level + 2) 
+    indent(out, indent_level + 2)
       << "<Scalar> collide-mask { 0x";
     get_collide_mask().output_hex(out, 0);
     out << " }\n";
   }
 
   if (has_from_collide_mask()) {
-    indent(out, indent_level + 2) 
+    indent(out, indent_level + 2)
       << "<Scalar> from-collide-mask { 0x";
     get_from_collide_mask().output_hex(out, 0);
     out << " }\n";
   }
 
   if (has_into_collide_mask()) {
-    indent(out, indent_level + 2) 
+    indent(out, indent_level + 2)
       << "<Scalar> into-collide-mask { 0x";
     get_into_collide_mask().output_hex(out, 0);
     out << " }\n";
@@ -235,7 +248,7 @@ write(ostream &out, int indent_level) const {
   }
 
   if (has_objecttype()) {
-    indent(out, indent_level + 2) 
+    indent(out, indent_level + 2)
       << "<ObjectType> { ";
     enquote_string(out, get_objecttype()) << " }\n";
   }
@@ -642,15 +655,15 @@ write_vertex_ref(ostream &out, int indent_level) const {
       double membership = (*mi).first;
       const Indices &indices = (*mi).second;
 
-      indent(out, indent_level) 
+      indent(out, indent_level)
         << "<VertexRef> {\n";
       write_long_list(out, indent_level+2, indices.begin(), indices.end(),
                       "", "", 72);
-      
+
       // If all vrefs in this group have membership of 1, don't bother
       // to write out the membership scalar.
       if (!all_membership_one) {
-        indent(out, indent_level + 2) 
+        indent(out, indent_level + 2)
           << "<Scalar> membership { " << membership << " }\n";
       }
       if (pool == (EggVertexPool *)NULL) {
@@ -694,7 +707,7 @@ egg_start_parse_body() {
 void EggGroup::
 adjust_under() {
   // Billboards without an explicit center are an implicit instance.
-  bool is_billboard_instance = 
+  bool is_billboard_instance =
     (get_billboard_type() != BT_none && !has_billboard_center());
 
   // If we have our own transform, it carries forward.
@@ -706,7 +719,7 @@ adjust_under() {
     _under_flags |= UF_under_transform;
 
     // Our own transform also affects our node frame.
-    _node_frame = 
+    _node_frame =
       new MatrixFrame(get_transform() * get_node_frame());
     _node_frame_inv =
       new MatrixFrame(invert(get_node_frame()));
@@ -759,7 +772,7 @@ r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
 
     LMatrix4d mat1 = mat;
     LMatrix4d inv1 = inv;
-    
+
     // If we have a translation component, we should only apply
     // it to the top matrix.  All subsequent matrices get just the
     // rotational component.
@@ -821,7 +834,7 @@ r_flatten_transforms() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GroupType output operator
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ostream &operator << (ostream &out, EggGroup::GroupType t) {
   switch (t) {
@@ -841,7 +854,7 @@ ostream &operator << (ostream &out, EggGroup::GroupType t) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DartType output operator
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ostream &operator << (ostream &out, EggGroup::DartType t) {
   switch (t) {
@@ -861,7 +874,7 @@ ostream &operator << (ostream &out, EggGroup::DartType t) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BillboardType output operator
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ostream &operator << (ostream &out, EggGroup::BillboardType t) {
   switch (t) {
@@ -881,7 +894,7 @@ ostream &operator << (ostream &out, EggGroup::BillboardType t) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolidType output operator
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ostream &operator << (ostream &out, EggGroup::CollisionSolidType t) {
   switch (t) {
@@ -907,7 +920,7 @@ ostream &operator << (ostream &out, EggGroup::CollisionSolidType t) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollideFlags output operator
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ostream &operator << (ostream &out, EggGroup::CollideFlags t) {
   if (t == EggGroup::CF_none) {

@@ -1,12 +1,25 @@
 // Filename: memoryUsagePointers.I
 // Created by:  drose (25May00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsagePointers::Entry::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE MemoryUsagePointers::Entry::
 Entry(ReferenceCount *ptr, TypedObject *typed_ptr,
@@ -22,7 +35,7 @@ Entry(ReferenceCount *ptr, TypedObject *typed_ptr,
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsagePointers::Entry::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE MemoryUsagePointers::Entry::
 Entry(const Entry &copy) :
@@ -37,7 +50,7 @@ Entry(const Entry &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsagePointers::Entry::Copy Assigment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void MemoryUsagePointers::Entry::
 operator = (const Entry &copy) {
@@ -56,7 +69,7 @@ operator = (const Entry &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsagePointers::Entry::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE MemoryUsagePointers::Entry::
 ~Entry() {

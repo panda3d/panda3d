@@ -1,6 +1,19 @@
 // Filename: fakestringstream.h
 // Created by:  cary (04Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef FAKESTRINGSTREAM_H
@@ -41,7 +54,7 @@ public:
 
 class istringstream : public fake_istream_buffer, public istrstream {
 public:
-  istringstream(const string &input) : 
+  istringstream(const string &input) :
     fake_istream_buffer(input),
     istrstream(_str, _len) { }
 };
@@ -60,12 +73,12 @@ public:
 
 class stringstream : public fake_istream_buffer, public strstream {
 public:
-  stringstream() : strstream() { 
+  stringstream() : strstream() {
     _owns_str = true;
   }
-  stringstream(const string &input) : 
+  stringstream(const string &input) :
     fake_istream_buffer(input),
-    strstream(_str, _len, ios::in) 
+    strstream(_str, _len, ios::in)
   {
     _owns_str = false;
   }

@@ -1,6 +1,19 @@
-// Filename: interrogateType.C
+// Filename: interrogateType.cxx
 // Created by:  drose (31Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "interrogateType.h"
@@ -16,7 +29,7 @@ string InterrogateType::_empty_string;
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::Derivation::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void InterrogateType::Derivation::
 output(ostream &out) const {
@@ -26,7 +39,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::Derivation::input
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void InterrogateType::Derivation::
 input(istream &in) {
@@ -36,7 +49,7 @@ input(istream &in) {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::EnumValue::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void InterrogateType::EnumValue::
 output(ostream &out) const {
@@ -48,7 +61,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::EnumValue::input
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void InterrogateType::EnumValue::
 input(istream &in) {
@@ -60,7 +73,7 @@ input(istream &in) {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void InterrogateType::
 operator = (const InterrogateType &copy) {

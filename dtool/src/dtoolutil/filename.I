@@ -1,21 +1,25 @@
 // Filename: filename.I
 // Created by:  drose (18Jan99)
-// 
+//
 ////////////////////////////////////////////////////////////////////
-// Copyright (C) 1992,93,94,95,96,97  Walt Disney Imagineering, Inc.
-// 
-// These  coded  instructions,  statements,  data   structures   and
-// computer  programs contain unpublished proprietary information of
-// Walt Disney Imagineering and are protected by  Federal  copyright
-// law.  They may  not be  disclosed to third  parties  or copied or
-// duplicated in any form, in whole or in part,  without  the  prior
-// written consent of Walt Disney Imagineering Inc.
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename::
 Filename(const string &filename) {
@@ -26,7 +30,7 @@ Filename(const string &filename) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename::
 Filename(const char *filename) {
@@ -38,10 +42,10 @@ Filename(const char *filename) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename::
-Filename(const Filename &copy) 
+Filename(const Filename &copy)
   : _filename(copy._filename),
     _dirname_end(copy._dirname_end),
     _basename_start(copy._basename_start),
@@ -54,7 +58,7 @@ Filename(const Filename &copy)
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::text_filename named constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename Filename::
 text_filename(const string &filename) {
@@ -66,7 +70,7 @@ text_filename(const string &filename) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::binary_filename named constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename Filename::
 binary_filename(const string &filename) {
@@ -78,7 +82,7 @@ binary_filename(const string &filename) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::dso_filename named constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename Filename::
 dso_filename(const string &filename) {
@@ -90,7 +94,7 @@ dso_filename(const string &filename) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::executable_filename named constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename Filename::
 executable_filename(const string &filename) {
@@ -102,7 +106,7 @@ executable_filename(const string &filename) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename::
 ~Filename() {
@@ -112,7 +116,7 @@ INLINE Filename::
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename &Filename::
 operator = (const string &filename) {
@@ -126,7 +130,7 @@ operator = (const string &filename) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename &Filename::
 operator = (const char *filename) {
@@ -137,7 +141,7 @@ operator = (const char *filename) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Copy assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename &Filename::
 operator = (const Filename &copy) {
@@ -149,12 +153,12 @@ operator = (const Filename &copy) {
   _flags = copy._flags;
   return *this;
 }
-  
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::string typecast operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename::
 operator const string & () const {
@@ -164,7 +168,7 @@ operator const string & () const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::c_str
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const char *Filename::
 c_str() const {
@@ -174,7 +178,7 @@ c_str() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::empty
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool Filename::
 empty() const {
@@ -184,7 +188,7 @@ empty() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::length
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE size_t Filename::
 length() const {
@@ -194,7 +198,7 @@ length() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Indexing operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE char Filename::
 operator [] (int n) const {
@@ -401,7 +405,7 @@ is_local() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Filename::
 is_fully_qualified() const {
-  return 
+  return
     (_filename.size() > 2 && _filename[0] == '.' && _filename[1] == '/') ||
     (!_filename.empty() && _filename[0] == '/');
 }
@@ -409,7 +413,7 @@ is_fully_qualified() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Equality operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool Filename::
 operator == (const string &other) const {
@@ -419,7 +423,7 @@ operator == (const string &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Inequality operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool Filename::
 operator != (const string &other) const {
@@ -429,7 +433,7 @@ operator != (const string &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Ordering operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool Filename::
 operator < (const string &other) const {
@@ -440,7 +444,7 @@ operator < (const string &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void Filename::
 output(ostream &out) const {

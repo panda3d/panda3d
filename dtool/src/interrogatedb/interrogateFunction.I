@@ -1,13 +1,26 @@
 // Filename: interrogateFunction.I
 // Created by:  drose (01Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunction::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE InterrogateFunction::
 InterrogateFunction(InterrogateModuleDef *def) :
@@ -20,7 +33,7 @@ InterrogateFunction(InterrogateModuleDef *def) :
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunction::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE InterrogateFunction::
 InterrogateFunction(const InterrogateFunction &copy) {
@@ -30,7 +43,7 @@ InterrogateFunction(const InterrogateFunction &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunction::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void InterrogateFunction::
 operator = (const InterrogateFunction &copy) {
@@ -91,7 +104,7 @@ get_class() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunction::has_scoped_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateFunction::
 has_scoped_name() const {
@@ -101,7 +114,7 @@ has_scoped_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunction::get_scoped_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const string &InterrogateFunction::
 get_scoped_name() const {
@@ -111,7 +124,7 @@ get_scoped_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunction::has_comment
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateFunction::
 has_comment() const {
@@ -121,7 +134,7 @@ has_comment() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunction::get_comment
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const string &InterrogateFunction::
 get_comment() const {
@@ -131,7 +144,7 @@ get_comment() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunction::has_prototype
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateFunction::
 has_prototype() const {
@@ -141,7 +154,7 @@ has_prototype() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunction::get_prototype
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const string &InterrogateFunction::
 get_prototype() const {
@@ -151,7 +164,7 @@ get_prototype() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunction::number_of_c_wrappers
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int InterrogateFunction::
 number_of_c_wrappers() const {
@@ -161,7 +174,7 @@ number_of_c_wrappers() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunction::get_c_wrapper
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE FunctionWrapperIndex InterrogateFunction::
 get_c_wrapper(int n) const {
@@ -174,7 +187,7 @@ get_c_wrapper(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunction::number_of_python_wrappers
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int InterrogateFunction::
 number_of_python_wrappers() const {
@@ -184,7 +197,7 @@ number_of_python_wrappers() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunction::get_python_wrapper
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE FunctionWrapperIndex InterrogateFunction::
 get_python_wrapper(int n) const {

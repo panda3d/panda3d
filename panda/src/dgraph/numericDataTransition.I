@@ -1,6 +1,19 @@
 // Filename: numericDataTransition.I
 // Created by:  drose (25Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 /* okcircular */
@@ -12,7 +25,7 @@ TypeHandle NumericDataTransition<NumType>::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: NumericDataTransition::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 INLINE NumericDataTransition<NumType>::
@@ -25,7 +38,7 @@ NumericDataTransition() :
 ////////////////////////////////////////////////////////////////////
 //     Function: NumericDataTransition::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 INLINE NumericDataTransition<NumType>::
@@ -38,7 +51,7 @@ NumericDataTransition(NumType scale, NumType offset) :
 ////////////////////////////////////////////////////////////////////
 //     Function: NumericDataTransition::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 INLINE NumericDataTransition<NumType>::
@@ -52,7 +65,7 @@ NumericDataTransition(const NumericDataTransition<NumType> &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: NumericDataTransition::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 INLINE void NumericDataTransition<NumType>::
@@ -77,7 +90,7 @@ is_identity() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NumericDataTransition::set_scale
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 void NumericDataTransition<NumType>::
@@ -89,7 +102,7 @@ set_scale(NumType scale) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NumericDataTransition::get_scale
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 NumType NumericDataTransition<NumType>::
@@ -100,7 +113,7 @@ get_scale() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NumericDataTransition::set_offset
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 void NumericDataTransition<NumType>::
@@ -112,7 +125,7 @@ set_offset(NumType offset) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NumericDataTransition::get_offset
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 NumType NumericDataTransition<NumType>::
@@ -158,7 +171,7 @@ compose(const NodeTransition *other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NumericDataTransition::invert
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 NodeTransition *NumericDataTransition<NumType>::
@@ -174,7 +187,7 @@ invert() const {
     NodeTransition *c = make_copy();
     NumericDataTransition<NumType> *result;
     DCAST_INTO_R(result, c, NULL);
- 
+
     result->_offset = - _offset / _scale;
     result->_scale = (NumType)1 / _scale;
     return result;
@@ -211,7 +224,7 @@ apply(const NodeAttribute *attrib) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NumericDataTransition::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 void NumericDataTransition<NumType>::
@@ -222,7 +235,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NumericDataTransition::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 void NumericDataTransition<NumType>::
@@ -233,7 +246,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NumericDataTransition::internal_compare_to
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class NumType>
 int NumericDataTransition<NumType>::

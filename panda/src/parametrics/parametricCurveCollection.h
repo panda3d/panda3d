@@ -1,6 +1,19 @@
 // Filename: parametricCurveCollection.h
 // Created by:  drose (04Mar01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef NODEPATHCOLLECTION_H
@@ -45,7 +58,7 @@ PUBLISHED:
 
   INLINE int get_num_curves() const;
   INLINE ParametricCurve *get_curve(int index) const;
-  
+
   ParametricCurve *get_xyz_curve() const;
   ParametricCurve *get_hpr_curve() const;
   ParametricCurve *get_default_curve() const;
@@ -72,7 +85,7 @@ PUBLISHED:
 
   bool recompute();
 
-  bool stitch(const ParametricCurveCollection *a, 
+  bool stitch(const ParametricCurveCollection *a,
               const ParametricCurveCollection *b);
 
   void output(ostream &out) const;

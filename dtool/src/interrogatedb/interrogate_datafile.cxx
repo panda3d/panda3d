@@ -1,6 +1,19 @@
-// Filename: interrogate_datafile.C
+// Filename: interrogate_datafile.cxx
 // Created by:  drose (09Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "interrogate_datafile.h"
@@ -32,7 +45,7 @@ idf_input_string(istream &in, string &str) {
   if (in.fail()) {
     return;
   }
-  
+
   // Skip one character of whitespace, and then read the string.
   in.get();
   str = "";
@@ -77,7 +90,7 @@ idf_input_string(istream &in, const char *&str) {
     // Don't change the string if the input length is zero.
     return;
   }
-  
+
   // Skip one character of whitespace, and then read the string.
   in.get();
   char *readstr = new char[length + 1];

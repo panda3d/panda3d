@@ -2,6 +2,19 @@
 // Created by:  drose (22Feb99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef PARTBUNDLE_H
 #define PARTBUNDLE_H
@@ -92,14 +105,14 @@ public:
   INLINE control_iterator control_begin() const;
   INLINE control_iterator control_end() const;
   INLINE control_size_type control_size() const;
- 
+
   INLINE const ChannelBlend &get_blend_map() const;
 
 PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
 
-  PT(AnimControl) bind_anim(AnimBundle *anim, 
+  PT(AnimControl) bind_anim(AnimBundle *anim,
                             int hierarchy_match_flags = 0);
 
   bool bind_anim(AnimBundle *anim, const string &name,

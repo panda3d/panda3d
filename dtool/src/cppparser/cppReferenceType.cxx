@@ -1,6 +1,19 @@
-// Filename: cppReferenceType.C
+// Filename: cppReferenceType.cxx
 // Created by:  drose (19Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -9,7 +22,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPReferenceType::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPReferenceType::
 CPPReferenceType(CPPType *pointing_at) :
@@ -28,14 +41,14 @@ CPPReferenceType(CPPType *pointing_at) :
 ////////////////////////////////////////////////////////////////////
 bool CPPReferenceType::
 is_fully_specified() const {
-  return CPPType::is_fully_specified() && 
+  return CPPType::is_fully_specified() &&
     _pointing_at->is_fully_specified();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPReferenceType::substitute_decl
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPReferenceType::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
@@ -46,7 +59,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   }
 
   CPPReferenceType *rep = new CPPReferenceType(*this);
-  rep->_pointing_at = 
+  rep->_pointing_at =
     _pointing_at->substitute_decl(subst, current_scope, global_scope)
     ->as_type();
 
@@ -114,7 +127,7 @@ is_equivalent(const CPPType &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPReferenceType::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPReferenceType::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
@@ -134,14 +147,14 @@ void CPPReferenceType::
 output_instance(ostream &out, int indent_level, CPPScope *scope,
                 bool complete, const string &prename,
                 const string &name) const {
-  _pointing_at->output_instance(out, indent_level, scope, complete, 
+  _pointing_at->output_instance(out, indent_level, scope, complete,
                                 "&" + prename, name);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPReferenceType::get_subtype
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration::SubType CPPReferenceType::
 get_subtype() const {
@@ -151,7 +164,7 @@ get_subtype() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPReferenceType::as_reference_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPReferenceType *CPPReferenceType::
 as_reference_type() {

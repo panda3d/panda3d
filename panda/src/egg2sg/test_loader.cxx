@@ -1,6 +1,19 @@
 // Filename: test_loader.cxx
 // Created by:  drose (21Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "load_egg_file.h"
@@ -28,7 +41,7 @@
 
 #include <stdlib.h>
 
-class PrintNodes : 
+class PrintNodes :
   public TraverserVisitor<AllTransitionsWrapper, NullLevelState> {
 public:
   PrintNodes() {
@@ -37,7 +50,7 @@ public:
   bool reached_node(Node *node, AttributeWrapper &state, NullLevelState &) {
     if (node->is_of_type(GeomNode::get_class_type())) {
       GeomNode *geomNode = (GeomNode *)node;
-      indent(nout, _indent_level) 
+      indent(nout, _indent_level)
         << *geomNode << ", " << geomNode->get_num_geoms()
         << " geoms:\n";
       int num_geoms = geomNode->get_num_geoms();
@@ -90,10 +103,10 @@ main(int argc, char *argv[]) {
 
     new RenderRelation(root, egg_root);
   }
-  
+
   PrintNodes pn;
   df_traverse(root, pn, AllAttributesWrapper(), NullLevelState(),
               RenderRelation::get_class_type());
-  
+
   return(0);
 }

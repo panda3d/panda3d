@@ -1,6 +1,19 @@
 // Filename: string_utils.cxx
 // Created by:  drose (18Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "string_utils.h"
@@ -21,12 +34,12 @@ cmp_nocase(const string &s, const string &s2) {
     ++p;
     ++p2;
   }
-  
+
   return (s2.size() == s.size()) ? 0 :
     (s.size() < s2.size()) ? -1 : 1;  // size is unsigned
 }
 
-INLINE int 
+INLINE int
 toupper_uh(int ch) {
   return (ch == '_') ? '-' : toupper(ch);
 }
@@ -44,7 +57,7 @@ cmp_nocase_uh(const string &s, const string &s2) {
     ++p;
     ++p2;
   }
-  
+
   return (s2.size() == s.size()) ? 0 :
     (s.size() < s2.size()) ? -1 : 1;  // size is unsigned
 }
@@ -148,7 +161,7 @@ tokenize(const string &str, vector_string &words, const string &delimiters) {
 //  Description: Returns a new string representing the contents of the
 //               given string with the leading whitespace removed.
 ////////////////////////////////////////////////////////////////////
-string 
+string
 trim_left(const string &str) {
   size_t begin = 0;
   while (begin < str.size() && isspace(str[begin])) {
@@ -163,7 +176,7 @@ trim_left(const string &str) {
 //  Description: Returns a new string representing the contents of the
 //               given string with the trailing whitespace removed.
 ////////////////////////////////////////////////////////////////////
-string 
+string
 trim_right(const string &str) {
   size_t begin = 0;
   size_t end = str.size();

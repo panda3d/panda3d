@@ -1,12 +1,25 @@
 // Filename: pnmImage.I
 // Created by:  drose (15Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImage::
 PNMImage() {
@@ -17,7 +30,7 @@ PNMImage() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImage::
 PNMImage(const Filename &filename, PNMFileType *type) {
@@ -30,7 +43,7 @@ PNMImage(const Filename &filename, PNMFileType *type) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImage::
 PNMImage(int x_size, int y_size, int num_channels, xelval maxval,
@@ -40,11 +53,11 @@ PNMImage(int x_size, int y_size, int num_channels, xelval maxval,
 
   clear(x_size, y_size, num_channels, maxval, type);
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImage::
 PNMImage(const PNMImage &copy) {
@@ -55,11 +68,11 @@ PNMImage(const PNMImage &copy) {
 
   copy_from(copy);
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::Copy Assigment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImage::
 operator = (const PNMImage &copy) {
@@ -69,7 +82,7 @@ operator = (const PNMImage &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImage::
 ~PNMImage() {
@@ -630,8 +643,8 @@ get_bright(int x, int y) const {
 ////////////////////////////////////////////////////////////////////
 INLINE double PNMImage::
 get_bright(int x, int y, double rc, double gc, double bc) const {
-  return from_val(rc * get_red_val(x, y) + 
-                  gc * get_green_val(x, y) + 
+  return from_val(rc * get_red_val(x, y) +
+                  gc * get_green_val(x, y) +
                   bc * get_blue_val(x, y));
 }
 
@@ -645,8 +658,8 @@ get_bright(int x, int y, double rc, double gc, double bc) const {
 ////////////////////////////////////////////////////////////////////
 INLINE double PNMImage::
 get_bright(int x, int y, double rc, double gc, double bc, double ac) const {
-  return from_val(rc * get_red_val(x, y) + 
-                  gc * get_green_val(x, y) + 
+  return from_val(rc * get_red_val(x, y) +
+                  gc * get_green_val(x, y) +
                   bc * get_blue_val(x, y) +
                   ac * get_alpha_val(x, y));
 }
@@ -672,8 +685,8 @@ blend(int x, int y, const RGBColord &val, double alpha) {
 //               xels.
 ////////////////////////////////////////////////////////////////////
 INLINE xel *PNMImage::
-operator [] (int y) { 
-  return row(y); 
+operator [] (int y) {
+  return row(y);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -683,8 +696,8 @@ operator [] (int y) {
 //               xels.
 ////////////////////////////////////////////////////////////////////
 INLINE const xel *PNMImage::
-operator [] (int y) const { 
-  return row(y); 
+operator [] (int y) const {
+  return row(y);
 }
 
 ////////////////////////////////////////////////////////////////////

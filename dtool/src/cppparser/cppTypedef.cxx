@@ -1,6 +1,19 @@
-// Filename: cppTypedef.C
+// Filename: cppTypedef.cxx
 // Created by:  drose (19Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -19,7 +32,7 @@
 //               typedef.
 ////////////////////////////////////////////////////////////////////
 CPPTypedef::
-CPPTypedef(CPPInstance *inst, bool global) : CPPInstance(*inst) 
+CPPTypedef(CPPInstance *inst, bool global) : CPPInstance(*inst)
 {
   // Actually, we'll avoid deleting this for now.  It causes problems
   // for some reason to be determined later.
@@ -35,12 +48,12 @@ CPPTypedef(CPPInstance *inst, bool global) : CPPInstance(*inst)
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypedef::substitute_decl
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPTypedef::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
                 CPPScope *current_scope, CPPScope *global_scope) {
-  CPPDeclaration *decl = 
+  CPPDeclaration *decl =
     CPPInstance::substitute_decl(subst, current_scope, global_scope);
   assert(decl != NULL);
   if (decl->as_typedef()) {
@@ -53,7 +66,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypedef::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPTypedef::
 output(ostream &out, int indent_level, CPPScope *scope, bool) const {
@@ -64,7 +77,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypedef::get_subtype
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration::SubType CPPTypedef::
 get_subtype() const {
@@ -74,7 +87,7 @@ get_subtype() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypedef::as_typedef
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPTypedef *CPPTypedef::
 as_typedef() {

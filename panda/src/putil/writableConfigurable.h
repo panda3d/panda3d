@@ -1,6 +1,20 @@
 // Filename: writableConfigurable.h
 // Created by:  jason (19Jun00)
 //
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 //
 #ifndef WRITABLECONFIGURABLE_H
@@ -20,15 +34,15 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : WritableConfigurable
-// Description : Defined as a fix to allow creating Configurable and 
+// Description : Defined as a fix to allow creating Configurable and
 //               Writable objects.  Otherwise the compiler gets
-//               confused since both TypedWritable and Configurable 
+//               confused since both TypedWritable and Configurable
 //               inherit from TypedObject.
 //
 //               An object that has data or parameters that are set
 //               less frequently (at least occasionally) than every
 //               frame.  We can cache the configuration info by
-//               by using the "dirty" flag. 
+//               by using the "dirty" flag.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA WritableConfigurable : public TypedWritable {
 
@@ -52,7 +66,7 @@ public:
 
 private:
   bool _dirty;
- 
+
 public:
   virtual void write_datagram(BamWriter*, Datagram&) = 0;
 
@@ -66,7 +80,7 @@ public:
     TypedWritable::init_type();
     register_type(_type_handle, "WritableConfigurable",
                   TypedWritable::get_class_type());
-    TypeRegistry::ptr()->record_alternate_name(_type_handle, 
+    TypeRegistry::ptr()->record_alternate_name(_type_handle,
                                                "WriteableConfigurable");
   }
   virtual TypeHandle get_type() const {

@@ -1,6 +1,19 @@
 // Filename: multiplexStreamBuf.cxx
 // Created by:  drose (27Nov00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "multiplexStreamBuf.h"
@@ -78,7 +91,7 @@ write_string(const string &str) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MultiplexStreamBuf::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 MultiplexStreamBuf::
 MultiplexStreamBuf() {
@@ -93,7 +106,7 @@ MultiplexStreamBuf() {
 ////////////////////////////////////////////////////////////////////
 //     Function: MultiplexStreamBuf::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 MultiplexStreamBuf::
 ~MultiplexStreamBuf() {
@@ -155,7 +168,7 @@ flush() {
 //               internal buffer is filled, plus one character.
 ////////////////////////////////////////////////////////////////////
 int MultiplexStreamBuf::
-overflow(int ch) { 
+overflow(int ch) {
 #ifdef HAVE_IPC
   mutex_lock m(_lock);
 #endif
@@ -184,7 +197,7 @@ overflow(int ch) {
 //               destruction).
 ////////////////////////////////////////////////////////////////////
 int MultiplexStreamBuf::
-sync() { 
+sync() {
 #ifdef HAVE_IPC
   mutex_lock m(_lock);
 #endif
@@ -256,5 +269,5 @@ write_chars(const char *start, int length, bool flush) {
       break;
     }
   }
-  
+
 }

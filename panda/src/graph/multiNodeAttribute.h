@@ -1,6 +1,19 @@
 // Filename: multiNodeAttribute.h
 // Created by:  drose (23Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef MULTINODEATTRIBUTE_H
@@ -25,16 +38,16 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, MULTIATTRIBUTE_NODE);
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MultiNodeAttribute
-// Description : 
+// Description :
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MultiNodeAttribute : 
+class EXPCL_PANDA MultiNodeAttribute :
   public MultiAttribute<PT_Node, PointerNameClass> {
 protected:
   INLINE_GRAPH MultiNodeAttribute() {};
   INLINE_GRAPH MultiNodeAttribute(const MultiNodeAttribute &copy) :
           MultiAttribute<PT_Node, PointerNameClass>(copy) {};
 
-  INLINE_GRAPH void operator = (const MultiNodeAttribute &copy) 
+  INLINE_GRAPH void operator = (const MultiNodeAttribute &copy)
           {MultiAttribute<PT_Node, PointerNameClass>::operator = (copy);}
 
 public:

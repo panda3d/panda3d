@@ -1,6 +1,19 @@
 // Filename: pnmFileTypeAlias.cxx
 // Created by:  drose (17Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileTypeAlias.h"
@@ -24,7 +37,7 @@ TypeHandle PNMFileTypeAlias::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeAlias::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeAlias::
 PNMFileTypeAlias() {
@@ -104,7 +117,7 @@ make_writer(FILE *file, bool owns_file) {
 
 
 
-inline unsigned short 
+inline unsigned short
 read_ushort(FILE *file) {
   unsigned short x;
   return pm_readbigshort(file, (short *)&x)==0 ? x : 0;
@@ -130,10 +143,10 @@ write_uchar(FILE *file, unsigned char x) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeAlias::Reader::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeAlias::Reader::
-Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) : 
+Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
   if (!read_magic_number(_file, magic_number, 4)) {
@@ -148,10 +161,10 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
     return;
   }
 
-  _x_size = 
+  _x_size =
     ((unsigned char)magic_number[0] << 8) |
     ((unsigned char)magic_number[1]);
-  _y_size = 
+  _y_size =
     ((unsigned char)magic_number[2] << 8) |
     ((unsigned char)magic_number[3]);
 
@@ -232,7 +245,7 @@ read_row(xel *row_data, xelval *) {
       return false;
     }
     blu = read_uchar(_file);
-    
+
     if (get_color_type() == PNMImageHeader::CT_color) {
       grn = read_uchar(_file);
       red = read_uchar(_file);
@@ -267,8 +280,8 @@ flush_color(FILE *file) {
   }
 }
 
-static void 
-write_color(FILE *file, 
+static void
+write_color(FILE *file,
             unsigned char red, unsigned char blu, unsigned char grn) {
   if (red==last_red && blu==last_blu && grn==last_grn && num_count<0377) {
     num_count++;
@@ -285,7 +298,7 @@ write_color(FILE *file,
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeAlias::Writer::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeAlias::Writer::
 Writer(PNMFileType *type, FILE *file, bool owns_file) :
@@ -367,11 +380,11 @@ write_row(xel *row_data, xelval *) {
       grn = (unsigned char)(255*PPM_GETG(row_data[x]) / _maxval);
       blu = (unsigned char)(255*PPM_GETB(row_data[x]) / _maxval);
     }
-    
+
     write_color(_file, red, blu, grn);
   }
   flush_color(_file);
-  
+
   return true;
 }
 

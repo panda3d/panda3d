@@ -1,12 +1,25 @@
 // Filename: nodeAttributeWrapper.I
 // Created by:  drose (20Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributeWrapper::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeAttributeWrapper::
 NodeAttributeWrapper(TypeHandle handle) : _handle(handle) {
@@ -16,7 +29,7 @@ NodeAttributeWrapper(TypeHandle handle) : _handle(handle) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributeWrapper::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeAttributeWrapper::
 NodeAttributeWrapper(const NodeAttributeWrapper &copy) :
@@ -28,7 +41,7 @@ NodeAttributeWrapper(const NodeAttributeWrapper &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributeWrapper::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NodeAttributeWrapper::
 operator = (const NodeAttributeWrapper &copy) {
@@ -39,7 +52,7 @@ operator = (const NodeAttributeWrapper &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributeWrapper::get_handle
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH TypeHandle NodeAttributeWrapper::
 get_handle() const {
@@ -49,7 +62,7 @@ get_handle() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributeWrapper::get_attrib
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeAttribute *NodeAttributeWrapper::
 get_attrib() const {
@@ -59,7 +72,7 @@ get_attrib() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributeWrapper::set_attrib
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NodeAttributeWrapper::
 set_attrib(NodeAttribute *attrib) {
@@ -81,7 +94,7 @@ is_initial() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributeWrapper::compare_to
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH int NodeAttributeWrapper::
 compare_to(const NodeAttributeWrapper &other) const {

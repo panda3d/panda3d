@@ -1,12 +1,25 @@
 // Filename: lvecBase3_src.I
 // Created by:  drose (08Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::Default Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3)::
 FLOATNAME(LVecBase3)() {
@@ -15,7 +28,7 @@ FLOATNAME(LVecBase3)() {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3)::
 FLOATNAME(LVecBase3)(const FLOATNAME(LVecBase3) &copy) {
@@ -28,7 +41,7 @@ FLOATNAME(LVecBase3)(const FLOATNAME(LVecBase3) &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3) &FLOATNAME(LVecBase3)::
 operator = (const FLOATNAME(LVecBase3) &copy) {
@@ -42,7 +55,7 @@ operator = (const FLOATNAME(LVecBase3) &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::Fill Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3) &FLOATNAME(LVecBase3)::
 operator = (FLOATTYPE fill_value) {
@@ -53,7 +66,7 @@ operator = (FLOATTYPE fill_value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3)::
 FLOATNAME(LVecBase3)(FLOATTYPE fill_value) {
@@ -63,7 +76,7 @@ FLOATNAME(LVecBase3)(FLOATTYPE fill_value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3)::
 FLOATNAME(LVecBase3)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z) {
@@ -116,7 +129,7 @@ unit_z() {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3)::
 ~FLOATNAME(LVecBase3)() {
@@ -125,7 +138,7 @@ INLINE_LINMATH FLOATNAME(LVecBase3)::
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::Indexing Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase3)::
 operator [](int i) const {
@@ -136,7 +149,7 @@ operator [](int i) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::Indexing Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE &FLOATNAME(LVecBase3)::
 operator [](int i) {
@@ -158,7 +171,7 @@ is_nan() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::get_cell
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase3)::
 get_cell(int i) const {
@@ -169,7 +182,7 @@ get_cell(int i) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::get_x
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase3)::
 get_x() const {
@@ -179,7 +192,7 @@ get_x() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::get_y
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase3)::
 get_y() const {
@@ -189,7 +202,7 @@ get_y() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::get_z
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase3)::
 get_z() const {
@@ -199,7 +212,7 @@ get_z() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::set_cell
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 set_cell(int i, FLOATTYPE value) {
@@ -210,7 +223,7 @@ set_cell(int i, FLOATTYPE value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::set_x
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 set_x(FLOATTYPE value) {
@@ -220,7 +233,7 @@ set_x(FLOATTYPE value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::set_y
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 set_y(FLOATTYPE value) {
@@ -230,7 +243,7 @@ set_y(FLOATTYPE value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::set_z
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 set_z(FLOATTYPE value) {
@@ -320,7 +333,7 @@ fill(FLOATTYPE fill_value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::set
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 set(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z) {
@@ -332,7 +345,7 @@ set(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::dot
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVecBase3)::
 dot(const FLOATNAME(LVecBase3) &other) const {
@@ -342,7 +355,7 @@ dot(const FLOATNAME(LVecBase3) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::cross
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
 cross(const FLOATNAME(LVecBase3) &other) const {
@@ -368,7 +381,7 @@ operator < (const FLOATNAME(LVecBase3) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::operator ==
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LVecBase3)::
 operator == (const FLOATNAME(LVecBase3) &other) const {
@@ -380,7 +393,7 @@ operator == (const FLOATNAME(LVecBase3) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::operator !=
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LVecBase3)::
 operator != (const FLOATNAME(LVecBase3) &other) const {
@@ -424,7 +437,7 @@ compare_to(const FLOATNAME(LVecBase3) &other, FLOATTYPE threshold) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::unary -
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
 operator - () const {
@@ -434,7 +447,7 @@ operator - () const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::vector + vector
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
 operator + (const FLOATNAME(LVecBase3) &other) const {
@@ -446,7 +459,7 @@ operator + (const FLOATNAME(LVecBase3) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::vector - vector
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
 operator - (const FLOATNAME(LVecBase3) &other) const {
@@ -458,7 +471,7 @@ operator - (const FLOATNAME(LVecBase3) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::vector * scalar
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
 operator * (FLOATTYPE scalar) const {
@@ -470,7 +483,7 @@ operator * (FLOATTYPE scalar) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::vector / scalar
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
 operator / (FLOATTYPE scalar) const {
@@ -483,7 +496,7 @@ operator / (FLOATTYPE scalar) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::operator +=
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 operator += (const FLOATNAME(LVecBase3) &other) {
@@ -495,7 +508,7 @@ operator += (const FLOATNAME(LVecBase3) &other) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::operator -=
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 operator -= (const FLOATNAME(LVecBase3) &other) {
@@ -507,7 +520,7 @@ operator -= (const FLOATNAME(LVecBase3) &other) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::operator *=
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 operator *= (FLOATTYPE scalar) {
@@ -519,7 +532,7 @@ operator *= (FLOATTYPE scalar) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::operator /=
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 operator /= (FLOATTYPE scalar) {
@@ -532,7 +545,7 @@ operator /= (FLOATTYPE scalar) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::cross product (with assigment)
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 cross_into(const FLOATNAME(LVecBase3) &other) {
@@ -566,12 +579,12 @@ almost_equal(const FLOATNAME(LVecBase3) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LVecBase3)::
 output(ostream &out) const {
-  out << MAYBE_ZERO(_v.v._0) << " " 
-      << MAYBE_ZERO(_v.v._1) << " " 
+  out << MAYBE_ZERO(_v.v._0) << " "
+      << MAYBE_ZERO(_v.v._1) << " "
       << MAYBE_ZERO(_v.v._2);
 }
 

@@ -1,6 +1,19 @@
 // Filename: test_spam_client.cxx
 // Created by:  drose (24Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "queuedConnectionManager.h"
@@ -37,7 +50,7 @@ main(int argc, char *argv[]) {
     exit(1);
   }
 
-  nout << "Successfully opened TCP connection to " << hostname 
+  nout << "Successfully opened TCP connection to " << hostname
        << " on port " << port << "\n";
 
   QueuedConnectionReader reader(&cm, 10);
@@ -102,5 +115,5 @@ main(int argc, char *argv[]) {
 
 
 
-    
-  
+
+

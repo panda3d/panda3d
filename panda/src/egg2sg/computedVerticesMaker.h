@@ -2,6 +2,19 @@
 // Created by:  drose (01Mar99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef COMPUTEDVERTICESMAKER_H
 #define COMPUTEDVERTICESMAKER_H
@@ -50,7 +63,7 @@ class EggVertex;
 class EXPCL_PANDAEGG ComputedVerticesMaker {
 public:
   ComputedVerticesMaker();
- 
+
   void begin_new_space();
   void add_joint(EggNode *joint, double membership);
   void add_vertex_joints(EggVertex *vertex, EggNode *object);
@@ -146,4 +159,4 @@ operator << (ostream &out, const ComputedVerticesMaker::JointWeights &jw) {
 #include "computedVerticesMaker.I"
 
 #endif
- 
+

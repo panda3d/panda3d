@@ -1,6 +1,19 @@
-// Filename: bitMaskTransition.I
+// Filename: bitMaskTransition.T
 // Created by:  drose (08Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "bitMaskAttribute.h"
@@ -11,7 +24,7 @@ TypeHandle BitMaskTransition<MaskType>::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMaskTransition::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MaskType>
 INLINE_GRAPH BitMaskTransition<MaskType>::
@@ -23,7 +36,7 @@ BitMaskTransition() {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMaskTransition::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MaskType>
 INLINE_GRAPH BitMaskTransition<MaskType>::
@@ -35,7 +48,7 @@ BitMaskTransition(const MaskType &and, const MaskType &or) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMaskTransition::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MaskType>
 INLINE_GRAPH BitMaskTransition<MaskType>::
@@ -49,7 +62,7 @@ BitMaskTransition(const BitMaskTransition &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMaskTransition::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MaskType>
 INLINE_GRAPH void BitMaskTransition<MaskType>::
@@ -62,7 +75,7 @@ operator = (const BitMaskTransition &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMaskTransition::set_and
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MaskType>
 INLINE_GRAPH void BitMaskTransition<MaskType>::
@@ -74,7 +87,7 @@ set_and(const MaskType &and) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMaskTransition::get_and
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MaskType>
 INLINE_GRAPH const MaskType &BitMaskTransition<MaskType>::
@@ -85,7 +98,7 @@ get_and() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMaskTransition::set_or
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MaskType>
 INLINE_GRAPH void BitMaskTransition<MaskType>::
@@ -97,7 +110,7 @@ set_or(const MaskType &or) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMaskTransition::get_or
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MaskType>
 INLINE_GRAPH const MaskType &BitMaskTransition<MaskType>::
@@ -135,7 +148,7 @@ compose(const NodeTransition *other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMaskTransition::invert
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MaskType>
 NodeTransition *BitMaskTransition<MaskType>::
@@ -180,7 +193,7 @@ apply(const NodeAttribute *attrib) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMaskTransition::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MaskType>
 void BitMaskTransition<MaskType>::
@@ -194,7 +207,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMaskTransition::internal_compare_to
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MaskType>
 int BitMaskTransition<MaskType>::

@@ -1,6 +1,19 @@
 // Filename: nodeTransitionWrapper.I
 // Created by:  drose (20Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "nodeRelation.h"
@@ -9,7 +22,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionWrapper::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeTransitionWrapper::
 NodeTransitionWrapper(TypeHandle handle) : _handle(handle) {
@@ -19,7 +32,7 @@ NodeTransitionWrapper(TypeHandle handle) : _handle(handle) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionWrapper::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeTransitionWrapper::
 NodeTransitionWrapper(const NodeTransitionWrapper &copy) :
@@ -31,7 +44,7 @@ NodeTransitionWrapper(const NodeTransitionWrapper &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionWrapper::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NodeTransitionWrapper::
 operator = (const NodeTransitionWrapper &copy) {
@@ -54,7 +67,7 @@ init_from(const NodeTransitionWrapper &other) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionWrapper::get_handle
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH TypeHandle NodeTransitionWrapper::
 get_handle() const {
@@ -64,7 +77,7 @@ get_handle() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionWrapper::has_trans
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH bool NodeTransitionWrapper::
 has_trans() const {
@@ -74,7 +87,7 @@ has_trans() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionWrapper::get_trans
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeTransition *NodeTransitionWrapper::
 get_trans() const {
@@ -95,7 +108,7 @@ is_identity() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionWrapper::compare_to
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH int NodeTransitionWrapper::
 compare_to(const NodeTransitionWrapper &other) const {
@@ -151,7 +164,7 @@ compose_in_place(const NodeTransitionWrapper &other) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionWrapper::invert_in_place
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NodeTransitionWrapper::
 invert_in_place() {
@@ -236,10 +249,10 @@ set_computed_verified(UpdateSeq now) {
 //               and stores the result in this wrapper.
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NodeTransitionWrapper::
-cached_compose(const NodeTransitionWrapper &cache, 
+cached_compose(const NodeTransitionWrapper &cache,
                const NodeTransitionWrapper &value,
                UpdateSeq now) {
-  _entry = 
+  _entry =
     NodeTransitionCacheEntry::cached_compose(_entry, cache._entry,
                                              value._entry, now);
 }

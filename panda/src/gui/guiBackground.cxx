@@ -1,6 +1,19 @@
 // Filename: guiBackground.cxx
 // Created by:  cary (05Feb01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "guiBackground.h"
@@ -121,7 +134,7 @@ void GuiBackground::set_priority(GuiItem* it, const GuiItem::Priority p) {
     _bg->set_priority(_bg, GuiLabel::P_HIGHEST);
   else if (p == P_Lowest)
     _bg->set_priority(_bg, GuiLabel::P_LOWEST);
-  else 
+  else
     it->set_priority(_bg, ((p==P_Low)?P_High:P_Low));
   GuiItem::set_priority(it, p);
 }

@@ -2,7 +2,18 @@
 // Created by:  mike (09Jan00)
 //
 ////////////////////////////////////////////////////////////////////
-// Includes
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #ifndef STRICT
 #define STRICT
@@ -62,7 +73,7 @@ static void DebugPrintPixFmt(DDPIXELFORMAT* pddpf) {
         *dbgout << " StencilBits:" << (void *) pddpf->dwStencilBitDepth;
     }
 
-    *dbgout << endl; 
+    *dbgout << endl;
 
     iddpfnum++;
 }
@@ -81,7 +92,7 @@ HRESULT CALLBACK EnumZBufFmtsCallback( LPDDPIXELFORMAT pddpf, VOID* param )  {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: lookup_key 
+//     Function: lookup_key
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -188,7 +199,7 @@ void AtExitFn() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: static_window_proc 
+//     Function: static_window_proc
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -239,12 +250,12 @@ extern void dbgPrintVidMem(LPDIRECTDRAW7 pDD, LPDDSCAPS2 lpddsCaps,const char *p
   // Tell PStats about the state of the texture memory.
   GraphicsStateGuardian::_total_texmem_pcollector.set_level(dwTotal);
   GraphicsStateGuardian::_used_texmem_pcollector.set_level(dwTotal - dwFree);
-  #endif  
+  #endif
 }
 #endif
 
 ////////////////////////////////////////////////////////////////////
-//     Function: window_proc 
+//     Function: window_proc
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -263,7 +274,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 //       to enable this, need to delete call to AtExitFn from under GetMessage loop
             return 0;
 
-        case WM_CLOSE: 
+        case WM_CLOSE:
             PostQuitMessage(0);
             return 0;
 
@@ -277,7 +288,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
         case WM_SYSCHAR:
         case WM_CHAR:
-            return 0;    
+            return 0;
         case WM_SYSKEYDOWN:
         case WM_KEYDOWN:
             GetCursorPos(&point);
@@ -306,7 +317,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             y = HIWORD(lparam);
             if(x & 1 << 15) x -= (1 << 16);
             if(y & 1 << 15) y -= (1 << 16);
-            if(_dxgsg->GetDXReady()) 
+            if(_dxgsg->GetDXReady())
                 handle_keypress(MouseButton::button(button), x, y);
             return 0;
 
@@ -323,7 +334,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             y = HIWORD(lparam);
             if(x & 1 << 15) x -= (1 << 16);
             if(y & 1 << 15) y -= (1 << 16);
-            if(_dxgsg->GetDXReady()) 
+            if(_dxgsg->GetDXReady())
                 handle_keyrelease(MouseButton::button(button), x, y);
             return 0;
 
@@ -333,10 +344,10 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                 y = HIWORD(lparam);
                 if(x & 1 << 15) x -= (1 << 16);
                 if(y & 1 << 15) y -= (1 << 16);
-                if(mouse_motion_enabled() 
+                if(mouse_motion_enabled()
                    && wparam & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON)) {
                     handle_mouse_motion(x, y);
-                } else if(mouse_passive_motion_enabled() && 
+                } else if(mouse_passive_motion_enabled() &&
                           ((wparam & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON)) == 0)) {
                     handle_mouse_motion(x, y);
                 }
@@ -344,11 +355,11 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             return 0;
 
         case WM_MOVE:
-            if(_dxgsg->GetDXReady()) 
+            if(_dxgsg->GetDXReady())
                 handle_window_move(LOWORD(lparam), HIWORD(lparam) );
             return 0;
 
-        case WM_EXITSIZEMOVE: 
+        case WM_EXITSIZEMOVE:
 #ifdef _DEBUG
             wdxdisplay_cat.spam()  << "WM_EXITSIZEMOVE received"  << endl;
 #endif
@@ -356,9 +367,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             if(_WindowAdjustingType==Resizing) {
                 _dxgsg->SetDXReady(false);  // disable rendering whilst we mess with surfs
 
-          // Want to change rendertarget size without destroying d3d device.  To save vid memory 
+          // Want to change rendertarget size without destroying d3d device.  To save vid memory
           // (and make resizing work on memory-starved 4MB cards), we need to construct
-          // a temporary mini-sized render target for the d3d device (it cannot point to a 
+          // a temporary mini-sized render target for the d3d device (it cannot point to a
           // NULL rendertarget) before creating the fully resized buffers.  The old
           // rendertargets will be freed when these temp targets are set, and that will give
           // us the memory to create the resized target
@@ -409,7 +420,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                     exit(1);
                 }
                 RELEASE(pddsDummyZ);
-                RELEASE(pddsDummy);            
+                RELEASE(pddsDummy);
 
                 RECT view_rect;
                 GetClientRect( _mwindow, &view_rect );
@@ -423,7 +434,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                 _props._xorg = view_rect.left;  // _props origin should reflect view rectangle
                 _props._yorg = view_rect.top;
 
-                _dxgsg->SetDXReady(true);      
+                _dxgsg->SetDXReady(true);
             }
             _WindowAdjustingType = NotAdjusting;
             return 0;
@@ -436,7 +447,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
         case WM_DISPLAYCHANGE: {
 #ifdef _DEBUG
-            width = LOWORD(lparam);  height = HIWORD(lparam);        
+            width = LOWORD(lparam);  height = HIWORD(lparam);
             DWORD newbitdepth=wparam;
             wdxdisplay_cat.spam() <<"WM_DISPLAYCHANGE received with width:" << width << "  height: " << height << " bpp: " << wparam<< endl;
 #endif
@@ -451,7 +462,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 #ifdef _DEBUG
                 {
                     width = LOWORD(lparam);  height = HIWORD(lparam);
-                    wdxdisplay_cat.spam() << "WM_SIZE received with width:" << width << "  height: " << height << " flags: " << 
+                    wdxdisplay_cat.spam() << "WM_SIZE received with width:" << width << "  height: " << height << " flags: " <<
                     ((wparam == SIZE_MAXHIDE)? "SIZE_MAXHIDE " : "") << ((wparam == SIZE_MAXSHOW)? "SIZE_MAXSHOW " : "") <<
                     ((wparam == SIZE_MINIMIZED)? "SIZE_MINIMIZED " : "") << ((wparam == SIZE_RESTORED)? "SIZE_RESTORED " : "") <<
                     ((wparam == SIZE_MAXIMIZED)? "SIZE_MAXIMIZED " : "") << endl;
@@ -466,7 +477,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                 if(_props._xsize != width || _props._ysize != height) {
                     _WindowAdjustingType = Resizing;
 
-                 // for maximized,unmaximize, need to call resize code artificially 
+                 // for maximized,unmaximize, need to call resize code artificially
                  // since no WM_EXITSIZEMOVE is generated
                  if(wparam==SIZE_MAXIMIZED) {
                        _bSizeIsMaximized=TRUE;
@@ -546,7 +557,7 @@ wdxGraphicsWindow::~wdxGraphicsWindow(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: config 
+//     Function: config
 //       Access:
 //  Description:  Set up win32 window
 ////////////////////////////////////////////////////////////////////
@@ -584,7 +595,7 @@ void wdxGraphicsWindow::config(void) {
     string windows_icon_filename = get_icon_filename().to_os_specific();
 
     if(!windows_icon_filename.empty()) {
-        // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings) 
+        // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
         // if icon is more than 8bpp
         wc.hIcon = (HICON) LoadImage(NULL, windows_icon_filename.c_str(), IMAGE_ICON, 0, 0, LR_LOADFROMFILE);
     } else {
@@ -605,7 +616,7 @@ void wdxGraphicsWindow::config(void) {
 
     int style;
     RECT win_rect;
-    SetRect(&win_rect, _props._xorg,  _props._yorg, _props._xorg + _props._xsize, 
+    SetRect(&win_rect, _props._xorg,  _props._yorg, _props._xorg + _props._xsize,
             _props._yorg + _props._ysize);
 
   // rect now contains the coords for the entire window, not the client
@@ -630,7 +641,7 @@ void wdxGraphicsWindow::config(void) {
         }
 
         _mwindow = CreateWindow("wdxDisplay", _props._title.c_str(),
-                                style, win_rect.left, win_rect.top, win_rect.right-win_rect.left, 
+                                style, win_rect.left, win_rect.top, win_rect.right-win_rect.left,
                                 win_rect.bottom-win_rect.top,
                                 NULL, NULL, hinstance, 0);
     }
@@ -647,7 +658,7 @@ void wdxGraphicsWindow::config(void) {
 
     _hdc = GetDC(_mwindow);
 
-    dx_setup();       
+    dx_setup();
 
     _mouse_input_enabled = false;
     _mouse_motion_enabled = false;
@@ -670,7 +681,7 @@ void wdxGraphicsWindow::config(void) {
 //  UpdateWindow( _mwindow );
 }
 
-HRESULT CALLBACK EnumDevicesCallback(LPSTR pDeviceDescription, LPSTR pDeviceName, 
+HRESULT CALLBACK EnumDevicesCallback(LPSTR pDeviceDescription, LPSTR pDeviceName,
                                      LPD3DDEVICEDESC7 pD3DDeviceDesc,LPVOID pContext) {
     D3DDEVICEDESC7 *pd3ddevs = (D3DDEVICEDESC7 *)pContext;
 #ifdef _DEBUG
@@ -691,10 +702,10 @@ HRESULT WINAPI EnumDisplayModesCallBack(LPDDSURFACEDESC2 lpDDSurfaceDesc,LPVOID 
     DWORD *pDDBDMask = (DWORD*)lpContext;
 
     *pDDBDMask |= BitDepth_2_DDBDMask(lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount);
-    return DDENUMRET_OK;    
+    return DDENUMRET_OK;
 }
 
-BOOL WINAPI DriverEnumCallback( GUID* pGUID, TCHAR* strDesc,TCHAR* strName, 
+BOOL WINAPI DriverEnumCallback( GUID* pGUID, TCHAR* strDesc,TCHAR* strName,
                                 VOID *argptr, HMONITOR hm) {
     if(hm!=NULL)  // skip over non-primary display devices
         return DDENUMRET_OK;
@@ -727,7 +738,7 @@ dx_setup() {
     RECT view_rect;
     int i;
     HRESULT hr;
-    DX_DECLARE_CLEAN( DDSURFACEDESC2, SurfaceDesc );    
+    DX_DECLARE_CLEAN( DDSURFACEDESC2, SurfaceDesc );
 
       // Check for DirectX 7 by looking for DirectDrawCreateEx
 
@@ -778,7 +789,7 @@ dx_setup() {
 #endif
 
       // imperfect method to ID NVid, could also scan desc str, but that isnt fullproof either
-    BOOL bIsNvidia = (dddi.dwVendorId==4318) || (dddi.dwVendorId==4818);  
+    BOOL bIsNvidia = (dddi.dwVendorId==4318) || (dddi.dwVendorId==4818);
 
       // Query DirectDraw for access to Direct3D
 
@@ -789,7 +800,7 @@ dx_setup() {
         exit(1);
     }
 
-       // just look for HAL and TnL devices right now.  I dont think 
+       // just look for HAL and TnL devices right now.  I dont think
        // we have any interest in the sw rasts at this point
 
     D3DDEVICEDESC7 d3ddevs[2];     // put HAL in 0, TnL in 1
@@ -834,7 +845,7 @@ dx_setup() {
 
         DWORD dwFullScreenBitDepth;
 
-        // Now we try to figure out if we can use requested screen resolution and best 
+        // Now we try to figure out if we can use requested screen resolution and best
         // rendertarget bpp and still have at least 2 meg of texture vidmem
 
         // Get Current VidMem avail.  Note this is only an estimate, when we switch to fullscreen
@@ -851,7 +862,7 @@ dx_setup() {
             exit(1);
         }
 
-#ifdef _DEBUG 
+#ifdef _DEBUG
         wdxdisplay_cat.debug() << "before FullScreen switch: GetAvailableVidMem returns Total: " << dwTotal/1000000.0 << "  Free: " << dwFree/1000000.0 << endl;
 #endif
 
@@ -875,7 +886,7 @@ dx_setup() {
         if(dwFree< LOWVIDMEMTHRESHOLD) {
             // we're going to need 800x600 or 640x480 at 16 bit to save enough tex vidmem
             dwFullScreenBitDepth=16;              // do 16bpp
-            dwRenderWidth=640; 
+            dwRenderWidth=640;
             dwRenderHeight=480;
             wdxdisplay_cat.debug() << "wdxGraphicsWindow:: "<<dwFree <<" Available VidMem is under "<< LOWVIDMEMTHRESHOLD <<", using 640x480 16bpp rendertargets to save tex vidmem.\n";
         }
@@ -920,7 +931,7 @@ dx_setup() {
             exit(1);
         }
 
-        // s3 savage2000 on w95 seems to set EXCLUSIVE_MODE only if you call SetCoopLevel twice. 
+        // s3 savage2000 on w95 seems to set EXCLUSIVE_MODE only if you call SetCoopLevel twice.
         // so we do it, it really shouldnt be necessary if drivers werent buggy
         if(FAILED(hr = pDD->SetCooperativeLevel(_mwindow, SCL_FLAGS))) {
             wdxdisplay_cat.fatal()
@@ -1063,7 +1074,7 @@ dx_setup() {
         }
 
         // Create a clipper object which handles all our clipping for cases when
-        // our window is partially obscured by other windows. 
+        // our window is partially obscured by other windows.
         LPDIRECTDRAWCLIPPER Clipper;
         if(FAILED(hr = pDD->CreateClipper( 0, &Clipper, NULL ))) {
             wdxdisplay_cat.fatal()
@@ -1087,7 +1098,7 @@ dx_setup() {
             exit(1);
         }
 
-        // Setup a surface description to create a backbuffer. 
+        // Setup a surface description to create a backbuffer.
         SurfaceDesc.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS;
         SurfaceDesc.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_3DDEVICE | DDSCAPS_VIDEOMEMORY;
         SurfaceDesc.dwWidth  = dwRenderWidth;
@@ -1126,7 +1137,7 @@ dx_setup() {
         ddsd.dwFlags        = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS | DDSD_PIXELFORMAT;
         ddsd.ddsCaps.dwCaps = DDSCAPS_ZBUFFER | DDSCAPS_VIDEOMEMORY;
 
-        DDPIXELFORMAT ZBufPixFmts[MAX_DX_ZBUF_FMTS]; 
+        DDPIXELFORMAT ZBufPixFmts[MAX_DX_ZBUF_FMTS];
 
         // Get an appropiate pixel format from enumeration of the formats. On the
         // first pass, we look for a zbuffer dpeth which is equal to the frame
@@ -1174,7 +1185,7 @@ dx_setup() {
             // must pick zbuf depth to match primary surface depth for nvidia
             if(ddsd_pri.ddpfPixelFormat.dwRGBBitCount==16) {
                 assert(pz16!=NULL);
-                ddsd.ddpfPixelFormat = *pz16;                
+                ddsd.ddpfPixelFormat = *pz16;
             } else {
                 assert(pz24!=NULL);
                 ddsd.ddpfPixelFormat = *pz24;  //take the no-stencil version of the 32-bit Zbuf
@@ -1219,7 +1230,7 @@ dx_setup() {
     }
 
     // Create the device. The device is created off of our back buffer, which
-    // becomes the render target for the newly created device. 
+    // becomes the render target for the newly created device.
     hr = pD3DI->CreateDevice( IID_IDirect3DHALDevice, pBackDDSurf, &pD3DDevice );
     if(hr != DD_OK) {
         wdxdisplay_cat.fatal()
@@ -1243,7 +1254,7 @@ dx_setup() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: setup_colormap 
+//     Function: setup_colormap
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -1305,7 +1316,7 @@ void wdxGraphicsWindow::setup_colormap(void) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: begin_frame 
+//     Function: begin_frame
 //       Access:
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsWindow::begin_frame(void) {
@@ -1320,7 +1331,7 @@ void wdxGraphicsWindow::show_frame(void) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: end_frame 
+//     Function: end_frame
 //       Access:
 //  Description:  timer info, incs frame #
 ////////////////////////////////////////////////////////////////////
@@ -1421,7 +1432,7 @@ void wdxGraphicsWindow::handle_changes(void) {
 
 /*
 ////////////////////////////////////////////////////////////////////
-//     Function: idle_wait 
+//     Function: idle_wait
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -1451,7 +1462,7 @@ supports_update() const {
 
 #if 0
 ////////////////////////////////////////////////////////////////////
-//     Function: process_events 
+//     Function: process_events
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -1466,7 +1477,7 @@ void wdxGraphicsWindow::process_events(void) {
     // Call window_proc
     DispatchMessage(&event);
   }
- 
+
   while (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE));
 }
 #endif
@@ -1485,7 +1496,7 @@ void INLINE wdxGraphicsWindow::process_events(void) {
       TranslateMessage(&msg);
   // Call window_proc
       DispatchMessage(&msg);
-  } 
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1513,8 +1524,8 @@ void wdxGraphicsWindow::update(void) {
 #endif
 
     call_idle_callback();
-/*  
-  if (_idle_callback) 
+/*
+  if (_idle_callback)
     idle_wait();
   else if (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
     process_events();
@@ -1525,7 +1536,7 @@ void wdxGraphicsWindow::update(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: enable_mouse_input 
+//     Function: enable_mouse_input
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -1534,7 +1545,7 @@ void wdxGraphicsWindow::enable_mouse_input(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: enable_mouse_motion 
+//     Function: enable_mouse_motion
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////

@@ -1,6 +1,19 @@
 // Filename: eggExternalReference.cxx
 // Created by:  drose (11Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggExternalReference.h"
@@ -15,27 +28,27 @@ TypeHandle EggExternalReference::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: EggExternalReference::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggExternalReference::
-EggExternalReference(const string &node_name, const string &filename) 
+EggExternalReference(const string &node_name, const string &filename)
   : EggFilenameNode(node_name, filename) {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggExternalReference::Copy constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggExternalReference::
-EggExternalReference(const EggExternalReference &copy) 
+EggExternalReference(const EggExternalReference &copy)
   : EggFilenameNode(copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggExternalReference::Copy assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggExternalReference &EggExternalReference::
 operator = (const EggExternalReference &copy) {

@@ -1,6 +1,19 @@
 // Filename: trackball.cxx
 // Created by:  drose (27Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "trackball.h"
@@ -236,7 +249,7 @@ reset_origin_here() {
   _rotation = _orig;
   _translation.set(0.0, 0.0, 0.0);
 }
-  
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Trackball::move_origin
@@ -384,28 +397,28 @@ apply(double x, double y, int button) {
   }
   if (button == B1_MASK) {
     // Button 1: translate in plane parallel to screen.
-    
-    _translation += 
+
+    _translation +=
       x * _fwdscale * LVector3f::right(_cs) +
       y * _fwdscale * LVector3f::down(_cs);
-    
+
   } else if (button == (B2_MASK | B3_MASK)) {
     // Buttons 2 + 3: rotate about the vector perpendicular to the
     // screen.
-    
-    _rotation *= 
-      LMatrix4f::rotate_mat_normaxis((x - y) * _rotscale, 
+
+    _rotation *=
+      LMatrix4f::rotate_mat_normaxis((x - y) * _rotscale,
                             LVector3f::forward(_cs), _cs);
-    
+
   } else if ((button == B2_MASK) || (button == (B1_MASK | B3_MASK))) {
     // Button 2, or buttons 1 + 3: rotate about the right and up
     // vectors.  (We alternately define this as buttons 1 + 3, to
     // support two-button mice.)
-    
+
     _rotation *=
       LMatrix4f::rotate_mat_normaxis(x * _rotscale, LVector3f::up(_cs), _cs) *
       LMatrix4f::rotate_mat_normaxis(y * _rotscale, LVector3f::right(_cs), _cs);
-    
+
   } else if ((button == B3_MASK) || (button == (B1_MASK | B2_MASK))) {
     // Button 3, or buttons 1 + 2: dolly in and out along the forward
     // vector.  (We alternately define this as buttons 1 + 2, to
@@ -466,7 +479,7 @@ recompute() {
 ////////////////////////////////////////////////////////////////////
 //     Function: Trackball::transmit_data
 //       Access: Public
-//  Description: Convert mouse data into a trackball matrix 
+//  Description: Convert mouse data into a trackball matrix
 ////////////////////////////////////////////////////////////////////
 void Trackball::
 transmit_data(NodeAttributes &data) {
@@ -478,7 +491,7 @@ transmit_data(NodeAttributes &data) {
 
   // Now, check for mouse motion.
   const NodeAttribute *pixel_xyz = data.get_attribute(_pixel_xyz_type);
-  
+
   if (pixel_xyz != (NodeAttribute *)NULL) {
     LVecBase3f p = DCAST(Vec3DataAttribute, pixel_xyz)->get_value();
     float this_x = p[0];
@@ -499,7 +512,7 @@ transmit_data(NodeAttributes &data) {
     float y = this_y - _lasty;
 
     apply(x, y, this_button);
-    
+
     _lastx = this_x;
     _lasty = this_y;
   }

@@ -1,6 +1,19 @@
 // Filename: buttonHandle.I
 // Created by:  drose (01Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -14,22 +27,22 @@
 //               previously by another static initializer!
 ////////////////////////////////////////////////////////////////////
 INLINE ButtonHandle::
-ButtonHandle() { 
+ButtonHandle() {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonHandle::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ButtonHandle::
-ButtonHandle(const ButtonHandle &copy) : _index(copy._index) { 
+ButtonHandle(const ButtonHandle &copy) : _index(copy._index) {
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonHandle::Equality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool ButtonHandle::
 operator == (const ButtonHandle &other) const {
@@ -39,7 +52,7 @@ operator == (const ButtonHandle &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonHandle::Inequality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool ButtonHandle::
 operator != (const ButtonHandle &other) const {
@@ -49,7 +62,7 @@ operator != (const ButtonHandle &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonHandle::Ordering Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool ButtonHandle::
 operator < (const ButtonHandle &other) const {

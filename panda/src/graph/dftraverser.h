@@ -2,6 +2,19 @@
 // Created by:  drose (26Oct98)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef DFTRAVERSER_H
 #define DFTRAVERSER_H
@@ -35,7 +48,7 @@ public:
   INLINE_GRAPH void start(Node *root, const LevelState &initial_level_state);
 
 protected:
-  void traverse(NodeRelation *arc, 
+  void traverse(NodeRelation *arc,
                 AttributeWrapper render_state,
                 LevelState level_state);
   void traverse(Node *node,

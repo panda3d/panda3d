@@ -1,6 +1,19 @@
-// Filename: cppToken.C
+// Filename: cppToken.cxx
 // Created by:  drose (22Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -13,13 +26,13 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPToken::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPToken::
 CPPToken(int token, int line_number, int col_number,
          const CPPFile &file, const string &str,
          const YYSTYPE &lval) :
-  _token(token), _lval(lval) 
+  _token(token), _lval(lval)
 {
   _lval.str = str;
   _lloc.timestamp = 0;
@@ -34,11 +47,11 @@ CPPToken(int token, int line_number, int col_number,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPToken::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPToken::
 CPPToken(const CPPToken &copy) :
-  _token(copy._token), 
+  _token(copy._token),
   _lloc(copy._lloc)
 {
   _lval.str = copy._lval.str;
@@ -48,7 +61,7 @@ CPPToken(const CPPToken &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPToken::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPToken::
 operator = (const CPPToken &copy) {
@@ -83,7 +96,7 @@ is_eof() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPToken::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPToken::
 output(ostream &out) const {

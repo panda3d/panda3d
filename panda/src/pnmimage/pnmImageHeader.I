@@ -1,12 +1,25 @@
 // Filename: pnmImageHeader.I
 // Created by:  drose (15Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImageHeader::
 PNMImageHeader() {
@@ -20,7 +33,7 @@ PNMImageHeader() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImageHeader::
 PNMImageHeader(const PNMImageHeader &copy) :
@@ -35,7 +48,7 @@ PNMImageHeader(const PNMImageHeader &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void PNMImageHeader::
 operator = (const PNMImageHeader &copy) {
@@ -49,7 +62,7 @@ operator = (const PNMImageHeader &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PNMImageHeader::
 ~PNMImageHeader() {

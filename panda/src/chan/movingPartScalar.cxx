@@ -1,6 +1,19 @@
 // Filename: movingPartScalar.cxx
 // Created by:  drose (23Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "movingPartScalar.h"
@@ -39,7 +52,7 @@ get_blend_value(const PartBundle *root) {
     nassertv(channel_index >= 0 && channel_index < (int)_channels.size());
     ChannelType *channel = DCAST(ChannelType, _channels[channel_index]);
     nassertv(channel != NULL);
-    
+
     channel->get_value(control->get_frame(), _value);
 
   } else {

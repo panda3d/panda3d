@@ -1,6 +1,19 @@
 // Filename: ribGraphicsWindow.cxx
 // Created by:  drose (15Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "ribGraphicsWindow.h"
@@ -15,7 +28,7 @@ TypeHandle RIBGraphicsWindow::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsWindow::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 RIBGraphicsWindow::
 RIBGraphicsWindow(GraphicsPipe *pipe) : GraphicsWindow(pipe) {
@@ -25,12 +38,12 @@ RIBGraphicsWindow(GraphicsPipe *pipe) : GraphicsWindow(pipe) {
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsWindow::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 RIBGraphicsWindow::
 RIBGraphicsWindow(GraphicsPipe *pipe,
                   const GraphicsWindow::Properties &props) :
-  GraphicsWindow(pipe, props) 
+  GraphicsWindow(pipe, props)
 {
   setup_window(pipe);
 }
@@ -39,7 +52,7 @@ RIBGraphicsWindow(GraphicsPipe *pipe,
 ////////////////////////////////////////////////////////////////////
 //     Function: RIBGraphicsWindow::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 RIBGraphicsWindow::
 ~RIBGraphicsWindow(void) {
@@ -78,7 +91,7 @@ begin_frame() {
   if (image_per_frame()) {
     // If we're writing out an image file for each frame, specify it
     // here, inside the Frame control group.
-    _file << "  Display \"" << get_image_filename() 
+    _file << "  Display \"" << get_image_filename()
           << "\" \"file\" \"rgba\"\n";
   }
 }
@@ -165,7 +178,7 @@ begin_file() {
     // frames, specify it outside the Frame control group.  Maybe the
     // renderer will be able to generate a multi-frame output file
     // somehow.
-    _file << "Display \"" << get_image_filename() 
+    _file << "Display \"" << get_image_filename()
           << "\" \"file\" \"rgb\"\n";
   }
 
@@ -230,7 +243,7 @@ format_name(const string &name_template) const {
           break;
 
         default:
-          cerr << "Invalid filename template specification: %" 
+          cerr << "Invalid filename template specification: %"
                << format_spec << *ci << "\n";
         }
         ++ci;
@@ -374,7 +387,7 @@ RIBGraphicsWindow::make_RibGraphicsWindow(const FactoryParams &params) {
   }
 
   GraphicsPipe *pipe = pipe_param->get_pipe();
-  
+
   GraphicsWindow::WindowProps *props_param;
   if (!get_param_into(props_param, params)) {
     return new RIBGraphicsWindow(pipe);

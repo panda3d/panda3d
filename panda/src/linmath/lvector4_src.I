@@ -1,13 +1,26 @@
 // Filename: lvector4_src.I
 // Created by:  drose (08Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector4::Default Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector4)::
 FLOATNAME(LVector4)() {
@@ -16,7 +29,7 @@ FLOATNAME(LVector4)() {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector4::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector4)::
 FLOATNAME(LVector4)(const FLOATNAME(LVecBase4) &copy) : FLOATNAME(LVecBase4)(copy) {
@@ -25,7 +38,7 @@ FLOATNAME(LVector4)(const FLOATNAME(LVecBase4) &copy) : FLOATNAME(LVecBase4)(cop
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector4::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector4) &FLOATNAME(LVector4)::
 operator = (const FLOATNAME(LVecBase4) &copy) {
@@ -36,7 +49,7 @@ operator = (const FLOATNAME(LVecBase4) &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector4::Copy Fill Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector4) &FLOATNAME(LVector4)::
 operator = (FLOATTYPE fill_value) {
@@ -47,22 +60,22 @@ operator = (FLOATTYPE fill_value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector4::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector4)::
 FLOATNAME(LVector4)(FLOATTYPE fill_value) :
-  FLOATNAME(LVecBase4)(fill_value) 
+  FLOATNAME(LVecBase4)(fill_value)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector4::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector4)::
-FLOATNAME(LVector4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w) : 
-  FLOATNAME(LVecBase4)(x, y, z, w) 
+FLOATNAME(LVector4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w) :
+  FLOATNAME(LVecBase4)(x, y, z, w)
 {
 }
 
@@ -119,7 +132,7 @@ unit_w() {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector4::unary -
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector4) FLOATNAME(LVector4)::
 operator - () const {
@@ -129,7 +142,7 @@ operator - () const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector4::vector + vecbase
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LVector4)::
 operator + (const FLOATNAME(LVecBase4) &other) const {
@@ -139,7 +152,7 @@ operator + (const FLOATNAME(LVecBase4) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector4::vector + vector
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector4) FLOATNAME(LVector4)::
 operator + (const FLOATNAME(LVector4) &other) const {
@@ -149,7 +162,7 @@ operator + (const FLOATNAME(LVector4) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector4::vector - vecbase
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LVector4)::
 operator - (const FLOATNAME(LVecBase4) &other) const {
@@ -159,7 +172,7 @@ operator - (const FLOATNAME(LVecBase4) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector4::vector - vector
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector4) FLOATNAME(LVector4)::
 operator - (const FLOATNAME(LVector4) &other) const {
@@ -212,7 +225,7 @@ normalize() {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector4::operator * scalar
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector4) FLOATNAME(LVector4)::
 operator * (FLOATTYPE scalar) const {
@@ -222,7 +235,7 @@ operator * (FLOATTYPE scalar) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector4::operator / scalar
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector4) FLOATNAME(LVector4)::
 operator / (FLOATTYPE scalar) const {

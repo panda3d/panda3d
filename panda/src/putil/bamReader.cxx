@@ -1,6 +1,20 @@
 // Filename: bamReader.cxx
 // Created by:  jason (12Jun00)
 //
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #include <pandabase.h>
 #include <notify.h>
@@ -21,10 +35,10 @@ const int BamReader::_cur_minor = _bam_minor_ver;
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 BamReader::
-BamReader(DatagramGenerator *generator) 
+BamReader(DatagramGenerator *generator)
   : _source(generator)
 {
   _num_extra_objects = 0;
@@ -35,7 +49,7 @@ BamReader(DatagramGenerator *generator)
 ////////////////////////////////////////////////////////////////////
 //     Function: BamReader::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 BamReader::
 ~BamReader() {
@@ -79,20 +93,20 @@ init() {
 
     if (_bam_minor_ver == 0) {
       bam_cat.error()
-        << "This program can only load version " 
+        << "This program can only load version "
         << _bam_major_ver << ".0 bams.\n";
     } else {
       bam_cat.error()
-        << "This program can only load version " 
-        << _bam_major_ver << ".0 through " 
+        << "This program can only load version "
+        << _bam_major_ver << ".0 through "
         << _bam_major_ver << "." << _bam_minor_ver << " bams.\n";
     }
-      
+
     return false;
   }
 
   if (bam_cat.is_debug()) {
-    bam_cat.debug() 
+    bam_cat.debug()
       << "Bam file is version " << _file_major << "." << _file_minor
       << ".\n";
     if (_file_minor != _bam_minor_ver) {
@@ -156,9 +170,9 @@ read_object() {
   }
 
   CreatedObjs::iterator oi = _created_objs.find(object_id);
-    
+
   if (oi == _created_objs.end()) {
-    bam_cat.error() 
+    bam_cat.error()
       << "Undefined object encountered!\n";
     return (TypedWritable *)NULL;
 
@@ -171,7 +185,7 @@ read_object() {
           << "Returning object of type " << object->get_type() << "\n";
       }
     }
-    
+
     return object;
   }
 }
@@ -200,7 +214,7 @@ resolve() {
 
   // Walk through all the objects that still have outstanding pointers.
   Requests::iterator ri;
-  ri = _deferred_pointers.begin(); 
+  ri = _deferred_pointers.begin();
   while (ri != _deferred_pointers.end()) {
     TypedWritable *whom = (*ri).first;
     const vector_ushort &pointers = (*ri).second;
@@ -283,7 +297,7 @@ read_handle(DatagramIterator &scan) {
 
   // Here's the index number.
   int id = scan.get_uint16();
-  
+
   if (id == 0) {
     // Index number 0 is always, by convention, TypeHandle::none().
     return TypeHandle::none();
@@ -327,12 +341,12 @@ read_handle(DatagramIterator &scan) {
     } else {
       if (type.get_parent_towards(parent_type) != parent_type) {
         bam_cat.warning()
-          << "Bam file indicates a derivation of " << type 
+          << "Bam file indicates a derivation of " << type
           << " from " << parent_type << " which is no longer true.\n";
       }
     }
   }
-  
+
   bool inserted = _index_map.insert(IndexMap::value_type(id, type)).second;
   nassertr(inserted, type);
 
@@ -444,7 +458,7 @@ register_finalize(TypedWritable *whom) {
 void BamReader::
 finalize_now(TypedWritable *whom) {
   nassertv(whom != (TypedWritable *)NULL);
-  
+
   Finalize::iterator fi = _finalize_list.find(whom);
   if (fi != _finalize_list.end()) {
     _finalize_list.erase(fi);
@@ -584,11 +598,11 @@ p_read_object() {
     // that in case this function is called recursively during the
     // object's factory constructor, we will have some definition for
     // the object.  It doesn't matter yet what the pointer is.
-    CreatedObjs::iterator oi = 
+    CreatedObjs::iterator oi =
       _created_objs.insert(CreatedObjs::value_type(object_id, NULL)).first;
 
     // Now we can call the factory to create the object.
-    TypedWritable *object = 
+    TypedWritable *object =
       _factory->make_instance_more_general(type, fparams);
 
     // And now we can store the new object pointer in the map.
@@ -596,7 +610,7 @@ p_read_object() {
 
     //Just some sanity checks
     if (object == (TypedWritable *)NULL) {
-      bam_cat.error() 
+      bam_cat.error()
         << "Unable to create an object of type " << type << endl;
 
     } else if (object->get_type() != type) {

@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "shader.h"
 
@@ -19,10 +28,10 @@ Shader::Visualize* Shader::_viz = (Shader::Visualize*)0L;
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::Constructor
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Shader::
-Shader() : Configurable(), _priority(0) { 
+Shader() : Configurable(), _priority(0) {
   MemoryUsage::update_type(this, this);
 }
 
@@ -49,12 +58,12 @@ void Shader::Visualize::Flush(void)
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::apply
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Shader::
-apply(Node *, const AllAttributesWrapper &, 
-      const AllTransitionsWrapper &, 
-      GraphicsStateGuardian *) 
+apply(Node *, const AllAttributesWrapper &,
+      const AllTransitionsWrapper &,
+      GraphicsStateGuardian *)
 {
   if (is_dirty()) config();
 }
@@ -62,12 +71,12 @@ apply(Node *, const AllAttributesWrapper &,
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::pre_apply
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Shader::
-pre_apply(Node *, const AllAttributesWrapper &, 
-      const AllTransitionsWrapper &, 
-      GraphicsStateGuardian *) 
+pre_apply(Node *, const AllAttributesWrapper &,
+      const AllTransitionsWrapper &,
+      GraphicsStateGuardian *)
 {
 }
 

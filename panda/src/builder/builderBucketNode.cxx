@@ -1,6 +1,19 @@
 // Filename: builderBucketNode.cxx
 // Created by:  drose (10Sep97)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "builderFuncs.h"
@@ -51,12 +64,12 @@ build(GeomNode *geom_node) const {
     // First, the nonindexed.
     Prims::const_iterator pi, last_pi;
     last_pi = _prims.begin();
-    
+
     for (pi = _prims.begin();
          pi != _prims.end();
          ++pi) {
       if ((*last_pi) < (*pi)) {
-        count += mesh_and_build(last_pi, pi, *_bucket, geom_node, 
+        count += mesh_and_build(last_pi, pi, *_bucket, geom_node,
                                 (BuilderPrim *)0);
         last_pi = pi;
       }
@@ -69,7 +82,7 @@ build(GeomNode *geom_node) const {
     // Then, the indexed.
     IPrims::const_iterator pi, last_pi;
     last_pi = _iprims.begin();
-    
+
     for (pi = _iprims.begin();
          pi != _iprims.end();
          ++pi) {

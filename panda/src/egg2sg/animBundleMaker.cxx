@@ -1,6 +1,19 @@
 // Filename: animBundleMaker.cxx
 // Created by:  drose (22Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "animBundleMaker.h"
@@ -20,7 +33,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimBundleMaker::Construtor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 AnimBundleMaker::
 AnimBundleMaker(EggTable *root) : _root(root) {
@@ -29,7 +42,7 @@ AnimBundleMaker(EggTable *root) : _root(root) {
 
   _ok_fps = true;
   _ok_num_frames = true;
-  
+
   inspect_tree(root);
 
   if (!_ok_fps) {
@@ -54,7 +67,7 @@ AnimBundleMaker(EggTable *root) : _root(root) {
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimBundleMaker::make_node
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 AnimBundleNode *AnimBundleMaker::
 make_node() {
@@ -64,7 +77,7 @@ make_node() {
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimBundleMaker::make_bundle
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 AnimBundle *AnimBundleMaker::
 make_bundle() {
@@ -184,7 +197,7 @@ build_hierarchy(EggTable *egg_table, AnimGroup *parent) {
         this_node = create_xfm_channel((*ci), egg_table->get_name(), parent);
       } else {
         egg2sg_cat.warning()
-          << "Duplicate xform table under node " 
+          << "Duplicate xform table under node "
           << egg_table->get_name() << "\n";
       }
     }
@@ -222,7 +235,7 @@ build_hierarchy(EggTable *egg_table, AnimGroup *parent) {
 AnimChannelScalarTable *AnimBundleMaker::
 create_s_channel(EggSAnimData *egg_anim, const string &name,
                  AnimGroup *parent) {
-  AnimChannelScalarTable *table 
+  AnimChannelScalarTable *table
     = new AnimChannelScalarTable(parent, name);
 
   // First we have to copy the table data from PTA_double to
@@ -231,10 +244,10 @@ create_s_channel(EggSAnimData *egg_anim, const string &name,
   for (int i = 0; i < egg_anim->get_num_rows(); i++) {
     new_data[i] = (float)egg_anim->get_value(i);
   }
-  
+
   // Now we can assign the table.
   table->set_table(new_data);
-      
+
   return table;
 }
 
@@ -278,7 +291,7 @@ create_xfm_channel(EggXfmSAnim *egg_anim, const string &name,
   // order.
   egg_anim->optimize_to_standard_order();
 
-  AnimChannelMatrixXfmTable *table 
+  AnimChannelMatrixXfmTable *table
     = new AnimChannelMatrixXfmTable(parent, name);
 
   // The EggXfmSAnim structure has a number of children which are
@@ -323,6 +336,6 @@ create_xfm_channel(EggXfmSAnim *egg_anim, const string &name,
       }
     }
   }
-      
+
   return table;
 }

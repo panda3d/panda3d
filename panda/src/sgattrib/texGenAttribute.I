@@ -1,12 +1,25 @@
 // Filename: texGenAttribute.I
 // Created by:  drose (22Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TexGenAttribute::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TexGenAttribute::
 TexGenAttribute() {
@@ -48,7 +61,7 @@ set_sphere_map() {
 ////////////////////////////////////////////////////////////////////
 //     Function: TexGenAttribute::get_mode
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TexGenProperty::Mode TexGenAttribute::
 get_mode() const {
@@ -58,7 +71,7 @@ get_mode() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TexGenAttribute::get_plane
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE LMatrix4f TexGenAttribute::
 get_plane() const {

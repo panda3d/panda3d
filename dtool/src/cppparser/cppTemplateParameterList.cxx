@@ -1,6 +1,19 @@
-// Filename: cppTemplateParameterList.C
+// Filename: cppTemplateParameterList.cxx
 // Created by:  drose (28Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -12,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTemplateParameterList::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPTemplateParameterList::
 CPPTemplateParameterList() {
@@ -21,7 +34,7 @@ CPPTemplateParameterList() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTemplateParameterList::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string CPPTemplateParameterList::
 get_string() const {
@@ -49,7 +62,7 @@ build_subst_decl(const CPPTemplateParameterList &formal_params,
        ++pfi, ++pai) {
     CPPDeclaration *formal = *pfi;
     CPPDeclaration *actual = *pai;
-    
+
     if (actual->as_type()) {
       actual = actual->as_type()->resolve_type(current_scope, global_scope);
     }
@@ -66,7 +79,7 @@ build_subst_decl(const CPPTemplateParameterList &formal_params,
       // A value template parameter.  Its default is an expression.
       CPPInstance *inst = decl->as_instance();
       if (inst->_initializer != NULL) {
-        CPPDeclaration *decl = 
+        CPPDeclaration *decl =
           inst->_initializer->substitute_decl(subst, current_scope,
                                               global_scope);
         if (!(*decl == *inst)) {
@@ -123,7 +136,7 @@ bool CPPTemplateParameterList::
 is_tbd() const {
   for (int i = 0; i < (int)_parameters.size(); i++) {
     CPPType *type = _parameters[i]->as_type();
-    if (type != (CPPType *)NULL && 
+    if (type != (CPPType *)NULL &&
         (type->is_tbd() || type->as_class_template_parameter() != NULL)) {
       return true;
     }
@@ -138,7 +151,7 @@ is_tbd() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTemplateParameterList::Equivalence Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPTemplateParameterList::
 operator == (const CPPTemplateParameterList &other) const {
@@ -156,7 +169,7 @@ operator == (const CPPTemplateParameterList &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTemplateParameterList::Nonequivalence Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPTemplateParameterList::
 operator != (const CPPTemplateParameterList &other) const {
@@ -166,7 +179,7 @@ operator != (const CPPTemplateParameterList &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTemplateParameterList::Ordering Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPTemplateParameterList::
 operator < (const CPPTemplateParameterList &other) const {
@@ -184,7 +197,7 @@ operator < (const CPPTemplateParameterList &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTemplateParameterList::substitute_decl
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPTemplateParameterList *CPPTemplateParameterList::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
@@ -193,7 +206,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
 
   bool anything_changed = false;
   for (int i = 0; i < (int)rep->_parameters.size(); i++) {
-    rep->_parameters[i] = 
+    rep->_parameters[i] =
       _parameters[i]->substitute_decl(subst, current_scope, global_scope);
     if (rep->_parameters[i] != _parameters[i]) {
       anything_changed = true;
@@ -211,7 +224,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTemplateParameterList::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPTemplateParameterList::
 output(ostream &out, CPPScope *scope) const {

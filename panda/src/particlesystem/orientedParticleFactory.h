@@ -1,6 +1,19 @@
 // Filename: orientedParticleFactory.h
 // Created by:  charles (05Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef ORIENTEDPARTICLEFACTORY_H
@@ -26,7 +39,7 @@ private:
 PUBLISHED:
   OrientedParticleFactory(void);
   OrientedParticleFactory(const OrientedParticleFactory &copy);
-  virtual ~OrientedParticleFactory(void);  
+  virtual ~OrientedParticleFactory(void);
 
   INLINE void set_initial_orientation(const LOrientationf &o);
   INLINE void set_final_orientation(const LOrientationf &o);

@@ -1,6 +1,19 @@
-// Filename: parse_file.C
+// Filename: parse_file.cxx
 // Created by:  drose (20Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <cppParser.h>
@@ -53,7 +66,7 @@ show_type_or_expression(const string &str) {
       cout << "type is " << *type << "\n";
     }
     cout << "value is " << expr->evaluate() << "\n\n";
-    
+
   } else {
     CPPType *type = parser.parse_type(str);
     if (type != NULL) {
@@ -78,7 +91,7 @@ show_type_or_expression(const string &str) {
            << "get_fully_scoped_name = " << type->get_fully_scoped_name() << "\n"
            << "get_preferred_name = " << type->get_preferred_name() << "\n"
            << "is_incomplete = " << type->is_incomplete() << "\n";
-      
+
       if (stype != (CPPStructType *)NULL) {
         cout << "scope = " << stype->get_scope()->get_fully_scoped_name() << "\n";
         bool is_abstract = stype->is_abstract();
@@ -185,7 +198,7 @@ show_typedefs(const string &str) {
     cerr << "  " << *td << "\n";
   }
 }
-  
+
 
 int
 main(int argc, char *argv[]) {
@@ -241,14 +254,14 @@ main(int argc, char *argv[]) {
   if (argc < 2) {
     cerr << "parse-file [opts] file1.h [file2.h ... ]\n"
          << "\nOptions:\n\n"
-         << "  -I include_path\n" 
-         << "  -S system_include_path\n" 
-         << "  -D manifest_name\n" 
+         << "  -I include_path\n"
+         << "  -S system_include_path\n"
+         << "  -D manifest_name\n"
          << "  -D manifest_name=manifest_definition\n"
          << "  -o output_file (ignored)\n"
          << "  -v             (increase verbosity)\n"
          << "  -p             (prompt for expression instead of dumping output)\n";
-  
+
     exit(1);
   }
 
@@ -295,7 +308,7 @@ main(int argc, char *argv[]) {
   /*
   cout << "Opened the following files:\n";
   CPPParser::ParsedFiles::const_iterator fi;
-  for (fi = parser._parsed_files.begin(); 
+  for (fi = parser._parsed_files.begin();
        fi != parser._parsed_files.end();
        ++fi) {
     cout << "   ";
@@ -345,4 +358,4 @@ main(int argc, char *argv[]) {
 }
 
 
-  
+

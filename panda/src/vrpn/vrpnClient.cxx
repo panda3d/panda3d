@@ -1,6 +1,19 @@
 // Filename: vrpnClient.cxx
 // Created by:  jason (04Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "vrpnClient.h"
@@ -22,7 +35,7 @@ TypeHandle VrpnClient::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: VrpnClient::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 VrpnClient::
 VrpnClient(const string &server_name) :
@@ -46,7 +59,7 @@ VrpnClient(const string &server_name) :
 ////////////////////////////////////////////////////////////////////
 //     Function: VrpnClient::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 VrpnClient::
 ~VrpnClient() {
@@ -201,7 +214,7 @@ do_poll() {
 
   if (vrpn_cat.is_spam()) {
     vrpn_cat.spam()
-      << "VrpnClient " << _server_name << " polling " 
+      << "VrpnClient " << _server_name << " polling "
       << _trackers.size() + _buttons.size() + _analogs.size() + _dials.size()
       << " devices.\n";
   }
@@ -269,7 +282,7 @@ make_tracker_device(const string &device_name) {
   string tracker_name = device_name;
   int sensor = 0;
   VrpnTrackerDevice::DataType data_type = VrpnTrackerDevice::DT_position;
-  
+
   size_t colon = device_name.rfind(':');
   if (colon != string::npos && colon + 1 < device_name.length()) {
     size_t begin = colon + 1;
@@ -303,7 +316,7 @@ make_tracker_device(const string &device_name) {
 
   VrpnTracker *tracker = get_tracker(tracker_name);
 
-  VrpnTrackerDevice *device = 
+  VrpnTrackerDevice *device =
     new VrpnTrackerDevice(this, device_name, sensor, data_type, tracker);
 
   if (vrpn_cat.is_debug()) {
@@ -330,7 +343,7 @@ make_button_device(const string &device_name) {
 
   VrpnButton *button = get_button(device_name);
 
-  VrpnButtonDevice *device = 
+  VrpnButtonDevice *device =
     new VrpnButtonDevice(this, device_name, button);
 
   if (vrpn_cat.is_debug()) {
@@ -357,7 +370,7 @@ make_analog_device(const string &device_name) {
 
   VrpnAnalog *analog = get_analog(device_name);
 
-  VrpnAnalogDevice *device = 
+  VrpnAnalogDevice *device =
     new VrpnAnalogDevice(this, device_name, analog);
 
   if (vrpn_cat.is_debug()) {
@@ -384,7 +397,7 @@ make_dial_device(const string &device_name) {
 
   VrpnDial *dial = get_dial(device_name);
 
-  VrpnDialDevice *device = 
+  VrpnDialDevice *device =
     new VrpnDialDevice(this, device_name, dial);
 
   if (vrpn_cat.is_debug()) {
@@ -809,7 +822,7 @@ max_analog_channels() {
 //               some kind of cacheing scheme so we don't call mainloop
 //               multiple times when a user is just asking for the data
 //               of multiple sensors on 1 tracker (as that is the interface
-//               supported).  This is a non-trivial problem as it is 
+//               supported).  This is a non-trivial problem as it is
 //               difficult to know when we should and shouldn't cache.
 ////////////////////////////////////////////////////////////////////
 void VrpnClient::

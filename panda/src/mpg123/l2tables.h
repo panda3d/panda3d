@@ -1,9 +1,20 @@
-/*
- * Layer 2 Alloc tables .. 
- * most other tables are calculated on program start (which is (of course)
- * not ISO-conform) .. 
- * Layer-3 huffman table is in huffman.h
- */
+/* Filename: l2tables.h
+ * Created by:  
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ * PANDA 3D SOFTWARE
+ * Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+ *
+ * All use of this software is subject to the terms of the Panda 3d
+ * Software license.  You should have received a copy of this license
+ * along with this source code; you will also find a current copy of
+ * the license at http://www.panda3d.org/license.txt .
+ *
+ * To contact the maintainers of this program write to
+ * panda3d@yahoogroups.com .
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 struct al_table alloc_0[] = {
         {4,0},{5,3},{3,-3},{4,-7},{5,-15},{6,-31},{7,-63},{8,-127},{9,-255},{10,-511},

@@ -1,14 +1,24 @@
-
-/*
- * Discrete Cosine Tansform (DCT) for subband synthesis
+/* Filename: dct64.c
+ * Created by:  
  *
- * -funroll-loops (for gcc) will remove the loops for better performance
- * using loops in the source-code enhances readabillity
- */
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ * PANDA 3D SOFTWARE
+ * Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+ *
+ * All use of this software is subject to the terms of the Panda 3d
+ * Software license.  You should have received a copy of this license
+ * along with this source code; you will also find a current copy of
+ * the license at http://www.panda3d.org/license.txt .
+ *
+ * To contact the maintainers of this program write to
+ * panda3d@yahoogroups.com .
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*
  * TODO: write an optimized version for the down-sampling modes
- *       (in these modes the bands 16-31 (2:1) or 8-31 (4:1) are zero 
+ *       (in these modes the bands 16-31 (2:1) or 8-31 (4:1) are zero
  */
 
 #include "mpg123.h"
@@ -27,7 +37,7 @@ void dct64(real *out0,real *out1,real *samples)
   b2 = b1 + 32;
 
   for(i=15;i>=0;i--)
-    *bs++ = (*b1++ + *--b2); 
+    *bs++ = (*b1++ + *--b2);
   for(i=15;i>=0;i--)
     *bs++ = (*--b2 - *b1++) * *--costab;
 
@@ -37,15 +47,15 @@ void dct64(real *out0,real *out1,real *samples)
 
   {
     for(i=7;i>=0;i--)
-      *bs++ = (*b1++ + *--b2); 
+      *bs++ = (*b1++ + *--b2);
     for(i=7;i>=0;i--)
-      *bs++ = (*--b2 - *b1++) * *--costab; 
+      *bs++ = (*--b2 - *b1++) * *--costab;
     b2 += 32;
     costab += 8;
     for(i=7;i>=0;i--)
-      *bs++ = (*b1++ + *--b2); 
+      *bs++ = (*b1++ + *--b2);
     for(i=7;i>=0;i--)
-      *bs++ = (*b1++ - *--b2) * *--costab; 
+      *bs++ = (*b1++ - *--b2) * *--costab;
     b2 += 32;
   }
 
@@ -56,14 +66,14 @@ void dct64(real *out0,real *out1,real *samples)
   for(j=2;j;j--)
   {
     for(i=3;i>=0;i--)
-      *bs++ = (*b1++ + *--b2); 
+      *bs++ = (*b1++ + *--b2);
     for(i=3;i>=0;i--)
-      *bs++ = (*--b2 - *b1++) * costab[i]; 
+      *bs++ = (*--b2 - *b1++) * costab[i];
     b2 += 16;
     for(i=3;i>=0;i--)
-      *bs++ = (*b1++ + *--b2); 
+      *bs++ = (*b1++ + *--b2);
     for(i=3;i>=0;i--)
-      *bs++ = (*b1++ - *--b2) * costab[i]; 
+      *bs++ = (*b1++ - *--b2) * costab[i];
     b2 += 16;
   }
 
@@ -73,14 +83,14 @@ void dct64(real *out0,real *out1,real *samples)
 
   for(j=4;j;j--)
   {
-    *bs++ = (*b1++ + *--b2); 
     *bs++ = (*b1++ + *--b2);
-    *bs++ = (*--b2 - *b1++) * costab[1]; 
+    *bs++ = (*b1++ + *--b2);
+    *bs++ = (*--b2 - *b1++) * costab[1];
     *bs++ = (*--b2 - *b1++) * costab[0];
     b2 += 8;
-    *bs++ = (*b1++ + *--b2); 
     *bs++ = (*b1++ + *--b2);
-    *bs++ = (*b1++ - *--b2) * costab[1]; 
+    *bs++ = (*b1++ + *--b2);
+    *bs++ = (*b1++ - *--b2) * costab[1];
     *bs++ = (*b1++ - *--b2) * costab[0];
     b2 += 8;
   }

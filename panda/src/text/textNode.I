@@ -1,6 +1,19 @@
 // Filename: textNode.I
 // Created by:  mike (04Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -29,7 +42,7 @@ INLINE int TextNode::
 freeze() {
   if (text_cat.is_debug()) {
     text_cat.debug()
-      << "Freezing " << this->get_name() << ", level = " 
+      << "Freezing " << this->get_name() << ", level = "
       << _freeze_level << "\n";
   }
   return _freeze_level++;
@@ -60,12 +73,12 @@ INLINE int TextNode::
 thaw() {
   if (text_cat.is_debug()) {
     text_cat.debug()
-      << "Thawing " << this->get_name() << ", level = " 
+      << "Thawing " << this->get_name() << ", level = "
       << _freeze_level-1 << "\n";
   }
   nassertr(_freeze_level > 0, _freeze_level);
   _freeze_level--;
-  
+
   if (_freeze_level == 0 && _needs_rebuild) {
     do_rebuild();
   }
@@ -110,7 +123,7 @@ get_font() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_line_height 
+//     Function: TextNode::get_line_height
 //       Access: Published
 //  Description: Returns the number of units high each line of text
 //               is.  This is based on the font.
@@ -190,7 +203,7 @@ clear_wordwrap() {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::has_wordwrap
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool TextNode::
 has_wordwrap() const {
@@ -200,7 +213,7 @@ has_wordwrap() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_wordwrap
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE float TextNode::
 get_wordwrap() const {
@@ -243,7 +256,7 @@ clear_text_color() {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::has_text_color
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool TextNode::
 has_text_color() const {
@@ -253,7 +266,7 @@ has_text_color() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_text_color
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Colorf TextNode::
 get_text_color() const {
@@ -284,7 +297,7 @@ set_frame_color(const Colorf &frame_color) {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_frame_color
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Colorf TextNode::
 get_frame_color() const {
@@ -369,7 +382,7 @@ set_card_color(const Colorf &card_color) {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_card_color
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Colorf TextNode::
 get_card_color() const {
@@ -391,7 +404,7 @@ set_card_texture(Texture *card_texture) {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::clear_card_texture
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
 clear_card_texture() {
@@ -403,7 +416,7 @@ clear_card_texture() {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::has_card_texture
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool TextNode::
 has_card_texture() const {
@@ -413,7 +426,7 @@ has_card_texture() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_card_texture
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *TextNode::
 get_card_texture() const {
@@ -444,7 +457,7 @@ set_shadow_color(const Colorf &shadow_color) {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_shadow_color
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Colorf TextNode::
 get_shadow_color() const {
@@ -502,7 +515,7 @@ clear_frame() {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::has_frame
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool TextNode::
 has_frame() const {
@@ -555,7 +568,7 @@ INLINE LVecBase4f TextNode::
 get_frame_actual() const {
   nassertr(has_frame(), LVecBase4f(0.0, 0.0, 0.0, 0.0));
   if (is_frame_as_margin()) {
-    return LVecBase4f(get_left() - _frame_ul[0], 
+    return LVecBase4f(get_left() - _frame_ul[0],
                       get_right() + _frame_lr[0],
                       get_bottom() - _frame_lr[1],
                       get_top() + _frame_ul[1]);
@@ -606,7 +619,7 @@ set_frame_corners(bool corners) {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_frame_corners
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool TextNode::
 get_frame_corners() const {
@@ -665,7 +678,7 @@ clear_card() {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::has_card
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool TextNode::
 has_card() const {
@@ -724,7 +737,7 @@ get_card_actual() const {
     return LVecBase4f(get_left(), get_right(), get_bottom(), get_top());
 
   } else if (is_card_as_margin()) {
-    return LVecBase4f(get_left() - _card_ul[0], 
+    return LVecBase4f(get_left() - _card_ul[0],
                       get_right() + _card_lr[0],
                       get_bottom() - _card_lr[1],
                       get_top() + _card_ul[1]);
@@ -747,7 +760,7 @@ get_card_transformed() const {
   LVecBase4f card = get_card_actual();
   LPoint3f ul = LPoint3f(card[0], 0.0, card[3]) * _transform;
   LPoint3f lr = LPoint3f(card[1], 0.0, card[2]) * _transform;
-    
+
   return LVecBase4f(ul[0], lr[0], lr[2], ul[2]);
 }
 
@@ -780,7 +793,7 @@ clear_shadow() {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::has_shadow
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool TextNode::
 has_shadow() const {
@@ -901,7 +914,7 @@ set_transform(const LMatrix4f &transform) {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_transform
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE LMatrix4f TextNode::
 get_transform() const {
@@ -923,7 +936,7 @@ set_coordinate_system(CoordinateSystem coordinate_system) {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_coordinate_system
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CoordinateSystem TextNode::
 get_coordinate_system() const {
@@ -956,7 +969,7 @@ clear_text() {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::has_text
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool TextNode::
 has_text() const {
@@ -966,7 +979,7 @@ has_text() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_text
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE string TextNode::
 get_text() const {

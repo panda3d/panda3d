@@ -1,3 +1,20 @@
+/* Filename: audio.c
+ * Created by:  
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ * PANDA 3D SOFTWARE
+ * Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+ *
+ * All use of this software is subject to the terms of the Panda 3d
+ * Software license.  You should have received a copy of this license
+ * along with this source code; you will also find a current copy of
+ * the license at http://www.panda3d.org/license.txt .
+ *
+ * To contact the maintainers of this program write to
+ * panda3d@yahoogroups.com .
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "mpg123.h"
 #ifdef WIN32
@@ -36,7 +53,7 @@ void audio_info_struct_init(struct audio_info_struct *ai)
 
 struct audio_name audio_val2name[NUM_ENCODINGS+1] = {
  { AUDIO_FORMAT_SIGNED_16  , "signed 16 bit" , "s16 " } ,
- { AUDIO_FORMAT_UNSIGNED_16, "unsigned 16 bit" , "u16 " } ,  
+ { AUDIO_FORMAT_UNSIGNED_16, "unsigned 16 bit" , "u16 " } ,
  { AUDIO_FORMAT_UNSIGNED_8 , "unsigned 8 bit" , "u8  " } ,
  { AUDIO_FORMAT_SIGNED_8   , "signed 8 bit" , "s8  " } ,
  { AUDIO_FORMAT_ULAW_8     , "mu-law (8 bit)" , "ulaw " } ,
@@ -45,20 +62,20 @@ struct audio_name audio_val2name[NUM_ENCODINGS+1] = {
 };
 
 #if 0
-static char *channel_name[NUM_CHANNELS] = 
+static char *channel_name[NUM_CHANNELS] =
  { "mono" , "stereo" };
 #endif
 
 static int channels[NUM_CHANNELS] = { 1 , 2 };
-static int rates[NUM_RATES] = { 
-         8000, 11025, 12000, 
+static int rates[NUM_RATES] = {
+         8000, 11025, 12000,
         16000, 22050, 24000,
         32000, 44100, 48000,
         8000    /* 8000 = dummy for user forced */
 
 };
 static int encodings[NUM_ENCODINGS] = {
- AUDIO_FORMAT_SIGNED_16, 
+ AUDIO_FORMAT_SIGNED_16,
  AUDIO_FORMAT_UNSIGNED_16,
  AUDIO_FORMAT_UNSIGNED_8,
  AUDIO_FORMAT_SIGNED_8,
@@ -135,7 +152,7 @@ void audio_capabilities(struct audio_info_struct *ai)
 static int rate2num(int r)
 {
         int i;
-        for(i=0;i<NUM_RATES;i++) 
+        for(i=0;i<NUM_RATES;i++)
                 if(rates[i] == r)
                         return i;
         return -1;

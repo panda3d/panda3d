@@ -1,6 +1,19 @@
 // Filename: notifyCategoryProxy.I
 // Created by:  drose (04Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
@@ -55,7 +68,7 @@ get_safe_ptr() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategoryProxy::is_on
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class GetCategory>
 INLINE bool NotifyCategoryProxy<GetCategory>::
@@ -66,7 +79,7 @@ is_on(NotifySeverity severity) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategoryProxy::is_spam
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class GetCategory>
 INLINE bool NotifyCategoryProxy<GetCategory>::
@@ -81,7 +94,7 @@ is_spam() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategoryProxy::is_debug
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class GetCategory>
 INLINE bool NotifyCategoryProxy<GetCategory>::
@@ -96,7 +109,7 @@ is_debug() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategoryProxy::is_info
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class GetCategory>
 INLINE bool NotifyCategoryProxy<GetCategory>::
@@ -107,7 +120,7 @@ is_info() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategoryProxy::is_warning
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class GetCategory>
 INLINE bool NotifyCategoryProxy<GetCategory>::
@@ -118,7 +131,7 @@ is_warning() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategoryProxy::is_error
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class GetCategory>
 INLINE bool NotifyCategoryProxy<GetCategory>::
@@ -129,7 +142,7 @@ is_error() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategoryProxy::is_fatal
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class GetCategory>
 INLINE bool NotifyCategoryProxy<GetCategory>::
@@ -140,7 +153,7 @@ is_fatal() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategoryProxy::out
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class GetCategory>
 INLINE ostream &NotifyCategoryProxy<GetCategory>::
@@ -151,7 +164,7 @@ out(NotifySeverity severity, bool prefix) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategoryProxy::spam
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class GetCategory>
 INLINE ostream &NotifyCategoryProxy<GetCategory>::
@@ -162,7 +175,7 @@ spam(bool prefix) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategoryProxy::debug
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class GetCategory>
 INLINE ostream &NotifyCategoryProxy<GetCategory>::
@@ -173,7 +186,7 @@ debug(bool prefix) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategoryProxy::info
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class GetCategory>
 INLINE ostream &NotifyCategoryProxy<GetCategory>::
@@ -184,7 +197,7 @@ info(bool prefix) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategoryProxy::warning
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class GetCategory>
 INLINE ostream &NotifyCategoryProxy<GetCategory>::
@@ -195,7 +208,7 @@ warning(bool prefix) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategoryProxy::error
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class GetCategory>
 INLINE ostream &NotifyCategoryProxy<GetCategory>::
@@ -206,7 +219,7 @@ error(bool prefix) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategoryProxy::fatal
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class GetCategory>
 INLINE ostream &NotifyCategoryProxy<GetCategory>::

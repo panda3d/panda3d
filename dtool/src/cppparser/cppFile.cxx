@@ -1,6 +1,19 @@
-// Filename: cppFile.C
+// Filename: cppFile.cxx
 // Created by:  drose (11Nov99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -11,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPFile::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPFile::
 CPPFile(const Filename &filename, const Filename &filename_as_referenced,
@@ -27,12 +40,12 @@ CPPFile(const Filename &filename, const Filename &filename_as_referenced,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPFile::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPFile::
 CPPFile(const CPPFile &copy) :
-  _filename(copy._filename), 
-  _filename_as_referenced(copy._filename_as_referenced), 
+  _filename(copy._filename),
+  _filename_as_referenced(copy._filename_as_referenced),
   _source(copy._source)
 {
 }
@@ -40,7 +53,7 @@ CPPFile(const CPPFile &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPFile::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPFile::
 operator = (const CPPFile &copy) {
@@ -52,7 +65,7 @@ operator = (const CPPFile &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPFile::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPFile::
 ~CPPFile() {
@@ -83,13 +96,13 @@ bool CPPFile::
 is_c_or_i_file(const Filename &filename) {
   string extension = filename.get_extension();
   // downcase the extension.
-  for (string::iterator ei = extension.begin(); 
+  for (string::iterator ei = extension.begin();
        ei != extension.end();
        ++ei) {
     (*ei) = tolower(*ei);
   }
-    
-  return (extension == "c" || extension == "cc" || 
+
+  return (extension == "c" || extension == "cc" ||
           extension == "cpp" || extension == "c++" || extension == "cxx" ||
           extension == "i" || extension == "t");
 }
@@ -119,13 +132,13 @@ bool CPPFile::
 is_c_file(const Filename &filename) {
   string extension = filename.get_extension();
   // downcase the extension.
-  for (string::iterator ei = extension.begin(); 
+  for (string::iterator ei = extension.begin();
        ei != extension.end();
        ++ei) {
     (*ei) = tolower(*ei);
   }
-    
-  return (extension == "c" || extension == "cc" || 
+
+  return (extension == "c" || extension == "cc" ||
           extension == "cpp" || extension == "c++" || extension == "cxx");
 }
 
@@ -148,7 +161,7 @@ replace_nearer(const CPPFile &other) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPFile::Ordering Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPFile::
 operator < (const CPPFile &other) const {
@@ -158,7 +171,7 @@ operator < (const CPPFile &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPFile::Equality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPFile::
 operator == (const CPPFile &other) const {
@@ -168,7 +181,7 @@ operator == (const CPPFile &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPFile::Inequality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPFile::
 operator != (const CPPFile &other) const {
@@ -178,7 +191,7 @@ operator != (const CPPFile &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPFile::c_str
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 const char *CPPFile::
 c_str() const {
@@ -188,7 +201,7 @@ c_str() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPFile::empty
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPFile::
 empty() const {

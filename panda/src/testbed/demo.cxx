@@ -1,3 +1,21 @@
+// Filename: demo.cxx
+// Created by:  
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
 #include "framework.h"
 
 #include <eventHandler.h>
@@ -86,7 +104,7 @@ RenderRelation *flare_arc = (RenderRelation *)NULL;
 
 
 /*
-void 
+void
 setup_panda2d() {
   static bool already_setup = false;
   if (already_setup) {
@@ -130,7 +148,7 @@ setup_panda2d() {
 
 
   // Put some interesting things in the 2-d scene graph.
-  PT_Node font = loader.load_sync("ttf-comic"); 
+  PT_Node font = loader.load_sync("ttf-comic");
 
   if (font != (NamedNode *)NULL) {
     label2d = new TextNode("label2d");
@@ -150,7 +168,7 @@ setup_panda2d() {
     label2d->set_text_color(0.2, 0.5, 1.0, 1.0);
     label2d->set_text("Now presenting Panda 2-D!");
 
-    MouseWatcherRegion *region = 
+    MouseWatcherRegion *region =
       new MouseWatcherRegion("label2d", label2d->get_card_transformed());
     region->set_suppress_below(true);
     mouse_watcher->add_region(region);
@@ -224,7 +242,7 @@ set_highlight() {
 
   if (selected_node.has_arcs()) {
     nout << "Bounding volume of arc is " << *selected_node.get_bounds() << "\n";
-    
+
     nout << "Transitions on arc:\n";
     selected_node.arc()->write_transitions(nout, 2);
     selected_node.show_bounds();
@@ -244,7 +262,7 @@ event_up(CPT_Event) {
 
 static void
 event_down(CPT_Event) {
-  if (!selected_node.is_empty() && 
+  if (!selected_node.is_empty() &&
       selected_node.get_num_children() != 0) {
     clear_highlight();
     selected_node = selected_node.get_child(0);
@@ -339,7 +357,7 @@ event_B(CPT_Event event) {
   // recompute the volume.
   selected_node.ls();
   selected_node.analyze();
-  
+
   if (selected_node.has_arcs()) {
     selected_node.arc()->force_bound_stale();
   }
@@ -353,13 +371,13 @@ enable_highlight() {
 
     // Set up the funny rendering attributes on the highlighted
     // geometry.
-    RenderModeTransition *rmt = 
+    RenderModeTransition *rmt =
       new RenderModeTransition(RenderModeProperty::M_wireframe);
-    ColorTransition *ct = 
+    ColorTransition *ct =
       new ColorTransition(1.0, 0.0, 0.0, 1.0);
     CullFaceTransition *cft =
       new CullFaceTransition(CullFaceProperty::M_cull_none);
-    TextureTransition *tt = 
+    TextureTransition *tt =
       new TextureTransition;
     LightTransition *lt =
       new LightTransition;
@@ -482,7 +500,7 @@ event_L(CPT_Event) {
     Texture *f4 = TexturePool::load_texture("Flare4.bw");
     Texture *f5 = TexturePool::load_texture("Flare5.bw");
     Texture *f6 = TexturePool::load_texture("Flare6.bw");
-  
+
     LensFlareNode *flare = new LensFlareNode();
 
     PTA_float scales, offsets, angles;
@@ -526,11 +544,11 @@ event_L(CPT_Event) {
     ColorBlendTransition *cb = new ColorBlendTransition(ColorBlendProperty::M_add);
     flare_arc->set_transition(cb);
 
-    TextureApplyTransition *ta = 
+    TextureApplyTransition *ta =
       new TextureApplyTransition(TextureApplyProperty::M_decal);
     flare_arc->set_transition(ta);
 
-    DepthTestTransition *dta = 
+    DepthTestTransition *dta =
       new DepthTestTransition(DepthTestProperty::M_none);
     flare_arc->set_transition(dta);
   }

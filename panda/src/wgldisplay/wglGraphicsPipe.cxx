@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "wglGraphicsPipe.h"
 #include "config_wgldisplay.h"
@@ -41,7 +50,7 @@ wglGraphicsPipe::wglGraphicsPipe(const PipeSpecifier& spec)
   string windows_icon_filename = get_icon_filename_().to_os_specific();
 
   if(!windows_icon_filename.empty()) {
-    // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings) 
+    // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
     // if icon is more than 8bpp
     wc.hIcon = (HICON) LoadImage(NULL, windows_icon_filename.c_str(), IMAGE_ICON, 0, 0, LR_LOADFROMFILE);
   } else {
@@ -143,7 +152,7 @@ find_window(HWND win) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: static_window_proc 
+//     Function: static_window_proc
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -153,7 +162,7 @@ static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: window_proc 
+//     Function: window_proc
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -252,11 +261,11 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         y = HIWORD(lparam);
     if (x & 1 << 15) x -= (1 << 16);
     if (y & 1 << 15) y -= (1 << 16);
-    if (window->mouse_motion_enabled() 
+    if (window->mouse_motion_enabled()
         && wparam & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON)) {
       window->make_current();
       window->handle_mouse_motion(x, y);
-    } else if (window->mouse_passive_motion_enabled() && 
+    } else if (window->mouse_passive_motion_enabled() &&
         ((wparam & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON)) == 0)) {
       window->make_current();
       window->handle_mouse_motion(x, y);
@@ -285,7 +294,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       return 1;
 #endif
     case WM_SETFOCUS:
-      SetCursor(hMouseCrossIcon);  
+      SetCursor(hMouseCrossIcon);
       window = find_window(hwnd);
       if (window) {
     if (window->mouse_entry_enabled()) {
@@ -309,7 +318,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: lookup_key 
+//     Function: lookup_key
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -362,7 +371,7 @@ wglGraphicsPipe::lookup_key(WPARAM wparam) const {
     int key = MapVirtualKey(wparam, 2);
     if (isascii(key) && key != 0) {
       if (GetKeyState(VK_SHIFT) >= 0)
-    key = tolower(key); 
+    key = tolower(key);
       else {
     switch (key) {
     case '1': key = '!'; break;

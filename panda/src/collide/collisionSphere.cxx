@@ -1,6 +1,19 @@
 // Filename: collisionSphere.cxx
 // Created by:  drose (24Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "collisionSphere.h"
@@ -24,7 +37,7 @@ TypeHandle CollisionSphere::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSphere::make_copy
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CollisionSolid *CollisionSphere::
 make_copy() {
@@ -34,7 +47,7 @@ make_copy() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSphere::test_intersection
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CollisionSphere::
 test_intersection(CollisionHandler *record, const CollisionEntry &entry,
@@ -76,7 +89,7 @@ get_collision_origin() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSphere::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionSphere::
 output(ostream &out) const {
@@ -86,7 +99,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSphere::recompute_bound
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionSphere::
 recompute_bound() {
@@ -100,7 +113,7 @@ recompute_bound() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSphere::test_intersection_from_sphere
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CollisionSphere::
 test_intersection_from_sphere(CollisionHandler *record,
@@ -109,7 +122,7 @@ test_intersection_from_sphere(CollisionHandler *record,
   DCAST_INTO_R(sphere, entry.get_from(), 0);
 
   LPoint3f from_center = sphere->get_center() * entry.get_wrt_space();
-  LVector3f from_radius_v = 
+  LVector3f from_radius_v =
     LVector3f(sphere->get_radius(), 0.0, 0.0) * entry.get_wrt_space();
   float from_radius = length(from_radius_v);
 
@@ -125,7 +138,7 @@ test_intersection_from_sphere(CollisionHandler *record,
 
   if (collide_cat.is_debug()) {
     collide_cat.debug()
-      << "intersection detected from " << *entry.get_from_node() << " into " 
+      << "intersection detected from " << *entry.get_from_node() << " into "
       << entry.get_into_node_path() << "\n";
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
@@ -146,7 +159,7 @@ test_intersection_from_sphere(CollisionHandler *record,
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSphere::test_intersection_from_ray
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CollisionSphere::
 test_intersection_from_ray(CollisionHandler *record,
@@ -163,14 +176,14 @@ test_intersection_from_ray(CollisionHandler *record,
     return 0;
   }
 
-  if (t2 < 0.0) { 
+  if (t2 < 0.0) {
     // Both intersection points are before the start of the ray.
     return 0;
   }
 
   if (collide_cat.is_debug()) {
     collide_cat.debug()
-      << "intersection detected from " << *entry.get_from_node() << " into " 
+      << "intersection detected from " << *entry.get_from_node() << " into "
       << entry.get_into_node_path() << "\n";
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
@@ -190,7 +203,7 @@ test_intersection_from_ray(CollisionHandler *record,
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSphere::test_intersection_from_segment
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CollisionSphere::
 test_intersection_from_segment(CollisionHandler *record,
@@ -208,7 +221,7 @@ test_intersection_from_segment(CollisionHandler *record,
     return 0;
   }
 
-  if (t2 < 0.0 || t1 > 1.0) { 
+  if (t2 < 0.0 || t1 > 1.0) {
     // Both intersection points are before the start of the segment or
     // after the end of the segment.
     return 0;
@@ -216,7 +229,7 @@ test_intersection_from_segment(CollisionHandler *record,
 
   if (collide_cat.is_debug()) {
     collide_cat.debug()
-      << "intersection detected from " << *entry.get_from_node() << " into " 
+      << "intersection detected from " << *entry.get_from_node() << " into "
       << entry.get_into_node_path() << "\n";
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);

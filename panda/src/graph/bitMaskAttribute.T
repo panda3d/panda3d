@@ -1,6 +1,19 @@
-// Filename: bitMaskAttribute.I
+// Filename: bitMaskAttribute.T
 // Created by:  drose (08Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <indent.h>
@@ -11,7 +24,7 @@ TypeHandle BitMaskAttribute<MaskType>::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMaskAttribute::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MaskType>
 INLINE_GRAPH BitMaskAttribute<MaskType>::
@@ -21,7 +34,7 @@ BitMaskAttribute() {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMaskAttribute::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MaskType>
 INLINE_GRAPH BitMaskAttribute<MaskType>::
@@ -33,7 +46,7 @@ BitMaskAttribute(const MaskType &mask) :
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMaskAttribute::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MaskType>
 INLINE_GRAPH BitMaskAttribute<MaskType>::
@@ -46,7 +59,7 @@ BitMaskAttribute(const BitMaskAttribute &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMaskAttribute::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MaskType>
 INLINE_GRAPH void BitMaskAttribute<MaskType>::
@@ -58,7 +71,7 @@ operator = (const BitMaskAttribute &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMaskAttribute::set_mask
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MaskType>
 INLINE_GRAPH void BitMaskAttribute<MaskType>::
@@ -69,7 +82,7 @@ set_mask(const MaskType &mask) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMaskAttribute::get_maskType
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MaskType>
 INLINE_GRAPH const MaskType &BitMaskAttribute<MaskType>::
@@ -80,7 +93,7 @@ get_mask() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMaskAttribute::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MaskType>
 void BitMaskAttribute<MaskType>::
@@ -91,7 +104,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BitMaskAttribute::internal_compare_to
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MaskType>
 int BitMaskAttribute<MaskType>::

@@ -1,13 +1,26 @@
 // Filename: mesherStrip.I
 // Created by:  drose (16Sep97)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "config_builder.h"
 
 template <class PrimType>
 INLINE MesherStrip<PrimType>::
-MesherStrip(const MesherStrip &copy) : 
+MesherStrip(const MesherStrip &copy) :
   _prims(copy._prims),
   _edges(copy._edges),
   _verts(copy._verts),
@@ -152,7 +165,7 @@ operator == (const MesherStrip &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: MesherStrip::operator !=
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template <class PrimType>
 INLINE bool MesherStrip<PrimType>::
@@ -163,7 +176,7 @@ operator != (const MesherStrip &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: MesherStrip::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template <class PrimType>
 MesherStrip<PrimType>::
@@ -174,7 +187,7 @@ MesherStrip(const PrimType &prim, int index, const BuilderBucket &bucket) {
   _origin = MO_unknown;
   prim.has_overall_normal();  // Force the prim to update its overall flags.
   _type = prim.get_type();
-  
+
   // We save only the prim's overall properties in the _prims
   // array.  The vertices get re-added later by Mesher::add_prim().
   _prims.push_back(prim);
@@ -212,7 +225,7 @@ MesherStrip(const PrimType &prim, int index, const BuilderBucket &bucket) {
       _planar = true;
       _plane_offset = -dot(_plane_normal, p1);
     }
-  }  
+  }
 }
 
 
@@ -275,7 +288,7 @@ make_prim(const BuilderBucket &bucket) {
          ++vi) {
       const Vertex *v = *vi;
       nassertr(v != (Vertex *)NULL, p);
-      
+
       if (++count >= 3) {
         // Beginning with the third vertex, we increment pi.  Thus, the
         // first two vertices stand alone, then each vertex beginning
@@ -285,7 +298,7 @@ make_prim(const BuilderBucket &bucket) {
       }
       p.add_vertex(*v);
     }
-    
+
     p.set_type(type);
 
     // If either of these fail, there weren't num_prims + 2 vertices in
@@ -300,7 +313,7 @@ make_prim(const BuilderBucket &bucket) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MesherStrip::measure_sheet
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template <class PrimType>
 void MesherStrip<PrimType>::
@@ -364,7 +377,7 @@ measure_sheet(const Edge *edge, int new_row, int &num_prims, int &num_rows,
     for (int secondary = 0; secondary <= 1; secondary++) {
       // How many common vertices are we looking for this pass (see
       // above)?
-      
+
       int want_count;
       if (secondary) {
         want_count = new_row ? 0 : 1;
@@ -392,8 +405,8 @@ measure_sheet(const Edge *edge, int new_row, int &num_prims, int &num_rows,
             }
           }
           if (mate!=NULL) {
-            mate->measure_sheet(*ei, secondary, num_prims, num_rows, 
-                               first_row_id, this_row_id, 
+            mate->measure_sheet(*ei, secondary, num_prims, num_rows,
+                               first_row_id, this_row_id,
                                this_row_distance + secondary);
           }
         }
@@ -425,7 +438,7 @@ measure_sheet(const Edge *edge, int new_row, int &num_prims, int &num_rows,
           }
         }
         if (mate!=NULL) {
-          mate->measure_sheet(*ei, false, num_prims, num_rows, 
+          mate->measure_sheet(*ei, false, num_prims, num_rows,
                              first_row_id, this_row_id, this_row_distance);
         }
       }
@@ -437,7 +450,7 @@ measure_sheet(const Edge *edge, int new_row, int &num_prims, int &num_rows,
 ////////////////////////////////////////////////////////////////////
 //     Function: MesherStrip::cut_sheet
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template <class PrimType>
 void MesherStrip<PrimType>::
@@ -482,7 +495,7 @@ cut_sheet(int first_row_id, int do_mate, const BuilderBucket &bucket) {
     int not_any;
     do {
       not_any = true;
-      
+
       ei = _edges.begin();
       while (ei != _edges.end() && not_any) {
         Edge::Strips &strips = (*ei)->_strips;
@@ -525,7 +538,7 @@ cut_sheet(int first_row_id, int do_mate, const BuilderBucket &bucket) {
 }
 
 
-    
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MesherStrip::mate
@@ -571,7 +584,7 @@ mate(const BuilderBucket &bucket) {
 ////////////////////////////////////////////////////////////////////
 template <class PrimType>
 bool MesherStrip<PrimType>::
-find_ideal_mate(MesherStrip *&mate, Edge *&common_edge, 
+find_ideal_mate(MesherStrip *&mate, Edge *&common_edge,
               const BuilderBucket &bucket) {
   Edges::iterator ei;
 
@@ -595,8 +608,8 @@ find_ideal_mate(MesherStrip *&mate, Edge *&common_edge,
   return (mate!=NULL);
 }
 
-  
-  
+
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MesherStrip::mate_pieces
@@ -624,22 +637,22 @@ mate_pieces(Edge *common_edge, MesherStrip &front, MesherStrip &back,
     if (is_coplanar && bucket._retesselate_coplanar &&
         front._prims.front() == back._prims.front() &&
         convex_quad(common_edge, front, back, bucket)) {
-      
+
       // If we're joining two equivalent coplanar triangles, call it a
       // quad.
       front._type = BPT_quad;
-      
+
       // We add one additional vertex for the new triangle, the one
       // vertex we didn't already share.
       const Vertex *new_vert = back.find_uncommon_vertex(common_edge);
-      
+
       // Now we just need to find the right place to insert it.  It
       // belongs in the middle of the common edge, i.e. after the first
       // vertex that is on the common edge and before the second vertex.
       Verts::iterator a = front._verts.begin();
       Verts::iterator b = a;
       ++b;
-      
+
       if (common_edge->contains_vertex(*a)) {
         if (common_edge->contains_vertex(*b)) {
           // It goes between a and b.
@@ -653,7 +666,7 @@ mate_pieces(Edge *common_edge, MesherStrip &front, MesherStrip &back,
         ++b;
         front._verts.insert(b, new_vert);
       }
-      
+
       front._prims.splice(front._prims.end(), back._prims);
       back._verts.clear();
 
@@ -672,8 +685,8 @@ mate_pieces(Edge *common_edge, MesherStrip &front, MesherStrip &back,
       front._prims.splice(front._prims.end(), back._prims);
       back._verts.clear();
     }
-      
-  } else if ((front._type==BPT_quad || front._type==BPT_quadstrip) && 
+
+  } else if ((front._type==BPT_quad || front._type==BPT_quadstrip) &&
              (back._type==BPT_quad || back._type==BPT_quadstrip)) {
     // Joining two quads, two quadstrips, or a quad and a quadstrip.
     // This makes another quadstrip.
@@ -769,7 +782,7 @@ mate_strips(Edge *common_edge, MesherStrip &front, MesherStrip &back,
   if (back._type==BPT_tri || back._type==BPT_quad) {
     back.rotate_to_front(common_edge);
   }
-  
+
   bool reverse_front = common_edge->matches(front.get_head_edge());
   bool reverse_back = !common_edge->matches(back.get_head_edge());
 
@@ -809,7 +822,7 @@ mate_strips(Edge *common_edge, MesherStrip &front, MesherStrip &back,
   }
 
   bool will_reverse = front.would_reverse_tail(type);
-  bool is_headtotail = (front.get_tail_edge() == back.get_head_edge()); 
+  bool is_headtotail = (front.get_tail_edge() == back.get_head_edge());
   if (will_reverse == is_headtotail) {
     // Instead of crapping out, for now we'll just recover and carry on.
     //    builder_cat.info() << "Recovering from attempt to join backfacing strips.\n";
@@ -892,7 +905,7 @@ must_invert(const MesherStrip &front, const MesherStrip &back,
     // Otherwise, we have to flip if the tail edge is odd.
     invert = !invert;
   }
-    
+
   if (will_reverse_back) {
     // With the back strip, we don't care about what will happen to
     // its tail edge when we convert it, but we do care what happens
@@ -905,7 +918,7 @@ must_invert(const MesherStrip &front, const MesherStrip &back,
   }
 
   return invert;
-}  
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MesherStrip::convex_quad
@@ -935,7 +948,7 @@ convex_quad(Edge *common_edge, MesherStrip &front, MesherStrip &back,
   // Project both edges into the 2-d axis plane most nearly
   // perpendicular to the normal.  We're assuming both tris have the
   // same normal.
-  
+
   nassertr(front._planar, false);
 
   LVector3f &n = front._plane_normal;
@@ -965,7 +978,7 @@ convex_quad(Edge *common_edge, MesherStrip &front, MesherStrip &back,
   b2.set(b3[xi], b3[yi]);
   c2.set(c3[xi], c3[yi]);
   d2.set(d3[xi], d3[yi]);
-  
+
   // Now (c2-d2) is the common edge, and (a2-b2) is the new edge.  The
   // quad is convex iff (c2-d2) intersects (a2-b2).  We actually only
   // need to test whether (c2-d2) intersects the infinite line passing
@@ -1215,7 +1228,7 @@ template <class PrimType>
 bool MesherStrip<PrimType>::
 can_invert() const {
   return (_type==BPT_quadstrip || _type==BPT_quad);
-}  
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MesherStrip::invert
@@ -1236,12 +1249,12 @@ invert() {
     vi2 = vi;
     ++vi2;
     nassertr(vi2 != _verts.end(), false);
-    
+
     // Exchange vi and vi2
     const Vertex *t = *vi2;
     *vi2 = *vi;
     *vi = t;
-    
+
     // Increment
     vi = vi2;
     ++vi;
@@ -1295,7 +1308,7 @@ would_reverse_tail(BuilderPrimType wantType) const {
       // tail edge if we have a multiple of four verts.
       reverse = (_verts.size()%4==0);
       break;
-      
+
     default:
       builder_cat.fatal() << "Invalid conversion!\n";
       abort();
@@ -1311,7 +1324,7 @@ would_reverse_tail(BuilderPrimType wantType) const {
     case BPT_tri:
     case BPT_tristrip:
       // We don't convert tristrips to quadstrips; fall through.
-      
+
     default:
       builder_cat.fatal() << "Invalid conversion!\n";
       abort();
@@ -1370,7 +1383,7 @@ convert_to_type(BuilderPrimType wantType) {
         even = !even;
       }
       break;
-      
+
     default:
       builder_cat.fatal() << "Invalid conversion!\n";
       abort();
@@ -1385,7 +1398,7 @@ convert_to_type(BuilderPrimType wantType) {
     case BPT_tri:
     case BPT_tristrip:
       // We don't convert tristrips to quadstrips; fall through.
-      
+
     default:
       builder_cat.fatal() << "Invalid conversion!\n";
       abort();
@@ -1447,7 +1460,7 @@ combine_edges(MesherStrip<PrimType> &other, int removeSides) {
       (*ei)->remove(this);
     }
   }
-}  
+}
 
 
 ////////////////////////////////////////////////////////////////////
@@ -1464,7 +1477,7 @@ remove_all_edges() {
   // list without it changing on us.
   Edges junk_edges;
   junk_edges.splice(junk_edges.end(), _edges);
-  
+
   // Now we can safely remove all the to-be-junked edges.
   Edges::iterator ei;
   for (ei = junk_edges.begin(); ei != junk_edges.end(); ++ei) {
@@ -1623,9 +1636,9 @@ output(ostream &out) const {
   for (vi = _verts.begin(); vi != _verts.end(); vi++) {
     out << " " << **vi;
   }
-  out << " ]: " << _prims.size() 
+  out << " ]: " << _prims.size()
       << " prims, " << count_neighbors() << " neighbors";
-  
+
   show_neighbors(out);
 
   out << " edges";

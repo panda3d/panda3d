@@ -3,6 +3,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 #ifndef SPOTLIGHTSHADER_H
 #define SPOTLIGHTSHADER_H
 //
@@ -25,13 +37,13 @@ class EXPCL_SHADER SpotlightShader : public ProjtexShader
 {
 public:
   SpotlightShader(int size = 256, float radius = 0.7);
-  
+
   virtual void config(void);
   // SpotlightShader uses ProjtexShader::apply()
 
 protected:
   float                 _radius;
-  
+
 public:
 
   static TypeHandle get_class_type() {
@@ -46,9 +58,9 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-  
+
 private:
-  
+
   static TypeHandle _type_handle;
 };
 

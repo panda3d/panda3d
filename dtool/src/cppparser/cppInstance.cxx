@@ -1,6 +1,19 @@
-// Filename: cppInstance.C
+// Filename: cppInstance.cxx
 // Created by:  drose (19Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -22,7 +35,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstance::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPInstance::
 CPPInstance(CPPType *type, const string &name, int storage_class) :
@@ -37,7 +50,7 @@ CPPInstance(CPPType *type, const string &name, int storage_class) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstance::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPInstance::
 CPPInstance(CPPType *type, CPPIdentifier *ident, int storage_class) :
@@ -73,7 +86,7 @@ CPPInstance(CPPType *type, CPPInstanceIdentifier *ii, int storage_class,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstance::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPInstance::
 CPPInstance(const CPPInstance &copy) :
@@ -89,7 +102,7 @@ CPPInstance(const CPPInstance &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstance::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPInstance::
 ~CPPInstance() {
@@ -110,10 +123,10 @@ make_typecast_function(CPPInstance *inst, CPPIdentifier *ident,
                        CPPParameterList *parameters, int function_flags) {
   CPPType *type = CPPType::new_type(inst->_type);
   delete inst;
-      
+
   function_flags |= (int)CPPFunctionType::F_operator_typecast;
 
-  CPPType *ft = 
+  CPPType *ft =
     CPPType::new_type(new CPPFunctionType(type, parameters, function_flags));
 
   return new CPPInstance(ft, ident);
@@ -122,7 +135,7 @@ make_typecast_function(CPPInstance *inst, CPPIdentifier *ident,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstance::Equivalence Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPInstance::
 operator == (const CPPInstance &other) const {
@@ -138,7 +151,7 @@ operator == (const CPPInstance &other) const {
   // on the identifier.
   if ((_ident == NULL && other._ident != NULL) ||
       (_ident != NULL && other._ident == NULL) ||
-      (_ident != NULL && other._ident != NULL && *_ident != *other._ident)) 
+      (_ident != NULL && other._ident != NULL && *_ident != *other._ident))
   {
     return false;
   }
@@ -147,7 +160,7 @@ operator == (const CPPInstance &other) const {
   if ((_initializer == NULL && other._initializer != NULL) ||
       (_initializer != NULL && other._initializer == NULL) ||
       (_initializer != NULL && other._initializer != NULL &&
-       *_initializer != *other._initializer)) 
+       *_initializer != *other._initializer))
   {
     return false;
   }
@@ -158,7 +171,7 @@ operator == (const CPPInstance &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstance::Nonequivalence Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPInstance::
 operator != (const CPPInstance &other) const {
@@ -168,7 +181,7 @@ operator != (const CPPInstance &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstance::Ordering Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPInstance::
 operator < (const CPPInstance &other) const {
@@ -184,7 +197,7 @@ operator < (const CPPInstance &other) const {
   // on the identifier.
   if ((_ident == NULL && other._ident != NULL) ||
       (_ident != NULL && other._ident == NULL) ||
-      (_ident != NULL && other._ident != NULL && *_ident != *other._ident)) 
+      (_ident != NULL && other._ident != NULL && *_ident != *other._ident))
   {
     if (_ident == NULL || other._ident == NULL) {
       return _ident < other._ident;
@@ -196,7 +209,7 @@ operator < (const CPPInstance &other) const {
   if ((_initializer == NULL && other._initializer != NULL) ||
       (_initializer != NULL && other._initializer == NULL) ||
       (_initializer != NULL && other._initializer != NULL &&
-       *_initializer != *other._initializer)) 
+       *_initializer != *other._initializer))
   {
     if (_initializer == NULL || other._initializer == NULL) {
       return _initializer < other._initializer;
@@ -234,7 +247,7 @@ set_initializer(CPPExpression *initializer) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstance::is_scoped
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPInstance::
 is_scoped() const {
@@ -248,7 +261,7 @@ is_scoped() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstance::get_scope
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPScope *CPPInstance::
 get_scope(CPPScope *current_scope, CPPScope *global_scope,
@@ -263,7 +276,7 @@ get_scope(CPPScope *current_scope, CPPScope *global_scope,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstance::get_simple_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string CPPInstance::
 get_simple_name() const {
@@ -277,7 +290,7 @@ get_simple_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstance::get_local_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string CPPInstance::
 get_local_name(CPPScope *scope) const {
@@ -291,7 +304,7 @@ get_local_name(CPPScope *scope) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstance::get_fully_scoped_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string CPPInstance::
 get_fully_scoped_name() const {
@@ -327,7 +340,7 @@ check_for_constructor(CPPScope *current_scope, CPPScope *global_scope) {
           (new CPPSimpleType(CPPSimpleType::T_void));
 
         _type = CPPType::new_type
-          (new CPPFunctionType(void_type, func->_parameters, 
+          (new CPPFunctionType(void_type, func->_parameters,
                                func->_flags | CPPFunctionType::F_constructor));
 
       } else if (method_name == "~" + class_name) {
@@ -335,7 +348,7 @@ check_for_constructor(CPPScope *current_scope, CPPScope *global_scope) {
           (new CPPSimpleType(CPPSimpleType::T_void));
 
         _type = CPPType::new_type
-          (new CPPFunctionType(void_type, func->_parameters, 
+          (new CPPFunctionType(void_type, func->_parameters,
                                func->_flags | CPPFunctionType::F_destructor));
       }
     }
@@ -345,7 +358,7 @@ check_for_constructor(CPPScope *current_scope, CPPScope *global_scope) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstance::instantiate
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPInstance::
 instantiate(const CPPTemplateParameterList *actual_params,
@@ -353,7 +366,7 @@ instantiate(const CPPTemplateParameterList *actual_params,
             CPPPreprocessor *error_sink) const {
   if (!is_template()) {
     if (error_sink != NULL) {
-      error_sink->warning("Ignoring template parameters for instance " + 
+      error_sink->warning("Ignoring template parameters for instance " +
                           _ident->get_local_name());
     }
     return (CPPInstance *)this;
@@ -374,7 +387,7 @@ instantiate(const CPPTemplateParameterList *actual_params,
   actual_params->build_subst_decl(tscope->_parameters, subst,
                                   current_scope, global_scope);
 
-  CPPInstance *inst = 
+  CPPInstance *inst =
     ((CPPInstance *)this)->substitute_decl(subst, current_scope, global_scope)
     ->as_instance();
   if (inst == this) {
@@ -419,19 +432,19 @@ is_fully_specified() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstance::substitute_decl
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPInstance::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
                 CPPScope *current_scope, CPPScope *global_scope) {
-  CPPDeclaration *top = 
+  CPPDeclaration *top =
     CPPDeclaration::substitute_decl(subst, current_scope, global_scope);
   if (top != this) {
     return top;
   }
 
   CPPInstance *rep = new CPPInstance(*this);
-  CPPDeclaration *new_type = 
+  CPPDeclaration *new_type =
     _type->substitute_decl(subst, current_scope, global_scope);
   rep->_type = new_type->as_type();
 
@@ -441,7 +454,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   }
 
   if (_initializer != NULL) {
-    rep->_initializer = 
+    rep->_initializer =
       _initializer->substitute_decl(subst, current_scope, global_scope)
       ->as_expression();
   }
@@ -459,7 +472,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstance::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPInstance::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
@@ -534,7 +547,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstance::get_subtype
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration::SubType CPPInstance::
 get_subtype() const {
@@ -544,7 +557,7 @@ get_subtype() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstance::as_instance
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPInstance *CPPInstance::
 as_instance() {

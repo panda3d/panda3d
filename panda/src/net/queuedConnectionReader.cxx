@@ -1,6 +1,19 @@
 // Filename: queuedConnectionReader.cxx
 // Created by:  drose (08Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "queuedConnectionReader.h"
@@ -9,18 +22,18 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: QueuedConnectionReader::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 QueuedConnectionReader::
-QueuedConnectionReader(ConnectionManager *manager, int num_threads) : 
-  ConnectionReader(manager, num_threads) 
+QueuedConnectionReader(ConnectionManager *manager, int num_threads) :
+  ConnectionReader(manager, num_threads)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: QueuedConnectionReader::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 QueuedConnectionReader::
 ~QueuedConnectionReader() {
@@ -78,7 +91,7 @@ get_data(Datagram &result) {
   result = nd;
   return true;
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: QueuedConnectionReader::receive_datagram
 //       Access: Protected, Virtual
@@ -91,12 +104,12 @@ void QueuedConnectionReader::
 receive_datagram(const NetDatagram &datagram) {
   if (net_cat.is_debug()) {
     net_cat.debug()
-      << "Received datagram of " << datagram.get_length() 
+      << "Received datagram of " << datagram.get_length()
       << " bytes\n";
   }
 
   if (!enqueue_thing(datagram)) {
-    net_cat.error() 
+    net_cat.error()
       << "QueuedConnectionReader queue full!\n";
   }
 }

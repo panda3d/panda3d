@@ -1,7 +1,20 @@
-// This file is actually a poor man's template function.  This is #included
-// several times into pnm-image-filter.cc, with certain macros redefined each
-// time to declare several copies of this function that operate on the
-// different channels of the image.
+// Filename: pnm-image-filter-core.cxx
+// Created by:  
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 // We map X and Y to A and B, because we might change our minds about which
 // is dominant, and we map get/set functions for the channel in question to
@@ -9,7 +22,7 @@
 
 
 static void
-FUNCTION_NAME(PNMImage &dest, const PNMImage &source, 
+FUNCTION_NAME(PNMImage &dest, const PNMImage &source,
               double width, FilterFunction *make_filter) {
   if (!dest.is_valid() || !source.is_valid()) {
     return;

@@ -1,6 +1,19 @@
 // Filename: omniBoundingVolume.cxx
 // Created by:  drose (22Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "omniBoundingVolume.h"
@@ -14,7 +27,7 @@ TypeHandle OmniBoundingVolume::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: OmniBoundingVolume::make_copy
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 BoundingVolume *OmniBoundingVolume::
 make_copy() const {
@@ -24,7 +37,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: OmniBoundingVolume::get_approx_center
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 LPoint3f OmniBoundingVolume::
 get_approx_center() const {
@@ -34,7 +47,7 @@ get_approx_center() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: OmniBoundingVolume::xform
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void OmniBoundingVolume::
 xform(const LMatrix4f &) {
@@ -43,7 +56,7 @@ xform(const LMatrix4f &) {
 ////////////////////////////////////////////////////////////////////
 //     Function: OmniBoundingVolume::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void OmniBoundingVolume::
 output(ostream &out) const {
@@ -53,7 +66,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: OmniBoundingVolume::extend_other
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool OmniBoundingVolume::
 extend_other(BoundingVolume *other) const {
@@ -64,7 +77,7 @@ extend_other(BoundingVolume *other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: OmniBoundingVolume::around_other
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool OmniBoundingVolume::
 around_other(BoundingVolume *other,
@@ -77,7 +90,7 @@ around_other(BoundingVolume *other,
 ////////////////////////////////////////////////////////////////////
 //     Function: OmniBoundingVolume::contains_other
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int OmniBoundingVolume::
 contains_other(const BoundingVolume *) const {
@@ -87,7 +100,7 @@ contains_other(const BoundingVolume *) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: OmniBoundingVolume::extend_by_point
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool OmniBoundingVolume::
 extend_by_point(const LPoint3f &) {
@@ -97,7 +110,7 @@ extend_by_point(const LPoint3f &) {
 ////////////////////////////////////////////////////////////////////
 //     Function: OmniBoundingVolume::extend_by_sphere
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool OmniBoundingVolume::
 extend_by_sphere(const BoundingSphere *) {
@@ -107,7 +120,7 @@ extend_by_sphere(const BoundingSphere *) {
 ////////////////////////////////////////////////////////////////////
 //     Function: OmniBoundingVolume::extend_by_hexahedron
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool OmniBoundingVolume::
 extend_by_hexahedron(const BoundingHexahedron *) {
@@ -117,7 +130,7 @@ extend_by_hexahedron(const BoundingHexahedron *) {
 ////////////////////////////////////////////////////////////////////
 //     Function: OmniBoundingVolume::around_points
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool OmniBoundingVolume::
 around_points(const LPoint3f *, const LPoint3f *) {
@@ -127,10 +140,10 @@ around_points(const LPoint3f *, const LPoint3f *) {
 ////////////////////////////////////////////////////////////////////
 //     Function: OmniBoundingVolume::around_spheres
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool OmniBoundingVolume::
-around_spheres(const BoundingVolume **, 
+around_spheres(const BoundingVolume **,
                const BoundingVolume **) {
   return true;
 }
@@ -138,10 +151,10 @@ around_spheres(const BoundingVolume **,
 ////////////////////////////////////////////////////////////////////
 //     Function: OmniBoundingVolume::around_hexahedrons
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool OmniBoundingVolume::
-around_hexahedrons(const BoundingVolume **, 
+around_hexahedrons(const BoundingVolume **,
                    const BoundingVolume **) {
   return true;
 }
@@ -149,7 +162,7 @@ around_hexahedrons(const BoundingVolume **,
 ////////////////////////////////////////////////////////////////////
 //     Function: OmniBoundingVolume::contains_point
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int OmniBoundingVolume::
 contains_point(const LPoint3f &) const {
@@ -159,7 +172,7 @@ contains_point(const LPoint3f &) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: OmniBoundingVolume::contains_lineseg
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int OmniBoundingVolume::
 contains_lineseg(const LPoint3f &, const LPoint3f &) const {
@@ -169,7 +182,7 @@ contains_lineseg(const LPoint3f &, const LPoint3f &) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: OmniBoundingVolume::contains_sphere
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int OmniBoundingVolume::
 contains_sphere(const BoundingSphere *) const {
@@ -179,7 +192,7 @@ contains_sphere(const BoundingSphere *) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: OmniBoundingVolume::contains_hexahedron
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int OmniBoundingVolume::
 contains_hexahedron(const BoundingHexahedron *) const {

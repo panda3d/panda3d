@@ -1,13 +1,26 @@
 // Filename: lpoint2_src.I
 // Created by:  drose (08Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint2::Default Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint2)::
 FLOATNAME(LPoint2)() {
@@ -16,7 +29,7 @@ FLOATNAME(LPoint2)() {
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint2::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint2)::
 FLOATNAME(LPoint2)(const FLOATNAME(LVecBase2) &copy) : FLOATNAME(LVecBase2)(copy) {
@@ -25,7 +38,7 @@ FLOATNAME(LPoint2)(const FLOATNAME(LVecBase2) &copy) : FLOATNAME(LVecBase2)(copy
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint2::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint2) &FLOATNAME(LPoint2)::
 operator = (const FLOATNAME(LVecBase2) &copy) {
@@ -36,7 +49,7 @@ operator = (const FLOATNAME(LVecBase2) &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint2::Copy Fill Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint2) &FLOATNAME(LPoint2)::
 operator = (FLOATTYPE fill_value) {
@@ -47,22 +60,22 @@ operator = (FLOATTYPE fill_value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint2::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint2)::
 FLOATNAME(LPoint2)(FLOATTYPE fill_value) :
-  FLOATNAME(LVecBase2)(fill_value) 
+  FLOATNAME(LVecBase2)(fill_value)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint2::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint2)::
-FLOATNAME(LPoint2)(FLOATTYPE x, FLOATTYPE y) : 
-  FLOATNAME(LVecBase2)(x, y) 
+FLOATNAME(LPoint2)(FLOATTYPE x, FLOATTYPE y) :
+  FLOATNAME(LVecBase2)(x, y)
 {
 }
 
@@ -99,7 +112,7 @@ unit_y() {
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint2::unary -
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint2) FLOATNAME(LPoint2)::
 operator - () const {
@@ -109,7 +122,7 @@ operator - () const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint2::point + vecbase
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LPoint2)::
 operator + (const FLOATNAME(LVecBase2) &other) const {
@@ -119,7 +132,7 @@ operator + (const FLOATNAME(LVecBase2) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint2::point + vector
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint2) FLOATNAME(LPoint2)::
 operator + (const FLOATNAME(LVector2) &other) const {
@@ -129,7 +142,7 @@ operator + (const FLOATNAME(LVector2) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint2::point - vecbase
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase2) FLOATNAME(LPoint2)::
 operator - (const FLOATNAME(LVecBase2) &other) const {
@@ -139,7 +152,7 @@ operator - (const FLOATNAME(LVecBase2) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint2::point - point
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector2) FLOATNAME(LPoint2)::
 operator - (const FLOATNAME(LPoint2) &other) const {
@@ -149,7 +162,7 @@ operator - (const FLOATNAME(LPoint2) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint2::point - vector
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint2) FLOATNAME(LPoint2)::
 operator - (const FLOATNAME(LVector2) &other) const {
@@ -159,7 +172,7 @@ operator - (const FLOATNAME(LVector2) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint2::operator * scalar
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint2) FLOATNAME(LPoint2)::
 operator * (FLOATTYPE scalar) const {
@@ -169,7 +182,7 @@ operator * (FLOATTYPE scalar) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint2::operator / scalar
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint2) FLOATNAME(LPoint2)::
 operator / (FLOATTYPE scalar) const {

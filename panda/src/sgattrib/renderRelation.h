@@ -1,6 +1,20 @@
 // Filename: renderRelation.h
 // Created by:  drose (26Oct98)
 //
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef RENDERRELATION_H
 #define RENDERRELATION_H
@@ -33,7 +47,7 @@ public:
   // This is just to be called at initialization time; don't try to
   // call this directly.
   INLINE static void register_with_factory();
-  
+
 private:
   static NodeRelation *make_arc(const FactoryParams &params);
 

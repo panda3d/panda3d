@@ -1,4 +1,20 @@
-// ProfileTimer.h
+// Filename: profileTimer.h
+// Created by:  
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 #ifndef PROFILETIMER_H //[
 #define PROFILETIMER_H
 
@@ -7,7 +23,7 @@
 
 /*
     ProfileTimer
-    
+
     HowTo:
       Create a ProfileTimer and hold onto it.
       Call init() whenever you like (the timer doesn't
@@ -17,9 +33,9 @@
         in the code you are timing.
       You can turn the timer off() and on() to skip things you
         don't want to time.
-      When your timing is finished, call printTo() to see the 
+      When your timing is finished, call printTo() to see the
         results (e.g. myTimer.printTo(cerr)).
-    
+
     Notes:
       You should be able to time things down to the millisecond
       well enough, but if you call on() and off() within micro-
@@ -32,14 +48,14 @@ PUBLISHED:
   ProfileTimer(const char* name=0, int maxEntries=MaxEntriesDefault);
   ProfileTimer(const ProfileTimer& other);
   ~ProfileTimer();
-  
+
   void init(const char* name, int maxEntries=MaxEntriesDefault);
-  
+
   void on();
   void mark(const char* tag);
   void off();
   void off(const char* tag);
-  
+
   // Don't call any of the following during timing:
   // (Because they are slow, not because anything will break).
   double getTotalTime() const;
@@ -60,7 +76,7 @@ public:
   public:
     AutoTimer(ProfileTimer& profile, const char* tag);
     ~AutoTimer();
-  
+
   protected:
     ProfileTimer& _profile;
     const char* _tag;
@@ -83,7 +99,7 @@ protected:
   int _autoTimerCount; // see class AutoTimer
 
   double getTime();
-  
+
   friend ProfileTimer::AutoTimer;
 };
 

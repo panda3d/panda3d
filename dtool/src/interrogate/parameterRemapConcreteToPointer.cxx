@@ -1,6 +1,19 @@
-// Filename: parameterRemapConcreteToPointer.C
+// Filename: parameterRemapConcreteToPointer.cxx
 // Created by:  drose (01Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "parameterRemapConcreteToPointer.h"
@@ -16,7 +29,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: ParameterRemapConcreteToPointer::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ParameterRemapConcreteToPointer::
 ParameterRemapConcreteToPointer(CPPType *orig_type) :
@@ -46,7 +59,7 @@ pass_parameter(ostream &out, const string &variable_name) {
 ////////////////////////////////////////////////////////////////////
 string ParameterRemapConcreteToPointer::
 get_return_expr(const string &expression) {
-  return 
+  return
     "new " + _orig_type->get_local_name(&parser) +
     "(" + expression + ")";
 }

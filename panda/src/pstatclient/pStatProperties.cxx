@@ -1,6 +1,19 @@
 // Filename: pStatProperties.cxx
 // Created by:  drose (17May01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pStatProperties.h"
@@ -137,7 +150,7 @@ static LevelCollectorProperties level_properties[] = {
   { 0, NULL }
 };
 
-    
+
 ////////////////////////////////////////////////////////////////////
 //     Function: initialize_collector_def_from_table
 //  Description: Looks up the collector in the compiled-in table
@@ -149,7 +162,7 @@ initialize_collector_def_from_table(const string &fullname, PStatCollectorDef *d
   int i;
 
   for (i = 0;
-       time_properties[i].name != (const char *)NULL; 
+       time_properties[i].name != (const char *)NULL;
        i++) {
     const TimeCollectorProperties &tp = time_properties[i];
     if (fullname == tp.name) {
@@ -166,7 +179,7 @@ initialize_collector_def_from_table(const string &fullname, PStatCollectorDef *d
   }
 
   for (i = 0;
-       level_properties[i].name != (const char *)NULL; 
+       level_properties[i].name != (const char *)NULL;
        i++) {
     const LevelCollectorProperties &lp = level_properties[i];
     if (fullname == lp.name) {
@@ -189,7 +202,7 @@ initialize_collector_def_from_table(const string &fullname, PStatCollectorDef *d
   }
 }
 
-    
+
 ////////////////////////////////////////////////////////////////////
 //     Function: initialize_collector_def
 //  Description: This is the only accessor function into this table.
@@ -257,7 +270,7 @@ initialize_collector_def(PStatClient *client, PStatCollectorDef *def) {
   // Get and decode the color string.  We allow any three
   // floating-point numbers, with any kind of non-digit characters
   // between them.
-  string color_str = 
+  string color_str =
     config_pstats.GetString("pstats-color-" + config_name, "");
   if (!color_str.empty()) {
     const char *cstr = color_str.c_str();

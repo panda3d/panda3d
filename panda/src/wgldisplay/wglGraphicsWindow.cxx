@@ -1,7 +1,19 @@
 // Filename: wglGraphicsWindow.cxx
+// Created by:  
 //
 ////////////////////////////////////////////////////////////////////
-// Includes
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "wglGraphicsWindow.h"
@@ -89,7 +101,7 @@ try_for_visual(wglGraphicsPipe *pipe, int mask,
   } else {
     want_color_component_bits = max(want_color_bits / 3, 1);
   }
-      
+
   attrib_list[n++] = GLX_RGBA;
   attrib_list[n++] = GLX_RED_SIZE;
   attrib_list[n++] = want_color_component_bits;
@@ -219,7 +231,7 @@ try_for_visual(wglGraphicsPipe *pipe, int mask,
     if (stereo) {
       if (!(match->dwFlags & PFD_STEREO)) {
     wgldisplay_cat.info()
-      << "wglGraphicsWindow::try_for_visual() - request for stereo failed" << endl; 
+      << "wglGraphicsWindow::try_for_visual() - request for stereo failed" << endl;
       }
     }
   }
@@ -228,15 +240,15 @@ try_for_visual(wglGraphicsPipe *pipe, int mask,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: get_config 
+//     Function: get_config
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::
 get_config(PIXELFORMATDESCRIPTOR *visual, int attrib, int *value) {
   if (visual == NULL)
-    return; 
-  
+    return;
+
   switch (attrib) {
     case GLX_USE_GL:
       if (visual->dwFlags & (PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW)) {
@@ -349,7 +361,7 @@ int wglGraphicsWindow::choose_visual(void) {
 
     bool special_size_request =
       (want_depth_bits != 1 || want_color_bits != 1);
-    
+
     // We try to be smart about choosing a close match for the visual.
     // First, we'll eliminate some of the more esoteric options one at
     // a time, then two at a time, and finally we'll try just the bare
@@ -365,18 +377,18 @@ int wglGraphicsWindow::choose_visual(void) {
     if (_visual == NULL) {
       // Ok, not good enough.  Now try to eliminate options, but keep
       // as many bits as we asked for.
-      
+
       // This array keeps the bitmasks of options that we pull out of
       // the requested mask, in order.
-      
-      static const int strip_properties[] = { 
+
+      static const int strip_properties[] = {
     // One esoteric option removed.
     W_MULTISAMPLE,
     W_STENCIL,
     W_ACCUM,
     W_ALPHA,
     W_STEREO,
-    
+
     // Two esoteric options removed.
     W_STENCIL | W_MULTISAMPLE,
     W_ACCUM | W_MULTISAMPLE,
@@ -386,14 +398,14 @@ int wglGraphicsWindow::choose_visual(void) {
     W_ALPHA | W_STEREO,
     W_STENCIL | W_ACCUM | W_MULTISAMPLE,
     W_ALPHA | W_STEREO | W_MULTISAMPLE,
-    
+
     // All esoteric options removed.
     W_STENCIL | W_ACCUM | W_ALPHA | W_STEREO | W_MULTISAMPLE,
 
     // All esoteric options, plus some we'd really really prefer,
     // removed.
     W_STENCIL | W_ACCUM | W_ALPHA | W_STEREO | W_MULTISAMPLE | W_DOUBLE,
-    
+
     // A zero marks the end of the array.
     0
       };
@@ -413,7 +425,7 @@ int wglGraphicsWindow::choose_visual(void) {
       if (special_size_request) {
     tried_masks.clear();
     tried_masks.insert(mask);
-    
+
     if (_visual == NULL) {
       // Try once more, this time eliminating all of the size
       // requests.
@@ -425,13 +437,13 @@ int wglGraphicsWindow::choose_visual(void) {
       }
     }
       }
-    
+
       if (_visual == NULL) {
     // Here's our last-ditch desparation attempt: give us any GLX
     // visual at all!
     _visual = try_for_visual(pipe, 0);
       }
-    
+
       if (_visual == NULL) {
     wgldisplay_cat.fatal()
       << "wglGraphicsWindow::choose_visual() - could not get any "
@@ -445,7 +457,7 @@ int wglGraphicsWindow::choose_visual(void) {
     int render_mode, double_buffer, stereo, red_size, green_size, blue_size,
       alpha_size, ared_size, agreen_size, ablue_size, aalpha_size,
       depth_size, stencil_size;
-    
+
     get_config(_visual, GLX_RGBA, &render_mode);
     get_config(_visual, GLX_DOUBLEBUFFER, &double_buffer);
     get_config(_visual, GLX_STEREO, &stereo);
@@ -478,7 +490,7 @@ typedef enum {Software, MCD, ICD} OGLDriverType;
 #ifdef _DEBUG
 void PrintPFD(PIXELFORMATDESCRIPTOR *pfd,char *msg) {
 
-  wgldisplay_cat.spam() << msg << endl 
+  wgldisplay_cat.spam() << msg << endl
                          << "PFD flags: 0x" << (void*)pfd->dwFlags << " (" <<
             ((pfd->dwFlags &  PFD_GENERIC_ACCELERATED) ? " PFD_GENERIC_ACCELERATED |" : "") <<
             ((pfd->dwFlags &  PFD_GENERIC_FORMAT) ? " PFD_GENERIC_FORMAT |" : "") <<
@@ -520,7 +532,7 @@ int wglGraphicsWindow::choose_visual(void) {
   pfd.nSize=sizeof(PIXELFORMATDESCRIPTOR);
   pfd.nVersion=1;
 
-//  if (_props._fullscreen) {  
+//  if (_props._fullscreen) {
 //  do anything different for fullscrn?
 
   // just use the pixfmt of the current desktop
@@ -602,7 +614,7 @@ int wglGraphicsWindow::choose_visual(void) {
 
   if(i>MaxPixFmtNum) {
       wgldisplay_cat.error() << "wglGraphicsWindow:: ERROR: couldn't find HW-accelerated OpenGL pixfmt appropriate for this desktop!!\n";
-      if(cur_bpp>16) 
+      if(cur_bpp>16)
         wgldisplay_cat.error() << "wglGraphicsWindow:: try reducing the screen resolution or reducing the screen pixeldepth\n";
        else wgldisplay_cat.error() << "wglGraphicsWindow:: try reducing the screen resolution\n";
       exit(1);
@@ -627,7 +639,7 @@ int wglGraphicsWindow::choose_visual(void) {
 #endif
 
 ////////////////////////////////////////////////////////////////////
-//     Function: adjust_coords 
+//     Function: adjust_coords
 //       Access:
 //  Description: Adjust the window rectangle because Win32 thinks
 //       that the x, y, width, and height are the *entire*
@@ -638,7 +650,7 @@ void wglGraphicsWindow::
 adjust_coords(int &xorg, int &yorg, int &xsize, int &ysize) {
   RECT rect;
   rect.left = xorg;  rect.top = yorg;
-  rect.right = xorg + xsize; 
+  rect.right = xorg + xsize;
   rect.bottom = yorg + ysize;
 
   // Style determines whether there are borders or not
@@ -662,7 +674,7 @@ adjust_coords(int &xorg, int &yorg, int &xsize, int &ysize) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: config 
+//     Function: config
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -678,9 +690,9 @@ void wglGraphicsWindow::config(void) {
       // This just runs fullscrn at current display res & depth
       // want to be smarter about this like wdxdisplay and pick a res
       // that will have HW acceleration and adequate texmem, but we cant
-      // get the appropriate info yet in GL (unlike DX). 
-      
-      // BUGBUG: The Configrc res vars (_props.x/ysize) are ignored; 
+      // get the appropriate info yet in GL (unlike DX).
+
+      // BUGBUG: The Configrc res vars (_props.x/ysize) are ignored;
       // instead we should consider switching to the specified res
       // (cant use DDraw for this though due to inconsistent driver support)
 
@@ -689,7 +701,7 @@ void wglGraphicsWindow::config(void) {
     _props._xsize = GetSystemMetrics(SM_CXSCREEN);
     _props._ysize = GetSystemMetrics(SM_CYSCREEN);
     _mwindow = CreateWindow("wglFullscreen", _props._title.c_str(),
-                WS_POPUP | WS_MAXIMIZE, 
+                WS_POPUP | WS_MAXIMIZE,
         _props._xorg, _props._yorg, _props._xsize, _props._ysize,
                 desktop, NULL, hinstance, 0);
 
@@ -780,7 +792,7 @@ void wglGraphicsWindow::config(void) {
      // 128 enough to handle all the ascii chars
      // this creates a display list for each char.  displist numbering starts
      // at FONT_BITMAP_OGLDISPLAYLISTNUM.  Might want to optimize just to save
-     // mem by just allocing bitmaps for chars we need (0-9 fps,SPC) 
+     // mem by just allocing bitmaps for chars we need (0-9 fps,SPC)
      wglUseFontBitmaps(_hdc, 0, 128, FONT_BITMAP_OGLDISPLAYLISTNUM);
   }
 
@@ -799,7 +811,7 @@ void wglGraphicsWindow::config(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: setup_colormap 
+//     Function: setup_colormap
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -860,7 +872,7 @@ void wglGraphicsWindow::setup_colormap(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: end_frame 
+//     Function: end_frame
 //       Access:
 //  Description: Swaps the front and back buffers.
 ////////////////////////////////////////////////////////////////////
@@ -868,64 +880,64 @@ void wglGraphicsWindow::end_frame(void) {
   if (gl_show_fps_meter) {
     PStatTimer timer(_show_fps_pcollector);
     DWORD now = timeGetTime();  // this is win32 fn
-    
+
     float time_delta = (now - _start_time) * 0.001f;
-    
+
     if(time_delta > gl_fps_meter_update_interval) {
       // didnt use global clock object, it wasnt working properly when
       // I tried, its probably slower due to cache faults, and I can
       // easily track all the info I need in dxgsg
       DWORD num_frames = _cur_frame_count - _start_frame_count;
-      
+
       _current_fps = num_frames / time_delta;
       _start_time = now;
       _start_frame_count = _cur_frame_count;
     }
-    
+
     char fps_msg[15];
     sprintf(fps_msg, "%.02f fps", _current_fps);
-    
+
     // Note: we cant use simple GDI TextOut calls to draw FPS meter
     // chars (like DX fps meter) because WGL doesnt support GDI in
     // double-buffered mode.  Instead we have to use glBitMap display
     // lists created by wglUseFontBitmaps
-    
+
     glColor3f(0.0,1.0,1.0);
-    
+
     GLboolean tex_was_on = glIsEnabled(GL_TEXTURE_2D);
-    
+
     if(tex_was_on)
       glDisable(GL_TEXTURE_2D);
-    
+
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
     glLoadMatrixf(LMatrix4f::ident_mat().get_data());
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
     glLoadMatrixf(LMatrix4f::ident_mat().get_data());
-    
+
     glOrtho(_props._xorg,_props._xorg+_props._xsize,
         _props._yorg,_props._yorg+_props._ysize,-1.0,1.0);
-    
+
     glRasterPos2f(_props._xsize-70,_props._ysize-20);  // these seem to be good for default font
-    
-    // set up for a string-drawing display list call 
+
+    // set up for a string-drawing display list call
     glListBase(FONT_BITMAP_OGLDISPLAYLISTNUM);
-    
+
     // draw a string using font display lists.  chars index their
     // corresponding displist name
     glCallLists(strlen(fps_msg), GL_UNSIGNED_BYTE, fps_msg);
-    
+
     glPopMatrix();
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
-    
+
     if(tex_was_on)
       glEnable(GL_TEXTURE_2D);
-    
+
     _cur_frame_count++;  // only used by fps meter right now
   }
-  
+
   {
     PStatTimer timer(_swap_pcollector);
     SwapBuffers(_hdc);
@@ -934,7 +946,7 @@ void wglGraphicsWindow::end_frame(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: handle_reshape 
+//     Function: handle_reshape
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -944,7 +956,7 @@ void wglGraphicsWindow::handle_reshape(int w, int h) {
     _props._xsize = w;
     _props._ysize = h;
     make_current();
-    GdiFlush(); 
+    GdiFlush();
     resized(w, h);
     _change_mask |= WGLWIN_CONFIGURE;
   }
@@ -1024,7 +1036,7 @@ void wglGraphicsWindow::handle_changes(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: process_events 
+//     Function: process_events
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -1043,7 +1055,7 @@ void wglGraphicsWindow::process_events(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: idle_wait 
+//     Function: idle_wait
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -1086,7 +1098,7 @@ void wglGraphicsWindow::update(void) {
   // Always ask for a redisplay for now
   call_draw_callback(true);
 
-  if (_idle_callback) 
+  if (_idle_callback)
     idle_wait();
   else
     process_events();
@@ -1094,7 +1106,7 @@ void wglGraphicsWindow::update(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: enable_mouse_input 
+//     Function: enable_mouse_input
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -1103,7 +1115,7 @@ void wglGraphicsWindow::enable_mouse_input(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: enable_mouse_motion 
+//     Function: enable_mouse_motion
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -1164,7 +1176,7 @@ make_wglGraphicsWindow(const FactoryParams &params) {
   }
 
   GraphicsPipe *pipe = pipe_param->get_pipe();
-  
+
   GraphicsWindow::WindowProps *props_param;
   if (!get_param_into(props_param, params)) {
     return new wglGraphicsWindow(pipe);

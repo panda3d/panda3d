@@ -1,6 +1,19 @@
 // Filename: framework.cxx
 // Created by:  cary (25Mar99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 // We need to include bitMask.h first to avoid a VC++ compiler bug
@@ -199,7 +212,7 @@ TypeHandle GeomNorms::_type_handle;
 // Since the Normal*Traversers don't care about state, we don't need
 // to accumulate the RenderTransitions, so it will template on
 // NullTransition.
-class NormalAddTraverser : 
+class NormalAddTraverser :
   public TraverserVisitor<NullTransitionWrapper, NullLevelState> {
 public:
   NormalAddTraverser(GraphicsStateGuardian *gsg) : _gsg(gsg) {}
@@ -268,7 +281,7 @@ reached_node(Node *node, NullAttributeWrapper &, NullLevelState &) {
   return true;
 }
 
-class NormalDelTraverser : 
+class NormalDelTraverser :
   public TraverserVisitor<NullTransitionWrapper, NullLevelState> {
 public:
   NormalDelTraverser(GraphicsStateGuardian *gsg) : _gsg(gsg) {}
@@ -629,7 +642,7 @@ void event_w(CPT_Event) {
     initial_state.set_attribute(CullFaceTransition::get_class_type(), cfa);
 
   } else {
-    // Set the initial state up for wireframe mode. 
+    // Set the initial state up for wireframe mode.
     RenderModeAttribute *rma = new RenderModeAttribute;
     rma->set_mode(RenderModeProperty::M_wireframe);
     CullFaceAttribute *cfa = new CullFaceAttribute;
@@ -691,7 +704,7 @@ void event_grave(CPT_Event) {
   int width = dr->get_pixel_width();
   int height = dr->get_pixel_height();
 
-  PixelBuffer p(width, height, 3, 1, PixelBuffer::T_unsigned_byte, 
+  PixelBuffer p(width, height, 3, 1, PixelBuffer::T_unsigned_byte,
                 PixelBuffer::F_rgb);
 
   nout << "Capturing frame.\n";
@@ -750,7 +763,7 @@ void event_N(CPT_Event) {
 static void
 switch_trackball(Node *trackball) {
   if (current_trackball != NULL) {
-    remove_child(mouse_watcher, current_trackball, 
+    remove_child(mouse_watcher, current_trackball,
                  DataRelation::get_class_type());
   }
   current_trackball = trackball;
@@ -783,7 +796,7 @@ start_drive() {
   }
   hpr[1] = 0.0;
   hpr[2] = 0.0;
-  
+
   drive_interface->set_pos(xyz);
   drive_interface->set_hpr(hpr);
 
@@ -962,7 +975,7 @@ static int gridwidth;  // cells/side
 #define MIN_WANDERAREA_DIMENSION 120.0
 
 static float grid_pos_offset;  // origin of grid
-static float wander_area_pos_offset;  
+static float wander_area_pos_offset;
 
 // making these fns to get around ridiculous VC++ matrix inlining bugs at Opt2
 static void move_gridded_stuff(GriddedMotionType gridmotiontype,gridded_file_info *InfoArr, RenderRelation **pRRptrArr, int size) {
@@ -988,7 +1001,7 @@ static void move_gridded_stuff(GriddedMotionType gridmotiontype,gridded_file_inf
                 DO_FP_MODULUS(InfoArr[i].ang2,360.0);
 
                 // xforms happen left to right
-                LVector2f new_center = LVector2f(InfoArr[i].radius,0.0) * 
+                LVector2f new_center = LVector2f(InfoArr[i].radius,0.0) *
                   LMatrix3f::rotate_mat(InfoArr[i].ang1);
 
                 LVector3f translate_vec(InfoArr[i].xcenter+new_center._v.v._0,
@@ -1056,7 +1069,7 @@ int framework_main(int argc, char *argv[]) {
       framework_cat.error()
         << "Unable to open " << framework_notify_output << " for output.\n";
     } else {
-      framework_cat.info() 
+      framework_cat.info()
         << "Sending Notify output to " << framework_notify_output << "\n";
     }
   }
@@ -1098,11 +1111,11 @@ int framework_main(int argc, char *argv[]) {
         ((argv[a])[0] != '+') && ((argv[a])[0] != '#'))
       pFileCollection->push_back(Filename::from_os_specific(argv[a]));
         else switch((argv[a])[1]) {
-                         case 'r': 
+                         case 'r':
                                  gridmotiontype = Rotation;
                                  break;
 
-                         case 'm': 
+                         case 'm':
                                  gridmotiontype = LinearMotion;
                                  break;
 
@@ -1175,7 +1188,7 @@ int framework_main(int argc, char *argv[]) {
   assert(main_win != (GraphicsWindow*)0L);
 
   // is ok if this doesn't work or returns NULL
-  if (rib_pipe != (GraphicsPipe*)0L) { 
+  if (rib_pipe != (GraphicsPipe*)0L) {
     Node *rib_cameras = new NamedNode("rib_cameras");
     new RenderRelation(render, rib_cameras);
     rib_win = ChanConfig(rib_pipe, "single", rib_cameras, render, override);
@@ -1269,7 +1282,7 @@ int framework_main(int argc, char *argv[]) {
   if (files.empty() && gridded_files.empty() && framework.GetBool("have-omnitriangle", true)) {
     // The user did not specify a model file to load.  Create some
     // default geometry.
-      
+
     PTA_Vertexf coords;
     PTA_TexCoordf uvs;
     PTA_Normalf norms;
@@ -1420,12 +1433,12 @@ int framework_main(int argc, char *argv[]) {
                                   }
 
                                   // xforms happen left to right
-                                  LVector2f new_center = LVector2f(InfoArr[filenum].radius,0.0) * 
+                                  LVector2f new_center = LVector2f(InfoArr[filenum].radius,0.0) *
                                                    LMatrix3f::rotate_mat(InfoArr[filenum].ang1);
 
                                   const LVector3f rotate_axis(0.0, 0.0, 1.0);
 
-                                  LVector3f translate_vec(xpos+new_center._v.v._0, 
+                                  LVector3f translate_vec(xpos+new_center._v.v._0,
                                                                                   ypos+new_center._v.v._1,
                                                                                   0.0);
 
@@ -1558,7 +1571,7 @@ int framework_main(int argc, char *argv[]) {
       draw_thread = thread::create(draw_loop);
       for (;;)
         icb.idle();
-    } else 
+    } else
 #endif
      {
        main_win->set_idle_callback(&icb);

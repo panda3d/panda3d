@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "projtexShadower.h"
 #include "config_shader.h"
@@ -36,7 +45,7 @@ TypeHandle ProjtexShadower::_type_handle;
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-ProjtexShadower::ProjtexShadower(int size) : CasterShader() 
+ProjtexShadower::ProjtexShadower(int size) : CasterShader()
 {
   set_size(size);
 
@@ -82,7 +91,7 @@ set_multipass(bool on)
 ////////////////////////////////////////////////////////////////////
 void ProjtexShadower::
 pre_apply(Node *node, const AllAttributesWrapper &init_state,
-      const AllTransitionsWrapper &net_trans, GraphicsStateGuardian *gsg) 
+      const AllTransitionsWrapper &net_trans, GraphicsStateGuardian *gsg)
 {
   DirectRenderTraverser drt(gsg, RenderRelation::get_class_type());
 
@@ -112,7 +121,7 @@ pre_apply(Node *node, const AllAttributesWrapper &init_state,
 
   // Save the current display region from the gsg
   Colorf clear_color = gsg->get_color_clear_value();
- 
+
   // Make sure the projtex shader has the same frustum
   _projtex_shader->remove_frustum(light);
   _projtex_shader->add_frustum(light);
@@ -126,11 +135,11 @@ pre_apply(Node *node, const AllAttributesWrapper &init_state,
   nassertv(node != (Node *)NULL && gsg != (GraphicsStateGuardian *)NULL);
 
   // First, draw the receiving node quickly (with no rendering attributes)
-  // from the point of view of the light 
+  // from the point of view of the light
 
   // Make a display region of the proper size and clear it to prepare for
   // rendering the shadow map
-  PT(DisplayRegion) disp_region = 
+  PT(DisplayRegion) disp_region =
         gsg->get_window()->make_scratch_display_region(_size, _size);
   DisplayRegionStack old_dr = gsg->push_display_region(disp_region);
 
@@ -162,15 +171,15 @@ pre_apply(Node *node, const AllAttributesWrapper &init_state,
   state.clear_attribute(TransformTransition::get_class_type());
 
   // Render the node with the new transitions from the viewpoint of the light
- 
+
   gsg->render_subgraph(&drt, node, light, state, trans);
 
-  // Now draw each of the casting objects in the shadow color using the 
+  // Now draw each of the casting objects in the shadow color using the
   // depth buffer from the receiving object (this will project the shadows
   // onto the surface properly), and use this to generate the shadow texture
-  // map 
+  // map
 
-  DepthTestTransition *dta = 
+  DepthTestTransition *dta =
     new DepthTestTransition(DepthTestProperty::M_less);
   trans.set_transition(dta);
 
@@ -202,7 +211,7 @@ pre_apply(Node *node, const AllAttributesWrapper &init_state,
 
   // Now render the group.
   gsg->render_subgraph(&drt, caster_group, light, state, trans);
-  
+
   // Remove the caster group from the scene graph.  This will also
   // delete the temporary group node (since the reference count is
   // zero), but not the caster objects themselves.

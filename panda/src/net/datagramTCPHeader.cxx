@@ -1,6 +1,19 @@
 // Filename: datagramTCPHeader.cxx
 // Created by:  drose (08Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "datagramTCPHeader.h"
@@ -84,13 +97,13 @@ verify_datagram(const NetDatagram &datagram) const {
       << "Invalid datagram!\n";
     if (size != get_datagram_size()) {
       net_cat.debug()
-        << "  size is " << size << " bytes, header reports " 
+        << "  size is " << size << " bytes, header reports "
         << get_datagram_size() << "\n";
     }
-    
+
     // We write the hex dump into a ostringstream first, to guarantee
     // an atomic write to the output stream in case we're threaded.
-    
+
     ostringstream hex;
     datagram.dump_hex(hex);
     hex << "\n";

@@ -1,6 +1,19 @@
 // Filename: pnmFileTypeYUV.cxx
 // Created by:  drose (19Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -11,7 +24,7 @@
 **
 ** by Marc Boucher
 ** Internet: marc@PostImage.cxxOM
-** 
+**
 ** Based on Example Conversion Program, A60/A64 Digital Video Interface
 ** Manual, page 69
 **
@@ -33,7 +46,7 @@
 **
 ** by Marc Boucher
 ** Internet: marc@PostImage.cxxOM
-** 
+**
 ** Based on Example Conversion Program, A60/A64 Digital Video Interface
 ** Manual, page 69.
 **
@@ -67,7 +80,7 @@ TypeHandle PNMFileTypeYUV::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeYUV::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeYUV::
 PNMFileTypeYUV() {
@@ -149,10 +162,10 @@ make_writer(FILE *file, bool owns_file) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeYUV::Reader::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeYUV::Reader::
-Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) : 
+Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
   yuvbuf = NULL;
@@ -188,7 +201,7 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeYUV::Reader::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeYUV::Reader::
 ~Reader() {
@@ -243,13 +256,13 @@ read_row(xel *row_data, xelval *) {
     v = (int)yuvptr[2] - 128;
     y1 = (int)yuvptr[3] - 16;
     if (y1 < 0) y1 = 0;
-    
+
     r = 104635 * v;
     g = -25690 * u + -53294 * v;
     b = 132278 * u;
-    
+
     y*=76310; y1*=76310;
-    
+
     PPM_ASSIGN(row_data[col], limit(r+y), limit(g+y), limit(b+y));
     PPM_ASSIGN(row_data[col+1], limit(r+y1), limit(g+y1), limit(b+y1));
 
@@ -261,7 +274,7 @@ read_row(xel *row_data, xelval *) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeYUV::Writer::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeYUV::Writer::
 Writer(PNMFileType *type, FILE *file, bool owns_file) :
@@ -273,7 +286,7 @@ Writer(PNMFileType *type, FILE *file, bool owns_file) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeYUV::Writer::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeYUV::Writer::
 ~Writer() {
@@ -344,35 +357,35 @@ write_row(xel *row_data, xelval *) {
   static const int max_byte = 255;
 
   unsigned char *yuvptr;
-    
+
   for (col = 0, yuvptr=yuvbuf; col < _x_size; col += 2) {
     pixval r, g, b;
-      
+
     /* first pixel gives Y and 0.5 of chroma */
     r = (pixval)(max_byte * PPM_GETR(row_data[col])/_maxval);
     g = (pixval)(max_byte * PPM_GETG(row_data[col])/_maxval);
     b = (pixval)(max_byte * PPM_GETB(row_data[col])/_maxval);
-    
+
     y1 = 16829 * r + 33039 * g + 6416 * b + (0xffff & y2);
     u1 = -4853 * r - 9530 * g + 14383 * b;
     v1 = 14386 * r - 12046 * g - 2340 * b;
-    
+
     /* second pixel just yields a Y and 0.25 U, 0.25 V */
     r = (pixval)(max_byte * PPM_GETR(row_data[col])/_maxval);
     g = (pixval)(max_byte * PPM_GETG(row_data[col])/_maxval);
     b = (pixval)(max_byte * PPM_GETB(row_data[col])/_maxval);
-    
+
     y2 = 16829 * r + 33039 * g + 6416 * b + (0xffff & y1);
     u2 = -2426 * r - 4765 * g + 7191 * b;
     v2 = 7193 * r - 6023 * g - 1170 * b;
-    
+
     /* filter the chroma */
     u = u0 + u1 + u2 + (0xffff & u);
     v = v0 + v1 + v2 + (0xffff & v);
-    
+
     u0 = u2;
     v0 = v2;
-    
+
     *yuvptr++ = (unsigned char)((u >> 16) + 128);
     *yuvptr++ = (unsigned char)((y1 >> 16) + 16);
     *yuvptr++ = (unsigned char)((v >> 16) + 128);

@@ -2,6 +2,19 @@
 // Created by:  drose (08Feb00)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef QUEUEDCONNECTIONREADER_H
 #define QUEUEDCONNECTIONREADER_H
@@ -26,7 +39,7 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, QueuedReturn<NetDatagram>);
 //               threading and is willing to poll for datagrams at its
 //               convenience.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA QueuedConnectionReader : public ConnectionReader, 
+class EXPCL_PANDA QueuedConnectionReader : public ConnectionReader,
                                public QueuedReturn<NetDatagram> {
 PUBLISHED:
   QueuedConnectionReader(ConnectionManager *manager, int num_threads);
@@ -35,7 +48,7 @@ PUBLISHED:
   bool data_available();
   bool get_data(NetDatagram &result);
   bool get_data(Datagram &result);
- 
+
 protected:
   virtual void receive_datagram(const NetDatagram &datagram);
 };

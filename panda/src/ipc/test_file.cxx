@@ -1,6 +1,20 @@
 // Filename: test_file.cxx
 // Created by:  jason (05Sep00)
 //
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #include <pandabase.h>
 #include "ipc_file.h"
@@ -18,7 +32,7 @@ int main(int argc, char* argv[])
 
   Datagram test_out;  test_out.add_string(test_data);
   datagram_file stream(test_file);
-  
+
   nout << "WRITE TEST" << endl;
   nout << "Opening file for writing: " << test_file  << endl;
   if (!stream.open(file::FILE_WRITE)) nout << "Didn't open!" << endl;
@@ -38,7 +52,7 @@ int main(int argc, char* argv[])
   nout << "Read datagram with data: " << scan.get_string() << endl;
   nout << "Closing file: " << test_file << endl;
   stream.close();
- 
+
 #ifdef _ERROR_TEST
   //Test error handling
   Datagram test_error;

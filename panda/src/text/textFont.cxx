@@ -1,6 +1,19 @@
 // Filename: textFont.cxx
 // Created by:  drose (03May01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "textFont.h"
@@ -30,7 +43,7 @@ isblank(char ch) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 TextFont::CharDef::
-CharDef(Geom *geom, float width, const AllTransitionsWrapper &trans) : 
+CharDef(Geom *geom, float width, const AllTransitionsWrapper &trans) :
   _geom(geom), _width(width), _trans(trans) { }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,7 +71,7 @@ TextFont(Node *font_def) {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextFont::Destructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 TextFont::
 ~TextFont() {
@@ -204,7 +217,7 @@ wordwrap_to(const string &text, float wordwrap_width) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextFont::write
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void TextFont::
 write(ostream &out, int indent_level) const {
@@ -227,7 +240,7 @@ find_character_gsets(Node *root, Geom *&ch, GeomPoint *&dot,
                      AllTransitionsWrapper &trans) {
   if (root->is_of_type(GeomNode::get_class_type())) {
     GeomNode *geode = (GeomNode *)root;
-    
+
     bool found = false;
     for (int i = 0; i < geode->get_num_geoms(); i++) {
       dDrawable *geom = geode->get_geom(i);
@@ -240,7 +253,7 @@ find_character_gsets(Node *root, Geom *&ch, GeomPoint *&dot,
       }
     }
     return found;
-    
+
   } else {
     TypeHandle graph_type = RenderRelation::get_class_type();
     int num_children = root->get_num_children(graph_type);
@@ -278,7 +291,7 @@ find_characters(Node *root) {
     all_digits = (isdigit(*p) != 0);
     p++;
   }
-  
+
   if (all_digits) {
     int character = atoi(name.c_str());
     Geom *ch = NULL;

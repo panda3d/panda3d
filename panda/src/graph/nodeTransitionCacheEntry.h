@@ -1,6 +1,19 @@
 // Filename: nodeTransitionCacheEntry.h
 // Created by:  drose (20Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef NODETRANSITIONCACHEENTRY_H
@@ -55,20 +68,20 @@ public:
   // keep the _computed and _verified members consistent across these
   // operations.
 
-  INLINE_GRAPH static NodeTransitionCacheEntry 
+  INLINE_GRAPH static NodeTransitionCacheEntry
   invert(const NodeTransitionCacheEntry &a);
 
   INLINE_GRAPH static NodeTransitionCacheEntry
-  compose(const NodeTransitionCacheEntry &a, 
+  compose(const NodeTransitionCacheEntry &a,
           const NodeTransitionCacheEntry &b);
 
   INLINE_GRAPH static NodeTransitionCacheEntry
-  invert_compose(const NodeTransitionCacheEntry &a, 
+  invert_compose(const NodeTransitionCacheEntry &a,
                  const NodeTransitionCacheEntry &b);
 
   INLINE_GRAPH static NodeTransitionCacheEntry
-  cached_compose(const NodeTransitionCacheEntry &a, 
-                 const NodeTransitionCacheEntry &cache, 
+  cached_compose(const NodeTransitionCacheEntry &a,
+                 const NodeTransitionCacheEntry &cache,
                  const NodeTransitionCacheEntry &b,
                  UpdateSeq now);
 

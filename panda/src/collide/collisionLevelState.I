@@ -1,13 +1,26 @@
 // Filename: collisionLevelState.I
 // Created by:  drose (24Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionLevelState::
 CollisionLevelState(const ArcChain &arc_chain) :
@@ -18,7 +31,7 @@ CollisionLevelState(const ArcChain &arc_chain) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionLevelState::
 CollisionLevelState(const CollisionLevelState &copy) :
@@ -33,7 +46,7 @@ CollisionLevelState(const CollisionLevelState &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::Copy Assignment
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionLevelState::
 operator = (const CollisionLevelState &copy) {
@@ -69,7 +82,7 @@ get_arc_chain() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::get_num_colliders
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int CollisionLevelState::
 get_num_colliders() const {
@@ -104,7 +117,7 @@ has_collider_with_geom(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::has_any_collider
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionLevelState::
 has_any_collider() const {
@@ -139,7 +152,7 @@ reached_collision_node() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::get_collider
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionSolid *CollisionLevelState::
 get_collider(int n) const {
@@ -152,7 +165,7 @@ get_collider(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::get_node
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionNode *CollisionLevelState::
 get_node(int n) const {
@@ -165,7 +178,7 @@ get_node(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::get_space
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const LMatrix4f &CollisionLevelState::
 get_space(int n) const {
@@ -178,7 +191,7 @@ get_space(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::get_inv_space
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const LMatrix4f &CollisionLevelState::
 get_inv_space(int n) const {
@@ -191,7 +204,7 @@ get_inv_space(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::get_local_bound
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const GeometricBoundingVolume *CollisionLevelState::
 get_local_bound(int n) const {
@@ -210,7 +223,7 @@ get_local_bound(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::omit_collider
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionLevelState::
 omit_collider(int n) {
@@ -223,7 +236,7 @@ omit_collider(int n) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::get_mask
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionLevelState::ColliderMask CollisionLevelState::
 get_mask(int n) const {

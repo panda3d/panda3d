@@ -1,6 +1,19 @@
 // Filename: dSearchPath.I
 // Created by:  drose (01Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -14,7 +27,7 @@
 //               indicated path string, and searches that.
 ////////////////////////////////////////////////////////////////////
 INLINE Filename DSearchPath::
-search_path(const Filename &filename, const string &path, 
+search_path(const Filename &filename, const string &path,
             const string &delimiters) {
   DSearchPath search(path, delimiters);
   return search.find_file(filename);

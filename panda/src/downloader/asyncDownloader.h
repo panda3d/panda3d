@@ -1,8 +1,20 @@
-// Filename: downloader.h
+// Filename: asyncDownloader.h
 // Created by:  mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
 //
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 #ifndef ASYNCDOWNLOADER_H
 #define ASYNCDOWNLOADER_H
 //
@@ -56,7 +68,7 @@ PUBLISHED:
                         const string &event_name, bool sync = false);
   int request_download(const string &file_name, const Filename &file_dest,
                         const string &event_name, int first_byte,
-                        int last_byte, int total_bytes, 
+                        int last_byte, int total_bytes,
                         bool partial_content = true, bool sync = false);
 
   INLINE void set_byte_rate(float bytes);
@@ -93,7 +105,7 @@ private:
   };
 
   void init();
-  int download(const string &file_name, Filename file_dest, 
+  int download(const string &file_name, Filename file_dest,
                         const string &event_name, int first_byte,
                         int last_byte, int total_bytes, bool partial_content,
                         bool sync, uint id);
@@ -102,7 +114,7 @@ private:
   bool write_to_disk(DownloadStatus &status);
   bool connect_to_server(void);
   int safe_send(int socket, const char *data, int length, long timeout);
-  int safe_receive(int socket, DownloadStatus &status, int length, 
+  int safe_receive(int socket, DownloadStatus &status, int length,
                                 long timeout, int &bytes);
   bool parse_http_response(const string &resp);
   int attempt_read(int length, DownloadStatus &status, int &bytes_read);
@@ -120,7 +132,7 @@ private:
   PT(Buffer) _buffer;
   int _disk_write_frequency;
   int _new_disk_write_frequency;
-  float _byte_rate; 
+  float _byte_rate;
   float _new_byte_rate;
   int _read_size;
   bool _download_enabled;

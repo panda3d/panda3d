@@ -1,6 +1,19 @@
 // Filename: eggBinner.cxx
 // Created by:  drose (17Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggBinner.h"
@@ -13,7 +26,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: EggBinner::get_bin_number
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int EggBinner::
 get_bin_number(const EggNode *node) {
@@ -23,7 +36,7 @@ get_bin_number(const EggNode *node) {
       return (int)BN_lod;
     }
   }
-    
+
   return (int)BN_none;
 }
 
@@ -31,7 +44,7 @@ get_bin_number(const EggNode *node) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggBinner::sorts_less
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool EggBinner::
 sorts_less(int bin_number, const EggNode *a, const EggNode *b) {
@@ -40,13 +53,13 @@ sorts_less(int bin_number, const EggNode *a, const EggNode *b) {
   const EggGroup *ga = DCAST(EggGroup, a);
   const EggGroup *gb = DCAST(EggGroup, b);
 
-  const EggSwitchCondition &swa = ga->get_lod();  
-  const EggSwitchCondition &swb = gb->get_lod();  
+  const EggSwitchCondition &swa = ga->get_lod();
+  const EggSwitchCondition &swb = gb->get_lod();
 
   // For now, this is the only kind of switch condition there is.
-  const EggSwitchConditionDistance &swda = 
+  const EggSwitchConditionDistance &swda =
     *DCAST(EggSwitchConditionDistance, &swa);
-  const EggSwitchConditionDistance &swdb = 
+  const EggSwitchConditionDistance &swdb =
     *DCAST(EggSwitchConditionDistance, &swb);
 
   // Group LOD nodes in order by switching center.
@@ -56,7 +69,7 @@ sorts_less(int bin_number, const EggNode *a, const EggNode *b) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggBinner::collapse_group
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool EggBinner::
 collapse_group(const EggGroup *group, int) {

@@ -1,6 +1,19 @@
-// Filename: cppTemplateScope.C
+// Filename: cppTemplateScope.cxx
 // Created by:  drose (28Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -13,7 +26,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTemplateScope::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPTemplateScope::
 CPPTemplateScope(CPPScope *parent_scope) :
@@ -25,7 +38,7 @@ CPPTemplateScope(CPPScope *parent_scope) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTemplateScope::add_declaration
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPTemplateScope::
 add_declaration(CPPDeclaration *decl, CPPScope *global_scope,
@@ -39,7 +52,7 @@ add_declaration(CPPDeclaration *decl, CPPScope *global_scope,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTemplateScope::add_enum_value
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPTemplateScope::
 add_enum_value(CPPInstance *inst) {
@@ -51,7 +64,7 @@ add_enum_value(CPPInstance *inst) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTemplateScope::define_extension_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPTemplateScope::
 define_extension_type(CPPExtensionType *type) {
@@ -63,7 +76,7 @@ define_extension_type(CPPExtensionType *type) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTemplateScope::define_namespace
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPTemplateScope::
 define_namespace(CPPNamespace *scope) {
@@ -74,7 +87,7 @@ define_namespace(CPPNamespace *scope) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTemplateScope::add_using
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPTemplateScope::
 add_using(CPPUsing *using_decl, CPPScope *global_scope,
@@ -86,7 +99,7 @@ add_using(CPPUsing *using_decl, CPPScope *global_scope,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTemplateScope::add_template_parameter
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPTemplateScope::
 add_template_parameter(CPPDeclaration *param) {
@@ -123,7 +136,7 @@ is_fully_specified() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTemplateScope::get_simple_name
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string CPPTemplateScope::
 get_simple_name() const {
@@ -134,7 +147,7 @@ get_simple_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTemplateScope::get_local_name
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string CPPTemplateScope::
 get_local_name(CPPScope *scope) const {
@@ -145,7 +158,7 @@ get_local_name(CPPScope *scope) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTemplateScope::get_fully_scoped_name
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string CPPTemplateScope::
 get_fully_scoped_name() const {
@@ -156,7 +169,7 @@ get_fully_scoped_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTemplateScope::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPTemplateScope::
 output(ostream &out, CPPScope *scope) const {
@@ -169,7 +182,7 @@ output(ostream &out, CPPScope *scope) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTemplateScope::as_template_scope
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPTemplateScope *CPPTemplateScope::
 as_template_scope() {

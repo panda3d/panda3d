@@ -1,6 +1,19 @@
 // Filename: collisionSolid.cxx
 // Created by:  drose (24Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "collisionSolid.h"
@@ -29,7 +42,7 @@ TypeHandle CollisionSolid::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CollisionSolid::
 CollisionSolid() {
@@ -40,7 +53,7 @@ CollisionSolid() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CollisionSolid::
 CollisionSolid(const CollisionSolid &copy) :
@@ -53,7 +66,7 @@ CollisionSolid(const CollisionSolid &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CollisionSolid::
 ~CollisionSolid() {
@@ -63,7 +76,7 @@ CollisionSolid::
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::update_viz
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionSolid::
 update_viz(Node *parent) {
@@ -77,7 +90,7 @@ update_viz(Node *parent) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionSolid::
 output(ostream &out) const {
@@ -87,7 +100,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionSolid::
 write(ostream &out, int indent_level) const {
@@ -97,7 +110,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::test_intersection_from_sphere
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CollisionSolid::
 test_intersection_from_sphere(CollisionHandler *,
@@ -110,7 +123,7 @@ test_intersection_from_sphere(CollisionHandler *,
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::test_intersection_from_ray
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CollisionSolid::
 test_intersection_from_ray(CollisionHandler *,
@@ -123,7 +136,7 @@ test_intersection_from_ray(CollisionHandler *,
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::test_intersection_from_segment
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CollisionSolid::
 test_intersection_from_segment(CollisionHandler *,
@@ -149,7 +162,7 @@ report_undefined_intersection_test(TypeHandle from_type, TypeHandle into_type) {
 
   if (reported.insert(Reported::value_type(from_type, into_type)).second) {
     collide_cat.error()
-      << "Invalid attempt to detect collision from " << from_type << " into " 
+      << "Invalid attempt to detect collision from " << from_type << " into "
       << into_type << "!\n"
 
       "This means that a " << from_type << " object attempted to test for a\n"
@@ -157,7 +170,7 @@ report_undefined_intersection_test(TypeHandle from_type, TypeHandle into_type) {
       "test has not yet been defined; it is possible the " << into_type << "\n"
       "object is not intended to be collidable.  Consider calling\n"
       "set_into_collide_mask(0) on the " << into_type << " object, or\n"
-      "set_from_collide_mask(0) on the " << from_type << " object.\n"; 
+      "set_from_collide_mask(0) on the " << from_type << " object.\n";
   }
 #endif
 }
@@ -190,7 +203,7 @@ clear_viz_arcs() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::add_solid_viz
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionSolid::
 add_solid_viz(Node *parent, GeomNode *viz) {
@@ -213,7 +226,7 @@ add_solid_viz(Node *parent, GeomNode *viz) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::add_wireframe_viz
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionSolid::
 add_wireframe_viz(Node *parent, GeomNode *viz) {
@@ -262,7 +275,7 @@ fillin(DatagramIterator& scan, BamReader*)
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::add_other_viz
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionSolid::
 add_other_viz(Node *parent, GeomNode *viz) {

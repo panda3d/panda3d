@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "outlineShader.h"
 #include <lightTransition.h>
@@ -43,7 +52,7 @@ OutlineShader::OutlineShader(const Colorf &color) : Shader() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OutlineShader::config 
+//     Function: OutlineShader::config
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -52,7 +61,7 @@ void OutlineShader::config(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OutlineShader::apply 
+//     Function: OutlineShader::apply
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -75,7 +84,7 @@ apply(Node *node, const AllAttributesWrapper &init_state,
   trans.set_transition(new LightTransition(LightTransition::all_off()));
 
   // Enable line drawing
-  RenderModeTransition *rm = 
+  RenderModeTransition *rm =
     new RenderModeTransition(RenderModeProperty::M_wireframe, 2.0);
   trans.set_transition(rm);
 
@@ -84,12 +93,12 @@ apply(Node *node, const AllAttributesWrapper &init_state,
   //  trans.set_transition(lsm);
 
   // Draw shared edges
-  DepthTestTransition *dta = 
+  DepthTestTransition *dta =
     new DepthTestTransition(DepthTestProperty::M_less_equal);
   trans.set_transition(dta);
 
   // Draw back facing edges only
-  CullFaceTransition *cf = 
+  CullFaceTransition *cf =
     new CullFaceTransition(CullFaceProperty::M_cull_counter_clockwise);
   trans.set_transition(cf);
 

@@ -1,6 +1,19 @@
 // Filename: immediateTransition.cxx
 // Created by:  drose (24Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "immediateTransition.h"
@@ -13,7 +26,7 @@ TypeHandle ImmediateTransition::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: ImmediateTransition::make_attrib
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NodeAttribute *ImmediateTransition::
 make_attrib() const {
@@ -67,7 +80,7 @@ apply(const NodeAttribute *) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ImmediateTransition::internal_compare_to
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int ImmediateTransition::
 internal_compare_to(const NodeTransition *) const {

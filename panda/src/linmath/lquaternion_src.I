@@ -1,12 +1,25 @@
 // Filename: lquaternion_src.I
 // Created by:  frang (06Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FLOATNAME(LQuaternion)::Default Constructor
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LQuaternion)::
 FLOATNAME(LQuaternion)() {
@@ -15,18 +28,18 @@ FLOATNAME(LQuaternion)() {
 ////////////////////////////////////////////////////////////////////
 //     Function: FLOATNAME(LQuaternion)::Copy Constructor
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LQuaternion)::
-FLOATNAME(LQuaternion)(const FLOATNAME(LQuaternion) &c) : 
-  FLOATNAME(LVecBase4)(c) 
+FLOATNAME(LQuaternion)(const FLOATNAME(LQuaternion) &c) :
+  FLOATNAME(LVecBase4)(c)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FLOATNAME(LQuaternion)::Constructor
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LQuaternion)::
 FLOATNAME(LQuaternion)(FLOATTYPE r, FLOATTYPE i, FLOATTYPE j, FLOATTYPE k) {
@@ -51,7 +64,7 @@ multiply(const FLOATNAME(LQuaternion)& rhs) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FLOATNAME(LQuaternion)::Multiply Operator
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LQuaternion) FLOATNAME(LQuaternion)::
 operator *(const FLOATNAME(LQuaternion)& c) {
@@ -61,7 +74,7 @@ operator *(const FLOATNAME(LQuaternion)& c) {
 ////////////////////////////////////////////////////////////////////
 //     Function: FLOATNAME(LQuaternion)::Multiply Assignment Operator
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LQuaternion)& FLOATNAME(LQuaternion)::
 operator *=(const FLOATNAME(LQuaternion)& c) {
@@ -75,7 +88,7 @@ operator *=(const FLOATNAME(LQuaternion)& c) {
 //  Description: Quat * Matrix = matrix
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LQuaternion)::
-operator *(const FLOATNAME(LMatrix3) &m) {  
+operator *(const FLOATNAME(LMatrix3) &m) {
   FLOATNAME(LMatrix3) result;
   extract_to_matrix(result);
   return result * m;
@@ -128,7 +141,7 @@ almost_equal(const FLOATNAME(LQuaternion)& c) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FLOATNAME(LQuaternion)::output
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LQuaternion)::
 output(ostream& os) const {
@@ -141,7 +154,7 @@ output(ostream& os) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FLOATNAME(LQuaternion)::get_r
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LQuaternion)::
 get_r() const {
@@ -151,7 +164,7 @@ get_r() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FLOATNAME(LQuaternion)::get_i
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LQuaternion)::
 get_i() const {
@@ -161,7 +174,7 @@ get_i() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FLOATNAME(LQuaternion)::get_j
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LQuaternion)::
 get_j() const {
@@ -171,7 +184,7 @@ get_j() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FLOATNAME(LQuaternion)::get_k
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LQuaternion)::
 get_k() const {
@@ -181,7 +194,7 @@ get_k() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: FLOATNAME(LQuaternion)::set_r
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LQuaternion)::
 set_r(FLOATTYPE r) {
@@ -191,7 +204,7 @@ set_r(FLOATTYPE r) {
 ////////////////////////////////////////////////////////////////////
 //     Function: FLOATNAME(LQuaternion)::set_i
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LQuaternion)::
 set_i(FLOATTYPE i) {
@@ -201,7 +214,7 @@ set_i(FLOATTYPE i) {
 ////////////////////////////////////////////////////////////////////
 //     Function: FLOATNAME(LQuaternion)::set_j
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LQuaternion)::
 set_j(FLOATTYPE j) {
@@ -211,7 +224,7 @@ set_j(FLOATTYPE j) {
 ////////////////////////////////////////////////////////////////////
 //     Function: FLOATNAME(LQuaternion)::set_k
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LQuaternion)::
 set_k(FLOATTYPE k) {
@@ -221,7 +234,7 @@ set_k(FLOATTYPE k) {
 ////////////////////////////////////////////////////////////////////
 //     Function: FLOATNAME(LQuaternion)::normalize
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LQuaternion)::
 normalize() {
@@ -240,7 +253,7 @@ normalize() {
 ////////////////////////////////////////////////////////////////////
 //     Function: set_from_matrix
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LQuaternion)::
 set_from_matrix(const FLOATNAME(LMatrix4) &m) {
@@ -250,7 +263,7 @@ set_from_matrix(const FLOATNAME(LMatrix4) &m) {
 ////////////////////////////////////////////////////////////////////
 //     Function: operator *(Matrix3, Quat)
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix3) operator *(const FLOATNAME(LMatrix3) &m,
                              const FLOATNAME(LQuaternion) &q) {
@@ -263,7 +276,7 @@ INLINE_LINMATH FLOATNAME(LMatrix3) operator *(const FLOATNAME(LMatrix3) &m,
 ////////////////////////////////////////////////////////////////////
 //     Function: operator *(Matrix4, Quat)
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) operator *(const FLOATNAME(LMatrix4) &m,
                              const FLOATNAME(LQuaternion) &q) {

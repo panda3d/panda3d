@@ -2,6 +2,19 @@
 // Created by:  drose (21Jan99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef EGGLOADER_H
 #define EGGLOADER_H
@@ -75,10 +88,10 @@ private:
   void load_textures();
   bool load_texture(TextureDef &def, const EggTexture *egg_tex);
   void apply_texture_attributes(Texture *tex, const EggTexture *egg_tex);
-  void apply_texture_apply_attributes(TextureApplyTransition *apply, 
+  void apply_texture_apply_attributes(TextureApplyTransition *apply,
                                       const EggTexture *egg_tex);
 
-  MaterialTransition *get_material_transition(const EggMaterial *egg_mat, 
+  MaterialTransition *get_material_transition(const EggMaterial *egg_mat,
                                               bool bface);
 
   void setup_bucket(BuilderBucket &bucket, NamedNode *parent,
@@ -94,7 +107,7 @@ private:
   RenderRelation *make_node(EggTable *egg_table, NamedNode *parent);
   RenderRelation *make_node(EggGroupNode *egg_group, NamedNode *parent);
 
-  void make_collision_solids(EggGroup *start_group, EggGroup *egg_group, 
+  void make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
                              CollisionNode *cnode);
   void make_collision_plane(EggGroup *egg_group, CollisionNode *cnode,
                             EggGroup::CollideFlags flags);
@@ -104,12 +117,12 @@ private:
                               EggGroup::CollideFlags flags);
   void make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
                              EggGroup::CollideFlags flags);
-  void apply_collision_flags(CollisionSolid *solid, 
+  void apply_collision_flags(CollisionSolid *solid,
                              EggGroup::CollideFlags flags);
   EggGroup *find_collision_geometry(EggGroup *egg_group);
   CollisionPlane *create_collision_plane(EggPolygon *egg_poly,
                                          EggGroup *parent_group);
-  void create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly, 
+  void create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
                                  EggGroup *parent_group,
                                  EggGroup::CollideFlags flags);
 
@@ -136,7 +149,7 @@ private:
 
   DeferredArcs _deferred_arcs;
 
-public: 
+public:
   PT_NamedNode _root;
   EggData _data;
   bool _error;

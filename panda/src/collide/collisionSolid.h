@@ -1,6 +1,19 @@
 // Filename: collisionSolid.h
 // Created by:  drose (24Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef COLLISIONSOLID_H
@@ -36,7 +49,7 @@ class CollisionNode;
 //               function calls handle the subset of the N*N
 //               intersection tests that we care about.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionSolid : 
+class EXPCL_PANDA CollisionSolid :
   public TypedWritableReferenceCount, public BoundedObject {
 public:
   CollisionSolid();
@@ -86,7 +99,7 @@ protected:
   void add_other_viz(Node *parent, GeomNode *viz);
 
   virtual void recompute_viz(Node *parent)=0;
-  
+
   typedef vector_PT_NodeRelation VizArcs;
   VizArcs _solid_viz_arcs;
   VizArcs _wireframe_viz_arcs;
@@ -95,7 +108,7 @@ protected:
   bool _tangible;
 
 public:
-  virtual void write_datagram(BamWriter* manager, Datagram &me);  
+  virtual void write_datagram(BamWriter* manager, Datagram &me);
 
 protected:
   void fillin(DatagramIterator& scan, BamReader* manager);

@@ -1,6 +1,19 @@
-// Filename: angularEulerIntergator.cxx
+// Filename: angularEulerIntegrator.cxx
 // Created by:  charles (09Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "angularEulerIntegrator.h"
@@ -31,13 +44,13 @@ AngularEulerIntegrator::
 ////////////////////////////////////////////////////////////////////
 //     Function : Integrate
 //       Access : Public
-//  Description : Integrate a step of motion (based on dt) by 
-//                applying every force in force_vec to every object 
+//  Description : Integrate a step of motion (based on dt) by
+//                applying every force in force_vec to every object
 //                in obj_vec.
 ////////////////////////////////////////////////////////////////////
 void AngularEulerIntegrator::
-child_integrate(Physical *physical, 
-                vector< PT(AngularForce) >& forces, 
+child_integrate(Physical *physical,
+                vector< PT(AngularForce) >& forces,
                 float dt) {
   // perform the precomputation.  Note that the vector returned by
   // get_precomputed_matrices() has the matrices loaded in order of force
@@ -57,7 +70,7 @@ child_integrate(Physical *physical,
   vector< PT(PhysicsObject) >::const_iterator current_object_iter;
   current_object_iter = physical->get_object_vector().begin();
 
-  for (; current_object_iter != physical->get_object_vector().end(); 
+  for (; current_object_iter != physical->get_object_vector().end();
        current_object_iter++) {
 
     PhysicsObject *current_object = *current_object_iter;
@@ -68,7 +81,7 @@ child_integrate(Physical *physical,
       continue;
 
     if (current_object->get_active() == false)
-      continue;  
+      continue;
 
     LVector3f accum_vec(0, 0, 0);
 

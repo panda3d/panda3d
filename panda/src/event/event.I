@@ -1,13 +1,26 @@
 // Filename: event.I
 // Created by:  drose (15May01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Event::set_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void Event::
 set_name(const string &name) {
@@ -19,7 +32,7 @@ set_name(const string &name) {
 //       Access: Public
 //  Description: Resets the Event's name to empty.
 ////////////////////////////////////////////////////////////////////
-INLINE void Event:: 
+INLINE void Event::
 clear_name() {
   _name = "";
 }
@@ -38,7 +51,7 @@ has_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Event::get_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const string &Event::
 get_name() const {

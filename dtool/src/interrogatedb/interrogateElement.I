@@ -1,13 +1,26 @@
 // Filename: interrogateElement.I
 // Created by:  drose (11Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Element: InterrogateElement::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE InterrogateElement::
 InterrogateElement(InterrogateModuleDef *def) :
@@ -22,7 +35,7 @@ InterrogateElement(InterrogateModuleDef *def) :
 ////////////////////////////////////////////////////////////////////
 //     Element: InterrogateElement::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE InterrogateElement::
 InterrogateElement(const InterrogateElement &copy) {
@@ -32,7 +45,7 @@ InterrogateElement(const InterrogateElement &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Element: InterrogateElement::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void InterrogateElement::
 operator = (const InterrogateElement &copy) {
@@ -59,7 +72,7 @@ is_global() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateElement::has_scoped_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateElement::
 has_scoped_name() const {
@@ -69,7 +82,7 @@ has_scoped_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateElement::get_scoped_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const string &InterrogateElement::
 get_scoped_name() const {
@@ -79,7 +92,7 @@ get_scoped_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Element: InterrogateElement::get_type
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TypeIndex InterrogateElement::
 get_type() const {
@@ -89,7 +102,7 @@ get_type() const {
 ////////////////////////////////////////////////////////////////////
 //     Element: InterrogateElement::has_getter
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateElement::
 has_getter() const {
@@ -99,7 +112,7 @@ has_getter() const {
 ////////////////////////////////////////////////////////////////////
 //     Element: InterrogateElement::get_getter
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE FunctionIndex InterrogateElement::
 get_getter() const {
@@ -109,7 +122,7 @@ get_getter() const {
 ////////////////////////////////////////////////////////////////////
 //     Element: InterrogateElement::has_setter
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateElement::
 has_setter() const {
@@ -119,7 +132,7 @@ has_setter() const {
 ////////////////////////////////////////////////////////////////////
 //     Element: InterrogateElement::get_setter
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE FunctionIndex InterrogateElement::
 get_setter() const {

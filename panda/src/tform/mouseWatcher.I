@@ -1,6 +1,19 @@
 // Filename: mouseWatcher.I
 // Created by:  drose (13Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -58,7 +71,7 @@ get_mouse_y() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcher::is_over_region 
+//     Function: MouseWatcher::is_over_region
 //       Access: Published
 //  Description: Returns true if the mouse is over any rectangular
 //               region, false otherwise.
@@ -69,7 +82,7 @@ is_over_region() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcher::is_over_region 
+//     Function: MouseWatcher::is_over_region
 //       Access: Published
 //  Description: Returns true if the mouse is over any rectangular
 //               region, false otherwise.
@@ -80,7 +93,7 @@ is_over_region(float x, float y) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcher::is_over_region 
+//     Function: MouseWatcher::is_over_region
 //       Access: Published
 //  Description: Returns true if the mouse is over any rectangular
 //               region, false otherwise.
@@ -91,7 +104,7 @@ is_over_region(const LPoint2f &pos) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcher::get_over_region 
+//     Function: MouseWatcher::get_over_region
 //       Access: Published
 //  Description: Returns the smallest region the mouse is currently
 //               over, or NULL if it is over no region.
@@ -102,7 +115,7 @@ get_over_region() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcher::get_over_region 
+//     Function: MouseWatcher::get_over_region
 //       Access: Published
 //  Description: Returns the smallest region the indicated point is
 //               over, or NULL if it is over no region.

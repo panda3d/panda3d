@@ -1,6 +1,19 @@
-// Filename: LinearCylinderVortexForce.h
+// Filename: linearCylinderVortexForce.h
 // Created by:  charles (24Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef LINEARCYLINDERVORTEXFORCE_H
@@ -11,9 +24,9 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : LinearCylinderVortexForce
 // Description : Defines a cylinder inside of which all forces are
-//               tangential to the theta of the particle wrt the 
+//               tangential to the theta of the particle wrt the
 //               z-axis in local coord. space.  This happens by
-//               assigning the force a node by which the cylinder is 
+//               assigning the force a node by which the cylinder is
 //               transformed.  Be warned- this will suck anything
 //               that it can reach directly into orbit and will NOT
 //               let go.

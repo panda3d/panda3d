@@ -1,6 +1,19 @@
 // Filename: nodeTransitionCacheEntry.I
 // Created by:  drose (20Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "config_graph.h"
@@ -8,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionCacheEntry::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeTransitionCacheEntry::
 NodeTransitionCacheEntry(NodeTransition *trans) : _trans(trans) {
@@ -17,7 +30,7 @@ NodeTransitionCacheEntry(NodeTransition *trans) : _trans(trans) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionCacheEntry::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeTransitionCacheEntry::
 NodeTransitionCacheEntry(const NodeTransitionCacheEntry &copy) :
@@ -30,7 +43,7 @@ NodeTransitionCacheEntry(const NodeTransitionCacheEntry &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionCacheEntry::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NodeTransitionCacheEntry::
 operator = (const NodeTransitionCacheEntry &copy) {
@@ -42,7 +55,7 @@ operator = (const NodeTransitionCacheEntry &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionCacheEntry::is_identity
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH bool NodeTransitionCacheEntry::
 is_identity() const {
@@ -53,7 +66,7 @@ is_identity() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionCacheEntry::compare_to
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH int NodeTransitionCacheEntry::
 compare_to(const NodeTransitionCacheEntry &other) const {
@@ -157,7 +170,7 @@ INLINE_GRAPH bool NodeTransitionCacheEntry::
 is_cache_verified(UpdateSeq as_of) const {
   if (wrt_cat.is_spam()) {
     wrt_cat.spam()
-      << "NodeTransitionCacheEntry::is_cache_verified(" << as_of 
+      << "NodeTransitionCacheEntry::is_cache_verified(" << as_of
       << "), _verified = " << _verified << ", result = "
       << (as_of <= _verified) << "\n";
   }
@@ -243,12 +256,12 @@ invert(const NodeTransitionCacheEntry &a) {
 //               composition of a and b.
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeTransitionCacheEntry NodeTransitionCacheEntry::
-compose(const NodeTransitionCacheEntry &a, 
+compose(const NodeTransitionCacheEntry &a,
         const NodeTransitionCacheEntry &b) {
   if (a.is_identity()) {
     return b;
   }
-  if (b.is_identity()) {      
+  if (b.is_identity()) {
     return a;
   }
   return NodeTransitionCacheEntry(a._trans->compose(b._trans));
@@ -261,7 +274,7 @@ compose(const NodeTransitionCacheEntry &a,
 //               composition of invert(a) and b.
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeTransitionCacheEntry NodeTransitionCacheEntry::
-invert_compose(const NodeTransitionCacheEntry &a, 
+invert_compose(const NodeTransitionCacheEntry &a,
                const NodeTransitionCacheEntry &b) {
   if (a.is_identity()) {
     return b;
@@ -297,8 +310,8 @@ invert_compose(const NodeTransitionCacheEntry &a,
 //               the result as computed at time 'now'.
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeTransitionCacheEntry NodeTransitionCacheEntry::
-cached_compose(const NodeTransitionCacheEntry &a, 
-               const NodeTransitionCacheEntry &cache, 
+cached_compose(const NodeTransitionCacheEntry &a,
+               const NodeTransitionCacheEntry &cache,
                const NodeTransitionCacheEntry &b,
                UpdateSeq now) {
   if (wrt_cat.is_spam()) {
@@ -310,7 +323,7 @@ cached_compose(const NodeTransitionCacheEntry &a,
   }
 
   if (cache._computed == UpdateSeq::initial() ||
-      (a._computed == UpdateSeq::initial() && 
+      (a._computed == UpdateSeq::initial() &&
        b._computed == UpdateSeq::initial()) ||
       cache._computed < a._computed) {
 
@@ -360,7 +373,7 @@ apply(const NodeAttribute *a, const NodeTransitionCacheEntry &b) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionCacheEntry::make_attrib
 //       Access: Public, Static
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeAttribute *NodeTransitionCacheEntry::
 make_attrib() const {

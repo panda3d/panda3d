@@ -1,6 +1,19 @@
-// Filename: cppClassTemplateParameter.C
+// Filename: cppClassTemplateParameter.cxx
 // Created by:  drose (28Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -10,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPClassTemplateParameter::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPClassTemplateParameter::
 CPPClassTemplateParameter(CPPIdentifier *ident, CPPType *default_type) :
@@ -36,7 +49,7 @@ is_fully_specified() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPClassTemplateParameter::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPClassTemplateParameter::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
@@ -56,7 +69,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPClassTemplateParameter::get_subtype
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration::SubType CPPClassTemplateParameter::
 get_subtype() const {
@@ -66,7 +79,7 @@ get_subtype() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPClassTemplateParameter::as_classTemplateParameter
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPClassTemplateParameter *CPPClassTemplateParameter::
 as_class_template_parameter() {

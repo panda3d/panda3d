@@ -1,6 +1,19 @@
 // Filename: collisionTraverser.cxx
 // Created by:  drose (24Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "collisionTraverser.h"
@@ -25,7 +38,7 @@ PStatCollector CollisionTraverser::_collisions_pcollector("App:Collisions");
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CollisionTraverser::
 CollisionTraverser(TypeHandle graph_type) :
@@ -36,7 +49,7 @@ CollisionTraverser(TypeHandle graph_type) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CollisionTraverser::
 ~CollisionTraverser() {
@@ -135,7 +148,7 @@ remove_collider(CollisionNode *node) {
 
   _colliders.erase(ci);
 
-  OrderedColliders::iterator oci = 
+  OrderedColliders::iterator oci =
     find(_ordered_colliders.begin(), _ordered_colliders.end(), node);
   nassertr(oci != _ordered_colliders.end(), false);
   _ordered_colliders.erase(oci);
@@ -214,7 +227,7 @@ clear_colliders() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::traverse
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
 traverse(Node *root) {
@@ -224,7 +237,7 @@ traverse(Node *root) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::traverse
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
 traverse(const NodePath &root) {
@@ -239,7 +252,7 @@ traverse(const NodePath &root) {
     (*hi).first->begin_group();
   }
 
-  df_traverse(root.node(), *this, NullAttributeWrapper(), 
+  df_traverse(root.node(), *this, NullAttributeWrapper(),
               level_state, _graph_type);
 
   for (hi = _handlers.begin(); hi != _handlers.end(); ++hi) {
@@ -250,7 +263,7 @@ traverse(const NodePath &root) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
 output(ostream &out) const {
@@ -261,7 +274,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
 write(ostream &out, int indent_level) const {
@@ -288,7 +301,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::prepare_colliders
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
 prepare_colliders(CollisionLevelState &level_state) {
@@ -329,10 +342,10 @@ prepare_colliders(CollisionLevelState &level_state) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::reached_node
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CollisionTraverser::
-reached_node(Node *node, NullAttributeWrapper &, 
+reached_node(Node *node, NullAttributeWrapper &,
              CollisionLevelState &level_state) {
   if (node->is_of_type(CollisionNode::get_class_type())) {
     level_state.reached_collision_node();
@@ -363,10 +376,10 @@ reached_node(Node *node, NullAttributeWrapper &,
           NodePath root;
           LMatrix4f into_space_inv = root.get_mat(entry._into_node_path);
           entry._wrt_space = entry._from_space * into_space_inv;
-          entry._inv_wrt_space = 
+          entry._inv_wrt_space =
             entry._into_space * level_state.get_inv_space(c);
 
-          const GeometricBoundingVolume *col_gbv = 
+          const GeometricBoundingVolume *col_gbv =
             level_state.get_local_bound(c);
 
           compare_collider_to_node(entry, col_gbv, node_gbv);
@@ -399,10 +412,10 @@ reached_node(Node *node, NullAttributeWrapper &,
         LMatrix4f into_space_inv;
         get_rel_mat(NULL, node, into_space_inv, _graph_type);
         entry._wrt_space = entry._from_space * into_space_inv;
-        entry._inv_wrt_space = 
+        entry._inv_wrt_space =
           entry._into_space * level_state.get_inv_space(c);
 
-        const GeometricBoundingVolume *col_gbv = 
+        const GeometricBoundingVolume *col_gbv =
           level_state.get_local_bound(c);
 
         compare_collider_to_geom_node(entry, col_gbv, node_gbv);
@@ -416,7 +429,7 @@ reached_node(Node *node, NullAttributeWrapper &,
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::forward_arc
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CollisionTraverser::
 forward_arc(NodeRelation *arc, NullTransitionWrapper &,
@@ -432,7 +445,7 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
     int num_colliders = level_state.get_num_colliders();
     for (int c = 0; c < num_colliders; c++) {
       if (level_state.has_collider(c)) {
-        const GeometricBoundingVolume *col_gbv = 
+        const GeometricBoundingVolume *col_gbv =
           level_state.get_local_bound(c);
         if (col_gbv != (GeometricBoundingVolume *)NULL) {
           if (arc_gbv->contains(col_gbv) == 0) {
@@ -468,7 +481,7 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::compare_collider_to_node
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
 compare_collider_to_node(CollisionEntry &entry,
@@ -508,7 +521,7 @@ compare_collider_to_node(CollisionEntry &entry,
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::compare_collider_to_geom_node
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
 compare_collider_to_geom_node(CollisionEntry &entry,
@@ -549,7 +562,7 @@ compare_collider_to_geom_node(CollisionEntry &entry,
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::compare_collider_to_solid
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
 compare_collider_to_solid(CollisionEntry &entry,
@@ -571,7 +584,7 @@ compare_collider_to_solid(CollisionEntry &entry,
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::compare_collider_to_geom
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionTraverser::
 compare_collider_to_geom(CollisionEntry &entry, Geom *geom,
@@ -592,7 +605,7 @@ compare_collider_to_geom(CollisionEntry &entry, Geom *geom,
     PTA_ushort vindex;
     geom->get_coords(coords, bind, vindex);
     PTA_ushort tris = geom->get_tris();
-    
+
     for (int i = 0; i < (int)tris.size(); i += 3) {
       if (CollisionPolygon::verify_points(coords[tris[i]],
                                           coords[tris[i + 1]],

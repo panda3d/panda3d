@@ -1,19 +1,29 @@
-/*
- * huffman tables ... recalcualted to work with my optimzed
- * decoder scheme (MH)
- * 
- * probably we could save a few bytes of memory, because the 
- * smaller tables are often the part of a bigger table
- */
+/* Filename: huffman.h
+ * Created by:  
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ * PANDA 3D SOFTWARE
+ * Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+ *
+ * All use of this software is subject to the terms of the Panda 3d
+ * Software license.  You should have received a copy of this license
+ * along with this source code; you will also find a current copy of
+ * the license at http://www.panda3d.org/license.txt .
+ *
+ * To contact the maintainers of this program write to
+ * panda3d@yahoogroups.com .
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-struct newhuff 
+struct newhuff
 {
   unsigned int linbits;
   short *table;
 };
 
-static short tab0[] = 
-{ 
+static short tab0[] =
+{
    0
 };
 
@@ -286,7 +296,7 @@ static short tab_c1[] =
 
 
 
-static struct newhuff ht[] = 
+static struct newhuff ht[] =
 {
  { /* 0 */ 0 , tab0  } ,
  { /* 2 */ 0 , tab1  } ,
@@ -323,7 +333,7 @@ static struct newhuff ht[] =
  { /* 16 */ 13, tab24 }
 };
 
-static struct newhuff htc[] = 
+static struct newhuff htc[] =
 {
  { /* 1 , 1 , */ 0 , tab_c0 } ,
  { /* 1 , 1 , */ 0 , tab_c1 }

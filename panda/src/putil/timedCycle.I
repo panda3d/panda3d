@@ -1,16 +1,29 @@
 // Filename: timedCycle.I
 // Created by:  jason (01Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TimedCycle::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TimedCycle::
 TimedCycle() :
-  _cycle_time(30), 
+  _cycle_time(30),
   _inv_cycle_time(1./30),
   _next_switch(-1),
   _current_child(0),
@@ -22,7 +35,7 @@ TimedCycle() :
 ////////////////////////////////////////////////////////////////////
 //     Function: TimedCycle::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TimedCycle::
 TimedCycle(float cycle_time, int element_count) :
@@ -78,7 +91,7 @@ INLINE int TimedCycle::
 next_element()
 {
   double current_time = _global_clock->get_real_time();
-  unsigned int increment = (unsigned int) ((current_time - _next_switch) 
+  unsigned int increment = (unsigned int) ((current_time - _next_switch)
                                            * _inv_cycle_time);
 
   _next_switch += _cycle_time * increment;

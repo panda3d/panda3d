@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include <pandabase.h>
 
@@ -44,7 +53,7 @@ Fog::Fog(Mode mode, int bits_per_color_channel) {
   set_mode(mode);
   set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
   set_range(0.0f, 100.0f);
-  
+
   _density = 0.5f;
 //  compute_density();
 }
@@ -65,7 +74,7 @@ void Fog::compute_density(void) {
   _density = 1.0f;
   float opaque_multiplier;
   switch (_mode) {
-  case M_linear: 
+  case M_linear:
     break;
   case M_exponential:
     // Multiplier = ln(2^bits)
@@ -93,7 +102,7 @@ void Fog::
 output(ostream &out) const {
   out << "fog:" << _mode;
   switch (_mode) {
-          case M_linear: 
+          case M_linear:
     break;
   case M_exponential:
   case M_exponential_squared:

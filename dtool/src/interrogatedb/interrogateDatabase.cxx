@@ -1,6 +1,19 @@
-// Filename: interrogateDatabase.C
+// Filename: interrogateDatabase.cxx
 // Created by:  drose (01Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "interrogateDatabase.h"
@@ -17,7 +30,7 @@ int InterrogateDatabase::_current_minor_version = 2;
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateDatabase::Constructor
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 InterrogateDatabase::
 InterrogateDatabase() {
@@ -42,7 +55,7 @@ get_ptr() {
   }
   return _global_ptr;
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateDatabase::request_module
 //       Access: Public
@@ -77,7 +90,7 @@ request_module(InterrogateModuleDef *def) {
     // to use this.
     _modules.push_back(def);
   }
-  
+
   if (def->num_unique_names > 0 && def->library_name != (const char *)NULL) {
     // Define a lookup by hash for this module, mainly so we can look
     // up functions by their unique names.
@@ -488,7 +501,7 @@ get_next_index() {
 ////////////////////////////////////////////////////////////////////
 void InterrogateDatabase::
 add_type(TypeIndex index, const InterrogateType &type) {
-  bool inserted = 
+  bool inserted =
     _type_map.insert(TypeMap::value_type(index, type)).second;
 
   if (!inserted) {
@@ -516,7 +529,7 @@ add_type(TypeIndex index, const InterrogateType &type) {
 ////////////////////////////////////////////////////////////////////
 void InterrogateDatabase::
 add_function(FunctionIndex index, const InterrogateFunction &function) {
-  bool inserted = 
+  bool inserted =
     _function_map.insert(FunctionMap::value_type(index, function)).second;
   assert(inserted);
 
@@ -533,9 +546,9 @@ add_function(FunctionIndex index, const InterrogateFunction &function) {
 //               the given index number.
 ////////////////////////////////////////////////////////////////////
 void InterrogateDatabase::
-add_wrapper(FunctionWrapperIndex index, 
+add_wrapper(FunctionWrapperIndex index,
             const InterrogateFunctionWrapper &wrapper) {
-  bool inserted = 
+  bool inserted =
     _wrapper_map.insert(FunctionWrapperMap::value_type(index, wrapper)).second;
   assert(inserted);
 }
@@ -548,7 +561,7 @@ add_wrapper(FunctionWrapperIndex index,
 ////////////////////////////////////////////////////////////////////
 void InterrogateDatabase::
 add_manifest(ManifestIndex index, const InterrogateManifest &manifest) {
-  bool inserted = 
+  bool inserted =
     _manifest_map.insert(ManifestMap::value_type(index, manifest)).second;
   assert(inserted);
 
@@ -563,7 +576,7 @@ add_manifest(ManifestIndex index, const InterrogateManifest &manifest) {
 ////////////////////////////////////////////////////////////////////
 void InterrogateDatabase::
 add_element(ElementIndex index, const InterrogateElement &element) {
-  bool inserted = 
+  bool inserted =
     _element_map.insert(ElementMap::value_type(index, element)).second;
   assert(inserted);
 
@@ -766,7 +779,7 @@ write(ostream &out, InterrogateModuleDef *def) const {
   // Write out the file header.
   out << def->file_identifier << "\n"
       << _current_major_version << " " << _current_minor_version << "\n";
-  
+
   // Write out the module definition.
   idf_output_string(out, def->library_name);
   idf_output_string(out, def->library_hash_name);
@@ -774,7 +787,7 @@ write(ostream &out, InterrogateModuleDef *def) const {
   out << "\n";
 
   // Now write out the components.
- 
+
   out << _function_map.size() << "\n";
   FunctionMap::const_iterator fi;
   for (fi = _function_map.begin(); fi != _function_map.end(); ++fi) {
@@ -815,7 +828,7 @@ write(ostream &out, InterrogateModuleDef *def) const {
 //               according to the expected index numbers specified in
 //               the module def.  The header information has already
 //               been read.
-//               
+//
 //               Returns true if the file is read successfully, false
 //               if there is an error.
 ////////////////////////////////////////////////////////////////////
@@ -833,7 +846,7 @@ read(istream &in, InterrogateModuleDef *def) {
     int next = temp.remap_indices(def->first_index);
     if (next != def->next_index) {
       interrogatedb_cat->error()
-        << "Module database file " << def->database_filename 
+        << "Module database file " << def->database_filename
         << " is out of date.\n";
       return false;
     }
@@ -867,7 +880,7 @@ load_latest() {
       }
 
       if (pathname.empty()) {
-        interrogatedb_cat->error() 
+        interrogatedb_cat->error()
           << "Unable to find " << filename << " on " << searchpath << "\n";
       } else {
 
@@ -890,7 +903,7 @@ load_latest() {
           if (_file_major_version != _current_major_version ||
               _file_minor_version > _current_minor_version) {
             interrogatedb_cat->error()
-              << "Cannot read interrogate data in " << pathname 
+              << "Cannot read interrogate data in " << pathname
               << "; database is version " << _file_major_version << "."
               << _file_minor_version << " while we are expecting "
               << _current_major_version << "." << _current_minor_version
@@ -930,13 +943,13 @@ read_new(istream &in, InterrogateModuleDef *def) {
 
   // Now read all of the components.
 
-  { // Functions. 
+  { // Functions.
     int num_functions;
     in >> num_functions;
     if (in.fail()) {
       return false;
     }
-    
+
     while (num_functions > 0) {
       FunctionIndex index;
       InterrogateFunction function(def);
@@ -944,7 +957,7 @@ read_new(istream &in, InterrogateModuleDef *def) {
       if (in.fail()) {
         return false;
       }
-      
+
       add_function(index, function);
       num_functions--;
     }
@@ -956,7 +969,7 @@ read_new(istream &in, InterrogateModuleDef *def) {
     if (in.fail()) {
       return false;
     }
-    
+
     while (num_wrappers > 0) {
       FunctionWrapperIndex index;
       InterrogateFunctionWrapper wrapper(def);
@@ -964,7 +977,7 @@ read_new(istream &in, InterrogateModuleDef *def) {
       if (in.fail()) {
         return false;
       }
-      
+
       add_wrapper(index, wrapper);
       num_wrappers--;
     }
@@ -976,7 +989,7 @@ read_new(istream &in, InterrogateModuleDef *def) {
     if (in.fail()) {
       return false;
     }
-    
+
     while (num_types > 0) {
       TypeIndex index;
       InterrogateType type(def);
@@ -984,19 +997,19 @@ read_new(istream &in, InterrogateModuleDef *def) {
       if (in.fail()) {
         return false;
       }
-      
+
       add_type(index, type);
       num_types--;
     }
   }
 
-  { // Manifests. 
+  { // Manifests.
     int num_manifests;
     in >> num_manifests;
     if (in.fail()) {
       return false;
     }
-    
+
     while (num_manifests > 0) {
       ManifestIndex index;
       InterrogateManifest manifest(def);
@@ -1004,19 +1017,19 @@ read_new(istream &in, InterrogateModuleDef *def) {
       if (in.fail()) {
         return false;
       }
-      
+
       add_manifest(index, manifest);
       num_manifests--;
     }
   }
 
-  { // Elements. 
+  { // Elements.
     int num_elements;
     in >> num_elements;
     if (in.fail()) {
       return false;
     }
-    
+
     while (num_elements > 0) {
       ElementIndex index;
       InterrogateElement element(def);
@@ -1024,7 +1037,7 @@ read_new(istream &in, InterrogateModuleDef *def) {
       if (in.fail()) {
         return false;
       }
-      
+
       add_element(index, element);
       num_elements--;
     }
@@ -1042,7 +1055,7 @@ read_new(istream &in, InterrogateModuleDef *def) {
 ////////////////////////////////////////////////////////////////////
 void InterrogateDatabase::
 merge_from(const InterrogateDatabase &other) {
-  // We want to collapse shared types together.  
+  // We want to collapse shared types together.
   IndexRemapper remap;
 
   // First, we need to build a set of types by name, so we know what
@@ -1307,7 +1320,7 @@ freshen_elements_by_scoped_name() {
     _elements_by_scoped_name[(*ti).second.get_scoped_name()] = (*ti).first;
   }
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateDatabase::lookup
 //       Access: Private

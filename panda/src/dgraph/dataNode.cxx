@@ -1,16 +1,29 @@
 // Filename: dataNode.cxx
 // Created by:  drose (26Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "dataNode.h"
 
 TypeHandle DataNode::_type_handle;
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DataNode::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DataNode::
 DataNode(const string &name) : NamedNode(name) {
@@ -33,7 +46,7 @@ DataNode(const string &name) : NamedNode(name) {
 void DataNode::
 transmit_data_per_child(NodeAttributes &, int) {
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DataNode::set_spam_mode
 //       Access: Public
@@ -47,7 +60,7 @@ void DataNode::
 set_spam_mode(bool flag) {
   _spam_mode = flag;
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DataNode::get_spam_mode
 //       Access: Public
@@ -60,7 +73,7 @@ get_spam_mode() const {
 }
 
 
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: register_data_transition
 //  Description: Defines a new data transition of the indicated name
@@ -74,7 +87,7 @@ get_spam_mode() const {
 //               on the TypeHandle of the data they share.
 ////////////////////////////////////////////////////////////////////
 void
-register_data_transition(TypeHandle &type_handle, const string &name, 
+register_data_transition(TypeHandle &type_handle, const string &name,
                          TypeHandle derived_from) {
   // Make sure the user gave us a transition type as the base.
   nassertv(derived_from.is_derived_from(NodeTransition::get_class_type()));
@@ -87,4 +100,4 @@ register_data_transition(TypeHandle &type_handle, const string &name,
   }
 }
 
-  
+

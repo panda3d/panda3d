@@ -1,6 +1,19 @@
 // Filename: globPattern.h
 // Created by:  drose (30May00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef GLOBPATTERN_H
@@ -33,7 +46,7 @@ public:
   INLINE const string &get_pattern() const;
 
   INLINE bool matches(const string &candidate) const;
-  
+
   INLINE void output(ostream &out) const;
 
 private:
@@ -42,7 +55,7 @@ private:
                       string::const_iterator ci,
                       string::const_iterator cend) const;
 
-  bool matches_set(string::const_iterator &pi, 
+  bool matches_set(string::const_iterator &pi,
                    string::const_iterator pend,
                    char ch) const;
 

@@ -1,6 +1,19 @@
 // Filename: queuedConnectionManager.cxx
 // Created by:  drose (09Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "queuedConnectionManager.h"
@@ -10,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: QueuedConnectionManager::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 QueuedConnectionManager::
 QueuedConnectionManager() {
@@ -19,7 +32,7 @@ QueuedConnectionManager() {
 ////////////////////////////////////////////////////////////////////
 //     Function: QueuedConnectionManager::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 QueuedConnectionManager::
 ~QueuedConnectionManager() {
@@ -73,8 +86,8 @@ bool QueuedConnectionManager::
 get_reset_connection(PT(Connection) &connection) {
   return get_thing(connection);
 }
-  
-  
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: QueuedConnectionManager::connection_reset
 //       Access: Protected, Virtual

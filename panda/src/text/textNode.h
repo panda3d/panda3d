@@ -3,6 +3,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 #ifndef TEXTNODE_H
 #define TEXTNODE_H
 //
@@ -91,8 +103,8 @@ PUBLISHED:
   INLINE void set_shadow_color(float r, float g, float b, float a);
   INLINE void set_shadow_color(const Colorf &shadow_color);
   INLINE Colorf get_shadow_color() const;
- 
-  INLINE void set_frame_as_margin(float left, float right, 
+
+  INLINE void set_frame_as_margin(float left, float right,
                                   float bottom, float top);
   INLINE void set_frame_actual(float left, float right,
                                float bottom, float top);
@@ -107,9 +119,9 @@ PUBLISHED:
   INLINE void set_frame_corners(bool corners);
   INLINE bool get_frame_corners() const;
 
-  INLINE void set_card_as_margin(float left, float right, 
+  INLINE void set_card_as_margin(float left, float right,
                                  float bottom, float top);
-  INLINE void set_card_actual(float left, float right, 
+  INLINE void set_card_actual(float left, float right,
                               float bottom, float top);
   INLINE void clear_card();
   INLINE bool has_card() const;
@@ -222,7 +234,7 @@ private:
 
   LMatrix4f _transform;
   CoordinateSystem _coordinate_system;
-  
+
   string _text;
 
   LPoint2f _ul2d, _lr2d;
@@ -244,7 +256,7 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-  
+
 private:
   static TypeHandle _type_handle;
 };

@@ -1,6 +1,19 @@
 // Filename: test_math.cxx
 // Created by:  drose (14Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "luse.h"
@@ -77,7 +90,7 @@ int main(int argc, char *argv[]) {
   nout << "p is " << p << "\n"
        << "p * x is " << p * x << "\n"
        << "p * y is " << p * y << "\n"
-       << "p * invert(y) is " << p * invert(y) << "\n" 
+       << "p * invert(y) is " << p * invert(y) << "\n"
        << "p * a is " << p * a << "\n";
 
   LVecBase4d q(0.0f, 1.0f, 1.0f, 1.0f);
@@ -93,9 +106,9 @@ int main(int argc, char *argv[]) {
 
   p2 = p2 - v1;
 
-  nout << "v1 = " << v1 
+  nout << "v1 = " << v1
        << "\nv2 = " << v2
-       << "\np1 = " << p1 
+       << "\np1 = " << p1
        << "\np2 = " << p2
        << "\nc1 = " << c1
        << "\n(c1 == c2) = " << (c1 == c2)
@@ -144,4 +157,4 @@ int main(int argc, char *argv[]) {
 
   return(0);
 }
- 
+

@@ -1,6 +1,19 @@
 // Filename: mouseWatcher.cxx
 // Created by:  drose (13Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "mouseWatcher.h"
@@ -26,7 +39,7 @@ TypeHandle MouseWatcher::_button_events_type;
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 MouseWatcher::
 MouseWatcher(const string &name) : DataNode(name) {
@@ -71,7 +84,7 @@ has_region(MouseWatcherRegion *region) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcher::remove_region 
+//     Function: MouseWatcher::remove_region
 //       Access: Published
 //  Description: Removes the indicated region from the Watcher.
 //               Returns true if it was successfully removed, or false
@@ -89,7 +102,7 @@ remove_region(MouseWatcherRegion *region) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcher::find_region 
+//     Function: MouseWatcher::find_region
 //       Access: Published
 //  Description: Returns a pointer to the first region found with the
 //               indicated name.  If multiple regions share the same
@@ -109,7 +122,7 @@ find_region(const string &name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcher::get_over_region 
+//     Function: MouseWatcher::get_over_region
 //       Access: Published
 //  Description: Returns the preferred region the mouse is over.  In
 //               the case of overlapping regions, the region with the
@@ -145,7 +158,7 @@ get_over_region(const LPoint2f &pos) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
 output(ostream &out) const {
@@ -156,7 +169,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
 write(ostream &out, int indent_level) const {
@@ -191,7 +204,7 @@ set_current_region(MouseWatcherRegion *region) {
     if (_current_region != (MouseWatcherRegion *)NULL) {
       throw_event_pattern(_enter_pattern, _current_region);
     }
-  }    
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -201,7 +214,7 @@ set_current_region(MouseWatcherRegion *region) {
 //               using the given pattern.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
-throw_event_pattern(const string &pattern, const MouseWatcherRegion *region, 
+throw_event_pattern(const string &pattern, const MouseWatcherRegion *region,
                     const string &button_name) {
   if (pattern.empty()) {
     return;
@@ -243,7 +256,7 @@ throw_event_pattern(const string &pattern, const MouseWatcherRegion *region,
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::transmit_data
 //       Access: Public
-//  Description: Convert mouse data into a mouseWatcher matrix 
+//  Description: Convert mouse data into a mouseWatcher matrix
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
 transmit_data(NodeAttributes &data) {

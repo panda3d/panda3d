@@ -1,13 +1,26 @@
 // Filename: eggTexture.I
 // Created by:  drose (18Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::set_format
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggTexture::
 set_format(Format format) {
@@ -17,7 +30,7 @@ set_format(Format format) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::get_format
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggTexture::Format EggTexture::
 get_format() const {
@@ -27,7 +40,7 @@ get_format() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::set_wrap_mode
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggTexture::
 set_wrap_mode(WrapMode mode) {
@@ -37,7 +50,7 @@ set_wrap_mode(WrapMode mode) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::get_wrap_mode
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggTexture::WrapMode EggTexture::
 get_wrap_mode() const {
@@ -47,7 +60,7 @@ get_wrap_mode() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::set_wrap_u
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggTexture::
 set_wrap_u(WrapMode mode) {
@@ -81,7 +94,7 @@ determine_wrap_u() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::set_wrap_v
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggTexture::
 set_wrap_v(WrapMode mode) {
@@ -115,7 +128,7 @@ determine_wrap_v() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::set_minfilter
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggTexture::
 set_minfilter(FilterType type) {
@@ -125,7 +138,7 @@ set_minfilter(FilterType type) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::get_minfilter
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggTexture::FilterType EggTexture::
 get_minfilter() const {
@@ -135,7 +148,7 @@ get_minfilter() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::set_magfilter
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggTexture::
 set_magfilter(FilterType type) {
@@ -145,7 +158,7 @@ set_magfilter(FilterType type) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::get_magfilter
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggTexture::FilterType EggTexture::
 get_magfilter() const {
@@ -155,7 +168,7 @@ get_magfilter() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::set_magfilteralpha
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggTexture::
 set_magfilteralpha(FilterType type) {
@@ -165,7 +178,7 @@ set_magfilteralpha(FilterType type) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::get_magfilteralpha
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggTexture::FilterType EggTexture::
 get_magfilteralpha() const {
@@ -175,7 +188,7 @@ get_magfilteralpha() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::set_magfiltercolor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggTexture::
 set_magfiltercolor(FilterType type) {
@@ -185,7 +198,7 @@ set_magfiltercolor(FilterType type) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::get_magfiltercolor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggTexture::FilterType EggTexture::
 get_magfiltercolor() const {
@@ -246,7 +259,7 @@ get_anisotropic_degree() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::set_env_type
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggTexture::
 set_env_type(EnvType type) {
@@ -256,7 +269,7 @@ set_env_type(EnvType type) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::get_env_type
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggTexture::EnvType EggTexture::
 get_env_type() const {
@@ -267,7 +280,7 @@ get_env_type() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::set_transform
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggTexture::
 set_transform(const LMatrix3d &transform) {
@@ -278,7 +291,7 @@ set_transform(const LMatrix3d &transform) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::clear_transform
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggTexture::
 clear_transform() {
@@ -301,7 +314,7 @@ has_transform() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::get_transform
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE LMatrix3d EggTexture::
 get_transform() const {
@@ -319,7 +332,7 @@ get_transform() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggTexture::
 transform_is_identity() const {
-  return (!has_transform() || 
+  return (!has_transform() ||
           _transform.almost_equal(LMatrix3d::ident_mat(), 0.0001));
 }
 
@@ -341,7 +354,7 @@ set_alpha_file(const Filename &alpha_file) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::clear_alpha_file
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggTexture::
 clear_alpha_file() {
@@ -392,7 +405,7 @@ update_alpha_file() {
 ////////////////////////////////////////////////////////////////////
 //     Function: UniqueEggTextures::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE UniqueEggTextures::
 UniqueEggTextures(int eq) : _eq(eq) {
@@ -401,7 +414,7 @@ UniqueEggTextures(int eq) : _eq(eq) {
 ////////////////////////////////////////////////////////////////////
 //     Function: UniqueEggTextures::Function operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool UniqueEggTextures::
 operator ()(const EggTexture *t1, const EggTexture *t2) const {

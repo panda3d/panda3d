@@ -1,6 +1,19 @@
-// Filename: cppExtensionType.C
+// Filename: cppExtensionType.cxx
 // Created by:  drose (21Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -13,10 +26,10 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExtensionType::Conextensionor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPExtensionType::
-CPPExtensionType(CPPExtensionType::Type type, 
+CPPExtensionType(CPPExtensionType::Type type,
                  CPPIdentifier *ident, CPPScope *current_scope,
                  const CPPFile &file) :
   CPPType(file),
@@ -30,7 +43,7 @@ CPPExtensionType(CPPExtensionType::Type type,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExtensionType::get_simple_name
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string CPPExtensionType::
 get_simple_name() const {
@@ -43,7 +56,7 @@ get_simple_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExtensionType::get_local_name
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string CPPExtensionType::
 get_local_name(CPPScope *scope) const {
@@ -56,7 +69,7 @@ get_local_name(CPPScope *scope) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExtensionType::get_fully_scoped_name
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string CPPExtensionType::
 get_fully_scoped_name() const {
@@ -96,7 +109,7 @@ is_tbd() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExtensionType::substitute_decl
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPExtensionType::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
@@ -108,7 +121,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
 
   CPPExtensionType *rep = new CPPExtensionType(*this);
   if (_ident != NULL) {
-    rep->_ident = 
+    rep->_ident =
       _ident->substitute_decl(subst, current_scope, global_scope);
   }
 
@@ -147,7 +160,7 @@ is_equivalent(const CPPType &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExtensionType::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPExtensionType::
 output(ostream &out, int, CPPScope *scope, bool) const {
@@ -170,7 +183,7 @@ output(ostream &out, int, CPPScope *scope, bool) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExtensionType::get_subtype
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration::SubType CPPExtensionType::
 get_subtype() const {
@@ -180,7 +193,7 @@ get_subtype() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExtensionType::as_extension_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPExtensionType *CPPExtensionType::
 as_extension_type() {

@@ -1,6 +1,19 @@
 // Filename: collisionHandlerPusher.cxx
 // Created by:  drose (25Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "collisionHandlerPusher.h"
@@ -26,7 +39,7 @@ public:
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerPusher::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CollisionHandlerPusher::
 CollisionHandlerPusher() {
@@ -36,7 +49,7 @@ CollisionHandlerPusher() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerPusher::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CollisionHandlerPusher::
 ~CollisionHandlerPusher() {
@@ -64,7 +77,7 @@ handle_entries() {
       // it this CollisionHandler pointer--but they didn't tell us
       // about the node.
       collide_cat.error()
-        << "CollisionHandlerPusher doesn't know about " 
+        << "CollisionHandlerPusher doesn't know about "
         << *from_node << "\n";
 
     } else {
@@ -99,13 +112,13 @@ handle_entries() {
           // Shove it just enough to clear the volume.
           if (entry->get_into_depth() != 0.0) {
             ShoveData sd;
-            sd._shove = 
+            sd._shove =
               entry->get_into_surface_normal() *
               entry->get_into_depth();
 
             if (collide_cat.is_debug()) {
               collide_cat.debug()
-                << "Shove on " << *from_node << " from " 
+                << "Shove on " << *from_node << " from "
                 << *entry->get_into_node() << ": " << sd._shove << "\n";
             }
 
@@ -161,10 +174,10 @@ handle_entries() {
         if (_horizontal) {
           net_shove[2] = 0.0;
         }
-      
+
         if (collide_cat.is_debug()) {
           collide_cat.debug()
-            << "Net shove on " << *from_node << " is: " 
+            << "Net shove on " << *from_node << " is: "
             << net_shove << "\n";
         }
 

@@ -1,4 +1,20 @@
-/* GPL clean */
+/* Filename: common.c
+ * Created by:  
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ * PANDA 3D SOFTWARE
+ * Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+ *
+ * All use of this software is subject to the terms of the Panda 3d
+ * Software license.  You should have received a copy of this license
+ * along with this source code; you will also find a current copy of
+ * the license at http://www.panda3d.org/license.txt .
+ *
+ * To contact the maintainers of this program write to
+ * panda3d@yahoogroups.com .
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -161,7 +177,7 @@ int read_frame(struct frame *fr)
         if(oldhead) {
             if((oldhead & 0xc00) == (newhead & 0xc00)) {
                 if( (oldhead & 0xc0) == 0 && (newhead & 0xc0) == 0)
-                    fr->header_change = 1; 
+                    fr->header_change = 1;
                 else if( (oldhead & 0xc0) > 0 && (newhead & 0xc0) > 0)
                     fr->header_change = 1;
             }
@@ -200,7 +216,7 @@ int read_frame(struct frame *fr)
                     return 0;
                 }
             }
-            /* 
+            /*
              * should we additionaly check, whether a new frame starts at
              * the next expected position? (some kind of read ahead)
              * We could implement this easily, at least for files.
@@ -272,7 +288,7 @@ int read_frame(struct frame *fr)
     if(!rd->read_frame_body(rd,bsbuf,fr->framesize))
         return 0;
 
-    { 
+    {
       /* Test */
       static struct vbrHeader head;
       static int vbr = 0;
@@ -301,32 +317,32 @@ int back_frame(struct reader *rds,struct frame *fr,int num)
 {
     long bytes;
     unsigned long newhead;
-  
+
     if(!firsthead)
         return 0;
-  
+
     bytes = (fr->framesize+8)*(num+2);
-  
+
     if(rds->back_bytes(rds,bytes) < 0)
         return -1;
     if(!rds->head_read(rds,&newhead))
         return -1;
-  
+
     while( (newhead & HDRCMPMASK) != (firsthead & HDRCMPMASK) ) {
         if(!rds->head_shift(rds,&newhead))
             return -1;
     }
-  
+
     if(rds->back_bytes(rds,4) <0)
         return -1;
 
     read_frame(fr);
     read_frame(fr);
-  
+
     if(fr->lay == 3) {
         set_pointer(512);
     }
-  
+
     return 0;
 }
 
@@ -350,7 +366,7 @@ static int decode_header(struct frame *fr,unsigned long newhead)
         fr->lsf = 1;
         fr->mpeg25 = 1;
     }
-    
+
     if (!param.tryresync || !oldhead) {
         /* If "tryresync" is true, assume that certain
            parameters do not change within the stream! */
@@ -406,9 +422,9 @@ static int decode_header(struct frame *fr,unsigned long newhead)
         fr->framesize  = (long) tabsel_123[fr->lsf][2][fr->bitrate_index] * 144000;
         fr->framesize /= freqs[fr->sampling_frequency]<<(fr->lsf);
         fr->framesize = fr->framesize + fr->padding - 4;
-        break; 
+        break;
     default:
-        fprintf(stderr,"Sorry, unknown layer type.\n"); 
+        fprintf(stderr,"Sorry, unknown layer type.\n");
         return (0);
     }
     return 1;
@@ -435,7 +451,7 @@ void print_header(struct frame *fr)
     static char *modes[4] = { "Stereo", "Joint-Stereo", "Dual-Channel", "Single-Channel" };
     static char *layers[4] = { "Unknown" , "I", "II", "III" };
 
-    fprintf(stderr,"MPEG %s, Layer: %s, Freq: %ld, mode: %s, modext: %d, BPF : %d\n", 
+    fprintf(stderr,"MPEG %s, Layer: %s, Freq: %ld, mode: %s, modext: %d, BPF : %d\n",
             fr->mpeg25 ? "2.5" : (fr->lsf ? "2.0" : "1.0"),
             layers[fr->lay],freqs[fr->sampling_frequency],
             modes[fr->mode],fr->mode_ext,fr->framesize+4);
@@ -451,7 +467,7 @@ void print_header_compact(struct frame *fr)
 {
     static char *modes[4] = { "stereo", "joint-stereo", "dual-channel", "mono" };
     static char *layers[4] = { "Unknown" , "I", "II", "III" };
- 
+
     fprintf(stderr,"MPEG %s layer %s, %d kbit/s, %ld Hz %s\n",
             fr->mpeg25 ? "2.5" : (fr->lsf ? "2.0" : "1.0"),
             layers[fr->lay],
@@ -571,7 +587,7 @@ void set_pointer(long backstep)
     bsi.wordpointer = bsbuf + ssize - backstep;
     if (backstep)
         memcpy(bsi.wordpointer,bsbufold+fsizeold-backstep,backstep);
-    bsi.bitindex = 0; 
+    bsi.bitindex = 0;
 }
 
 /********************************/
@@ -610,7 +626,7 @@ double compute_tpf(struct frame *fr)
 }
 
 /*
- * Returns number of frames queued up in output buffer, i.e. 
+ * Returns number of frames queued up in output buffer, i.e.
  * offset between currently played and currently decoded frame.
  */
 
@@ -628,7 +644,7 @@ long compute_buffer_offset(struct frame *fr)
        || !buffermem->buf[0] || !buffermem->buf[1])
         return 0;
 
-    bufsize = (long)((double) bufsize / buffermem->buf[0] / 
+    bufsize = (long)((double) bufsize / buffermem->buf[0] /
                      buffermem->buf[1] / compute_tpf(fr));
 
     if((buffermem->buf[2] & AUDIO_FORMAT_MASK) == AUDIO_FORMAT_16)
@@ -644,7 +660,7 @@ void print_stat(struct frame *fr,int no,long buffsize,struct audio_info_struct *
     int sno,rno;
     char outbuf[256];
 
-    if(!rd || !fr) 
+    if(!rd || !fr)
         return;
 
     outbuf[0] = 0;

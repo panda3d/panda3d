@@ -1,6 +1,19 @@
 // Filename: nurbsCurveInterface.cxx
 // Created by:  drose (02Mar01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "nurbsCurveInterface.h"
@@ -30,20 +43,20 @@ set_cv_weight(int n, float w) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveInterface::write_cv
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NurbsCurveInterface::
 write_cv(ostream &out, int n) const {
   nassertv(n >= 0 && n < get_num_cvs());
 
-  out << "CV " << n << ": " << get_cv_point(n) << ", weight " 
+  out << "CV " << n << ": " << get_cv_point(n) << ", weight "
       << get_cv_weight(n) << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveInterface::write
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NurbsCurveInterface::
 write(ostream &out, int indent_level) const {
@@ -66,7 +79,7 @@ write(ostream &out, int indent_level) const {
   int num_cvs = get_num_cvs();
   for (i = 0; i < num_cvs; i++) {
     indent(out, indent_level)
-      << i << ") " << get_cv_point(i) << ", weight " 
+      << i << ") " << get_cv_point(i) << ", weight "
       << get_cv_weight(i) << "\n";
   }
 
@@ -99,7 +112,7 @@ format_egg(ostream &out, const string &name, const string &curve_type,
   }
   indent(out, indent_level)
     << "}\n";
-    
+
   indent(out, indent_level)
     << "<NurbsCurve> " << name << " {\n";
 
@@ -109,7 +122,7 @@ format_egg(ostream &out, const string &name, const string &curve_type,
   }
 
   indent(out, indent_level+2) << "<Order> { " << get_order() << " }\n";
-  
+
   indent(out, indent_level+2) << "<Knots> {";
   int k;
   int num_knots = get_num_knots();

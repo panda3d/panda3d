@@ -1,6 +1,19 @@
 // Filename: lmatrix3_src.I
 // Created by:  drose (29Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
@@ -19,18 +32,18 @@ ident_mat() {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::Default Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LMatrix3):: 
+INLINE_LINMATH FLOATNAME(LMatrix3)::
 FLOATNAME(LMatrix3)() {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LMatrix3):: 
+INLINE_LINMATH FLOATNAME(LMatrix3)::
 FLOATNAME(LMatrix3)(const FLOATNAME(LMatrix3) &copy) {
         memcpy(_m.data,copy._m.data,sizeof(_m.data));
 //  (*this) = copy;
@@ -39,13 +52,13 @@ FLOATNAME(LMatrix3)(const FLOATNAME(LMatrix3) &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3):: 
+INLINE_LINMATH FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
 operator = (const FLOATNAME(LMatrix3) &copy) {
   memcpy(_m.data,copy._m.data,sizeof(_m.data));
-//  set(copy(0, 0), copy(0, 1), copy(0, 2), 
-//      copy(1, 0), copy(1, 1), copy(1, 2), 
+//  set(copy(0, 0), copy(0, 1), copy(0, 2),
+//      copy(1, 0), copy(1, 1), copy(1, 2),
 //      copy(2, 0), copy(2, 1), copy(2, 2));
   return *this;
 }
@@ -53,7 +66,7 @@ operator = (const FLOATNAME(LMatrix3) &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::Fill Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
 operator = (FLOATTYPE fill_value) {
@@ -64,9 +77,9 @@ operator = (FLOATTYPE fill_value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LMatrix3):: 
+INLINE_LINMATH FLOATNAME(LMatrix3)::
 FLOATNAME(LMatrix3)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
                     FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12,
                     FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22) {
@@ -88,7 +101,7 @@ FLOATNAME(LMatrix3)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::set
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LMatrix3)::
 set(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02,
@@ -220,7 +233,7 @@ get_col2(int col) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::Indexing operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE &FLOATNAME(LMatrix3)::
 operator () (int row, int col) {
@@ -232,7 +245,7 @@ operator () (int row, int col) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::Indexing operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix3)::
 operator () (int row, int col) const {
@@ -249,7 +262,7 @@ operator () (int row, int col) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LMatrix3)::
 is_nan() const {
-  return 
+  return
     cnan(_m.data[0]) || cnan(_m.data[1]) || cnan(_m.data[2]) ||
     cnan(_m.data[3]) || cnan(_m.data[4]) || cnan(_m.data[5]) ||
     cnan(_m.data[6]) || cnan(_m.data[7]) || cnan(_m.data[8]);
@@ -362,7 +375,7 @@ operator < (const FLOATNAME(LMatrix3) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::Equality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LMatrix3)::
 operator == (const FLOATNAME(LMatrix3) &other) const {
@@ -372,7 +385,7 @@ operator == (const FLOATNAME(LMatrix3) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::Inequality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LMatrix3)::
 operator != (const FLOATNAME(LMatrix3) &other) const {
@@ -414,7 +427,7 @@ xform(const FLOATNAME(LVecBase3) &v) const {
 
 
 
-        return v_res; 
+        return v_res;
 
 //  return FLOATNAME(LVecBase3)(v.dot(get_col(0)),
 //                          v.dot(get_col(1)),
@@ -494,7 +507,7 @@ res._m.m._22 = a._m.m._20*b._m.m._02 + a._m.m._21*b._m.m._12 + a._m.m._22*b._m.m
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::matrix * matrix
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 operator * (const FLOATNAME(LMatrix3) &other) const {
@@ -555,7 +568,7 @@ scale_multiply(const FLOATNAME(LVecBase3) &scale_vector,const FLOATNAME(LMatrix3
   #ifdef _DEBUG
      assert(&other_mat != this);
   #endif
-  
+
    // optimize for 0.0 or 1.0 factors?
 
   _m.m._00 = other_mat._m.m._00 * scale_vector._v.v._0;
@@ -574,7 +587,7 @@ scale_multiply(const FLOATNAME(LVecBase3) &scale_vector,const FLOATNAME(LMatrix3
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::matrix * scalar
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 operator * (FLOATTYPE scalar) const {
@@ -598,7 +611,7 @@ operator * (FLOATTYPE scalar) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::matrix / scalar
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix3) FLOATNAME(LMatrix3)::
 operator / (FLOATTYPE scalar) const {
@@ -653,7 +666,7 @@ operator -= (const FLOATNAME(LMatrix3) &other) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::matrix *= matrix
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix3) &FLOATNAME(LMatrix3)::
 operator *= (const FLOATNAME(LMatrix3) &other) {
@@ -775,12 +788,12 @@ det2(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e10, FLOATTYPE e11) const {
 INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix3)::
 determinant() const {
 /*
-  return 
+  return
     (*this)(0,0) * det2((*this)(1,1),(*this)(1,2),(*this)(2,1),(*this)(2,2))
     -(*this)(0,1) * det2((*this)(1,0),(*this)(1,2),(*this)(2,0),(*this)(2,2))
     +(*this)(0,2) * det2((*this)(1,0),(*this)(1,1),(*this)(2,0),(*this)(2,1));
 */
- 
+
  return MATRIX3_DETERMINANT(_m.m);
 }
 
@@ -802,7 +815,7 @@ determinant() const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LMatrix3)::
 invert_from(const FLOATNAME(LMatrix3) &other) {
- 
+
   FLOATTYPE other_det = MATRIX3_DETERMINANT(other._m.m);
 
   if (IS_NEARLY_ZERO(other_det)) {
@@ -934,16 +947,16 @@ rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
   FLOATTYPE axis_1 = axis._v.v._1;
   FLOATTYPE axis_2 = axis._v.v._2;
 
-  // Normalize the axis.  
+  // Normalize the axis.
   FLOATTYPE length_sq = axis_0 * axis_0 + axis_1 * axis_1 + axis_2 * axis_2;
 #ifdef _DEBUG
   nassertr(length_sq != 0.0f, ident_mat());
 #endif
   FLOATTYPE recip_length = 1.0f/csqrt(length_sq);
-  
+
   axis_0 *= recip_length;
   axis_1 *= recip_length;
-  axis_2 *= recip_length;  
+  axis_2 *= recip_length;
 
   FLOATTYPE angle_rad=deg_2_rad(angle);
   FLOATTYPE s,c;
@@ -983,7 +996,7 @@ rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
   mat._m.m._20 = t * axis._v.v._2 * axis._v.v._0 + s * axis._v.v._1;
   mat._m.m._21 = t * axis._v.v._2 * axis._v.v._1 - s * axis._v.v._0;
   mat._m.m._22 = t * axis._v.v._2 * axis._v.v._2 + c;
-*/  
+*/
 
   return mat;
 }
@@ -1051,7 +1064,7 @@ rotate_mat_normaxis(FLOATTYPE angle, const FLOATNAME(LVecBase3) &axis,
   mat._m.m._20 = t * axis._v.v._2 * axis._v.v._0 + s * axis._v.v._1;
   mat._m.m._21 = t * axis._v.v._2 * axis._v.v._1 - s * axis._v.v._0;
   mat._m.m._22 = t * axis._v.v._2 * axis._v.v._2 + c;
-*/  
+*/
 
   return mat;
 }

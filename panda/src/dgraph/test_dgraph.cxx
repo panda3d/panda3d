@@ -1,6 +1,19 @@
 // Filename: test_dgraph.cxx
 // Created by:  drose (25Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <notify.h>
@@ -149,7 +162,7 @@ transmit_data(NodeAttributes &data) {
   if (get_attribute_into(s, data, _s_type) &&
       get_attribute_into(t, data, _t_type) &&
       get_attribute_into(xyz, data, _xyz_type)) {
-    nout << get_name() << " got xyz " << *xyz << " s " << *s 
+    nout << get_name() << " got xyz " << *xyz << " s " << *s
          << " t " << *t << "\n";
   } else {
     nout << get_name() << " didn't get all data.\n";
@@ -161,7 +174,7 @@ transmit_data(NodeAttributes &data) {
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
-int 
+int
 main() {
   Producer::init_type();
   Consumer::init_type();

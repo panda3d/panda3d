@@ -1,13 +1,26 @@
 // Filename: pointerTo.I
 // Created by:  drose (10Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToBase::Constructor
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE PointerToBase<T>::
@@ -19,7 +32,7 @@ PointerToBase(To *ptr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToBase::Copy Constructor
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE PointerToBase<T>::
@@ -31,7 +44,7 @@ PointerToBase(const PointerToBase<T> &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToBase::Destructor
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE PointerToBase<T>::
@@ -56,7 +69,7 @@ reassign(To *ptr) {
     // inadvertently delete the new one.  (Don't laugh--it's
     // happened!)
     To *old_ptr = _ptr;
-    
+
     _ptr = ptr;
     if (_ptr != (To *)NULL) {
       _ptr->ref();
@@ -86,7 +99,7 @@ reassign(To *ptr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToBase::reassign
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE void PointerToBase<T>::
@@ -99,7 +112,7 @@ reassign(const PointerToBase<To> &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToBase::Equivalence operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE bool PointerToBase<T>::
@@ -110,7 +123,7 @@ operator == (const To *other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToBase::Nonequivalence operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE bool PointerToBase<T>::
@@ -121,7 +134,7 @@ operator != (const To *other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToBase::Greater-than operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE bool PointerToBase<T>::
@@ -132,7 +145,7 @@ operator > (const To *other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToBase::Less-than-or-equal operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE bool PointerToBase<T>::
@@ -143,7 +156,7 @@ operator <= (const To *other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToBase::Greater-than-or-equal operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE bool PointerToBase<T>::
@@ -154,7 +167,7 @@ operator >= (const To *other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToBase::Equivalence operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE bool PointerToBase<T>::
@@ -165,7 +178,7 @@ operator == (const PointerToBase<To> &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToBase::Nonequivalence operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE bool PointerToBase<T>::
@@ -176,7 +189,7 @@ operator != (const PointerToBase<To> &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToBase::Greater-than operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE bool PointerToBase<T>::
@@ -187,7 +200,7 @@ operator > (const PointerToBase<To> &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToBase::Less-than-or-equal operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE bool PointerToBase<T>::
@@ -198,7 +211,7 @@ operator <= (const PointerToBase<To> &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToBase::Greater-than-or-equal operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE bool PointerToBase<T>::
@@ -210,7 +223,7 @@ operator >= (const PointerToBase<To> &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToBase::Less-than operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE bool PointerToBase<T>::
@@ -221,7 +234,7 @@ operator < (const To *other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToBase::Less-than operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE bool PointerToBase<T>::
@@ -277,29 +290,29 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerTo::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE PointerTo<T>::
-PointerTo(To *ptr) : PointerToBase<T>(ptr) { 
+PointerTo(To *ptr) : PointerToBase<T>(ptr) {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerTo::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE PointerTo<T>::
-PointerTo(const PointerTo<T> &copy) : 
-  PointerToBase<T>((const PointerToBase<T> &)copy) 
-{ 
+PointerTo(const PointerTo<T> &copy) :
+  PointerToBase<T>((const PointerToBase<T> &)copy)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerTo::Dereference operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE PointerTo<T>::To &PointerTo<T>::
@@ -310,7 +323,7 @@ operator *() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerTo::Member access operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE PointerTo<T>::To *PointerTo<T>::
@@ -350,7 +363,7 @@ p() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerTo::Assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE PointerTo<T> &PointerTo<T>::
@@ -362,7 +375,7 @@ operator = (To *ptr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerTo::Assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE PointerTo<T> &PointerTo<T>::
@@ -374,43 +387,43 @@ operator = (const PointerTo<T> &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerTo::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE ConstPointerTo<T>::
-ConstPointerTo(const To *ptr) : 
-  PointerToBase<T>((ConstPointerTo<T>::To *)ptr) 
+ConstPointerTo(const To *ptr) :
+  PointerToBase<T>((ConstPointerTo<T>::To *)ptr)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerTo::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE ConstPointerTo<T>::
-ConstPointerTo(const PointerTo<T> &copy) : 
-  PointerToBase<T>((const PointerToBase<T> &)copy) 
+ConstPointerTo(const PointerTo<T> &copy) :
+  PointerToBase<T>((const PointerToBase<T> &)copy)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerTo::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE ConstPointerTo<T>::
-ConstPointerTo(const ConstPointerTo<T> &copy) : 
-  PointerToBase<T>((const PointerToBase<T> &)copy) 
+ConstPointerTo(const ConstPointerTo<T> &copy) :
+  PointerToBase<T>((const PointerToBase<T> &)copy)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerTo::Dereference operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE const ConstPointerTo<T>::To &ConstPointerTo<T>::
@@ -421,7 +434,7 @@ operator *() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerTo::Member access operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE const ConstPointerTo<T>::To *ConstPointerTo<T>::
@@ -461,7 +474,7 @@ p() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerTo::Assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE ConstPointerTo<T> &ConstPointerTo<T>::
@@ -473,7 +486,7 @@ operator = (const To *ptr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerTo::Assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE ConstPointerTo<T> &ConstPointerTo<T>::
@@ -485,7 +498,7 @@ operator = (const ConstPointerTo<T> &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerTo::Assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class T>
 INLINE ConstPointerTo<T> &ConstPointerTo<T>::

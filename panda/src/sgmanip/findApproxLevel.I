@@ -1,6 +1,19 @@
 // Filename: findApproxLevel.I
 // Created by:  drose (18Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <notify.h>
@@ -8,12 +21,12 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: FindApproxLevelEntry::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE FindApproxLevelEntry::
 FindApproxLevelEntry(const NodePath &node_path, FindApproxPath &approx_path) :
   _node_path(node_path),
-  _approx_path(approx_path) 
+  _approx_path(approx_path)
 {
   _i = 0;
 }
@@ -21,7 +34,7 @@ FindApproxLevelEntry(const NodePath &node_path, FindApproxPath &approx_path) :
 ////////////////////////////////////////////////////////////////////
 //     Function: FindApproxLevelEntry::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE FindApproxLevelEntry::
 FindApproxLevelEntry(const FindApproxLevelEntry &copy) :
@@ -34,7 +47,7 @@ FindApproxLevelEntry(const FindApproxLevelEntry &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: FindApproxLevelEntry::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void FindApproxLevelEntry::
 operator = (const FindApproxLevelEntry &copy) {

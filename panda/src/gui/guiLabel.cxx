@@ -1,6 +1,19 @@
 // Filename: guiLabel.cxx
 // Created by:  cary (26Oct00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "guiLabel.h"
@@ -20,11 +33,11 @@ void GuiLabel::recompute_transform(void) {
                     LMatrix4f::scale_mat(LVector3f::rfu((_mirror_x?-1.0f:1.0f), 1.0f,
                           (_mirror_y?-1.0f:1.0f))) *
                     LMatrix4f::translate_mat(_pos);
-*/  
+*/
   // optimize the above calculation
 
   float sx,sy,sz;
-       
+
   sx = _scale_x*_scale;
   if(_mirror_x)
       sx = -sx;
@@ -34,9 +47,9 @@ void GuiLabel::recompute_transform(void) {
       sz = -sz;
 
   LVector3f scalevec1 = LVector3f::rfu(sx,sy,sz);
-                                        
+
   LMatrix4f mat(scalevec1[0], 0.0f, 0.0f, 0.0f,
-                0.0f, scalevec1[1], 0.0f, 0.0f, 
+                0.0f, scalevec1[1], 0.0f, 0.0f,
                 0.0f, 0.0f, scalevec1[2], 0.0f,
                 _pos[0], _pos[1], _pos[2], 1.0f);
 
@@ -66,7 +79,7 @@ void GuiLabel::recompute_transform(void) {
     LMatrix4f::scale_mat(LVector3f::rfu((_mirror_x?-1.0f:1.0f), 1.0f,
                         (_mirror_y?-1.0f:1.0f))) *
     LMatrix4f::translate_mat(_pos + _model_pos);
-*/  
+*/
       // optimize above calculation, which was already partially done at start
 
       if(_have_width || _have_height) {
@@ -308,7 +321,7 @@ GuiLabel* GuiLabel::make_model_label(Node* geom, float w, float h) {
   ret->_model_height = h;
   ret->_internal = new RenderRelation(ret->_geom, geom);
 #ifdef _DEBUG
-  gui_cat->debug() << "created model label 0x" << (void*)ret 
+  gui_cat->debug() << "created model label 0x" << (void*)ret
            << " from node 0x" << (void*)geom
            << ", set _type(" << (int)(ret->_type) << ") to MODEL("
            << (int)MODEL << ")" << endl;
@@ -327,7 +340,7 @@ GuiLabel* GuiLabel::make_model_label(Node* geom, float left, float right,
   ret->_model_height = top - bottom;
   ret->_internal = new RenderRelation(ret->_geom, geom);
 #ifdef _DEBUG
-  gui_cat->debug() << "created model label 0x" << (void*)ret 
+  gui_cat->debug() << "created model label 0x" << (void*)ret
            << " from node 0x" << (void*)geom
            << ", set _type(" << (int)(ret->_type) << ") to MODEL("
            << (int)MODEL << ")" << endl;
@@ -418,14 +431,14 @@ void GuiLabel::get_extents(float& l, float& r, float& b, float& t) {
                               _scale_z)) *
     LMatrix4f::scale_mat(_scale) *
     LMatrix4f::translate_mat(_pos);
-    
+
     ul = ul * mat;
-    lr = lr * mat;  
-*/  
+    lr = lr * mat;
+*/
       // optimize above
 
       LVector3f scalevec1 = LVector3f::rfu(_scale_x*_scale, _scale_y*_scale, _scale_z*_scale);
-      LVector3f scalevec2 = LVector3f::rfu((_mirror_x?-1.0f:1.0f), 
+      LVector3f scalevec2 = LVector3f::rfu((_mirror_x?-1.0f:1.0f),
                                             1.0f,
                                             (_mirror_y?-1.0f:1.0f));
 

@@ -1,6 +1,19 @@
 // Filename: partBundleNode.cxx
 // Created by:  drose (23Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "partBundleNode.h"
@@ -58,7 +71,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //     Function: PartBundleNode::complete_pointers
 //       Access: Public
 //  Description: Takes in a vector of pointes to TypedWritable
-//               objects that correspond to all the requests for 
+//               objects that correspond to all the requests for
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int PartBundleNode::

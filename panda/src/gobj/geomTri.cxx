@@ -1,6 +1,19 @@
 // Filename: geomTri.cxx
 // Created by:  charles (13Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <datagram.h>
@@ -53,8 +66,8 @@ print_draw_immediate(void) const
     // Draw overall
     if ( _color_command[G_OVERALL] != _issue_color_noop )
     {
-        nout << "Color (Overall): "; 
-        if ( tcindex ) 
+        nout << "Color (Overall): ";
+        if ( tcindex )
         {
             nout << "idx: " << *tcindex << " ";
             nout << tcolors[*(tcindex++)];
@@ -64,9 +77,9 @@ print_draw_immediate(void) const
         nout << endl;
     }
     if ( _normal_command[G_OVERALL] != _issue_normal_noop )
-    {   
-        nout << "Normal (Overall): ";    
-        if ( tnindex )                    
+    {
+        nout << "Normal (Overall): ";
+        if ( tnindex )
         {
             nout << "idx: " << *tnindex << " ";
             nout << tnorms[*(tnindex++)];

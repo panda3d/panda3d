@@ -2,6 +2,19 @@
 // Created by:  drose (23Oct98)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef TYPEHANDLE_H
 #define TYPEHANDLE_H
@@ -83,7 +96,7 @@ class EXPCL_PANDAEXPRESS TypeHandle {
 PUBLISHED:
   INLINE TypeHandle();
   INLINE TypeHandle(const TypeHandle &copy);
- 
+
   INLINE bool operator == (const TypeHandle &other) const;
   INLINE bool operator != (const TypeHandle &other) const;
   INLINE bool operator < (const TypeHandle &other) const;
@@ -139,7 +152,7 @@ protected:
     TypeHandle _handle;
     string _name;
     TypeHandle &_ref;
-    typedef vector<RegistryNode *> Classes; 
+    typedef vector<RegistryNode *> Classes;
     Classes _parent_classes;
     Classes _child_classes;
   };
@@ -172,10 +185,10 @@ PUBLISHED:
   int get_num_child_classes(TypeHandle child,
                             TypedObject *child_object) const;
   TypeHandle get_child_class(TypeHandle child, int index) const;
-  
+
   TypeHandle get_parent_towards(TypeHandle child, TypeHandle ancestor,
                                 TypedObject *child_object) const;
-  
+
   static void reregister_types();
 
   void write(ostream &out) const;

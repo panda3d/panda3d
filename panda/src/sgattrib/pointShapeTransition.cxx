@@ -1,6 +1,19 @@
 // Filename: pointShapeTransition.cxx
 // Created by:  charles (11Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pointShapeTransition.h"
@@ -47,7 +60,7 @@ set_value_from(const OnTransition *other) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointShapeTransition::compare_values
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int PointShapeTransition::
 compare_values(const OnTransition *other) const {

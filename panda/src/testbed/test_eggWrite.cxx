@@ -1,6 +1,20 @@
 // Filename: test_eggWrite.cxx
 // Created by:  jason (16Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #include <renderRelation.h>
 #include <transformTransition.h>
@@ -32,14 +46,14 @@ public:
   PrintNodes() {
     _indent_level = 0;
   }
-  bool reached_node(Node *node, AttributeWrapper &state, NullLevelState &) 
+  bool reached_node(Node *node, AttributeWrapper &state, NullLevelState &)
   {
     indent(nout, _indent_level) << "Reached " << *node << ", state is " << state << "\n";
-    //  if (node->is_of_type(GeomNode::get_class_type())) 
+    //  if (node->is_of_type(GeomNode::get_class_type()))
 //      {
 //        GeomNode *geomNode = (GeomNode *)node;
 //        int num_geoms = geomNode->get_num_geoms();
-//        for (int i = 0; i < num_geoms; i++) 
+//        for (int i = 0; i < num_geoms; i++)
 //        {
 //      dDrawable *draw = geomNode->get_geom(i);
 //      Geom *geom = DCAST(Geom, draw);
@@ -49,12 +63,12 @@ public:
 //      }
     return true;
   }
-  bool forward_arc(NodeRelation *, TransitionWrapper &, AttributeWrapper &, AttributeWrapper &, NullLevelState &) 
+  bool forward_arc(NodeRelation *, TransitionWrapper &, AttributeWrapper &, AttributeWrapper &, NullLevelState &)
   {
     _indent_level += 2;
     return true;
   }
-  void backward_arc(NodeRelation *, TransitionWrapper &, AttributeWrapper &, AttributeWrapper &, const NullLevelState &) 
+  void backward_arc(NodeRelation *, TransitionWrapper &, AttributeWrapper &, AttributeWrapper &, const NullLevelState &)
   {
     _indent_level -= 2;
   }
@@ -82,12 +96,12 @@ int main(int argc, char* argv[]) {
 
   nout << "\n";
   PrintNodes<NodeTransitionWrapper> pn;
-  df_traverse(smiley, pn, 
+  df_traverse(smiley, pn,
               NodeAttributeWrapper(TransformTransition::get_class_type()),
               NullLevelState(),
               RenderRelation::get_class_type());
   nout << "\n";
-  
+
   stream.open(file::FILE_WRITE, _bam_header);
   manager.init();
   manager.write_object(smiley);

@@ -2,6 +2,19 @@
 // Created by:  drose (25Jan99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef DATANODE_H
 #define DATANODE_H
@@ -100,7 +113,7 @@ private:
   static TypeHandle _type_handle;
 };
 
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: register_data_transition
 //  Description: Defines a new data transition of the indicated name
@@ -113,7 +126,7 @@ private:
 //               possible to unify data producers and consumers based
 //               on the TypeHandle of the data they share.
 ////////////////////////////////////////////////////////////////////
-void EXPCL_PANDA 
+void EXPCL_PANDA
 register_data_transition(TypeHandle &type_handle, const string &name,
                          TypeHandle derived_from);
 

@@ -1,6 +1,19 @@
 // Filename: lmatrix4_src.h
 // Created by:  drose (15Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -22,7 +35,7 @@ PUBLISHED:
                                      FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12, FLOATTYPE e13,
                                      FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22, FLOATTYPE e23,
                                      FLOATTYPE e30, FLOATTYPE e31, FLOATTYPE e32, FLOATTYPE e33);
-  
+
   // Construct a 4x4 matrix given a 3x3 rotation matrix and an optional
   // translation component.
   INLINE_LINMATH FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix3) &upper3);
@@ -33,7 +46,7 @@ PUBLISHED:
                   FLOATTYPE e10, FLOATTYPE e11, FLOATTYPE e12, FLOATTYPE e13,
                   FLOATTYPE e20, FLOATTYPE e21, FLOATTYPE e22, FLOATTYPE e23,
                   FLOATTYPE e30, FLOATTYPE e31, FLOATTYPE e32, FLOATTYPE e33);
- 
+
   // Get and set the upper 3x3 rotation matrix.
   INLINE_LINMATH void set_upper_3(const FLOATNAME(LMatrix3) &upper3);
   INLINE_LINMATH FLOATNAME(LMatrix3) get_upper_3() const;
@@ -84,7 +97,7 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATNAME(LVecBase3)
   xform_point(const FLOATNAME(LVecBase3) &v) const;
- 
+
   INLINE_LINMATH FLOATNAME(LVecBase3)
   xform_vec(const FLOATNAME(LVecBase3) &v) const;
 
@@ -115,7 +128,7 @@ PUBLISHED:
   INLINE_LINMATH bool invert_in_place();
 
   INLINE_LINMATH static const FLOATNAME(LMatrix4) &ident_mat();
-  INLINE_LINMATH static FLOATNAME(LMatrix4) 
+  INLINE_LINMATH static FLOATNAME(LMatrix4)
     translate_mat(const FLOATNAME(LVecBase3) &trans);
   INLINE_LINMATH static FLOATNAME(LMatrix4)
     translate_mat(FLOATTYPE tx, FLOATTYPE ty, FLOATTYPE tz);
@@ -123,7 +136,7 @@ PUBLISHED:
     rotate_mat(FLOATTYPE angle,
                FLOATNAME(LVecBase3) axis,
                CoordinateSystem cs = CS_default);
-  INLINE_LINMATH static FLOATNAME(LMatrix4) 
+  INLINE_LINMATH static FLOATNAME(LMatrix4)
     rotate_mat_normaxis(FLOATTYPE angle,
                         const FLOATNAME(LVecBase3) &axis,
                         CoordinateSystem cs = CS_default);
@@ -145,10 +158,10 @@ PUBLISHED:
   static FLOATNAME(LMatrix4) convert_mat(CoordinateSystem from,
                                          CoordinateSystem to);
 
-  bool almost_equal(const FLOATNAME(LMatrix4) &other, 
+  bool almost_equal(const FLOATNAME(LMatrix4) &other,
                     FLOATTYPE threshold) const;
   INLINE_LINMATH bool almost_equal(const FLOATNAME(LMatrix4) &other) const;
-  
+
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
 
@@ -167,7 +180,7 @@ public:
 
         FLOATTYPE data[4 * 4];
   } _m;
-  
+
 private:
   INLINE_LINMATH FLOATTYPE mult_cel(const FLOATNAME(LMatrix4) &other, int x, int y) const;
   bool decompose_mat(int index[4]);
@@ -187,7 +200,7 @@ public:
     return _type_handle;
   }
   static void init_type();
- 
+
 private:
   static TypeHandle _type_handle;
 };

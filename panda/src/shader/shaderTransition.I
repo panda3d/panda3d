@@ -1,6 +1,19 @@
 // Filename: shaderTransition.I
 // Created by:  drose (24Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <algorithm>
@@ -8,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderTransition::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ShaderTransition::
 ShaderTransition() {
@@ -21,7 +34,7 @@ ShaderTransition() {
 //               shader to an existing ShaderTransition, or create a
 //               new ShaderTransition if necessary.
 ////////////////////////////////////////////////////////////////////
-INLINE bool 
+INLINE bool
 set_shader(NodeRelation *arc, Shader *shader) {
   ShaderTransition *st;
   if (get_transition_into(st, arc)) {
@@ -41,7 +54,7 @@ set_shader(NodeRelation *arc, Shader *shader) {
 //               shader from the existing ShaderTransition, if there
 //               is one.
 ////////////////////////////////////////////////////////////////////
-INLINE bool 
+INLINE bool
 clear_shader(NodeRelation *arc, Shader *shader) {
   ShaderTransition *st;
   if (get_transition_into(st, arc)) {
@@ -57,7 +70,7 @@ clear_shader(NodeRelation *arc, Shader *shader) {
 //               exists a ShaderTransition and it contains the
 //               indicated shader, false otherwise.
 ////////////////////////////////////////////////////////////////////
-INLINE bool 
+INLINE bool
 has_shader(const NodeRelation *arc, Shader *shader) {
   const ShaderTransition *st;
   if (get_transition_into(st, arc)) {

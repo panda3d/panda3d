@@ -1,5 +1,18 @@
-// Filename: factory.h
+// Filename: factoryBase.h
 // Created by:  cary (06Oct99)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
 
@@ -38,7 +51,7 @@ public:
   FactoryBase();
   ~FactoryBase();
 
-  TypedObject *make_instance(TypeHandle handle, 
+  TypedObject *make_instance(TypeHandle handle,
                              const FactoryParams &params);
 
   INLINE TypedObject *make_instance(const string &type_name,
@@ -68,7 +81,7 @@ private:
   void operator = (const FactoryBase &copy);
 
   // internal utility functions
-  TypedObject *make_instance_exact(TypeHandle handle, 
+  TypedObject *make_instance_exact(TypeHandle handle,
                                    const FactoryParams &params);
   TypedObject *make_instance_more_specific(TypeHandle handle,
                                            const FactoryParams &params);

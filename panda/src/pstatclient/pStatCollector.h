@@ -1,6 +1,19 @@
 // Filename: pStatCollector.h
 // Created by:  drose (10Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef PSTATCOLLECTOR_H
@@ -19,7 +32,7 @@
 //               that may be timed and/or counted via stats.
 //
 //               Collectors can be used to measure two different kinds
-//               of values: elapsed time, and "other".  
+//               of values: elapsed time, and "other".
 //
 //               To measure elapsed time, call start() and stop() as
 //               appropriate to bracket the section of code you want
@@ -45,7 +58,7 @@ private:
   INLINE PStatCollector(PStatClient *client, int index);
 
 public:
-  INLINE PStatCollector(const string &name, 
+  INLINE PStatCollector(const string &name,
                         PStatClient *client = NULL);
   INLINE PStatCollector(const PStatCollector &parent,
                         const string &name);
@@ -81,7 +94,7 @@ friend class PStatClient;
 
 #else  // DO_PSTATS
 public:
-  INLINE PStatCollector(const string &, 
+  INLINE PStatCollector(const string &,
                         const RGBColorf & = RGBColorf::zero(),
                         int = -1,
                         PStatClient * = NULL) { }

@@ -1,6 +1,19 @@
-// Filename: cppSimpleType.C
+// Filename: cppSimpleType.cxx
 // Created by:  drose (19Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "cppSimpleType.h"
@@ -9,7 +22,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPSimpleType::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPSimpleType::
 CPPSimpleType(CPPSimpleType::Type type, int flags) :
@@ -34,7 +47,7 @@ is_tbd() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPSimpleType::get_preferred_name
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string CPPSimpleType::
 get_preferred_name() const {
@@ -45,7 +58,7 @@ get_preferred_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPSimpleType::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPSimpleType::
 output(ostream &out, int, CPPScope *, bool) const {
@@ -111,7 +124,7 @@ output(ostream &out, int, CPPScope *, bool) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPSimpleType::get_subtype
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration::SubType CPPSimpleType::
 get_subtype() const {
@@ -121,7 +134,7 @@ get_subtype() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPSimpleType::as_simple_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPSimpleType *CPPSimpleType::
 as_simple_type() {

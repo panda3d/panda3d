@@ -1,6 +1,19 @@
 // Filename: collisionHandlerEvent.cxx
 // Created by:  drose (27Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "collisionHandlerEvent.h"
@@ -80,7 +93,7 @@ end_group() {
     collide_cat.spam()
       << "end_group.\n"
       << "current_colliding has " << _current_colliding.size()
-      << " entries, last_colliding has " << _last_colliding.size() 
+      << " entries, last_colliding has " << _last_colliding.size()
       << "\n";
   }
 
@@ -170,15 +183,15 @@ throw_event_pattern(const string &pattern, CollisionEntry *entry) {
         event += entry->get_into_node()->get_name();
 
       } else if (cmd == "ft") {
-        event += 
+        event +=
           (!entry->get_from()->is_tangible() ? 'i' : 't');
 
       } else if (cmd == "it") {
-        event += 
+        event +=
           (entry->has_into() && !entry->get_into()->is_tangible() ? 'i' : 't');
 
       } else if (cmd == "ig") {
-        event += 
+        event +=
           (entry->has_into() ? 'c' : 'g');
 
       } else {

@@ -1,6 +1,19 @@
 // Filename: dtoolbase_cc.h
 // Created by:  drose (13Sep00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef PANDABASE_CC_H
@@ -56,7 +69,7 @@ using namespace std;
 
 #if defined(WIN32_VC) && defined(FORCE_INLINING)
 // If FORCE_INLINING is defined, we use the keyword __forceinline,
-// which tells MS VC++ to override its internal benefit heuristic 
+// which tells MS VC++ to override its internal benefit heuristic
 // and inline the fn if it is technically possible to do so.
 #define INLINE __forceinline
 #else

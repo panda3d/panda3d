@@ -1,6 +1,19 @@
 // Filename: collisionLevelState.cxx
 // Created by:  drose (24Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "collisionLevelState.h"
@@ -10,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::clear
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionLevelState::
 clear() {
@@ -23,9 +36,9 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::reserve
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void CollisionLevelState:: 
+void CollisionLevelState::
 reserve(int max_colliders) {
   _colliders.reserve(max_colliders);
   _local_bounds.reserve(max_colliders);
@@ -37,7 +50,7 @@ reserve(int max_colliders) {
 //  Description: Adds the indicated Collider to the set of Colliders
 //               in the current level state.
 ////////////////////////////////////////////////////////////////////
-void CollisionLevelState:: 
+void CollisionLevelState::
 prepare_collider(const ColliderDef &def) {
   int index = (int)_colliders.size();
   _colliders.push_back(def);
@@ -63,16 +76,16 @@ prepare_collider(const ColliderDef &def) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionLevelState::xform
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-void CollisionLevelState:: 
+void CollisionLevelState::
 xform(const LMatrix4f &mat) {
   BoundingVolumes new_bounds;
 
   int num_colliders = get_num_colliders();
   new_bounds.reserve(num_colliders);
   for (int c = 0; c < num_colliders; c++) {
-    if (!has_collider(c) || 
+    if (!has_collider(c) ||
         get_local_bound(c) == (GeometricBoundingVolume *)NULL) {
       new_bounds.push_back((GeometricBoundingVolume *)NULL);
     } else {

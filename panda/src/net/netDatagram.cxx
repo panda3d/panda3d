@@ -1,6 +1,19 @@
-// Filename: datagram.cxx
+// Filename: netDatagram.cxx
 // Created by:  jns (07Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "netDatagram.h"
@@ -22,14 +35,14 @@ NetDatagram() {
 //  Description: Constructs a datagram from an existing block of data.
 ////////////////////////////////////////////////////////////////////
 NetDatagram::
-NetDatagram(const void *data, size_t size) : 
+NetDatagram(const void *data, size_t size) :
   Datagram(data, size) {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NetDatagram::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NetDatagram::
 NetDatagram(const Datagram &copy) :
@@ -40,20 +53,20 @@ NetDatagram(const Datagram &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: NetDatagram::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NetDatagram::
 NetDatagram(const NetDatagram &copy) :
   Datagram(copy),
   _connection(copy._connection),
-  _address(copy._address) 
+  _address(copy._address)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NetDatagram::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NetDatagram::
 operator = (const Datagram &copy) {
@@ -65,7 +78,7 @@ operator = (const Datagram &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NetDatagram::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NetDatagram::
 operator = (const NetDatagram &copy) {

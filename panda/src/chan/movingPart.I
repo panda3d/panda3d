@@ -1,6 +1,19 @@
 // Filename: movingPart.I
 // Created by:  drose (22Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "animChannelFixed.h"
@@ -36,11 +49,11 @@ MovingPart(const MovingPart<SwitchType> &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: MovingPart::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class SwitchType>
 INLINE MovingPart<SwitchType>::
-MovingPart(PartGroup *parent, const string &name, 
+MovingPart(PartGroup *parent, const string &name,
            const ValueType &initial_value) :
   MovingPartBase(parent, name),
   _value(initial_value),
@@ -51,7 +64,7 @@ MovingPart(PartGroup *parent, const string &name,
 ////////////////////////////////////////////////////////////////////
 //     Function: MovingPart::Constructor
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class SwitchType>
 INLINE MovingPart<SwitchType>::

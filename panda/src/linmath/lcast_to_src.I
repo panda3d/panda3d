@@ -1,45 +1,62 @@
+// Filename: lcast_to_src.I
+// Created by:  
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
-INLINE_LINMATH FLOATNAME2(LVecBase2) 
+INLINE_LINMATH FLOATNAME2(LVecBase2)
 lcast_to(FLOATTYPE2 *, const FLOATNAME(LVecBase2) &source) {
   return FLOATNAME2(LVecBase2)(source[0], source[1]);
 }
 
-INLINE_LINMATH FLOATNAME2(LVecBase3) 
+INLINE_LINMATH FLOATNAME2(LVecBase3)
 lcast_to(FLOATTYPE2 *, const FLOATNAME(LVecBase3) &source) {
   return FLOATNAME2(LVecBase3)(source[0], source[1], source[2]);
 }
 
-INLINE_LINMATH FLOATNAME2(LVecBase4) 
+INLINE_LINMATH FLOATNAME2(LVecBase4)
 lcast_to(FLOATTYPE2 *, const FLOATNAME(LVecBase4) &source) {
   return FLOATNAME2(LVecBase4)(source[0], source[1], source[2], source[3]);
 }
 
-INLINE_LINMATH FLOATNAME2(LVector2) 
+INLINE_LINMATH FLOATNAME2(LVector2)
 lcast_to(FLOATTYPE2 *, const FLOATNAME(LVector2) &source) {
   return FLOATNAME2(LVector2)(source[0], source[1]);
 }
 
-INLINE_LINMATH FLOATNAME2(LVector3) 
+INLINE_LINMATH FLOATNAME2(LVector3)
 lcast_to(FLOATTYPE2 *, const FLOATNAME(LVector3) &source) {
   return FLOATNAME2(LVector3)(source[0], source[1], source[2]);
 }
 
-INLINE_LINMATH FLOATNAME2(LVector4) 
+INLINE_LINMATH FLOATNAME2(LVector4)
 lcast_to(FLOATTYPE2 *, const FLOATNAME(LVector4) &source) {
   return FLOATNAME2(LVector4)(source[0], source[1], source[2], source[3]);
 }
 
-INLINE_LINMATH FLOATNAME2(LPoint2) 
+INLINE_LINMATH FLOATNAME2(LPoint2)
 lcast_to(FLOATTYPE2 *, const FLOATNAME(LPoint2) &source) {
   return FLOATNAME2(LPoint2)(source[0], source[1]);
 }
 
-INLINE_LINMATH FLOATNAME2(LPoint3) 
+INLINE_LINMATH FLOATNAME2(LPoint3)
 lcast_to(FLOATTYPE2 *, const FLOATNAME(LPoint3) &source) {
   return FLOATNAME2(LPoint3)(source[0], source[1], source[2]);
 }
 
-INLINE_LINMATH FLOATNAME2(LPoint4) 
+INLINE_LINMATH FLOATNAME2(LPoint4)
 lcast_to(FLOATTYPE2 *, const FLOATNAME(LPoint4) &source) {
   return FLOATNAME2(LPoint4)(source[0], source[1], source[2], source[3]);
 }
@@ -49,7 +66,7 @@ lcast_to(FLOATTYPE2 *, const FLOATNAME(LQuaternion)& c) {
   return FLOATNAME2(LQuaternion)(c.get_r(), c.get_i(), c.get_j(), c.get_k());
 }
 
-INLINE_LINMATH FLOATNAME2(LMatrix3) 
+INLINE_LINMATH FLOATNAME2(LMatrix3)
 lcast_to(FLOATTYPE2 *, const FLOATNAME(LMatrix3) &source) {
   return FLOATNAME2(LMatrix3)
     (source(0, 0), source(0, 1), source(0, 2),
@@ -57,7 +74,7 @@ lcast_to(FLOATTYPE2 *, const FLOATNAME(LMatrix3) &source) {
      source(2, 0), source(2, 1), source(2, 2));
 }
 
-INLINE_LINMATH FLOATNAME2(LMatrix4) 
+INLINE_LINMATH FLOATNAME2(LMatrix4)
 lcast_to(FLOATTYPE2 *, const FLOATNAME(LMatrix4) &source) {
   return FLOATNAME2(LMatrix4)
     (source(0, 0), source(0, 1), source(0, 2), source(0, 3),

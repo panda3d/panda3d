@@ -2,12 +2,25 @@
 // Created by:  shochet (08Sep00)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int DownloadDb::
 get_client_num_multifiles(void) const {
@@ -17,7 +30,7 @@ get_client_num_multifiles(void) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int DownloadDb::
 get_server_num_multifiles(void) const {
@@ -27,7 +40,7 @@ get_server_num_multifiles(void) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE string DownloadDb::
 get_client_multifile_name(int index) const {
@@ -37,7 +50,7 @@ get_client_multifile_name(int index) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE string DownloadDb::
 get_server_multifile_name(int index) const {
@@ -48,7 +61,7 @@ get_server_multifile_name(int index) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Version DownloadDb::
 get_client_multifile_phase(string mfname) const {
@@ -58,7 +71,7 @@ get_client_multifile_phase(string mfname) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Version DownloadDb::
 get_server_multifile_phase(string mfname) const {
@@ -70,7 +83,7 @@ get_server_multifile_phase(string mfname) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int DownloadDb::
 get_client_multifile_size(string mfname) const {
@@ -80,7 +93,7 @@ get_client_multifile_size(string mfname) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void DownloadDb::
 set_client_multifile_size(string mfname, int size) {
@@ -92,7 +105,7 @@ set_client_multifile_size(string mfname, int size) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int DownloadDb::
 set_client_multifile_delta_size(string mfname, int size) {
@@ -107,7 +120,7 @@ set_client_multifile_delta_size(string mfname, int size) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int DownloadDb::
 get_server_multifile_size(string mfname) const {
@@ -118,7 +131,7 @@ get_server_multifile_size(string mfname) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void DownloadDb::
 set_server_multifile_size(string mfname, int size) {
@@ -129,7 +142,7 @@ set_server_multifile_size(string mfname, int size) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void DownloadDb::
 set_client_multifile_incomplete(string mfname) {
@@ -140,7 +153,7 @@ set_client_multifile_incomplete(string mfname) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void DownloadDb::
 set_client_multifile_complete(string mfname) {
@@ -151,7 +164,7 @@ set_client_multifile_complete(string mfname) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void DownloadDb::
 set_client_multifile_decompressed(string mfname) {
@@ -162,7 +175,7 @@ set_client_multifile_decompressed(string mfname) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void DownloadDb::
 set_client_multifile_extracted(string mfname) {
@@ -174,7 +187,7 @@ set_client_multifile_extracted(string mfname) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int DownloadDb::
 get_client_num_files(string mfname) const {
@@ -183,7 +196,7 @@ get_client_num_files(string mfname) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int DownloadDb::
 get_server_num_files(string mfname) const {
@@ -193,9 +206,9 @@ get_server_num_files(string mfname) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE string DownloadDb::
 get_server_file_name(string mfname, int index) const {
-  return (_server_db.get_multifile_record_named(mfname))->get_file_name(index);  
+  return (_server_db.get_multifile_record_named(mfname))->get_file_name(index);
 }

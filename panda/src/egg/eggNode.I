@@ -1,13 +1,26 @@
 // Filename: eggNode.I
 // Created by:  drose (10Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggNode::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggNode::
 EggNode(const string &name) : EggNamedObject(name) {
@@ -19,10 +32,10 @@ EggNode(const string &name) : EggNamedObject(name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggNode::Copy constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggNode::
-EggNode(const EggNode &copy) : EggNamedObject(copy) { 
+EggNode(const EggNode &copy) : EggNamedObject(copy) {
   _parent = NULL;
   _depth = 0;
   _under_flags = 0;
@@ -32,7 +45,7 @@ EggNode(const EggNode &copy) : EggNamedObject(copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggNode::Copy assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggNode &EggNode::
 operator = (const EggNode &copy) {
@@ -45,11 +58,11 @@ operator = (const EggNode &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggNode::get_parent
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggGroupNode *EggNode::
-get_parent() const { 
-  return _parent; 
+get_parent() const {
+  return _parent;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -59,8 +72,8 @@ get_parent() const {
 //               egg hierarchy.
 ////////////////////////////////////////////////////////////////////
 INLINE int EggNode::
-get_depth() const { 
-  return _depth; 
+get_depth() const {
+  return _depth;
 }
 
 

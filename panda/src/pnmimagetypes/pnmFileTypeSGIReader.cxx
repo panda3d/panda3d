@@ -1,6 +1,19 @@
 // Filename: pnmFileTypeSGIReader.cxx
 // Created by:  drose (17Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileTypeSGI.h"
@@ -50,7 +63,7 @@ static char * compression_name (char compr);
 static void       read_bytes (FILE *ifp, int n, char *buf);
 static bool read_header(FILE *ifp, Header *head, const string &magic_number);
 static TabEntry * read_table (FILE *ifp, int tablen);
-static void       read_channel (FILE *ifp, int xsize, int ysize, 
+static void       read_channel (FILE *ifp, int xsize, int ysize,
                                      int zsize, int bpc, TabEntry *table,
                                      ScanElem *channel_data, long table_start,
                                      int channel, int row);
@@ -70,10 +83,10 @@ static bool eof_err = false;
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeSGI::Reader::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeSGI::Reader::
-Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) : 
+Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
   eof_err = false;
@@ -121,9 +134,9 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
     head.name[79] = '\0';  /* just to be safe */
     pnmimage_sgi_cat.debug()
       << "Read RGB image:\n"
-      << "  raster size " << head.xsize << " x " << head.ysize 
+      << "  raster size " << head.xsize << " x " << head.ysize
       << ", " << head.zsize << " channels\n"
-      << "  compression: " << (int)head.storage << " = " 
+      << "  compression: " << (int)head.storage << " = "
       << compression_name(head.storage) << "\n"
       << "  image name: " << head.name << "\n"
       << "  bpc: " << (int)head.bpc << " dimension: " << head.dimension << "\n"
@@ -135,7 +148,7 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeSGI::Reader::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeSGI::Reader::
 ~Reader() {
@@ -180,18 +193,18 @@ read_row(xel *row_data, xelval *alpha_data) {
   ScanElem *blu = (ScanElem *)alloca(_x_size * sizeof(ScanElem));
   ScanElem *alpha = (ScanElem *)alloca(_x_size * sizeof(ScanElem));
 
-  read_channel(_file, _x_size, _y_size, _num_channels, bpc, table, red, 
+  read_channel(_file, _x_size, _y_size, _num_channels, bpc, table, red,
                table_start, 0, current_row);
 
   if (!is_grayscale()) {
-    read_channel(_file, _x_size, _y_size, _num_channels, bpc, table, grn, 
+    read_channel(_file, _x_size, _y_size, _num_channels, bpc, table, grn,
                  table_start, 1, current_row);
-    read_channel(_file, _x_size, _y_size, _num_channels, bpc, table, blu, 
+    read_channel(_file, _x_size, _y_size, _num_channels, bpc, table, blu,
                  table_start, 2, current_row);
   }
 
   if (has_alpha()) {
-    read_channel(_file, _x_size, _y_size, _num_channels, bpc, table, alpha, 
+    read_channel(_file, _x_size, _y_size, _num_channels, bpc, table, alpha,
                  table_start, _num_channels - 1, current_row);
   }
 
@@ -205,7 +218,7 @@ read_row(xel *row_data, xelval *alpha_data) {
       b = (xelval)blu[x];
       PPM_ASSIGN(row_data[x], r, g, b);
     }
-    
+
     if (has_alpha()) {
       alpha_data[x] = (xelval)alpha[x];
     }
@@ -219,7 +232,7 @@ read_row(xel *row_data, xelval *alpha_data) {
 static bool
 read_header(FILE *ifp, Header *head, const string &magic_number) {
     nassertr(magic_number.size() == 4, false);
-    head->magic = 
+    head->magic =
       ((unsigned char)magic_number[0] << 8) |
       ((unsigned char)magic_number[1]);
     head->storage   = (unsigned char)magic_number[2];
@@ -294,7 +307,7 @@ read_header(FILE *ifp, Header *head, const string &magic_number) {
       break;
     default:
       pnmimage_sgi_cat.error()
-        << "Illegal dimension value " << head->dimension 
+        << "Illegal dimension value " << head->dimension
         << " (only 1-3 allowed)\n";
       return false;
     }
@@ -352,7 +365,7 @@ read_channel(FILE *ifp,
       nassertv(length <= WORSTCOMPR(xsize));
       for( i = 0; i < length; i++ )
         temp[i] = (*func)(ifp);
-      
+
       rle_decompress(temp, length, channel_data, xsize);
     }
     else {

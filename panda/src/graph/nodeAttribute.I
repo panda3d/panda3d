@@ -1,12 +1,25 @@
 // Filename: nodeAttribute.I
 // Created by:  drose (20Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttribute::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeAttribute::
 NodeAttribute() {
@@ -16,7 +29,7 @@ NodeAttribute() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttribute::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeAttribute::
 NodeAttribute(const NodeAttribute &copy) :
@@ -28,7 +41,7 @@ NodeAttribute(const NodeAttribute &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttribute::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NodeAttribute::
 operator = (const NodeAttribute &copy) {
@@ -39,7 +52,7 @@ operator = (const NodeAttribute &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttribute::Equality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH bool NodeAttribute::
 operator == (const NodeAttribute &other) const {
@@ -49,7 +62,7 @@ operator == (const NodeAttribute &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttribute::Inequality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH bool NodeAttribute::
 operator != (const NodeAttribute &other) const {
@@ -59,7 +72,7 @@ operator != (const NodeAttribute &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttribute::Inequality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH bool NodeAttribute::
 operator < (const NodeAttribute &other) const {
@@ -69,7 +82,7 @@ operator < (const NodeAttribute &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttribute::Inequality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH bool NodeAttribute::
 operator <= (const NodeAttribute &other) const {
@@ -79,7 +92,7 @@ operator <= (const NodeAttribute &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttribute::Inequality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH bool NodeAttribute::
 operator > (const NodeAttribute &other) const {
@@ -89,7 +102,7 @@ operator > (const NodeAttribute &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttribute::Inequality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH bool NodeAttribute::
 operator >= (const NodeAttribute &other) const {
@@ -119,7 +132,7 @@ compare_to(const NodeAttribute &other) const {
     return internal_compare_to(&other);
 
   } else {
-    return 
+    return
       (my_handle < other_handle) ? -1 : 1;
   }
 }

@@ -3,6 +3,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 #ifndef MULTIFILE_H
 #define MULTIFILE_H
 //
@@ -20,8 +32,8 @@
 #include <list>
 
 ////////////////////////////////////////////////////////////////////
-//       Class : Multifile 
-// Description : A file that contains a set of files. 
+//       Class : Multifile
+// Description : A file that contains a set of files.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Multifile {
 PUBLISHED:
@@ -54,13 +66,13 @@ PUBLISHED:
 
 private:
 
-  INLINE void write_header(ofstream &write_stream); 
+  INLINE void write_header(ofstream &write_stream);
 
   class Memfile {
   public:
     Memfile(void);
     ~Memfile(void);
-    bool parse_header_length(char *&start, int &size); 
+    bool parse_header_length(char *&start, int &size);
     bool parse_header(char *&start, int &size);
 
     bool read(const Filename &name);
@@ -108,7 +120,7 @@ private:
   Datagram _datagram;
   int _header_length;
   int _mfiles_written;
- 
+
   static PN_uint32 _magic_number;
 };
 

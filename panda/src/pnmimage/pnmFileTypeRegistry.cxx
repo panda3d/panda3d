@@ -1,6 +1,19 @@
 // Filename: pnmFileTypeRegistry.cxx
 // Created by:  drose (15Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileTypeRegistry.h"
@@ -17,7 +30,7 @@ PNMFileTypeRegistry *PNMFileTypeRegistry::_global_ptr;
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeRegistry::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeRegistry::
 PNMFileTypeRegistry() {
@@ -27,7 +40,7 @@ PNMFileTypeRegistry() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeRegistry::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeRegistry::
 ~PNMFileTypeRegistry() {
@@ -139,7 +152,7 @@ get_type_from_magic_number(const string &magic_number) const {
       return type;
     }
   }
-  
+
   return NULL;
 }
 
@@ -205,7 +218,7 @@ register_type(PNMFileType *type) {
   Handles::iterator hi = _handles.find(type->get_type());
   if (hi != _handles.end()) {
     pnmimage_cat.warning()
-      << "Attempt to register PNMFileType " << type->get_name() 
+      << "Attempt to register PNMFileType " << type->get_name()
       << " (" << type->get_type() << ") more than once.\n";
     return;
   }
@@ -218,7 +231,7 @@ register_type(PNMFileType *type) {
   int num_extensions = type->get_num_extensions();
   for (int i = 0; i < num_extensions; i++) {
     string extension = downcase(type->get_extension(i));
-    
+
     if (!unique_extensions.insert(extension).second) {
       pnmimage_cat.warning()
         << "PNMFileType " << type->get_name()

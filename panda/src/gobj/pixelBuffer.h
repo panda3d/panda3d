@@ -3,6 +3,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 #ifndef PIXELBUFFER_H
 #define PIXELBUFFER_H
 //
@@ -35,7 +47,7 @@ public:
     T_unsigned_byte_332,
     T_float,
   };
- 
+
   enum Format {
     F_color_index,
     F_stencil_index,
@@ -61,7 +73,7 @@ public:
   };
 
   INLINE PixelBuffer(void);
-  INLINE PixelBuffer(int xsize, int ysize, int components, 
+  INLINE PixelBuffer(int xsize, int ysize, int components,
              int component_width, Type type, Format format);
   INLINE PixelBuffer(const PixelBuffer &copy);
   INLINE void operator = (const PixelBuffer &copy);
@@ -108,7 +120,7 @@ public:
   INLINE Format get_format() const;
   INLINE Type get_image_type() const;
 
-  INLINE void set_uchar_rgb_texel(const uchar color[3], 
+  INLINE void set_uchar_rgb_texel(const uchar color[3],
                   int x, int y, int width);
 
 private:
@@ -146,8 +158,8 @@ protected:
 
   // pixelbuffer "origin" represents upper left screen point at which
   // pixelbuffer should be drawn using draw_pixel_buffer
-  int _xorg; 
-  int _yorg; 
+  int _xorg;
+  int _yorg;
   int _border;
   int _components;
   int _component_width;

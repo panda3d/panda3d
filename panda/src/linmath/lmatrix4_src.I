@@ -1,6 +1,19 @@
 // Filename: lmatrix4_src.I
 // Created by:  drose (15Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
@@ -19,18 +32,18 @@ ident_mat() {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::Default Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4)::
-FLOATNAME(LMatrix4)() { 
+FLOATNAME(LMatrix4)() {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LMatrix4):: 
+INLINE_LINMATH FLOATNAME(LMatrix4)::
 FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix4) &copy) {
   memcpy(_m.data,copy._m.data,sizeof(_m.data));
 //  (*this) = copy;
@@ -39,12 +52,12 @@ FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix4) &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4):: 
+INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator = (const FLOATNAME(LMatrix4) &copy) {
   //xxx888
-  memcpy(_m.data,copy._m.data,sizeof(_m.data)); 
+  memcpy(_m.data,copy._m.data,sizeof(_m.data));
 //  set(copy(0, 0), copy(0, 1), copy(0, 2), copy(0, 3),
 //      copy(1, 0), copy(1, 1), copy(1, 2), copy(1, 3),
 //      copy(2, 0), copy(2, 1), copy(2, 2), copy(2, 3),
@@ -56,7 +69,7 @@ operator = (const FLOATNAME(LMatrix4) &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::Fill Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator = (FLOATTYPE fill_value) {
@@ -67,7 +80,7 @@ operator = (FLOATTYPE fill_value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4)::
 FLOATNAME(LMatrix4)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
@@ -99,7 +112,7 @@ FLOATNAME(LMatrix4)(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::Constructor, upper 3x3
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4)::
 FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix3) &upper3) {
@@ -133,7 +146,7 @@ FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix3) &upper3) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::Constructor, upper 3x3 plus translation
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4)::
 FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix3) &upper3,
@@ -183,7 +196,7 @@ fill(FLOATTYPE fill_value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::set
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH void FLOATNAME(LMatrix4)::
 set(FLOATTYPE e00, FLOATTYPE e01, FLOATTYPE e02, FLOATTYPE e03,
@@ -231,7 +244,7 @@ set_upper_3(const FLOATNAME(LMatrix3) &upper3) {
   _m.m._21 = upper3(2, 1);
   _m.m._22 = upper3(2, 2);
 }
-    
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::get_upper_3
 //       Access: Public
@@ -371,7 +384,7 @@ get_col3(int col) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::Indexing operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE &FLOATNAME(LMatrix4)::
 operator () (int row, int col) {
@@ -383,7 +396,7 @@ operator () (int row, int col) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::Indexing operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix4)::
 operator () (int row, int col) const {
@@ -400,10 +413,10 @@ operator () (int row, int col) const {
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LMatrix4)::
 is_nan() const {
-  return 
+  return
     cnan(_m.data[0]) || cnan(_m.data[1]) || cnan(_m.data[2]) || cnan(_m.data[3]) ||
-    cnan(_m.data[4]) || cnan(_m.data[5]) || cnan(_m.data[6]) || cnan(_m.data[7]) || 
-    cnan(_m.data[8]) || cnan(_m.data[9]) || cnan(_m.data[10]) || cnan(_m.data[11]) || 
+    cnan(_m.data[4]) || cnan(_m.data[5]) || cnan(_m.data[6]) || cnan(_m.data[7]) ||
+    cnan(_m.data[8]) || cnan(_m.data[9]) || cnan(_m.data[10]) || cnan(_m.data[11]) ||
     cnan(_m.data[12]) || cnan(_m.data[13]) || cnan(_m.data[14]) || cnan(_m.data[15]);
 }
 
@@ -514,7 +527,7 @@ operator < (const FLOATNAME(LMatrix4) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::Equality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LMatrix4)::
 operator == (const FLOATNAME(LMatrix4) &other) const {
@@ -524,7 +537,7 @@ operator == (const FLOATNAME(LMatrix4) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::Inequality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH bool FLOATNAME(LMatrix4)::
 operator != (const FLOATNAME(LMatrix4) &other) const {
@@ -546,7 +559,7 @@ compare_to(const FLOATNAME(LMatrix4) &other) const {
 v_res._v.v._0 = v._v.v._0*mat._m.m._00 + v._v.v._1*mat._m.m._10 + v._v.v._2*mat._m.m._20 + v._v.v._3*mat._m.m._30;   \
 v_res._v.v._1 = v._v.v._0*mat._m.m._01 + v._v.v._1*mat._m.m._11 + v._v.v._2*mat._m.m._21 + v._v.v._3*mat._m.m._31;   \
 v_res._v.v._2 = v._v.v._0*mat._m.m._02 + v._v.v._1*mat._m.m._12 + v._v.v._2*mat._m.m._22 + v._v.v._3*mat._m.m._32;   \
-v_res._v.v._3 = v._v.v._0*mat._m.m._03 + v._v.v._1*mat._m.m._13 + v._v.v._2*mat._m.m._23 + v._v.v._3*mat._m.m._33;   
+v_res._v.v._3 = v._v.v._0*mat._m.m._03 + v._v.v._1*mat._m.m._13 + v._v.v._2*mat._m.m._23 + v._v.v._3*mat._m.m._33;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::xform
@@ -559,7 +572,7 @@ xform(const FLOATNAME(LVecBase4) &v) const {
     FLOATNAME(LVecBase4) v_res;
 
         VECTOR4_MATRIX4_PRODUCT(v_res, v,(*this));
-        return v_res; 
+        return v_res;
 
 /*  return FLOATNAME(LVecBase4)(v.dot(get_col(0)),
                               v.dot(get_col(1)),
@@ -655,7 +668,7 @@ res._m.m._33 = a._m.m._30*b._m.m._03 + a._m.m._31*b._m.m._13 + a._m.m._32*b._m.m
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::matrix * matrix
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 operator * (const FLOATNAME(LMatrix4) &other) const {
@@ -727,9 +740,9 @@ scale_multiply(const FLOATNAME(LVecBase3) &scale_vector,const FLOATNAME(LMatrix4
   #ifdef _DEBUG
      assert(&other_mat != this);
   #endif
-  
+
    // optimize for 0.0 or 1.0 factors?
-  
+
   _m.m._00 = other_mat._m.m._00 * scale_vector._v.v._0;
   _m.m._01 = other_mat._m.m._01 * scale_vector._v.v._0;
   _m.m._02 = other_mat._m.m._02 * scale_vector._v.v._0;
@@ -749,7 +762,7 @@ scale_multiply(const FLOATNAME(LVecBase3) &scale_vector,const FLOATNAME(LMatrix4
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::matrix * scalar
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 operator * (FLOATTYPE scalar) const {
@@ -781,7 +794,7 @@ operator * (FLOATTYPE scalar) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::matrix / scalar
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) FLOATNAME(LMatrix4)::
 operator / (FLOATTYPE scalar) const {
@@ -874,7 +887,7 @@ operator -= (const FLOATNAME(LMatrix4) &other) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::matrix *= matrix
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator *= (const FLOATNAME(LMatrix4) &other) {
@@ -885,7 +898,7 @@ operator *= (const FLOATNAME(LMatrix4) &other) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::matrix *= scalar
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator *= (FLOATTYPE scalar) {
@@ -915,7 +928,7 @@ operator *= (FLOATTYPE scalar) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::matrix /= scalar
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LMatrix4) &FLOATNAME(LMatrix4)::
 operator /= (FLOATTYPE scalar) {
@@ -1021,7 +1034,7 @@ invert_from(const FLOATNAME(LMatrix4) &other) {
   }
 
   (*this) = other;
-   
+
   int index[4];
 
   if (!decompose_mat(index)) {
@@ -1030,14 +1043,14 @@ invert_from(const FLOATNAME(LMatrix4) &other) {
 #endif
     return false;
   }
-  
+
   FLOATNAME(LMatrix4) inv = FLOATNAME(LMatrix4)::ident_mat();
   int row;
-  
+
   for (row = 0; row < 4; row++) {
     back_sub_mat(index, inv, row);
   }
-  
+
   transpose_from(inv);
   return true;
 }
@@ -1064,7 +1077,7 @@ invert_from(const FLOATNAME(LMatrix4) &other) {
 INLINE_LINMATH bool FLOATNAME(LMatrix4)::
 invert_affine_from(const FLOATNAME(LMatrix4) &other) {
   FLOATNAME(LMatrix3) rot;
-  
+
   rot.invert_from(other.get_upper_3());  // probably could use transpose here
 
   set_upper_3(rot);
@@ -1084,16 +1097,16 @@ invert_affine_from(const FLOATNAME(LMatrix4) &other) {
     }
   }
 */
-    
-    _m.m._30 = -(other._m.m._30 * _m.m._00 + 
+
+    _m.m._30 = -(other._m.m._30 * _m.m._00 +
                other._m.m._31 * _m.m._10 +
                other._m.m._32 * _m.m._20);
 
-    _m.m._31 = -(other._m.m._30 * _m.m._01 + 
+    _m.m._31 = -(other._m.m._30 * _m.m._01 +
                    other._m.m._31 * _m.m._11 +
                other._m.m._32 * _m.m._21);
 
-    _m.m._32 = -(other._m.m._30 * _m.m._02 + 
+    _m.m._32 = -(other._m.m._30 * _m.m._02 +
                    other._m.m._31 * _m.m._12 +
                other._m.m._32 * _m.m._22);
 
@@ -1166,16 +1179,16 @@ rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
   FLOATTYPE axis_1 = axis._v.v._1;
   FLOATTYPE axis_2 = axis._v.v._2;
 
-  // Normalize the axis.  
+  // Normalize the axis.
 
-/*  
-  // hack check for prenormalization, only works for simple unit vecs, 
+/*
+  // hack check for prenormalization, only works for simple unit vecs,
   // which is what we usually pass in anyway. screws up if you happen to
   // pass in something like (.5,.5,0).  need to add flag parameter so caller
   // can request normalization if needed
-  
+
   if((cabs(axis_0)+cabs(axis_1)+cabs(axis_2)) != 1.0f) {
-*/  
+*/
 
           FLOATTYPE length_sq = axis_0 * axis_0 + axis_1 * axis_1 + axis_2 * axis_2;
           #ifdef _DEBUG
@@ -1185,7 +1198,7 @@ rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
 
           axis_0 *= recip_length;
           axis_1 *= recip_length;
-          axis_2 *= recip_length;  
+          axis_2 *= recip_length;
 //  }
 
   FLOATTYPE angle_rad=deg_2_rad(angle);
@@ -1226,7 +1239,7 @@ rotate_mat(FLOATTYPE angle, FLOATNAME(LVecBase3) axis,
   return mat;
 }
 
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix::rotate_mat_normaxis
 //       Access: Public, Static

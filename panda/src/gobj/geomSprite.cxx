@@ -1,6 +1,19 @@
 // Filename: geomSprite.cxx
 // Created by:  charles (13Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <datagram.h>
@@ -29,7 +42,7 @@ GeomSprite(Texture *tex, bool alpha_disable) :
   _y_texel_ratio.clear();
 
   _theta_bind_type = G_OFF;
-  // note that the other bind types are intentionally left 
+  // note that the other bind types are intentionally left
   // uninitialized; the arrays themselves can not be set without a
   // bind type.
 }
@@ -133,7 +146,7 @@ register_with_read_factory(void) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomSprite::complete_pointers
 //       Access: Public, Static
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int GeomSprite::
 complete_pointers(vector_typedWritable &plist, BamReader *manager) {

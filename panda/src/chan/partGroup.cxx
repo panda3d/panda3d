@@ -1,6 +1,19 @@
 // Filename: partGroup.cxx
 // Created by:  drose (22Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "partGroup.h"
@@ -34,7 +47,7 @@ PartGroup(PartGroup *parent, const string &name) : Namable(name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PartGroup::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PartGroup::
 ~PartGroup() {
@@ -60,7 +73,7 @@ make_copy() const {
 PartGroup *PartGroup::
 copy_subgraph() const {
   PartGroup *root = make_copy();
-  
+
   if (root->get_type() != get_type()) {
     chan_cat.warning()
       << "Don't know how to copy " << get_type() << "\n";
@@ -167,7 +180,7 @@ sort_descendants() {
 //       Access: Public
 //  Description: Walks the part hierarchy in tandem with the indicated
 //               anim hierarchy, and returns true if the hierarchies
-//               match, false otherwise.  
+//               match, false otherwise.
 //
 //               If hierarchy_match_flags is 0, only an exact match is
 //               accepted; otherwise, it may contain a union of
@@ -200,7 +213,7 @@ check_hierarchy(const AnimGroup *anim, const PartGroup *,
     if (anim->get_num_children() != get_num_children()) {
       chan_cat.info()
         << "Part " << get_name() << " has " << get_num_children()
-        << " children, while matching anim node has " 
+        << " children, while matching anim node has "
         << anim->get_num_children() << ":\n";
       match = false;
 
@@ -240,7 +253,7 @@ check_hierarchy(const AnimGroup *anim, const PartGroup *,
           j++;
         }
       }
-      
+
       while (i < get_num_children()) {
         PartGroup *pc = get_child(i);
         chan_cat.info()
@@ -248,7 +261,7 @@ check_hierarchy(const AnimGroup *anim, const PartGroup *,
           << ", not in anim.\n";
         i++;
       }
-      
+
       while (j < anim->get_num_children()) {
         AnimGroup *ac = anim->get_child(j);
         chan_cat.info()
@@ -293,7 +306,7 @@ check_hierarchy(const AnimGroup *anim, const PartGroup *,
       return false;
     }
   }
-  
+
   if (j < anim->get_num_children()) {
     // There's at least one extra anim channel.
     if ((hierarchy_match_flags & HMF_ok_anim_extra) == 0) {
@@ -336,7 +349,7 @@ write_with_value(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PartGroup::do_update
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PartGroup::
 do_update(PartBundle *root, PartGroup *,
@@ -478,7 +491,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //     Function: PartGroup::complete_pointers
 //       Access: Public
 //  Description: Takes in a vector of pointes to TypedWritable
-//               objects that correspond to all the requests for 
+//               objects that correspond to all the requests for
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int PartGroup::

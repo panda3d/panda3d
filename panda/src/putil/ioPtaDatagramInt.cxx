@@ -1,6 +1,19 @@
 // Filename: ioPtaDatagramInt.cxx
 // Created by:  jason (26Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <pandabase.h>
@@ -12,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: IoPtaDatagramInt::write_datagram
 //       Access: Public, Static
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void IoPtaDatagramInt::
 write_datagram(Datagram &dest, CPTA_int array)
@@ -27,7 +40,7 @@ write_datagram(Datagram &dest, CPTA_int array)
 ////////////////////////////////////////////////////////////////////
 //     Function: IoPtaDatagramInt::read_datagram
 //       Access: Public, Static
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PTA_int IoPtaDatagramInt::
 read_datagram(DatagramIterator &source)

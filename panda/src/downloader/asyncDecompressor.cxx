@@ -1,5 +1,18 @@
-// Filename: decompressor.cxx
+// Filename: asyncDecompressor.cxx
 // Created by:  mike (09Jan97)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
 
@@ -28,7 +41,7 @@
 ////////////////////////////////////////////////////////////////////
 class DecompressorToken : public ReferenceCount {
 public:
-  INLINE DecompressorToken(uint id, const Filename &source_file, 
+  INLINE DecompressorToken(uint id, const Filename &source_file,
                     const Filename &dest_file, const string &event_name) {
     _id = id;
     _source_file = source_file;
@@ -64,7 +77,7 @@ Decompressor(PT(Buffer) buffer) : AsyncUtility() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Decompressor::Constructor
-//       Access: Private 
+//       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Decompressor::
@@ -72,7 +85,7 @@ init(PT(Buffer) buffer) {
   nassertv(!buffer.is_null());
   _frequency = decompressor_frequency;
   _token_board = new DecompressorTokenBoard;
-  _half_buffer_length = buffer->get_length()/2; 
+  _half_buffer_length = buffer->get_length()/2;
   _buffer = buffer;
   char *temp_name = tempnam(NULL, "dc");
   _temp_file_name = temp_name;
@@ -96,7 +109,7 @@ Decompressor::
 ////////////////////////////////////////////////////////////////////
 //     Function: Decompressor::request_decompress
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int Decompressor::
 request_decompress(const Filename &source_file, const string &event_name) {
@@ -108,7 +121,7 @@ request_decompress(const Filename &source_file, const string &event_name) {
     if (downloader_cat.is_debug())
       downloader_cat.debug()
         << "Decompressor::request_decompress() - Unknown file extension: ."
-        << extension << endl; 
+        << extension << endl;
   }
   return request_decompress(source_file, dest_file, event_name);
 }
@@ -168,11 +181,11 @@ request_decompress(const Filename &source_file, const Filename &dest_file,
     }
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
-        << "Decompress requested for file: " << source_file << endl; 
+        << "Decompress requested for file: " << source_file << endl;
     }
 
     tok = new DecompressorToken(_next_token++, source_file, dest_file,
-                                        event_name); 
+                                        event_name);
     _token_board->_waiting.insert(tok);
     process_request();
   }
@@ -210,7 +223,7 @@ process_request() {
 
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
-          << "Decompressor::process_request() - decompress complete for " 
+          << "Decompressor::process_request() - decompress complete for "
           << tok->_source_file << "\n";
       }
     }
@@ -242,7 +255,7 @@ decompress(Filename &source_file) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Decompressor::decompress
-//       Access: Public 
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool Decompressor::
@@ -253,10 +266,10 @@ decompress(Filename &source_file, Filename &dest_file) {
   source_file.set_binary();
   if (!source_file.open_read(read_stream)) {
     downloader_cat.error()
-      << "Decompressor::decompress() - Error opening source file: " 
+      << "Decompressor::decompress() - Error opening source file: "
       << source_file << endl;
     return false;
-  } 
+  }
 
   // Determine source file length
   read_stream.seekg(0, ios::end);
@@ -269,15 +282,15 @@ decompress(Filename &source_file, Filename &dest_file) {
   }
   read_stream.seekg(0, ios::beg);
 
-  // Open destination file 
+  // Open destination file
   ofstream write_stream;
   dest_file.set_binary();
   if (!dest_file.open_write(write_stream)) {
     downloader_cat.error()
-      << "Decompressor::decompress() - Error opening dest file: " 
+      << "Decompressor::decompress() - Error opening dest file: "
       << source_file << endl;
     return false;
-  } 
+  }
 
   // Read from the source file into the first half of the buffer,
   // decompress into the second half of the buffer, write the second
@@ -310,7 +323,7 @@ decompress(Filename &source_file, Filename &dest_file) {
 
     while (avail_in > 0) {
       int ret = decompressor.decompress_to_stream(next_in, avail_in,
-                        next_out, avail_out, dest_buffer, 
+                        next_out, avail_out, dest_buffer,
                         dest_buffer_length, write_stream);
       if (ret == ZCompressorBase::S_error)
         return false;

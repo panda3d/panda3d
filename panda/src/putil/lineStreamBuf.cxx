@@ -1,6 +1,19 @@
 // Filename: lineStreamBuf.cxx
 // Created by:  drose (26Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "lineStreamBuf.h"
@@ -13,7 +26,7 @@ typedef int streamsize;
 ////////////////////////////////////////////////////////////////////
 //     Function: LineStreamBuf::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 LineStreamBuf::
 ~LineStreamBuf() {
@@ -55,7 +68,7 @@ get_line() {
 //               destruction).
 ////////////////////////////////////////////////////////////////////
 int LineStreamBuf::
-sync() { 
+sync() {
   streamsize n = pptr() - pbase();
   write_chars(pbase(), n);
   pbump(-n);  // Reset pptr().
@@ -69,7 +82,7 @@ sync() {
 //               internal buffer is filled, plus one character.
 ////////////////////////////////////////////////////////////////////
 int LineStreamBuf::
-overflow(int ch) { 
+overflow(int ch) {
   streamsize n = pptr() - pbase();
 
   if (n != 0 && sync() != 0) {

@@ -1,6 +1,19 @@
 // Filename: transform2sg.cxx
 // Created by:  drose (27Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "transform2sg.h"
@@ -52,12 +65,12 @@ get_arc() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Transform2SG::transmit_data
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Transform2SG::
 transmit_data(NodeAttributes &data) {
   const NodeAttribute *transform = data.get_attribute(_transform_type);
-  
+
   if (transform != (NodeAttribute *)NULL && _arc != (NodeRelation *)NULL) {
     const LMatrix4f &mat = DCAST(MatrixDataAttribute, transform)->get_value();
     _arc->set_transition(new TransformTransition(mat));
@@ -78,7 +91,7 @@ init_type() {
   DataNode::init_type();
   register_type(_type_handle, "Transform2SG",
                 DataNode::get_class_type());
-  
+
   MatrixDataTransition::init_type();
   register_data_transition(_transform_type, "Transform",
                            MatrixDataTransition::get_class_type());

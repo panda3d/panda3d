@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "graphicsWindow.h"
 #include "graphicsPipe.h"
@@ -47,7 +56,7 @@ Properties() {
   _title = "";
   _border = true;
   _fullscreen = false;
-  _mask = W_RGBA | W_DOUBLE | W_DEPTH; 
+  _mask = W_RGBA | W_DOUBLE | W_DEPTH;
   _want_depth_bits = 1;
   _want_color_bits = 1;
 }
@@ -119,7 +128,7 @@ TypeHandle GraphicsWindow::WindowPipe::force_init_type(void) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow::
 GraphicsWindow(GraphicsPipe *pipe) : Configurable() {
@@ -135,7 +144,7 @@ GraphicsWindow(GraphicsPipe *pipe) : Configurable() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow::
 GraphicsWindow(GraphicsPipe *pipe,
@@ -152,7 +161,7 @@ GraphicsWindow(GraphicsPipe *pipe,
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow::
 GraphicsWindow(const GraphicsWindow&) {
@@ -163,7 +172,7 @@ GraphicsWindow(const GraphicsWindow&) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow& GraphicsWindow::
 operator=(const GraphicsWindow&) {
@@ -175,7 +184,7 @@ operator=(const GraphicsWindow&) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow::
 ~GraphicsWindow() {
@@ -298,7 +307,7 @@ is_channel_defined(int index) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::flag_redisplay
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 flag_redisplay() {
@@ -328,7 +337,7 @@ declare_channel(int index, GraphicsChannel *chan) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::register_draw_function
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 register_draw_function(GraphicsWindow::vfn f) {
@@ -338,7 +347,7 @@ register_draw_function(GraphicsWindow::vfn f) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::register_idle_function
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 register_idle_function(GraphicsWindow::vfn f) {
@@ -348,7 +357,7 @@ register_idle_function(GraphicsWindow::vfn f) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::register_resize_function
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 register_resize_function(GraphicsWindow::vfnii f) {
@@ -392,7 +401,7 @@ supports_update() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::update
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 update() {
@@ -462,7 +471,7 @@ make_scratch_display_region(int xsize, int ysize) const {
     ysize = _props._ysize;
   }
 
-  return new DisplayRegion(xsize, ysize); 
+  return new DisplayRegion(xsize, ysize);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -480,7 +489,7 @@ make_current(void) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::unmake_current
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 unmake_current(void) {
@@ -497,7 +506,7 @@ void GraphicsWindow::
 make_gsg() {
   FactoryParams params;
   params.add_param(new GraphicsStateGuardian::GsgWindow(this));
-  
+
   _gsg = GraphicsStateGuardian::get_factory().
     make_instance(get_gsg_type(), params);
 

@@ -1,6 +1,19 @@
 // Filename: characterJoint.cxx
 // Created by:  drose (23Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "characterJoint.h"
@@ -27,7 +40,7 @@ CharacterJoint() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterJoint::Copy Constructor
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CharacterJoint::
 CharacterJoint(const CharacterJoint &copy) :
@@ -41,12 +54,12 @@ CharacterJoint(const CharacterJoint &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterJoint::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CharacterJoint::
-CharacterJoint(PartGroup *parent, const string &name, 
-               const LMatrix4f &initial_value) 
-  : MovingPartMatrix(parent, name, initial_value) 
+CharacterJoint(PartGroup *parent, const string &name,
+               const LMatrix4f &initial_value)
+  : MovingPartMatrix(parent, name, initial_value)
 {
   // Now that we've constructed and we're in the tree, let's call
   // update_internals() to get our _net_transform set properly.
@@ -71,7 +84,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterJoint::update_internals
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CharacterJoint::
 update_internals(PartGroup *parent, bool self_changed, bool) {
@@ -322,7 +335,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //     Function: CharacterJoint::complete_pointers
 //       Access: Public
 //  Description: Takes in a vector of pointes to TypedWritable
-//               objects that correspond to all the requests for 
+//               objects that correspond to all the requests for
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int CharacterJoint::
@@ -332,12 +345,12 @@ complete_pointers(vector_typedWritable &plist, BamReader* manager)
   int start = MovingPartMatrix::complete_pointers(plist, manager);
   int mid = start+_num_net_arcs;
   int end = start+_num_net_arcs+_num_local_arcs;
-  
+
   for(i = start; i < mid; i++)
   {
     if (plist[i] == TypedWritable::Null)
     {
-      char_cat->warning() << get_name() 
+      char_cat->warning() << get_name()
                           << " Ignoring null Net NodeRelation" << endl;
     }
     else
@@ -350,7 +363,7 @@ complete_pointers(vector_typedWritable &plist, BamReader* manager)
   {
     if (plist[i] == TypedWritable::Null)
     {
-      char_cat->warning() << get_name() 
+      char_cat->warning() << get_name()
                           << " Ignoring null Local NodeRelation" << endl;
     }
     else

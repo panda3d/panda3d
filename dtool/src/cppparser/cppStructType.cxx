@@ -1,6 +1,19 @@
-// Filename: cppStructType.C
+// Filename: cppStructType.cxx
 // Created by:  drose (19Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -18,7 +31,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPStructType::Base::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPStructType::Base::
 output(ostream &out) const {
@@ -31,11 +44,11 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPStructType::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPStructType::
-CPPStructType(CPPStructType::Type type, CPPIdentifier *ident, 
-              CPPScope *current_scope, CPPScope *scope, 
+CPPStructType(CPPStructType::Type type, CPPIdentifier *ident,
+              CPPScope *current_scope, CPPScope *scope,
               const CPPFile &file) :
   CPPExtensionType(type, ident, current_scope, file),
   _scope(scope)
@@ -47,7 +60,7 @@ CPPStructType(CPPStructType::Type type, CPPIdentifier *ident,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPStructType::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPStructType::
 CPPStructType(const CPPStructType &copy) :
@@ -62,7 +75,7 @@ CPPStructType(const CPPStructType &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPStructType::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPStructType::
 operator = (const CPPStructType &copy) {
@@ -86,7 +99,7 @@ append_derivation(CPPType *base, CPPVisibility vis, bool is_virtual) {
     b._base = base;
     b._vis = vis;
     b._is_virtual = is_virtual;
-    
+
     _derivation.push_back(b);
   }
 }
@@ -94,7 +107,7 @@ append_derivation(CPPType *base, CPPVisibility vis, bool is_virtual) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPStructType::get_scope
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPScope *CPPStructType::
 get_scope() const {
@@ -188,10 +201,10 @@ get_destructor() const {
          ++ii) {
       CPPInstance *inst = (*ii);
       assert(inst->_type != (CPPType *)NULL);
-      
+
       CPPFunctionType *ftype = inst->_type->as_function_type();
       assert(ftype != (CPPFunctionType *)NULL);
-      
+
       if ((ftype->_flags & CPPFunctionType::F_destructor) != 0) {
         return inst;
       }
@@ -205,7 +218,7 @@ get_destructor() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPStructType::instantiate
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPStructType::
 instantiate(const CPPTemplateParameterList *actual_params,
@@ -217,13 +230,13 @@ instantiate(const CPPTemplateParameterList *actual_params,
 
   if (_scope == NULL) {
     if (error_sink != NULL) {
-      error_sink->warning("Ignoring template parameters for class " + 
+      error_sink->warning("Ignoring template parameters for class " +
                           get_local_name());
     }
     return (CPPDeclaration *)this;
   }
 
-  CPPScope *scope = 
+  CPPScope *scope =
     _scope->instantiate(actual_params, current_scope, global_scope, error_sink);
 
   if (scope->get_struct_type()->get_scope() != scope) {
@@ -251,7 +264,7 @@ instantiate(const CPPTemplateParameterList *actual_params,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPStructType::substitute_decl
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPStructType::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
@@ -280,7 +293,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   CPPStructType *rep = new CPPStructType(*this);
 
   if (_ident != NULL) {
-    rep->_ident = 
+    rep->_ident =
       _ident->substitute_decl(subst, current_scope, global_scope);
   }
 
@@ -294,7 +307,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
       // parameters into our identifier.
       CPPScope *pscope = rep->_scope->get_parent_scope();
 
-      if (pscope != (CPPScope *)NULL && 
+      if (pscope != (CPPScope *)NULL &&
           pscope->_name.has_templ()) {
 
         // If the struct name didn't have an explicit template
@@ -311,11 +324,11 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
     }
   }
 
-  bool unchanged = 
+  bool unchanged =
     (rep->_ident == _ident && rep->_scope == _scope);
 
   for (int i = 0; i < (int)_derivation.size(); i++) {
-    rep->_derivation[i]._base = 
+    rep->_derivation[i]._base =
       _derivation[i]._base->substitute_decl(subst, current_scope, global_scope)->as_type();
     if (rep->_derivation[i]._base != _derivation[i]._base) {
       unchanged = false;
@@ -350,7 +363,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPStructType::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPStructType::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
@@ -382,7 +395,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
     } else {
       out << _type;
     }
-    
+
     // Show any derivation we may have
     if (!_derivation.empty()) {
       Derivation::const_iterator di = _derivation.begin();
@@ -403,7 +416,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPStructType::get_subtype
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration::SubType CPPStructType::
 get_subtype() const {
@@ -413,7 +426,7 @@ get_subtype() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPStructType::as_struct_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPStructType *CPPStructType::
 as_struct_type() {
@@ -466,7 +479,7 @@ get_virtual_funcs(VFunctions &funcs) const {
       if (destructor != (CPPInstance *)NULL) {
         // It's a match!  This destructor is virtual.
         funcs.erase(vfi);
-        destructor->_storage_class |= 
+        destructor->_storage_class |=
           (CPPInstance::SC_virtual | CPPInstance::SC_inherited_virtual);
       }
 
@@ -501,7 +514,7 @@ get_virtual_funcs(VFunctions &funcs) const {
             // *inherited* virtual, which means only that the
             // interface is defined in some parent class.  Sometimes
             // this is useful to know.
-            new_inst->_storage_class |= 
+            new_inst->_storage_class |=
               (CPPInstance::SC_virtual | CPPInstance::SC_inherited_virtual);
           }
         }
@@ -518,7 +531,7 @@ get_virtual_funcs(VFunctions &funcs) const {
     CPPFunctionGroup *fgroup = (*fi).second;
     CPPFunctionGroup::Instances::const_iterator ii;
     for (ii = fgroup->_instances.begin();
-         ii != fgroup->_instances.end();  
+         ii != fgroup->_instances.end();
          ++ii) {
       CPPInstance *inst = (*ii);
       if ((inst->_storage_class & CPPInstance::SC_virtual) != 0) {
@@ -566,7 +579,7 @@ is_equal(const CPPDeclaration *other) const {
   const CPPStructType *ot = ((CPPDeclaration *)other)->as_struct_type();
   assert(ot != NULL);
 
-  return this == ot || 
+  return this == ot ||
     (get_fully_scoped_name() == ot->get_fully_scoped_name());
   */
 }
@@ -589,7 +602,7 @@ is_less(const CPPDeclaration *other) const {
     return false;
   }
 
-  return 
+  return
     (get_fully_scoped_name() < ot->get_fully_scoped_name());
   */
 }

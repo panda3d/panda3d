@@ -1,6 +1,19 @@
 // Filename: multiAttribute.T
 // Created by:  drose (23Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 template<class Property, class NameClass>
@@ -9,7 +22,7 @@ TypeHandle MultiAttribute<Property, NameClass>::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: MultiAttribute::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
 MultiAttribute<Property, NameClass>::
@@ -20,7 +33,7 @@ MultiAttribute() {
 ////////////////////////////////////////////////////////////////////
 //     Function: MultiAttribute::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
 MultiAttribute<Property, NameClass>::
@@ -34,7 +47,7 @@ MultiAttribute(const MultiAttribute &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: MultiAttribute::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
 void MultiAttribute<Property, NameClass>::
@@ -47,7 +60,7 @@ operator = (const MultiAttribute &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MultiAttribute::set_on
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
 void MultiAttribute<Property, NameClass>::
@@ -62,7 +75,7 @@ set_on(const Property &property) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MultiAttribute::set_off
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
 void MultiAttribute<Property, NameClass>::
@@ -124,7 +137,7 @@ get_properties_is_on() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: MultiAttribute::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
 void MultiAttribute<Property, NameClass>::
@@ -144,7 +157,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: MultiAttribute::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
 void MultiAttribute<Property, NameClass>::
@@ -158,7 +171,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: MultiAttribute::internal_compare_to
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
 int MultiAttribute<Property, NameClass>::
@@ -291,7 +304,7 @@ binary_search_property(Properties::iterator begin, Properties::iterator end,
 ////////////////////////////////////////////////////////////////////
 //     Function: MultiAttribute::size
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Property, class NameClass>
 INLINE_GRAPH MultiAttribute<Property, NameClass>::size_type MultiAttribute<Property, NameClass>::

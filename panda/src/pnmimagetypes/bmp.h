@@ -1,39 +1,20 @@
-/*\
- * $Id$
+/* Filename: bmp.h
+ * Created by:  
  *
- * bmp.h - routines to calculate sizes of parts of BMP files
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- * Some fields in BMP files contain offsets to other parts
- * of the file.  These routines allow us to calculate these
- * offsets, so that we can read and write BMP files without
- * the need to fseek().
+ * PANDA 3D SOFTWARE
+ * Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
  *
- * Copyright (C) 1992 by David W. Sanderson.
+ * All use of this software is subject to the terms of the Panda 3d
+ * Software license.  You should have received a copy of this license
+ * along with this source code; you will also find a current copy of
+ * the license at http://www.panda3d.org/license.txt .
  *
- * Permission to use, copy, modify, and distribute this software and its
- * documentation for any purpose and without fee is hereby granted,
- * provided that the above copyright notice appear in all copies and
- * that both that copyright notice and this permission notice appear
- * in supporting documentation.  This software is provided "as is"
- * without express or implied warranty.
+ * To contact the maintainers of this program write to
+ * panda3d@yahoogroups.com .
  *
- * $Log$
- * Revision 1.2  2001/05/25 15:59:19  drose
- * remove tab characters
- *
- * Revision 1.1.1.1  2000/10/04 01:14:42  drose
- *
- *
- * Revision 1.3  1992/11/24  19:39:56  dws
- * Added copyright.
- *
- * Revision 1.2  1992/11/17  02:13:37  dws
- * Adjusted a string's name.
- *
- * Revision 1.1  1992/11/16  19:54:44  dws
- * Initial revision
- *
-\*/
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #ifndef _BMP_H_
 #define _BMP_H_

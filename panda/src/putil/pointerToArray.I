@@ -1,6 +1,19 @@
 // Filename: pointerToArray.I
 // Created by:  drose (07Jan00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 template<class Element>
@@ -12,23 +25,23 @@ vector<Element> ConstPointerToArray<Element>::_empty_array;
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE PointerToArray<Element>::
-PointerToArray() : 
-  PointerToBase<RefCountObj<vector<Element> > >((RefCountObj<vector<Element> > *)NULL) 
+PointerToArray() :
+  PointerToBase<RefCountObj<vector<Element> > >((RefCountObj<vector<Element> > *)NULL)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE PointerToArray<Element>::
-PointerToArray(size_type n) : 
+PointerToArray(size_type n) :
   PointerToBase<RefCountObj<vector<Element> > >(new RefCountObj<vector<Element> >) {
   _ptr->reserve(n);
   insert(begin(), n, Element());
@@ -37,11 +50,11 @@ PointerToArray(size_type n) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE PointerToArray<Element>::
-PointerToArray(size_type n, const Element &value) : 
+PointerToArray(size_type n, const Element &value) :
   PointerToBase<RefCountObj<vector<Element> > >(new RefCountObj<vector<Element> >) {
   _ptr->reserve(n);
   insert(begin(), n, value);
@@ -50,19 +63,19 @@ PointerToArray(size_type n, const Element &value) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::Copy Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE PointerToArray<Element>::
-PointerToArray(const PointerToArray<Element> &copy) : 
-  PointerToBase<RefCountObj<vector<Element> > >(copy) 
+PointerToArray(const PointerToArray<Element> &copy) :
+  PointerToBase<RefCountObj<vector<Element> > >(copy)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::begin
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE PointerToArray<Element>::iterator PointerToArray<Element>::
@@ -76,7 +89,7 @@ begin() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::end
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE PointerToArray<Element>::iterator PointerToArray<Element>::
@@ -90,7 +103,7 @@ end() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::rbegin
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE PointerToArray<Element>::reverse_iterator PointerToArray<Element>::
@@ -104,7 +117,7 @@ rbegin() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::rend
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE PointerToArray<Element>::reverse_iterator PointerToArray<Element>::
@@ -118,18 +131,18 @@ rend() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::size
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE PointerToArray<Element>::size_type PointerToArray<Element>::
 size() const {
   return (_ptr == NULL) ? 0 : _ptr->size();
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::max_size
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE PointerToArray<Element>::size_type PointerToArray<Element>::
@@ -143,7 +156,7 @@ max_size() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::empty
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE bool PointerToArray<Element>::
@@ -154,7 +167,7 @@ empty() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::reserve
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE void PointerToArray<Element>::
@@ -168,7 +181,7 @@ reserve(PointerToArray<Element>::size_type n) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::capacity
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE PointerToArray<Element>::size_type PointerToArray<Element>::
@@ -180,7 +193,7 @@ capacity() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::front
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE PointerToArray<Element>::reference PointerToArray<Element>::
@@ -197,7 +210,7 @@ front() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::back
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE PointerToArray<Element>::reference PointerToArray<Element>::
@@ -214,7 +227,7 @@ back() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::insert
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE PointerToArray<Element>::iterator PointerToArray<Element>::
@@ -228,7 +241,7 @@ insert(iterator position, const Element &x) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::insert
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE void PointerToArray<Element>::
@@ -242,7 +255,7 @@ insert(iterator position, size_type n, const Element &x) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::erase
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE void PointerToArray<Element>::
@@ -258,7 +271,7 @@ erase(iterator position) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::erase
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE void PointerToArray<Element>::
@@ -275,7 +288,7 @@ erase(iterator first, iterator last) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::Indexing operator
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE PointerToArray<Element>::reference PointerToArray<Element>::
@@ -294,7 +307,7 @@ operator [](size_type n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::push_back
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE void PointerToArray<Element>::
@@ -308,7 +321,7 @@ push_back(const Element &x) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::pop_back
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE void PointerToArray<Element>::
@@ -418,7 +431,7 @@ get_ref_count() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::Assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE PointerToArray<Element> &PointerToArray<Element>::
@@ -430,7 +443,7 @@ operator = (RefCountObj<vector<Element> > *ptr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::Assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE PointerToArray<Element> &PointerToArray<Element>::
@@ -457,43 +470,43 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE ConstPointerToArray<Element>::
-ConstPointerToArray() : 
-  PointerToBase<RefCountObj<vector<Element> > >((RefCountObj<vector<Element> > *)NULL) 
+ConstPointerToArray() :
+  PointerToBase<RefCountObj<vector<Element> > >((RefCountObj<vector<Element> > *)NULL)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE ConstPointerToArray<Element>::
-ConstPointerToArray(const PointerToArray<Element> &copy) : 
-  PointerToBase<RefCountObj<vector<Element> > >(copy) 
+ConstPointerToArray(const PointerToArray<Element> &copy) :
+  PointerToBase<RefCountObj<vector<Element> > >(copy)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE ConstPointerToArray<Element>::
-ConstPointerToArray(const ConstPointerToArray<Element> &copy) : 
-  PointerToBase<RefCountObj<vector<Element> > >(copy) 
+ConstPointerToArray(const ConstPointerToArray<Element> &copy) :
+  PointerToBase<RefCountObj<vector<Element> > >(copy)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::begin
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE ConstPointerToArray<Element>::iterator ConstPointerToArray<Element>::
@@ -507,7 +520,7 @@ begin() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::end
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE ConstPointerToArray<Element>::iterator ConstPointerToArray<Element>::
@@ -521,7 +534,7 @@ end() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::rbegin
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE ConstPointerToArray<Element>::reverse_iterator ConstPointerToArray<Element>::
@@ -535,7 +548,7 @@ rbegin() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::rend
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE ConstPointerToArray<Element>::reverse_iterator ConstPointerToArray<Element>::
@@ -549,18 +562,18 @@ rend() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::size
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE ConstPointerToArray<Element>::size_type ConstPointerToArray<Element>::
 size() const {
   return (_ptr == NULL) ? 0 : _ptr->size();
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::max_size
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE ConstPointerToArray<Element>::size_type ConstPointerToArray<Element>::
@@ -574,7 +587,7 @@ max_size() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::empty
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE bool ConstPointerToArray<Element>::
@@ -585,7 +598,7 @@ empty() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::capacity
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE ConstPointerToArray<Element>::size_type ConstPointerToArray<Element>::
@@ -600,7 +613,7 @@ capacity() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::Indexing operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE ConstPointerToArray<Element>::reference ConstPointerToArray<Element>::
@@ -619,7 +632,7 @@ operator[](size_type n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::front
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE ConstPointerToArray<Element>::reference ConstPointerToArray<Element>::
@@ -636,7 +649,7 @@ front() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::back
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE ConstPointerToArray<Element>::reference ConstPointerToArray<Element>::
@@ -707,7 +720,7 @@ get_ref_count() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::Assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE ConstPointerToArray<Element> &ConstPointerToArray<Element>::
@@ -719,7 +732,7 @@ operator = (RefCountObj<vector<Element> > *ptr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::Assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE ConstPointerToArray<Element> &ConstPointerToArray<Element>::
@@ -731,7 +744,7 @@ operator = (const PointerToArray<Element> &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerToArray::Assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE ConstPointerToArray<Element> &ConstPointerToArray<Element>::

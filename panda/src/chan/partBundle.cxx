@@ -1,6 +1,19 @@
 // Filename: partBundle.cxx
 // Created by:  drose (22Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "partBundle.h"
@@ -215,7 +228,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void PartBundle::
 write(ostream &out, int indent_level) const {
-  indent(out, indent_level) 
+  indent(out, indent_level)
     << get_type() << " " << get_name() << " {\n";
   write_descendants(out, indent_level + 2);
   indent(out, indent_level) << "}\n";
@@ -251,7 +264,7 @@ bind_anim(AnimBundle *anim, int hierarchy_match_flags) {
     if (get_name() != anim->get_name()) {
       if (chan_cat.is_error()) {
         chan_cat.error()
-          << "Root name of part (" << get_name() 
+          << "Root name of part (" << get_name()
           << ") does not match that of anim (" << anim->get_name()
           << ")\n";
       }
@@ -330,7 +343,7 @@ advance_time(double time) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::update
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PartBundle::
 update() {

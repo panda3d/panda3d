@@ -1,6 +1,19 @@
-// Filename: lrotation_src.h
+// Filename: lrotation_src.cxx
 // Created by:  frang, charles (23Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 TypeHandle FLOATNAME(LRotation)::_type_handle;
@@ -8,7 +21,7 @@ TypeHandle FLOATNAME(LRotation)::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: LRotation::init_type
 //       Access: Public, Static
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(LRotation)::
 init_type() {
@@ -16,8 +29,8 @@ init_type() {
     FLOATNAME(LQuaternion)::init_type();
     // Format a string to describe the type.
     string name = "LRotation";
-    name += FLOATTOKEN; 
-    register_type(_type_handle, name, 
+    name += FLOATTOKEN;
+    register_type(_type_handle, name,
                   FLOATNAME(LQuaternion)::get_class_type());
   }
 }

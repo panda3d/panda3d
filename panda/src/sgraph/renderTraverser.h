@@ -1,6 +1,19 @@
 // Filename: renderTraverser.h
 // Created by:  drose (12Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef RENDERTRAVERSER_H
@@ -29,14 +42,14 @@ class AllTransitionsWrapper;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA RenderTraverser : public TypedReferenceCount {
 public:
-  INLINE RenderTraverser(GraphicsStateGuardian *gsg, 
+  INLINE RenderTraverser(GraphicsStateGuardian *gsg,
                          TypeHandle graph_type,
                          const ArcChain &arc_chain);
   INLINE ~RenderTraverser();
 
   typedef ArcChain::iterator iterator;
   typedef ArcChain::const_iterator const_iterator;
-  
+
   INLINE const ArcChain &get_arc_chain() const;
   INLINE const_iterator begin() const;
   INLINE const_iterator end() const;
@@ -46,8 +59,8 @@ PUBLISHED:
   INLINE GraphicsStateGuardian *get_gsg() const;
   INLINE TypeHandle get_graph_type() const;
 
-public:  
-  virtual void traverse(Node *root, 
+public:
+  virtual void traverse(Node *root,
                         const AllAttributesWrapper &initial_state,
                         const AllTransitionsWrapper &net_trans)=0;
 
@@ -55,7 +68,7 @@ PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
-protected:  
+protected:
   // These methods are to be called by derived classes as we traverse
   // each arc.  They update the arc list returned by begin()/end().
   INLINE void mark_forward_arc(NodeRelation *arc);
@@ -79,7 +92,7 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
- 
+
 private:
   static TypeHandle _type_handle;
 };

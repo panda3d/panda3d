@@ -2,6 +2,19 @@
 // Created by:  mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 // Includes
@@ -41,13 +54,13 @@ write_datagram(BamWriter *, Datagram &me)
     filename.find_on_searchpath(get_texture_path());
     filename.find_on_searchpath(get_model_path());
     if (gobj_cat.is_debug()) {
-      gobj_cat.debug() 
+      gobj_cat.debug()
         << "Texture file " << get_name() << " found as " << filename << "\n";
     }
     alpha_filename.find_on_searchpath(get_texture_path());
     alpha_filename.find_on_searchpath(get_model_path());
     if (gobj_cat.is_debug()) {
-      gobj_cat.debug() 
+      gobj_cat.debug()
         << "Alpha image " << get_alpha_name() << " found as " << alpha_filename << "\n";
     }
     break;

@@ -1,6 +1,19 @@
 // Filename: typeHandle.cxx
 // Created by:  drose (23Oct98)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "typeHandle.h"
@@ -49,7 +62,7 @@ void init_system_type_handles() {
     register_type(bool_type_handle, "bool");
     register_type(double_type_handle, "double");
     register_type(float_type_handle, "float");
-    
+
     register_type(int_p_type_handle, "int*");
     register_type(short_p_type_handle, "short*");
     register_type(char_p_type_handle, "char*");
@@ -64,11 +77,11 @@ void init_system_type_handles() {
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistry::RegistryNode::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 TypeRegistry::RegistryNode::
 RegistryNode(TypeHandle handle, const string &name, TypeHandle &ref) :
-  _handle(handle), _name(name), _ref(ref) { 
+  _handle(handle), _name(name), _ref(ref) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -109,7 +122,7 @@ register_type(TypeHandle &type_handle, const string &name) {
       express_cat->spam() << "Registering type " << name << "\n";
     }
 #endif
-    
+
     TypeHandle new_handle;
     new_handle._index = _handle_registry.size();
 
@@ -122,7 +135,7 @@ register_type(TypeHandle &type_handle, const string &name) {
   }
   RegistryNode *rnode = (*ri).second;
   nassertr(rnode->_name == (*ri).first, false);
-  nassertr(rnode->_handle._index >= 0 && 
+  nassertr(rnode->_handle._index >= 0 &&
            rnode->_handle._index < (int)_handle_registry.size(), false);
   nassertr(_handle_registry[rnode->_handle._index] == rnode, false);
   nassertr(rnode->_handle._index != 0, false);
@@ -186,7 +199,7 @@ register_dynamic_type(const string &name) {
       express_cat->spam() << "Registering type " << name << "\n";
     }
 #endif
-    
+
     // We must dynamically allocate a new handle so the RegistryNode
     // has something unique to point to.  This doesn't really mean
     // anything, though.
@@ -245,7 +258,7 @@ void TypeRegistry::
 record_alternate_name(TypeHandle type, const string &name) {
   RegistryNode *rnode = look_up(type, (TypedObject *)NULL);
   if (rnode != (RegistryNode *)NULL) {
-    NameRegistry::iterator ri = 
+    NameRegistry::iterator ri =
       _name_registry.insert(NameRegistry::value_type(name, rnode)).first;
     if ((*ri).second != rnode) {
       express_cat.warning()
@@ -452,8 +465,8 @@ void TypeRegistry::
 reregister_types() {
   HandleRegistry::iterator ri;
   TypeRegistry *reg = ptr();
-  for (ri = reg->_handle_registry.begin(); 
-       ri != reg->_handle_registry.end(); 
+  for (ri = reg->_handle_registry.begin();
+       ri != reg->_handle_registry.end();
        ++ri) {
     RegistryNode *rnode = (*ri);
     if (rnode != NULL && rnode->_handle != rnode->_ref) {
@@ -503,7 +516,7 @@ ptr() {
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistry::Constructor
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 TypeRegistry::
 TypeRegistry() {
@@ -511,7 +524,7 @@ TypeRegistry() {
   // TypeHandles whose index number is zero, and are therefore
   // (probably) uninitialized.
   _handle_registry.push_back(NULL);
- 
+
   _root_classes_fresh = false;
 }
 
@@ -572,12 +585,12 @@ write_node(ostream &out, int indent_level, const RegistryNode *node) const {
     }
   }
   out << "\n";
-  
+
   for (int i = 0; i < (int)node->_child_classes.size(); i++) {
     write_node(out, indent_level + 2, node->_child_classes[i]);
   }
 }
-    
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistry::look_up
@@ -635,7 +648,7 @@ look_up(TypeHandle handle, TypedObject *object) const {
   if (handle._index < 0 ||
       handle._index >= (int)_handle_registry.size()) {
     express_cat->fatal()
-      << "Invalid TypeHandle index " << handle._index 
+      << "Invalid TypeHandle index " << handle._index
       << "!  Is memory corrupt?\n";
     nassertr(false, NULL);
   }

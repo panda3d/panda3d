@@ -2,6 +2,19 @@
 // Created by:  drose (03Mar99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef COMPUTEDVERTICESMORPH_H
 #define COMPUTEDVERTICESMORPH_H
@@ -30,7 +43,7 @@ public:
 
   INLINE ComputedVerticesMorphValue2(int index, const VecType &mvector);
   INLINE ComputedVerticesMorphValue2(void);
- 
+
   ushort _index;
   VecType _vector;
 
@@ -50,7 +63,7 @@ public:
   typedef LVector3f VecType;
 
   INLINE ComputedVerticesMorphValue3(int index, const VecType &mvector);
-  INLINE ComputedVerticesMorphValue3(void); 
+  INLINE ComputedVerticesMorphValue3(void);
 
   ushort _index;
   VecType _vector;
@@ -72,7 +85,7 @@ public:
 
   INLINE ComputedVerticesMorphValue4(int index, const VecType &mvector);
   INLINE ComputedVerticesMorphValue4(void);
- 
+
   ushort _index;
   VecType _vector;
 
@@ -102,8 +115,8 @@ public:
   Morphs _morphs;
 
 public:
-  void write_datagram(Datagram &dest);  
-  void read_datagram(DatagramIterator &source);  
+  void write_datagram(Datagram &dest);
+  void read_datagram(DatagramIterator &source);
 };
 
 template<class ValueType, class MorphValueType>

@@ -1,6 +1,19 @@
 // Filename: pnmImageHeader.h
 // Created by:  drose (14Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef PNMIMAGEHEADER_H
@@ -72,13 +85,13 @@ public:
                          string magic_number = string(),
                          PNMFileType *type = NULL) const;
 
-  PNMWriter *make_writer(const Filename &filename, 
+  PNMWriter *make_writer(const Filename &filename,
                          PNMFileType *type = NULL) const;
   PNMWriter *make_writer(FILE *file, bool owns_file = true,
                          const Filename &filename = Filename(),
                          PNMFileType *type = NULL) const;
 
-  static bool read_magic_number(FILE *file, string &magic_number, 
+  static bool read_magic_number(FILE *file, string &magic_number,
                                 int num_bytes);
 
   void output(ostream &out) const;

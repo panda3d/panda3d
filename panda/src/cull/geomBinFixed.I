@@ -1,6 +1,19 @@
 // Filename: geomBinFixed.I
 // Created by:  drose (14Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "cullTraverser.h"
@@ -8,10 +21,10 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinFixed::NodeEntry::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomBinFixed::NodeEntry::
-NodeEntry(int draw_order, const PT(CullState) &state, 
+NodeEntry(int draw_order, const PT(CullState) &state,
           const ArcChain &arc_chain, bool is_direct) :
   _draw_order(draw_order),
   _state(state),
@@ -23,7 +36,7 @@ NodeEntry(int draw_order, const PT(CullState) &state,
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinFixed::NodeEntry::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomBinFixed::NodeEntry::
 NodeEntry(const GeomBinFixed::NodeEntry &copy) :
@@ -37,7 +50,7 @@ NodeEntry(const GeomBinFixed::NodeEntry &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinFixed::NodeEntry::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomBinFixed::NodeEntry::
 operator = (const NodeEntry &copy) {
@@ -50,7 +63,7 @@ operator = (const NodeEntry &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinFixed::NodeEntry::Ordering Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomBinFixed::NodeEntry::
 operator < (const NodeEntry &other) const {
@@ -60,7 +73,7 @@ operator < (const NodeEntry &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinFixed::NodeEntry::draw
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomBinFixed::NodeEntry::
 draw(CullTraverser *trav) const {
@@ -75,10 +88,10 @@ draw(CullTraverser *trav) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinFixed::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomBinFixed::
 GeomBinFixed(const string &name) :
-  GeomBin(name) 
+  GeomBin(name)
 {
 }

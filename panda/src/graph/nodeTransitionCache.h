@@ -1,6 +1,19 @@
 // Filename: nodeTransitionCache.h
 // Created by:  drose (20Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef NODETRANSITIONCACHE_H
@@ -70,7 +83,7 @@ public:
   // AllTransitionsWrapper; they have limited utility elsewhere.
 
   static void
-  store_to(const NodeTransitionCache *a, NodeRelation *arc, 
+  store_to(const NodeTransitionCache *a, NodeRelation *arc,
            NodeTransitions &nt);
 
   static NodeTransitionCache *
@@ -86,7 +99,7 @@ public:
   invert_compose(const NodeTransitionCache *a, const NodeTransitionCache *b);
 
   static NodeTransitionCache *
-  cached_compose(const NodeTransitionCache *a, 
+  cached_compose(const NodeTransitionCache *a,
                  const NodeTransitionCache *cache,
                  const NodeTransitionCache *b,
                  UpdateSeq now);

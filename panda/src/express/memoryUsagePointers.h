@@ -1,6 +1,19 @@
 // Filename: memoryUsagePointers.h
 // Created by:  drose (25May00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef MEMORYUSAGEPOINTERS_H
@@ -18,7 +31,7 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : MemoryUsagePointers
 // Description : This is a list of pointers returned by a MemoryUsage
-//               object in response to some query.  
+//               object in response to some query.
 //
 //               Warning: once pointers are stored in a
 //               MemoryUsagePointers object, they are
@@ -40,7 +53,7 @@ class EXPCL_PANDAEXPRESS MemoryUsagePointers {
 PUBLISHED:
   MemoryUsagePointers();
   ~MemoryUsagePointers();
-  
+
   int get_num_pointers() const;
   ReferenceCount *get_pointer(int n) const;
   TypedObject *get_typed_pointer(int n) const;

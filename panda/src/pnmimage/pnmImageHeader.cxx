@@ -1,8 +1,21 @@
 // Filename: pnmImageHeader.cxx
 // Created by:  drose (14Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
-  
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
 #include "pnmImageHeader.h"
 #include "pnmFileTypeRegistry.h"
 #include "pnmFileType.h"
@@ -72,7 +85,7 @@ make_reader(const Filename &filename, PNMFileType *type) const {
       // The file doesn't exist.  Don't pass it through libpnm, which
       // will abort.
       return NULL;
-    } 
+    }
     owns_file = true;
     file = pm_openr((char *)actual_name.to_os_specific().c_str());
   }
@@ -147,7 +160,7 @@ make_reader(FILE *file, bool owns_file, const Filename &filename,
           << "Unable to determine image file type from magic number.\n";
       }
     }
-  }    
+  }
 
   if (type == (PNMFileType *)NULL && !filename.empty()) {
     // We still don't know the type; attempt to guess it from the
@@ -352,10 +365,10 @@ read_magic_number(FILE *file, string &magic_number, int num_bytes) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PNMImageHeader::
 output(ostream &out) const {
-  out << "image: " << _x_size << " by " << _y_size << " pixels, " 
+  out << "image: " << _x_size << " by " << _y_size << " pixels, "
       << _num_channels << " channels, " << _maxval << " maxval.";
 }

@@ -1,6 +1,19 @@
 // Filename: shaderTransition.cxx
 // Created by:  mike (06Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "shaderTransition.h"
@@ -67,7 +80,7 @@ set_shader_always_blend(TypeHandle shader) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderTransition::clear
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ShaderTransition::
 clear() {
@@ -77,7 +90,7 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderTransition::is_empty
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool ShaderTransition::
 is_empty() const {
@@ -89,7 +102,7 @@ is_empty() const {
 //       Access: Public
 //  Description: Inserts the shader into the list, based
 //               on the set order of the list.  If there is no order set for
-//               the shader, it is put at the end of the list. 
+//               the shader, it is put at the end of the list.
 ////////////////////////////////////////////////////////////////////
 void ShaderTransition::
 insert(Shader *shader) {
@@ -199,7 +212,7 @@ has_shader(Shader *shader) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderTransition::begin
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ShaderTransition::const_iterator ShaderTransition::
 begin() const {
@@ -209,7 +222,7 @@ begin() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderTransition::end
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ShaderTransition::const_iterator ShaderTransition::
 end() const {
@@ -238,7 +251,7 @@ must_blend()
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderTransition::sub_render 
+//     Function: ShaderTransition::sub_render
 //       Access: Public, Virtual
 //  Description: This is called by the RenderTraverser to tell the
 //               shader to do its thing.
@@ -269,7 +282,7 @@ sub_render(NodeRelation *arc, const AllAttributesWrapper &attrib,
   // thing and then when the scene is actually rendered, it will blow
   // those artifacts away.  Those shaders will store their work to be
   // actually applied later when we call apply.
-  for (si = begin(); si != end(); ++si) 
+  for (si = begin(); si != end(); ++si)
   {
     // We'll go ahead and tell each shader in turn if multipass is
     // needed or not now.
@@ -284,9 +297,9 @@ sub_render(NodeRelation *arc, const AllAttributesWrapper &attrib,
     DirectRenderTraverser drt(gsg, RenderRelation::get_class_type());
     gsg->render_subgraph(&drt, node, node_attrib, AllTransitionsWrapper());
   }
- 
+
   // Now apply each shader in turn.
-  for (si = begin(); si != end(); ++si) 
+  for (si = begin(); si != end(); ++si)
   {
     (*si)->apply(node, node_attrib, AllTransitionsWrapper(), gsg);
   }

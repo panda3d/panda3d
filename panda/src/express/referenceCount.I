@@ -1,6 +1,19 @@
 // Filename: referenceCount.I
 // Created by:  drose (23Oct98)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 template<class Base>
@@ -58,7 +71,7 @@ ReferenceCount(const ReferenceCount &) {
 INLINE void ReferenceCount::
 operator = (const ReferenceCount &) {
   nassertv(this != NULL);
-  
+
   // If this assertion fails, our own pointer was recently deleted.
   // Yikes!
   nassertv(_ref_count != -100);
@@ -95,30 +108,30 @@ INLINE ReferenceCount::
 INLINE void ReferenceCount::
 prepare_delete() {
   nassertv(this != NULL);
-  
+
   // If this assertion fails, we're trying to delete an object that
   // was just deleted.  Probably you've accidentally made a bitwise
   // copy of a PointerTo, by forgetting to write a copy constructor
   // for a class that contains PointerTo's.
   nassertv(_ref_count != -100);
-  
+
   // If this assertion fails, the reference counts are all screwed
   // up altogether.  Maybe some errant code stomped all over memory
   // somewhere.
   nassertv(_ref_count >= 0);
-  
+
   // If this assertion fails, someone tried to delete this object
   // while its reference count was still positive.  Maybe you tried
   // to point a PointerTo at a static object (a local variable,
   // instead of one allocated via new)?  The test below against 0x7f
   // is supposed to check for that, but it's a pretty hokey test.
-  
+
   // Another possibility is you inadvertently omitted a copy
   // constructor for a ReferenceCount object, and then bitwise
   // copied a dynamically allocated value--reference count and
   // all--onto a locally allocated one.
   nassertv(_ref_count == 0);
-  
+
   // Ok, all clear to delete.  Now set the reference count to -100,
   // so we'll have a better chance of noticing if we happen to have
   // a stray pointer to it still out there.
@@ -183,7 +196,7 @@ ref() const {
   // define a copy constructor for a class that contains
   // PointerTo's.
   nassertv(_ref_count != -100);
-  
+
   // If this assertion fails, the reference counts are all screwed
   // up altogether.  Maybe some errant code stomped all over memory
   // somewhere.
@@ -199,9 +212,9 @@ ref() const {
   // any local variables!
   nassertv(((long)this & 0xff000000) != 0x7f000000);
 #endif
-  
+
   ((ReferenceCount *)this)->_ref_count++;
-  
+
   // If this assertion fails, we have just wrapped!  Either there
   // are actually 2^32 pointers to this thing somewhere, or
   // something is really screwy.
@@ -239,12 +252,12 @@ unref() const {
   // define a copy constructor for a class that contains
   // PointerTo's.
   nassertv(_ref_count != -100);
-  
+
   // If this assertion fails, the reference counts are all screwed
   // up altogether.  Maybe some errant code stomped all over memory
   // somewhere.
   nassertv(_ref_count >= 0);
-  
+
   // If this assertion fails, you tried to unref an object with a
   // zero reference count.  Are you using ref() and unref()
   // directly?  Are you sure you can't use PointerTo's?
@@ -271,7 +284,7 @@ test_ref_count_integrity() const {
   // define a copy constructor for a class that contains
   // PointerTo's.
   nassertv(_ref_count != -100);
-  
+
   // If this assertion fails, the reference counts are all screwed
   // up altogether.  Maybe some errant code stomped all over memory
   // somewhere.
@@ -316,27 +329,27 @@ unref_delete(RefCountType *ptr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: RefCountProxy::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Base>
 INLINE RefCountProxy<Base>::
-RefCountProxy() { 
+RefCountProxy() {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RefCountProxy::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Base>
 INLINE RefCountProxy<Base>::
-RefCountProxy(const Base &copy) : _base(copy) { 
+RefCountProxy(const Base &copy) : _base(copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RefCountProxy::Base Typecast Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Base>
 INLINE RefCountProxy<Base>::
@@ -347,7 +360,7 @@ operator Base &() {
 ////////////////////////////////////////////////////////////////////
 //     Function: RefCountProxy::Base Typecast Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Base>
 INLINE RefCountProxy<Base>::
@@ -358,13 +371,13 @@ operator const Base &() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: RefCountProxy::init_type
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Base>
 void RefCountProxy<Base>::
 init_type() {
   do_init_type(Base);
-  register_type(_type_handle, 
+  register_type(_type_handle,
                 "RefCountProxy<" + get_type_handle(Base).get_name() + ">",
                 get_type_handle(Base));
 }
@@ -373,28 +386,28 @@ init_type() {
 ////////////////////////////////////////////////////////////////////
 //     Function: RefCountObj::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Base>
 INLINE RefCountObj<Base>::
-RefCountObj() { 
+RefCountObj() {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RefCountObj::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Base>
 INLINE RefCountObj<Base>::
-RefCountObj(const Base &copy) : Base(copy) { 
+RefCountObj(const Base &copy) : Base(copy) {
 }
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RefCountObj::init_type
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Base>
 void RefCountObj<Base>::

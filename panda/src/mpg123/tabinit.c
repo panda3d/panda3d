@@ -1,3 +1,20 @@
+/* Filename: tabinit.c
+ * Created by:  
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ * PANDA 3D SOFTWARE
+ * Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+ *
+ * All use of this software is subject to the terms of the Panda 3d
+ * Software license.  You should have received a copy of this license
+ * along with this source code; you will also find a current copy of
+ * the license at http://www.panda3d.org/license.txt .
+ *
+ * To contact the maintainers of this program write to
+ * panda3d@yahoogroups.com .
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <stdlib.h>
 
@@ -47,7 +64,7 @@ void make_decode_tables(long scaleval)
   real *costab;
   int idx;
 
-  
+
   for(i=0;i<5;i++)
   {
     kr=0x10>>i; divv=0x40>>i;
@@ -112,7 +129,7 @@ void make_conv16to8_table(int mode)
         c1 = 127 - (int) (log( 1.0 - 255.0 * (double) i*mul / 32768.0 ) * m);
       else
         c1 = 255 - (int) (log( 1.0 + 255.0 * (double) i*mul / 32768.0 ) * m);
-      if(c1 < 0 || c1 > 255) 
+      if(c1 < 0 || c1 > 255)
         fprintf(stderr,"Converror %d %d\n",i,c1);
       if(c1 == 0)
         c1 = 2;

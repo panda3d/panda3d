@@ -1,6 +1,19 @@
 // Filename: allAttributesWrapper.cxx
 // Created by:  drose (21Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "allAttributesWrapper.h"
@@ -27,7 +40,7 @@ apply_in_place(const AllTransitionsWrapper &trans) {
 //               the indicated transition to the other attribute.
 ////////////////////////////////////////////////////////////////////
 void AllAttributesWrapper::
-apply_from(const AllAttributesWrapper &other, 
+apply_from(const AllAttributesWrapper &other,
            const AllTransitionsWrapper &trans) {
   if (trans._cache != (NodeTransitionCache *)NULL) {
     _attrib.apply_from(other._attrib, *trans._cache);
@@ -55,7 +68,7 @@ apply(const AllTransitionsWrapper &trans) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: AllAttributesWrapper::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void AllAttributesWrapper::
 output(ostream &out) const {
@@ -65,7 +78,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: AllAttributesWrapper::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void AllAttributesWrapper::
 write(ostream &out, int indent_level) const {

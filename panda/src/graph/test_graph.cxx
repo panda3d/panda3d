@@ -1,6 +1,19 @@
 // Filename: test_graph.cxx
 // Created by:  drose (02Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "nodeRelation.h"
@@ -453,7 +466,7 @@ int main() {
     new NodeRelation(a, ab, 0, NodeRelation::get_class_type());
   NodeRelation *b_ba =
     new NodeRelation(b, ba, 0, NodeRelation::get_class_type());
-  
+
   r_a->set_transition(new TestTransition(1));
   //  a_aa->set_transition(new TestTransition(2));
   a_aa->set_transition(new Test2Transition(3));
@@ -495,7 +508,7 @@ int main() {
   {
     nout << "\n";
     PrintNodes<NullTransitionWrapper> pn;
-    df_traverse(r, pn, 
+    df_traverse(r, pn,
                 NullAttributeWrapper(),
                 NullLevelState(),
                 NodeRelation::get_class_type());
@@ -543,7 +556,7 @@ int main() {
   {
     nout << "\n";
     PrintNodes<NodeTransitionWrapper> pn;
-    df_traverse(r, pn, 
+    df_traverse(r, pn,
                 NodeAttributeWrapper(TestTransition::get_class_type()),
                 NullLevelState(),
                 NodeRelation::get_class_type());
@@ -591,7 +604,7 @@ int main() {
   {
     nout << "\n";
     PrintNodes<NodeTransitionWrapper> pn;
-    df_traverse(r, pn, 
+    df_traverse(r, pn,
                 NodeAttributeWrapper(Test2Transition::get_class_type()),
                 NullLevelState(),
                 NodeRelation::get_class_type());
@@ -639,7 +652,7 @@ int main() {
   {
     nout << "\n";
     PrintNodes<NodeTransitionWrapper> pn;
-    df_traverse(r, pn, 
+    df_traverse(r, pn,
                 NodeAttributeWrapper(TestMTransition::get_class_type()),
                 NullLevelState(),
                 NodeRelation::get_class_type());
@@ -687,7 +700,7 @@ int main() {
   {
     nout << "\n";
     PrintNodes<AllTransitionsWrapper> pn;
-    df_traverse(r, pn, 
+    df_traverse(r, pn,
                 AllAttributesWrapper(),
                 NullLevelState(),
                 NodeRelation::get_class_type());
@@ -738,7 +751,7 @@ int main() {
   wrt(aa, r, result, NodeRelation::get_class_type());
   nout << "wrt of aa to r is " << result << "\n";
   a_aa->set_transition(new Test2Transition(4));
-  
+
   wrt(aa, r, result, NodeRelation::get_class_type());
   nout << "wrt of aa to r is now " << result << "\n";
 

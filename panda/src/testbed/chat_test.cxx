@@ -1,3 +1,21 @@
+// Filename: chat_test.cxx
+// Created by:  
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
 #include <eventHandler.h>
 #include <chancfg.h>
 #include <textNode.h>
@@ -7,7 +25,7 @@
 #include <camera.h>
 #include <transformTransition.h>
 #include <lightTransition.h>
-#include <chatHelpers.h> 
+#include <chatHelpers.h>
 #include <notify.h>
 #include <pt_NamedNode.h>
 #include <framework.h>
@@ -26,7 +44,7 @@ void event_enter(CPT_Event) {
   if (!in_chat_mode) {
     nout << "Enter chat mode" << endl;
     chat_input->reset();
-    new DataRelation(mak, chat_input);  
+    new DataRelation(mak, chat_input);
     in_chat_mode = true;
   }
 }
@@ -49,7 +67,7 @@ void chat_keys(EventHandler& eh) {
   eh.add_hook("chat_exit", event_chat_exit);
   eh.add_hook("chat_overflow", event_chat_overflow);
 
-  PT_Node font = loader.load_sync("ttf-comic"); 
+  PT_Node font = loader.load_sync("ttf-comic");
 
   // Create the input text node
   input_text_node = new TextNode("input_text_node");

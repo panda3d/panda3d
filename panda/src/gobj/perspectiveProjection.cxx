@@ -1,6 +1,19 @@
 // Filename: perspectiveProjection.cxx
 // Created by:  drose (18Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "geomLine.h"
@@ -38,17 +51,17 @@ get_projection_mat(CoordinateSystem cs) const {
 //     Function: PerspectiveProjection::make_geometry
 //       Access: Public, Virtual
 //  Description: Creates a GeomLine that describes the shape of the
-//               frustum for this projection 
+//               frustum for this projection
 ////////////////////////////////////////////////////////////////////
 Geom *PerspectiveProjection::
 make_geometry(const Colorf &color,
               CoordinateSystem cs) const {
   Vertexf rtn, ltn, lbn, rbn;
   Vertexf rtf, ltf, lbf, rbf;
-  
+
   // x, y, and z here refer to the right, forward, and up vectors,
   // which are not necessarily the x, y, and z axes.
-  
+
   LVector3f x = LVector3f::right(cs);
   LVector3f y = LVector3f::forward(cs);
   LVector3f z = LVector3f::up(cs);
@@ -71,7 +84,7 @@ make_geometry(const Colorf &color,
   rtf = yf + ((zt + xr) * fs);
   ltf = yf + ((zt + xl) * fs);
   lbf = yf + ((zb + xl) * fs);
-  rbf = yf + ((zb + xr) * fs); 
+  rbf = yf + ((zb + xr) * fs);
 
   PTA_Vertexf coords(0);
   PTA_ushort vindex(0);
@@ -152,9 +165,9 @@ extrude(const LPoint2f &point2d, LPoint3f &origin, LVector3f &direction,
 
   // Scale the point from (-1,1) to the range of the frustum.
 
-  LPoint2f scaled(_frustum._l + 0.5 * (point2d[0] + 1.0) * 
+  LPoint2f scaled(_frustum._l + 0.5 * (point2d[0] + 1.0) *
                   (_frustum._r - _frustum._l),
-                  _frustum._b + 0.5 * (point2d[1] + 1.0) * 
+                  _frustum._b + 0.5 * (point2d[1] + 1.0) *
                   (_frustum._t - _frustum._b));
 
   LVector3f near_vector =
@@ -198,9 +211,9 @@ project(const LPoint3f &point3d, LPoint2f &point2d,
     return false;
   }
 
-  point2d.set((scaled[0] - _frustum._l) * 2.0 / 
+  point2d.set((scaled[0] - _frustum._l) * 2.0 /
               (_frustum._r - _frustum._l) - 1.0,
-              (scaled[1] - _frustum._b) * 2.0 / 
+              (scaled[1] - _frustum._b) * 2.0 /
               (_frustum._t - _frustum._b) - 1.0);
   return true;
 }

@@ -3,6 +3,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 #ifndef GRAPHICSWINDOW_H
 #define GRAPHICSWINDOW_H
 //
@@ -51,7 +63,7 @@ enum WindowModeType
 
 class GraphicsPipe;
 class GraphicsWindow;
- 
+
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsWindow
 // Description :
@@ -73,7 +85,7 @@ public:
     int _want_depth_bits;
     int _want_color_bits;
   };
- 
+
   class EXPCL_PANDA Callback {
   public:
     virtual void draw(bool);
@@ -81,7 +93,7 @@ public:
   };
   typedef void (*vfn)();
   typedef void (*vfnii)(int, int);
- 
+
 public:
 
   GraphicsWindow(GraphicsPipe*);
@@ -91,7 +103,7 @@ public:
   GraphicsWindow(GraphicsPipe*, const GraphicsWindow::Properties&);
 #endif
   virtual ~GraphicsWindow();
- 
+
   INLINE const GraphicsWindow::Properties& get_properties() const;
 
 PUBLISHED:
@@ -99,23 +111,23 @@ PUBLISHED:
   INLINE int get_height() const;
   INLINE int get_xorg() const;
   INLINE int get_yorg() const;
- 
+
   INLINE GraphicsStateGuardian *get_gsg() const;
- 
+
   INLINE GraphicsPipe *get_pipe() const;
- 
+
   INLINE void set_frame_number(const int);
   INLINE int get_frame_number() const;
 
-public: 
+public:
   virtual void resized(const int, const int);
- 
+
   INLINE virtual void set_draw_callback(Callback *c);
   INLINE virtual void set_idle_callback(Callback *c);
- 
+
   INLINE void call_draw_callback(bool force_redraw);
   INLINE void call_idle_callback();
- 
+
   PT(DisplayRegion) make_scratch_display_region(int xsize,
                                                 int ysize) const;
 
@@ -139,7 +151,7 @@ public:
   INLINE const MouseData &get_mouse_data(int device) const;
   INLINE bool has_button_event(int device) const;
   INLINE ButtonEvent get_button_event(int device);
- 
+
 PUBLISHED:
   // GUI glue methods
   virtual void flag_redisplay();
@@ -150,7 +162,7 @@ PUBLISHED:
   virtual void main_loop();
   virtual bool supports_update() const;
   virtual void update();
- 
+
 public:
   virtual void begin_frame();
   virtual void end_frame();
@@ -162,7 +174,7 @@ public:
   static PStatCollector _clear_pcollector;
   static PStatCollector _show_fps_pcollector;
   static PStatCollector _make_current_pcollector;
- 
+
 protected:
   void make_gsg();
 
@@ -171,7 +183,7 @@ protected:
 
   PT(GraphicsStateGuardian) _gsg;
   Properties _props;
- 
+
   GraphicsPipe *_pipe;
   vfn _draw_function;
   vfn _idle_function;
@@ -179,18 +191,18 @@ protected:
   int _frame_number;
 
 protected:
- 
+
   Callback *_draw_callback;
   Callback *_idle_callback;
   Callback *_resize_callback;
- 
+
 public:
   virtual GraphicsChannel *get_channel(int index);
   void remove_channel(int index);
 
   int get_max_channel_index() const;
   bool is_channel_defined(int index) const;
- 
+
 protected:
   void declare_channel(int index, GraphicsChannel *chan);
 
@@ -243,12 +255,12 @@ public:
 private:
 
   static void read_priorities(void);
- 
+
   GraphicsWindow(const GraphicsWindow&);
   GraphicsWindow &operator=(const GraphicsWindow&);
 
   static WindowFactory *_factory;
- 
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -264,13 +276,13 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
- 
+
 private:
   static TypeHandle _type_handle;
- 
+
   friend class GraphicsPipe;
 };
- 
+
 #include "graphicsWindow.I"
 
 #endif /* GRAPHICSWINDOW_H */

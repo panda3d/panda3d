@@ -1,34 +1,47 @@
 // Filename: namable.I
 // Created by:  drose (16Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Namable::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Namable::
-Namable(const string &initial_name) : 
-  _name(initial_name) 
-{ 
+Namable(const string &initial_name) :
+  _name(initial_name)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Namable::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Namable::
-Namable(const Namable &copy) : 
-  _name(copy._name) 
+Namable(const Namable &copy) :
+  _name(copy._name)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Namable::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Namable &Namable::
 operator = (const Namable &other) {
@@ -39,7 +52,7 @@ operator = (const Namable &other) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Namable::set_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void Namable::
 set_name(const string &name) {
@@ -51,7 +64,7 @@ set_name(const string &name) {
 //       Access: Public
 //  Description: Resets the Namable's name to empty.
 ////////////////////////////////////////////////////////////////////
-INLINE void Namable:: 
+INLINE void Namable::
 clear_name() {
   _name = "";
 }
@@ -70,7 +83,7 @@ has_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Namable::get_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const string &Namable::
 get_name() const {
@@ -87,7 +100,7 @@ get_name() const {
 INLINE void Namable::
 output(ostream &out) const {
   out << get_name();
-}    
+}
 
 
 INLINE ostream &operator << (ostream &out, const Namable &n) {
@@ -98,7 +111,7 @@ INLINE ostream &operator << (ostream &out, const Namable &n) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NamableOrderByName::Function operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool NamableOrderByName::
 operator ()(const Namable *n1, const Namable *n2) const {

@@ -1,6 +1,19 @@
-// Filename: notifyCategory.C
+// Filename: notifyCategory.cxx
 // Created by:  drose (29Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "notifyCategory.h"
@@ -12,13 +25,13 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategory::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NotifyCategory::
-NotifyCategory(const string &fullname, const string &basename, 
-               NotifyCategory *parent) : 
-  _fullname(fullname), 
-  _basename(basename), 
+NotifyCategory(const string &fullname, const string &basename,
+               NotifyCategory *parent) :
+  _fullname(fullname),
+  _basename(basename),
   _parent(parent)
 {
   if (_parent != (NotifyCategory *)NULL) {
@@ -47,7 +60,7 @@ NotifyCategory(const string &fullname, const string &basename,
       // The user specified a particular severity for this category at
       // config time.  Use it.
       _severity = Notify::string_severity(severity_name);
-      
+
       if (_severity == NS_unspecified) {
         nout << "Invalid severity name for " << config_name << ": "
              << severity_name << "\n";

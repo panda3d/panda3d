@@ -2,6 +2,19 @@
 // Created by:  mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Plane::Constructor
@@ -12,16 +25,16 @@
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL FLOATNAME(Plane)::
 FLOATNAME(Plane)(void) {
-  _a = 0.0f; 
-  _b = 0.0f; 
-  _c = 1.0f; 
+  _a = 0.0f;
+  _b = 0.0f;
+  _c = 1.0f;
   _d = 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Plane::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL FLOATNAME(Plane)::
 FLOATNAME(Plane)(const FLOATNAME(Plane) &copy) :
@@ -41,7 +54,7 @@ FLOATNAME(Plane)(const FLOATNAME(Plane) &copy) :
 //               down).
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL FLOATNAME(Plane)::
-FLOATNAME(Plane)(const FLOATNAME(LPoint3) &a, const FLOATNAME(LPoint3) &b, 
+FLOATNAME(Plane)(const FLOATNAME(LPoint3) &a, const FLOATNAME(LPoint3) &b,
                  const FLOATNAME(LPoint3) &c) {
   FLOATNAME(LVector3) u = b - a;
   FLOATNAME(LVector3) v = c - a;
@@ -64,22 +77,22 @@ FLOATNAME(Plane)(const FLOATNAME(LVector3) &normal, const FLOATNAME(LPoint3) &po
   FLOATNAME(LVector3) p = normalize(normal);
 
   _a = p[0];
-  _b = p[1]; 
+  _b = p[1];
   _c = p[2];
   _d = -dot(p, point);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Plane::Operator = 
+//     Function: Plane::Operator =
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL FLOATNAME(Plane)& FLOATNAME(Plane)::
 operator = (const FLOATNAME(Plane)& p) {
-  _a = p._a; 
+  _a = p._a;
   _b = p._b;
   _c = p._c;
-  _d = p._d;  
+  _d = p._d;
   return (*this);
 }
 
@@ -172,14 +185,14 @@ intersects_line(FLOATNAME(LPoint3) &intersection_point,
 //               delta, with other values of t accordingly.
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL bool FLOATNAME(Plane)::
-intersects_line(FLOATTYPE &t, 
-                const FLOATNAME(LPoint3) &from, 
+intersects_line(FLOATTYPE &t,
+                const FLOATNAME(LPoint3) &from,
                 const FLOATNAME(LVector3) &delta) const {
   FLOATTYPE denom = dot(get_normal(), delta);
   if (IS_NEARLY_ZERO(denom)) {
     return false;
   }
-  
+
   t = -(dist_to_plane(from) / denom);
   return true;
 }
@@ -187,7 +200,7 @@ intersects_line(FLOATTYPE &t,
 ////////////////////////////////////////////////////////////////////
 //     Function: Plane::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL void FLOATNAME(Plane)::
 output(ostream &out) const {
@@ -197,7 +210,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Plane::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL void FLOATNAME(Plane)::
 write(ostream &out, int indent_level) const {
@@ -207,10 +220,10 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Plane::write_datagram
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL void FLOATNAME(Plane)::
-write_datagram(Datagram &dest) 
+write_datagram(Datagram &dest)
 {
   dest.add_float32(_a);
   dest.add_float32(_b);
@@ -221,10 +234,10 @@ write_datagram(Datagram &dest)
 ////////////////////////////////////////////////////////////////////
 //     Function: Plane::read_datagram
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL void FLOATNAME(Plane)::
-read_datagram(DatagramIterator &source) 
+read_datagram(DatagramIterator &source)
 {
   _a = source.get_float32();
   _b = source.get_float32();

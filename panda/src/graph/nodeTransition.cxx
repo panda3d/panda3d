@@ -1,6 +1,19 @@
 // Filename: nodeTransition.cxx
 // Created by:  drose (26Oct98)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "nodeTransition.h"
@@ -35,7 +48,7 @@ get_handle() const {
 //               process.
 ////////////////////////////////////////////////////////////////////
 bool NodeTransition::
-sub_render(NodeRelation *, const AllAttributesWrapper &, 
+sub_render(NodeRelation *, const AllAttributesWrapper &,
            AllTransitionsWrapper &, RenderTraverser *) {
   return true;
 }
@@ -55,7 +68,7 @@ has_sub_render() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransition::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodeTransition::
 output(ostream &out) const {
@@ -65,7 +78,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransition::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodeTransition::
 write(ostream &out, int indent_level) const {

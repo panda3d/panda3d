@@ -1,7 +1,20 @@
-/*
- * mpg123 defines 
- * used source: musicout.h from mpegaudio package
- */
+/* Filename: mpg123.h
+ * Created by:  
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ * PANDA 3D SOFTWARE
+ * Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+ *
+ * All use of this software is subject to the terms of the Panda 3d
+ * Software license.  You should have received a copy of this license
+ * along with this source code; you will also find a current copy of
+ * the license at http://www.panda3d.org/license.txt .
+ *
+ * To contact the maintainers of this program write to
+ * panda3d@yahoogroups.com .
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include        <stdio.h>
 #include        <string.h>
@@ -99,7 +112,7 @@ typedef unsigned char byte;
 #define AUSHIFT (3)
 
 
-struct al_table 
+struct al_table
 {
   short bits;
   short d;
@@ -381,7 +394,7 @@ extern int au_close(void);
 extern int cdr_open(struct audio_info_struct *ai, char *cdrfilename);
 extern int cdr_close(void);
 
-extern int getVBRHeader(struct vbrHeader *head,unsigned char *buf, 
+extern int getVBRHeader(struct vbrHeader *head,unsigned char *buf,
         struct frame *fr);
 
 

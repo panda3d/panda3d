@@ -1,6 +1,19 @@
 // Filename: piecewiseCurve.cxx
 // Created by:  drose (04Mar01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "piecewiseCurve.h"
@@ -125,7 +138,7 @@ adjust_point(float t,
       << "Adjusting point at " << t << " to " << px << " " << py << " "
       << pz << "\n";
   }
-      
+
   const ParametricCurve *curve;
   bool result = find_curve(curve, t);
 
@@ -608,7 +621,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 //     Function: PiecewiseCurve::complete_pointers
 //       Access: Protected, Virtual
 //  Description: Takes in a vector of pointes to TypedWritable
-//               objects that correspond to all the requests for 
+//               objects that correspond to all the requests for
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int PiecewiseCurve::
@@ -621,6 +634,6 @@ complete_pointers(vector_typedWritable &plist, BamReader *manager) {
   for (i = 0; i < _segs.size(); i++) {
     DCAST_INTO_R(_segs[i]._curve, plist[used + i], used);
   }
-  
+
   return used + _segs.size();
 }

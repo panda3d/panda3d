@@ -1,6 +1,19 @@
 // Filename: glGraphicsStateGuardian.I
 // Created by:  drose (02Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "config_glgsg.h"
@@ -10,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::LightInfo::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GLGraphicsStateGuardian::LightInfo::
 LightInfo() {
@@ -39,7 +52,7 @@ activate() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glClearColor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void GLGraphicsStateGuardian::
 call_glClearColor(GLclampf red, GLclampf green, GLclampf blue,
@@ -59,7 +72,7 @@ call_glClearColor(GLclampf red, GLclampf green, GLclampf blue,
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glClearDepth
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void GLGraphicsStateGuardian::
 call_glClearDepth(GLclampd depth) {
@@ -77,7 +90,7 @@ call_glClearDepth(GLclampd depth) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glClearStencil
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void GLGraphicsStateGuardian::
 call_glClearStencil(GLint s) {
@@ -90,7 +103,7 @@ call_glClearStencil(GLint s) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glClearAccum
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void GLGraphicsStateGuardian::
 call_glClearAccum(GLclampf red, GLclampf green, GLclampf blue,
@@ -110,7 +123,7 @@ call_glClearAccum(GLclampf red, GLclampf green, GLclampf blue,
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glDrawBuffer
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void GLGraphicsStateGuardian::
 call_glDrawBuffer(GLenum mode) {
@@ -119,31 +132,31 @@ call_glDrawBuffer(GLenum mode) {
     glgsg_cat.debug() << "glDrawBuffer(";
     switch (mode) {
     case GL_FRONT:
-      glgsg_cat.debug(false) << "GL_FRONT)"; 
+      glgsg_cat.debug(false) << "GL_FRONT)";
       break;
     case GL_BACK:
-      glgsg_cat.debug(false) << "GL_BACK)"; 
+      glgsg_cat.debug(false) << "GL_BACK)";
       break;
     case GL_RIGHT:
-      glgsg_cat.debug(false) << "GL_RIGHT)"; 
+      glgsg_cat.debug(false) << "GL_RIGHT)";
       break;
     case GL_LEFT:
-      glgsg_cat.debug(false) << "GL_LEFT)"; 
+      glgsg_cat.debug(false) << "GL_LEFT)";
       break;
     case GL_FRONT_RIGHT:
-      glgsg_cat.debug(false) << "GL_FRONT_RIGHT)"; 
+      glgsg_cat.debug(false) << "GL_FRONT_RIGHT)";
       break;
     case GL_FRONT_LEFT:
-      glgsg_cat.debug(false) << "GL_FRONT_LEFT)"; 
+      glgsg_cat.debug(false) << "GL_FRONT_LEFT)";
       break;
     case GL_BACK_RIGHT:
-      glgsg_cat.debug(false) << "GL_BACK_RIGHT)"; 
+      glgsg_cat.debug(false) << "GL_BACK_RIGHT)";
       break;
     case GL_BACK_LEFT:
-      glgsg_cat.debug(false) << "GL_BACK_LEFT)"; 
+      glgsg_cat.debug(false) << "GL_BACK_LEFT)";
       break;
     case GL_FRONT_AND_BACK:
-      glgsg_cat.debug(false) << "GL_FRONT_AND_BACK)"; 
+      glgsg_cat.debug(false) << "GL_FRONT_AND_BACK)";
       break;
     }
     glgsg_cat.debug(false) << endl;
@@ -156,7 +169,7 @@ call_glDrawBuffer(GLenum mode) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::call_glReadBuffer
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void GLGraphicsStateGuardian::
 call_glReadBuffer(GLenum mode) {
@@ -207,7 +220,7 @@ call_glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
 {
     if ( _viewport_x != x || _viewport_y != y ||
         _viewport_width != width || _viewport_height != height )
-    {   
+    {
         _viewport_x = x; _viewport_y = y;
         _viewport_width = width; _viewport_height = height;
         glViewport( x, y, width, height );
@@ -254,7 +267,7 @@ call_glLightModelLocal(GLboolean local)
 ////////////////////////////////////////////////////////////////////
 INLINE void GLGraphicsStateGuardian::
 call_glLightModelTwoSide(GLboolean twoside)
-{       
+{
   if (_lmodel_twoside != twoside) {
     _lmodel_twoside = twoside;
 #ifdef GSG_VERBOSE
@@ -278,31 +291,31 @@ call_glStencilFunc(GLenum func) {
     glgsg_cat.debug() << "glStencilFunc(";
     switch (func) {
     case GL_NEVER:
-      glgsg_cat.debug(false) << "GL_NEVER, "; 
+      glgsg_cat.debug(false) << "GL_NEVER, ";
       break;
     case GL_LESS:
-      glgsg_cat.debug(false) << "GL_LESS, "; 
+      glgsg_cat.debug(false) << "GL_LESS, ";
       break;
     case GL_EQUAL:
-      glgsg_cat.debug(false) << "GL_EQUAL, "; 
+      glgsg_cat.debug(false) << "GL_EQUAL, ";
       break;
     case GL_LEQUAL:
-      glgsg_cat.debug(false) << "GL_LEQUAL, "; 
+      glgsg_cat.debug(false) << "GL_LEQUAL, ";
       break;
     case GL_GREATER:
-      glgsg_cat.debug(false) << "GL_GREATER, "; 
+      glgsg_cat.debug(false) << "GL_GREATER, ";
       break;
     case GL_NOTEQUAL:
-      glgsg_cat.debug(false) << "GL_NOTEQUAL, "; 
+      glgsg_cat.debug(false) << "GL_NOTEQUAL, ";
       break;
     case GL_GEQUAL:
-      glgsg_cat.debug(false) << "GL_GEQUAL, "; 
+      glgsg_cat.debug(false) << "GL_GEQUAL, ";
       break;
     case GL_ALWAYS:
-      glgsg_cat.debug(false) << "GL_ALWAYS, "; 
+      glgsg_cat.debug(false) << "GL_ALWAYS, ";
       break;
     default:
-      glgsg_cat.debug(false) << "unknown, "; 
+      glgsg_cat.debug(false) << "unknown, ";
       break;
     }
     glgsg_cat.debug(false) << "1, 1)" << endl;
@@ -324,25 +337,25 @@ call_glStencilOp(GLenum op) {
     glgsg_cat.debug() << "glStencilOp(GL_KEEP, GL_KEEP, ";
     switch (op) {
     case GL_KEEP:
-      glgsg_cat.debug(false) << "GL_KEEP)"; 
+      glgsg_cat.debug(false) << "GL_KEEP)";
       break;
     case GL_ZERO:
-      glgsg_cat.debug(false) << "GL_ZERO)"; 
+      glgsg_cat.debug(false) << "GL_ZERO)";
       break;
     case GL_REPLACE:
-      glgsg_cat.debug(false) << "GL_REPLACE)"; 
+      glgsg_cat.debug(false) << "GL_REPLACE)";
       break;
     case GL_INCR:
-      glgsg_cat.debug(false) << "GL_INCR)"; 
+      glgsg_cat.debug(false) << "GL_INCR)";
       break;
     case GL_DECR:
-      glgsg_cat.debug(false) << "GL_DECR)"; 
+      glgsg_cat.debug(false) << "GL_DECR)";
       break;
     case GL_INVERT:
-      glgsg_cat.debug(false) << "GL_INVERT)"; 
+      glgsg_cat.debug(false) << "GL_INVERT)";
       break;
     default:
-      glgsg_cat.debug(false) << "unknown)"; 
+      glgsg_cat.debug(false) << "unknown)";
       break;
     }
     glgsg_cat.debug(false) << endl;
@@ -399,64 +412,64 @@ call_glBlendFunc(GLenum sfunc, GLenum dfunc) {
     glgsg_cat.debug() << "glBlendFunc(";
     switch (sfunc) {
     case GL_ZERO:
-      glgsg_cat.debug(false) << "GL_ZERO, "; 
+      glgsg_cat.debug(false) << "GL_ZERO, ";
       break;
     case GL_ONE:
-      glgsg_cat.debug(false) << "GL_ONE, "; 
+      glgsg_cat.debug(false) << "GL_ONE, ";
       break;
     case GL_DST_COLOR:
-      glgsg_cat.debug(false) << "GL_DST_COLOR, "; 
+      glgsg_cat.debug(false) << "GL_DST_COLOR, ";
       break;
     case GL_ONE_MINUS_DST_COLOR:
-      glgsg_cat.debug(false) << "GL_ONE_MINUS_DST_COLOR, "; 
+      glgsg_cat.debug(false) << "GL_ONE_MINUS_DST_COLOR, ";
       break;
     case GL_SRC_ALPHA:
-      glgsg_cat.debug(false) << "GL_SRC_ALPHA, "; 
+      glgsg_cat.debug(false) << "GL_SRC_ALPHA, ";
       break;
     case GL_ONE_MINUS_SRC_ALPHA:
-      glgsg_cat.debug(false) << "GL_ONE_MINUS_SRC_ALPHA, "; 
+      glgsg_cat.debug(false) << "GL_ONE_MINUS_SRC_ALPHA, ";
       break;
     case GL_DST_ALPHA:
-      glgsg_cat.debug(false) << "GL_DST_ALPHA, "; 
+      glgsg_cat.debug(false) << "GL_DST_ALPHA, ";
       break;
     case GL_ONE_MINUS_DST_ALPHA:
-      glgsg_cat.debug(false) << "GL_ONE_MINUS_DST_ALPHA, "; 
+      glgsg_cat.debug(false) << "GL_ONE_MINUS_DST_ALPHA, ";
       break;
     case GL_SRC_ALPHA_SATURATE:
- 
-      glgsg_cat.debug(false) << "GL_SRC_ALPHA_SATURATE, "; 
+
+      glgsg_cat.debug(false) << "GL_SRC_ALPHA_SATURATE, ";
       break;
     default:
-      glgsg_cat.debug(false) << "unknown, "; 
+      glgsg_cat.debug(false) << "unknown, ";
       break;
     }
     switch (dfunc) {
     case GL_ZERO:
-      glgsg_cat.debug(false) << "GL_ZERO)"; 
+      glgsg_cat.debug(false) << "GL_ZERO)";
       break;
     case GL_ONE:
-      glgsg_cat.debug(false) << "GL_ONE)"; 
+      glgsg_cat.debug(false) << "GL_ONE)";
       break;
     case GL_SRC_COLOR:
-      glgsg_cat.debug(false) << "GL_SRC_COLOR)"; 
+      glgsg_cat.debug(false) << "GL_SRC_COLOR)";
       break;
     case GL_ONE_MINUS_SRC_COLOR:
-      glgsg_cat.debug(false) << "GL_ONE_MINUS_SRC_COLOR)"; 
+      glgsg_cat.debug(false) << "GL_ONE_MINUS_SRC_COLOR)";
       break;
     case GL_SRC_ALPHA:
-      glgsg_cat.debug(false) << "GL_SRC_ALPHA)"; 
+      glgsg_cat.debug(false) << "GL_SRC_ALPHA)";
       break;
     case GL_ONE_MINUS_SRC_ALPHA:
-      glgsg_cat.debug(false) << "GL_ONE_MINUS_SRC_ALPHA)"; 
+      glgsg_cat.debug(false) << "GL_ONE_MINUS_SRC_ALPHA)";
       break;
     case GL_DST_ALPHA:
-      glgsg_cat.debug(false) << "GL_DST_ALPHA)"; 
+      glgsg_cat.debug(false) << "GL_DST_ALPHA)";
       break;
     case GL_ONE_MINUS_DST_ALPHA:
-      glgsg_cat.debug(false) << "GL_ONE_MINUS_DST_ALPHA)"; 
+      glgsg_cat.debug(false) << "GL_ONE_MINUS_DST_ALPHA)";
       break;
     default:
-      glgsg_cat.debug(false) << "unknown)"; 
+      glgsg_cat.debug(false) << "unknown)";
       break;
     }
     glgsg_cat.debug(false) << endl;
@@ -495,21 +508,21 @@ call_glFogMode(GLint mode) {
     glgsg_cat.debug() << "glFog(GL_FOG_MODE, ";
     switch(mode) {
     case GL_LINEAR:
-      glgsg_cat.debug(false) << "GL_LINEAR)" << endl; 
+      glgsg_cat.debug(false) << "GL_LINEAR)" << endl;
       break;
     case GL_EXP:
-      glgsg_cat.debug(false) << "GL_EXP)" << endl; 
+      glgsg_cat.debug(false) << "GL_EXP)" << endl;
       break;
     case GL_EXP2:
-      glgsg_cat.debug(false) << "GL_EXP2)" << endl; 
+      glgsg_cat.debug(false) << "GL_EXP2)" << endl;
       break;
 #ifdef GL_FOG_FUNC_SGIS
     case GL_FOG_FUNC_SGIS:
-      glgsg_cat.debug(false) << "GL_FOG_FUNC_SGIS)" << endl; 
+      glgsg_cat.debug(false) << "GL_FOG_FUNC_SGIS)" << endl;
       break;
 #endif
     default:
-      glgsg_cat.debug(false) << "unknown)" << endl; 
+      glgsg_cat.debug(false) << "unknown)" << endl;
       break;
     }
 #endif
@@ -599,33 +612,33 @@ call_glAlphaFunc(GLenum func, GLclampf ref) {
     glgsg_cat.debug() << "glAlphaFunc(";
     switch (func) {
     case GL_NEVER:
-      glgsg_cat.debug(false) << "GL_NEVER, "; 
+      glgsg_cat.debug(false) << "GL_NEVER, ";
       break;
     case GL_LESS:
-      glgsg_cat.debug(false) << "GL_LESS, "; 
+      glgsg_cat.debug(false) << "GL_LESS, ";
       break;
     case GL_EQUAL:
-      glgsg_cat.debug(false) << "GL_EQUAL, "; 
+      glgsg_cat.debug(false) << "GL_EQUAL, ";
       break;
     case GL_LEQUAL:
-      glgsg_cat.debug(false) << "GL_LEQUAL, "; 
+      glgsg_cat.debug(false) << "GL_LEQUAL, ";
       break;
     case GL_GREATER:
-      glgsg_cat.debug(false) << "GL_GREATER, "; 
+      glgsg_cat.debug(false) << "GL_GREATER, ";
       break;
     case GL_NOTEQUAL:
-      glgsg_cat.debug(false) << "GL_NOTEQUAL, "; 
+      glgsg_cat.debug(false) << "GL_NOTEQUAL, ";
       break;
     case GL_GEQUAL:
-      glgsg_cat.debug(false) << "GL_GEQUAL, "; 
+      glgsg_cat.debug(false) << "GL_GEQUAL, ";
       break;
     case GL_ALWAYS:
-      glgsg_cat.debug(false) << "GL_ALWAYS, "; 
+      glgsg_cat.debug(false) << "GL_ALWAYS, ";
       break;
     }
     glgsg_cat.debug() << ref << ")" << endl;
 #endif
-    glAlphaFunc(func, ref); 
+    glAlphaFunc(func, ref);
   }
 }
 
@@ -642,13 +655,13 @@ call_glPolygonMode(GLenum mode) {
     glgsg_cat.debug() << "glPolygonMode(GL_BACK_AND_FRONT, ";
     switch (mode) {
     case GL_POINT:
-      glgsg_cat.debug(false) << "GL_POINT)" << endl; 
+      glgsg_cat.debug(false) << "GL_POINT)" << endl;
       break;
     case GL_LINE:
-      glgsg_cat.debug(false) << "GL_LINE)" << endl; 
+      glgsg_cat.debug(false) << "GL_LINE)" << endl;
       break;
     case GL_FILL:
-      glgsg_cat.debug(false) << "GL_FILL)" << endl; 
+      glgsg_cat.debug(false) << "GL_FILL)" << endl;
       break;
     }
 #endif
@@ -672,11 +685,11 @@ set_pack_alignment(GLint alignment) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::set_unpack_alignment
 //       Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void GLGraphicsStateGuardian::
 set_unpack_alignment(GLint alignment) {
-  if (_unpack_alignment != alignment) {   
+  if (_unpack_alignment != alignment) {
     glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
     _unpack_alignment = alignment;
   }
@@ -689,7 +702,7 @@ set_unpack_alignment(GLint alignment) {
 ////////////////////////////////////////////////////////////////////
 INLINE void GLGraphicsStateGuardian::
 enable_multisample(bool val) {
-  if (_multisample_enabled != val) {   
+  if (_multisample_enabled != val) {
     _multisample_enabled = val;
     if (val) {
 #ifdef GL_MULTISAMPLE_SGIS
@@ -712,7 +725,7 @@ enable_multisample(bool val) {
 ////////////////////////////////////////////////////////////////////
 INLINE void GLGraphicsStateGuardian::
 enable_line_smooth(bool val) {
-  if (_line_smooth_enabled != val) {   
+  if (_line_smooth_enabled != val) {
     _line_smooth_enabled = val;
     if (val) {
       glEnable(GL_LINE_SMOOTH);
@@ -730,7 +743,7 @@ enable_line_smooth(bool val) {
 ////////////////////////////////////////////////////////////////////
 INLINE void GLGraphicsStateGuardian::
 enable_point_smooth(bool val) {
-  if (_point_smooth_enabled != val) {   
+  if (_point_smooth_enabled != val) {
     _point_smooth_enabled = val;
     if (val) {
       glEnable(GL_POINT_SMOOTH);
@@ -749,7 +762,7 @@ enable_point_smooth(bool val) {
 ////////////////////////////////////////////////////////////////////
 INLINE void GLGraphicsStateGuardian::
 enable_lighting(bool val) {
-  if (_lighting_enabled != val) {   
+  if (_lighting_enabled != val) {
     _lighting_enabled = val;
     if (val) {
 #ifdef GSG_VERBOSE
@@ -826,7 +839,7 @@ enable_stencil_test(bool val) {
 INLINE GLenum GLGraphicsStateGuardian::get_light_id(int index) const
 {
     switch( index )
-    {   
+    {
         case 0: return GL_LIGHT0;
         case 1: return GL_LIGHT1;
         case 2: return GL_LIGHT2;
@@ -903,7 +916,7 @@ INLINE void GLGraphicsStateGuardian::enable_light(int light, bool val)
 ////////////////////////////////////////////////////////////////////
 INLINE void GLGraphicsStateGuardian::
 enable_texturing(bool val) {
-  if (_texturing_enabled != val) {   
+  if (_texturing_enabled != val) {
     _texturing_enabled = val;
     if (val) {
 #ifdef GSG_VERBOSE

@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "spotlight.h"
 #include "lightTransition.h"
@@ -135,7 +144,7 @@ bool Spotlight::make_image(Texture* texture, float radius)
       if (D <= radius)
         intensity = 1.0f;
           else if (D < 1.0f)
-        intensity = pow(cos((D-radius) / 
+        intensity = pow(cos((D-radius) /
                 (1.0f-radius) * (MathNumbers::pi_f*0.5f)), _exponent);
       else
         intensity = 0;
@@ -201,7 +210,7 @@ make_geometry(float intensity, float length, int num_facets)
   coords[1] = first_last_vert;
   vindex[0] = 0;
   vindex[1] = 1;
-  vindex[num_indices-1] = 1; 
+  vindex[num_indices-1] = 1;
 
   int i;
   for (i = 2; i < num_indices-1; i++) {
@@ -230,32 +239,32 @@ make_geometry(float intensity, float length, int num_facets)
 
   GeomNode* geomnode = new GeomNode("spotlight_frustum_geom");
   geomnode->add_geom(tfan);
-  
+
   NamedNode* root = new NamedNode("spotlight_frustum");
   RenderRelation* root_arc = new RenderRelation(root, geomnode);
 
   // Disable lighting
-  LightTransition *light_trans = 
+  LightTransition *light_trans =
     new LightTransition(LightTransition::all_off());
   root_arc->set_transition(light_trans);
 
   // Disable texturing
-  TextureTransition *tex_trans = 
+  TextureTransition *tex_trans =
     new TextureTransition(TextureTransition::off());
   root_arc->set_transition(tex_trans);
 
   // Turn off writes to Z
-  DepthWriteTransition *depth_trans = 
+  DepthWriteTransition *depth_trans =
     new DepthWriteTransition(DepthWriteTransition::off());
   root_arc->set_transition(depth_trans);
 
   // Enable transparency
-  TransparencyTransition *col_trans = 
+  TransparencyTransition *col_trans =
     new TransparencyTransition(TransparencyProperty::M_alpha);
   root_arc->set_transition(col_trans);
 
   // Disable culling
-  CullFaceTransition *cull_trans = 
+  CullFaceTransition *cull_trans =
     new CullFaceTransition(CullFaceProperty::M_cull_none);
   root_arc->set_transition(cull_trans);
 

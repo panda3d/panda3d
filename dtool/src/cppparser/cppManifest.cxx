@@ -1,6 +1,19 @@
-// Filename: cppManifest.C
+// Filename: cppManifest.cxx
 // Created by:  drose (22Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -12,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPManifest::ExpansionNode::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPManifest::ExpansionNode::
 ExpansionNode(int parm_number) :
@@ -23,7 +36,7 @@ ExpansionNode(int parm_number) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPManifest::ExpansionNode::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPManifest::ExpansionNode::
 ExpansionNode(const string &str) :
@@ -34,7 +47,7 @@ ExpansionNode(const string &str) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPManifest::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPManifest::
 CPPManifest(const string &args, const CPPFile &file) : _file(file) {
@@ -52,7 +65,7 @@ CPPManifest(const string &args, const CPPFile &file) : _file(file) {
   }
 
   _name = args.substr(0, p);
-  
+
   vector_string parameter_names;
 
   if (args[p] == '(') {
@@ -78,7 +91,7 @@ CPPManifest(const string &args, const CPPFile &file) : _file(file) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPManifest::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPManifest::
 ~CPPManifest() {
@@ -92,7 +105,7 @@ CPPManifest::
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPManifest::expand
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string CPPManifest::
 expand(const vector_string &args) const {
@@ -133,7 +146,7 @@ determine_type() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPManifest::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPManifest::
 output(ostream &out) const {
@@ -168,10 +181,10 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPManifest::parse_parameters
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPManifest::
-parse_parameters(const string &args, size_t &p, 
+parse_parameters(const string &args, size_t &p,
                  vector_string &parameter_names) {
   assert(p < args.size());
   assert(args[p] == '(');
@@ -184,7 +197,7 @@ parse_parameters(const string &args, size_t &p,
   while (p < args.size() && args[p] != ')') {
     // Here's the beginning of a parm.
     size_t q = p;
-    while (p < args.size() && !isspace(args[p]) && 
+    while (p < args.size() && !isspace(args[p]) &&
            args[p] != ')' && args[p] != ',') {
       p++;
     }
@@ -208,7 +221,7 @@ parse_parameters(const string &args, size_t &p,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPManifest::save_expansion
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPManifest::
 save_expansion(const string &exp, const vector_string &parameter_names) {
@@ -240,7 +253,7 @@ save_expansion(const string &exp, const vector_string &parameter_names) {
           pnum = i;
         }
       }
-      
+
       if (pnum != -1) {
         // Yep!
         if (last != q) {

@@ -1,6 +1,19 @@
-// Filename: cppEnumType.C
+// Filename: cppEnumType.cxx
 // Created by:  drose (25Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -15,7 +28,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPEnumType::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPEnumType::
 CPPEnumType(CPPIdentifier *ident, CPPScope *current_scope,
@@ -27,11 +40,11 @@ CPPEnumType(CPPIdentifier *ident, CPPScope *current_scope,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPEnumType::add_element
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPEnumType::
 add_element(const string &name, CPPScope *scope, CPPExpression *value) {
-  CPPType *type = 
+  CPPType *type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_int,
                                         CPPSimpleType::F_unsigned));
   CPPIdentifier *ident = new CPPIdentifier(name);
@@ -55,7 +68,7 @@ is_incomplete() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPEnumType::substitute_decl
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPEnumType::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
@@ -67,7 +80,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
 
   CPPEnumType *rep = new CPPEnumType(*this);
   if (_ident != NULL) {
-    rep->_ident = 
+    rep->_ident =
       _ident->substitute_decl(subst, current_scope, global_scope);
   }
 
@@ -84,7 +97,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPEnumType::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPEnumType::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
@@ -104,7 +117,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
     if (_ident != NULL) {
       out << " " << _ident->get_local_name(scope);
     }
-    
+
     out << " {\n";
     Elements::const_iterator ei;
     for (ei = _elements.begin(); ei != _elements.end(); ++ei) {
@@ -121,7 +134,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPEnumType::get_subtype
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration::SubType CPPEnumType::
 get_subtype() const {
@@ -131,7 +144,7 @@ get_subtype() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPEnumType::as_enum_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPEnumType *CPPEnumType::
 as_enum_type() {

@@ -1,6 +1,19 @@
 // Filename: eggMaterialCollection.I
 // Created by:  drose (30Apr01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 INLINE EggMaterialCollection::iterator EggMaterialCollection::
@@ -9,17 +22,17 @@ begin() const {
            _ordered_materials.begin());
   return _ordered_materials.begin();
 }
- 
+
 INLINE EggMaterialCollection::iterator EggMaterialCollection::
 end() const {
   return _ordered_materials.end();
 }
- 
+
 INLINE bool EggMaterialCollection::
 empty() const {
   return _ordered_materials.empty();
 }
- 
+
 INLINE EggMaterialCollection::size_type EggMaterialCollection::
 size() const {
   nassertr(_ordered_materials.size() == _materials.size(), 0);

@@ -1,6 +1,19 @@
 // Filename: immediateAttribute.cxx
 // Created by:  drose (24Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "immediateAttribute.h"
@@ -13,7 +26,7 @@ TypeHandle ImmediateAttribute::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: ImmediateAttribute::make_copy
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NodeAttribute *ImmediateAttribute::
 make_copy() const {
@@ -23,7 +36,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ImmediateAttribute::make_initial
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NodeAttribute *ImmediateAttribute::
 make_initial() const {
@@ -33,7 +46,7 @@ make_initial() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ImmediateAttribute::get_handle
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 TypeHandle ImmediateAttribute::
 get_handle() const {
@@ -43,7 +56,7 @@ get_handle() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ImmediateAttribute::internal_compare_to
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int ImmediateAttribute::
 internal_compare_to(const NodeAttribute *) const {

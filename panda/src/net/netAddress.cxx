@@ -1,6 +1,19 @@
 // Filename: netAddress.cxx
 // Created by:  drose (08Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "netAddress.h"
@@ -111,7 +124,7 @@ set_host(const string &hostname, int port) {
   if (p == hostname.length() && ni < 4 && is_ip && p > q) {
     ipaddr.n[ni] = (unsigned char)num;
     ni++;
-    
+
     if (num >= 256) {
       is_ip = false;
     }
@@ -141,9 +154,9 @@ set_host(const string &hostname, int port) {
         << "Unable to look up hostname " << hostname << ".\n";
       return false;
     }
-    
+
     PRIntn next = PR_EnumerateHostEnt(0, &host, port, &_addr);
-    
+
     if (next == -1) {
       pprerror("PR_EnumerateHostEnt");
       return false;
@@ -199,7 +212,7 @@ get_ip_string() const {
   static const int buf_len = 1024;
   char buf[buf_len];
 
-  PRStatus result = 
+  PRStatus result =
     PR_NetAddrToString(&_addr, buf, buf_len);
   if (result != PR_SUCCESS) {
     pprerror("PR_NetAddrToString");

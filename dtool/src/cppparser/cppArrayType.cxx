@@ -1,6 +1,19 @@
-// Filename: cppArrayType.C
+// Filename: cppArrayType.cxx
 // Created by:  drose (19Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -10,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPArrayType::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPArrayType::
 CPPArrayType(CPPType *element_type, CPPExpression *bounds) :
@@ -30,7 +43,7 @@ CPPArrayType(CPPType *element_type, CPPExpression *bounds) :
 ////////////////////////////////////////////////////////////////////
 bool CPPArrayType::
 is_fully_specified() const {
-  return CPPType::is_fully_specified() && 
+  return CPPType::is_fully_specified() &&
     _element_type->is_fully_specified();
 }
 
@@ -89,7 +102,7 @@ is_equivalent(const CPPType &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPArrayType::substitute_decl
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPArrayType::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
@@ -100,12 +113,12 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   }
 
   CPPArrayType *rep = new CPPArrayType(*this);
-  rep->_element_type = 
+  rep->_element_type =
     _element_type->substitute_decl(subst, current_scope, global_scope)
     ->as_type();
-  
+
   if (_bounds != NULL) {
-    rep->_bounds = 
+    rep->_bounds =
       _bounds->substitute_decl(subst, current_scope, global_scope)
       ->as_expression();
   }
@@ -123,7 +136,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPArrayType::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPArrayType::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
@@ -155,14 +168,14 @@ output_instance(ostream &out, int indent_level, CPPScope *scope,
   brackets << "]";
   string bracketsstr = brackets.str();
 
-  _element_type->output_instance(out, indent_level, scope, complete, 
+  _element_type->output_instance(out, indent_level, scope, complete,
                                  prename, name + bracketsstr);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPArrayType::get_subtype
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration::SubType CPPArrayType::
 get_subtype() const {
@@ -172,7 +185,7 @@ get_subtype() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPArrayType::as_array_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPArrayType *CPPArrayType::
 as_array_type() {

@@ -1,6 +1,19 @@
 // Filename: orthoProjection.cxx
 // Created by:  mike (18Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "geomLine.h"
@@ -37,17 +50,17 @@ get_projection_mat(CoordinateSystem cs) const {
 //     Function: OrthoProjection::make_geometry
 //       Access: Public, Virtual
 //  Description: Creates a GeomLine that describes the shape of the
-//               frustum for this projection 
+//               frustum for this projection
 ////////////////////////////////////////////////////////////////////
 Geom *OrthoProjection::
 make_geometry(const Colorf &color,
               CoordinateSystem cs) const {
   Vertexf rtn, ltn, lbn, rbn;
   Vertexf rtf, ltf, lbf, rbf;
-  
+
   // x, y, and z here refer to the right, forward, and up vectors,
   // which are not necessarily the x, y, and z axes.
-  
+
   LVector3f x = LVector3f::right(cs);
   LVector3f y = LVector3f::forward(cs);
   LVector3f z = LVector3f::up(cs);
@@ -70,7 +83,7 @@ make_geometry(const Colorf &color,
   rtf = yf + ((zt + xr) * fs);
   ltf = yf + ((zt + xl) * fs);
   lbf = yf + ((zb + xl) * fs);
-  rbf = yf + ((zb + xr) * fs); 
+  rbf = yf + ((zb + xr) * fs);
 
   PTA_Vertexf coords(0);
   PTA_ushort vindex(0);

@@ -1,6 +1,19 @@
 // Filename: parametricCurveCollection.cxx
 // Created by:  drose (04Mar01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "parametricCurveCollection.h"
@@ -18,7 +31,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: ParametricCurveCollection::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ParametricCurveCollection::
 ParametricCurveCollection() {
@@ -663,7 +676,7 @@ recompute() {
 //               Returns true if successful, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool ParametricCurveCollection::
-stitch(const ParametricCurveCollection *a, 
+stitch(const ParametricCurveCollection *a,
        const ParametricCurveCollection *b) {
   PT(ParametricCurve) a_xyz = a->get_xyz_curve();
   PT(ParametricCurve) b_xyz = b->get_xyz_curve();
@@ -763,15 +776,15 @@ write_egg(ostream &out, const Filename &filename, CoordinateSystem cs) {
     case CS_zup_right:
       out << "Z-Up";
       break;
-      
+
     case CS_yup_right:
       out << "Y-Up";
       break;
-      
+
     case CS_zup_left:
       out << "Z-Up-Left";
       break;
-      
+
     case CS_yup_left:
       out << "Y-Up-Left";
       break;
@@ -819,7 +832,7 @@ write_egg(ostream &out, const Filename &filename, CoordinateSystem cs) {
         t_count++;
         break;
       }
-      
+
       curve->set_name(name);
     }
 

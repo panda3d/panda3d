@@ -2,6 +2,19 @@
 // Created by:  drose (18Jan99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef COLORTRANSITION_H
 #define COLORTRANSITION_H
@@ -37,7 +50,7 @@ PUBLISHED:
   INLINE bool is_real() const;
   INLINE Colorf get_color() const;
 
-public:  
+public:
   virtual NodeTransition *make_copy() const;
   virtual NodeAttribute *make_attrib() const;
 
@@ -51,7 +64,7 @@ protected:
 
 public:
   static void register_with_read_factory();
-  virtual void write_datagram(BamWriter *manager, Datagram &me);  
+  virtual void write_datagram(BamWriter *manager, Datagram &me);
 
 protected:
   static TypedWritable *make_ColorTransition(const FactoryParams &params);

@@ -1,6 +1,19 @@
 // Filename: test_mathutil.cxx
 // Created by:  drose (16Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <luse.h>
@@ -24,14 +37,14 @@ main() {
   nout << "a * rot = " << a * rot << " length " << length(a * rot) << "\n"
        << "a * invert(rot) = " << a * invert(rot)
        << " length " << length(a * invert(rot)) << "\n"
-       << "b * rot = " << b * rot 
+       << "b * rot = " << b * rot
        << " length " << length(b * rot) << "\n"
        << "b * invert(rot) = " << b * invert(rot)
        << " length " << length(a * invert(rot)) << "\n";
   */
 
   BoundingLine line(LPoint3f(0, 0, 1), LPoint3f(0, 0, 0));
-  
+
   BoundingSphere s1(LPoint3f(0, 0, 10), 1);
   BoundingSphere s2(LPoint3f(10, 0, 10), 1);
   BoundingSphere s3(LPoint3f(1, 0, 0), 1);

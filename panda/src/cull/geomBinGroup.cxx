@@ -1,6 +1,19 @@
 // Filename: geomBinGroup.cxx
 // Created by:  drose (13Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "geomBinGroup.h"
@@ -15,7 +28,7 @@ TypeHandle GeomBinGroup::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinGroup::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomBinGroup::
 ~GeomBinGroup() {
@@ -129,7 +142,7 @@ clear_current_states() {
 //               GeomNodes) is visible this frame.
 ////////////////////////////////////////////////////////////////////
 void GeomBinGroup::
-record_current_state(GraphicsStateGuardian *gsg, CullState *cs, 
+record_current_state(GraphicsStateGuardian *gsg, CullState *cs,
                      int draw_order, CullTraverser *trav) {
   int index = choose_bin(cs);
   if (index >= 0 && index < get_num_bins()) {
@@ -140,7 +153,7 @@ record_current_state(GraphicsStateGuardian *gsg, CullState *cs,
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinGroup::draw
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomBinGroup::
 draw(CullTraverser *trav) {
@@ -160,7 +173,7 @@ draw(CullTraverser *trav) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinGroup::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomBinGroup::
 output(ostream &out) const {
@@ -171,7 +184,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinGroup::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomBinGroup::
 write(ostream &out, int indent_level) const {
@@ -230,7 +243,7 @@ PT(GeomBin) GeomBinGroup::
 detach() {
   nassertr(_is_attached, NULL);
   nassertr(_traverser != (CullTraverser *)NULL, NULL);
-    
+
   PT(GeomBin) keep = this;
 
   if (!has_parent()) {

@@ -1,6 +1,19 @@
 // Filename: nullTransitionWrapper.I
 // Created by:  drose (22Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "nodeRelation.h"
@@ -9,7 +22,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: NullTransitionWrapper::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NullTransitionWrapper::
 NullTransitionWrapper() {
@@ -18,7 +31,7 @@ NullTransitionWrapper() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NullTransitionWrapper::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NullTransitionWrapper::
 NullTransitionWrapper(const NullTransitionWrapper &) {
@@ -27,7 +40,7 @@ NullTransitionWrapper(const NullTransitionWrapper &) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NullTransitionWrapper::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NullTransitionWrapper::
 operator = (const NullTransitionWrapper &) {
@@ -36,7 +49,7 @@ operator = (const NullTransitionWrapper &) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NullTransitionWrapper::init_from
 //       Access: Public, Static
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NullTransitionWrapper NullTransitionWrapper::
 init_from(const NullTransitionWrapper &) {
@@ -46,7 +59,7 @@ init_from(const NullTransitionWrapper &) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NullTransitionWrapper::init_from
 //       Access: Public, Static
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NullTransitionWrapper NullTransitionWrapper::
 init_from(const NullAttributeWrapper &) {
@@ -56,7 +69,7 @@ init_from(const NullAttributeWrapper &) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NullTransitionWrapper::is_identity
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH bool NullTransitionWrapper::
 is_identity() const {
@@ -66,7 +79,7 @@ is_identity() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NullTransitionWrapper::compare_to
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH int NullTransitionWrapper::
 compare_to(const NullTransitionWrapper &) const {
@@ -76,7 +89,7 @@ compare_to(const NullTransitionWrapper &) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NullTransitionWrapper::make_identity
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NullTransitionWrapper::
 make_identity() {
@@ -85,7 +98,7 @@ make_identity() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NullTransitionWrapper::extract_from
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NullTransitionWrapper::
 extract_from(const NodeRelation *) {
@@ -94,7 +107,7 @@ extract_from(const NodeRelation *) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NullTransitionWrapper::store_to
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NullTransitionWrapper::
 store_to(NodeRelation *) const {
@@ -103,7 +116,7 @@ store_to(NodeRelation *) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NullTransitionWrapper::compose_in_place
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NullTransitionWrapper::
 compose_in_place(const NullTransitionWrapper &) {
@@ -112,7 +125,7 @@ compose_in_place(const NullTransitionWrapper &) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NullTransitionWrapper::invert_in_place
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NullTransitionWrapper::
 invert_in_place() {
@@ -121,7 +134,7 @@ invert_in_place() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NullTransitionWrapper::invert_compose_in_place
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NullTransitionWrapper::
 invert_compose_in_place(const NullTransitionWrapper &) {
@@ -130,7 +143,7 @@ invert_compose_in_place(const NullTransitionWrapper &) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NullTransitionWrapper::extract_from_cache
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH Node *NullTransitionWrapper::
 extract_from_cache(const NodeRelation *) {
@@ -174,7 +187,7 @@ set_computed_verified(UpdateSeq) {
 //               and stores the result in this wrapper.
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NullTransitionWrapper::
-cached_compose(const NullTransitionWrapper &, 
+cached_compose(const NullTransitionWrapper &,
                const NullTransitionWrapper &,
                UpdateSeq) {
 }
@@ -182,7 +195,7 @@ cached_compose(const NullTransitionWrapper &,
 ////////////////////////////////////////////////////////////////////
 //     Function: NullTransitionWrapper::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NullTransitionWrapper::
 output(ostream &) const {
@@ -191,7 +204,7 @@ output(ostream &) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NullTransitionWrapper::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH void NullTransitionWrapper::
 write(ostream &, int) const {

@@ -1,4 +1,20 @@
-/* Copyright (c) 1994 Regents of the University of California */
+/* Filename: header.c
+ * Created by:  
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ * PANDA 3D SOFTWARE
+ * Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+ *
+ * All use of this software is subject to the terms of the Panda 3d
+ * Software license.  You should have received a copy of this license
+ * along with this source code; you will also find a current copy of
+ * the license at http://www.panda3d.org/license.txt .
+ *
+ * To contact the maintainers of this program write to
+ * panda3d@yahoogroups.com .
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*
  *  header.c - routines for reading and writing information headers.
@@ -38,7 +54,7 @@ newheader(char *s, register FILE *fp)           /* identifying line of informati
 }
 
 
-int 
+int
 headidval(register char *r, register char *s)                   /* get header id (return true if is id) */
 {
         register char  *cp = HDRSTR;

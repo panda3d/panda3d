@@ -1,13 +1,26 @@
 // Filename: eggXfmAnimData.I
 // Created by:  drose (19Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmAnimData::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggXfmAnimData::
 EggXfmAnimData(const string &name, CoordinateSystem cs) : EggAnimData(name) {
@@ -18,10 +31,10 @@ EggXfmAnimData(const string &name, CoordinateSystem cs) : EggAnimData(name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmAnimData::Copy constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggXfmAnimData::
-EggXfmAnimData(const EggXfmAnimData &copy) 
+EggXfmAnimData(const EggXfmAnimData &copy)
   : EggAnimData(copy),
     _order(copy._order),
     _contents(copy._contents),
@@ -32,7 +45,7 @@ EggXfmAnimData(const EggXfmAnimData &copy)
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmAnimData::Copy assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggXfmAnimData &EggXfmAnimData::
 operator = (const EggXfmAnimData &copy) {
@@ -48,7 +61,7 @@ operator = (const EggXfmAnimData &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmAnimData::set_order
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggXfmAnimData::
 set_order(const string &order) {
@@ -58,7 +71,7 @@ set_order(const string &order) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmAnimData::clear_order
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggXfmAnimData::
 clear_order() {
@@ -68,17 +81,17 @@ clear_order() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmAnimData::has_order
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggXfmAnimData::
 has_order() const {
   return !_order.empty();
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmAnimData::get_order
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const string &EggXfmAnimData::
 get_order() const {
@@ -106,7 +119,7 @@ get_standard_order() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmAnimData::set_contents
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggXfmAnimData::
 set_contents(const string &contents) {
@@ -116,7 +129,7 @@ set_contents(const string &contents) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmAnimData::clear_contents
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggXfmAnimData::
 clear_contents() {
@@ -126,17 +139,17 @@ clear_contents() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmAnimData::has_contents
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggXfmAnimData::
 has_contents() const {
   return !_contents.empty();
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmAnimData::get_contents
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const string &EggXfmAnimData::
 get_contents() const {

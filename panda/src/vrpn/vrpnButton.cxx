@@ -1,6 +1,19 @@
 // Filename: vrpnButton.cxx
 // Created by:  drose (26Jan01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "vrpnButton.h"
@@ -15,7 +28,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: VrpnButton::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 VrpnButton::
 VrpnButton(const string &button_name, vrpn_Connection *connection) :
@@ -29,7 +42,7 @@ VrpnButton(const string &button_name, vrpn_Connection *connection) :
 ////////////////////////////////////////////////////////////////////
 //     Function: VrpnButton::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 VrpnButton::
 ~VrpnButton() {
@@ -62,7 +75,7 @@ unmark(VrpnButtonDevice *device) {
     vrpn_cat.debug() << *this << " unmarking " << *device << "\n";
   }
 
-  Devices::iterator di = 
+  Devices::iterator di =
     find(_devices.begin(), _devices.end(), device);
 
   if (di != _devices.end()) {
@@ -73,7 +86,7 @@ unmark(VrpnButtonDevice *device) {
 ////////////////////////////////////////////////////////////////////
 //     Function: VrpnButton::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void VrpnButton::
 output(ostream &out) const {
@@ -83,11 +96,11 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: VrpnButton::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void VrpnButton::
 write(ostream &out, int indent_level) const {
-  indent(out, indent_level) 
+  indent(out, indent_level)
     << get_button_name() << " ("
     << _devices.size() << " devices)\n";
 }

@@ -1,6 +1,19 @@
 // Filename: movingPartBase.cxx
 // Created by:  drose (22Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "movingPartBase.h"
@@ -15,7 +28,7 @@ TypeHandle MovingPartBase::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: MovingPartBase::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 MovingPartBase::
 MovingPartBase(PartGroup *parent, const string &name)
@@ -25,7 +38,7 @@ MovingPartBase(PartGroup *parent, const string &name)
 ////////////////////////////////////////////////////////////////////
 //     Function: MovingPartBase::Constructor
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 MovingPartBase::
 MovingPartBase(void){
@@ -73,7 +86,7 @@ write_with_value(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: MovingPartBase::do_update
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void MovingPartBase::
 do_update(PartBundle *root, PartGroup *parent,
@@ -145,7 +158,7 @@ pick_channel_index(list<int> &holes, int &next) const {
 
     int hole = (*ii);
     nassertv(hole >= 0 && hole < next);
-    if (hole < (int)_channels.size() || 
+    if (hole < (int)_channels.size() ||
         _channels[hole] != (AnimChannelBase *)NULL) {
       // We can't accept this hole; we're using it!
       holes.erase(ii);

@@ -1,6 +1,20 @@
 // Filename: bamReader.I
 // Created by:  jason (12Jun00)
 //
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
@@ -94,7 +108,7 @@ create_factory() {
 //               into any TypedWritable's make function, and parses
 //               out the datagram that contatins the data it needs to
 //               construct itself, and parses out the pointer to the
-//               managing BamReader object 
+//               managing BamReader object
 ////////////////////////////////////////////////////////////////////
 INLINE void
 parse_params(const FactoryParams &params,

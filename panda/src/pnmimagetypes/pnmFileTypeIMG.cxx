@@ -1,6 +1,19 @@
 // Filename: pnmFileTypeIMG.cxx
 // Created by:  drose (19Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileTypeIMG.h"
@@ -24,7 +37,7 @@ TypeHandle PNMFileTypeIMG::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeIMG::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeIMG::
 PNMFileTypeIMG() {
@@ -103,13 +116,13 @@ make_writer(FILE *file, bool owns_file) {
 }
 
 
-inline unsigned long 
+inline unsigned long
 read_ulong(FILE *file) {
   unsigned long x;
   return pm_readbiglong(file, (long *)&x)==0 ? x : 0;
 }
 
-inline unsigned short 
+inline unsigned short
 read_ushort(FILE *file) {
   unsigned short x;
   return pm_readbigshort(file, (short *)&x)==0 ? x : 0;
@@ -140,10 +153,10 @@ write_uchar(FILE *file, unsigned char x) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeIMG::Reader::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeIMG::Reader::
-Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) : 
+Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
   if (img_header_type == IHT_long) {
@@ -158,14 +171,14 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
       _is_valid = false;
       return;
     }
-    
-    _x_size = 
+
+    _x_size =
       ((unsigned char)magic_number[0] << 24) |
       ((unsigned char)magic_number[1] << 16) |
       ((unsigned char)magic_number[2] << 8) |
       ((unsigned char)magic_number[3]);
-    
-    _y_size = 
+
+    _y_size =
       ((unsigned char)magic_number[4] << 24) |
       ((unsigned char)magic_number[5] << 16) |
       ((unsigned char)magic_number[6] << 8) |
@@ -180,12 +193,12 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
       _is_valid = false;
       return;
     }
-    
-    _x_size = 
+
+    _x_size =
       ((unsigned char)magic_number[0] << 8) |
       ((unsigned char)magic_number[1]);
-    
-    _y_size = 
+
+    _y_size =
       ((unsigned char)magic_number[2] << 8) |
       ((unsigned char)magic_number[3]);
 
@@ -248,7 +261,7 @@ read_row(xel *row_data, xelval *) {
     red = read_uchar(_file);
     grn = read_uchar(_file);
     blu = read_uchar(_file);
-    
+
     PPM_ASSIGN(row_data[x], red, grn, blu);
   }
 
@@ -258,7 +271,7 @@ read_row(xel *row_data, xelval *) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeIMG::Writer::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeIMG::Writer::
 Writer(PNMFileType *type, FILE *file, bool owns_file) :
@@ -330,7 +343,7 @@ write_row(xel *row_data, xelval *) {
     write_uchar(_file, (unsigned char)(255*PPM_GETG(row_data[x])/_maxval));
     write_uchar(_file, (unsigned char)(255*PPM_GETB(row_data[x])/_maxval));
   }
-  
+
   return true;
 }
 

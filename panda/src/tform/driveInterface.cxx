@@ -1,6 +1,19 @@
 // Filename: driveInterface.cxx
 // Created by:  drose (17Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "driveInterface.h"
@@ -94,7 +107,7 @@ operator < (const DriveInterface::KeyHeld &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DriveInterface::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DriveInterface::
 DriveInterface(const string &name) : DataNode(name) {
@@ -227,7 +240,7 @@ apply(double x, double y, bool any_button) {
     // Determine, based on the mouse's position and the amount of time
     // elapsed since last frame, how far forward/backward we should
     // move and how much we should rotate.
-    
+
     // First, how fast are we moving?  This is based on the mouse's
     // vertical position.
 
@@ -237,19 +250,19 @@ apply(double x, double y, bool any_button) {
     if (y >= dead_zone_top) {
       // Motion is forward.  Compute the throttle value: the ratio of
       // the mouse pointer within the range of vertical movement.
-      float throttle = 
-        (min(y, 1.0) - dead_zone_top) / 
+      float throttle =
+        (min(y, 1.0) - dead_zone_top) /
         (1.0 - dead_zone_top);
       _speed = throttle * _forward_speed;
-      
+
     } else if (y <= dead_zone_bottom) {
       // Motion is backward.
-      float throttle = 
-        (max(y, -1.0) - dead_zone_bottom) / 
+      float throttle =
+        (max(y, -1.0) - dead_zone_bottom) /
         (-1.0 - dead_zone_bottom);
       _speed = -throttle * _reverse_speed;
     }
-    
+
     // Now, what's our rotational velocity?  This is based on the
     // mouse's horizontal position.
 
@@ -260,15 +273,15 @@ apply(double x, double y, bool any_button) {
       // Rotation is to the right.  Compute the throttle value: the
       // ratio of the mouse pointer within the range of horizontal
       // movement.
-      float throttle = 
-        (min(x, 1.0) - dead_zone_right) / 
+      float throttle =
+        (min(x, 1.0) - dead_zone_right) /
         (1.0 - dead_zone_right);
       _rot_speed = throttle * _rotate_speed;
-      
+
     } else if (x <= dead_zone_left) {
       // Rotation is to the left.
-      float throttle = 
-        (max(x, -1.0) - dead_zone_left) / 
+      float throttle =
+        (max(x, -1.0) - dead_zone_left) /
         (-1.0 - dead_zone_left);
       _rot_speed = -throttle * _rotate_speed;
     }
@@ -276,7 +289,7 @@ apply(double x, double y, bool any_button) {
   } else {
     // If we're not holding down any of the mouse buttons, do this
     // computation based on the arrow keys.
-    
+
     // Which vertical arrow key changed state more recently?
     float throttle;
 
@@ -322,7 +335,7 @@ apply(double x, double y, bool any_button) {
 
   // rot_mat is the rotation matrix corresponding to our previous
   // heading.
-  LMatrix3f rot_mat = 
+  LMatrix3f rot_mat =
     LMatrix3f::rotate_mat_normaxis(_hpr[0], LVector3f::up(_cs), _cs);
 
   // Take a step in the direction of our previous heading.
@@ -371,7 +384,7 @@ reextract() {
   }
 
   if (tform_cat.is_debug()) {
-    tform_cat.debug() 
+    tform_cat.debug()
       << "Reextract " << _hpr << ", " << _xyz << " from:\n";
     _mat.write(tform_cat.debug(false), 2);
   }
@@ -392,7 +405,7 @@ recompute() {
 ////////////////////////////////////////////////////////////////////
 //     Function: DriveInterface::transmit_data
 //       Access: Public
-//  Description: Convert mouse data into a driveInterface matrix 
+//  Description: Convert mouse data into a driveInterface matrix
 ////////////////////////////////////////////////////////////////////
 void DriveInterface::
 transmit_data(NodeAttributes &data) {

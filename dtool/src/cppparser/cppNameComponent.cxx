@@ -1,6 +1,19 @@
-// Filename: cppNameComponent.C
+// Filename: cppNameComponent.cxx
 // Created by:  drose (12Nov99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -10,11 +23,11 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPNameComponent::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPNameComponent::
 CPPNameComponent(const string &name) :
-  _name(name) 
+  _name(name)
 {
   _templ = (CPPTemplateParameterList *)NULL;
 }
@@ -22,7 +35,7 @@ CPPNameComponent(const string &name) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPNameComponent::Equivalence Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPNameComponent::
 operator == (const CPPNameComponent &other) const {
@@ -45,7 +58,7 @@ operator == (const CPPNameComponent &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPNameComponent::Nonequivalence Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPNameComponent::
 operator != (const CPPNameComponent &other) const {
@@ -55,7 +68,7 @@ operator != (const CPPNameComponent &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPNameComponent::Ordering Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPNameComponent::
 operator < (const CPPNameComponent &other) const {
@@ -74,7 +87,7 @@ operator < (const CPPNameComponent &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPNameComponent::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string CPPNameComponent::
 get_name() const {
@@ -84,7 +97,7 @@ get_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPNameComponent::get_name_with_templ
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 string CPPNameComponent::
 get_name_with_templ(CPPScope *scope) const {
@@ -101,7 +114,7 @@ get_name_with_templ(CPPScope *scope) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPNameComponent::get_templ
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPTemplateParameterList *CPPNameComponent::
 get_templ() const {
@@ -111,7 +124,7 @@ get_templ() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPNameComponent::empty
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPNameComponent::
 empty() const {
@@ -121,7 +134,7 @@ empty() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPNameComponent::has_templ
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPNameComponent::
 has_templ() const {
@@ -146,7 +159,7 @@ is_tbd() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPNameComponent::set_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPNameComponent::
 set_name(const string &name) {
@@ -156,7 +169,7 @@ set_name(const string &name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPNameComponent::append_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPNameComponent::
 append_name(const string &name) {
@@ -166,7 +179,7 @@ append_name(const string &name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPNameComponent::set_templ
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPNameComponent::
 set_templ(CPPTemplateParameterList *templ) {
@@ -176,7 +189,7 @@ set_templ(CPPTemplateParameterList *templ) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPNameComponent::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPNameComponent::
 output(ostream &out) const {

@@ -1,13 +1,26 @@
 // Filename: interrogateComponent.I
 // Created by:  drose (08Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateComponent::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE InterrogateComponent::
 InterrogateComponent(InterrogateModuleDef *def) :
@@ -18,7 +31,7 @@ InterrogateComponent(InterrogateModuleDef *def) :
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateComponent::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE InterrogateComponent::
 InterrogateComponent(const InterrogateComponent &copy) :
@@ -30,7 +43,7 @@ InterrogateComponent(const InterrogateComponent &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateComponent::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void InterrogateComponent::
 operator = (const InterrogateComponent &copy) {
@@ -100,7 +113,7 @@ get_module_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateComponent::has_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateComponent::
 has_name() const {
@@ -110,7 +123,7 @@ has_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateComponent::get_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const string &InterrogateComponent::
 get_name() const {

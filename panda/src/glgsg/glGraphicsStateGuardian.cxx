@@ -1,6 +1,19 @@
 // Filename: glGraphicsStateGuardian.cxx
 // Created by:  drose (02Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "glGraphicsStateGuardian.h"
@@ -134,7 +147,7 @@ issue_transformed_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
   // scaled and offsetted.
   LPoint3f temp(color[0], color[1], color[2]);
   temp = temp * glgsg->get_current_color_mat();
-  float alpha = (color[3] * glgsg->get_current_alpha_scale()) + 
+  float alpha = (color[3] * glgsg->get_current_alpha_scale()) +
                  glgsg->get_current_alpha_offset();
 
   Colorf transformed(temp[0], temp[1], temp[2], alpha);
@@ -148,20 +161,20 @@ issue_transformed_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GLGraphicsStateGuardian::
 GLGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
   _light_info = (LightInfo *)NULL;
   _clip_plane_enabled = (bool *)NULL;
   _cur_clip_plane_enabled = (bool *)NULL;
-  
+
   // Create a default RenderTraverser.
   if (gl_cull_traversal) {
-    _render_traverser = 
+    _render_traverser =
       new CullTraverser(this, RenderRelation::get_class_type());
   } else {
-    _render_traverser = 
+    _render_traverser =
       new DirectRenderTraverser(this, RenderRelation::get_class_type());
   }
 
@@ -171,7 +184,7 @@ GLGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GLGraphicsStateGuardian::
 ~GLGraphicsStateGuardian() {
@@ -215,15 +228,15 @@ reset() {
 
   // Set up our clear values to invalid values, so the glClear* calls
   // will be made initially.
-  _clear_color_red = -1.0f; 
+  _clear_color_red = -1.0f;
   _clear_color_green = -1.0f;
-  _clear_color_blue = -1.0f; 
+  _clear_color_blue = -1.0f;
   _clear_color_alpha = -1.0f;
   _clear_depth = -1.0f;
   _clear_stencil = -1;
   _clear_accum_red = -1.0f;
   _clear_accum_green = -1.0f;
-  _clear_accum_blue = -1.0f; 
+  _clear_accum_blue = -1.0f;
   _clear_accum_alpha = -1.0f;
 
   // Set up the specific state values to GL's known initial values.
@@ -330,7 +343,7 @@ reset() {
   }
 
   // use per-vertex fog if per-pixel fog requires SW renderer
-  glHint(GL_FOG_HINT,GL_DONT_CARE);  
+  glHint(GL_FOG_HINT,GL_DONT_CARE);
 }
 
 
@@ -444,9 +457,9 @@ prepare_display_region() {
     GLint y = GLint(b);
     GLsizei width = GLsizei(w);
     GLsizei height = GLsizei(h);
-  
+
     enable_scissor( true );
-    call_glScissor( x, y, width, height );    
+    call_glScissor( x, y, width, height );
     call_glViewport( x, y, width, height );
   }
 }
@@ -464,7 +477,7 @@ void GLGraphicsStateGuardian::
 render_frame(const AllAttributesWrapper &initial_state) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug()
-    << "begin frame " << ClockObject::get_global_clock()->get_frame_count() 
+    << "begin frame " << ClockObject::get_global_clock()->get_frame_count()
     << " --------------------------------------------" << endl;
 #endif
 
@@ -489,7 +502,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
 
   if (_clear_buffer_type != 0) {
     // First, clear the entire window.
-    PT(DisplayRegion) win_dr = 
+    PT(DisplayRegion) win_dr =
       _win->make_scratch_display_region(_win->get_width(), _win->get_height());
     nassertv(win_dr != (DisplayRegion*)NULL);
     DisplayRegionStack old_dr = push_display_region(win_dr);
@@ -515,7 +528,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
               Camera *cam = dr->get_camera();
 
               // For each display region, render from the camera's view.
-              if (dr->is_active() && cam != (Camera *)NULL && 
+              if (dr->is_active() && cam != (Camera *)NULL &&
                   cam->is_active() && cam->get_scene() != (Node *)NULL) {
                 DisplayRegionStack old_dr = push_display_region(dr);
                 prepare_display_region();
@@ -536,19 +549,19 @@ render_frame(const AllAttributesWrapper &initial_state) {
     // Let's turn off all the lights we had on, and clear the light
     // cache--to force the lights to be reissued next frame, in case
     // their parameters or positions have changed between frames.
-    
+
     for (int i = 0; i < _max_lights; i++) {
       enable_light(i, false);
       _light_info[i]._light = (Light *)NULL;
     }
-    
+
     // Also force the lighting state to unlit, so that issue_light()
     // will be guaranteed to be called next frame even if we have the
     // same set of light pointers we had this frame.
     NodeAttributes state;
     state.set_attribute(LightTransition::get_class_type(), new LightAttribute);
     set_state(state, false);
-    
+
     // All this work to undo the lighting state each frame doesn't seem
     // ideal--there may be a better way.  Maybe if the lights were just
     // more aware of whether their parameters or positions have changed
@@ -582,7 +595,7 @@ render_scene(Node *root, ProjectionNode *projnode,
 #ifdef GSG_VERBOSE
   _pass_number = 0;
   glgsg_cat.debug()
-    << "begin scene - - - - - - - - - - - - - - - - - - - - - - - - -" 
+    << "begin scene - - - - - - - - - - - - - - - - - - - - - - - - -"
     << endl;
 #endif
   _current_root_node = root;
@@ -592,7 +605,7 @@ render_scene(Node *root, ProjectionNode *projnode,
 
 #ifdef GSG_VERBOSE
   glgsg_cat.debug()
-    << "done scene  - - - - - - - - - - - - - - - - - - - - - - - - -" 
+    << "done scene  - - - - - - - - - - - - - - - - - - - - - - - - -"
     << endl;
 #endif
 }
@@ -626,7 +639,7 @@ render_subgraph(RenderTraverser *traverser,
   // a coordinate system.  Sigh.  In order to implement a Z-up
   // coordinate system, we'll store the Z-up conversion in the
   // modelview matrix.
-  LMatrix4f projection_mat = 
+  LMatrix4f projection_mat =
     projnode->get_projection()->get_projection_mat(CS_yup_right);
 
   _current_projection_mat = projection_mat;
@@ -648,7 +661,7 @@ render_subgraph(RenderTraverser *traverser,
   if (_coordinate_system != CS_yup_right) {
     // Now we build the coordinate system conversion into the
     // modelview matrix (as described in the paragraph above).
-    modelview_mat = modelview_mat * 
+    modelview_mat = modelview_mat *
       LMatrix4f::convert_mat(_coordinate_system, CS_yup_right);
   }
 
@@ -684,23 +697,23 @@ render_subgraph(RenderTraverser *traverser,
 //               render process.
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-render_subgraph(RenderTraverser *traverser, Node *subgraph, 
+render_subgraph(RenderTraverser *traverser, Node *subgraph,
                 const AllAttributesWrapper &initial_state,
                 const AllTransitionsWrapper &net_trans) {
 #ifdef GSG_VERBOSE
   glgsg_cat.debug()
-    << "begin subgraph (pass " << ++_pass_number 
+    << "begin subgraph (pass " << ++_pass_number
     << ") - - - - - - - - - - - - - - - - - - - - - - - - -" << endl;
 #endif
   //  activate();
-    
+
   nassertv(traverser != (RenderTraverser *)NULL);
   traverser->traverse(subgraph, initial_state, net_trans);
 
 #ifdef GSG_VERBOSE
   glgsg_cat.debug()
-    << "end subgraph (pass " << _pass_number 
-    << ") - - - - - - - - - - - - - - - - - - - - - - - - -" 
+    << "end subgraph (pass " << _pass_number
+    << ") - - - - - - - - - - - - - - - - - - - - - - - - -"
     << endl;
 #endif
 }
@@ -708,7 +721,7 @@ render_subgraph(RenderTraverser *traverser, Node *subgraph,
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::draw_point
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 draw_point(const GeomPoint *geom) {
@@ -744,7 +757,7 @@ draw_point(const GeomPoint *geom) {
 
   // Draw overall
   issuer.issue_color(G_OVERALL, ci);
-  issuer.issue_normal(G_OVERALL, ni); 
+  issuer.issue_normal(G_OVERALL, ni);
 
   glBegin(GL_POINTS);
 
@@ -752,7 +765,7 @@ draw_point(const GeomPoint *geom) {
     // Draw per primitive
     issuer.issue_color(G_PER_PRIM, ci);
     issuer.issue_normal(G_PER_PRIM, ni);
-    
+
     // Draw per vertex, same thing.
     issuer.issue_color(G_PER_VERTEX, ci);
     issuer.issue_normal(G_PER_VERTEX, ni);
@@ -767,19 +780,19 @@ draw_point(const GeomPoint *geom) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::draw_line
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 draw_line(const GeomLine* geom) {
   //  activate();
- 
+
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_line()" << endl;
 #endif
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
-  
+
   call_glLineWidth(geom->get_width());
- 
+
   int nprims = geom->get_num_prims();
   Geom::VertexIterator vi = geom->make_vertex_iterator();
   Geom::ColorIterator ci = geom->make_color_iterator();
@@ -807,7 +820,7 @@ draw_line(const GeomLine* geom) {
 
   // Draw overall
   issuer.issue_color(G_OVERALL, ci);
- 
+
   glBegin(GL_LINES);
 
   for (int i = 0; i < nprims; i++) {
@@ -876,7 +889,7 @@ draw_linestrip(const GeomLinestrip* geom) {
 
     int num_verts = *(plen++);
     nassertv(num_verts >= 2);
-   
+
     glBegin(GL_LINE_STRIP);
 
     // Per-component attributes for the first line segment?
@@ -911,7 +924,7 @@ draw_linestrip(const GeomLinestrip* geom) {
 ////////////////////////////////////////////////////////////////////
 
 // this class exists because an alpha sort is necessary for correct
-// sprite rendering, and we can't simply sort the vertex arrays as 
+// sprite rendering, and we can't simply sort the vertex arrays as
 // each vertex may or may not have corresponding information in the
 // x/y texel-world-ratio and rotation arrays.
 class WrappedSprite {
@@ -925,7 +938,7 @@ public:
 
 // this struct exists because the STL can sort faster than i can.
 struct draw_sprite_vertex_less {
-  INLINE bool operator ()(const WrappedSprite& v0, 
+  INLINE bool operator ()(const WrappedSprite& v0,
               const WrappedSprite& v1) const {
     return v0._v[2] < v1._v[2]; }
 };
@@ -937,12 +950,12 @@ draw_sprite(const GeomSprite *geom) {
   // of sprites all facing the screen.  Performing the billboard math
   // for ~1000 sprites is way too slow.  Ideally, we want one
   // matrix transformation that will handle everything, and this is
-  // just about what ends up happening. We're getting the front-facing 
+  // just about what ends up happening. We're getting the front-facing
   // effect by setting up a new frustum (of the same z-depth as the
   // current one) that is very small in x and y.  This way regularly
   // rendered triangles that might not be EXACTLY facing the camera
   // will certainly look close enough.  Then, we transform to camera-space
-  // by hand and apply the inverse frustum to the transformed point.  
+  // by hand and apply the inverse frustum to the transformed point.
   // For some cracked out reason, this actually works.
 
 #ifdef GSG_VERBOSE
@@ -1003,7 +1016,7 @@ draw_sprite(const GeomSprite *geom) {
           glLoadIdentity();
           glFrustum(-1.0f, 1.0f, -1.0f, 1.0f, tnear, tfar);
   #endif
-  
+
   // load up our own matrices
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
@@ -1133,7 +1146,7 @@ draw_sprite(const GeomSprite *geom) {
   // notice that alphas may be screwy.  It's ok though, because this is fast.
   // if you want accuracy, use billboards and take the speed hit.
   if (alpha) {
-    sort(cameraspace_vector.begin(), cameraspace_vector.end(), 
+    sort(cameraspace_vector.begin(), cameraspace_vector.end(),
      draw_sprite_vertex_less());
   }
 
@@ -1214,7 +1227,7 @@ draw_sprite(const GeomSprite *geom) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::draw_polygon
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 draw_polygon(const GeomPolygon *geom) {
@@ -1249,7 +1262,7 @@ draw_polygon(const GeomPolygon *geom) {
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.
-  if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) || 
+  if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) ||
       (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
     call_glShadeModel(GL_SMOOTH);
   } else {
@@ -1258,7 +1271,7 @@ draw_polygon(const GeomPolygon *geom) {
 
   // Draw overall
   issuer.issue_color(G_OVERALL, ci);
-  issuer.issue_normal(G_OVERALL, ni); 
+  issuer.issue_normal(G_OVERALL, ni);
 
   for (int i = 0; i < nprims; i++) {
     // Draw per primitive
@@ -1287,7 +1300,7 @@ draw_polygon(const GeomPolygon *geom) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::draw_tri
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 draw_tri(const GeomTri *geom) {
@@ -1321,7 +1334,7 @@ draw_tri(const GeomTri *geom) {
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.
-  if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) || 
+  if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) ||
       (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
     call_glShadeModel(GL_SMOOTH);
   } else {
@@ -1330,15 +1343,15 @@ draw_tri(const GeomTri *geom) {
 
   // Draw overall
   issuer.issue_color(G_OVERALL, ci);
-  issuer.issue_normal(G_OVERALL, ni); 
-  
+  issuer.issue_normal(G_OVERALL, ni);
+
   glBegin(GL_TRIANGLES);
-  
+
   for (int i = 0; i < nprims; i++) {
     // Draw per primitive
     issuer.issue_color(G_PER_PRIM, ci);
     issuer.issue_normal(G_PER_PRIM, ni);
-    
+
     for (int j = 0; j < 3; j++) {
       // Draw per vertex
       issuer.issue_color(G_PER_VERTEX, ci);
@@ -1355,7 +1368,7 @@ draw_tri(const GeomTri *geom) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::draw_quad
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 draw_quad(const GeomQuad *geom) {
@@ -1389,7 +1402,7 @@ draw_quad(const GeomQuad *geom) {
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.
-  if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) || 
+  if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) ||
       (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
     call_glShadeModel(GL_SMOOTH);
   } else {
@@ -1398,15 +1411,15 @@ draw_quad(const GeomQuad *geom) {
 
   // Draw overall
   issuer.issue_color(G_OVERALL, ci);
-  issuer.issue_normal(G_OVERALL, ni); 
-  
+  issuer.issue_normal(G_OVERALL, ni);
+
   glBegin(GL_QUADS);
-  
+
   for (int i = 0; i < nprims; i++) {
     // Draw per primitive
     issuer.issue_color(G_PER_PRIM, ci);
     issuer.issue_normal(G_PER_PRIM, ni);
-    
+
     for (int j = 0; j < 4; j++) {
       // Draw per vertex
       issuer.issue_color(G_PER_VERTEX, ci);
@@ -1423,7 +1436,7 @@ draw_quad(const GeomQuad *geom) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::draw_tristrip
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 draw_tristrip(const GeomTristrip *geom) {
@@ -1458,7 +1471,7 @@ draw_tristrip(const GeomTristrip *geom) {
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.
-  if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) || 
+  if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) ||
       (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
     call_glShadeModel(GL_SMOOTH);
   } else {
@@ -1467,7 +1480,7 @@ draw_tristrip(const GeomTristrip *geom) {
 
   // Draw overall
   issuer.issue_color(G_OVERALL, ci);
-  issuer.issue_normal(G_OVERALL, ni); 
+  issuer.issue_normal(G_OVERALL, ni);
 
   for (int i = 0; i < nprims; i++) {
     // Draw per primitive
@@ -1482,7 +1495,7 @@ draw_tristrip(const GeomTristrip *geom) {
     // Per-component attributes for the first triangle?
     issuer.issue_color(G_PER_COMPONENT, ci);
     issuer.issue_normal(G_PER_COMPONENT, ni);
-    
+
     // Draw the first three vertices.
     int v;
     for (v = 0; v < 3; v++) {
@@ -1491,14 +1504,14 @@ draw_tristrip(const GeomTristrip *geom) {
       issuer.issue_texcoord(G_PER_VERTEX, ti);
       issuer.issue_vertex(G_PER_VERTEX, vi);
     }
-    
+
     // Now draw each of the remaining vertices.  Each vertex from
     // this point on defines a new triangle.
     for (v = 3; v < num_verts; v++) {
       // Per-component attributes?
       issuer.issue_color(G_PER_COMPONENT, ci);
       issuer.issue_normal(G_PER_COMPONENT, ni);
-      
+
       // Per-vertex attributes.
       issuer.issue_color(G_PER_VERTEX, ci);
       issuer.issue_normal(G_PER_VERTEX, ni);
@@ -1513,7 +1526,7 @@ draw_tristrip(const GeomTristrip *geom) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::draw_trifan
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 draw_trifan(const GeomTrifan *geom) {
@@ -1548,7 +1561,7 @@ draw_trifan(const GeomTrifan *geom) {
 
   // If we have per-vertex colors or normals, we need smooth shading.
   // Otherwise we want flat shading for performance reasons.
-  if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) || 
+  if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) ||
       (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
     call_glShadeModel(GL_SMOOTH);
   } else {
@@ -1572,7 +1585,7 @@ draw_trifan(const GeomTrifan *geom) {
     // Per-component attributes for the first triangle?
     issuer.issue_color(G_PER_COMPONENT, ci);
     issuer.issue_normal(G_PER_COMPONENT, ni);
-   
+
     // Draw the first three vertices.
     int v;
     for (v = 0; v < 3; v++) {
@@ -1604,17 +1617,17 @@ draw_trifan(const GeomTrifan *geom) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::draw_sphere
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 draw_sphere(const GeomSphere *geom) {
   //  activate();
- 
+
 #ifdef GSG_VERBOSE
   glgsg_cat.debug() << "draw_sphere()" << endl;
 #endif
   _vertices_other_pcollector.add_level(geom->get_num_vertices());
- 
+
   int nprims = geom->get_num_prims();
   Geom::VertexIterator vi = geom->make_vertex_iterator();
   Geom::ColorIterator ci = geom->make_color_iterator();
@@ -1642,7 +1655,7 @@ draw_sphere(const GeomSphere *geom) {
 
   // Draw overall
   issuer.issue_color(G_OVERALL, ci);
- 
+
   GLUquadricObj *sph = gluNewQuadric();
   gluQuadricNormals(sph, wants_normals() ? (GLenum)GLU_SMOOTH : (GLenum)GLU_NONE);
   gluQuadricTexture(sph, wants_texcoords() ? (GLenum)GL_TRUE : (GLenum)GL_FALSE);
@@ -1709,7 +1722,7 @@ prepare_texture(Texture *tex) {
   // which shouldn't be possible, since the texture itself should
   // detect this.
   nassertr(inserted, NULL);
- 
+
   report_errors();
   return gtc;
 }
@@ -1809,7 +1822,7 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr) {
 
   bind_texture(tc);
 
-  glCopyTexImage2D( GL_TEXTURE_2D, tex->get_level(), 
+  glCopyTexImage2D( GL_TEXTURE_2D, tex->get_level(),
             get_internal_image_format(pb->get_format()),
             pb->get_xorg(), pb->get_yorg(),
             pb->get_xsize(), pb->get_ysize(), pb->get_border() );
@@ -1830,7 +1843,7 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr, const RenderBuffer &rb
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::draw_texture
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 draw_texture(TextureContext *tc, const DisplayRegion *dr) {
@@ -1854,7 +1867,7 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr) {
   TextureApplyAttribute *taa = new TextureApplyAttribute;
   taa->set_mode(TextureApplyProperty::M_decal);
 
-  state.set_attribute(LightTransition::get_class_type(), 
+  state.set_attribute(LightTransition::get_class_type(),
               new LightAttribute);
   state.set_attribute(ColorMaskTransition::get_class_type(),
               new ColorMaskAttribute);
@@ -1909,7 +1922,7 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::draw_texture
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 draw_texture(TextureContext *tc, const DisplayRegion *dr, const RenderBuffer &rb) {
@@ -1951,13 +1964,13 @@ texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb, 
+texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
             const DisplayRegion *dr) {
   nassertv(tc != NULL && pb != NULL && dr != NULL);
   //  activate();
 
   Texture *tex = tc->_texture;
- 
+
   // Do a deep copy to initialize the pixel buffer
   pb->copy(tex->_pbuffer);
 
@@ -1976,7 +1989,7 @@ texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::copy_pixel_buffer
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
@@ -1990,7 +2003,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
   // for glReadPixels() to work
   // NOTE: reading the depth buffer is *much* slower than reading the
   // color buffer
-  state.set_attribute(TextureTransition::get_class_type(), 
+  state.set_attribute(TextureTransition::get_class_type(),
               new TextureAttribute);
   set_state(state, false);
 
@@ -2003,28 +2016,28 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
     << ", " << pb->get_xsize() << ", " << pb->get_ysize()
     << ", ";
   switch (get_external_image_format(pb->get_format())) {
-  case GL_DEPTH_COMPONENT: 
-    glgsg_cat.debug(false) << "GL_DEPTH_COMPONENT, "; 
+  case GL_DEPTH_COMPONENT:
+    glgsg_cat.debug(false) << "GL_DEPTH_COMPONENT, ";
     break;
   case GL_RGB:
     glgsg_cat.debug(false) << "GL_RGB, ";
     break;
   case GL_RGBA:
-    glgsg_cat.debug(false) << "GL_RGBA, "; 
+    glgsg_cat.debug(false) << "GL_RGBA, ";
     break;
-  default: 
-    glgsg_cat.debug(false) << "unknown, "; 
+  default:
+    glgsg_cat.debug(false) << "unknown, ";
     break;
   }
   switch (get_image_type(pb->get_image_type())) {
-    case GL_UNSIGNED_BYTE: 
+    case GL_UNSIGNED_BYTE:
       glgsg_cat.debug(false) << "GL_UNSIGNED_BYTE, ";
       break;
-    case GL_FLOAT: 
-      glgsg_cat.debug(false) << "GL_FLOAT, "; 
+    case GL_FLOAT:
+      glgsg_cat.debug(false) << "GL_FLOAT, ";
       break;
-  default: 
-    glgsg_cat.debug(false) << "unknown, "; 
+  default:
+    glgsg_cat.debug(false) << "unknown, ";
     break;
   }
   glgsg_cat.debug(false)
@@ -2033,8 +2046,8 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 
   // pixelbuffer "origin" represents upper left screen point at which
   // pixelbuffer should be drawn using draw_pixel_buffer
-  glReadPixels(pb->get_xorg() + xo, pb->get_yorg() + yo,  
-                           pb->get_xsize(), pb->get_ysize(), 
+  glReadPixels(pb->get_xorg() + xo, pb->get_yorg() + yo,
+                           pb->get_xsize(), pb->get_ysize(),
                            get_external_image_format(pb->get_format()),
                            get_image_type(pb->get_image_type()),
                            pb->_image.p() );
@@ -2049,7 +2062,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
-copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr, 
+copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
           const RenderBuffer &rb) {
   //  activate();
   set_read_buffer(rb);
@@ -2059,7 +2072,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::draw_pixel_buffer
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
@@ -2072,19 +2085,19 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
   prepare_display_region();
 
   NodeAttributes state(na);
-  state.set_attribute(LightTransition::get_class_type(), 
+  state.set_attribute(LightTransition::get_class_type(),
               new LightAttribute);
-  state.set_attribute(TextureTransition::get_class_type(), 
+  state.set_attribute(TextureTransition::get_class_type(),
               new TextureAttribute);
-  state.set_attribute(TransformTransition::get_class_type(), 
+  state.set_attribute(TransformTransition::get_class_type(),
               new TransformAttribute);
-  //state.set_attribute(ColorBlendTransition::get_class_type(), 
+  //state.set_attribute(ColorBlendTransition::get_class_type(),
   //              new ColorBlendAttribute);
-  state.set_attribute(StencilTransition::get_class_type(), 
+  state.set_attribute(StencilTransition::get_class_type(),
               new StencilAttribute);
 
   switch (pb->get_format()) {
-  case PixelBuffer::F_depth_component: 
+  case PixelBuffer::F_depth_component:
     {
       ColorMaskAttribute *cma = new ColorMaskAttribute;
       cma->set_mask(0);
@@ -2097,7 +2110,7 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
       state.set_attribute(DepthWriteTransition::get_class_type(), dwa);
     }
     break;
-    
+
   case PixelBuffer::F_rgb:
   case PixelBuffer::F_rgb5:
   case PixelBuffer::F_rgb8:
@@ -2140,28 +2153,28 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
     << "glDrawPixels(" << pb->get_xsize() << ", " << pb->get_ysize()
     << ", ";
   switch (get_external_image_format(pb->get_format())) {
-  case GL_DEPTH_COMPONENT: 
-    glgsg_cat.debug(false) << "GL_DEPTH_COMPONENT, "; 
-    break; 
+  case GL_DEPTH_COMPONENT:
+    glgsg_cat.debug(false) << "GL_DEPTH_COMPONENT, ";
+    break;
   case GL_RGB:
-    glgsg_cat.debug(false) << "GL_RGB, "; 
+    glgsg_cat.debug(false) << "GL_RGB, ";
     break;
-  case GL_RGBA: 
-    glgsg_cat.debug(false) << "GL_RGBA, "; 
+  case GL_RGBA:
+    glgsg_cat.debug(false) << "GL_RGBA, ";
     break;
-  default: 
+  default:
     glgsg_cat.debug(false) << "unknown, ";
     break;
   }
   switch (get_image_type(pb->get_image_type())) {
-  case GL_UNSIGNED_BYTE: 
-    glgsg_cat.debug(false) << "GL_UNSIGNED_BYTE, "; 
+  case GL_UNSIGNED_BYTE:
+    glgsg_cat.debug(false) << "GL_UNSIGNED_BYTE, ";
     break;
   case GL_FLOAT:
     glgsg_cat.debug(false) << "GL_FLOAT, ";
     break;
-  default: 
-    glgsg_cat.debug(false) << "unknown, "; 
+  default:
+    glgsg_cat.debug(false) << "unknown, ";
     break;
   }
   glgsg_cat.debug(false)
@@ -2169,11 +2182,11 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
 #endif
 
   glRasterPos2i( pb->get_xorg(), pb->get_yorg() );
-  glDrawPixels( pb->get_xsize(), pb->get_ysize(), 
+  glDrawPixels( pb->get_xsize(), pb->get_ysize(),
         get_external_image_format(pb->get_format()),
         get_image_type(pb->get_image_type()),
         pb->_image.p() );
- 
+
   glMatrixMode( GL_PROJECTION );
   glPopMatrix();
 
@@ -2205,7 +2218,7 @@ void GLGraphicsStateGuardian::apply_material(const Material *material) {
   glMaterialfv(face, GL_SPECULAR, material->get_specular().get_data());
   glMaterialfv(face, GL_EMISSION, material->get_emission().get_data());
   glMaterialf(face, GL_SHININESS, material->get_shininess());
-  
+
   if (material->has_ambient() && material->has_diffuse()) {
     // The material has both an ambient and diffuse specified.  This
     // means we do not need glMaterialColor().
@@ -2233,7 +2246,7 @@ void GLGraphicsStateGuardian::apply_material(const Material *material) {
     glColorMaterial(face, GL_AMBIENT_AND_DIFFUSE);
     glEnable(GL_COLOR_MATERIAL);
   }
-  
+
   call_glLightModelLocal(material->get_local());
   call_glLightModelTwoSide(material->get_twoside());
   report_errors();
@@ -2353,9 +2366,9 @@ void GLGraphicsStateGuardian::apply_light( DirectionalLight* light )
     glLightfv(id, GL_DIFFUSE, light->get_color().get_data());
     glLightfv(id, GL_SPECULAR, light->get_specular().get_data());
 
-    // Position needs to specify x, y, z, and w 
+    // Position needs to specify x, y, z, and w
     // w == 0 implies light is at infinity
-    LPoint3f dir = get_rel_forward( light, _current_projection_node, 
+    LPoint3f dir = get_rel_forward( light, _current_projection_node,
                 _coordinate_system );
     LPoint4f pos( -dir[0], -dir[1], -dir[2], 0 );
     glLightfv( id, GL_POSITION, pos.get_data() );
@@ -2417,17 +2430,17 @@ void GLGraphicsStateGuardian::apply_light( Spotlight* light )
     LPoint4f fpos( pos[0], pos[1], pos[2], 1 );
     glLightfv( id, GL_POSITION, fpos.get_data() );
 
-    glLightfv( id, GL_SPOT_DIRECTION, 
+    glLightfv( id, GL_SPOT_DIRECTION,
         get_rel_forward( light, _current_projection_node,
                  _coordinate_system ).get_data() );
     glLightf( id, GL_SPOT_EXPONENT, light->get_exponent() );
-    glLightf( id, GL_SPOT_CUTOFF, 
+    glLightf( id, GL_SPOT_CUTOFF,
         light->get_cutoff_angle() );
-    glLightf( id, GL_CONSTANT_ATTENUATION, 
+    glLightf( id, GL_CONSTANT_ATTENUATION,
         light->get_constant_attenuation() );
-    glLightf( id, GL_LINEAR_ATTENUATION, 
+    glLightf( id, GL_LINEAR_ATTENUATION,
         light->get_linear_attenuation() );
-    glLightf( id, GL_QUADRATIC_ATTENUATION, 
+    glLightf( id, GL_QUADRATIC_ATTENUATION,
         light->get_quadratic_attenuation() );
 
     glPopMatrix();
@@ -2451,7 +2464,7 @@ void GLGraphicsStateGuardian::apply_light( AmbientLight* )
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::issue_transform
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 issue_transform(const TransformAttribute *attrib) {
@@ -2471,12 +2484,12 @@ issue_transform(const TransformAttribute *attrib) {
     enable_texturing(false);
 
     glBegin(GL_LINES);
-    
+
     // X axis in red
     glColor3f(1.0f, 0.0f, 0.0f);
     glVertex3f(0.0f, 0.0f, 0.0f);
     glVertex3f(1.0f, 0.0f, 0.0f);
-    
+
     // Y axis in green
     glColor3f(0.0f, 1.0f, 0.0f);
     glVertex3f(0.0f, 0.0f, 0.0f);
@@ -2486,7 +2499,7 @@ issue_transform(const TransformAttribute *attrib) {
     glColor3f(0.0f, 0.0f, 1.0f);
     glVertex3f(0.0f, 0.0f, 0.0f);
     glVertex3f(0.0f, 0.0f, 1.0f);
-  
+
     glEnd();
     enable_lighting(lighting_was_enabled);
     enable_texturing(texturing_was_enabled);
@@ -2498,7 +2511,7 @@ issue_transform(const TransformAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::issue_color_transform
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 issue_color_transform(const ColorMatrixAttribute *attrib) {
@@ -2515,7 +2528,7 @@ issue_color_transform(const ColorMatrixAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::issue_alpha_transform
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 issue_alpha_transform(const AlphaTransformAttribute *attrib) {
@@ -2533,7 +2546,7 @@ issue_alpha_transform(const AlphaTransformAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::issue_matrix
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 issue_tex_matrix(const TexMatrixAttribute *attrib) {
@@ -2550,7 +2563,7 @@ issue_tex_matrix(const TexMatrixAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::issue_color
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 issue_color(const ColorAttribute *attrib) {
@@ -2565,7 +2578,7 @@ issue_color(const ColorAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::issue_texture
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 issue_texture(const TextureAttribute *attrib) {
@@ -2617,7 +2630,7 @@ issue_tex_gen(const TexGenAttribute *attrib) {
       glTexGeni(GL_Q, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
     }
     break;
-    
+
   case TexGenProperty::M_sphere_map:
     glEnable(GL_TEXTURE_GEN_S);
     glEnable(GL_TEXTURE_GEN_T);
@@ -2626,7 +2639,7 @@ issue_tex_gen(const TexGenAttribute *attrib) {
     glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
     glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
     break;
-    
+
   default:
     glgsg_cat.error()
       << "Unknown texgen mode " << (int)mode << endl;
@@ -2674,7 +2687,7 @@ issue_fog(const FogAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::issue_render_mode
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 issue_render_mode(const RenderModeAttribute *attrib) {
@@ -2686,7 +2699,7 @@ issue_render_mode(const RenderModeAttribute *attrib) {
   case RenderModeProperty::M_filled:
     call_glPolygonMode(GL_FILL);
     break;
-    
+
   case RenderModeProperty::M_wireframe:
     // Make sure line width is back to default (1 pixel)
     call_glLineWidth(attrib->get_line_width());
@@ -2729,7 +2742,7 @@ void GLGraphicsStateGuardian::issue_light(const LightAttribute *attrib )
     if (light->get_light_type() == AmbientLight::get_class_type()) {
       // Ambient lights don't require specific light ids; simply add
       // in the ambient contribution to the current total
-      cur_ambient_light += light->get_color(); 
+      cur_ambient_light += light->get_color();
 
     } else {
       // Check to see if this light has already been bound to an id
@@ -2744,8 +2757,8 @@ void GLGraphicsStateGuardian::issue_light(const LightAttribute *attrib )
           break;
         }
       }
-    
-      // See if there are any unbound light ids 
+
+      // See if there are any unbound light ids
       if (_cur_light_id == -1) {
         for (i = 0; i < _max_lights; i++) {
           if (_light_info[i]._light == (Light *)NULL) {
@@ -2755,16 +2768,16 @@ void GLGraphicsStateGuardian::issue_light(const LightAttribute *attrib )
           }
         }
       }
-    
+
       // If there were no unbound light ids, see if we can replace
-      // a currently unused but previously bound id 
+      // a currently unused but previously bound id
       if (_cur_light_id == -1) {
         for (i = 0; i < _max_lights; i++) {
           if (attrib->is_off(_light_info[i]._light)) {
             _light_info[i]._light = light;
             _cur_light_id = i;
             break;
-          } 
+          }
         }
       }
 
@@ -2889,7 +2902,7 @@ issue_depth_test(const DepthTestAttribute *attrib) {
 void GLGraphicsStateGuardian::
 issue_depth_write(const DepthWriteAttribute *attrib) {
   //  activate();
-  
+
   call_glDepthMask(attrib->is_on());
   report_errors();
 }
@@ -2974,7 +2987,7 @@ issue_clip_plane(const ClipPlaneAttribute *attrib)
 
     _cur_clip_plane_id = -1;
     num_enabled++;
-    
+
     // Check to see if this clip plane has already been bound to an id
     for (i = 0; i < _max_clip_planes; i++) {
       if (_available_clip_plane_ids[i] == plane_node) {
@@ -2997,7 +3010,7 @@ issue_clip_plane(const ClipPlaneAttribute *attrib)
     }
       }
     }
-    
+
     // If there were no unbound clip plane ids, see if we can replace
     // a currently unused but previously bound id
     if (_cur_clip_plane_id == -1) {
@@ -3009,7 +3022,7 @@ issue_clip_plane(const ClipPlaneAttribute *attrib)
     }
       }
     }
-    
+
     if (_cur_clip_plane_id >= 0) {
       enable_clip_plane(_cur_clip_plane_id, true);
       _cur_clip_plane_enabled[_cur_clip_plane_id] = true;
@@ -3031,7 +3044,7 @@ issue_clip_plane(const ClipPlaneAttribute *attrib)
     }
   }
 
-  // Disable all unused clip planes 
+  // Disable all unused clip planes
   for (i = 0; i < _max_clip_planes; i++) {
     if (_cur_clip_plane_enabled[i] == false)
       enable_clip_plane(i, false);
@@ -3058,7 +3071,7 @@ issue_transparency(const TransparencyAttribute *attrib )
     enable_blend(false);
     enable_alpha_test(false);
     break;
-  case TransparencyProperty::M_alpha: 
+  case TransparencyProperty::M_alpha:
   case TransparencyProperty::M_alpha_sorted:
     // Should we really have an "alpha" and an "alpha_sorted" mode,
     // like Performer does?  (The difference is that "alpha" is with
@@ -3159,7 +3172,7 @@ issue_polygon_offset(const PolygonOffsetAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::wants_normals
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool GLGraphicsStateGuardian::
 wants_normals() const {
@@ -3169,7 +3182,7 @@ wants_normals() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::wants_texcoords
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool GLGraphicsStateGuardian::
 wants_texcoords() const {
@@ -3183,7 +3196,7 @@ wants_texcoords() const {
 //               commands, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool GLGraphicsStateGuardian::
-wants_colors() const { 
+wants_colors() const {
   // If we have scene graph color enabled, return false to indicate we
   // shouldn't bother issuing geometry color commands.
 
@@ -3221,7 +3234,7 @@ begin_decal(GeomNode *base_geom) {
     // Just draw the base geometry normally.
     base_geom->draw(this);
 
-#if 0    
+#if 0
 // Note: code below does not work since state engine resets PolygonOffsetAttrib
 //       before decal geom is rendered
 
@@ -3242,14 +3255,14 @@ begin_decal(GeomNode *base_geom) {
     if (_decal_level > 1) {
       // If we're already decaling, just draw the geometry.
       base_geom->draw(this);
-      
+
     } else {
       // Turn off writing the depth buffer to render the base geometry.
       call_glDepthMask(false);
-      
+
       // Now render the base geometry.
       base_geom->draw(this);
-      
+
       // Render all of the decal geometry, too.  We'll keep the depth
       // buffer write off during this.
     }
@@ -3326,9 +3339,9 @@ end_decal(GeomNode *base_geom) {
 
       // No need to have texturing on for this.
       enable_texturing(false);
-    
+
       base_geom->draw(this);
-    
+
       // Finally, restore the depth write and color mask states to the
       // way they're supposed to be.
       DepthWriteAttribute *depth_write;
@@ -3350,7 +3363,7 @@ end_decal(GeomNode *base_geom) {
               glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
           }
       }
-      
+
       enable_texturing(was_textured);
     }
   }
@@ -3407,35 +3420,35 @@ set_draw_buffer(const RenderBuffer &rb) {
   case RenderBuffer::T_front:
     call_glDrawBuffer(GL_FRONT);
     break;
-    
+
   case RenderBuffer::T_back:
     call_glDrawBuffer(GL_BACK);
     break;
-    
+
   case RenderBuffer::T_right:
     call_glDrawBuffer(GL_RIGHT);
     break;
-    
+
   case RenderBuffer::T_left:
     call_glDrawBuffer(GL_LEFT);
     break;
-    
+
   case RenderBuffer::T_front_right:
     call_glDrawBuffer(GL_FRONT_RIGHT);
     break;
-    
+
   case RenderBuffer::T_front_left:
     call_glDrawBuffer(GL_FRONT_LEFT);
     break;
-    
+
   case RenderBuffer::T_back_right:
     call_glDrawBuffer(GL_BACK_RIGHT);
     break;
-    
+
   case RenderBuffer::T_back_left:
     call_glDrawBuffer(GL_BACK_LEFT);
     break;
-    
+
   default:
     call_glDrawBuffer(GL_FRONT_AND_BACK);
   }
@@ -3456,35 +3469,35 @@ set_read_buffer(const RenderBuffer &rb) {
   case RenderBuffer::T_front:
     call_glReadBuffer(GL_FRONT);
     break;
-    
+
   case RenderBuffer::T_back:
     call_glReadBuffer(GL_BACK);
     break;
-    
+
   case RenderBuffer::T_right:
     call_glReadBuffer(GL_RIGHT);
     break;
-    
+
   case RenderBuffer::T_left:
     call_glReadBuffer(GL_LEFT);
     break;
-    
+
   case RenderBuffer::T_front_right:
     call_glReadBuffer(GL_FRONT_RIGHT);
     break;
-    
+
   case RenderBuffer::T_front_left:
     call_glReadBuffer(GL_FRONT_LEFT);
     break;
-    
+
   case RenderBuffer::T_back_right:
     call_glReadBuffer(GL_BACK_RIGHT);
     break;
-    
+
   case RenderBuffer::T_back_left:
     call_glReadBuffer(GL_BACK_LEFT);
     break;
-    
+
   default:
     call_glReadBuffer(GL_FRONT_AND_BACK);
   }
@@ -3495,7 +3508,7 @@ set_read_buffer(const RenderBuffer &rb) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::bind_texture
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 bind_texture(TextureContext *tc) {
@@ -3515,22 +3528,22 @@ bind_texture(TextureContext *tc) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::specify_texture
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 specify_texture(Texture *tex) {
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, 
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
                   get_texture_wrap_mode(tex->get_wrapu()));
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
                   get_texture_wrap_mode(tex->get_wrapv()));
 
   if (gl_force_mipmaps) {
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
                     GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   } else {
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
                     get_texture_filter_type(tex->get_minfilter()));
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
                     get_texture_filter_type(tex->get_magfilter()));
@@ -3542,7 +3555,7 @@ specify_texture(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::apply_texture_immediate
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 apply_texture_immediate(Texture *tex) {
@@ -3802,7 +3815,7 @@ get_texture_apply_mode_type( TextureApplyProperty::Mode am ) const
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::get_depth_func_type
 //       Access: Protected
-//  Description: Maps from the depth func modes to gl version 
+//  Description: Maps from the depth func modes to gl version
 ////////////////////////////////////////////////////////////////////
 GLenum GLGraphicsStateGuardian::
 get_depth_func_type(DepthTestProperty::Mode m) const
@@ -3894,7 +3907,7 @@ get_fog_mode_type(Fog::Mode m) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::print_gfx_visual 
+//     Function: GLGraphicsStateGuardian::print_gfx_visual
 //       Access: Public
 //  Description: Prints a description of the current visual selected.
 ////////////////////////////////////////////////////////////////////
@@ -3924,13 +3937,13 @@ print_gfx_visual() {
   glGetIntegerv( GL_ALPHA_BITS, &i ); cout << "Alpha: " << i << endl;
   glGetIntegerv( GL_STENCIL_BITS, &i ); cout << "Stencil: " << i << endl;
 
-  glGetBooleanv( GL_DOUBLEBUFFER, &j ); cout << "DoubleBuffer? " 
+  glGetBooleanv( GL_DOUBLEBUFFER, &j ); cout << "DoubleBuffer? "
                          << (int)j << endl;
 
   glGetBooleanv( GL_STEREO, &j ); cout << "Stereo? " << (int)j << endl;
 
 #ifdef GL_MULTISAMPLE_SGIS
-  glGetBooleanv( GL_MULTISAMPLE_SGIS, &j ); cout << "Multisample? " 
+  glGetBooleanv( GL_MULTISAMPLE_SGIS, &j ); cout << "Multisample? "
                          << (int)j << endl;
 #endif
 #ifdef GL_SAMPLES_SGIS
@@ -3938,9 +3951,9 @@ print_gfx_visual() {
 #endif
 
   glGetBooleanv( GL_BLEND, &j ); cout << "Blend? " << (int)j << endl;
-  glGetBooleanv( GL_POINT_SMOOTH, &j ); cout << "Point Smooth? " 
+  glGetBooleanv( GL_POINT_SMOOTH, &j ); cout << "Point Smooth? "
                          << (int)j << endl;
-  glGetBooleanv( GL_LINE_SMOOTH, &j ); cout << "Line Smooth? " 
+  glGetBooleanv( GL_LINE_SMOOTH, &j ); cout << "Line Smooth? "
                         << (int)j << endl;
 
   glGetIntegerv( GL_AUX_BUFFERS, &i ); cout << "Aux Buffers: " << i << endl;
@@ -3985,7 +3998,7 @@ save_frame_buffer(const RenderBuffer &buffer,
 
   if (buffer._buffer_type & RenderBuffer::T_depth) {
     // Save the depth buffer.
-    sfb->_depth = 
+    sfb->_depth =
       new PixelBuffer(PixelBuffer::depth_buffer(dr->get_pixel_width(),
                         dr->get_pixel_height()));
     copy_pixel_buffer(sfb->_depth, dr, buffer);
@@ -4037,7 +4050,7 @@ build_phony_mipmaps(Texture *tex) {
   int xsize = pb->get_xsize();
   int ysize = pb->get_ysize();
 
-  glgsg_cat.info() 
+  glgsg_cat.info()
     << "Building phony mipmap levels for " << tex->get_name() << "\n";
   int level = 0;
   while (xsize > 0 && ysize > 0) {
@@ -4119,7 +4132,7 @@ build_phony_mipmap_level(int level, int xsize, int ysize) {
     glgsg_cat.info(false)
       << "    " << filename << " cannot be read, making solid color mipmap.\n";
     image_sized.fill(level_colors[level][0],
-             level_colors[level][1], 
+             level_colors[level][1],
              level_colors[level][2]);
   }
 
@@ -4178,7 +4191,7 @@ dump_state(void)
     int i;
     ostream &dump = glgsg_cat.debug(false);
     glgsg_cat.debug() << "Dumping GL State" << endl;
-    
+
     dump << "\t\t" << "GL_LINE_SMOOTH " << _line_smooth_enabled << " " << (bool)glIsEnabled(GL_LINE_SMOOTH) << "\n";
     dump << "\t\t" << "GL_POINT_SMOOTH " << _point_smooth_enabled << " " << (bool)glIsEnabled(GL_POINT_SMOOTH) << "\n";
     dump << "\t\t" << "GL_LIGHTING " << _lighting_enabled << " " << (bool)glIsEnabled(GL_LIGHTING) << "\n";
@@ -4200,7 +4213,7 @@ dump_state(void)
     dump << "\t\t" << "GL_FOG " << _fog_enabled << " " << (bool)glIsEnabled(GL_FOG) << "\n";
     dump << "\t\t" << "GL_ALPHA_TEST " << _alpha_test_enabled << " " << (bool)glIsEnabled(GL_ALPHA_TEST) << "\n";
     dump << "\t\t" << "GL_POLYGON_OFFSET_FILL " << _polygon_offset_enabled << " " << (bool)glIsEnabled(GL_POLYGON_OFFSET_FILL) << "\n";
-    
+
     dump << endl;
   }
 }
@@ -4222,1171 +4235,1171 @@ dump_state(void)
 // debugging.
 ostream &output_gl_enum(ostream &out, GLenum v) {
   switch (v) {
-  case GL_FALSE: 
+  case GL_FALSE:
     return out << "GL_FALSE";
-  case GL_TRUE: 
+  case GL_TRUE:
     return out << "GL_TRUE";
-    
+
     /* Data types */
-  case GL_BYTE: 
+  case GL_BYTE:
     return out << "GL_BYTE";
-  case GL_UNSIGNED_BYTE: 
+  case GL_UNSIGNED_BYTE:
     return out << "GL_UNSIGNED_BYTE";
-  case GL_SHORT: 
+  case GL_SHORT:
     return out << "GL_SHORT";
-  case GL_UNSIGNED_SHORT: 
+  case GL_UNSIGNED_SHORT:
     return out << "GL_UNSIGNED_SHORT";
-  case GL_INT: 
+  case GL_INT:
     return out << "GL_INT";
-  case GL_UNSIGNED_INT: 
+  case GL_UNSIGNED_INT:
     return out << "GL_UNSIGNED_INT";
-  case GL_FLOAT: 
+  case GL_FLOAT:
     return out << "GL_FLOAT";
-  case GL_DOUBLE: 
+  case GL_DOUBLE:
     return out << "GL_DOUBLE";
-  case GL_2_BYTES: 
+  case GL_2_BYTES:
     return out << "GL_2_BYTES";
-  case GL_3_BYTES: 
+  case GL_3_BYTES:
     return out << "GL_3_BYTES";
-  case GL_4_BYTES: 
+  case GL_4_BYTES:
     return out << "GL_4_BYTES";
 
     /* Primitives */
     /*
-  case GL_LINES: 
+  case GL_LINES:
     return out << "GL_LINES";
-  case GL_POINTS: 
+  case GL_POINTS:
     return out << "GL_POINTS";
     */
-  case GL_LINE_STRIP: 
+  case GL_LINE_STRIP:
     return out << "GL_LINE_STRIP";
-  case GL_LINE_LOOP: 
+  case GL_LINE_LOOP:
     return out << "GL_LINE_LOOP";
-  case GL_TRIANGLES: 
+  case GL_TRIANGLES:
     return out << "GL_TRIANGLES";
-  case GL_TRIANGLE_STRIP: 
+  case GL_TRIANGLE_STRIP:
     return out << "GL_TRIANGLE_STRIP";
-  case GL_TRIANGLE_FAN: 
+  case GL_TRIANGLE_FAN:
     return out << "GL_TRIANGLE_FAN";
-  case GL_QUADS: 
+  case GL_QUADS:
     return out << "GL_QUADS";
-  case GL_QUAD_STRIP: 
+  case GL_QUAD_STRIP:
     return out << "GL_QUAD_STRIP";
-  case GL_POLYGON: 
+  case GL_POLYGON:
     return out << "GL_POLYGON";
-  case GL_EDGE_FLAG: 
+  case GL_EDGE_FLAG:
     return out << "GL_EDGE_FLAG";
 
     /* Vertex Arrays */
-  case GL_VERTEX_ARRAY: 
+  case GL_VERTEX_ARRAY:
     return out << "GL_VERTEX_ARRAY";
-  case GL_NORMAL_ARRAY: 
+  case GL_NORMAL_ARRAY:
     return out << "GL_NORMAL_ARRAY";
-  case GL_COLOR_ARRAY: 
+  case GL_COLOR_ARRAY:
     return out << "GL_COLOR_ARRAY";
-  case GL_INDEX_ARRAY: 
+  case GL_INDEX_ARRAY:
     return out << "GL_INDEX_ARRAY";
-  case GL_TEXTURE_COORD_ARRAY: 
+  case GL_TEXTURE_COORD_ARRAY:
     return out << "GL_TEXTURE_COORD_ARRAY";
-  case GL_EDGE_FLAG_ARRAY: 
+  case GL_EDGE_FLAG_ARRAY:
     return out << "GL_EDGE_FLAG_ARRAY";
-  case GL_VERTEX_ARRAY_SIZE: 
+  case GL_VERTEX_ARRAY_SIZE:
     return out << "GL_VERTEX_ARRAY_SIZE";
-  case GL_VERTEX_ARRAY_TYPE: 
+  case GL_VERTEX_ARRAY_TYPE:
     return out << "GL_VERTEX_ARRAY_TYPE";
-  case GL_VERTEX_ARRAY_STRIDE: 
+  case GL_VERTEX_ARRAY_STRIDE:
     return out << "GL_VERTEX_ARRAY_STRIDE";
-  case GL_NORMAL_ARRAY_TYPE: 
+  case GL_NORMAL_ARRAY_TYPE:
     return out << "GL_NORMAL_ARRAY_TYPE";
-  case GL_NORMAL_ARRAY_STRIDE: 
+  case GL_NORMAL_ARRAY_STRIDE:
     return out << "GL_NORMAL_ARRAY_STRIDE";
-  case GL_COLOR_ARRAY_SIZE: 
+  case GL_COLOR_ARRAY_SIZE:
     return out << "GL_COLOR_ARRAY_SIZE";
-  case GL_COLOR_ARRAY_TYPE: 
+  case GL_COLOR_ARRAY_TYPE:
     return out << "GL_COLOR_ARRAY_TYPE";
-  case GL_COLOR_ARRAY_STRIDE: 
+  case GL_COLOR_ARRAY_STRIDE:
     return out << "GL_COLOR_ARRAY_STRIDE";
-  case GL_INDEX_ARRAY_TYPE: 
+  case GL_INDEX_ARRAY_TYPE:
     return out << "GL_INDEX_ARRAY_TYPE";
-  case GL_INDEX_ARRAY_STRIDE: 
+  case GL_INDEX_ARRAY_STRIDE:
     return out << "GL_INDEX_ARRAY_STRIDE";
-  case GL_TEXTURE_COORD_ARRAY_SIZE: 
+  case GL_TEXTURE_COORD_ARRAY_SIZE:
     return out << "GL_TEXTURE_COORD_ARRAY_SIZE";
-  case GL_TEXTURE_COORD_ARRAY_TYPE: 
+  case GL_TEXTURE_COORD_ARRAY_TYPE:
     return out << "GL_TEXTURE_COORD_ARRAY_TYPE";
-  case GL_TEXTURE_COORD_ARRAY_STRIDE: 
+  case GL_TEXTURE_COORD_ARRAY_STRIDE:
     return out << "GL_TEXTURE_COORD_ARRAY_STRIDE";
-  case GL_EDGE_FLAG_ARRAY_STRIDE: 
+  case GL_EDGE_FLAG_ARRAY_STRIDE:
     return out << "GL_EDGE_FLAG_ARRAY_STRIDE";
-  case GL_VERTEX_ARRAY_POINTER: 
+  case GL_VERTEX_ARRAY_POINTER:
     return out << "GL_VERTEX_ARRAY_POINTER";
-  case GL_NORMAL_ARRAY_POINTER: 
+  case GL_NORMAL_ARRAY_POINTER:
     return out << "GL_NORMAL_ARRAY_POINTER";
-  case GL_COLOR_ARRAY_POINTER: 
+  case GL_COLOR_ARRAY_POINTER:
     return out << "GL_COLOR_ARRAY_POINTER";
-  case GL_INDEX_ARRAY_POINTER: 
+  case GL_INDEX_ARRAY_POINTER:
     return out << "GL_INDEX_ARRAY_POINTER";
-  case GL_TEXTURE_COORD_ARRAY_POINTER: 
+  case GL_TEXTURE_COORD_ARRAY_POINTER:
     return out << "GL_TEXTURE_COORD_ARRAY_POINTER";
-  case GL_EDGE_FLAG_ARRAY_POINTER: 
+  case GL_EDGE_FLAG_ARRAY_POINTER:
     return out << "GL_EDGE_FLAG_ARRAY_POINTER";
-  case GL_V2F: 
+  case GL_V2F:
     return out << "GL_V2F";
-  case GL_V3F: 
+  case GL_V3F:
     return out << "GL_V3F";
-  case GL_C4UB_V2F: 
+  case GL_C4UB_V2F:
     return out << "GL_C4UB_V2F";
-  case GL_C4UB_V3F: 
+  case GL_C4UB_V3F:
     return out << "GL_C4UB_V3F";
-  case GL_C3F_V3F: 
+  case GL_C3F_V3F:
     return out << "GL_C3F_V3F";
-  case GL_N3F_V3F: 
+  case GL_N3F_V3F:
     return out << "GL_N3F_V3F";
-  case GL_C4F_N3F_V3F: 
+  case GL_C4F_N3F_V3F:
     return out << "GL_C4F_N3F_V3F";
-  case GL_T2F_V3F: 
+  case GL_T2F_V3F:
     return out << "GL_T2F_V3F";
-  case GL_T4F_V4F: 
+  case GL_T4F_V4F:
     return out << "GL_T4F_V4F";
-  case GL_T2F_C4UB_V3F: 
+  case GL_T2F_C4UB_V3F:
     return out << "GL_T2F_C4UB_V3F";
-  case GL_T2F_C3F_V3F: 
+  case GL_T2F_C3F_V3F:
     return out << "GL_T2F_C3F_V3F";
-  case GL_T2F_N3F_V3F: 
+  case GL_T2F_N3F_V3F:
     return out << "GL_T2F_N3F_V3F";
-  case GL_T2F_C4F_N3F_V3F: 
+  case GL_T2F_C4F_N3F_V3F:
     return out << "GL_T2F_C4F_N3F_V3F";
-  case GL_T4F_C4F_N3F_V4F: 
+  case GL_T4F_C4F_N3F_V4F:
     return out << "GL_T4F_C4F_N3F_V4F";
 
     /* Matrix Mode */
-  case GL_MATRIX_MODE: 
+  case GL_MATRIX_MODE:
     return out << "GL_MATRIX_MODE";
-  case GL_MODELVIEW: 
+  case GL_MODELVIEW:
     return out << "GL_MODELVIEW";
-  case GL_PROJECTION: 
+  case GL_PROJECTION:
     return out << "GL_PROJECTION";
-  case GL_TEXTURE: 
+  case GL_TEXTURE:
     return out << "GL_TEXTURE";
 
     /* Points */
-  case GL_POINT_SMOOTH: 
+  case GL_POINT_SMOOTH:
     return out << "GL_POINT_SMOOTH";
-  case GL_POINT_SIZE: 
+  case GL_POINT_SIZE:
     return out << "GL_POINT_SIZE";
-  case GL_POINT_SIZE_GRANULARITY: 
+  case GL_POINT_SIZE_GRANULARITY:
     return out << "GL_POINT_SIZE_GRANULARITY";
-  case GL_POINT_SIZE_RANGE: 
+  case GL_POINT_SIZE_RANGE:
     return out << "GL_POINT_SIZE_RANGE";
 
     /* Lines */
-  case GL_LINE_SMOOTH: 
+  case GL_LINE_SMOOTH:
     return out << "GL_LINE_SMOOTH";
-  case GL_LINE_STIPPLE: 
+  case GL_LINE_STIPPLE:
     return out << "GL_LINE_STIPPLE";
-  case GL_LINE_STIPPLE_PATTERN: 
+  case GL_LINE_STIPPLE_PATTERN:
     return out << "GL_LINE_STIPPLE_PATTERN";
-  case GL_LINE_STIPPLE_REPEAT: 
+  case GL_LINE_STIPPLE_REPEAT:
     return out << "GL_LINE_STIPPLE_REPEAT";
-  case GL_LINE_WIDTH: 
+  case GL_LINE_WIDTH:
     return out << "GL_LINE_WIDTH";
-  case GL_LINE_WIDTH_GRANULARITY: 
+  case GL_LINE_WIDTH_GRANULARITY:
     return out << "GL_LINE_WIDTH_GRANULARITY";
-  case GL_LINE_WIDTH_RANGE: 
+  case GL_LINE_WIDTH_RANGE:
     return out << "GL_LINE_WIDTH_RANGE";
 
     /* Polygons */
-  case GL_POINT: 
+  case GL_POINT:
     return out << "GL_POINT";
-  case GL_LINE: 
+  case GL_LINE:
     return out << "GL_LINE";
-  case GL_FILL: 
+  case GL_FILL:
     return out << "GL_FILL";
-  case GL_CCW: 
+  case GL_CCW:
     return out << "GL_CCW";
-  case GL_CW: 
+  case GL_CW:
     return out << "GL_CW";
-  case GL_FRONT: 
+  case GL_FRONT:
     return out << "GL_FRONT";
-  case GL_BACK: 
+  case GL_BACK:
     return out << "GL_BACK";
-  case GL_CULL_FACE: 
+  case GL_CULL_FACE:
     return out << "GL_CULL_FACE";
-  case GL_CULL_FACE_MODE: 
+  case GL_CULL_FACE_MODE:
     return out << "GL_CULL_FACE_MODE";
-  case GL_POLYGON_SMOOTH: 
+  case GL_POLYGON_SMOOTH:
     return out << "GL_POLYGON_SMOOTH";
-  case GL_POLYGON_STIPPLE: 
+  case GL_POLYGON_STIPPLE:
     return out << "GL_POLYGON_STIPPLE";
-  case GL_FRONT_FACE: 
+  case GL_FRONT_FACE:
     return out << "GL_FRONT_FACE";
-  case GL_POLYGON_MODE: 
+  case GL_POLYGON_MODE:
     return out << "GL_POLYGON_MODE";
-  case GL_POLYGON_OFFSET_FACTOR: 
+  case GL_POLYGON_OFFSET_FACTOR:
     return out << "GL_POLYGON_OFFSET_FACTOR";
-  case GL_POLYGON_OFFSET_UNITS: 
+  case GL_POLYGON_OFFSET_UNITS:
     return out << "GL_POLYGON_OFFSET_UNITS";
-  case GL_POLYGON_OFFSET_POINT: 
+  case GL_POLYGON_OFFSET_POINT:
     return out << "GL_POLYGON_OFFSET_POINT";
-  case GL_POLYGON_OFFSET_LINE: 
+  case GL_POLYGON_OFFSET_LINE:
     return out << "GL_POLYGON_OFFSET_LINE";
-  case GL_POLYGON_OFFSET_FILL: 
+  case GL_POLYGON_OFFSET_FILL:
     return out << "GL_POLYGON_OFFSET_FILL";
 
     /* Display Lists */
-  case GL_COMPILE: 
+  case GL_COMPILE:
     return out << "GL_COMPILE";
-  case GL_COMPILE_AND_EXECUTE: 
+  case GL_COMPILE_AND_EXECUTE:
     return out << "GL_COMPILE_AND_EXECUTE";
-  case GL_LIST_BASE: 
+  case GL_LIST_BASE:
     return out << "GL_LIST_BASE";
-  case GL_LIST_INDEX: 
+  case GL_LIST_INDEX:
     return out << "GL_LIST_INDEX";
-  case GL_LIST_MODE: 
+  case GL_LIST_MODE:
     return out << "GL_LIST_MODE";
 
     /* Depth buffer */
-  case GL_NEVER: 
+  case GL_NEVER:
     return out << "GL_NEVER";
-  case GL_LESS: 
+  case GL_LESS:
     return out << "GL_LESS";
-  case GL_GEQUAL: 
+  case GL_GEQUAL:
     return out << "GL_GEQUAL";
-  case GL_LEQUAL: 
+  case GL_LEQUAL:
     return out << "GL_LEQUAL";
-  case GL_GREATER: 
+  case GL_GREATER:
     return out << "GL_GREATER";
-  case GL_NOTEQUAL: 
+  case GL_NOTEQUAL:
     return out << "GL_NOTEQUAL";
-  case GL_EQUAL: 
+  case GL_EQUAL:
     return out << "GL_EQUAL";
-  case GL_ALWAYS: 
+  case GL_ALWAYS:
     return out << "GL_ALWAYS";
-  case GL_DEPTH_TEST: 
+  case GL_DEPTH_TEST:
     return out << "GL_DEPTH_TEST";
-  case GL_DEPTH_BITS: 
+  case GL_DEPTH_BITS:
     return out << "GL_DEPTH_BITS";
-  case GL_DEPTH_CLEAR_VALUE: 
+  case GL_DEPTH_CLEAR_VALUE:
     return out << "GL_DEPTH_CLEAR_VALUE";
-  case GL_DEPTH_FUNC: 
+  case GL_DEPTH_FUNC:
     return out << "GL_DEPTH_FUNC";
-  case GL_DEPTH_RANGE: 
+  case GL_DEPTH_RANGE:
     return out << "GL_DEPTH_RANGE";
-  case GL_DEPTH_WRITEMASK: 
+  case GL_DEPTH_WRITEMASK:
     return out << "GL_DEPTH_WRITEMASK";
-  case GL_DEPTH_COMPONENT: 
+  case GL_DEPTH_COMPONENT:
     return out << "GL_DEPTH_COMPONENT";
 
     /* Lighting */
-  case GL_LIGHTING: 
+  case GL_LIGHTING:
     return out << "GL_LIGHTING";
-  case GL_LIGHT0: 
+  case GL_LIGHT0:
     return out << "GL_LIGHT0";
-  case GL_LIGHT1: 
+  case GL_LIGHT1:
     return out << "GL_LIGHT1";
-  case GL_LIGHT2: 
+  case GL_LIGHT2:
     return out << "GL_LIGHT2";
-  case GL_LIGHT3: 
+  case GL_LIGHT3:
     return out << "GL_LIGHT3";
-  case GL_LIGHT4: 
+  case GL_LIGHT4:
     return out << "GL_LIGHT4";
-  case GL_LIGHT5: 
+  case GL_LIGHT5:
     return out << "GL_LIGHT5";
-  case GL_LIGHT6: 
+  case GL_LIGHT6:
     return out << "GL_LIGHT6";
-  case GL_LIGHT7: 
+  case GL_LIGHT7:
     return out << "GL_LIGHT7";
-  case GL_SPOT_EXPONENT: 
+  case GL_SPOT_EXPONENT:
     return out << "GL_SPOT_EXPONENT";
-  case GL_SPOT_CUTOFF: 
+  case GL_SPOT_CUTOFF:
     return out << "GL_SPOT_CUTOFF";
-  case GL_CONSTANT_ATTENUATION: 
+  case GL_CONSTANT_ATTENUATION:
     return out << "GL_CONSTANT_ATTENUATION";
-  case GL_LINEAR_ATTENUATION: 
+  case GL_LINEAR_ATTENUATION:
     return out << "GL_LINEAR_ATTENUATION";
-  case GL_QUADRATIC_ATTENUATION: 
+  case GL_QUADRATIC_ATTENUATION:
     return out << "GL_QUADRATIC_ATTENUATION";
-  case GL_AMBIENT: 
+  case GL_AMBIENT:
     return out << "GL_AMBIENT";
-  case GL_DIFFUSE: 
+  case GL_DIFFUSE:
     return out << "GL_DIFFUSE";
-  case GL_SPECULAR: 
+  case GL_SPECULAR:
     return out << "GL_SPECULAR";
-  case GL_SHININESS: 
+  case GL_SHININESS:
     return out << "GL_SHININESS";
-  case GL_EMISSION: 
+  case GL_EMISSION:
     return out << "GL_EMISSION";
-  case GL_POSITION: 
+  case GL_POSITION:
     return out << "GL_POSITION";
-  case GL_SPOT_DIRECTION: 
+  case GL_SPOT_DIRECTION:
     return out << "GL_SPOT_DIRECTION";
-  case GL_AMBIENT_AND_DIFFUSE: 
+  case GL_AMBIENT_AND_DIFFUSE:
     return out << "GL_AMBIENT_AND_DIFFUSE";
-  case GL_COLOR_INDEXES: 
+  case GL_COLOR_INDEXES:
     return out << "GL_COLOR_INDEXES";
-  case GL_LIGHT_MODEL_TWO_SIDE: 
+  case GL_LIGHT_MODEL_TWO_SIDE:
     return out << "GL_LIGHT_MODEL_TWO_SIDE";
-  case GL_LIGHT_MODEL_LOCAL_VIEWER: 
+  case GL_LIGHT_MODEL_LOCAL_VIEWER:
     return out << "GL_LIGHT_MODEL_LOCAL_VIEWER";
-  case GL_LIGHT_MODEL_AMBIENT: 
+  case GL_LIGHT_MODEL_AMBIENT:
     return out << "GL_LIGHT_MODEL_AMBIENT";
-  case GL_FRONT_AND_BACK: 
+  case GL_FRONT_AND_BACK:
     return out << "GL_FRONT_AND_BACK";
-  case GL_SHADE_MODEL: 
+  case GL_SHADE_MODEL:
     return out << "GL_SHADE_MODEL";
-  case GL_FLAT: 
+  case GL_FLAT:
     return out << "GL_FLAT";
-  case GL_SMOOTH: 
+  case GL_SMOOTH:
     return out << "GL_SMOOTH";
-  case GL_COLOR_MATERIAL: 
+  case GL_COLOR_MATERIAL:
     return out << "GL_COLOR_MATERIAL";
-  case GL_COLOR_MATERIAL_FACE: 
+  case GL_COLOR_MATERIAL_FACE:
     return out << "GL_COLOR_MATERIAL_FACE";
-  case GL_COLOR_MATERIAL_PARAMETER: 
+  case GL_COLOR_MATERIAL_PARAMETER:
     return out << "GL_COLOR_MATERIAL_PARAMETER";
-  case GL_NORMALIZE: 
+  case GL_NORMALIZE:
     return out << "GL_NORMALIZE";
 
     /* User clipping planes */
-  case GL_CLIP_PLANE0: 
+  case GL_CLIP_PLANE0:
     return out << "GL_CLIP_PLANE0";
-  case GL_CLIP_PLANE1: 
+  case GL_CLIP_PLANE1:
     return out << "GL_CLIP_PLANE1";
-  case GL_CLIP_PLANE2: 
+  case GL_CLIP_PLANE2:
     return out << "GL_CLIP_PLANE2";
-  case GL_CLIP_PLANE3: 
+  case GL_CLIP_PLANE3:
     return out << "GL_CLIP_PLANE3";
-  case GL_CLIP_PLANE4: 
+  case GL_CLIP_PLANE4:
     return out << "GL_CLIP_PLANE4";
-  case GL_CLIP_PLANE5: 
+  case GL_CLIP_PLANE5:
     return out << "GL_CLIP_PLANE5";
 
     /* Accumulation buffer */
-  case GL_ACCUM_RED_BITS: 
+  case GL_ACCUM_RED_BITS:
     return out << "GL_ACCUM_RED_BITS";
-  case GL_ACCUM_GREEN_BITS: 
+  case GL_ACCUM_GREEN_BITS:
     return out << "GL_ACCUM_GREEN_BITS";
-  case GL_ACCUM_BLUE_BITS: 
+  case GL_ACCUM_BLUE_BITS:
     return out << "GL_ACCUM_BLUE_BITS";
-  case GL_ACCUM_ALPHA_BITS: 
+  case GL_ACCUM_ALPHA_BITS:
     return out << "GL_ACCUM_ALPHA_BITS";
-  case GL_ACCUM_CLEAR_VALUE: 
+  case GL_ACCUM_CLEAR_VALUE:
     return out << "GL_ACCUM_CLEAR_VALUE";
-  case GL_ACCUM: 
+  case GL_ACCUM:
     return out << "GL_ACCUM";
-  case GL_ADD: 
+  case GL_ADD:
     return out << "GL_ADD";
-  case GL_LOAD: 
+  case GL_LOAD:
     return out << "GL_LOAD";
-  case GL_MULT: 
+  case GL_MULT:
     return out << "GL_MULT";
 
     /* Alpha testing */
-  case GL_ALPHA_TEST: 
+  case GL_ALPHA_TEST:
     return out << "GL_ALPHA_TEST";
-  case GL_ALPHA_TEST_REF: 
+  case GL_ALPHA_TEST_REF:
     return out << "GL_ALPHA_TEST_REF";
-  case GL_ALPHA_TEST_FUNC: 
+  case GL_ALPHA_TEST_FUNC:
     return out << "GL_ALPHA_TEST_FUNC";
 
     /* Blending */
-  case GL_BLEND: 
+  case GL_BLEND:
     return out << "GL_BLEND";
-  case GL_BLEND_SRC: 
+  case GL_BLEND_SRC:
     return out << "GL_BLEND_SRC";
-  case GL_BLEND_DST: 
+  case GL_BLEND_DST:
     return out << "GL_BLEND_DST";
     /*
-  case GL_ZERO: 
+  case GL_ZERO:
     return out << "GL_ZERO";
-  case GL_ONE: 
+  case GL_ONE:
     return out << "GL_ONE";
     */
-  case GL_SRC_COLOR: 
+  case GL_SRC_COLOR:
     return out << "GL_SRC_COLOR";
-  case GL_ONE_MINUS_SRC_COLOR: 
+  case GL_ONE_MINUS_SRC_COLOR:
     return out << "GL_ONE_MINUS_SRC_COLOR";
-  case GL_DST_COLOR: 
+  case GL_DST_COLOR:
     return out << "GL_DST_COLOR";
-  case GL_ONE_MINUS_DST_COLOR: 
+  case GL_ONE_MINUS_DST_COLOR:
     return out << "GL_ONE_MINUS_DST_COLOR";
-  case GL_SRC_ALPHA: 
+  case GL_SRC_ALPHA:
     return out << "GL_SRC_ALPHA";
-  case GL_ONE_MINUS_SRC_ALPHA: 
+  case GL_ONE_MINUS_SRC_ALPHA:
     return out << "GL_ONE_MINUS_SRC_ALPHA";
-  case GL_DST_ALPHA: 
+  case GL_DST_ALPHA:
     return out << "GL_DST_ALPHA";
-  case GL_ONE_MINUS_DST_ALPHA: 
+  case GL_ONE_MINUS_DST_ALPHA:
     return out << "GL_ONE_MINUS_DST_ALPHA";
-  case GL_SRC_ALPHA_SATURATE: 
+  case GL_SRC_ALPHA_SATURATE:
     return out << "GL_SRC_ALPHA_SATURATE";
-  case GL_CONSTANT_COLOR: 
+  case GL_CONSTANT_COLOR:
     return out << "GL_CONSTANT_COLOR";
-  case GL_ONE_MINUS_CONSTANT_COLOR: 
+  case GL_ONE_MINUS_CONSTANT_COLOR:
     return out << "GL_ONE_MINUS_CONSTANT_COLOR";
-  case GL_CONSTANT_ALPHA: 
+  case GL_CONSTANT_ALPHA:
     return out << "GL_CONSTANT_ALPHA";
-  case GL_ONE_MINUS_CONSTANT_ALPHA: 
+  case GL_ONE_MINUS_CONSTANT_ALPHA:
     return out << "GL_ONE_MINUS_CONSTANT_ALPHA";
 
     /* Render Mode */
-  case GL_FEEDBACK: 
+  case GL_FEEDBACK:
     return out << "GL_FEEDBACK";
-  case GL_RENDER: 
+  case GL_RENDER:
     return out << "GL_RENDER";
-  case GL_SELECT: 
+  case GL_SELECT:
     return out << "GL_SELECT";
 
     /* Feedback */
-  case GL_2D: 
+  case GL_2D:
     return out << "GL_2D";
-  case GL_3D: 
+  case GL_3D:
     return out << "GL_3D";
-  case GL_3D_COLOR: 
+  case GL_3D_COLOR:
     return out << "GL_3D_COLOR";
-  case GL_3D_COLOR_TEXTURE: 
+  case GL_3D_COLOR_TEXTURE:
     return out << "GL_3D_COLOR_TEXTURE";
-  case GL_4D_COLOR_TEXTURE: 
+  case GL_4D_COLOR_TEXTURE:
     return out << "GL_4D_COLOR_TEXTURE";
-  case GL_POINT_TOKEN: 
+  case GL_POINT_TOKEN:
     return out << "GL_POINT_TOKEN";
-  case GL_LINE_TOKEN: 
+  case GL_LINE_TOKEN:
     return out << "GL_LINE_TOKEN";
-  case GL_LINE_RESET_TOKEN: 
+  case GL_LINE_RESET_TOKEN:
     return out << "GL_LINE_RESET_TOKEN";
-  case GL_POLYGON_TOKEN: 
+  case GL_POLYGON_TOKEN:
     return out << "GL_POLYGON_TOKEN";
-  case GL_BITMAP_TOKEN: 
+  case GL_BITMAP_TOKEN:
     return out << "GL_BITMAP_TOKEN";
-  case GL_DRAW_PIXEL_TOKEN: 
+  case GL_DRAW_PIXEL_TOKEN:
     return out << "GL_DRAW_PIXEL_TOKEN";
-  case GL_COPY_PIXEL_TOKEN: 
+  case GL_COPY_PIXEL_TOKEN:
     return out << "GL_COPY_PIXEL_TOKEN";
-  case GL_PASS_THROUGH_TOKEN: 
+  case GL_PASS_THROUGH_TOKEN:
     return out << "GL_PASS_THROUGH_TOKEN";
-  case GL_FEEDBACK_BUFFER_POINTER: 
+  case GL_FEEDBACK_BUFFER_POINTER:
     return out << "GL_FEEDBACK_BUFFER_POINTER";
-  case GL_FEEDBACK_BUFFER_SIZE: 
+  case GL_FEEDBACK_BUFFER_SIZE:
     return out << "GL_FEEDBACK_BUFFER_SIZE";
-  case GL_FEEDBACK_BUFFER_TYPE: 
+  case GL_FEEDBACK_BUFFER_TYPE:
     return out << "GL_FEEDBACK_BUFFER_TYPE";
 
     /* Selection */
-  case GL_SELECTION_BUFFER_POINTER: 
+  case GL_SELECTION_BUFFER_POINTER:
     return out << "GL_SELECTION_BUFFER_POINTER";
-  case GL_SELECTION_BUFFER_SIZE: 
+  case GL_SELECTION_BUFFER_SIZE:
     return out << "GL_SELECTION_BUFFER_SIZE";
 
     /* Fog */
-  case GL_FOG: 
+  case GL_FOG:
     return out << "GL_FOG";
-  case GL_FOG_MODE: 
+  case GL_FOG_MODE:
     return out << "GL_FOG_MODE";
-  case GL_FOG_DENSITY: 
+  case GL_FOG_DENSITY:
     return out << "GL_FOG_DENSITY";
-  case GL_FOG_COLOR: 
+  case GL_FOG_COLOR:
     return out << "GL_FOG_COLOR";
-  case GL_FOG_INDEX: 
+  case GL_FOG_INDEX:
     return out << "GL_FOG_INDEX";
-  case GL_FOG_START: 
+  case GL_FOG_START:
     return out << "GL_FOG_START";
-  case GL_FOG_END: 
+  case GL_FOG_END:
     return out << "GL_FOG_END";
-  case GL_LINEAR: 
+  case GL_LINEAR:
     return out << "GL_LINEAR";
-  case GL_EXP: 
+  case GL_EXP:
     return out << "GL_EXP";
-  case GL_EXP2: 
+  case GL_EXP2:
     return out << "GL_EXP2";
 
     /* Logic Ops */
-  case GL_LOGIC_OP: 
+  case GL_LOGIC_OP:
     return out << "GL_LOGIC_OP";
     /*
-  case GL_INDEX_LOGIC_OP: 
+  case GL_INDEX_LOGIC_OP:
     return out << "GL_INDEX_LOGIC_OP";
     */
-  case GL_COLOR_LOGIC_OP: 
+  case GL_COLOR_LOGIC_OP:
     return out << "GL_COLOR_LOGIC_OP";
-  case GL_LOGIC_OP_MODE: 
+  case GL_LOGIC_OP_MODE:
     return out << "GL_LOGIC_OP_MODE";
-  case GL_CLEAR: 
+  case GL_CLEAR:
     return out << "GL_CLEAR";
-  case GL_SET: 
+  case GL_SET:
     return out << "GL_SET";
-  case GL_COPY: 
+  case GL_COPY:
     return out << "GL_COPY";
-  case GL_COPY_INVERTED: 
+  case GL_COPY_INVERTED:
     return out << "GL_COPY_INVERTED";
-  case GL_NOOP: 
+  case GL_NOOP:
     return out << "GL_NOOP";
-  case GL_INVERT: 
+  case GL_INVERT:
     return out << "GL_INVERT";
-  case GL_AND: 
+  case GL_AND:
     return out << "GL_AND";
-  case GL_NAND: 
+  case GL_NAND:
     return out << "GL_NAND";
-  case GL_OR: 
+  case GL_OR:
     return out << "GL_OR";
-  case GL_NOR: 
+  case GL_NOR:
     return out << "GL_NOR";
-  case GL_XOR: 
+  case GL_XOR:
     return out << "GL_XOR";
-  case GL_EQUIV: 
+  case GL_EQUIV:
     return out << "GL_EQUIV";
-  case GL_AND_REVERSE: 
+  case GL_AND_REVERSE:
     return out << "GL_AND_REVERSE";
-  case GL_AND_INVERTED: 
+  case GL_AND_INVERTED:
     return out << "GL_AND_INVERTED";
-  case GL_OR_REVERSE: 
+  case GL_OR_REVERSE:
     return out << "GL_OR_REVERSE";
-  case GL_OR_INVERTED: 
+  case GL_OR_INVERTED:
     return out << "GL_OR_INVERTED";
 
     /* Stencil */
-  case GL_STENCIL_TEST: 
+  case GL_STENCIL_TEST:
     return out << "GL_STENCIL_TEST";
-  case GL_STENCIL_WRITEMASK: 
+  case GL_STENCIL_WRITEMASK:
     return out << "GL_STENCIL_WRITEMASK";
-  case GL_STENCIL_BITS: 
+  case GL_STENCIL_BITS:
     return out << "GL_STENCIL_BITS";
-  case GL_STENCIL_FUNC: 
+  case GL_STENCIL_FUNC:
     return out << "GL_STENCIL_FUNC";
-  case GL_STENCIL_VALUE_MASK: 
+  case GL_STENCIL_VALUE_MASK:
     return out << "GL_STENCIL_VALUE_MASK";
-  case GL_STENCIL_REF: 
+  case GL_STENCIL_REF:
     return out << "GL_STENCIL_REF";
-  case GL_STENCIL_FAIL: 
+  case GL_STENCIL_FAIL:
     return out << "GL_STENCIL_FAIL";
-  case GL_STENCIL_PASS_DEPTH_PASS: 
+  case GL_STENCIL_PASS_DEPTH_PASS:
     return out << "GL_STENCIL_PASS_DEPTH_PASS";
-  case GL_STENCIL_PASS_DEPTH_FAIL: 
+  case GL_STENCIL_PASS_DEPTH_FAIL:
     return out << "GL_STENCIL_PASS_DEPTH_FAIL";
-  case GL_STENCIL_CLEAR_VALUE: 
+  case GL_STENCIL_CLEAR_VALUE:
     return out << "GL_STENCIL_CLEAR_VALUE";
-  case GL_STENCIL_INDEX: 
+  case GL_STENCIL_INDEX:
     return out << "GL_STENCIL_INDEX";
-  case GL_KEEP: 
+  case GL_KEEP:
     return out << "GL_KEEP";
-  case GL_REPLACE: 
+  case GL_REPLACE:
     return out << "GL_REPLACE";
-  case GL_INCR: 
+  case GL_INCR:
     return out << "GL_INCR";
-  case GL_DECR: 
+  case GL_DECR:
     return out << "GL_DECR";
 
     /* Buffers, Pixel Drawing/Reading */
     /*
-  case GL_NONE: 
+  case GL_NONE:
     return out << "GL_NONE";
     */
-  case GL_LEFT: 
+  case GL_LEFT:
     return out << "GL_LEFT";
-  case GL_RIGHT: 
+  case GL_RIGHT:
     return out << "GL_RIGHT";
-  case GL_FRONT_LEFT: 
+  case GL_FRONT_LEFT:
     return out << "GL_FRONT_LEFT";
-  case GL_FRONT_RIGHT: 
+  case GL_FRONT_RIGHT:
     return out << "GL_FRONT_RIGHT";
-  case GL_BACK_LEFT: 
+  case GL_BACK_LEFT:
     return out << "GL_BACK_LEFT";
-  case GL_BACK_RIGHT: 
+  case GL_BACK_RIGHT:
     return out << "GL_BACK_RIGHT";
-  case GL_AUX0: 
+  case GL_AUX0:
     return out << "GL_AUX0";
-  case GL_AUX1: 
+  case GL_AUX1:
     return out << "GL_AUX1";
-  case GL_AUX2: 
+  case GL_AUX2:
     return out << "GL_AUX2";
-  case GL_AUX3: 
+  case GL_AUX3:
     return out << "GL_AUX3";
-  case GL_COLOR_INDEX: 
+  case GL_COLOR_INDEX:
     return out << "GL_COLOR_INDEX";
-  case GL_RED: 
+  case GL_RED:
     return out << "GL_RED";
-  case GL_GREEN: 
+  case GL_GREEN:
     return out << "GL_GREEN";
-  case GL_BLUE: 
+  case GL_BLUE:
     return out << "GL_BLUE";
-  case GL_ALPHA: 
+  case GL_ALPHA:
     return out << "GL_ALPHA";
-  case GL_LUMINANCE: 
+  case GL_LUMINANCE:
     return out << "GL_LUMINANCE";
-  case GL_LUMINANCE_ALPHA: 
+  case GL_LUMINANCE_ALPHA:
     return out << "GL_LUMINANCE_ALPHA";
-  case GL_ALPHA_BITS: 
+  case GL_ALPHA_BITS:
     return out << "GL_ALPHA_BITS";
-  case GL_RED_BITS: 
+  case GL_RED_BITS:
     return out << "GL_RED_BITS";
-  case GL_GREEN_BITS: 
+  case GL_GREEN_BITS:
     return out << "GL_GREEN_BITS";
-  case GL_BLUE_BITS: 
+  case GL_BLUE_BITS:
     return out << "GL_BLUE_BITS";
-  case GL_INDEX_BITS: 
+  case GL_INDEX_BITS:
     return out << "GL_INDEX_BITS";
-  case GL_SUBPIXEL_BITS: 
+  case GL_SUBPIXEL_BITS:
     return out << "GL_SUBPIXEL_BITS";
-  case GL_AUX_BUFFERS: 
+  case GL_AUX_BUFFERS:
     return out << "GL_AUX_BUFFERS";
-  case GL_READ_BUFFER: 
+  case GL_READ_BUFFER:
     return out << "GL_READ_BUFFER";
-  case GL_DRAW_BUFFER: 
+  case GL_DRAW_BUFFER:
     return out << "GL_DRAW_BUFFER";
-  case GL_DOUBLEBUFFER: 
+  case GL_DOUBLEBUFFER:
     return out << "GL_DOUBLEBUFFER";
-  case GL_STEREO: 
+  case GL_STEREO:
     return out << "GL_STEREO";
-  case GL_BITMAP: 
+  case GL_BITMAP:
     return out << "GL_BITMAP";
-  case GL_COLOR: 
+  case GL_COLOR:
     return out << "GL_COLOR";
-  case GL_DEPTH: 
+  case GL_DEPTH:
     return out << "GL_DEPTH";
-  case GL_STENCIL: 
+  case GL_STENCIL:
     return out << "GL_STENCIL";
-  case GL_DITHER: 
+  case GL_DITHER:
     return out << "GL_DITHER";
-  case GL_RGB: 
+  case GL_RGB:
     return out << "GL_RGB";
-  case GL_RGBA: 
+  case GL_RGBA:
     return out << "GL_RGBA";
 
     /* Implementation limits */
-  case GL_MAX_LIST_NESTING: 
+  case GL_MAX_LIST_NESTING:
     return out << "GL_MAX_LIST_NESTING";
-  case GL_MAX_ATTRIB_STACK_DEPTH: 
+  case GL_MAX_ATTRIB_STACK_DEPTH:
     return out << "GL_MAX_ATTRIB_STACK_DEPTH";
-  case GL_MAX_MODELVIEW_STACK_DEPTH: 
+  case GL_MAX_MODELVIEW_STACK_DEPTH:
     return out << "GL_MAX_MODELVIEW_STACK_DEPTH";
-  case GL_MAX_NAME_STACK_DEPTH: 
+  case GL_MAX_NAME_STACK_DEPTH:
     return out << "GL_MAX_NAME_STACK_DEPTH";
-  case GL_MAX_PROJECTION_STACK_DEPTH: 
+  case GL_MAX_PROJECTION_STACK_DEPTH:
     return out << "GL_MAX_PROJECTION_STACK_DEPTH";
-  case GL_MAX_TEXTURE_STACK_DEPTH: 
+  case GL_MAX_TEXTURE_STACK_DEPTH:
     return out << "GL_MAX_TEXTURE_STACK_DEPTH";
-  case GL_MAX_EVAL_ORDER: 
+  case GL_MAX_EVAL_ORDER:
     return out << "GL_MAX_EVAL_ORDER";
-  case GL_MAX_LIGHTS: 
+  case GL_MAX_LIGHTS:
     return out << "GL_MAX_LIGHTS";
-  case GL_MAX_CLIP_PLANES: 
+  case GL_MAX_CLIP_PLANES:
     return out << "GL_MAX_CLIP_PLANES";
-  case GL_MAX_TEXTURE_SIZE: 
+  case GL_MAX_TEXTURE_SIZE:
     return out << "GL_MAX_TEXTURE_SIZE";
-  case GL_MAX_PIXEL_MAP_TABLE: 
+  case GL_MAX_PIXEL_MAP_TABLE:
     return out << "GL_MAX_PIXEL_MAP_TABLE";
-  case GL_MAX_VIEWPORT_DIMS: 
+  case GL_MAX_VIEWPORT_DIMS:
     return out << "GL_MAX_VIEWPORT_DIMS";
-  case GL_MAX_CLIENT_ATTRIB_STACK_DEPTH: 
+  case GL_MAX_CLIENT_ATTRIB_STACK_DEPTH:
     return out << "GL_MAX_CLIENT_ATTRIB_STACK_DEPTH";
 
     /* Gets */
-  case GL_ATTRIB_STACK_DEPTH: 
+  case GL_ATTRIB_STACK_DEPTH:
     return out << "GL_ATTRIB_STACK_DEPTH";
-  case GL_CLIENT_ATTRIB_STACK_DEPTH: 
+  case GL_CLIENT_ATTRIB_STACK_DEPTH:
     return out << "GL_CLIENT_ATTRIB_STACK_DEPTH";
-  case GL_COLOR_CLEAR_VALUE: 
+  case GL_COLOR_CLEAR_VALUE:
     return out << "GL_COLOR_CLEAR_VALUE";
-  case GL_COLOR_WRITEMASK: 
+  case GL_COLOR_WRITEMASK:
     return out << "GL_COLOR_WRITEMASK";
-  case GL_CURRENT_INDEX: 
+  case GL_CURRENT_INDEX:
     return out << "GL_CURRENT_INDEX";
-  case GL_CURRENT_COLOR: 
+  case GL_CURRENT_COLOR:
     return out << "GL_CURRENT_COLOR";
-  case GL_CURRENT_NORMAL: 
+  case GL_CURRENT_NORMAL:
     return out << "GL_CURRENT_NORMAL";
-  case GL_CURRENT_RASTER_COLOR: 
+  case GL_CURRENT_RASTER_COLOR:
     return out << "GL_CURRENT_RASTER_COLOR";
-  case GL_CURRENT_RASTER_DISTANCE: 
+  case GL_CURRENT_RASTER_DISTANCE:
     return out << "GL_CURRENT_RASTER_DISTANCE";
-  case GL_CURRENT_RASTER_INDEX: 
+  case GL_CURRENT_RASTER_INDEX:
     return out << "GL_CURRENT_RASTER_INDEX";
-  case GL_CURRENT_RASTER_POSITION: 
+  case GL_CURRENT_RASTER_POSITION:
     return out << "GL_CURRENT_RASTER_POSITION";
-  case GL_CURRENT_RASTER_TEXTURE_COORDS: 
+  case GL_CURRENT_RASTER_TEXTURE_COORDS:
     return out << "GL_CURRENT_RASTER_TEXTURE_COORDS";
-  case GL_CURRENT_RASTER_POSITION_VALID: 
+  case GL_CURRENT_RASTER_POSITION_VALID:
     return out << "GL_CURRENT_RASTER_POSITION_VALID";
-  case GL_CURRENT_TEXTURE_COORDS: 
+  case GL_CURRENT_TEXTURE_COORDS:
     return out << "GL_CURRENT_TEXTURE_COORDS";
-  case GL_INDEX_CLEAR_VALUE: 
+  case GL_INDEX_CLEAR_VALUE:
     return out << "GL_INDEX_CLEAR_VALUE";
-  case GL_INDEX_MODE: 
+  case GL_INDEX_MODE:
     return out << "GL_INDEX_MODE";
-  case GL_INDEX_WRITEMASK: 
+  case GL_INDEX_WRITEMASK:
     return out << "GL_INDEX_WRITEMASK";
-  case GL_MODELVIEW_MATRIX: 
+  case GL_MODELVIEW_MATRIX:
     return out << "GL_MODELVIEW_MATRIX";
-  case GL_MODELVIEW_STACK_DEPTH: 
+  case GL_MODELVIEW_STACK_DEPTH:
     return out << "GL_MODELVIEW_STACK_DEPTH";
-  case GL_NAME_STACK_DEPTH: 
+  case GL_NAME_STACK_DEPTH:
     return out << "GL_NAME_STACK_DEPTH";
-  case GL_PROJECTION_MATRIX: 
+  case GL_PROJECTION_MATRIX:
     return out << "GL_PROJECTION_MATRIX";
-  case GL_PROJECTION_STACK_DEPTH: 
+  case GL_PROJECTION_STACK_DEPTH:
     return out << "GL_PROJECTION_STACK_DEPTH";
-  case GL_RENDER_MODE: 
+  case GL_RENDER_MODE:
     return out << "GL_RENDER_MODE";
-  case GL_RGBA_MODE: 
+  case GL_RGBA_MODE:
     return out << "GL_RGBA_MODE";
-  case GL_TEXTURE_MATRIX: 
+  case GL_TEXTURE_MATRIX:
     return out << "GL_TEXTURE_MATRIX";
-  case GL_TEXTURE_STACK_DEPTH: 
+  case GL_TEXTURE_STACK_DEPTH:
     return out << "GL_TEXTURE_STACK_DEPTH";
-  case GL_VIEWPORT: 
+  case GL_VIEWPORT:
     return out << "GL_VIEWPORT";
 
 
     /* Evaluators */
-  case GL_AUTO_NORMAL: 
+  case GL_AUTO_NORMAL:
     return out << "GL_AUTO_NORMAL";
-  case GL_MAP1_COLOR_4: 
+  case GL_MAP1_COLOR_4:
     return out << "GL_MAP1_COLOR_4";
-  case GL_MAP1_GRID_DOMAIN: 
+  case GL_MAP1_GRID_DOMAIN:
     return out << "GL_MAP1_GRID_DOMAIN";
-  case GL_MAP1_GRID_SEGMENTS: 
+  case GL_MAP1_GRID_SEGMENTS:
     return out << "GL_MAP1_GRID_SEGMENTS";
-  case GL_MAP1_INDEX: 
+  case GL_MAP1_INDEX:
     return out << "GL_MAP1_INDEX";
-  case GL_MAP1_NORMAL: 
+  case GL_MAP1_NORMAL:
     return out << "GL_MAP1_NORMAL";
-  case GL_MAP1_TEXTURE_COORD_1: 
+  case GL_MAP1_TEXTURE_COORD_1:
     return out << "GL_MAP1_TEXTURE_COORD_1";
-  case GL_MAP1_TEXTURE_COORD_2: 
+  case GL_MAP1_TEXTURE_COORD_2:
     return out << "GL_MAP1_TEXTURE_COORD_2";
-  case GL_MAP1_TEXTURE_COORD_3: 
+  case GL_MAP1_TEXTURE_COORD_3:
     return out << "GL_MAP1_TEXTURE_COORD_3";
-  case GL_MAP1_TEXTURE_COORD_4: 
+  case GL_MAP1_TEXTURE_COORD_4:
     return out << "GL_MAP1_TEXTURE_COORD_4";
-  case GL_MAP1_VERTEX_3: 
+  case GL_MAP1_VERTEX_3:
     return out << "GL_MAP1_VERTEX_3";
-  case GL_MAP1_VERTEX_4: 
+  case GL_MAP1_VERTEX_4:
     return out << "GL_MAP1_VERTEX_4";
-  case GL_MAP2_COLOR_4: 
+  case GL_MAP2_COLOR_4:
     return out << "GL_MAP2_COLOR_4";
-  case GL_MAP2_GRID_DOMAIN: 
+  case GL_MAP2_GRID_DOMAIN:
     return out << "GL_MAP2_GRID_DOMAIN";
-  case GL_MAP2_GRID_SEGMENTS: 
+  case GL_MAP2_GRID_SEGMENTS:
     return out << "GL_MAP2_GRID_SEGMENTS";
-  case GL_MAP2_INDEX: 
+  case GL_MAP2_INDEX:
     return out << "GL_MAP2_INDEX";
-  case GL_MAP2_NORMAL: 
+  case GL_MAP2_NORMAL:
     return out << "GL_MAP2_NORMAL";
-  case GL_MAP2_TEXTURE_COORD_1: 
+  case GL_MAP2_TEXTURE_COORD_1:
     return out << "GL_MAP2_TEXTURE_COORD_1";
-  case GL_MAP2_TEXTURE_COORD_2: 
+  case GL_MAP2_TEXTURE_COORD_2:
     return out << "GL_MAP2_TEXTURE_COORD_2";
-  case GL_MAP2_TEXTURE_COORD_3: 
+  case GL_MAP2_TEXTURE_COORD_3:
     return out << "GL_MAP2_TEXTURE_COORD_3";
-  case GL_MAP2_TEXTURE_COORD_4: 
+  case GL_MAP2_TEXTURE_COORD_4:
     return out << "GL_MAP2_TEXTURE_COORD_4";
-  case GL_MAP2_VERTEX_3: 
+  case GL_MAP2_VERTEX_3:
     return out << "GL_MAP2_VERTEX_3";
-  case GL_MAP2_VERTEX_4: 
+  case GL_MAP2_VERTEX_4:
     return out << "GL_MAP2_VERTEX_4";
-  case GL_COEFF: 
+  case GL_COEFF:
     return out << "GL_COEFF";
-  case GL_DOMAIN: 
+  case GL_DOMAIN:
     return out << "GL_DOMAIN";
-  case GL_ORDER: 
+  case GL_ORDER:
     return out << "GL_ORDER";
 
     /* Hints */
-  case GL_FOG_HINT: 
+  case GL_FOG_HINT:
     return out << "GL_FOG_HINT";
-  case GL_LINE_SMOOTH_HINT: 
+  case GL_LINE_SMOOTH_HINT:
     return out << "GL_LINE_SMOOTH_HINT";
-  case GL_PERSPECTIVE_CORRECTION_HINT: 
+  case GL_PERSPECTIVE_CORRECTION_HINT:
     return out << "GL_PERSPECTIVE_CORRECTION_HINT";
-  case GL_POINT_SMOOTH_HINT: 
+  case GL_POINT_SMOOTH_HINT:
     return out << "GL_POINT_SMOOTH_HINT";
-  case GL_POLYGON_SMOOTH_HINT: 
+  case GL_POLYGON_SMOOTH_HINT:
     return out << "GL_POLYGON_SMOOTH_HINT";
-  case GL_DONT_CARE: 
+  case GL_DONT_CARE:
     return out << "GL_DONT_CARE";
-  case GL_FASTEST: 
+  case GL_FASTEST:
     return out << "GL_FASTEST";
-  case GL_NICEST: 
+  case GL_NICEST:
     return out << "GL_NICEST";
 
     /* Scissor box */
-  case GL_SCISSOR_TEST: 
+  case GL_SCISSOR_TEST:
     return out << "GL_SCISSOR_TEST";
-  case GL_SCISSOR_BOX: 
+  case GL_SCISSOR_BOX:
     return out << "GL_SCISSOR_BOX";
 
     /* Pixel Mode / Transfer */
-  case GL_MAP_COLOR: 
+  case GL_MAP_COLOR:
     return out << "GL_MAP_COLOR";
-  case GL_MAP_STENCIL: 
+  case GL_MAP_STENCIL:
     return out << "GL_MAP_STENCIL";
-  case GL_INDEX_SHIFT: 
+  case GL_INDEX_SHIFT:
     return out << "GL_INDEX_SHIFT";
-  case GL_INDEX_OFFSET: 
+  case GL_INDEX_OFFSET:
     return out << "GL_INDEX_OFFSET";
-  case GL_RED_SCALE: 
+  case GL_RED_SCALE:
     return out << "GL_RED_SCALE";
-  case GL_RED_BIAS: 
+  case GL_RED_BIAS:
     return out << "GL_RED_BIAS";
-  case GL_GREEN_SCALE: 
+  case GL_GREEN_SCALE:
     return out << "GL_GREEN_SCALE";
-  case GL_GREEN_BIAS: 
+  case GL_GREEN_BIAS:
     return out << "GL_GREEN_BIAS";
-  case GL_BLUE_SCALE: 
+  case GL_BLUE_SCALE:
     return out << "GL_BLUE_SCALE";
-  case GL_BLUE_BIAS: 
+  case GL_BLUE_BIAS:
     return out << "GL_BLUE_BIAS";
-  case GL_ALPHA_SCALE: 
+  case GL_ALPHA_SCALE:
     return out << "GL_ALPHA_SCALE";
-  case GL_ALPHA_BIAS: 
+  case GL_ALPHA_BIAS:
     return out << "GL_ALPHA_BIAS";
-  case GL_DEPTH_SCALE: 
+  case GL_DEPTH_SCALE:
     return out << "GL_DEPTH_SCALE";
-  case GL_DEPTH_BIAS: 
+  case GL_DEPTH_BIAS:
     return out << "GL_DEPTH_BIAS";
-  case GL_PIXEL_MAP_S_TO_S_SIZE: 
+  case GL_PIXEL_MAP_S_TO_S_SIZE:
     return out << "GL_PIXEL_MAP_S_TO_S_SIZE";
-  case GL_PIXEL_MAP_I_TO_I_SIZE: 
+  case GL_PIXEL_MAP_I_TO_I_SIZE:
     return out << "GL_PIXEL_MAP_I_TO_I_SIZE";
-  case GL_PIXEL_MAP_I_TO_R_SIZE: 
+  case GL_PIXEL_MAP_I_TO_R_SIZE:
     return out << "GL_PIXEL_MAP_I_TO_R_SIZE";
-  case GL_PIXEL_MAP_I_TO_G_SIZE: 
+  case GL_PIXEL_MAP_I_TO_G_SIZE:
     return out << "GL_PIXEL_MAP_I_TO_G_SIZE";
-  case GL_PIXEL_MAP_I_TO_B_SIZE: 
+  case GL_PIXEL_MAP_I_TO_B_SIZE:
     return out << "GL_PIXEL_MAP_I_TO_B_SIZE";
-  case GL_PIXEL_MAP_I_TO_A_SIZE: 
+  case GL_PIXEL_MAP_I_TO_A_SIZE:
     return out << "GL_PIXEL_MAP_I_TO_A_SIZE";
-  case GL_PIXEL_MAP_R_TO_R_SIZE: 
+  case GL_PIXEL_MAP_R_TO_R_SIZE:
     return out << "GL_PIXEL_MAP_R_TO_R_SIZE";
-  case GL_PIXEL_MAP_G_TO_G_SIZE: 
+  case GL_PIXEL_MAP_G_TO_G_SIZE:
     return out << "GL_PIXEL_MAP_G_TO_G_SIZE";
-  case GL_PIXEL_MAP_B_TO_B_SIZE: 
+  case GL_PIXEL_MAP_B_TO_B_SIZE:
     return out << "GL_PIXEL_MAP_B_TO_B_SIZE";
-  case GL_PIXEL_MAP_A_TO_A_SIZE: 
+  case GL_PIXEL_MAP_A_TO_A_SIZE:
     return out << "GL_PIXEL_MAP_A_TO_A_SIZE";
-  case GL_PIXEL_MAP_S_TO_S: 
+  case GL_PIXEL_MAP_S_TO_S:
     return out << "GL_PIXEL_MAP_S_TO_S";
-  case GL_PIXEL_MAP_I_TO_I: 
+  case GL_PIXEL_MAP_I_TO_I:
     return out << "GL_PIXEL_MAP_I_TO_I";
-  case GL_PIXEL_MAP_I_TO_R: 
+  case GL_PIXEL_MAP_I_TO_R:
     return out << "GL_PIXEL_MAP_I_TO_R";
-  case GL_PIXEL_MAP_I_TO_G: 
+  case GL_PIXEL_MAP_I_TO_G:
     return out << "GL_PIXEL_MAP_I_TO_G";
-  case GL_PIXEL_MAP_I_TO_B: 
+  case GL_PIXEL_MAP_I_TO_B:
     return out << "GL_PIXEL_MAP_I_TO_B";
-  case GL_PIXEL_MAP_I_TO_A: 
+  case GL_PIXEL_MAP_I_TO_A:
     return out << "GL_PIXEL_MAP_I_TO_A";
-  case GL_PIXEL_MAP_R_TO_R: 
+  case GL_PIXEL_MAP_R_TO_R:
     return out << "GL_PIXEL_MAP_R_TO_R";
-  case GL_PIXEL_MAP_G_TO_G: 
+  case GL_PIXEL_MAP_G_TO_G:
     return out << "GL_PIXEL_MAP_G_TO_G";
-  case GL_PIXEL_MAP_B_TO_B: 
+  case GL_PIXEL_MAP_B_TO_B:
     return out << "GL_PIXEL_MAP_B_TO_B";
-  case GL_PIXEL_MAP_A_TO_A: 
+  case GL_PIXEL_MAP_A_TO_A:
     return out << "GL_PIXEL_MAP_A_TO_A";
-  case GL_PACK_ALIGNMENT: 
+  case GL_PACK_ALIGNMENT:
     return out << "GL_PACK_ALIGNMENT";
-  case GL_PACK_LSB_FIRST: 
+  case GL_PACK_LSB_FIRST:
     return out << "GL_PACK_LSB_FIRST";
-  case GL_PACK_ROW_LENGTH: 
+  case GL_PACK_ROW_LENGTH:
     return out << "GL_PACK_ROW_LENGTH";
-  case GL_PACK_SKIP_PIXELS: 
+  case GL_PACK_SKIP_PIXELS:
     return out << "GL_PACK_SKIP_PIXELS";
-  case GL_PACK_SKIP_ROWS: 
+  case GL_PACK_SKIP_ROWS:
     return out << "GL_PACK_SKIP_ROWS";
-  case GL_PACK_SWAP_BYTES: 
+  case GL_PACK_SWAP_BYTES:
     return out << "GL_PACK_SWAP_BYTES";
-  case GL_UNPACK_ALIGNMENT: 
+  case GL_UNPACK_ALIGNMENT:
     return out << "GL_UNPACK_ALIGNMENT";
-  case GL_UNPACK_LSB_FIRST: 
+  case GL_UNPACK_LSB_FIRST:
     return out << "GL_UNPACK_LSB_FIRST";
-  case GL_UNPACK_ROW_LENGTH: 
+  case GL_UNPACK_ROW_LENGTH:
     return out << "GL_UNPACK_ROW_LENGTH";
-  case GL_UNPACK_SKIP_PIXELS: 
+  case GL_UNPACK_SKIP_PIXELS:
     return out << "GL_UNPACK_SKIP_PIXELS";
-  case GL_UNPACK_SKIP_ROWS: 
+  case GL_UNPACK_SKIP_ROWS:
     return out << "GL_UNPACK_SKIP_ROWS";
-  case GL_UNPACK_SWAP_BYTES: 
+  case GL_UNPACK_SWAP_BYTES:
     return out << "GL_UNPACK_SWAP_BYTES";
-  case GL_ZOOM_X: 
+  case GL_ZOOM_X:
     return out << "GL_ZOOM_X";
-  case GL_ZOOM_Y: 
+  case GL_ZOOM_Y:
     return out << "GL_ZOOM_Y";
 
     /* Texture mapping */
-  case GL_TEXTURE_ENV: 
+  case GL_TEXTURE_ENV:
     return out << "GL_TEXTURE_ENV";
-  case GL_TEXTURE_ENV_MODE: 
+  case GL_TEXTURE_ENV_MODE:
     return out << "GL_TEXTURE_ENV_MODE";
-  case GL_TEXTURE_1D: 
+  case GL_TEXTURE_1D:
     return out << "GL_TEXTURE_1D";
-  case GL_TEXTURE_2D: 
+  case GL_TEXTURE_2D:
     return out << "GL_TEXTURE_2D";
-  case GL_TEXTURE_WRAP_S: 
+  case GL_TEXTURE_WRAP_S:
     return out << "GL_TEXTURE_WRAP_S";
-  case GL_TEXTURE_WRAP_T: 
+  case GL_TEXTURE_WRAP_T:
     return out << "GL_TEXTURE_WRAP_T";
-  case GL_TEXTURE_MAG_FILTER: 
+  case GL_TEXTURE_MAG_FILTER:
     return out << "GL_TEXTURE_MAG_FILTER";
-  case GL_TEXTURE_MIN_FILTER: 
+  case GL_TEXTURE_MIN_FILTER:
     return out << "GL_TEXTURE_MIN_FILTER";
-  case GL_TEXTURE_ENV_COLOR: 
+  case GL_TEXTURE_ENV_COLOR:
     return out << "GL_TEXTURE_ENV_COLOR";
-  case GL_TEXTURE_GEN_S: 
+  case GL_TEXTURE_GEN_S:
     return out << "GL_TEXTURE_GEN_S";
-  case GL_TEXTURE_GEN_T: 
+  case GL_TEXTURE_GEN_T:
     return out << "GL_TEXTURE_GEN_T";
-  case GL_TEXTURE_GEN_MODE: 
+  case GL_TEXTURE_GEN_MODE:
     return out << "GL_TEXTURE_GEN_MODE";
-  case GL_TEXTURE_BORDER_COLOR: 
+  case GL_TEXTURE_BORDER_COLOR:
     return out << "GL_TEXTURE_BORDER_COLOR";
-  case GL_TEXTURE_WIDTH: 
+  case GL_TEXTURE_WIDTH:
     return out << "GL_TEXTURE_WIDTH";
-  case GL_TEXTURE_HEIGHT: 
+  case GL_TEXTURE_HEIGHT:
     return out << "GL_TEXTURE_HEIGHT";
-  case GL_TEXTURE_BORDER: 
+  case GL_TEXTURE_BORDER:
     return out << "GL_TEXTURE_BORDER";
-  case GL_TEXTURE_COMPONENTS: 
+  case GL_TEXTURE_COMPONENTS:
     return out << "GL_TEXTURE_COMPONENTS";
-  case GL_TEXTURE_RED_SIZE: 
+  case GL_TEXTURE_RED_SIZE:
     return out << "GL_TEXTURE_RED_SIZE";
-  case GL_TEXTURE_GREEN_SIZE: 
+  case GL_TEXTURE_GREEN_SIZE:
     return out << "GL_TEXTURE_GREEN_SIZE";
-  case GL_TEXTURE_BLUE_SIZE: 
+  case GL_TEXTURE_BLUE_SIZE:
     return out << "GL_TEXTURE_BLUE_SIZE";
-  case GL_TEXTURE_ALPHA_SIZE: 
+  case GL_TEXTURE_ALPHA_SIZE:
     return out << "GL_TEXTURE_ALPHA_SIZE";
-  case GL_TEXTURE_LUMINANCE_SIZE: 
+  case GL_TEXTURE_LUMINANCE_SIZE:
     return out << "GL_TEXTURE_LUMINANCE_SIZE";
-  case GL_TEXTURE_INTENSITY_SIZE: 
+  case GL_TEXTURE_INTENSITY_SIZE:
     return out << "GL_TEXTURE_INTENSITY_SIZE";
-  case GL_NEAREST_MIPMAP_NEAREST: 
+  case GL_NEAREST_MIPMAP_NEAREST:
     return out << "GL_NEAREST_MIPMAP_NEAREST";
-  case GL_NEAREST_MIPMAP_LINEAR: 
+  case GL_NEAREST_MIPMAP_LINEAR:
     return out << "GL_NEAREST_MIPMAP_LINEAR";
-  case GL_LINEAR_MIPMAP_NEAREST: 
+  case GL_LINEAR_MIPMAP_NEAREST:
     return out << "GL_LINEAR_MIPMAP_NEAREST";
-  case GL_LINEAR_MIPMAP_LINEAR: 
+  case GL_LINEAR_MIPMAP_LINEAR:
     return out << "GL_LINEAR_MIPMAP_LINEAR";
-  case GL_OBJECT_LINEAR: 
+  case GL_OBJECT_LINEAR:
     return out << "GL_OBJECT_LINEAR";
-  case GL_OBJECT_PLANE: 
+  case GL_OBJECT_PLANE:
     return out << "GL_OBJECT_PLANE";
-  case GL_EYE_LINEAR: 
+  case GL_EYE_LINEAR:
     return out << "GL_EYE_LINEAR";
-  case GL_EYE_PLANE: 
+  case GL_EYE_PLANE:
     return out << "GL_EYE_PLANE";
-  case GL_SPHERE_MAP: 
+  case GL_SPHERE_MAP:
     return out << "GL_SPHERE_MAP";
-  case GL_DECAL: 
+  case GL_DECAL:
     return out << "GL_DECAL";
-  case GL_MODULATE: 
+  case GL_MODULATE:
     return out << "GL_MODULATE";
-  case GL_NEAREST: 
+  case GL_NEAREST:
     return out << "GL_NEAREST";
-  case GL_REPEAT: 
+  case GL_REPEAT:
     return out << "GL_REPEAT";
-  case GL_CLAMP: 
+  case GL_CLAMP:
     return out << "GL_CLAMP";
-  case GL_S: 
+  case GL_S:
     return out << "GL_S";
-  case GL_T: 
+  case GL_T:
     return out << "GL_T";
-  case GL_R: 
+  case GL_R:
     return out << "GL_R";
-  case GL_Q: 
+  case GL_Q:
     return out << "GL_Q";
-  case GL_TEXTURE_GEN_R: 
+  case GL_TEXTURE_GEN_R:
     return out << "GL_TEXTURE_GEN_R";
-  case GL_TEXTURE_GEN_Q: 
+  case GL_TEXTURE_GEN_Q:
     return out << "GL_TEXTURE_GEN_Q";
 
     /* GL 1.1 texturing */
-  case GL_PROXY_TEXTURE_1D: 
+  case GL_PROXY_TEXTURE_1D:
     return out << "GL_PROXY_TEXTURE_1D";
-  case GL_PROXY_TEXTURE_2D: 
+  case GL_PROXY_TEXTURE_2D:
     return out << "GL_PROXY_TEXTURE_2D";
-  case GL_TEXTURE_PRIORITY: 
+  case GL_TEXTURE_PRIORITY:
     return out << "GL_TEXTURE_PRIORITY";
-  case GL_TEXTURE_RESIDENT: 
+  case GL_TEXTURE_RESIDENT:
     return out << "GL_TEXTURE_RESIDENT";
-  case GL_TEXTURE_BINDING_1D: 
+  case GL_TEXTURE_BINDING_1D:
     return out << "GL_TEXTURE_BINDING_1D";
-  case GL_TEXTURE_BINDING_2D: 
+  case GL_TEXTURE_BINDING_2D:
     return out << "GL_TEXTURE_BINDING_2D";
     /*
-  case GL_TEXTURE_INTERNAL_FORMAT: 
+  case GL_TEXTURE_INTERNAL_FORMAT:
     return out << "GL_TEXTURE_INTERNAL_FORMAT";
     */
 
     /* GL 1.2 texturing */
-  case GL_PACK_SKIP_IMAGES: 
+  case GL_PACK_SKIP_IMAGES:
     return out << "GL_PACK_SKIP_IMAGES";
-  case GL_PACK_IMAGE_HEIGHT: 
+  case GL_PACK_IMAGE_HEIGHT:
     return out << "GL_PACK_IMAGE_HEIGHT";
-  case GL_UNPACK_SKIP_IMAGES: 
+  case GL_UNPACK_SKIP_IMAGES:
     return out << "GL_UNPACK_SKIP_IMAGES";
-  case GL_UNPACK_IMAGE_HEIGHT: 
+  case GL_UNPACK_IMAGE_HEIGHT:
     return out << "GL_UNPACK_IMAGE_HEIGHT";
-  case GL_TEXTURE_3D: 
+  case GL_TEXTURE_3D:
     return out << "GL_TEXTURE_3D";
-  case GL_PROXY_TEXTURE_3D: 
+  case GL_PROXY_TEXTURE_3D:
     return out << "GL_PROXY_TEXTURE_3D";
-  case GL_TEXTURE_DEPTH: 
+  case GL_TEXTURE_DEPTH:
     return out << "GL_TEXTURE_DEPTH";
-  case GL_TEXTURE_WRAP_R: 
+  case GL_TEXTURE_WRAP_R:
     return out << "GL_TEXTURE_WRAP_R";
-  case GL_MAX_3D_TEXTURE_SIZE: 
+  case GL_MAX_3D_TEXTURE_SIZE:
     return out << "GL_MAX_3D_TEXTURE_SIZE";
 #ifdef GL_TEXTURE_BINDING_3D
-  case GL_TEXTURE_BINDING_3D: 
+  case GL_TEXTURE_BINDING_3D:
     return out << "GL_TEXTURE_BINDING_3D";
 #endif
 
     /* Internal texture formats (GL 1.1) */
-  case GL_ALPHA4: 
+  case GL_ALPHA4:
     return out << "GL_ALPHA4";
-  case GL_ALPHA8: 
+  case GL_ALPHA8:
     return out << "GL_ALPHA8";
-  case GL_ALPHA12: 
+  case GL_ALPHA12:
     return out << "GL_ALPHA12";
-  case GL_ALPHA16: 
+  case GL_ALPHA16:
     return out << "GL_ALPHA16";
-  case GL_LUMINANCE4: 
+  case GL_LUMINANCE4:
     return out << "GL_LUMINANCE4";
-  case GL_LUMINANCE8: 
+  case GL_LUMINANCE8:
     return out << "GL_LUMINANCE8";
-  case GL_LUMINANCE12: 
+  case GL_LUMINANCE12:
     return out << "GL_LUMINANCE12";
-  case GL_LUMINANCE16: 
+  case GL_LUMINANCE16:
     return out << "GL_LUMINANCE16";
-  case GL_LUMINANCE4_ALPHA4: 
+  case GL_LUMINANCE4_ALPHA4:
     return out << "GL_LUMINANCE4_ALPHA4";
-  case GL_LUMINANCE6_ALPHA2: 
+  case GL_LUMINANCE6_ALPHA2:
     return out << "GL_LUMINANCE6_ALPHA2";
-  case GL_LUMINANCE8_ALPHA8: 
+  case GL_LUMINANCE8_ALPHA8:
     return out << "GL_LUMINANCE8_ALPHA8";
-  case GL_LUMINANCE12_ALPHA4: 
+  case GL_LUMINANCE12_ALPHA4:
     return out << "GL_LUMINANCE12_ALPHA4";
-  case GL_LUMINANCE12_ALPHA12: 
+  case GL_LUMINANCE12_ALPHA12:
     return out << "GL_LUMINANCE12_ALPHA12";
-  case GL_LUMINANCE16_ALPHA16: 
+  case GL_LUMINANCE16_ALPHA16:
     return out << "GL_LUMINANCE16_ALPHA16";
-  case GL_INTENSITY: 
+  case GL_INTENSITY:
     return out << "GL_INTENSITY";
-  case GL_INTENSITY4: 
+  case GL_INTENSITY4:
     return out << "GL_INTENSITY4";
-  case GL_INTENSITY8: 
+  case GL_INTENSITY8:
     return out << "GL_INTENSITY8";
-  case GL_INTENSITY12: 
+  case GL_INTENSITY12:
     return out << "GL_INTENSITY12";
-  case GL_INTENSITY16: 
+  case GL_INTENSITY16:
     return out << "GL_INTENSITY16";
-  case GL_R3_G3_B2: 
+  case GL_R3_G3_B2:
     return out << "GL_R3_G3_B2";
-  case GL_RGB4: 
+  case GL_RGB4:
     return out << "GL_RGB4";
-  case GL_RGB5: 
+  case GL_RGB5:
     return out << "GL_RGB5";
-  case GL_RGB8: 
+  case GL_RGB8:
     return out << "GL_RGB8";
-  case GL_RGB10: 
+  case GL_RGB10:
     return out << "GL_RGB10";
-  case GL_RGB12: 
+  case GL_RGB12:
     return out << "GL_RGB12";
-  case GL_RGB16: 
+  case GL_RGB16:
     return out << "GL_RGB16";
-  case GL_RGBA2: 
+  case GL_RGBA2:
     return out << "GL_RGBA2";
-  case GL_RGBA4: 
+  case GL_RGBA4:
     return out << "GL_RGBA4";
-  case GL_RGB5_A1: 
+  case GL_RGB5_A1:
     return out << "GL_RGB5_A1";
-  case GL_RGBA8: 
+  case GL_RGBA8:
     return out << "GL_RGBA8";
-  case GL_RGB10_A2: 
+  case GL_RGB10_A2:
     return out << "GL_RGB10_A2";
-  case GL_RGBA12: 
+  case GL_RGBA12:
     return out << "GL_RGBA12";
-  case GL_RGBA16: 
+  case GL_RGBA16:
     return out << "GL_RGBA16";
 
     /* Utility */
-  case GL_VENDOR: 
+  case GL_VENDOR:
     return out << "GL_VENDOR";
-  case GL_RENDERER: 
+  case GL_RENDERER:
     return out << "GL_RENDERER";
-  case GL_VERSION: 
+  case GL_VERSION:
     return out << "GL_VERSION";
-  case GL_EXTENSIONS: 
+  case GL_EXTENSIONS:
     return out << "GL_EXTENSIONS";
-    
+
     /* Errors */
-  case GL_INVALID_VALUE: 
+  case GL_INVALID_VALUE:
     return out << "GL_INVALID_VALUE";
-  case GL_INVALID_ENUM: 
+  case GL_INVALID_ENUM:
     return out << "GL_INVALID_ENUM";
-  case GL_INVALID_OPERATION: 
+  case GL_INVALID_OPERATION:
     return out << "GL_INVALID_OPERATION";
-  case GL_STACK_OVERFLOW: 
+  case GL_STACK_OVERFLOW:
     return out << "GL_STACK_OVERFLOW";
-  case GL_STACK_UNDERFLOW: 
+  case GL_STACK_UNDERFLOW:
     return out << "GL_STACK_UNDERFLOW";
-  case GL_OUT_OF_MEMORY: 
+  case GL_OUT_OF_MEMORY:
     return out << "GL_OUT_OF_MEMORY";
 
     /* OpenGL 1.2 */
-  case GL_RESCALE_NORMAL: 
+  case GL_RESCALE_NORMAL:
     return out << "GL_RESCALE_NORMAL";
-  case GL_CLAMP_TO_EDGE: 
+  case GL_CLAMP_TO_EDGE:
     return out << "GL_CLAMP_TO_EDGE";
-  case GL_MAX_ELEMENTS_VERTICES: 
+  case GL_MAX_ELEMENTS_VERTICES:
     return out << "GL_MAX_ELEMENTS_VERTICES";
-  case GL_MAX_ELEMENTS_INDICES: 
+  case GL_MAX_ELEMENTS_INDICES:
     return out << "GL_MAX_ELEMENTS_INDICES";
-  case GL_BGR: 
+  case GL_BGR:
     return out << "GL_BGR";
-  case GL_BGRA: 
+  case GL_BGRA:
     return out << "GL_BGRA";
-  case GL_UNSIGNED_BYTE_3_3_2: 
+  case GL_UNSIGNED_BYTE_3_3_2:
     return out << "GL_UNSIGNED_BYTE_3_3_2";
-  case GL_UNSIGNED_BYTE_2_3_3_REV: 
+  case GL_UNSIGNED_BYTE_2_3_3_REV:
     return out << "GL_UNSIGNED_BYTE_2_3_3_REV";
-  case GL_UNSIGNED_SHORT_5_6_5: 
+  case GL_UNSIGNED_SHORT_5_6_5:
     return out << "GL_UNSIGNED_SHORT_5_6_5";
-  case GL_UNSIGNED_SHORT_5_6_5_REV: 
+  case GL_UNSIGNED_SHORT_5_6_5_REV:
     return out << "GL_UNSIGNED_SHORT_5_6_5_REV";
-  case GL_UNSIGNED_SHORT_4_4_4_4: 
+  case GL_UNSIGNED_SHORT_4_4_4_4:
     return out << "GL_UNSIGNED_SHORT_4_4_4_4";
-  case GL_UNSIGNED_SHORT_4_4_4_4_REV: 
+  case GL_UNSIGNED_SHORT_4_4_4_4_REV:
     return out << "GL_UNSIGNED_SHORT_4_4_4_4_REV";
-  case GL_UNSIGNED_SHORT_5_5_5_1: 
+  case GL_UNSIGNED_SHORT_5_5_5_1:
     return out << "GL_UNSIGNED_SHORT_5_5_5_1";
-  case GL_UNSIGNED_SHORT_1_5_5_5_REV: 
+  case GL_UNSIGNED_SHORT_1_5_5_5_REV:
     return out << "GL_UNSIGNED_SHORT_1_5_5_5_REV";
-  case GL_UNSIGNED_INT_8_8_8_8: 
+  case GL_UNSIGNED_INT_8_8_8_8:
     return out << "GL_UNSIGNED_INT_8_8_8_8";
-  case GL_UNSIGNED_INT_8_8_8_8_REV: 
+  case GL_UNSIGNED_INT_8_8_8_8_REV:
     return out << "GL_UNSIGNED_INT_8_8_8_8_REV";
-  case GL_UNSIGNED_INT_10_10_10_2: 
+  case GL_UNSIGNED_INT_10_10_10_2:
     return out << "GL_UNSIGNED_INT_10_10_10_2";
-  case GL_UNSIGNED_INT_2_10_10_10_REV: 
+  case GL_UNSIGNED_INT_2_10_10_10_REV:
     return out << "GL_UNSIGNED_INT_2_10_10_10_REV";
-  case GL_LIGHT_MODEL_COLOR_CONTROL: 
+  case GL_LIGHT_MODEL_COLOR_CONTROL:
     return out << "GL_LIGHT_MODEL_COLOR_CONTROL";
-  case GL_SINGLE_COLOR: 
+  case GL_SINGLE_COLOR:
     return out << "GL_SINGLE_COLOR";
-  case GL_SEPARATE_SPECULAR_COLOR: 
+  case GL_SEPARATE_SPECULAR_COLOR:
     return out << "GL_SEPARATE_SPECULAR_COLOR";
-  case GL_TEXTURE_MIN_LOD: 
+  case GL_TEXTURE_MIN_LOD:
     return out << "GL_TEXTURE_MIN_LOD";
-  case GL_TEXTURE_MAX_LOD: 
+  case GL_TEXTURE_MAX_LOD:
     return out << "GL_TEXTURE_MAX_LOD";
-  case GL_TEXTURE_BASE_LEVEL: 
+  case GL_TEXTURE_BASE_LEVEL:
     return out << "GL_TEXTURE_BASE_LEVEL";
-  case GL_TEXTURE_MAX_LEVEL: 
+  case GL_TEXTURE_MAX_LEVEL:
     return out << "GL_TEXTURE_MAX_LEVEL";
   }
-  
+
   return out << (int)v;
 }
 #endif

@@ -1,6 +1,19 @@
-// Filename: cppDeclaration.C
+// Filename: cppDeclaration.cxx
 // Created by:  drose (19Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -10,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration::
 CPPDeclaration(const CPPFile &file) :
@@ -24,7 +37,7 @@ CPPDeclaration(const CPPFile &file) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration::
 CPPDeclaration(const CPPDeclaration &copy) :
@@ -38,7 +51,7 @@ CPPDeclaration(const CPPDeclaration &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration::
 ~CPPDeclaration() {
@@ -47,7 +60,7 @@ CPPDeclaration::
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::Equivalence Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPDeclaration::
 operator == (const CPPDeclaration &other) const {
@@ -60,7 +73,7 @@ operator == (const CPPDeclaration &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::Nonequivalence Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPDeclaration::
 operator != (const CPPDeclaration &other) const {
@@ -70,7 +83,7 @@ operator != (const CPPDeclaration &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::Ordering Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPDeclaration::
 operator < (const CPPDeclaration &other) const {
@@ -121,10 +134,10 @@ is_fully_specified() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::instantiate
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPDeclaration::
-instantiate(const CPPTemplateParameterList *, 
+instantiate(const CPPTemplateParameterList *,
             CPPScope *, CPPScope *,
             CPPPreprocessor *error_sink) const {
   if (error_sink != NULL) {
@@ -136,7 +149,7 @@ instantiate(const CPPTemplateParameterList *,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::substitute_decl
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPDeclaration::
 substitute_decl(SubstDecl &subst, CPPScope *, CPPScope *) {
@@ -150,7 +163,7 @@ substitute_decl(SubstDecl &subst, CPPScope *, CPPScope *) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::as_instance
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPInstance *CPPDeclaration::
 as_instance() {
@@ -160,7 +173,7 @@ as_instance() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::as_class_template_parameter
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPClassTemplateParameter *CPPDeclaration::
 as_class_template_parameter() {
@@ -170,7 +183,7 @@ as_class_template_parameter() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::as_typedef
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPTypedef *CPPDeclaration::
 as_typedef() {
@@ -180,7 +193,7 @@ as_typedef() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::as_type_declaration
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPTypeDeclaration *CPPDeclaration::
 as_type_declaration() {
@@ -190,7 +203,7 @@ as_type_declaration() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::as_expression
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPExpression *CPPDeclaration::
 as_expression() {
@@ -200,7 +213,7 @@ as_expression() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::as_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPType *CPPDeclaration::
 as_type() {
@@ -210,7 +223,7 @@ as_type() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::as_namespace
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPNamespace *CPPDeclaration::
 as_namespace() {
@@ -220,7 +233,7 @@ as_namespace() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::as_using
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPUsing *CPPDeclaration::
 as_using() {
@@ -230,7 +243,7 @@ as_using() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::as_simple_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPSimpleType *CPPDeclaration::
 as_simple_type() {
@@ -240,7 +253,7 @@ as_simple_type() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::as_pointer_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPPointerType *CPPDeclaration::
 as_pointer_type() {
@@ -250,7 +263,7 @@ as_pointer_type() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::as_reference_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPReferenceType *CPPDeclaration::
 as_reference_type() {
@@ -260,7 +273,7 @@ as_reference_type() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::as_array_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPArrayType *CPPDeclaration::
 as_array_type() {
@@ -270,7 +283,7 @@ as_array_type() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::as_const_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPConstType *CPPDeclaration::
 as_const_type() {
@@ -280,7 +293,7 @@ as_const_type() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::as_function_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPFunctionType *CPPDeclaration::
 as_function_type() {
@@ -290,7 +303,7 @@ as_function_type() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::as_function_group
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPFunctionGroup *CPPDeclaration::
 as_function_group() {
@@ -300,7 +313,7 @@ as_function_group() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::as_extension_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPExtensionType *CPPDeclaration::
 as_extension_type() {
@@ -310,7 +323,7 @@ as_extension_type() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::as_struct_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPStructType *CPPDeclaration::
 as_struct_type() {
@@ -320,7 +333,7 @@ as_struct_type() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::as_enum_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPEnumType *CPPDeclaration::
 as_enum_type() {
@@ -330,7 +343,7 @@ as_enum_type() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::as_tbd_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPTBDType *CPPDeclaration::
 as_tbd_type() {
@@ -340,7 +353,7 @@ as_tbd_type() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPDeclaration::as_type_proxy
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPTypeProxy *CPPDeclaration::
 as_type_proxy() {

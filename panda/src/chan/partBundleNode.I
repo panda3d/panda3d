@@ -1,6 +1,19 @@
 // Filename: partBundleNode.I
 // Created by:  drose (23Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -15,8 +28,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE PartBundleNode::
 PartBundleNode(const string &name, PartBundle *bundle) :
-  NamedNode(name), 
-  _bundle(bundle) 
+  NamedNode(name),
+  _bundle(bundle)
 {
   _bundle->_node = this;
 }
@@ -49,7 +62,7 @@ PartBundleNode(const PartBundleNode &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PartBundleNode::get_bundle
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PartBundle *PartBundleNode::
 get_bundle() const {

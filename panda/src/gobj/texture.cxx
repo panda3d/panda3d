@@ -2,6 +2,19 @@
 // Created by:  mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 // Includes
@@ -85,7 +98,7 @@ consider_rescale(PNMImage &pnmimage, const string &name) {
   if (pnmimage.get_x_size() != new_x_size ||
       pnmimage.get_y_size() != new_y_size) {
     gobj_cat.info()
-      << "Automatically rescaling " << name << " from " 
+      << "Automatically rescaling " << name << " from "
       << pnmimage.get_x_size() << " by " << pnmimage.get_y_size() << " to "
       << new_x_size << " by " << new_y_size << "\n";
 
@@ -114,7 +127,7 @@ Texture() : ImageBuffer() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Destructor 
+//     Function: Destructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -175,21 +188,21 @@ read(const string &name, const string &gray) {
   if (pnmimage.get_x_size() != grayimage.get_x_size() ||
       pnmimage.get_y_size() != grayimage.get_y_size()) {
     gobj_cat.info()
-      << "Automatically rescaling " << gray << " from " 
+      << "Automatically rescaling " << gray << " from "
       << grayimage.get_x_size() << " by " << grayimage.get_y_size() << " to "
       << pnmimage.get_x_size() << " by " << pnmimage.get_y_size() << "\n";
 
-    PNMImage scaled(pnmimage.get_x_size(), pnmimage.get_y_size(), 
+    PNMImage scaled(pnmimage.get_x_size(), pnmimage.get_y_size(),
             grayimage.get_num_channels(),
             grayimage.get_maxval(), grayimage.get_type());
     scaled.quick_filter_from(grayimage);
     grayimage = scaled;
   }
-  
+
   // Make the original image a 4-component image
   pnmimage.add_alpha();
   for (int x = 0; x < pnmimage.get_x_size(); x++) {
-    for (int y = 0; y < pnmimage.get_y_size(); y++) { 
+    for (int y = 0; y < pnmimage.get_y_size(); y++) {
       pnmimage.set_alpha(x, y, grayimage.get_gray(x, y));
     }
   }
@@ -200,7 +213,7 @@ read(const string &name, const string &gray) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: write 
+//     Function: write
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -235,7 +248,7 @@ bool Texture::store(PNMImage& pnmimage) const
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: prepare 
+//     Function: prepare
 //       Access: Public
 //  Description: Creates a context for the texture on the particular
 //               GSG, if it does not already exist.  Returns the new
@@ -342,7 +355,7 @@ void Texture::draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: set_wrapu 
+//     Function: set_wrapu
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -449,10 +462,10 @@ write_datagram(BamWriter *manager, Datagram &me)
 ////////////////////////////////////////////////////////////////////
 void Texture::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  //We don't want to call ImageBuffer::fillin, like we 
+  //We don't want to call ImageBuffer::fillin, like we
   //would normally, since due to needing to know the name
   //of the Texture before creating it, we have already read
-  //that name in.  This is something of a problem as it forces 
+  //that name in.  This is something of a problem as it forces
   //Texture to know how the parent write_datagram works.  And
   //makes the assumption that the only data being written is
   //the name

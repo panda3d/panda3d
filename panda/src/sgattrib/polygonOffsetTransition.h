@@ -1,6 +1,19 @@
 // Filename: polygonOffsetTransition.h
 // Created by:  jason (12Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef POLYGONOFFSETTRANSITION_H
@@ -15,9 +28,9 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : PolygonOffsetTransition
 // Description : This controls the amount of offseting done for depth
-//               tests.  The first value is the units, this is the 
-//               fixed offseting to be used, and the second value 
-//               allows for variable offsetting per polygon based on 
+//               tests.  The first value is the units, this is the
+//               fixed offseting to be used, and the second value
+//               allows for variable offsetting per polygon based on
 //               the ratio of depth relative to screen area of the polygon
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PolygonOffsetTransition : public OnTransition {

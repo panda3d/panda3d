@@ -1,6 +1,19 @@
-// Filename: matrixAttribute.I
+// Filename: matrixAttribute.T
 // Created by:  drose (24Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <indent.h>
@@ -11,7 +24,7 @@ TypeHandle MatrixAttribute<Matrix>::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: MatrixAttribute::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Matrix>
 INLINE_GRAPH MatrixAttribute<Matrix>::
@@ -22,7 +35,7 @@ MatrixAttribute() {
 ////////////////////////////////////////////////////////////////////
 //     Function: MatrixAttribute::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Matrix>
 INLINE_GRAPH MatrixAttribute<Matrix>::
@@ -35,7 +48,7 @@ MatrixAttribute(const MatrixAttribute &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: MatrixAttribute::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Matrix>
 INLINE_GRAPH void MatrixAttribute<Matrix>::
@@ -47,7 +60,7 @@ operator = (const MatrixAttribute &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MatrixAttribute::set_matrix
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Matrix>
 INLINE_GRAPH void MatrixAttribute<Matrix>::
@@ -58,7 +71,7 @@ set_matrix(const Matrix &mat) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MatrixAttribute::get_matrix
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Matrix>
 INLINE_GRAPH const Matrix &MatrixAttribute<Matrix>::
@@ -69,7 +82,7 @@ get_matrix() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: MatrixAttribute::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Matrix>
 void MatrixAttribute<Matrix>::
@@ -80,7 +93,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: MatrixAttribute::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Matrix>
 void MatrixAttribute<Matrix>::
@@ -91,7 +104,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: MatrixAttribute::internal_compare_to
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Matrix>
 int MatrixAttribute<Matrix>::

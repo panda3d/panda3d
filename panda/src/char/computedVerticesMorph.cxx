@@ -1,6 +1,19 @@
 // Filename: computedVerticesMorph.cxx
 // Created by:  jason (23Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "computedVerticesMorph.h"
@@ -13,7 +26,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMorphValue2::write_datagram
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ComputedVerticesMorphValue2::
 write_datagram(Datagram &dest)
@@ -25,7 +38,7 @@ write_datagram(Datagram &dest)
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMorphValue2::read_datagram
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ComputedVerticesMorphValue2::
 read_datagram(DatagramIterator &source)
@@ -37,7 +50,7 @@ read_datagram(DatagramIterator &source)
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMorphValue3::write_datagram
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ComputedVerticesMorphValue3::
 write_datagram(Datagram &dest)
@@ -49,7 +62,7 @@ write_datagram(Datagram &dest)
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMorphValue3::read_datagram
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ComputedVerticesMorphValue3::
 read_datagram(DatagramIterator &source)
@@ -61,7 +74,7 @@ read_datagram(DatagramIterator &source)
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMorphValue4::write_datagram
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ComputedVerticesMorphValue4::
 write_datagram(Datagram &dest)
@@ -73,7 +86,7 @@ write_datagram(Datagram &dest)
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMorphValue4::read_datagram
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ComputedVerticesMorphValue4::
 read_datagram(DatagramIterator &source)

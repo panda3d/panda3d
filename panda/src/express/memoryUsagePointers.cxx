@@ -1,6 +1,19 @@
 // Filename: memoryUsagePointers.cxx
 // Created by:  drose (25May00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "memoryUsagePointers.h"
@@ -16,7 +29,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsagePointers::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 MemoryUsagePointers::
 MemoryUsagePointers() {
@@ -25,7 +38,7 @@ MemoryUsagePointers() {
 ////////////////////////////////////////////////////////////////////
 //     Function: MemoryUsagePointers::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 MemoryUsagePointers::
 ~MemoryUsagePointers() {
@@ -85,7 +98,7 @@ get_typed_pointer(int n) const {
   // RTTI can't help us here, because ReferenceCount has no virtual
   // functions, so we can't use C++'s new dynamic_cast feature.
 
-  if (type != TypeHandle::none() && 
+  if (type != TypeHandle::none() &&
       type.is_derived_from(TypedReferenceCount::get_class_type())) {
     return (TypedReferenceCount *)ptr;
   }
@@ -147,7 +160,7 @@ clear() {
 //               only by MemoryUsage.
 ////////////////////////////////////////////////////////////////////
 void MemoryUsagePointers::
-add_entry(ReferenceCount *ptr, TypedObject *typed_ptr, 
+add_entry(ReferenceCount *ptr, TypedObject *typed_ptr,
           TypeHandle type, double age) {
   // We can't safly add pointers with a zero reference count.  They
   // might be statically-allocated or something, and if we try to add

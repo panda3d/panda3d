@@ -1,6 +1,19 @@
 // Filename: analogNode.cxx
 // Created by:  drose (26Jan01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "analogNode.h"
@@ -12,7 +25,7 @@
 TypeHandle AnalogNode::_type_handle;
 
 TypeHandle AnalogNode::_xyz_type;
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: AnalogNode::Constructor
 //       Access: Public
@@ -23,7 +36,7 @@ AnalogNode(ClientBase *client, const string &device_name) :
   DataNode(device_name)
 {
   nassertv(client != (ClientBase *)NULL);
-  PT(ClientDevice) device = 
+  PT(ClientDevice) device =
     client->get_device(ClientAnalogDevice::get_class_type(), device_name);
 
   if (device == (ClientDevice *)NULL) {
@@ -60,7 +73,7 @@ AnalogNode::
 ////////////////////////////////////////////////////////////////////
 //     Function: AnalogNode::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void AnalogNode::
 write(ostream &out, int indent_level) const {
@@ -87,7 +100,7 @@ transmit_data(NodeAttributes &data) {
 
     _analog->lock();
     for (int i = 0; i < max_outputs; i++) {
-      if (_outputs[i]._index >= 0 && 
+      if (_outputs[i]._index >= 0 &&
           _analog->is_control_known(_outputs[i]._index)) {
         if (_outputs[i]._flip) {
           out[i] = -_analog->get_control_state(_outputs[i]._index);

@@ -1,6 +1,19 @@
 // Filename: eggPolygon.cxx
 // Created by:  drose (16Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggPolygon.h"
@@ -160,7 +173,7 @@ decomp_concave(EggGroupNode *container, int asum, int x, int y) const {
 
   int num_verts = size();
   nassertr(num_verts >= 3, false);
-  
+
   /* Make linked list of verts */
   vert = (DecompVtx *) alloca(sizeof(DecompVtx));
   vert->index = 0;
@@ -190,9 +203,9 @@ decomp_concave(EggGroupNode *container, int asum, int x, int y) const {
 
   while (p0 != p2->next) {
     /* Polygon is self-intersecting so punt */
-    if (chek && 
-        m[0] == p0 && 
-        m[1] == p1 && 
+    if (chek &&
+        m[0] == p0 &&
+        m[1] == p1 &&
         m[2] == p2) {
 
       return false;
@@ -204,9 +217,9 @@ decomp_concave(EggGroupNode *container, int asum, int x, int y) const {
     b[0] = VX(p2, x) - VX(p1, x);
     a[2] = VX(p0, y) - VX(p1, y);
     b[2] = VX(p1, x) - VX(p0, x);
-    
+
     csum = ((b[0] * a[2] - b[2] * a[0] >= 0.0) ? 1 : 0);
-    
+
     if (csum ^ asum) {
       /* current angle is concave */
       p0 = p1;
@@ -218,19 +231,19 @@ decomp_concave(EggGroupNode *container, int asum, int x, int y) const {
       xmin = (VX(p0, x) < VX(p1, x)) ? VX(p0, x) : VX(p1, x);
       if (xmin > VX(p2, x))
         xmin = VX(p2, x);
-      
+
       xmax = (VX(p0, x) > VX(p1, x)) ? VX(p0, x) : VX(p1, x);
       if (xmax < VX(p2, x))
         xmax = VX(p2, x);
-      
+
       ymin = (VX(p0, y) < VX(p1, y)) ? VX(p0, y) : VX(p1, y);
       if (ymin > VX(p2, y))
         ymin = VX(p2, y);
-      
+
       ymax = (VX(p0, y) > VX(p1, y)) ? VX(p0, y) : VX(p1, y);
       if (ymax < VX(p2, y))
         ymax = VX(p2, y);
-      
+
       for (init = 1, t0 = p2->next; t0 != p0; t0 = t0->next) {
         if (VX(t0, x) >= xmin && VX(t0, x) <= xmax &&
             VX(t0, y) >= ymin && VX(t0, y) <= ymax) {
@@ -256,7 +269,7 @@ decomp_concave(EggGroupNode *container, int asum, int x, int y) const {
           }
         }
       }
-      
+
       if (t0 != p0) {
         p0 = p1;
         p1 = p2;
@@ -329,7 +342,7 @@ triangulate_poly(EggGroupNode *container, bool convex_also) {
   if (!cleanup()) {
     return false;
   }
-  
+
   // First see if the polygon is already a triangle
   int num_verts = size();
   if (num_verts == 3) {
@@ -381,12 +394,12 @@ triangulate_poly(EggGroupNode *container, bool convex_also) {
     x = 0;
     y = 1;
     break;
-    
+
   case 1:
     x = 0;
     y = 2;
     break;
-    
+
   case 2:
     x = 1;
     y = 2;
@@ -394,7 +407,7 @@ triangulate_poly(EggGroupNode *container, bool convex_also) {
   }
 
   /* concave check */
-  p0 = get_vertex(0)->get_pos3(); 
+  p0 = get_vertex(0)->get_pos3();
   p1 = get_vertex(1)->get_pos3();
   dx1 = p1[x] - p0[x];
   dy1 = p1[y] - p0[y];
@@ -431,10 +444,10 @@ triangulate_poly(EggGroupNode *container, bool convex_also) {
   v0 = 0;
   v1 = 1;
   v = num_verts - 1;
-  
+
   even = 1;
-  
-  /* 
+
+  /*
    * Convert to triangles only. Do not fan out from a single vertex
    * but zigzag into triangle strip.
    */
@@ -468,9 +481,9 @@ triangulate_poly(EggGroupNode *container, bool convex_also) {
       v1 = v;
       v = v0 - 1;
     }
-    
+
     even = !even;
   }
-  
+
   return true;
 }

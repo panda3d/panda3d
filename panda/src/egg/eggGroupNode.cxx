@@ -1,6 +1,19 @@
 // Filename: eggGroupNode.cxx
 // Created by:  drose (16Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggGroupNode.h"
@@ -29,7 +42,7 @@ TypeHandle EggGroupNode::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::Copy constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroupNode::
 EggGroupNode(const EggGroupNode &copy) : EggNode(copy) {
@@ -42,7 +55,7 @@ EggGroupNode(const EggGroupNode &copy) : EggNode(copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::Copy assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroupNode &EggGroupNode::
 operator =(const EggGroupNode &copy) {
@@ -57,7 +70,7 @@ operator =(const EggGroupNode &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroupNode::
 ~EggGroupNode() {
@@ -81,7 +94,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::begin
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroupNode::iterator EggGroupNode::
 begin() const {
@@ -91,7 +104,7 @@ begin() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::end
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroupNode::iterator EggGroupNode::
 end() const {
@@ -101,7 +114,7 @@ end() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::rbegin
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroupNode::reverse_iterator EggGroupNode::
 rbegin() const {
@@ -111,7 +124,7 @@ rbegin() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::rend
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroupNode::reverse_iterator EggGroupNode::
 rend() const {
@@ -121,7 +134,7 @@ rend() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::empty
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool EggGroupNode::
 empty() const {
@@ -131,7 +144,7 @@ empty() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::size
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroupNode::size_type EggGroupNode::
 size() const {
@@ -141,7 +154,7 @@ size() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::insert
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroupNode::iterator EggGroupNode::
 insert(iterator position, PT(EggNode) x) {
@@ -152,7 +165,7 @@ insert(iterator position, PT(EggNode) x) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::erase
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroupNode::iterator EggGroupNode::
 erase(iterator position) {
@@ -163,7 +176,7 @@ erase(iterator position) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::erase
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroupNode::iterator EggGroupNode::
 erase(iterator first, iterator last) {
@@ -171,7 +184,7 @@ erase(iterator first, iterator last) {
   for (i = first; i != last; ++i) {
     prepare_remove_child(*i);
   }
-  return _children.erase((Children::iterator &)first, 
+  return _children.erase((Children::iterator &)first,
                          (Children::iterator &)last);
 }
 
@@ -194,7 +207,7 @@ replace(iterator position, PT(EggNode) x) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::clear
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void EggGroupNode::
 clear() {
@@ -368,7 +381,7 @@ recompute_vertex_normals(double threshold, CoordinateSystem cs) {
       NVertexGroup leftover_group;
       new_group.push_back(base_ref);
       ++gi;
-      
+
       while (gi != group.end()) {
         const NVertexReference &ref = (*gi);
         double dot = base_ref._normal.dot(ref._normal);
@@ -491,7 +504,7 @@ strip_normals() {
           prim->set_vertex(i, unique);
         }
       }
-    
+
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
       DCAST(EggGroupNode, child)->strip_normals();
     }
@@ -526,7 +539,7 @@ triangulate_polygons(bool convex_also) {
     if (child->is_of_type(EggPolygon::get_class_type())) {
       EggPolygon *poly = DCAST(EggPolygon, child);
       poly->triangulate_in_place(convex_also);
-    
+
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
       num_produced += DCAST(EggGroupNode, child)->triangulate_polygons(convex_also);
     }
@@ -574,7 +587,7 @@ remove_unused_vertices() {
         // in the vertex pool, then remove the whole vertex pool.
         _children.erase(ci);
       }
-    
+
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
       num_removed += DCAST(EggGroupNode, child)->remove_unused_vertices();
     }
@@ -610,7 +623,7 @@ remove_invalid_primitives() {
         _children.erase(ci);
         num_removed++;
       }
-    
+
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
       num_removed += DCAST(EggGroupNode, child)->remove_invalid_primitives();
     }
@@ -661,7 +674,7 @@ update_under(int depth_offset) {
 //               if we are not changing coordinate systems.
 ////////////////////////////////////////////////////////////////////
 void EggGroupNode::
-r_transform(const LMatrix4d &mat, const LMatrix4d &inv, 
+r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
             CoordinateSystem to_cs) {
   Children::iterator ci;
   for (ci = _children.begin();
@@ -764,7 +777,7 @@ find_coordsys_entry() {
     EggNode *child = *ci;
 
     if (child->is_of_type(EggCoordinateSystem::get_class_type())) {
-      CoordinateSystem new_cs = 
+      CoordinateSystem new_cs =
         DCAST(EggCoordinateSystem, child)->get_value();
 
       // Now remove the CoordinateSystem entry from our child list.
@@ -780,7 +793,7 @@ find_coordsys_entry() {
       }
 
     } else if (child->is_of_type(EggGroupNode::get_class_type())) {
-      CoordinateSystem new_cs = 
+      CoordinateSystem new_cs =
         DCAST(EggGroupNode, child)->find_coordsys_entry();
       if (new_cs != CS_default) {
         if (coordsys != CS_default && coordsys != new_cs) {
@@ -899,7 +912,7 @@ find_materials(EggMaterialCollection *collection) {
 //               EggData::resolve_externals().
 ////////////////////////////////////////////////////////////////////
 bool EggGroupNode::
-r_resolve_externals(const DSearchPath &searchpath, 
+r_resolve_externals(const DSearchPath &searchpath,
                     CoordinateSystem coordsys) {
   bool success = true;
 
@@ -914,10 +927,10 @@ r_resolve_externals(const DSearchPath &searchpath,
       // Replace the reference with an empty group node.  When we load
       // the external file successfully, we'll put its contents here.
       Filename filename = ref->get_filename();
-      EggGroupNode *new_node = 
+      EggGroupNode *new_node =
         new EggGroupNode(filename.get_basename_wo_extension());
       replace(ci, new_node);
-      
+
       if (!EggData::resolve_egg_filename(filename, searchpath)) {
         egg_cat.error()
           << "Could not locate " << filename << " in "
@@ -993,7 +1006,7 @@ prepare_remove_child(EggNode *node) {
   node->update_under(-(get_depth() + 1));
 }
 
-  
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::r_collect_vertex_normals

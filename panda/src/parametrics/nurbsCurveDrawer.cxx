@@ -1,6 +1,19 @@
-// Filename: nurbsCurveDrawer.C
+// Filename: nurbsCurveDrawer.cxx
 // Created by:  drose (27Feb98)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "nurbsCurveDrawer.h"
@@ -21,11 +34,11 @@ NurbsCurveDrawer() {
   set_cv_color(1.0, 0.0, 0.0);
   set_hull_color(1.0, 0.5, 0.5);
   set_knot_color(0.0, 0.0, 1.0);
-  
+
   _cvs.set_thickness(4.0);
   _hull.set_thickness(1.0);
   _knots.set_thickness(4.0);
-  
+
   _show_cvs = true;
   _show_hull = true;
   _show_knots = true;
@@ -155,7 +168,7 @@ draw() {
   return true;
 }
 
-    
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveDrawer::recompute
@@ -256,7 +269,7 @@ hilight(int n, float hr, float hg, float hb) {
 
   return true;
 }
-  
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsCurveDrawer::unhilight

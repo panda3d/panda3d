@@ -1,13 +1,26 @@
 // Filename: interrogateFunctionWrapper.I
 // Created by:  drose (06Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunctionWrapper::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE InterrogateFunctionWrapper::
 InterrogateFunctionWrapper(InterrogateModuleDef *def) :
@@ -22,7 +35,7 @@ InterrogateFunctionWrapper(InterrogateModuleDef *def) :
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunctionWrapper::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE InterrogateFunctionWrapper::
 InterrogateFunctionWrapper(const InterrogateFunctionWrapper &copy) {
@@ -32,7 +45,7 @@ InterrogateFunctionWrapper(const InterrogateFunctionWrapper &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunctionWrapper::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void InterrogateFunctionWrapper::
 operator = (const InterrogateFunctionWrapper &copy) {
@@ -59,7 +72,7 @@ get_function() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunctionWrapper::is_callable_by_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateFunctionWrapper::
 is_callable_by_name() const {
@@ -69,7 +82,7 @@ is_callable_by_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunctionWrapper::has_return_value
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateFunctionWrapper::
 has_return_value() const {
@@ -79,7 +92,7 @@ has_return_value() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunctionWrapper::get_return_type
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TypeIndex InterrogateFunctionWrapper::
 get_return_type() const {
@@ -89,7 +102,7 @@ get_return_type() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunctionWrapper::caller_manages_return_value
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateFunctionWrapper::
 caller_manages_return_value() const {
@@ -99,7 +112,7 @@ caller_manages_return_value() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunctionWrapper::get_return_value_destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE FunctionIndex InterrogateFunctionWrapper::
 get_return_value_destructor() const {
@@ -109,7 +122,7 @@ get_return_value_destructor() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunctionWrapper::number_of_parameters
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int InterrogateFunctionWrapper::
 number_of_parameters() const {
@@ -119,7 +132,7 @@ number_of_parameters() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunctionWrapper::parameter_get_type
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TypeIndex InterrogateFunctionWrapper::
 parameter_get_type(int n) const {
@@ -132,7 +145,7 @@ parameter_get_type(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunctionWrapper::parameter_has_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateFunctionWrapper::
 parameter_has_name(int n) const {
@@ -145,7 +158,7 @@ parameter_has_name(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunctionWrapper::parameter_get_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const string &InterrogateFunctionWrapper::
 parameter_get_name(int n) const {
@@ -159,7 +172,7 @@ parameter_get_name(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunctionWrapper::parameter_is_this
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateFunctionWrapper::
 parameter_is_this(int n) const {
@@ -172,7 +185,7 @@ parameter_is_this(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunctionWrapper::get_unique_name
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const string &InterrogateFunctionWrapper::
 get_unique_name() const {

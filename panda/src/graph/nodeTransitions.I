@@ -1,6 +1,19 @@
 // Filename: nodeTransitions.I
 // Created by:  drose (20Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
@@ -23,7 +36,7 @@ set_transition(NodeTransition *trans) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitions::size
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeTransitions::size_type NodeTransitions::
 size() const {
@@ -33,7 +46,7 @@ size() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitions::begin
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeTransitions::const_iterator NodeTransitions::
 begin() const {
@@ -43,7 +56,7 @@ begin() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitions::end
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH NodeTransitions::const_iterator NodeTransitions::
 end() const {
@@ -62,7 +75,7 @@ end() const {
 //               false.
 ////////////////////////////////////////////////////////////////////
 template<class Transition>
-INLINE_GRAPH bool 
+INLINE_GRAPH bool
 get_transition_into(Transition *&ptr, const NodeTransitions &trans,
                     TypeHandle transition_type) {
   NodeTransition *nt = trans.get_transition(transition_type);
@@ -75,7 +88,7 @@ get_transition_into(Transition *&ptr, const NodeTransitions &trans,
 }
 
 template<class Transition>
-INLINE_GRAPH bool 
+INLINE_GRAPH bool
 get_transition_into(Transition *&ptr, const NodeTransitions &trans) {
   return get_transition_into(ptr, trans, Transition::get_class_type());
 }

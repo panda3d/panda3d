@@ -1,6 +1,19 @@
 // Filename: builderNormalVisualizer.cxx
 // Created by:  drose (08Sep99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "builderNormalVisualizer.h"
@@ -51,13 +64,13 @@ show_normals(GeomNode *node) {
 void BuilderNormalVisualizer::
 add_normal(const BuilderV &center, const BuilderN &normal) {
   BuilderV to = center + normal * _bucket._normal_scale;
-    
+
   BuilderPrim line;
   line.set_type(BPT_line);
   line.set_color(_bucket._normal_color);
   line.add_vertex(BuilderVertex(center));
   line.add_vertex(BuilderVertex(to));
-  
+
   _lines.push_back(line);
 }
 

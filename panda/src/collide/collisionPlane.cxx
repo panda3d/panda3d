@@ -1,6 +1,19 @@
 // Filename: collisionPlane.cxx
 // Created by:  drose (25Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "collisionPlane.h"
@@ -25,7 +38,7 @@ TypeHandle CollisionPlane::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPlane::make_copy
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CollisionSolid *CollisionPlane::
 make_copy() {
@@ -35,7 +48,7 @@ make_copy() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPlane::test_intersection
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CollisionPlane::
 test_intersection(CollisionHandler *, const CollisionEntry &,
@@ -77,7 +90,7 @@ get_collision_origin() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPlane::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionPlane::
 output(ostream &out) const {
@@ -87,7 +100,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPlane::recompute_bound
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CollisionPlane::
 recompute_bound() {
@@ -101,7 +114,7 @@ recompute_bound() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPlane::test_intersection_from_sphere
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CollisionPlane::
 test_intersection_from_sphere(CollisionHandler *record,
@@ -110,7 +123,7 @@ test_intersection_from_sphere(CollisionHandler *record,
   DCAST_INTO_R(sphere, entry.get_from(), 0);
 
   LPoint3f from_center = sphere->get_center() * entry.get_wrt_space();
-  LVector3f from_radius_v = 
+  LVector3f from_radius_v =
     LVector3f(sphere->get_radius(), 0.0f, 0.0f) * entry.get_wrt_space();
   float from_radius = length(from_radius_v);
 
@@ -122,7 +135,7 @@ test_intersection_from_sphere(CollisionHandler *record,
 
   if (collide_cat.is_debug()) {
     collide_cat.debug()
-      << "intersection detected from " << *entry.get_from_node() << " into " 
+      << "intersection detected from " << *entry.get_from_node() << " into "
       << entry.get_into_node_path() << "\n";
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
@@ -140,7 +153,7 @@ test_intersection_from_sphere(CollisionHandler *record,
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPlane::test_intersection_from_ray
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CollisionPlane::
 test_intersection_from_ray(CollisionHandler *record,
@@ -157,14 +170,14 @@ test_intersection_from_ray(CollisionHandler *record,
     return 0;
   }
 
-  if (t < 0.0f) { 
+  if (t < 0.0f) {
     // The intersection point is before the start of the ray.
     return 0;
   }
 
   if (collide_cat.is_debug()) {
     collide_cat.debug()
-      << "intersection detected from " << *entry.get_from_node() << " into " 
+      << "intersection detected from " << *entry.get_from_node() << " into "
       << entry.get_into_node_path() << "\n";
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
@@ -197,7 +210,7 @@ recompute_viz(Node *parent) {
   // the plane.  We'll start with a center point and one corner
   // point, and then use cross products to find the remaining three
   // corners of a square.
-  
+
   // The center point will be on the axis with the largest
   // coefficent.  The first corner will be diagonal in the other two
   // dimensions.
@@ -213,12 +226,12 @@ recompute_viz(Node *parent) {
     // X has the largest coefficient.
     cp.set(-D / normal[0], 0.0f, 0.0f);
     p1 = LPoint3f(-(normal[1] + normal[2] + D)/normal[0], 1.0f, 1.0f) - cp;
-    
+
   } else if (fabs(normal[1]) > fabs(normal[2])) {
     // Y has the largest coefficient.
     cp.set(0.0f, -D / normal[1], 0.0f);
     p1 = LPoint3f(1.0f, -(normal[0] + normal[2] + D)/normal[1], 1.0f) - cp;
-    
+
   } else {
     // Z has the largest coefficient.
     cp.set(0.0f, 0.0f, -D / normal[2]);

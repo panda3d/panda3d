@@ -1,4 +1,20 @@
-//Nodes
+// Filename: test_sequences.cxx
+// Created by:  
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 #include <pt_NamedNode.h>
 #include <geomNode.h>
 
@@ -44,7 +60,7 @@ extern PT(GraphicsWindow) main_win;
 //  Description: Set event handlers for the various keys needed, and
 //               do any initialization necessary
 ////////////////////////////////////////////////////////////////////
-void keys(EventHandler &eh) 
+void keys(EventHandler &eh)
 {
   PTA_Vertexf c1, c2, c3, c4, c5, c6;
   GeomSphere *s1, *s2, *s3, *s4, *s5, *s6;
@@ -104,15 +120,15 @@ void keys(EventHandler &eh)
 
   PT_NamedNode sn = DCAST(NamedNode, new SequenceNode(1));
 
-  new RenderRelation(render, sn); 
+  new RenderRelation(render, sn);
 
-  new RenderRelation(sn, n1); 
-  new RenderRelation(sn, n2); 
-  new RenderRelation(sn, n3); 
-  new RenderRelation(sn, n4); 
-  new RenderRelation(sn, n5); 
+  new RenderRelation(sn, n1);
+  new RenderRelation(sn, n2);
+  new RenderRelation(sn, n3);
+  new RenderRelation(sn, n4);
+  new RenderRelation(sn, n5);
   new RenderRelation(sn, n6);
-  
+
   remove_arc(first_arc);
 }
 

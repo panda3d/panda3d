@@ -1,6 +1,19 @@
-// Filename: curveFitter.C
+// Filename: curveFitter.cxx
 // Created by:  drose (17Sep98)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pandabase.h"
@@ -18,7 +31,7 @@ TypeHandle CurveFitter::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: CurveFitter::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CurveFitter::
 CurveFitter() {
@@ -29,7 +42,7 @@ CurveFitter() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CurveFitter::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CurveFitter::
 ~CurveFitter() {
@@ -216,17 +229,17 @@ wrap_hpr() {
     int i;
     for (i = 0; i < 3; i++) {
       (*di)._hpr[i] += net[i];
-  
+
       while (((*di)._hpr[i] - last[i]) > 180.0) {
         (*di)._hpr[i] -= 360.0;
         net[i] -= 360.0;
       }
-      
+
       while (((*di)._hpr[i] - last[i]) < -180.0) {
         (*di)._hpr[i] += 360.0;
         net[i] += 360.0;
       }
-      
+
       last[i] = (*di)._hpr[i];
     }
   }
@@ -303,14 +316,14 @@ compute_tangents(float scale) {
   // not.
   if (_got_xyz) {
     for (i = 1; i < len-1; i++) {
-      _data[i]._tangent = 
+      _data[i]._tangent =
         (_data[i+1]._xyz - _data[i-1]._xyz) * scale /
         (_data[i+1]._t - _data[i-1]._t);
     }
   }
   if (_got_hpr) {
     for (i = 1; i < len-1; i++) {
-      _data[i]._hpr_tangent = 
+      _data[i]._hpr_tangent =
         (_data[i+1]._hpr - _data[i-1]._hpr) * scale /
         (_data[i+1]._t - _data[i-1]._t);
     }
@@ -328,7 +341,7 @@ compute_tangents(float scale) {
         (_data[1]._hpr - _data[len-2]._hpr) * scale /
         ((_data[1]._t - _data[0]._t) + (_data[len-1]._t - _data[len-2]._t));
     }
-      
+
   } else {
     if (_got_xyz) {
       _data[0]._tangent =
@@ -363,7 +376,7 @@ make_hermite() const {
     HermiteCurve *hc = new HermiteCurve;
     result->add_curve(hc);
     hc->set_curve_type(PCT_XYZ);
-    
+
     Data::const_iterator di;
     for (di = _data.begin(); di != _data.end(); ++di) {
       int n = hc->insert_cv((*di)._t);
@@ -378,7 +391,7 @@ make_hermite() const {
     HermiteCurve *hc = new HermiteCurve;
     result->add_curve(hc);
     hc->set_curve_type(PCT_HPR);
-    
+
     Data::const_iterator di;
     for (di = _data.begin(); di != _data.end(); ++di) {
       int n = hc->insert_cv((*di)._t);
@@ -415,7 +428,7 @@ make_nurbs() const {
     // everything c2 continuous.
 
     int num_knots = nc->get_num_knots();
-    
+
     // We expect this to be a 4th order curve, since we just converted
     // it from a Hermite.
     assert(nc->get_order() == 4);
@@ -423,11 +436,11 @@ make_nurbs() const {
 
     // Now the knot sequence goes something like this:
     //    0 0 0 0 1 1 1 2 2 2 3 3 3 4 4 4 4
-    
+
     // We'll consider pairs of knot values beginning at position 3 and
     // every third position thereafter.  We just even out these values
     // between their two neighbors.
-    
+
     int i;
     float k1, k2 = nc->get_knot(num_knots-1);
     for (i = 3; i < num_knots - 4; i += 3) {
@@ -439,28 +452,28 @@ make_nurbs() const {
 
     // The last knot must have the terminal value.
     nc->set_knot(num_knots-4, k2);
-    
+
     // Finally, recompute the curve.
     nc->recompute();
   }
 
   return result;
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CurveFitter::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CurveFitter::
 output(ostream &out) const {
   out << "CurveFitter, " << _data.size() << " samples.\n";
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CurveFitter::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CurveFitter::
 write(ostream &out) const {

@@ -1,6 +1,19 @@
 // Filename: onTransition.cxx
 // Created by:  drose (22Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "onTransition.h"
@@ -67,7 +80,7 @@ apply(const NodeAttribute *attrib) const {
     DCAST_INTO_R(result, make_attrib(), NULL);
   } else {
     DCAST_INTO_R(result, (NodeAttribute *)attrib, NULL);
-  }    
+  }
 
   if (_priority < result->_priority) {
     // The priority is too low to affect the attribute.
@@ -87,7 +100,7 @@ apply(const NodeAttribute *attrib) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: OnTransition::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void OnTransition::
 output(ostream &out) const {
@@ -97,7 +110,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: OnTransition::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void OnTransition::
 write(ostream &out, int indent_level) const {

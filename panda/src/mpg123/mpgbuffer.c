@@ -1,9 +1,20 @@
-/*
- *   buffer.c
+/* Filename: mpgbuffer.c
+ * Created by:  
  *
- *   Oliver Fromme  <oliver.fromme@heim3.tu-clausthal.de>
- *   Mon Apr 14 03:53:18 MET DST 1997
- */
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ * PANDA 3D SOFTWARE
+ * Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+ *
+ * All use of this software is subject to the terms of the Panda 3d
+ * Software license.  You should have received a copy of this license
+ * along with this source code; you will also find a current copy of
+ * the license at http://www.panda3d.org/license.txt .
+ *
+ * To contact the maintainers of this program write to
+ * panda3d@yahoogroups.com .
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <stdlib.h>
 #include <errno.h>
@@ -83,7 +94,7 @@ void buffer_sig(int signal, int block)
         if (!buffermem || !block)
                 return;
 
-        if(xfermem_block(XF_WRITER, buffermem) != XF_CMD_WAKEUP) 
+        if(xfermem_block(XF_WRITER, buffermem) != XF_CMD_WAKEUP)
                 perror("Could not resync/reset buffers");
 #endif
 
@@ -125,7 +136,7 @@ void buffer_loop(struct audio_info_struct *ai, sigset_t *oldsigset)
                          *   changing the sample rate.   [OF]
                          */
                         /* writer must block when sending SIGUSR1
-                         * or we will lose all data processed 
+                         * or we will lose all data processed
                          * in the meantime! [dk]
                          */
                         xf->readindex = xf->freeindex;
@@ -136,8 +147,8 @@ void buffer_loop(struct audio_info_struct *ai, sigset_t *oldsigset)
                                 xfermem_putcmd(my_fd, XF_CMD_WAKEUP);
                         if (param.outmode == DECODE_AUDIO) {
                                 audio_close (ai);
-                                ai->rate = xf->buf[0]; 
-                                ai->channels = xf->buf[1]; 
+                                ai->rate = xf->buf[0];
+                                ai->channels = xf->buf[1];
                                 ai->format = xf->buf[2];
                                 if (audio_open(ai) < 0) {
                                         perror("audio");
@@ -155,7 +166,7 @@ void buffer_loop(struct audio_info_struct *ai, sigset_t *oldsigset)
                 }
                 if(bytes < preload) {
                         int cmd;
-                        if (done && !bytes) { 
+                        if (done && !bytes) {
                                 break;
                         }
 
@@ -174,7 +185,7 @@ void buffer_loop(struct audio_info_struct *ai, sigset_t *oldsigset)
                                         case XF_CMD_WAKEUP:
                                                 break;  /* Proceed playing. */
                                         case XF_CMD_TERMINATE:
-                                                /* Proceed playing without 
+                                                /* Proceed playing without
                                                  * blocking any further.
                                                  */
                                                 done=TRUE;
@@ -211,7 +222,7 @@ void buffer_loop(struct audio_info_struct *ai, sigset_t *oldsigset)
                                 /*
                                  * done==TRUE tells writer process to stop
                                  * sending data. There might be some latency
-                                 * involved when resetting readindex to 
+                                 * involved when resetting readindex to
                                  * freeindex so we might need more than one
                                  * cycle to terminate. (The number of cycles
                                  * should be finite unless I managed to mess

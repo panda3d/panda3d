@@ -1,12 +1,25 @@
 // Filename: polygonOffsetTransition.I
 // Created by:  jason (12Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PolygonOffsetTransition::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PolygonOffsetTransition::
 PolygonOffsetTransition(int units, int factor) :
@@ -17,7 +30,7 @@ PolygonOffsetTransition(int units, int factor) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PolygonOffsetTransition::set_units
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void PolygonOffsetTransition::
 set_units(int units) {
@@ -27,7 +40,7 @@ set_units(int units) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PolygonOffsetTransition::get_units
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int PolygonOffsetTransition::
 get_units() const {
@@ -37,7 +50,7 @@ get_units() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PolygonOffsetTransition::set_factor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void PolygonOffsetTransition::
 set_factor(int factor) {
@@ -47,7 +60,7 @@ set_factor(int factor) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PolygonOffsetTransition::get_factor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int PolygonOffsetTransition::
 get_factor() const {

@@ -1,6 +1,19 @@
-// Filename: cppTBDType.C
+// Filename: cppTBDType.cxx
 // Created by:  drose (05Nov99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -12,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTBDType::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPTBDType::
 CPPTBDType(CPPIdentifier *ident) :
@@ -91,12 +104,12 @@ get_fully_scoped_name() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTBDType::substitute_decl
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPTBDType::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
                 CPPScope *current_scope, CPPScope *global_scope) {
-  CPPDeclaration *top = 
+  CPPDeclaration *top =
     CPPDeclaration::substitute_decl(subst, current_scope, global_scope);
   if (top != this) {
     return top;
@@ -138,7 +151,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTBDType::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPTBDType::
 output(ostream &out, int, CPPScope *, bool) const {
@@ -148,7 +161,7 @@ output(ostream &out, int, CPPScope *, bool) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTBDType::get_subtype
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration::SubType CPPTBDType::
 get_subtype() const {
@@ -158,7 +171,7 @@ get_subtype() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTBDType::as_tbd_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPTBDType *CPPTBDType::
 as_tbd_type() {
@@ -176,7 +189,7 @@ bool CPPTBDType::
 is_equal(const CPPDeclaration *other) const {
   const CPPTBDType *ot = ((CPPDeclaration *)other)->as_tbd_type();
   assert(ot != NULL);
-  
+
   return (*_ident) == (*ot->_ident);
 }
 
@@ -192,6 +205,6 @@ bool CPPTBDType::
 is_less(const CPPDeclaration *other) const {
   const CPPTBDType *ot = ((CPPDeclaration *)other)->as_tbd_type();
   assert(ot != NULL);
-  
+
   return (*_ident) < (*ot->_ident);
 }

@@ -2,6 +2,19 @@
 // Created by:  drose (11Nov99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef CPPFILE_H
 #define CPPFILE_H
@@ -25,8 +38,8 @@ public:
     S_none,        // File is internally generated
   };
 
-  CPPFile(const Filename &filename = "", 
-          const Filename &filename_as_referenced = "", 
+  CPPFile(const Filename &filename = "",
+          const Filename &filename_as_referenced = "",
           Source source = S_none);
   CPPFile(const CPPFile &copy);
   void operator = (const CPPFile &copy);

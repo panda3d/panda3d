@@ -1,6 +1,19 @@
-// Filename: cppFunctionGroup.C
+// Filename: cppFunctionGroup.cxx
 // Created by:  drose (11Nov99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -12,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPFunctionGroup::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPFunctionGroup::
 CPPFunctionGroup(const string &name) :
@@ -24,7 +37,7 @@ CPPFunctionGroup(const string &name) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPFunctionGroup::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPFunctionGroup::
 ~CPPFunctionGroup() {
@@ -60,7 +73,7 @@ get_return_type() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPFunctionGroup::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPFunctionGroup::
 output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
@@ -80,7 +93,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool complete) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPFunctionGroup::get_subtype
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration::SubType CPPFunctionGroup::
 get_subtype() const {
@@ -90,7 +103,7 @@ get_subtype() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPFunctionGroup::as_function_group
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPFunctionGroup *CPPFunctionGroup::
 as_function_group() {

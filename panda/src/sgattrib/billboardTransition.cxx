@@ -1,6 +1,19 @@
 // Filename: billboardTransition.cxx
 // Created by:  mike (06Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "billboardTransition.h"
@@ -34,7 +47,7 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardTransition::sub_render 
+//     Function: BillboardTransition::sub_render
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -51,7 +64,7 @@ sub_render(NodeRelation *arc, const AllAttributesWrapper &,
   // And the relative coordinate space.
   LMatrix4f rel_mat;
   NodeTransitionWrapper ntw(TransformTransition::get_class_type());
-  wrt(camera, node, trav->begin(), trav->end(), 
+  wrt(camera, node, trav->begin(), trav->end(),
       ntw, RenderRelation::get_class_type());
   TransformTransition *tt;
   if (!get_transition_into(tt, ntw)) {
@@ -81,7 +94,7 @@ sub_render(NodeRelation *arc, const AllAttributesWrapper &,
     camera_pos[0] = -rel_mat(3,0);
     camera_pos[1] = -rel_mat(3,1);
     camera_pos[2] = -rel_mat(3,2);
-    
+
     up = _up_vector;
   }
 
@@ -110,7 +123,7 @@ sub_render(NodeRelation *arc, const AllAttributesWrapper &,
   trans.compose_in_place(new_trans);
 
   // Continue the render pass
-  return true; 
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -128,7 +141,7 @@ has_sub_render() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BillboardTransition::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void BillboardTransition::
 output(ostream &out) const {
@@ -146,7 +159,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: BillboardTransition::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void BillboardTransition::
 write(ostream &out, int indent_level) const {
@@ -161,14 +174,14 @@ write(ostream &out, int indent_level) const {
   }
   out << " Billboard:\n";
 
-  indent(out, indent_level + 2) 
+  indent(out, indent_level + 2)
     << "up vector: " << _up_vector << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BillboardTransition::internal_compare_to
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int BillboardTransition::
 internal_compare_to(const NodeTransition *other) const {

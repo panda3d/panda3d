@@ -1,6 +1,19 @@
 // Filename: multiNodeTransition.h
 // Created by:  drose (23Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef MULTINODETRANSITION_H
@@ -33,14 +46,14 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, MULTITRANSITION_NODE);
 //               (rather than instantiating a whole new kind of
 //               MultiTransition).
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MultiNodeTransition : 
+class EXPCL_PANDA MultiNodeTransition :
   public MultiTransition<PT_Node, PointerNameClass> {
 protected:
   INLINE_GRAPH MultiNodeTransition() {};
   INLINE_GRAPH MultiNodeTransition(const MultiNodeTransition &copy) :
           MultiTransition<PT_Node, PointerNameClass>(copy) {};
 
-  INLINE_GRAPH void operator = (const MultiNodeTransition &copy) 
+  INLINE_GRAPH void operator = (const MultiNodeTransition &copy)
           {MultiTransition<PT_Node, PointerNameClass>::operator = (copy);};
 
 public:

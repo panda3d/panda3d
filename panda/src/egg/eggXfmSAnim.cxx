@@ -1,6 +1,19 @@
 // Filename: eggXfmSAnim.cxx
 // Created by:  drose (19Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggXfmSAnim.h"
@@ -32,7 +45,7 @@ string EggXfmSAnim::_standard_order = "sphrt";
 //               newer-style XfmSAnim table.
 ////////////////////////////////////////////////////////////////////
 EggXfmSAnim::
-EggXfmSAnim(const EggXfmAnimData &convert_from) 
+EggXfmSAnim(const EggXfmAnimData &convert_from)
   : EggGroupNode(convert_from.get_name())
 {
   _has_fps = false;
@@ -172,7 +185,7 @@ write(ostream &out, int indent_level) const {
 //               the string.
 ////////////////////////////////////////////////////////////////////
 void EggXfmSAnim::
-compose_with_order(LMatrix4d &mat, 
+compose_with_order(LMatrix4d &mat,
                    const LVecBase3d &scale,
                    const LVecBase3d &hpr,
                    const LVecBase3d &trans,
@@ -196,15 +209,15 @@ compose_with_order(LMatrix4d &mat,
     case 's':
       mat = mat * LMatrix4d::scale_mat(scale);
       break;
-      
+
     case 'h':
       mat = mat * LMatrix4d::rotate_mat_normaxis(hpr[0], LVector3d::up(cs), cs);
       break;
-      
+
     case 'p':
       mat = mat * LMatrix4d::rotate_mat_normaxis(hpr[1], LVector3d::right(cs), cs);
       break;
-      
+
     case 'r':
       if (reverse_roll) {
         mat = mat * LMatrix4d::rotate_mat_normaxis(-hpr[2], LVector3d::forward(cs), cs);
@@ -212,18 +225,18 @@ compose_with_order(LMatrix4d &mat,
         mat = mat * LMatrix4d::rotate_mat_normaxis(hpr[2], LVector3d::forward(cs), cs);
       }
       break;
-      
+
     case 't':
       mat = mat * LMatrix4d::translate_mat(trans);
       break;
-      
+
     default:
       egg_cat.warning()
         << "Invalid letter in order string: " << *pi << "\n";
     }
   }
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmSAnim::get_num_rows
 //       Access: Public
@@ -255,7 +268,7 @@ get_num_rows() const {
 
   return min_rows;
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmSAnim::get_value
 //       Access: Public
@@ -323,7 +336,7 @@ get_value(int row, LMatrix4d &mat) const {
       case 'x':
         translate[0] = value;
         break;
-     
+
       case 'y':
         translate[1] = value;
         break;
@@ -342,7 +355,7 @@ get_value(int row, LMatrix4d &mat) const {
   // So now we've got the nine components; build a matrix.
   compose_with_order(mat, scale, hpr, translate, get_order(), _coordsys);
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmSAnim::set_value
 //       Access: Public
@@ -360,7 +373,7 @@ get_value(int row, LMatrix4d &mat) const {
 bool EggXfmSAnim::
 set_value(int row, const LMatrix4d &mat) {
   nassertr(get_order() == get_standard_order(), false);
-  
+
   LVector3d scale, hpr, translate;
   bool result = decompose_matrix(mat, scale, hpr, translate, _coordsys);
   if (!result) {
@@ -420,7 +433,7 @@ set_value(int row, const LMatrix4d &mat) {
       case 'x':
         sanim->set_value(row, translate[0]);
         break;
-     
+
       case 'y':
         sanim->set_value(row, translate[1]);
         break;
@@ -439,7 +452,7 @@ set_value(int row, const LMatrix4d &mat) {
   nassertr(num_tables == 9, false);
   return true;
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmSAnim::add_data
 //       Access: Public
@@ -546,7 +559,7 @@ add_data(const LMatrix4d &mat) {
       case 'x':
         sanim->add_data(translate[0]);
         break;
-     
+
       case 'y':
         sanim->add_data(translate[1]);
         break;
@@ -565,7 +578,7 @@ add_data(const LMatrix4d &mat) {
   nassertr(num_tables == 9, false);
   return true;
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmSAnim::r_transform
 //       Access: Protected, Virtual
@@ -638,14 +651,14 @@ normalize_by_rebuilding() {
   EggXfmSAnim original;
   original.steal_children(*this);
   original = (*this);
-  
+
   // Now we have no children, so our data is clear.  Rebuild it.
   int num_rows = original.get_num_rows();
   LMatrix4d orig_mat;
   for (int r = 0; r < num_rows; r++) {
     original.get_value(r, orig_mat);
     bool result = add_data(orig_mat);
-    
+
     // If this assertion fails, we somehow got a matrix out of the
     // original table that we could not represent in the new table.
     // That shouldn't be possible; there's probably something wrong
@@ -672,17 +685,17 @@ normalize_by_expanding() {
   int num_tables = 0;
   int table_length = 1;
   string remaining_tables = "ijkhprxyz";
-  
+
   for (ci = begin(); ci != end(); ++ci) {
     if ((*ci)->is_of_type(EggSAnimData::get_class_type())) {
       EggSAnimData *sanim = DCAST(EggSAnimData, *ci);
-      
+
       nassertv(sanim->get_name().length() == 1);
       char name = sanim->get_name()[0];
       size_t p = remaining_tables.find(name);
       nassertv(p != string::npos);
       remaining_tables[p] = ' ';
-      
+
       num_tables++;
       if (sanim->get_num_rows() > 1) {
         if (table_length == 1) {
@@ -717,7 +730,7 @@ normalize_by_expanding() {
       }
     }
   }
-  
+
   // Now expand any one-row tables as needed.
   for (ci = begin(); ci != end(); ++ci) {
     if ((*ci)->is_of_type(EggSAnimData::get_class_type())) {

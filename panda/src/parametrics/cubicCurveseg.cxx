@@ -1,6 +1,19 @@
 // Filename: cubicCurveseg.cxx
 // Created by:  drose (04Mar01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "piecewiseCurve.h"
@@ -134,7 +147,7 @@ void CubicCurveseg::
 hermite_basis(const HermiteCurveCV &cv0,
               const HermiteCurveCV &cv1,
               float tlength) {
-  static LMatrix4f 
+  static LMatrix4f
     Mh(2, -3, 0, 1,
        -2, 3, 0, 0,
        1, -2, 1, 0,
@@ -144,7 +157,7 @@ hermite_basis(const HermiteCurveCV &cv0,
                 cv0._out[0]*tlength, cv1._in[0]*tlength);
   LVecBase4f Gy(cv0._p[1], cv1._p[1],
                 cv0._out[1]*tlength, cv1._in[1]*tlength);
-  LVecBase4f Gz(cv0._p[2], cv1._p[2], 
+  LVecBase4f Gz(cv0._p[2], cv1._p[2],
                 cv0._out[2]*tlength, cv1._in[2]*tlength);
 
   Bx = Gx * Mh;

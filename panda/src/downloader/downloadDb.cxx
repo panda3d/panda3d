@@ -1,10 +1,19 @@
-// Filename: downloader.cxx
+// Filename: downloadDb.cxx
 // Created by:  shochet (08Sep00)
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "downloadDb.h"
 #include "config_downloader.h"
@@ -18,8 +27,8 @@
 PN_uint32 DownloadDb::_magic_number = 0xfeedfeed;
 
 // Written at the top of the file to signify we are not done
-// writing to the file yet. If you load a db with this magic 
-// number that means the previous time it got written out was 
+// writing to the file yet. If you load a db with this magic
+// number that means the previous time it got written out was
 // probably interrupted in the middle of the write.
 PN_uint32 DownloadDb::_bogus_magic_number = 0x11111111;
 
@@ -59,7 +68,7 @@ DownloadDb::
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::
 output(ostream &out) const {
@@ -112,7 +121,7 @@ client_multifile_exists(string mfname) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::
 //       Access: Public
-//  Description: A multifile is complete when it is completely 
+//  Description: A multifile is complete when it is completely
 //               downloaded. Note: it may already be decompressed
 //               or extracted and it is still complete
 ////////////////////////////////////////////////////////////////////
@@ -141,7 +150,7 @@ client_multifile_decompressed(string mfname) const {
 bool DownloadDb::
 client_multifile_extracted(string mfname) const {
   int client_status = _client_db.get_multifile_record_named(mfname)->_status;
-  return (client_status >= Status_extracted);  
+  return (client_status >= Status_extracted);
 }
 
 // Operations on multifiles
@@ -190,7 +199,7 @@ read_db(Filename &file, bool want_server_info) {
   // Open the multifile for reading
   ifstream read_stream;
   file.set_binary();
-  
+
   Db db;
 
   if (!file.open_read(read_stream)) {
@@ -209,7 +218,7 @@ read_db(Filename &file, bool want_server_info) {
   if (want_server_info) {
     if (!read_version_map(read_stream)) {
       downloader_cat.error()
-        << "DownloadDb::read() - read_version_map() failed: " 
+        << "DownloadDb::read() - read_version_map() failed: "
         << file << endl;
     }
   }
@@ -236,7 +245,7 @@ read_db(Ramfile &file, bool want_server_info) {
   if (want_server_info) {
     if (!read_version_map(read_stream)) {
       downloader_cat.error()
-        << "DownloadDb::read() - read_version_map() failed" << endl; 
+        << "DownloadDb::read() - read_version_map() failed" << endl;
     }
   }
 
@@ -259,7 +268,7 @@ write_db(Filename &file, Db db, bool want_server_info) {
       << file << endl;
     return false;
   }
-  
+
   downloader_cat.debug()
     << "Writing to file: " << file << endl;
 
@@ -279,7 +288,7 @@ write_db(Filename &file, Db db, bool want_server_info) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::create_new_server_db
 //       Access: Public
-//  Description: Used on the server side makefiles to create a 
+//  Description: Used on the server side makefiles to create a
 //               new clean server db
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::
@@ -320,7 +329,7 @@ server_add_file(string mfname, string fname) {
   }
 
   // Uh-oh, did not find it
-  downloader_cat.error() << "Could not find record named " 
+  downloader_cat.error() << "Could not find record named "
                          << mfname << " in database " << endl;
   return;
 }
@@ -362,7 +371,7 @@ MultifileRecord(string name, Phase phase, int size, int status) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::MultifileRecord::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::MultifileRecord::
 output(ostream &out) const {
@@ -432,7 +441,7 @@ get_file_record_named(string fname) const {
     }
   }
   // Did not find it, just return an empty version
-  downloader_cat.error() << "Could not find record named " 
+  downloader_cat.error() << "Could not find record named "
                          << fname << " in multifile " << _name << endl;
   PT(FileRecord) foo = new FileRecord;
   return foo;
@@ -461,7 +470,7 @@ add_file_record(PT(FileRecord) fr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::Db::constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DownloadDb::Db::
 Db(void) {
@@ -473,7 +482,7 @@ Db(void) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::Db::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::Db::
 output(ostream &out) const {
@@ -534,7 +543,7 @@ get_multifile_record_named(string mfname) const {
     }
   }
   // Did not find it, just return an empty version
-  downloader_cat.error() << "Could not find record named " 
+  downloader_cat.error() << "Could not find record named "
                          << mfname << " in database " << endl;
   PT(MultifileRecord) foo = new MultifileRecord;
   return foo;
@@ -554,7 +563,7 @@ add_multifile_record(PT(MultifileRecord) mfr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::Db::parse_header
 //       Access: Private
-//  Description: Verifies magic number, returns the number of 
+//  Description: Verifies magic number, returns the number of
 //               multifiles or -1 if invalid
 ////////////////////////////////////////////////////////////////////
 int DownloadDb::Db::
@@ -572,15 +581,15 @@ parse_header(uchar *start, int size) {
   if (magic_number == _bogus_magic_number) {
     downloader_cat.error()
       << "DownloadDb::parse_header() - "
-      << "Bogus magic number, previous write incomplete: " 
+      << "Bogus magic number, previous write incomplete: "
       << magic_number << " expected: " << _magic_number << endl;
     return -1;
   }
-  // If the magic number does not match at all, something is 
+  // If the magic number does not match at all, something is
   // really wrong
   else if (magic_number != _magic_number) {
     downloader_cat.error()
-      << "DownloadDb::parse_header() - Invalid magic number: " 
+      << "DownloadDb::parse_header() - Invalid magic number: "
       << magic_number << " expected: " << _magic_number << endl;
     return -1;
   }
@@ -636,9 +645,9 @@ parse_mfr(uchar *start, int size) {
   mfr->_size = di.get_int32();
   mfr->_status = di.get_int32();
   mfr->_num_files = di.get_int32();
-  
+
   downloader_cat.debug()
-    << "Parsed multifile record: " << mfr->_name << " phase: " << mfr->_phase 
+    << "Parsed multifile record: " << mfr->_name << " phase: " << mfr->_phase
      << " size: " << mfr->_size
     << " status: " << mfr->_status << " num_files: " << mfr->_num_files << endl;
 
@@ -665,7 +674,7 @@ parse_fr(uchar *start, int size) {
   DatagramIterator di(_datagram);
   PN_int32 fr_name_length = di.get_int32();
   fr->_name = di.extract_bytes(fr_name_length);
-  
+
   downloader_cat.spam()
     << "Parsed file record: " << fr->_name << endl;
 
@@ -679,11 +688,11 @@ parse_fr(uchar *start, int size) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::Db::read
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool DownloadDb::Db::
 read(istream &read_stream, bool want_server_info) {
-  
+
   // Make a little buffer to read the header into
   uchar *header_buf = new uchar[_header_length];
   // Read the header
@@ -697,7 +706,7 @@ read(istream &read_stream, bool want_server_info) {
     return false;
   }
 
-  delete header_buf;  
+  delete header_buf;
 
   // Now that we know how many multifiles this db has, we can iterate
   // reading them off one by one
@@ -715,7 +724,7 @@ read(istream &read_stream, bool want_server_info) {
     // Parse the header
     int mfr_length = parse_record_header(header_buf, mfr_header_length);
     delete header_buf;
-    
+
     // Ok, now that we know the size of the mfr, read it in
     // Make a buffer to read the multifile record into
     header_buf = new uchar[mfr_length];
@@ -745,7 +754,7 @@ read(istream &read_stream, bool want_server_info) {
         // Parse the header
         int fr_length = parse_record_header(header_buf, fr_header_length);
         delete header_buf;
-      
+
         // Ok, now that we know the size of the mfr, read it in
         // Make a buffer to read the file record into
         header_buf = new uchar[fr_length];
@@ -774,7 +783,7 @@ read(istream &read_stream, bool want_server_info) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::Db::write
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool DownloadDb::Db::
 write(ofstream &write_stream, bool want_server_info) {
@@ -791,7 +800,7 @@ write(ofstream &write_stream, bool want_server_info) {
   vector< PT(MultifileRecord) >::const_iterator i = _mfile_records.begin();
   for(; i != _mfile_records.end(); ++i) {
     _datagram.clear();
-    
+
     // Cache some properties so we do not have to keep asking for them
     phase = (*i)->_phase;
     size = (*i)->_size;
@@ -800,13 +809,13 @@ write(ofstream &write_stream, bool want_server_info) {
     name_length = (*i)->_name.length();
 
     // Compute the length of this datagram
-    header_length = 
+    header_length =
       sizeof(header_length) +  // Size of this header length
       sizeof(name_length) +    // Size of the size of the name string
       (*i)->_name.length() +      // Size of the name string
-      sizeof(phase) + sizeof(size) + 
+      sizeof(phase) + sizeof(size) +
       sizeof(status) + sizeof(num_files);
-      
+
     // Add the length of this entire datagram
     _datagram.add_int32(header_length);
 
@@ -820,7 +829,7 @@ write(ofstream &write_stream, bool want_server_info) {
     _datagram.add_int32(size);
     _datagram.add_int32(status);
     _datagram.add_int32(num_files);
-    
+
     // Now put this datagram on the write stream
     string msg = _datagram.get_message();
     write_stream.write(msg.data(), msg.length());
@@ -837,11 +846,11 @@ write(ofstream &write_stream, bool want_server_info) {
         name_length = (*j)->_name.length();
 
         // Compute the length of this datagram
-        header_length = 
+        header_length =
           sizeof(header_length) +  // Size of this header length
           sizeof(name_length) +    // Size of the size of the name string
           (*j)->_name.length();    // Size of the name string
-      
+
         // Add the length of this entire datagram
         _datagram.add_int32(header_length);
 
@@ -864,8 +873,8 @@ write(ofstream &write_stream, bool want_server_info) {
 //     Function: DownloadDb::Db::write_bogus_header
 //       Access: Private
 //  Description: Writes the bogus header uncompressed with platform-
-//               independent byte ordering. This header will get 
-//               overwritten with the real magic number as the last 
+//               independent byte ordering. This header will get
+//               overwritten with the real magic number as the last
 //               step in the write
 ////////////////////////////////////////////////////////////////////
 bool DownloadDb::Db::
@@ -938,7 +947,7 @@ FileRecord(string name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::FileRecord::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::FileRecord::
 output(ostream &out) const {
@@ -1076,8 +1085,8 @@ read_version_map(istream &read_stream) {
 
     // Get the length of the file name
     _master_datagram.clear();
-    read_stream.read(buffer, sizeof(PN_int32)); 
-    _master_datagram.append_data(buffer, sizeof(PN_int32)); 
+    read_stream.read(buffer, sizeof(PN_int32));
+    _master_datagram.append_data(buffer, sizeof(PN_int32));
     DatagramIterator di2(_master_datagram);
     int name_length = di2.get_int32();
     downloader_cat.spam()
@@ -1099,7 +1108,7 @@ read_version_map(istream &read_stream) {
     read_stream.read(buffer, sizeof(PN_int32));
     _master_datagram.append_data(buffer, sizeof(PN_int32));
     DatagramIterator di5(_master_datagram);
-    int length = di5.get_int32();   
+    int length = di5.get_int32();
     downloader_cat.spam()
       << "DownloadDb::read_version_map() - number of values: " << length
       << endl;
@@ -1132,7 +1141,7 @@ read_version_map(istream &read_stream) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::output_version_map
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::
 output_version_map(ostream &out) const {

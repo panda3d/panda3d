@@ -1,13 +1,26 @@
 // Filename: lpoint4_src.I
 // Created by:  drose (08Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint4::Default Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint4)::
 FLOATNAME(LPoint4)() {
@@ -16,7 +29,7 @@ FLOATNAME(LPoint4)() {
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint4::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint4)::
 FLOATNAME(LPoint4)(const FLOATNAME(LVecBase4) &copy) : FLOATNAME(LVecBase4)(copy) {
@@ -25,7 +38,7 @@ FLOATNAME(LPoint4)(const FLOATNAME(LVecBase4) &copy) : FLOATNAME(LVecBase4)(copy
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint4::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint4) &FLOATNAME(LPoint4)::
 operator = (const FLOATNAME(LVecBase4) &copy) {
@@ -36,7 +49,7 @@ operator = (const FLOATNAME(LVecBase4) &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint4::Copy Fill Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint4) &FLOATNAME(LPoint4)::
 operator = (FLOATTYPE fill_value) {
@@ -47,22 +60,22 @@ operator = (FLOATTYPE fill_value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint4::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint4)::
 FLOATNAME(LPoint4)(FLOATTYPE fill_value) :
-  FLOATNAME(LVecBase4)(fill_value) 
+  FLOATNAME(LVecBase4)(fill_value)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint4::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint4)::
-FLOATNAME(LPoint4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w) : 
-  FLOATNAME(LVecBase4)(x, y, z, w) 
+FLOATNAME(LPoint4)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z, FLOATTYPE w) :
+  FLOATNAME(LVecBase4)(x, y, z, w)
 {
 }
 
@@ -119,7 +132,7 @@ unit_w() {
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint4::unary -
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint4) FLOATNAME(LPoint4)::
 operator - () const {
@@ -129,7 +142,7 @@ operator - () const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint4::point + vecbase
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LPoint4)::
 operator + (const FLOATNAME(LVecBase4) &other) const {
@@ -139,7 +152,7 @@ operator + (const FLOATNAME(LVecBase4) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint4::point + vector
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint4) FLOATNAME(LPoint4)::
 operator + (const FLOATNAME(LVector4) &other) const {
@@ -149,7 +162,7 @@ operator + (const FLOATNAME(LVector4) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint4::point - vecbase
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase4) FLOATNAME(LPoint4)::
 operator - (const FLOATNAME(LVecBase4) &other) const {
@@ -159,7 +172,7 @@ operator - (const FLOATNAME(LVecBase4) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint4::point - point
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector4) FLOATNAME(LPoint4)::
 operator - (const FLOATNAME(LPoint4) &other) const {
@@ -169,7 +182,7 @@ operator - (const FLOATNAME(LPoint4) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint4::point - vector
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint4) FLOATNAME(LPoint4)::
 operator - (const FLOATNAME(LVector4) &other) const {
@@ -179,7 +192,7 @@ operator - (const FLOATNAME(LVector4) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint4::operator * scalar
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint4) FLOATNAME(LPoint4)::
 operator * (FLOATTYPE scalar) const {
@@ -189,7 +202,7 @@ operator * (FLOATTYPE scalar) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint4::operator / scalar
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LPoint4) FLOATNAME(LPoint4)::
 operator / (FLOATTYPE scalar) const {

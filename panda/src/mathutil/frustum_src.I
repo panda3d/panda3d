@@ -2,6 +2,19 @@
 // Created by:  mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Constructor
@@ -19,18 +32,18 @@ FLOATNAME(Frustum)() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: make_ortho_2D 
+//     Function: make_ortho_2D
 //       Access:
-//  Description: Sets up a two-dimensional orthographic frustum 
+//  Description: Sets up a two-dimensional orthographic frustum
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL void FLOATNAME(Frustum)::make_ortho_2D(void) {
   make_ortho(-1.0f, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: make_ortho_2D 
+//     Function: make_ortho_2D
 //       Access:
-//  Description: Sets up a two-dimensional orthographic frustum 
+//  Description: Sets up a two-dimensional orthographic frustum
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL void FLOATNAME(Frustum)::
 make_ortho_2D(FLOATTYPE l, FLOATTYPE r, FLOATTYPE t, FLOATTYPE b) {
@@ -44,7 +57,7 @@ make_ortho_2D(FLOATTYPE l, FLOATTYPE r, FLOATTYPE t, FLOATTYPE b) {
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL void FLOATNAME(Frustum)::make_ortho(FLOATTYPE fnear, FLOATTYPE ffar) {
   _fnear = fnear;
-  _ffar = ffar; 
+  _ffar = ffar;
   _l = -1.0f;
   _r = 1.0f;
   _t = 1.0f;
@@ -60,7 +73,7 @@ INLINE_MATHUTIL void FLOATNAME(Frustum)::
 make_ortho(FLOATTYPE fnear, FLOATTYPE ffar, FLOATTYPE l, FLOATTYPE r,
            FLOATTYPE t, FLOATTYPE b) {
   _fnear = fnear;
-  _ffar = ffar; 
+  _ffar = ffar;
   _l = l;
   _r = r;
   _t = t;
@@ -162,7 +175,7 @@ get_perspective_projection_mat(CoordinateSystem cs) const {
   if (cs == CS_default) {
     cs = default_coordinate_system;
   }
-  
+
   FLOATTYPE recip_far_minus_near = 1.0f/(_ffar - _fnear);
   FLOATTYPE recip_r_minus_l = 1.0f/(_r - _l);
   FLOATTYPE recip_t_minus_b = 1.0f/(_t - _b);
@@ -182,7 +195,7 @@ get_perspective_projection_mat(CoordinateSystem cs) const {
   FLOATTYPE d = (_r + _l) / (_r - _l);
   FLOATTYPE e = (2.0f * _fnear) / (_t - _b);
   FLOATTYPE f = (-2.0f * _ffar * _fnear) / (_ffar - _fnear);
-*/  
+*/
 
   switch (cs) {
   case CS_zup_right:
@@ -204,7 +217,7 @@ get_perspective_projection_mat(CoordinateSystem cs) const {
   case CS_yup_left:
     return FLOATNAME(LMatrix4)::convert_mat(CS_yup_right, CS_yup_left) *
       get_perspective_projection_mat(CS_yup_right);
-   
+
   default:
     mathutil_cat.error()
       << "Invalid coordinate system!\n";

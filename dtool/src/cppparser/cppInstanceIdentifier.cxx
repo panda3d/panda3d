@@ -1,6 +1,19 @@
-// Filename: cppInstanceIdentifier.C
+// Filename: cppInstanceIdentifier.cxx
 // Created by:  drose (21Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -16,7 +29,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstanceIdentifier::Modifier::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPInstanceIdentifier::Modifier::
 Modifier(CPPInstanceIdentifierType type) :
@@ -31,7 +44,7 @@ Modifier(CPPInstanceIdentifierType type) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstanceIdentifier::Modifier::named func_type constructor
 //       Access: Public, Static
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPInstanceIdentifier::Modifier CPPInstanceIdentifier::Modifier::
 func_type(CPPParameterList *params, int flags) {
@@ -44,7 +57,7 @@ func_type(CPPParameterList *params, int flags) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstanceIdentifier::Modifier::named array_type constructor
 //       Access: Public, Static
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPInstanceIdentifier::Modifier CPPInstanceIdentifier::Modifier::
 array_type(CPPExpression *expr) {
@@ -56,7 +69,7 @@ array_type(CPPExpression *expr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstanceIdentifier::Modifier::named scoped_pointer_type
 //       Access: Public, Static
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPInstanceIdentifier::Modifier CPPInstanceIdentifier::Modifier::
 scoped_pointer_type(CPPIdentifier *scoping) {
@@ -68,7 +81,7 @@ scoped_pointer_type(CPPIdentifier *scoping) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstanceIdentifier::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPInstanceIdentifier::
 CPPInstanceIdentifier(CPPIdentifier *ident) : _ident(ident) {
@@ -93,7 +106,7 @@ unroll_type(CPPType *start_type) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstanceIdentifier::add_modifier
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPInstanceIdentifier::
 add_modifier(CPPInstanceIdentifierType type) {
@@ -103,7 +116,7 @@ add_modifier(CPPInstanceIdentifierType type) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstanceIdentifier::add_modifier
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPInstanceIdentifier::
 add_func_modifier(CPPParameterList *params, int flags) {
@@ -118,7 +131,7 @@ add_scoped_pointer_modifier(CPPIdentifier *scoping) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstanceIdentifier::add_modifier
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPInstanceIdentifier::
 add_array_modifier(CPPExpression *expr) {
@@ -128,7 +141,7 @@ add_array_modifier(CPPExpression *expr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPInstanceIdentifier::get_scope
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPScope *CPPInstanceIdentifier::
 get_scope(CPPScope *current_scope, CPPScope *global_scope,

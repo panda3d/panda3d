@@ -1,6 +1,19 @@
 // Filename: test_attrib.cxx
 // Created by:  drose (18Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "colorTransition.h"
@@ -16,7 +29,7 @@
 #include <nullLevelState.h>
 
 
-class PrintNodes : 
+class PrintNodes :
   public TraverserVisitor<AllTransitionsWrapper, NullLevelState> {
 public:
   PrintNodes() {
@@ -66,7 +79,7 @@ main(int argc, char *argv[]) {
     new NodeRelation(a, ab, 0, NodeRelation::get_class_type());
   NodeRelation *b_ba =
     new NodeRelation(b, ba, 0, NodeRelation::get_class_type());
-  
+
   PT(Texture) alpha = new Texture;
   alpha->set_name("alpha");
   PT(Texture) beta = new Texture;
@@ -92,7 +105,7 @@ main(int argc, char *argv[]) {
   {
     cerr << "\n";
     PrintNodes pn;
-    df_traverse(r, pn, 
+    df_traverse(r, pn,
                 AllAttributesWrapper(),
                 NullLevelState(),
                 NodeRelation::get_class_type());

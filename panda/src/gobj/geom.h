@@ -1,7 +1,20 @@
 // Filename: geom.h
 // Created by:  mike (09Jan97)
 //
+////////////////////////////////////////////////////////////////////
 //
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 #ifndef GEOM_H
 #define GEOM_H
 //
@@ -103,33 +116,33 @@ public:
   Geom( void );
   Geom( const Geom& copy );
   ~Geom( void );
- 
+
   void operator = ( const Geom &copy );
   virtual Geom *make_copy() const=0;
 
-PUBLISHED: 
+PUBLISHED:
   void write(ostream &out, int indent_level = 0) const;
   virtual void output(ostream &out) const;
   void write_verbose(ostream &out, int indent_level) const;
 
-public: 
+public:
   // From parent dDrawable
   virtual void draw(GraphicsStateGuardianBase *gsg) {
     dDrawable::draw(gsg); draw_immediate(gsg);
   }
- 
+
   // From parent Configurable
   virtual void config( void );
- 
+
   // Immediate mode drawing functions - issue graphics commands
   virtual void draw_immediate(GraphicsStateGuardianBase *) const = 0;
   virtual void print_draw_immediate( void ) const = 0;
- 
+
 public:
- 
+
   void get_min_max( Vertexf& min, Vertexf& max ) const;
-  
- 
+
+
   void set_coords( const PTA_Vertexf &coords,
                    GeomBindType bind,
                    const PTA_ushort &vindex =
@@ -146,7 +159,7 @@ public:
                       GeomBindType bind,
                       const PTA_ushort &tindex =
                       PTA_ushort() );
- 
+
   void get_coords( PTA_Vertexf &coords,
                    GeomBindType &bind,
                    PTA_ushort &vindex) const;
@@ -160,7 +173,7 @@ public:
                       GeomBindType &bind,
                       PTA_ushort &tindex) const;
 
-PUBLISHED: 
+PUBLISHED:
   INLINE GeomBindType get_binding(int attr) const;
   INLINE const PTA_Vertexf &get_coords_array() const;
   INLINE const PTA_Normalf &get_normals_array() const;
@@ -171,13 +184,13 @@ PUBLISHED:
   INLINE const PTA_ushort &get_colors_index() const;
   INLINE const PTA_ushort &get_texcoords_index() const;
 
-public: 
+public:
   INLINE void set_num_prims(int num);
   INLINE int get_num_prims(void) const;
- 
+
   INLINE void set_lengths(const PTA_int &lengths);
   INLINE PTA_int get_lengths() const;
- 
+
   virtual int get_num_vertices_per_prim() const=0;
   virtual int get_num_more_vertices_than_components() const=0;
   virtual bool uses_components() const=0;
@@ -210,23 +223,23 @@ protected:
 
   void init( void );
   virtual void recompute_bound();
- 
+
 protected:
- 
+
   PTA_Vertexf _coords;
   PTA_Normalf _norms;
   PTA_Colorf _colors;
   PTA_TexCoordf _texcoords;
- 
+
   PTA_ushort _vindex;
   PTA_ushort _nindex;
   PTA_ushort _cindex;
   PTA_ushort _tindex;
- 
+
   int _numprims;
   PTA_int _primlengths;
   enum GeomBindType _bind[num_GeomAttrTypes];
- 
+
   // Functions to extract component values, one at a time.
   GetNextVertex *_get_vertex;
   GetNextNormal *_get_normal;
@@ -236,7 +249,7 @@ protected:
 
 public:
   //static void register_with_read_factory(void);
-  virtual void write_datagram(BamWriter* manager, Datagram &me);  
+  virtual void write_datagram(BamWriter* manager, Datagram &me);
 
   //static TypedWritable *make_Generic(const FactoryParams &params);
 

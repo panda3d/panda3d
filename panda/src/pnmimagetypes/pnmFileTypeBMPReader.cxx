@@ -1,6 +1,19 @@
 // Filename: pnmFileTypeBMPReader.cxx
 // Created by:  drose (19Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileTypeBMP.h"
@@ -14,23 +27,26 @@ extern "C" {
 // Much code in this file is borrowed from Netpbm, specifically bmptoppm.c.
 /*\
  * $Id$
- * 
+ *
  * bmptoppm.c - Converts from a Microsoft Windows or OS/2 .BMP file to a
  * PPM file.
- * 
+ *
  * The current implementation is probably not complete, but it works for
  * all the BMP files I have.  I welcome feedback.
- * 
+ *
  * Copyright (C) 1992 by David W. Sanderson.
- * 
+ *
  * Permission to use, copy, modify, and distribute this software and its
  * documentation for any purpose and without fee is hereby granted,
  * provided that the above copyright notice appear in all copies and
  * that both that copyright notice and this permission notice appear
  * in supporting documentation.  This software is provided "as is"
  * without express or implied warranty.
- * 
+ *
  * $Log$
+ * Revision 1.4  2001/05/25 21:30:42  drose
+ * Update copyright header
+ *
  * Revision 1.3  2001/05/25 15:59:19  drose
  * remove tab characters
  *
@@ -456,10 +472,10 @@ BMPreadbits(xel *array,
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeBMP::Reader::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeBMP::Reader::
-Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) : 
+Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
   if (!read_magic_number(_file, magic_number, 2)) {
@@ -485,13 +501,13 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   unsigned long   cy;
 
   pos = 0;
-  
+
   BMPreadfileheader(file, &pos, &offBits);
   BMPreadinfoheader(file, &pos, &cx, &cy, &cBitCount, &classv);
-  
+
   if (offBits != BMPoffbits(classv, cBitCount)) {
     pnmimage_bmp_cat.warning()
-      << "offBits is " << offBits << ", expected " 
+      << "offBits is " << offBits << ", expected "
       << BMPoffbits(classv, cBitCount) << "\n";
   }
 
@@ -500,7 +516,7 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   if (cBitCount <= 8) {
     indexed = true;
     rc = BMPreadrgbtable(file, &pos, cBitCount, classv, R, G, B);
-    
+
     if (rc != (int)BMPlenrgbtable(classv, cBitCount)) {
       pnmimage_bmp_cat.warning()
         << rc << "-byte RGB table, expected "

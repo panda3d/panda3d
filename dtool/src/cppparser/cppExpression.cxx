@@ -1,6 +1,19 @@
-// Filename: cppExpression.C
+// Filename: cppExpression.cxx
 // Created by:  drose (25Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -23,7 +36,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpresion::Result::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPExpression::Result::
 Result() {
@@ -33,7 +46,7 @@ Result() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpresion::Result::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPExpression::Result::
 Result(int value) {
@@ -44,7 +57,7 @@ Result(int value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpresion::Result::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPExpression::Result::
 Result(double value) {
@@ -55,7 +68,7 @@ Result(double value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpresion::Result::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPExpression::Result::
 Result(void *value) {
@@ -67,7 +80,7 @@ Result(void *value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpresion::Result::as_integer
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int CPPExpression::Result::
 as_integer() const {
@@ -91,7 +104,7 @@ as_integer() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpresion::Result::as_real
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 double CPPExpression::Result::
 as_real() const {
@@ -115,7 +128,7 @@ as_real() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpresion::Result::as_pointer
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void *CPPExpression::Result::
 as_pointer() const {
@@ -139,7 +152,7 @@ as_pointer() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpresion::Result::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPExpression::Result::
 output(ostream &out) const {
@@ -168,11 +181,11 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpresion::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPExpression::
 CPPExpression(int value) :
-  CPPDeclaration(CPPFile()) 
+  CPPDeclaration(CPPFile())
 {
   _type = T_integer;
   _u._integer = value;
@@ -181,11 +194,11 @@ CPPExpression(int value) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpression::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPExpression::
 CPPExpression(double value) :
-  CPPDeclaration(CPPFile()) 
+  CPPDeclaration(CPPFile())
 {
   _type = T_real;
   _u._real = value;
@@ -194,11 +207,11 @@ CPPExpression(double value) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpression::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPExpression::
 CPPExpression(const string &value) :
-  CPPDeclaration(CPPFile()) 
+  CPPDeclaration(CPPFile())
 {
   _type = T_string;
   _str = value;
@@ -207,14 +220,14 @@ CPPExpression(const string &value) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpression::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPExpression::
-CPPExpression(CPPIdentifier *ident, CPPScope *current_scope, 
+CPPExpression(CPPIdentifier *ident, CPPScope *current_scope,
               CPPScope *global_scope, CPPPreprocessor *error_sink) :
-  CPPDeclaration(CPPFile()) 
+  CPPDeclaration(CPPFile())
 {
-  CPPDeclaration *decl = 
+  CPPDeclaration *decl =
     ident->find_symbol(current_scope, global_scope, error_sink);
 
   if (decl != NULL) {
@@ -239,11 +252,11 @@ CPPExpression(CPPIdentifier *ident, CPPScope *current_scope,
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpression::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPExpression::
 CPPExpression(int unary_operator, CPPExpression *op1) :
-  CPPDeclaration(CPPFile()) 
+  CPPDeclaration(CPPFile())
 {
   _type = T_unary_operation;
   _u._op._operator = unary_operator;
@@ -255,11 +268,11 @@ CPPExpression(int unary_operator, CPPExpression *op1) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpression::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPExpression::
 CPPExpression(int binary_operator, CPPExpression *op1, CPPExpression *op2) :
-  CPPDeclaration(CPPFile()) 
+  CPPDeclaration(CPPFile())
 {
   _type = T_binary_operation;
   _u._op._operator = binary_operator;
@@ -271,12 +284,12 @@ CPPExpression(int binary_operator, CPPExpression *op1, CPPExpression *op2) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpression::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPExpression::
-CPPExpression(int trinary_operator, CPPExpression *op1, CPPExpression *op2, 
+CPPExpression(int trinary_operator, CPPExpression *op1, CPPExpression *op2,
               CPPExpression *op3) :
-  CPPDeclaration(CPPFile()) 
+  CPPDeclaration(CPPFile())
 {
   _type = T_trinary_operation;
   _u._op._operator = trinary_operator;
@@ -349,7 +362,7 @@ new_op(CPPType *type, CPPExpression *op1) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpression::named sizeof_func constructor
 //       Access: Public, Static
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPExpression CPPExpression::
 sizeof_func(CPPType *type) {
@@ -363,7 +376,7 @@ sizeof_func(CPPType *type) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpression::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPExpression::
 ~CPPExpression() {
@@ -372,7 +385,7 @@ CPPExpression::
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpression::evaluate
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPExpression::Result CPPExpression::
 evaluate() const {
@@ -432,7 +445,7 @@ evaluate() const {
 
     // In all other cases, both operands must be valid in order for
     // the operation to be valid.
-    if (r2._type == RT_error && 
+    if (r2._type == RT_error &&
         (_u._op._operator != OROR && _u._op._operator != ANDAND)) {
       return r2;
     }
@@ -459,7 +472,7 @@ evaluate() const {
 
     case UNARY_NEGATE:
       return Result(~r1.as_integer());
-     
+
     case UNARY_MINUS:
       return (r1._type == RT_real) ? Result(-r1.as_real()) : Result(-r1.as_integer());
 
@@ -567,7 +580,7 @@ evaluate() const {
       return Result(r1.as_integer() >> r2.as_integer());
 
     case '?':
-      return r1.as_integer() ? 
+      return r1.as_integer() ?
         _u._op._op2->evaluate() : _u._op._op3->evaluate();
 
     case '.':
@@ -606,19 +619,19 @@ CPPType *CPPExpression::
 determine_type() const {
   CPPType *t1, *t2;
 
-  CPPType *int_type = 
+  CPPType *int_type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_int));
 
-  CPPType *bool_type = 
+  CPPType *bool_type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_bool));
 
-  CPPType *float_type = 
+  CPPType *float_type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_double));
 
-  CPPType *char_type = 
+  CPPType *char_type =
     CPPType::new_type(new CPPSimpleType(CPPSimpleType::T_char));
 
-  CPPType *const_char_type = 
+  CPPType *const_char_type =
     CPPType::new_type(new CPPConstType(char_type));
 
   CPPType *char_star_type =
@@ -678,7 +691,7 @@ determine_type() const {
 
     case UNARY_NEGATE:
       return int_type;
-     
+
     case UNARY_MINUS:
       return t1;
 
@@ -765,12 +778,12 @@ determine_type() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpression::substitute_decl
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration *CPPExpression::
 substitute_decl(CPPDeclaration::SubstDecl &subst,
                 CPPScope *current_scope, CPPScope *global_scope) {
-  CPPDeclaration *top = 
+  CPPDeclaration *top =
     CPPDeclaration::substitute_decl(subst, current_scope, global_scope);
   if (top != this) {
     return top;
@@ -800,7 +813,7 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   case T_typecast:
   case T_construct:
   case T_new:
-    rep->_u._typecast._op1 = 
+    rep->_u._typecast._op1 =
       _u._typecast._op1->substitute_decl(subst, current_scope, global_scope)
       ->as_expression();
     any_changed = any_changed || (rep->_u._typecast._op1 != _u._typecast._op1);
@@ -809,21 +822,21 @@ substitute_decl(CPPDeclaration::SubstDecl &subst,
   case T_default_construct:
   case T_default_new:
   case T_sizeof:
-    rep->_u._typecast._to = 
+    rep->_u._typecast._to =
       _u._typecast._to->substitute_decl(subst, current_scope, global_scope)
       ->as_type();
     any_changed = any_changed || (rep->_u._typecast._to != _u._typecast._to);
     break;
 
   case T_trinary_operation:
-    rep->_u._op._op3 = 
+    rep->_u._op._op3 =
       _u._op._op3->substitute_decl(subst, current_scope, global_scope)
       ->as_expression();
     any_changed = any_changed || (rep->_u._op._op3 != _u._op._op3);
     // fall through
 
   case T_binary_operation:
-    rep->_u._op._op2 = 
+    rep->_u._op._op2 =
       _u._op._op2->substitute_decl(subst, current_scope, global_scope)
       ->as_expression();
     any_changed = any_changed || (rep->_u._op._op2 != _u._op._op2);
@@ -896,7 +909,7 @@ is_tbd() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpression::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPExpression::
 output(ostream &out, int indent_level, CPPScope *scope, bool) const {
@@ -967,7 +980,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
     break;
 
   case T_construct:
-    out << "(" << _u._typecast._to->get_typedef_name(scope) 
+    out << "(" << _u._typecast._to->get_typedef_name(scope)
         << "(" << *_u._typecast._op1 << "))";
     break;
 
@@ -999,7 +1012,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
     case UNARY_NEGATE:
       out << "(~ " << *_u._op._op1 << ")";
       break;
-     
+
     case UNARY_MINUS:
       out << "(- " << *_u._op._op1 << ")";
       break;
@@ -1027,31 +1040,31 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
     case OROR:
       out << "(" << *_u._op._op1 << " || " << *_u._op._op2 << ")";
       break;
-      
+
     case ANDAND:
       out << "(" << *_u._op._op1 << " && " << *_u._op._op2 << ")";
       break;
-      
+
     case EQCOMPARE:
       out << "(" << *_u._op._op1 << " == " << *_u._op._op2 << ")";
       break;
-      
+
     case NECOMPARE:
       out << "(" << *_u._op._op1 << " != " << *_u._op._op2 << ")";
       break;
-      
+
     case LECOMPARE:
       out << "(" << *_u._op._op1 << " <= " << *_u._op._op2 << ")";
       break;
-      
+
     case GECOMPARE:
       out << "(" << *_u._op._op1 << " >= " << *_u._op._op2 << ")";
       break;
-      
+
     case LSHIFT:
       out << "(" << *_u._op._op1 << " << " << *_u._op._op2 << ")";
       break;
-      
+
     case RSHIFT:
       out << "(" << *_u._op._op1 << " >> " << *_u._op._op2 << ")";
       break;
@@ -1075,7 +1088,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
     case ',': // Comma, no parens are used
       out << *_u._op._op1 << ", " << *_u._op._op2;
       break;
-      
+
     default:
       out << "(" << *_u._op._op1 << " " << (char)_u._op._operator
           << " " << *_u._op._op2 << ")";
@@ -1095,7 +1108,7 @@ output(ostream &out, int indent_level, CPPScope *scope, bool) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpression::get_subtype
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPDeclaration::SubType CPPExpression::
 get_subtype() const {
@@ -1105,7 +1118,7 @@ get_subtype() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPExpression::as_expression
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPExpression *CPPExpression::
 as_expression() {

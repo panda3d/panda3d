@@ -1,6 +1,19 @@
 // Filename: collisionPlane.I
 // Created by:  drose (25Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
@@ -17,7 +30,7 @@ CollisionPlane() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPlane::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionPlane::
 CollisionPlane(const Planef &plane) :
@@ -28,7 +41,7 @@ CollisionPlane(const Planef &plane) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPlane::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionPlane::
 CollisionPlane(const CollisionPlane &copy) :
@@ -40,7 +53,7 @@ CollisionPlane(const CollisionPlane &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPlane::get_normal
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3f CollisionPlane::
 get_normal() const {
@@ -50,7 +63,7 @@ get_normal() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPlane::dist_to_plane
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE float CollisionPlane::
 dist_to_plane(const LPoint3f &point) const {
@@ -60,7 +73,7 @@ dist_to_plane(const LPoint3f &point) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPlane::set_plane
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionPlane::
 set_plane(const Planef &plane) {
@@ -72,7 +85,7 @@ set_plane(const Planef &plane) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPlane::get_plane
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const Planef &CollisionPlane::
 get_plane() const {

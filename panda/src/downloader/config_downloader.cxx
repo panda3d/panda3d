@@ -1,6 +1,19 @@
 // Filename: config_downloader.cxx
 // Created by:  mike (19Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "config_downloader.h"
@@ -19,7 +32,7 @@ const int downloader_disk_write_frequency =
 
 // We'd like this to be about 1 second worth of download assuming a
 // 28.8Kb connection (28.8Kb / 8 = 3600 bytes per second).
-const int downloader_byte_rate = 
+const int downloader_byte_rate =
         config_downloader.GetInt("downloader-byte-rate", 3600);
 
 // Frequency of download chunk requests in seconds (or fractions of)

@@ -1,13 +1,26 @@
 // Filename: eggMorphList.I
 // Created by:  drose (29Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMorphList::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
 INLINE EggMorphList<MorphType>::
@@ -17,7 +30,7 @@ EggMorphList() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMorphList::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
 INLINE EggMorphList<MorphType>::
@@ -29,7 +42,7 @@ EggMorphList(const EggMorphList<MorphType> &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMorphList::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
 INLINE void EggMorphList<MorphType>::
@@ -40,7 +53,7 @@ operator = (const EggMorphList &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMorphList::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
 INLINE EggMorphList<MorphType>::
@@ -48,9 +61,9 @@ INLINE EggMorphList<MorphType>::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggMorphList::operator == 
+//     Function: EggMorphList::operator ==
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
 INLINE bool EggMorphList<MorphType>::
@@ -59,9 +72,9 @@ operator == (const EggMorphList<MorphType> &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggMorphList::operator != 
+//     Function: EggMorphList::operator !=
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
 INLINE bool EggMorphList<MorphType>::
@@ -70,9 +83,9 @@ operator != (const EggMorphList<MorphType> &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggMorphList::operator < 
+//     Function: EggMorphList::operator <
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
 INLINE bool EggMorphList<MorphType>::
@@ -83,7 +96,7 @@ operator < (const EggMorphList<MorphType> &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMorphList::begin
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
 INLINE EggMorphList<MorphType>::iterator EggMorphList<MorphType>::
@@ -94,7 +107,7 @@ begin() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMorphList::begin
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
 INLINE EggMorphList<MorphType>::const_iterator EggMorphList<MorphType>::
@@ -105,7 +118,7 @@ begin() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMorphList::end
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
 INLINE EggMorphList<MorphType>::iterator EggMorphList<MorphType>::
@@ -116,7 +129,7 @@ end() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMorphList::end
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
 INLINE EggMorphList<MorphType>::const_iterator EggMorphList<MorphType>::
@@ -127,7 +140,7 @@ end() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMorphList::size
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
 INLINE EggMorphList<MorphType>::size_type EggMorphList<MorphType>::
@@ -138,7 +151,7 @@ size() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMorphList::empty
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
 INLINE bool EggMorphList<MorphType>::
@@ -181,7 +194,7 @@ insert(const MorphType &value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMorphList::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class MorphType>
 void EggMorphList<MorphType>::

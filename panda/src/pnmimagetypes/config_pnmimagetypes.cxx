@@ -1,6 +1,19 @@
 // Filename: config_pnmimagetypes.cxx
 // Created by:  drose (17Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "config_pnmimagetypes.h"
@@ -116,7 +129,7 @@ init_libpnmimagetypes() {
   PNMFileTypeJPG::init_type();
 #endif
 
-  string sgi_storage_type_str = 
+  string sgi_storage_type_str =
     config_pnmimagetypes.GetString("sgi-storage-type", "rle");
   if (cmp_nocase(sgi_storage_type_str, "rle") == 0) {
     sgi_storage_type = STORAGE_RLE;
@@ -125,7 +138,7 @@ init_libpnmimagetypes() {
   } else {
     pnmimage_sgi_cat->error()
       << "Invalid sgi-storage-type: " << sgi_storage_type_str << "\n";
-  }    
+  }
 
   string img_header_type_str =
     config_pnmimagetypes.GetString("img-header-type", "long");

@@ -1,6 +1,19 @@
-// Filename: physics_object.I
+// Filename: physicsObject.I
 // Created by:  charles (13Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
@@ -159,7 +172,7 @@ get_terminal_velocity(void) const {
 ////////////////////////////////////////////////////////////////////
 //    Function : set_orientation
 //      Access : Public
-// Description : 
+// Description :
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
 set_orientation(const LOrientationf &orientation) {
@@ -169,7 +182,7 @@ set_orientation(const LOrientationf &orientation) {
 ////////////////////////////////////////////////////////////////////
 //    Function : set_rotation
 //      Access : Public
-// Description : 
+// Description :
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
 set_rotation(const LVector3f &rotation) {
@@ -179,7 +192,7 @@ set_rotation(const LVector3f &rotation) {
 ////////////////////////////////////////////////////////////////////
 //    Function : get_orientation
 //      Access : Public
-// Description : 
+// Description :
 ////////////////////////////////////////////////////////////////////
 INLINE LOrientationf PhysicsObject::
 get_orientation(void) const {
@@ -189,7 +202,7 @@ get_orientation(void) const {
 ////////////////////////////////////////////////////////////////////
 //    Function : get_rotation
 //      Access : Public
-// Description : 
+// Description :
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3f PhysicsObject::
 get_rotation(void) const {
@@ -199,7 +212,7 @@ get_rotation(void) const {
 ////////////////////////////////////////////////////////////////////
 //    Function : set_oriented
 //      Access : Public
-// Description : 
+// Description :
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
 set_oriented(bool flag) {
@@ -209,7 +222,7 @@ set_oriented(bool flag) {
 ////////////////////////////////////////////////////////////////////
 //    Function : get_oriented
 //      Access : Public
-// Description : 
+// Description :
 ////////////////////////////////////////////////////////////////////
 INLINE bool PhysicsObject::
 get_oriented(void) const {

@@ -1,6 +1,19 @@
 // Filename: eggVertexPool.cxx
 // Created by:  drose (16Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggVertexPool.h"
@@ -14,7 +27,7 @@ TypeHandle EggVertexPool::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertexPool::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggVertexPool::
 EggVertexPool(const string &name) : EggNode(name) {
@@ -40,7 +53,7 @@ EggVertexPool(const EggVertexPool &copy) : EggNode(copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertexPool::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggVertexPool::
 ~EggVertexPool() {
@@ -110,7 +123,7 @@ begin() const {
            iterator(_index_vertices.begin()));
   return iterator(_index_vertices.begin());
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertexPool::end()
 //       Access: Public
@@ -121,7 +134,7 @@ EggVertexPool::iterator EggVertexPool::
 end() const {
   return iterator(_index_vertices.end());
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertexPool::empty()
 //       Access: Public
@@ -131,7 +144,7 @@ bool EggVertexPool::
 empty() const {
   return _index_vertices.empty();
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertexPool::size()
 //       Access: Public
@@ -289,7 +302,7 @@ public:
     return (prim->is_local_coord() ? 1 : 0);
   }
 };
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggVertexPool::transform
 //       Access: Public
@@ -324,18 +337,18 @@ transform(const LMatrix4d &mat) {
     // First, transform the global vertices.  Get a copy of the list
     // of vertices in this pool.  We must have a copy because we might
     // be modifying the list as we traverse it.
-    
+
     typedef vector<EggVertex *> Verts;
     Verts verts;
     verts.reserve(size());
     copy(begin(), end(), back_inserter(verts));
-    
+
     Verts::const_iterator vi;
     for (vi = verts.begin(); vi != verts.end(); ++vi) {
       EggVertex *vert = *vi;
       int num_local_coord = vert->get_num_local_coord();
       int num_global_coord = vert->get_num_global_coord();
-      
+
       if (num_global_coord != 0) {
         // This vertex will be transformed.
         if (num_local_coord != 0) {
@@ -346,12 +359,12 @@ transform(const LMatrix4d &mat) {
         vert->transform(mat);
       }
     }
-    
+
     // Now transform the local vertices.  We can walk through the list
     // directly now, because we won't be modifying the list this time.
     LMatrix4d local_mat = mat;
     local_mat.set_row(3, LVector3d(0.0, 0.0, 0.0));
-    
+
     iterator i;
     for (i = begin(); i != end(); ++i) {
       EggVertex *vert = *i;

@@ -1,6 +1,19 @@
-// Filename: sequenceNode.h
+// Filename: sequenceNode.cxx
 // Created by:  jason (18Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
@@ -26,7 +39,7 @@ TypeHandle SequenceNode::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: SequenceNode::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 SequenceNode::
 SequenceNode(const string &initial_name) :
@@ -37,7 +50,7 @@ SequenceNode(const string &initial_name) :
 ////////////////////////////////////////////////////////////////////
 //     Function: SequenceNode::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 SequenceNode::
 SequenceNode(float switch_time, const string &initial_name) :
@@ -48,7 +61,7 @@ SequenceNode(float switch_time, const string &initial_name) :
 ////////////////////////////////////////////////////////////////////
 //     Function: SequenceNode::set_switch_time
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void SequenceNode::
 set_switch_time(float switch_time)

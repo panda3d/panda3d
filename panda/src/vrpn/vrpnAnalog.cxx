@@ -1,6 +1,19 @@
 // Filename: vrpnAnalog.cxx
 // Created by:  drose (26Jan01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "vrpnAnalog.h"
@@ -15,7 +28,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: VrpnAnalog::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 VrpnAnalog::
 VrpnAnalog(const string &analog_name, vrpn_Connection *connection) :
@@ -29,7 +42,7 @@ VrpnAnalog(const string &analog_name, vrpn_Connection *connection) :
 ////////////////////////////////////////////////////////////////////
 //     Function: VrpnAnalog::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 VrpnAnalog::
 ~VrpnAnalog() {
@@ -62,7 +75,7 @@ unmark(VrpnAnalogDevice *device) {
     vrpn_cat.debug() << *this << " unmarking " << *device << "\n";
   }
 
-  Devices::iterator di = 
+  Devices::iterator di =
     find(_devices.begin(), _devices.end(), device);
 
   if (di != _devices.end()) {
@@ -73,7 +86,7 @@ unmark(VrpnAnalogDevice *device) {
 ////////////////////////////////////////////////////////////////////
 //     Function: VrpnAnalog::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void VrpnAnalog::
 output(ostream &out) const {
@@ -83,11 +96,11 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: VrpnAnalog::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void VrpnAnalog::
 write(ostream &out, int indent_level) const {
-  indent(out, indent_level) 
+  indent(out, indent_level)
     << get_analog_name() << " ("
     << _devices.size() << " devices)\n";
 }

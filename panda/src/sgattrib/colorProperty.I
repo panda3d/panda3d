@@ -1,6 +1,19 @@
 // Filename: colorProperty.I
 // Created by:  drose (22Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <notify.h>
@@ -8,23 +21,23 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: ColorProperty::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ColorProperty::
-ColorProperty() : 
-  _real(false) 
-{ 
+ColorProperty() :
+  _real(false)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ColorProperty::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ColorProperty::
-ColorProperty(const Colorf &color) : 
-  _color(color), 
-  _real(true) 
+ColorProperty(const Colorf &color) :
+  _color(color),
+  _real(true)
 {
 }
 
@@ -54,7 +67,7 @@ get_color() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ColorProperty::compare_to
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int ColorProperty::
 compare_to(const ColorProperty &other) const {

@@ -1,6 +1,19 @@
 // Filename: physicalNode.cxx
 // Created by:  charles (01Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "physicalNode.h"
@@ -68,7 +81,7 @@ void PhysicalNode::
 add_physicals_from(const PhysicalNode &other) {
   vector< PT(Physical) >::iterator last = _physicals.end() - 1;
 
-  _physicals.insert(_physicals.end(), 
+  _physicals.insert(_physicals.end(),
                     other._physicals.begin(), other._physicals.end());
 
   for (; last != _physicals.end(); last++)

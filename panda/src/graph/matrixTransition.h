@@ -1,6 +1,19 @@
 // Filename: matrixTransition.h
 // Created by:  drose (24Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef MATRIXTRANSITION_H
@@ -55,7 +68,7 @@ private:
   Matrix _matrix;
 
 public:
-  virtual void write_datagram(BamWriter* manager, Datagram &me);  
+  virtual void write_datagram(BamWriter* manager, Datagram &me);
 
   //Matrix has no factory method as it is a virtual template
   //class
@@ -73,7 +86,7 @@ public:
   static void init_type() {
     NodeTransition::init_type();
     Matrix::init_type();
-    register_type(_type_handle, 
+    register_type(_type_handle,
                   string("MatrixTransition<") +
                   Matrix::get_class_type().get_name() + ">",
                   NodeTransition::get_class_type());

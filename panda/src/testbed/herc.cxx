@@ -1,3 +1,21 @@
+// Filename: herc.cxx
+// Created by:  
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
+
 #include <eventHandler.h>
 #include <projtexShader.h>
 #include <shaderTransition.h>
@@ -112,7 +130,7 @@ void herc_overrides_func(ChanCfgOverrides &override, std::string&) {
 
 void herc_idle() {
   static const double walk_speed = 4.0;  // feet per second
-  
+
   if (follow_ball) {
     LPoint3f bp = get_rel_pos(ball, herc);
     LVector2f bv2(bp[0], bp[1]);
@@ -152,7 +170,7 @@ void event_p(CPT_Event) {
     clear_shader(room_arc, proj_shader);
     clear_shader(herc_arc, proj_shader);
     clear_shader(ball_arc, proj_shader);
-    
+
     set_alt_trackball(NULL);
     remove_child(tex_proj, proj_geom_node, RenderRelation::get_class_type());
 
@@ -312,15 +330,15 @@ void herc_keys(EventHandler &eh) {
   eh.add_hook("r", event_r); // Planar Reflector
   eh.add_hook("z", event_z); // Move ball
   eh.add_hook("Z", event_Z); // Follow ball
-  eh.add_hook("o", event_o); // Outlining 
+  eh.add_hook("o", event_o); // Outlining
 
 //==========================================================================
-// Models 
+// Models
 //==========================================================================
   // Load herc
   PT_NamedNode herc_model = loader.load_sync("herc-6000.egg");
   PT_NamedNode herc_anim = loader.load_sync("HB_1_HE1.egg");
-  assert(herc_model != (NamedNode *)NULL && 
+  assert(herc_model != (NamedNode *)NULL &&
          herc_anim != (NamedNode *)NULL);
   PT_NamedNode herc_parent = new NamedNode("herc_parent");
   new RenderRelation(herc_parent, herc_model);
@@ -353,7 +371,7 @@ void herc_keys(EventHandler &eh) {
 
   // Control the ball using a PlanarSlider tform.
   ball_slider = new PlanarSlider("ball_slider");
-  ball_slider->set_transform(LMatrix4f::translate_mat(0.0, 0.0, 1.0) * 
+  ball_slider->set_transform(LMatrix4f::translate_mat(0.0, 0.0, 1.0) *
                              LMatrix4f::scale_mat(7.0, -7.0, 1.0));
   ball_slider->set_mouse_pos(LPoint2f(4.0 / 7.0, 2.0 / -7.0));
   Transform2SG *slider2ball = new Transform2SG("slider2ball");
@@ -412,7 +430,7 @@ void herc_keys(EventHandler &eh) {
   proj_shader->add_frustum(tex_proj);
 
   // Create a wireframe representation of the texture projector frustum
-  GeomLine* proj_geom = 
+  GeomLine* proj_geom =
         (GeomLine *)tex_proj->get_projection()->make_geometry();
   proj_geom_node = new GeomNode("proj_geometry");
   proj_geom_node->add_geom(proj_geom);
@@ -421,7 +439,7 @@ void herc_keys(EventHandler &eh) {
 //==========================================================================
 // Projected Texture Spotlight Shader
 //==========================================================================
-  tex_proj_spot = new Spotlight("tex_proj_spotlight"); 
+  tex_proj_spot = new Spotlight("tex_proj_spotlight");
   spot_arc = new RenderRelation(render, tex_proj_spot, 10);
 
   // Create a trackball to spin this around.
@@ -450,7 +468,7 @@ void herc_keys(EventHandler &eh) {
 
 
 //==========================================================================
-// Projected Texture Shadower 
+// Projected Texture Shadower
 //==========================================================================
   proj_shadow = new ProjtexShadower;
   proj_shadow->add_frustum(tex_proj_spot);
@@ -460,20 +478,20 @@ void herc_keys(EventHandler &eh) {
 
 
 //==========================================================================
-// Sphere Texture Shader 
+// Sphere Texture Shader
 //==========================================================================
   spheretex = new SpheretexShader(tex);
 
 
 //==========================================================================
-// Sphere Texture Highlighter 
+// Sphere Texture Highlighter
 //==========================================================================
   highlight = new SpheretexHighlighter;
   highlight->add_frustum(tex_proj_spot);
 
 
 //==========================================================================
-// Sphere Texture Reflector     
+// Sphere Texture Reflector
 //==========================================================================
   sreflect = new SpheretexReflector;
   sreflect->add_frustum(tex_proj_spot);
@@ -483,9 +501,9 @@ void herc_keys(EventHandler &eh) {
 
 
 //==========================================================================
-// Planar Reflector       
+// Planar Reflector
 //==========================================================================
-  // Create a plane that corresponds to the floor of the room 
+  // Create a plane that corresponds to the floor of the room
   Planef p(LVector3f::up(), LPoint3f::origin());
   PlaneNode* plane_node = new PlaneNode;
   plane_node->set_plane(p);

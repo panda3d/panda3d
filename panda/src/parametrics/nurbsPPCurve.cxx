@@ -1,6 +1,19 @@
 // Filename: nurbsPPCurve.cxx
 // Created by:  drose (01Mar01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "nurbsPPCurve.h"
@@ -15,7 +28,7 @@ TypeHandle NurbsPPCurve::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsPPCurve::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NurbsPPCurve::
 NurbsPPCurve() {
@@ -33,9 +46,9 @@ NurbsPPCurve::
 NurbsPPCurve(const ParametricCurve &pc) {
   _nurbs_valid = false;
   _order = 4;
-  
+
   if (!pc.convert_to_nurbs(this)) {
-    parametrics_cat->warning() 
+    parametrics_cat->warning()
       << "Cannot make a NURBS from the indicated curve.\n";
   }
 }
@@ -59,7 +72,7 @@ NurbsPPCurve(int order, int num_cvs,
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsPPCurve::Destructor
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NurbsPPCurve::
 ~NurbsPPCurve() {
@@ -104,7 +117,7 @@ set_order(int order) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsPPCurve::get_order
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int NurbsPPCurve::
 get_order() const {
@@ -119,7 +132,7 @@ get_order() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsPPCurve::get_num_cvs
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int NurbsPPCurve::
 get_num_cvs() const {
@@ -133,7 +146,7 @@ get_num_cvs() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsPPCurve::get_num_knots
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int NurbsPPCurve::
 get_num_knots() const {
@@ -439,7 +452,7 @@ stitch(const ParametricCurve *a, const ParametricCurve *b) {
 
   // First, translate curve B to move its first CV to curve A's last
   // CV.
-  LVecBase3f point_offset = 
+  LVecBase3f point_offset =
     na->get_cv_point(na->get_num_cvs() - 1) - nb->get_cv_point(0);
   int num_b_cvs = nb->get_num_cvs();
   for (int i = 0; i < num_b_cvs; i++) {
@@ -470,7 +483,7 @@ stitch(const ParametricCurve *a, const ParametricCurve *b) {
   if (!result.mergeOf(na->_nurbs, b_nurbs)) {
     return false;
   }
-    
+
   _nurbs = result;
   _nurbs_valid = true;
   return true;
@@ -504,7 +517,7 @@ convert_to_nurbs(ParametricCurve *nc) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NurbsPPCurve::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NurbsPPCurve::
 write(ostream &out, int indent_level) const {
@@ -612,7 +625,7 @@ copy_nurbs(PLib::NurbsCurvef &nurbs) const {
 //  Description: Fills the arrays up with a copy of the nurbs data.
 ////////////////////////////////////////////////////////////////////
 void NurbsPPCurve::
-copy_arrays(NurbsPPCurve::Points &points, NurbsPPCurve::Knots &knots, 
+copy_arrays(NurbsPPCurve::Points &points, NurbsPPCurve::Knots &knots,
             int &order) const {
   if (_nurbs_valid) {
     make_arrays_from(_nurbs, points, knots, order);

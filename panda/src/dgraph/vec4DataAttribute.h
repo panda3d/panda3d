@@ -1,6 +1,19 @@
 // Filename: vec4DataAttribute.h
 // Created by:  jason (03Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef VEC4DATAATTRIBUTE_H
@@ -40,7 +53,7 @@ public:
   }
   static void init_type() {
     VectorDataAttribute<LPoint4f, LMatrix4f>::init_type();
-    register_type(_type_handle, "Vec4DataAttribute", 
+    register_type(_type_handle, "Vec4DataAttribute",
                   VectorDataAttribute<LPoint4f, LMatrix4f>::get_class_type());
   }
 

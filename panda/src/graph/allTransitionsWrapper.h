@@ -1,6 +1,19 @@
 // Filename: allTransitionsWrapper.h
 // Created by:  drose (21Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef ALLTRANSITIONSWRAPPER_H
@@ -51,9 +64,9 @@ public:
   INLINE_GRAPH void operator = (const AllTransitionsWrapper &copy);
   INLINE_GRAPH ~AllTransitionsWrapper();
 
-  INLINE_GRAPH static AllTransitionsWrapper 
+  INLINE_GRAPH static AllTransitionsWrapper
   init_from(const AllTransitionsWrapper &other);
-  INLINE_GRAPH static AllTransitionsWrapper 
+  INLINE_GRAPH static AllTransitionsWrapper
   init_from(const AllAttributesWrapper &attrib);
 
   INLINE_GRAPH bool is_empty() const;
@@ -84,7 +97,7 @@ public:
   INLINE_GRAPH bool is_cache_verified(UpdateSeq as_of) const;
   INLINE_GRAPH void set_computed_verified(UpdateSeq now);
 
-  INLINE_GRAPH void cached_compose(const AllTransitionsWrapper &cache, 
+  INLINE_GRAPH void cached_compose(const AllTransitionsWrapper &cache,
                                    const AllTransitionsWrapper &value,
                                    UpdateSeq now);
 

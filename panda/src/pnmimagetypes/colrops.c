@@ -1,4 +1,20 @@
-/* Copyright (c) 1992 Regents of the University of California */
+/* Filename: colrops.c
+ * Created by:  
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ * PANDA 3D SOFTWARE
+ * Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+ *
+ * All use of this software is subject to the terms of the Panda 3d
+ * Software license.  You should have received a copy of this license
+ * along with this source code; you will also find a current copy of
+ * the license at http://www.panda3d.org/license.txt .
+ *
+ * To contact the maintainers of this program write to
+ * panda3d@yahoogroups.com .
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*
  * Integer operations on COLR scanlines
@@ -99,7 +115,7 @@ int colrs_gambs(register COLR *scan, int len)
                                 scan[0][BLU] = 0;
                         } else {
                                 i = (-MAXGSHIFT-1) - expo;
-                                scan[0][RED] = 
+                                scan[0][RED] =
                                 g_bval[MAXGSHIFT][((scan[0][RED]>>i)+1)>>1];
                                 scan[0][GRN] =
                                 g_bval[MAXGSHIFT][((scan[0][GRN]>>i)+1)>>1];

@@ -1,6 +1,19 @@
 // Filename: pnmFileTypeTGA.cxx
 // Created by:  drose (27Apr01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -49,7 +62,7 @@ static const int num_extensions = sizeof(extensions) / sizeof(const char *);
 
 TypeHandle PNMFileTypeTGA::_type_handle;
 
- 
+
 /* Header definition. */
 struct ImageHeader {
     unsigned char IDLength;             /* length of Identifier String */
@@ -90,7 +103,7 @@ typedef char ImageIDField[256];
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeTGA::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeTGA::
 PNMFileTypeTGA() {
@@ -172,10 +185,10 @@ make_writer(FILE *file, bool owns_file) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeTGA::Reader::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeTGA::Reader::
-Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) : 
+Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
   tga_head = new ImageHeader;
@@ -234,7 +247,7 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
          tga_head->ImgType == TGA_CompMap4 )
         { /* Color-mapped image */
         if ( tga_head->CoMapType != 1 )
-            pm_error( 
+            pm_error(
                 "mapped image (type %d) with color map type != 1",
                 tga_head->ImgType );
         mapped = 1;
@@ -252,23 +265,23 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
       _num_channels = 1;
       _maxval = 255;
       break;
-      
+
     case 24:
       _num_channels = 3;
       _maxval = 255;
       break;
-      
+
     case 32:
       _num_channels = 4;
       _maxval = 255;
       break;
-      
+
     case 15:
     case 16:
       _num_channels = 3;
       _maxval = 31;
       break;
-      
+
     default:
       pm_error("unknown pixel size - %d", size );
     }
@@ -297,13 +310,13 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
     _x_size = cols;
     _y_size = rows;
     _num_channels = 3;
-    
+
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeTGA::Reader::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeTGA::Reader::
 ~Reader() {
@@ -334,7 +347,7 @@ read_data(xel *array, xelval *alpha) {
             realrow = rows - realrow - 1;
 
         for ( int col = 0; col < cols; ++col )
-            get_pixel( _file, &(array[realrow * cols + col]), 
+            get_pixel( _file, &(array[realrow * cols + col]),
                        (int) tga_head->PixelSize,
                        &(alpha[realrow * cols + col]) );
         if ( tga_head->IntrLve == TGA_IL_Four )
@@ -353,7 +366,7 @@ read_data(xel *array, xelval *alpha) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeTGA::Writer::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeTGA::Writer::
 Writer(PNMFileType *type, FILE *file, bool owns_file) :
@@ -368,7 +381,7 @@ Writer(PNMFileType *type, FILE *file, bool owns_file) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeTGA::Writer::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeTGA::Writer::
 ~Writer() {
@@ -466,7 +479,7 @@ write_data(xel *array, xelval *) {
         }
       runlength = (int*) pm_allocrow( cols, sizeof(int) );
     }
-    
+
   tgaHeader->IDLength = 0;
   tgaHeader->Index_lo = 0;
   tgaHeader->Index_hi = 0;
@@ -660,7 +673,7 @@ get_map_entry( FILE *ifp, pixel *Value, int Size, gray *Alpha ) {
         r = getbyte( ifp );
         if ( Size == 32 )
             a = getbyte( ifp );
-    else 
+    else
         a = 0;
         break;
 
@@ -793,13 +806,13 @@ writetga( struct ImageHeader *tgaP, char *id )
     if ( tgaP->IDLength )
         fwrite( id, 1, (int) tgaP->IDLength, _file );
     }
-    
+
 void PNMFileTypeTGA::Writer::
 put_map_entry( pixel* valueP, int size, pixval maxval )
     {
     int j;
     pixel p;
-    
+
     switch ( size )
         {
         case 8:                         /* Grey scale. */
@@ -833,7 +846,7 @@ compute_runlengths( int cols, pixel *pixelrow, int *runlength )
     /* Initialize all run lengths to 0.  (This is just an error check.) */
     for ( col = 0; col < cols; ++col )
         runlength[col] = 0;
-    
+
     /* Find runs of identical pixels. */
     for ( col = 0; col < cols; )
         {
@@ -846,7 +859,7 @@ compute_runlengths( int cols, pixel *pixelrow, int *runlength )
                 PPM_EQUAL( pixelrow[col], pixelrow[start] ) );
         runlength[start] = col - start;
         }
-    
+
     /* Now look for runs of length-1 runs, and turn them into negative runs. */
     for ( col = 0; col < cols; )
         {

@@ -1,6 +1,19 @@
 // Filename: datagram.I
 // Created by:  drose (06Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
@@ -33,7 +46,7 @@ Datagram(const string &data) : _message(data) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Datagram::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Datagram::
 Datagram(const Datagram &copy) :
@@ -44,7 +57,7 @@ Datagram(const Datagram &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: Datagram::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
 operator = (const Datagram &copy) {
@@ -383,9 +396,9 @@ get_length() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Datagram::operator == 
+//     Function: Datagram::operator ==
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool Datagram::
 operator == (const Datagram &other) const {
@@ -393,9 +406,9 @@ operator == (const Datagram &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Datagram::operator != 
+//     Function: Datagram::operator !=
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool Datagram::
 operator != (const Datagram &other) const {
@@ -405,7 +418,7 @@ operator != (const Datagram &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Datagram::operator <
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool Datagram::
 operator < (const Datagram &other) const {

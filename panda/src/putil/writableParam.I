@@ -1,12 +1,25 @@
 // Filename: writableParam.I
 // Created by:  jason (13Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: WritableParam::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE WritableParam::
 WritableParam(const Datagram &datagram) :
@@ -17,7 +30,7 @@ WritableParam(const Datagram &datagram) :
 ////////////////////////////////////////////////////////////////////
 //     Function: WritableParam::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE WritableParam::
 WritableParam(const WritableParam &copy) :
@@ -29,7 +42,7 @@ WritableParam(const WritableParam &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: WritableParam::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE WritableParam::
 ~WritableParam(void) {
@@ -38,7 +51,7 @@ INLINE WritableParam::
 ////////////////////////////////////////////////////////////////////
 //     Function: WritableParam::Copy Assignment Operator
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void WritableParam::
 operator = (const WritableParam &) {
@@ -49,7 +62,7 @@ operator = (const WritableParam &) {
 ////////////////////////////////////////////////////////////////////
 //     Function: WritableParam::get_datagram
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const Datagram& WritableParam::
 get_datagram(void) {

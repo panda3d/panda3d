@@ -1,6 +1,19 @@
 // Filename: collisionTraverser.h
 // Created by:  drose (24Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef COLLISIONTRAVERSER_H
@@ -27,9 +40,9 @@ class NodePath;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CollisionTraverser
-// Description : 
+// Description :
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA CollisionTraverser : 
+class EXPCL_PANDA CollisionTraverser :
   public TraverserVisitor<NullTransitionWrapper, CollisionLevelState> {
 PUBLISHED:
   CollisionTraverser(TypeHandle graph_type = RenderRelation::get_class_type());
@@ -52,7 +65,7 @@ PUBLISHED:
 private:
   void prepare_colliders(CollisionLevelState &state);
 
-public:  
+public:
   // These methods, from parent class TraverserVisitor, define the
   // behavior of the CollisionTraverser as it traverses the graph.
   // Normally you would never call these directly.

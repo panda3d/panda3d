@@ -1,6 +1,19 @@
 // Filename: geomBinUnsorted.cxx
 // Created by:  drose (13Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "geomBinUnsorted.h"
@@ -16,7 +29,7 @@ TypeHandle GeomBinUnsorted::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinUnsorted::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomBinUnsorted::
 ~GeomBinUnsorted() {
@@ -64,7 +77,7 @@ record_current_state(GraphicsStateGuardian *, CullState *cs, int,
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinUnsorted::draw
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomBinUnsorted::
 draw(CullTraverser *trav) {
@@ -73,7 +86,7 @@ draw(CullTraverser *trav) {
   GraphicsStateGuardian *gsg = trav->get_gsg();
 
   if (cull_cat.is_spam()) {
-    cull_cat.spam() 
+    cull_cat.spam()
       << "GeomBinUnsorted drawing " << _cull_states.size() << " states.\n";
   }
 
@@ -118,7 +131,7 @@ draw(CullTraverser *trav) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinUnsorted::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomBinUnsorted::
 output(ostream &out) const {
@@ -129,7 +142,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinUnsorted::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomBinUnsorted::
 write(ostream &out, int indent_level) const {

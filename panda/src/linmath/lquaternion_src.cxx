@@ -1,3 +1,20 @@
+// Filename: lquaternion_src.cxx
+// Created by:  
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 TypeHandle FLOATNAME(LQuaternion)::_type_handle;
 
@@ -7,7 +24,7 @@ const FLOATNAME(LQuaternion) FLOATNAME(LQuaternion)::_ident_quat =
 ////////////////////////////////////////////////////////////////////
 //     Function: FLOATNAME(LQuaternion)::pure_imaginary_quat
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 FLOATNAME(LQuaternion) FLOATNAME(LQuaternion)::
 pure_imaginary(const FLOATNAME(LVector3) &v) {
@@ -38,7 +55,7 @@ extract_to_matrix(FLOATNAME(LMatrix3) &m) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: extract (LMatrix4)
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(LQuaternion)::
 extract_to_matrix(FLOATNAME(LMatrix4) &m) const {
@@ -223,15 +240,15 @@ set_from_matrix(const FLOATNAME(LMatrix3) &m) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LQuaternion::init_type
 //       Access: public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void FLOATNAME(LQuaternion)::
 init_type() {
   if (_type_handle == TypeHandle::none()) {
     FLOATNAME(LVecBase4)::init_type();
     string name = "LQuaternion";
-    name += FLOATTOKEN; 
-    register_type(_type_handle, name, 
+    name += FLOATTOKEN;
+    register_type(_type_handle, name,
                   FLOATNAME(LVecBase4)::get_class_type());
   }
 }

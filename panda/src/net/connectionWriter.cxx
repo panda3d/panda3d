@@ -1,6 +1,19 @@
 // Filename: connectionWriter.cxx
 // Created by:  drose (08Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "connectionWriter.h"
@@ -28,12 +41,12 @@ ConnectionWriter(ConnectionManager *manager, int num_threads) :
   _immediate = (num_threads <= 0);
 
   for (int i = 0; i < num_threads; i++) {
-    PRThread *thread = 
+    PRThread *thread =
       PR_CreateThread(PR_USER_THREAD,
                       thread_start, (void *)this,
                       PR_PRIORITY_NORMAL,
                       PR_GLOBAL_THREAD, // Since thread will mostly do I/O.
-                      PR_JOINABLE_THREAD, 
+                      PR_JOINABLE_THREAD,
                       0);  // Select a suitable stack size.
 
     nassertv(thread != (PRThread *)NULL);
@@ -46,7 +59,7 @@ ConnectionWriter(ConnectionManager *manager, int num_threads) :
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionWriter::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ConnectionWriter::
 ~ConnectionWriter() {
@@ -97,13 +110,13 @@ send(const Datagram &datagram, const PT(Connection) &connection) {
 
   if (net_cat.is_debug()) {
     net_cat.debug()
-      << "Sending TCP datagram of " << datagram.get_length() 
+      << "Sending TCP datagram of " << datagram.get_length()
       << " bytes\n";
   }
 
   NetDatagram copy(datagram);
   copy.set_connection(connection);
-    
+
   if (_immediate) {
     return connection->send_datagram(copy);
   } else {
@@ -135,7 +148,7 @@ send(const Datagram &datagram, const PT(Connection) &connection,
 
   if (net_cat.is_debug()) {
     net_cat.debug()
-      << "Sending UDP datagram of " << datagram.get_length() 
+      << "Sending UDP datagram of " << datagram.get_length()
       << " bytes\n";
   }
 

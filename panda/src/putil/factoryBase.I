@@ -1,6 +1,19 @@
-// Filename: factory.I
+// Filename: factoryBase.I
 // Created by:  drose (08May00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -39,7 +52,7 @@ make_instance(const string &type_name, const FactoryParams &params) {
 //               be the name of some already-registered type.
 ////////////////////////////////////////////////////////////////////
 INLINE TypedObject *FactoryBase::
-make_instance_more_general(const string &type_name, 
+make_instance_more_general(const string &type_name,
                            const FactoryParams &params) {
   TypeHandle handle = TypeRegistry::ptr()->find_type(type_name);
   nassertr(handle != TypeHandle::none(), NULL);

@@ -2,6 +2,19 @@
 // Created by:  drose (02Feb99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef GRAPHICSSTATEGUARDIAN_H
 #define GRAPHICSSTATEGUARDIAN_H
@@ -77,7 +90,7 @@ public:
   virtual void render_frame(const AllAttributesWrapper &initial_state)=0;
   virtual void render_scene(Node *root, ProjectionNode *projnode,
                             const AllAttributesWrapper &initial_state)=0;
-  virtual void render_subgraph(RenderTraverser *traverser, 
+  virtual void render_subgraph(RenderTraverser *traverser,
                                Node *subgraph, ProjectionNode *projnode,
                                const AllAttributesWrapper &initial_state,
                                const AllTransitionsWrapper &net_trans)=0;
@@ -126,7 +139,7 @@ public:
   // virtual function because different GSG's may define the modelview
   // coordinate space differently.
   virtual float compute_distance_to(const LPoint3f &point) const=0;
-  
+
 protected:
   virtual PT(SavedFrameBuffer) save_frame_buffer(const RenderBuffer &buffer,
                                                  CPT(DisplayRegion) dr)=0;
@@ -248,7 +261,7 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
- 
+
 private:
   static TypeHandle _type_handle;
 

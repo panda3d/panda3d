@@ -1,6 +1,19 @@
 // Filename: appTraverser.h
 // Created by:  drose (25Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef APPTRAVERSER_H
@@ -30,7 +43,7 @@ public:
 
   void traverse(Node *root);
 
-public:  
+public:
   // These methods, from parent class TraverserVisitor, define the
   // behavior of the AppTraverser as it traverses the graph.
   // Normally you would never call these directly.

@@ -1,15 +1,19 @@
-// Filename: filename.C
+// Filename: filename.cxx
 // Created by:  drose (18Jan99)
-// 
+//
 ////////////////////////////////////////////////////////////////////
-// Copyright (C) 1992,93,94,95,96,97  Walt Disney Imagineering, Inc.
-// 
-// These  coded  instructions,  statements,  data   structures   and
-// computer  programs contain unpublished proprietary information of
-// Walt Disney Imagineering and are protected by  Federal  copyright
-// law.  They may  not be  disclosed to third  parties  or copied or
-// duplicated in any form, in whole or in part,  without  the  prior
-// written consent of Walt Disney Imagineering Inc.
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "filename.h"
@@ -65,25 +69,25 @@ back_to_front_slash(const string &str) {
   return result;
 }
 
-static const string & 
+static const string &
 get_panda_root() {
   static string panda_root;
   static bool got_panda_root = false;
-  
+
   if (!got_panda_root) {
     const char *envvar = getenv("PANDA_ROOT");
     if (envvar == (const char *)NULL) {
       envvar = getenv("CYGWIN_ROOT");
     }
-    
+
     if (envvar != (const char *)NULL) {
       panda_root = front_to_back_slash(envvar);
     }
-    
+
     if (!panda_root.empty() && panda_root[panda_root.length() - 1] != '\\') {
       panda_root += '\\';
     }
-    
+
     got_panda_root = true;
   }
 
@@ -121,14 +125,14 @@ convert_pathname(const string &unix_style_pathname) {
              unix_style_pathname[2] == '/') {
     // This is a pathname that begins with a single letter.  That must
     // be the drive letter.
-    windows_pathname = 
+    windows_pathname =
       string(1, toupper(unix_style_pathname[1])) + ":" +
       front_to_back_slash(unix_style_pathname.substr(2));
 
   } else {
     // It does not begin with a single letter, so prefix "PANDA_ROOT".
-    
-    windows_pathname = 
+
+    windows_pathname =
       get_panda_root() + front_to_back_slash(unix_style_pathname);
   }
 
@@ -139,7 +143,7 @@ string
 convert_dso_pathname(const string &unix_style_pathname) {
   // If the extension is .so, change it to .dll.
   size_t dot = unix_style_pathname.rfind('.');
-  if (dot == string::npos || 
+  if (dot == string::npos ||
       unix_style_pathname.find('/', dot) != string::npos) {
     // No filename extension.
     return convert_pathname(unix_style_pathname);
@@ -173,7 +177,7 @@ string
 convert_executable_pathname(const string &unix_style_pathname) {
   // If the extension is not .exe, append .exe.
   size_t dot = unix_style_pathname.rfind('.');
-  if (dot == string::npos || 
+  if (dot == string::npos ||
       unix_style_pathname.find('/', dot) != string::npos) {
     // No filename extension.
     return convert_pathname(unix_style_pathname + ".exe");
@@ -246,7 +250,7 @@ from_os_specific(const string &os_specific, Filename::Type type) {
       }
       matches = (c == tolower(result[p]));
     }
-    
+
     if (matches) {
       // The initial prefix matches!  Replace the initial bit with a
       // leading slash.
@@ -369,9 +373,9 @@ set_dirname(const string &s) {
     }
 
     int length_change = ss.length() - _basename_start;
-    
+
     _filename.replace(0, _basename_start, ss);
-    
+
     _dirname_end = ss.length() - 1;
 
     // An exception: if the dirname string was the single slash, the
@@ -499,7 +503,7 @@ standardize() {
     string component = _filename.substr(p, slash - p);
     if (component == ".") {
       // Ignore /./.
-    } else if (component == ".." && !components.empty() && 
+    } else if (component == ".." && !components.empty() &&
                !(components.back() == "..")) {
       // Back up.
       components.pop_back();
@@ -512,7 +516,7 @@ standardize() {
       p++;
     }
   }
-   
+
   // Now reassemble the filename.
   string result;
   if (global) {
@@ -601,7 +605,7 @@ make_canonical() {
 
   // Temporarily save the current working directory.
   Filename cwd = ExecutionEnvironment::get_cwd();
-  
+
   if (is_directory()) {
     // If the filename itself represents a directory and not a
     // filename, cd to the named directory, not the one above it.
@@ -807,8 +811,8 @@ is_executable() const {
 //               Similarly for other_missing_is_old.
 ////////////////////////////////////////////////////////////////////
 int Filename::
-compare_timestamps(const Filename &other, 
-                   bool this_missing_is_old, 
+compare_timestamps(const Filename &other,
+                   bool this_missing_is_old,
                    bool other_missing_is_old) const {
   string os_specific = to_os_specific();
   string other_os_specific = other.to_os_specific();
@@ -882,7 +886,7 @@ compare_timestamps(const Filename &other,
 //               false.
 ////////////////////////////////////////////////////////////////////
 bool Filename::
-resolve_filename(const DSearchPath &searchpath, 
+resolve_filename(const DSearchPath &searchpath,
                  const string &default_extension) {
   string found;
 
@@ -1065,7 +1069,7 @@ scan_directory(vector_string &contents) const {
 #else
   // Don't know how to scan directories!
   return false;
-#endif  
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1273,7 +1277,7 @@ bool Filename::
 rename_to(const Filename &other) const {
   string os_specific = to_os_specific();
   string other_os_specific = other.to_os_specific();
-  return (rename(os_specific.c_str(), 
+  return (rename(os_specific.c_str(),
                  other_os_specific.c_str()) == 0);
 }
 
@@ -1333,26 +1337,26 @@ locate_basename() {
     _basename_start = 0;
 
   } else {
-    
+
     string::size_type slash = _filename.rfind('/');
     if (slash != string::npos) {
       _basename_start = slash + 1;
       _dirname_end = _basename_start;
-      
+
       // One exception: in case there are multiple slashes in a row,
       // we want to treat them as a single slash.  The directory
       // therefore actually ends at the first of these; back up a bit.
       while (_dirname_end > 0 && _filename[_dirname_end-1] == '/') {
         _dirname_end--;
       }
-      
+
       // Another exception: if the dirname was nothing but slashes, it
       // was the root directory, or / itself.  In this case the dirname
       // does include the terminal slash (of course).
       if (_dirname_end == 0) {
         _dirname_end = 1;
       }
-      
+
     } else {
       _dirname_end = 0;
       _basename_start = 0;
@@ -1391,7 +1395,7 @@ locate_extension() {
     while (dot+1 > _basename_start && _filename[dot] != '.') {
       --dot;
     }
-    
+
     if (dot+1 > _basename_start) {
       _basename_end = dot;
       _extension_start = dot + 1;
@@ -1404,7 +1408,7 @@ locate_extension() {
   // Now:
 
   // _basename_end is the last dot, or npos if there is no dot.
-  
+
   // _extension_start is the character after the last dot, or npos if
   // there is no dot.
 }

@@ -1,6 +1,19 @@
 // Filename: test_udp.cxx
 // Created by:  drose (08Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "queuedConnectionManager.h"
@@ -35,7 +48,7 @@ main(int argc, char *argv[]) {
     exit(1);
   }
 
-  nout << "Successfully opened UDP connection on port " 
+  nout << "Successfully opened UDP connection on port "
        << c->get_address().get_port() << " and IP "
        << c->get_address() << "\n";
 
@@ -48,7 +61,7 @@ main(int argc, char *argv[]) {
   cin >> datagram;
 
   bool lost_connection = false;
-  
+
   while (!cin.fail() && !lost_connection) {
     // Send the datagram.
     writer.send(datagram, c, host);
@@ -69,7 +82,7 @@ main(int argc, char *argv[]) {
     // Now poll for new datagrams on the socket.
     while (reader.data_available()) {
       if (reader.get_data(datagram)) {
-        nout << "Got datagram " << datagram << "from " 
+        nout << "Got datagram " << datagram << "from "
              << datagram.get_address() << "\n";
       }
     }
@@ -84,5 +97,5 @@ main(int argc, char *argv[]) {
 
 
 
-    
-  
+
+

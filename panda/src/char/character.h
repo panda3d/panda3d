@@ -2,6 +2,19 @@
 // Created by:  drose (23Feb99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef CHARACTER_H
 #define CHARACTER_H
@@ -56,9 +69,9 @@ private:
   void copy_joints(PartGroup *copy, PartGroup *orig);
 
   typedef map<NodeRelation *, NodeRelation *> ArcMap;
-  virtual Node *r_copy_subgraph(TypeHandle graph_type, 
+  virtual Node *r_copy_subgraph(TypeHandle graph_type,
                                 InstanceMap &inst_map) const;
-  void r_copy_char(Node *dest, const Node *source, TypeHandle graph_type, 
+  void r_copy_char(Node *dest, const Node *source, TypeHandle graph_type,
                    const Character *from, ArcMap &arc_map);
   PT(Geom) copy_geom(Geom *source, const Character *from);
   void copy_arc_pointers(const Character *from, const ArcMap &arc_map);
@@ -85,8 +98,8 @@ private:
 
 public:
   static void register_with_read_factory(void);
-  virtual void write_datagram(BamWriter* manager, Datagram &me);  
-  virtual int complete_pointers(vector_typedWritable &plist, 
+  virtual void write_datagram(BamWriter* manager, Datagram &me);
+  virtual int complete_pointers(vector_typedWritable &plist,
                                 BamReader *manager);
 
   static TypedWritable *make_Character(const FactoryParams &params);

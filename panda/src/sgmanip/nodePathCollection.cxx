@@ -1,6 +1,19 @@
 // Filename: nodePathCollection.cxx
 // Created by:  drose (06Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "nodePathCollection.h"
@@ -13,7 +26,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NodePathCollection::
 NodePathCollection() {
@@ -22,18 +35,18 @@ NodePathCollection() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::Copy Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NodePathCollection::
-NodePathCollection(const NodePathCollection &copy) : 
-  _node_paths(copy._node_paths) 
+NodePathCollection(const NodePathCollection &copy) :
+  _node_paths(copy._node_paths)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::Copy Assignment Operator
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodePathCollection::
 operator = (const NodePathCollection &copy) {
@@ -271,7 +284,7 @@ find_all_matches(const string &path) const {
         FindApproxLevelEntry start(get_path(i), approx_path);
         level.add_entry(start);
       }
-      get_path(0).r_find_matches(result, level, -1, 
+      get_path(0).r_find_matches(result, level, -1,
                                  NodePath::get_max_search_depth());
     }
   }

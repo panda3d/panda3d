@@ -1,6 +1,19 @@
 // Filename: pnmFileTypeJPG.cxx
 // Created by:  mike (19Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileTypeJPG.h"
@@ -19,7 +32,7 @@ TypeHandle PNMFileTypeJPG::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeJPG::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeJPG::
 PNMFileTypeJPG() {
@@ -92,7 +105,7 @@ has_magic_number() const {
 bool PNMFileTypeJPG::
 matches_magic_number(const string &magic_number) const {
   nassertr(magic_number.size() >= 2, false);
-  return ((char)magic_number[0] == (char)0xff && 
+  return ((char)magic_number[0] == (char)0xff &&
           (char)magic_number[1] == (char)0xd8);
 }
 

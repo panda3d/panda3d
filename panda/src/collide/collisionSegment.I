@@ -1,6 +1,19 @@
 // Filename: collisionSegment.I
 // Created by:  drose (30Jan01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
@@ -13,26 +26,26 @@
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionSegment::
 CollisionSegment() :
-  _a(LPoint3f(0.0, 0.0, 0.0)), 
-  _b(LPoint3f(0.0, 0.0, 0.0)) 
+  _a(LPoint3f(0.0, 0.0, 0.0)),
+  _b(LPoint3f(0.0, 0.0, 0.0))
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSegment::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionSegment::
 CollisionSegment(const LPoint3f &a, const LPoint3f &b) :
-  _a(a), _b(b) 
+  _a(a), _b(b)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSegment::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionSegment::
 CollisionSegment(float ax, float ay, float az,
@@ -44,12 +57,12 @@ CollisionSegment(float ax, float ay, float az,
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSegment::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionSegment::
 CollisionSegment(const CollisionSegment &copy) :
   CollisionSolid(copy),
-  _a(copy._a), 
+  _a(copy._a),
   _b(copy._b)
 {
 }
@@ -57,7 +70,7 @@ CollisionSegment(const CollisionSegment &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSegment::set_point_a
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionSegment::
 set_point_a(const LPoint3f &a) {
@@ -69,7 +82,7 @@ set_point_a(const LPoint3f &a) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSegment::set_point_a
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionSegment::
 set_point_a(float x, float y, float z) {
@@ -79,7 +92,7 @@ set_point_a(float x, float y, float z) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSegment::get_point_a
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const LPoint3f &CollisionSegment::
 get_point_a() const {
@@ -89,7 +102,7 @@ get_point_a() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSegment::set_point_b
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionSegment::
 set_point_b(const LPoint3f &b) {
@@ -101,7 +114,7 @@ set_point_b(const LPoint3f &b) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSegment::set_point_b
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionSegment::
 set_point_b(float x, float y, float z) {
@@ -111,7 +124,7 @@ set_point_b(float x, float y, float z) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSegment::get_point_b
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const LPoint3f &CollisionSegment::
 get_point_b() const {

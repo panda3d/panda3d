@@ -1,13 +1,26 @@
 // Filename: interrogateManifest.I
 // Created by:  drose (11Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateManifest::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE InterrogateManifest::
 InterrogateManifest(InterrogateModuleDef *def) :
@@ -22,7 +35,7 @@ InterrogateManifest(InterrogateModuleDef *def) :
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateManifest::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE InterrogateManifest::
 InterrogateManifest(const InterrogateManifest &copy) {
@@ -32,7 +45,7 @@ InterrogateManifest(const InterrogateManifest &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateManifest::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void InterrogateManifest::
 operator = (const InterrogateManifest &copy) {
@@ -48,7 +61,7 @@ operator = (const InterrogateManifest &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateManifest::get_definition
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const string &InterrogateManifest::
 get_definition() const {
@@ -58,7 +71,7 @@ get_definition() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateManifest::has_type
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateManifest::
 has_type() const {
@@ -68,7 +81,7 @@ has_type() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateManifest::get_type
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TypeIndex InterrogateManifest::
 get_type() const {
@@ -78,7 +91,7 @@ get_type() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateManifest::has_getter
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateManifest::
 has_getter() const {
@@ -88,7 +101,7 @@ has_getter() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateManifest::get_getter
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE FunctionIndex InterrogateManifest::
 get_getter() const {
@@ -98,7 +111,7 @@ get_getter() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateManifest::has_int_value
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool InterrogateManifest::
 has_int_value() const {
@@ -108,7 +121,7 @@ has_int_value() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: InterrogateManifest::get_int_value
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int InterrogateManifest::
 get_int_value() const {

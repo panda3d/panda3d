@@ -1,6 +1,19 @@
 // Filename: eggAnimData.I
 // Created by:  drose (19Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <notify.h>
@@ -8,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: EggAnimData::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggAnimData::
 EggAnimData(const string &name) : EggNode(name) {
@@ -19,11 +32,11 @@ EggAnimData(const string &name) : EggNode(name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggAnimData::Copy constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggAnimData::
-EggAnimData(const EggAnimData &copy) : 
-  EggNode(copy), _data(copy._data), 
+EggAnimData(const EggAnimData &copy) :
+  EggNode(copy), _data(copy._data),
   _fps(copy._fps), _has_fps(copy._has_fps) {
 }
 
@@ -31,7 +44,7 @@ EggAnimData(const EggAnimData &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: EggAnimData::Copy assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggAnimData &EggAnimData::
 operator = (const EggAnimData &copy) {
@@ -47,7 +60,7 @@ operator = (const EggAnimData &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggAnimData::set_fps
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggAnimData::
 set_fps(double fps) {
@@ -59,7 +72,7 @@ set_fps(double fps) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggAnimData::clear_fps
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void EggAnimData::
 clear_fps() {
@@ -69,7 +82,7 @@ clear_fps() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggAnimData::has_fps
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggAnimData::
 has_fps() const {

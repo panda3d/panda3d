@@ -1,6 +1,19 @@
 // Filename: collisionSegment.h
 // Created by:  drose (30Jan01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef COLLISIONSEGMENT_H
@@ -27,7 +40,7 @@ class EXPCL_PANDA CollisionSegment : public CollisionSolid {
 PUBLISHED:
   INLINE CollisionSegment();
   INLINE CollisionSegment(const LPoint3f &a, const LPoint3f &db);
-  INLINE CollisionSegment(float ax, float ay, float az, 
+  INLINE CollisionSegment(float ax, float ay, float az,
                           float bx, float by, float bz);
 
 public:

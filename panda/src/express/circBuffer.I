@@ -1,6 +1,19 @@
 // Filename: circBuffer.I
 // Created by:  drose (08Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <pandabase.h>
@@ -12,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CircBuffer::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Thing, int max_size>
 INLINE CircBuffer<Thing, max_size>::
@@ -24,7 +37,7 @@ CircBuffer() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CircBuffer::is_empty
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Thing, int max_size>
 INLINE bool CircBuffer<Thing, max_size>::
@@ -36,7 +49,7 @@ is_empty() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CircBuffer::is_full
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Thing, int max_size>
 INLINE bool CircBuffer<Thing, max_size>::
@@ -48,7 +61,7 @@ is_full() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CircBuffer::peek
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Thing, int max_size>
 INLINE const Thing &CircBuffer<Thing, max_size>::
@@ -61,7 +74,7 @@ peek() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CircBuffer::extract
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Thing, int max_size>
 INLINE Thing CircBuffer<Thing, max_size>::
@@ -78,12 +91,12 @@ extract() {
   _out = (_out+1)%(max_size+1);
   return temp;
 }
-  
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CircBuffer::insert
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Thing, int max_size>
 INLINE void CircBuffer<Thing, max_size>::

@@ -1,6 +1,19 @@
 // Filename: test_cull.cxx
 // Created by:  drose (07Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "cullTraverser.h"
@@ -91,7 +104,7 @@ main(int argc, char *argv[]) {
   NodeRelation *m_mb =
     new NodeRelation(m, mb, 0, NodeRelation::get_class_type());
 
-  
+
   PT(Texture) alpha = new Texture;
   alpha->set_name("alpha");
   PT(Texture) beta = new Texture;
@@ -122,7 +135,7 @@ main(int argc, char *argv[]) {
 
   nout << "\n";
   PrintNodes pn;
-  df_traverse(r, pn, 
+  df_traverse(r, pn,
               AllAttributesWrapper(), NullLevelState(),
               NodeRelation::get_class_type());
   nout << "\n";

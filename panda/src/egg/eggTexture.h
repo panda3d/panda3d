@@ -2,6 +2,19 @@
 // Created by:  drose (18Jan99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef EGGTEXTURE_H
 #define EGGTEXTURE_H
@@ -24,7 +37,7 @@ public:
   EggTexture(const string &tref_name, const string &filename);
   EggTexture(const EggTexture &copy);
   EggTexture &operator = (const EggTexture &copy);
- 
+
   virtual void write(ostream &out, int indent_level) const;
 
   enum Equivalence {
@@ -43,10 +56,10 @@ public:
   bool has_alpha_channel(int num_components) const;
 
   enum Format {
-    F_unspecified, 
+    F_unspecified,
     F_rgba, F_rgbm, F_rgba12, F_rgba8, F_rgba4, F_rgba5,
     F_rgb, F_rgb12, F_rgb8, F_rgb5, F_rgb332,
-    F_red, F_green, F_blue, F_alpha, F_luminance, 
+    F_red, F_green, F_blue, F_alpha, F_luminance,
     F_luminance_alpha, F_luminance_alphamask
   };
   enum WrapMode {
@@ -62,7 +75,7 @@ public:
     // Mag Filter and Min Filter
     FT_nearest,
     FT_linear,
- 
+
     // Min Filter Only
     FT_nearest_mipmap_nearest,   // "mipmap point"
     FT_linear_mipmap_nearest,    // "mipmap linear"
@@ -159,7 +172,7 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
- 
+
 private:
   static TypeHandle _type_handle;
 };

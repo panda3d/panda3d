@@ -1,6 +1,19 @@
 // Filename: nodePath.cxx
 // Created by:  drose (05Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "nodePath.h"
@@ -71,7 +84,7 @@ bool NodePath::
 extend_by(Node *dnode) {
   nassertr(verify_connectivity(), false);
   nassertr(dnode != (Node *)NULL, false);
-  
+
   if (is_empty()) {
     // Extending an empty NodePath by a single node is the same thing
     // as creating a new NodePath with just the single node.
@@ -117,7 +130,7 @@ extend_by(NodeRelation *darc) {
   if (darc->get_parent() != node()) {
     if (sgmanip_cat.is_debug()) {
       sgmanip_cat.debug()
-        << "Cannot extend " << *this << " by arc " << *darc 
+        << "Cannot extend " << *this << " by arc " << *darc
         << "; no connection.\n";
     }
     return false;
@@ -127,7 +140,7 @@ extend_by(NodeRelation *darc) {
       darc->get_type() != NodeRelation::get_stashed_type()) {
     if (sgmanip_cat.is_debug()) {
       sgmanip_cat.debug()
-        << "Cannot extend " << *this << " by arc " << *darc 
+        << "Cannot extend " << *this << " by arc " << *darc
         << "; wrong graph type.\n";
     }
     return false;
@@ -376,7 +389,7 @@ get_siblings() const {
   nassertr(verify_connectivity(), result);
   nassertr(has_arcs(), result);
   NodeRelation *my_arc = arc();
-  
+
   NodePath parent = *this;
   parent.shorten(1);
 
@@ -605,16 +618,16 @@ share_with(const NodePath &other) {
   Comps::const_iterator ti = this_comps.begin();
 
   // The first components in both chains should be the topnodes.
-  if (oi != other_comps.end() && 
-      ti != this_comps.end() && 
+  if (oi != other_comps.end() &&
+      ti != this_comps.end() &&
       (*oi)->get_node() == (*ti)->get_node()) {
     ++oi;
     ++ti;
     ++in_common;
   }
   // The remaining components are arcs.
-  while (oi != other_comps.end() && 
-         ti != this_comps.end() && 
+  while (oi != other_comps.end() &&
+         ti != this_comps.end() &&
          (*oi)->get_arc() == (*ti)->get_arc()) {
     ++oi;
     ++ti;
@@ -635,7 +648,7 @@ share_with(const NodePath &other) {
       (*ti)->set_next(dest);
     }
   }
-  
+
   return in_common;
 }
 
@@ -763,7 +776,7 @@ amputate_badness() {
 bool NodePath::
 repair_connectivity(const NodePath &top) {
   nassertr(top.verify_connectivity(), false);
-  
+
   NodePath new_path(*this);
   new_path.amputate_badness();
   if (new_path.is_empty()) {
@@ -846,7 +859,7 @@ wrt_reparent_to(const NodePath &other, int sort) {
 //               the bottom node of the indicated other NodePath.  Any
 //               other parent-child relations of the node are
 //               unchanged; in particular, the node is not removed
-//               from its existing parent, if any.  
+//               from its existing parent, if any.
 //
 //               A new arc is created, and its transitions are copied
 //               from the bottom arc of this NodePath, if any.
@@ -866,8 +879,8 @@ instance_to(const NodePath &other, int sort) const {
   nassertr(!other.is_empty(), NodePath());
 
   Node *bottom_node = node();
-  NodeRelation *darc = 
-    NodeRelation::create_typed_arc(_graph_type, other.node(), 
+  NodeRelation *darc =
+    NodeRelation::create_typed_arc(_graph_type, other.node(),
                                    bottom_node, sort);
   nassertr(darc != (NodeRelation *)NULL, NodePath());
   nassertr(darc->is_exact_type(_graph_type), NodePath());
@@ -908,8 +921,8 @@ copy_to(const NodePath &other, int sort) const {
   PT_Node copy_node = source_node->copy_subgraph(_graph_type);
   nassertr(copy_node != (Node *)NULL, NodePath());
 
-  NodeRelation *darc = 
-    NodeRelation::create_typed_arc(_graph_type, other.node(), 
+  NodeRelation *darc =
+    NodeRelation::create_typed_arc(_graph_type, other.node(),
                                    copy_node, sort);
   nassertr(darc != (NodeRelation *)NULL, NodePath());
   nassertr(darc->is_exact_type(_graph_type), NodePath());
@@ -1200,7 +1213,7 @@ write_bam_file(const string &filename) const {
 
   return okflag;
 }
-  
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_pos
@@ -1306,7 +1319,7 @@ set_r(float r) {
 //  Description: Retrieves the rotation component of the transform.
 ////////////////////////////////////////////////////////////////////
 LVecBase3f NodePath::
-get_hpr() const { 
+get_hpr() const {
   nassertr(has_arcs(), LVecBase3f(0.0, 0.0, 0.0));
   LMatrix4f mat = get_mat();
   LVecBase3f scale, hpr, pos;
@@ -1382,7 +1395,7 @@ get_scale() const {
   mat.get_row3(x,0);
   mat.get_row3(y,1);
   mat.get_row3(z,2);
-  
+
 
   // Now return the lengths of these axes as the scale.
   return LVecBase3f(length(x), length(y), length(z));
@@ -1591,7 +1604,7 @@ look_at_preserve_scale(const LPoint3f &point, const LVector3f &up) {
 
   mat.get_row3(x,0);
   mat.get_row3(y,1);
-  mat.get_row3(z,2);  
+  mat.get_row3(z,2);
 
   x *= scale_0;
   y *= scale_1;
@@ -1639,7 +1652,7 @@ heads_up_preserve_scale(const LPoint3f &point, const LVector3f &up) {
 
   mat.get_row3(x,0);
   mat.get_row3(y,1);
-  mat.get_row3(z,2);  
+  mat.get_row3(z,2);
 
   x *= scale_0;
   y *= scale_1;
@@ -1819,7 +1832,7 @@ get_scale(const NodePath &other) const {
 //               transform, relative to the other node.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_pos_hpr(const NodePath &other, const LVecBase3f &pos, 
+set_pos_hpr(const NodePath &other, const LVecBase3f &pos,
             const LVecBase3f &hpr) {
   nassertv(has_arcs());
   LMatrix4f mat = get_mat(other);
@@ -1837,7 +1850,7 @@ set_pos_hpr(const NodePath &other, const LVecBase3f &pos,
 //               to the other node.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-set_pos_hpr_scale(const NodePath &other, 
+set_pos_hpr_scale(const NodePath &other,
                   const LVecBase3f &pos, const LVecBase3f &hpr,
                   const LVecBase3f &scale) {
   nassertv(has_arcs());
@@ -1920,7 +1933,7 @@ look_at_preserve_scale(const NodePath &other, const LPoint3f &point,
   float scale_0 = length(x);
   float scale_1 = length(y);
   float scale_2 = length(z);
- 
+
   LPoint3f pos;
   mat.get_row3(pos,3);
 
@@ -1934,7 +1947,7 @@ look_at_preserve_scale(const NodePath &other, const LPoint3f &point,
 
   mat.get_row3(x,0);
   mat.get_row3(y,1);
-  mat.get_row3(z,2);  
+  mat.get_row3(z,2);
 
   x *= scale_0;
   y *= scale_1;
@@ -1973,7 +1986,7 @@ heads_up_preserve_scale(const NodePath &other, const LPoint3f &point,
   float scale_0 = length(x);
   float scale_1 = length(y);
   float scale_2 = length(z);
- 
+
   LPoint3f pos;
   mat.get_row3(pos,3);
 
@@ -1986,7 +1999,7 @@ heads_up_preserve_scale(const NodePath &other, const LPoint3f &point,
   // Now reapply the scale and position.
   mat.get_row3(x,0);
   mat.get_row3(y,1);
-  mat.get_row3(z,2);  
+  mat.get_row3(z,2);
 
   x *= scale_0;
   y *= scale_1;
@@ -2002,7 +2015,7 @@ heads_up_preserve_scale(const NodePath &other, const LPoint3f &point,
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_color
 //       Access: Public
-//  Description: Sets the color transition for a render relation 
+//  Description: Sets the color transition for a render relation
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_color(const Colorf &color, int priority) {
@@ -2026,7 +2039,7 @@ void NodePath::
 set_color_off(int priority) {
   nassertv_always(has_arcs());
 
-  ColorTransition *col_trans = 
+  ColorTransition *col_trans =
     new ColorTransition(ColorTransition::off());
   arc()->set_transition(col_trans, priority);
 }
@@ -2050,7 +2063,7 @@ get_color() const {
 
   sgmanip_cat.warning()
     << "get_color() called on " << *this << " which has no color set.\n";
-  
+
   return Colorf(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
@@ -2158,7 +2171,7 @@ void NodePath::
 set_texture_off(int priority) {
   nassertv_always(has_arcs());
 
-  TextureTransition *tex_trans = 
+  TextureTransition *tex_trans =
     new TextureTransition(TextureTransition::off());
   arc()->set_transition(tex_trans, priority);
 }
@@ -2331,7 +2344,7 @@ void NodePath::
 set_fog_off(int priority) {
   nassertv_always(has_arcs());
 
-  FogTransition *fog_trans = 
+  FogTransition *fog_trans =
     new FogTransition(FogTransition::off());
   arc()->set_transition(fog_trans, priority);
 }
@@ -2446,7 +2459,7 @@ set_two_sided(bool two_sided, int priority) {
   nassertv_always(has_arcs());
 
   CullFaceProperty::Mode mode =
-    two_sided ? 
+    two_sided ?
     CullFaceProperty::M_cull_none :
     CullFaceProperty::M_cull_clockwise;
 
@@ -2592,7 +2605,7 @@ set_transparency(bool transparency, int priority) {
   nassertv_always(has_arcs());
 
   TransparencyProperty::Mode mode =
-    transparency ? 
+    transparency ?
     TransparencyProperty::M_alpha :
     TransparencyProperty::M_none;
 
@@ -2700,7 +2713,7 @@ prepare_scene(GraphicsStateGuardianBase *gsg) {
   visitor._gsg = gsg;
 
   NodeAttributeWrapper initial(TextureTransition::get_class_type());
-  df_traverse(node(), visitor, initial, NullLevelState(), 
+  df_traverse(node(), visitor, initial, NullLevelState(),
               RenderRelation::get_class_type());
 }
 
@@ -2866,7 +2879,7 @@ r_write_transitions(const ArcComponent *comp,
 //  Description: The recursive implementation of get_net_transitions().
 ////////////////////////////////////////////////////////////////////
 void NodePath::
-r_get_net_transitions(const ArcComponent *comp, 
+r_get_net_transitions(const ArcComponent *comp,
                       AllTransitionsWrapper &trans) const {
   nassertv(comp != (const ArcComponent *)NULL);
   nassertv(comp->has_arc());
@@ -2924,7 +2937,7 @@ format_arc_name(NodeRelation *arc) const {
 
   if (arc->get_graph_type() == NodeRelation::get_stashed_type()) {
     result += "@@";
-    
+
   } else if (arc->get_graph_type() != _graph_type) {
     result += "@@(" + arc->get_graph_type().get_name() + ")";
   }
@@ -2986,7 +2999,7 @@ find_matches(NodePathCollection &result, FindApproxPath &approx_path,
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 r_find_matches(NodePathCollection &result,
-               const FindApproxLevel &level, 
+               const FindApproxLevel &level,
                int max_matches, int num_levels_remaining) const {
   // Go on to the next level.  If we exceeded the requested maximum
   // depth, stop.

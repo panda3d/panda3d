@@ -1,6 +1,19 @@
 // Filename: sceneGraphReducer.cxx
 // Created by:  drose (22May00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "sceneGraphReducer.h"
@@ -26,14 +39,14 @@ apply_to_arc(NodeRelation *arc, int transition_types) {
     }
     _transform = new TransformTransition;
   }
-  
+
   if ((transition_types & TT_color) != 0) {
     if (!_color->is_identity()) {
       arc->set_transition(_color);
       _color = new ColorTransition;
     }
   }
-  
+
   if ((transition_types & TT_texture_matrix) != 0) {
     if (!_texture_matrix->get_matrix().almost_equal(LMatrix4f::ident_mat())) {
       arc->set_transition(_texture_matrix);
@@ -45,7 +58,7 @@ apply_to_arc(NodeRelation *arc, int transition_types) {
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphReducer::AccumulatedTransitions::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void SceneGraphReducer::AccumulatedTransitions::
 write(ostream &out, int transition_types, int indent_level) const {
@@ -63,7 +76,7 @@ write(ostream &out, int transition_types, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphReducer::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 SceneGraphReducer::
 SceneGraphReducer(TypeHandle graph_type) :
@@ -143,7 +156,7 @@ r_apply_transitions(NodeRelation *arc, int transition_types,
     nassertv(trans._texture_matrix != (TexMatrixTransition *)NULL);
     TexMatrixTransition *tmt;
     if (get_transition_into(tmt, arc)) {
-      trans._texture_matrix = 
+      trans._texture_matrix =
         DCAST(TexMatrixTransition, trans._texture_matrix->compose(tmt));
       arc->clear_transition(TexMatrixTransition::get_class_type());
     }
@@ -186,7 +199,7 @@ r_apply_transitions(NodeRelation *arc, int transition_types,
     PT(Node) new_node = node->make_copy();
     if (new_node->get_type() != node->get_type()) {
       sgraphutil_cat.error()
-        << "Cannot apply transitions to " << *node 
+        << "Cannot apply transitions to " << *node
         << "; don't know how to copy nodes of this type.\n";
 
       trans.apply_to_arc(arc, transition_types);
@@ -211,7 +224,7 @@ r_apply_transitions(NodeRelation *arc, int transition_types,
   if (arc->has_transition(BillboardTransition::get_class_type())) {
     if (sgraphutil_cat.is_debug()) {
       sgraphutil_cat.debug()
-        << "Arc " << *arc 
+        << "Arc " << *arc
         << " contains a BillboardTransition; leaving transform here.\n";
     }
     apply_types |= TT_transform;
@@ -223,7 +236,7 @@ r_apply_transitions(NodeRelation *arc, int transition_types,
         << "; leaving a transform here but carrying on otherwise.\n";
     }
     apply_types |= TT_transform;
-  }    
+  }
   trans.apply_to_arc(arc, transition_types & apply_types);
 
   // Now apply what's left to the vertices.
@@ -249,19 +262,19 @@ r_apply_transitions(NodeRelation *arc, int transition_types,
     }
     if ((transition_types & TT_texture_matrix) != 0) {
       if (trans._texture_matrix->get_matrix() != LMatrix4f::ident_mat()) {
-        _transformer.transform_texcoords(gnode, 
+        _transformer.transform_texcoords(gnode,
                                          trans._texture_matrix->get_matrix());
       }
     }
-    
+
   } else {
     // This handles any kind of node other than a GeomNode.
     if ((transition_types & TT_transform) != 0) {
       node->xform(trans._transform->get_matrix());
     }
   }
-  
-  const DownRelationPointers &drp = 
+
+  const DownRelationPointers &drp =
     node->find_connection(_graph_type).get_down();
   DownRelationPointers drp_copy = drp;
 
@@ -291,7 +304,7 @@ collapse_nodes(Node *node1, Node *node2, bool siblings) {
   // We can collapse two GeomNodes easily, if they're siblings.  If
   // they're parent-child, we'd probably better not (it might
   // interfere with decaling).
-  if (siblings && 
+  if (siblings &&
       node1->is_exact_type(GeomNode::get_class_type()) &&
       node2->is_exact_type(GeomNode::get_class_type())) {
     GeomNode *gnode1;

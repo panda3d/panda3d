@@ -1,6 +1,19 @@
 // Filename: cullStateSubtree.cxx
 // Created by:  drose (09Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "cullStateSubtree.h"
@@ -10,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CullStateSubtree::Constructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CullStateSubtree::
 ~CullStateSubtree() {
@@ -24,7 +37,7 @@ CullStateSubtree::
 //               if it should be recomputed.
 ////////////////////////////////////////////////////////////////////
 bool CullStateSubtree::
-check_currency(const AllTransitionsWrapper &, Node *top_subtree, 
+check_currency(const AllTransitionsWrapper &, Node *top_subtree,
                UpdateSeq as_of) {
   if (cull_cat.is_spam()) {
     cull_cat.spam()

@@ -1,12 +1,25 @@
 // Filename: lineSegs.I
 // Created by:  drose (24May00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LineSegs::Point::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE LineSegs::Point::
 Point() {
@@ -15,19 +28,19 @@ Point() {
 ////////////////////////////////////////////////////////////////////
 //     Function: LineSegs::Point::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE LineSegs::Point::
 Point(const LVecBase3f &point, const Colorf &color) :
-  _point(point[0], point[1], point[2]), 
-  _color(color) 
+  _point(point[0], point[1], point[2]),
+  _color(color)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LineSegs::Point::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE LineSegs::Point::
 Point(const LineSegs::Point &copy) :
@@ -39,7 +52,7 @@ Point(const LineSegs::Point &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: LineSegs::Point::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void LineSegs::Point::
 operator = (const LineSegs::Point &copy) {
@@ -155,7 +168,7 @@ get_num_vertices() const {
 ////////////////////////////////////////////////////////////////////
 INLINE Vertexf LineSegs::
 get_vertex(int vertex) const {
-  nassertr(vertex >= 0 && vertex < (int)_created_verts.size(), 
+  nassertr(vertex >= 0 && vertex < (int)_created_verts.size(),
            Vertexf(0.0, 0.0, 0.0));
   return _created_verts[vertex];
 }
@@ -196,7 +209,7 @@ set_vertex(int vertex, float x, float y, float z) {
 ////////////////////////////////////////////////////////////////////
 INLINE Colorf LineSegs::
 get_vertex_color(int vertex) const {
-  nassertr(vertex >= 0 && vertex < (int)_created_colors.size(), 
+  nassertr(vertex >= 0 && vertex < (int)_created_colors.size(),
            Colorf(0.0, 0.0, 0.0, 0.0));
   return _created_colors[vertex];
 }

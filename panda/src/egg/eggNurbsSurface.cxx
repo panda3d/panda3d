@@ -1,6 +1,19 @@
 // Filename: eggNurbsSurface.cxx
 // Created by:  drose (15Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggNurbsSurface.h"
@@ -204,16 +217,16 @@ write(ostream &out, int indent_level) const {
   if (get_v_subdiv() != 0) {
     indent(out, indent_level + 2)
       << "<Scalar> V-subdiv { " << get_v_subdiv() << " }\n";
-  } 
+  }
   indent(out, indent_level + 2)
     << "<Order> { " << get_u_order() << " " << get_v_order() << " }\n";
-  indent(out, indent_level + 2) 
+  indent(out, indent_level + 2)
     << "<U-Knots> {\n";
   write_long_list(out, indent_level+4, _u_knots.begin(), _u_knots.end(),
         "", "", 72);
   indent(out, indent_level + 2)
     << "}\n";
-  indent(out, indent_level + 2) 
+  indent(out, indent_level + 2)
     << "<V-Knots> {\n";
   write_long_list(out, indent_level+4, _v_knots.begin(), _v_knots.end(),
         "", "", 72);

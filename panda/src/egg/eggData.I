@@ -1,13 +1,26 @@
 // Filename: eggData.I
 // Created by:  drose (11Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggData::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggData::
 EggData() {
@@ -18,19 +31,19 @@ EggData() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggData::Copy constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggData::
-EggData(const EggData &copy) : 
-  EggGroupNode(copy), 
-  _coordsys(copy._coordsys), 
+EggData(const EggData &copy) :
+  EggGroupNode(copy),
+  _coordsys(copy._coordsys),
   _egg_filename(copy._egg_filename) {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggData::Copy assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggData &EggData::
 operator = (const EggData &copy) {

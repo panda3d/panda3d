@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "spheretexShader.h"
 #include "config_shader.h"
@@ -41,7 +50,7 @@ SpheretexShader::SpheretexShader(Texture* texture) : Shader()
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SpheretexShader::config 
+//     Function: SpheretexShader::config
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -57,7 +66,7 @@ void SpheretexShader::config(void)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SpheretexShader::apply 
+//     Function: SpheretexShader::apply
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -81,7 +90,7 @@ apply(Node *node, const AllAttributesWrapper &init_state,
   t->set_on(_texture);
   t->set_priority(_priority);
   trans.set_transition(t);
-  
+
   if (_viz != (Shader::Visualize*)0L)
     _viz->DisplayTexture(_texture, this);
 
@@ -95,18 +104,18 @@ apply(Node *node, const AllAttributesWrapper &init_state,
   // Do some extra work if we're doing the 2-pass version (e.g. the
   // object we are shading is textured)
   if (_multipass_on) {
-    // Set a color blend mode that assumes this is a second pass over 
+    // Set a color blend mode that assumes this is a second pass over
     // textured geometry
-    ColorBlendTransition *cb = 
+    ColorBlendTransition *cb =
       new ColorBlendTransition(_blend_mode);
     trans.set_transition(cb);
 
-    TextureApplyTransition *ta = 
+    TextureApplyTransition *ta =
       new TextureApplyTransition(TextureApplyProperty::M_decal);
     trans.set_transition(ta);
 
     // Set the depth test to M_equal (? Or should this be M_none?)
-    DepthTestTransition *dta = 
+    DepthTestTransition *dta =
       new DepthTestTransition(DepthTestProperty::M_equal);
     trans.set_transition(dta);
   }

@@ -1,6 +1,20 @@
 // Filename: renderRelation.cxx
 // Created by:  drose (26Oct98)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #include "renderRelation.h"
 #include "transformTransition.h"
@@ -14,7 +28,7 @@ TypeHandle RenderRelation::_type_handle;
 //       Access: Public, Virtual
 //  Description: This is called by set_transition() or
 //               clear_transition() whenever a transition is added,
-//               updated, or removed from the arc.  It is just a 
+//               updated, or removed from the arc.  It is just a
 //               callback to the arc so it can decide whether
 //               it needs to update any internal data as a response to
 //               this adjustment (for instance, by marking the
@@ -134,5 +148,5 @@ get_type() const {
 TypeHandle RenderRelation::
 force_init_type() {
   init_type();
-  return get_class_type(); 
+  return get_class_type();
 }

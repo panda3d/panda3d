@@ -1,6 +1,19 @@
-// Filename: wrapperBuilderPython.C
+// Filename: wrapperBuilderPython.cxx
 // Created by:  drose (07Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "wrapperBuilderPython.h"
@@ -23,12 +36,12 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: WrapperBuilderPython::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 WrapperBuilderPython::
 WrapperBuilderPython() {
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: WrapperBuilderPython::write_wrapper
 //       Access: Public, Virtual
@@ -71,7 +84,7 @@ write_wrapper(ostream &out, const string &wrapper_name) const {
 
     // This is the string to convert our local variable to the
     // appropriate C++ type.  Normally this is just a cast.
-    string pexpr_string = 
+    string pexpr_string =
       "(" + type->get_local_name(&parser) + ")" + get_parameter_name(pn);
 
     if (_parameters[pn]._remap->new_type_is_atomic_string()) {
@@ -87,10 +100,10 @@ write_wrapper(ostream &out, const string &wrapper_name) const {
         parameter_list += ", &" + get_parameter_name(pn)
           + "_str, &" + get_parameter_name(pn) + "_len";
         pexpr_string = "basic_string<char>(" +
-          get_parameter_name(pn) + "_str, " + 
+          get_parameter_name(pn) + "_str, " +
           get_parameter_name(pn) + "_len)";
       }
-      
+
     } else if (TypeManager::is_bool(type)) {
       out << "PyObject *" << get_parameter_name(pn);
       format_specifiers += "O";
@@ -128,7 +141,7 @@ write_wrapper(ostream &out, const string &wrapper_name) const {
     pexprs.push_back(pexpr_string);
   }
 
-  out << "  if (PyArg_ParseTuple(args, \"" << format_specifiers 
+  out << "  if (PyArg_ParseTuple(args, \"" << format_specifiers
       << "\"" << parameter_list << ")) {\n";
 
   if (_return_type->new_type_is_atomic_string()) {
@@ -149,7 +162,7 @@ write_wrapper(ostream &out, const string &wrapper_name) const {
     if (return_expr.empty()) {
       test_assert(out, 4);
       out << "    return Py_BuildValue(\"\");\n";
-      
+
     } else {
       CPPType *type = _return_type->get_temporary_type();
       out << "    ";
@@ -244,24 +257,24 @@ pack_return_value(ostream &out, string return_expr) const {
   if (_return_type->new_type_is_atomic_string()) {
     if (TypeManager::is_char_pointer(orig_type)) {
       out << "\"s\", " << return_expr;
-      
+
     } else {
-      out << "\"s#\", " << return_expr << ".data(), " 
+      out << "\"s#\", " << return_expr << ".data(), "
           << return_expr << ".length()";
     }
 
   } else if (TypeManager::is_integer(type)) {
     out << "\"i\", (int)(" << return_expr << ")";
-    
+
   } else if (TypeManager::is_float(type)) {
     out << "\"d\", (double)(" << return_expr << ")";
-    
+
   } else if (TypeManager::is_char_pointer(type)) {
     out << "\"s\", " << return_expr;
-      
+
   } else if (TypeManager::is_pointer(type)) {
     out << "\"i\", (int)" << return_expr;
-    
+
   } else {
     // Return None.
     out << "\"\"";

@@ -1,6 +1,19 @@
 // Filename: nodeRelation.T
 // Created by:  drose (30Sep99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
@@ -15,7 +28,7 @@
 //               false.
 ////////////////////////////////////////////////////////////////////
 template<class Transition>
-INLINE_GRAPH bool 
+INLINE_GRAPH bool
 get_transition_into(Transition *&ptr, const NodeRelation *arc,
                     TypeHandle transition_type) {
   NodeTransition *nt = arc->get_transition(transition_type);
@@ -28,7 +41,7 @@ get_transition_into(Transition *&ptr, const NodeRelation *arc,
 }
 
 template<class Transition>
-INLINE_GRAPH bool 
+INLINE_GRAPH bool
 get_transition_into(Transition *&ptr, const NodeRelation *arc) {
   return get_transition_into(ptr, arc, Transition::get_class_type());
 }

@@ -1,6 +1,19 @@
 // Filename: test_sgmanip.cxx
 // Created by:  drose (18Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <pandabase.h>
@@ -55,7 +68,7 @@ main() {
   nout << "oranges_path = " << oranges_path << "\n";
 
   /*
-  nout << "\ndel_path2.share_with(del_path) = " 
+  nout << "\ndel_path2.share_with(del_path) = "
        << del_path2.share_with(del_path) << "\n";
   nout << "del_path2 = " << del_path2 << "\n";
   */
@@ -96,7 +109,7 @@ main() {
        << "mc_path = " << mc_path << "\n"
        << "apples_path = " << apples_path << "\n"
        << "oranges_path = " << oranges_path << "\n";
-  
+
   render_path.ls(nout);
 
   nout << "\nInstancing del_path back under apples\n";
@@ -111,7 +124,7 @@ main() {
 
   render_path.ls(nout);
 
-  nout << "\nRepairing del_path2, result is " 
+  nout << "\nRepairing del_path2, result is "
        << del_path2.repair_connectivity(render_path) << "\n";
   nout << "del_path2 = " << del_path2 << "\n\n";
 

@@ -1,6 +1,19 @@
 // Filename: eggGroupUniquifier.cxx
 // Created by:  drose (22Feb01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggGroupUniquifier.h"
@@ -16,7 +29,7 @@ TypeHandle EggGroupUniquifier::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroupUniquifier::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggGroupUniquifier::
 EggGroupUniquifier() {
@@ -50,7 +63,7 @@ string EggGroupUniquifier::
 filter_name(EggNode *node) {
   string name = node->get_name();
   nassertr(!name.empty(), string());
-  
+
   string result;
 
   // First, replace characters not A-Z, a-z, 0-9, or '_' with
@@ -61,7 +74,7 @@ filter_name(EggNode *node) {
     if (isalnum(*pi)) {
       result += *pi;
       last_underscore = false;
-      
+
     } else if (!last_underscore) {
       result += '_';
       last_underscore = true;

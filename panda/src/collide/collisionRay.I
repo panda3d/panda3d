@@ -1,6 +1,19 @@
 // Filename: collisionRay.I
 // Created by:  drose (22Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
@@ -13,26 +26,26 @@
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionRay::
 CollisionRay() :
-  _origin(LPoint3f(0.0, 0.0, 0.0)), 
-  _direction(LVector3f(0.0, 0.0, 0.0)) 
+  _origin(LPoint3f(0.0, 0.0, 0.0)),
+  _direction(LVector3f(0.0, 0.0, 0.0))
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionRay::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionRay::
 CollisionRay(const LPoint3f &origin, const LVector3f &direction) :
-  _origin(origin), _direction(direction) 
+  _origin(origin), _direction(direction)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionRay::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionRay::
 CollisionRay(float ox, float oy, float oz,
@@ -44,12 +57,12 @@ CollisionRay(float ox, float oy, float oz,
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionRay::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionRay::
 CollisionRay(const CollisionRay &copy) :
   CollisionSolid(copy),
-  _origin(copy._origin), 
+  _origin(copy._origin),
   _direction(copy._direction)
 {
 }
@@ -57,7 +70,7 @@ CollisionRay(const CollisionRay &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionRay::set_origin
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionRay::
 set_origin(const LPoint3f &origin) {
@@ -69,7 +82,7 @@ set_origin(const LPoint3f &origin) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionRay::set_origin
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionRay::
 set_origin(float x, float y, float z) {
@@ -79,7 +92,7 @@ set_origin(float x, float y, float z) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionRay::get_origin
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const LPoint3f &CollisionRay::
 get_origin() const {
@@ -89,7 +102,7 @@ get_origin() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionRay::set_direction
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionRay::
 set_direction(const LVector3f &direction) {
@@ -101,7 +114,7 @@ set_direction(const LVector3f &direction) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionRay::set_direction
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionRay::
 set_direction(float x, float y, float z) {
@@ -111,7 +124,7 @@ set_direction(float x, float y, float z) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionRay::get_direction
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const LVector3f &CollisionRay::
 get_direction() const {

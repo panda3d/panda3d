@@ -1,6 +1,19 @@
 // Filename: geomBinBackToFront.cxx
 // Created by:  drose (13Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "geomBinBackToFront.h"
@@ -54,7 +67,7 @@ record_current_state(GraphicsStateGuardian *gsg, CullState *cs, int,
     nassertv(node != (GeomNode *)NULL);
     const BoundingVolume &volume = node->get_bound();
 
-    if (!volume.is_empty() && 
+    if (!volume.is_empty() &&
         volume.is_of_type(GeometricBoundingVolume::get_class_type())) {
       const GeometricBoundingVolume *gbv;
       DCAST_INTO_V(gbv, &volume);
@@ -80,7 +93,7 @@ record_current_state(GraphicsStateGuardian *gsg, CullState *cs, int,
     float distance = 0.0;
     bool got_distance = false;
 
-    if (!volume.is_empty() && 
+    if (!volume.is_empty() &&
         volume.is_of_type(GeometricBoundingVolume::get_class_type())) {
       const GeometricBoundingVolume *gbv;
       DCAST_INTO_V(gbv, &volume);
@@ -105,7 +118,7 @@ record_current_state(GraphicsStateGuardian *gsg, CullState *cs, int,
         NodeRelation *arc = node->get_child(graph_type, i);
 
         const BoundingVolume &volume = arc->get_bound();
-        if (!volume.is_empty() && 
+        if (!volume.is_empty() &&
             volume.is_of_type(GeometricBoundingVolume::get_class_type())) {
           const GeometricBoundingVolume *gbv;
           DCAST_INTO_V(gbv, &volume);
@@ -133,14 +146,14 @@ record_current_state(GraphicsStateGuardian *gsg, CullState *cs, int,
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinBackToFront::draw
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomBinBackToFront::
 draw(CullTraverser *trav) {
   PStatTimer timer(CullTraverser::_draw_pcollector);
 
   if (cull_cat.is_spam()) {
-    cull_cat.spam() 
+    cull_cat.spam()
       << "GeomBinBackToFront drawing " << _node_entries.size() << " entries.\n";
   }
   NodeEntries::iterator nei;

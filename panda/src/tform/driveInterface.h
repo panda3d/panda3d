@@ -2,6 +2,19 @@
 // Created by:  drose (17Feb00)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef DRIVEINTERFACE_H
 #define DRIVEINTERFACE_H
@@ -67,9 +80,9 @@ PUBLISHED:
   INLINE void set_x(float x);
   INLINE void set_y(float y);
   INLINE void set_z(float z);
- 
+
   /// **** Rotation ****
- 
+
   INLINE const LVecBase3f &get_hpr() const;
   INLINE float get_h() const;
   INLINE float get_p() const;
@@ -139,7 +152,7 @@ private:
     void set_key(bool down);
     void clear();
     bool operator < (const KeyHeld &other) const;
-  
+
     float _effect;
     bool _down;
     double _changed_time;

@@ -1,8 +1,22 @@
+// Filename: pnm-image-filter.cxx
+// Created by:  
 //
-// pnm-image-filter.cc
+////////////////////////////////////////////////////////////////////
 //
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
-// The functions in this module support spatial filtering of an image by 
+// The functions in this module support spatial filtering of an image by
 // convolution with an (almost) arbitrary kernel.  There are a broad class of
 // image filters to which this principle applies, including box filtering,
 // Bartlett, and Gaussian.
@@ -47,7 +61,7 @@
 
 // The biggest reason to use integer arithmetic is space.  A table of
 // StoreTypes must be allocated to match the size of the image.  On an SGI,
-// sizeof(float) is 4, while sizeof(short) is 2 and sizeof(char) is, of 
+// sizeof(float) is 4, while sizeof(short) is 2 and sizeof(char) is, of
 // course, 1.  Since the source precision is probably 8 bits anyway (there
 // are usually 8 bits per channel), it doesn't cost any precision at all to
 // use shorts, and not very much to use chars.
@@ -94,20 +108,20 @@ static const WorkType filter_max = 255;
 // the radius of interest of the filter function.  The array may need to be
 // larger (by a factor of scale), to adequately cover all the values.
 
-static void 
-filter_row(StoreType dest[], int dest_len, 
+static void
+filter_row(StoreType dest[], int dest_len,
            const StoreType source[], int source_len,
            double scale,                    //  == dest_len / source_len
            const WorkType filter[],
            double filter_width) {
-  // If we are expanding the row (scale>1.0), we need to look at a fractional 
+  // If we are expanding the row (scale>1.0), we need to look at a fractional
   // granularity.  Hence, we scale our filter index by scale.  If we are
   // compressing (scale<1.0), we don't need to fiddle with the filter index, so
   // we leave it at one.
   double iscale = max(scale, 1.0);
 
   // Similarly, if we are expanding the row, we want to start the new row at
-  // the far left edge of the original pixel, not in the center.  So we will 
+  // the far left edge of the original pixel, not in the center.  So we will
   // have a non-zero offset.
   int offset = (int)floor(iscale/2.0);
 
@@ -159,7 +173,7 @@ filter_row(StoreType dest[], int dest_len,
 // by the user, they must build an array of filter values (described above)
 // and also set the radius of interest of the filter function.
 
-// The values of the elements of filter must completely cover the range 
+// The values of the elements of filter must completely cover the range
 // 0..filter_max; the array must have enough elements to include all indices
 // corresponding to values in the range -filter_width to filter_width.
 
@@ -382,7 +396,7 @@ gaussian_filter_impl(double scale, double width,
 // filter_image pulls everything together, and filters one image into
 // another.  Both images can be the same with no ill effects.
 static void
-filter_image(PNMImage &dest, const PNMImage &source, 
+filter_image(PNMImage &dest, const PNMImage &source,
              double width, FilterFunction *make_filter) {
 
   // We want to scale by the smallest destination axis first, for a
@@ -396,7 +410,7 @@ filter_image(PNMImage &dest, const PNMImage &source,
       filter_green_xy(dest, source, width, make_filter);
       filter_blue_xy(dest, source, width, make_filter);
     }
-      
+
     if (dest.has_alpha() && source.has_alpha()) {
       filter_alpha_xy(dest, source, width, make_filter);
     }
@@ -409,7 +423,7 @@ filter_image(PNMImage &dest, const PNMImage &source,
       filter_green_yx(dest, source, width, make_filter);
       filter_blue_yx(dest, source, width, make_filter);
     }
-      
+
     if (dest.has_alpha() && source.has_alpha()) {
       filter_alpha_yx(dest, source, width, make_filter);
     }
@@ -454,7 +468,7 @@ gaussian_filter_from(double width, const PNMImage &copy) {
 INLINE void
 box_filter_xel(const PNMImage &image,
                int x, int y, double x_contrib, double y_contrib,
-               double &red, double &grn, double &blu, double &alpha, 
+               double &red, double &grn, double &blu, double &alpha,
                double &pixel_count) {
   double contrib = x_contrib * y_contrib;
   red += image.get_red_val(x, y) * contrib;
@@ -466,12 +480,12 @@ box_filter_xel(const PNMImage &image,
 
   pixel_count += contrib;
 }
-  
+
 
 INLINE void
 box_filter_line(const PNMImage &image,
                 double x0, int y, double x1, double y_contrib,
-                double &red, double &grn, double &blu, double &alpha, 
+                double &red, double &grn, double &blu, double &alpha,
                 double &pixel_count) {
   int x = (int)floor(x0);
   // Get the first (partial) xel
@@ -495,11 +509,11 @@ box_filter_line(const PNMImage &image,
                      red, grn, blu, alpha, pixel_count);
     }
   }
-}  
+}
 
 static void
-box_filter_region(const PNMImage &image, 
-                  double x0, double y0, double x1, double y1, 
+box_filter_region(const PNMImage &image,
+                  double x0, double y0, double x1, double y1,
                   xel &result, xelval &alpha_result) {
   double red = 0.0, grn = 0.0, blu = 0.0, alpha = 0.0;
   double pixel_count = 0.0;
@@ -565,17 +579,17 @@ quick_filter_from(const PNMImage &from, int xborder, int yborder) {
   double y_scale = (double)from_ys / (double)to_ys;
 
   from_y0 = max(0, -to_yoff) * y_scale;
-  for (to_y = max(0, -to_yoff); 
-       to_y < min(to_ys, get_y_size()-to_yoff); 
+  for (to_y = max(0, -to_yoff);
+       to_y < min(to_ys, get_y_size()-to_yoff);
        to_y++) {
     from_y1 = (to_y+1) * y_scale;
-    
+
     from_x0 = max(0, -to_xoff) * x_scale;
-    for (to_x = max(0, -to_xoff); 
-         to_x < min(to_xs, get_x_size()-to_xoff); 
+    for (to_x = max(0, -to_xoff);
+         to_x < min(to_xs, get_x_size()-to_xoff);
          to_x++) {
       from_x1 = (to_x+1) * x_scale;
-      
+
       // Now the box from (from_x0, from_y0) - (from_x1, from_y1)
       // but not including (from_x1, from_y1) maps to the pixel (to_x, to_y).
       xelval alpha_result;
@@ -586,7 +600,7 @@ quick_filter_from(const PNMImage &from, int xborder, int yborder) {
       if (has_alpha()) {
         set_alpha_val(to_xoff+to_x, to_yoff+to_y, alpha_result);
       }
-      
+
       from_x0 = from_x1;
     }
     from_y0 = from_y1;

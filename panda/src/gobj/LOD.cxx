@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "LOD.h"
 
@@ -69,7 +78,7 @@ xform(const LMatrix4f &mat) {
   LVector3f y;
   mat.get_row3(y,1);
   float factor_squared = y.length_squared();
-  
+
   LODSwitchVector::iterator si;
   for (si = _switch_vector.begin(); si != _switch_vector.end(); ++si) {
     (*si).rescale(factor_squared);
@@ -81,7 +90,7 @@ xform(const LMatrix4f &mat) {
 //       Access: Public
 //  Description: Computes the distance between two points and returns
 //               the index for the child of the LOD by testing against
-//               the corresponding list of switching distances. 
+//               the corresponding list of switching distances.
 ////////////////////////////////////////////////////////////////////
 int LOD::
 compute_child(const LPoint3f &cam_pos, const LPoint3f &center) const {
@@ -89,7 +98,7 @@ compute_child(const LPoint3f &cam_pos, const LPoint3f &center) const {
   float dist = dot(v, v);
   LODSwitchVector::const_iterator i;
   int child = 0;
-  for (i = _switch_vector.begin(), child = 0; 
+  for (i = _switch_vector.begin(), child = 0;
        i != _switch_vector.end(); ++i, ++child) {
     if ((*i).in_range(dist))
       break;
@@ -126,9 +135,9 @@ write_datagram(Datagram &destination) const {
 void LOD::
 read_datagram(DatagramIterator &source) {
   _center.read_datagram(source);
- 
+
   _switch_vector.clear();
-  
+
   int num_switches = source.get_uint16();
   _switch_vector.reserve(num_switches);
   for (int i = 0; i < num_switches; i++) {
@@ -140,7 +149,7 @@ read_datagram(DatagramIterator &source) {
 ////////////////////////////////////////////////////////////////////
 //     Function: LOD::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void LOD::
 output(ostream &out) const {
@@ -161,7 +170,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LOD::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void LOD::
 write(ostream &out, int indent_level) const {
@@ -173,7 +182,7 @@ write(ostream &out, int indent_level) const {
        si != _switch_vector.end();
        ++si) {
     indent(out, indent_level + 2)
-      << i << ". in at " << (*si).get_in() 
+      << i << ". in at " << (*si).get_in()
       << ", out at " << (*si).get_out() << "\n";
     i++;
   }

@@ -1,6 +1,19 @@
 // Filename: eventQueue.cxx
 // Created by:  drose (08Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eventQueue.h"
@@ -12,7 +25,7 @@ EventQueue *EventQueue::_global_event_queue = NULL;
 ////////////////////////////////////////////////////////////////////
 //     Function: EventQueue::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EventQueue::
 EventQueue() {
@@ -21,7 +34,7 @@ EventQueue() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EventQueue::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EventQueue::
 ~EventQueue() {
@@ -30,7 +43,7 @@ EventQueue::
 ////////////////////////////////////////////////////////////////////
 //     Function: EventQueue::queue_event
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void EventQueue::
 queue_event(CPT_Event event) {
@@ -58,7 +71,7 @@ queue_event(CPT_Event event) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EventQueue::is_queue_empty
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool EventQueue::
 is_queue_empty() const {
@@ -69,7 +82,7 @@ is_queue_empty() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EventQueue::dequeue_event
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPT_Event EventQueue::
 dequeue_event() {
@@ -81,7 +94,7 @@ dequeue_event() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EventQueue::make_global_event_queue
 //       Access: Protected, Static
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void EventQueue::
 make_global_event_queue() {

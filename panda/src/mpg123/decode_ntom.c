@@ -1,11 +1,20 @@
-/* 
- * Mpeg Layer-1,2,3 audio decoder 
- * ------------------------------
- * copyright (c) 1995,1996,1997 by Michael Hipp, All rights reserved.
- * See also 'README'
+/* Filename: decode_ntom.c
+ * Created by:  
  *
- * N->M down/up sampling. Not optimized for speed.
- */
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ * PANDA 3D SOFTWARE
+ * Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+ *
+ * All use of this software is subject to the terms of the Panda 3d
+ * Software license.  You should have received a copy of this license
+ * along with this source code; you will also find a current copy of
+ * the license at http://www.panda3d.org/license.txt .
+ *
+ * To contact the maintainers of this program write to
+ * panda3d@yahoogroups.com .
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <stdlib.h>
 #include <math.h>
@@ -79,7 +88,7 @@ int synth_ntom_8bit_mono(real *bandPtr,unsigned char *samples,int *pnt)
     tmp1 += 2;
   }
   *pnt += pnt1 >> 2;
-  
+
   return ret;
 }
 
@@ -131,7 +140,7 @@ int synth_ntom_mono2stereo(real *bandPtr,unsigned char *samples,int *pnt)
 
   ret = synth_ntom(bandPtr,0,samples,pnt);
   samples += pnt1;
-  
+
   for(i=0;i<((*pnt-pnt1)>>2);i++) {
     ((short *)samples)[1] = ((short *)samples)[0];
     samples+=4;
@@ -149,7 +158,7 @@ int synth_ntom(real *bandPtr,int channel,unsigned char *out,int *pnt)
   short *samples = (short *) (out + *pnt);
 
   real *b0,(*buf)[0x110];
-  int clip = 0; 
+  int clip = 0;
   int bo1;
   int ntom;
 
@@ -184,7 +193,7 @@ int synth_ntom(real *bandPtr,int channel,unsigned char *out,int *pnt)
   {
     register int j;
     real *window = decwin + 16 - bo1;
- 
+
     for (j=16;j;j--,window+=0x10)
     {
       real sum;

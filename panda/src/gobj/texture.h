@@ -3,6 +3,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 #ifndef TEXTURE_H
 #define TEXTURE_H
 //
@@ -36,7 +48,7 @@ PUBLISHED:
 
     // Bilinear filtering of four neighboring pixels
     FT_linear,
- 
+
     // Min Filter Only
 
     // Point sample the pixel from the nearest mipmap level
@@ -48,11 +60,11 @@ PUBLISHED:
     // Point sample the pixel from two mipmap levels, and linearly blend
     FT_nearest_mipmap_linear,
 
-    // A.k.a. trilinear filtering: Bilinear filter the pixel from 
+    // A.k.a. trilinear filtering: Bilinear filter the pixel from
     // two mipmap levels, and linearly blend the results.
     FT_linear_mipmap_linear,
   };
- 
+
   enum WrapMode {
     WM_clamp,
     WM_repeat,
@@ -91,7 +103,7 @@ public:
 
   INLINE int get_level() const;
 
-PUBLISHED: 
+PUBLISHED:
   void set_wrapu(WrapMode wrap);
   void set_wrapv(WrapMode wrap);
   void set_minfilter(FilterType filter);
@@ -106,7 +118,7 @@ PUBLISHED:
 
 public:
   static void register_with_read_factory(void);
-  virtual void write_datagram(BamWriter* manager, Datagram &me);  
+  virtual void write_datagram(BamWriter* manager, Datagram &me);
 
   static TypedWritable *make_Texture(const FactoryParams &params);
 

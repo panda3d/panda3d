@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "spheretexReflector.h"
 #include "config_shader.h"
@@ -34,7 +43,7 @@ TypeHandle SpheretexReflector::_type_handle;
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-SpheretexReflector::SpheretexReflector(int size) : CasterShader() 
+SpheretexReflector::SpheretexReflector(int size) : CasterShader()
 {
   set_size(size);
   _is_reflector = true;
@@ -93,7 +102,7 @@ set_multipass(bool on)
 ////////////////////////////////////////////////////////////////////
 void SpheretexReflector::
 pre_apply(Node *node, const AllAttributesWrapper &init_state,
-          const AllTransitionsWrapper &net_trans, GraphicsStateGuardian *gsg) 
+          const AllTransitionsWrapper &net_trans, GraphicsStateGuardian *gsg)
 {
   if (get_num_casters() == 0) {
     shader_cat.error()
@@ -163,7 +172,7 @@ pre_apply(Node *node, const AllAttributesWrapper &init_state,
   // Get camera pos in the coordinate space of the reflecting object
   LVector3f camera_pos = get_rel_pos(camera, node);
   LVector3f camera_up = get_rel_up(camera, node);
-  if (_is_reflector == true) 
+  if (_is_reflector == true)
   {
     // Take the picture looking toward the camera
     look_at(r_mat, camera_pos, camera_up, gsg->get_coordinate_system());
@@ -173,7 +182,7 @@ pre_apply(Node *node, const AllAttributesWrapper &init_state,
 
     // And the vertex order for front facing polygons to compensate
     // for the above flip.
-    CullFaceTransition *cf = 
+    CullFaceTransition *cf =
       new CullFaceTransition(CullFaceProperty::M_cull_counter_clockwise);
     trans.set_transition(cf);
   }

@@ -2,6 +2,19 @@
 // Created by:  drose (22Feb99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef ANIMCHANNEL_H
 #define ANIMCHANNEL_H
@@ -73,7 +86,7 @@ public:
   static const char *get_fixed_channel_type_name() { return "AnimChannelMatrixFixed"; }
   static const char *get_part_type_name() { return "MovingPart<LMatrix4f>"; }
   static void output_value(ostream &out, const ValueType &value);
-    
+
   static void write_datagram(Datagram &dest, ValueType& me)
   {
     me.write_datagram(dest);
@@ -99,7 +112,7 @@ public:
   }
   static void write_datagram(Datagram &dest, ValueType& me)
   {
-    dest.add_float32(me); 
+    dest.add_float32(me);
   }
   static void read_datagram(DatagramIterator &source, ValueType& me)
   {

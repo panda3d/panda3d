@@ -1,6 +1,19 @@
 // Filename: character.cxx
 // Created by:  drose (23Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "character.h"
@@ -29,7 +42,7 @@ PStatCollector Character::_anim_pcollector("App:Animation");
 //  Description: Use make_copy() or copy_subgraph() to copy a character.
 ////////////////////////////////////////////////////////////////////
 Character::
-Character(const Character &copy) : 
+Character(const Character &copy) :
   PartBundleNode(copy.get_name(), new CharacterJointBundle(copy.get_bundle()->get_name())),
   _cv(DynamicVertices::deep_copy(copy._cv)),
   _computed_vertices(copy._computed_vertices),
@@ -46,7 +59,7 @@ Character(const Character &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: Character::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Character::
 Character(const string &name) :
@@ -58,7 +71,7 @@ Character(const string &name) :
 ////////////////////////////////////////////////////////////////////
 //     Function: Character::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Character::
 ~Character() {
@@ -210,7 +223,7 @@ r_copy_subgraph(TypeHandle graph_type, Node::InstanceMap &) const {
 //               GeomNodes found.
 ////////////////////////////////////////////////////////////////////
 void Character::
-r_copy_char(Node *dest, const Node *source, TypeHandle graph_type, 
+r_copy_char(Node *dest, const Node *source, TypeHandle graph_type,
             const Character *from, Character::ArcMap &arc_map) {
   if (source->is_of_type(GeomNode::get_class_type())) {
     const GeomNode *source_gnode;
@@ -253,11 +266,11 @@ r_copy_char(Node *dest, const Node *source, TypeHandle graph_type,
       r_copy_char(dest_child, source_child, graph_type, from, arc_map);
     }
 
-    NodeRelation *dest_arc = 
+    NodeRelation *dest_arc =
       NodeRelation::create_typed_arc(graph_type, dest, dest_child);
     nassertv(dest_arc != (NodeRelation *)NULL);
     nassertv(dest_arc->is_exact_type(graph_type));
-    
+
     dest_arc->copy_transitions_from(source_arc);
     arc_map[source_arc] = dest_arc;
   }
@@ -434,7 +447,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
 //     Function: Character::complete_pointers
 //       Access: Public
 //  Description: Takes in a vector of pointers to TypedWritable
-//               objects that correspond to all the requests for 
+//               objects that correspond to all the requests for
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int Character::

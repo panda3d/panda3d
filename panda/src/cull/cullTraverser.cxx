@@ -1,6 +1,19 @@
 // Filename: cullTraverser.cxx
 // Created by:  drose (07Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "cullTraverser.h"
@@ -45,7 +58,7 @@ PStatCollector CullTraverser::_cull_bins_btf_pcollector("Cull:Bins:BTF");
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CullTraverser::
 CullTraverser(GraphicsStateGuardian *gsg, TypeHandle graph_type,
@@ -60,7 +73,7 @@ CullTraverser(GraphicsStateGuardian *gsg, TypeHandle graph_type,
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CullTraverser::
 ~CullTraverser() {
@@ -123,7 +136,7 @@ clear_bins() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
 output(ostream &out) const {
@@ -147,7 +160,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
 write(ostream &out, int indent_level) const {
@@ -177,7 +190,7 @@ write(ostream &out, int indent_level) const {
 //               the first frame.
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
-traverse(Node *root, 
+traverse(Node *root,
          const AllAttributesWrapper &initial_state,
          const AllTransitionsWrapper &net_trans) {
   // Statistics
@@ -336,7 +349,7 @@ draw() {
       << "Initiating draw with " << num_states
       << " nonempty states of " << _states.size() << " total.\n";
   }
-  
+
   SubBins::const_iterator sbi;
   {
     PStatTimer timer(_cull_clean_pcollector);
@@ -353,7 +366,7 @@ draw() {
         PStatTimer timer(_cull_draw_get_bin_pcollector);
         cs->apply_to(_initial_state);
       }
-      
+
       static string default_bin_name = "default";
       string bin_name = default_bin_name;
       GeomBin *requested_bin = _default_bin;
@@ -367,12 +380,12 @@ draw() {
         bin_name = bin_attrib->get_bin();
         requested_bin = get_bin(bin_name);
       }
-        
+
       if (requested_bin == (GeomBin *)NULL) {
         // If we don't have a bin by this name, create one.
         cull_cat.warning()
           << "Bin " << bin_name << " is unknown; creating a default bin.\n";
-        
+
         requested_bin = new GeomBinNormal(bin_name);
         requested_bin->set_traverser(this);
       }
@@ -517,7 +530,7 @@ add_direct_node(Node *node, const AllTransitionsWrapper &trans,
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::forward_arc
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CullTraverser::
 forward_arc(NodeRelation *arc, NullTransitionWrapper &,
@@ -566,13 +579,13 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
     arc_num_sub_render--;
   }
 
-  bool has_direct_render = 
+  bool has_direct_render =
     arc->has_transition(DirectRenderTransition::get_class_type());
 
 #ifndef NDEBUG
   if (support_decals != SD_on) {
     has_direct_render = has_direct_render && !has_decal;
-  } else 
+  } else
 #endif
     {
       has_direct_render = has_direct_render || has_decal;
@@ -612,7 +625,7 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
   mark_forward_arc(arc);
 
   if (cull_cat.is_spam()) {
-    cull_cat.spam() 
+    cull_cat.spam()
       << "Reached " << *node << ":\n"
       << " as_of = " << level_state._as_of
       << " now = " << _now
@@ -624,11 +637,11 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
       << "\n";
   }
 
-  if (is_instanced || is_geom || node_has_sub_render || 
+  if (is_instanced || is_geom || node_has_sub_render ||
       arc_num_sub_render != 0 || has_direct_render) {
     // In any of these cases, we'll need to determine the net
     // transition to this node.
-    wrt_subtree(arc, level_state._lookup->get_top_subtree(), 
+    wrt_subtree(arc, level_state._lookup->get_top_subtree(),
                 level_state._as_of, _now,
                 trans, _graph_type);
   }
@@ -723,7 +736,7 @@ attach_toplevel_bin(GeomBin *bin) {
   const string &bin_name = bin->get_name();
 
   // Insert the new bin by name.
-  pair<ToplevelBins::iterator, bool> result = 
+  pair<ToplevelBins::iterator, bool> result =
     _toplevel_bins.insert(ToplevelBins::value_type(bin_name, bin));
 
   if (!result.second) {

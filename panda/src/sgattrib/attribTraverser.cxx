@@ -1,6 +1,19 @@
 // Filename: attribTraverser.cxx
 // Created by:  mike (16Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "attribTraverser.h"
@@ -19,20 +32,20 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AttribTraverser::constructor
-//       Access: Public 
-//  Description: 
+//       Access: Public
+//  Description:
 ////////////////////////////////////////////////////////////////////
 AttribTraverser::
-AttribTraverser() 
+AttribTraverser()
      : _has_attrib(false), _has_transition(false)
-{ 
+{
   _attrib_type = TypeHandle::none();
   _transition_type = TypeHandle::none();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AttribTraverser::reached_node
-//       Access: Public 
+//       Access: Public
 //  Description: Called for each node of the scene graph
 ////////////////////////////////////////////////////////////////////
 bool AttribTraverser::
@@ -44,10 +57,10 @@ reached_node(Node *node, NodeAttributeWrapper &state, NullLevelState &) {
     return true;
   }
 
-  if (node->is_of_type(GeomNode::get_class_type())) 
+  if (node->is_of_type(GeomNode::get_class_type()))
   {
     NodeAttribute *attrib = state.get_attrib();
-    if (attrib != (NodeAttribute *)NULL) 
+    if (attrib != (NodeAttribute *)NULL)
     {
       nassertr(attrib->is_of_type(_attrib_type), false);
 
@@ -73,7 +86,7 @@ reached_node(Node *node, NodeAttributeWrapper &state, NullLevelState &) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AttribTraverser::forward_arc
-//       Access: Public 
+//       Access: Public
 //  Description: Called for each forward arc of the scene graph
 ////////////////////////////////////////////////////////////////////
 bool AttribTraverser::
@@ -100,31 +113,31 @@ forward_arc(NodeRelation *, TransitionWrapper &trans,
 }
 ////////////////////////////////////////////////////////////////////
 //     Function: AttribTraverser::set_attrib_type
-//       Access: Public 
-//  Description: 
+//       Access: Public
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void AttribTraverser::
-set_attrib_type(TypeHandle type) 
+set_attrib_type(TypeHandle type)
 {
   _attrib_type = type;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AttribTraverser::set_transition_type
-//       Access: Public 
-//  Description: 
+//       Access: Public
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void AttribTraverser::
-set_transition_type(TypeHandle type) 
+set_transition_type(TypeHandle type)
 {
   _transition_type = type;
   nassertv(_transition_type.is_derived_from(ImmediateTransition::get_class_type()));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: is_textured 
+//     Function: is_textured
 //  Description: Recursively checks the tree of nodes from root to
-//               see if any geometry is textured 
+//               see if any geometry is textured
 ////////////////////////////////////////////////////////////////////
 bool
 is_textured(Node* root) {
@@ -132,20 +145,20 @@ is_textured(Node* root) {
 
   trav.set_attrib_type(TextureAttribute::get_class_type());
 
-  df_traverse(root, trav, 
-              NodeAttributeWrapper(TextureTransition::get_class_type()), 
+  df_traverse(root, trav,
+              NodeAttributeWrapper(TextureTransition::get_class_type()),
               NullLevelState(), RenderRelation::get_class_type());
 
   return trav._has_attrib;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: is_textured 
+//     Function: is_textured
 //  Description: Recursively checks the tree of nodes from root to
-//               see if any geometry is textured 
+//               see if any geometry is textured
 ////////////////////////////////////////////////////////////////////
 bool
-is_textured(Node* root, const AllAttributesWrapper &init_state) 
+is_textured(Node* root, const AllAttributesWrapper &init_state)
 {
   AttribTraverser trav;
 
@@ -160,9 +173,9 @@ is_textured(Node* root, const AllAttributesWrapper &init_state)
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: is_shaded 
+//     Function: is_shaded
 //  Description: Recursively checks the tree of nodes from root to
-//               see if any geometry is shaded 
+//               see if any geometry is shaded
 ////////////////////////////////////////////////////////////////////
 bool
 is_shaded(Node* root) {
@@ -175,8 +188,8 @@ is_shaded(Node* root) {
   //handle of a ShaderTransition
   trav.set_transition_type(TypeRegistry::ptr()->find_type("ShaderTransition"));
 
-  df_traverse(root, trav, 
-              NodeAttributeWrapper(TypeRegistry::ptr()->find_type("ShaderTransition")), 
+  df_traverse(root, trav,
+              NodeAttributeWrapper(TypeRegistry::ptr()->find_type("ShaderTransition")),
               NullLevelState(), RenderRelation::get_class_type());
 
   return trav._has_attrib;

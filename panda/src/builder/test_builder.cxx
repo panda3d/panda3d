@@ -1,6 +1,19 @@
-// Filename: tb.cxx
+// Filename: test_builder.cxx
 // Created by:  drose (09Sep97)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "builder.h"
@@ -32,7 +45,7 @@ extern polygon polys[];
 extern int num_polys;
 
 
-class ReportGeoms : 
+class ReportGeoms :
   public TraverserVisitor<NullTransitionWrapper, NullLevelState> {
 public:
   bool reached_node(Node *node, const NullAttributeWrapper &, NullLevelState &);
@@ -42,7 +55,7 @@ bool ReportGeoms::
 reached_node(Node *node, const NullAttributeWrapper &, NullLevelState &) {
   if (node->is_of_type(GeomNode::get_class_type())) {
     GeomNode *geomNode = (GeomNode *)node;
-    nout << "\n" << *geomNode << ", " << geomNode->get_num_geoms() 
+    nout << "\n" << *geomNode << ", " << geomNode->get_num_geoms()
          << " geoms:\n";
     int num_geoms = geomNode->get_num_geoms();
     for (int i = 0; i < num_geoms; i++) {
@@ -87,7 +100,7 @@ main(void) {
     //    nout << "Adding polygon " << i << ": " << polys[i] << "\n";
     builder.add_prim_nonindexed(bucket, polys[i]);
   }
-  
+
   ReportGeoms rg;
 
   GeomNode *gn = builder.build();

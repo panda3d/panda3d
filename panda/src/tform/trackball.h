@@ -2,6 +2,19 @@
 // Created by:  drose (27Jan99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef TRACKBALL_H
 #define TRACKBALL_H
@@ -51,9 +64,9 @@ PUBLISHED:
   void set_x(float x);
   void set_y(float y);
   void set_z(float z);
- 
+
   /// **** Rotation ****
- 
+
   LVecBase3f get_hpr() const;
   float get_h() const;
   float get_p() const;
@@ -96,7 +109,7 @@ private:
 
   float _rotscale;
   float _fwdscale;
- 
+
   LMatrix4f _rotation;
   LPoint3f _translation;
   LMatrix4f _mat, _orig;

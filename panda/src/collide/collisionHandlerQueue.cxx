@@ -1,6 +1,19 @@
 // Filename: collisionHandlerQueue.cxx
 // Created by:  drose (27Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "collisionHandlerQueue.h"
@@ -13,8 +26,8 @@ class CollisionEntrySorter {
 public:
   CollisionEntrySorter(CollisionEntry *entry) {
     _entry = entry;
-    LVector3f vec = 
-      entry->get_from_intersection_point() - 
+    LVector3f vec =
+      entry->get_from_intersection_point() -
       entry->get_from()->get_collision_origin();
     _dist2 = vec.length_squared();
   }
@@ -29,7 +42,7 @@ public:
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerQueue::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CollisionHandlerQueue::
 CollisionHandlerQueue() {
@@ -76,7 +89,7 @@ sort_entries() {
   typedef vector<CollisionEntrySorter> Sorter;
   Sorter sorter;
   sorter.reserve(_entries.size());
-  
+
   Entries::const_iterator ei;
   for (ei = _entries.begin(); ei != _entries.end(); ++ei) {
     sorter.push_back(CollisionEntrySorter(*ei));

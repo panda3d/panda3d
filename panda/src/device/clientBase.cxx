@@ -1,6 +1,19 @@
-// Filename: clientBase.h
+// Filename: clientBase.cxx
 // Created by:  jason (04Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "clientBase.h"
@@ -11,7 +24,7 @@ TypeHandle ClientBase::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: ClientBase::constructor
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ClientBase::
 ClientBase() {
@@ -29,7 +42,7 @@ ClientBase() {
 ////////////////////////////////////////////////////////////////////
 //     Function: ClientBase::destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ClientBase::
 ~ClientBase() {
@@ -193,11 +206,11 @@ do_poll() {
 //       Access: Private, static
 //  Description: Call back function for thread (if thread has been
 //               spawned).  A call back function must be static, so
-//               this merely calls the non-static member callback In 
+//               this merely calls the non-static member callback In
 //               addition, the function has a void* return type even
 //               though we don't actually return anything.  This is
-//               necessary because ipc assumes a function that does 
-//               not return anything indicates that the associated 
+//               necessary because ipc assumes a function that does
+//               not return anything indicates that the associated
 //               thread should  be created as unjoinable (detached).
 ////////////////////////////////////////////////////////////////////
 void *ClientBase::

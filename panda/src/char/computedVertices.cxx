@@ -1,6 +1,19 @@
 // Filename: computedVertices.cxx
 // Created by:  drose (01Mar99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "computedVertices.h"
@@ -21,7 +34,7 @@ TypeHandle ComputedVertices::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVertices::VertexTransform::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ComputedVertices::VertexTransform::
 VertexTransform(const VertexTransform &copy) :
@@ -59,7 +72,7 @@ compute_morphs(ValueType *table, const vector<MorphType> &morph_list,
     typedef typename MorphValue::VecType VecType;
     ushort index = (*mi)._index;
     const VecType &v = (*mi)._vector;
-    
+
     table[index] += v * slider_value;
       }
     }
@@ -93,7 +106,7 @@ write_datagram(Datagram &dest)
 ////////////////////////////////////////////////////////////////////
 //     Function: VertexTransform::read_datagram
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ComputedVertices::VertexTransform::
 read_datagram(DatagramIterator &source)
@@ -139,7 +152,7 @@ update(Character *character) {
     int table_size = sizeof(Vertexf) * _orig_coords.size();
     Vertexf *morphed_coords = (Vertexf *)alloca(table_size);
     memcpy(morphed_coords, _orig_coords, table_size);
-    
+
     compute_morphs(morphed_coords, _vertex_morphs, character);
     orig_coords = morphed_coords;
   }
@@ -198,8 +211,8 @@ update(Character *character) {
       CharacterJoint *joint;
       DCAST_INTO_V(joint, character->get_part(vt._joint_index));
 
-      mat = 
-    joint->_initial_net_transform_inverse * 
+      mat =
+    joint->_initial_net_transform_inverse *
     joint->_net_transform;
     }
 
@@ -258,12 +271,12 @@ make_orig(Character *character) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVertices::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void ComputedVertices::
 write(ostream &out, Character *character) const {
   VertexTransforms::const_iterator vti;
-  
+
   out << "ComputedVertices:\n";
   for (vti = _transforms.begin(); vti != _transforms.end(); ++vti) {
     const VertexTransform &vt = (*vti);
@@ -319,22 +332,22 @@ write_datagram(BamWriter *manager, Datagram &me)
   me.add_uint16(_vertex_morphs.size());
   for(i = 0; i < (int)_vertex_morphs.size(); i++){
     _vertex_morphs[i].write_datagram(me);
-  } 
+  }
 
   me.add_uint16(_normal_morphs.size());
   for(i = 0; i < (int)_normal_morphs.size(); i++){
     _normal_morphs[i].write_datagram(me);
-  } 
-  
+  }
+
   me.add_uint16(_texcoord_morphs.size());
   for(i = 0; i < (int)_texcoord_morphs.size(); i++){
     _texcoord_morphs[i].write_datagram(me);
-  } 
+  }
 
   me.add_uint16(_color_morphs.size());
   for(i = 0; i < (int)_color_morphs.size(); i++){
     _color_morphs[i].write_datagram(me);
-  } 
+  }
 
   //Original Coordinates for vertices, colors, normals and textures
   WRITE_PTA(manager, me, IPD_Vertexf::write_datagram, _orig_coords)
@@ -389,7 +402,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
     ComputedVerticesMorphColor cm;
     cm.read_datagram(scan);
     _color_morphs.push_back(cm);
-  }  
+  }
 
   //Original Coordinates for vertices, colors, normals and textures
   READ_PTA(manager, scan, IPD_Vertexf::read_datagram, _orig_coords)

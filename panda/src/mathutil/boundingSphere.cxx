@@ -1,6 +1,19 @@
 // Filename: boundingSphere.cxx
 // Created by:  drose (01Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "boundingSphere.h"
@@ -142,7 +155,7 @@ extend_by_sphere(const BoundingSphere *sphere) {
     _flags = 0;
   } else {
     float dist = length(sphere->_center - _center);
-    
+
     _radius = max(_radius, dist + sphere->_radius);
   }
   return true;
@@ -183,7 +196,7 @@ around_points(const LPoint3f *first, const LPoint3f *last) {
   // First, get the minmax of all the points to construct a bounding
   // box.
   const LPoint3f *p = first;
-  
+
 #ifndef NDEBUG
   // Skip any NaN points.
   int skipped_nan = 0;
@@ -239,7 +252,7 @@ around_points(const LPoint3f *first, const LPoint3f *last) {
 
     // Now take the center of the bounding box as the center of the sphere.
     _center = (min_box + max_box) * 0.5f;
-    
+
     // Now walk back through to get the max distance from center.
     float max_dist2 = 0.0f;
     for (p = first; p != last; ++p) {
@@ -247,7 +260,7 @@ around_points(const LPoint3f *first, const LPoint3f *last) {
       float dist2 = dot(v, v);
       max_dist2 = max(max_dist2, dist2);
     }
-    
+
     _radius = sqrtf(max_dist2);
   }
 
@@ -265,19 +278,19 @@ around_points(const LPoint3f *first, const LPoint3f *last) {
 }
 
 bool BoundingSphere::
-around_spheres(const BoundingVolume **first, 
+around_spheres(const BoundingVolume **first,
                const BoundingVolume **last) {
   return around_finite(first, last);
 }
 
 bool BoundingSphere::
-around_hexahedrons(const BoundingVolume **first, 
+around_hexahedrons(const BoundingVolume **first,
                    const BoundingVolume **last) {
   return around_finite(first, last);
 }
 
 bool BoundingSphere::
-around_finite(const BoundingVolume **first, 
+around_finite(const BoundingVolume **first,
               const BoundingVolume **last) {
   nassertr(first != last, false);
 
@@ -298,7 +311,7 @@ around_finite(const BoundingVolume **first,
 
   for (++p; p != last; ++p) {
     nassertr(!(*p)->is_infinite(), false);
-    if (!(*p)->is_empty() && 
+    if (!(*p)->is_empty() &&
         (*p)->is_of_type(FiniteBoundingVolume::get_class_type())) {
       const FiniteBoundingVolume *vol = DCAST(FiniteBoundingVolume, *p);
       LPoint3f min1 = vol->get_min();
@@ -362,7 +375,7 @@ contains_point(const LPoint3f &point) const {
   } else {
     LVector3f v = point - _center;
     float dist2 = dot(v, v);
-    return (dist2 <= _radius * _radius) ? 
+    return (dist2 <= _radius * _radius) ?
       IF_possible | IF_some | IF_all : IF_no_intersection;
   }
 }
@@ -384,37 +397,37 @@ contains_lineseg(const LPoint3f &a, const LPoint3f &b) const {
     LPoint3f from = a;
     LVector3f delta = b - a;
     float t1, t2;
-    
+
     // Solve the equation for the intersection of a line with a sphere
     // using the quadratic equation.
     float A = dot(delta, delta);
-    
+
     nassertr(A != 0.0f, 0);    // Trivial line segment.
 
     LVector3f fc = from - _center;
     float B = 2.0f * dot(delta, fc);
     float C = dot(fc, fc) - _radius * _radius;
-    
+
     float radical = B*B - 4.0f*A*C;
 
     if (IS_NEARLY_ZERO(radical)) {
       // Tangent.
       t1 = t2 = -B / (2.0f*A);
-      return (t1 >= 0.0f && t1 <= 1.0f) ? 
+      return (t1 >= 0.0f && t1 <= 1.0f) ?
                  IF_possible | IF_some : IF_no_intersection;
     }
-    
+
     if (radical < 0.0f) {
       // No real roots: no intersection with the line.
       return IF_no_intersection;
     }
-    
+
         float reciprocal_2A = 1.0f/(2.0f*A);
     float sqrt_radical = sqrtf(radical);
 
     t1 = ( -B - sqrt_radical ) * reciprocal_2A;
     t2 = ( -B + sqrt_radical ) * reciprocal_2A;
-    
+
     if (t1 >= 0.0f && t2 <= 1.0f) {
       return IF_possible | IF_some | IF_all;
     } else if (t1 <= 1.0f && t2 >= 0.0f) {

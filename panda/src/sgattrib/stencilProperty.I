@@ -1,16 +1,29 @@
 // Filename: stencilProperty.I
 // Created by:  drose (23Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StencilProperty::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE StencilProperty::
 StencilProperty(StencilProperty::Mode mode, StencilProperty::Action action) :
-  _mode(mode), 
+  _mode(mode),
   _action(action)
 {
 }
@@ -18,7 +31,7 @@ StencilProperty(StencilProperty::Mode mode, StencilProperty::Action action) :
 ////////////////////////////////////////////////////////////////////
 //     Function: StencilProperty::set_mode
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void StencilProperty::
 set_mode(StencilProperty::Mode mode) {
@@ -28,7 +41,7 @@ set_mode(StencilProperty::Mode mode) {
 ////////////////////////////////////////////////////////////////////
 //     Function: StencilProperty::get_mode
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE StencilProperty::Mode StencilProperty::
 get_mode() const {
@@ -38,7 +51,7 @@ get_mode() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: StencilProperty::set_action
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void StencilProperty::
 set_action(StencilProperty::Action action) {
@@ -48,7 +61,7 @@ set_action(StencilProperty::Action action) {
 ////////////////////////////////////////////////////////////////////
 //     Function: StencilProperty::get_action
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE StencilProperty::Action StencilProperty::
 get_action() const {
@@ -58,7 +71,7 @@ get_action() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: StencilProperty::compare_to
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int StencilProperty::
 compare_to(const StencilProperty &other) const {

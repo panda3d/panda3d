@@ -1,6 +1,19 @@
 // Filename: builder.cxx
 // Created by:  drose (09Sep97)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "builder.h"
@@ -18,7 +31,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: Builder::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Builder::
 Builder() {
@@ -28,7 +41,7 @@ Builder() {
 ////////////////////////////////////////////////////////////////////
 //     Function: Builder::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Builder::
 ~Builder() {
@@ -58,9 +71,9 @@ Builder::
 
 class NodeMap : public Namable {
 public:
-  NodeMap(NamedNode *node, const BuilderBucket *bucket) 
+  NodeMap(NamedNode *node, const BuilderBucket *bucket)
     : _node(node), _bucket(bucket) { }
-  
+
   bool operator < (const NodeMap &other) const {
     if (_node != other._node) {
       return _node < other._node;
@@ -129,7 +142,7 @@ build(const string &default_name) {
       // Since the caller already created this GeomNode and passed it
       // in, we'll leave it up to the caller to name the node and set
       // up the state transitions leading into it.
-      
+
     } else {
       // The node is not a GeomNode, so look it up in the map.
       GeomNodeMap::iterator f = geom_nodes.find(NodeMap(node, bucket));
@@ -179,7 +192,7 @@ build(const string &default_name) {
     }
 
     // Only reparent the geom_node if it has no parent already.
-    int num_parents = 
+    int num_parents =
       geom_node->get_num_parents(RenderRelation::get_class_type());
     if (num_parents == 0) {
       if (geom_node->get_num_geoms() == 0) {

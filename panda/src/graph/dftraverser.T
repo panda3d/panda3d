@@ -1,6 +1,19 @@
 // Filename: dftraverser.T
 // Created by:  drose (26Oct98)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "dftraverser.h"
@@ -10,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: DFTraverser::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Visitor, class LevelState>
 INLINE_GRAPH DFTraverser<Visitor, LevelState>::
@@ -55,9 +68,9 @@ template<class Visitor, class LevelState>
 void DFTraverser<Visitor, LevelState>::
 traverse(NodeRelation *arc, AttributeWrapper state, LevelState level_state) {
   nassertv(arc->get_child() != (Node *)NULL);
-  
+
   // Give the visitor a chance to veto this arc.
-  TransitionWrapper trans = 
+  TransitionWrapper trans =
     TransitionWrapper::init_from(_initial_render_state);
   trans.extract_from(arc);
 
@@ -84,7 +97,7 @@ traverse(Node *node, AttributeWrapper &state, LevelState &level_state) {
   if (_visitor.reached_node(node, state, level_state)) {
 
     // Look for further children of the given NodeRelation.
-    const DownRelationPointers &drp = 
+    const DownRelationPointers &drp =
       node->find_connection(_graph_type).get_down();
 
     // Now visit each of the children in turn.
@@ -98,11 +111,11 @@ traverse(Node *node, AttributeWrapper &state, LevelState &level_state) {
 // Convenience functions.
 template<class Visitor, class AttributeWrapper, class LevelState>
 INLINE void
-df_traverse(NodeRelation *arc, Visitor &visitor, 
+df_traverse(NodeRelation *arc, Visitor &visitor,
             const AttributeWrapper &initial_render_state,
             const LevelState &initial_level_state,
             TypeHandle graph_type) {
-  DFTraverser<Visitor, LevelState> 
+  DFTraverser<Visitor, LevelState>
     dft(visitor, initial_render_state, graph_type);
   dft.start(arc, initial_level_state);
 }
@@ -113,7 +126,7 @@ df_traverse(Node *root, Visitor &visitor,
             const AttributeWrapper &initial_render_state,
             const LevelState &initial_level_state,
             TypeHandle graph_type) {
-  DFTraverser<Visitor, LevelState> 
+  DFTraverser<Visitor, LevelState>
     dft(visitor, initial_render_state, graph_type);
   dft.start(root, initial_level_state);
 }

@@ -1,13 +1,26 @@
 // Filename: eggSurface.I
 // Created by:  drose (15Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggSurface::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggSurface::
 EggSurface(const string &name) : EggPrimitive(name) {
@@ -18,10 +31,10 @@ EggSurface(const string &name) : EggPrimitive(name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggSurface::Copy constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggSurface::
-EggSurface(const EggSurface &copy) : 
+EggSurface(const EggSurface &copy) :
   EggPrimitive(copy),
   _u_subdiv(copy._u_subdiv),
   _v_subdiv(copy._v_subdiv)
@@ -31,7 +44,7 @@ EggSurface(const EggSurface &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: EggSurface::Copy assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggSurface &EggSurface::
 operator = (const EggSurface &copy) {

@@ -2,6 +2,19 @@
 // Created by:  drose (08Feb99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef RENDERMODETRANSITION_H
 #define RENDERMODETRANSITION_H
@@ -14,11 +27,11 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : RenderModeTransition
-// Description : 
+// Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA RenderModeTransition : public OnTransition {
 public:
-  INLINE RenderModeTransition(RenderModeProperty::Mode mode, 
+  INLINE RenderModeTransition(RenderModeProperty::Mode mode,
                               double line_width = 1.0);
 
   INLINE void set_mode(RenderModeProperty::Mode mode);
@@ -26,7 +39,7 @@ public:
 
   INLINE void set_line_width(double line_width);
   INLINE double get_line_width() const;
-  
+
   virtual NodeTransition *make_copy() const;
   virtual NodeAttribute *make_attrib() const;
 

@@ -1,6 +1,19 @@
-// Filename: hermiteCurve.C
+// Filename: hermiteCurve.cxx
 // Created by:  drose (27Feb98)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pandabase.h"
@@ -29,7 +42,7 @@ static const LVecBase3f zero = LVecBase3f(0.0, 0.0, 0.0);
 //               number of significant dimensions.
 ////////////////////////////////////////////////////////////////////
 static ostream &
-show_vec3(ostream &out, int indent_level, const LVecBase3f &v, 
+show_vec3(ostream &out, int indent_level, const LVecBase3f &v,
           int num_dimensions) {
   indent(out, indent_level) << v[0];
   for (int i = 1; i<num_dimensions; i++) {
@@ -41,7 +54,7 @@ show_vec3(ostream &out, int indent_level, const LVecBase3f &v,
 ////////////////////////////////////////////////////////////////////
 //     Function: HermiteCurveCV::constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 HermiteCurveCV::
 HermiteCurveCV() {
@@ -51,12 +64,12 @@ HermiteCurveCV() {
 ////////////////////////////////////////////////////////////////////
 //     Function: HermiteCurveCV::copy_constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 HermiteCurveCV::
 HermiteCurveCV(const HermiteCurveCV &c) :
-  _p(c._p), _in(c._in), _out(c._out), 
-  _type(c._type), _name(c._name) 
+  _p(c._p), _in(c._in), _out(c._out),
+  _type(c._type), _name(c._name)
 {
 }
 
@@ -64,7 +77,7 @@ HermiteCurveCV(const HermiteCurveCV &c) :
 ////////////////////////////////////////////////////////////////////
 //     Function: HermiteCurveCV::destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 HermiteCurveCV::
 ~HermiteCurveCV() {
@@ -89,7 +102,7 @@ set_in(const LVecBase3f &in) {
       _out = _in * _out.length() / l;
     }
     break;
-    
+
   case HC_SMOOTH:
     _out = _in;
     break;
@@ -115,7 +128,7 @@ set_out(const LVecBase3f &out) {
       _in = _out * _in.length() / l;
     }
     break;
-    
+
   case HC_SMOOTH:
     _in = _out;
     break;
@@ -144,7 +157,7 @@ set_type(int type) {
   case HC_G1:
     _out = _out.length() * _in;
     break;
-    
+
   case HC_SMOOTH:
     _out = _in;
     break;
@@ -176,7 +189,7 @@ format_egg(ostream &out, int indent_level, int num_dimensions,
        float scale_in, float scale_out) const {
   if (show_in) {
     indent(out, indent_level) << "<Vertex> {\n";
-    show_vec3(out, indent_level + 2, _p - scale_in * _in / 3.0, 
+    show_vec3(out, indent_level + 2, _p - scale_in * _in / 3.0,
               num_dimensions) << "\n";
     indent(out, indent_level) << "}\n";
   }
@@ -189,15 +202,15 @@ format_egg(ostream &out, int indent_level, int num_dimensions,
   case HC_CUT:
     out << "Cut";
     break;
-    
+
   case HC_FREE:
     out << "Free";
     break;
-    
+
   case HC_G1:
     out << "G1";
     break;
-    
+
   case HC_SMOOTH:
     out << "Smooth";
     break;
@@ -208,7 +221,7 @@ format_egg(ostream &out, int indent_level, int num_dimensions,
 
   if (show_out) {
     indent(out, indent_level) << "<Vertex> {\n";
-    show_vec3(out, indent_level + 2, _p + scale_out * _out / 3.0, 
+    show_vec3(out, indent_level + 2, _p + scale_out * _out / 3.0,
               num_dimensions) << "\n";
     indent(out, indent_level) << "}\n";
   }
@@ -250,7 +263,7 @@ fillin(DatagramIterator &scan, BamReader *) {
 ////////////////////////////////////////////////////////////////////
 //     Function: HermiteCurve::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 HermiteCurve::
 HermiteCurve() {
@@ -275,7 +288,7 @@ HermiteCurve(const ParametricCurve &nc) {
 ////////////////////////////////////////////////////////////////////
 //     Function: HermiteCurve::Destructor
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 HermiteCurve::
 ~HermiteCurve() {
@@ -388,7 +401,7 @@ remove_cv(int n) {
   if (_segs.size()>0) {
     remove_curveseg(_segs.size()-1);
   }
-  
+
   recompute_basis();
   invalidate_all();
   return true;
@@ -404,7 +417,7 @@ void HermiteCurve::
 remove_all_cvs() {
   _points.erase(_points.begin(), _points.end());
   remove_all_curvesegs();
-  
+
   invalidate_all();
 }
 
@@ -640,7 +653,7 @@ get_cv_name(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: HermiteCurve::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void HermiteCurve::
 output(ostream &out) const {
@@ -670,7 +683,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: HermiteCurve::write_cv
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void HermiteCurve::
 write_cv(ostream &out, int n) const {
@@ -742,13 +755,13 @@ format_egg(ostream &out, const string &name, const string &curve_type,
   for (i = 0; i < (int)_points.size(); i++) {
     bool show_in = (i != 0);
     bool show_out = (i != (int)_points.size()-1);
-    _points[i].format_egg(out, indent_level + 2, _num_dimensions, 
+    _points[i].format_egg(out, indent_level + 2, _num_dimensions,
                           show_in, show_out,
                           show_in ? get_tlength(i-1) : 0.0,
                           show_out ? get_tlength(i) : 0.0);
   }
   indent(out, indent_level) << "}\n";
-    
+
   indent(out, indent_level) << "<BezierCurve> " << name << " {\n";
 
   if (!curve_type.empty()) {
@@ -793,7 +806,7 @@ wrap_hpr(const LVecBase3f &hpr1, LVecBase3f &hpr2) {
     while ((hpr2[i] - hpr1[i]) > 180.0) {
       hpr2[i] -= 360.0;
     }
-    
+
     while ((hpr2[i] - hpr1[i]) < -180.0) {
       hpr2[i] += 360.0;
     }

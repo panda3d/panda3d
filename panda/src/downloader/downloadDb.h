@@ -3,6 +3,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 #ifndef DOWNLOADDB_H
 #define DOWNLOADDB_H
 //
@@ -32,7 +44,7 @@ header_length multifile_name phase version size status num_files
   header_length file_name version hash
   header_length file_name version hash
 header_length multifile_name phase version size status num_files
-  header_length file_name version hash 
+  header_length file_name version hash
   header_length file_name version hash
   ...
 ...
@@ -68,7 +80,7 @@ PUBLISHED:
   // Write a database file
   bool write_client_db(Filename &file);
   bool write_server_db(Filename &file);
-  
+
   INLINE int get_client_num_multifiles(void) const;
   INLINE int get_server_num_multifiles(void) const;
 
@@ -181,10 +193,10 @@ public:
   // and one that represents the server state
   Db _client_db;
   Db _server_db;
-  
+
   // Magic number for knowing this is a download Db
-  static PN_uint32 _magic_number;  
-  static PN_uint32 _bogus_magic_number;  
+  static PN_uint32 _magic_number;
+  static PN_uint32 _bogus_magic_number;
   typedef vector<HashVal> vectorHash;
   typedef map<string, vectorHash> VersionMap;
 

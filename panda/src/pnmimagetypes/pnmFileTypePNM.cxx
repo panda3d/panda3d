@@ -1,6 +1,19 @@
-// Filename: pnm-rw-pnm.cxx
+// Filename: pnmFileTypePNM.cxx
 // Created by:  drose (04Apr98)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileTypePNM.h"
@@ -29,7 +42,7 @@ TypeHandle PNMFileTypePNM::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypePNM::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypePNM::
 PNMFileTypePNM() {
@@ -102,7 +115,7 @@ has_magic_number() const {
 bool PNMFileTypePNM::
 matches_magic_number(const string &magic_number) const {
   return (magic_number.size() >= 2) &&
-    magic_number[0] == 'P' && 
+    magic_number[0] == 'P' &&
     (magic_number[1] >= '1' && magic_number[1] <= '6');
 }
 
@@ -136,10 +149,10 @@ make_writer(FILE *file, bool owns_file) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypePNM::Reader::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypePNM::Reader::
-Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) : 
+Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
   PNMReader(type, file, owns_file)
 {
   if (!read_magic_number(_file, magic_number, 2)) {
@@ -154,8 +167,8 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
 
   //  pnm_pbmmaxval = PNM_MAXMAXVAL;  /* use larger value for better results */
 
-  _ftype = 
-    ((unsigned char)magic_number[0] << 8) | 
+  _ftype =
+    ((unsigned char)magic_number[0] << 8) |
     (unsigned char)magic_number[1];
 
   switch ( PNM_FORMAT_TYPE(_ftype) ) {
@@ -163,18 +176,18 @@ Reader(PNMFileType *type, FILE *file, bool owns_file, string magic_number) :
     ppm_readppminitrest( file, &_x_size, &_y_size, &_maxval );
     _num_channels = 3;
     break;
-    
+
   case PGM_TYPE:
     pgm_readpgminitrest( file, &_x_size, &_y_size, &_maxval );
     _num_channels = 1;
     break;
-    
+
   case PBM_TYPE:
     pbm_readpbminitrest( file, &_x_size, &_y_size );
     _num_channels = 1;
     _maxval = pnm_pbmmaxval;
     break;
-    
+
   default:
     _is_valid = false;
   }
@@ -240,7 +253,7 @@ read_row(xel *row_data, xelval *) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypePNM::Writer::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypePNM::Writer::
 Writer(PNMFileType *type, FILE *file, bool owns_file) :
@@ -284,7 +297,7 @@ write_header() {
   case PNMImageHeader::CT_two_channel:
     _pnm_format = PGM_TYPE;
     break;
-    
+
   case PNMImageHeader::CT_color:
   case PNMImageHeader::CT_four_channel:
     _pnm_format = PPM_TYPE;

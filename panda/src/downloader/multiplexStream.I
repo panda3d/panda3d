@@ -1,15 +1,28 @@
 // Filename: multiplexStream.I
 // Created by:  drose (27Nov00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MultiplexStream::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE MultiplexStream::
-MultiplexStream() : ostream(&_msb) { 
+MultiplexStream() : ostream(&_msb) {
   setf(ios::unitbuf);
 }
 
@@ -22,7 +35,7 @@ MultiplexStream() : ostream(&_msb) {
 ////////////////////////////////////////////////////////////////////
 INLINE void MultiplexStream::
 add_ostream(ostream *out, bool delete_later) {
-  _msb.add_output(MultiplexStreamBuf::BT_none, 
+  _msb.add_output(MultiplexStreamBuf::BT_none,
                   MultiplexStreamBuf::OT_ostream,
                   out, NULL, delete_later);
 }
@@ -35,7 +48,7 @@ add_ostream(ostream *out, bool delete_later) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool MultiplexStream::
 add_stdio_file(FILE *fout, bool close_when_done) {
-  _msb.add_output(MultiplexStreamBuf::BT_line, 
+  _msb.add_output(MultiplexStreamBuf::BT_line,
                   MultiplexStreamBuf::OT_ostream,
                   NULL, fout, close_when_done);
   return true;
@@ -48,7 +61,7 @@ add_stdio_file(FILE *fout, bool close_when_done) {
 ////////////////////////////////////////////////////////////////////
 INLINE void MultiplexStream::
 add_standard_output() {
-  _msb.add_output(MultiplexStreamBuf::BT_none, 
+  _msb.add_output(MultiplexStreamBuf::BT_none,
                   MultiplexStreamBuf::OT_ostream,
                   &cout, NULL, false);
 }
@@ -70,7 +83,7 @@ add_file(Filename file) {
   }
   out->setf(ios::unitbuf);
 
-  _msb.add_output(MultiplexStreamBuf::BT_line, 
+  _msb.add_output(MultiplexStreamBuf::BT_line,
                   MultiplexStreamBuf::OT_ostream,
                   out, NULL, true);
   return true;
@@ -89,7 +102,7 @@ add_file(Filename file) {
 ////////////////////////////////////////////////////////////////////
 INLINE void MultiplexStream::
 add_system_debug() {
-  _msb.add_output(MultiplexStreamBuf::BT_line, 
+  _msb.add_output(MultiplexStreamBuf::BT_line,
                   MultiplexStreamBuf::OT_system_debug);
 }
 

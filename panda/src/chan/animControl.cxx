@@ -1,6 +1,19 @@
 // Filename: animControl.cxx
 // Created by:  drose (19Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "animControl.h"
@@ -15,7 +28,7 @@
 TypeHandle AnimControl::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AnimControl::Constructor 
+//     Function: AnimControl::Constructor
 //       Access: Public, Scheme
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -135,11 +148,11 @@ loop(bool restart, int from, int to) {
 
     if ((to == 0 && from == get_num_frames()-1) ||
         (to == from-1)) {
-      
+
       // In this case, the user has specified to loop over the whole
       // range of animation.  We don't need a special jump action to
       // handle this.
-      
+
     } else {
       // Otherwise, set up a jump action to effect the loop.  This isn't
       // completely accurate, since it will always jump exactly to the
@@ -147,18 +160,18 @@ loop(bool restart, int from, int to) {
       // we'd gotten to, but it should be reasonably close, especially
       // if the number of frames in the loop is large enough and/or the
       // frame rate is high enough.
-      insert_jump_action(_actions, (to-1+get_num_frames())%get_num_frames(), 
+      insert_jump_action(_actions, (to-1+get_num_frames())%get_num_frames(),
                          from);
     }
   } else {
 
     if ((from == 0 && to == get_num_frames()-1) ||
         (from == to-1)) {
-      
+
       // In this case, the user has specified to loop over the whole
       // range of animation.  We don't need a special jump action to
       // handle this.
-      
+
     } else {
       // Otherwise, set up a jump action to effect the loop.  This isn't
       // completely accurate, since it will always jump exactly to the
@@ -260,7 +273,7 @@ remove_event(const string &event_name) {
       int p_removed = 0;
       for (ai = _actions.begin(); ai != _actions.end(); ++ai) {
         const Action &action = (*ai).second;
-        if (action._type == AT_event && 
+        if (action._type == AT_event &&
             action._event->get_name() == event_name) {
           // Remove this event by not copying it to new_actions.
           p_removed++;
@@ -318,7 +331,7 @@ advance_time(double time) {
   double elapsed_time = time - _as_of_time;
   double elapsed_frames = elapsed_time * get_frame_rate();
   _as_of_time = time;
-    
+
   if (_playing && elapsed_frames != 0.0) {
     int orig_frame = get_frame();
 
@@ -343,7 +356,7 @@ advance_time(double time) {
       }
     } else {
       // Normally, we'll be playing the animation forward.
-      
+
       if (new_frame < get_num_frames()) {
         do_actions_forward(orig_frame+1, new_frame);
       } else {
@@ -368,7 +381,7 @@ bool AnimControl::
 channel_has_changed(AnimChannelBase *channel) const {
   if (_marked_frame < 0) {
     return true;
-  } 
+  }
 
   int this_frame = get_frame();
 
@@ -394,11 +407,11 @@ mark_channels() {
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void AnimControl::
 output(ostream &out) const {
-  out << "AnimControl(" << get_part()->get_name() 
+  out << "AnimControl(" << get_part()->get_name()
       << ", " << get_anim()->get_name() << ")";
 }
 
@@ -482,15 +495,15 @@ do_actions_forward(int from, int to) {
   if (to >= from) {
     Actions::const_iterator lower = _actions.lower_bound(from);
     Actions::const_iterator upper = _actions.lower_bound(to+1);
-    
+
     int sequence_frame = -1;
     const Action *sequence_action;
-    
+
     Actions::const_iterator ai;
     for (ai = lower; ai != upper; ++ai) {
       int frame = (*ai).first;
       const Action &action = (*ai).second;
-      
+
       if (sequence_frame != -1 && frame > sequence_frame) {
         // We encountered an action that resequenced our frame numbers.
         // Now that we've finished evaluating all the other actions that
@@ -499,10 +512,10 @@ do_actions_forward(int from, int to) {
         do_sequence_action(sequence_frame, *sequence_action);
         return false;
       }
-      
+
       do_action(frame, action, sequence_frame, sequence_action);
     }
-    
+
     if (sequence_frame != -1) {
       do_sequence_action(sequence_frame, *sequence_action);
       return false;
@@ -534,15 +547,15 @@ do_actions_backward(int from, int to) {
 #endif
     Action_reverse_iterator lower(_actions.upper_bound(from));
     Action_reverse_iterator upper(_actions.upper_bound(to-1));
-    
+
     int sequence_frame = -1;
     const Action *sequence_action;
-    
+
     Action_reverse_iterator ai;
     for (ai = lower; ai != upper; ++ai) {
       int frame = (*ai).first;
       const Action &action = (*ai).second;
-      
+
       if (sequence_frame != -1 && frame < sequence_frame) {
         // We encountered an action that resequenced our frame numbers.
         // Now that we've finished evaluating all the other actions that
@@ -551,10 +564,10 @@ do_actions_backward(int from, int to) {
         do_sequence_action(sequence_frame, *sequence_action);
         return false;
       }
-      
+
       do_action(frame, action, sequence_frame, sequence_action);
     }
-    
+
     if (sequence_frame != -1) {
       do_sequence_action(sequence_frame, *sequence_action);
       return false;
@@ -577,7 +590,7 @@ do_actions_backward(int from, int to) {
 //               other actions this frame have been executed).
 ////////////////////////////////////////////////////////////////////
 void AnimControl::
-do_action(int frame, const Action &action, 
+do_action(int frame, const Action &action,
           int &sequence_frame, const Action *&sequence_action) {
   switch (action._type) {
   case AT_stop:
@@ -626,7 +639,7 @@ do_sequence_action(int, const Action &action) {
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimControl::Action::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void AnimControl::Action::
 output(ostream &out) const {

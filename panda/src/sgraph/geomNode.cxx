@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "geomNode.h"
 #include "geomTransformer.h"
@@ -34,7 +43,7 @@ GeomNode(const string &name) : NamedNode(name), _num_geoms(0) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 GeomNode::
-GeomNode(const GeomNode &copy) : 
+GeomNode(const GeomNode &copy) :
   NamedNode(copy),
   _geoms(copy._geoms),
   _num_geoms(0)
@@ -96,7 +105,7 @@ xform(const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomNode::
 write(ostream &out, int indent_level) const {
@@ -114,7 +123,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::write_verbose
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void GeomNode::
 write_verbose(ostream &out, int indent_level) const {
@@ -130,7 +139,7 @@ write_verbose(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomNode::draw 
+//     Function: GeomNode::draw
 //       Access: Public
 //  Description: Draws all the geometry belonging to the geom node,
 //               in the gsg's current state.
@@ -265,7 +274,7 @@ write_datagram(BamWriter *manager, Datagram &me)
 //     Function: GeomNode::complete_pointers
 //       Access: Public
 //  Description: Takes in a vector of pointes to TypedWritable
-//               objects that correspond to all the requests for 
+//               objects that correspond to all the requests for
 //               pointers that this object made to BamReader.
 ////////////////////////////////////////////////////////////////////
 int GeomNode::

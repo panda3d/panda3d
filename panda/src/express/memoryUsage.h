@@ -1,6 +1,19 @@
 // Filename: memoryUsage.h
 // Created by:  drose (25May00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef MEMORYUSAGE_H
@@ -52,9 +65,9 @@ PUBLISHED:
 #ifndef NDEBUG
   INLINE static int get_num_pointers();
   INLINE static void get_pointers(MemoryUsagePointers &result);
-  INLINE static void get_pointers_of_type(MemoryUsagePointers &result, 
+  INLINE static void get_pointers_of_type(MemoryUsagePointers &result,
                                           TypeHandle type);
-  INLINE static void get_pointers_of_age(MemoryUsagePointers &result, 
+  INLINE static void get_pointers_of_age(MemoryUsagePointers &result,
                                          double from, double to);
   INLINE static void get_pointers_with_zero_count(MemoryUsagePointers &result);
 
@@ -68,7 +81,7 @@ PUBLISHED:
 private:
   MemoryUsage();
   static MemoryUsage *get_global_ptr();
-  
+
   void ns_record_pointer(ReferenceCount *ptr);
   void ns_update_type(ReferenceCount *ptr, TypeHandle type);
   void ns_update_type(ReferenceCount *ptr, TypedObject *typed_ptr);
@@ -76,9 +89,9 @@ private:
 
   int ns_get_num_pointers();
   void ns_get_pointers(MemoryUsagePointers &result);
-  void ns_get_pointers_of_type(MemoryUsagePointers &result, 
+  void ns_get_pointers_of_type(MemoryUsagePointers &result,
                                TypeHandle type);
-  void ns_get_pointers_of_age(MemoryUsagePointers &result, 
+  void ns_get_pointers_of_age(MemoryUsagePointers &result,
                               double from, double to);
   void ns_get_pointers_with_zero_count(MemoryUsagePointers &result);
   void ns_freeze();
@@ -100,7 +113,7 @@ private:
     TypedObject *_typed_ptr;
     TypeHandle _static_type;
     TypeHandle _dynamic_type;
-    
+
     double _time;
     int _freeze_index;
     bool _reconsider_dynamic_type;

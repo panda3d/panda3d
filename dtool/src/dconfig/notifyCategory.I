@@ -1,13 +1,26 @@
 // Filename: notifyCategory.I
 // Created by:  drose (29Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategory::get_fullname
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE string NotifyCategory::
 get_fullname() const {
@@ -17,7 +30,7 @@ get_fullname() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategory::get_basename
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE string NotifyCategory::
 get_basename() const {
@@ -27,7 +40,7 @@ get_basename() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategory::get_severity
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE NotifySeverity NotifyCategory::
 get_severity() const {

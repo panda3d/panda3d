@@ -1,6 +1,19 @@
 // Filename: interrogateDatabase.h
 // Created by:  drose (01Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef INTERROGATEDATABASE_H
@@ -71,13 +84,13 @@ public:
   static int get_file_minor_version();
   static int get_current_major_version();
   static int get_current_minor_version();
-  
+
 public:
   // Functions to build the database.
   int get_next_index();
   void add_type(TypeIndex index, const InterrogateType &type);
   void add_function(FunctionIndex index, const InterrogateFunction &function);
-  void add_wrapper(FunctionWrapperIndex index, 
+  void add_wrapper(FunctionWrapperIndex index,
                    const InterrogateFunctionWrapper &wrapper);
   void add_manifest(ManifestIndex index, const InterrogateManifest &manifest);
   void add_element(ElementIndex index, const InterrogateElement &element);

@@ -1,6 +1,19 @@
 // Filename: geomBinBackToFront.I
 // Created by:  drose (13Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "cullTraverser.h"
@@ -8,10 +21,10 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinBackToFront::NodeEntry::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomBinBackToFront::NodeEntry::
-NodeEntry(float distance, const PT(CullState) &state, 
+NodeEntry(float distance, const PT(CullState) &state,
           const ArcChain &arc_chain, bool is_direct) :
   _distance(distance),
   _state(state),
@@ -23,7 +36,7 @@ NodeEntry(float distance, const PT(CullState) &state,
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinBackToFront::NodeEntry::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomBinBackToFront::NodeEntry::
 NodeEntry(const GeomBinBackToFront::NodeEntry &copy) :
@@ -37,7 +50,7 @@ NodeEntry(const GeomBinBackToFront::NodeEntry &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinBackToFront::NodeEntry::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomBinBackToFront::NodeEntry::
 operator = (const NodeEntry &copy) {
@@ -49,7 +62,7 @@ operator = (const NodeEntry &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinBackToFront::NodeEntry::Ordering Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeomBinBackToFront::NodeEntry::
 operator < (const NodeEntry &other) const {
@@ -59,7 +72,7 @@ operator < (const NodeEntry &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinBackToFront::NodeEntry::draw
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void GeomBinBackToFront::NodeEntry::
 draw(CullTraverser *trav) const {
@@ -74,10 +87,10 @@ draw(CullTraverser *trav) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomBinBackToFront::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GeomBinBackToFront::
 GeomBinBackToFront(const string &name) :
-  GeomBin(name) 
+  GeomBin(name)
 {
 }

@@ -1,6 +1,19 @@
 // Filename: eggSwitchCondition.cxx
 // Created by:  drose (08Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggSwitchCondition.h"
@@ -14,7 +27,7 @@ TypeHandle EggSwitchConditionDistance::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: EggSwitchConditionDistance::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggSwitchConditionDistance::
 EggSwitchConditionDistance(double switch_in, double switch_out,
@@ -29,7 +42,7 @@ EggSwitchConditionDistance(double switch_in, double switch_out,
 ////////////////////////////////////////////////////////////////////
 //     Function: EggSwitchConditionDistance::make_copy
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggSwitchCondition *EggSwitchConditionDistance::
 make_copy() const {
@@ -40,7 +53,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggSwitchConditionDistance::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void EggSwitchConditionDistance::
 write(ostream &out, int indent_level) const {

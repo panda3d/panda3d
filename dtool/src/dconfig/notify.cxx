@@ -1,6 +1,19 @@
-// Filename: notify.C
+// Filename: notify.cxx
 // Created by:  drose (28Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "notify.h"
@@ -18,7 +31,7 @@ Notify *Notify::_global_ptr = (Notify *)NULL;
 ////////////////////////////////////////////////////////////////////
 //     Function: Notify::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Notify::
 Notify() {
@@ -33,7 +46,7 @@ Notify() {
 ////////////////////////////////////////////////////////////////////
 //     Function: Notify::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Notify::
 ~Notify() {
@@ -252,7 +265,7 @@ get_category(const string &basename, NotifyCategory *parent_category) {
     }
   }
 
-  NotifyCategory *category = 
+  NotifyCategory *category =
     new NotifyCategory(fullname, basename, parent_category);
   _categories.insert(Categories::value_type(fullname, category));
   return category;
@@ -380,7 +393,7 @@ bool Notify::
 assert_failure(const char *expression, int line,
                const char *source_file) {
   ostringstream message_str;
-  message_str 
+  message_str
     << expression << " at line " << line << " of " << source_file;
   string message = message_str.str();
 
@@ -421,7 +434,7 @@ string_severity(const string &str) {
   // comparison.
   string lstring;
   for (string::const_iterator si = str.begin();
-       si != str.end(); 
+       si != str.end();
        ++si) {
     lstring += tolower(*si);
   }

@@ -1,6 +1,19 @@
 // Filename: lineSegs.cxx
-// Created by:   (24May00)
-// 
+// Created by:  (24May00)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "lineSegs.h"
@@ -81,7 +94,7 @@ draw_to(const LVecBase3f &v) {
     // Get the current SegmentList, which was the last one we added to
     // the LineList.
     SegmentList &segs = _list.back();
-    
+
     // Add the new point.
     segs.push_back(Point(v, _color));
   }
@@ -97,7 +110,7 @@ draw_to(const LVecBase3f &v) {
 bool LineSegs::
 is_empty() {
   return _list.empty();
-}  
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LineSegs::get_current_position
@@ -155,7 +168,7 @@ create(GeomNode *previous, bool) {
       } else {
         lengths.push_back(segs.size());
       }
-      
+
       for (sl = segs.begin(); sl != segs.end(); sl++) {
         if (segs.size() >= 2) {
           line_index.push_back(v);
@@ -166,7 +179,7 @@ create(GeomNode *previous, bool) {
         nassertr(v == (int)_created_verts.size(), previous);
       }
     }
-      
+
     // Now create the lines.
     if (line_index.size() > 0) {
       // Create a new Geom and add the line segments.
@@ -193,7 +206,7 @@ create(GeomNode *previous, bool) {
 
       previous->add_geom(geom);
     }
-    
+
     // And now create the points.
     if (point_index.size() > 0) {
       // Create a new Geom and add the points.

@@ -1,6 +1,19 @@
 // Filename: collisionHandlerPhysical.cxx
 // Created by:  drose (03Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "collisionHandlerPhysical.h"
@@ -61,7 +74,7 @@ set_mat(const LMatrix4f &mat) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerPhysical::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CollisionHandlerPhysical::
 CollisionHandlerPhysical() {
@@ -70,7 +83,7 @@ CollisionHandlerPhysical() {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerPhysical::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CollisionHandlerPhysical::
 ~CollisionHandlerPhysical() {
@@ -101,7 +114,7 @@ add_entry(CollisionEntry *entry) {
   nassertv(entry != (CollisionEntry *)NULL);
   CollisionHandlerEvent::add_entry(entry);
 
-  if (entry->get_from()->is_tangible() && 
+  if (entry->get_from()->is_tangible() &&
       (!entry->has_into() || entry->get_into()->is_tangible())) {
     _from_entries[entry->get_from_node()].push_back(entry);
   }

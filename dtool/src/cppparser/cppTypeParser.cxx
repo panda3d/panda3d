@@ -1,6 +1,19 @@
-// Filename: cppTypeParser.C
+// Filename: cppTypeParser.cxx
 // Created by:  drose (14Dec99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -10,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypeParser::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPTypeParser::
 CPPTypeParser(CPPScope *current_scope, CPPScope *global_scope) :
@@ -23,7 +36,7 @@ CPPTypeParser(CPPScope *current_scope, CPPScope *global_scope) :
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypeParser::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 CPPTypeParser::
 ~CPPTypeParser() {
@@ -32,7 +45,7 @@ CPPTypeParser::
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypeParser::parse_type
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPTypeParser::
 parse_type(const string &type) {
@@ -49,7 +62,7 @@ parse_type(const string &type) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypeParser::parse_type
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool CPPTypeParser::
 parse_type(const string &type, const CPPPreprocessor &filepos) {
@@ -68,7 +81,7 @@ parse_type(const string &type, const CPPPreprocessor &filepos) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CPPTypeParser::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void CPPTypeParser::
 output(ostream &out) const {

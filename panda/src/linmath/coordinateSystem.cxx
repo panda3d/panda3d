@@ -1,6 +1,19 @@
 // Filename: coordinateSystem.cxx
 // Created by:  drose (24Sep99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "coordinateSystem.h"
@@ -80,7 +93,7 @@ operator << (ostream &out, CoordinateSystem cs) {
 
   case CS_zup_left:
     return out << "zup_left";
-    
+
   case CS_yup_left:
     return out << "yup_left";
 

@@ -1,6 +1,19 @@
 // Filename: multiTransitionHelpers.I
 // Created by:  drose (15Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -44,7 +57,7 @@ dmap_compose(InputIterator1 first1, InputIterator1 last1,
     ++result;
   }
 
-  while (first2 != last2) { 
+  while (first2 != last2) {
     *result = *first2;
     ++first2;
     ++result;
@@ -102,7 +115,7 @@ dmap_invert_compose(InputIterator1 first1, InputIterator1 last1,
     ++result;
   }
 
-  while (first2 != last2) { 
+  while (first2 != last2) {
     *result = *first2;
     ++first2;
     ++result;
@@ -189,7 +202,7 @@ dmap_equiv(InputIterator1 first1, InputIterator1 last1,
     ++first1;
   }
 
-  while (first2 != last2) { 
+  while (first2 != last2) {
     if ((*first2).second != TD_identity) {
       return false;
     }
@@ -254,7 +267,7 @@ dmap_compare(InputIterator1 first1, InputIterator1 last1,
     ++first1;
   }
 
-  while (first2 != last2) { 
+  while (first2 != last2) {
     if ((*first2).second != TD_identity) {
       // list2 is longer.
       return 1;
@@ -381,7 +394,7 @@ bmap_apply(InputIterator1 first1, InputIterator1 last1,
         ++result;
         break;
       }
-      
+
       ++first2;
 
     } else {  // ((*first2).first == (*first1))
@@ -419,17 +432,17 @@ bmap_apply(InputIterator1 first1, InputIterator1 last1,
     ++first1;
   }
 
-  while (first2 != last2) { 
+  while (first2 != last2) {
     // The transition mentions this property that wasn't previously
     // in the attribute.  It becomes a member of the attribute only
     // if the transition explicitly turned it on.
-    
+
     if ((*first2).second == want_dirs) {
       *result = (*first2).first;
       ++result;
       break;
     }
-    
+
     ++first2;
   }
   return result;

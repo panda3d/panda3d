@@ -1,6 +1,19 @@
 // Filename: pnmFileTypeSGIWriter.cxx
 // Created by:  drose (17Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileTypeSGI.h"
@@ -39,7 +52,7 @@
 #define MAXVAL_BYTE     255
 #define MAXVAL_WORD     65535
 
-inline void 
+inline void
 put_byte(FILE *out_file, unsigned char b) {
   putc(b, out_file);
 }
@@ -67,7 +80,7 @@ put_short_as_byte(FILE *out_file, short s) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeSGI::Writer::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeSGI::Writer::
 Writer(PNMFileType *type, FILE *file, bool owns_file) :
@@ -78,7 +91,7 @@ Writer(PNMFileType *type, FILE *file, bool owns_file) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeSGI::Writer::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeSGI::Writer::
 ~Writer() {
@@ -149,7 +162,7 @@ write_header() {
   } else {
     return false;
   }
-  
+
   if( sgi_storage_type != STORAGE_VERBATIM ) {
     table = new TabEntry[_num_channels * _y_size];
     memset(table, 0, _num_channels * _y_size * sizeof(TabEntry));
@@ -195,7 +208,7 @@ write_row(xel *row_data, xelval *alpha_data) {
     write_channels(channel, put_short_as_byte);
   else
     write_channels(channel, put_big_short);
-  
+
   for (int i = 0; i < _num_channels; i++) {
     delete[] channel[i].data;
   }
@@ -246,7 +259,7 @@ write_table() {
 void PNMFileTypeSGI::Writer::
 write_channels(ScanLine channel[], void (*put)(FILE *, short)) {
   int i, col;
-  
+
   for( i = 0; i < _num_channels; i++ ) {
     Table(i).start = ftell(_file);
     Table(i).length = channel[i].length * bpc;
@@ -262,12 +275,12 @@ void PNMFileTypeSGI::Writer::
 build_scanline(ScanLine output[], xel *row_data, xelval *alpha_data) {
   int col;
   ScanElem *temp;
-  
+
   if( sgi_storage_type != STORAGE_VERBATIM ) {
     rletemp = (ScanElem *)alloca(WORSTCOMPR(_x_size) * sizeof(ScanElem));
   }
   temp = new ScanElem[_x_size];
-  
+
   if( _num_channels <= 2 ) {
     for( col = 0; col < _x_size; col++ )
       temp[col] = (ScanElem)

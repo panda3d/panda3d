@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "planarReflector.h"
 #include "config_shader.h"
@@ -45,7 +54,7 @@ TypeHandle PlanarReflector::_type_handle;
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-PlanarReflector::PlanarReflector(void) : CasterShader() 
+PlanarReflector::PlanarReflector(void) : CasterShader()
 {
   Colorf c(0.8f, 0.8f, 0.8f, 1.0f);
   init(NULL, c);
@@ -80,7 +89,7 @@ PlanarReflector(const Colorf& c) : CasterShader()
 //  Description:
 ////////////////////////////////////////////////////////////////////
 PlanarReflector::
-PlanarReflector(PlaneNode* plane_node, const Colorf& c) : CasterShader() 
+PlanarReflector(PlaneNode* plane_node, const Colorf& c) : CasterShader()
 {
   init(plane_node, c);
 }
@@ -96,7 +105,7 @@ void PlanarReflector::init(PlaneNode *plane_node, const Colorf& c)
     plane_node = new PlaneNode;
 
   _save_color_buffer = true;
-  _save_depth_buffer = true; 
+  _save_depth_buffer = true;
   _clip_to_plane = true;
 
   _color_buffer = NULL;
@@ -109,7 +118,7 @@ void PlanarReflector::init(PlaneNode *plane_node, const Colorf& c)
 ////////////////////////////////////////////////////////////////////
 //     Function: PlanarReflector::pre_apply
 //       Access:
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void PlanarReflector::
 pre_apply(Node *, const AllAttributesWrapper &,
@@ -160,7 +169,7 @@ apply(Node *node, const AllAttributesWrapper &init_state,
   {
     // Copy the transition wrapper so we can modify it freely.
     AllTransitionsWrapper trans(net_trans);
-    
+
     // Save the current fully-rendered scene that is in the back buffer
     int buffer_mask = RenderBuffer::T_stencil;
     if (_save_color_buffer) {
@@ -172,11 +181,11 @@ apply(Node *node, const AllAttributesWrapper &init_state,
       ColorMaskTransition *cm = new ColorMaskTransition(0);
       trans.set_transition(cm);
     } else {
-      ColorMaskTransition *cm = 
+      ColorMaskTransition *cm =
         new ColorMaskTransition(ColorMaskProperty::M_a);
       trans.set_transition(cm);
     }
-    
+
     if (_save_depth_buffer)
     {
       gsg->copy_pixel_buffer(_depth_buffer,
@@ -184,7 +193,7 @@ apply(Node *node, const AllAttributesWrapper &init_state,
                              gsg->get_render_buffer(RenderBuffer::T_depth));
       //                     gsg->get_render_buffer(RenderBuffer::T_back));
     }
-    
+
     // The scene has already been rendered so we need to stencil in an area
     // on the reflecting plane that is covered by the reflected objects.
 
@@ -192,51 +201,51 @@ apply(Node *node, const AllAttributesWrapper &init_state,
     trans.set_transition(new LightTransition(LightTransition::all_off()));
 
     // Set the depth test to M_equal (? Or should this be M_none?)
-    DepthTestTransition *dta = 
+    DepthTestTransition *dta =
       new DepthTestTransition(DepthTestProperty::M_equal);
     trans.set_transition(dta);
-    
+
     // Turn off writes to the depth buffer
     DepthWriteTransition *dwa = new DepthWriteTransition;
     dwa->set_off();
     trans.set_transition(dwa);
-    
+
     // Enable the stencil buffer
-    StencilTransition *sa = 
+    StencilTransition *sa =
       new StencilTransition(StencilProperty::M_not_equal,
                             StencilProperty::A_replace);
     trans.set_transition(sa);
-    
+
     // Disable texturing
     trans.set_transition(tex_off);
-    
+
     // Disable blending
     trans.set_transition(new ColorBlendTransition(ColorBlendProperty::M_none));
-    
+
     // Clear the stencil buffer (and color buffer if we're saving it)
     gsg->clear(gsg->get_render_buffer(buffer_mask));
-    
+
     // Draw the reflecting object
     gsg->render_subgraph(&drt, node, init_state, trans);
   }
 
   {
     // Reflecting area on the plane has a stencil value of 1.  We can now
-    // draw the reflected objects into this area. 
+    // draw the reflected objects into this area.
     gsg->clear(gsg->get_render_buffer(RenderBuffer::T_depth));
-    
+
     // Copy the transition wrapper so we can modify it freely.
     AllTransitionsWrapper trans(net_trans);
 
     // Adjust the stencil buffer properties
-    StencilTransition *sa = 
+    StencilTransition *sa =
       new StencilTransition(StencilProperty::M_equal,
                             StencilProperty::A_keep);
     trans.set_transition(sa);
 
 
     // Draw back facing polys only
-    CullFaceTransition *cf = 
+    CullFaceTransition *cf =
       new CullFaceTransition(CullFaceProperty::M_cull_counter_clockwise);
     trans.set_transition(cf);
 
@@ -262,7 +271,7 @@ apply(Node *node, const AllAttributesWrapper &init_state,
 
     // Parent this caster group to the node itself, since it's already
     // converted to the coordinate space of the node.
-    PT(RenderRelation) caster_arc = 
+    PT(RenderRelation) caster_arc =
       new RenderRelation(_plane_node, caster_group);
 
     LMatrix4f plane_mat = _plane_node->get_plane().get_reflection_mat();
@@ -297,17 +306,17 @@ apply(Node *node, const AllAttributesWrapper &init_state,
 
     gsg->render_subgraph(&drt, node, init_state, trans);
   }
-    
+
   // Blend the previously rendered image with the reflected image
-  
-  if (_save_color_buffer) { 
+
+  if (_save_color_buffer) {
     NodeAttributes na;
-    
-    ColorBlendAttribute *cb = 
+
+    ColorBlendAttribute *cb =
       new ColorBlendAttribute;
     cb->set_mode(ColorBlendProperty::M_add);
     na.set_attribute(ColorBlendTransition::get_class_type(), cb);
-    
+
     gsg->draw_pixel_buffer(_color_buffer, gsg->get_current_display_region(),
                            gsg->get_render_buffer(RenderBuffer::T_back), na);
   } else {
@@ -315,25 +324,25 @@ apply(Node *node, const AllAttributesWrapper &init_state,
     // Final color is reflecting obj color + (ref. obj. color * reflectivity)
     AllTransitionsWrapper trans(net_trans);
 
-    StencilTransition *sa = 
+    StencilTransition *sa =
       new StencilTransition(StencilProperty::M_equal,
                             StencilProperty::A_keep);
     trans.set_transition(sa);
 
-    DepthTestTransition *dta = 
+    DepthTestTransition *dta =
       new DepthTestTransition(DepthTestProperty::M_equal);
     trans.set_transition(dta);
-    
+
     DepthWriteTransition *dwa = new DepthWriteTransition;
     dwa->set_off();
     trans.set_transition(dwa);
 
-    ColorBlendTransition *cb = 
+    ColorBlendTransition *cb =
       new ColorBlendTransition(ColorBlendProperty::M_add);
     trans.set_transition(cb);
 
     gsg->render_subgraph(&drt, node, init_state, trans);
-  } 
+  }
 
   if (_save_depth_buffer)
   {
@@ -341,7 +350,7 @@ apply(Node *node, const AllAttributesWrapper &init_state,
                            gsg->get_render_buffer(RenderBuffer::T_depth));
               //           gsg->get_render_buffer(RenderBuffer::T_back));
   }
-  
+
 
   // Restore the stencil buffer clear value
   gsg->set_stencil_clear_value(clear_stencil);

@@ -2,6 +2,19 @@
 // Created by:  mike (02Feb99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef DXGRAPHICSSTATEGUARDIAN_H
 #define DXGRAPHICSSTATEGUARDIAN_H
@@ -56,7 +69,7 @@ INLINE ostream &operator << (ostream &out, GLenum v) {
 #define DX_DECLARE_CLEAN(type, var) \
     type var;                       \
     ZeroMemory(&var, sizeof(type));  \
-    var.dwSize = sizeof(type);   
+    var.dwSize = sizeof(type);
 
 #define RELEASE(object) if (object!=NULL) {object->Release(); object = NULL;}
 
@@ -93,7 +106,7 @@ public:
   virtual void render_frame(const AllAttributesWrapper &initial_state);
   virtual void render_scene(Node *root, ProjectionNode *projnode,
                 const AllAttributesWrapper &initial_state);
-  virtual void render_subgraph(RenderTraverser *traverser, 
+  virtual void render_subgraph(RenderTraverser *traverser,
                    Node *subgraph, ProjectionNode *projnode,
                    const AllAttributesWrapper &initial_state,
                    const AllTransitionsWrapper &net_trans);
@@ -175,7 +188,7 @@ public:
   virtual void end_decal(GeomNode *base_geom);
 
   INLINE float compute_distance_to(const LPoint3f &point) const;
-  
+
   void reset_ambient();
 
 protected:
@@ -192,10 +205,10 @@ protected:
   void bind_texture(TextureContext *tc);
 
   // for storage of the flexible vertex format
-  char *_pCurFvfBufPtr,*_pFvfBufBasePtr;   
+  char *_pCurFvfBufPtr,*_pFvfBufBasePtr;
   INLINE void add_to_FVFBuf(void *data,  size_t bytes) ;
   WORD *_index_buf;  // base of malloced array
-  
+
   bool                  _dx_ready;
   bool                  _bIsTNLDevice;
   LPDIRECTDRAWSURFACE7  _back;
@@ -212,14 +225,14 @@ protected:
   LPDDPIXELFORMAT   _pTexPixFmts;
   DXTextureContext  *_pCurTexContext;
 
-  RenderBuffer::Type _cur_read_pixel_buffer;  // source for copy_pixel_buffer operation 
+  RenderBuffer::Type _cur_read_pixel_buffer;  // source for copy_pixel_buffer operation
 
   D3DDEVICEDESC7    _D3DDevDesc;
 
   void set_clipper(RECT cliprect);
   void GenerateSphere(void *pVertexSpace,DWORD dwVertSpaceByteSize,
                     void *pIndexSpace,DWORD dwIndexSpaceByteSize,
-                    D3DVECTOR *pCenter, float fRadius, 
+                    D3DVECTOR *pCenter, float fRadius,
                     DWORD wNumRings, DWORD wNumSections, float sx, float sy, float sz,
                     DWORD *pNumVertices,DWORD *pNumIndices,DWORD fvfFlags,DWORD dwVertSize);
   HRESULT DXGraphicsStateGuardian::RestoreAllVideoSurfaces(void);
@@ -247,7 +260,7 @@ protected:
 /*  INLINE void enable_multisample_alpha_one(bool val);
   INLINE void enable_multisample_alpha_mask(bool val);
   INLINE void enable_multisample(bool val, LPDIRECT3DDEVICE7 d3dDevice);
-*/ 
+*/
   INLINE void enable_alpha_test(bool val);
   INLINE void enable_line_smooth(bool val);
   INLINE void enable_blend(bool val);
@@ -282,7 +295,7 @@ protected:
   short     perComp;
 
   // iterators for primitives
-  Geom::VertexIterator vi; 
+  Geom::VertexIterator vi;
   Geom::NormalIterator ni;
   Geom::TexCoordIterator ti;
   Geom::ColorIterator ci;
@@ -363,7 +376,7 @@ protected:
 
   PTA(PlaneNode*) _available_clip_plane_ids;
   int _max_clip_planes;
-  bool* _cur_clip_plane_enabled; 
+  bool* _cur_clip_plane_enabled;
   int _cur_clip_plane_id;
 
   CPT(DisplayRegion) _actual_display_region;

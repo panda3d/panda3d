@@ -1,6 +1,20 @@
 // Filename: bamWriter.cxx
 // Created by:  jason (08Jun00)
 //
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #include <pandabase.h>
 #include <notify.h>
@@ -12,10 +26,10 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: BamWriter::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 BamWriter::
-BamWriter(DatagramSink *sink) : 
+BamWriter(DatagramSink *sink) :
   _target(sink)
 {
 }
@@ -23,7 +37,7 @@ BamWriter(DatagramSink *sink) :
 ////////////////////////////////////////////////////////////////////
 //     Function: BamWriter::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 BamWriter::
 ~BamWriter() {
@@ -132,7 +146,7 @@ write_object(TypedWritable *object) {
     }
 
     if (!_target->put_datagram(dg)) {
-      util_cat.error() 
+      util_cat.error()
         << "Unable to write datagram to file.\n";
       return false;
     }
@@ -212,32 +226,32 @@ register_pta(Datagram &packet, void *ptr) {
     // PointerToArray, this will generally be simply a zero element
     // count.
     return false;
-  }  
+  }
 
   PTAMap::iterator pi = _pta_map.find(ptr);
   if (pi == _pta_map.end()) {
     // We have not encountered this pointer before.
     int pta_id = _next_pta_id;
     _next_pta_id++;
-    
+
     // Make sure our PTA ID will fit within the PN_uint16 we have
     // allocated for it.
     nassertr(pta_id <= 65535, 0);
-    
+
     bool inserted = _pta_map.insert(PTAMap::value_type(ptr, pta_id)).second;
     nassertr(inserted, false);
-    
+
     packet.add_uint16(pta_id);
-    
+
     // Return false to indicate the caller must now write out the
     // array definition.
     return false;
-    
+
   } else {
     // We have encountered this pointer before.
     int pta_id = (*pi).second;
     packet.add_uint16(pta_id);
-    
+
     // Return true to indicate the caller need do nothing further.
     return true;
   }
@@ -275,7 +289,7 @@ write_handle(Datagram &packet, TypeHandle type) {
       // This is the first time this TypeHandle has been written, so
       // also write out its definition.
       packet.add_string(type.get_name());
-      
+
       // We also need to write the derivation of the TypeHandle, in case
       // the program reading this file later has never heard of this
       // type before.
@@ -293,7 +307,7 @@ write_handle(Datagram &packet, TypeHandle type) {
 //     Function: BamWriter::enqueue_object
 //       Access: Private
 //  Description: Assigns an object ID to the object and queues it up
-//               for later writing to the Bam file.  
+//               for later writing to the Bam file.
 //
 //               The return value is the object ID, or 0 if there is
 //               an error.
@@ -320,12 +334,12 @@ enqueue_object(TypedWritable *object) {
     // arbitrarily.
     object_id = _next_object_id;
     already_written = false;
-    
+
     // Make sure our object ID will fit within the PN_uint16 we have
     // allocated for it.
     nassertr(object_id <= 65535, 0);
 
-    bool inserted = 
+    bool inserted =
       _state_map.insert(StateMap::value_type(object, StoreState(_next_object_id))).second;
     nassertr(inserted, false);
     _next_object_id++;

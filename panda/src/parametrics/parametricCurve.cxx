@@ -1,6 +1,19 @@
 // Filename: parametricCurve.cxx
 // Created by:  drose (04Mar01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "parametricCurve.h"
@@ -394,15 +407,15 @@ write_egg(ostream &out, const Filename &filename, CoordinateSystem cs) {
     case CS_zup_right:
       out << "Z-Up";
       break;
-      
+
     case CS_yup_right:
       out << "Y-Up";
       break;
-      
+
     case CS_zup_left:
       out << "Z-Up-Left";
       break;
-      
+
     case CS_yup_left:
       out << "Y-Up-Left";
       break;
@@ -524,7 +537,7 @@ convert_to_hermite(HermiteCurve *hc) const {
     if (hc->get_cv_type(n)!=HC_CUT) {
       LVector3f in = hc->get_cv_in(n);
       LVector3f out = hc->get_cv_out(n);
-      
+
       if (in.almost_equal(out, 0.0001)) {
         hc->set_cv_type(n, HC_SMOOTH);
       } else {
@@ -612,7 +625,7 @@ draw_traverse() {
     _implicit_drawer->set_curve(this);
     _implicit_drawer->draw();
     _viz_arc = new RenderRelation(this, _implicit_drawer->detach_geom_node());
-    
+
     // We must then tell the drawer to forget about us, so we don't
     // maintain a circular reference count.
     _implicit_drawer->clear_curves();
@@ -776,7 +789,7 @@ r_calc_length(float t1, float t2, const LPoint3f &p1, const LPoint3f &p2,
 ////////////////////////////////////////////////////////////////////
 bool ParametricCurve::
 r_find_length(float target_length, float &found_t,
-              float t1, float t2, 
+              float t1, float t2,
               const LPoint3f &p1, const LPoint3f &p2,
               float &seglength) const {
   static const float length_tolerance = 0.0000001;

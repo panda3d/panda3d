@@ -1,6 +1,19 @@
 // Filename: test_tcp_server.cxx
 // Created by:  drose (09Feb00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <pandabase.h>
@@ -74,7 +87,7 @@ main(int argc, char *argv[]) {
     while (reader.data_available()) {
       NetDatagram datagram;
       if (reader.get_data(datagram)) {
-        nout << "Got datagram " << datagram << "from " 
+        nout << "Got datagram " << datagram << "from "
              << datagram.get_address() << ", sending to "
              << clients.size() << " clients.\n";
 
@@ -90,7 +103,7 @@ main(int argc, char *argv[]) {
           if (connection.is_null()) {
             nout << "Empty datagram from a null connection.\n";
           } else {
-            nout << "Closing connection from " 
+            nout << "Closing connection from "
                  << connection->get_address() << "\n";
             clients.erase(connection);
             cm.close_connection(connection);
@@ -103,7 +116,7 @@ main(int argc, char *argv[]) {
         }
       }
     }
-      
+
     // Yield the timeslice before we poll again.
     PR_Sleep(PR_MillisecondsToInterval(100));
   }
@@ -113,5 +126,5 @@ main(int argc, char *argv[]) {
 
 
 
-    
-  
+
+

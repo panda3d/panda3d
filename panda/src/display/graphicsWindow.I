@@ -1,6 +1,19 @@
 // Filename: graphicsWindow.I
 // Created by:  frang (07Mar99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <notify.h>
@@ -19,7 +32,7 @@ get_properties() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::get_width
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int GraphicsWindow::
 get_width() const {
@@ -29,7 +42,7 @@ get_width() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::get_height
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int GraphicsWindow::
 get_height() const {
@@ -39,7 +52,7 @@ get_height() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::get_xorg
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int GraphicsWindow::
 get_xorg() const {
@@ -49,7 +62,7 @@ get_xorg() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::get_yorg
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int GraphicsWindow::
 get_yorg() const {
@@ -142,7 +155,7 @@ has_keyboard(int device) const {
 ////////////////////////////////////////////////////////////////////
 INLINE const MouseData &GraphicsWindow::
 get_mouse_data(int device) const {
-  nassertr(device >= 0 && device < (int)_input_devices.size(), 
+  nassertr(device >= 0 && device < (int)_input_devices.size(),
            *(new MouseData));
   return _input_devices[device].get_mouse_data();
 }
@@ -202,7 +215,7 @@ get_frame_number() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::set_draw_callback
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsWindow::
 set_draw_callback(Callback *c) {
@@ -212,7 +225,7 @@ set_draw_callback(Callback *c) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::set_idle_callback
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsWindow::
 set_idle_callback(Callback *c) {
@@ -222,7 +235,7 @@ set_idle_callback(Callback *c) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::call_draw_callback
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsWindow::
 call_draw_callback(bool force_redraw) {
@@ -234,7 +247,7 @@ call_draw_callback(bool force_redraw) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::call_idle_callback
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsWindow::
 call_idle_callback() {

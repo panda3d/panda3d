@@ -1,6 +1,19 @@
 // Filename: nodePath.I
 // Created by:  drose (06Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -51,16 +64,16 @@ NodePath(const ArcChain &chain, TypeHandle graph_type) :
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath::
 NodePath(const NodePathBase &copy) : NodePathBase(copy) {
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 operator = (const NodePath &copy) {
@@ -70,7 +83,7 @@ operator = (const NodePath &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath::
 ~NodePath() {
@@ -79,7 +92,7 @@ INLINE NodePath::
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::Equality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool NodePath::
 operator == (const NodePath &other) const {
@@ -89,7 +102,7 @@ operator == (const NodePath &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::Inequality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool NodePath::
 operator != (const NodePath &other) const {
@@ -362,7 +375,7 @@ attach_new_node(const string &name, int sort) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 output(ostream &out) const {
@@ -614,7 +627,7 @@ get_sa() const {
 //               This is preferable to simply setting the color scale to
 //               identity, as it also removes the overhead associated
 //               with having a color scale at all.
-// 
+//
 //               This method is not strictly accurate as it clears
 //               both a color matrix and alpha transform, and either of
 //               those could have only offset components
@@ -632,7 +645,7 @@ clear_color_scale() {
 //       Access: Public
 //  Description: Returns true if a color scale has been applied
 //               to the bottom arc, false otherwise.
-// 
+//
 //               This method is not strictly accurate as it checks
 //               for a color matrix or alpha transform, and either of
 //               those could have only offset components
@@ -805,7 +818,7 @@ print_scale() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 print_pos_hpr() const {
-  nout << get_pos() << "\n" 
+  nout << get_pos() << "\n"
        << get_hpr() << "\n";
 }
 
@@ -817,7 +830,7 @@ print_pos_hpr() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 print_pos_hpr_scale() const {
-  nout << get_pos() << "\n" 
+  nout << get_pos() << "\n"
        << get_hpr() << "\n"
        << get_scale() << "\n";
 }
@@ -959,8 +972,8 @@ get_sz(const NodePath &other) const {
 //               transform, relative to the other node.
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
-set_pos_hpr(const NodePath &other, 
-            float x, float y, float z, 
+set_pos_hpr(const NodePath &other,
+            float x, float y, float z,
             float h, float p, float r) {
   set_pos_hpr(other, LVecBase3f(x, y, z), LVecBase3f(h, p, r));
 }
@@ -1072,7 +1085,7 @@ print_scale(const NodePath &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 print_pos_hpr(const NodePath &other) const {
-  nout << get_pos(other) << "\n" 
+  nout << get_pos(other) << "\n"
        << get_hpr(other) << "\n";
 }
 
@@ -1084,7 +1097,7 @@ print_pos_hpr(const NodePath &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 print_pos_hpr_scale(const NodePath &other) const {
-  nout << get_pos(other) << "\n" 
+  nout << get_pos(other) << "\n"
        << get_hpr(other) << "\n"
        << get_scale(other) << "\n";
 }
@@ -1115,7 +1128,7 @@ get_distance(const NodePath &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_color
 //       Access: Public
-//  Description: Sets the color transition for a render relation 
+//  Description: Sets the color transition for a render relation
 ////////////////////////////////////////////////////////////////////
 INLINE void NodePath::
 set_color(float r, float g, float b, float a,

@@ -1,6 +1,19 @@
 // Filename: eggTexture.cxx
 // Created by:  drose (18Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggTexture.h"
@@ -16,11 +29,11 @@ TypeHandle EggTexture::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggTexture::
-EggTexture(const string &tref_name, const string &filename) 
-  : EggFilenameNode(tref_name, filename) 
+EggTexture(const string &tref_name, const string &filename)
+  : EggFilenameNode(tref_name, filename)
 {
   _format = F_unspecified;
   _wrap_mode = WM_unspecified;
@@ -39,7 +52,7 @@ EggTexture(const string &tref_name, const string &filename)
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::Copy constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggTexture::
 EggTexture(const EggTexture &copy) {
@@ -49,13 +62,13 @@ EggTexture(const EggTexture &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTexture::Copy assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggTexture &EggTexture::
 operator = (const EggTexture &copy) {
   EggFilenameNode::operator = (copy);
   EggRenderMode::operator = (copy);
-  
+
   _format = copy._format;
   _wrap_mode = copy._wrap_mode;
   _wrap_u = copy._wrap_u;
@@ -170,7 +183,7 @@ write(ostream &out, int indent_level) const {
 //               EggTexture::E_dirname:
 //                 The directory prefix of the texture filename.
 //
-//               EggTexture::E_complete_filename: 
+//               EggTexture::E_complete_filename:
 //                 The union of the above three; that is, the complete
 //                 filename, with directory, basename, and extension.
 //
@@ -215,7 +228,7 @@ is_equivalent_to(const EggTexture &other, int eq) const {
     if (transform_is_identity() != other.transform_is_identity()) {
       return false;
     }
-    
+
     if (has_transform() && other.has_transform()) {
       if (!_transform.almost_equal(other._transform, 0.0001)) {
         return false;
@@ -508,7 +521,7 @@ egg_start_parse_body() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Format output operator
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ostream &operator << (ostream &out, EggTexture::Format format) {
   switch (format) {
@@ -561,7 +574,7 @@ ostream &operator << (ostream &out, EggTexture::Format format) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: WrapMode output operator
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ostream &operator << (ostream &out, EggTexture::WrapMode mode) {
   switch (mode) {
@@ -579,7 +592,7 @@ ostream &operator << (ostream &out, EggTexture::WrapMode mode) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FilterType output operator
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ostream &operator << (ostream &out, EggTexture::FilterType type) {
   switch (type) {
@@ -607,7 +620,7 @@ ostream &operator << (ostream &out, EggTexture::FilterType type) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EnvType output operator
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ostream &operator << (ostream &out, EggTexture::EnvType type) {
   switch (type) {

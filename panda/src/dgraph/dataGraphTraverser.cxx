@@ -1,6 +1,19 @@
 // Filename: dataGraphTraverser.cxx
 // Created by:  drose (05Feb01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "dataGraphTraverser.h"
@@ -81,25 +94,25 @@ r_traverse_below(Node *node, NodeAttributes &data, bool has_spam_mode) {
     // For the first n - 1 children we need to make a copy of our
     // NodeAttributes for each one--this allows our children to modify
     // the set freely without affecting its siblings.
-  
+
     for (int i = 0; i < num_children - 1; i++) {
       NodeAttributes copy = data;
       if (data_node != (DataNode *)NULL) {
         data_node->transmit_data_per_child(copy, i);
       }
-      
-      NodeRelation *arc = 
+
+      NodeRelation *arc =
         node->get_child(DataRelation::get_class_type(), i);
       r_traverse(arc->get_child(), copy, has_spam_mode);
     }
-    
+
     // For the last child, we don't have to bother making a copy since
     // no one cares any more.  This is a slight optimization.
     if (data_node != (DataNode *)NULL) {
       data_node->transmit_data_per_child(data, num_children - 1);
     }
-    
-    NodeRelation *arc = 
+
+    NodeRelation *arc =
       node->get_child(DataRelation::get_class_type(), num_children - 1);
 
     if (dgraph_cat.is_spam()) {
@@ -122,7 +135,7 @@ r_traverse_below(Node *node, NodeAttributes &data, bool has_spam_mode) {
 void DataGraphTraverser::
 save(Node *node, const NodeAttributes &data, bool has_spam_mode,
      int num_parents) {
-   
+
   States::iterator si;
   si = _saved_states.find(node);
 
@@ -178,7 +191,7 @@ resume(Node *node, DataGraphTraverser::SavedState &state) {
       dgraph_cat.info() << "Sending into " << *node << " {\n";
       describe_data_verbose(dgraph_cat.info(false), state._data, 2);
       dgraph_cat.info(false) << "}\n";
-      
+
     } else if (dgraph_cat.is_spam()) {
       dgraph_cat.spam() << "Sending into " << *node << " {\n";
       describe_data_verbose(dgraph_cat.spam(false), state._data, 2);

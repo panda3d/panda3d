@@ -1,6 +1,19 @@
 // Filename: builderBucket.cxx
 // Created by:  drose (10Sep97)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "builderAttrib.h"
@@ -17,7 +30,7 @@ BuilderBucket *BuilderBucket::_default_bucket = NULL;
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderBucket::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 BuilderBucket::
 BuilderBucket() {
@@ -29,7 +42,7 @@ BuilderBucket() {
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderBucket::Copy constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 BuilderBucket::
 BuilderBucket(const BuilderBucket &copy) {
@@ -41,7 +54,7 @@ BuilderBucket(const BuilderBucket &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderBucket::Copy assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 BuilderBucket &BuilderBucket::
 operator = (const BuilderBucket &copy) {
@@ -67,7 +80,7 @@ operator = (const BuilderBucket &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderBucket::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 BuilderBucket::
 ~BuilderBucket() {
@@ -140,16 +153,16 @@ operator < (const BuilderBucket &other) const {
 
   if (_node != other._node)
     return _node < other._node;
-  
-  if (_coords != other._coords)      
+
+  if (_coords != other._coords)
     return _coords < other._coords;
-  if (_normals != other._normals)        
+  if (_normals != other._normals)
     return _normals < other._normals;
   if (_texcoords != other._texcoords)
     return _texcoords < other._texcoords;
   if (_colors != other._colors)
     return _colors < other._colors;
-  
+
   if (_drawBin != other._drawBin)
     return _drawBin < other._drawBin;
   if (_drawOrder != other._drawOrder)
@@ -197,11 +210,11 @@ output(ostream &out) const {
   if (_drawBin != -1) {
     out << "_drawBin = " << _drawBin << "\n";
   }
- 
+
   if (_drawOrder != 0) {
     out << "_drawOrder = " << _drawOrder << "\n";
   }
-  
+
   BuilderProperties::output(out);
 }
 

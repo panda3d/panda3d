@@ -1,6 +1,19 @@
 // Filename: test_client.cxx
 // Created by:  drose (09Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "config_pstats.h"
@@ -69,7 +82,7 @@ public:
   float _time;
   int _index;
   bool _start;
-  
+
   bool operator < (const WaitRequest &other) const {
     return _time < other._time;
   }
@@ -104,7 +117,7 @@ main(int argc, char *argv[]) {
     nout << "Couldn't connect.\n";
     exit(1);
   }
-  
+
   srand(time(NULL));
 
   int ds_index;
@@ -131,7 +144,7 @@ main(int argc, char *argv[]) {
     }
     i++;
   }
-  
+
   while (!user_interrupted && client->is_connected()) {
     client->get_main_thread().new_frame();
 
@@ -151,23 +164,23 @@ main(int argc, char *argv[]) {
       } else {
         // A bit of random jitter so the collectors might overlap some.
         float jitter_ms = (5.0 * rand() / (RAND_MAX + 1.0));
-        
+
         WaitRequest wr;
         wr._time = now + jitter_ms / 1000.0;
         wr._index = i;
         wr._start = true;
         wait.push_back(wr);
-        
+
         float ms_range = ds[i].max_ms - ds[i].min_ms;
-        float ms = (float)ds[i].min_ms + 
+        float ms = (float)ds[i].min_ms +
           (ms_range * rand() / (RAND_MAX + 1.0));
         now += ms / 1000.0;
         total_ms += ms;
-        
+
         wr._time = now + jitter_ms / 1000.0;
         wr._start = false;
         wait.push_back(wr);
-      }        
+      }
     }
 
     // Put the wait requests in order, to allow for the jitter, and
@@ -185,7 +198,7 @@ main(int argc, char *argv[]) {
 
     // Now actually wait some approximation of the time we said we
     // did.
-    PRIntervalTime sleep_timeout = 
+    PRIntervalTime sleep_timeout =
       PR_MillisecondsToInterval((int)total_ms + 5);
     PR_Sleep(sleep_timeout);
   }

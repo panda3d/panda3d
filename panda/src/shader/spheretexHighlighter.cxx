@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "spheretexHighlighter.h"
 #include "config_shader.h"
@@ -29,7 +38,7 @@ TypeHandle SpheretexHighlighter::_type_handle;
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
-SpheretexHighlighter::SpheretexHighlighter(int size) : FrustumShader() 
+SpheretexHighlighter::SpheretexHighlighter(int size) : FrustumShader()
 {
   set_size(size);
 
@@ -79,7 +88,7 @@ pre_apply(Node *node, const AllAttributesWrapper &init_state,
 {
   if (get_num_frusta() == 0) {
     shader_cat.error()
-      << "SpheretexHighlighter::config() - no lights in frusta list" 
+      << "SpheretexHighlighter::config() - no lights in frusta list"
       << endl;
     return;
   } else if (get_num_frusta() > 1) {
@@ -89,7 +98,7 @@ pre_apply(Node *node, const AllAttributesWrapper &init_state,
   }
   if (_frusta[0]->get_type() != Spotlight::get_class_type()) {
     shader_cat.error()
-      << "SpheretexHighlighter::config() - only works for Spotlights" 
+      << "SpheretexHighlighter::config() - only works for Spotlights"
       << " so far - we'll add point lights later" << endl;
     return;
   }
@@ -99,10 +108,10 @@ pre_apply(Node *node, const AllAttributesWrapper &init_state,
   // Figure out how shiny the highlighted object is
   float shininess = 0.0;
 
-  const NodeAttribute *mat_attrib = 
+  const NodeAttribute *mat_attrib =
     init_state.get_attribute(MaterialTransition::get_class_type());
   if (mat_attrib != (NodeAttribute *)NULL) {
-    const Material *material = 
+    const Material *material =
       DCAST(MaterialAttribute, mat_attrib)->get_material();
     shininess = material->get_shininess();
   }
@@ -151,7 +160,7 @@ pre_apply(Node *node, const AllAttributesWrapper &init_state,
           // light (even slightly), no reflection will be seen
           if (intensity > 0.) {
             intensity = pow(intensity, shininess);
-            color[0] = color[1] = color[2] = (uchar)(intensity * 255.);  
+            color[0] = color[1] = color[2] = (uchar)(intensity * 255.);
           }
         }
       }

@@ -1,12 +1,25 @@
 // Filename: vec4DataAttribute.I
 // Created by:  jason (03Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Vec4DataAttribute::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Vec4DataAttribute::
 Vec4DataAttribute() {
@@ -15,10 +28,10 @@ Vec4DataAttribute() {
 ////////////////////////////////////////////////////////////////////
 //     Function: Vec4DataAttribute::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Vec4DataAttribute::
-Vec4DataAttribute(const LVecBase4f &value) : 
+Vec4DataAttribute(const LVecBase4f &value) :
   VectorDataAttribute<LPoint4f, LMatrix4f>(value)
 {
 }

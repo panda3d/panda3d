@@ -1,6 +1,19 @@
 // Filename: buttonThrower.cxx
 // Created by:  drose (09Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "buttonThrower.h"
@@ -18,7 +31,7 @@ TypeHandle ButtonThrower::_button_events_type;
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonThrower::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ButtonThrower::
 ButtonThrower(const string &name) : DataNode(name) {
@@ -134,11 +147,11 @@ transmit_data(NodeAttributes &data) {
         _mods.button_up(be._button);
         event_name += "-up";
       }
-      
+
       throw_event(event_name);
     }
   }
-  
+
   // Clear the data going down the pipe.
   data.clear();
 }

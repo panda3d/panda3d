@@ -1,12 +1,25 @@
 // Filename: collisionEntry.I
 // Created by:  drose (24Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionEntry::
 CollisionEntry() {
@@ -125,7 +138,7 @@ get_into_space() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_wrt_space
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const LMatrix4f &CollisionEntry::
 get_wrt_space() const {
@@ -135,7 +148,7 @@ get_wrt_space() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_inv_wrt_space
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const LMatrix4f &CollisionEntry::
 get_inv_wrt_space() const {
@@ -145,7 +158,7 @@ get_inv_wrt_space() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::set_into_intersection_point
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionEntry::
 set_into_intersection_point(const LPoint3f &point) {
@@ -209,7 +222,7 @@ get_from_intersection_point() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::set_into_surface_normal
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionEntry::
 set_into_surface_normal(const LVector3f &normal) {
@@ -247,7 +260,7 @@ get_into_surface_normal() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::set_into_depth
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionEntry::
 set_into_depth(float depth) {

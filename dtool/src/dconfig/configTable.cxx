@@ -1,6 +1,19 @@
-// Filename: configTable.C
+// Filename: configTable.cxx
 // Created by:  drose (15May00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "dconfig.h"
@@ -116,7 +129,7 @@ void ConfigTable::ReadConfigFile(void) {
     // this is currently done in makefile.config.so...
 
     // CSN.
-      
+
 #ifndef CONFIG_PATH
 #define CONFIG_PATH "."
 #endif
@@ -144,7 +157,7 @@ void ConfigTable::ReadConfigFile(void) {
   if (microconfig_cat->is_spam())
     microconfig_cat->spam() << "evaluated value of configpath '"
                             << configpath << "'" << endl;
-  
+
   DSearchPath config_search(configpath);
   DSearchPath::Results config_files;
 

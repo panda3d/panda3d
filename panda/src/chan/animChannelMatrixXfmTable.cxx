@@ -1,6 +1,19 @@
 // Filename: animChannelMatrixXfmTable.cxx
 // Created by:  drose (20Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "animChannelMatrixXfmTable.h"
@@ -17,21 +30,21 @@
 
 TypeHandle AnimChannelMatrixXfmTable::_type_handle;
 
-const char 
+const char
 AnimChannelMatrixXfmTable::_table_ids[AnimChannelMatrixXfmTable::num_tables] =
 { 'i', 'j', 'k', 'h', 'p', 'r', 'x', 'y', 'z' };
 
-const float 
+const float
 AnimChannelMatrixXfmTable::_default_values[AnimChannelMatrixXfmTable::num_tables] =
 { 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelMatrixXfmTable::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 AnimChannelMatrixXfmTable::
-AnimChannelMatrixXfmTable(AnimGroup *parent, const string &name) 
+AnimChannelMatrixXfmTable(AnimGroup *parent, const string &name)
   : AnimChannelMatrix(parent, name) {
 }
 
@@ -259,7 +272,7 @@ write_datagram(BamWriter *manager, Datagram &me)
     // Now, write out the joint angles.  For these we need to build up
     // a HPR array.
     vector_LVecBase3f hprs;
-    int hprs_length = 
+    int hprs_length =
       max(max(_tables[3].size(), _tables[4].size()), _tables[5].size());
     hprs.reserve(hprs_length);
     for (i = 0; i < hprs_length; i++) {

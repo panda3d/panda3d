@@ -1,6 +1,20 @@
 // Filename: bamReader.h
 // Created by:  jason (12Jun00)
 //
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef __BAM_READER_
 #define __BAM_READER_
@@ -104,7 +118,7 @@ public:
   void register_pta(void *ptr);
 
   TypeHandle read_handle(DatagramIterator &scan);
-  
+
 
 public:
   INLINE static WritableFactory *get_factory();

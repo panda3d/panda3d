@@ -1,6 +1,19 @@
 // Filename: directRenderTraverser.cxx
 // Created by:  drose (18Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "directRenderTraverser.h"
@@ -63,7 +76,7 @@ DirectRenderTraverser::
 //               using this DirectRenderTraverser object.
 ////////////////////////////////////////////////////////////////////
 void DirectRenderTraverser::
-traverse(Node *root, 
+traverse(Node *root,
          const AllAttributesWrapper &initial_state,
          const AllTransitionsWrapper &net_trans) {
   // Statistics
@@ -84,7 +97,7 @@ traverse(Node *root,
         level_state._decal_mode = decal_attrib->is_on();
       }
     }
-    
+
   // Determine the relative transform matrix from the camera to our
   // starting node.  This is important for proper view-frustum
   // culling.
@@ -103,7 +116,7 @@ traverse(Node *root,
   fc_traverse(_arc_chain, root, rel_from_camera, *this,
               render_state, level_state, _gsg, _graph_type);
 
-  if (level_state._decal_mode && 
+  if (level_state._decal_mode &&
       root->is_of_type(GeomNode::get_class_type())) {
 #ifndef NDEBUG
     if (support_decals == SD_hide) {
@@ -117,7 +130,7 @@ traverse(Node *root,
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DirectRenderTraverser::reached_node 
+//     Function: DirectRenderTraverser::reached_node
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -151,7 +164,7 @@ reached_node(Node *node, AllAttributesWrapper &render_state,
     // Make sure the current display region is still in effect.
     _gsg->prepare_display_region();
 
-    GeomNode *geom = DCAST(GeomNode, node); 
+    GeomNode *geom = DCAST(GeomNode, node);
 
     // We must make decals a special case, because they're so strange.
 #ifndef NDEBUG
@@ -183,7 +196,7 @@ reached_node(Node *node, AllAttributesWrapper &render_state,
     SwitchNode *swnode = DCAST(SwitchNode, node);
     swnode->compute_switch(this);
   }
-  
+
   return true;
 }
 
@@ -206,7 +219,7 @@ forward_arc(NodeRelation *arc, AllTransitionsWrapper &trans,
   mark_forward_arc(arc);
 
 #ifndef NDEBUG
-  if (support_subrender == SD_on) 
+  if (support_subrender == SD_on)
 #endif
     {
       AllTransitionsWrapper::const_iterator nti;

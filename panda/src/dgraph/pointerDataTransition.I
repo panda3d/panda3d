@@ -1,6 +1,19 @@
 // Filename: pointerDataTransition.I
 // Created by:  jason (07Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 /* okcircular */
@@ -12,7 +25,7 @@ TypeHandle PointerDataTransition<PtrType>::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerDataTransition::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class PtrType>
 INLINE PointerDataTransition<PtrType>::
@@ -24,7 +37,7 @@ PointerDataTransition() :
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerDataTransition::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class PtrType>
 INLINE PointerDataTransition<PtrType>::
@@ -36,7 +49,7 @@ PointerDataTransition(PtrType* ptr) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerDataTransition::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class PtrType>
 INLINE PointerDataTransition<PtrType>::
@@ -48,7 +61,7 @@ PointerDataTransition(const PointerDataTransition<PtrType> &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerDataTransition::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class PtrType>
 INLINE void PointerDataTransition<PtrType>::
@@ -60,7 +73,7 @@ operator = (const PointerDataTransition<PtrType> &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerDataTransition::set_value
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class PtrType>
 void PointerDataTransition<PtrType>::
@@ -72,7 +85,7 @@ set_value(PtrType* ptr) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerDataTransition::get_value
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class PtrType>
 PtrType* PointerDataTransition<PtrType>::
@@ -104,7 +117,7 @@ compose(const NodeTransition *other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerDataTransition::invert
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class PtrType>
 NodeTransition *PointerDataTransition<PtrType>::
@@ -133,7 +146,7 @@ apply(const NodeAttribute *attrib) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerDataTransition::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class PtrType>
 void PointerDataTransition<PtrType>::
@@ -144,7 +157,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: PointerDataTransition::write
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class PtrType>
 void PointerDataTransition<PtrType>::
@@ -155,7 +168,7 @@ write(ostream &out, int indent_level) const {
 ///////////////////////////////////////////////////////////////////
 //     Function: PointerDataTransition::internal_compare_to
 //       Access: Protected, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class PtrType>
 int PointerDataTransition<PtrType>::

@@ -1,6 +1,19 @@
 // Filename: eggAttributes.cxx
 // Created by:  drose (16Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggAttributes.h"
@@ -17,7 +30,7 @@ TypeHandle EggAttributes::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: EggAttributes::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggAttributes::
 EggAttributes() {
@@ -27,7 +40,7 @@ EggAttributes() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggAttributes::Copy constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggAttributes::
 EggAttributes(const EggAttributes &copy) {
@@ -37,7 +50,7 @@ EggAttributes(const EggAttributes &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggAttributes::Copy assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggAttributes &EggAttributes::
 operator = (const EggAttributes &copy) {
@@ -54,7 +67,7 @@ operator = (const EggAttributes &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggAttributes::Destructor
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 EggAttributes::
 ~EggAttributes() {
@@ -71,7 +84,7 @@ void EggAttributes::
 write(ostream &out, int indent_level) const {
   if (has_normal()) {
     if (_dnormals.empty()) {
-      indent(out, indent_level) 
+      indent(out, indent_level)
         << "<Normal> { " << get_normal() << " }\n";
     } else {
       indent(out, indent_level) << "<Normal> {\n";
@@ -82,7 +95,7 @@ write(ostream &out, int indent_level) const {
   }
   if (has_uv()) {
     if (_duvs.empty()) {
-      indent(out, indent_level) 
+      indent(out, indent_level)
         << "<UV> { " << get_uv() << " }\n";
     } else {
       indent(out, indent_level) << "<UV> {\n";
@@ -93,7 +106,7 @@ write(ostream &out, int indent_level) const {
   }
   if (has_color()) {
     if (_drgbas.empty()) {
-      indent(out, indent_level) 
+      indent(out, indent_level)
         << "<RGBA> { " << get_color() << " }\n";
     } else {
       indent(out, indent_level) << "<RGBA> {\n";
@@ -103,7 +116,7 @@ write(ostream &out, int indent_level) const {
     }
   }
 }
-  
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggAttributes::sorts_less_than
@@ -150,7 +163,7 @@ sorts_less_than(const EggAttributes &other) const {
       return _drgbas < other._drgbas;
     }
   }
-  
+
   return false;
 }
 

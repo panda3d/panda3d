@@ -1,11 +1,24 @@
 // Filename: pStatClient.cxx
 // Created by:  drose (09Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pStatClient.h"
 
-#ifdef DO_PSTATS 
+#ifdef DO_PSTATS
 // This file only defines anything interesting if DO_PSTATS is
 // defined.
 
@@ -29,7 +42,7 @@ PStatClient *PStatClient::_global_pstats = NULL;
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatClient::PerThreadData::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PStatClient::PerThreadData::
 PerThreadData() {
@@ -41,7 +54,7 @@ PerThreadData() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatClient::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PStatClient::
 PStatClient() :
@@ -72,7 +85,7 @@ PStatClient() :
 ////////////////////////////////////////////////////////////////////
 //     Function: PStatClient::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PStatClient::
 ~PStatClient() {
@@ -230,13 +243,13 @@ make_collector_with_relname(int parent_index, string relname) {
   while (start < relname.size() && relname[start] == ':') {
     start++;
   }
-  
+
   // If the name contains a colon (after the initial colon), it means
   // we are making a nested collector.
   size_t colon = relname.find(':', start);
   while (colon != string::npos) {
     string parent_name = relname.substr(start, colon - start);
-    PStatCollector parent_collector = 
+    PStatCollector parent_collector =
       make_collector_with_name(parent_index, parent_name);
     parent_index = parent_collector._index;
     relname = relname.substr(colon + 1);
@@ -308,7 +321,7 @@ make_collector_with_name(int parent_index, const string &name) {
 ////////////////////////////////////////////////////////////////////
 PStatThread PStatClient::
 make_thread(const string &name) {
-  ThingsByName::const_iterator ni = 
+  ThingsByName::const_iterator ni =
     _threads_by_name.find(name);
 
   if (ni != _threads_by_name.end()) {
@@ -394,7 +407,7 @@ client_connect(string hostname, int port) {
 
   if (_tcp_connection.is_null()) {
     pstats_cat.error()
-      << "Couldn't connect to PStatServer at " << hostname << ":" 
+      << "Couldn't connect to PStatServer at " << hostname << ":"
       << port << "\n";
     return false;
   }
@@ -438,12 +451,12 @@ client_disconnect() {
     (*ti)._next_packet = 0.0;
     (*ti)._frame_data.clear();
   }
-  
+
   Collectors::iterator ci;
   for (ci = _collectors.begin(); ci != _collectors.end(); ++ci) {
     PerThread::iterator ii;
-    for (ii = (*ci)._per_thread.begin(); 
-         ii != (*ci)._per_thread.end(); 
+    for (ii = (*ci)._per_thread.begin();
+         ii != (*ci)._per_thread.end();
          ++ii) {
       (*ii)._nested_count = 0;
     }
@@ -524,9 +537,9 @@ stop(int collector_index, int thread_index, float as_of) {
         << "!\n";
       return;
     }
-    
+
     _collectors[collector_index]._per_thread[thread_index]._nested_count--;
-    
+
     if (_collectors[collector_index]._per_thread[thread_index]._nested_count == 0) {
       // This collector has now been completely stopped; record a new
       // data point.
@@ -667,7 +680,7 @@ transmit_frame_data(int thread_index) {
       // We don't want to send more than _max_rate UDP-size packets
       // per second, per thread.
       float packet_delay = 1.0 / _max_rate;
-      
+
       // Send new data.
       NetDatagram datagram;
       // We always start with a zero byte, to differentiate it from a
@@ -686,7 +699,7 @@ transmit_frame_data(int thread_index) {
         _writer.send(datagram, _tcp_connection);
         // If our packets are so large that we must ship them via TCP,
         // then artificially slow down the packet rate even further.
-        int packet_ratio = 
+        int packet_ratio =
           (datagram.get_length() + maximum_udp_datagram - 1) /
           maximum_udp_datagram;
         packet_delay *= (float)packet_ratio;
@@ -720,7 +733,7 @@ transmit_control_data() {
       }
     }
   }
-  
+
   if (_is_connected) {
     report_new_collectors();
     report_new_threads();
@@ -827,7 +840,7 @@ handle_server_control_message(const PStatServerControlMessage &message) {
   switch (message._type) {
   case PStatServerControlMessage::T_hello:
     pstats_cat.info()
-      << "Connected to " << message._server_progname << " on " 
+      << "Connected to " << message._server_progname << " on "
       << message._server_hostname << "\n";
 
     _server.set_port(message._udp_port);

@@ -1,6 +1,19 @@
-// Filename: executionEnvironment.C
+// Filename: executionEnvironment.cxx
 // Created by:  drose (15May00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "executionEnvironment.h"
@@ -76,7 +89,7 @@ expand_string(const string &str) {
       // A double dollar sign maps to a single dollar sign.
       result += str.substr(last, start - last);
       last = start + 1;
-      
+
     } else {
       string varname;
       size_t end = start;
@@ -98,7 +111,7 @@ expand_string(const string &str) {
         varname = str.substr(start, end - start);
       }
 
-      string subst = 
+      string subst =
       result += str.substr(last, dollar - last);
       result += get_environment_variable(varname);
       last = end;
@@ -208,7 +221,7 @@ ns_get_arg(int n) const {
   assert(n >= 0 && n < ns_get_num_args());
   return _args[n];
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ExecutionEnvironment::ns_get_binary_name
 //       Access: Private
@@ -265,12 +278,12 @@ read_environment_variables() {
   while (!proc.eof() && !proc.fail()) {
     string variable;
     string value;
-      
+
     while (!proc.eof() && !proc.fail() && ch != '=' && ch != '\0') {
       variable += (char)ch;
       ch = proc.get();
     }
-      
+
     if (ch == '=') {
       ch = proc.get();
       while (!proc.eof() && !proc.fail() && ch != '\0') {

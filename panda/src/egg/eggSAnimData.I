@@ -1,13 +1,26 @@
 // Filename: eggSAnimData.I
 // Created by:  drose (19Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggSAnimData::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggSAnimData::
 EggSAnimData(const string &name) : EggAnimData(name) {
@@ -17,7 +30,7 @@ EggSAnimData(const string &name) : EggAnimData(name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggSAnimData::Copy constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggSAnimData::
 EggSAnimData(const EggSAnimData &copy) : EggAnimData(copy) {
@@ -27,7 +40,7 @@ EggSAnimData(const EggSAnimData &copy) : EggAnimData(copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggSAnimData::Copy assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE EggSAnimData &EggSAnimData::
 operator = (const EggSAnimData &copy) {

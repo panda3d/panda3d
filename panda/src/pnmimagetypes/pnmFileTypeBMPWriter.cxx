@@ -1,6 +1,19 @@
 // Filename: pnmFileTypeBMPWriter.cxx
 // Created by:  drose (19Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileTypeBMP.h"
@@ -35,6 +48,9 @@ extern "C" {
  * without express or implied warranty.
  *
  * $Log$
+ * Revision 1.4  2001/05/25 21:30:42  drose
+ * Update copyright header
+ *
  * Revision 1.3  2001/05/25 15:59:19  drose
  * remove tab characters
  *
@@ -497,7 +513,7 @@ BMPEncode24(
 {
         unsigned long   nbyte = 0;
         int             bpp = 24;
-  
+
         pm_message("Using %d bits per pixel", bpp);
 
         nbyte += BMPwritefileheader(fp, classv, bpp, x, y);
@@ -520,7 +536,7 @@ BMPEncode24(
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMFileTypeBMP::Writer::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeBMP::Writer::
 Writer(PNMFileType *type, FILE *file, bool owns_file) :
@@ -565,7 +581,7 @@ write_data(xel *array, xelval *) {
   pixval          Red[MAXCOLORS];
   pixval          Green[MAXCOLORS];
   pixval          Blue[MAXCOLORS];
-  
+
   pixel** pixels;
   colorhash_table cht;
 
@@ -605,9 +621,9 @@ write_data(xel *array, xelval *) {
   } else {
     pnmimage_bmp_cat.debug()
       << colors << " colors found\n";
-  
+
     /*
-     * Now turn the ppm colormap into the appropriate BMP colormap.  
+     * Now turn the ppm colormap into the appropriate BMP colormap.
      */
     if (_maxval > 255) {
       pnmimage_bmp_cat.debug()
@@ -625,14 +641,14 @@ write_data(xel *array, xelval *) {
         Blue[i] = (pixval) PPM_GETB(chv[i].color) * 255 / _maxval;
       }
     }
-    
+
     /* And make a hash table for fast lookup. */
     cht = ppm_colorhisttocolorhash(chv, colors);
     ppm_freecolorhist(chv);
-    
+
     BMPEncode(_file, classv, _x_size, _y_size, pixels, colors, cht,
               Red, Green, Blue);
   }
-    
+
   return _y_size;
 }

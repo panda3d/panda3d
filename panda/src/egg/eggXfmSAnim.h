@@ -2,6 +2,19 @@
 // Created by:  drose (19Feb99)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef EGGXFMSANIM_H
 #define EGGXFMSANIM_H
@@ -56,7 +69,7 @@ public:
 
   virtual void write(ostream &out, int indent_level) const;
 
-  static void compose_with_order(LMatrix4d &mat, 
+  static void compose_with_order(LMatrix4d &mat,
                                  const LVecBase3d &scale,
                                  const LVecBase3d &hpr,
                                  const LVecBase3d &trans,
@@ -78,7 +91,7 @@ private:
   bool _has_fps;
   string _order;
   CoordinateSystem _coordsys;
-  
+
   static string _standard_order;
 
 public:
@@ -95,7 +108,7 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
- 
+
 private:
   static TypeHandle _type_handle;
 };

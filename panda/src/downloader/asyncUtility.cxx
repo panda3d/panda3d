@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "asyncUtility.h"
 #include "config_downloader.h"
@@ -59,7 +68,7 @@ void AsyncUtility::
 create_thread(void) {
 #ifdef HAVE_IPC
   if (_threaded == false && _threads_enabled == true) {
-    downloader_cat.debug() 
+    downloader_cat.debug()
       << "AsyncUtility::create_thread()" << endl;
     _thread = thread::create(&st_callback, this, thread::PRIORITY_NORMAL);
     _threaded = true;
@@ -77,7 +86,7 @@ destroy_thread(void) {
 #ifdef HAVE_IPC
   if (_threaded == false)
     return;
- 
+
   // Tell the thread to shut itself down.
   // We need to grab the lock in order to signal the condition variable
   _lock.lock();
@@ -98,10 +107,10 @@ destroy_thread(void) {
 //  Description: This is a static wrapper around the callback()
 //               method, below.  It's static just so we can pass it to
 //               the thread-creation function.  In addition, the
-//               function has a void* return type even though we 
+//               function has a void* return type even though we
 //               don't actually return anything.  This is necessary
 //               because ipc assumes a function that does not return
-//               anything indicates that the associated thread should 
+//               anything indicates that the associated thread should
 //               be created as unjoinable (detached).
 ////////////////////////////////////////////////////////////////////
 void* AsyncUtility::
@@ -133,7 +142,7 @@ callback(void) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AsyncUtility::nap
-//       Access: Protected 
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void AsyncUtility::

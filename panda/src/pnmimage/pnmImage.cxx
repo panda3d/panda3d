@@ -1,6 +1,19 @@
 // Filename: pnmImage.cxx
 // Created by:  drose (14Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmImage.h"
@@ -17,7 +30,7 @@ extern "C" {
 #include "../pnm/libpgm.h"
 #include "../pnm/libpbm.h"
 }
-    
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::clear
 //       Access: Public
@@ -48,7 +61,7 @@ clear() {
 //               empty (black) image with the given dimensions.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
-clear(int x_size, int y_size, int num_channels, 
+clear(int x_size, int y_size, int num_channels,
       xelval maxval, PNMFileType *type) {
   clear();
 
@@ -104,7 +117,7 @@ copy_header_from(const PNMImageHeader &header) {
   if (has_alpha()) {
     allocate_alpha();
   }
-  
+
   allocate_array();
   setup_rc();
 }
@@ -183,7 +196,7 @@ read(PNMReader *reader) {
 
   if (reader == NULL) {
     return false;
-  } 
+  }
 
   if (!reader->is_valid()) {
     delete reader;
@@ -332,7 +345,7 @@ make_grayscale(double rc, double gc, double bc) {
   _num_channels = has_alpha() ? 2 : 1;
   setup_rc();
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::set_maxval
 //       Access: Public
@@ -364,7 +377,7 @@ set_maxval(xelval maxval) {
     if (has_alpha()) {
       for (int y = 0; y < get_y_size(); y++) {
         for (int x = 0; x < get_x_size(); x++) {
-          set_alpha_val(x, y, 
+          set_alpha_val(x, y,
                         (xelval)((long)get_alpha_val(x, y) * ratio));
         }
       }
@@ -502,7 +515,7 @@ blend(int x, int y, double r, double g, double b, double alpha) {
 //               will fit.
 ////////////////////////////////////////////////////////////////////
 void PNMImage::
-copy_sub_image(const PNMImage &copy, int xto, int yto, 
+copy_sub_image(const PNMImage &copy, int xto, int yto,
                int xfrom, int yfrom, int x_size, int y_size) {
   if (xfrom < 0) {
     xto += -xfrom;
@@ -513,10 +526,10 @@ copy_sub_image(const PNMImage &copy, int xto, int yto,
     yfrom = 0;
   }
 
-  x_size = (x_size < 0) ? 
-    copy.get_x_size() : 
+  x_size = (x_size < 0) ?
+    copy.get_x_size() :
     min(x_size, copy.get_x_size() - xfrom);
-  y_size = (y_size < 0) ? 
+  y_size = (y_size < 0) ?
     copy.get_y_size() :
     min(y_size, copy.get_y_size() - yfrom);
 

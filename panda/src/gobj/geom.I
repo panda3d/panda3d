@@ -1,6 +1,19 @@
 // Filename: geom.I
 // Created by:  drose (04Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -123,9 +136,9 @@ get_texcoords_index() const {
 //               one tristrip in a GeomTristrip.
 ////////////////////////////////////////////////////////////////////
 INLINE void Geom::
-set_num_prims(int num) { 
-  _numprims = num; 
-  make_dirty(); 
+set_num_prims(int num) {
+  _numprims = num;
+  make_dirty();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -134,8 +147,8 @@ set_num_prims(int num) {
 //  Description: Returns the number of primitives in the Geom.
 ////////////////////////////////////////////////////////////////////
 INLINE int Geom::
-get_num_prims(void) const { 
-  return _numprims; 
+get_num_prims(void) const {
+  return _numprims;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -197,7 +210,7 @@ get_lengths() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::make_vertex_iterator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Geom::VertexIterator Geom::
 make_vertex_iterator() const {
@@ -211,7 +224,7 @@ make_vertex_iterator() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::get_next_vertex
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const Vertexf &Geom::
 get_next_vertex(VertexIterator &viterator) const {
@@ -221,7 +234,7 @@ get_next_vertex(VertexIterator &viterator) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::make_normal_iterator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Geom::NormalIterator Geom::
 make_normal_iterator() const {
@@ -235,7 +248,7 @@ make_normal_iterator() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::get_next_normal
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const Normalf &Geom::
 get_next_normal(NormalIterator &niterator) const {
@@ -245,7 +258,7 @@ get_next_normal(NormalIterator &niterator) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::make_texcoord_iterator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Geom::TexCoordIterator Geom::
 make_texcoord_iterator() const {
@@ -259,7 +272,7 @@ make_texcoord_iterator() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::get_next_texcoord
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const TexCoordf &Geom::
 get_next_texcoord(TexCoordIterator &tciterator) const {
@@ -269,7 +282,7 @@ get_next_texcoord(TexCoordIterator &tciterator) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::make_color_iterator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Geom::ColorIterator Geom::
 make_color_iterator() const {
@@ -283,7 +296,7 @@ make_color_iterator() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::get_next_color
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const Colorf &Geom::
 get_next_color(ColorIterator &citerator) const {

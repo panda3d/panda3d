@@ -1,6 +1,19 @@
 // Filename: nodeTransitionCache.cxx
 // Created by:  drose (20Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "nodeTransitionCache.h"
@@ -15,7 +28,7 @@ TypeHandle NodeTransitionCache::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionCache::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NodeTransitionCache::
 NodeTransitionCache() {
@@ -48,7 +61,7 @@ NodeTransitionCache(const NodeTransitions &nt) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionCache::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NodeTransitionCache::
 ~NodeTransitionCache() {
@@ -207,7 +220,7 @@ get_transition(TypeHandle handle) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionCache::clear
 //       Access: Public
-//  Description: Blows away all entries in the cache. 
+//  Description: Blows away all entries in the cache.
 ////////////////////////////////////////////////////////////////////
 void NodeTransitionCache::
 clear() {
@@ -255,7 +268,7 @@ store_entry(TypeHandle handle, const NodeTransitionCacheEntry &entry) {
 //               has been added to the indicated arc.
 ////////////////////////////////////////////////////////////////////
 void NodeTransitionCache::
-store_to(const NodeTransitionCache *a, NodeRelation *arc, 
+store_to(const NodeTransitionCache *a, NodeRelation *arc,
          NodeTransitions &nt) {
   if (a == (NodeTransitionCache *)NULL || a->_cache.empty()) {
     // a is empty: no change.
@@ -366,7 +379,7 @@ invert(const NodeTransitionCache *a) {
 
   tmap_invert(a->_cache.begin(), a->_cache.end(),
               inserter(result->_cache, result->_cache.begin()));
-  
+
   return result;
 }
 
@@ -417,7 +430,7 @@ invert_compose(const NodeTransitionCache *a, const NodeTransitionCache *b) {
 //               the result as computed at time 'now'.
 ////////////////////////////////////////////////////////////////////
 NodeTransitionCache *NodeTransitionCache::
-cached_compose(const NodeTransitionCache *a, 
+cached_compose(const NodeTransitionCache *a,
                const NodeTransitionCache *cache,
                const NodeTransitionCache *b,
                UpdateSeq now) {
@@ -489,7 +502,7 @@ set_computed_verified(const NodeTransitionCache *a, UpdateSeq now) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionCache::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodeTransitionCache::
 output(ostream &out) const {
@@ -509,7 +522,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeTransitionCache::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodeTransitionCache::
 write(ostream &out, int indent_level) const {

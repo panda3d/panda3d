@@ -1,6 +1,19 @@
 // Filename: eggPrimitive.cxx
 // Created by:  drose (16Jan99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "eggPrimitive.h"
@@ -49,7 +62,7 @@ determine_depth_write_mode() {
   if (get_depth_write_mode() != DWM_unspecified) {
     return this;
   }
-  if (has_texture() && 
+  if (has_texture() &&
       get_texture()->get_depth_write_mode() != DWM_unspecified) {
     return get_texture();
   }
@@ -70,7 +83,7 @@ determine_depth_test_mode() {
   if (get_depth_test_mode() != DTM_unspecified) {
     return this;
   }
-  if (has_texture() && 
+  if (has_texture() &&
       get_texture()->get_depth_test_mode() != DTM_unspecified) {
     return get_texture();
   }
@@ -240,7 +253,7 @@ erase(iterator first, iterator last) {
   for (i = first; i != last; ++i) {
     prepare_remove_vertex(*i);
   }
-  iterator result = _vertices.erase((Vertices::iterator &)first, 
+  iterator result = _vertices.erase((Vertices::iterator &)first,
                                     (Vertices::iterator &)last);
   test_vref_integrity();
   return result;
@@ -404,7 +417,7 @@ prepare_remove_vertex(EggVertex *vertex) {
   // can't just use the simple erase() function, since that will
   // remove all instances of this primitive from the pref; instead, we
   // must find one instance and remove that.
-  
+
   EggVertex::PrimitiveRef::iterator pri = vertex->_pref.find(this);
 
   // We should have found the primitive in the vertex's pref.  If we
@@ -430,7 +443,7 @@ write_body(ostream &out, int indent_level) const {
 
   if (has_texture()) {
     EggTexture *texture = get_texture();
-    
+
     // Make sure the texture is named.
     nassertv(texture->has_name());
 
@@ -441,7 +454,7 @@ write_body(ostream &out, int indent_level) const {
 
   if (has_material()) {
     EggMaterial *material = get_material();
-    
+
     // Make sure the material is named.
     nassertv(material->has_name());
 
@@ -495,7 +508,7 @@ write_body(ostream &out, int indent_level) const {
 
         indices.push_back(vert->get_index());
       }
-      
+
       indent(out, indent_level) << "<VertexRef> {\n";
       write_long_list(out, indent_level+2, indices.begin(), indices.end(),
                 "", "", 72);
@@ -555,7 +568,7 @@ r_flatten_transforms() {
     for (size_t i = 0; i < num_vertices; i++) {
       EggVertex *vertex = get_vertex(i);
       EggVertexPool *pool = vertex->get_pool();
-      
+
       EggVertex new_vertex(*vertex);
       new_vertex.transform(mat);
       EggVertex *unique = pool->create_unique_vertex(new_vertex);

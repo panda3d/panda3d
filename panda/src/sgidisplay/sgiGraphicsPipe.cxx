@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "sgiGraphicsPipe.h"
 #include <X11/Xlib.h>
@@ -37,7 +46,7 @@ int sgiGraphicsPipe::get_num_hw_channels( void )
     {
         Display* display = (Display *)_display;
         // Is there a better way to get the display??? (I hope so)
-        display = glXGetCurrentDisplayEXT(); 
+        display = glXGetCurrentDisplayEXT();
 
         // For now, screen is the same as display
         _screen = DefaultScreen( display );
@@ -46,7 +55,7 @@ int sgiGraphicsPipe::get_num_hw_channels( void )
         XSGIvcQueryVideoScreenInfo( display, _screen, &server );
 
         // Not all of these will be active necessarily
-        _num_channels = server.numChannels; 
+        _num_channels = server.numChannels;
     }
 
     return _num_channels;
@@ -64,13 +73,13 @@ get_hw_channel( GraphicsWindow* window, int index ) {
 
     if ( index >= _num_channels )
     {
-        cerr << "sgiGraphicsPipe::get_hw_channel() - invalid index: " 
+        cerr << "sgiGraphicsPipe::get_hw_channel() - invalid index: "
                 << index << endl;
         return NULL;
     }
 
     Channels::iterator i;
-    i = _hw_chans.find( index ); 
+    i = _hw_chans.find( index );
     if (i != _hw_chans.end()) {
       return (*i).second.p();
     }

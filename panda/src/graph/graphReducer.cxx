@@ -1,6 +1,19 @@
 // Filename: graphReducer.cxx
 // Created by:  drose (26Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "graphReducer.h"
@@ -14,7 +27,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphReducer::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GraphReducer::
 GraphReducer(TypeHandle graph_type) :
@@ -25,7 +38,7 @@ GraphReducer(TypeHandle graph_type) :
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphReducer::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GraphReducer::
 ~GraphReducer() {
@@ -61,13 +74,13 @@ flatten(Node *root, bool combine_siblings) {
   do {
     num_pass_nodes = 0;
 
-    const DownRelationPointers &drp = 
+    const DownRelationPointers &drp =
       root->find_connection(_graph_type).get_down();
-      
+
     // Get a copy of the children list, so we don't have to worry
     // about self-modifications.
     DownRelationPointers drp_copy = drp;
-      
+
     // Now visit each of the children in turn.
     DownRelationPointers::const_iterator drpi;
     for (drpi = drp_copy.begin(); drpi != drp_copy.end(); ++drpi) {
@@ -97,7 +110,7 @@ int GraphReducer::
 r_flatten(Node *root, bool combine_siblings) {
   int num_nodes = 0;
 
-  const DownRelationPointers &drp = 
+  const DownRelationPointers &drp =
     root->find_connection(_graph_type).get_down();
 
   // Get a copy of the children list, so we don't have to worry
@@ -110,11 +123,11 @@ r_flatten(Node *root, bool combine_siblings) {
     NodeRelation *arc = (*drpi);
     num_nodes += r_flatten(arc->get_child(), combine_siblings);
   }
-  
+
   if (combine_siblings && drp.size() >= 2) {
     num_nodes += flatten_siblings(root);
   }
-  
+
   if (drp.size() == 1) {
     // If we have exactly one child, consider flattening it.
     NodeRelation *arc = *drp.begin();
@@ -130,7 +143,7 @@ r_flatten(Node *root, bool combine_siblings) {
 
 class SortByTransitions {
 public:
-  INLINE bool 
+  INLINE bool
   operator () (const NodeRelation *arc1, const NodeRelation *arc2) const;
 };
 
@@ -155,7 +168,7 @@ flatten_siblings(Node *root) {
   typedef map<NodeRelation *, list<NodeRelation *>, SortByTransitions> Children;
   Children children;
 
-  const DownRelationPointers &drp = 
+  const DownRelationPointers &drp =
     root->find_connection(_graph_type).get_down();
   DownRelationPointers::const_iterator drpi;
   for (drpi = drp.begin(); drpi != drp.end(); ++drpi) {
@@ -283,7 +296,7 @@ flatten_arc(NodeRelation *arc) {
     }
   }
 
-  remove_arc(arc);  
+  remove_arc(arc);
   return true;
 }
 
@@ -292,7 +305,7 @@ flatten_arc(NodeRelation *arc) {
 //       Access: Protected, Virtual
 //  Description: Performs the work of collapsing two sibling arcs
 //               together into a single arc (and their associated
-//               nodes into a single node).  
+//               nodes into a single node).
 //
 //               Returns a pointer to a NodeRelation the reflects the
 //               combined arc (which may be either of the source arcs,
@@ -341,7 +354,7 @@ collapse_nodes(Node *node1, Node *node2, bool) {
       node2->is_exact_type(NamedNode::get_class_type())) {
     // Node2 isn't anything special, so preserve node1.
     return node1;
-    
+
   } else if (node1->is_exact_type(Node::get_class_type()) ||
              node1->is_exact_type(NamedNode::get_class_type())) {
     // Node1 isn't anything special, so preserve node2.
@@ -403,7 +416,7 @@ move_children(Node *to, Node *from) {
   if (to != from) {
     int num_children = from->get_num_children(_graph_type);
     while (num_children > 0) {
-      NodeRelation *arc = 
+      NodeRelation *arc =
         from->get_child(_graph_type, 0);
       arc->change_parent(to);
       num_children--;

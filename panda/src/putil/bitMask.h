@@ -1,6 +1,19 @@
 // Filename: bitMask.h
 // Created by:  drose (08Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef BITMASK_H
@@ -60,22 +73,22 @@ PUBLISHED:
   INLINE bool operator < (const BitMask<WordType, num_bits> &other) const;
   INLINE int compare_to(const BitMask<WordType, num_bits> &other) const;
 
-  INLINE BitMask<WordType, num_bits> 
+  INLINE BitMask<WordType, num_bits>
   operator & (const BitMask<WordType, num_bits> &other) const;
 
-  INLINE BitMask<WordType, num_bits> 
+  INLINE BitMask<WordType, num_bits>
   operator | (const BitMask<WordType, num_bits> &other) const;
 
-  INLINE BitMask<WordType, num_bits> 
+  INLINE BitMask<WordType, num_bits>
   operator ^ (const BitMask<WordType, num_bits> &other) const;
 
-  INLINE BitMask<WordType, num_bits> 
+  INLINE BitMask<WordType, num_bits>
   operator ~ () const;
 
-  INLINE BitMask<WordType, num_bits> 
+  INLINE BitMask<WordType, num_bits>
   operator << (int shift) const;
 
-  INLINE BitMask<WordType, num_bits> 
+  INLINE BitMask<WordType, num_bits>
   operator >> (int shift) const;
 
   INLINE void operator &= (const BitMask<WordType, num_bits> &other);

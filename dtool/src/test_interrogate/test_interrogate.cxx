@@ -1,6 +1,19 @@
-// Filename: test_interrogate.C
+// Filename: test_interrogate.cxx
 // Created by:  drose (09Dec99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <dtoolbase.h>
@@ -117,8 +130,8 @@ describe_wrapper(int wrapper, int indent_level) {
 
 void
 describe_function(int function, int indent_level) {
-  indent(cout, indent_level) 
-    << "Function " << interrogate_function_scoped_name(function) 
+  indent(cout, indent_level)
+    << "Function " << interrogate_function_scoped_name(function)
     << " (" << function << ")\n";
 
   indent(cout, indent_level + 2)
@@ -131,7 +144,7 @@ describe_function(int function, int indent_level) {
     cout << "\n";
   }
 
-  if (interrogate_function_is_virtual(function)) { 
+  if (interrogate_function_is_virtual(function)) {
     indent(cout, indent_level + 2) << "is virtual.\n";
   }
 
@@ -147,11 +160,11 @@ describe_function(int function, int indent_level) {
       << num_c_wrappers << " C-style wrappers:\n";
   }
   for (w = 0; w < num_c_wrappers; w++) {
-    describe_wrapper(interrogate_function_c_wrapper(function, w), 
+    describe_wrapper(interrogate_function_c_wrapper(function, w),
                      indent_level + 4);
   }
 
-  int num_python_wrappers = 
+  int num_python_wrappers =
     interrogate_function_number_of_python_wrappers(function);
   if (num_python_wrappers == 0) {
   } else if (num_python_wrappers == 1) {
@@ -162,7 +175,7 @@ describe_function(int function, int indent_level) {
       << num_python_wrappers << " Python-style wrappers:\n";
   }
   for (w = 0; w < num_python_wrappers; w++) {
-    describe_wrapper(interrogate_function_python_wrapper(function, w), 
+    describe_wrapper(interrogate_function_python_wrapper(function, w),
                      indent_level + 4);
   }
 
@@ -183,7 +196,7 @@ report_manifests() {
     } else {
       cout << " of unknown type\n";
     }
-    cout << "    definition is \"" 
+    cout << "    definition is \""
          << interrogate_manifest_definition(manifest) << "\"\n";
 
     if (interrogate_manifest_has_getter(manifest)) {
@@ -202,7 +215,7 @@ report_manifests() {
 
 void
 describe_element(int element, int indent_level) {
-  indent(cout, indent_level) 
+  indent(cout, indent_level)
     << "Element " << interrogate_element_scoped_name(element)
     << " of type ";
   show_type(interrogate_element_type(element));
@@ -434,7 +447,7 @@ report_all_functions() {
 
 void
 usage() {
-  cerr << 
+  cerr <<
     "\n"
     "test_interrogate [opts] libfile.so [libfile.so ...]\n\n"
 
@@ -528,7 +541,7 @@ main(int argc, char *argv[]) {
     if (all_functions) {
       report_all_functions();
     }
-    
+
     if (!all_types && !all_functions) {
       report_manifests();
       report_globals();
@@ -536,6 +549,6 @@ main(int argc, char *argv[]) {
       report_global_functions();
     }
   }
-    
+
   return (return_status);
 }

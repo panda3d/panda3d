@@ -1,21 +1,34 @@
 // Filename: frustumCullTraverser.I
 // Created by:  drose (14Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FrustumCullTraverser::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class Visitor, class LevelState>
 FrustumCullTraverser<Visitor, LevelState>::
-FrustumCullTraverser(ArcChain &arc_chain, Node *root, 
+FrustumCullTraverser(ArcChain &arc_chain, Node *root,
                      const LMatrix4f &rel_from_camera, Visitor &visitor,
                      const AttributeWrapper &initial_render_state,
                      const LevelState &initial_level_state,
-                     GraphicsStateGuardian *gsg, 
+                     GraphicsStateGuardian *gsg,
                      TypeHandle graph_type) :
   _arc_chain(arc_chain),
   _visitor(visitor),
@@ -81,7 +94,7 @@ FrustumCullTraverser(ArcChain &arc_chain, Node *root,
 ////////////////////////////////////////////////////////////////////
 template<class Visitor, class LevelState>
 void FrustumCullTraverser<Visitor, LevelState>::
-traverse(NodeRelation *arc, AttributeWrapper render_state, 
+traverse(NodeRelation *arc, AttributeWrapper render_state,
          LevelState level_state, PT(GeometricBoundingVolume) local_frustum,
          bool all_in) {
   // local_frustum, above, is a PT(GeometricBoundingVolume), instead
@@ -127,9 +140,9 @@ traverse(NodeRelation *arc, AttributeWrapper render_state,
             // In fake mode, we just render everything in red
             // wireframe instead of actually culling it.
 
-            ColorTransition *c = 
+            ColorTransition *c =
               new ColorTransition(1.0, 0.0, 0.0, 1.0);
-            RenderModeTransition *w = 
+            RenderModeTransition *w =
               new RenderModeTransition(RenderModeProperty::M_wireframe);
             TextureTransition *t =
               new TextureTransition(TextureTransition::off());
@@ -165,7 +178,7 @@ traverse(NodeRelation *arc, AttributeWrapper render_state,
           all_in = true;
         }
 
-        if (!all_in && 
+        if (!all_in &&
             arc->has_transition(TransformTransition::get_class_type())) {
           // Now apply the transform associated with this arc.  We do
           // this after the bounding volume test, because the bounding
@@ -201,16 +214,16 @@ traverse(NodeRelation *arc, AttributeWrapper render_state,
 
   if (carry_on) {
     // Now give the visitor a chance to veto this arc.
-    TransitionWrapper trans = 
+    TransitionWrapper trans =
       TransitionWrapper::init_from(_initial_render_state);
     trans.extract_from(arc);
-    
+
     AttributeWrapper post_state(render_state);
     post_state.apply_in_place(trans);
-    if (_visitor.forward_arc(arc, trans, render_state, post_state, 
+    if (_visitor.forward_arc(arc, trans, render_state, post_state,
                              level_state)) {
-      
-      traverse(arc->get_child(), post_state, level_state, 
+
+      traverse(arc->get_child(), post_state, level_state,
                local_frustum, all_in);
       _visitor.backward_arc(arc, trans, render_state, post_state,
                             level_state);
@@ -236,7 +249,7 @@ traverse(Node *node, AttributeWrapper &render_state, LevelState &level_state,
   if (_visitor.reached_node(node, render_state, level_state)) {
 
     // Look for further children of the given NodeRelation.
-    const DownRelationPointers &drp = 
+    const DownRelationPointers &drp =
       node->find_connection(_graph_type).get_down();
 
     // Now visit each of the children in turn.

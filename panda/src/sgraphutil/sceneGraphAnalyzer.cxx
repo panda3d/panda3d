@@ -1,6 +1,19 @@
 // Filename: sceneGraphAnalyzer.cxx
 // Created by:  drose (02Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "sceneGraphAnalyzer.h"
@@ -16,7 +29,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphAnalyzer::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 SceneGraphAnalyzer::
 SceneGraphAnalyzer(TypeHandle graph_type) :
@@ -28,7 +41,7 @@ SceneGraphAnalyzer(TypeHandle graph_type) :
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphAnalyzer::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 SceneGraphAnalyzer::
 ~SceneGraphAnalyzer() {
@@ -99,14 +112,14 @@ add_node(Node *node) {
 void SceneGraphAnalyzer::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
-    << _num_nodes << " total nodes (including " 
+    << _num_nodes << " total nodes (including "
     << _num_instances << " instances).\n";
 
   indent(out, indent_level)
     << _num_transforms << " transforms";
 
   if (_num_arcs != 0) {
-    out << "; " << 100 * _num_arcs_with_transitions / _num_arcs 
+    out << "; " << 100 * _num_arcs_with_transitions / _num_arcs
         << "% of arcs have some transition.";
   }
   out << "\n";
@@ -124,7 +137,7 @@ write(ostream &out, int indent_level) const {
 
   if (_num_long_normals != 0 || _num_short_normals != 0) {
     indent(out, indent_level)
-      << _num_long_normals << " normals are too long, " 
+      << _num_long_normals << " normals are too long, "
       << _num_short_normals << " are too short.  Average normal length is "
       << _total_normal_length / (float)_num_normals << "\n";
   }
@@ -132,7 +145,7 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << _num_tris << " triangles:\n";
   indent(out, indent_level + 2)
-    << _num_triangles_in_strips 
+    << _num_triangles_in_strips
     << " of these are on " << _num_tristrips << " tristrips";
   if (_num_tristrips != 0) {
     out << " ("
@@ -142,7 +155,7 @@ write(ostream &out, int indent_level) const {
   out << ".\n";
 
   indent(out, indent_level + 2)
-    << _num_triangles_in_fans 
+    << _num_triangles_in_fans
     << " of these are on " << _num_trifans << " trifans";
   if (_num_trifans != 0) {
     out << " ("
@@ -152,7 +165,7 @@ write(ostream &out, int indent_level) const {
   out << ".\n";
 
   indent(out, indent_level + 2)
-    << _num_individual_tris 
+    << _num_individual_tris
     << " of these are independent triangles.\n";
 
   indent(out, indent_level)
@@ -161,7 +174,7 @@ write(ostream &out, int indent_level) const {
     << _num_spheres << " spheres.\n";
 
   indent(out, indent_level)
-    << _textures.size() << " textures, estimated minimum " 
+    << _textures.size() << " textures, estimated minimum "
     << (_texture_bytes + 1023) / 1024 << "K texture memory required.\n";
 }
 
@@ -188,11 +201,11 @@ collect_statistics(Node *node, bool under_instance) {
       under_instance = true;
     }
   }
-  
+
   if (node->is_of_type(GeomNode::get_class_type())) {
     collect_statistics(DCAST(GeomNode, node));
   }
-  
+
   int num_children = node->get_num_children(_graph_type);
   for (int i = 0; i < num_children; i++) {
     NodeRelation *arc = node->get_child(_graph_type, i);
@@ -343,10 +356,10 @@ collect_statistics(Geom *geom) {
 
   } else {
     sgraphutil_cat.warning()
-      << "Unknown GeomType in SceneGraphAnalyzer: " 
+      << "Unknown GeomType in SceneGraphAnalyzer: "
       << geom->get_type() << "\n";
   }
-}    
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphAnalyzer::collect_statistics
@@ -368,9 +381,9 @@ collect_statistics(Texture *texture) {
     PixelBuffer *pb = texture->_pbuffer;
     if (pb != (PixelBuffer *)NULL) {
       int bytes =
-        pb->get_xsize() * pb->get_ysize() * pb->get_num_components() * 
+        pb->get_xsize() * pb->get_ysize() * pb->get_num_components() *
         pb->get_component_width();
-      
+
       bool is_mipmapped = false;
       switch (texture->get_minfilter()) {
       case Texture::FT_nearest_mipmap_nearest:
@@ -383,14 +396,14 @@ collect_statistics(Texture *texture) {
       default:
         break;
       }
-      
+
       if (is_mipmapped) {
         bytes *= 4/3;
       }
 
       _texture_bytes += bytes;
     }
-  
+
   } else {
     // This texture has been encountered before; don't count it again.
     (*ti).second++;

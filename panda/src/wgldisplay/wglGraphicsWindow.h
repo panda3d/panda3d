@@ -3,6 +3,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 #ifndef WGLGRAPHICSWINDOW_H
 #define WGLGRAPHICSWINDOW_H
 //
@@ -67,8 +79,8 @@ public:
 
   INLINE bool mouse_entry_enabled(void) { return _mouse_entry_enabled; }
   INLINE bool mouse_motion_enabled(void) { return _mouse_motion_enabled; }
-  INLINE bool mouse_passive_motion_enabled(void) { 
-    return _mouse_passive_motion_enabled; 
+  INLINE bool mouse_passive_motion_enabled(void) {
+    return _mouse_passive_motion_enabled;
   }
   void handle_reshape( int w, int h );
   void handle_mouse_motion( int x, int y );

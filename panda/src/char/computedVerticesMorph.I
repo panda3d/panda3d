@@ -1,6 +1,19 @@
 // Filename: computedVerticesMorph.I
 // Created by:  drose (03Mar99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "characterSlider.h"
@@ -8,17 +21,17 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMorphValue2::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ComputedVerticesMorphValue2::
-ComputedVerticesMorphValue2(int index, const VecType &mvector) 
+ComputedVerticesMorphValue2(int index, const VecType &mvector)
   : _index(index), _vector(mvector) {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMorphValue2::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ComputedVerticesMorphValue2::
 ComputedVerticesMorphValue2(void){
@@ -27,17 +40,17 @@ ComputedVerticesMorphValue2(void){
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMorphValue3::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ComputedVerticesMorphValue3::
-ComputedVerticesMorphValue3(int index, const VecType &mvector) 
+ComputedVerticesMorphValue3(int index, const VecType &mvector)
   : _index(index), _vector(mvector) {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMorphValue3::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ComputedVerticesMorphValue3::
 ComputedVerticesMorphValue3(void){
@@ -46,17 +59,17 @@ ComputedVerticesMorphValue3(void){
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMorphValue4::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ComputedVerticesMorphValue4::
-ComputedVerticesMorphValue4(int index, const VecType &mvector) 
+ComputedVerticesMorphValue4(int index, const VecType &mvector)
   : _index(index), _vector(mvector) {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMorphValue4::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ComputedVerticesMorphValue4::
 ComputedVerticesMorphValue4(void){
@@ -65,18 +78,18 @@ ComputedVerticesMorphValue4(void){
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMorph::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class ValueType, class MorphValueType>
 ComputedVerticesMorph<ValueType, MorphValueType>::
 ComputedVerticesMorph() {
   _slider_index = -1;
 }
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMorph::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class ValueType, class MorphValueType>
 ComputedVerticesMorph<ValueType, MorphValueType>::
@@ -85,17 +98,17 @@ ComputedVerticesMorph(const ComputedVerticesMorph<ValueType, MorphValueType> &co
   _morphs(copy._morphs)
 {
 }
-  
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMorph::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class ValueType, class MorphValueType>
 void ComputedVerticesMorph<ValueType, MorphValueType>::
 output(ostream &out) const {
-  out << "morph index " << _slider_index << ": " 
+  out << "morph index " << _slider_index << ": "
       << _morphs.size() << " points.";
 }
 
@@ -103,7 +116,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMorph::write_datagram
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class ValueType, class MorphValueType>
 void ComputedVerticesMorph<ValueType, MorphValueType>::
@@ -120,7 +133,7 @@ write_datagram(Datagram &dest)
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMorph::read_datagram
 //       Access: Protected
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 template<class ValueType, class MorphValueType>
 void ComputedVerticesMorph<ValueType, MorphValueType>::

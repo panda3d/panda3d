@@ -1,6 +1,19 @@
 // Filename: discEmitter.I
 // Created by:  charles (22Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
@@ -10,8 +23,8 @@
 ////////////////////////////////////////////////////////////////////
 
 INLINE void DiscEmitter::
-set_radius(float r) { 
-  _radius = r; 
+set_radius(float r) {
+  _radius = r;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -43,8 +56,8 @@ set_inner_angle(float i_angle) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void DiscEmitter::
-set_outer_magnitude(float o_mag) { 
-  _outer_magnitude = o_mag; 
+set_outer_magnitude(float o_mag) {
+  _outer_magnitude = o_mag;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -54,8 +67,8 @@ set_outer_magnitude(float o_mag) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void DiscEmitter::
-set_inner_magnitude(float i_mag) { 
-  _inner_magnitude = i_mag; 
+set_inner_magnitude(float i_mag) {
+  _inner_magnitude = i_mag;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -65,8 +78,8 @@ set_inner_magnitude(float i_mag) {
 ////////////////////////////////////////////////////////////////////
 
 INLINE void DiscEmitter::
-set_cubic_lerping(bool clerp) { 
-  _cubic_lerping = clerp; 
+set_cubic_lerping(bool clerp) {
+  _cubic_lerping = clerp;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -98,8 +111,8 @@ get_outer_angle(void) const {
 ////////////////////////////////////////////////////////////////////
 
 INLINE float DiscEmitter::
-get_inner_angle(void) const { 
-  return _inner_aoe; 
+get_inner_angle(void) const {
+  return _inner_aoe;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -109,8 +122,8 @@ get_inner_angle(void) const {
 ////////////////////////////////////////////////////////////////////
 
 INLINE float DiscEmitter::
-get_outer_magnitude(void) const { 
-  return _outer_magnitude; 
+get_outer_magnitude(void) const {
+  return _outer_magnitude;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -120,8 +133,8 @@ get_outer_magnitude(void) const {
 ////////////////////////////////////////////////////////////////////
 
 INLINE float DiscEmitter::
-get_inner_magnitude(void) const { 
-  return _inner_magnitude; 
+get_inner_magnitude(void) const {
+  return _inner_magnitude;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -131,6 +144,6 @@ get_inner_magnitude(void) const {
 ////////////////////////////////////////////////////////////////////
 
 INLINE bool DiscEmitter::
-get_cubic_lerping(void) const { 
-  return _cubic_lerping; 
+get_cubic_lerping(void) const {
+  return _cubic_lerping;
 }

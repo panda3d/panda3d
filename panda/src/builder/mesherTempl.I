@@ -1,6 +1,19 @@
 // Filename: mesherTempl.I
 // Created by:  drose (15Sep97)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "builderMisc.h"
@@ -31,7 +44,7 @@ add_prim(const Prim &prim, MesherStripOrigin origin) {
   list.push_back(temp_strip);
   Strip &strip = list.back();
   strip._origin = origin;
-  
+
   int i;
   int num_verts = prim.get_num_verts();
 
@@ -40,7 +53,7 @@ add_prim(const Prim &prim, MesherStripOrigin origin) {
 
   // Get the common vertex pointers for the primitive's vertices.
   for (i = 0; i < num_verts; i++) {
-    Verts::iterator n = 
+    Verts::iterator n =
       _verts.insert(Verts::value_type(prim.get_vertex(i), EdgePtrs())).first;
     vptrs[i] = &(*n).first;
     eptrs[i] = &(*n).second;
@@ -62,7 +75,7 @@ add_prim(const Prim &prim, MesherStripOrigin origin) {
       // outer edge (and vice-versa).
       Edge inner(vptrs[i], vptrs[(i+1) % num_verts]);
       Edge outer(vptrs[(i+1) % num_verts], vptrs[i]);
-      
+
       // Add it to the list and get its common pointer.
       Edge &inner_ref = (Edge &)*_edges.insert(inner).first;
       Edge &outer_ref = (Edge &)*_edges.insert(outer).first;
@@ -70,13 +83,13 @@ add_prim(const Prim &prim, MesherStripOrigin origin) {
       // Tell the edges about each other.
       inner_ref._opposite = &outer_ref;
       outer_ref._opposite = &inner_ref;
-      
+
       // Associate the common edge to the strip.
       strip._edges.push_back(&inner_ref);
-      
+
       // Associate the strip, as well as the original prim, to the edge.
       outer_ref._strips.push_back(&strip);
-      
+
       // Associate the common edge with the vertices that share it.
       //      Edge *edge_ptr = inner_ref.common_ptr();
       eptrs[i]->insert(&outer_ref);
@@ -206,7 +219,7 @@ getPrim() {
     if (strip._row_id < 0) {
       // Yep!  Assign a new color, if it doesn't already have one.
       ColorSheetMap::iterator ci = _color_sheets.find(strip._row_id);
-      
+
       if (ci == _color_sheets.end()) {
         Colorf color1;
         make_random_color(color1);
@@ -217,7 +230,7 @@ getPrim() {
         i1 = (*ci).second;
       }
     }
-      
+
     // Now i1 is the color we want to assign to the whole primitive.
     // Just set all vertices to the same color.
     int num_verts = prim.get_num_verts();
@@ -263,7 +276,7 @@ getPrim() {
       case BPT_quadstrip:
         i1 = 3;
         break;
-      
+
       case BPT_tristrip:
         make_random_color(color1);
         // Make it a shade of red.
@@ -294,7 +307,7 @@ getPrim() {
         i1 = 0;
       }
     }
-      
+
     // Now i1 is the color we want to assign to the whole primitive.
     // Just set all vertices to the same color.
     int num_verts = prim.get_num_verts();
@@ -323,7 +336,7 @@ finalize() {
   }
 }
 
-  
+
 
 template <class PrimType>
 void MesherTempl<PrimType>::
@@ -384,14 +397,14 @@ choose_strip_list(const Strip &strip) {
     switch (strip._type) {
     case BPT_tri:
       return _tris;
-      
+
     case BPT_quad:
       return _quads;
-      
+
     default:
       return _strips;
     }
-  
+
   default:
     builder_cat.fatal() << "Invalid strip status!\n";
     abort();
@@ -427,21 +440,21 @@ build_sheets() {
 
       const Edge *edge_a = (*best)._edges.front();
       const Edge *edge_b = (*best).find_adjacent_edge(edge_a);
-      
+
       int num_prims_a = 0;
       int num_rows_a = 0;
       int first_row_id_a = first_row_id;
-      (*best).measure_sheet(edge_a, true, num_prims_a, num_rows_a, 
+      (*best).measure_sheet(edge_a, true, num_prims_a, num_rows_a,
                            first_row_id_a, 0, 0);
       first_row_id += num_rows_a;
       double avg_length_a = (double)num_prims_a / (double)num_rows_a;
-      
+
       int num_prims_b = 0;
       int num_rows_b = 0;
       int first_row_id_b = first_row_id;
       double avg_length_b;
       if (edge_b != NULL) {
-        (*best).measure_sheet(edge_b, true, num_prims_b, num_rows_b, 
+        (*best).measure_sheet(edge_b, true, num_prims_b, num_rows_b,
                              first_row_id_b, 0, 0);
         first_row_id += num_rows_b;
         avg_length_b = (double)num_prims_b / (double)num_rows_b;
@@ -457,11 +470,11 @@ build_sheets() {
         // because we've unfortunately wiped out the information we
         // stored when we measured sheet a.  We'll have to do it
         // again.
-      
+
         num_prims_a = 0;
         num_rows_a = 0;
         first_row_id_a = first_row_id;
-        (*best).measure_sheet(edge_a, true, num_prims_a, num_rows_a, 
+        (*best).measure_sheet(edge_a, true, num_prims_a, num_rows_a,
                              first_row_id_a, 0, 0);
         first_row_id += num_rows_a;
 
@@ -501,13 +514,13 @@ find_fans() {
 
       // Build up a list of far fan edges.
       typedef vector<FanMaker> FanMakers;
-      
+
       FanMakers fans;
 
       EdgePtrs::iterator ei;
       Edge::Strips::iterator si;
       for (ei = edges.begin(); ei != edges.end(); ++ei) {
-        for (si = (*ei)->_strips.begin(); 
+        for (si = (*ei)->_strips.begin();
              si != (*ei)->_strips.end();
              ++si) {
           Strip *strip = *si;
@@ -516,14 +529,14 @@ find_fans() {
           }
         }
       }
-      
+
       // Sort the fans list by edge pointers, and remove duplicates.
       sort(fans.begin(), fans.end());
       fans.erase(unique(fans.begin(), fans.end()),
                  fans.end());
-      
+
       FanMakers::iterator fi, fi2;
-      
+
       // Now pull out connected edges.
       int joined_any;
       do {
@@ -539,7 +552,7 @@ find_fans() {
           }
         }
       } while (joined_any);
-      
+
       for (fi = fans.begin(); fi != fans.end(); ++fi) {
         if ((*fi).is_valid()) {
           (*fi).build();
@@ -646,11 +659,11 @@ meshList(Strips &strips) {
     if ((*best)._status == MS_alive) {
       (*best).mate(*_bucket);
     }
-    
+
     // Put the strip back on the end of whichever list it wants.  This
     // might be the same list, if the strip is still alive, or it
     // might be _done or _dead.
     Strips &list = choose_strip_list(*best);
     list.splice(list.end(), strips, best);
   }
-}  
+}

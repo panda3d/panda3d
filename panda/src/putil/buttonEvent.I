@@ -1,13 +1,26 @@
 // Filename: buttonEvent.I
 // Created by:  drose (01Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonEvent::Default Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ButtonEvent::
 ButtonEvent() :
@@ -19,7 +32,7 @@ ButtonEvent() :
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonEvent::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ButtonEvent::
 ButtonEvent(ButtonHandle button, bool down) :
@@ -31,7 +44,7 @@ ButtonEvent(ButtonHandle button, bool down) :
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonEvent::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ButtonEvent::
 ButtonEvent(const ButtonEvent &copy) :
@@ -43,7 +56,7 @@ ButtonEvent(const ButtonEvent &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonEvent::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void ButtonEvent::
 operator = (const ButtonEvent &copy) {
@@ -54,7 +67,7 @@ operator = (const ButtonEvent &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonEvent::Equality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool ButtonEvent::
 operator == (const ButtonEvent &other) const {
@@ -65,7 +78,7 @@ operator == (const ButtonEvent &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonEvent::Inequality Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool ButtonEvent::
 operator != (const ButtonEvent &other) const {
@@ -75,7 +88,7 @@ operator != (const ButtonEvent &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ButtonEvent::Ordering Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool ButtonEvent::
 operator < (const ButtonEvent &other) const {

@@ -1,6 +1,19 @@
 // Filename: updateSeq.I
 // Created by:  drose (30Sep99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 
@@ -51,7 +64,7 @@ fresh() {
 ////////////////////////////////////////////////////////////////////
 //     Function: UpdateSeq::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq::
 UpdateSeq(const UpdateSeq &copy) {
@@ -61,7 +74,7 @@ UpdateSeq(const UpdateSeq &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: UpdateSeq::Copy Assignment operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq &UpdateSeq::
 operator = (const UpdateSeq &copy) {
@@ -133,7 +146,7 @@ is_special() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: UpdateSeq::Equality operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 operator == (const UpdateSeq &other) const {
@@ -143,7 +156,7 @@ operator == (const UpdateSeq &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: UpdateSeq::Inequality operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 operator != (const UpdateSeq &other) const {
@@ -153,7 +166,7 @@ operator != (const UpdateSeq &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: UpdateSeq::Comparison operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 operator < (const UpdateSeq &other) const {
@@ -170,7 +183,7 @@ operator < (const UpdateSeq &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: UpdateSeq::Comparison operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 operator <= (const UpdateSeq &other) const {
@@ -180,7 +193,7 @@ operator <= (const UpdateSeq &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: UpdateSeq::Preincrement operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq UpdateSeq::
 operator ++ () {
@@ -190,14 +203,14 @@ operator ++ () {
     // with our special cases.
     _seq = (unsigned int)SC_old + 1;
   }
-    
+
   return *this;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: UpdateSeq::Postincrement operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq UpdateSeq::
 operator ++ (int) {
@@ -209,7 +222,7 @@ operator ++ (int) {
 ////////////////////////////////////////////////////////////////////
 //     Function: UpdateSeq::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void UpdateSeq::
 output(ostream &out) const {

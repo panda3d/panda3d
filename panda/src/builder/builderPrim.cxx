@@ -1,6 +1,19 @@
 // Filename: builderPrim.cxx
 // Created by:  drose (10Sep97)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "builderPrim.h"
@@ -21,7 +34,7 @@
 //               coordinates in the given bucket.
 ////////////////////////////////////////////////////////////////////
 BuilderPrim &BuilderPrim::
-nonindexed_copy(const BuilderPrimTempl<BuilderVertexI> &copy, 
+nonindexed_copy(const BuilderPrimTempl<BuilderVertexI> &copy,
                 const BuilderBucket &bucket) {
   clear();
 
@@ -191,8 +204,8 @@ fill_geom(Geom *geom, const PTA_ushort &v_array,
     c_data = NULL;
     c_array = NULL;
   }
-    
-  int n_len = 
+
+  int n_len =
     (n_attr==G_PER_VERTEX) ? num_verts :
     (n_attr==G_PER_COMPONENT) ? num_components :
     (n_attr==G_PER_PRIM) ? num_prims :
@@ -202,12 +215,12 @@ fill_geom(Geom *geom, const PTA_ushort &v_array,
     (t_attr==G_PER_COMPONENT) ? num_components :
     (t_attr==G_PER_PRIM) ? num_prims :
     (t_attr==G_OVERALL) ? 1 : 0;
-  int c_len = 
+  int c_len =
     (c_attr==G_PER_VERTEX) ? num_verts :
     (c_attr==G_PER_COMPONENT) ? num_components :
     (c_attr==G_PER_PRIM) ? num_prims :
     (c_attr==G_OVERALL) ? 1 : 0;
-    
+
   // See if we can share some of the index lists.
   if (n_attr != G_OFF &&
       memcmp(v_array, n_array, sizeof(ushort) * n_len)==0) {

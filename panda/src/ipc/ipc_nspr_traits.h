@@ -2,6 +2,19 @@
 // Created by:  cary (12Jan00)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 #ifndef __IPC_NSPR_TRAITS_H__
 #define __IPC_NSPR_TRAITS_H__
@@ -213,9 +226,9 @@ public:
           close();
           switch(mode){
           case 0: _fhandle = PR_Open(_filename.c_str(), PR_RDONLY, 00666); break;
-          case 1: _fhandle = PR_Open(_filename.c_str(), 
+          case 1: _fhandle = PR_Open(_filename.c_str(),
                                      PR_WRONLY | PR_CREATE_FILE | PR_TRUNCATE, 00666); break;
-          case 2: _fhandle = PR_Open(_filename.c_str(), 
+          case 2: _fhandle = PR_Open(_filename.c_str(),
                                      PR_RDWR | PR_CREATE_FILE | PR_TRUNCATE, 00666); break;
           case 3: _fhandle = PR_Open(_filename.c_str(), PR_APPEND | PR_CREATE_FILE, 00666); break;
           default: _fhandle = PR_Open(_filename.c_str(), PR_RDONLY, 00666); break;

@@ -1,6 +1,19 @@
-// Filename: LinearVectorForce.cxx
+// Filename: linearVectorForce.cxx
 // Created by:  charles (14Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <datagram.h>
@@ -13,14 +26,14 @@
 TypeHandle LinearVectorForce::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function : LinearVectorForce 
+//     Function : LinearVectorForce
 //       Access : Public
 //  Description : Vector Constructor
 ////////////////////////////////////////////////////////////////////
 LinearVectorForce::
-LinearVectorForce(const LVector3f& vec, float a, bool mass) : 
+LinearVectorForce(const LVector3f& vec, float a, bool mass) :
   LinearForce(a, mass),
-  _fvec(vec) 
+  _fvec(vec)
 {
 }
 

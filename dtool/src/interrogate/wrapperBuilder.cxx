@@ -1,6 +1,19 @@
-// Filename: wrapperBuilder.C
+// Filename: wrapperBuilder.cxx
 // Created by:  drose (01Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "wrapperBuilder.h"
@@ -31,7 +44,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: WrapperBuilder::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 WrapperBuilder::
 WrapperBuilder() {
@@ -46,17 +59,17 @@ WrapperBuilder() {
   _ftype = (CPPFunctionType *)NULL;
   _num_default_parameters = 0;
   _wrapper_index = 0;
-  
+
   _is_valid = false;
   _return_value_needs_management = false;
   _return_value_destructor = 0;
   _manage_reference_count = false;
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: WrapperBuilder::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 WrapperBuilder::
 ~WrapperBuilder() {
@@ -99,7 +112,7 @@ bool WrapperBuilder::
 set_function(CPPInstance *function, const string &description,
              CPPStructType *struct_type,
              CPPScope *scope, const string &function_signature,
-             WrapperBuilder::Type type, 
+             WrapperBuilder::Type type,
              const string &expression,
              int num_default_parameters) {
   clear();
@@ -115,7 +128,7 @@ set_function(CPPInstance *function, const string &description,
 
   _ftype = _function->_type->resolve_type(scope, &parser)->as_function_type();
   assert(_ftype != (CPPFunctionType *)NULL);
-  
+
   _is_valid = true;
   _has_this = false;
   _type = type;
@@ -164,7 +177,7 @@ set_function(CPPInstance *function, const string &description,
     }
   }
 
-  const CPPParameterList::Parameters &params = 
+  const CPPParameterList::Parameters &params =
     _ftype->_parameters->_parameters;
   for (int i = 0; i < (int)params.size() - num_default_parameters; i++) {
     CPPType *type = params[i]->_type->resolve_type(&parser, _scope);
@@ -237,7 +250,7 @@ set_function(CPPInstance *function, const string &description,
   CPPType *return_type = _return_type->get_new_type();
   CPPType *return_meat_type = TypeManager::unwrap_pointer(return_type);
 
-  if (manage_reference_counts && 
+  if (manage_reference_counts &&
       TypeManager::is_reference_count_pointer(return_type) &&
       !TypeManager::has_protected_destructor(return_meat_type)) {
     // Yes!
@@ -252,7 +265,7 @@ set_function(CPPInstance *function, const string &description,
 
   return _is_valid;
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: WrapperBuilder::is_valid
 //       Access: Public
@@ -305,7 +318,7 @@ make_remap(CPPType *orig_type) {
     if (TypeManager::is_char_pointer(orig_type)) {
       return new ParameterRemapCharStarToString(orig_type);
     }
-     
+
     // If we're exporting a method of basic_string<char> itself, don't
     // convert basic_string<char>'s to atomic strings.
 
@@ -321,7 +334,7 @@ make_remap(CPPType *orig_type) {
   }
 
   if (manage_reference_counts) {
-    if (TypeManager::is_pointer_to_base(orig_type) || 
+    if (TypeManager::is_pointer_to_base(orig_type) ||
         TypeManager::is_const_ref_to_pointer_to_base(orig_type)) {
       CPPType *pt_type = TypeManager::unwrap_reference(orig_type);
 
@@ -432,7 +445,7 @@ output_ref(ostream &out, int indent_level, const string &varname) const {
       << "}\n";
   }
 }
- 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: WrapperBuilder::get_parameter_name
 //       Access: Protected
@@ -514,15 +527,15 @@ get_call_str(const vector_string &pexprs) const {
       call << "(" << get_parameter_expr(pn, pexprs) << ")->"
            << _function->get_local_name();
       pn++;
-      
+
     } else if (_type == T_constructor) {
       // Constructors are called differently too.
       call << _struct_type->get_local_name(&parser);
-      
+
     } else {
       call << _function->get_local_name(&parser);
     }
-    
+
     call << "(";
     if (pn < (int)_parameters.size()) {
       _parameters[pn]._remap->pass_parameter(call, get_parameter_expr(pn, pexprs));
@@ -535,7 +548,7 @@ get_call_str(const vector_string &pexprs) const {
     }
     call << ")";
   }
-  
+
   return call.str();
 }
 
@@ -577,8 +590,8 @@ call_function(ostream &out, int indent_level, bool convert_result,
   } else if (_type == T_typecast_method) {
     // A typecast method can be invoked implicitly.
     assert(_parameters.size() == 1);
-    string cast_expr = 
-      "(" + _return_type->get_orig_type()->get_local_name(&parser) + 
+    string cast_expr =
+      "(" + _return_type->get_orig_type()->get_local_name(&parser) +
       ")(*" + get_parameter_expr(0, pexprs) + ")";
 
     if (!convert_result) {
@@ -595,8 +608,8 @@ call_function(ostream &out, int indent_level, bool convert_result,
     // above, which converts from the concrete type to some other
     // type.)
     assert(_parameters.size() == 1);
-    string cast_expr = 
-      "(" + _return_type->get_orig_type()->get_local_name(&parser) + 
+    string cast_expr =
+      "(" + _return_type->get_orig_type()->get_local_name(&parser) +
       ")" + get_parameter_expr(0, pexprs);
 
     if (!convert_result) {
@@ -631,18 +644,18 @@ call_function(ostream &out, int indent_level, bool convert_result,
       // this case, we might inadventent generate code like "return
       // &(*this)", when "return this" would do.  We check for this here
       // and undo it as a special case.
-      
+
       // There's no real good reason to do this, other than that it
       // feels more satisfying to a casual perusal of the generated
       // code.  It *is* conceivable that some broken compilers wouldn't
       // like "&(*this)", though.
-      
+
       if (return_expr == "&(" + ref_expr + ")" ||
           return_expr == "&" + ref_expr) {
         return_expr = this_expr;
       }
     }
-          
+
   } else if (_void_return) {
     indent(out, indent_level)
       << get_call_str(pexprs) << ";\n";
@@ -652,7 +665,7 @@ call_function(ostream &out, int indent_level, bool convert_result,
 
     if (!convert_result) {
       return_expr = get_call_str(pexprs);
-      
+
     } else {
       if (_return_type->return_value_should_be_simple()) {
         // We have to assign the result to a temporary first; this makes
@@ -668,7 +681,7 @@ call_function(ostream &out, int indent_level, bool convert_result,
 
       } else {
         // This should be simple enough that we can return it directly.
-        string new_str = 
+        string new_str =
           _return_type->prepare_return_expr(out, indent_level, call);
         return_expr = _return_type->get_return_expr(new_str);
       }
@@ -735,7 +748,7 @@ write_quoted_string(ostream &out, const string &str) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: WrapperBuilder::indent
 //       Access: Public, Static
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 ostream &WrapperBuilder::
 indent(ostream &out, int indent_level) {

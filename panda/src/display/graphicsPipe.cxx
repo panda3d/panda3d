@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "graphicsPipe.h"
 #include "config_display.h"
@@ -48,11 +57,11 @@ TypeHandle GraphicsPipe::PipeSpec::force_init_type(void) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsPipe::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsPipe::
 GraphicsPipe(const PipeSpecifier &spec) :
-  Namable(spec.get_name()) 
+  Namable(spec.get_name())
 {
   // Add ourself to the global list of pipes.
   get_all_pipes().push_back(this);
@@ -61,7 +70,7 @@ GraphicsPipe(const PipeSpecifier &spec) :
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsPipe::Default Constructor
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsPipe::
 GraphicsPipe() {
@@ -72,7 +81,7 @@ GraphicsPipe() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsPipe::Copy Constructor
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsPipe::
 GraphicsPipe(const GraphicsPipe&) {
@@ -83,7 +92,7 @@ GraphicsPipe(const GraphicsPipe&) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsPipe::Copy Assignment Operator
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsPipe &GraphicsPipe::
 operator=(const GraphicsPipe&) {
@@ -96,7 +105,7 @@ operator=(const GraphicsPipe&) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsPipe::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsPipe::
 ~GraphicsPipe() {
@@ -111,7 +120,7 @@ GraphicsPipe::
 
   // Remove ourself from the global list.
   Pipes &all_pipes = get_all_pipes();
-  Pipes::iterator pi = 
+  Pipes::iterator pi =
     find(all_pipes.begin(), all_pipes.end(), this);
   if (pi != all_pipes.end()) {
     all_pipes.erase(pi);
@@ -178,7 +187,7 @@ remove_window(GraphicsWindow *window) {
   // For whatever reason, VC++ considers == ambiguous unless we
   // compare it to a PT(GraphicsWindow) instead of a GraphicsWindow*.
   PT(GraphicsWindow) ptwin = window;
-  Windows::iterator wi = 
+  Windows::iterator wi =
     find(_windows.begin(), _windows.end(), ptwin);
   if (wi != _windows.end()) {
     _windows.erase(wi);

@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "loader.h"
 #include "loaderFileType.h"
@@ -97,7 +106,7 @@ resolve_filename(Filename &filename) const {
   }
 
   LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
-  LoaderFileType *requested_type = 
+  LoaderFileType *requested_type =
     reg->get_type_from_extension(extension);
 
   if (requested_type != (LoaderFileType *)NULL) {
@@ -134,7 +143,7 @@ request_load(const Filename &filename, const string &event_name) {
         << "never called!  Calling it now..." << endl;
       create_thread();
     }
-   
+
     // We need to grab the lock in order to signal the condition variable
 #ifdef HAVE_IPC
     _lock.lock();
@@ -298,7 +307,7 @@ load_file(const Filename &filename) const {
   }
 
   LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
-  LoaderFileType *requested_type = 
+  LoaderFileType *requested_type =
     reg->get_type_from_extension(extension);
 
   if (requested_type == (LoaderFileType *)NULL) {
@@ -319,7 +328,7 @@ load_file(const Filename &filename) const {
 
   if (loader_cat.is_debug()) {
     loader_cat.debug()
-      << "Loading " << requested_type->get_name() << " file: " 
+      << "Loading " << requested_type->get_name() << " file: "
       << requested_filename << "\n";
   }
 
@@ -415,7 +424,7 @@ load_unknown_file_type(const Filename &filename) const {
     }
     if (loader_cat.is_debug()) {
       loader_cat.debug()
-        << "Couldn't read " << consider._type->get_name() 
+        << "Couldn't read " << consider._type->get_name()
         << " file " << consider._path << "\n";
     }
   }

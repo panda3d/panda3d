@@ -1,15 +1,19 @@
 // Filename: dxTextureContext.cxx
 // Created by:  drose (07Oct99)
-// 
+//
 ////////////////////////////////////////////////////////////////////
-// Copyright (C) 2000 Walt Disney Imagineering, Inc.
-// 
-// These  coded  instructions,  statements,  data   structures   and
-// computer  programs contain unpublished proprietary information of
-// Walt Disney Imagineering and are protected by  Federal  copyright
-// law.  They may  not be  disclosed to third  parties  or copied or
-// duplicated in any form, in whole or in part,  without  the  prior
-// written consent of Walt Disney Imagineering Inc.
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <assert.h>
@@ -62,7 +66,7 @@ static void DebugPrintPixFmt(DDPIXELFORMAT* pddpf) {
         *dbgout << " Lummask:" << (void *) pddpf->dwLuminanceBitMask;
     }
 
-    *dbgout << endl; 
+    *dbgout << endl;
 
     iddpfnum++;
 }
@@ -117,7 +121,7 @@ enum Format {
     T_unsigned_short,  // 2 byte per channel
     T_unsigned_byte_332,  // RGB in 1 byte
     T_float,             // 1 channel stored as float
-  };  
+  };
 */
 
 ////////////////////////////////////////////////////////////////////
@@ -149,7 +153,7 @@ get_bits_per_pixel(PixelBuffer::Format format, int *alphbits) {
             return 16;
         case PixelBuffer::F_luminance:
             return 8;
-        case PixelBuffer::F_rgba4:  
+        case PixelBuffer::F_rgba4:
             *alphbits = 4;
             return 16;
         case PixelBuffer::F_rgba5:
@@ -165,7 +169,7 @@ get_bits_per_pixel(PixelBuffer::Format format, int *alphbits) {
         case PixelBuffer::F_rgba:
             *alphbits = 8;
             return 32;
-        case PixelBuffer::F_rgbm: 
+        case PixelBuffer::F_rgbm:
             *alphbits = 1;
             return 32;
         case PixelBuffer::F_rgb12:
@@ -216,9 +220,9 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                         r = (BYTE)((dwPixel    )&0x000000ff);
 
                         *pDstWord = (a << 24) | (r << 16)| (g << 8) | b;
-#else 
+#else
                         BYTE r,b;
-                  // simpler: just swap r & b                   
+                  // simpler: just swap r & b
                         b = (BYTE)((dwPixel>>16)&0x000000ff);
                         r = (BYTE)((dwPixel    )&0x000000ff);
                         *pDstWord = ((dwPixel & 0xff00ff00) | (r<<16) | b) & dwAlphaMaskOff;
@@ -228,13 +232,13 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                 break;
             }
 
-        case Conv32to16_1555: 
+        case Conv32to16_1555:
         case Conv32to16_0555: {
                 DWORD *pSrcWord = (DWORD *) pbuf;
                 WORD *pDstWord;
                 DWORD dwAlphaMaskOff = (ConvNeeded==Conv32to16_0555) ? 0x7FFF : 0xFFFF;
 
-                assert(ddsd.ddpfPixelFormat.dwRBitMask==0x7C00);  
+                assert(ddsd.ddpfPixelFormat.dwRBitMask==0x7C00);
           // for some reason, bits are 'in-order' when converting to 16bit
 
           // just handle 1/15 alpha/rgb
@@ -269,7 +273,7 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                 DWORD *pSrcWord = (DWORD *) pbuf;
                 WORD *pDstWord;
 
-                assert(ddsd.ddpfPixelFormat.dwRBitMask==0xF800);  
+                assert(ddsd.ddpfPixelFormat.dwRBitMask==0xF800);
           // for some reason, bits are 'in-order' when converting to 16bit
 
           // just handle 1/15 alpha/rgb
@@ -343,7 +347,7 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                   // pixel buffer is in ABGR format (orig fmt designed for big-endian RGBA)
                   // need to change byte order to ARGB
 
-                        a = (BYTE)((dwPixel>>24))                   >> 4; 
+                        a = (BYTE)((dwPixel>>24))                   >> 4;
                         b = (BYTE)((dwPixel>>16) & 0x000000ff)      >> 4;
                         g = (BYTE)((dwPixel>> 8) & 0x000000ff)      >> 4;
                         r = (BYTE)((dwPixel    ) & 0x000000ff)      >> 4;
@@ -384,7 +388,7 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                 BYTE *pSrcWord = (BYTE *) pbuf;
                 WORD *pDstWord;
 
-                assert(ddsd.ddpfPixelFormat.dwRBitMask==0x7C00);  
+                assert(ddsd.ddpfPixelFormat.dwRBitMask==0x7C00);
              // for some reason, bits are 'in-order' when converting to 16bit
 
                 for(DWORD y=0; y<dwOrigHeight; y++,pDDSurfBytes += ddsd.lPitch) {
@@ -411,7 +415,7 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                 BYTE *pSrcWord = (BYTE *) pbuf;
                 WORD *pDstWord;
 
-                assert(ddsd.ddpfPixelFormat.dwRBitMask==0xF800);  
+                assert(ddsd.ddpfPixelFormat.dwRBitMask==0xF800);
              // for some reason, bits are 'in-order' when converting to 16bit
 
                 for(DWORD y=0; y<dwOrigHeight; y++,pDDSurfBytes += ddsd.lPitch) {
@@ -448,7 +452,7 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                   // need to change byte order to ARGB
 
                   // bugbug?  swapping doesnt work  I dont understand why must
-                  // swap bytes for 32-bit RGBA (herc) but not here in 24bit, 
+                  // swap bytes for 32-bit RGBA (herc) but not here in 24bit,
                   // where they seem to be in correct order in pixelbuffer
 
                         r = *pSrcWord;
@@ -498,7 +502,7 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                         BYTE r,a;
                         dwPixel = *pSrcWord;
 
-                        a = (BYTE)(dwPixel>>8)           >> 4; 
+                        a = (BYTE)(dwPixel>>8)           >> 4;
                         r = (BYTE)(dwPixel & 0x000000ff) >> 4;
 
                         *pDstWord = (a << 12) | (r << 8)| (r << 4) | r;
@@ -534,7 +538,7 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                 break;
             }
 
-        case ConvLum8to16_0565: 
+        case ConvLum8to16_0565:
         case ConvLum8to16_0555: {
                 BYTE *pSrcWord = (BYTE *) pbuf;
                 WORD *pDstWord;
@@ -543,11 +547,11 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                 if(ConvNeeded==ConvLum8to16_0555) {
                     FarShift=10;  OrVal=0x8000;  // turn on alpha bit, just in case
                     MiddleRoundShift = 3;
-                    assert(ddsd.ddpfPixelFormat.dwRBitMask==0x7C00);  
+                    assert(ddsd.ddpfPixelFormat.dwRBitMask==0x7C00);
                 } else {
-                    FarShift=11;  OrVal=0x0; 
+                    FarShift=11;  OrVal=0x0;
                     MiddleRoundShift = 2;
-                    assert(ddsd.ddpfPixelFormat.dwRBitMask==0xF800);            
+                    assert(ddsd.ddpfPixelFormat.dwRBitMask==0xF800);
                 }
 
                 for(DWORD y=0; y<dwOrigHeight; y++,pDDSurfBytes+=ddsd.lPitch) {
@@ -611,7 +615,7 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                 break;
             }
 
-        default:  
+        default:
             dxgsg_cat.error() << "CreateTexture failed! unhandled texture conversion type: "<< ConvNeeded <<" \n";
             pDDSurf->Unlock(NULL);
             return E_INVALIDARG;
@@ -710,7 +714,7 @@ HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) 
                             // pixel buffer is in ABGR format(it stores big-endian RGBA)
                             // need to change byte order from ARGB
 
-                            // simpler: just swap r & b                   
+                            // simpler: just swap r & b
                             r = (BYTE)((dwPixel>>16)&0x000000ff);
                             g = (BYTE)((dwPixel>> 8)&0x000000ff);
                             b = (BYTE)((dwPixel    )&0x000000ff);
@@ -743,7 +747,7 @@ HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) 
                     break;
                 }
 
-            case 16: {  
+            case 16: {
 
                     assert((ddsd.ddpfPixelFormat.dwRBitMask==0xF800)  ||  // 565
                            (ddsd.ddpfPixelFormat.dwRBitMask==0x0F00)  ||  // 4444
@@ -813,7 +817,7 @@ HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) 
                             // pixel buffer is in ABGR format(it stores big-endian RGBA)
                             // need to change byte order to ARGB
 
-                            // simpler: just swap r & b                   
+                            // simpler: just swap r & b
                             r = (BYTE)((dwPixel>>16)&0x000000ff);
                             g = (BYTE)((dwPixel>> 8)&0x000000ff);
                             b = (BYTE)((dwPixel    )&0x000000ff);
@@ -901,7 +905,7 @@ HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) 
                             *pDstByte++ = b;
                         }
                     }
-                } 
+                }
                 break;
         }
     }
@@ -929,7 +933,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
     LPDIRECTDRAWSURFACE7 pddsRender;
     LPDIRECTDRAW7        pDD = NULL;
 
-    DDPIXELFORMAT TexFmtsArr[MAX_DX_TEXPIXFMTS];  
+    DDPIXELFORMAT TexFmtsArr[MAX_DX_TEXPIXFMTS];
 
     ConversionType ConvNeeded;
 
@@ -965,19 +969,19 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
     DDSURFACEDESC2 ddsd;
     ZeroMemory( &ddsd, sizeof(DDSURFACEDESC2) );
     ddsd.dwSize          = sizeof(DDSURFACEDESC2);
-    ddsd.dwFlags         =  DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH 
+    ddsd.dwFlags         =  DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH
                             | DDSD_PIXELFORMAT ;
 
     ddsd.ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
 
     // setup ddpf to match against avail fmts
 
-    ddsd.ddpfPixelFormat.dwFlags = DDPF_RGB;  
+    ddsd.ddpfPixelFormat.dwFlags = DDPF_RGB;
 
     if((pbuf->get_format() == PixelBuffer::F_luminance_alpha)||
        (pbuf->get_format() == PixelBuffer::F_luminance_alphamask) ||
        (pbuf->get_format() == PixelBuffer::F_luminance)) {
-        ddsd.ddpfPixelFormat.dwFlags = DDPF_LUMINANCE; 
+        ddsd.ddpfPixelFormat.dwFlags = DDPF_LUMINANCE;
     }
 
     ddsd.ddpfPixelFormat.dwRGBBitCount = bpp;
@@ -1017,7 +1021,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
     bShrinkOriginal=FALSE;
     if((dwOrigWidth>devDesc.dwMaxTextureWidth)||(dwOrigHeight>devDesc.dwMaxTextureHeight)) {
 #ifdef _DEBUG
-        dxgsg_cat.error() << "WARNING: " <<_tex->get_name() << ": Image size exceeds max texture dimensions of (" << devDesc.dwMaxTextureWidth << "," << devDesc.dwMaxTextureHeight << ") !!\n" 
+        dxgsg_cat.error() << "WARNING: " <<_tex->get_name() << ": Image size exceeds max texture dimensions of (" << devDesc.dwMaxTextureWidth << "," << devDesc.dwMaxTextureHeight << ") !!\n"
         << "Scaling "<< _tex->get_name() << " ("<< dwOrigWidth<<"," <<dwOrigHeight << ") => ("<<  devDesc.dwMaxTextureWidth << "," << devDesc.dwMaxTextureHeight << ") !\n";
 #endif
 
@@ -1028,9 +1032,9 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
         bShrinkOriginal=TRUE;
     }
 
-#if 0   
+#if 0
     // checks for SQUARE reqmt
-    //riva128 seems to handle non-sq fine.  is it wasting mem to do this?  do I care or should I shrink to be sure we save mem?  
+    //riva128 seems to handle non-sq fine.  is it wasting mem to do this?  do I care or should I shrink to be sure we save mem?
     if((ddsd.dwWidth != ddsd.dwHeight) && (devDesc.dpcTriCaps.dwTextureCaps & D3DPTEXTURECAPS_SQUAREONLY )) {
 
         // assume pow2 textures.   sum exponents, divide by 2 rounding down to get sq size
@@ -1048,7 +1052,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
 #endif
 
     if(bShrinkOriginal) {
-        // need 2 add checks for errors 
+        // need 2 add checks for errors
         PNMImage pnmi_src;
         PNMImage *pnmi = new PNMImage(ddsd.dwWidth, ddsd.dwHeight, cNumColorChannels);
         pbuf->store(pnmi_src);
@@ -1114,7 +1118,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
             if(!dx_force_16bpptextures)
 #endif
                 for(i=0,pCurPixFmt=pTexPixFmts;i<cNumTexPixFmts;i++,pCurPixFmt++) {
-                    if((pCurPixFmt->dwRGBBitCount==32) && 
+                    if((pCurPixFmt->dwRGBBitCount==32) &&
                        (((pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS)!=0)==(cNumAlphaBits!=0))) {
                   // we should have a match
                         assert(pCurPixFmt->dwRGBAlphaBitMask==0xFF000000);
@@ -1134,7 +1138,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
                 ConversionType ConvTo1=Conv32to16_4444,ConvTo2=Conv32to16_1555;
                 DWORD dwAlphaMask1=0xF000,dwAlphaMask2=0x8000;
             // assume ALPHAMASK is x8000 and RGBMASK is x7fff to simplify 32->16 conversion
-            // this should be true on most cards.  
+            // this should be true on most cards.
 
 #ifndef FORCE_16bpp_1555
                 if(cNumAlphaBits==1)
@@ -1190,22 +1194,22 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
 #endif
 
           // no 24-bit fmt.  look for 32 bit fmt  (note: this is memory-hogging choice
-          // instead I could look for memory-conserving 16-bit fmt).  
+          // instead I could look for memory-conserving 16-bit fmt).
           // check mask to ensure ARGB, not RGBA (which I am not handling here)
                 for(i=0,pCurPixFmt=pTexPixFmts;i<cNumTexPixFmts;i++,pCurPixFmt++) {
                     if((pCurPixFmt->dwRGBBitCount==32) && (pCurPixFmt->dwFlags & DDPF_RGB)
                        && ((pCurPixFmt->dwRBitMask|pCurPixFmt->dwGBitMask|pCurPixFmt->dwBBitMask)==0xFFFFFF)
                       ) {
-                    // I'm allowing alpha formats here.  will set alpha to opaque 
+                    // I'm allowing alpha formats here.  will set alpha to opaque
                         ConvNeeded=((cNumColorChannels==3) ? Conv24to32 : Conv32to32_NoAlpha);
                         goto found_matching_format;
                     }
                 }
 
-          // no 24-bit or 32 fmt.  look for 16 bit fmt 
+          // no 24-bit or 32 fmt.  look for 16 bit fmt
             for(i=0,pCurPixFmt=&pTexPixFmts[cNumTexPixFmts-1];i<cNumTexPixFmts;i++,pCurPixFmt--) {
-              // assume RGBMASK is x7fff to simplify 32->16 conversion, should be true on most cards.  
-                if((pCurPixFmt->dwFlags & DDPF_RGB) && (pCurPixFmt->dwRGBBitCount==16) 
+              // assume RGBMASK is x7fff to simplify 32->16 conversion, should be true on most cards.
+                if((pCurPixFmt->dwFlags & DDPF_RGB) && (pCurPixFmt->dwRGBBitCount==16)
                    && !(pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS)) {  // no alpha fmts
                         // if numchan==4,this means user has requested we throw away the input alpha channel
                     if(pCurPixFmt->dwGBitMask==0x7E0) {
@@ -1219,7 +1223,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
                 }
             }
 
-          // at this point, bail.  
+          // at this point, bail.
             break;
 
         case 16:
@@ -1253,7 +1257,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
                 ConversionType ConvTo1=ConvLum16to16_4444,ConvTo2=ConvLum16to16_1555;
                 DWORD dwAlphaMask1=0xF000,dwAlphaMask2=0x8000;
             // assume ALPHAMASK is x8000 and RGBMASK is x7fff to simplify 32->16 conversion
-            // this should be true on most cards.  
+            // this should be true on most cards.
 
 #ifndef FORCE_16bpp_1555
                 if(cNumAlphaBits==1)
@@ -1285,14 +1289,14 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
 
             } else
 
-          // look for compatible 16bit fmts, if none then give up 
+          // look for compatible 16bit fmts, if none then give up
           // (dont worry about other bitdepths for 16 bit)
 
                 for(i=0,pCurPixFmt=pTexPixFmts;i<cNumTexPixFmts;i++,pCurPixFmt++) {
 
                     if((pCurPixFmt->dwRGBBitCount==16)&&(pCurPixFmt->dwFlags & DDPF_RGB)) {
                         switch(cNumAlphaBits) {
-                            case 0:  
+                            case 0:
                                 if(!(pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS)) {
                             // if numchan==4,this means user has requested we throw away the input alpha channel
                                     if(pCurPixFmt->dwGBitMask==0x7E0) {
@@ -1305,14 +1309,14 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
                                     goto found_matching_format;
                                 }
                                 break;
-                            case 1:  
+                            case 1:
                                 if((pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS)&&
                                    (pCurPixFmt->dwRGBAlphaBitMask==0x8000)) {
                                     ConvNeeded=Conv32to16_1555;
                                     goto found_matching_format;
                                 }
                                 break;
-                            case 4: 
+                            case 4:
                                 if((pCurPixFmt->dwFlags & DDPF_ALPHAPIXELS)&&
                                    (pCurPixFmt->dwRGBAlphaBitMask==0xF000)) {
                                     ConvNeeded=Conv32to16_4444;
@@ -1399,7 +1403,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
 
     ddsd.ddsCaps.dwCaps  = DDSCAPS_TEXTURE;
 
-    ddsd.ddsCaps.dwCaps2 = DDSCAPS2_TEXTUREMANAGE  // Turn on texture management 
+    ddsd.ddsCaps.dwCaps2 = DDSCAPS2_TEXTUREMANAGE  // Turn on texture management
                            | DDSCAPS2_HINTSTATIC;  // BUGBUG:  is this ok for ALL textures?
 
     // validate magfilter setting
@@ -1472,7 +1476,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
     aniso_degree=1;
     if(devDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ANISOTROPY) {
         aniso_degree=_tex->get_anisotropic_degree();
-        if((aniso_degree>devDesc.dwMaxAnisotropy) 
+        if((aniso_degree>devDesc.dwMaxAnisotropy)
 #ifdef _DEBUG
            || dx_force_anisotropic_filtering
 #endif
@@ -1485,9 +1489,9 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
 #endif
 
     if(_bHasMipMaps) {
-       // We dont specify mipmapcount, so CreateSurface will auto-create surfs 
+       // We dont specify mipmapcount, so CreateSurface will auto-create surfs
        // for all mipmaps down to 1x1 (if driver supports deep-mipmaps, otherwise Nx1)
-        ddsd.ddsCaps.dwCaps |= (DDSCAPS_MIPMAP | DDSCAPS_COMPLEX); 
+        ddsd.ddsCaps.dwCaps |= (DDSCAPS_MIPMAP | DDSCAPS_COMPLEX);
         dxgsg_cat.debug() << "CreateTexture: generating mipmaps for "<< _tex->get_name() << endl;
     }
 
@@ -1507,7 +1511,7 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
     }
 
 #ifdef _DEBUG
-    dxgsg_cat.debug() << "CreateTexture: "<< _tex->get_name() <<" converted " << ConvNameStrs[ConvNeeded] << " \n";    
+    dxgsg_cat.debug() << "CreateTexture: "<< _tex->get_name() <<" converted " << ConvNameStrs[ConvNeeded] << " \n";
 #endif
 
     _PixBufConversionType=ConvNeeded;
@@ -1649,7 +1653,7 @@ FillDDSurfTexturePixels(void) {
         //   cerr <<  "mipmap gen takes " << elapsed_time << " secs for this texture\n";
 
         delete [] pMipMapPixBufSpace;
-        pCurDDSurf->Release(); 
+        pCurDDSurf->Release();
 
 #ifdef _DEBUG
         if(dx_debug_view_mipmaps) {
@@ -1665,8 +1669,8 @@ FillDDSurfTexturePixels(void) {
             LPDIRECTDRAWSURFACE7 pTextureCurrent,pTexturePrev = _surface;
             int cury,curx;
             HDC hScreenDC;
-            RECT scrnrect;        
-            hScreenDC=GetDC(NULL);  
+            RECT scrnrect;
+            hScreenDC=GetDC(NULL);
 
             scrnrect.left=scrnrect.top=0;
             scrnrect.bottom=GetDeviceCaps(hScreenDC,VERTRES);
@@ -1682,7 +1686,7 @@ FillDDSurfTexturePixels(void) {
 
                 hr = pTexturePrev->GetDC(&hTexDC);
                 if(FAILED(hr)) {
-                    dxgsg_cat.error() << "GetDC failed hr = " << ConvD3DErrorToString(hr) << "\n";    
+                    dxgsg_cat.error() << "GetDC failed hr = " << ConvD3DErrorToString(hr) << "\n";
                     break;
                 }
 
@@ -1693,25 +1697,25 @@ FillDDSurfTexturePixels(void) {
 #if 0
                 if(cNumAlphaBits>0) {
                     BLENDFUNCTION  bf;
-                    bf.BlendOp = AC_SRC_OVER;  bf.BlendFlags=0; 
+                    bf.BlendOp = AC_SRC_OVER;  bf.BlendFlags=0;
                     bf.SourceConstantAlpha=255; bf.AlphaFormat=AC_SRC_ALPHA;
                     res = AlphaBlend(hScreenDC,curx,cury,ddsd_cur.dwWidth,ddsd_cur.dwHeight, TexDC,0,0,ddsd_cur.dwWidth,ddsd_cur.dwHeight,bf);
                     if(!res) {
                         PrintLastError(msg);
-                        dxgsg_cat.error() << "AlphaBlend BLT failed: "<<msg<<"\n";    
+                        dxgsg_cat.error() << "AlphaBlend BLT failed: "<<msg<<"\n";
                     }
 
                 } else
-#endif                    
+#endif
                 {
                     res = StretchBlt(hScreenDC,curx,ddsd_cur.dwHeight+cury,ddsd_cur.dwWidth,-ddsd_cur.dwHeight, hTexDC,0,0,ddsd_cur.dwWidth,ddsd_cur.dwHeight,SRCCOPY);
                     if(!res) {
                         PrintLastError(msg);
-                        dxgsg_cat.error() << "StretchBLT failed: "<<msg<<"\n";    
+                        dxgsg_cat.error() << "StretchBLT failed: "<<msg<<"\n";
 
                     }
                 }
-        //                SetBkMode(hScreenDC, TRANSPARENT);     
+        //                SetBkMode(hScreenDC, TRANSPARENT);
                 sprintf(msg,"%d",i);
                 TextOut(hScreenDC,curx+(ddsd_cur.dwWidth)/2,5+cury+ddsd_cur.dwHeight,msg,strlen(msg));
 
@@ -1724,7 +1728,7 @@ FillDDSurfTexturePixels(void) {
                 hr = pTexturePrev->ReleaseDC(hTexDC);
 
                 if(FAILED(hr)) {
-                    dxgsg_cat.error() << "tex ReleaseDC failed for mip "<<i<<" hr = " << ConvD3DErrorToString(hr) << "\n";    
+                    dxgsg_cat.error() << "tex ReleaseDC failed for mip "<<i<<" hr = " << ConvD3DErrorToString(hr) << "\n";
                     break;
                 }
 
@@ -1737,13 +1741,13 @@ FillDDSurfTexturePixels(void) {
                 ZeroMemory(&ddsCaps,sizeof(DDSCAPS2));
                 ddsCaps.dwCaps = DDSCAPS_TEXTURE | DDSCAPS_MIPMAP;
                 ddsCaps.dwCaps2 = DDSCAPS2_MIPMAPSUBLEVEL;
-                hr = pTexturePrev->GetAttachedSurface(&ddsCaps, &pTextureCurrent); 
+                hr = pTexturePrev->GetAttachedSurface(&ddsCaps, &pTextureCurrent);
                 if(FAILED(hr)) {
                     dxgsg_cat.error() << " failed displaying mipmaps: GetAttachedSurf hr = " << ConvD3DErrorToString(hr) << "\n";
                 }
                         // done with the previous texture
                 pTexturePrev->Release();
-                pTexturePrev = pTextureCurrent;            
+                pTexturePrev = pTextureCurrent;
             }
 
             ReleaseDC(0,hScreenDC);
@@ -1782,7 +1786,7 @@ DeleteTexture( ) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DXTextureContext::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 DXTextureContext::
 DXTextureContext(Texture *tex) :
@@ -1798,7 +1802,7 @@ TextureContext(tex) {
 DXTextureContext::
 ~DXTextureContext() {
 #ifdef _DEBUG
-    dxgsg_cat.spam() << "Deleting DX texture for " << _tex->get_name() << "\n";    
+    dxgsg_cat.spam() << "Deleting DX texture for " << _tex->get_name() << "\n";
 #endif
     DeleteTexture();
     TextureContext::~TextureContext();

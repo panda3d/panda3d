@@ -1,6 +1,19 @@
 // Filename: trueClock.cxx
 // Created by:  drose (04Jul00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "trueClock.h"
@@ -173,7 +186,7 @@ void get_true_time_of_day(ulong &sec, ulong &msec) {
     return;
   }
   sec = tv.tv_sec;
-  msec = tv.tv_usec; 
+  msec = tv.tv_usec;
 }
 
 double TrueClock::

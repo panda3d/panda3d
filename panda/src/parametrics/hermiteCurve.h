@@ -1,6 +1,19 @@
 // Filename: hermiteCurve.h
 // Created by:  drose (27Feb98)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef HERMITECURVE_H
@@ -12,15 +25,15 @@
 
 BEGIN_PUBLISH //[
 // Hermite curve continuity types.
-#define HC_CUT         1 
+#define HC_CUT         1
 // The curve is disconnected at this point.  All points between
 // this and the following CV are not part of the curve.
 
-#define HC_FREE        2  
+#define HC_FREE        2
 // Tangents are unconstrained.  The curve is continuous, but its first
 // derivative is not.  This is G0 geometric continuity.
 
-#define HC_G1          3  
+#define HC_G1          3
 // Tangents are constrained to be collinear.  The curve's derivative
 // is not continuous in parametric space, but its geometric slope is.
 // The distinction is mainly relevant in the context of animation
@@ -45,7 +58,7 @@ public:
   HermiteCurveCV();
   HermiteCurveCV(const HermiteCurveCV &c);
   ~HermiteCurveCV();
-  
+
   void set_point(const LVecBase3f &point) { _p = point; }
   void set_in(const LVecBase3f &in);
   void set_out(const LVecBase3f &out);
@@ -58,7 +71,7 @@ public:
 
   void write_datagram(BamWriter *manager, Datagram &me) const;
   void fillin(DatagramIterator &scan, BamReader *manager);
-  
+
   LVecBase3f _p, _in, _out;
   int _type;
   string _name;
@@ -122,7 +135,7 @@ PUBLISHED:
 
   virtual void output(ostream &out) const;
   void write_cv(ostream &out, int n) const;
-  
+
 public:
 
   CubicCurveseg *get_curveseg(int ti) {
@@ -136,7 +149,7 @@ public:
                    int rtype3, float t3, const LVecBase4f &v3);
 
 protected:
-  virtual bool format_egg(ostream &out, const string &name, 
+  virtual bool format_egg(ostream &out, const string &name,
                           const string &curve_type, int indent_level) const;
 
   void invalidate_cv(int n, bool redo_all);
@@ -151,7 +164,7 @@ public:
 
 protected:
   static TypedWritable *make_HermiteCurve(const FactoryParams &params);
-  virtual void write_datagram(BamWriter *manager, Datagram &me);  
+  virtual void write_datagram(BamWriter *manager, Datagram &me);
   void fillin(DatagramIterator &scan, BamReader *manager);
 
 public:
@@ -165,7 +178,7 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
- 
+
 private:
   static TypeHandle _type_handle;
 };

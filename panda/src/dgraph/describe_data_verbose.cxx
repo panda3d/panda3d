@@ -1,6 +1,19 @@
 // Filename: describe_data_verbose.cxx
 // Created by:  drose (27Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "describe_data_verbose.h"
@@ -13,7 +26,7 @@
 // data value.
 static const int data_indent_level = 12;
 
-  
+
 ////////////////////////////////////////////////////////////////////
 //     Function: describe_data_verbose
 //  Description: Writes to the indicated output stream a
@@ -44,7 +57,7 @@ describe_data_verbose(ostream &out, const NodeAttributes &state,
         // before the last underscore.
         name = actual_name.substr(0, underscore);
       }
-      
+
       indent(out, indent_level) << name;
       if ((int)name.length() < data_indent_level) {
         indent(out, data_indent_level - name.length());

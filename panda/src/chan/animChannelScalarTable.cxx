@@ -1,6 +1,19 @@
 // Filename: animChannelScalarTable.cxx
 // Created by:  drose (22Feb99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "animChannelScalarTable.h"
@@ -19,17 +32,17 @@ TypeHandle AnimChannelScalarTable::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelScalarTable::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 AnimChannelScalarTable::
-AnimChannelScalarTable(AnimGroup *parent, const string &name) 
+AnimChannelScalarTable(AnimGroup *parent, const string &name)
   : AnimChannelScalar(parent, name) {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelScalarTable::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 AnimChannelScalarTable::
 AnimChannelScalarTable(void){
@@ -146,7 +159,7 @@ write_datagram(BamWriter *manager, Datagram &me)
 
     map<int, int> index;
     int i;
-    for (i = 0; 
+    for (i = 0;
          i < (int)_table.size() && (int)index.size() <= max_values;
          i++) {
       int value = (int)floor(_table[i] * scale + 0.5);

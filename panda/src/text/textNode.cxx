@@ -1,10 +1,19 @@
 // Filename: textNode.cxx
 // Created by:  drose (12May99)
-// 
-////////////////////////////////////////////////////////////////////
 //
 ////////////////////////////////////////////////////////////////////
-// Includes
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "textNode.h"
 #include "config_text.h"
@@ -31,7 +40,7 @@ TypeHandle TextNode::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::Constructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 TextNode::
 TextNode(const string &name) : NamedNode(name) {
@@ -45,7 +54,7 @@ TextNode(const string &name) : NamedNode(name) {
   _frame_color.set(1.0, 1.0, 1.0, 1.0);
   _card_color.set(1.0, 1.0, 1.0, 1.0);
   _shadow_color.set(1.0, 1.0, 1.0, 1.0);
-  
+
   _frame_width = 1.0;
 
   _frame_ul.set(0.0, 0.0);
@@ -72,7 +81,7 @@ TextNode(const string &name) : NamedNode(name) {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::Destructor
 //       Access: Published
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 TextNode::
 ~TextNode() {
@@ -82,7 +91,7 @@ TextNode::
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::write
 //       Access: Published, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void TextNode::
 write(ostream &out, int indent_level) const {
@@ -105,7 +114,7 @@ write(ostream &out, int indent_level) const {
   case TM_ALIGN_LEFT:
     out << "TM_ALIGN_LEFT\n";
     break;
-    
+
   case TM_ALIGN_RIGHT:
     out << "TM_ALIGN_RIGHT\n";
     break;
@@ -122,7 +131,7 @@ write(ostream &out, int indent_level) const {
 
   if (has_frame()) {
     indent(out, indent_level + 2)
-      << "frame of color " << _frame_color << " at " 
+      << "frame of color " << _frame_color << " at "
       << get_frame_as_set() << " line width " << _frame_width << "\n";
     if (get_frame_corners()) {
       indent(out, indent_level + 2)
@@ -139,7 +148,7 @@ write(ostream &out, int indent_level) const {
   }
   if (has_card()) {
     indent(out, indent_level + 2)
-      << "card of color " << _card_color << " at " 
+      << "card of color " << _card_color << " at "
       << get_card_as_set() << "\n";
     if (is_card_as_margin()) {
       indent(out, indent_level + 2)
@@ -152,7 +161,7 @@ write(ostream &out, int indent_level) const {
   }
   if (has_shadow()) {
     indent(out, indent_level + 2)
-      << "shadow of color " << _shadow_color << " at " 
+      << "shadow of color " << _shadow_color << " at "
       << _shadow_offset << "\n";
   }
   if (has_bin()) {
@@ -162,7 +171,7 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level + 2)
     << "draw order is " << _draw_order << ", "
     << _draw_order + 1 << ", " << _draw_order + 2 << "\n";
-    
+
   LVecBase3f scale, hpr, trans;
   if (decompose_matrix(_transform, scale, hpr, trans, _coordinate_system)) {
   indent(out, indent_level + 2)
@@ -197,7 +206,7 @@ generate() {
 
   // The strategy here will be to assemble together a bunch of
   // letters, instanced from the letter hierarchy of font_def, into
-  // our own little hierarchy. 
+  // our own little hierarchy.
 
   // There will be one root over the whole text block, that
   // contains the transform passed in.  Under this root there will be
@@ -224,8 +233,8 @@ generate() {
   // Compute the overall text transform matrix.  We build the text in
   // a Z-up coordinate system and then convert it to whatever the user
   // asked for.
-  LMatrix4f mat = 
-    LMatrix4f::convert_mat(CS_zup_right, _coordinate_system) * 
+  LMatrix4f mat =
+    LMatrix4f::convert_mat(CS_zup_right, _coordinate_system) *
     _transform;
 
   root_arc->set_transition(new TransformTransition(mat));
@@ -239,7 +248,7 @@ generate() {
   LVector2f ul, lr;
   int num_rows = 0;
   PT_Node text_root = assemble_text(text.c_str(), ul, lr, num_rows);
-  RenderRelation *text_arc = 
+  RenderRelation *text_arc =
     new RenderRelation(sub_root, text_root, _draw_order + 2);
 
   if (has_text_color()) {
@@ -268,7 +277,7 @@ generate() {
 
 
   // Now deal with all the decorations.
-  
+
   if (has_shadow()) {
     // Make a shadow by instancing the text behind itself.
 
@@ -278,7 +287,7 @@ generate() {
 
     LMatrix4f offset =
       LMatrix4f::translate_mat(_shadow_offset[0], 0.0, -_shadow_offset[1]);
-    RenderRelation *shadow_arc = 
+    RenderRelation *shadow_arc =
       new RenderRelation(sub_root, text_root, _draw_order + 1);
     shadow_arc->set_transition(new TransformTransition(offset));
     shadow_arc->set_transition(new ColorTransition(_shadow_color));
@@ -316,7 +325,7 @@ generate() {
       card_root = make_card_with_border();
     else
       card_root = make_card();
-    RenderRelation *card_arc = 
+    RenderRelation *card_arc =
       new RenderRelation(sub_root, card_root, _draw_order);
     card_arc->set_transition(new ColorTransition(_card_color));
     if (_card_color[3] != 1.0) {
@@ -332,7 +341,7 @@ generate() {
         (new GeomBinTransition(_bin, _draw_order));
     }
   }
-  
+
   // Now flatten our hierarchy to get rid of the transforms we put in,
   // applying them to the vertices.
 
@@ -442,14 +451,14 @@ assemble_row(const char *&source, Node *dest) {
       if (def == (const TextFont::CharDef *)NULL) {
         text_cat.warning()
           << "No definition for character " << character << endl;
-  
+
       } else {
         Geom *char_geom = def->_geom;
         float char_width = def->_width;
         const AllTransitionsWrapper &trans = def->_trans;
 
         LMatrix4f mat = LMatrix4f::ident_mat();
-        mat.set_row(3, LVector3f(xpos, 0, 0)); 
+        mat.set_row(3, LVector3f(xpos, 0, 0));
         if (char_geom != NULL) {
           string ch(1, (char)character);
           GeomNode *geode = new GeomNode(ch);
@@ -500,18 +509,18 @@ assemble_text(const char *source, LVector2f &ul, LVector2f &lr,
       // Skip past the newline.
       source++;
     }
-    
+
     LMatrix4f mat = LMatrix4f::ident_mat();
     if (_align == TM_ALIGN_LEFT) {
-      mat.set_row(3, LVector3f(0, 0, posy));  
+      mat.set_row(3, LVector3f(0, 0, posy));
       lr[0] = max(lr[0], row_width);
 
     } else if (_align == TM_ALIGN_RIGHT) {
-      mat.set_row(3, LVector3f(-row_width, 0, posy));  
+      mat.set_row(3, LVector3f(-row_width, 0, posy));
       ul[0] = min(ul[0], -row_width);
 
     } else {
-      mat.set_row(3, LVector3f(-row_width / 2.0, 0, posy));  
+      mat.set_row(3, LVector3f(-row_width / 2.0, 0, posy));
       lr[0] = max(lr[0], row_width / 2);
       ul[0] = min(ul[0], -row_width / 2);
     }
@@ -562,7 +571,7 @@ measure_row(const char *&source) {
       if (def == (const TextFont::CharDef *)NULL) {
         text_cat.warning()
           << "No definition for character " << character << endl;
-  
+
       } else {
         float char_width = def->_width;
         xpos += char_width;
@@ -596,7 +605,7 @@ measure_text(const char *source, LVector2f &ul, LVector2f &lr,
       // Skip past the newline.
       source++;
     }
-    
+
     if (_align == TM_ALIGN_LEFT) {
       lr[0] = max(lr[0], row_width);
 
@@ -629,7 +638,7 @@ make_frame() {
   float right = dimensions[1];
   float bottom = dimensions[2];
   float top = dimensions[3];
-  
+
   GeomLinestrip *geoset = new GeomLinestrip;
   PTA_int lengths(0);
   PTA_Vertexf verts;
@@ -639,7 +648,7 @@ make_frame() {
   verts.push_back(Vertexf(right, 0.0, bottom));
   verts.push_back(Vertexf(right, 0.0, top));
   verts.push_back(Vertexf(left, 0.0, top));
-  
+
   geoset->set_num_prims(1);
   geoset->set_lengths(lengths);
 
@@ -649,7 +658,7 @@ make_frame() {
 
   if (get_frame_corners()) {
     GeomPoint *geoset = new GeomPoint;
-    
+
     geoset->set_num_prims(4);
     geoset->set_coords(verts, G_PER_VERTEX);
     geoset->set_size(_frame_width);
@@ -683,12 +692,12 @@ make_card() {
   verts.push_back(Vertexf::rfu(left, 0.02, bottom));
   verts.push_back(Vertexf::rfu(right, 0.02, top));
   verts.push_back(Vertexf::rfu(right, 0.02, bottom));
-  
+
   geoset->set_num_prims(1);
   geoset->set_lengths(lengths);
 
   geoset->set_coords(verts, G_PER_VERTEX);
- 
+
   if (has_card_texture()) {
     PTA_TexCoordf uvs;
     uvs.push_back(TexCoordf(0.0, 1.0));
@@ -698,7 +707,7 @@ make_card() {
 
     geoset->set_texcoords(uvs, G_PER_VERTEX);
   }
- 
+
   card_geode->add_geom(geoset);
 
   return card_geode;
@@ -740,70 +749,70 @@ make_card_with_border() {
   verts.push_back(Vertexf::rfu(left, 0.02, top));
   verts.push_back(Vertexf::rfu(left, 0.02, top - _card_border_size));
   verts.push_back(Vertexf::rfu(left + _card_border_size, 0.02, top));
-  verts.push_back(Vertexf::rfu(left + _card_border_size, 0.02, 
+  verts.push_back(Vertexf::rfu(left + _card_border_size, 0.02,
                                top - _card_border_size));
-  // verts 5,6,7,8 
+  // verts 5,6,7,8
   verts.push_back(Vertexf::rfu(right - _card_border_size, 0.02, top));
-  verts.push_back(Vertexf::rfu(right - _card_border_size, 0.02, 
+  verts.push_back(Vertexf::rfu(right - _card_border_size, 0.02,
                                top - _card_border_size));
   verts.push_back(Vertexf::rfu(right, 0.02, top));
   verts.push_back(Vertexf::rfu(right, 0.02, top - _card_border_size));
-  // verts 9,10,11,12 
+  // verts 9,10,11,12
   verts.push_back(Vertexf::rfu(left, 0.02, bottom + _card_border_size));
   verts.push_back(Vertexf::rfu(left, 0.02, bottom));
-  verts.push_back(Vertexf::rfu(left + _card_border_size, 0.02, 
+  verts.push_back(Vertexf::rfu(left + _card_border_size, 0.02,
                                bottom + _card_border_size));
   verts.push_back(Vertexf::rfu(left + _card_border_size, 0.02, bottom));
   // verts 13,14,15,16
-  verts.push_back(Vertexf::rfu(right - _card_border_size, 0.02, 
+  verts.push_back(Vertexf::rfu(right - _card_border_size, 0.02,
                                bottom + _card_border_size));
   verts.push_back(Vertexf::rfu(right - _card_border_size, 0.02, bottom));
   verts.push_back(Vertexf::rfu(right, 0.02, bottom + _card_border_size));
   verts.push_back(Vertexf::rfu(right, 0.02, bottom));
-  
+
   PTA_ushort indices;
   // tristrip #1
-  indices.push_back(0); 
-  indices.push_back(1); 
-  indices.push_back(2); 
-  indices.push_back(3); 
-  indices.push_back(4); 
-  indices.push_back(5); 
-  indices.push_back(6); 
-  indices.push_back(7); 
+  indices.push_back(0);
+  indices.push_back(1);
+  indices.push_back(2);
+  indices.push_back(3);
+  indices.push_back(4);
+  indices.push_back(5);
+  indices.push_back(6);
+  indices.push_back(7);
   // tristrip #2
-  indices.push_back(1); 
-  indices.push_back(8); 
-  indices.push_back(3); 
-  indices.push_back(10); 
-  indices.push_back(5); 
-  indices.push_back(12); 
-  indices.push_back(7); 
-  indices.push_back(14); 
+  indices.push_back(1);
+  indices.push_back(8);
+  indices.push_back(3);
+  indices.push_back(10);
+  indices.push_back(5);
+  indices.push_back(12);
+  indices.push_back(7);
+  indices.push_back(14);
   // tristrip #3
-  indices.push_back(8); 
-  indices.push_back(9); 
-  indices.push_back(10); 
-  indices.push_back(11); 
-  indices.push_back(12); 
-  indices.push_back(13); 
-  indices.push_back(14); 
-  indices.push_back(15); 
+  indices.push_back(8);
+  indices.push_back(9);
+  indices.push_back(10);
+  indices.push_back(11);
+  indices.push_back(12);
+  indices.push_back(13);
+  indices.push_back(14);
+  indices.push_back(15);
 
   geoset->set_num_prims(3);
   geoset->set_lengths(lengths);
 
   geoset->set_coords(verts, G_PER_VERTEX, indices);
- 
+
   if (has_card_texture()) {
     PTA_TexCoordf uvs;
     uvs.push_back(TexCoordf(0.0, 1.0)); //1
     uvs.push_back(TexCoordf(0.0, 1.0 - _card_border_uv_portion)); //2
     uvs.push_back(TexCoordf(0.0 + _card_border_uv_portion, 1.0)); //3
-    uvs.push_back(TexCoordf(0.0 + _card_border_uv_portion, 
+    uvs.push_back(TexCoordf(0.0 + _card_border_uv_portion,
       1.0 - _card_border_uv_portion)); //4
     uvs.push_back(TexCoordf( 1.0 -_card_border_uv_portion, 1.0)); //5
-    uvs.push_back(TexCoordf( 1.0 -_card_border_uv_portion, 
+    uvs.push_back(TexCoordf( 1.0 -_card_border_uv_portion,
       1.0 - _card_border_uv_portion)); //6
     uvs.push_back(TexCoordf(1.0, 1.0)); //7
     uvs.push_back(TexCoordf(1.0, 1.0 - _card_border_uv_portion)); //8
@@ -822,7 +831,7 @@ make_card_with_border() {
     geoset->set_texcoords(uvs, G_PER_VERTEX, indices);
 
   }
- 
+
   card_geode->add_geom(geoset);
 
   return card_geode;

@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "graphicsChannel.h"
 #include "graphicsWindow.h"
@@ -20,7 +29,7 @@ TypeHandle GraphicsChannel::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsChannel::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsChannel::
 GraphicsChannel() {
@@ -31,11 +40,11 @@ GraphicsChannel() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsChannel::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsChannel::
 GraphicsChannel(GraphicsWindow *window)
-  : _window(window) 
+  : _window(window)
 {
   _is_active = true;
 }
@@ -43,7 +52,7 @@ GraphicsChannel(GraphicsWindow *window)
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsChannel::Copy Constructor
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GraphicsChannel::
 GraphicsChannel(const GraphicsChannel&) {
@@ -54,7 +63,7 @@ GraphicsChannel(const GraphicsChannel&) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsChannel::Copy Assignment Operator
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE GraphicsChannel &GraphicsChannel::
 operator=(const GraphicsChannel&) {
@@ -66,7 +75,7 @@ operator=(const GraphicsChannel&) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsChannel::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsChannel::
 ~GraphicsChannel() {
@@ -75,7 +84,7 @@ GraphicsChannel::
   // pointers do.  However, we do need to zero out their pointers to
   // us.
   GraphicsLayers::iterator li;
-  for (li = _layers.begin(); 
+  for (li = _layers.begin();
        li != _layers.end();
        ++li) {
     (*li)->_channel = NULL;
@@ -210,7 +219,7 @@ window_resized(int x, int y) {
   // so when the window resizes so does the channel, by the same
   // amount.
   GraphicsLayers::iterator li;
-  for (li = _layers.begin(); 
+  for (li = _layers.begin();
        li != _layers.end();
        ++li) {
     (*li)->channel_resized(x, y);

@@ -1,6 +1,19 @@
 // Filename: nodeAttributes.cxx
 // Created by:  drose (20Mar00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "nodeAttributes.h"
@@ -11,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributes::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NodeAttributes::
 NodeAttributes() {
@@ -20,7 +33,7 @@ NodeAttributes() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributes::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NodeAttributes::
 NodeAttributes(const NodeAttributes &copy) :
@@ -31,7 +44,7 @@ NodeAttributes(const NodeAttributes &copy) :
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributes::Copy Assignment Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodeAttributes::
 operator = (const NodeAttributes &copy) {
@@ -41,7 +54,7 @@ operator = (const NodeAttributes &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributes::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 NodeAttributes::
 ~NodeAttributes() {
@@ -158,7 +171,7 @@ get_attribute(TypeHandle handle) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributes::clear
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodeAttributes::
 clear() {
@@ -168,7 +181,7 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributes::is_initial
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 bool NodeAttributes::
 is_initial() const {
@@ -186,7 +199,7 @@ is_initial() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributes::compare_to
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int NodeAttributes::
 compare_to(const NodeAttributes &other) const {
@@ -216,7 +229,7 @@ apply_from(const NodeAttributes &other, const NodeTransitionCache &trans) {
     tmap_apply(other._attributes.begin(), other._attributes.end(),
                trans._cache.begin(), trans._cache.end(),
                inserter(temp, temp.begin()));
-    
+
     _attributes.swap(temp);
   }
 }
@@ -245,7 +258,7 @@ merge_from(const NodeAttributes &a, const NodeAttributes &b) {
     tmap_merge_union(a._attributes.begin(), a._attributes.end(),
                      b._attributes.begin(), b._attributes.end(),
                      inserter(temp, temp.begin()));
-    
+
     _attributes.swap(temp);
   }
 }
@@ -254,7 +267,7 @@ merge_from(const NodeAttributes &a, const NodeAttributes &b) {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributes::output
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodeAttributes::
 output(ostream &out) const {
@@ -275,7 +288,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeAttributes::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void NodeAttributes::
 write(ostream &out, int indent_level) const {

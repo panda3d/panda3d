@@ -1,6 +1,19 @@
 // Filename: globPattern.cxx
 // Created by:  drose (30May00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "globPattern.h"
@@ -29,7 +42,7 @@ matches_substr(string::const_iterator pi, string::const_iterator pend,
   }
 
   switch (*pi) {
-    
+
   case '*':
     // A '*' in the pattern string means to match any sequence of zero
     // or more characters in the candidate string.  This means we have
@@ -63,7 +76,7 @@ matches_substr(string::const_iterator pi, string::const_iterator pend,
       return false;
     }
     return matches_substr(pi + 1, pend, ci + 1, cend);
-    
+
   case '\\':
     // A backslash escapes the next special character.
     ++pi;
@@ -145,4 +158,4 @@ matches_set(string::const_iterator &pi, string::const_iterator pend,
 }
 
 
-  
+

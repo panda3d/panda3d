@@ -1,6 +1,19 @@
 // Filename: geomTransformer.cxx
 // Created by:  drose (23May00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "geomTransformer.h"
@@ -10,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomTransformer::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomTransformer::
 GeomTransformer() {
@@ -19,7 +32,7 @@ GeomTransformer() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomTransformer::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 GeomTransformer::
 ~GeomTransformer() {
@@ -50,9 +63,9 @@ transform_vertices(Geom *geom, const LMatrix4f &mat) {
     SourceVertices sv;
     sv._mat = mat;
     sv._coords = coords;
-    
+
     PTA_Vertexf &new_coords = _vertices[sv];
-    
+
     if (new_coords.is_null()) {
       // We have not transformed the array yet.  Do so now.
       new_coords.reserve(coords.size());
@@ -62,7 +75,7 @@ transform_vertices(Geom *geom, const LMatrix4f &mat) {
       }
       nassertr(new_coords.size() == coords.size(), false);
     }
-    
+
     geom->set_coords(new_coords, bind, index);
     transformed = true;
   }
@@ -76,9 +89,9 @@ transform_vertices(Geom *geom, const LMatrix4f &mat) {
     SourceNormals sn;
     sn._mat = mat;
     sn._norms = norms;
-    
+
     PTA_Normalf &new_norms = _normals[sn];
-    
+
     if (new_norms.is_null()) {
       // We have not transformed the array yet.  Do so now.
       new_norms.reserve(norms.size());
@@ -168,9 +181,9 @@ transform_texcoords(Geom *geom, const LMatrix4f &mat) {
     SourceTexCoords stc;
     stc._mat = mat;
     stc._texcoords = texcoords;
-    
+
     PTA_TexCoordf &new_texcoords = _texcoords[stc];
-    
+
     if (new_texcoords.is_null()) {
       // We have not transformed the array yet.  Do so now.
       new_texcoords.reserve(texcoords.size());
@@ -183,7 +196,7 @@ transform_texcoords(Geom *geom, const LMatrix4f &mat) {
       }
       nassertr(new_texcoords.size() == texcoords.size(), false);
     }
-    
+
     geom->set_texcoords(new_texcoords, bind, index);
     transformed = true;
   }
@@ -249,7 +262,7 @@ set_color(Geom *geom, const Colorf &color) {
 
   // We do want to share this one-element array between Geoms, though.
   PTA_Colorf &new_colors = _colors[color];
-  
+
   if (new_colors.is_null()) {
     // We haven't seen this color before; define a new color array.
     new_colors.push_back(color);

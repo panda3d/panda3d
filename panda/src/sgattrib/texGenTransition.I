@@ -1,12 +1,25 @@
 // Filename: texGenTransition.I
 // Created by:  drose (24Sep99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TexGenTransition::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TexGenTransition::
 TexGenTransition() {
@@ -77,7 +90,7 @@ set_sphere_map() {
 ////////////////////////////////////////////////////////////////////
 //     Function: TexGenTransition::get_mode
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE TexGenProperty::Mode TexGenTransition::
 get_mode() const {
@@ -87,7 +100,7 @@ get_mode() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TexGenTransition::get_plane
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE LMatrix4f TexGenTransition::
 get_plane() const {

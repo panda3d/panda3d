@@ -1,6 +1,19 @@
-// Filename: interrogate_module.C
+// Filename: interrogate_module.cxx
 // Created by:  drose (08Aug00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 // This program generates a module-level file for interrogate.  This
@@ -85,16 +98,16 @@ write_python_table(ostream &out) {
         module_name == interrogate_function_module_name(function_index)) {
 
       // For each function, get all of the python wrappers.
-      int num_wrappers = 
+      int num_wrappers =
         interrogate_function_number_of_python_wrappers(function_index);
 
       for (int wi = 0; wi < num_wrappers; wi++) {
-        FunctionWrapperIndex wrapper_index = 
+        FunctionWrapperIndex wrapper_index =
           interrogate_function_python_wrapper(function_index, wi);
 
         if (interrogate_wrapper_is_callable_by_name(wrapper_index)) {
           count++;
-          const char *wrapper_name = 
+          const char *wrapper_name =
             interrogate_wrapper_name(wrapper_index);
           out << "  PyObject *" << wrapper_name
               << "(PyObject *self, PyObject *args);\n";
@@ -117,14 +130,14 @@ write_python_table(ostream &out) {
         module_name == interrogate_function_module_name(function_index)) {
 
       // For each function, get all of the python wrappers.
-      int num_wrappers = 
+      int num_wrappers =
         interrogate_function_number_of_python_wrappers(function_index);
       for (int wi = 0; wi < num_wrappers; wi++) {
-        FunctionWrapperIndex wrapper_index = 
+        FunctionWrapperIndex wrapper_index =
           interrogate_function_python_wrapper(function_index, wi);
 
         if (interrogate_wrapper_is_callable_by_name(wrapper_index)) {
-          const char *wrapper_name = 
+          const char *wrapper_name =
             interrogate_wrapper_name(wrapper_index);
           out << "  { \""
               << wrapper_name << "\", &"
@@ -159,8 +172,8 @@ main(int argc, char *argv[]) {
   extern char *optarg;
   extern int optind;
   int flag;
-  
-  flag = getopt_long_only(argc, argv, short_options, long_options, NULL); 
+
+  flag = getopt_long_only(argc, argv, short_options, long_options, NULL);
   while (flag != EOF) {
     switch (flag) {
     case CO_oc:
@@ -186,7 +199,7 @@ main(int argc, char *argv[]) {
     default:
       exit(1);
     }
-    flag = getopt_long_only(argc, argv, short_options, long_options, NULL); 
+    flag = getopt_long_only(argc, argv, short_options, long_options, NULL);
   }
 
   argc -= (optind-1);

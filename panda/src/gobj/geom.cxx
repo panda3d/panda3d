@@ -2,6 +2,19 @@
 // Created by:  mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 // Includes
@@ -162,12 +175,12 @@ operator = (const Geom &copy) {
   _norms = copy._norms;
   _colors = copy._colors;
   _texcoords = copy._texcoords;
-  
+
   _vindex = copy._vindex;
   _nindex = copy._nindex;
   _cindex = copy._cindex;
   _tindex = copy._tindex;
-  
+
   _numprims = copy._numprims;
   _primlengths = copy._primlengths;
   for (int i = 0; i < num_GeomAttrTypes; i++) {
@@ -178,18 +191,18 @@ operator = (const Geom &copy) {
   _get_normal = copy._get_normal;
   _get_color = copy._get_color;
   _get_texcoord = copy._get_texcoord;
-  
+
   if (copy.is_dirty())
     make_dirty();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::set_coords 
+//     Function: Geom::set_coords
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Geom::
-set_coords(const PTA_Vertexf &coords, GeomBindType bind, 
+set_coords(const PTA_Vertexf &coords, GeomBindType bind,
            const PTA_ushort &vindex) {
   _coords = coords;
   assert(bind == G_PER_VERTEX);
@@ -197,7 +210,7 @@ set_coords(const PTA_Vertexf &coords, GeomBindType bind,
 
   if ( vindex )
     _vindex = vindex;
-  
+
   mark_bound_stale();
   make_dirty();
 }
@@ -208,14 +221,14 @@ set_coords(const PTA_Vertexf &coords, GeomBindType bind,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Geom::
-set_normals(const PTA_Normalf &norms, GeomBindType bind, 
+set_normals(const PTA_Normalf &norms, GeomBindType bind,
             const PTA_ushort &nindex) {
   _norms = norms;
   _bind[G_NORMAL] = bind;
-  
+
   if (nindex)
     _nindex = nindex;
-  
+
   make_dirty();
 }
 
@@ -225,14 +238,14 @@ set_normals(const PTA_Normalf &norms, GeomBindType bind,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Geom::
-set_colors(const PTA_Colorf &colors, GeomBindType bind, 
+set_colors(const PTA_Colorf &colors, GeomBindType bind,
            const PTA_ushort &cindex) {
   _colors = colors;
   _bind[G_COLOR] = bind;
-  
+
   if ( cindex )
     _cindex = cindex;
-  
+
   make_dirty();
 }
 
@@ -242,25 +255,25 @@ set_colors(const PTA_Colorf &colors, GeomBindType bind,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Geom::
-set_texcoords(const PTA_TexCoordf &texcoords, GeomBindType bind, 
+set_texcoords(const PTA_TexCoordf &texcoords, GeomBindType bind,
               const PTA_ushort &tindex) {
   _texcoords = texcoords;
   assert(bind == G_PER_VERTEX || bind == G_OFF);
   _bind[G_TEXCOORD] = bind;
-  
+
   if ( tindex )
     _tindex = tindex;
-  
+
   make_dirty();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_coords 
+//     Function: Geom::get_coords
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Geom::
-get_coords(PTA_Vertexf &coords, GeomBindType &bind, 
+get_coords(PTA_Vertexf &coords, GeomBindType &bind,
            PTA_ushort &vindex) const {
   coords = _coords;
   bind = _bind[G_COORD];
@@ -273,7 +286,7 @@ get_coords(PTA_Vertexf &coords, GeomBindType &bind,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Geom::
-get_normals(PTA_Normalf &norms, GeomBindType &bind, 
+get_normals(PTA_Normalf &norms, GeomBindType &bind,
             PTA_ushort &nindex) const {
   norms = _norms;
   bind = _bind[G_NORMAL];
@@ -286,7 +299,7 @@ get_normals(PTA_Normalf &norms, GeomBindType &bind,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Geom::
-get_colors(PTA_Colorf &colors, GeomBindType &bind, 
+get_colors(PTA_Colorf &colors, GeomBindType &bind,
            PTA_ushort &cindex) const {
   colors = _colors;
   bind = _bind[G_COLOR];
@@ -299,7 +312,7 @@ get_colors(PTA_Colorf &colors, GeomBindType &bind,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Geom::
-get_texcoords(PTA_TexCoordf &texcoords, GeomBindType &bind, 
+get_texcoords(PTA_TexCoordf &texcoords, GeomBindType &bind,
               PTA_ushort &tindex) const {
   texcoords = _texcoords;
   bind = _bind[G_TEXCOORD];
@@ -364,7 +377,7 @@ get_tris() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::config 
+//     Function: Geom::config
 //       Access: Public
 //  Description: Configure rendering based on current settings
 ////////////////////////////////////////////////////////////////////
@@ -374,13 +387,13 @@ config(void) {
 
   // Only per vertex binding makes any sense
   if (_coords != (Vertexf*)0L && _bind[G_COORD] != G_OFF) {
-    _get_vertex = 
+    _get_vertex =
       (_vindex == (ushort*)0L) ? get_vertex_nonindexed : get_vertex_indexed;
   } else {
     gobj_cat.error()
       << "Geom::Config() - no vertex array!" << endl;
   }
-  
+
   // Set up normal rendering configuration
   if (_norms != (Normalf*)0L && _bind[G_NORMAL] != G_OFF) {
     _get_normal =
@@ -388,7 +401,7 @@ config(void) {
   } else {
     _get_normal = get_normal_noop;
   }
-  
+
   // Set up texture coordinate rendering configuration
   if (_texcoords != (TexCoordf*)0L && _bind[G_TEXCOORD] != G_OFF) {
     _get_texcoord =
@@ -396,7 +409,7 @@ config(void) {
   } else {
     _get_texcoord = get_texcoord_noop;
   }
-  
+
   // Set up color rendering configuration
   if (_colors != (Colorf*)0L && _bind[G_COLOR] != G_OFF) {
     _get_color =
@@ -409,7 +422,7 @@ config(void) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::write
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Geom::
 write(ostream &out, int indent_level) const {
@@ -419,7 +432,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Geom::output
 //       Access: Public, Virtual
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Geom::
 output(ostream &out) const {
@@ -435,14 +448,14 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::init 
+//     Function: Geom::init
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Geom::
 init(void) {
   int i;
-  
+
   _coords.clear();
   _norms.clear();
   _colors.clear();
@@ -452,15 +465,15 @@ init(void) {
   _cindex.clear();
   _tindex.clear();
   _primlengths.clear();
-  
+
   for ( i = 0; i < num_GeomAttrTypes; i++ )
     _bind[i] = G_OFF;
-  
+
   _get_vertex = get_vertex_noop;
   _get_normal = get_normal_noop;
   _get_texcoord = get_texcoord_noop;
   _get_color = get_color_noop;
-  
+
   WritableConfigurable::config();
 }
 
@@ -685,17 +698,17 @@ write_verbose(ostream &out, int indent_level) const {
   GeomBindType bind_normals;
   GeomBindType bind_tcoords;
   GeomBindType bind_colors;
-  
+
   PTA_Vertexf g_coords;
   PTA_Normalf g_normals;
   PTA_TexCoordf g_tcoords;
   PTA_Colorf g_colors;
-  
+
   PTA_ushort i_coords;
   PTA_ushort i_normals;
   PTA_ushort i_tcoords;
   PTA_ushort i_colors;
-  
+
   get_coords(g_coords, bind_coords, i_coords);
   get_normals(g_normals, bind_normals, i_normals);
   get_texcoords(g_tcoords, bind_tcoords, i_tcoords);
@@ -703,7 +716,7 @@ write_verbose(ostream &out, int indent_level) const {
 
   out << "\n";
   indent(out, indent_level)
-    << get_type() << " contains " 
+    << get_type() << " contains "
     << get_num_prims() << " primitives:\n";
 
   if (bind_coords == G_OFF) {
@@ -711,7 +724,7 @@ write_verbose(ostream &out, int indent_level) const {
       << "No coords\n";
   } else if (i_coords!=(ushort*)0L) {
     indent(out, indent_level)
-      << "Indexed coords = " << (void *)g_coords << ", length = " 
+      << "Indexed coords = " << (void *)g_coords << ", length = "
       << g_coords.size() << ":\n";
     describe_attr(out, this, bind_coords, i_coords, false, indent_level + 2);
   } else {
@@ -719,27 +732,27 @@ write_verbose(ostream &out, int indent_level) const {
       << "Nonindexed coords:\n";
     describe_attr(out, this, bind_coords, g_coords, true, indent_level + 2);
   }
-  
+
   if (bind_colors == G_OFF) {
     indent(out, indent_level)
       << "No colors\n";
   } else if (i_colors!=(ushort*)0L) {
     indent(out, indent_level)
-      << "Indexed colors = " << (void *)g_colors << ", length = " 
+      << "Indexed colors = " << (void *)g_colors << ", length = "
       << g_colors.size() << "\n";
     describe_attr(out, this, bind_colors, i_colors, false, indent_level + 2);
   } else {
     indent(out, indent_level)
-      << "Nonindexed colors:\n"; 
+      << "Nonindexed colors:\n";
     describe_attr(out, this, bind_colors, g_colors, true, indent_level + 2);
   }
-  
+
   if (bind_tcoords == G_OFF) {
     indent(out, indent_level)
       << "No tcoords\n";
   } else if (i_tcoords!=(ushort*)0L) {
     indent(out, indent_level)
-      << "Indexed tcoords = " << (void *)g_tcoords << ", length = " 
+      << "Indexed tcoords = " << (void *)g_tcoords << ", length = "
       << g_tcoords.size() << "\n";
     describe_attr(out, this, bind_tcoords, i_tcoords, false, indent_level + 2);
   } else {
@@ -747,13 +760,13 @@ write_verbose(ostream &out, int indent_level) const {
       << "Nonindexed tcoords:\n";
     describe_attr(out, this, bind_tcoords, g_tcoords, true, indent_level + 2);
   }
-  
+
   if (bind_normals == G_OFF) {
     indent(out, indent_level)
       << "No normals\n";
   } else if (i_normals!=(ushort*)0L) {
     indent(out, indent_level)
-      << "Indexed normals = " << (void *)g_normals << ", length = " 
+      << "Indexed normals = " << (void *)g_normals << ", length = "
       << g_normals.size() << "\n";
     describe_attr(out, this, bind_normals, i_normals, false, indent_level + 2);
   } else {
@@ -764,7 +777,7 @@ write_verbose(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Geom::get_min_max 
+//     Function: Geom::get_min_max
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -773,17 +786,17 @@ get_min_max(Vertexf& min, Vertexf& max) const {
   int numv = _coords.size();
 
   for (int i = 0; i < numv; i++) {
-    if (_coords[i][0] < min[0]) 
+    if (_coords[i][0] < min[0])
       min[0] = _coords[i][0];
-    else if (_coords[i][0] > max[0]) 
+    else if (_coords[i][0] > max[0])
       max[0] = _coords[i][0];
 
-    if (_coords[i][1] < min[1]) 
+    if (_coords[i][1] < min[1])
       min[1] = _coords[i][1];
-    else if (_coords[i][1] > max[1]) 
+    else if (_coords[i][1] > max[1])
       max[1] = _coords[i][1];
 
-    if (_coords[i][2] < min[2]) 
+    if (_coords[i][2] < min[2])
       min[2] = _coords[i][2];
     else if (_coords[i][2] > max[2])
       max[2] = _coords[i][2];

@@ -1,5 +1,19 @@
 // Filename: imageBuffer.h
 // Created by:  mike (09Jan97)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef IMAGEBUFFER_H
@@ -29,16 +43,16 @@ class DisplayRegion;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA ImageBuffer : public dDrawable, public Namable
 {
-PUBLISHED:  
+PUBLISHED:
   ImageBuffer( void ) : dDrawable() { }
   virtual ~ImageBuffer( void ) { }
-  
+
   virtual bool read( const string& name ) = 0;
   virtual bool write( const string& name = "" ) const = 0;
-  
+
 public:
   virtual void config( void ) { WritableConfigurable::config(); }
-  
+
   virtual void copy(GraphicsStateGuardianBase *, const DisplayRegion *)=0;
   virtual void copy(GraphicsStateGuardianBase *, const DisplayRegion *,
                     const RenderBuffer &rb)=0;
@@ -57,13 +71,13 @@ private:
 
 public:
   //Abstract class, so no factory methods for Reading and Writing
-  virtual void write_datagram(BamWriter* manager, Datagram &me);  
+  virtual void write_datagram(BamWriter* manager, Datagram &me);
 
 protected:
   void fillin(DatagramIterator& scan, BamReader* manager);
-  
+
 public:
-  
+
   static TypeHandle get_class_type() {
     return _type_handle;
   }
@@ -78,9 +92,9 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-  
+
 private:
-  
+
   static TypeHandle _type_handle;
 };
 

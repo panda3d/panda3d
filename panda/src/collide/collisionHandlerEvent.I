@@ -1,6 +1,19 @@
 // Filename: collisionHandlerEvent.I
 // Created by:  drose (27Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
@@ -11,7 +24,7 @@
 //               detected.
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionHandlerEvent::SortEntries::
-operator () (const PT(CollisionEntry) &a, 
+operator () (const PT(CollisionEntry) &a,
              const PT(CollisionEntry) &b) const {
   if (a->get_from_node() != b->get_from_node()) {
     return a->get_from_node() < b->get_from_node();

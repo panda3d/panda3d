@@ -1,12 +1,25 @@
 // Filename: frameBufferStack.I
 // Created by:  drose (06Oct99)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferStack::Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE FrameBufferStack::
 FrameBufferStack() {
@@ -16,7 +29,7 @@ FrameBufferStack() {
 ////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferStack::Destructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE FrameBufferStack::
 ~FrameBufferStack() {
@@ -25,19 +38,19 @@ INLINE FrameBufferStack::
 ////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferStack::Copy Constructor
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE FrameBufferStack::
 FrameBufferStack(const FrameBufferStack &copy) :
   _frame_buffer(copy._frame_buffer),
-  _stack_level(copy._stack_level) 
+  _stack_level(copy._stack_level)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferStack::Copy Operator
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void FrameBufferStack::
 operator =(const FrameBufferStack &copy) {

@@ -1,6 +1,19 @@
 // Filename: nurbsPPCurve.h
 // Created by:  drose (01Mar01)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef NURBSPPCURVE_H
@@ -56,7 +69,7 @@ public:
   virtual float get_knot(int n) const;
 
   virtual bool recompute();
-  
+
 public:
   virtual bool get_point(float t, LVecBase3f &point) const;
   virtual bool get_tangent(float t, LVecBase3f &tangent) const;
@@ -71,7 +84,7 @@ public:
 
 protected:
   virtual int append_cv_impl(const LVecBase4f &v);
-  virtual bool format_egg(ostream &out, const string &name, 
+  virtual bool format_egg(ostream &out, const string &name,
                           const string &curve_type, int indent_level) const;
 
 private:
@@ -111,7 +124,7 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
- 
+
 private:
   static TypeHandle _type_handle;
 };

@@ -3,8 +3,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
-////////////////////////////////////////////////////////////////////
-// Includes
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 #include "mouse.h"
 
@@ -28,7 +37,7 @@ TypeHandle MouseAndKeyboard::_button_events_type;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 MouseAndKeyboard::
-MouseAndKeyboard(GraphicsWindow *window, int device, const string& name) : 
+MouseAndKeyboard(GraphicsWindow *window, int device, const string& name) :
   DataNode(name),
   _window(window),
   _device(device)
@@ -64,14 +73,14 @@ transmit_data(NodeAttributes &data) {
     if (mdata._in_window) {
       // Get motion
       _pixel_xyz->set_value(LPoint3f(mdata._xpos, mdata._ypos, 0));
-      
-      int w = _window->get_width(); 
+
+      int w = _window->get_width();
       int h = _window->get_height();
-      
+
       // Scale to range [-1,1]
       float xf = (float)(2 * mdata._xpos) / (float)w - 1.0;
       float yf = 1.0 - (float)(2 * mdata._ypos) / (float)h;
-  
+
       _xyz->set_value(LPoint3f(xf, yf, 0));
       data = _got_mouse_attrib;
 

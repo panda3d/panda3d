@@ -1,6 +1,19 @@
 // Filename: collisionNode.I
 // Created by:  drose (24Apr00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "collisionSolid.h"
@@ -107,7 +120,7 @@ get_collide_geom() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionNode::get_num_solids
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE int CollisionNode::
 get_num_solids() const {
@@ -117,7 +130,7 @@ get_num_solids() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionNode::get_solid
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE CollisionSolid *CollisionNode::
 get_solid(int n) const {
@@ -132,7 +145,7 @@ get_solid(int n) const {
 //               will shift all subsequent indices down by one.
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionNode::
-remove_solid(int n) { 
+remove_solid(int n) {
   nassertv(n >= 0 && n < get_num_solids());
   _solids.erase(_solids.begin() + n);
   mark_bound_stale();

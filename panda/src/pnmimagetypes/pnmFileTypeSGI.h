@@ -1,6 +1,19 @@
 // Filename: pnmFileTypeSGI.h
 // Created by:  drose (17Jun00)
-// 
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef PNMFILETYPESGI_H
@@ -46,7 +59,7 @@ public:
       long start;     /* offset in file */
       long length;    /* length of compressed scanline */
     } TabEntry;
-    
+
   private:
     TabEntry *table;
     long table_start;
@@ -67,13 +80,13 @@ public:
       long start;     /* offset in file */
       long length;    /* length of compressed scanline */
     } TabEntry;
-    
+
     typedef short ScanElem;
     typedef struct {
       ScanElem *  data;
       long        length;
     } ScanLine;
-    
+
   private:
     TabEntry &Table(int chan) {
       return table[chan * _y_size + current_row];
@@ -92,7 +105,7 @@ public:
     int bpc;
     int dimensions;
     int new_maxval;
-    
+
     ScanElem *rletemp;
   };
 
@@ -117,11 +130,11 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
- 
+
 private:
   static TypeHandle _type_handle;
 };
 
 #endif
 
-  
+

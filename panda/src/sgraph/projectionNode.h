@@ -3,6 +3,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 //
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://www.panda3d.org/license.txt .
+//
+// To contact the maintainers of this program write to
+// panda3d@yahoogroups.com .
+//
+////////////////////////////////////////////////////////////////////
 #ifndef PROJECTIONNODE_H
 #define PROJECTIONNODE_H
 //
@@ -32,14 +44,14 @@ public:
 
   virtual Node *make_copy() const;
 
-PUBLISHED:  
+PUBLISHED:
   void set_projection(const Projection &projection);
   void share_projection(Projection *projection);
   Projection *get_projection();
 
   bool is_in_view(const LPoint3f &pos);
 
-  void get_perspective_params(float &yfov, float &aspect, float &cnear, 
+  void get_perspective_params(float &yfov, float &aspect, float &cnear,
                               float &cfar) const;
   void get_perspective_params(float &xfov, float &yfov, float &aspect,
                               float &cnear, float &cfar) const;
@@ -57,12 +69,12 @@ PUBLISHED:
   void set_near(float cnear);
   float get_far(void) const;
   void set_far(float cfar);
-  
+
 protected:
   PT(Projection) _projection;
-  
+
 public:
-  
+
   static TypeHandle get_class_type( void ) {
     return _type_handle;
   }
@@ -75,9 +87,9 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-  
+
 private:
-  
+
   static TypeHandle                       _type_handle;
 };
 
