@@ -44,7 +44,7 @@ ZStreamBuf() {
   char *buf = new char[4096];
   char *ebuf = buf + 4096;
   setg(buf, ebuf, ebuf);
-  setp(buf, ebuf, ebuf);
+  setp(buf, ebuf);
 
 #else
   allocate();
