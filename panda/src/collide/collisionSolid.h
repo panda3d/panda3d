@@ -103,6 +103,8 @@ protected:
 private:
   LVector3f _effective_normal;
 
+  // Be careful reordering these bits, since they are written to a bam
+  // file.
   enum Flags {
     F_tangible         = 0x01,
     F_effective_normal = 0x02,
