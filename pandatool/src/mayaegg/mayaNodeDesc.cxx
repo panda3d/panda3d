@@ -17,8 +17,23 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "mayaNodeDesc.h"
+#include "maya_funcs.h"
 
 TypeHandle MayaNodeDesc::_type_handle;
+
+// This is a list of the names of Maya connections that count as a
+// transform.
+static const char *transform_connections[] = {
+  "translate",
+  "translateX",
+  "translateY",
+  "translateZ",
+  "rotate",
+  "rotateX",
+  "rotateY",
+  "rotateZ",
+};
+static const int num_transform_connections = sizeof(transform_connections) / sizeof(const char *);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaNodeDesc::Constructor
@@ -71,6 +86,31 @@ from_dag_path(const MDagPath &dag_path) {
       _joint_type = JT_joint;
       if (_parent != (MayaNodeDesc *)NULL) {
         _parent->mark_joint_parent();
+      }
+
+    } else {
+      // The node is not a joint, but maybe its transform is
+      // controlled by connected inputs.  If so, we should treat it
+      // like a joint.
+      bool transform_connected = false;
+
+      MStatus status;
+      MObject node = dag_path.node(&status);
+      if (status) {
+        for (int i = 0; 
+             i < num_transform_connections && !transform_connected;
+             i++) {
+          if (is_connected(node, transform_connections[i])) {
+            transform_connected = true;
+          }
+        }
+      }
+      
+      if (transform_connected) {
+        _joint_type = JT_joint;
+        if (_parent != (MayaNodeDesc *)NULL) {
+          _parent->mark_joint_parent();
+        }
       }
     }
   }

@@ -38,6 +38,9 @@ class MObject;
 bool
 get_maya_plug(MObject &node, const string &attribute_name, MPlug &plug);
 
+bool
+is_connected(MObject &node, const string &attribute_name);
+
 template<class ValueType>
 bool
 get_maya_attribute(MObject &node, const string &attribute_name,

@@ -662,15 +662,7 @@ process_model_node(MayaNodeDesc *node_desc) {
     mayaegg_cat.debug(false) << "\n";
   }
 
-  if (node_desc->is_joint()) {
-    // Don't bother with joints unless we're getting an animatable
-    // model.
-    if (_animation_convert == AC_model) { 
-      EggGroup *egg_group = _tree.get_egg_group(node_desc);
-      get_joint_transform(dag_path, egg_group);
-    }
-
-  } else if (dag_node.inUnderWorld()) {
+  if (dag_node.inUnderWorld()) {
     if (mayaegg_cat.is_debug()) {
       mayaegg_cat.debug()
         << "Ignoring underworld node " << path
@@ -700,7 +692,7 @@ process_model_node(MayaNodeDesc *node_desc) {
 
   } else if (dag_path.hasFn(MFn::kNurbsSurface)) {
     EggGroup *egg_group = _tree.get_egg_group(node_desc);
-    get_transform(dag_path, egg_group);
+    get_transform(node_desc, dag_path, egg_group);
     
     MFnNurbsSurface surface(dag_path, &status);
     if (!status) {
@@ -718,7 +710,7 @@ process_model_node(MayaNodeDesc *node_desc) {
     // things in them.
     if (_animation_convert != AC_model) {
       EggGroup *egg_group = _tree.get_egg_group(node_desc);
-      get_transform(dag_path, egg_group);
+      get_transform(node_desc, dag_path, egg_group);
       
       MFnNurbsCurve curve(dag_path, &status);
       if (!status) {
@@ -732,7 +724,7 @@ process_model_node(MayaNodeDesc *node_desc) {
       
   } else if (dag_path.hasFn(MFn::kMesh)) {
     EggGroup *egg_group = _tree.get_egg_group(node_desc);
-    get_transform(dag_path, egg_group);
+    get_transform(node_desc, dag_path, egg_group);
 
     MFnMesh mesh(dag_path, &status);
     if (!status) {
@@ -761,13 +753,13 @@ process_model_node(MayaNodeDesc *node_desc) {
       // locators within character models may not be meaningful.
       egg_group->set_dcs_type(EggGroup::DC_net);
     }
-    get_transform(dag_path, egg_group);
+    get_transform(node_desc, dag_path, egg_group);
     make_locator(dag_path, dag_node, egg_group);
 
   } else {
     // Just a generic node.
     EggGroup *egg_group = _tree.get_egg_group(node_desc);
-    get_transform(dag_path, egg_group);
+    get_transform(node_desc, dag_path, egg_group);
   }
 
   return true;
@@ -780,10 +772,15 @@ process_model_node(MayaNodeDesc *node_desc) {
 //               and applies it to the corresponding Egg node.
 ////////////////////////////////////////////////////////////////////
 void MayaToEggConverter::
-get_transform(const MDagPath &dag_path, EggGroup *egg_group) {
+get_transform(MayaNodeDesc *node_desc, const MDagPath &dag_path, 
+              EggGroup *egg_group) {
   if (_animation_convert == AC_model) {
     // When we're getting an animated model, we only get transforms
-    // for joints.
+    // for joints, and they get converted in a special way.
+
+    if (node_desc->is_joint()) { 
+      get_joint_transform(dag_path, egg_group);
+    }
     return;
   }
 
@@ -1768,9 +1765,8 @@ get_vertex_weights(const MDagPath &dag_path, const MFnMesh &mesh,
 
     it.next();
   }
-  
-  mayaegg_cat.error()
-    << "Unable to find a cluster handle for the DG node.\n"; 
+
+  // The mesh was not soft-skinned.
   return false;
 }
 

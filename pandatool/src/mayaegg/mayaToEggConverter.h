@@ -97,7 +97,8 @@ private:
   bool convert_hierarchy(EggGroupNode *egg_root);
   bool process_model_node(MayaNodeDesc *node_desc);
 
-  void get_transform(const MDagPath &dag_path, EggGroup *egg_group);
+  void get_transform(MayaNodeDesc *node_desc, const MDagPath &dag_path,
+                     EggGroup *egg_group);
   void get_joint_transform(const MDagPath &dag_path, EggGroup *egg_group);
 
   // I ran into core dumps trying to pass around a MFnMesh object by

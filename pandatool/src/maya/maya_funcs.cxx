@@ -66,6 +66,21 @@ get_maya_plug(MObject &node, const string &attribute_name, MPlug &plug) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: is_connected
+//  Description: Returns true if the named connection exists on the
+//               node and is connected to anything, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool
+is_connected(MObject &node, const string &attribute_name) {
+  MPlug plug;
+  if (!get_maya_plug(node, attribute_name, plug)) {
+    return false;
+  }
+
+  return plug.isConnected();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: has_attribute
 //  Description: Returns true if the node has the indicated attribute,
 //               false otherwise.
@@ -559,10 +574,17 @@ list_maya_attributes(MObject &node) {
       << name << " has " << connections.length() << " connections.\n";
     for (i = 0; i < connections.length(); i++) {
       MPlug plug = connections[i];
+
       maya_cat.info(false)
         << "  " << i << ". " << plug.name().asChar() << ", "
         << plug.attribute().apiTypeStr() << ", " 
-        << plug.node().apiTypeStr() << "\n";
+        << plug.node().apiTypeStr();
+      if (plug.isConnected()) {
+        maya_cat.info(false)
+          << " (*)";
+      }
+      maya_cat.info(false)
+        << "\n";
     }
   }
     
