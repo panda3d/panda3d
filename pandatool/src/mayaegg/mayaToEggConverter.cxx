@@ -988,9 +988,12 @@ get_joint_transform(const MDagPath &dag_path, EggGroup *egg_group) {
   MTransformationMatrix matrix(transform.transformationMatrix());
 
   if (mayaegg_cat.is_spam()) {
+    MVector t = matrix.translation(MSpace::kWorld);
     mayaegg_cat.spam()
-      << "  translation: " << matrix.translation(MSpace::kWorld)
-      << "\n";
+      << "  translation: ["
+      << t[0] << ", "
+      << t[1] << ", "
+      << t[2] << "]\n";
     double d[3];
     MTransformationMatrix::RotationOrder rOrder;
 

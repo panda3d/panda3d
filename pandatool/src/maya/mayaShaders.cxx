@@ -64,7 +64,7 @@ find_shader_for_node(MObject node) {
   if (!status) {
     // The node is not renderable.  What are you thinking?
     maya_cat.error()
-      << node_fn.name() << " : not a renderable object.\n";
+      << node_fn.name().asChar() << " : not a renderable object.\n";
     return (MayaShader *)NULL;
   }
 
@@ -78,7 +78,7 @@ find_shader_for_node(MObject node) {
   if (!status) {
     // No shading group defined for this object.
     maya_cat.error()
-      << node_fn.name() << " : no shading group defined.\n";
+      << node_fn.name().asChar() << " : no shading group defined.\n";
     return (MayaShader *)NULL;
   }
 
@@ -96,7 +96,7 @@ find_shader_for_node(MObject node) {
 
   // Well, we didn't find a ShadingEngine after all.  Huh.
   maya_cat.debug()
-    << node_fn.name() << " : no shading engine found.\n";
+    << node_fn.name().asChar() << " : no shading engine found.\n";
   return (MayaShader *)NULL;
 }
 
