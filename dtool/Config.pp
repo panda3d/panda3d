@@ -396,8 +396,8 @@
 // How to install a data file or executable file.  $[local] is the
 // local name of the file to install, and $[dest] is the name of the
 // directory to put it in.
-#defer INSTALL install -m 644 $[local] $[dest]
-#defer INSTALL_PROG install -m 755 $[local] $[dest]
+#defer INSTALL install -m 666 $[local] $[dest]
+#defer INSTALL_PROG install -m 777 $[local] $[dest]
 
 // When building under Irix, we assume you want to use the MIPSPro
 // compiler.  Comment this bit out (or redefine the variables
