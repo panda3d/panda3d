@@ -856,7 +856,6 @@ get_ssl_ctx() {
 
   // Get the configured set of expected servers.
   {
-    // Load in any default certificates listed in the Configrc file.
     Config::ConfigTable::Symbol expected_servers;
     config_downloader.GetAll("expected-ssl-server", expected_servers);
     
