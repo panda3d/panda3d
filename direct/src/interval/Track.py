@@ -1,7 +1,6 @@
 """Track module: contains the Track class"""
 
 from Interval import *
-
 import types
 
 PREVIOUS_END = 1
@@ -33,9 +32,12 @@ class Track(Interval):
         # Initialize superclass
 	Interval.__init__(self, name, duration)
 
+    # Access interval at given index
     def __getitem__(self, item):
         return self.ilist[item]
 
+    # Create a list of this track's intervals, recording time
+    # and time type (relative to track start, previous start, previous end
     def __buildIlist(self, intervalList):
 	self.ilist = []
 	for i in intervalList:
@@ -43,39 +45,42 @@ class Track(Interval):
                 self.ilist.append([i, 0.0, PREVIOUS_END, 0.0, 0.0])
             elif (isinstance(i, types.ListType) or
                   isinstance(i, types.TupleType)):
-                t0 = i[0]
+                itime = i[0]
                 ival = i[1]
                 try:
                     type = i[2]
                 except IndexError:
                     type = TRACK_START
-                self.ilist.append([ival, t0, type, 0.0, 0.0])
+                self.ilist.append([ival, itime, type, 0.0, 0.0])
             else:
                 print 'Track.__buildIlist: Invalid intervallist entry'
 
+    # Compute duration of the track and precompute start and end time of
+    # each interval
     def __computeDuration(self):
 	""" __computeDuration()
 	"""
 	duration = 0.0
 	prev = None
         for idata in self.ilist:
-	    ival = idata[IDATA_IVAL]
-	    t0 = idata[IDATA_TIME]
-	    type = idata[IDATA_TYPE]
-	    assert(t0 >= 0.0)
+            ival = idata[IDATA_IVAL]
+            itime = idata[IDATA_TIME]
+            type = idata[IDATA_TYPE]
+	    assert(itime >= 0.0)
             # Compute fill time, time between end of last interval and
-            # start of this one
-	    fillTime = t0 
+            # start of this one.  Depend on interval type
+	    fillTime = itime 
 	    if (type == PREVIOUS_END):
                 pass
 	    elif (type == PREVIOUS_START):
 		if (prev != None):
-		    fillTime = t0 - prev.getDuration()
+		    fillTime = itime - prev.getDuration()
 	    elif (type == TRACK_START):
-		fillTime = t0 - duration
+		fillTime = itime - duration
 	    else:
 		Interval.notify.error(
 			'Track.__computeDuration(): unknown type: %d' % type)
+            # Check for overlap
 	    if (fillTime < 0.0):
 		Interval.notify.error(
 			'Track.__computeDuration(): overlap detected')
@@ -83,22 +88,25 @@ class Track(Interval):
             idata[IDATA_START] = duration + fillTime
             # Compute end time of interval
             idata[IDATA_END] = idata[IDATA_START] + ival.getDuration()
-            # Keep track of current duration
+            # Keep track of cumulative duration
 	    duration = idata[IDATA_END]
 	    prev = ival
 	return duration
 
-    def setIntervalStartTime(self, name, t0, type=TRACK_START):
-	""" setIntervalStartTime(name, t0, type)
+    def setIntervalStartTime(self, name, itime, type=TRACK_START):
+	""" setIntervalStartTime(name, itime, type)
 	"""
 	found = 0
+        # Check for interval in current interval list
         for idata in self.ilist:
+            # If found, update time and type
 	    if (idata[IDATA_IVAL].getName() == name):
-                idata[IDATA_TIME] = t0
+                idata[IDATA_TIME] = itime
                 idata[IDATA_TYPE] = type
 		found = 1
 		break
 	if (found):
+            # And recompute duration
 	    self.duration = self.__computeDuration()	
 	else:
 	    Interval.notify.warning(
@@ -107,6 +115,7 @@ class Track(Interval):
     def getIntervalStartTime(self, name):
 	""" getIntervalStartTime(name)
 	"""
+        # Search for interval of given name
 	for idata in self.ilist:
 	    if (idata[IDATA_IVAL].getName() == name):
 		return idata[IDATA_START]
@@ -117,6 +126,7 @@ class Track(Interval):
     def __getIntervalStartTime(self, interval):
 	""" __getIntervalStartTime(interval)
 	"""
+        # Search for given interval
 	for idata in self.ilist:
 	    if (idata[IDATA_IVAL] == interval):
 		return idata[IDATA_START]
@@ -127,6 +137,7 @@ class Track(Interval):
     def getIntervalEndTime(self, name):
 	""" getIntervalEndTime(name)
 	"""
+        # Search for interval of given name
 	for idata in self.ilist:
 	    if (idata[IDATA_IVAL].getName() == name):	
 		return idata[IDATA_END]
@@ -152,8 +163,7 @@ class Track(Interval):
             currentInterval = None
             # First entry, re-init instance variables
             if (event == IVAL_INIT):
-                # Initialize prev_t to max t of track
-                #self.prev_t = self.getDuration()
+                # Initialize prev_t to 0.0
                 self.prev_t = 0.0
                 # Clear record of currentInterval
                 self.currentInterval = None
@@ -166,7 +176,7 @@ class Track(Interval):
             # start of an interval ((prev_t > tStart) and (t < tStart))
             # then execute that interval at its start value
 	    for ival, itime, itype, tStart, tEnd in self.ilist:
-                # Compare time with ival's start/end times
+                # Compare time with each ival's start/end times
                 if (t < tStart):
                     if (self.prev_t > tStart) and (event != IVAL_STOP):
                         # We just crossed the start of this interval
@@ -200,11 +210,13 @@ class Track(Interval):
             # Record current interval (may be None)
             self.currentInterval = currentInterval
 
+    # Create a printable representation of the track
     def __repr__(self, indent=0):
 	""" __repr__(indent)
 	"""
 	str = Interval.__repr__(self, indent) + '\n'
-	for idata in self.ilist:	
+	for idata in self.ilist:
+            # Tack on start and end time for this interval
 	    str = (str + idata[IDATA_IVAL].__repr__(indent+1) +
                    (' start: %0.2f end: %0.2f' %
                     (idata[IDATA_START], idata[IDATA_END])) + '\n'

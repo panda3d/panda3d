@@ -18,9 +18,12 @@ class FunctionInterval(Interval):
 	    name = 'FunctionInterval-%d' % FunctionInterval.functionIntervalNum
 	    FunctionInterval.functionIntervalNum += 1
         # Initialize superclass
-        # Set openEnded true if calls after end time cause interval
-        # function to be called
+        # Set openEnded true if IVAL_INIT calls after end time cause interval
+        # function to be called.  If false, IVAL_INIT calls have no effect
+        # Event, Accept, Ignore intervals default to fOpenEnded = 0
+        # Parent, Pos, Hpr, etc intervals default to fOpenEnded = 1
 	Interval.__init__(self, name, duration = 0.0, openEnded = openEnded)
+    
     def updateFunc(self, t, event = IVAL_NONE):
 	""" updateFunc(t, event)
 	    Go to time t
@@ -44,25 +47,29 @@ class EventInterval(FunctionInterval):
 ### FunctionInterval subclass for accepting hooks ###
 class AcceptInterval(FunctionInterval):
     # Initialization
-    def __init__(self, dirObj, event, function, name):
+    def __init__(self, dirObj, event, function, name = None):
         """__init__(dirObj, event, function, name)
         """
         def acceptFunc(dirObj = dirObj, event = event, function = function):
-            print "accepting..."
             dirObj.accept(event, function)
+        # Determine name
+        if (name == None):
+            name = 'Accept-' + event
         # Create function interval
 	FunctionInterval.__init__(self, acceptFunc, name = name,
                                   openEnded = 0)
 
-### FunctionInterval subclass for throwing events ###
+### FunctionInterval subclass for ignoring events ###
 class IgnoreInterval(FunctionInterval):
     # Initialization
-    def __init__(self, dirObj, event, name):
+    def __init__(self, dirObj, event, name = None):
         """__init__(dirObj, event, name)
         """
         def ignoreFunc(dirObj = dirObj, event = event):
-            print "ignoring..."
             dirObj.ignore(event)
+        # Determine name
+	if (name == None):
+	    name = 'Ignore-' + event
         # Create function interval
 	FunctionInterval.__init__(self, ignoreFunc, name = name,
                                   openEnded = 0)
@@ -188,7 +195,7 @@ class PosHprInterval(FunctionInterval):
         FunctionInterval.__init__(self, posHprFunc, name = name)
 
 class PosHprScaleInterval(FunctionInterval):
-    # PosHprInterval counter
+    # PosHprScaleInterval counter
     posHprScaleIntervalNum = 1
     # Initialization
     def __init__(self, nodePath, pos, hpr, scale, duration = 0.0,
@@ -212,19 +219,49 @@ class PosHprScaleInterval(FunctionInterval):
 
 """
 SAMPLE CODE
+
 from IntervalGlobal import *
 
 ### Using lambdas and functions ###
 # Using a lambda
 i1 = FunctionInterval(lambda: base.transitions.fadeOut())
 i2 = FunctionInterval(lambda: base.transitions.fadeIn())
-# Using a function
-def printHello():
-    print 'hello'
 
-i3 = FunctionInterval(printHello)
+def caughtIt():
+    print 'Caught here-is-an-event'
+
+class DummyAcceptor(DirectObject):
+    pass
+
+da = DummyAcceptor()
+i3 = AcceptInterval(da, 'here-is-an-event', caughtIt)
+
+i4 = EventInterval('here-is-an-event')
+
+i5 = IgnoreInterval(da, 'here-is-an-event')
+
+# Using a function
+def printDone():
+    print 'done'
+
+i6 = FunctionInterval(printDone)
+
 # Create track
-t1 = Track([(0.0, i1), (2.0, i2), (4.0, i3)], name = 'demo')
+t1 = Track([
+    # Fade out
+    (0.0, i1),
+    # Fade in
+    (2.0, i2),
+    # Accept event
+    (4.0, i3),
+    # Throw it,
+    (5.0, i4),
+    # Ignore event
+    (6.0, i5),
+    # Throw event again and see if ignore worked
+    (7.0, i4),
+    # Print done
+    (8.0, i6)], name = 'demo')
 
 # Play track
 t1.play()

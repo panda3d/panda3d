@@ -4,26 +4,26 @@ from Interval import *
 from Track import *
 
 class MultiTrack(Interval):
-
+    # Name counter
     multiTrackNum = 1
-
-    # special methods
-    
+    # Class methods
     def __init__(self, trackList, name=None):
         """__init__(trackList, name)
         """
-	if (name == None):
-	    n = 'MultiTrack-%d' % MultiTrack.multiTrackNum
-	    MultiTrack.multiTrackNum = MultiTrack.multiTrackNum + 1
-	else:
-	    n = name
+        # Record track list
 	self.tlist = trackList
+	if (name == None):
+	    name = 'MultiTrack-%d' % MultiTrack.multiTrackNum
+	    MultiTrack.multiTrackNum = MultiTrack.multiTrackNum + 1
+        # Duration is max of all track durations
 	duration = self.__computeDuration()
-	Interval.__init__(self, n, duration)
-
+        # Initialize superclass
+	Interval.__init__(self, name, duration)
+    
+    # Access track at given index
     def __getitem__(self, item):
         return self.tlist[item]
-
+    
     def __computeDuration(self):
 	""" __computeDuration()
 	    Returns the duration of the longest Track 
@@ -43,11 +43,15 @@ class MultiTrack(Interval):
             tEnd = track.getDuration()
             # Compare time with track's end times
             if (t > tEnd):
+                # If t > tEnd, only call if just crossing over
+                # or this is an IVAL_INIT event
                 if (self.prev_t < tEnd) or (event == IVAL_INIT):
                     track.setT(t, event)
             else:
+                # Update track
                 track.setT(t, event)
 
+    # Print out representation of MultiTrack
     def __repr__(self, indent=0):
 	""" __repr__(indent)
 	"""

@@ -16,8 +16,7 @@ class Interval(DirectObject):
     notify = directNotify.newCategory("Interval")
     #notify.setDebug(1)
 
-    # special methods
-    
+    # Class methods
     def __init__(self, name, duration, openEnded = 1):
         """__init__(name, duration)
         """
@@ -65,9 +64,13 @@ class Interval(DirectObject):
         self.prev_t = self.curr_t
 
     def updateFunc(self, t, event = IVAL_NONE):
+        """ updateFunc(t, event)
+        """
+        # Subclasses define this function
         pass
 
     def setTHook(self, t):
+        # Used by control panel to update scale
         pass
 
     def setFinalT(self):
@@ -79,7 +82,7 @@ class Interval(DirectObject):
         """ play(t0, duration)
         """
         # Kill ongoing play task
-        self.stop()
+        taskMgr.removeTasksNamed(self.name + '-play')
         # Start new one
 	self.offset = t0
         self.startT = self.clock.getFrameTime()
@@ -93,12 +96,15 @@ class Interval(DirectObject):
             # Otherwise use min of interval duration and offset + play duration
             self.endTime = min(self.duration, self.offset + duration)
 	assert(t0 <= self.endTime)
+        # Spawn task
         taskMgr.spawnMethodNamed(self.__playTask, self.name + '-play')
 
     def stop(self):
         """ stop()
         """
+        # Kill task
         taskMgr.removeTasksNamed(self.name + '-play')
+        # And stop freerunning (e.g. sound and anim) intervals
         self.setT(self.curr_t, event = IVAL_STOP)
 	return self.curr_t
 
@@ -108,6 +114,7 @@ class Interval(DirectObject):
         t = self.clock.getFrameTime()
         te = self.offset + ((t - self.startT) * self.scale)
         if (te < self.endTime):
+            # If first call, init intervals
 	    if (self.firstTime):
 		self.setT(te, event = IVAL_INIT)
 		self.firstTime = 0
@@ -127,6 +134,9 @@ class Interval(DirectObject):
 	return (space + self.name + ' dur: %.2f' % self.duration)
 
     def popupControls(self):
+        """ popupControls()
+            Popup control panel for interval.
+        """
         import fpformat
         import string
         # I moved this here because Toontown does not ship Tk
@@ -146,11 +156,14 @@ class Interval(DirectObject):
             # INIT interval
             s.setT(es.get(), event = IVAL_INIT)
         es.onPress = onPress
+        # To make sure you stop free running intervals
         es.onRelease = lambda s=self: s.stop()
+        # To update scale and execute intervals with IVAL_INIT
         es.onReturnRelease = lambda s=self, es = es: s.setT(es.get(),
                                                             event = IVAL_INIT)
         es.pack(expand = 1, fill = X)
         f = Frame(tl)
+        # Jump to start and end
         def toStart(s=self, es=es):
             s.stop()
             s.setT(0.0, event = IVAL_INIT)
@@ -158,6 +171,7 @@ class Interval(DirectObject):
             s.stop()
             s.setT(s.getDuration(), event = IVAL_INIT)
         jumpToStart = Button(tl, text = '<<', command = toStart)
+        # Stop/play buttons
         stop = Button(tl, text = 'Stop',
                       command = lambda s=self: s.stop())
         play = Button(
@@ -169,11 +183,11 @@ class Interval(DirectObject):
         stop.pack(side = LEFT, expand = 1, fill = X)
         jumpToEnd.pack(side = LEFT, expand = 1, fill = X)
         f.pack(expand = 1, fill = X)
-        # Add hook to update slider on changes in curr_t
+        # Add function to update slider during setT calls
         def update(t,es=es):
             es.set(t, fCommand = 0)
         self.setTHooks.append(update)
-        # Clear out hook on destroy
+        # Clear out function on destroy
         def onDestroy(e, s=self, u=update):
             if u in s.setTHooks:
                 s.setTHooks.remove(u)

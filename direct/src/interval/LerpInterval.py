@@ -9,18 +9,20 @@ class LerpInterval(Interval):
     def __init__(self, name, duration, functorFunc, blendType='noBlend'):
         """__init__(name, duration, functorFunc, blendType)
         """
+        # Record instance variables
         self.lerp = None
 	self.functorFunc = functorFunc
 	self.blendType = self.getBlend(blendType)
+        # Initialize superclass
 	Interval.__init__(self, name, duration)
     def updateFunc(self, t, event = IVAL_NONE):
 	""" updateFunc(t, event)
 	"""
-        # First check to see if we need to create the lerp
+        # Check to see if we need to create the lerp
 	if (event == IVAL_INIT):
 	    self.lerp = Lerp.Lerp(self.functorFunc(), self.duration, 
                                   self.blendType)
-        # Now evaluate the lerp
+        # Evaluate the lerp if its been created
         if self.lerp:
             self.lerp.setT(t)
     def getBlend(self, blendType):
@@ -51,7 +53,6 @@ class LerpPosInterval(LerpInterval):
 	def functorFunc(self=self, node=node, pos=pos, startPos=startPos,
 			other=other):
             import PosLerpFunctor
-
 	    assert(not node.isEmpty())
             if (other != None):
             	# lerp wrt other
@@ -227,7 +228,8 @@ class LerpPosHprScaleInterval(LerpInterval):
 	LerpInterval.__init__(self, name, duration, functorFunc, blendType)
 
 # Class used to execute a function over time.  Function can access fromData
-# and toData to perform blend
+# and toData to perform blend.  If fromData and toData not specified, will
+# execute the given function passing in values ranging from 0 to 1
 class LerpFunctionInterval(Interval):
     # Interval counter
     lerpFunctionIntervalNum = 1
@@ -252,21 +254,24 @@ class LerpFunctionInterval(Interval):
 	""" updateFunc(t, event)
 	"""
         # Evaluate the function
-        if (t == self.duration):
+        if (t >= self.duration):
             # Set to end value
 	    self.function(self.toData)            
         else:
-            # In the middle of the lerp, compute appropriate value
+            # In the middle of the lerp, compute appropriate blended value
             try:
                 bt = self.blendType(t/self.duration)
                 data = (self.fromData * (1 - bt)) + (self.toData * bt)
+                # Evaluate function
                 self.function(data)
             except ZeroDivisionError:
+                # Zero duration, just use endpoint
                 self.function(self.toData)
     def getBlend(self, blendType):
         """__getBlend(self, string)
         Return the C++ blend class corresponding to blendType string
         """
+        # Note, this is temporary until blend functions get exposed
         import LerpBlendHelpers
         def easeIn(t):
             x = t*t

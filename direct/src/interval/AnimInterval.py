@@ -7,6 +7,15 @@ class AnimInterval(Interval):
     # Name counter
     animNum = 1
     # Class methods
+    # Interval used to play an animation.  If loop = 0, animation is
+    # played only once and the pose of the anim depends on t passed
+    # into the setT method every frame.  If loop = 1, the animation is
+    # started and plays on its own and stopped when t > duration or
+    # IVAL_STOP event occurs.  If no duration is specified, interval
+    # duration defaults to be equal to the length of the animation.
+    # Note: if loop == 0 and duration > anim duration then the animation
+    # will play once and then nothing will happen for the remainder of the
+    # interval
     def __init__(self, animControl, loop = 0, duration = 0.0, name=None):
         """__init__(name)
         """

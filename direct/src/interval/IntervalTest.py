@@ -72,3 +72,102 @@ def handleWaterDone():
     print 'water is done'
 
 messenger.accept('water-is-done', 1, handleWaterDone)
+
+
+### Using lambdas and functions ###
+# Using a lambda
+i1 = FunctionInterval(lambda: base.transitions.fadeOut())
+i2 = FunctionInterval(lambda: base.transitions.fadeIn())
+
+def caughtIt():
+    print 'Caught here-is-an-event'
+
+class DummyAcceptor(DirectObject):
+    pass
+
+da = DummyAcceptor()
+i3 = AcceptInterval(da, 'here-is-an-event', caughtIt)
+
+i4 = EventInterval('here-is-an-event')
+
+i5 = IgnoreInterval(da, 'here-is-an-event')
+
+# Using a function
+def printDone():
+    print 'done'
+
+i6 = FunctionInterval(printDone)
+
+# Create track
+t1 = Track([
+    # Fade out
+    (0.0, i1),
+    # Fade in
+    (2.0, i2),
+    # Accept event
+    (4.0, i3),
+    # Throw it,
+    (5.0, i4),
+    # Ignore event
+    (6.0, i5),
+    # Throw event again and see if ignore worked
+    (7.0, i4),
+    # Print done
+    (8.0, i6)], name = 'demo')
+
+print(t1)
+
+### Specifying interval start times during track construction ###
+# Interval start time can be specified relative to three different points:
+# PREVIOUS_END
+# PREVIOUS_START
+# TRACK_START
+
+startTime = 0.0
+def printStart():
+    global startTime
+    startTime = globalClock.getFrameTime()
+    print 'Start'
+
+def printPreviousStart():
+    global startTime
+    currTime = globalClock.getFrameTime()
+    print 'PREVIOUS_END %0.2f' % (currTime - startTime)
+
+def printPreviousEnd():
+    global startTime
+    currTime = globalClock.getFrameTime()
+    print 'PREVIOUS_END %0.2f' % (currTime - startTime)
+
+def printTrackStart():
+    global startTime
+    currTime = globalClock.getFrameTime()
+    print 'TRACK_START %0.2f' % (currTime - startTime)
+
+i1 = FunctionInterval(printStart)
+# Just to take time
+i2 = LerpPosInterval(camera, 2.0, Point3(0,10,5))
+# This will be relative to end of camera move
+i3 = FunctionInterval(printPreviousEnd)
+# Just to take time
+i4 = LerpPosInterval(camera, 2.0, Point3(0,0,5))
+# This will be relative to the start of the camera move
+i5 = FunctionInterval(printPreviousStart)
+# This will be relative to track start
+i6 = FunctionInterval(printTrackStart)
+# Create the track, if you don't specify offset type in tuple it defaults to
+# relative to TRACK_START (first entry below)
+t2 = Track([(0.0, i1),                 # i1 start at t = 0, duration = 0.0
+           (1.0, i2, TRACK_START),    # i2 start at t = 1, duration = 2.0
+           (2.0, i3, PREVIOUS_END),   # i3 start at t = 5, duration = 0.0
+           (1.0, i4, PREVIOUS_END),   # i4 start at t = 6, duration = 2.0
+           (3.0, i5, PREVIOUS_START), # i5 start at t = 9, duration = 0.0
+           (10.0, i6, TRACK_START)],  # i6 start at t = 10, duration = 0.0
+          name = 'startTimeDemo')
+
+print(t2)
+
+# Play tracks
+# mtrack.play()
+# t1.play()
+# t2.play()

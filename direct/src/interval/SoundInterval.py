@@ -7,36 +7,43 @@ class SoundInterval(Interval):
     # Name counter
     soundNum = 1
     # Class methods
-    def __init__(self, sound, loop=0, name=None):
+    # Create a sound interval
+    # If loop = 0, sound will play once, duration of the interval
+    # equals the duration of the sound
+    # If loop = 1, the sound will loop for the specified duration
+    # If no duration is specified, sound will loop for the duration
+    # of the sound, i.e. it will only play once.....usually, there
+    # seems to be some timing in the audio such that the stop doesn't
+    # kill the looping sound until the next time around if duration
+    # of the interval equals duration of the sound
+    def __init__(self, sound, loop = 0, duration = 0.0, name = None):
         """__init__(sound, loop, name)
         """
+        # Record instance variables
 	self.sound = sound
 	self.loop = loop
-	self.isPlaying = 0
+        # If no duration given use sound's duration as interval's duration
+        if duration == 0.0:
+            duration = self.sound.length()
         # Generate unique name if necessary
 	if (name == None):
 	    name = 'Sound-%d' % SoundInterval.soundNum
 	    SoundInterval.soundNum += 1
-        # Calculate duration
-	duration = self.sound.length()
         # Initialize superclass
 	Interval.__init__(self, name, duration)
-
     def updateFunc(self, t, event = IVAL_NONE):
 	""" updateFunc(t, event)
         Go to time t
 	"""
-        if (t == self.duration) or (event == IVAL_STOP):
-            # Stop sound if necessary
-	    if (self.isPlaying == 1):
-		self.isPlaying = 0
-		AudioManager.stop(self.sound)
+        # Update sound based on current time
+        if (t >= self.getDuration()) or (event == IVAL_STOP):
+            # If end of sound reached or stop event received, stop sound
+            AudioManager.stop(self.sound)
         elif (event == IVAL_INIT):
-            # Set flag
-	    self.isPlaying = 1
-            # If its within a 20th of a second of the start,
+            # IVAL_INIT event, start new sound
+            # If its within a 10th of a second of the start,
             # start at the beginning
-            if (t < 0.05):
+            if (t < 0.1):
                 t = 0.0
             # Start sound
             AudioManager.play(self.sound, t)
