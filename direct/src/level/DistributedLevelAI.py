@@ -51,7 +51,7 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
     def createEntityCreator(self):
         """Create the object that will be used to create Entities.
         Inheritors, override if desired."""
-        return EntityCreatorAI.EntityCreatorAI(self.air, level=self)
+        return EntityCreatorAI.EntityCreatorAI(level=self)
 
     def getEntityZoneId(self, entId):
         """figure out what network zoneId an entity is in"""

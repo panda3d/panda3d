@@ -8,20 +8,20 @@ from PythonUtil import Functor
 
 # some useful constructor functions
 # ctor functions for entities must take
-#  (air, level, entId, zoneId)
+#  (level, entId, zoneId)
 
 # this func creates distributed entities whose constructors take
 #  (air, level doId, entId)
 # and do not generate themselves
-def createDistributedEntity(AIclass, air, level, entId, zoneId):
+def createDistributedEntity(AIclass, level, entId, zoneId):
     """create a distributed entity and call generate"""
-    ent = AIclass(air, level, entId)
+    ent = AIclass(level, entId)
     ent.generateWithRequired(zoneId)
     return ent
 
 # this func creates local entities whose constructors take
 #  (level, entId)
-def createLocalEntity(AIclass, air, level, entId, zoneId):
+def createLocalEntity(AIclass, level, entId, zoneId):
     """create a local entity"""
     ent = AIclass(level, entId)
 
@@ -34,10 +34,9 @@ class EntityCreatorAI(EntityCreatorBase.EntityCreatorBase):
     """This class is responsible for creating instances of Entities on the AI.
     It can be subclassed to handle more Entity types."""
 
-    def __init__(self, air, level):
+    def __init__(self, level):
         EntityCreatorBase.EntityCreatorBase.__init__(self, level)
-        self.air = air
-
+        
         # create short aliases for ctor funcs
         cLE = createLocalEntity
 
@@ -51,4 +50,4 @@ class EntityCreatorAI(EntityCreatorBase.EntityCreatorBase):
     def doCreateEntity(self, ctor, entId):
         zoneId = self.level.getEntityZoneId(entId)
         self.notify.debug('creating entity %s in zone %s' % (entId, zoneId))
-        return ctor(self.air, self.level, entId, zoneId)
+        return ctor(self.level, entId, zoneId)
