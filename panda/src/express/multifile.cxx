@@ -23,6 +23,7 @@
 #include "streamReader.h"
 #include "datagram.h"
 #include "zStream.h"
+#include "encryptStream.h"
 
 #include <algorithm>
 
@@ -36,6 +37,18 @@ const size_t Multifile::_header_size = 6;
 // an older minor version may still be read.
 const int Multifile::_current_major_ver = 1;
 const int Multifile::_current_minor_ver = 0;
+
+// To confirm that the supplied password matches, we write the
+// Mutifile magic header at the beginning of the encrypted stream.
+// I suppose this does compromise the encryption security a tiny
+// bit by making it easy for crackers to validate that a
+// particular password guess matches or doesn't match, but the
+// encryption algorithm doesn't depend on this being difficult
+// anyway.
+const char Multifile::_encrypt_header[] = "crypty";
+const size_t Multifile::_encrypt_header_size = 6;
+
+
 
 //
 // A Multifile consists of the following elements:
@@ -65,9 +78,10 @@ const int Multifile::_current_minor_ver = 0;
 //   uint32     The address of this subfile's data record.
 //   uint32     The length in bytes of this subfile's data record.
 //   uint16     The Subfile::_flags member.
-//  [uint32]    The original, uncompressed length of the subfile, if it
-//               is compressed.  This field is only present if the
-//               SF_compressed bit is set in _flags.
+//  [uint32]    The original, uncompressed and unencrypted length of the
+//               subfile, if it is compressed or encrypted.  This field
+//               is only present if one or both of the SF_compressed
+//               or SF_encrypted bits are set in _flags.
 //   uint16     The length in bytes of the subfile's name.
 //   char[n]    The subfile's name.
 //
@@ -93,6 +107,7 @@ Multifile() {
   _needs_repack = false;
   _scale_factor = 1;
   _new_scale_factor = 1;
+  _encryption_flag = false;
   _file_major_ver = 0;
   _file_minor_ver = 0;
 }
@@ -441,6 +456,7 @@ flush() {
       Subfile *subfile = (*pi);
       _last_index = _next_index;
       _next_index = subfile->write_index(*_write, _next_index, this);
+      nassertr(_next_index == _write->tellp(), false);
       _next_index = pad_to_streampos(_next_index);
       nassertr(_next_index == _write->tellp(), false);
     }
@@ -450,12 +466,15 @@ flush() {
     StreamWriter writer(_write);
     writer.add_uint32(0);
     _next_index += 4;
+    nassertr(_next_index == _write->tellp(), false);
     _next_index = pad_to_streampos(_next_index);
 
     // All right, now write out each subfile's data.
     for (pi = _new_subfiles.begin(); pi != _new_subfiles.end(); ++pi) {
       Subfile *subfile = (*pi);
-      _next_index = subfile->write_data(*_write, _read, _next_index);
+      _next_index = subfile->write_data(*_write, _read, _next_index,
+                                        this);
+      nassertr(_next_index == _write->tellp(), false);
       _next_index = pad_to_streampos(_next_index);
       if (subfile->is_data_invalid()) {
         wrote_ok = false;
@@ -751,16 +770,31 @@ is_subfile_compressed(int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Multifile::get_subfile_compressed_length
+//     Function: Multifile::is_subfile_encrypted
+//       Access: Published
+//  Description: Returns true if the indicated subfile has been
+//               encrypted when stored within the archive, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+is_subfile_encrypted(int index) const {
+  nassertr(index >= 0 && index < (int)_subfiles.size(), 0);
+  return (_subfiles[index]->_flags & SF_encrypted) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::get_subfile_internal_length
 //       Access: Published
 //  Description: Returns the number of bytes the indicated subfile
 //               consumes within the archive.  For compressed
 //               subfiles, this will generally be smaller than
-//               get_subfile_length(); for noncompressed subfiles, it
-//               will be equal.
+//               get_subfile_length(); for encrypted (but
+//               noncompressed) subfiles, it may be slightly
+//               different, for noncompressed and nonencrypted
+//               subfiles, it will be equal.
 ////////////////////////////////////////////////////////////////////
 size_t Multifile::
-get_subfile_compressed_length(int index) const {
+get_subfile_internal_length(int index) const {
   nassertr(index >= 0 && index < (int)_subfiles.size(), 0);
   return _subfiles[index]->_data_length;
 }
@@ -811,6 +845,33 @@ open_read_subfile(int index) {
     new ISubStream(_read, subfile->_data_start,
                    subfile->_data_start + (streampos)subfile->_data_length); 
   
+  if ((subfile->_flags & SF_encrypted) != 0) {
+#ifndef HAVE_SSL
+    express_cat.error()
+      << "OpenSSL not compiled in; cannot read encrypted multifiles.\n";
+    delete stream;
+    return NULL;
+#else  // HAVE_SSL
+    // The subfile is encrypted.  So actually, return an
+    // IDecryptStream that wraps around the ISubStream.
+    IDecryptStream *wrapper = 
+      new IDecryptStream(stream, true, _encryption_password);
+    stream = wrapper;
+
+    // Validate the password by confirming that the encryption header
+    // matches.
+    char this_header[_encrypt_header_size];
+    stream->read(this_header, _encrypt_header_size);
+    if (stream->fail() || stream->gcount() != (unsigned)_encrypt_header_size ||
+        memcmp(this_header, _encrypt_header, _encrypt_header_size) != 0) {
+      express_cat.error()
+        << "Unable to decrypt subfile " << subfile->_name << ".\n";
+      delete stream;
+      return NULL;
+    }
+#endif  // HAVE_SSL
+  }
+
   if ((subfile->_flags & SF_compressed) != 0) {
 #ifndef HAVE_ZLIB
     express_cat.error()
@@ -1086,8 +1147,8 @@ extract_subfile_to(int index, ostream &out) {
 //  Description: Assumes the _write pointer is at the indicated fpos,
 //               rounds the fpos up to the next legitimate address
 //               (using normalize_streampos()), and writes enough
-//               zeros to the stream to fill the gap.  Returns the new
-//               fpos.
+//               zeroes to the stream to fill the gap.  Returns the
+//               new fpos.
 ////////////////////////////////////////////////////////////////////
 streampos Multifile::
 pad_to_streampos(streampos fpos) {
@@ -1098,6 +1159,7 @@ pad_to_streampos(streampos fpos) {
     _write->put(0);
     fpos += 1; // VC++ doesn't define streampos++ (!)
   }
+  nassertr(_write->tellp() == fpos, fpos);
   return fpos;
 }
 
@@ -1119,6 +1181,12 @@ add_new_subfile(Subfile *subfile, int compression_level) {
     subfile->_compression_level = compression_level;
 #endif  // HAVE_ZLIB
   }
+
+#ifdef HAVE_SSL
+  if (_encryption_flag) {
+    subfile->_flags |= SF_encrypted;
+  }
+#endif  // HAVE_SSL
 
   if (_next_index != (streampos)0) {
     // If we're adding a Subfile to an already-existing Multifile, we
@@ -1348,7 +1416,7 @@ read_index(istream &read, streampos fpos, Multifile *multifile) {
   _data_start = multifile->word_to_streampos(reader.get_uint32());
   _data_length = reader.get_uint32();
   _flags = reader.get_uint16();
-  if ((_flags & SF_compressed) != 0) {
+  if ((_flags & (SF_compressed | SF_encrypted)) != 0) {
     _uncompressed_length = reader.get_uint32();
   } else {
     _uncompressed_length = _data_length;
@@ -1400,7 +1468,7 @@ write_index(ostream &write, streampos fpos, Multifile *multifile) {
   dg.add_uint32(multifile->streampos_to_word(_data_start));
   dg.add_uint32(_data_length);
   dg.add_uint16(_flags);
-  if ((_flags & SF_compressed) != 0) {
+  if ((_flags & (SF_compressed | SF_encrypted)) != 0) {
     dg.add_uint32(_uncompressed_length);
   }
   dg.add_uint16(_name.length());
@@ -1449,7 +1517,8 @@ write_index(ostream &write, streampos fpos, Multifile *multifile) {
 //               contents of the Subfile during a repack() operation.
 ////////////////////////////////////////////////////////////////////
 streampos Multifile::Subfile::
-write_data(ostream &write, istream *read, streampos fpos) {
+write_data(ostream &write, istream *read, streampos fpos,
+           Multifile *multifile) {
   nassertr(write.tellp() == fpos, fpos);
 
   istream *source = _source;
@@ -1494,6 +1563,28 @@ write_data(ostream &write, istream *read, streampos fpos) {
   } else {
     // We do have source data.  Copy it in, and also measure its
     // length.
+    ostream *putter = &write;
+    bool delete_putter = false;
+
+#ifndef HAVE_SSL
+    // Without OpenSSL, we can't support encryption.  The flag had
+    // better not be set.
+    nassertr((_flags & SF_encrypted) == 0, fpos);
+#else  // HAVE_ZLIB
+    if ((_flags & SF_encrypted) != 0) {
+      // Write it encrypted.
+      putter = new OEncryptStream(putter, delete_putter, 
+                                  multifile->_encryption_password, 
+                                  multifile->_encryption_algorithm);
+      delete_putter = true;
+
+      // Also write the encrypt_header to the beginning of the
+      // encrypted stream, so we can validate the password on
+      // decryption.
+      putter->write(_encrypt_header, _encrypt_header_size);
+    }
+#endif  // HAVE_ZLIB
+
 #ifndef HAVE_ZLIB
     // Without ZLIB, we can't support compression.  The flag had
     // better not be set.
@@ -1501,31 +1592,27 @@ write_data(ostream &write, istream *read, streampos fpos) {
 #else  // HAVE_ZLIB
     if ((_flags & SF_compressed) != 0) {
       // Write it compressed.
-      streampos write_start = write.tellp();
-      _uncompressed_length = 0;
-      OCompressStream zstream(&write, false, _compression_level);
-      int byte = source->get();
-      while (!source->eof() && !source->fail()) {
-        _uncompressed_length++;
-        zstream.put(byte);
-        byte = source->get();
-      }
-      zstream.close();
-      streampos write_end = write.tellp();
-      _data_length = (size_t)(write_end - write_start);
-    } else
+      putter = new OCompressStream(putter, delete_putter, _compression_level);
+      delete_putter = true;
+    }
 #endif  // HAVE_ZLIB
-      {
-        // Write it uncompressed.
-        _uncompressed_length = 0;
-        int byte = source->get();
-        while (!source->eof() && !source->fail()) {
-          _uncompressed_length++;
-          write.put(byte);
-          byte = source->get();
-        }
-        _data_length = _uncompressed_length;
-      }
+
+    streampos write_start = fpos;
+    _uncompressed_length = 0;
+
+    int byte = source->get();
+    while (!source->eof() && !source->fail()) {
+      _uncompressed_length++;
+      putter->put(byte);
+      byte = source->get();
+    }
+
+    if (delete_putter) {
+      delete putter;
+    }
+
+    streampos write_end = write.tellp();
+    _data_length = (size_t)(write_end - write_start);
   }
 
   // We can't set _data_start until down here, after we have read the
@@ -1559,7 +1646,7 @@ rewrite_index_data_start(ostream &write, Multifile *multifile) {
   writer.add_uint32(multifile->streampos_to_word(_data_start));
   writer.add_uint32(_data_length);
   writer.add_uint16(_flags);
-  if ((_flags & SF_compressed) != 0) {
+  if ((_flags & (SF_compressed | SF_encrypted)) != 0) {
     writer.add_uint32(_uncompressed_length);
   }
 }

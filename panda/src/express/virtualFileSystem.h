@@ -54,7 +54,8 @@ PUBLISHED:
   };
 
   bool mount(Multifile *multifile, const string &mount_point, int flags);
-  bool mount(const Filename &physical_filename, const string &mount_point, int flags);
+  bool mount(const Filename &physical_filename, const string &mount_point, 
+             int flags, const string &password = "");
   int unmount(Multifile *multifile);
   int unmount(const Filename &physical_filename);
   int unmount_point(const string &mount_point);
@@ -94,6 +95,8 @@ private:
   Filename normalize_mount_point(const string &mount_point) const;
   bool found_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_file,
                    VirtualFileMount *mount, const string &local_filename) const;
+  static void parse_option(const string &option,
+                           int &flags, string &password);
 
   typedef pvector<VirtualFileMount *> Mounts;
   Mounts _mounts;

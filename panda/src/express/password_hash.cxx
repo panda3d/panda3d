@@ -1,0 +1,79 @@
+// Filename: password_hash.cxx
+// Created by:  drose (01Sep04)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+#include "password_hash.h"
+
+// The functions defined within this file rely on algorithms defined
+// within OpenSSL.
+#ifdef HAVE_SSL
+
+#include <openssl/evp.h>
+
+////////////////////////////////////////////////////////////////////
+//     Function: password_hash
+//       Access: Published
+//  Description: Generates a non-reversible hash of a particular
+//               length based on an arbitrary password and a random
+//               salt.  This is much stronger than the algorithm
+//               implemented by the standard Unix crypt().
+//
+//               The resulting hash can be useful for two primary
+//               purposes: (1) the hash may be recorded to disk in
+//               lieu of recording plaintext passwords, for validation
+//               against a password entered by the user later (which
+//               should produce the same hash given a particular
+//               salt), or (2) the hash may be used as input to an
+//               encryption algorithm that requires a key of a
+//               particular length.
+//
+//               password is the text password provided by a user.
+//
+//               salt should be a string of arbitrary random bytes (it
+//               need not be crypotographically secure, just different
+//               for each different hash).
+//
+//               iters should be a number in the thousands to indicate
+//               the number of times the hash algorithm should be
+//               applied.  In general, iters should be chosen to make
+//               the computation as expensive as it can be and still
+//               be tolerable, to reduce the attractiveness of a
+//               brute-force attack.
+//
+//               keylen is the length in bytes of the required key
+//               hash.
+////////////////////////////////////////////////////////////////////
+string
+password_hash(const string &password, const string &salt,
+              int iters, int keylen) {
+  nassertr(iters > 0 && keylen > 0, string());
+  unsigned char *dk = new unsigned char[keylen];
+  int result =
+    PKCS5_PBKDF2_HMAC_SHA1((const char *)password.data(), password.length(),
+                           (unsigned char *)salt.data(), salt.length(),
+                           iters, keylen, dk);
+  nassertr(result > 0, string());
+
+  string hash((char *)dk, keylen);
+  delete[] dk;
+  return hash;
+}
+
+
+
+#endif  // HAVE_SSL
+

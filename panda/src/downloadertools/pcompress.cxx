@@ -46,16 +46,6 @@ main(int argc, char *argv[]) {
     return 1;
   }
 
-  // Determine source file length
-  read_stream.seekg(0, ios::end);
-  int source_file_length = read_stream.tellg();
-  read_stream.seekg(0, ios::beg);
-
-  if (source_file_length == 0) {
-    cerr << "zero length file: " << source_file << endl;
-    return 1;
-  }
-
   // Open destination file
   ofstream write_stream;
   dest_file.set_binary();
@@ -64,6 +54,7 @@ main(int argc, char *argv[]) {
     return 1;
   }
 
+  bool fail = false;
   {
     OCompressStream compress(&write_stream, false);
     
@@ -72,13 +63,20 @@ main(int argc, char *argv[]) {
       compress.put(ch);
       ch = read_stream.get();
     }
+
+    fail = compress.fail() && !compress.eof();
   }
 
   read_stream.close();
   write_stream.close();
 
-  if (implicit_dest_file) {
-    source_file.unlink();
+  if (fail) {
+    dest_file.unlink();
+
+  } else {
+    if (implicit_dest_file) {
+      source_file.unlink();
+    }
   }
 
   return 0;

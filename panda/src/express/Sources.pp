@@ -23,6 +23,7 @@
     datagramGenerator.h \
     datagramIterator.I datagramIterator.h datagramSink.I datagramSink.h \
     dcast.T dcast.h \
+    encryptStreamBuf.h encryptStream.h encryptStream.I \
     error_utils.h \
     get_config_path.h \
     hashGeneratorBase.I hashGeneratorBase.h \
@@ -40,6 +41,7 @@
     namable.h nativeNumericData.I nativeNumericData.h \
     numeric_types.h \
     ordered_vector.h ordered_vector.I ordered_vector.T \
+    password_hash.h \
     patchfile.I patchfile.h \
     pointerTo.I pointerTo.h \
     pointerToArray.I pointerToArray.h \
@@ -79,7 +81,9 @@
     conditionVar.cxx conditionVarDummyImpl.cxx conditionVarNsprImpl.cxx \
     config_express.cxx datagram.cxx datagramGenerator.cxx \
     datagramIterator.cxx \
-    datagramSink.cxx dcast.cxx error_utils.cxx \
+    datagramSink.cxx dcast.cxx \
+    encryptStreamBuf.cxx encryptStream.cxx \
+    error_utils.cxx \
     get_config_path.cxx \
     hashGeneratorBase.cxx hashVal.cxx indent.cxx \
     memoryInfo.cxx memoryUsage.cxx memoryUsagePointerCounts.cxx \
@@ -88,6 +92,7 @@
     namable.cxx \
     nativeNumericData.cxx \
     ordered_vector.cxx \
+    password_hash.cxx \
     patchfile.cxx \
     profileTimer.cxx \
     pta_uchar.cxx \
@@ -125,6 +130,7 @@
     datagramGenerator.I datagramGenerator.h \
     datagramIterator.I datagramIterator.h \
     datagramSink.I datagramSink.h dcast.T dcast.h \
+    encryptStreamBuf.h encryptStream.h encryptStream.I \
     error_utils.h get_config_path.h \
     hashGeneratorBase.I \
     hashGeneratorBase.h hashVal.I hashVal.h \
@@ -139,6 +145,7 @@
     namable.I namable.h \
     nativeNumericData.I nativeNumericData.h numeric_types.h \
     ordered_vector.h ordered_vector.I ordered_vector.T \
+    password_hash.h \
     patchfile.I patchfile.h pointerTo.I pointerTo.h \
     pointerToArray.I pointerToArray.h profileTimer.I \
     profileTimer.h pta_uchar.h \

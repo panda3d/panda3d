@@ -14,6 +14,8 @@
 #include "datagramSink.cxx"
 #include "dcast.cxx"
 #include "error_utils.cxx"
+#include "encryptStreamBuf.cxx"
+#include "encryptStream.cxx"
 #include "get_config_path.cxx"
 #include "hashGeneratorBase.cxx"
 #include "hashVal.cxx"

@@ -28,21 +28,24 @@
 #include <stdio.h>
 
 
-bool create = false;      // -c
-bool append = false;      // -r
-bool update = false;      // -u
-bool list = false;        // -t
-bool extract = false;     // -x
-bool verbose = false;     // -v
-bool compress = false;    // -z
+bool create = false;           // -c
+bool append = false;           // -r
+bool update = false;           // -u
+bool list = false;             // -t
+bool extract = false;          // -x
+bool verbose = false;          // -v
+bool compress = false;         // -z
 int default_compression_level = 6;
-Filename multifile_name;  // -f
+Filename multifile_name;       // -f
 bool got_multifile_name = false;
-bool to_stdout = false;   // -O
-Filename chdir_to;        // -C
+bool to_stdout = false;        // -O
+bool encryption_flag = false;  // -e
+string password;               // -p
+bool got_password = false;
+Filename chdir_to;             // -C
 bool got_chdir_to = false;
-size_t scale_factor = 0;  // -F
-pset<string> dont_compress; // -Z
+size_t scale_factor = 0;       // -F
+pset<string> dont_compress;    // -Z
 
 // Default extensions not to compress.  May be overridden with -Z.
 string dont_compress_str = "jpg,mp3";
@@ -120,6 +123,21 @@ help() {
     "      decompressed automatically.  Also see -Z, which restricts which\n"
     "      subfiles will be compressed based on the filename extension.\n\n"
 
+    "  -e\n"
+    "      Encrypt subfiles as they are written to the Multifile using the password\n"
+    "      specified with -p, below.  Subfiles are encrypted individually, rather\n"
+    "      than encrypting the entire multifile, and different subfiles may be\n"
+    "      encrypted using different passwords (although this requires running\n"
+    "      multify multiple times).  It is not possible to encrypt the multifile's\n"
+    "      table of contents using this interface, but see the pencrypt program to\n"
+    "      encrypt the entire multifile after it has been generated).\n\n"
+
+
+    "  -p \"password\"\n"
+    "      Specifies the password to encrypt or decrypt subfiles.  If this is not\n"
+    "      specified, and passwords are required, the user will be prompted from\n"
+    "      standard input.\n\n"
+
     "  -F <scale_factor>\n"
     "      Specify a Multifile scale factor.  This is only necessary to support\n"
     "      Multifiles that will exceed 4GB in size.  The default scale factor is\n"
@@ -145,6 +163,18 @@ help() {
     "      generate slightly smaller files, but compression takes longer.  The\n"
     "      default is -" << default_compression_level << ".\n\n";
 }
+
+const string &
+get_password() {
+  if (!got_password) {
+    cerr << "Enter password: ";
+    getline(cin, password);
+    got_password = true;
+  }
+
+  return password;
+}
+
 
 bool
 is_named(const string &subfile_name, int argc, char *argv[]) {
@@ -243,6 +273,11 @@ add_files(int argc, char *argv[]) {
     }
   }
 
+  if (encryption_flag) {
+    multifile.set_encryption_flag(true);
+    multifile.set_encryption_password(get_password());
+  }
+
   if (scale_factor != 0 && scale_factor != multifile.get_scale_factor()) {
     cerr << "Setting scale factor to " << scale_factor << "\n";
     multifile.set_scale_factor(scale_factor);
@@ -309,7 +344,26 @@ extract_files(int argc, char *argv[]) {
 
   int num_subfiles = multifile.get_num_subfiles();
 
-  for (int i = 0; i < num_subfiles; i++) {
+  // First, check to see whether any of the named subfiles have been
+  // encrypted.  If any have, we may need to prompt the user to enter
+  // a password before we can extract them.
+  int i;
+  bool any_encrypted = false;
+  for (i = 0; i < num_subfiles && !any_encrypted; i++) {
+    string subfile_name = multifile.get_subfile_name(i);
+    if (is_named(subfile_name, argc, argv)) {
+      if (multifile.is_subfile_encrypted(i)) {
+        any_encrypted = true;
+      }
+    }
+  }
+
+  if (any_encrypted) {
+    multifile.set_encryption_password(get_password());
+  }
+
+  // Now walk back through the list and this time do the extraction.
+  for (i = 0; i < num_subfiles; i++) {
     string subfile_name = multifile.get_subfile_name(i);
     if (is_named(subfile_name, argc, argv)) {
       Filename filename = subfile_name;
@@ -352,21 +406,32 @@ list_files(int argc, char *argv[]) {
     for (int i = 0; i < num_subfiles; i++) {
       string subfile_name = multifile.get_subfile_name(i);
       if (is_named(subfile_name, argc, argv)) {
+        char encrypted_symbol = ' ';
+        if (multifile.is_subfile_encrypted(i)) {
+          encrypted_symbol = 'e';
+        }
         if (multifile.is_subfile_compressed(i)) {
           size_t orig_length = multifile.get_subfile_length(i);
-          size_t compressed_length = multifile.get_subfile_compressed_length(i);
+          size_t internal_length = multifile.get_subfile_internal_length(i);
           double ratio = 1.0;
           if (orig_length != 0) {
-            ratio = (double)compressed_length / (double)orig_length;
+            ratio = (double)internal_length / (double)orig_length;
           }
-          printf("%12d %3.0f%%  %s\n",
-                 multifile.get_subfile_length(i),
-                 100.0 - ratio * 100.0,
-                 subfile_name.c_str());
+          if (ratio > 1.0) {
+            printf("%12d worse %c %s\n",
+                   multifile.get_subfile_length(i),
+                   encrypted_symbol,
+                   subfile_name.c_str());
+          } else {
+            printf("%12d  %3.0f%% %c %s\n",
+                   multifile.get_subfile_length(i),
+                   100.0 - ratio * 100.0, encrypted_symbol,
+                   subfile_name.c_str());
+          }
         } else {
-          printf("%12d       %s\n", 
+          printf("%12d       %c %s\n", 
                  multifile.get_subfile_length(i),
-                 subfile_name.c_str());
+                 encrypted_symbol, subfile_name.c_str());
         }
       }
     }
@@ -424,7 +489,7 @@ main(int argc, char *argv[]) {
 
   extern char *optarg;
   extern int optind;
-  static const char *optflags = "crutxvz123456789Z:f:OC:F:h";
+  static const char *optflags = "crutxvz123456789Z:f:OC:ep:F:h";
   int flag = getopt(argc, argv, optflags);
   Filename rel_path;
   while (flag != EOF) {
@@ -499,6 +564,13 @@ main(int argc, char *argv[]) {
       break;
     case 'O':
       to_stdout = true;
+      break;
+    case 'e':
+      encryption_flag = true;
+      break;
+    case 'p':
+      password = optarg;
+      got_password = true;
       break;
     case 'F':
       {

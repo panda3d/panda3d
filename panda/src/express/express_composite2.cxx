@@ -1,4 +1,5 @@
 #include "patchfile.cxx"
+#include "password_hash.cxx"
 #include "pmutex.cxx"
 #include "profileTimer.cxx"
 #include "pta_uchar.cxx"

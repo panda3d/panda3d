@@ -83,7 +83,7 @@ mount(Multifile *multifile, const string &mount_point, int flags) {
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileSystem::
 mount(const Filename &physical_filename, const string &mount_point, 
-      int flags) {
+      int flags, const string &password) {
   if (!physical_filename.exists()) {
     express_cat.warning()
       << "Attempt to mount " << physical_filename << ", not found.\n";
@@ -102,6 +102,8 @@ mount(const Filename &physical_filename, const string &mount_point,
   } else {
     // It's not a directory; it must be a Multifile.
     Multifile *multifile = new Multifile;
+
+    multifile->set_encryption_password(password);
 
     // For now these are always opened read only.  Maybe later we'll
     // support read-write on Multifiles.
@@ -550,7 +552,21 @@ get_global_ptr() {
           mount_desc = ExecutionEnvironment::expand_string(mount_desc);
           Filename physical_filename = Filename::from_os_specific(mount_desc);
 
-          _global_ptr->mount(physical_filename, mount_point, 0);
+          int flags = 0;
+          string password;
+
+          // Split the options up by commas.
+          size_t p = 0;
+          size_t q = options.find(',', p);
+          while (q != string::npos) {
+            parse_option(options.substr(p, q - p),
+                         flags, password);
+            p = q + 1;
+            q = options.find(',', p);
+          }
+          parse_option(options.substr(p), flags, password);
+
+          _global_ptr->mount(physical_filename, mount_point, flags, password);
         }
       }
     }
@@ -668,3 +684,25 @@ found_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_file,
   return false;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::parse_option
+//       Access: Private, Static
+//  Description: Parses one of the option flags in the options list on
+//               the vfs-mount Config.prc line.
+////////////////////////////////////////////////////////////////////
+void VirtualFileSystem::
+parse_option(const string &option, int &flags, string &password) {
+  if (option == "0" || option.empty()) {
+    // 0 is the null option.
+
+  } else if (option == "ro") {
+    flags |= MF_read_only;
+
+  } else if (option.substr(0, 3) == "pw:") {
+    password = option.substr(3);
+
+  } else {
+    express_cat.warning()
+      << "Invalid option on vfs-mount: \"" << option << "\"\n";
+  }
+}

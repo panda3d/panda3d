@@ -88,3 +88,23 @@
     pdecompress.cxx
 
 #end bin_target
+
+#begin bin_target
+  #define TARGET pencrypt
+  #define BUILD_TARGET $[HAVE_SSL]
+  #define USE_PACKAGES $[USE_PACKAGES] ssl
+
+  #define SOURCES \
+    pencrypt.cxx
+
+#end bin_target
+
+#begin bin_target
+  #define TARGET pdecrypt
+  #define BUILD_TARGET $[HAVE_SSL]
+  #define USE_PACKAGES $[USE_PACKAGES] ssl
+
+  #define SOURCES \
+    pdecrypt.cxx
+
+#end bin_target

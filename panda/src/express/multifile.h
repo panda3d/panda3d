@@ -55,6 +55,13 @@ PUBLISHED:
   void set_scale_factor(size_t scale_factor);
   INLINE size_t get_scale_factor() const;
 
+  INLINE void set_encryption_flag(bool flag);
+  INLINE bool get_encryption_flag() const;
+  INLINE void set_encryption_password(const string &password);
+  INLINE const string &get_encryption_password() const;
+  INLINE void set_encryption_algorithm(const string &algorithm);
+  INLINE const string &get_encryption_algorithm() const;
+
   string add_subfile(const string &subfile_name, const Filename &filename,
                      int compression_level);
   string update_subfile(const string &subfile_name, const Filename &filename,
@@ -71,7 +78,8 @@ PUBLISHED:
   const string &get_subfile_name(int index) const;
   size_t get_subfile_length(int index) const;
   bool is_subfile_compressed(int index) const;
-  size_t get_subfile_compressed_length(int index) const;
+  bool is_subfile_encrypted(int index) const;
+  size_t get_subfile_internal_length(int index) const;
 
   INLINE string read_subfile(int index);
   istream *open_read_subfile(int index);
@@ -99,6 +107,7 @@ private:
     SF_index_invalid  = 0x0002,
     SF_data_invalid   = 0x0004,
     SF_compressed     = 0x0008,
+    SF_encrypted      = 0x0010,
   };
 
   class Subfile {
@@ -109,7 +118,8 @@ private:
                          Multifile *multfile);
     streampos write_index(ostream &write, streampos fpos,
                           Multifile *multifile);
-    streampos write_data(ostream &write, istream *read, streampos fpos);
+    streampos write_data(ostream &write, istream *read, streampos fpos,
+                         Multifile *multifile);
     void rewrite_index_data_start(ostream &write, Multifile *multifile);
     void rewrite_index_flags(ostream &write);
     INLINE bool is_deleted() const;
@@ -155,6 +165,10 @@ private:
   size_t _scale_factor;
   size_t _new_scale_factor;
 
+  bool _encryption_flag;
+  string _encryption_password;
+  string _encryption_algorithm;
+
   ifstream _read_file;
   ofstream _write_file;
   fstream _read_write_file;
@@ -167,6 +181,9 @@ private:
   static const size_t _header_size;
   static const int _current_major_ver;
   static const int _current_minor_ver;
+
+  static const char _encrypt_header[];
+  static const size_t _encrypt_header_size;
 
   friend class Subfile;
 };
