@@ -6,8 +6,10 @@ from Tkinter import *
 from AppShell import *
 from DirectGeometry import *
 from DirectSelection import *
+from DirectUtil import *
 from tkFileDialog import *
 import os
+import string
 import Pmw
 import Dial
 import Floater
@@ -26,7 +28,7 @@ class MopathRecorder(AppShell, PandaObject):
     # Override class variables here
     appname = 'Mopath Recorder Panel'
     frameWidth      = 450
-    frameHeight     = 535
+    frameHeight     = 550
     usecommandarea = 0
     usestatusarea  = 0
     count = 0
@@ -47,8 +49,7 @@ class MopathRecorder(AppShell, PandaObject):
         
         self.initialiseoptions(MopathRecorder)
 
-        self.selectRecordNodePathNamed('marker')
-        self.selectPlaybackNodePathNamed('marker')
+        self.selectNodePathNamed('camera')
 
     def appInit(self):
         self.name = self['name']
@@ -56,16 +57,22 @@ class MopathRecorder(AppShell, PandaObject):
         self.widgetDict = {}
         self.variableDict = {}
         # Initialize state
+        # The active node path
+        self.nodePath = self['nodePath']
+        self.playbackNodePath = self.nodePath
+        # The active node path's parent
+        self.nodePathParent = render
+        # Top level node path
         self.recorderNodePath = direct.group.attachNewNode(self.name)
+        # Temp CS for use in refinement/path extension
         self.tempCS = self.recorderNodePath.attachNewNode(
             'mopathRecorderTempCS')
-        self.nodePathParent = render
+        # Marker for use in playback
         self.playbackMarker = loader.loadModel('models/directmodels/smiley')
+        self.playbackMarker.setName('Playback Marker')
         self.playbackMarker.reparentTo(self.recorderNodePath)
         self.playbackMarker.hide()
-        self.playbackMarker.setName('Playback Marker')
-        # ID of selected object
-        self.manipulandumId = None
+        # Tangent marker
         self.tangentGroup = self.playbackMarker.attachNewNode('Tangent Group')
         self.tangentGroup.hide()
         self.tangentMarker = loader.loadModel('models/directmodels/sphere')
@@ -79,22 +86,17 @@ class MopathRecorder(AppShell, PandaObject):
 	self.tangentLines.moveTo(0,0,0)
         self.tangentLines.drawTo(0,0,0)
         self.tangentLines.create()
+        # Active node path dictionary
+        self.nodePathDict = {}
+        self.nodePathDict['marker'] = self.playbackMarker
+        self.nodePathDict['camera'] = direct.camera
+        self.nodePathDict['widget'] = direct.widget
+        self.nodePathDict['mopathRecorderTempCS'] = self.tempCS
+        self.nodePathNames = ['marker', 'camera', 'selected']
+        # ID of selected object
+        self.manipulandumId = None
         self.trace = LineNodePath(self.recorderNodePath)
-        self.playbackNodePath = None
-        self.lastPlaybackNodePath = None
-        # For node path selectors
-        self.recNodePathDict = {}
-        self.recNodePathDict['marker'] = self.playbackMarker
-        self.recNodePathDict['camera'] = direct.camera
-        self.recNodePathDict['widget'] = direct.widget
-        self.recNodePathDict['mopathRecorderTempCS'] = self.tempCS
-        self.recNodePathNames = ['marker', 'camera', 'selected']
-        self.pbNodePathDict = {}
-        self.pbNodePathDict['marker'] = self.playbackMarker
-        self.pbNodePathDict['camera'] = direct.camera
-        self.pbNodePathDict['widget'] = direct.widget
-        self.pbNodePathDict['mopathRecorderTempCS'] = self.tempCS
-        self.pbNodePathNames = ['marker', 'camera', 'selected']
+        self.oldPlaybackNodePath = None
         # Count of point sets recorded
         self.pointSet = []
         self.prePoints = []
@@ -126,15 +128,15 @@ class MopathRecorder(AppShell, PandaObject):
         self.nurbsCurveDrawer.setShowHull(0)
         self.nurbsCurveDrawer.setShowCvs(0)
         self.nurbsCurveDrawer.setNumTicks(0)
+        self.nurbsCurveDrawer.setTickScale(5.0)
         self.curveNodePath = self.recorderNodePath.attachNewNode(
             self.nurbsCurveDrawer.getGeomNode())
+        useDirectRenderStyle(self.curveNodePath)
         # Playback variables
         self.playbackTime = 0.0
         self.loopPlayback = 1
         self.playbackSF = 1.0
         # Sample variables
-        self.fEven = 0
-        self.fForward = 0
         self.desampleFrequency = 1
         self.numSamples = 100
         self.recordStart = 0.0
@@ -186,7 +188,7 @@ class MopathRecorder(AppShell, PandaObject):
             'Recorder', 'command',
             'Save current curve as a new point set',
             label = 'Save Point Set',
-            command = self.savePointSet)
+            command = self.extractPointSetFromCurveCollection)
         self.menuBar.addmenuitem(
             'Recorder', 'command',
             'Toggle widget visability',
@@ -198,7 +200,7 @@ class MopathRecorder(AppShell, PandaObject):
             label = 'Toggle Widget Mode',
             command = direct.manipulationControl.toggleObjectHandlesMode)
 
-        self.createComboBox(self.menuFrame, 'Mopath', 'Point Set',
+        self.createComboBox(self.menuFrame, 'Mopath', 'History',
                             'Select input points to fit curve to', '',
                             self.selectPointSetNamed, expand = 1)
 
@@ -221,17 +223,28 @@ class MopathRecorder(AppShell, PandaObject):
         self.bind(self.redoButton, 'Redo last operation')
 
         # Record button
-        frame = Frame(interior, relief = SUNKEN, borderwidth = 2)
-        widget = self.createCheckbutton(
-            frame, 'Recording', 'Record',
-            'On: path is being recorded', self.toggleRecord, 0,
-            side = LEFT, fill = BOTH, expand = 1)
-        widget.configure(foreground = 'Red', relief = RAISED, borderwidth = 2,
-                         anchor = CENTER, width = 16)
-        widget = self.createButton(frame, 'Recording', 'Add Keyframe',
-                                   'Add Keyframe To Current Path',
-                                   self.addKeyframe,
-                                   side = LEFT, expand = 1)
+        mainFrame = Frame(interior, relief = SUNKEN, borderwidth = 2)
+        frame = Frame(mainFrame)
+        # Active node path
+        # Button to select active node path
+        widget = self.createButton(frame, 'Recording', 'Node Path:',
+                                   'Select Active Mopath Node Path',
+                                   lambda s = self: direct.select(s.nodePath),
+                                   side = LEFT, expand = 0)
+        widget['relief'] = FLAT
+        self.nodePathMenu = Pmw.ComboBox(
+            frame, entry_width = 20,
+            selectioncommand = self.selectNodePathNamed,
+            scrolledlist_items = self.nodePathNames)
+        self.nodePathMenu.selectitem('camera')
+        self.nodePathMenuEntry = (
+            self.nodePathMenu.component('entryfield_entry'))
+        self.nodePathMenuBG = (
+            self.nodePathMenuEntry.configure('background')[3])
+        self.nodePathMenu.pack(side = LEFT, fill = X, expand = 1)
+        self.bind(self.nodePathMenu,
+                  'Select active node path used for recording and playback')
+        # Recording type
         self.recordingType = StringVar()
         self.recordingType.set('New Curve')
         widget = self.createRadiobutton(
@@ -249,35 +262,29 @@ class MopathRecorder(AppShell, PandaObject):
             'Recording', 'Extend',
             ('Next record session extends existing path'),
             self.recordingType, 'Extend', expand = 0)
-        frame.pack(expand = 1, fill = X, pady = 3)
+        frame.pack(fill = X, expand = 1)
+
+        frame = Frame(mainFrame)
+        widget = self.createCheckbutton(
+            frame, 'Recording', 'Record',
+            'On: path is being recorded', self.toggleRecord, 0,
+            side = LEFT, fill = BOTH, expand = 1)
+        widget.configure(foreground = 'Red', relief = RAISED, borderwidth = 2,
+                         anchor = CENTER, width = 16)
+        widget = self.createButton(frame, 'Recording', 'Add Keyframe',
+                                   'Add Keyframe To Current Path',
+                                   self.addKeyframe,
+                                   side = LEFT, expand = 1)
+        frame.pack(fill = X, expand = 1)
+        
+        mainFrame.pack(expand = 1, fill = X, pady = 3)
         
         # Playback controls
         playbackFrame = Frame(interior, relief = SUNKEN,
                               borderwidth = 2)
         Label(playbackFrame, text = 'PLAYBACK CONTROLS',
               font=('MSSansSerif', 12, 'bold')).pack(fill = X)
-        # Playback modifiers
-        frame = Frame(playbackFrame)
-        # Playback node path
-        self.pbNodePathMenu = Pmw.ComboBox(
-            frame, labelpos = W, label_text = 'Playback Node Path:',
-            entry_width = 20,
-            selectioncommand = self.selectPlaybackNodePathNamed,
-            scrolledlist_items = self.pbNodePathNames)
-        self.pbNodePathMenu.selectitem('marker')
-        self.pbNodePathMenuEntry = (
-            self.pbNodePathMenu.component('entryfield_entry'))
-        self.pbNodePathMenuBG = (
-            self.pbNodePathMenuEntry.configure('background')[3])
-        self.pbNodePathMenu.pack(side = LEFT, fill = X, expand = 1)
-        self.bind(self.pbNodePathMenu,
-                  'Select node path to fly along path during playback')
-        # Duration entry
-        self.createLabeledEntry(frame, 'Resample', 'Path Duration',
-                                'Set total curve duration',
-                                command = self.setPathDuration)
-        frame.pack(fill = X, expand = 1)
-        
+        # Main playback control slider
         widget = self.createEntryScale(
             playbackFrame, 'Playback', 'Time', 'Set current playback time',
             resolution = 0.01, command = self.playbackGoTo, side = TOP)
@@ -285,19 +292,11 @@ class MopathRecorder(AppShell, PandaObject):
         # Kill playback task if drag slider
         widget.component('scale').bind(
             '<ButtonPress-1>', lambda e = None, s = self: s.stopPlayback())
-        
-        # Speed control
-        frame = Frame(playbackFrame)
-        Label(frame, text = 'PB Speed Vernier').pack(side = LEFT, expand = 0)
-        self.speedScale = Scale(frame, from_ = -1, to = 1,
-                                resolution = 0.01, showvalue = 0,
-                                width = 10, orient = 'horizontal',
-                                command = self.setPlaybackSF)
-        self.speedScale.pack(fill = X, expand = 0)
-        self.speedScale.bind('<ButtonRelease-1>',
-                             lambda e = None, s = self: s.speedScale.set(0.0))
-        frame.pack(fill = X, expand = 1)
-        
+        # Jam duration entry into entry scale
+        self.createLabeledEntry(widget.labelFrame, 'Resample', 'Path Duration',
+                                'Set total curve duration',
+                                command = self.setPathDuration,
+                                side = LEFT, expand = 0)
         # Start stop buttons
         frame = Frame(playbackFrame)
         widget = self.createButton(frame, 'Playback', '<<',
@@ -322,80 +321,38 @@ class MopathRecorder(AppShell, PandaObject):
                                side = LEFT, fill = BOTH, expand = 0)
         frame.pack(fill = X, expand = 1)
 
+        # Speed control
+        frame = Frame(playbackFrame)
+        widget = Button(frame, text = 'PB Speed Vernier', relief = FLAT,
+                        command = lambda s = self: s.setSpeedScale(1.0))
+        widget.pack(side = LEFT, expand = 0)
+        self.speedScale = Scale(frame, from_ = -1, to = 1,
+                                resolution = 0.01, showvalue = 0,
+                                width = 10, orient = 'horizontal',
+                                command = self.setPlaybackSF)
+        self.speedScale.pack(side = LEFT, fill = X, expand = 1)
+        self.speedVar = StringVar()
+        self.speedVar.set("0.00")
+        self.speedEntry = Entry(frame, textvariable = self.speedVar,
+                                width = 8)
+        self.speedEntry.bind(
+            '<Return>',
+            lambda e = None, s = self: s.setSpeedScale(
+            string.atof(s.speedVar.get())))
+        self.speedEntry.pack(side = LEFT, expand = 0)
+        frame.pack(fill = X, expand = 1)
+        
         playbackFrame.pack(fill = X, pady = 2)
 
         # Create notebook pages
         self.mainNotebook = Pmw.NoteBook(interior)
         self.mainNotebook.pack(fill = BOTH, expand = 1)
-        self.recordPage = self.mainNotebook.add('Record')
         self.resamplePage = self.mainNotebook.add('Resample')
         self.refinePage = self.mainNotebook.add('Refine')
         self.extendPage = self.mainNotebook.add('Extend')
         self.cropPage = self.mainNotebook.add('Crop')
-        self.stylePage = self.mainNotebook.add('Style')
-
-        ## RECORD PAGE ##
-        recordFrame = Frame(self.recordPage, relief = SUNKEN,
-                            borderwidth = 2)
-        label = Label(recordFrame, text = 'RECORDING OPTIONS',
-                      font=('MSSansSerif', 12, 'bold'))
-        label.pack(fill = X)
-        # Recording Buttons
-        # Record node path
-        frame = Frame(recordFrame)        
-        self.recNodePathMenu = Pmw.ComboBox(
-            frame, labelpos = W, label_text = 'Record Node Path:',
-            label_width = 16, label_anchor = W, entry_width = 20, 
-            selectioncommand = self.selectRecordNodePathNamed,
-            scrolledlist_items = self.recNodePathNames)
-        self.recNodePathMenu.selectitem('marker')
-        self.recNodePathMenuEntry = (
-            self.recNodePathMenu.component('entryfield_entry'))
-        self.recNodePathMenuBG = (
-            self.recNodePathMenuEntry.configure('background')[3])
-        self.bind(self.recNodePathMenu,
-                  'Select node path to track when recording a new curve')
-        self.recNodePathMenu.pack(side = LEFT, expand = 0)
-        self.createButton(frame, 'Recording', 'Select',
-                          'Select Current Record Node Path',
-                          lambda s = self: direct.select(s['nodePath']))
-        frame.pack(expand = 1, fill = X)
-
-        # Hooks
-        frame = Frame(recordFrame)
-        widget = self.createLabeledEntry(
-            frame, 'Recording', 'Record Hook',
-            'Hook used to start/stop recording',
-            initialValue = self.startStopHook,
-            command = self.setStartStopHook)[0]
-        label = self.getWidget('Recording', 'Record Hook-Label')
-        label.configure(width = 16, anchor = W)
-        self.setStartStopHook()
-        widget = self.createLabeledEntry(
-            frame, 'Recording', 'Keyframe Hook',
-            'Hook used to add a new keyframe',
-            initialValue = self.keyframeHook,
-            command = self.setKeyframeHook)[0]
-        label = self.getWidget('Recording', 'Keyframe Hook-Label')
-        label.configure(width = 16, anchor = W)
-        self.setKeyframeHook()
-        frame.pack(expand = 1, fill = X)
-        # PreRecordFunc
-        frame = Frame(recordFrame)
-        widget = self.createComboBox(
-            frame, 'Recording', 'Pre-Record Func',
-            'Function called before sampling each point',
-            PRF_UTILITIES, self.setPreRecordFunc,
-            history = 1, expand = 1)
-        widget.configure(label_width = 16, label_anchor = W)
-        widget.configure(entryfield_entry_state = 'normal')
-        self.createCheckbutton(frame, 'Recording', 'PRF Active',
-                               'On: Pre Record Func enabled',
-                               None, 0,
-                               side = LEFT, fill = BOTH, expand = 0)
-        frame.pack(expand = 1, fill = X)
-        # Pack record frame
-        recordFrame.pack(fill = X, pady = 2)
+        self.drawPage = self.mainNotebook.add('Draw')
+        self.optionsPage = self.mainNotebook.add('Options')
 
         ## RESAMPLE PAGE
         label = Label(self.resamplePage, text = 'RESAMPLE CURVE',
@@ -410,22 +367,22 @@ class MopathRecorder(AppShell, PandaObject):
         widget = self.createEntryScale(
             resampleFrame, 'Resample', 'Num. Samples',
             'Number of samples in resampled curve',
-            resolution = 1, min = 2, max = 1000, command = self.setNumSamples,
-            side = LEFT)
+            resolution = 1, min = 2, max = 1000, command = self.setNumSamples)
         widget.component('hull')['relief'] = RIDGE
         widget.onRelease = widget.onReturnRelease = self.sampleCurve
+
         frame = Frame(resampleFrame)
-        self.createCheckbutton(frame, 'Resample', 'Even',
-                               'On: Resulting path has constant velocity',
-                               self.setEven, self.fEven,
-                               side = TOP, fill = BOTH, expand = 0)
-        self.createCheckbutton(
-            frame, 'Resample', 'Forward',
-            'On: Resulting hpr curve faces along xyz tangent',
-            self.setForward, self.fForward,
-            side = TOP, fill = BOTH, expand = 0)
+        self.createButton(
+            frame, 'Resample', 'Make Even',
+            'Apply timewarp so resulting path has constant velocity',
+            self.makeEven, side = LEFT, fill = X, expand = 1)
+        self.createButton(
+            frame, 'Resample', 'Face Forward',
+            'Compute HPR so resulting hpr curve faces along xyz tangent',
+            self.faceForward, side = LEFT, fill = X, expand = 1)
         frame.pack(fill = X, expand = 0)
         resampleFrame.pack(fill = X, expand = 0, pady = 2)
+        
         # Desample
         desampleFrame = Frame(
             self.resamplePage, relief = SUNKEN, borderwidth = 2)
@@ -527,39 +484,42 @@ class MopathRecorder(AppShell, PandaObject):
                           self.cropCurve, fill = NONE)
         cropFrame.pack(fill = X)
 
-        ## STYLE PAGE ##
-        styleFrame = Frame(self.stylePage, relief = SUNKEN,
+        ## DRAW PAGE ##
+        drawFrame = Frame(self.drawPage, relief = SUNKEN,
                            borderwidth = 2)
-        label = Label(styleFrame, text = 'CURVE RENDERINNG STYLE',
+
+        self.sf = Pmw.ScrolledFrame(self.drawPage, horizflex = 'elastic')
+        self.sf.pack(fill = 'both', expand = 1)
+        sfFrame = self.sf.interior()
+
+        label = Label(sfFrame, text = 'CURVE RENDERING STYLE',
                       font=('MSSansSerif', 12, 'bold'))
         label.pack(fill = X)
 
-        self.sf = Pmw.ScrolledFrame(styleFrame, horizflex = 'elastic')
-        self.sf.pack(fill = 'both', expand = 1)
-        sfFrame = self.sf.interior()
         frame = Frame(sfFrame)
+        Label(frame, text = 'SHOW:').pack(side = LEFT, expand = 0)
         widget = self.createCheckbutton(
-            frame, 'Style', 'Show Path',
+            frame, 'Style', 'Path',
             'On: path is visible', self.setPathVis, 1,
             side = LEFT, fill = X, expand = 1)
         widget = self.createCheckbutton(
-            frame, 'Style', 'Show Knots',
+            frame, 'Style', 'Knots',
             'On: path knots are visible', self.setKnotVis, 1,
             side = LEFT, fill = X, expand = 1)
         widget = self.createCheckbutton(
-            frame, 'Style', 'Show CVs',
+            frame, 'Style', 'CVs',
             'On: path CVs are visible', self.setCvVis, 0,
             side = LEFT, fill = X, expand = 1)
         widget = self.createCheckbutton(
-            frame, 'Style', 'Show Hull',
+            frame, 'Style', 'Hull',
             'On: path hull is visible', self.setHullVis, 0,
             side = LEFT, fill = X, expand = 1)
         widget = self.createCheckbutton(
-            frame, 'Style', 'Show Trace',
+            frame, 'Style', 'Trace',
             'On: record is visible', self.setTraceVis, 0,
             side = LEFT, fill = X, expand = 1)
         widget = self.createCheckbutton(
-            frame, 'Style', 'Show Marker',
+            frame, 'Style', 'Marker',
             'On: playback marker is visible', self.setMarkerVis, 0,
             side = LEFT, fill = X, expand = 1)
         frame.pack(fill = X, expand = 1)
@@ -582,7 +542,7 @@ class MopathRecorder(AppShell, PandaObject):
             sfFrame, 'Style', 'Tick Scale',
             'Set visible size of time tick marks',
             min = 0.01, max = 100.0, resolution = 0.01,
-            initialValue = 1.0,
+            initialValue = 5.0,
             command = self.setTickScale, side = TOP)
         widget.component('hull')['relief'] = RIDGE
 	self.createColorEntry(
@@ -611,12 +571,56 @@ class MopathRecorder(AppShell, PandaObject):
             command = self.setHullColor,
             initialValue = [255.0,128.0,128.0,255.0])
 
-        styleFrame.pack(fill = X)
+        #drawFrame.pack(fill = X)
+
+        ## OPTIONS PAGE ##
+        optionsFrame = Frame(self.optionsPage, relief = SUNKEN,
+                            borderwidth = 2)
+        label = Label(optionsFrame, text = 'RECORDING OPTIONS',
+                      font=('MSSansSerif', 12, 'bold'))
+        label.pack(fill = X)
+        # Hooks
+        frame = Frame(optionsFrame)
+        widget = self.createLabeledEntry(
+            frame, 'Recording', 'Record Hook',
+            'Hook used to start/stop recording',
+            initialValue = self.startStopHook,
+            command = self.setStartStopHook)[0]
+        label = self.getWidget('Recording', 'Record Hook-Label')
+        label.configure(width = 16, anchor = W)
+        self.setStartStopHook()
+        widget = self.createLabeledEntry(
+            frame, 'Recording', 'Keyframe Hook',
+            'Hook used to add a new keyframe',
+            initialValue = self.keyframeHook,
+            command = self.setKeyframeHook)[0]
+        label = self.getWidget('Recording', 'Keyframe Hook-Label')
+        label.configure(width = 16, anchor = W)
+        self.setKeyframeHook()
+        frame.pack(expand = 1, fill = X)
+        # PreRecordFunc
+        frame = Frame(optionsFrame)
+        widget = self.createComboBox(
+            frame, 'Recording', 'Pre-Record Func',
+            'Function called before sampling each point',
+            PRF_UTILITIES, self.setPreRecordFunc,
+            history = 1, expand = 1)
+        widget.configure(label_width = 16, label_anchor = W)
+        widget.configure(entryfield_entry_state = 'normal')
+        # Initialize preRecordFunc
+        self.preRecordFunc = eval(PRF_UTILITIES[0])
+        self.createCheckbutton(frame, 'Recording', 'PRF Active',
+                               'On: Pre Record Func enabled',
+                               None, 0,
+                               side = LEFT, fill = BOTH, expand = 0)
+        frame.pack(expand = 1, fill = X)
+        # Pack record frame
+        optionsFrame.pack(fill = X, pady = 2)
 
         self.mainNotebook.setnaturalsize()        
         
     def pushUndo(self, fResetRedo = 1):
-        direct.pushUndo([self['nodePath']])
+        direct.pushUndo([self.nodePath])
 
     def undoHook(self):
         # Reflect new changes
@@ -631,7 +635,7 @@ class MopathRecorder(AppShell, PandaObject):
         self.undoButton.configure(state = 'disabled')
 
     def pushRedo(self):
-        direct.pushRedo([self['nodePath']])
+        direct.pushRedo([self.nodePath])
         
     def redoHook(self):
         # Reflect new changes
@@ -685,12 +689,10 @@ class MopathRecorder(AppShell, PandaObject):
                 hpr = Point3(0)
                 pos = self.playbackMarker.getPos(self.nodePathParent)
                 hpr = self.playbackMarker.getHpr(self.nodePathParent)
-                self.curveCollection.getXyzCurve().adjustPoint(
-                    self.playbackTime,
-                    pos[0], pos[1], pos[2])
-                self.curveCollection.getHprCurve().adjustPoint(
-                    self.playbackTime,
-                    hpr[0], hpr[1], hpr[2])
+                self.curveCollection.adjustXyz(
+                    self.playbackTime, VBase3(pos[0], pos[1], pos[2]))
+                self.curveCollection.adjustHpr(
+                    self.playbackTime, VBase3(hpr[0], hpr[1], hpr[2]))
                 # Note: this calls recompute on the curves
                 self.nurbsCurveDrawer.draw()
             # Update tangent
@@ -756,26 +758,12 @@ class MopathRecorder(AppShell, PandaObject):
         taskMgr.removeTasksNamed(self.name + '-playbackTask')
         taskMgr.removeTasksNamed(self.name + '-curveEditTask')
 
-    def savePointSet(self):
-        # Use curve to compute default point set at 30 fps
-        # Keep a handle on the original curve
-        curveCollection = self.curveCollection
-        # Sample curves
-        self.maxT = self.curveCollection.getMaxT()
-        self.setNumSamples(self.maxT * 30.0)
-        self.sampleCurve()
-        # Restore curves to those loaded in
-        self.curveCollection = curveCollection
-        # Redraw
-        self.nurbsCurveDrawer.setCurves(self.curveCollection)
-        self.nurbsCurveDrawer.draw()
-
     def createNewPointSet(self):
         self.pointSetName = self.name + '-ps-' + `self.pointSetCount`
         # Update dictionary and record pointer to new point set
         self.pointSet = self.pointSetDict[self.pointSetName] = []
         # Update combo box
-        comboBox = self.getWidget('Mopath', 'Point Set')
+        comboBox = self.getWidget('Mopath', 'History')
         scrolledList = comboBox.component('scrolledlist')
         listbox = scrolledList.component('listbox')
         names = list(listbox.get(0,'end'))
@@ -784,6 +772,28 @@ class MopathRecorder(AppShell, PandaObject):
         comboBox.selectitem(self.pointSetName)
         # Update count
         self.pointSetCount += 1
+
+    def extractPointSetFromCurveFitter(self):
+        # Get new point set based on newly created curve
+        self.createNewPointSet()
+        for i in range(self.curveFitter.getNumSamples()):
+            time = self.curveFitter.getSampleT(i)
+            pos = Point3(self.curveFitter.getSampleXyz(i))
+            hpr = Point3(self.curveFitter.getSampleHpr(i))
+            self.pointSet.append([time, pos, hpr])
+
+    def extractPointSetFromCurveCollection(self):
+        # Use curve to compute new point set
+        # Record maxT
+        self.maxT = self.curveCollection.getMaxT()
+        # Determine num samples
+        # Limit point set to 1000 points and samples per second to 30
+        samplesPerSegment = min(30.0, 1000.0/self.curveCollection.getMaxT())
+        self.setNumSamples(self.maxT * samplesPerSegment)
+        # Sample the curve but don't create a new curve collection
+        self.sampleCurve(fCompute = 0)
+        # Update widgets based on new data
+        self.updateWidgets()
 
     def selectPointSetNamed(self, name):
         self.pointSet = self.pointSetDict.get(name, None)
@@ -797,31 +807,31 @@ class MopathRecorder(AppShell, PandaObject):
         self.computeCurves()
 
     def setPathVis(self):
-        if self.getVariable('Style', 'Show Path').get():
+        if self.getVariable('Style', 'Path').get():
             self.curveNodePath.show()
         else:
             self.curveNodePath.hide()
         
     def setKnotVis(self):
         self.nurbsCurveDrawer.setShowKnots(
-            self.getVariable('Style', 'Show Knots').get())
+            self.getVariable('Style', 'Knots').get())
 
     def setCvVis(self):
         self.nurbsCurveDrawer.setShowCvs(
-            self.getVariable('Style', 'Show CVs').get())
+            self.getVariable('Style', 'CVs').get())
         
     def setHullVis(self):
         self.nurbsCurveDrawer.setShowHull(
-            self.getVariable('Style', 'Show Hull').get())
+            self.getVariable('Style', 'Hull').get())
         
     def setTraceVis(self):
-        if self.getVariable('Style', 'Show Trace').get():
+        if self.getVariable('Style', 'Trace').get():
             self.trace.show()
         else:
             self.trace.hide()
 
     def setMarkerVis(self):
-        if self.getVariable('Style', 'Show Marker').get():
+        if self.getVariable('Style', 'Marker').get():
             self.playbackMarker.reparentTo(self.recorderNodePath)
         else:
             self.playbackMarker.reparentTo(hidden)
@@ -924,17 +934,13 @@ class MopathRecorder(AppShell, PandaObject):
                 self.disableKeyframeButton()
             # Create a new point set to hold raw data
             self.createNewPointSet()
-            # Record nopath's parent
-            self.nodePathParent = self['nodePath'].getParent()
-            # Put curve drawer under record node path's parent
-            self.curveNodePath.reparentTo(self.nodePathParent)
             # Clear out old trace, get ready to draw new
             self.initTrace()
             # Keyframe mode?
             if (self.samplingMode == 'Keyframe'):
                 # Record first point
                 self.lastPos.assign(Point3(
-                    self['nodePath'].getPos(self.nodePathParent)))
+                    self.nodePath.getPos(self.nodePathParent)))
                 # Init delta time
                 self.deltaTime = 0.0
                 # Record first point
@@ -948,12 +954,12 @@ class MopathRecorder(AppShell, PandaObject):
                     # Update widget to reflect new value
                     self.getVariable('Playback', 'Loop').set(0)
                     # Select tempCS as playback nodepath
-                    self.lastPlaybackNodePath = self.playbackNodePath
-                    self.selectPlaybackNodePathNamed('mopathRecorderTempCS')
+                    self.oldPlaybackNodePath = self.playbackNodePath
+                    self.setPlaybackNodePath(self.tempCS)
                     # Parent record node path to temp
-                    self['nodePath'].reparentTo(self.tempCS)
+                    self.nodePath.reparentTo(self.playbackNodePath)
                     # Align with temp
-                    self['nodePath'].setPosHpr(0,0,0,0,0,0)
+                    self.nodePath.setPosHpr(0,0,0,0,0,0)
                     # Set playback start to self.recordStart
                     self.playbackGoTo(self.recordStart)
                     # start flying nodePath along path
@@ -969,12 +975,9 @@ class MopathRecorder(AppShell, PandaObject):
                 if ((self.recordingType.get() == 'Refine') or
                     (self.recordingType.get() == 'Extend')):
                     # Reparent node path back to parent
-                    self['nodePath'].wrtReparentTo(self.nodePathParent)
+                    self.nodePath.wrtReparentTo(self.nodePathParent)
                     # Restore playback Node Path
-                    self.playbackNodePath = self.lastPlaybackNodePath
-                    # See if it was the playback marker
-                    if self.playbackNodePath.id() == self.playbackMarker.id():
-                        self.playbackMarker.show()
+                    self.setPlaybackNodePath(self.oldPlaybackNodePath)
             else:
                 # Add last point
                 self.addKeyframe(0)
@@ -996,7 +999,8 @@ class MopathRecorder(AppShell, PandaObject):
             
     def recordTask(self, state):
         # Record raw data point
-        time = self.recordStart + (globalClock.getFrameTime() - state.startTime)
+        time = self.recordStart + (
+            globalClock.getFrameTime() - state.startTime)
         self.recordPoint(time)
         return Task.cont
 
@@ -1010,7 +1014,7 @@ class MopathRecorder(AppShell, PandaObject):
             self.toggleRecordVar()
         else:
             # Use distance as a time
-            pos = self['nodePath'].getPos(self.nodePathParent)
+            pos = self.nodePath.getPos(self.nodePathParent)
             deltaPos = Vec3(pos - self.lastPos).length()
             if deltaPos != 0:
                 # If we've moved at all, use delta Pos as time
@@ -1040,30 +1044,38 @@ class MopathRecorder(AppShell, PandaObject):
             (self.preRecordFunc != None)):
             self.preRecordFunc()
         # Get point
-        pos = self['nodePath'].getPos(self.nodePathParent)
-        hpr = self['nodePath'].getHpr(self.nodePathParent)
-        # Blend between recordNodePath and self['nodePath']
+        pos = self.nodePath.getPos(self.nodePathParent)
+        hpr = self.nodePath.getHpr(self.nodePathParent)
+        qNP = Quat()
+        qNP.setHpr(hpr)
+        # Blend between recordNodePath and self.nodePath
         if ((self.recordingType.get() == 'Refine') or
             (self.recordingType.get() == 'Extend')):
             if ((time < self.controlStart) and
                 ((self.controlStart - self.recordStart) != 0.0)):
                 rPos = self.playbackNodePath.getPos(self.nodePathParent)
                 rHpr = self.playbackNodePath.getHpr(self.nodePathParent)
+                qR = Quat()
+                qR.setHpr(rHpr)
                 t = self.easeInOut(((time - self.recordStart)/
                                     (self.controlStart - self.recordStart)))
                 # Transition between the recorded node path and the driven one
                 pos = (rPos * (1 - t)) + (pos * t)
-                hpr = (rHpr * (1 - t)) + (hpr * t)
+                q = qSlerp(qR, qNP, t)
+                hpr.assign(q.getHpr())
             elif ((self.recordingType.get() == 'Refine') and
                   (time > self.controlStop) and
                   ((self.recordStop - self.controlStop) != 0.0)):
                 rPos = self.playbackNodePath.getPos(self.nodePathParent)
                 rHpr = self.playbackNodePath.getHpr(self.nodePathParent)
+                qR = Quat()
+                qR.setHpr(rHpr)
                 t = self.easeInOut(((time - self.controlStop)/
                                     (self.recordStop - self.controlStop)))
                 # Transition between the recorded node path and the driven one
                 pos = (pos * (1 - t)) + (rPos * t)
-                hpr = (hpr * (1 - t)) + (rHpr * t)
+                q = qSlerp(qNP, qR, t)
+                hpr.assign(q.getHpr())
         # Add it to the point set
         self.pointSet.append([time, pos, hpr])
         # Add it to the curve fitters
@@ -1145,24 +1157,24 @@ class MopathRecorder(AppShell, PandaObject):
         widget.set(numSamples, 0)
         self.fAdjustingValues = 0
 
-    def selectRecordNodePathNamed(self, name):
+    def selectNodePathNamed(self, name):
         nodePath = None
         if name == 'init':
-            nodePath = self['nodePath']
+            nodePath = self.nodePath
             # Add Combo box entry for the initial node path
-            self.addRecordNodePath(nodePath)
+            self.addNodePath(nodePath)
         elif name == 'selected':
             nodePath = direct.selected.last
             # Add Combo box entry for this selected object
-            self.addRecordNodePath(nodePath)
+            self.addNodePath(nodePath)
         else:
-            nodePath = self.recNodePathDict.get(name, None)
+            nodePath = self.nodePathDict.get(name, None)
             if (nodePath == None):
                 # See if this evaluates into a node path
                 try:
                     nodePath = eval(name)
                     if isinstance(nodePath, NodePath):
-                        self.addRecordNodePath(nodePath)
+                        self.addNodePath(nodePath)
                     else:
                         # Good eval but not a node path, give up
                         nodePath = None
@@ -1170,59 +1182,12 @@ class MopathRecorder(AppShell, PandaObject):
                     # Bogus eval
                     nodePath = None
                     # Clear bogus entry from listbox
-                    listbox = self.recNodePathMenu.component('scrolledlist')
-                    listbox.setlist(self.recNodePathNames)
+                    listbox = self.nodePathMenu.component('scrolledlist')
+                    listbox.setlist(self.nodePathNames)
             else:
                 if name == 'widget':
                     # Record relationship between selected nodes and widget
                     direct.selected.getWrtAll()                    
-                if name == 'marker':
-                    self.playbackMarker.show()
-                else:
-                    self.playbackMarker.hide()
-        # Update active node path
-        self.setRecordNodePath(nodePath)
-
-    def setRecordNodePath(self, nodePath):
-        self['nodePath'] = nodePath
-        if self['nodePath']:
-            self.recNodePathMenuEntry.configure(
-                background = self.recNodePathMenuBG)
-        else:
-            # Flash entry
-            self.recNodePathMenuEntry.configure(background = 'Pink')
-
-    def selectPlaybackNodePathNamed(self, name):
-        nodePath = None
-        if name == 'init':
-            nodePath = self['nodePath']
-            # Add Combo box entry for the initial node path
-            self.addPlaybackNodePath(nodePath)
-        elif name == 'selected':
-            nodePath = direct.selected.last
-            # Add Combo box entry for this selected object
-            self.addPlaybackNodePath(nodePath)
-        else:
-            nodePath = self.pbNodePathDict.get(name, None)
-            if (nodePath == None):
-                # See if this evaluates into a node path
-                try:
-                    nodePath = eval(name)
-                    if isinstance(nodePath, NodePath):
-                        self.addPlaybackNodePath(nodePath)
-                    else:
-                        # Good eval but not a node path, give up
-                        nodePath = None
-                except:
-                    # Bogus eval
-                    nodePath = None
-                    # Clear bogus entry from listbox
-                    listbox = self.pbNodePathMenu.component('scrolledlist')
-                    listbox.setlist(self.pbNodePathNames)
-            else:
-                if name == 'widget':
-                    # Record relationship between selected nodes and widget
-                    direct.selected.getWrtAll()
                 if name == 'marker':
                     self.playbackMarker.show()
                     # Initialize tangent marker position
@@ -1234,24 +1199,28 @@ class MopathRecorder(AppShell, PandaObject):
                 else:
                     self.playbackMarker.hide()
         # Update active node path
-        self.setPlaybackNodePath(nodePath)
+        self.setNodePath(nodePath)
+
+    def setNodePath(self, nodePath):
+        self.playbackNodePath = self.nodePath = nodePath
+        if self.nodePath:
+            # Record nopath's parent
+            self.nodePathParent = self.nodePath.getParent()
+            # Put curve drawer under record node path's parent
+            self.curveNodePath.reparentTo(self.nodePathParent)
+            # Set entry color
+            self.nodePathMenuEntry.configure(
+                background = self.nodePathMenuBG)
+        else:
+            # Flash entry
+            self.nodePathMenuEntry.configure(background = 'Pink')
 
     def setPlaybackNodePath(self, nodePath):
         self.playbackNodePath = nodePath
-        if self.playbackNodePath:
-            self.pbNodePathMenuEntry.configure(
-                background = self.pbNodePathMenuBG)
-        else:
-            # Flash entry
-            self.pbNodePathMenuEntry.configure(background = 'Pink')
 
-    def addRecordNodePath(self, nodePath):
-        self.addNodePathToDict(nodePath, self.recNodePathNames,
-                               self.recNodePathMenu, self.recNodePathDict)
-
-    def addPlaybackNodePath(self, nodePath):
-        self.addNodePathToDict(nodePath, self.pbNodePathNames,
-                               self.pbNodePathMenu, self.pbNodePathDict)
+    def addNodePath(self, nodePath):
+        self.addNodePathToDict(nodePath, self.nodePathNames,
+                               self.nodePathMenu, self.nodePathDict)
 
     def addNodePathToDict(self, nodePath, names, menu, dict):
         if not nodePath:
@@ -1299,10 +1268,11 @@ class MopathRecorder(AppShell, PandaObject):
         t.lastTime = globalClock.getFrameTime()
 
     def setSpeedScale(self, value):
-        self.speedScale.set(value)
+        self.speedScale.set(math.log10(value))
 
     def setPlaybackSF(self, value):
         self.playbackSF = pow(10.0, float(value))
+        self.speedVar.set('%0.2f' % self.playbackSF)
         
     def playbackTask(self, state):
         time = globalClock.getFrameTime()
@@ -1323,11 +1293,17 @@ class MopathRecorder(AppShell, PandaObject):
             # Also kill record task
             self.toggleRecordVar()
             return Task.done
-        elif (((self.loopPlayback == 0) and (cTime > self.maxT)) or
-            ((self.recordingType.get() == 'Extend') and (cTime > self.maxT))):
+        elif ((self.loopPlayback == 0) and (cTime > self.maxT)):
             # Go to maxT
             self.getWidget('Playback', 'Time').set(self.maxT)
             # Then stop playback
+            self.stopPlayback()
+            return Task.done
+        elif ((self.recordingType.get() == 'Extend') and
+              (cTime > self.controlStart)):
+            # Go to final point
+            self.getWidget('Playback', 'Time').set(self.controlStart)
+            # Stop playback
             self.stopPlayback()
             return Task.done
         # Otherwise go to specified time and continue
@@ -1363,51 +1339,39 @@ class MopathRecorder(AppShell, PandaObject):
             return
         # NOTE: This is destructive, points will be deleted from curve fitter
         self.curveFitter.desample(self.desampleFrequency)
+        # Compute new curve based on desampled data
         self.computeCurves()
-        # Get new point set based on newly created curve
-        self.createNewPointSet()
-        for i in range(self.curveFitter.getNumSamples()):
-            time = self.curveFitter.getSampleT(i)
-            pos = Point3(self.curveFitter.getSampleXyz(i))
-            hpr = Point3(self.curveFitter.getSampleHpr(i))
-            self.pointSet.append([time, pos, hpr])
+        # Get point set from the curve fitter
+        self.extractPointSetFromCurveFitter()
 
     def setNumSamples(self, numSamples):
         self.numSamples = int(numSamples)
         
-    def sampleCurve(self, even = 'None Given'):
+    def sampleCurve(self, fCompute = 1):
         if self.curveCollection == None:
             print 'MopathRecorder.sampleCurve: Must define curve first'
             return
         # Reset curve fitters
         self.curveFitter.reset()
-        # Get new data points based on given curve
-        if even == 'None Given':
-            even = self.fEven
-        # Make even if necessary
-        if even:
-            # Note: segments_per_unit = 2 seems to give a good fit
-            self.curveCollection.makeEven(self.maxT, 2)
-        # Face forward if necessary
-        if self.fForward:
-            # MRM: To be added, face forward
-            pass
+        # Sample curve using specified number of samples
         self.curveFitter.sample(self.curveCollection, self.numSamples)
-        # Now recompute curves
-        self.computeCurves()
-        # Get new point set based on newly created curve
-        self.createNewPointSet()
-        for i in range(self.curveFitter.getNumSamples()):
-            time = self.curveFitter.getSampleT(i)
-            pos = Point3(self.curveFitter.getSampleXyz(i))
-            hpr = Point3(self.curveFitter.getSampleHpr(i))
-            self.pointSet.append([time, pos, hpr])
+        if fCompute:
+            # Now recompute curves
+            self.computeCurves()
+        # Get point set from the curve fitter
+        self.extractPointSetFromCurveFitter()
 
-    def setEven(self):
-        self.fEven = self.getVariable('Resample', 'Even').get()
+    def makeEven(self):
+        # Note: segments_per_unit = 2 seems to give a good fit
+        self.curveCollection.makeEven(self.maxT, 2)
+        # Get point set from curve
+        self.extractPointSetFromCurveCollection()
 
-    def setForward(self):
-        self.fForward = self.getVariable('Resample', 'Forward').get()
+    def faceForward(self):
+        # Note: segments_per_unit = 2 seems to give a good fit
+        self.curveCollection.faceForward(2)
+        # Get point set from curve
+        self.extractPointSetFromCurveCollection()
 
     def setPathDuration(self, event):
         newMaxT = float(self.getWidget('Resample', 'Path Duration').get())
@@ -1662,8 +1626,11 @@ class MopathRecorder(AppShell, PandaObject):
             self.curveCollection.addCurves(nodePath.node())
             nodePath.removeNode()
             if self.curveCollection:
+                # Draw the curve
+                self.nurbsCurveDrawer.setCurves(self.curveCollection)
+                self.nurbsCurveDrawer.draw()
                 # Save a pointset for this curve
-                self.savePointSet()
+                self.extractPointSetFromCurveCollection()
             else:
                 self.reset()
 
@@ -1693,12 +1660,11 @@ class MopathRecorder(AppShell, PandaObject):
             self.curveCollection.writeEgg(Filename(mopathFilename))
 
     def followTerrain(self, height = 1.0):
-        self.iRay.rayCollisionNodePath.reparentTo(self['nodePath'])
+        self.iRay.rayCollisionNodePath.reparentTo(self.nodePath)
         node, hitPt, hitPtDist = self.iRay.pickGeom3D()
         if node:
-            self['nodePath'].setZ(self['nodePath'], height - hitPtDist)
+            self.nodePath.setZ(self.nodePath, height - hitPtDist)
         self.iRay.rayCollisionNodePath.reparentTo(self.recorderNodePath)
-
 
     ## WIDGET UTILITY FUNCTIONS ##
     def addWidget(self, widget, category, text):
@@ -1888,4 +1854,3 @@ class MopathRecorder(AppShell, PandaObject):
         # Record widget
         self.widgetDict[category + '-' + text] = widget
         return widget
-

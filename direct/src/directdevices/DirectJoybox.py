@@ -292,7 +292,7 @@ class DirectJoybox(PandaObject):
             np2planet = Vec3(self.nodePath.getPos(planet))
             # Compute dist
             offsetDist = np2planet.length()
-            # Too high, never mind
+            # Above threshold, leave velocity vec as is
             if offsetDist > (1.2 * radius):
                 pass
             else:
@@ -304,14 +304,19 @@ class DirectJoybox(PandaObject):
                 # Xform fly vec to planet space
                 dPlanet = self.nodePath.getMat(planet).xformVec(Vec3(0, dy, 0))
                 # Compute radial component of fly vec
-                radialComponent = oNorm * oNorm.dot(dPlanet)
-                # If within transition zone, begin subtracting radial component
-                above = offsetDist - radius
-                sf = max(1.0 - (max(above, 0.0)/(0.2 * radius)), 0.0)
-                if offsetDist < radius:
+                dotProd = oNorm.dot(dPlanet)
+                if dotProd < 0:
+                    # Trying to fly below radius, compute radial component
+                    radialComponent = oNorm * dotProd
+                    # How far above?
+                    above = offsetDist - radius
+                    # Set sf accordingly
+                    sf = max(1.0 - (max(above, 0.0)/(0.2 * radius)), 0.0)
+                    # Subtract scaled radial component
                     dPlanet -= radialComponent * (sf * sf)
-                # Convert back to node path space
-                dPos.assign(planet.getMat(self.nodePath).xformVec(dPlanet))
+                    #dPlanet -= radialComponent
+                    # Convert back to node path space
+                    dPos.assign(planet.getMat(self.nodePath).xformVec(dPlanet))
         # Set pos accordingly
         self.nodePath.setPos(self.nodePath, dPos)
 

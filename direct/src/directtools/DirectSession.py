@@ -1,4 +1,5 @@
 from PandaObject import *
+from DirectUtil import *
 from DirectCameraControl import *
 from DirectManipulation import *
 from DirectSelection import *
