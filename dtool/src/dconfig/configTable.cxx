@@ -191,18 +191,20 @@ void ConfigTable::ReadConfigFile() {
                                 << (configname + configsuffix) << endl;
       for (int di = 0; di < config_search.get_num_directories(); di++) {
         const Filename &directory = config_search.get_directory(di);
-        vector_string files;
-        directory.scan_directory(files);
-        // Scan the files in reverse order to match Configrc overwrite
-        // rules, so that the alphabetically earliest file has
-        // precedence.
-        for (vector_string::reverse_iterator fi = files.rbegin();
-             fi != files.rend();
-             ++fi) {
-          if ((*fi).substr(0, configname.length()) == configname &&
-              (*fi).substr((*fi).length() - 1) != string("~")) {
-            Filename file(directory, (*fi));
-            config_files.add_file(file);
+        if (directory.is_directory()) {
+          vector_string files;
+          directory.scan_directory(files);
+          // Scan the files in reverse order to match Configrc overwrite
+          // rules, so that the alphabetically earliest file has
+          // precedence.
+          for (vector_string::reverse_iterator fi = files.rbegin();
+               fi != files.rend();
+               ++fi) {
+            if ((*fi).substr(0, configname.length()) == configname &&
+                (*fi).substr((*fi).length() - 1) != string("~")) {
+              Filename file(directory, (*fi));
+              config_files.add_file(file);
+            }
           }
         }
       }
