@@ -18,6 +18,7 @@
 
 #include "curve.h"
 #include "config_parametrics.h"
+#include "hermiteCurve.h"
 #include "nurbsCurve.h"
 #include "curveDrawer.h"
 
@@ -204,7 +205,7 @@ calc_length(double from, double to) const {
 ////////////////////////////////////////////////////////////////////
 double ParametricCurve::
 compute_t(double start_t, double length_offset, double guess,
-	  double threshold) const {
+          double threshold) const {
   if (length_offset > 0.0) {
     // If the length_offset is positive, we are looking forward.
     // Enforce that the guess is greater than the start.
@@ -245,7 +246,7 @@ compute_t(double start_t, double length_offset, double guess,
     // Clamp it to the end of the curve.
     if (guess > max_t) {
       if (clamped) {
-	return max_t;
+        return max_t;
       }
       clamped = true;
       guess = max_t;
@@ -270,7 +271,6 @@ compute_t(double start_t, double length_offset, double guess,
 ////////////////////////////////////////////////////////////////////
 bool ParametricCurve::
 convert_to_hermite(HermiteCurve &hc) const {
-#if 0 //[////todo:skyler
   BezierSegs bz_segs;
   if (!GetBezierSegs(bz_segs)) {
     return false;
@@ -293,9 +293,9 @@ convert_to_hermite(HermiteCurve &hc) const {
       scale_in = scale_out;
       scale_out = bz_segs[i+1]._t - bz_segs[i]._t;
 
-      if (!bz_segs[i]._v[3].almostEqual(bz_segs[i+1]._v[0], 0.0001)) {
-	// Oops, we have a cut.
-	hc.set_cv_type(n, HC_CUT);
+      if (!bz_segs[i]._v[3].almost_equal(bz_segs[i+1]._v[0], 0.0001)) {
+        // Oops, we have a cut.
+        hc.set_cv_type(n, HC_CUT);
       }
 
       n = hc.append_cv(HC_FREE, bz_segs[i+1]._v[0]);
@@ -317,21 +317,20 @@ convert_to_hermite(HermiteCurve &hc) const {
   int num_cvs = hc.get_num_cvs();
   for (n = 1; n < num_cvs-1; n++) {
     if (hc.get_cv_type(n)!=HC_CUT) {
-      pfVec3 in = hc.get_cv_in(n);
-      pfVec3 out = hc.get_cv_out(n);
+      LVector3f in = hc.get_cv_in(n);
+      LVector3f out = hc.get_cv_out(n);
       
-      if (in.almostEqual(out, 0.0001)) {
-	hc.set_cv_type(n, HC_SMOOTH);
+      if (in.almost_equal(out, 0.0001)) {
+        hc.set_cv_type(n, HC_SMOOTH);
       } else {
-	in.normalize();
-	out.normalize();
-	if (in.almostEqual(out, 0.0001)) {
-	  hc.set_cv_type(n, HC_G1);
-	}
+        in.normalize();
+        out.normalize();
+        if (in.almost_equal(out, 0.0001)) {
+          hc.set_cv_type(n, HC_G1);
+        }
       }
     }
   }
-#endif //]
   return true;
 }
 
@@ -359,8 +358,8 @@ convert_to_nurbs(NurbsCurve &nc) const {
       nc.append_cv(bz_segs[i]._v[1]);
       nc.append_cv(bz_segs[i]._v[2]);
       if (i == bz_segs.size()-1 ||
-	  !bz_segs[i]._v[3].almost_equal(bz_segs[i+1]._v[0], 0.0001)) {
-	nc.append_cv(bz_segs[i]._v[3]);
+          !bz_segs[i]._v[3].almost_equal(bz_segs[i+1]._v[0], 0.0001)) {
+        nc.append_cv(bz_segs[i]._v[3]);
       }
     }
 
@@ -379,9 +378,9 @@ convert_to_nurbs(NurbsCurve &nc) const {
       nc.set_knot(ki+2, t);
       ki += 3;
       if (i == bz_segs.size()-1 ||
-	  !bz_segs[i]._v[3].almost_equal(bz_segs[i+1]._v[0], 0.0001)) {
-	nc.set_knot(ki, t);
-	ki++;
+          !bz_segs[i]._v[3].almost_equal(bz_segs[i+1]._v[0], 0.0001)) {
+        nc.set_knot(ki, t);
+        ki++;
       }
     }
   }
@@ -443,8 +442,8 @@ ascii_draw() const {
       r = (p[2] - minz) * zscale;
 
       if (r>=0 && r<rows && c>=0 && c<cols) {
-	int digit = ((int)floor(t))%10;
-	text[rows-1-r][c] = digit + '0';
+        int digit = ((int)floor(t))%10;
+        text[rows-1-r][c] = digit + '0';
       }
     }
   }
@@ -524,8 +523,8 @@ invalidate(double t1, double t2) {
   if (t1 <= t2) {
     DrawerList::iterator n;
     for (n = _drawers.begin();
-	 n != _drawers.end();
-	 ++n) {
+         n != _drawers.end();
+         ++n) {
       (*n)->recompute(max(t1, 0.0), min(t2, get_max_t()), this);
     }
   }
@@ -560,7 +559,7 @@ invalidate_all() {
 ////////////////////////////////////////////////////////////////////
 float ParametricCurve::
 r_calc_length(double t1, double t2, const LVector3f &p1, const LVector3f &p2,
-	      float seglength) const {
+              float seglength) const {
   static const float length_tolerance = 0.0000001;
   static const double t_tolerance = 0.000001;
 
@@ -701,7 +700,7 @@ get_2ndtangent(double t, LVector3f &tangent2) const {
 ////////////////////////////////////////////////////////////////////
 bool PiecewiseCurve::
 adjust_point(double t,
-	     float px, float py, float pz) {
+             float px, float py, float pz) {
   const ParametricCurve *curve;
   bool result = find_curve(curve, t);
 
@@ -711,9 +710,9 @@ adjust_point(double t,
   }
 
   rebuild_curveseg(RT_CV | RT_KEEP_ORIG, 0.0, LVector4f(),
-		   RT_POINT, t, LVector4f(px, py, pz, 1.0),
-		   RT_TANGENT | RT_KEEP_ORIG, t, LVector4f(),
-		   RT_CV | RT_KEEP_ORIG, 0.0, LVector4f());
+                   RT_POINT, t, LVector4f(px, py, pz, 1.0),
+                   RT_TANGENT | RT_KEEP_ORIG, t, LVector4f(),
+                   RT_CV | RT_KEEP_ORIG, 0.0, LVector4f());
   return true;
 }
 
@@ -726,7 +725,7 @@ adjust_point(double t,
 ////////////////////////////////////////////////////////////////////
 bool PiecewiseCurve::
 adjust_tangent(double t,
-	       float tx, float ty, float tz) {
+               float tx, float ty, float tz) {
   const ParametricCurve *curve;
   bool result = find_curve(curve, t);
 
@@ -736,9 +735,9 @@ adjust_tangent(double t,
   }
 
   rebuild_curveseg(RT_CV | RT_KEEP_ORIG, 0.0, LVector4f(),
-		   RT_POINT | RT_KEEP_ORIG, t, LVector4f(),
-		   RT_TANGENT, t, LVector4f(tx, ty, tz, 0.0),
-		   RT_CV | RT_KEEP_ORIG, 0.0, LVector4f());
+                   RT_POINT | RT_KEEP_ORIG, t, LVector4f(),
+                   RT_TANGENT, t, LVector4f(tx, ty, tz, 0.0),
+                   RT_CV | RT_KEEP_ORIG, 0.0, LVector4f());
   return true;
 }
 
@@ -750,8 +749,8 @@ adjust_tangent(double t,
 ////////////////////////////////////////////////////////////////////
 bool PiecewiseCurve::
 adjust_pt(double t,
-	  float px, float py, float pz,
-	  float tx, float ty, float tz) {
+          float px, float py, float pz,
+          float tx, float ty, float tz) {
   const ParametricCurve *curve;
   bool result = find_curve(curve, t);
 
@@ -761,9 +760,9 @@ adjust_pt(double t,
   }
 
   rebuild_curveseg(RT_CV | RT_KEEP_ORIG, 0.0, LVector4f(),
-		   RT_POINT, t, LVector4f(px, py, pz, 1.0),
-		   RT_TANGENT, t, LVector4f(tx, ty, tz, 0.0),
-		   RT_CV | RT_KEEP_ORIG, 0.0, LVector4f());
+                   RT_POINT, t, LVector4f(px, py, pz, 1.0),
+                   RT_TANGENT, t, LVector4f(tx, ty, tz, 0.0),
+                   RT_CV | RT_KEEP_ORIG, 0.0, LVector4f());
   return true;
 }
 
@@ -832,11 +831,11 @@ insert_curveseg(int ti, ParametricCurve *seg, double tlength) {
 
   } else if (ti==0) {
     _segs.insert(_segs.begin(),
-		 Curveseg(seg, tlength));
+                 Curveseg(seg, tlength));
 
   } else {
     _segs.insert(_segs.begin() + ti,
-		 Curveseg(seg, _segs[ti-1]._tend + tlength));
+                 Curveseg(seg, _segs[ti-1]._tend + tlength));
   }
 
   return true;
@@ -954,15 +953,15 @@ set_tlength(int ti, double tlength) {
 ////////////////////////////////////////////////////////////////////
 void PiecewiseCurve::
 make_nurbs(int order, int num_cvs,
-	   const double knots[], const LVector4f cvs[]) {
+           const double knots[], const LVector4f cvs[]) {
   remove_all_curvesegs();
 
   for (int i=0; i<num_cvs - order + 1; i++) {
     if (knots[i+order] > knots[i+order-1]) {
       int ti = get_num_segs();
       bool result =
-	insert_curveseg(ti, new CubicCurveseg(order, knots+i, cvs+i),
-			knots[i+order] - knots[i+order-1]);
+        insert_curveseg(ti, new CubicCurveseg(order, knots+i, cvs+i),
+                        knots[i+order] - knots[i+order-1]);
       assert(result);
     }
   }
@@ -1005,9 +1004,9 @@ GetBezierSegs(BezierSegs &bz_segs) const {
 ////////////////////////////////////////////////////////////////////
 bool PiecewiseCurve::
 rebuild_curveseg(int, double, const LVector4f &,
-		 int, double, const LVector4f &,
-		 int, double, const LVector4f &,
-		 int, double, const LVector4f &) {
+                 int, double, const LVector4f &,
+                 int, double, const LVector4f &,
+                 int, double, const LVector4f &) {
   cerr << "rebuild_curveseg not implemented for this curve type.\n";
   return false;
 }
@@ -1090,13 +1089,13 @@ find_curve(const ParametricCurve *&curve, double &t) const {
 
     if (ti >= _segs.size()) {
       if (_segs.empty()) {
-	curve = NULL;
-	t = 0.0;
-	return false;
+        curve = NULL;
+        t = 0.0;
+        return false;
       } else {
-	curve = _segs.back()._curve;
-	t = 1.0;
-	return false;
+        curve = _segs.back()._curve;
+        t = 1.0;
+        return false;
       }
     } else if (!_segs[ti]._curve->is_valid()) {
       curve = _segs[ti]._curve;
@@ -1245,6 +1244,36 @@ get_2ndtangent(double t, LVector3f &tangent2) const {
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CubicCurveseg::hermite_basis
+//       Access: Public
+//  Description: Defines the curve segment as a Hermite.  This only
+//               sets up the basis vectors, so the curve will be
+//               computed correctly; it does not retain the CV's.
+////////////////////////////////////////////////////////////////////
+void CubicCurveseg::
+hermite_basis(const HermiteCurveCV &cv0,
+              const HermiteCurveCV &cv1,
+              double tlength) {
+  static LMatrix4f 
+    Mh(2, -3, 0, 1,
+       -2, 3, 0, 0,
+       1, -2, 1, 0,
+       1, -1, 0, 0);
+
+  LVector4f Gx(cv0._p[0], cv1._p[0],
+            cv0._out[0]*tlength, cv1._in[0]*tlength);
+  LVector4f Gy(cv0._p[1], cv1._p[1],
+            cv0._out[1]*tlength, cv1._in[1]*tlength);
+  LVector4f Gz(cv0._p[2], cv1._p[2], 
+            cv0._out[2]*tlength, cv1._in[2]*tlength);
+
+  Bx = Gx * Mh;
+  By = Gy * Mh;
+  Bz = Gz * Mh;
+  rational = false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CubicCurveseg::bezier_basis
 //       Access: Public
 //  Description: Defines the curve segment as a Bezier.  This only
@@ -1271,7 +1300,7 @@ bezier_basis(const BezierSeg &seg) {
 
 static LVector4f
 nurbs_blending_function(int order, int i, int j,
-			const double knots[]) {
+                        const double knots[]) {
   // This is doubly recursive.  Ick.
   LVector4f r;
 
@@ -1292,9 +1321,9 @@ nurbs_blending_function(int order, int i, int j,
     // First term.  Division by zero is defined to equal zero.
     if (d0 != 0.0) {
       if (d1 != 0.0) {
-	r = bi0 / d0 - bi1 / d1;
+        r = bi0 / d0 - bi1 / d1;
       } else {
-	r = bi0 / d0;
+        r = bi0 / d0;
       }
 
     } else if (d1 != 0.0) {
@@ -1313,9 +1342,9 @@ nurbs_blending_function(int order, int i, int j,
     // Second term.
     if (d0 != 0.0) {
       if (d1 != 0.0) {
-	r += bi0 * (- knots[i] / d0) + bi1 * (knots[i+j] / d1);
+        r += bi0 * (- knots[i] / d0) + bi1 * (knots[i+j] / d1);
       } else {
-	r += bi0 * (- knots[i] / d0);
+        r += bi0 * (- knots[i] / d0);
       }
 
     } else if (d1 != 0.0) {
@@ -1328,8 +1357,8 @@ nurbs_blending_function(int order, int i, int j,
 
 void
 compute_nurbs_basis(int order,
-		    const double knots_in[],
-		    LMatrix4f &basis) {
+                    const double knots_in[],
+                    LMatrix4f &basis) {
   int i;
 
   // Scale the supplied knots to the range 0..1.
@@ -1408,9 +1437,9 @@ bool CubicCurveseg::
 GetBezierSeg(BezierSeg &seg) const {
   static LMatrix4f
     Mbi(0.0, 0.0, 0.0, 1.0,
-	0.0, 0.0, 1.0/3.0, 1.0,
-	0.0, 1.0/3.0, 2.0/3.0, 1.0,
-	1.0, 1.0, 1.0, 1.0);
+        0.0, 0.0, 1.0/3.0, 1.0,
+        0.0, 1.0/3.0, 2.0/3.0, 1.0,
+        1.0, 1.0, 1.0, 1.0);
 
   LVector4f Gx = Bx * Mbi;
   LVector4f Gy = By * Mbi;
@@ -1437,9 +1466,9 @@ GetBezierSeg(BezierSeg &seg) const {
 inline LVector4f
 operator * (const LMatrix4f &M, const LVector4f &v) {
   return LVector4f(M(0,0)*v[0] + M(0,1)*v[1] + M(0,2)*v[2] + M(0,3)*v[3],
-		M(1,0)*v[0] + M(1,1)*v[1] + M(1,2)*v[2] + M(1,3)*v[3],
-		M(2,0)*v[0] + M(2,1)*v[1] + M(2,2)*v[2] + M(2,3)*v[3],
-		M(3,0)*v[0] + M(3,1)*v[1] + M(3,2)*v[2] + M(3,3)*v[3]);
+                M(1,0)*v[0] + M(1,1)*v[1] + M(1,2)*v[2] + M(1,3)*v[3],
+                M(2,0)*v[0] + M(2,1)*v[1] + M(2,2)*v[2] + M(2,3)*v[3],
+                M(3,0)*v[0] + M(3,1)*v[1] + M(3,2)*v[2] + M(3,3)*v[3]);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1450,12 +1479,12 @@ operator * (const LMatrix4f &M, const LVector4f &v) {
 ////////////////////////////////////////////////////////////////////
 static bool
 compute_seg_col(int c,
-		int rtype, double t, const LVector4f &v,
-		const LMatrix4f &B,
-		const LMatrix4f &Bi,
-		const LMatrix4f &G,
-		const LMatrix4f &GB,
-		LMatrix4f &T, LMatrix4f &P) {
+                int rtype, double t, const LVector4f &v,
+                const LMatrix4f &B,
+                const LMatrix4f &Bi,
+                const LMatrix4f &G,
+                const LMatrix4f &GB,
+                LMatrix4f &T, LMatrix4f &P) {
   int keep_orig = (rtype & RT_KEEP_ORIG);
 
   switch (rtype & RT_BASE_TYPE) {
@@ -1556,12 +1585,12 @@ compute_seg_col(int c,
 ////////////////////////////////////////////////////////////////////
 bool CubicCurveseg::
 compute_seg(int rtype0, double t0, const LVector4f &v0,
-	    int rtype1, double t1, const LVector4f &v1,
-	    int rtype2, double t2, const LVector4f &v2,
-	    int rtype3, double t3, const LVector4f &v3,
-	    const LMatrix4f &B,
-	    const LMatrix4f &Bi,
-	    LMatrix4f &G) {
+            int rtype1, double t1, const LVector4f &v1,
+            int rtype2, double t2, const LVector4f &v2,
+            int rtype3, double t3, const LVector4f &v3,
+            const LMatrix4f &B,
+            const LMatrix4f &Bi,
+            LMatrix4f &G) {
 
   // We can define a cubic curve segment given four arbitrary
   // properties of the segment: any point along the curve, any tangent
@@ -1590,9 +1619,9 @@ compute_seg(int rtype0, double t0, const LVector4f &v0,
   }
 
   if (! (compute_seg_col(0, rtype0, t0, v0, B, Bi, G, GB, T, P) &&
-	 compute_seg_col(1, rtype1, t1, v1, B, Bi, G, GB, T, P) &&
-	 compute_seg_col(2, rtype2, t2, v2, B, Bi, G, GB, T, P) &&
-	 compute_seg_col(3, rtype3, t3, v3, B, Bi, G, GB, T, P))) {
+         compute_seg_col(1, rtype1, t1, v1, B, Bi, G, GB, T, P) &&
+         compute_seg_col(2, rtype2, t2, v2, B, Bi, G, GB, T, P) &&
+         compute_seg_col(3, rtype3, t3, v3, B, Bi, G, GB, T, P))) {
     return false;
   }
 
