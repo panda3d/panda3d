@@ -324,14 +324,14 @@ intersects_line(double &t1, double &t2,
     // Tangent.
     t1 = t2 = -B /(2.0*A);
     return true;
-  }
+  } else
 
   if (radical < 0.0) {
     // No real roots: no intersection with the line.
     return false;
   }
 
-  double reciprocal_2A = 1.0f/(2.0*A);
+  double reciprocal_2A = 1.0/(2.0*A);
   double sqrt_radical = sqrtf(radical);
   t1 = ( -B - sqrt_radical ) * reciprocal_2A;
   t2 = ( -B + sqrt_radical ) * reciprocal_2A;

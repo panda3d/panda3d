@@ -111,7 +111,7 @@ test_intersection_from_sphere(CollisionHandler *record,
 
   LPoint3f from_center = sphere->get_center() * entry.get_wrt_space();
   LVector3f from_radius_v = 
-    LVector3f(sphere->get_radius(), 0.0, 0.0) * entry.get_wrt_space();
+    LVector3f(sphere->get_radius(), 0.0f, 0.0f) * entry.get_wrt_space();
   float from_radius = length(from_radius_v);
 
   float dist = dist_to_plane(from_center);
@@ -157,7 +157,7 @@ test_intersection_from_ray(CollisionHandler *record,
     return 0;
   }
 
-  if (t < 0.0) { 
+  if (t < 0.0f) { 
     // The intersection point is before the start of the ray.
     return 0;
   }
@@ -211,18 +211,18 @@ recompute_viz(Node *parent) {
   if (fabs(normal[0]) > fabs(normal[1]) &&
       fabs(normal[0]) > fabs(normal[2])) {
     // X has the largest coefficient.
-    cp.set(-D / normal[0], 0.0, 0.0);
-    p1 = LPoint3f(-(normal[1] + normal[2] + D)/normal[0], 1.0, 1.0) - cp;
+    cp.set(-D / normal[0], 0.0f, 0.0f);
+    p1 = LPoint3f(-(normal[1] + normal[2] + D)/normal[0], 1.0f, 1.0f) - cp;
     
   } else if (fabs(normal[1]) > fabs(normal[2])) {
     // Y has the largest coefficient.
-    cp.set(0.0, -D / normal[1], 0.0);
-    p1 = LPoint3f(1.0, -(normal[0] + normal[2] + D)/normal[1], 1.0) - cp;
+    cp.set(0.0f, -D / normal[1], 0.0f);
+    p1 = LPoint3f(1.0f, -(normal[0] + normal[2] + D)/normal[1], 1.0f) - cp;
     
   } else {
     // Z has the largest coefficient.
-    cp.set(0.0, 0.0, -D / normal[2]);
-    p1 = LPoint3f(1.0, 1.0, -(normal[0] + normal[1] + D)/normal[2]) - cp;
+    cp.set(0.0f, 0.0f, -D / normal[2]);
+    p1 = LPoint3f(1.0f, 1.0f, -(normal[0] + normal[1] + D)/normal[2]) - cp;
   }
 
   p1.normalize();

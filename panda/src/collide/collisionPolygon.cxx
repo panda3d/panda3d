@@ -85,7 +85,7 @@ verify_points(const LPoint3f *begin, const LPoint3f *end) {
   Planef plane(begin[0], begin[1], begin[2]);
   LVector3f normal = plane.get_normal();
   float normal_length = normal.length();
-  bool all_ok = IS_THRESHOLD_EQUAL(normal_length, 1.0, 0.001);
+  bool all_ok = IS_THRESHOLD_EQUAL(normal_length, 1.0f, 0.001f);
   
   const LPoint3f *pi;
   for (pi = begin; pi != end && all_ok; ++pi) {
@@ -225,7 +225,7 @@ test_intersection_from_sphere(CollisionHandler *record,
 
   LPoint3f from_center = sphere->get_center() * entry.get_wrt_space();
   LVector3f from_radius_v = 
-    LVector3f(sphere->get_radius(), 0.0, 0.0) * entry.get_wrt_space();
+    LVector3f(sphere->get_radius(), 0.0f, 0.0f) * entry.get_wrt_space();
   float from_radius = length(from_radius_v);
 
   float dist = dist_to_plane(from_center);
@@ -268,7 +268,7 @@ test_intersection_from_sphere(CollisionHandler *record,
 
   } else {
 
-    if (from_radius > 0.0) {
+    if (from_radius > 0.0f) {
       // Now find the point on the rim of the circle nearest the
       // polygon's center.
 
@@ -340,7 +340,7 @@ test_intersection_from_ray(CollisionHandler *record,
     return 0;
   }
 
-  if (t < 0.0) { 
+  if (t < 0.0f) { 
     // The intersection point is before the start of the ray.
     return 0;
   }
@@ -389,7 +389,7 @@ test_intersection_from_segment(CollisionHandler *record,
     return 0;
   }
 
-  if (t < 0.0 || t > 1.0) { 
+  if (t < 0.0f || t > 1.0f) { 
     // The intersection point is before the start of the segment or
     // after the end of the segment.
     return 0;
@@ -504,7 +504,7 @@ is_concave() const {
 
   float dx2 = p1[0] - p0[0];
   float dy2 = p1[1] - p0[1];
-  int asum = ((dx1 * dy2 - dx2 * dy1 >= 0.0) ? 1 : 0);
+  int asum = ((dx1 * dy2 - dx2 * dy1 >= 0.0f) ? 1 : 0);
 
   for (size_t i = 0; i < _points.size() - 1; i++) {
     p0 = p1;
@@ -514,7 +514,7 @@ is_concave() const {
     dy1 = dy2;
     dx2 = p1[0] - p0[0];
     dy2 = p1[1] - p0[1];
-    int csum = ((dx1 * dy2 - dx2 * dy1 >= 0.0) ? 1 : 0);
+    int csum = ((dx1 * dy2 - dx2 * dy1 >= 0.0f) ? 1 : 0);
 
     if (csum ^ asum) {
       // Oops, the polygon is concave.
@@ -662,7 +662,7 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
 ////////////////////////////////////////////////////////////////////
 LPoint2f CollisionPolygon::
 to_2d(const LPoint3f &point3d) const {
-  nassertr(!point3d.is_nan(), LPoint2f(0.0, 0.0));
+  nassertr(!point3d.is_nan(), LPoint2f(0.0f, 0.0f));
 
   // Project the point of intersection with the plane onto the
   // axis-aligned plane we projected the polygon onto, and see if the
@@ -678,8 +678,8 @@ to_2d(const LPoint3f &point3d) const {
     return LPoint2f(point3d[0], point3d[1]);
   }
 
-  nassertr(false, LPoint2f(0.0, 0.0));
-  return LPoint2f(0.0, 0.0);
+  nassertr(false, LPoint2f(0.0f, 0.0f));
+  return LPoint2f(0.0f, 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -690,13 +690,13 @@ to_2d(const LPoint3f &point3d) const {
 ////////////////////////////////////////////////////////////////////
 LPoint3f CollisionPolygon::
 to_3d(const LPoint2f &point2d) const {
-  nassertr(!point2d.is_nan(), LPoint3f(0.0, 0.0, 0.0));
+  nassertr(!point2d.is_nan(), LPoint3f(0.0f, 0.0f, 0.0f));
 
   LVector3f normal = get_normal();
   float D = get_plane()._d;
 
-  nassertr(!normal.is_nan(), LPoint3f(0.0, 0.0, 0.0));
-  nassertr(!cnan(D), LPoint3f(0.0, 0.0, 0.0));
+  nassertr(!normal.is_nan(), LPoint3f(0.0f, 0.0f, 0.0f));
+  nassertr(!cnan(D), LPoint3f(0.0f, 0.0f, 0.0f));
 
   switch (_axis) {
   case AT_x:
@@ -713,8 +713,8 @@ to_3d(const LPoint2f &point2d) const {
 		    -(normal[0]*point2d[0] + normal[1]*point2d[1] + D)/normal[2]);
   }
 
-  nassertr(false, LPoint3f(0.0, 0.0, 0.0));
-  return LPoint3f(0.0, 0.0, 0.0);
+  nassertr(false, LPoint3f(0.0f, 0.0f, 0.0f));
+  return LPoint3f(0.0f, 0.0f, 0.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
