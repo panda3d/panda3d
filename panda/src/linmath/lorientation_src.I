@@ -89,7 +89,7 @@ FLOATNAME(LOrientation)(const FLOATNAME(LMatrix4) &m) {
 //               Applies an rotation to an orientation.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LOrientation) FLOATNAME(LOrientation)::
-operator *(const FLOATNAME(LQuaternion)& other) const {
+operator *(const FLOATNAME(LRotation)& other) const {
   return multiply(other);
 }
 
@@ -101,6 +101,7 @@ operator *(const FLOATNAME(LQuaternion)& other) const {
 //               simply return the rhs.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LOrientation) FLOATNAME(LOrientation)::
-operator *(const FLOATNAME(LOrientation)& other) const {
-  return other;
+operator *(const FLOATNAME(LQuaternion)& other) const {
+  nassert_raise("LOrientation * LQuaternion is undefined; use LOrientation * LRotation or LQuaternion * LQuaternion");
+  return multiply(other);
 }

@@ -107,12 +107,12 @@ operator*(const FLOATNAME(LRotation)& other) const {
 //       Access: public
 //  Description: Rotation * Orientation = Orientation
 //               This is another meaningless operation, attempting
-//               to apply an orientation to a rotation.  It simply
-//               returns the rhs.
+//               to apply an orientation to a rotation.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LQuaternion) FLOATNAME(LRotation)::
 operator*(const FLOATNAME(LQuaternion)& other) const {
-  return other;
+  nassert_raise("LRotation * LQuaternion is undefined; use LRotation * LRotation or LQuaternion * LQuaternion");
+  return multiply(other);
 }
 
 
