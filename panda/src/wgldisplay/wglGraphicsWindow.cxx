@@ -567,10 +567,13 @@ void wglGraphicsWindow::config(void) {
 
   _extensions_str = tmpstr;
 
-  PFNWGLGETEXTENSIONSSTRINGEXTPROC wglGetExtensionsStringEXT;
-  PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB;
-  wglGetExtensionsStringARB = (PFNWGLGETEXTENSIONSSTRINGARBPROC)wglGetProcAddress("wglGetExtensionsStringARB");
-  wglGetExtensionsStringEXT = (PFNWGLGETEXTENSIONSSTRINGEXTPROC)wglGetProcAddress("wglGetExtensionsStringEXT");
+  PFNWGLGETEXTENSIONSSTRINGEXTPROC wglGetExtensionsStringEXT = NULL;
+  PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB = NULL;
+
+  if (!support_wiregl) {
+    wglGetExtensionsStringARB = (PFNWGLGETEXTENSIONSSTRINGARBPROC)wglGetProcAddress("wglGetExtensionsStringARB");
+    wglGetExtensionsStringEXT = (PFNWGLGETEXTENSIONSSTRINGEXTPROC)wglGetProcAddress("wglGetExtensionsStringEXT");
+  }
 
   if(wglGetExtensionsStringARB!=NULL) {
        _extensions_str += " ";

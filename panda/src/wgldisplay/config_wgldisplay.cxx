@@ -40,6 +40,10 @@ int gl_forced_pixfmt=config_wgldisplay.GetInt("gl-force-pixfmt", 0);
 
 bool bResponsive_minimized_fullscreen_window = config_wgldisplay.GetBool("responsive-minimized-fullscreen-window",false);
 
+// Set this true to not attempt to use any of the function calls that
+// will crab out WireGL.
+bool support_wiregl = config_wgldisplay.GetBool("support-wiregl", false);
+
 extern void AtExitFn(void);
 
 ////////////////////////////////////////////////////////////////////

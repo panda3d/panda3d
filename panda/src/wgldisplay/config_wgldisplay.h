@@ -36,6 +36,7 @@ extern float gl_fps_meter_update_interval;
 extern bool gl_sync_video;
 extern int gl_forced_pixfmt;
 extern bool bResponsive_minimized_fullscreen_window;
+extern bool support_wiregl;
 
 extern EXPCL_PANDAGL void init_libwgldisplay();
 
