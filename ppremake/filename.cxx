@@ -34,7 +34,10 @@
 #endif
 
 #ifdef HAVE_GLOB_H
-#include <glob.h>
+  #include <glob.h>
+  #ifndef GLOB_NOMATCH
+    #define GLOB_NOMATCH -3
+  #endif
 #endif
 
 #ifdef HAVE_DIRENT_H
