@@ -49,6 +49,7 @@ glxGraphicsWindow(GraphicsPipe *pipe) :
   _xwindow = (Window)0;
   _context = (GLXContext)0;
   _visual = (XVisualInfo *)NULL;
+  _awaiting_configure = false;
 
   GraphicsWindowInputDevice device =
     GraphicsWindowInputDevice::pointer_and_keyboard("keyboard/mouse");
@@ -121,6 +122,26 @@ make_current() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsWindow::begin_frame
+//       Access: Public, Virtual
+//  Description: This function will be called within the draw thread
+//               before beginning rendering for a given frame.  It
+//               should do whatever setup is required, and return true
+//               if the frame should be rendered, or false if it
+//               should be skipped.
+////////////////////////////////////////////////////////////////////
+bool glxGraphicsWindow::
+begin_frame() {
+  if (_awaiting_configure) {
+    // Don't attempt to draw while we have just reconfigured the
+    // window and we haven't got the notification back yet.
+    return false;
+  }
+
+  return GraphicsWindow::begin_frame();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: glxGraphicsWindow::begin_flip
 //       Access: Public, Virtual
 //  Description: This function will be called within the draw thread
@@ -170,6 +191,7 @@ process_events() {
       break;
 
     case ConfigureNotify:
+      _awaiting_configure = false;
       properties.set_size(event.xconfigure.width, event.xconfigure.height);
       system_changed_properties(properties);
       break;
@@ -282,13 +304,43 @@ set_properties_now(WindowProperties &properties) {
   }
 
   // The window is already open; we are limited to what we can change
-  // on the fly.  This appears to be just the window title.
+  // on the fly.
+
+  // The window title may be changed by issuing another hint request.
+  // Assume this will be honored.
   if (properties.has_title()) {
     WindowProperties wm_properties;
     wm_properties.set_title(properties.get_title());
     _properties.set_title(properties.get_title());
     set_wm_properties(wm_properties);
     properties.clear_title();
+  }
+
+  // The size and position of an already-open window are changed via
+  // explicit X calls.  These may still get intercepted by the window
+  // manager.  Rather than changing _properties immediately, we'll
+  // wait for the ConfigureNotify message to come back.
+  XWindowChanges changes;
+  int value_mask = 0;
+
+  if (properties.has_origin()) {
+    changes.x = properties.get_x_origin();
+    changes.y = properties.get_y_origin();
+    value_mask |= (CWX | CWY);
+    properties.clear_origin();
+  }
+  if (properties.has_size()) {
+    changes.width = properties.get_x_size();
+    changes.height = properties.get_y_size();
+    value_mask |= (CWWidth | CWHeight);
+    properties.clear_size();
+  }
+
+  if (value_mask != 0) {
+    XConfigureWindow(_display, _xwindow, value_mask, &changes);
+
+    // Don't draw anything until this is done reconfiguring.
+    _awaiting_configure = true;
   }
 }
 
@@ -436,7 +488,7 @@ set_wm_properties(const WindowProperties &properties) {
   // Class to "Undecorated", and let the user configure his/her window
   // manager not to put a border around windows of this class.
   XClassHint *class_hints_p = NULL;
-  if (properties.has_undecorated() && properties.get_undecorated()) {
+  if (properties.get_undecorated()) {
     class_hints_p = XAllocClassHint();
     class_hints_p->res_class = "Undecorated";
   }

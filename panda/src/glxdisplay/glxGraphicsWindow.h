@@ -43,6 +43,7 @@ public:
   virtual void release_gsg();
   virtual void make_current();
 
+  virtual bool begin_frame();
   virtual void begin_flip();
 
   virtual void process_events();
@@ -69,6 +70,7 @@ private:
   XVisualInfo *_visual;
   Colormap _colormap;
   long _event_mask;
+  bool _awaiting_configure;
 
 
 public:
