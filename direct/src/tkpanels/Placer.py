@@ -75,6 +75,10 @@ class Placer(Pmw.MegaToplevel):
         menuBar.pack(side = LEFT, expand = 1, fill = X)
         menuBar.addmenu('Placer', 'Placer Panel Operations')
         menuBar.addmenuitem('Placer', 'command',
+                            'Zero Node Path',
+                            label = 'Zero All',
+                            command = self.zeroAll)
+        menuBar.addmenuitem('Placer', 'command',
                             'Reset Node Path',
                             label = 'Reset All',
                             command = self.resetAll)
@@ -417,6 +421,8 @@ class Placer(Pmw.MegaToplevel):
                 nodePath = self.tempCS
             else:
                 nodePath = None
+        elif name == 'parent':
+            nodePath = self['nodePath'].getParent()
         else:
             nodePath = self.refNodePathDict.get(name, None)
             if (nodePath == None):
@@ -609,6 +615,11 @@ class Placer(Pmw.MegaToplevel):
         self.scaleX.set(scale[0])
         self.scaleY.set(scale[1])
         self.scaleZ.set(scale[2])
+
+    def zeroAll(self):
+        self.zeroPos()
+        self.zeroHpr()
+        self.unitScale()
 
     def zeroPos(self):
         self.updatePosWidgets(ZERO_VEC)

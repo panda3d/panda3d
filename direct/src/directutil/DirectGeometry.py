@@ -86,3 +86,9 @@ def ROUND_TO(value, divisor):
     return round(value/float(divisor)) * divisor
 def ROUND_INT(val):
     return int(round(val))
+
+# Set direct drawing style for an object
+# Never light object or draw in wireframe
+def useDirectRenderStyle(nodePath):
+    nodePath.getBottomArc().setTransition(LightTransition.allOff())
+    nodePath.setRenderModeFilled()

@@ -1,6 +1,8 @@
 from PandaObject import *
+from DirectGeometry import useDirectRenderStyle
 
 CAM_MOVE_DURATION = 1.0
+COA_MARKER_SF = 0.0075
 Y_AXIS = Vec3(0,1,0)
 
 class DirectCameraControl(PandaObject):
@@ -10,9 +12,11 @@ class DirectCameraControl(PandaObject):
         self.camera = self.chan.camera
 	self.orthoViewRoll = 0.0
 	self.lastView = 0
-        self.coa = Point3(0)
+        self.coa = Point3(0,100,0)
+        self.coaDist = 100
         self.coaMarker = loader.loadModel('models/misc/sphere')
         self.coaMarker.setColor(1,0,0)
+        useDirectRenderStyle(self.coaMarker)
         self.coaMarkerPos = Point3(0)
 	self.relNodePath = render.attachNewNode(NamedNode('targetNode'))
         self.zeroBaseVec = VBase3(0)
@@ -68,19 +72,17 @@ class DirectCameraControl(PandaObject):
                                 coaDist = dist
                                 coa.set(hitPt[0],hitPt[1],hitPt[2])
                                 minPt = i
-
                     # Handle case of bad coa point (too close or too far)
                     if ((coaDist < (1.1 * self.chan.near)) |
                         (coaDist > self.chan.far)):
-                        # Put it out in front of the camera
-                        coa.set(0,100,0)
-                        coaDist = 100
+                        # Just use existing point
+                        coa.assign(self.coaMarker.getPos(camera))
+                        coaDist = Vec3(coa - self.zeroPoint).length()
                 else:
                     # If no intersection point:
-                    # Put coa out in front of the camera
-                    coa.set(0,100,0)
-                    coaDist = 100
-
+                    # Use existing point
+                    coa.assign(self.coaMarker.getPos(camera))
+                    coaDist = Vec3(coa - self.zeroPoint).length()
                 # Update coa and marker
                 self.updateCoa(coa, coaDist)
                 # Now spawn task to determine mouse fly mode
@@ -131,7 +133,7 @@ class DirectCameraControl(PandaObject):
     def updateCoaMarkerSize(self, coaDist = None):
         if not coaDist:
             coaDist = Vec3(self.coaMarker.getPos( self.chan.camera )).length()
-        self.coaMarker.setScale(0.01 * coaDist *
+        self.coaMarker.setScale(COA_MARKER_SF * coaDist *
                                 math.tan(deg2Rad(self.chan.fovV)))
 
     def homeCam(self, chan):
@@ -265,7 +267,8 @@ class DirectCameraControl(PandaObject):
 
     def HPanYZoomTask(self,state):
         targetVector = state.targetVector
-        distToMove = targetVector * self.chan.mouseDeltaY
+        # Can bring object to you by dragging across half the screen
+        distToMove = targetVector * (2.0 * self.chan.mouseDeltaY)
         self.camera.setPosHpr(self.camera,
                               distToMove[0],
                               distToMove[1],

@@ -31,6 +31,8 @@ class DirectSession(PandaObject):
         self.selected = SelectedNodePaths()
 
         self.readout = OnscreenText.OnscreenText( '', 0.1, -0.95 )
+        # Make sure readout is never lit or drawn in wireframe
+        useDirectRenderStyle(self.readout)
         # self.readout.textNode.setCardColor(0.5, 0.5, 0.5, 0.5)
         self.readout.reparentTo( hidden )
 

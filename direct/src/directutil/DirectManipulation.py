@@ -564,6 +564,9 @@ class ObjectHandles(NodePath,PandaObject):
         self.createGuideLines()
         self.hideGuides()
 
+        # Make sure object handles are never lit or drawn in wireframe
+        useDirectRenderStyle(self)
+
     def coaModeColor(self):
         self.setColor(.5,.5,.5,1)
 

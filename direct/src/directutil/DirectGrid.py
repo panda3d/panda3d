@@ -6,6 +6,8 @@ class DirectGrid(NodePath,PandaObject):
         # Initialize superclass
         NodePath.__init__(self)
         self.assign(hidden.attachNewNode( NamedNode('DirectGrid')))
+        # Don't wireframe or light
+        useDirectRenderStyle(self)
 
 	# Load up grid parts to initialize grid object
 	# Polygon used to mark grid plane

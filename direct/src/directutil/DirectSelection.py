@@ -297,6 +297,10 @@ class DirectBoundingBox:
 
         # Create and return bbox lines
 	lines.create()
+        
+        # Make sure bbox is never lit or drawn in wireframe
+        useDirectRenderStyle(lines)
+        
         return lines
 
     def updateBBoxLines(self):
