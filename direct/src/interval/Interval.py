@@ -1,10 +1,6 @@
 """Interval module: contains the Interval class"""
 
 from DirectObject import *
-from Tkinter import *
-import Pmw
-import EntryScale
-
 import ClockObject
 import Task
 
@@ -93,6 +89,10 @@ class Interval(DirectObject):
 	print (space + self.name + ' dur: %.2f' % self.duration)
 
     def popupControls(self):
+        # I moved this here because Toontown does not ship Tk
+        from Tkinter import *
+        import Pmw
+        import EntryScale
         tl = Toplevel()
         es = EntryScale.EntryScale(
             tl, min = 0, max = self.duration,
