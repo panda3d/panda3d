@@ -37,7 +37,7 @@ extra_genPyCode_libs="$extra_genPyCode_libs $*"
 
 if [ "$firstarg" = "linux" ]; then
     cd $DIRECT/bin
-    exec ppython -d generatePythonCode -v -d $DIRECT/lib/py -e $DIRECT/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs
+    exec ppython -d generatePythonCode -O -v -d $DIRECT/lib/py -e $DIRECT/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs
     exit 1
 fi
 
