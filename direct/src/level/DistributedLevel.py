@@ -177,7 +177,6 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
         # load stuff
         self.initVisibility()
-
         self.placeLocalToon()
 
     def placeLocalToon(self):
@@ -190,6 +189,9 @@ class DistributedLevel(DistributedObject.DistributedObject,
             epEnt.placeToon(toonbase.localToon,
                             self.avIdList.index(toonbase.localToon.doId),
                             len(self.avIdList))
+            # kickstart the visibility
+            firstZoneEnt = self.getEntity(epEnt.getZoneEntId())
+            self.enterZone(firstZoneEnt.getZoneNum())
 
     def createEntityCreator(self):
         """Create the object that will be used to create Entities.
