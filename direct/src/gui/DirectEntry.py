@@ -26,6 +26,7 @@ class DirectEntry(DirectFrame):
             ('pgFunc',          PGEntry,          None),
             ('numStates',       3,                None),
             ('state',           NORMAL,           None),
+            ('entryFont',       None,             None),
             ('width',           10,               self.setup),
             ('numLines',        5,                self.setup),
             ('focus',           0,                self.setFocus),
@@ -46,6 +47,9 @@ class DirectEntry(DirectFrame):
         # Initialize superclasses
         DirectFrame.__init__(self, parent)
 
+        if self['entryFont'] == None:
+            self['entryFont'] = getDefaultFont()
+
         # Create Text Node Component
         self.onscreenText = self.createcomponent(
             'text', (), None,
@@ -56,7 +60,7 @@ class DirectEntry(DirectFrame):
             text = '',
             # PGEntry assumes left alignment
             align = TMALIGNLEFT,
-            font = getDefaultFont(),
+            font = self['entryFont'],
             scale = 1,
             # Don't get rid of the text node
             mayChange = 1)
