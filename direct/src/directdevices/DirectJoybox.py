@@ -126,7 +126,9 @@ class DirectJoybox(PandaObject):
         return DirectJoybox.hprMultiplier
 
     def updateTask(self, state):
-        self.updateValsUnrolled()
+        # old optimization
+        #self.updateValsUnrolled()
+        self.updateVals()
         self.updateFunc()
         return Task.cont
     
@@ -161,6 +163,7 @@ class DirectJoybox(PandaObject):
                 val = max(val - ANALOG_DEADBAND, 0.0)
             # Scale up rotating knob values
             if (chan == 2) or (chan == 6):
+                print "got twist in unrolled!"
                 val *= 3.0
             # Now clamp value between minVal and maxVal
             val = CLAMP(val, JOYBOX_MIN, JOYBOX_MAX)
@@ -409,10 +412,12 @@ class DirectJoybox(PandaObject):
     def normalizeChannel(self, chan, minVal = -1, maxVal = 1):
         try:
             if (chan == L_TWIST) or (chan == R_TWIST):
+                print "in Joybox normalize channel: got *_TWIST!"
                 # These channels have reduced range
-                return self.analogs.normalize(self[chan] * 3.0, minVal, maxVal)
+                return self.analogs.normalize(self.analogs.getControlState(chan) * 3.0, minVal, maxVal)
             else:
-                return self.analogs.normalize(self[chan], minVal, maxVal)
+                print "in Joybox normalize channel..."
+                return self.analogs.normalize(self.analogs.getControlState(chan), minVal, maxVal)
         except IndexError:
             return 0.0
 
