@@ -29,6 +29,8 @@
 #include "pruneTransition.h"
 #include "transformTransition.h"
 
+#include <algorithm>
+
 TypeHandle MouseWatcher::_type_handle;
 
 TypeHandle MouseWatcher::_xyz_type;
@@ -44,8 +46,8 @@ MouseWatcher::
 MouseWatcher(const string &name) : DataNode(name) {
   _has_mouse = false;
   _suppress_flags = 0;
-  _current_region = (MouseWatcherRegion *)NULL;
-  _button_down_region = (MouseWatcherRegion *)NULL;
+  _preferred_region = (MouseWatcherRegion *)NULL;
+  _preferred_button_down_region = (MouseWatcherRegion *)NULL;
   _button_down = false;
   _eh = (EventHandler*)0L;
 }
@@ -68,12 +70,14 @@ MouseWatcher::
 ////////////////////////////////////////////////////////////////////
 bool MouseWatcher::
 remove_region(MouseWatcherRegion *region) {
-  if (region == _current_region) {
-    _current_region = (MouseWatcherRegion *)NULL;
+  remove_region_from(_current_regions, region);
+  if (region == _preferred_region) {
+    _preferred_region = (MouseWatcherRegion *)NULL;
   }
-  if (region == _button_down_region) {
-    _button_down_region = (MouseWatcherRegion *)NULL;
+  if (region == _preferred_button_down_region) {
+    _preferred_button_down_region = (MouseWatcherRegion *)NULL;
   }
+
   return MouseWatcherGroup::remove_region(region);
 }
 
@@ -88,47 +92,9 @@ remove_region(MouseWatcherRegion *region) {
 ////////////////////////////////////////////////////////////////////
 MouseWatcherRegion *MouseWatcher::
 get_over_region(const LPoint2f &pos) const {
-  MouseWatcherRegion *over_region = (MouseWatcherRegion *)NULL;
-
-  Regions::const_iterator ri;
-  for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
-    MouseWatcherRegion *region = (*ri);
-    const LVecBase4f &frame = region->get_frame();
-
-    if (region->get_active() &&
-        pos[0] >= frame[0] && pos[0] <= frame[1] &&
-        pos[1] >= frame[2] && pos[1] <= frame[3]) {
-
-      // We're over this region.  Is it preferred to the other one?
-      if (over_region == (MouseWatcherRegion *)NULL ||
-          *region < *over_region) {
-        over_region = region;
-      }
-    }
-  }
-
-  // Also check all of our sub-groups.
-  Groups::const_iterator gi;
-  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
-    MouseWatcherGroup *group = (*gi);
-    for (ri = group->_regions.begin(); ri != group->_regions.end(); ++ri) {
-      MouseWatcherRegion *region = (*ri);
-      const LVecBase4f &frame = region->get_frame();
-      
-      if (region->get_active() &&
-          pos[0] >= frame[0] && pos[0] <= frame[1] &&
-          pos[1] >= frame[2] && pos[1] <= frame[3]) {
-        
-        // We're over this region.  Is it preferred to the other one?
-        if (over_region == (MouseWatcherRegion *)NULL ||
-            *region < *over_region) {
-          over_region = region;
-        }
-      }
-    }
-  }
-
-  return over_region;
+  VRegions regions;
+  get_over_regions(regions, pos);
+  return get_preferred_region(regions);
 }
 
 
@@ -140,7 +106,15 @@ get_over_region(const LPoint2f &pos) const {
 void MouseWatcher::
 output(ostream &out) const {
   DataNode::output(out);
-  out << " (" << _regions.size() << " regions)";
+
+  int count = _regions.size();
+  Groups::const_iterator gi;
+  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+    MouseWatcherGroup *group = (*gi);
+    count += group->_regions.size();
+  }
+
+  out << " (" << count << " regions)";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -203,44 +177,317 @@ add_group(MouseWatcherGroup *group) {
 ////////////////////////////////////////////////////////////////////
 bool MouseWatcher::
 remove_group(MouseWatcherGroup *group) {
-  if (group->has_region(_current_region)) {
-    _current_region = (MouseWatcherRegion *)NULL;
+  remove_regions_from(_current_regions, group);
+  if (group->has_region(_preferred_region)) {
+    _preferred_region = (MouseWatcherRegion *)NULL;
   }
-  if (group->has_region(_button_down_region)) {
-    _button_down_region = (MouseWatcherRegion *)NULL;
+  if (group->has_region(_preferred_button_down_region)) {
+    _preferred_button_down_region = (MouseWatcherRegion *)NULL;
   }
+
   return _groups.erase(group) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcher::set_current_region
+//     Function: MouseWatcher::get_over_regions
 //       Access: Private
-//  Description: Changes the "current" region--the one we consider the
-//               mouse to be over--to the indicated one, and throws
-//               whatever events are appropriate because of that.
+//  Description: Fills up the "regions" list with the set of regions
+//               that the indicated point is over, sorted in order by
+//               pointer.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
-set_current_region(MouseWatcherRegion *region) {
-#ifndef NDEBUG
-  if (region != (MouseWatcherRegion *)NULL) {
-    region->test_ref_count_integrity();
+get_over_regions(MouseWatcher::VRegions &regions, const LPoint2f &pos) const {
+  // Ensure the vector is empty before we begin.
+  regions.clear();
+
+  Regions::const_iterator ri;
+  for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
+    MouseWatcherRegion *region = (*ri);
+    const LVecBase4f &frame = region->get_frame();
+
+    if (region->get_active() &&
+        pos[0] >= frame[0] && pos[0] <= frame[1] &&
+        pos[1] >= frame[2] && pos[1] <= frame[3]) {
+
+      regions.push_back(region);
+    }
   }
-#endif
-  if (region != _current_region) {
+
+  // Also check all of our sub-groups.
+  Groups::const_iterator gi;
+  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+    MouseWatcherGroup *group = (*gi);
+    for (ri = group->_regions.begin(); ri != group->_regions.end(); ++ri) {
+      MouseWatcherRegion *region = (*ri);
+      const LVecBase4f &frame = region->get_frame();
+      
+      if (region->get_active() &&
+          pos[0] >= frame[0] && pos[0] <= frame[1] &&
+          pos[1] >= frame[2] && pos[1] <= frame[3]) {
+        
+        regions.push_back(region);
+      }
+    }
+  }
+
+  // Now sort the regions by pointer.  By convention, the Regions
+  // vectors are always kept in order by pointer, so we can do easy
+  // linear comparison and intersection operations.
+  sort(regions.begin(), regions.end());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::get_preferred_region
+//       Access: Private, Static
+//  Description: Returns the innermost region of all the regions
+//               indicated in the given vector (usually, the regions
+//               the mouse is over).  This is the "preferred" region
+//               that gets some special treatment.
+////////////////////////////////////////////////////////////////////
+MouseWatcherRegion *MouseWatcher::
+get_preferred_region(const MouseWatcher::VRegions &regions) {
+  if (regions.empty()) {
+    return (MouseWatcherRegion *)NULL;
+  }
+
+  VRegions::const_iterator ri;
+  ri = regions.begin();
+  MouseWatcherRegion *preferred = *ri;
+  ++ri;
+  while (ri != regions.end()) {
+    MouseWatcherRegion *region = *ri;
+
+    if (*region < *preferred) {
+      preferred = region;
+    }
+    ++ri;
+  }
+
+  return preferred;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::set_current_regions
+//       Access: Private
+//  Description: Changes the "current" regions--the one we consider the
+//               mouse to be over--to the indicated list, and throws
+//               whatever events are appropriate because of that.
+//
+//               The list passed in is destroyed.
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+set_current_regions(MouseWatcher::VRegions &regions) {
+  // Set up a parameter for passing through any change events.
+  MouseWatcherParameter param;
+  param.set_modifier_buttons(_mods);
+  param.set_mouse(_mouse);
+
+  // Now do a standard sorted comparison between the two vectors.
+  VRegions::const_iterator new_ri = regions.begin();
+  VRegions::const_iterator old_ri = _current_regions.begin();
+
+  bool any_changes = false;
+  while (new_ri != regions.end() && old_ri != _current_regions.end()) {
+    if ((*new_ri) < (*old_ri)) {
+      // Here's a new region that we didn't have last frame.
+      MouseWatcherRegion *new_region = (*new_ri);
+      new_region->within(param);
+      throw_event_pattern(_within_pattern, new_region, ButtonHandle::none());
+      any_changes = true;
+      ++new_ri;
+
+    } else if ((*old_ri) < (*new_ri)) {
+      // Here's a region we don't have any more.
+      MouseWatcherRegion *old_region = (*old_ri);
+      old_region->without(param);
+      throw_event_pattern(_without_pattern, old_region, ButtonHandle::none());
+      any_changes = true;
+      ++old_ri;
+
+    } else {
+      // Here's a region that hasn't changed.
+      ++new_ri;
+      ++old_ri;
+    }
+  }
+
+  while (new_ri != regions.end()) {
+    // Here's a new region that we didn't have last frame.
+    MouseWatcherRegion *new_region = (*new_ri);
+    new_region->within(param);
+    throw_event_pattern(_within_pattern, new_region, ButtonHandle::none());
+    any_changes = true;
+    ++new_ri;
+  }
+
+  while (old_ri != _current_regions.end()) {
+    // Here's a region we don't have any more.
+    MouseWatcherRegion *old_region = (*old_ri);
+    old_region->without(param);
+    throw_event_pattern(_without_pattern, old_region, ButtonHandle::none());
+    any_changes = true;
+    ++old_ri;
+  }
+
+  if (any_changes) {
+    // Now that we've compared the two vectors, simply swap them to set
+    // the new vector.
+    _current_regions.swap(regions);
+
+    // Determine which is the "preferred region", if any.  This is the
+    // topmost region that the mouse cursor is over, and the one that
+    // we are considred "entered" into.
+    MouseWatcherRegion *new_preferred_region = 
+      get_preferred_region(_current_regions);
+
+    if (_button_down && new_preferred_region != _preferred_button_down_region) {
+      // If the button's being held down, we're only allowed to select
+      // the preferred button down region.
+      new_preferred_region = (MouseWatcherRegion *)NULL;
+    }
+
+    if (new_preferred_region != _preferred_region) {
+      if (_preferred_region != (MouseWatcherRegion *)NULL) {
+        _preferred_region->exit(param);
+        throw_event_pattern(_leave_pattern, _preferred_region, ButtonHandle::none());
+      }
+      _preferred_region = new_preferred_region;
+      if (_preferred_region != (MouseWatcherRegion *)NULL) {
+        _preferred_region->enter(param);
+        throw_event_pattern(_enter_pattern, _preferred_region, ButtonHandle::none());
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::clear_current_regions
+//       Access: Private
+//  Description: Empties the set of current regions.
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+clear_current_regions() {
+  if (!_current_regions.empty()) {
+    // Set up a parameter for passing through any change events.
     MouseWatcherParameter param;
     param.set_modifier_buttons(_mods);
     param.set_mouse(_mouse);
-
-    if (_current_region != (MouseWatcherRegion *)NULL) {
-      _current_region->exit(param);
-      throw_event_pattern(_leave_pattern, _current_region, ButtonHandle::none());
+    
+    VRegions::const_iterator old_ri = _current_regions.begin();
+    
+    while (old_ri != _current_regions.end()) {
+      // Here's a region we don't have any more.
+      MouseWatcherRegion *old_region = (*old_ri);
+      old_region->exit(param);
+      throw_event_pattern(_leave_pattern, old_region, ButtonHandle::none());
+      ++old_ri;
     }
-    _current_region = region;
-    if (_current_region != (MouseWatcherRegion *)NULL) {
-      _current_region->enter(param);
-      throw_event_pattern(_enter_pattern, _current_region, ButtonHandle::none());
+    
+    _current_regions.clear();
+
+    if (_preferred_region != (MouseWatcherRegion *)NULL) {
+      _preferred_region->exit(param);
+      throw_event_pattern(_leave_pattern, _preferred_region, ButtonHandle::none());
+      _preferred_region = (MouseWatcherRegion *)NULL;
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::intersect_regions
+//       Access: Private, Static
+//  Description: Sets result to be the intersection of the list of
+//               regions in regions_a and regions_b.  It is assumed
+//               that both vectors are already sorted in pointer
+//               order.
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+intersect_regions(MouseWatcher::VRegions &result,
+                  const MouseWatcher::VRegions &regions_a,
+                  const MouseWatcher::VRegions &regions_b) {
+  // Get a temporary vector for storing the result in.  We don't use
+  // result directly, because it might be the same vector as one of a
+  // or b.
+  VRegions temp;
+
+  // Now do a standard sorted intersection between the two vectors.
+  VRegions::const_iterator a_ri = regions_a.begin();
+  VRegions::const_iterator b_ri = regions_b.begin();
+
+  while (a_ri != regions_a.end() && b_ri != regions_b.end()) {
+    if ((*a_ri) < (*b_ri)) {
+      // Here's a region in a, not in b.
+      ++a_ri;
+
+    } else if ((*b_ri) < (*a_ri)) {
+      // Here's a region in b, not in a.
+      ++b_ri;
+
+    } else {
+      // Here's a region in both vectors.
+      temp.push_back(*a_ri);
+      ++a_ri;
+      ++b_ri;
+    }
+  }
+
+  // Now store the result!
+  result.swap(temp);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::remove_region_from
+//       Access: Private, Static
+//  Description: Removes the indicated region from the given vector.
+//               Assumes the vector is sorted in pointer order.
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+remove_region_from(MouseWatcher::VRegions &regions,
+                   MouseWatcherRegion *region) {
+  VRegions::iterator ri = 
+    lower_bound(regions.begin(), regions.end(), region);
+  if (ri != regions.end() && (*ri) == region) {
+    // The region is in the vector.  Remove it.
+    regions.erase(ri);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::remove_regions_from
+//       Access: Private, Static
+//  Description: Removes all the regions in the indicated group from
+//               the given vector.  Assumes the vector is sorted in
+//               pointer order.
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+remove_regions_from(MouseWatcher::VRegions &regions,
+                    MouseWatcherGroup *group) {
+  // Since the group stores a set of regions, which are also sorted in
+  // pointer order, we can just do an intersection operation here.
+  VRegions temp;
+
+  VRegions::const_iterator a_ri = regions.begin();
+  MouseWatcherGroup::Regions::const_iterator b_ri = group->_regions.begin();
+
+  while (a_ri != regions.end() && b_ri != group->_regions.end()) {
+    if ((*a_ri) < (*b_ri)) {
+      // Here's a region in the group, not in regions.
+      ++a_ri;
+
+    } else if ((*b_ri) < (*a_ri)) {
+      // Here's a region in regions, not in the group.
+      temp.push_back(*b_ri);
+      ++b_ri;
+
+    } else {
+      // Here's a region in the group and in regions.
+      ++a_ri;
+      ++b_ri;
+    }
+  }
+
+  // Now store the result!
+  regions.swap(temp);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -318,24 +565,25 @@ press(ButtonHandle button) {
     // Mouse buttons are inextricably linked to the mouse position.
     
     if (!_button_down) {
-      _button_down_region = _current_region;
+      _preferred_button_down_region = _preferred_region;
     }
     _button_down = true;
-    if (_button_down_region != (MouseWatcherRegion *)NULL) {
-      _button_down_region->press(param);
-      throw_event_pattern(_button_down_pattern, _button_down_region,
-                          button);
+
+    if (_preferred_button_down_region != (MouseWatcherRegion *)NULL) {
+      _preferred_button_down_region->press(param);
+      throw_event_pattern(_button_down_pattern,
+                          _preferred_button_down_region, button);
     }
     
   } else {
     // It's a keyboard button; therefore, send the event to every
     // region that wants keyboard buttons, regardless of the mouse
     // position.
-    if (_current_region != (MouseWatcherRegion *)NULL) {
+    if (_preferred_region != (MouseWatcherRegion *)NULL) {
       // Our current region, the one under the mouse, always get
       // all the keyboard events, even if it doesn't set its
       // keyboard flag.
-      _current_region->press(param);
+      _preferred_region->press(param);
     }
 
     if ((_suppress_flags & MouseWatcherRegion::SF_other_button) == 0) {
@@ -362,26 +610,28 @@ release(ButtonHandle button) {
   param.set_mouse(_mouse);
 
   if (MouseButton::is_mouse_button(button)) {
-    // Button up.  Send the up event associated with the region we
+    // Button up.  Send the up event associated with the region(s) we
     // were over when the button went down.
     
     // There is some danger of losing button-up events here.  If
     // more than one button goes down together, we won't detect
     // both of the button-up events properly.
-    if (_button_down_region != (MouseWatcherRegion *)NULL) {
-      param.set_outside(_current_region != _button_down_region);
-      _button_down_region->release(param);
-      throw_event_pattern(_button_up_pattern, _button_down_region,
-                          button);
+    if (_preferred_button_down_region != (MouseWatcherRegion *)NULL) {
+      param.set_outside(_preferred_button_down_region != _preferred_region);
+      _preferred_button_down_region->release(param);
+      throw_event_pattern(_button_up_pattern,
+                          _preferred_button_down_region, button);
     }
+
     _button_down = false;
+    _preferred_button_down_region = (MouseWatcherRegion *)NULL;
     
   } else {
     // It's a keyboard button; therefore, send the event to every
     // region that wants keyboard buttons, regardless of the mouse
     // position.
-    if (_current_region != (MouseWatcherRegion *)NULL) {
-      _current_region->release(param);
+    if (_preferred_region != (MouseWatcherRegion *)NULL) {
+      _preferred_region->release(param);
     }
     
     param.set_outside(true);
@@ -402,7 +652,7 @@ global_keyboard_press(const MouseWatcherParameter &param) {
   for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
     MouseWatcherRegion *region = (*ri);
 
-    if (region != _current_region && region->get_keyboard()) {
+    if (region != _preferred_region && region->get_keyboard()) {
       region->press(param);
     }
   }
@@ -414,7 +664,7 @@ global_keyboard_press(const MouseWatcherParameter &param) {
     for (ri = group->_regions.begin(); ri != group->_regions.end(); ++ri) {
       MouseWatcherRegion *region = (*ri);
 
-      if (region != _current_region && region->get_keyboard()) {
+      if (region != _preferred_region && region->get_keyboard()) {
         region->press(param);
       }
     }
@@ -434,7 +684,7 @@ global_keyboard_release(const MouseWatcherParameter &param) {
   for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
     MouseWatcherRegion *region = (*ri);
 
-    if (region != _current_region && region->get_keyboard()) {
+    if (region != _preferred_region && region->get_keyboard()) {
       region->release(param);
     }
   }
@@ -446,7 +696,7 @@ global_keyboard_release(const MouseWatcherParameter &param) {
     for (ri = group->_regions.begin(); ri != group->_regions.end(); ++ri) {
       MouseWatcherRegion *region = (*ri);
 
-      if (region != _current_region && region->get_keyboard()) {
+      if (region != _preferred_region && region->get_keyboard()) {
         region->release(param);
       }
     }
@@ -473,7 +723,7 @@ transmit_data(AllTransitionsWrapper &data) {
     _has_mouse = false;
     // If the mouse is outside the window, do nothing; let all the
     // events continue down the pipe unmolested.
-    set_current_region(NULL);
+    clear_current_regions();
     return;
   }
 
@@ -492,26 +742,13 @@ transmit_data(AllTransitionsWrapper &data) {
 
   _has_mouse = true;
 
-  if (!_button_down) {
-    // If the button is not currently being held down, we are free to
-    // set the mouse into whichever region we like.
-    set_current_region(get_over_region(_mouse));
-
-  } else {
-    // If the button *is* currently being held down, we can only move
-    // the mouse into a region if the region is the same region we
-    // started from.
-    MouseWatcherRegion *region = get_over_region(_mouse);
-    if (region == _button_down_region) {
-      set_current_region(region);
-    } else {
-      set_current_region((MouseWatcherRegion *)NULL);
-    }
-  }
+  VRegions regions;
+  get_over_regions(regions, _mouse);
+  set_current_regions(regions);
 
   _suppress_flags = 0;
-  if (_current_region != (MouseWatcherRegion *)NULL) {
-    _suppress_flags = _current_region->get_suppress_flags();
+  if (_preferred_region != (MouseWatcherRegion *)NULL) {
+    _suppress_flags = _preferred_region->get_suppress_flags();
   }
 
   // Look for button events.

@@ -124,7 +124,7 @@ is_over_region(const LPoint2f &pos) const {
 ////////////////////////////////////////////////////////////////////
 INLINE MouseWatcherRegion *MouseWatcher::
 get_over_region() const {
-  return _current_region;
+  return _preferred_region;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -197,8 +197,11 @@ get_button_up_pattern() const {
 //     Function: MouseWatcher::set_enter_pattern
 //       Access: Published
 //  Description: Sets the pattern string that indicates how the event
-//               names are generated when the mouse wanders over a
-//               region.  See set_button_down_pattern().
+//               names are generated when the mouse enters a region.
+//               This is different from within_pattern, in that a
+//               mouse is only "entered" in the topmost region at a
+//               given time, while it might be "within" multiple
+//               nested regions.
 ////////////////////////////////////////////////////////////////////
 INLINE void MouseWatcher::
 set_enter_pattern(const string &pattern) {
@@ -209,8 +212,10 @@ set_enter_pattern(const string &pattern) {
 //     Function: MouseWatcher::get_enter_pattern
 //       Access: Published
 //  Description: Returns the string that indicates how event names are
-//               generated when the mouse wanders over a region.  See
-//               set_button_down_pattern().
+//               generated when the mouse enters a region.  This is
+//               different from within_pattern, in that a mouse is
+//               only "entered" in the topmost region at a given time,
+//               while it might be "within" multiple nested regions.
 ////////////////////////////////////////////////////////////////////
 INLINE const string &MouseWatcher::
 get_enter_pattern() const {
@@ -222,7 +227,10 @@ get_enter_pattern() const {
 //       Access: Published
 //  Description: Sets the pattern string that indicates how the event
 //               names are generated when the mouse leaves a region.
-//               See set_button_down_pattern().
+//               This is different from without_pattern, in that a
+//               mouse is only "entered" in the topmost region at a
+//               given time, while it might be "within" multiple
+//               nested regions.
 ////////////////////////////////////////////////////////////////////
 INLINE void MouseWatcher::
 set_leave_pattern(const string &pattern) {
@@ -233,12 +241,73 @@ set_leave_pattern(const string &pattern) {
 //     Function: MouseWatcher::get_leave_pattern
 //       Access: Published
 //  Description: Returns the string that indicates how event names are
-//               generated when the mouse leaves a region.  See
-//               set_button_down_pattern().
+//               generated when the mouse leaves a region.  This is
+//               different from without_pattern, in that a mouse is
+//               only "entered" in the topmost region at a given time,
+//               while it might be "within" multiple nested regions.
 ////////////////////////////////////////////////////////////////////
 INLINE const string &MouseWatcher::
 get_leave_pattern() const {
   return _leave_pattern;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::set_within_pattern
+//       Access: Published
+//  Description: Sets the pattern string that indicates how the event
+//               names are generated when the mouse wanders over a
+//               region.  This is different from enter_pattern, in
+//               that a mouse is only "entered" in the topmost region
+//               at a given time, while it might be "within" multiple
+//               nested regions.
+////////////////////////////////////////////////////////////////////
+INLINE void MouseWatcher::
+set_within_pattern(const string &pattern) {
+  _within_pattern = pattern;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::get_within_pattern
+//       Access: Published
+//  Description: Returns the string that indicates how event names are
+//               generated when the mouse wanders over a region.  This
+//               is different from enter_pattern, in that a mouse is
+//               only "entered" in the topmost region at a given time,
+//               while it might be "within" multiple nested regions.
+////////////////////////////////////////////////////////////////////
+INLINE const string &MouseWatcher::
+get_within_pattern() const {
+  return _within_pattern;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::set_without_pattern
+//       Access: Published
+//  Description: Sets the pattern string that indicates how the event
+//               names are generated when the mouse wanders out of a
+//               region.  This is different from leave_pattern, in
+//               that a mouse is only "entered" in the topmost region
+//               at a given time, while it might be "within" multiple
+//               nested regions.
+////////////////////////////////////////////////////////////////////
+INLINE void MouseWatcher::
+set_without_pattern(const string &pattern) {
+  _without_pattern = pattern;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::get_without_pattern
+//       Access: Published
+//  Description: Returns the string that indicates how event names are
+//               generated when the mouse wanders out of a region.
+//               This is different from leave_pattern, in that a mouse
+//               is only "entered" in the topmost region at a given
+//               time, while it might be "within" multiple nested
+//               regions.
+////////////////////////////////////////////////////////////////////
+INLINE const string &MouseWatcher::
+get_without_pattern() const {
+  return _without_pattern;
 }
 
 ////////////////////////////////////////////////////////////////////

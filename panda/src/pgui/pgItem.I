@@ -238,6 +238,30 @@ get_exit_prefix() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGItem::get_within_prefix
+//       Access: Published, Static
+//  Description: Returns the prefix that is used to define the within
+//               event for all PGItems.  The within event is the
+//               concatenation of this string followed by get_id().
+////////////////////////////////////////////////////////////////////
+INLINE string PGItem::
+get_within_prefix() {
+  return "within-";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::get_without_prefix
+//       Access: Published, Static
+//  Description: Returns the prefix that is used to define the without
+//               event for all PGItems.  The without event is the
+//               concatenation of this string followed by get_id().
+////////////////////////////////////////////////////////////////////
+INLINE string PGItem::
+get_without_prefix() {
+  return "without-";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGItem::get_focus_in_prefix
 //       Access: Published, Static
 //  Description: Returns the prefix that is used to define the focus_in
@@ -297,7 +321,8 @@ get_release_prefix() {
 //     Function: PGItem::get_enter_event
 //       Access: Published
 //  Description: Returns the event name that will be thrown when the
-//               item is active and the mouse enters its frame.
+//               item is active and the mouse enters its frame, but
+//               not any nested frames.
 ////////////////////////////////////////////////////////////////////
 INLINE string PGItem::
 get_enter_event() const {
@@ -308,11 +333,41 @@ get_enter_event() const {
 //     Function: PGItem::get_exit_event
 //       Access: Published
 //  Description: Returns the event name that will be thrown when the
-//               item is active and the mouse exits its frame.
+//               item is active and the mouse exits its frame, or
+//               enters a nested frame.
 ////////////////////////////////////////////////////////////////////
 INLINE string PGItem::
 get_exit_event() const {
   return get_exit_prefix() + get_id();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::get_within_event
+//       Access: Published
+//  Description: Returns the event name that will be thrown when the
+//               item is active and the mouse moves within the
+//               boundaries of the frame.  This is different from the
+//               enter_event in that the mouse is considered within
+//               the frame even if it is also within a nested frame.
+////////////////////////////////////////////////////////////////////
+INLINE string PGItem::
+get_within_event() const {
+  return get_within_prefix() + get_id();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::get_without_event
+//       Access: Published
+//  Description: Returns the event name that will be thrown when the
+//               item is active and the mouse moves completely outside
+//               the boundaries of the frame.  This is different from
+//               the exit_event in that the mouse is considered
+//               within the frame even if it is also within a nested
+//               frame.
+////////////////////////////////////////////////////////////////////
+INLINE string PGItem::
+get_without_event() const {
+  return get_without_prefix() + get_id();
 }
 
 ////////////////////////////////////////////////////////////////////

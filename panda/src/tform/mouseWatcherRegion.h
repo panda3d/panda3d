@@ -72,6 +72,8 @@ public:
 
   virtual void enter(const MouseWatcherParameter &param);
   virtual void exit(const MouseWatcherParameter &param);
+  virtual void within(const MouseWatcherParameter &param);
+  virtual void without(const MouseWatcherParameter &param);
   virtual void press(const MouseWatcherParameter &param);
   virtual void release(const MouseWatcherParameter &param);
 

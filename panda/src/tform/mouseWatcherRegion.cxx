@@ -47,7 +47,10 @@ write(ostream &out, int indent_level) const {
 //     Function: MouseWatcherRegion::enter
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever the
-//               mouse enters the region.
+//               mouse enters the region.  The mouse is only
+//               considered to be "entered" in one region at a time;
+//               in the case of nested regions, it exits the outer
+//               region before entering the inner one.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherRegion::
 enter(const MouseWatcherParameter &) {
@@ -57,10 +60,38 @@ enter(const MouseWatcherParameter &) {
 //     Function: MouseWatcherRegion::exit
 //       Access: Public, Virtual
 //  Description: This is a callback hook function, called whenever the
-//               mouse exits the region.
+//               mouse exits the region.  The mouse is only considered
+//               to be "entered" in one region at a time; in the case
+//               of nested regions, it exits the outer region before
+//               entering the inner one.
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherRegion::
 exit(const MouseWatcherParameter &) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherRegion::within
+//       Access: Public, Virtual
+//  Description: This is a callback hook function, called whenever the
+//               mouse moves within the boundaries of the region, even
+//               if it is also within the boundaries of a nested
+//               region.  This is different from "enter", which is
+//               only called whenever the mouse is within only that
+//               region.
+////////////////////////////////////////////////////////////////////
+void MouseWatcherRegion::
+within(const MouseWatcherParameter &) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherRegion::without
+//       Access: Public, Virtual
+//  Description: This is a callback hook function, called whenever the
+//               mouse moves completely outside the boundaries of the
+//               region.  See within().
+////////////////////////////////////////////////////////////////////
+void MouseWatcherRegion::
+without(const MouseWatcherParameter &) {
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -89,6 +89,12 @@ PUBLISHED:
   INLINE void set_leave_pattern(const string &pattern);
   INLINE const string &get_leave_pattern() const;
 
+  INLINE void set_within_pattern(const string &pattern);
+  INLINE const string &get_within_pattern() const;
+
+  INLINE void set_without_pattern(const string &pattern);
+  INLINE const string &get_without_pattern() const;
+
   INLINE void set_geometry(NodeRelation *arc);
   INLINE bool has_geometry() const;
   INLINE NodeRelation *get_geometry() const;
@@ -108,7 +114,21 @@ public:
   bool remove_group(MouseWatcherGroup *group);
 
 private:
-  void set_current_region(MouseWatcherRegion *region);
+  typedef pvector< PT(MouseWatcherRegion) > VRegions;
+  void get_over_regions(VRegions &regions, const LPoint2f &pos) const;
+  static MouseWatcherRegion *get_preferred_region(const VRegions &regions);
+
+  void set_current_regions(VRegions &regions);
+  void clear_current_regions();
+  static void intersect_regions(MouseWatcher::VRegions &result,
+                                const MouseWatcher::VRegions &regions_a,
+                                const MouseWatcher::VRegions &regions_b);
+  static void remove_region_from(MouseWatcher::VRegions &regions,
+                                 MouseWatcherRegion *region);
+  static void remove_regions_from(MouseWatcher::VRegions &regions,
+                                  MouseWatcherGroup *group);
+
+    
   void throw_event_pattern(const string &pattern,
                            const MouseWatcherRegion *region,
                            const ButtonHandle &button);
@@ -125,14 +145,17 @@ private:
   int _suppress_flags;
   LPoint2f _mouse;
 
-  PT(MouseWatcherRegion) _current_region;
-  PT(MouseWatcherRegion) _button_down_region;
+  VRegions _current_regions;
+  PT(MouseWatcherRegion) _preferred_region;
+  PT(MouseWatcherRegion) _preferred_button_down_region;
   bool _button_down;
 
   string _button_down_pattern;
   string _button_up_pattern;
   string _enter_pattern;
   string _leave_pattern;
+  string _within_pattern;
+  string _without_pattern;
 
   PT_NodeRelation _geometry;
 
