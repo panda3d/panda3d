@@ -1239,7 +1239,7 @@ int framework_main(int argc, char *argv[]) {
 		int filenum=0;
 	
 		for(int passnum=0;passnum<gridrepeats;passnum++) {
-  		  for (i = 0; i < grided_files_size; i++) {
+  		  for (i = 0; i < grided_files_size; i++,filenum++) {
 
 			  PT_Node pNodePtr=pNodeArr[i];
 			  if(passnum>0) {
