@@ -93,11 +93,11 @@ Downloader::
 ////////////////////////////////////////////////////////////////////
 int Downloader::
 connect_to_server_by_proxy(const string &proxy_name, uint proxy_port,
-			   const string &server_name) {
+                           const string &server_name) {
   if (connect_to_server(proxy_name, proxy_port) != EU_success) {
     downloader_cat.error()
       << "Downloader::connect_to_server_by_proxy() - could not connect to: "
-      << proxy_name << endl;	
+      << proxy_name << endl;
     return EU_error_abort;
   }
   

@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
   INLINE PT_NamedNode ChanConfig::get_group_node(const int node_index) const {
-	 return _group_node[node_index];
+         return _group_node[node_index];
   }
   INLINE int ChanConfig::get_group_membership(const int dr_index) const {
     return _group_membership[dr_index];

@@ -2932,8 +2932,8 @@ typedef void (APIENTRY * PFNGLTEXTURECOLORMASKSGISPROC) (GLboolean red, GLboolea
 /* Extensions */
 #define GL_ARB_texture_border_clamp       1
 #define GL_NV_evaluators                  1
-#define GL_NV_fence						  1
-#define GL_NV_packed_depth_stencil		  1
+#define GL_NV_fence                                               1
+#define GL_NV_packed_depth_stencil                1
 #define GL_NV_register_combiners2         1
 #define GL_NV_texture_rectangle           1
 #define GL_NV_texture_shader              1

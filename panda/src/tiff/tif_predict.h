@@ -25,7 +25,7 @@
  */
 
 #ifndef _TIFFPREDICT_
-#define	_TIFFPREDICT_
+#define _TIFFPREDICT_
 /*
  * ``Library-private'' Support for the Predictor Tag
  */
@@ -36,25 +36,25 @@
  * the predictor code can cast tif_data to find its state.
  */
 typedef struct {
-	int	predictor;		/* predictor tag value */
-	int	stride;			/* sample stride over data */
-	tsize_t	rowsize;		/* tile/strip row size */
+        int     predictor;              /* predictor tag value */
+        int     stride;                 /* sample stride over data */
+        tsize_t rowsize;                /* tile/strip row size */
 
-	TIFFPostMethod	pfunc;		/* horizontal differencer/accumulator */
-	TIFFCodeMethod	coderow;	/* parent codec encode/decode row */
-	TIFFCodeMethod	codestrip;	/* parent codec encode/decode strip */
-	TIFFCodeMethod	codetile;	/* parent codec encode/decode tile */
-	TIFFVGetMethod	vgetparent;	/* super-class method */
-	TIFFVSetMethod	vsetparent;	/* super-class method */
-	TIFFPrintMethod	printdir;	/* super-class method */
-	TIFFBoolMethod	setupdecode;	/* super-class method */
-	TIFFBoolMethod	setupencode;	/* super-class method */
+        TIFFPostMethod  pfunc;          /* horizontal differencer/accumulator */
+        TIFFCodeMethod  coderow;        /* parent codec encode/decode row */
+        TIFFCodeMethod  codestrip;      /* parent codec encode/decode strip */
+        TIFFCodeMethod  codetile;       /* parent codec encode/decode tile */
+        TIFFVGetMethod  vgetparent;     /* super-class method */
+        TIFFVSetMethod  vsetparent;     /* super-class method */
+        TIFFPrintMethod printdir;       /* super-class method */
+        TIFFBoolMethod  setupdecode;    /* super-class method */
+        TIFFBoolMethod  setupencode;    /* super-class method */
 } TIFFPredictorState;
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
-extern	int TIFFPredictorInit(TIFF*);
+extern  int TIFFPredictorInit(TIFF*);
 #if defined(__cplusplus)
 }
 #endif

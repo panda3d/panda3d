@@ -47,7 +47,7 @@ PUBLISHED:
   virtual ~Downloader(void);
 
   int connect_to_server_by_proxy(const string &proxy_name, uint proxy_port,
-		const string &server_name);
+                const string &server_name);
   int connect_to_server(const string &name, uint port=80);
   void disconnect_from_server(void);
 

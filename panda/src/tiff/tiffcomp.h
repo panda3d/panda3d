@@ -25,7 +25,7 @@
  */
 
 #ifndef _COMPAT_
-#define	_COMPAT_
+#define _COMPAT_
 /*
  * This file contains a hodgepodge of definitions and
  * declarations that are needed to provide compatibility
@@ -81,20 +81,20 @@
  */
 #if defined(__MWERKS__) || defined(THINK_C) || defined(__PPCC__) || defined(__SC__) || defined(__MRC__)
 #include <stdlib.h>
-#define	BSDTYPES
-#define	HAVE_UNISTD_H	0
+#define BSDTYPES
+#define HAVE_UNISTD_H   0
 #elif (defined(_WINDOWS) || defined(__WIN32__) || defined(_Windows) || defined(_WIN32)) && !defined(unix)
-#define	BSDTYPES
+#define BSDTYPES
 #elif defined(OS2_16) || defined(OS2_32)
-#define	BSDTYPES
+#define BSDTYPES
 #elif defined(__acornriscos)
 #include <stdlib.h>
-#define	BSDTYPES
-#define	HAVE_UNISTD_H	0
+#define BSDTYPES
+#define HAVE_UNISTD_H   0
 #elif defined(VMS)
-#define	HAVE_UNISTD_H	0
+#define HAVE_UNISTD_H   0
 #else
-#define	HAVE_UNISTD_H	1
+#define HAVE_UNISTD_H   1
 #endif
 
 /*
@@ -119,10 +119,10 @@
  * then define BSDTYPES in your Makefile.
  */
 #if defined(BSDTYPES)
-typedef	unsigned char u_char;
-typedef	unsigned short u_short;
-typedef	unsigned int u_int;
-typedef	unsigned long u_long;
+typedef unsigned char u_char;
+typedef unsigned short u_short;
+typedef unsigned int u_int;
+typedef unsigned long u_long;
 #endif
 
 /*
@@ -144,12 +144,12 @@ typedef double dblparam_t;
  */
 #if defined(__GNUC__)
 #if defined(__STRICT_ANSI__)
-#define	INLINE	__inline__
+#define INLINE  __inline__
 #else
-#define	INLINE	inline
+#define INLINE  inline
 #endif
 #else /* !__GNUC__ */
-#define	INLINE
+#define INLINE
 #endif
 
 /*
@@ -166,14 +166,14 @@ typedef double dblparam_t;
  */
 #if defined(VAX) && defined(VMS)
 #if defined(VAXC)
-#define GLOBALDATA(TYPE,NAME)	extern noshare TYPE NAME
+#define GLOBALDATA(TYPE,NAME)   extern noshare TYPE NAME
 #endif
 #if defined(__GNUC__)
-#define GLOBALDATA(TYPE,NAME)	extern TYPE NAME \
-	asm("_$$PsectAttributes_NOSHR$$" #NAME)
+#define GLOBALDATA(TYPE,NAME)   extern TYPE NAME \
+        asm("_$$PsectAttributes_NOSHR$$" #NAME)
 #endif
-#else	/* !VAX/VMS */
-#define GLOBALDATA(TYPE,NAME)	extern TYPE NAME
+#else   /* !VAX/VMS */
+#define GLOBALDATA(TYPE,NAME)   extern TYPE NAME
 #endif
 
 #if defined(__acornriscos)
@@ -186,12 +186,12 @@ typedef double dblparam_t;
 #if defined(__cplusplus)
 #include <osfcn.h>
 #else
-#define	O_RDONLY	0
-#define	O_WRONLY	1
-#define	O_RDWR		2
-#define	O_APPEND	8
-#define	O_CREAT		0x200
-#define	O_TRUNC		0x400
+#define O_RDONLY        0
+#define O_WRONLY        1
+#define O_RDWR          2
+#define O_APPEND        8
+#define O_CREAT         0x200
+#define O_TRUNC         0x400
 typedef long off_t;
 extern int open(const char *name, int flags, int mode);
 extern int close(int fd);
@@ -207,7 +207,7 @@ extern int creat(const char *path, int mode);
 #undef HOST_FILLORDER
 #undef HOST_BIGENDIAN
 #define HOST_FILLORDER FILLORDER_LSB2MSB
-#define HOST_BIGENDIAN	0
+#define HOST_BIGENDIAN  0
 #endif
 
 

@@ -24,7 +24,7 @@
  */
 
 #ifndef _TIFFCONF_
-#define	_TIFFCONF_
+#define _TIFFCONF_
 /*
  * Library Configuration Definitions.
  *
@@ -39,33 +39,33 @@
 /*
  * General portability-related defines:
  *
- * HAVE_IEEEFP		define as 0 or 1 according to the floating point
- *			format suported by the machine
- * BSDTYPES		define this if your system does NOT define the
- *			usual 4BSD typedefs u_int et. al.
- * HAVE_MMAP		enable support for memory mapping read-only files;
- *			this is typically deduced by the configure script
- * HOST_FILLORDER	native cpu bit order: one of FILLORDER_MSB2LSB
- *			or FILLODER_LSB2MSB; this is typically set by the
- *			configure script
- * HOST_BIGENDIAN	native cpu byte order: 1 if big-endian (Motorola)
- *			or 0 if little-endian (Intel); this may be used
- *			in codecs to optimize code
- * USE_64BIT_API	set to 1 if tif_unix.c should use lseek64(),
+ * HAVE_IEEEFP          define as 0 or 1 according to the floating point
+ *                      format suported by the machine
+ * BSDTYPES             define this if your system does NOT define the
+ *                      usual 4BSD typedefs u_int et. al.
+ * HAVE_MMAP            enable support for memory mapping read-only files;
+ *                      this is typically deduced by the configure script
+ * HOST_FILLORDER       native cpu bit order: one of FILLORDER_MSB2LSB
+ *                      or FILLODER_LSB2MSB; this is typically set by the
+ *                      configure script
+ * HOST_BIGENDIAN       native cpu byte order: 1 if big-endian (Motorola)
+ *                      or 0 if little-endian (Intel); this may be used
+ *                      in codecs to optimize code
+ * USE_64BIT_API        set to 1 if tif_unix.c should use lseek64(),
  *                      fstat64() and stat64 allowing 2-4GB files.
  */
 #ifndef HAVE_IEEEFP
-#define	HAVE_IEEEFP	1
+#define HAVE_IEEEFP     1
 #endif
 #ifndef HOST_FILLORDER
-#define	HOST_FILLORDER	FILLORDER_MSB2LSB
+#define HOST_FILLORDER  FILLORDER_MSB2LSB
 #endif
-#ifndef	HOST_BIGENDIAN
-#define	HOST_BIGENDIAN	1
+#ifndef HOST_BIGENDIAN
+#define HOST_BIGENDIAN  1
 #endif
 
 #ifndef USE_64BIT_API
-#  define USE_64BIT_API	0
+#  define USE_64BIT_API 0
 #endif
 
 #ifndef FEATURE_SUPPORT
@@ -73,16 +73,16 @@
  * Feature support definitions:
  *
  *    COLORIMETRY_SUPPORT enable support for 6.0 colorimetry tags
- *    YCBCR_SUPPORT	enable support for 6.0 YCbCr tags
- *    CMYK_SUPPORT	enable support for 6.0 CMYK tags
- *    ICC_SUPPORT	enable support for ICC profile tag
+ *    YCBCR_SUPPORT     enable support for 6.0 YCbCr tags
+ *    CMYK_SUPPORT      enable support for 6.0 CMYK tags
+ *    ICC_SUPPORT       enable support for ICC profile tag
  *    PHOTOSHOP_SUPPORT enable support for PHOTOSHOP resource tag
  *    IPTC_SUPPORT  enable support for RichTIFF IPTC tag
  */
-#define	COLORIMETRY_SUPPORT
-#define	YCBCR_SUPPORT
-#define	CMYK_SUPPORT
-#define	ICC_SUPPORT
+#define COLORIMETRY_SUPPORT
+#define YCBCR_SUPPORT
+#define CMYK_SUPPORT
+#define ICC_SUPPORT
 #define PHOTOSHOP_SUPPORT
 #define IPTC_SUPPORT
 #endif /* FEATURE_SUPPORT */
@@ -91,25 +91,25 @@
 /*
  * Compression support defines:
  *
- *    CCITT_SUPPORT	enable support for CCITT Group 3 & 4 algorithms
- *    PACKBITS_SUPPORT	enable support for Macintosh PackBits algorithm
- *    LZW_SUPPORT	enable support for LZW algorithm
- *    THUNDER_SUPPORT	enable support for ThunderScan 4-bit RLE algorithm
- *    NEXT_SUPPORT	enable support for NeXT 2-bit RLE algorithm
- *    OJPEG_SUPPORT	enable support for 6.0-style JPEG DCT algorithms
- *			(no builtin support, only a codec hook)
- *    JPEG_SUPPORT	enable support for post-6.0-style JPEG DCT algorithms
- *			(requires freely available IJG software, see tif_jpeg.c)
- *    ZIP_SUPPORT	enable support for Deflate algorithm
- *			(requires freely available zlib software, see tif_zip.c)
- *    PIXARLOG_SUPPORT	enable support for Pixar log-format algorithm
- *    LOGLUV_SUPPORT	enable support for LogLuv high dynamic range encoding
+ *    CCITT_SUPPORT     enable support for CCITT Group 3 & 4 algorithms
+ *    PACKBITS_SUPPORT  enable support for Macintosh PackBits algorithm
+ *    LZW_SUPPORT       enable support for LZW algorithm
+ *    THUNDER_SUPPORT   enable support for ThunderScan 4-bit RLE algorithm
+ *    NEXT_SUPPORT      enable support for NeXT 2-bit RLE algorithm
+ *    OJPEG_SUPPORT     enable support for 6.0-style JPEG DCT algorithms
+ *                      (no builtin support, only a codec hook)
+ *    JPEG_SUPPORT      enable support for post-6.0-style JPEG DCT algorithms
+ *                      (requires freely available IJG software, see tif_jpeg.c)
+ *    ZIP_SUPPORT       enable support for Deflate algorithm
+ *                      (requires freely available zlib software, see tif_zip.c)
+ *    PIXARLOG_SUPPORT  enable support for Pixar log-format algorithm
+ *    LOGLUV_SUPPORT    enable support for LogLuv high dynamic range encoding
  */
-#define	CCITT_SUPPORT
-#define	PACKBITS_SUPPORT
-#define	LZW_SUPPORT
-#define	THUNDER_SUPPORT
-#define	NEXT_SUPPORT
+#define CCITT_SUPPORT
+#define PACKBITS_SUPPORT
+#define LZW_SUPPORT
+#define THUNDER_SUPPORT
+#define NEXT_SUPPORT
 #define LOGLUV_SUPPORT
 #endif /* COMPRESSION_SUPPORT */
 
@@ -119,25 +119,25 @@
  */
 #ifdef JPEG_SUPPORT
 #ifndef YCBCR_SUPPORT
-#define	YCBCR_SUPPORT
+#define YCBCR_SUPPORT
 #endif
 #ifndef COLORIMETRY_SUPPORT
-#define	COLORIMETRY_SUPPORT
+#define COLORIMETRY_SUPPORT
 #endif
 #endif /* JPEG_SUPPORT */
 
 /*
  * ``Orthogonal Features''
  *
- * STRIPCHOP_DEFAULT	default handling of strip chopping support (whether
- *			or not to convert single-strip uncompressed images
- *			to mutiple strips of ~8Kb--to reduce memory use)
- * SUBIFD_SUPPORT	enable support for SubIFD tag (thumbnails and such)
+ * STRIPCHOP_DEFAULT    default handling of strip chopping support (whether
+ *                      or not to convert single-strip uncompressed images
+ *                      to mutiple strips of ~8Kb--to reduce memory use)
+ * SUBIFD_SUPPORT       enable support for SubIFD tag (thumbnails and such)
  */
 #ifndef STRIPCHOP_DEFAULT
-#define	STRIPCHOP_DEFAULT	TIFF_STRIPCHOP	/* default is to enable */
+#define STRIPCHOP_DEFAULT       TIFF_STRIPCHOP  /* default is to enable */
 #endif
 #ifndef SUBIFD_SUPPORT
-#define	SUBIFD_SUPPORT		1	/* enable SubIFD tag (330) support */
+#define SUBIFD_SUPPORT          1       /* enable SubIFD tag (330) support */
 #endif
 #endif /* _TIFFCONF_ */

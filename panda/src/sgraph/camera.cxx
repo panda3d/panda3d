@@ -185,82 +185,82 @@ remove_display_region(DisplayRegion *display_region) {
 ////////////////////////////////////////////////////////////////////
 void Camera::
 set_projection(const Projection &projection) {
-	ProjectionNode::set_projection(projection);
-	if(has_name()) {
-	  throw_event(_CHANGE_CAM,get_name());
-	}
-	else
-	  throw_event(_CHANGE_CAM,std::string(""));
+        ProjectionNode::set_projection(projection);
+        if(has_name()) {
+          throw_event(_CHANGE_CAM,get_name());
+        }
+        else
+          throw_event(_CHANGE_CAM,std::string(""));
 }
 
 void Camera::
 set_fov(float hfov) {
-	ProjectionNode::set_fov(hfov);
-	if(has_name())
-	  throw_event(_CHANGE_CAM,get_name());
-	else
-	  throw_event(_CHANGE_CAM,std::string(""));
+        ProjectionNode::set_fov(hfov);
+        if(has_name())
+          throw_event(_CHANGE_CAM,get_name());
+        else
+          throw_event(_CHANGE_CAM,std::string(""));
 }
 
 void Camera::
 set_fov(float hfov, float vfov) {
-	ProjectionNode::set_fov(hfov, vfov);
-	if(has_name())
-	  throw_event(_CHANGE_CAM,get_name());
-	else
-	  throw_event(_CHANGE_CAM,std::string(""));
+        ProjectionNode::set_fov(hfov, vfov);
+        if(has_name())
+          throw_event(_CHANGE_CAM,get_name());
+        else
+          throw_event(_CHANGE_CAM,std::string(""));
 }
 
 void Camera::
 set_hfov(float hfov) {
-	ProjectionNode::set_hfov(hfov);
-	if(has_name())
-	  throw_event(_CHANGE_CAM,get_name());
-	else
-	  throw_event(_CHANGE_CAM,std::string(""));
+        ProjectionNode::set_hfov(hfov);
+        if(has_name())
+          throw_event(_CHANGE_CAM,get_name());
+        else
+          throw_event(_CHANGE_CAM,std::string(""));
 }
 
 void Camera::
 set_vfov(float vfov) {
-	ProjectionNode::set_vfov(vfov);
-	if(has_name())
-	  throw_event(_CHANGE_CAM,get_name());
-	else
-	  throw_event(_CHANGE_CAM,std::string(""));
+        ProjectionNode::set_vfov(vfov);
+        if(has_name())
+          throw_event(_CHANGE_CAM,get_name());
+        else
+          throw_event(_CHANGE_CAM,std::string(""));
 }
 
 void Camera::
 set_aspect(float aspect) {
-	ProjectionNode::set_aspect(aspect);
-	if(has_name())
-	  throw_event(_CHANGE_CAM,get_name());
-	else
-	  throw_event(_CHANGE_CAM,std::string(""));
+        ProjectionNode::set_aspect(aspect);
+        if(has_name())
+          throw_event(_CHANGE_CAM,get_name());
+        else
+          throw_event(_CHANGE_CAM,std::string(""));
 }
 
 void Camera::
 set_near_far(float cnear, float cfar) {
-	ProjectionNode::set_near_far(cnear,cfar);
-	if(has_name())
-	  throw_event(_CHANGE_CAM,get_name());
-	else
-	  throw_event(_CHANGE_CAM,std::string(""));
+        ProjectionNode::set_near_far(cnear,cfar);
+        if(has_name())
+          throw_event(_CHANGE_CAM,get_name());
+        else
+          throw_event(_CHANGE_CAM,std::string(""));
 }
 
 void Camera::
 set_near(float cnear) {
-	ProjectionNode::set_near(cnear);
-	if(has_name())
-	  throw_event(_CHANGE_CAM,get_name());
-	else
-	  throw_event(_CHANGE_CAM,std::string(""));
+        ProjectionNode::set_near(cnear);
+        if(has_name())
+          throw_event(_CHANGE_CAM,get_name());
+        else
+          throw_event(_CHANGE_CAM,std::string(""));
 }
 
 void Camera::
 set_far(float cfar) {
-	ProjectionNode::set_far(cfar);
-	if(has_name())
-	  throw_event(_CHANGE_CAM,get_name());
-	else
-	  throw_event(_CHANGE_CAM,std::string(""));
+        ProjectionNode::set_far(cfar);
+        if(has_name())
+          throw_event(_CHANGE_CAM,get_name());
+        else
+          throw_event(_CHANGE_CAM,std::string(""));
 }

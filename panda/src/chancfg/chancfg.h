@@ -112,8 +112,8 @@ private:
   std::vector<int> _group_membership;
   PT(GraphicsWindow) _graphics_window;
   void chan_eval(GraphicsWindow* win, WindowItem& W, LayoutItem& L, 
-	 SVec& S, ChanViewport& V, int hw_offset, 
-	 int xsize, int ysize, Node *render, bool want_cameras);
+         SVec& S, ChanViewport& V, int hw_offset, 
+         int xsize, int ysize, Node *render, bool want_cameras);
 PUBLISHED:
   ChanConfig(GraphicsPipe*, std::string, Node *render,
     ChanCfgOverrides& = ChanOverrideNone);

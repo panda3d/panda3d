@@ -298,7 +298,7 @@ run() {
       poly->set_texture(tref);
       poly->set_color(_polygon_color);
       if (_apply_bface){
-	poly->set_bface_flag(1);
+        poly->set_bface_flag(1);
       }
 
       poly->add_vertex(v1);
