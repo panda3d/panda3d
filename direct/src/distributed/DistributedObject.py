@@ -15,7 +15,11 @@ ESGenerating   = 5  # values here and greater are considered "generated"
 ESGenerated    = 6
 
 class DistributedObject(PandaObject):
-    """Distributed Object class:"""
+    """
+    The Distributed Object class is the base class for all network based
+    (i.e. distributed) objects.  These will usually (always?) have a
+    dclass entry in a *.dc file.
+    """
     notify = directNotify.newCategory("DistributedObject")
 
     # A few objects will set neverDisable to 1... Examples are
@@ -182,7 +186,7 @@ class DistributedObject(PandaObject):
             self.DistributedObject_deleted = 1
             self.cr = None
             self.dclass = None
-            
+
     def generate(self):
         """
         Inheritors should redefine this to take appropriate action on generate
@@ -196,17 +200,17 @@ class DistributedObject(PandaObject):
         to the world... Not when it is pulled from the cache.
         """
         self.activeState = ESGenerating
-    
+
     def getDoId(self):
         """
         Return the distributed object id
         """
         return self.doId
-    
+
     def updateRequiredFields(self, dclass, di):
         dclass.receiveUpdateBroadcastRequired(self, di)
         self.announceGenerate()
-    
+
     def updateAllRequiredFields(self, dclass, di):
         dclass.receiveUpdateAllRequired(self, di)
         self.announceGenerate()
@@ -233,7 +237,7 @@ class DistributedObject(PandaObject):
 
     def taskName(self, taskString):
         return (taskString + "-" + str(self.getDoId()))
-    
+
     def uniqueName(self, idString):
         return (idString + "-" + str(self.getDoId()))
 
@@ -292,7 +296,7 @@ class DistributedObject(PandaObject):
             del self.__callbacks[context]
         else:
             self.notify.warning("Got unexpected context from AI: %s" % (context))
-        
+
     def setBarrierData(self, data):
         # This message is sent by the AI to tell us the barriers and
         # avIds for which the AI is currently waiting.  The client
@@ -307,10 +311,10 @@ class DistributedObject(PandaObject):
                 self.__barrierContext = (context, name)
                 assert(self.notify.debug('setBarrierData(%s, %s)' % (context, name)))
                 return
-                
+
         assert(self.notify.debug('setBarrierData(%s)' % (None)))
         self.__barrierContext = None
-        
+
     def doneBarrier(self, name = None):
         # Tells the AI we have finished handling our task.  If the
         # optional name parameter is specified, it must match the
@@ -332,11 +336,11 @@ class DistributedObject(PandaObject):
                 assert(self.notify.debug('doneBarrier(%s) ignored; current barrier is %s' % (name, aiName)))
         else:
             assert(self.notify.debug('doneBarrier(%s) ignored; no active barrier.' % (name)))
-    
+
     if wantOtpServer:
         def addInterest(self, zoneId, note="", event=None):
             self.cr.addInterest(self.getDoId(), zoneId, note, event)
-        
+
         def setLocation(self, parentId, zoneId):
             # The store must run first so we know the old location
             self.cr.storeObjectLocation(self.doId, parentId, zoneId)
