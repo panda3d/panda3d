@@ -69,22 +69,13 @@ class Loader:
         return texture
 
     # sound loading funcs
-    def loadSample(self, samplePath):
+    def loadSound(self, soundPath):
         """loadSample(self, string)
         Attempt to load a sound from the given file path using
         Cary's sound class. Returns None if not found"""
-        Loader.notify.info("Loading sound: %s" % (samplePath) )
-        sound = self.__audioPool.loadSample(samplePath)
+        Loader.notify.info("Loading sound: %s" % (soundPath) )
+        sound = self.__audioPool.loadSound(soundPath)
         return sound
-
-    def loadMusic(self, musicPath):
-        """loadMusic(self, string)
-        Attempt to load music from the given file path using
-        Cary's sound class. Returns None if not found"""
-        Loader.notify.info("Loading music: %s" % (musicPath) )
-        music = self.__audioPool.loadMusic(musicPath)
-        return music
-
 
 
 
