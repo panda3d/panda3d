@@ -75,9 +75,12 @@ begin_frame() {
     int flag = 0;
     wglgsg->_wglQueryPbufferARB(_pbuffer, WGL_PBUFFER_LOST_ARB, &flag);
     if (flag != 0) {
-      wgldisplay_cat.info()
-        << "Pbuffer contents lost.\n";
-      return false;
+      // The pbuffer was lost, due to a mode change or something
+      // silly like that.  We must therefore recreate the pbuffer.
+      close_buffer();
+      if (!open_buffer()) {
+        return false;
+      }
     }
   }
 
