@@ -13,6 +13,7 @@ BillboardTransition() {
   _up_vector = LVector3f::up();
   _eye_relative = false;
   _axial_rotate = true;
+  _offset = 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -23,11 +24,12 @@ BillboardTransition() {
 //               appropriate to the given coordinate system.
 ////////////////////////////////////////////////////////////////////
 INLINE BillboardTransition BillboardTransition::
-axis(CoordinateSystem cs) {
+axis(float offset, CoordinateSystem cs) {
   BillboardTransition t;
   t.set_up_vector(LVector3f::up(cs));
   t.set_eye_relative(false);
   t.set_axial_rotate(true);
+  t.set_offset(offset);
   return t;
 }
 
@@ -39,11 +41,12 @@ axis(CoordinateSystem cs) {
 //               (camera) coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE BillboardTransition BillboardTransition::
-point_eye(CoordinateSystem cs) {
+point_eye(float offset, CoordinateSystem cs) {
   BillboardTransition t;
   t.set_up_vector(LVector3f::up(cs));
   t.set_eye_relative(true);
   t.set_axial_rotate(false);
+  t.set_offset(offset);
   return t;
 }
 
@@ -55,11 +58,12 @@ point_eye(CoordinateSystem cs) {
 //               coordinates.
 ////////////////////////////////////////////////////////////////////
 INLINE BillboardTransition BillboardTransition::
-point_world(CoordinateSystem cs) {
+point_world(float offset, CoordinateSystem cs) {
   BillboardTransition t;
   t.set_up_vector(LVector3f::up(cs));
   t.set_eye_relative(false);
   t.set_axial_rotate(false);
+  t.set_offset(offset);
   return t;
 }
 
@@ -140,4 +144,40 @@ set_axial_rotate(bool axial_rotate) {
 INLINE bool BillboardTransition::
 get_axial_rotate() const {
   return _axial_rotate;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BillboardTransition::set_offset
+//       Access: Public
+//  Description: Sets a linear offset in the billboard.  This is
+//               particularly useful when eye_relative is true (which
+//               means the billboard rotates towards the camera plane,
+//               instead of towards the camera point).
+//
+//               The billboard geometry is first rotated
+//               appropriately, and then translated along the linear
+//               offset directly towards the camera.
+//
+//               This can be used to allow billboarding geometry to
+//               appear to float in front of an object, while not
+//               drifting away from the object as the object goes
+//               off-axis.  Another way to achieve the same effect is
+//               to simply translate the billboarding geometry by some
+//               linear distance along the z axis before making it a
+//               billboard, but this does not work in eye_relative
+//               mode.
+////////////////////////////////////////////////////////////////////
+INLINE void BillboardTransition::
+set_offset(float offset) {
+  _offset = offset;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BillboardTransition::get_axial_rotate
+//       Access: Public
+//  Description: See set_offset().
+////////////////////////////////////////////////////////////////////
+INLINE float BillboardTransition::
+get_offset() const {
+  return _offset;
 }

@@ -40,7 +40,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 bool BillboardTransition::
 sub_render(NodeRelation *arc, const AllAttributesWrapper &,
-       AllTransitionsWrapper &trans, RenderTraverser *trav) {
+           AllTransitionsWrapper &trans, RenderTraverser *trav) {
   Node *node = arc->get_child();
   GraphicsStateGuardian *gsg = trav->get_gsg();
 
@@ -61,7 +61,7 @@ sub_render(NodeRelation *arc, const AllAttributesWrapper &,
     rel_mat = tt->get_matrix();
   }
 
-  LVector3f camera_pos,up;
+  LVector3f camera_pos, up;
 
   CoordinateSystem coordsys = gsg->get_coordinate_system();
 
@@ -71,18 +71,18 @@ sub_render(NodeRelation *arc, const AllAttributesWrapper &,
   // perpendicular to the forward direction, not directly to the
   // camera.
 
-
   if (_eye_relative) {
     up = _up_vector * rel_mat;
     camera_pos = LVector3f::forward(coordsys) * rel_mat;
+
   } else {
-//    camera_pos= -rel_mat.get_row3(3);
+//  camera_pos= -rel_mat.get_row3(3);
 
-      camera_pos[0] = -rel_mat(3,0);
-      camera_pos[1] = -rel_mat(3,1);
-      camera_pos[2] = -rel_mat(3,2);
-
-      up = _up_vector;
+    camera_pos[0] = -rel_mat(3,0);
+    camera_pos[1] = -rel_mat(3,1);
+    camera_pos[2] = -rel_mat(3,2);
+    
+    up = _up_vector;
   }
 
   // Now determine the rotation matrix for the Billboard.
@@ -91,6 +91,15 @@ sub_render(NodeRelation *arc, const AllAttributesWrapper &,
     heads_up(rotate, camera_pos, up, coordsys);
   } else {
     look_at(rotate, camera_pos, up, coordsys);
+  }
+
+  // Also slide the billboard geometry towards the camera according to
+  // the offset factor.
+  if (_offset != 0.0f) {
+    LVector3f translate(rel_mat(3, 0), rel_mat(3, 1), rel_mat(3, 2));
+    translate.normalize();
+    translate *= _offset;
+    rotate.set_row(3, translate);
   }
 
   // And finally, apply the rotation transform to the set of

@@ -27,9 +27,9 @@
 class EXPCL_PANDA BillboardTransition : public ImmediateTransition {
 public:
   INLINE BillboardTransition();
-  INLINE static BillboardTransition axis(CoordinateSystem cs = CS_default);
-  INLINE static BillboardTransition point_eye(CoordinateSystem cs = CS_default);
-  INLINE static BillboardTransition point_world(CoordinateSystem cs = CS_default);
+  INLINE static BillboardTransition axis(float offset = 0.0, CoordinateSystem cs = CS_default);
+  INLINE static BillboardTransition point_eye(float offset = 0.0, CoordinateSystem cs = CS_default);
+  INLINE static BillboardTransition point_world(float offset = 0.0, CoordinateSystem cs = CS_default);
 
   INLINE void set_up_vector(const LVector3f &up_vector);
   INLINE LVector3f get_up_vector() const;
@@ -39,6 +39,9 @@ public:
 
   INLINE void set_axial_rotate(bool axial_rotate);
   INLINE bool get_axial_rotate() const;
+
+  INLINE void set_offset(float offset);
+  INLINE float get_offset() const;
 
   virtual NodeTransition *make_copy() const;
 
@@ -58,6 +61,7 @@ private:
   LVector3f _up_vector;
   bool _eye_relative;
   bool _axial_rotate;
+  float _offset;
 
 public:
   static void register_with_read_factory(void);
