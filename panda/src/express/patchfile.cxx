@@ -213,7 +213,7 @@ initiate(const Filename &patch_file, const Filename &file) {
         << "Patchfile::initiate() - Failed to create temp file name, using default" << endl;
       _temp_file = "patcher_temp_file";
     } else {
-      _temp_file = tempfilename;
+      _temp_file = Filename::from_os_specific(tempfilename);
       free(tempfilename);
     }
   }
