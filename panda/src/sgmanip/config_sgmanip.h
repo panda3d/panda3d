@@ -25,4 +25,7 @@
 
 NotifyCategoryDecl(sgmanip, EXPCL_PANDA, EXPTP_PANDA);
 
+// Configure variables for sgmanip package.
+extern const bool EXPCL_PANDA check_singular_transform;
+
 #endif

@@ -26,6 +26,13 @@
 Configure(config_sgmanip);
 NotifyCategoryDef(sgmanip, "");
 
+// Set this to true to generate an assertion failure whenever you
+// first attempt to apply a singular transform matrix to the scene
+// graph, or false to ignore this.  The default is true, which makes
+// it much easier to track down singular matrix errors.  In NDEBUG
+// mode, this is ignored and is effectively always false.
+const bool check_singular_transform = config_sgmanip.GetBool("check-singular-transform", true);
+
 ConfigureFn(config_sgmanip) {
   NodePath::init_type();
   PosLerpFunctor::init_type();

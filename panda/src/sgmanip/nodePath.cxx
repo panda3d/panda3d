@@ -1410,7 +1410,19 @@ set_mat(const LMatrix4f &mat) {
       << "Setting transform on data graph arc.\n"
       << "(This is probably meaningless.  Did you mean to do this to the bottom node?)\n";
   }
-#endif
+#endif  // NDEBUG
+
+#ifndef NDEBUG
+  if (check_singular_transform) {
+    LMatrix4f inv_mat;
+    bool ok = inv_mat.invert_from(mat);
+    if (!ok) {
+      sgmanip_cat.error()
+        << "Attempt to set a singular transform on " << *this << "\n";
+      nassertv(false);
+    }
+  }
+#endif  // NDEBUG
 
   arc()->set_transition(new TransformTransition(mat));
 }
@@ -1858,6 +1870,18 @@ set_mat(const NodePath &other, const LMatrix4f &mat) {
     new_mat.multiply(mat,tt->get_matrix());
     new_mat_ptr = &new_mat;
   }
+
+#ifndef NDEBUG
+  if (check_singular_transform) {
+    LMatrix4f inv_mat;
+    bool ok = inv_mat.invert_from(*new_mat_ptr);
+    if (!ok) {
+      sgmanip_cat.error()
+        << "Attempt to set a singular transform on " << *this << "\n";
+      nassertv(false);
+    }
+  }
+#endif  // NDEBUG
 
   darc->set_transition(new TransformTransition(*new_mat_ptr));
 }
