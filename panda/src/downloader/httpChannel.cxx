@@ -1847,7 +1847,7 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
       << " " << _client->get_http_version_string() << "\r\n";
     if (_client->get_http_version() >= HTTPEnum::HV_11) {
       request 
-        << "Host: " << _request.get_url().get_server() << "\r\n";
+        << "Host: " << _request.get_url().get_server_and_port() << "\r\n";
     }
     _proxy_header = request.str();
     make_proxy_request_text();
@@ -2697,7 +2697,7 @@ make_header() {
 
   if (_client->get_http_version() >= HTTPEnum::HV_11) {
     stream 
-      << "Host: " << _request.get_url().get_server() << "\r\n";
+      << "Host: " << _request.get_url().get_server_and_port() << "\r\n";
     if (!get_persistent_connection()) {
       stream
         << "Connection: close\r\n";
