@@ -110,3 +110,12 @@ const int patchfile_buffer_size =
 
 const int patchfile_zone_size =
         config_express.GetInt("patchfile-zone-size", 10000);
+
+
+// Returns the configure object for accessing config variables from a
+// scripting language.
+ConfigExpress &
+get_config_express() {
+  return config_express;
+}
+

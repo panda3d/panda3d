@@ -4,4 +4,5 @@ forcetype Notify
 forcetype NotifyCategory
 forcetype NotifySeverity
 
-
+forcetype ConfigExpress
+renametype ConfigExpress ConfigExpress

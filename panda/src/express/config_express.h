@@ -42,4 +42,10 @@ extern const int patchfile_increment_size;
 extern const int patchfile_buffer_size;
 extern const int patchfile_zone_size;
 
+// Expose the Config variable for Python access.
+BEGIN_PUBLISH
+typedef Config::Config<ConfigureGetConfig_config_express> ConfigExpress;
+EXPCL_PANDAEXPRESS ConfigExpress &get_config_express();
+END_PUBLISH
+
 #endif /* __CONFIG_UTIL_H__ */
