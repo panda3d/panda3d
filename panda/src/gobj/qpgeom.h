@@ -78,7 +78,7 @@ PUBLISHED:
   void clear_primitives();
 
   int get_num_bytes() const;
-  UpdateSeq get_modified() const;
+  INLINE UpdateSeq get_modified() const;
 
   void munge_geom(const qpGeomMunger *munger,
                   CPT(qpGeom) &result, CPT(qpGeomVertexData) &data) const;
@@ -129,6 +129,7 @@ private:
     Primitives _primitives;
     qpGeomUsageHint::UsageHint _usage_hint;
     bool _got_usage_hint;
+    UpdateSeq _modified;
     MungedCache _munged_cache;
   };
 

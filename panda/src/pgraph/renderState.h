@@ -32,6 +32,10 @@ class GraphicsStateGuardianBase;
 class FogAttrib;
 class CullBinAttrib;
 class TransparencyAttrib;
+class ColorAttrib;
+class ColorScaleAttrib;
+class TextureAttrib;
+class TexGenAttrib;
 class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
@@ -114,7 +118,10 @@ PUBLISHED:
   INLINE const CullBinAttrib *get_bin() const;
   INLINE const TransparencyAttrib *get_transparency() const;
   INLINE int get_bin_index() const;
-  INLINE bool is_flat_shaded() const;
+  INLINE const ColorAttrib *get_color() const;
+  INLINE const ColorScaleAttrib *get_color_scale() const;
+  INLINE const TextureAttrib *get_texture() const;
+  INLINE const TexGenAttrib *get_tex_gen() const;
 
 public:
   CPT(RenderState) issue_delta_modify(const RenderState *other, 
@@ -151,7 +158,10 @@ private:
   void determine_fog();
   void determine_bin();
   void determine_transparency();
-  void determine_flat_shaded();
+  void determine_color();
+  void determine_color_scale();
+  void determine_texture();
+  void determine_tex_gen();
 
   INLINE void set_destructing();
   INLINE bool is_destructing() const;
@@ -225,14 +235,20 @@ private:
   const FogAttrib *_fog;
   const CullBinAttrib *_bin;
   const TransparencyAttrib *_transparency;
+  const ColorAttrib *_color;
+  const ColorScaleAttrib *_color_scale;
+  const TextureAttrib *_texture;
+  const TexGenAttrib *_tex_gen;
 
   enum Flags {
     F_checked_bin_index    = 0x0001,
     F_checked_fog          = 0x0002,
     F_checked_bin          = 0x0004,
     F_checked_transparency = 0x0008,
-    F_checked_flat_shaded  = 0x0010,
-    F_flat_shaded          = 0x0020,
+    F_checked_color        = 0x0010,
+    F_checked_color_scale  = 0x0020,
+    F_checked_texture      = 0x0040,
+    F_checked_tex_gen      = 0x0080,
     F_is_destructing       = 0x8000,
   };
   unsigned short _flags;

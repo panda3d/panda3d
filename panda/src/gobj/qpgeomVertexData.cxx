@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "qpgeomVertexData.h"
-#include "qpgeomVertexCacheManager.h"
 #include "pStatTimer.h"
 #include "bamReader.h"
 #include "bamWriter.h"
@@ -93,25 +92,6 @@ operator = (const qpGeomVertexData &copy) {
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexData::
 ~qpGeomVertexData() {
-  // When we destruct, we should ensure that all of our cached
-  // entries, across all pipeline stages, are properly removed from
-  // the cache manager.
-  qpGeomVertexCacheManager *cache_mgr = 
-    qpGeomVertexCacheManager::get_global_ptr();
-
-  int num_stages = _cycler.get_num_stages();
-  for (int i = 0; i < num_stages; i++) {
-    if (_cycler.is_stage_unique(i)) {
-      CData *cdata = _cycler.write_stage(i);
-      for (ConvertedCache::iterator ci = cdata->_converted_cache.begin();
-           ci != cdata->_converted_cache.end();
-           ++ci) {
-        cache_mgr->remove_data(this, (*ci).first);
-      }
-      cdata->_converted_cache.clear();
-      _cycler.release_write_stage(i, cdata);
-    }
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -144,7 +124,6 @@ get_num_vertices() const {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexData::
 clear_vertices() {
-  clear_cache();
   CDWriter cdata(_cycler);
   nassertv(_format->get_num_arrays() == (int)cdata->_arrays.size());
 
@@ -154,6 +133,7 @@ clear_vertices() {
        ++ai) {
     (*ai)->clear_vertices();
   }
+  cdata->_modified = qpGeom::get_next_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -170,13 +150,13 @@ modify_array(int i) {
   // Perform copy-on-write: if the reference count on the vertex data
   // is greater than 1, assume some other GeomVertexData has the same
   // pointer, so make a copy of it first.
-  clear_cache();
   CDWriter cdata(_cycler);
   nassertr(i >= 0 && i < (int)cdata->_arrays.size(), NULL);
 
   if (cdata->_arrays[i]->get_ref_count() > 1) {
     cdata->_arrays[i] = new qpGeomVertexArrayData(*cdata->_arrays[i]);
   }
+  cdata->_modified = qpGeom::get_next_modified();
 
   return cdata->_arrays[i];
 }
@@ -191,10 +171,10 @@ modify_array(int i) {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexData::
 set_array(int i, const qpGeomVertexArrayData *array) {
-  clear_cache();
   CDWriter cdata(_cycler);
   nassertv(i >= 0 && i < (int)cdata->_arrays.size());
   cdata->_arrays[i] = (qpGeomVertexArrayData *)array;
+  cdata->_modified = qpGeom::get_next_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -230,28 +210,6 @@ convert_to(const qpGeomVertexFormat *new_format) const {
   if (new_format == _format) {
     // Trivial case: no change is needed.
     return this;
-  }
-
-  // Look up the format in our cache--maybe we've recently converted
-  // to the requested format.
-  {
-    // Use read() and release_read() instead of CDReader, because the
-    // call to record_data() might recursively call back into this
-    // object, and require a write.
-    const CData *cdata = _cycler.read();
-    ConvertedCache::const_iterator ci = 
-      cdata->_converted_cache.find(new_format);
-    if (ci != cdata->_converted_cache.end()) {
-      _cycler.release_read(cdata);
-      // Record a cache hit, so this element will stay in the cache a
-      // while longer.
-      qpGeomVertexCacheManager *cache_mgr = 
-        qpGeomVertexCacheManager::get_global_ptr();
-      cache_mgr->record_data(this, new_format, (*ci).second->get_num_bytes());
-
-      return (*ci).second;
-    }
-    _cycler.release_read(cdata);
   }
 
   // Okay, convert the data to the new format.
@@ -326,19 +284,6 @@ convert_to(const qpGeomVertexFormat *new_format) const {
     }
   }
 
-  // Record the new result in the cache.
-  {
-    CDWriter cdata(((qpGeomVertexData *)this)->_cycler);
-    cdata->_converted_cache[new_format] = new_data;
-  }
-
-  // And tell the cache manager about the new entry.  (It might
-  // immediately request a delete from the cache of the thing we just
-  // added.)
-  qpGeomVertexCacheManager *cache_mgr = 
-    qpGeomVertexCacheManager::get_global_ptr();
-  cache_mgr->record_data(this, new_format, new_data->get_num_bytes());
-
   return new_data;
 }
 
@@ -360,28 +305,6 @@ output(ostream &out) const {
 void qpGeomVertexData::
 write(ostream &out, int indent_level) const {
   _format->write_with_data(out, indent_level, this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::clear_cache
-//       Access: Published
-//  Description: Removes all of the previously-cached results of
-//               convert_to().
-////////////////////////////////////////////////////////////////////
-void qpGeomVertexData::
-clear_cache() {
-  // Probably we shouldn't do anything at all here unless we are
-  // running in pipeline stage 0.
-  qpGeomVertexCacheManager *cache_mgr = 
-    qpGeomVertexCacheManager::get_global_ptr();
-
-  CData *cdata = CDWriter(_cycler);
-  for (ConvertedCache::iterator ci = cdata->_converted_cache.begin();
-       ci != cdata->_converted_cache.end();
-       ++ci) {
-    cache_mgr->remove_data(this, (*ci).first);
-  }
-  cdata->_converted_cache.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -696,27 +619,6 @@ unpack_argb(float data[4], unsigned int packed_argb) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::remove_cache_entry
-//       Access: Private
-//  Description: Removes a particular entry from the local cache; it
-//               has already been removed from the cache manager.
-//               This is only called from GeomVertexCacheManager.
-////////////////////////////////////////////////////////////////////
-void qpGeomVertexData::
-remove_cache_entry(const qpGeomVertexFormat *modifier) const {
-  // We have to operate on stage 0 of the pipeline, since that's where
-  // the cache really counts.  Because of the multistage pipeline, we
-  // might not actually have a cache entry there (it might have been
-  // added to stage 1 instead).  No big deal if we don't.
-  CData *cdata = ((qpGeomVertexData *)this)->_cycler.write_stage(0);
-  ConvertedCache::iterator ci = cdata->_converted_cache.find(modifier);
-  if (ci != cdata->_converted_cache.end()) {
-    cdata->_converted_cache.erase(ci);
-  }
-  ((qpGeomVertexData *)this)->_cycler.release_write_stage(0, cdata);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::do_set_num_vertices
 //       Access: Private
 //  Description: The private implementation of set_num_vertices().
@@ -728,13 +630,18 @@ do_set_num_vertices(int n, qpGeomVertexData::CDWriter &cdata) {
   bool any_changed = false;
 
   for (size_t i = 0; i < cdata->_arrays.size(); i++) {
-    if (cdata->_arrays[i]->set_num_vertices(n)) {
+    if (cdata->_arrays[i]->get_num_vertices() != n) {
+      // Copy-on-write.
+      if (cdata->_arrays[i]->get_ref_count() > 1) {
+        cdata->_arrays[i] = new qpGeomVertexArrayData(*cdata->_arrays[i]);
+      }
+      cdata->_arrays[i]->set_num_vertices(n);
       any_changed = true;
     }
   }
 
   if (any_changed) {
-    clear_cache();
+    cdata->_modified = qpGeom::get_next_modified();
   }
 
   return any_changed;

@@ -318,7 +318,7 @@ protected:
   int _pass_number;
   bool _auto_rescale_normal;
   CLP(GeomContext) *_geom_display_list;
-  float _num_display_list_verts_before;
+  int _last_max_stage_index;
   
   int _error_count;
 
@@ -340,6 +340,7 @@ public:
 
   bool _supports_multitexture;
   PFNGLACTIVETEXTUREPROC _glActiveTexture;
+  PFNGLCLIENTACTIVETEXTUREPROC _glClientActiveTexture;
   PFNGLMULTITEXCOORD2FVPROC _glMultiTexCoord2fv;
 
   bool _supports_buffers;

@@ -433,6 +433,8 @@ reset() {
 
     _glActiveTexture = (PFNGLACTIVETEXTUREPROC)
       get_extension_func(GLPREFIX_QUOTED, "ActiveTexture");
+    _glClientActiveTexture = (PFNGLACTIVETEXTUREPROC)
+      get_extension_func(GLPREFIX_QUOTED, "ClientActiveTexture");
     _glMultiTexCoord2fv = (PFNGLMULTITEXCOORD2FVPROC)
       get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord2fv");
 
@@ -441,12 +443,15 @@ reset() {
 
     _glActiveTexture = (PFNGLACTIVETEXTUREPROC)
       get_extension_func(GLPREFIX_QUOTED, "ActiveTextureARB");
+    _glClientActiveTexture = (PFNGLACTIVETEXTUREPROC)
+      get_extension_func(GLPREFIX_QUOTED, "ClientActiveTextureARB");
     _glMultiTexCoord2fv = (PFNGLMULTITEXCOORD2FVPROC)
       get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord2fvARB");
   }
 
   if (_supports_multitexture) {
-    if (_glActiveTexture == NULL || _glMultiTexCoord2fv == NULL) {
+    if (_glActiveTexture == NULL || _glClientActiveTexture == NULL ||
+        _glMultiTexCoord2fv == NULL) {
       GLCAT.warning()
         << "Multitexture advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_multitexture = false;
@@ -454,6 +459,7 @@ reset() {
   }
   if (!_supports_multitexture) {
     _glActiveTexture = null_glActiveTexture;
+    _glClientActiveTexture = null_glActiveTexture;
   }
 
   _supports_buffers = false;
@@ -707,6 +713,7 @@ reset() {
   _current_tex_gen = DCAST(TexGenAttrib, TexGenAttrib::make());
   _needs_tex_gen = false;
   _tex_gen_modifies_mat = false;
+  _last_max_stage_index = 0;
   _auto_antialias_mode = false;
   _render_mode = RenderModeAttrib::M_filled;
 
@@ -2041,12 +2048,13 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomVertexData *vertex_data) {
   if (geom->get_usage_hint() == qpGeomUsageHint::UH_static && 
       _vertex_data->get_usage_hint() == qpGeomUsageHint::UH_static &&
       display_lists) {
-    // If the geom appears to be totally static, try to build it into
+    // If the geom claims to be totally static, try to build it into
     // a display list.
     GeomContext *gc = ((qpGeom *)geom)->prepare_now(get_prepared_objects(), this);
     nassertr(gc != (GeomContext *)NULL, false);
     CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
-    if (ggc->_modified == geom->get_modified()) {
+    UpdateSeq modified = max(geom->get_modified(), _vertex_data->get_modified());
+    if (ggc->_modified == modified) {
       // If it hasn't been modified, just play the display list again.
       GLP(CallList)(ggc->_index);
 #ifdef DO_PSTATS
@@ -2064,7 +2072,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomVertexData *vertex_data) {
     } else {
       GLP(NewList)(ggc->_index, GL_COMPILE);
     }      
-    ggc->_modified = geom->get_modified();
+    ggc->_modified = modified;
 
 #ifdef DO_PSTATS
     // Count up the number of vertices used by primitives in the Geom,
@@ -2115,16 +2123,52 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomVertexData *vertex_data) {
     GLP(DisableClientState)(GL_COLOR_ARRAY);
   }
 
-  if (_vertex_data->get_array_info(InternalName::get_texcoord(),
-                                   array_data, num_components, numeric_type, 
-                                   start, stride)) {
-    const unsigned char *client_pointer = setup_array_data(array_data);
-    GLP(TexCoordPointer)(num_components, get_numeric_type(numeric_type), 
-                         stride, client_pointer + start);
-    GLP(EnableClientState)(GL_TEXTURE_COORD_ARRAY);
-  } else {
-    GLP(DisableClientState)(GL_TEXTURE_COORD_ARRAY);
+  // Now set up each of the active texture coordinate stages--or at
+  // least those for which we're not generating texture coordinates
+  // automatically.
+  const Geom::ActiveTextureStages &active_stages = 
+    _current_texture->get_on_stages();
+  const Geom::NoTexCoordStages &no_texcoords = 
+    _current_tex_gen->get_no_texcoords();
+
+  int max_stage_index = (int)active_stages.size();
+  int stage_index = 0;
+  while (stage_index < max_stage_index) {
+    _glClientActiveTexture(GL_TEXTURE0 + stage_index);
+    TextureStage *stage = active_stages[stage_index];
+    if (no_texcoords.find(stage) == no_texcoords.end()) {
+      // This stage is not one of the stages that doesn't need
+      // texcoords issued for it.
+      const InternalName *name = stage->get_texcoord_name();
+
+      if (_vertex_data->get_array_info(name, array_data, num_components, 
+                                       numeric_type, start, stride)) {
+        // The vertex data does have texcoords for this stage.
+        const unsigned char *client_pointer = setup_array_data(array_data);
+        GLP(TexCoordPointer)(num_components, get_numeric_type(numeric_type), 
+                             stride, client_pointer + start);
+        GLP(EnableClientState)(GL_TEXTURE_COORD_ARRAY);
+
+      } else {
+        // The vertex data doesn't have texcoords for this stage (even
+        // though they're needed).
+        GLP(DisableClientState)(GL_TEXTURE_COORD_ARRAY);
+      }
+    } else {
+      // No texcoords are needed for this stage.
+      GLP(DisableClientState)(GL_TEXTURE_COORD_ARRAY);
+    }
+
+    ++stage_index;
   }
+
+  // Be sure also to disable any texture stages we had enabled before.
+  while (stage_index < _last_max_stage_index) {
+    _glClientActiveTexture(GL_TEXTURE0 + stage_index);
+    GLP(DisableClientState)(GL_TEXTURE_COORD_ARRAY);
+    ++stage_index;
+  }
+  _last_max_stage_index = max_stage_index;
 
   return true;
 }
@@ -2528,7 +2572,7 @@ setup_array_data(const qpGeomVertexArrayData *data) {
   nassertr(vbc != (VertexBufferContext *)NULL, data->get_data());
   apply_vertex_buffer(vbc);
 
-  // NULL is the OpenGL convention for the first byte of the buffer.
+  // NULL is the OpenGL convention for the first byte of the buffer object.
   return NULL;
 }
 
@@ -2659,7 +2703,7 @@ setup_primitive(const qpGeomPrimitive *data) {
   nassertr(ibc != (IndexBufferContext *)NULL, data->get_flat_last_vertices());
   apply_index_buffer(ibc);
 
-  // NULL is the OpenGL convention for the first byte of the buffer.
+  // NULL is the OpenGL convention for the first byte of the buffer object.
   return NULL;
 }
 

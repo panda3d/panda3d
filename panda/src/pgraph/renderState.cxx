@@ -22,7 +22,10 @@
 #include "cullBinManager.h"
 #include "fogAttrib.h"
 #include "transparencyAttrib.h"
-#include "shadeModelAttrib.h"
+#include "colorAttrib.h"
+#include "colorScaleAttrib.h"
+#include "textureAttrib.h"
+#include "texGenAttrib.h"
 #include "pStatTimer.h"
 #include "config_pgraph.h"
 #include "bamReader.h"
@@ -1513,23 +1516,63 @@ determine_transparency() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderState::determine_flat_shaded
+//     Function: RenderState::determine_color
 //       Access: Private
-//  Description: This is the private implementation of
-//               is_flat_shaded().
+//  Description: This is the private implementation of get_color().
 ////////////////////////////////////////////////////////////////////
 void RenderState::
-determine_flat_shaded() {
-  const RenderAttrib *attrib = 
-    get_attrib(ShadeModelAttrib::get_class_type());
+determine_color() {
+  const RenderAttrib *attrib = get_attrib(ColorAttrib::get_class_type());
+  _color = (const ColorAttrib *)NULL;
   if (attrib != (const RenderAttrib *)NULL) {
-    const ShadeModelAttrib *sma = DCAST(ShadeModelAttrib, attrib);
-    if (sma->get_mode() == ShadeModelAttrib::M_flat) {
-      _flags |= F_flat_shaded;
-    }
+    _color = DCAST(ColorAttrib, attrib);
   }
+  _flags |= F_checked_color;
+}
 
-  _flags |= F_checked_flat_shaded;
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::determine_color_scale
+//       Access: Private
+//  Description: This is the private implementation of get_color_scale().
+////////////////////////////////////////////////////////////////////
+void RenderState::
+determine_color_scale() {
+  const RenderAttrib *attrib = get_attrib(ColorScaleAttrib::get_class_type());
+  _color_scale = (const ColorScaleAttrib *)NULL;
+  if (attrib != (const RenderAttrib *)NULL) {
+    _color_scale = DCAST(ColorScaleAttrib, attrib);
+  }
+  _flags |= F_checked_color_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::determine_texture
+//       Access: Private
+//  Description: This is the private implementation of get_texture().
+////////////////////////////////////////////////////////////////////
+void RenderState::
+determine_texture() {
+  const RenderAttrib *attrib = get_attrib(TextureAttrib::get_class_type());
+  _texture = (const TextureAttrib *)NULL;
+  if (attrib != (const RenderAttrib *)NULL) {
+    _texture = DCAST(TextureAttrib, attrib);
+  }
+  _flags |= F_checked_texture;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::determine_tex_gen
+//       Access: Private
+//  Description: This is the private implementation of get_tex_gen().
+////////////////////////////////////////////////////////////////////
+void RenderState::
+determine_tex_gen() {
+  const RenderAttrib *attrib = get_attrib(TexGenAttrib::get_class_type());
+  _tex_gen = (const TexGenAttrib *)NULL;
+  if (attrib != (const RenderAttrib *)NULL) {
+    _tex_gen = DCAST(TexGenAttrib, attrib);
+  }
+  _flags |= F_checked_tex_gen;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -197,6 +197,11 @@ get_ends() const {
 INLINE CPTA_ushort qpGeomPrimitive::
 get_mins() const {
   CDReader cdata(_cycler);
+  if (!cdata->_got_minmax) {
+    CDWriter cdataw(((qpGeomPrimitive *)this)->_cycler, cdata);
+    ((qpGeomPrimitive *)this)->recompute_minmax(cdataw);
+    return cdataw->_mins;
+  }
   return cdata->_mins;
 }
 
@@ -214,6 +219,11 @@ get_mins() const {
 INLINE CPTA_ushort qpGeomPrimitive::
 get_maxs() const {
   CDReader cdata(_cycler);
+  if (!cdata->_got_minmax) {
+    CDWriter cdataw(((qpGeomPrimitive *)this)->_cycler, cdata);
+    ((qpGeomPrimitive *)this)->recompute_minmax(cdataw);
+    return cdataw->_maxs;
+  }
   return cdata->_maxs;
 }
 
@@ -252,7 +262,9 @@ INLINE int qpGeomPrimitive::
 get_min_vertex() const {
   CDReader cdata(_cycler);
   if (!cdata->_got_minmax) {
-    ((qpGeomPrimitive *)this)->recompute_minmax();
+    CDWriter cdataw(((qpGeomPrimitive *)this)->_cycler, cdata);
+    ((qpGeomPrimitive *)this)->recompute_minmax(cdataw);
+    return cdataw->_min_vertex;
   }
   return cdata->_min_vertex;
 }
@@ -265,12 +277,9 @@ get_min_vertex() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int qpGeomPrimitive::
 get_min_vertex(int i) const {
-  CDReader cdata(_cycler);
-  if (!cdata->_got_minmax) {
-    ((qpGeomPrimitive *)this)->recompute_minmax();
-  }
-  nassertr(i >= 0 && i < (int)cdata->_mins.size(), -1);
-  return cdata->_mins[i];
+  CPTA_ushort mins = get_mins();
+  nassertr(i >= 0 && i < (int)mins.size(), -1);
+  return mins[i];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -283,7 +292,9 @@ INLINE int qpGeomPrimitive::
 get_max_vertex() const {
   CDReader cdata(_cycler);
   if (!cdata->_got_minmax) {
-    ((qpGeomPrimitive *)this)->recompute_minmax();
+    CDWriter cdataw(((qpGeomPrimitive *)this)->_cycler, cdata);
+    ((qpGeomPrimitive *)this)->recompute_minmax(cdataw);
+    return cdataw->_max_vertex;
   }
   return cdata->_max_vertex;
 }
@@ -296,12 +307,9 @@ get_max_vertex() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int qpGeomPrimitive::
 get_max_vertex(int i) const {
-  CDReader cdata(_cycler);
-  if (!cdata->_got_minmax) {
-    ((qpGeomPrimitive *)this)->recompute_minmax();
-  }
-  nassertr(i >= 0 && i < (int)cdata->_maxs.size(), -1);
-  return cdata->_maxs[i];
+  CPTA_ushort maxs = get_maxs();
+  nassertr(i >= 0 && i < (int)maxs.size(), -1);
+  return maxs[i];
 }
 
 ////////////////////////////////////////////////////////////////////

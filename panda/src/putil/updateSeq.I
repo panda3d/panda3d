@@ -67,8 +67,9 @@ fresh() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE UpdateSeq::
-UpdateSeq(const UpdateSeq &copy) {
-  _seq = copy._seq;
+UpdateSeq(const UpdateSeq &copy) :
+  _seq(copy._seq)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -132,15 +133,8 @@ is_fresh() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool UpdateSeq::
 is_special() const {
-  switch (_seq) {
-  case (unsigned int)SC_initial:
-  case (unsigned int)SC_old:
-  case (unsigned int)SC_fresh:
-    return true;
-
-  default:
-    return false;
-  }
+  // This relies on the assumption that (~0 + 1) == 0.
+  return ((_seq + 1) <= 2);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -188,6 +182,26 @@ operator < (const UpdateSeq &other) const {
 INLINE bool UpdateSeq::
 operator <= (const UpdateSeq &other) const {
   return (*this) == other || (*this) < other;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UpdateSeq::Comparison operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool UpdateSeq::
+operator > (const UpdateSeq &other) const {
+  return (other < (*this));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UpdateSeq::Comparison operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool UpdateSeq::
+operator >= (const UpdateSeq &other) const {
+  return (other <= (*this));
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -30,6 +30,9 @@ qpGeomVertexCacheManager::
 qpGeomVertexCacheManager() :
   _total_size(0)
 {
+  _list = new Entry;
+  _list->_next = _list;
+  _list->_prev = _list;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -39,6 +42,8 @@ qpGeomVertexCacheManager() :
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexCacheManager::
 ~qpGeomVertexCacheManager() {
+  // Shouldn't be deleting this global object.
+  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,80 +66,77 @@ get_global_ptr() {
 //               cache hit for a previous entry in the cache.
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexCacheManager::
-record_entry(const qpGeomVertexCacheManager::Entry &entry) {
+record_entry(const qpGeomVertexCacheManager::Entry &const_entry) {
   MutexHolder holder(_lock);
-  EntriesIndex::iterator ii = _entries_index.find(&entry);
-  if (ii != _entries_index.end()) {
-    // Remove the previous cache entry.
-    Entries::iterator ei = (*ii).second;
-    _total_size -= (*ei)._result_size;
-    _entries_index.erase(ii);
-    _entries.erase(ei);
 
+  EntriesIndex::iterator ii = _entries_index.find((Entry *)&const_entry);
+  if (ii != _entries_index.end()) {
+    // We already had this entry in the cache.  Refresh it.
     if (gobj_cat.is_spam()) {
       gobj_cat.spam()
-        << "refreshing cache entry: " << entry << "\n";
+        << "refreshing cache entry: " << const_entry << "\n";
     }
+
+    // Move the previous cache entry to the tail of the list.
+    Entry *entry = (*ii);
+    dequeue_entry(entry);
+    enqueue_entry(entry);
+
+    _total_size += (const_entry._result_size - entry->_result_size);
+    entry->_result_size = const_entry._result_size;
+
   } else {
+    // There was no such entry already in the cache.  Add it.
     if (gobj_cat.is_debug()) {
       gobj_cat.debug()
-        << "recording cache entry: " << entry << ", total_size = "
-        << _total_size + entry._result_size << "\n";
+        << "recording cache entry: " << const_entry << ", total_size = "
+        << _total_size + const_entry._result_size << "\n";
     }
+    
+    Entry *entry = new Entry(const_entry);
+    enqueue_entry(entry);
+    _total_size += entry->_result_size;
+
+    // Also record an index entry.
+    bool inserted = _entries_index.insert(entry).second;
+    nassertv(inserted);
   }
-
-  // Add the new entry at the end of the list, so it will be the last
-  // to be removed.
-  Entries::iterator ei = 
-    _entries.insert(_entries.end(), entry);
-  Entry *entry_pointer = &(*ei);
-
-  // Also record an index entry.
-  bool inserted = _entries_index.insert
-    (EntriesIndex::value_type(entry_pointer, ei)).second;
-  nassertv(inserted);
-
-  _total_size += entry_pointer->_result_size;
 
   // Now remove any old entries if our cache is over the limit.  This may
   // also remove the entry we just added, especially if our cache size
   // is set to 0.
   int max_size = get_max_size();
   while (_total_size > max_size) {
-    nassertv(!_entries.empty());
-    ei = _entries.begin();
-    entry_pointer = &(*ei);
+    Entry *entry = _list->_next;
+    nassertv(entry != _list);
 
     if (gobj_cat.is_debug()) {
       gobj_cat.debug()
         << "cache total_size = " << _total_size << ", max_size = "
-        << max_size << ", removing " << *entry_pointer << "\n";
+        << max_size << ", removing " << *entry << "\n";
     }
 
-    ii = _entries_index.find(entry_pointer);
+    ii = _entries_index.find(entry);
     nassertv(ii != _entries_index.end());
 
-    switch (entry_pointer->_cache_type) {
-    case CT_data:
-      entry_pointer->_u._data._source->remove_cache_entry
-        (entry_pointer->_u._data._modifier);
-      break;
-
+    switch (entry->_cache_type) {
     case CT_primitive:
-      entry_pointer->_u._primitive->remove_cache_entry();
+      entry->_u._primitive->remove_cache_entry();
       break;
 
     case CT_geom:
-      entry_pointer->_u._geom._source->remove_cache_entry
-        (entry_pointer->_u._geom._modifier);
+      entry->_u._geom._source->remove_cache_entry
+        (entry->_u._geom._modifier);
       break;
 
     default:
       break;
     }
-    _total_size -= entry_pointer->_result_size;
+    _total_size -= entry->_result_size;
     _entries_index.erase(ii);
-    _entries.erase(ei);
+
+    dequeue_entry(entry);
+    delete entry;
   }
 }
 
@@ -145,19 +147,20 @@ record_entry(const qpGeomVertexCacheManager::Entry &entry) {
 //               Quietly ignores it if it is not.
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexCacheManager::
-remove_entry(const qpGeomVertexCacheManager::Entry &entry) {
+remove_entry(const qpGeomVertexCacheManager::Entry &const_entry) {
   if (gobj_cat.is_debug()) {
     gobj_cat.debug()
-      << "remove_entry(" << entry << ")\n";
+      << "remove_entry(" << const_entry << ")\n";
   }
   MutexHolder holder(_lock);
 
-  EntriesIndex::iterator ii = _entries_index.find(&entry);
+  EntriesIndex::iterator ii = _entries_index.find((Entry *)&const_entry);
   if (ii != _entries_index.end()) {
-    Entries::iterator ei = (*ii).second;
-    _total_size -= (*ei)._result_size;
+    Entry *entry = (*ii);
+    _total_size -= entry->_result_size;
     _entries_index.erase(ii);
-    _entries.erase(ei);
+    dequeue_entry(entry);
+    delete entry;
   }
 }
 
@@ -170,6 +173,10 @@ void qpGeomVertexCacheManager::Entry::
 output(ostream &out) const {
   out << "[ ";
   switch (_cache_type) {
+  case CT_none:
+    out << "end-of-list token";
+    break;
+
   case CT_munger:
     out << "munger " << (void *)_u._munger << ":" 
         << _u._munger->get_ref_count();
@@ -177,11 +184,6 @@ output(ostream &out) const {
 
   case CT_primitive:
     out << "primitive " << (void *)_u._primitive;
-    break;
-
-  case CT_data:
-    out << "data " << (void *)_u._data._source << ", " 
-        << (void *)_u._data._modifier;
     break;
 
   case CT_geom:

@@ -804,9 +804,7 @@ remove_cache_entry() const {
 //               necessary.
 ////////////////////////////////////////////////////////////////////
 void qpGeomPrimitive::
-recompute_minmax() {
-  CDWriter cdata(_cycler);
-  
+recompute_minmax(qpGeomPrimitive::CDWriter &cdata) {
   if (cdata->_vertices.empty()) {
     cdata->_min_vertex = 0;
     cdata->_max_vertex = 0;

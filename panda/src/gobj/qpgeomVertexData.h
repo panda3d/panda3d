@@ -82,13 +82,12 @@ PUBLISHED:
   void set_array(int i, const qpGeomVertexArrayData *array);
 
   int get_num_bytes() const;
+  INLINE UpdateSeq get_modified() const;
 
   CPT(qpGeomVertexData) convert_to(const qpGeomVertexFormat *new_format) const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
-
-  void clear_cache();
 
 public:
   void set_data(int array, const qpGeomVertexDataType *data_type,
@@ -110,20 +109,10 @@ public:
   static void unpack_argb(float data[4], unsigned int packed_argb);
 
 private:
-  void remove_cache_entry(const qpGeomVertexFormat *modifier) const;
-
-private:
   CPT(qpGeomVertexFormat) _format;
   qpGeomUsageHint::UsageHint _usage_hint;
 
   typedef pvector< PT(qpGeomVertexArrayData) > Arrays;
-
-  // We have to use reference-counting pointers here instead of having
-  // explicit cleanup in the GeomVertexFormat destructor, because the
-  // cache needs to be stored in the CycleData, which makes accurate
-  // cleanup more difficult.  We use the GeomVertexCacheManager class
-  // to avoid cache bloat.
-  typedef pmap<CPT(qpGeomVertexFormat), CPT(qpGeomVertexData) > ConvertedCache;
 
   // This is the data that must be cycled between pipeline stages.
   class EXPCL_PANDA CData : public CycleData {
@@ -136,7 +125,7 @@ private:
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
 
     Arrays _arrays;
-    ConvertedCache _converted_cache;
+    UpdateSeq _modified;
   };
 
   PipelineCycler<CData> _cycler;
@@ -172,8 +161,6 @@ public:
 
 private:
   static TypeHandle _type_handle;
-
-  friend class qpGeomVertexCacheManager;
 };
 
 INLINE ostream &operator << (ostream &out, const qpGeomVertexData &obj);

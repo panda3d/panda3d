@@ -89,6 +89,7 @@ modify_primitive(int i) {
   CDWriter cdata(_cycler);
   nassertr(i >= 0 && i < (int)cdata->_primitives.size(), NULL);
   cdata->_got_usage_hint = false;
+  cdata->_modified = qpGeom::get_next_modified();
   return cdata->_primitives[i];
 }
 
@@ -117,6 +118,23 @@ set_primitive(int i, const qpGeomPrimitive *primitive) {
     }
   }
   cdata->_primitives[i] = (qpGeomPrimitive *)primitive;
+  cdata->_modified = qpGeom::get_next_modified();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::get_modified
+//       Access: Published
+//  Description: Returns a sequence number which is guaranteed to
+//               change at least every time any of the primitives in
+//               the Geom is modified, or the set of primitives is
+//               modified.  However, this does not include
+//               modifications to the vertex data, which should be
+//               tested separately.
+////////////////////////////////////////////////////////////////////
+INLINE UpdateSeq qpGeom::
+get_modified() const {
+  CDReader cdata(_cycler);
+  return cdata->_modified;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -141,7 +159,8 @@ CData(const qpGeom::CData &copy) :
   _data(copy._data),
   _primitives(copy._primitives),
   _usage_hint(copy._usage_hint),
-  _got_usage_hint(copy._got_usage_hint)
+  _got_usage_hint(copy._got_usage_hint),
+  _modified(copy._modified)
 {
 }
 

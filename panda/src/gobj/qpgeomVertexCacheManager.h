@@ -74,18 +74,17 @@ private:
   INLINE void record_primitive(const qpGeomPrimitive *primitive,
                                int result_size);
   INLINE void remove_primitive(const qpGeomPrimitive *primitive);
-  INLINE void record_data(const qpGeomVertexData *source,
-                          const qpGeomVertexFormat *modifier,
-                          int result_size);
-  INLINE void remove_data(const qpGeomVertexData *source,
-                          const qpGeomVertexFormat *modifier);
   INLINE void record_geom(const qpGeom *source,
                           const qpGeomMunger *modifier,
                           int result_size);
-  INLINE void remove_geom(const qpGeom *geom, const qpGeomMunger *modifier);
+  INLINE void remove_geom(const qpGeom *source,
+                          const qpGeomMunger *modifier);
 
-  void record_entry(const Entry &entry);
-  void remove_entry(const Entry &entry);
+  void record_entry(const Entry &const_entry);
+  void remove_entry(const Entry &const_entry);
+
+  INLINE void dequeue_entry(Entry *entry);
+  INLINE void enqueue_entry(Entry *entry);
 
 private:
   // This mutex protects all operations on this object.
@@ -94,9 +93,9 @@ private:
   int _total_size;
 
   enum CacheType {
+    CT_none,
     CT_munger,
     CT_primitive,
-    CT_data,
     CT_geom,
   };
 
@@ -109,10 +108,9 @@ public:
   // this C-style polymorphism.
   class Entry {
   public:
+    INLINE Entry();
     INLINE Entry(const qpGeomMunger *munger, int result_size);
     INLINE Entry(const qpGeomPrimitive *primitive, int result_size);
-    INLINE Entry(const qpGeomVertexData *source,
-                 const qpGeomVertexFormat *modifier, int result_size);
     INLINE Entry(const qpGeom *source, const qpGeomMunger *modifier, 
                  int result_size);
     INLINE Entry(const Entry &copy);
@@ -128,31 +126,37 @@ public:
       const qpGeomMunger *_munger;
       const qpGeomPrimitive *_primitive;
       struct {
-        const qpGeomVertexData *_source;
-        const qpGeomVertexFormat *_modifier;
-      } _data;
-      struct {
         const qpGeom *_source;
         const qpGeomMunger *_modifier;
       } _geom;
     } _u;
+
+    Entry *_prev, *_next;
   };
 
 private:
-  // This list keeps the cache entries in least-recently-used order:
-  // the items at the head of the list are ready to be flushed.
-  typedef plist<Entry> Entries;
-  Entries _entries;
+  // We maintain a doubly-linked list to keep the cache entries in
+  // least-recently-used order: the items at the head of the list are
+  // ready to be flushed.  We use our own doubly-linked list instead
+  // of an STL list, just so we can avoid a tiny bit of overhead,
+  // especially with managing the pointer to the entry in
+  // _entries_index.
+
+  // The tail and the head of the list are both kept by the _prev and
+  // _next pointers, respectively, within the following object, which
+  // always exists solely to keep a handle to the list.  Keeping a
+  // token of the list this way avoids special cases for an empty
+  // list.
+  Entry *_list;
 
   // And this indexes into the above list, for fast lookup.
-  typedef pmap<const Entry *, Entries::iterator, IndirectLess<Entry> > EntriesIndex;
+  typedef pset<Entry *, IndirectLess<Entry> > EntriesIndex;
   EntriesIndex _entries_index;
 
   static qpGeomVertexCacheManager *_global_ptr;
 
   friend class qpGeomMunger;
   friend class qpGeomPrimitive;
-  friend class qpGeomVertexData;
   friend class qpGeom;
 };
 

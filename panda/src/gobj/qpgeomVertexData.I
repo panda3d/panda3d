@@ -92,6 +92,19 @@ get_array(int i) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexData::get_modified
+//       Access: Published
+//  Description: Returns a sequence number which is guaranteed to
+//               change at least every time the vertex data is
+//               modified.
+////////////////////////////////////////////////////////////////////
+INLINE UpdateSeq qpGeomVertexData::
+get_modified() const {
+  CDReader cdata(_cycler);
+  return cdata->_modified;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexData::CData::Constructor
 //       Access: Public
 //  Description:
@@ -107,7 +120,8 @@ CData() {
 ////////////////////////////////////////////////////////////////////
 INLINE qpGeomVertexData::CData::
 CData(const qpGeomVertexData::CData &copy) :
-  _arrays(copy._arrays)
+  _arrays(copy._arrays),
+  _modified(copy._modified)
 {
 }
 

@@ -77,8 +77,8 @@ PUBLISHED:
     SM_smooth,  
 
     // SM_uniform: all vertices across all faces have the same colors
-    // and normals.  It doesn't matter which ShadeModelAttrib mode is
-    // used to render this primitive.
+    // and normals.  It doesn't really matter which ShadeModelAttrib
+    // mode is used to render this primitive.
     SM_uniform, 
 
     // SM_flat_(first,last)_vertex: each face within the primitive
@@ -208,7 +208,7 @@ private:
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
 
-  void recompute_minmax();
+  void recompute_minmax(CDWriter &cdata);
 
 public:
   virtual void write_datagram(BamWriter *manager, Datagram &dg);

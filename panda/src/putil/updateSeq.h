@@ -61,6 +61,8 @@ PUBLISHED:
   INLINE bool operator != (const UpdateSeq &other) const;
   INLINE bool operator < (const UpdateSeq &other) const;
   INLINE bool operator <= (const UpdateSeq &other) const;
+  INLINE bool operator > (const UpdateSeq &other) const;
+  INLINE bool operator >= (const UpdateSeq &other) const;
 
   INLINE UpdateSeq operator ++ ();
   INLINE UpdateSeq operator ++ (int);
@@ -71,7 +73,7 @@ private:
   enum SpecialCases {
     SC_initial = 0,
     SC_old = 1,
-    SC_fresh = ~0,
+    SC_fresh = ~(unsigned int)0,
   };
 
   unsigned int _seq;

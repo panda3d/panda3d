@@ -102,36 +102,6 @@ remove_primitive(const qpGeomPrimitive *primitive) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexCacheManager::record_data
-//       Access: Private
-//  Description: Records a new entry in the cache, or marks a cache
-//               hit for a previous entry in the cache.  This should
-//               only be called by GeomVertexData.
-//
-//               The cache manager will not hold a reference on the
-//               GeomVertexData pointer; if it destructs, it should
-//               call remove_data() to remove itself from the cache.
-////////////////////////////////////////////////////////////////////
-INLINE void qpGeomVertexCacheManager::
-record_data(const qpGeomVertexData *source, const qpGeomVertexFormat *modifier,
-            int result_size) {
-  record_entry(Entry(source, modifier, result_size));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexCacheManager::remove_data
-//       Access: Private
-//  Description: Removes an entry from the cache, if it is there.
-//               Quietly ignores it if it is not.  This should only be
-//               called by GeomVertexData.
-////////////////////////////////////////////////////////////////////
-INLINE void qpGeomVertexCacheManager::
-remove_data(const qpGeomVertexData *source,
-            const qpGeomVertexFormat *modifier) {
-  remove_entry(Entry(source, modifier, 0));
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexCacheManager::record_geom
 //       Access: Private
 //  Description: Records a new entry in the cache, or marks a cache
@@ -139,8 +109,8 @@ remove_data(const qpGeomVertexData *source,
 //               only be called by Geom.
 //
 //               The cache manager will not hold a reference on the
-//               Geom pointer; if it destructs, it should
-//               call remove_geom() to remove itself from the cache.
+//               Geom pointer; if it destructs, it should call
+//               remove_geom() to remove itself from the cache.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexCacheManager::
 record_geom(const qpGeom *source, const qpGeomMunger *modifier,
@@ -153,11 +123,52 @@ record_geom(const qpGeom *source, const qpGeomMunger *modifier,
 //       Access: Private
 //  Description: Removes an entry from the cache, if it is there.
 //               Quietly ignores it if it is not.  This should only be
-//               called by Geom.
+//               called by GeomVertexData.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpGeomVertexCacheManager::
 remove_geom(const qpGeom *source, const qpGeomMunger *modifier) {
   remove_entry(Entry(source, modifier, 0));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexCacheManager::dequeue_entry
+//       Access: Private
+//  Description: Removes an Entry record from the doubly-linked list.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexCacheManager::
+dequeue_entry(qpGeomVertexCacheManager::Entry *entry) {
+  nassertv(entry->_prev->_next == entry &&
+           entry->_next->_prev == entry);
+  entry->_prev->_next = entry->_next;
+  entry->_next->_prev = entry->_prev;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexCacheManager::enqueue_entry
+//       Access: Private
+//  Description: Adds an Entry record to the tail of the doubly-linked
+//               list.
+////////////////////////////////////////////////////////////////////
+INLINE void qpGeomVertexCacheManager::
+enqueue_entry(qpGeomVertexCacheManager::Entry *entry) {
+  nassertv(_list->_prev->_next == _list &&
+           _list->_next->_prev == _list);
+  entry->_prev = _list->_prev;
+  entry->_next = _list;
+  entry->_prev->_next = entry;
+  _list->_prev = entry;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexCacheManager::Entry::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomVertexCacheManager::Entry::
+Entry() :
+  _cache_type(CT_none),
+  _result_size(0)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -193,22 +204,8 @@ Entry(const qpGeomPrimitive *primitive, int result_size) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE qpGeomVertexCacheManager::Entry::
-Entry(const qpGeomVertexData *source, const qpGeomVertexFormat *modifier,
+Entry(const qpGeom *source, const qpGeomMunger *modifier,
       int result_size) :
-  _cache_type(CT_data),
-  _result_size(result_size)
-{
-  _u._data._source = source;
-  _u._data._modifier = modifier;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexCacheManager::Entry::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE qpGeomVertexCacheManager::Entry::
-Entry(const qpGeom *source, const qpGeomMunger *modifier, int result_size) :
   _cache_type(CT_geom),
   _result_size(result_size)
 {
@@ -269,18 +266,21 @@ INLINE qpGeomVertexCacheManager::Entry::
 ////////////////////////////////////////////////////////////////////
 INLINE bool qpGeomVertexCacheManager::Entry::
 operator < (const qpGeomVertexCacheManager::Entry &other) const {
+  if (_cache_type != other._cache_type) {
+    return (int)_cache_type < (int)other._cache_type;
+  }
+
   switch (_cache_type) {
+  case CT_none:
+    // We shouldn't be adding the end-of-list token to the index.
+    nassertr(false, false);
+    return false;
+
   case CT_munger:
     return _u._munger < other._u._munger;
 
   case CT_primitive:
     return _u._primitive < other._u._primitive;
-
-  case CT_data:
-    if (_u._data._source != other._u._data._source) {
-      return _u._data._source < other._u._data._source;
-    }
-    return _u._data._modifier < other._u._data._modifier;
 
   case CT_geom:
     if (_u._geom._source != other._u._geom._source) {
@@ -289,7 +289,7 @@ operator < (const qpGeomVertexCacheManager::Entry &other) const {
     return _u._geom._modifier < other._u._geom._modifier;
   }
 
-  return 0;
+  return false;
 }
 
 INLINE ostream &

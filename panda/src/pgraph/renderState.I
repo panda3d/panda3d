@@ -155,21 +155,79 @@ get_bin_index() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderState::is_flat_shaded
+//     Function: RenderState::get_color
 //       Access: Published
-//  Description: Returns true if this RenderState specifies a flat
-//               shading model (that is, per-vertex color applies to
-//               entire triangles), or false if it specifies a smooth
-//               shading model or does not specify.
+//  Description: This function is provided as an optimization, to
+//               speed up the render-time checking for the existance
+//               of a ColorAttrib on this state.  It returns a
+//               pointer to the ColorAttrib, if there is one, or
+//               NULL if there is not.
 ////////////////////////////////////////////////////////////////////
-INLINE bool RenderState::
-is_flat_shaded() const {
-  if ((_flags & F_checked_flat_shaded) == 0) {
+INLINE const ColorAttrib *RenderState::
+get_color() const {
+  if ((_flags & F_checked_color) == 0) {
     // We pretend this function is const, even though it transparently
-    // modifies the internal flat_shaded cache.
-    ((RenderState *)this)->determine_flat_shaded();
+    // modifies the internal color cache.
+    ((RenderState *)this)->determine_color();
   }
-  return ((_flags & F_flat_shaded) != 0);
+  return _color;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_color_scale
+//       Access: Published
+//  Description: This function is provided as an optimization, to
+//               speed up the render-time checking for the existance
+//               of a ColorScaleAttrib on this state.  It returns a
+//               pointer to the ColorScaleAttrib, if there is one, or
+//               NULL if there is not.
+////////////////////////////////////////////////////////////////////
+INLINE const ColorScaleAttrib *RenderState::
+get_color_scale() const {
+  if ((_flags & F_checked_color_scale) == 0) {
+    // We pretend this function is const, even though it transparently
+    // modifies the internal color_scale cache.
+    ((RenderState *)this)->determine_color_scale();
+  }
+  return _color_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_texture
+//       Access: Published
+//  Description: This function is provided as an optimization, to
+//               speed up the render-time checking for the existance
+//               of a TextureAttrib on this state.  It returns a
+//               pointer to the TextureAttrib, if there is one, or
+//               NULL if there is not.
+////////////////////////////////////////////////////////////////////
+INLINE const TextureAttrib *RenderState::
+get_texture() const {
+  if ((_flags & F_checked_texture) == 0) {
+    // We pretend this function is const, even though it transparently
+    // modifies the internal texture cache.
+    ((RenderState *)this)->determine_texture();
+  }
+  return _texture;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_tex_gen
+//       Access: Published
+//  Description: This function is provided as an optimization, to
+//               speed up the render-time checking for the existance
+//               of a TexGenAttrib on this state.  It returns a
+//               pointer to the TexGenAttrib, if there is one, or
+//               NULL if there is not.
+////////////////////////////////////////////////////////////////////
+INLINE const TexGenAttrib *RenderState::
+get_tex_gen() const {
+  if ((_flags & F_checked_tex_gen) == 0) {
+    // We pretend this function is const, even though it transparently
+    // modifies the internal tex_gen cache.
+    ((RenderState *)this)->determine_tex_gen();
+  }
+  return _tex_gen;
 }
 
 ////////////////////////////////////////////////////////////////////

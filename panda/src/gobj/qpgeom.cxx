@@ -157,6 +157,7 @@ add_primitive(const qpGeomPrimitive *primitive) {
   if (cdata->_got_usage_hint) {
     cdata->_usage_hint = min(cdata->_usage_hint, primitive->get_usage_hint());
   }
+  cdata->_modified = qpGeom::get_next_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -176,6 +177,7 @@ remove_primitive(int i) {
     cdata->_got_usage_hint = false;
   }
   cdata->_primitives.erase(cdata->_primitives.begin() + i);
+  cdata->_modified = qpGeom::get_next_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -212,40 +214,6 @@ get_num_bytes() const {
   }
 
   return num_bytes;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpGeom::get_modified
-//       Access: Published
-//  Description: Returns the maximum UpdateSeq of all the Geom's
-//               individual primitives and vertex arrays.  This,
-//               therefore, will change only when any part of the Geom
-//               changes.
-////////////////////////////////////////////////////////////////////
-UpdateSeq qpGeom::
-get_modified() const {
-  CDReader cdata(_cycler);
-  UpdateSeq seq;
-
-  Primitives::const_iterator pi;
-  for (pi = cdata->_primitives.begin(); 
-       pi != cdata->_primitives.end();
-       ++pi) {
-    UpdateSeq pseq = (*pi)->get_modified();
-    if (seq < pseq) {
-      seq = pseq;
-    }
-  }
-
-  int num_arrays = cdata->_data->get_num_arrays();
-  for (int i = 0; i < num_arrays; ++i) {
-    UpdateSeq aseq = cdata->_data->get_array(i)->get_modified();
-    if (seq < aseq) {
-      seq = aseq;
-    }
-  }
-
-  return seq;
 }
 
 ////////////////////////////////////////////////////////////////////
