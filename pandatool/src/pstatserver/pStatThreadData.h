@@ -60,8 +60,8 @@ public:
 
   const PStatFrameData &get_latest_frame() const;
 
-  bool get_elapsed_frames(int &then_i, int &now_i, float time) const;
-  float get_frame_rate(float time = 3.0) const;
+  bool get_elapsed_frames(int &then_i, int &now_i) const;
+  float get_frame_rate() const;
 
 
   void set_history(float time);
@@ -70,12 +70,18 @@ public:
   void record_new_frame(int frame_number, PStatFrameData *frame_data);
 
 private:
+  void compute_elapsed_frames();
   const PStatClientData *_client_data;
 
   typedef pdeque<PStatFrameData *> Frames;
   Frames _frames;
   int _first_frame_number;
   float _history;
+
+  bool _computed_elapsed_frames;
+  bool _got_elapsed_frames;
+  int _then_i;
+  int _now_i;
 
   static PStatFrameData _null_frame;
 };

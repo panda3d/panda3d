@@ -19,8 +19,8 @@
 #include "pStatViewLevel.h"
 #include "pStatClientData.h"
 
-#include <pStatCollectorDef.h>
-#include <notify.h>
+#include "pStatCollectorDef.h"
+#include "notify.h"
 
 #include <algorithm>
 

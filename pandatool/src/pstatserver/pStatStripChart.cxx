@@ -347,7 +347,7 @@ get_frame_data(int frame_number) {
 //     Function: PStatStripChart::get_net_value
 //       Access: Protected
 //  Description: Returns the net value of the chart's collector for
-//               the indicated fraem number.
+//               the indicated frame number.
 ////////////////////////////////////////////////////////////////////
 float PStatStripChart::
 get_net_value(int frame_number) const {
@@ -368,22 +368,43 @@ get_net_value(int frame_number) const {
 //     Function: PStatStripChart::get_average_net_value
 //       Access: Protected
 //  Description: Computes the average value of the chart's collector
-//               over the past indicated number of seconds.
+//               over the past pstats_average_time number of seconds.
 ////////////////////////////////////////////////////////////////////
 float PStatStripChart::
-get_average_net_value(float time) const {
+get_average_net_value() const {
   const PStatThreadData *thread_data = _view.get_thread_data();
   int now_i, then_i;
-  if (!thread_data->get_elapsed_frames(then_i, now_i, time)) {
+  if (!thread_data->get_elapsed_frames(then_i, now_i)) {
     return 0.0f;
   }
 
-  float net_value = 0.0f;
-  for (int frame_number = then_i; frame_number <= now_i; frame_number++) {
-    net_value += get_net_value(frame_number);
-  }
   int num_frames = now_i - then_i + 1;
-  return net_value / (float)num_frames;
+
+  if (_collector_index == 0 && !_view.get_show_level()) {
+    // If we're showing the time for the whole frame, compute this
+    // from the total elapsed time, rather than summing up individual
+    // frames.  This is more accurate and exactly matches what is
+    // reported by thread_data->get_frame_rate().
+
+    const PStatFrameData &now_frame_data = thread_data->get_frame(now_i);
+    const PStatFrameData &then_frame_data = thread_data->get_frame(then_i);
+    float now = now_frame_data.get_end();
+    float elapsed_time = (now - then_frame_data.get_start());
+    return elapsed_time / (float)num_frames;
+
+  } else {
+    // On the other hand, if we're showing the time for some
+    // sub-frame, we have to do it the less-accurate way of summing up
+    // individual frames, which might introduce errors if we are
+    // missing data for some frames, but what can you do?
+    
+    float net_value = 0.0f;
+    for (int frame_number = then_i; frame_number <= now_i; frame_number++) {
+      net_value += get_net_value(frame_number);
+    }
+    
+    return net_value / (float)num_frames;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

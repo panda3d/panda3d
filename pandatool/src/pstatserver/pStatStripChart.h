@@ -26,7 +26,7 @@
 #include "pStatClientData.h"
 
 #include "luse.h"
-#include <vector_int.h>
+#include "vector_int.h"
 
 #include "pmap.h"
 
@@ -87,7 +87,7 @@ protected:
 
   const FrameData &get_frame_data(int frame_number);
   float get_net_value(int frame_number) const;
-  float get_average_net_value(float time = 3.0) const;
+  float get_average_net_value() const;
 
   void changed_size(int xsize, int ysize);
   void force_redraw();
