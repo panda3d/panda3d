@@ -87,7 +87,7 @@ class ActorInterval(Interval.Interval):
         self.implicitDuration = 0
         if duration == None:
             self.implicitDuration = 1
-            duration = float(self.numFrames - 1) / self.frameRate
+            duration = float(self.numFrames) / self.frameRate
 
         # Initialize superclass
         Interval.Interval.__init__(self, name, duration)
