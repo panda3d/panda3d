@@ -69,12 +69,12 @@
 // print out simple drawprim stats every few secs
 //#define COUNT_DRAWPRIMS
 
+//#define PRINT_TEXSTATS
+
 //#define DISABLE_DECALING
 #define DISABLE_POLYGON_OFFSET_DECALING
 // currently doesnt work well enough in toontown models for us to use
 // prob is when viewer gets close to decals, they disappear into wall poly, need to investigate
-
-//#define PRINT_TEXSTATS
 
 // test non-optimized general geom pipe for all models
 // apparently DPStrided faults for some color G_OVERALL cases, so comment out for now
@@ -130,6 +130,10 @@ static void CountDPs(DWORD nVerts,DWORD nTris) {
 }
 #else
 #define CountDPs(nv,nt)
+#endif
+
+#if defined(DO_PSTATS) || defined(PRINT_TEXSTATS)
+static bool bTexStatsRetrievalImpossible=false;
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -223,9 +227,9 @@ reset() {
     _issued_color_enabled = false;
     _enable_all_color = true;
 
-//   this is incorrect for mono displays, need both right and left flags set.
+//   this is incorrect for general mono displays, need both right and left flags set.
 //   stereo has not been handled yet for dx
-//    _buffer_mask &= ~RenderBuffer::T_right;  // test for these later
+//    _buffer_mask &= ~RenderBuffer::T_right;
 
     // Set up our clear values to invalid values, so the glClear* calls
     // will be made initially.
@@ -912,8 +916,11 @@ render_frame() {
     }
 #endif
 
-#ifdef DO_PSTATS
-  if (_texmgrmem_total_pcollector.is_active()) {
+#if defined(DO_PSTATS)||defined(PRINT_TEXSTATS)
+#ifndef PRINT_TEXSTATS
+  if (_texmgrmem_total_pcollector.is_active()) 
+#endif
+  {
       #define TICKS_PER_GETTEXINFO (2.5*1000)   // 2.5 second interval
       static DWORD LastTickCount=0;
       DWORD CurTickCount=GetTickCount();
@@ -925,26 +932,77 @@ render_frame() {
   }
 #endif
 
+#ifdef GSG_VERBOSE
+    dxgsg_cat.debug() << "end frame ----------------------------------------------" << endl;
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::report_texmgr_stats
+//       Access: Protected
+//  Description: Reports the DX texture manager's activity to PStats.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+report_texmgr_stats() {
+
+#if defined(DO_PSTATS)||defined(PRINT_TEXSTATS)
+
+  HRESULT hr;
+  DWORD dwTexTotal,dwTexFree,dwVidTotal,dwVidFree;
+
+#ifndef PRINT_TEXSTATS
+  if (_total_texmem_pcollector.is_active())
+#endif
+  {
+      DDSCAPS2 ddsCaps;
+    
+      ZeroMemory(&ddsCaps,sizeof(ddsCaps));
+    
+      ddsCaps.dwCaps = DDSCAPS_VIDEOMEMORY | DDSCAPS_PRIMARYSURFACE | DDSCAPS_3DDEVICE;
+      if(FAILED(  hr = _pDD->GetAvailableVidMem(&ddsCaps,&dwVidTotal,&dwVidFree))) {
+            dxgsg_cat.debug() << "report_texmgr GetAvailableVidMem for VIDMEM failed : result = " << ConvD3DErrorToString(hr) << endl;
+            exit(1);
+      }
+    
+      ddsCaps.dwCaps = DDSCAPS_TEXTURE; 
+      if(FAILED(  hr = _pDD->GetAvailableVidMem(&ddsCaps,&dwTexTotal,&dwTexFree))) {
+            dxgsg_cat.debug() << "report_texmgr GetAvailableVidMem for TEXTURE failed : result = " << ConvD3DErrorToString(hr) << endl;
+            exit(1);
+      }
+  }
+
+  D3DDEVINFO_TEXTUREMANAGER tminfo;
+  ZeroMemory(&tminfo,sizeof(D3DDEVINFO_TEXTUREMANAGER));
+
+  if(!bTexStatsRetrievalImpossible) {
+      hr = _d3dDevice->GetInfo(D3DDEVINFOID_TEXTUREMANAGER,&tminfo,sizeof(D3DDEVINFO_TEXTUREMANAGER));
+      if (hr!=D3D_OK) {
+          if (hr==S_FALSE) {
+              static int PrintedMsg=2;
+              if(PrintedMsg>0) {
+                  if(dxgsg_cat.is_debug())
+                    dxgsg_cat.debug() << " ************ texstats GetInfo() requires debug DX DLLs to be installed!!  ***********\n";
+                  ZeroMemory(&tminfo,sizeof(D3DDEVINFO_TEXTUREMANAGER));
+                  bTexStatsRetrievalImpossible=true;
+              }
+          } else {
+              dxgsg_cat.error() << "d3ddev->GetInfo(TEXTUREMANAGER) failed to get tex stats: result = " << ConvD3DErrorToString(hr) << endl;
+              return;
+          }
+      }
+  }
+
 #ifdef PRINT_TEXSTATS
-    {
-        #undef TICKS_PER_GETTEXINFO
-        #define TICKS_PER_GETTEXINFO (3*1000)
-        static DWORD LastTickCount=0;
-        DWORD CurTickCount=GetTickCount();
+    char tmpstr1[50],tmpstr2[50],tmpstr3[50],tmpstr4[50];
+    sprintf(tmpstr1,"%.4g",dwVidTotal/1000000.0);
+    sprintf(tmpstr2,"%.4g",dwVidFree/1000000.0);
+    sprintf(tmpstr3,"%.4g",dwTexTotal/1000000.0);
+    sprintf(tmpstr4,"%.4g",dwTexFree/1000000.0);
+    dxgsg_cat.debug() << "\nAvailableVidMem for RenderSurfs: (megs) total: " << tmpstr1 << "  free: " << tmpstr2
+                      << "\nAvailableVidMem for Textures:    (megs) total: " << tmpstr3 << "  free: " << tmpstr4 << endl;
 
-        if (CurTickCount-LastTickCount > TICKS_PER_GETTEXINFO) {
-            LastTickCount=CurTickCount;
-            HRESULT hr;
-
-            D3DDEVINFO_TEXTUREMANAGER tminfo;
-            ZeroMemory(&tminfo,sizeof(  D3DDEVINFO_TEXTUREMANAGER));
-            hr = _d3dDevice->GetInfo(D3DDEVINFOID_TEXTUREMANAGER,&tminfo,sizeof(D3DDEVINFO_TEXTUREMANAGER));
-            if (hr!=D3D_OK) {
-                if (hr==S_FALSE)
-                    dxgsg_cat.error() << "GetInfo requires debug DX7 DLLs to be installed!!\n";
-                else dxgsg_cat.error() << "GetInfo appinfo failed : result = " << ConvD3DErrorToString(hr) << endl;
-            } else
-                dxgsg_cat.spam()
+   if(!bTexStatsRetrievalImpossible) {
+            dxgsg_cat.spam()
                 << "\n bThrashing:\t" << tminfo.bThrashing
                 << "\n NumEvicts:\t" << tminfo.dwNumEvicts
                 << "\n NumVidCreates:\t" << tminfo.dwNumVidCreates
@@ -954,19 +1012,17 @@ render_frame() {
                 << "\n WorkingSetBytes:\t" << tminfo.dwWorkingSetBytes
                 << "\n TotalManaged:\t" << tminfo.dwTotalManaged
                 << "\n TotalBytes:\t" << tminfo.dwTotalBytes
-                << "\n LastPri:\t" << tminfo.dwLastPri       << endl;
-
+                << "\n LastPri:\t" << tminfo.dwLastPri << endl;
 
             D3DDEVINFO_TEXTURING texappinfo;
-            ZeroMemory(&texappinfo,sizeof(  D3DDEVINFO_TEXTURING));
+            ZeroMemory(&texappinfo,sizeof(D3DDEVINFO_TEXTURING));
             hr = _d3dDevice->GetInfo(D3DDEVINFOID_TEXTURING,&texappinfo,sizeof(D3DDEVINFO_TEXTURING));
             if (hr!=D3D_OK) {
-                if (hr==S_FALSE)
-                    dxgsg_cat.error() << "GetInfo requires debug DX7 DLLs to be installed!!\n";
-                else dxgsg_cat.error() << "GetInfo appinfo failed : result = " << ConvD3DErrorToString(hr) << endl;
-            } else
+                dxgsg_cat.error() << "GetInfo(TEXTURING) failed : result = " << ConvD3DErrorToString(hr) << endl;
+                return;
+            } else {
                 dxgsg_cat.spam()
-                << "\n NumLoads:\t" << texappinfo.dwNumLoads
+                << "\n NumTexLoads:\t" << texappinfo.dwNumLoads
                 << "\n ApproxBytesLoaded:\t" << texappinfo.dwApproxBytesLoaded
                 << "\n NumPreLoads:\t" << texappinfo.dwNumPreLoads
                 << "\n NumSet:\t" << texappinfo.dwNumSet
@@ -976,39 +1032,27 @@ render_frame() {
                 << "\n NumSetLODs:\t" << texappinfo.dwNumSetLODs
                 << "\n NumLocks:\t" << texappinfo.dwNumLocks
                 << "\n NumGetDCs:\t" << texappinfo.dwNumGetDCs << endl;
-        }
-
+            }
     }
 #endif
 
-#ifdef GSG_VERBOSE
-    dxgsg_cat.debug()
-    << "end frame ----------------------------------------------" << endl;
+#ifdef DO_PSTATS
+  // Tell PStats about the state of the texture memory.
+
+  if (_texmgrmem_total_pcollector.is_active()) {
+      // report zero if no debug dlls, to signal this info is invalid
+      _texmgrmem_total_pcollector.set_level(tminfo.dwTotalBytes);
+      _texmgrmem_resident_pcollector.set_level(tminfo.dwWorkingSetBytes);
+  }
+    
+  if (_total_texmem_pcollector.is_active()) {
+    _total_texmem_pcollector.set_level(dwTexTotal);
+    _used_texmem_pcollector.set_level(dwTexTotal - dwTexFree);
+  }
+#endif
+
 #endif
 }
-
-#ifdef DO_PSTATS
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::report_texmgr_stats
-//       Access: Protected
-//  Description: Reports the DX texture manager's activity to PStats.
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-report_texmgr_stats() {
-  HRESULT hr;
-
-  D3DDEVINFO_TEXTUREMANAGER tminfo;
-  ZeroMemory(&tminfo, sizeof(tminfo));
-  hr = _d3dDevice->GetInfo(D3DDEVINFOID_TEXTUREMANAGER,
-                           &tminfo, sizeof(tminfo));
-
-  // Quietly ignore an error in GetInfo().
-  if (hr == D3D_OK) {
-    _texmgrmem_total_pcollector.set_level(tminfo.dwTotalBytes);
-    _texmgrmem_resident_pcollector.set_level(tminfo.dwWorkingSetBytes);
-  }
-}
-#endif  // DO_PSTATS
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::render_scene

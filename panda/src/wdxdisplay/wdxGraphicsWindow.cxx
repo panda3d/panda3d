@@ -110,15 +110,14 @@ void PrintErrorMessage(DWORD msgID) {
    LocalFree( pMessageBuffer ); 
 }
 
-#if defined(NOTIFY_DEBUG) || defined(DO_PSTATS)
+//#if defined(NOTIFY_DEBUG) || defined(DO_PSTATS)
+#ifdef _DEBUG
 extern void dbgPrintVidMem(LPDIRECTDRAW7 pDD, LPDDSCAPS2 lpddsCaps,const char *pMsg) {
     DWORD dwTotal,dwFree;
     HRESULT hr;
 
-/*
- * These Caps bits arent allowed to be specified when calling GetAvailVidMem.
- * They don't affect surface allocation in a vram heap.
- */
+ //  These Caps bits arent allowed to be specified when calling GetAvailVidMem.
+ //  They don't affect surface allocation in a vram heap.
 
 #define AVAILVIDMEM_BADCAPS  (DDSCAPS_BACKBUFFER   | \
                               DDSCAPS_FRONTBUFFER  | \
@@ -139,19 +138,12 @@ extern void dbgPrintVidMem(LPDIRECTDRAW7 pDD, LPDDSCAPS2 lpddsCaps,const char *p
         exit(1);
     }
 
-  #ifdef NOTIFY_DEBUG
   // Write a debug message to the console reporting the texture memory.
     char tmpstr[100],tmpstr2[100];
     sprintf(tmpstr,"%.4g",dwTotal/1000000.0);
     sprintf(tmpstr2,"%.4g",dwFree/1000000.0);
-    wdxdisplay_cat.debug() << "AvailableVidMem before creating "<< pMsg << ",(megs) total: " << tmpstr << "  free:" << tmpstr2 <<endl;
-  #endif
-
-  #ifdef DO_PSTATS
-  // Tell PStats about the state of the texture memory.
-  GraphicsStateGuardian::_total_texmem_pcollector.set_level(dwTotal);
-  GraphicsStateGuardian::_used_texmem_pcollector.set_level(dwTotal - dwFree);
-  #endif
+    if(wdxdisplay_cat.is_debug())
+       wdxdisplay_cat.debug() << "AvailableVidMem before creating "<< pMsg << ",(megs) total: " << tmpstr << "  free:" << tmpstr2 <<endl;
 }
 #endif
 

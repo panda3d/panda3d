@@ -66,7 +66,8 @@ INLINE ostream &operator << (ostream &out, GLenum v) {
 
 #define RELEASE(OBJECT) if(((OBJECT)!=NULL)&&(!IsBadWritePtr((OBJECT),4))) {(OBJECT)->Release(); (OBJECT) = NULL;}
 
-#if defined(NOTIFY_DEBUG) || defined(DO_PSTATS)
+//#if defined(NOTIFY_DEBUG) || defined(DO_PSTATS)
+#ifdef _DEBUG
 // This function now serves both to print a debug message to the
 // console, as well as to notify PStats about the change in texture
 // memory.  Thus, we compile it in if we are building with support for
@@ -275,9 +276,7 @@ protected:
   size_t draw_prim_setup(const Geom *geom) ;
   void draw_multitri(Geom *geom, D3DPRIMITIVETYPE tri_id);
 
-#ifdef DO_PSTATS
   void report_texmgr_stats();
-#endif
 
   //   for drawing primitives
   Colorf    p_color;
