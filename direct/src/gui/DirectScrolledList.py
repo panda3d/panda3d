@@ -1,11 +1,47 @@
+from direct.directnotify import DirectNotifyGlobal
 from DirectFrame import *
 from DirectButton import *
 from direct.task import Task
 import types
 
-class DirectScrolledList(DirectFrame):
-    def __init__(self, parent = None, **kw):
 
+class DirectScrolledListItem(DirectButton):
+    """
+    While you are not required to use a DirectScrolledListItem for a
+    DirectScrolledList, doing so takes care of the highlighting and
+    unhighlighting of the list items.
+    """
+    notify = DirectNotifyGlobal.directNotify.newCategory("DirectScrolledListItem")
+
+    def __init__(self, parent=None, **kw):
+        assert self.notify.debugStateCall(self)
+        self.parent = parent
+        if kw.has_key("command"):
+            self.nextCommand = kw.get("command")
+            del kw["command"]
+        if kw.has_key("extraArgs"):
+            self.nextCommnadExtraArgs = kw.get("extraArgs")
+            del kw["extraArgs"]
+        optiondefs = (
+            ('parent', self.parent,    None),
+            ('command', self.select, None),
+            )
+        # Merge keyword options with default options
+        self.defineoptions(kw, optiondefs)
+        DirectButton.__init__(self)
+        self.initialiseoptions(DirectScrolledListItem)
+
+    def select(self):
+        assert self.notify.debugStateCall(self)
+        apply(self.nextCommand, self.nextCommnadExtraArgs)
+        self.parent.selectListItem(self)
+
+
+class DirectScrolledList(DirectFrame):
+    notify = DirectNotifyGlobal.directNotify.newCategory("DirectScrolledList")
+
+    def __init__(self, parent = None, **kw):
+        assert self.notify.debugStateCall(self)
         self.index = 0
         self.forceHeight = None
 
@@ -70,38 +106,52 @@ class DirectScrolledList(DirectFrame):
         self.scrollTo(0)
         
     def setForceHeight(self):
+        assert self.notify.debugStateCall(self)
         self.forceHeight = self["forceHeight"]
 
     def recordMaxHeight(self):
+        assert self.notify.debugStateCall(self)
         if self.forceHeight is not None:
             self.maxHeight = self.forceHeight
-            return
-        
-        self.maxHeight = 0.0
-        for item in self["items"]:
-            if item.__class__.__name__ != 'str':
-                self.maxHeight = max(self.maxHeight, item.getHeight())
-        return
+        else:
+            self.maxHeight = 0.0
+            for item in self["items"]:
+                if item.__class__.__name__ != 'str':
+                    self.maxHeight = max(self.maxHeight, item.getHeight())
         
     def setScrollSpeed(self):
+        assert self.notify.debugStateCall(self)
         # Items per second to move
         self.scrollSpeed = self["scrollSpeed"]
         if self.scrollSpeed <= 0:
             self.scrollSpeed = 1
 
     def setNumItemsVisible(self):
+        assert self.notify.debugStateCall(self)
         # Items per second to move
         self.numItemsVisible = self["numItemsVisible"]
 
     def destroy(self):
+        assert self.notify.debugStateCall(self)
         taskMgr.remove(self.taskName("scroll"))
+        if hasattr(self, "currentSelected"):
+            del self.currentSelected
         DirectFrame.destroy(self)
 
+    def selectListItem(self, item):
+        assert self.notify.debugStateCall(self)
+        if hasattr(self, "currentSelected"):
+            self.currentSelected['state']=NORMAL
+        item['state']=DISABLED
+        self.currentSelected=item
+
     def scrollBy(self, delta):
+        assert self.notify.debugStateCall(self)
         # print "scrollBy[",delta,"]"
         return self.scrollTo(self.index + delta)
 
     def getItemIndexForItemID(self, itemID):
+        assert self.notify.debugStateCall(self)
         #for i in range(len(self["items"])):
         #    print "buttontext[",i,"]",self["items"][i]["text"]
 
@@ -119,10 +169,12 @@ class DirectScrolledList(DirectFrame):
         return 0
 
     def scrollToItemID(self, itemID, centered=0):
+        assert self.notify.debugStateCall(self)
         self.scrollTo(self.getItemIndexForItemID(itemID), centered)
 
-    """ scrolls list so selected index is at top, or centered in box"""
     def scrollTo(self, index, centered=0):
+        """ scrolls list so selected index is at top, or centered in box"""
+        assert self.notify.debugStateCall(self)
         # print "scrollTo[",index,"] called, len(self[items])=",len(self["items"])," self[numItemsVisible]=",self["numItemsVisible"]
 
         numItemsVisible=self["numItemsVisible"]
@@ -192,6 +244,7 @@ class DirectScrolledList(DirectFrame):
         return ret
 
     def makeAllItems(self):
+        assert self.notify.debugStateCall(self)
         for i in range(len(self['items'])):
             item = self["items"][i]
             # If the item is a 'str', then it has not been created
@@ -210,6 +263,7 @@ class DirectScrolledList(DirectFrame):
         self.recordMaxHeight()
 
     def __scrollByTask(self, task):
+        assert self.notify.debugStateCall(self)
         if ((task.time - task.prevTime) < task.delayTime):
             return Task.cont
         else:
@@ -221,6 +275,7 @@ class DirectScrolledList(DirectFrame):
                 return Task.done
             
     def __incButtonDown(self, event):
+        assert self.notify.debugStateCall(self)
         task = Task.Task(self.__scrollByTask)
         task.delayTime = (1.0 / self.scrollSpeed)
         task.prevTime = 0.0
@@ -230,6 +285,7 @@ class DirectScrolledList(DirectFrame):
         
 
     def __decButtonDown(self, event):
+        assert self.notify.debugStateCall(self)
         task = Task.Task(self.__scrollByTask)
         task.delayTime = (1.0 / self.scrollSpeed)
         task.prevTime = 0.0
@@ -238,12 +294,14 @@ class DirectScrolledList(DirectFrame):
         taskMgr.add(task, self.taskName("scroll"))
 
     def __buttonUp(self, event):
+        assert self.notify.debugStateCall(self)
         taskMgr.remove(self.taskName("scroll"))
 
     def addItem(self, item, refresh=1):
         """
         Add this string and extraArg to the list
         """
+        assert self.notify.debugStateCall(self)
         if(type(item) == types.InstanceType):
             # cant add attribs to non-classes (like strings & ints)
             item.itemID = self.nextItemID
@@ -261,10 +319,13 @@ class DirectScrolledList(DirectFrame):
         """
         Remove this item from the panel
         """
+        assert self.notify.debugStateCall(self)
         #print "remove item called", item
         #print "items list", self['items']
         if item in self["items"]:
             #print "removing item", item
+            if hasattr(self, "currentSelected") and self.currentSelected is item:
+                del self.currentSelected
             self["items"].remove(item)
             if type(item) != type(''):
                 item.reparentTo(hidden)
@@ -278,14 +339,17 @@ class DirectScrolledList(DirectFrame):
         Update the list - useful when adding or deleting items
         or changing properties that would affect the scrolling
         """
+        assert self.notify.debugStateCall(self)
         self.recordMaxHeight()
         #print "refresh called"
         self.scrollTo(self.index)
         
     def getSelectedIndex(self):
+        assert self.notify.debugStateCall(self)
         return self.index
 
     def getSelectedText(self):
+        assert self.notify.debugStateCall(self)
         return self['items'][self.index]['text']
     
 
