@@ -16,14 +16,10 @@ ONEPOINTFIVE_PI = 1.5 * math.pi
 POINTFIVE_PI = 0.5 * math.pi
 INNER_SF = 0.2
 
-DIAL_FULL = 'full'
-DIAL_MINI = 'mini'
-
 DIAL_FULL_SIZE = 45
 DIAL_MINI_SIZE = 30
 
 globalClock = ClockObject.getGlobalClock()
-
 
 class Dial(Valuator):
     """
@@ -33,7 +29,7 @@ class Dial(Valuator):
     def __init__(self, parent = None, **kw):
         INITOPT = Pmw.INITOPT
         optiondefs = (
-            ('style',             DIAL_FULL,      INITOPT),
+            ('style',             VALUATOR_FULL,  INITOPT),
             ('base',              0.0,            self.setBase),
             ('delta',             1.0,            self.setDelta),
             ('fSnap',             0,              self.setSnap),
@@ -56,7 +52,7 @@ class Dial(Valuator):
         self._valuator._canvas.bind('<Double-ButtonPress-1>', self.mouseReset)
 
     def packValuator(self):
-        if self['style'] == DIAL_FULL:
+        if self['style'] == VALUATOR_FULL:
             self._valuator.grid(rowspan = 2, columnspan = 2,
                                 padx = 2, pady = 2)
             if self._label:
@@ -155,7 +151,7 @@ class DialWidget(Pmw.MegaWidget):
         INITOPT = Pmw.INITOPT
         optiondefs = (
             # Appearance
-            ('style',           DIAL_FULL,      INITOPT),
+            ('style',           VALUATOR_FULL,      INITOPT),
             ('size',            None,           INITOPT),
             ('relief',          SUNKEN,         self.setRelief),
             ('borderwidth',     2,              self.setBorderwidth),
@@ -200,7 +196,7 @@ class DialWidget(Pmw.MegaWidget):
 
         # Base dial size on style, if size not specified, 
         if not self['size']:
-            if self['style'] == DIAL_FULL:
+            if self['style'] == VALUATOR_FULL:
                 size = DIAL_FULL_SIZE
             else:
                 size = DIAL_MINI_SIZE

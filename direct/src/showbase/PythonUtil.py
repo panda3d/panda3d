@@ -276,7 +276,7 @@ def adjust(command = None, parent = None, **kw):
     adjust(command = None, parent = None, **kw)
     Popup and entry scale to adjust a parameter
     
-    Accepts any EntryScale keyword argument.  Typical arguments include:
+    Accepts any Slider keyword argument.  Typical arguments include:
     command: The one argument command to execute
     min: The min value of the slider
     max: The max value of the slider
@@ -294,7 +294,7 @@ def adjust(command = None, parent = None, **kw):
     # Make sure we enable Tk
     import TkGlobal
     import Tkinter
-    import EntryScale
+    import Slider
     import Pmw
     # Create toplevel if needed
     if not parent:
@@ -303,7 +303,7 @@ def adjust(command = None, parent = None, **kw):
     # Set command if specified
     if command:
         kw['command'] = command
-    es = apply(EntryScale.EntryScale, (parent,), kw)
+    es = apply(Slider.Slider, (parent,), kw)
     es.pack(expand = 1, fill = 'x')
     es.parent = parent
     return es

@@ -9,7 +9,7 @@ import os
 import Pmw
 import Dial
 import Floater
-import EntryScale
+import Slider
 import VectorWidgets
 import Placer
 import ForceGroup
@@ -279,23 +279,23 @@ class ParticlePanel(AppShell):
         zSpinPage = self.factoryNotebook.add('ZSpinParticleFactory')
         self.createAngleDial(zSpinPage, 'Z Spin Factory', 'Initial Angle',
                              'Starting angle in degrees',
-                             dial_fRollover = 1,
+                             fRollover = 1,
                              command = self.setFactoryZSpinInitialAngle)
         self.createAngleDial(
             zSpinPage, 'Z Spin Factory',
             'Initial Angle Spread',
             'Spread of the initial angle',
-            dial_fRollover = 1,
+            fRollover = 1,
             command = self.setFactoryZSpinInitialAngleSpread)
         self.createAngleDial(zSpinPage, 'Z Spin Factory', 'Final Angle',
                              'Final angle in degrees',
-                             dial_fRollover = 1,
+                             fRollover = 1,
                              command = self.setFactoryZSpinFinalAngle)
         self.createAngleDial(
             zSpinPage, 'Z Spin Factory',
             'Final Angle Spread',
             'Spread of the final angle',
-            dial_fRollover = 1,
+            fRollover = 1,
             command = self.setFactoryZSpinFinalAngleSpread)
         # Oriented page #
         orientedPage = self.factoryNotebook.add('OrientedParticleFactory')
@@ -472,7 +472,7 @@ class ParticlePanel(AppShell):
                               ('NO_ALPHA','ALPHA_OUT','ALPHA_IN','ALPHA_USER'),
                               self.setRendererAlphaMode)
         
-        self.createEntryScale(
+        self.createSlider(
             rendererPage, 'Renderer', 'User Alpha',
             'alpha value for ALPHA_USER alpha mode',
             command = self.setRendererUserAlpha)
@@ -739,7 +739,7 @@ class ParticlePanel(AppShell):
                       numDigits = 3, **kw):
         kw['text'] = text
         kw['min'] = min
-        kw['floater_resolution'] = resolution
+        kw['resolution'] = resolution
         kw['numDigits'] = numDigits
         widget = apply(Floater.Floater, (parent,), kw)
         # Do this after the widget so command isn't called on creation
@@ -752,7 +752,7 @@ class ParticlePanel(AppShell):
     def createAngleDial(self, parent, category, text, balloonHelp,
                         command = None, **kw):
         kw['text'] = text
-        kw['style'] = Dial.DIAL_MINI
+        kw['style'] = 'mini'
         widget = apply(Dial.AngleDial,(parent,), kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
@@ -761,14 +761,14 @@ class ParticlePanel(AppShell):
         self.widgetDict[category + '-' + text] = widget
         return widget
 
-    def createEntryScale(self, parent, category, text, balloonHelp,
-                         command = None, min = 0.0, max = 1.0,
-                         resolution = 0.001, **kw):
+    def createSlider(self, parent, category, text, balloonHelp,
+                     command = None, min = 0.0, max = 1.0,
+                     resolution = 0.001, **kw):
         kw['text'] = text
         kw['min'] = min
         kw['max'] = max
         kw['resolution'] = resolution
-        widget = apply(EntryScale.EntryScale, (parent,), kw)
+        widget = apply(Slider.Slider, (parent,), kw)
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)

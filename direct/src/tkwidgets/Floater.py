@@ -17,7 +17,10 @@ FLOATER_HEIGHT = 18
 
 class Floater(Valuator):
     def __init__(self, parent = None, **kw):
-        optiondefs = ()
+        INITOPT = Pmw.INITOPT
+        optiondefs = (
+            ('style',  VALUATOR_MINI,   INITOPT),
+            )
         self.defineoptions(kw, optiondefs)
         # Initialize the superclass
         Valuator.__init__(self, parent)

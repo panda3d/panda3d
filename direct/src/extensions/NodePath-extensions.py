@@ -803,8 +803,8 @@
         base.wantTk = 1
         base.wantDIRECT = 1
         import TkGlobal
-        import EntryScale
-        return EntryScale.rgbPanel(self, cb)
+        import Slider
+        return Slider.rgbPanel(self, cb)
 
     def select(self):
         base.wantTk = 1

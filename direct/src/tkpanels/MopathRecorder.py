@@ -13,6 +13,7 @@ import string
 import Pmw
 import Dial
 import Floater
+import Slider
 import EntryScale
 import VectorWidgets
 import __builtin__
@@ -365,7 +366,7 @@ class MopathRecorder(AppShell, PandaObject):
             self.resamplePage, relief = SUNKEN, borderwidth = 2)
         label = Label(resampleFrame, text = 'RESAMPLE CURVE',
                       font=('MSSansSerif', 12, 'bold')).pack()
-        widget = self.createEntryScale(
+        widget = self.createSlider(
             resampleFrame, 'Resample', 'Num. Samples',
             'Number of samples in resampled curve',
             resolution = 1, min = 2, max = 1000, command = self.setNumSamples)
@@ -389,7 +390,7 @@ class MopathRecorder(AppShell, PandaObject):
             self.resamplePage, relief = SUNKEN, borderwidth = 2)
         Label(desampleFrame, text = 'DESAMPLE CURVE',
               font=('MSSansSerif', 12, 'bold')).pack()
-        widget = self.createEntryScale(
+        widget = self.createSlider(
             desampleFrame, 'Resample', 'Points Between Samples',
             'Specify number of points to skip between samples',
             min = 1, max = 100, resolution = 1,
@@ -405,28 +406,28 @@ class MopathRecorder(AppShell, PandaObject):
                       font=('MSSansSerif', 12, 'bold'))
         label.pack(fill = X)
 
-        widget = self.createEntryScale(refineFrame,
+        widget = self.createSlider(refineFrame,
                                        'Refine Page', 'Refine From',
                                        'Begin time of refine pass',
                                        resolution = 0.01,
                                        command = self.setRecordStart)
         widget['preCallback'] = self.setRefineMode
         widget['postCallback'] = lambda s = self: s.getPrePoints('Refine')
-        widget = self.createEntryScale(
+        widget = self.createSlider(
             refineFrame, 'Refine Page',
             'Control Start',
             'Time when full control of node path is given during refine pass',
             resolution = 0.01,
             command = self.setControlStart)
         widget['preCallback'] = self.setRefineMode
-        widget = self.createEntryScale(
+        widget = self.createSlider(
             refineFrame, 'Refine Page',
             'Control Stop',
             'Time when node path begins transition back to original curve',
             resolution = 0.01,
             command = self.setControlStop)
         widget['preCallback'] = self.setRefineMode
-        widget = self.createEntryScale(refineFrame, 'Refine Page', 'Refine To',
+        widget = self.createSlider(refineFrame, 'Refine Page', 'Refine To',
                                        'Stop time of refine pass',
                                        resolution = 0.01,
                                        command = self.setRefineStop)
@@ -441,14 +442,14 @@ class MopathRecorder(AppShell, PandaObject):
                       font=('MSSansSerif', 12, 'bold'))
         label.pack(fill = X)
 
-        widget = self.createEntryScale(extendFrame,
+        widget = self.createSlider(extendFrame,
                                        'Extend Page', 'Extend From',
                                        'Begin time of extend pass',
                                        resolution = 0.01,
                                        command = self.setRecordStart)
         widget['preCallback'] = self.setExtendMode
         widget['postCallback'] = lambda s = self: s.getPrePoints('Extend')
-        widget = self.createEntryScale(
+        widget = self.createSlider(
             extendFrame, 'Extend Page',
             'Control Start',
             'Time when full control of node path is given during extend pass',
@@ -464,14 +465,14 @@ class MopathRecorder(AppShell, PandaObject):
                       font=('MSSansSerif', 12, 'bold'))
         label.pack(fill = X)
 
-        widget = self.createEntryScale(
+        widget = self.createSlider(
             cropFrame,
             'Crop Page', 'Crop From',
             'Delete all curve points before this time',
             resolution = 0.01,
             command = self.setCropFrom)
 
-        widget = self.createEntryScale(
+        widget = self.createSlider(
             cropFrame,
             'Crop Page', 'Crop To',
             'Delete all curve points after this time',
@@ -523,21 +524,21 @@ class MopathRecorder(AppShell, PandaObject):
             side = LEFT, fill = X, expand = 1)
         frame.pack(fill = X, expand = 1)
         # Sliders
-        widget = self.createEntryScale(
+        widget = self.createSlider(
             sfFrame, 'Style', 'Num Segs',
             'Set number of segments used to approximate each parametric unit',
             min = 1.0, max = 400, resolution = 1.0,
             value = 40, 
             command = self.setNumSegs, side = TOP)
         widget.component('hull')['relief'] = RIDGE
-        widget = self.createEntryScale(
+        widget = self.createSlider(
             sfFrame, 'Style', 'Num Ticks',
             'Set number of tick marks drawn for each unit of time',
             min = 0.0, max = 10.0, resolution = 1.0,
             value = 0.0,
             command = self.setNumTicks, side = TOP)
         widget.component('hull')['relief'] = RIDGE
-        widget = self.createEntryScale(
+        widget = self.createSlider(
             sfFrame, 'Style', 'Tick Scale',
             'Set visible size of time tick marks',
             min = 0.01, max = 100.0, resolution = 0.01,
@@ -1756,6 +1757,24 @@ class MopathRecorder(AppShell, PandaObject):
         # Do this after the widget so command isn't called on creation
         widget['command'] = command
         widget.pack(fill = X)
+        self.bind(widget, balloonHelp)
+        self.widgetDict[category + '-' + text] = widget
+        return widget
+
+    def createSlider(self, parent, category, text, balloonHelp,
+                         command = None, min = 0.0, max = 1.0,
+                         resolution = None,
+                         side = TOP, fill = X, expand = 1, **kw):
+        kw['text'] = text
+        kw['min'] = min
+        kw['max'] = max
+        kw['resolution'] = resolution
+        #widget = apply(EntryScale.EntryScale, (parent,), kw)
+        import Slider
+        widget = apply(Slider.Slider, (parent,), kw)
+        # Do this after the widget so command isn't called on creation
+        widget['command'] = command
+        widget.pack(side = side, fill = fill, expand = expand)
         self.bind(widget, balloonHelp)
         self.widgetDict[category + '-' + text] = widget
         return widget

@@ -4,6 +4,9 @@ import Pmw
 import WidgetPropertiesDialog
 import string
 
+VALUATOR_MINI = 'mini'
+VALUATOR_FULL = 'full'
+
 class Valuator(Pmw.MegaWidget):
     sfBase = 3.0
     sfDist = 7
@@ -357,6 +360,11 @@ class ValuatorGroup(Pmw.MegaWidget):
             ('labels',          DEFAULT_LABELS,         self._updateLabels),
             # The command to be executed when one of the valuators is updated
             ('command',         None,                   None),
+            # Callbacks to execute when updating widget's value
+            ('preCallback',       None,                 None),
+            ('postCallback',      None,                 None),
+            # Extra data to be passed to callback function, needs to be a list
+            ('callbackData',      [],                   None),
             )
         self.defineoptions(kw, optiondefs)
 
@@ -376,6 +384,9 @@ class ValuatorGroup(Pmw.MegaWidget):
             if self['type'] == DIAL:
                 import Dial
                 valuatorType = Dial.Dial
+            elif self['type'] == SLIDER:
+                import Slider
+                valuatorType = Slider.Slider
             else:
                 import Floater
                 valuatorType = Floater.Floater
@@ -383,7 +394,10 @@ class ValuatorGroup(Pmw.MegaWidget):
                 'valuator%d' % index, (), 'valuator', valuatorType,
                 (interior,), value = self._value[index],
                 text = self['labels'][index],
-                command = lambda val, i = index: self._valuatorSetAt(i, val)
+                command = lambda val, i = index: self._valuatorSetAt(i, val),
+                preCallback = self._preCallback,
+                postCallback = self._postCallback,
+                callbackData = [self],
                 )
             f.pack(side = self['side'], expand = 1, fill = X)
             self._valuatorList.append(f)
@@ -428,6 +442,16 @@ class ValuatorGroup(Pmw.MegaWidget):
             for index in range(self['dim']):
                 self._valuatorList[index]['text'] = self['labels'][index]
 
+    def _preCallback(self, valGroup):
+        # Execute pre callback
+        if self['preCallback']:
+            apply(self['preCallback'], valGroup.get())
+        
+    def _postCallback(self, valGroup):
+        # Execute post callback
+        if self['postCallback']:
+            apply(self['postCallback'], valGroup.get())
+
     def __len__(self):
         return self['dim']
     
@@ -464,6 +488,13 @@ class ValuatorGroupPanel(Pmw.MegaToplevel):
             ('numDigits',       2,                      self._setNumDigits),
             # The command to be executed when one of the floaters is updated
             ('command',         None,                   self._setCommand),
+            # Callbacks to execute when updating widget's value
+            ('preCallback',       None,                 self._setPreCallback),
+            ('postCallback',      None,                 self._setPostCallback),
+            # Extra data to be passed to callback function, needs to be a list
+            ('callbackData',      [],                   self._setCallbackData),
+            # Destroy or withdraw
+            ('fDestroy',        0,                      INITOPT)
             )
         self.defineoptions(kw, optiondefs)
 
@@ -486,9 +517,15 @@ class ValuatorGroupPanel(Pmw.MegaToplevel):
             'Valuator Group', 'command', 'Reset the Valuator Group panel',
             label = 'Reset',
             command = lambda s = self: s.reset())
+
+        if self['fDestroy']:
+            dismissCommand = self.destroy
+        else:
+            dismissCommand = self.withdraw
+
         menubar.addmenuitem(
             'Valuator Group', 'command', 'Dismiss Valuator Group panel',
-            label = 'Dismiss', command = self.withdraw)
+            label = 'Dismiss', command = dismissCommand)
         
         menubar.addmenu('Help', 'Valuator Group Help Operations')
         self.toggleBalloonVar = IntVar()
@@ -530,7 +567,85 @@ class ValuatorGroupPanel(Pmw.MegaToplevel):
     def _setCommand(self):
         self.valuatorGroup['command'] = self['command']
 
+    def _setPreCallback(self):
+        self.valuatorGroup['preCallback'] = self['preCallback']
+
+    def _setPostCallback(self):
+        self.valuatorGroup['postCallback'] = self['postCallback']
+
+    def _setCallbackData(self):
+        self.valuatorGroup['callbackData'] = self['callbackData']
+
     def reset(self):
         self.set(self['value'])
 
 Pmw.forwardmethods(ValuatorGroupPanel, ValuatorGroup, 'valuatorGroup')
+
+
+def rgbPanel(nodePath, callback = None, style = 'full'):
+    def setNodePathColor(color, np = nodePath, cb = callback):
+        np.setColor(color[0]/255.0, color[1]/255.0,
+                    color[2]/255.0, color[3]/255.0)
+        # Execute callback to pass along color info
+        if cb:
+            cb(color)
+    # Check init color
+    if nodePath.hasColor():
+        initColor = nodePath.getColor() * 255.0
+    else:
+        initColor = Vec4(255)
+    # Create entry scale group
+    esg = ValuatorGroupPanel(title = 'RGBA Panel: ' + nodePath.getName(),
+                             dim = 4,
+                             labels = ['R','G','B','A'],
+                             value = [int(initColor[0]),
+                                      int(initColor[1]),
+                                      int(initColor[2]),
+                                      int(initColor[3])],
+                             type = 'slider',
+                             valuator_style = style,
+                             valuator_min = 0,
+                             valuator_max = 255,
+                             valuator_resolution = 1,
+                             # Destroy not withdraw panel on dismiss
+                             fDestroy = 1,
+                             command = setNodePathColor)
+    # Update menu button
+    esg.component('menubar').component('Valuator Group-button')['text'] = (
+        'RGBA Panel')
+    # Update menu
+    menu = esg.component('menubar').component('Valuator Group-menu')
+    # Some helper functions
+    # Clear color
+    menu.insert_command(index = 1, label = 'Clear Color',
+                        command = lambda np = nodePath: np.clearColor())
+    # Set Clear Transparency
+    menu.insert_command(index = 2, label = 'Set Transparency',
+                        command = lambda np = nodePath: np.setTransparency(1))
+    menu.insert_command(
+        index = 3, label = 'Clear Transparency',
+        command = lambda np = nodePath: np.clearTransparency())
+
+    # System color picker
+    def popupColorPicker(esg = esg):
+        # Can pass in current color with: color = (255, 0, 0)
+        color = tkColorChooser.askcolor(
+            parent = esg.interior(),
+            # Initialize it to current color
+            initialcolor = tuple(esg.get()[:3]))[0]
+        if color:
+            esg.set((color[0], color[1], color[2], esg.getAt(3)))
+    menu.insert_command(index = 4, label = 'Popup Color Picker',
+                        command = popupColorPicker)
+    def printToLog(nodePath=nodePath):
+        c=nodePath.getColor()
+        print "Vec4(%.3f, %.3f, %.3f, %.3f)"%(c[0], c[1], c[2], c[3])
+    menu.insert_command(index = 5, label = 'Print to log',
+                        command = printToLog)
+    
+    # Set callback
+    def onRelease(r,g,b,a, nodePath = nodePath):
+        messenger.send('RGBPanel_setColor', [nodePath, r,g,b,a])
+    esg['postCallback'] = onRelease
+    return esg
+

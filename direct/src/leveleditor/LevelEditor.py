@@ -10,7 +10,6 @@ from tkFileDialog import *
 from whrandom import *
 import Pmw
 import Floater
-import EntryScale
 import VectorWidgets
 import string
 import os

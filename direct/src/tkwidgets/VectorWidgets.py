@@ -2,7 +2,7 @@ from Tkinter import *
 import Pmw
 import Valuator
 import Floater
-import EntryScale
+import Slider
 import string
 import tkColorChooser
 
@@ -15,7 +15,6 @@ class VectorEntry(Pmw.MegaWidget):
         DEFAULT_VALUE = [0.0] * kw.get('dim', DEFAULT_DIM)
         DEFAULT_LABELS = map(lambda x: 'v[%d]' % x,
                              range(kw.get('dim', DEFAULT_DIM)))
-        VALUATOR = kw.get('valuatorType', Floater.FloaterGroup)
 
         # Process options
         INITOPT = Pmw.INITOPT
@@ -31,8 +30,8 @@ class VectorEntry(Pmw.MegaWidget):
             ('text',                'Vector:',      self._updateText),
             ('min',                 None,           self._updateValidate),
             ('max',                 None,           self._updateValidate),
-            ('numDigits',   2,              self._setSigDigits),
-            ('valuatorType',        VALUATOR,       None),
+            ('numDigits',           2,              self._setSigDigits),
+            ('type',                'floater',      None),
             ('state',               'normal',       self._setState),
             )
         self.defineoptions(kw, optiondefs)
@@ -92,9 +91,11 @@ class VectorEntry(Pmw.MegaWidget):
         self._floaters = self.createcomponent(
             'floaterGroup',
             (('fGroup', 'floaterGroup'),
-             ('Valuator', 'floaterGroup_Valuator'),), None,
-            self['valuatorType'], (self.interior(),),
-            dim = self['dim'], title = self['text'],
+             ('valuator', 'floaterGroup_valuator'),), None,
+            Valuator.ValuatorGroupPanel, (self.interior(),),
+            dim = self['dim'],
+            #title = self['text'],
+            type = self['type'],
             command = self.set)
         # Note: This means the 'X' on the menu bar doesn't really destroy
         # the panel, just withdraws it.  This is to avoid problems which occur
@@ -145,7 +146,7 @@ class VectorEntry(Pmw.MegaWidget):
     def _setSigDigits(self):
         sd = self['numDigits']
         self.entryFormat = '%.' + '%d' % sd + 'f'
-        self.configure(Valuator_numDigits = sd)
+        self.configure(valuator_numDigits = sd)
         # And refresh value to reflect change
         for index in range(self['dim']):
             self._refreshEntry(index)
@@ -159,8 +160,8 @@ class VectorEntry(Pmw.MegaWidget):
             'minstrict' : 0,
             'maxstrict' : 0})
         # Reflect changes in floaters
-        self.configure(Valuator_min = self['min'],
-                       Valuator_max = self['max'])            
+        self.configure(valuator_min = self['min'],
+                       valuator_max = self['max'])            
 
     def get(self):
         return self._value
@@ -234,24 +235,24 @@ class VectorEntry(Pmw.MegaWidget):
             self.configure(Entry_entry_background = '#C0C0C0')
             # Disable floater Group scale
             self.component('fGroup').configure(
-                Valuator_state = 'disabled')
+                valuator_state = 'disabled')
             # Disable floater group entry
             self.component('fGroup').configure(
-                Valuator_entry_state = 'disabled')
+                valuator_entry_state = 'disabled')
             self.component('fGroup').configure(
-                Valuator_entry_background = '#C0C0C0')
+                valuator_entry_background = '#C0C0C0')
         else:
             # Disable entry
             self.configure(Entry_entry_state = 'normal')
             self.configure(Entry_entry_background = self.entryBackground)
             # Disable floater Group scale
             self.component('fGroup').configure(
-                Valuator_state = 'normal')
+                valuator_state = 'normal')
             # Disable floater group entry
             self.component('fGroup').configure(
-                Valuator_entry_state = 'normal')
+                valuator_entry_state = 'normal')
             self.component('fGroup').configure(
-                Valuator_entry_background = self.entryBackground)
+                valuator_entry_background = self.entryBackground)
 
 class Vector2Entry(VectorEntry):
     def __init__(self, parent = None, **kw):
@@ -300,18 +301,17 @@ class ColorEntry(VectorEntry):
         # Initialize options for the class (overriding some superclass options)
         optiondefs = (
             ('dim',                     4,                  Pmw.INITOPT),
+            ('type',                    'slider',           Pmw.INITOPT),
             ('fGroup_labels',           ('R','G','B','A'),  None),
             ('min',                     0.0,                None),
             ('max',                     255.0,              None),
-            ('nuDigits',       0,                  None),
-            ('Valuator_resolution',     1.0,                None),
+            ('nuDigits',                0,                  None),
+            ('valuator_resolution',     1.0,                None),
             )
         self.defineoptions(kw, optiondefs)
-        #kw['valuatorType'] = EntryScale.EntryScaleGroup
-        #kw['dim'] = self['dim']
+
         # Initialize the superclass, make sure dim makes it to superclass
-        VectorEntry.__init__(self, parent, dim = self['dim'],
-                             valuatorType = EntryScale.EntryScaleGroup)
+        VectorEntry.__init__(self, parent, dim = self['dim'])
         # Add menu item to popup color picker
         self.addMenuItem(
             'Popup color picker',

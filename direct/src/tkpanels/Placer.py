@@ -233,7 +233,7 @@ class Placer(AppShell):
         # Create the dials
         self.hprH = self.createcomponent('hprH', (), None,
                                          Dial.AngleDial, (hprInterior,),
-                                         style = Dial.DIAL_MINI,
+                                         style = 'mini',
                                          text = 'H', value = 0.0,
                                          relief = FLAT,
                                          label_foreground = 'blue')
@@ -246,7 +246,7 @@ class Placer(AppShell):
         
         self.hprP = self.createcomponent('hprP', (), None,
                                          Dial.AngleDial, (hprInterior,),
-                                         style = Dial.DIAL_MINI,
+                                         style = 'mini',
                                          text = 'P', value = 0.0,
                                          relief = FLAT,
                                          label_foreground = 'red')
@@ -259,7 +259,7 @@ class Placer(AppShell):
         
         self.hprR = self.createcomponent('hprR', (), None,
                                          Dial.AngleDial, (hprInterior,),
-                                         style = Dial.DIAL_MINI,
+                                         style = 'mini',
                                          text = 'R', value = 0.0,
                                          relief = FLAT,
                                          label_foreground = '#00A000')

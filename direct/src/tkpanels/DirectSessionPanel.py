@@ -8,7 +8,7 @@ import string
 import Pmw
 import Dial
 import Floater
-import EntryScale
+import Slider
 import VectorWidgets
 import SceneGraphExplorer
 from TaskManagerPanel import TaskManagerWidget
@@ -24,8 +24,8 @@ class DirectSessionPanel(AppShell):
     # Override class variables here
     appname = 'Direct Session Panel'
     frameWidth      = 600
-    frameHeight     = 502
-    usecommandarea = 1
+    frameHeight     = 365
+    usecommandarea = 0
     usestatusarea  = 0
 
     def __init__(self, parent = None, **kw):
@@ -102,6 +102,17 @@ class DirectSessionPanel(AppShell):
                                  label = 'Enable Grid',
                                  variable = self.directGridEnabled,
                                  command = self.toggleDirectGrid)
+
+        self.menuBar.addmenuitem('DIRECT', 'command',
+                                 'Toggle Object Handles Visability',
+                                 label = 'Toggle Widget Viz',
+                                 command = direct.toggleWidgetVis)
+
+        self.menuBar.addmenuitem(
+            'DIRECT', 'command',
+            'Toggle Widget Move/COA Mode',
+            label = 'Toggle Widget Mode',
+            command = direct.manipulationControl.toggleObjectHandlesMode)
         
         # Get a handle to the menu frame
         menuFrame = self.menuFrame
@@ -150,7 +161,7 @@ class DirectSessionPanel(AppShell):
         self.SGE = SceneGraphExplorer.SceneGraphExplorer(
             sgeFrame, nodePath = render,
             scrolledCanvas_hull_width = 250,
-            scrolledCanvas_hull_height = 400)
+            scrolledCanvas_hull_height = 300)
         self.SGE.pack(fill = BOTH, expand = 0)
         sgeFrame.pack(side = LEFT, fill = 'both', expand = 0)
 
@@ -212,7 +223,7 @@ class DirectSessionPanel(AppShell):
 
         fovFrame = Frame(drFrame)
         fovFloaterFrame = Frame(fovFrame)
-        self.hFov = EntryScale.EntryScale(
+        self.hFov = Slider.Slider(
             fovFloaterFrame,
             text = 'Horizontal FOV',
             min = 0.01, max = 170.0)
@@ -220,7 +231,7 @@ class DirectSessionPanel(AppShell):
         self.hFov.pack(fill = X, expand = 0)
         self.bind(self.hFov, 'Set horizontal field of view')
            
-        self.vFov = EntryScale.EntryScale(
+        self.vFov = Slider.Slider(
             fovFloaterFrame,
             text = 'Vertical FOV',
             min = 0.01, max = 170.0)
@@ -366,7 +377,7 @@ class DirectSessionPanel(AppShell):
         self.bind(self.pSpecularColor,
                   'Set point light specular color')
 
-        self.pConstantAttenuation = EntryScale.EntryScale(
+        self.pConstantAttenuation = Slider.Slider(
             pointPage,
             text = 'Constant Attenuation',
             min = 0.0, max = 1.0, value = 1.0)
@@ -375,7 +386,7 @@ class DirectSessionPanel(AppShell):
         self.bind(self.pConstantAttenuation,
                   'Set point light constant attenuation')
            
-        self.pLinearAttenuation = EntryScale.EntryScale(
+        self.pLinearAttenuation = Slider.Slider(
             pointPage,
             text = 'Linear Attenuation',
             min = 0.0, max = 1.0, value = 0.0)
@@ -384,7 +395,7 @@ class DirectSessionPanel(AppShell):
         self.bind(self.pLinearAttenuation,
                   'Set point light linear attenuation')
            
-        self.pQuadraticAttenuation = EntryScale.EntryScale(
+        self.pQuadraticAttenuation = Slider.Slider(
             pointPage,
             text = 'Quadratic Attenuation',
             min = 0.0, max = 1.0, value = 0.0)
@@ -401,7 +412,7 @@ class DirectSessionPanel(AppShell):
         self.bind(self.sSpecularColor,
                   'Set spot light specular color')
 
-        self.sConstantAttenuation = EntryScale.EntryScale(
+        self.sConstantAttenuation = Slider.Slider(
             spotPage,
             text = 'Constant Attenuation',
             min = 0.0, max = 1.0, value = 1.0)
@@ -410,7 +421,7 @@ class DirectSessionPanel(AppShell):
         self.bind(self.sConstantAttenuation,
                   'Set spot light constant attenuation')
            
-        self.sLinearAttenuation = EntryScale.EntryScale(
+        self.sLinearAttenuation = Slider.Slider(
             spotPage,
             text = 'Linear Attenuation',
             min = 0.0, max = 1.0, value = 0.0)
@@ -419,7 +430,7 @@ class DirectSessionPanel(AppShell):
         self.bind(self.sLinearAttenuation,
                   'Set spot light linear attenuation')
            
-        self.sQuadraticAttenuation = EntryScale.EntryScale(
+        self.sQuadraticAttenuation = Slider.Slider(
             spotPage,
             text = 'Quadratic Attenuation',
             min = 0.0, max = 1.0, value = 0.0)
@@ -428,7 +439,7 @@ class DirectSessionPanel(AppShell):
         self.bind(self.sQuadraticAttenuation,
                   'Set spot light quadratic attenuation')
            
-        self.sExponent = EntryScale.EntryScale(
+        self.sExponent = Slider.Slider(
             spotPage,
             text = 'Exponent',
             min = 0.0, max = 1.0, value = 0.0)
@@ -493,7 +504,7 @@ class DirectSessionPanel(AppShell):
         self.gridSnapAngle = Dial.AngleDial(
             gridPage,
             text = 'Snap Angle',
-            style = Dial.DIAL_MINI,
+            style = 'mini',
             value = direct.grid.getSnapAngle())
         self.gridSnapAngle['command'] = direct.grid.setSnapAngle
         self.gridSnapAngle.pack(fill = X, expand = 0)
@@ -542,7 +553,7 @@ class DirectSessionPanel(AppShell):
             self.bind(self.jbNodePathMenu,
                       'Select node path to manipulate using the joybox')
 
-            self.jbXyzSF = EntryScale.EntryScale(
+            self.jbXyzSF = Slider.Slider(
                 joyboxFrame,
                 text = 'XYZ Scale Factor',
                 value = 1.0,
@@ -553,7 +564,7 @@ class DirectSessionPanel(AppShell):
             self.jbXyzSF.pack(fill = X, expand = 0)
             self.bind(self.jbXyzSF, 'Set joybox XYZ speed multiplier')
 
-            self.jbHprSF = EntryScale.EntryScale(
+            self.jbHprSF = Slider.Slider(
                 joyboxFrame,
                 text = 'HPR Scale Factor',
                 value = 1.0,
@@ -568,30 +579,12 @@ class DirectSessionPanel(AppShell):
         Label(tasksPage, text = 'TASKS',
               font=('MSSansSerif', 14, 'bold')).pack(expand = 0)
         self.taskMgrPanel = TaskManagerWidget(tasksPage, taskMgr)
+        self.taskMgrPanel.taskListBox['listbox_height'] = 10
 
         notebook.setnaturalsize()
 
         framePane.pack(expand = 1, fill = BOTH)
         mainFrame.pack(fill = 'both', expand = 1)
-
-        # Create some buttons in the bottom tray
-        self.createButtons()
-
-    def createButtons(self):
-        # Grid: enable/disable, xyz/hpr snap, snap to plane
-        # Render mode: wireframe, lights, texture
-        self.buttonAdd('Toggle Widget Viz',
-                       helpMessage='Toggle Object Handles Visability',
-                       statusMessage='Toggle Object Handles Visability',
-                       command=direct.toggleWidgetVis)
-        self.buttonAdd(
-            'Toggle Widget Mode',
-            helpMessage='Toggle Widget Move/COA Mode',
-            statusMessage='Toggle Widget Move/COA Mode',
-            command=direct.manipulationControl.toggleObjectHandlesMode)
-        
-        # Make all buttons as wide as widest
-        self.alignbuttons()
 
     def toggleDirect(self):
         if self.directEnabled.get():

@@ -12,7 +12,7 @@ from ClusterServer import *
 from ClusterConfig import *
 from tkSimpleDialog import askstring
 import Placer
-import EntryScale
+import Slider
 import SceneGraphExplorer
 import OnscreenText
 import types
@@ -149,7 +149,7 @@ class DirectSession(PandaObject):
             ['SGE_Show All', self.showAllDescendants],
             ['SGE_Fit', self.fitOnNodePath],
             ['SGE_Place', Placer.place],
-            ['SGE_Set Color', EntryScale.rgbPanel],
+            ['SGE_Set Color', Slider.rgbPanel],
             ['SGE_Explore', SceneGraphExplorer.explore],
             ['SGE_Delete', self.removeNodePath],
             ['SGE_Set Name', self.getAndSetName],

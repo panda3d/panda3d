@@ -10,6 +10,7 @@ from tkFileDialog import *
 import Pmw
 import Dial
 import Floater
+import Slider
 import EntryScale
 import VectorWidgets
 import sys, string
@@ -408,6 +409,15 @@ class AppShell(Pmw.MegaWidget, PandaObject):
         # Create the widget
         widget = self.createWidget(parent, category, text,
                                    Dial.Dial,
+                                   help, command, side, fill, expand, kw)
+        return widget
+
+    def newCreateSider(self, parent, category, text,
+                       help = '', command = None,
+                       side = LEFT, fill = X, expand = 0, **kw):
+        # Create the widget
+        widget = self.createWidget(parent, category, text,
+                                   Slider.Slider,
                                    help, command, side, fill, expand, kw)
         return widget
 

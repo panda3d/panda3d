@@ -111,12 +111,18 @@ class WidgetPropertiesDialog(Toplevel):
             # Set up help string and validator based upon type
             if entryType == 'real':
                 # Only allow real numbers
-                entry['validate'] = { 'validator' : self.realOrNone }
+                if fAllowNone:
+                    entry['validate'] = { 'validator' : self.realOrNone }
+                else:
+                    entry['validate'] = { 'validator' : 'real' }
                 if helpString is None:
                     helpString = 'Enter a floating point number' + extra + '.'
             elif entryType == 'integer':
                 # Only allow integer values
-                entry['validate'] = { 'validator' : self.intOrNone }
+                if fAllowNone:
+                    entry['validate'] = { 'validator' : self.intOrNone }
+                else:
+                    entry['validate'] = { 'validator' : 'integer' }
                 if helpString is None:
                     helpString = 'Enter an integer' + extra + '.'
             else:
