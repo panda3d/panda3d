@@ -389,6 +389,7 @@ safe_send(int socket, const char *data, int length, long timeout) {
 ////////////////////////////////////////////////////////////////////
 int Downloader::
 safe_receive(int socket, char *data, int length, long timeout) {
+  char *data_ptr = data;
   if (length == 0) {
     downloader_cat.error()
       << "Downloader::safe_receive() - requested 0 length receive!" << endl;
@@ -413,12 +414,18 @@ safe_receive(int socket, char *data, int length, long timeout) {
 	<< "Downloader::safe_receive() - error: " << strerror(errno) << endl;
       return bytes;
     }
-    int ret = recv(socket, data, length, 0);
-    if (ret > 0)
+    int ret = recv(socket, data_ptr, length - bytes, 0);
+    if (ret > 0) {
+      downloader_cat.debug()
+	<< "Downloader::safe_receive() - recv() got: " << ret << " bytes"
+	<< endl;
       bytes += ret;
-    else if (ret == 0)
-      return 0;
-    else {
+      data_ptr += ret;
+    } else if (ret == 0) {
+      downloader_cat.debug()
+	<< "Downloader::safe_receive() - End of file" << endl;
+      return bytes;
+    } else {
       downloader_cat.error()
 	<< "Downloader::safe_receive() - error: " << strerror(errno) << endl;
       return bytes;
