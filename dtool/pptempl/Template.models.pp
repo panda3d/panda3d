@@ -268,7 +268,9 @@ $[target] : $[source] $[bam_dir]/stamp
     #define sourcedir $[pal_egg_dir]
     #define dest $[install_model_dir]
 $[dest]/$[local] : $[sourcedir]/$[local]
-	cd ./$[sourcedir] && $[INSTALL]
+//	cd ./$[sourcedir] && $[INSTALL]
+	rm -f $[dest]/$[local]
+	cp $[sourcedir]/$[local] $[dest]
 
   #end egg
   #foreach egg $[UNPAL_SOURCES]
@@ -276,7 +278,9 @@ $[dest]/$[local] : $[sourcedir]/$[local]
     #define sourcedir $[SOURCE_DIR]
     #define dest $[install_model_dir]
 $[dest]/$[local] : $[sourcedir]/$[local]
-	cd ./$[sourcedir] && $[INSTALL]
+//	cd ./$[sourcedir] && $[INSTALL]
+	rm -f $[dest]/$[local]
+	cp $[sourcedir]/$[local] $[dest]
 
   #end egg
 #end install_egg
@@ -289,7 +293,9 @@ $[dest]/$[local] : $[sourcedir]/$[local]
     #define sourcedir $[bam_dir]
     #define dest $[install_model_dir]
 $[dest]/$[local] : $[sourcedir]/$[local]
-	cd ./$[sourcedir] && $[INSTALL]
+//	cd ./$[sourcedir] && $[INSTALL]
+	rm -f $[dest]/$[local]
+	cp $[sourcedir]/$[local] $[dest]
 
   #end egg
 #end install_egg
@@ -301,7 +307,9 @@ $[dest]/$[local] : $[sourcedir]/$[local]
     #define local $[file]
     #define dest $[install_model_dir]
 $[dest]/$[local] : $[local]
-	$[INSTALL]
+//	$[INSTALL]
+	rm -f $[dest]/$[local]
+	cp $[local] $[dest]
 
   #end file
 #end install_audio install_dna install_icons install_misc
