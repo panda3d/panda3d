@@ -55,7 +55,7 @@ class ShadowPlacer(DirectObject.DirectObject):
         self.cRay = CollisionRay(0.0, 0.0, 4.0, 0.0, 0.0, -1.0)
         cRayNode = CollisionNode('shadowPlacer')
         cRayNode.addSolid(self.cRay)
-        self.cRayNodePath = shadowNodePath.getParent().attachNewNode(cRayNode)
+        self.cRayNodePath = NodePath(cRayNode)
         self.cRayBitMask = floorCollideMask
         cRayNode.setFromCollideMask(self.cRayBitMask)
         cRayNode.setIntoCollideMask(BitMask32.allOff())
@@ -99,6 +99,7 @@ class ShadowPlacer(DirectObject.DirectObject):
             assert self.cTrav.hasCollider(self.cRayNodePath)
             return
         assert not self.cTrav.hasCollider(self.cRayNodePath)
+        self.cRayNodePath.reparentTo(self.shadowNodePath.getParent())
         self.cTrav.addCollider(self.cRayNodePath, self.lifter)
         self.isActive = 1
         if __debug__:
@@ -118,6 +119,7 @@ class ShadowPlacer(DirectObject.DirectObject):
         assert self.cTrav.hasCollider(self.cRayNodePath)
         didIt = self.cTrav.removeCollider(self.cRayNodePath)
         assert didIt
+        self.cRayNodePath.detachNode()
         # Now that we have disabled collisions, make one more pass
         # right now to ensure we aren't standing in a wall.
         self.oneTimeCollide()
