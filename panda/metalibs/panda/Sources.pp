@@ -21,6 +21,19 @@
 #define LOCAL_LIBS downloader event ipc express pandabase
 #define OTHER_LIBS dtoolconfig dtool
 
+#if $[LINK_IN_GL]
+  #define BUILDING_DLL $[BUILDING_DLL] BUILDING_PANDAGL
+  #define COMPONENT_LIBS $[COMPONENT_LIBS] \
+    glgsg glxdisplay wgldisplay glutdisplay \
+    sgidisplay sgiglxdisplay sgiglutdisplay
+#endif
+
+#if $[LINK_IN_PHYSICS]
+  #define BUILDING_DLL $[BUILDING_DLL] BUILDING_PANDAPHYSICS
+  #define COMPONENT_LIBS $[COMPONENT_LIBS] \
+    physics particlesystem
+#endif
+
 #begin metalib_target
   #define TARGET panda
 

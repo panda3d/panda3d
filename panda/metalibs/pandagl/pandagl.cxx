@@ -5,10 +5,11 @@
 
 #include "pandagl.h"
 
+#ifndef LINK_IN_GL
 #include <config_glgsg.h>
-
 #ifdef HAVE_WGL
 #include <config_wgldisplay.h>
+#endif
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -21,9 +22,10 @@
 ////////////////////////////////////////////////////////////////////
 void
 init_libpandagl() {
+#ifndef LINK_IN_GL
   init_libglgsg();
-
 #ifdef HAVE_WGL
   init_libwgldisplay();
+#endif
 #endif
 }

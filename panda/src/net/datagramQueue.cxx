@@ -69,7 +69,11 @@ insert(const NetDatagram &data) {
   PR_Lock(_cvlock);
   bool enqueue_ok = ((int)_queue.size() < _max_queue_size);
   if (enqueue_ok) {
+#ifdef __ICL
+    _queue.push_back(new NetDatagram(data));
+#else
     _queue.push_back(data);
+#endif
   }
   PR_NotifyCondVar(_cv);
   PR_Unlock(_cvlock);
@@ -112,7 +116,13 @@ extract(NetDatagram &result) {
   }
 
   nassertr(!_queue.empty(), false);
+#ifdef __ICL
+  NetDatagram *ptr = _queue.front();
+  result = *ptr;
+  delete ptr;
+#else
   result = _queue.front();
+#endif
   _queue.pop_front();
   
   PR_Unlock(_cvlock);

@@ -13,4 +13,6 @@
 ConfigureDecl(config_physics, EXPCL_PANDAPHYSICS, EXPTP_PANDAPHYSICS);
 NotifyCategoryDecl(physics, EXPCL_PANDAPHYSICS, EXPTP_PANDAPHYSICS);
 
+extern EXPCL_PANDAPHYSICS void init_libphysics();
+
 #endif // CONFIG_PHYSICS_H

@@ -12,6 +12,18 @@
 #include <config_pstats.h>
 #include <config_sgraph.h>
 
+#ifdef LINK_IN_GL
+#include <config_glgsg.h>
+#ifdef HAVE_WGL
+#include <config_wgldisplay.h>
+#endif
+#endif
+
+#ifdef LINK_IN_PHYSICS
+#include <config_physics.h>
+#include <config_particlesystem.h>
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpanda
 //  Description: Initializes the library.  This must be called at
@@ -28,4 +40,16 @@ init_libpanda() {
   init_libpnmimagetypes();
   init_libpstatclient();
   init_libsgraph();
+
+#ifdef LINK_IN_GL
+  init_libglgsg();
+#ifdef HAVE_WGL
+  init_libwgldisplay();
+#endif
+#endif
+
+#ifdef LINK_IN_PHYSICS
+  init_libphysics();
+  init_libparticlesystem();
+#endif
 }

@@ -1,5 +1,3 @@
-#define DIRECTORY_IF_GL yes
-
 // DIR_TYPE "metalib" indicates we are building a shared library that
 // consists mostly of references to other shared libraries.  Under
 // Windows, this directly produces a DLL (as opposed to the regular
@@ -8,10 +6,15 @@
 
 #define DIR_TYPE metalib
 #define BUILDING_DLL BUILDING_PANDAGL
+#define DIRECTORY_IF_GL yes
 
-#define COMPONENT_LIBS \
-    glgsg glxdisplay wgldisplay glutdisplay \
-    sgidisplay sgiglxdisplay sgiglutdisplay
+#if $[eq $[LINK_IN_GL],]
+  // We don't have any components if we're linking the GL library
+  // directly into Panda.
+  #define COMPONENT_LIBS \
+      glgsg glxdisplay wgldisplay glutdisplay \
+      sgidisplay sgiglxdisplay sgiglutdisplay
+#endif
 
 #define LOCAL_LIBS gsgbase display express
 #define OTHER_LIBS dtoolconfig dtool
@@ -20,7 +23,6 @@
   #define TARGET pandagl
 
   #define SOURCES pandagl.cxx pandagl.h
-
   #define INSTALL_HEADERS pandagl.h
 
 #end metalib_target

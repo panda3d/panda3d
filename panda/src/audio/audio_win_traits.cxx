@@ -35,6 +35,7 @@ static IDirectSound* musicDirectSound = NULL;
 // #define MULTI_TO_WIDE(_in, _out) MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, _in, -1, _out, DMUS_MAX_FILENAME)
 #define MULTI_TO_WIDE(x,y) MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, y, -1, x, _MAX_PATH);
 
+
 static void update_win(void) {
 }
 
@@ -693,17 +694,22 @@ WinSamplePlaying::WinSamplePlaying(AudioTraits::SoundClass* s)
     audio_cat->debug() << "WinSamplePlaying::WinSamplePlaying _data = 0x"
 		       << (void*)(ws->_data) << "  dst = 0x"
 		       << (void*)dst << endl;
-  try {
-    memcpy(dst, ws->_data, ws->_len);
-  }
-  catch (...) {
-    _channel = NULL;
-    if (audio_cat->is_debug())
-      audio_cat->debug() << "memcpy failed.  dst = 0x" << (void*)dst
-			 << "  data = 0x" << (void*)(ws->_data)
-			 << "   len = " << ws->_len << endl;
-    return;
-  }
+
+  // The Intel compiler dumps core if we attempt to protect this in a
+  // try .. catch block.  We probably shouldn't be using exception
+  // handling anyway.
+
+  //  try {
+  memcpy(dst, ws->_data, ws->_len);
+  //  }
+  //  catch (...) {
+  //    _channel = NULL;
+  //    if (audio_cat->is_debug())
+  //      audio_cat->debug() << "memcpy failed.  dst = 0x" << (void*)dst
+  //			 << "  data = 0x" << (void*)(ws->_data)
+  //			 << "   len = " << ws->_len << endl;
+  //    return;
+  //  }
   this->unlock();
 }
 

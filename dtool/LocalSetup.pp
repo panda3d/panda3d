@@ -85,6 +85,16 @@ $[cdefine HAVE_NET]
 /* Define if we want to compile the audio code.  */
 $[cdefine HAVE_AUDIO]
 
+/* Define if we want to export template classes from the DLL.  Only
+   makes sense to MSVC++. */
+$[cdefine EXPORT_TEMPLATES]
+
+/* Define if we are linking PANDAGL in with PANDA. */
+$[cdefine LINK_IN_GL]
+
+/* Define if we are linking PANDAPHYSICS in with PANDA. */
+$[cdefine LINK_IN_PHYSICS]
+
 /* Define if we have a gettimeofday() function. */
 $[cdefine HAVE_GETTIMEOFDAY]
 

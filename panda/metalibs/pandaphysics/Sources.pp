@@ -7,13 +7,20 @@
 #define DIR_TYPE metalib
 #define BUILDING_DLL BUILDING_PANDAPHYSICS
 
-#define COMPONENT_LIBS \
-    physics particlesystem
+#if $[eq $[LINK_IN_PHYSICS],]
+  // We don't have any components if we're linking the Physics library
+  // directly into Panda.
+  #define COMPONENT_LIBS \
+      physics particlesystem
+#endif
+
 #define LOCAL_LIBS linmath putil express
 #define OTHER_LIBS dtoolconfig dtool
 
 #begin metalib_target
   #define TARGET pandaphysics
 
-  #define SOURCES pandaphysics.cxx
+  #define SOURCES pandaphysics.cxx pandaphysics.h
+  #define INSTALL_HEADERS pandaphysics.h
+
 #end metalib_target

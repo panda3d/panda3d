@@ -36,7 +36,16 @@ public:
 private:
   PRLock *_cvlock;
   PRCondVar *_cv;
-  deque<NetDatagram> _queue;
+
+#ifdef __ICL
+  // The Intel compiler for some reason dumps core on a queue of
+  // NetDatagrams.
+  typedef deque<NetDatagram *> QueueType;
+#else
+  typedef deque<NetDatagram> QueueType;
+#endif
+
+  QueueType _queue;
   bool _shutdown;
   int _max_queue_size;
 };

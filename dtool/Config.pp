@@ -292,6 +292,44 @@
 #defer HAVE_MAYA $[isdir $[MAYA_LOCATION]]
 
 
+// Define this to generate static libraries and executables, rather than
+// dynamic libraries.
+//#define LINK_ALL_STATIC yes
+
+// Define this to export the templates from the DLL.  This is only
+// meaningful if LINK_ALL_STATIC is not defined, and we are building
+// on Windows.  This can only be used if VC++ is the compiler in
+// use, since other compilers don't support the syntax.
+#defer EXPORT_TEMPLATES $[eq $[USE_COMPILER],MSVC]
+
+// Define this to explicitly link in the various external drivers, which
+// are normally separate, as part of the Panda library.
+//#define LINK_IN_GL yes
+//#define LINK_IN_DX yes
+//#define LINK_IN_EGG yes
+//#define LINK_IN_PHYSICS yes
+
+// Define USE_COMPILER to switch the particular compiler that should 
+// be used.  A handful of tokens are recognized, depending on BUILD_TYPE.
+// This may also be further customized within Global.$[BUILD_TYPE].pp.
+
+// If BUILD_TYPE is "unix", this may be one of:
+//    GCC    (gcc/g++)
+//    MIPS   (Irix MIPSPro compiler)
+//
+// If BUILD_TYPE is "msvc" or "gmsvc", this may be one of:
+//    MSVC   (Microsoft Visual C++)
+//    BOUNDS (BoundsChecker)
+//    INTEL  (Intel C/C++ compiler)e
+
+#if $[eq $[PLATFORM], Irix]
+  #define USE_COMPILER MIPS
+#elif $[eq $[PLATFORM], Linux]
+  #define USE_COMPILER GCC
+#elif $[eq $[PLATFORM], Windows]
+  #define USE_COMPILER MSVC
+#endif
+
 ///////////////////////////////////////////////////////////////////////
 // The following variables are meaningful when BUILD_TYPE is "unix" or
 // "msvc".  They define a few environmental things.

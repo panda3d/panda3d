@@ -62,7 +62,6 @@
 #else
 #define BROWSEINFO_FLAG
 #endif
-#defer CFLAGS_SHARED
 
 // Define LINK_ALL_STATIC to generate static libs instead of DLL's.
 #if $[LINK_ALL_STATIC]
@@ -75,32 +74,52 @@
   #define dlllib dll
 #endif
 
-#defer OPTFLAGS /O2 /Ob1 /Ogity /G6
+#define CFLAGS_SHARED
+
+#if $[eq $[USE_COMPILER], MSVC]
+  #define COMPILER cl
+  #define LINKER link
+  #define LIBBER lib
+  #define COMMONFLAGS /Gi-
+  #define OPTFLAGS /O2 /Ob1 /Ogity /G6
+  #define DEBUGFLAGS /MDd /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
+  #define RELEASEFLAGS /MD
+  #define EXTRA_LIBPATH
+
+#elif $[eq $[USE_COMPILER], BOUNDS]
+  #define COMPILER nmcl
+  #define LINKER nmlink
+  #define LIBBER lib
+  #define COMMONFLAGS
+  #define OPTFLAGS /O2 /Ogity /G6
+  #define DEBUGFLAGS /MDd /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
+  #define RELEASEFLAGS /MD
+  #define EXTRA_LIBPATH
+
+#elif $[eq $[USE_COMPILER], INTEL]
+  #define COMPILER icl
+  #define LINKER xilink
+  #define LIBBER xilib
+  #define COMMONFLAGS /Gi-
+  #define OPTFLAGS /O3 /Ob1 /Ogity /G6 /Qip
+  #define DEBUGFLAGS /MDd /Zi $[BROWSEINFO_FLAG]
+  #define RELEASEFLAGS /MD
+  // We assume the Intel compiler installation dir is mounted as /ia32.
+  #define EXTRA_LIBPATH /ia32/lib
+
+#else
+  #error Invalid value specified for USE_COMPILER.
+#endif
 
 #defer CDEFINES_OPT1 _DEBUG $[dlink_all_static]
 #defer CDEFINES_OPT2 _DEBUG $[dlink_all_static]
 #defer CDEFINES_OPT3 $[dlink_all_static]
 #defer CDEFINES_OPT4 NDEBUG $[dlink_all_static]
 
-#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] /MDd /Gi- /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
-#defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] /MDd /Gi- /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
-#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] /MD /Gi-
-#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] /MD /Gi-
-
-#defer COMPILER cl
-#defer LINKER link
-
-// Define USE_BOUNDSCHECKER for BoundsChecker instrumentaion:
-#if $[USE_BOUNDSCHECKER]
-  #defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] /MDd /GZ /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
-  #defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] /MDd /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
-  #defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] /MD
-  #defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] /MD
-  
-  #defer OPTFLAGS /O2 /Ogity /G6
-  #defer COMPILER nmcl
-  #defer LINKER nmlink
-#endif
+#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS]
+#defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPTFLAGS]
+#defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS]
+#defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS]
 
 // NODEFAULTLIB ensures static libs linked in will connect to the correct msvcrt, so no debug/release mixing occurs
 #defer LDFLAGS_OPT1 /debug /incremental:no /NODEFAULTLIB:MSVCRT.LIB /WARN:3
@@ -130,15 +149,15 @@
 #defer COMPILE_C $[COMPILER] /nologo /c /Fo"$[osfilename $[target]]" $[decygwin %,/I"%",$[ipath]] $[flags] $[extra_cflags] $[source]
 #defer COMPILE_C++ $[COMPILE_C]
 
-#defer STATIC_LIB_C lib /nologo $[sources] /OUT:"$[osfilename $[target]]" 
+#defer STATIC_LIB_C $[LIBBER] /nologo $[sources] /OUT:"$[osfilename $[target]]" 
 #defer STATIC_LIB_C++ $[STATIC_LIB_C]
 
 #defer ver_resource $[directory]\ver.res
 
-#defer SHARED_LIB_C $[LINKER] /nologo /dll $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] "$[ver_resource]" $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
+#defer SHARED_LIB_C $[LINKER] /nologo /dll $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] "$[ver_resource]" $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
 #defer SHARED_LIB_C++ $[SHARED_LIB_C]
 
-#defer LINK_BIN_C $[LINKER] /nologo $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
+#defer LINK_BIN_C $[LINKER] /nologo $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
 #defer LINK_BIN_C++ $[LINK_BIN_C]
 
 #if $[LINK_ALL_STATIC]

@@ -13,4 +13,6 @@
 ConfigureDecl(config_particlesystem, EXPCL_PANDAPHYSICS, EXPTP_PANDAPHYSICS);
 NotifyCategoryDecl(particlesystem, EXPCL_PANDAPHYSICS, EXPTP_PANDAPHYSICS);
 
+extern EXPCL_PANDAPHYSICS void init_libparticlesystem();
+
 #endif // CONFIG_PARTICLESYSTEM_H
