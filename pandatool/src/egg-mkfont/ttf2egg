@@ -55,13 +55,21 @@ fi
 
 shift `expr $OPTIND - 1`
 
-ttf=$1
+ttf="$1"
 egg=$2
 
 # Perform some sanity checks on input parameters.
 
-if [ `basename $ttf .ttf` = `basename $ttf` -a `basename $ttf .TTF` = `basename $ttf` ]; then
-  echo "$ttf should end in .ttf or .TTF"
+if [ -f "$ttf" ]; then
+  basettf=`basename "$ttf" .ttf`
+  baseTTF=`basename "$ttf" .TTF`
+  base=`basename "$ttf"`
+  if [ "$basettf" = "$base" -a "$baseTTF" = "$base" ]; then
+    echo "$ttf should end in .ttf or .TTF"
+    exit 1
+  fi
+else
+  echo "$ttf does not exist."
   exit 1
 fi
 
@@ -77,16 +85,29 @@ if [ "x$1" = "x--" ]; then
   shift
 fi
 
+# Create a temporary TTF filename in case the source filename has bad
+# characters (like spaces).
+tempttf=$fontname.ttf
+if [ $tempttf != "$ttf" ]; then
+  echo ln -s \"$ttf\" $tempttf
+  if ln -s "$ttf" $tempttf; then
+    status=0
+  else
+    echo Cannot create $tempttf
+    exit 1
+  fi
+fi
+
 status=0
 rm -f ttfonts1.map
-echo ttf2tfm $ttf -q -u -T \"$enc\" $fontname.tfm
-if ttf2tfm $ttf -q -u -T "$enc" $fontname.tfm > ttfonts1.map 2>/dev/null; then
+echo ttf2tfm $tempttf -q -u -T \"$enc\" \"$fontname.tfm\"
+if ttf2tfm $tempttf -q -u -T "$enc" "$fontname.tfm" > ttfonts1.map 2>/dev/null; then
   rm -f ttfonts.map
   tail -1 ttfonts1.map >ttfonts.map
-  echo ttf2pk -q $fontname $dpi
-  if ttf2pk -q $fontname $dpi >/dev/null 2>/dev/null; then
-    echo egg-mkfont $* -o $egg $fontname.${dpi}pk
-    egg-mkfont $* -o $egg $fontname.${dpi}pk
+  echo ttf2pk -q \"$fontname\" $dpi
+  if ttf2pk -q "$fontname" $dpi >/dev/null 2>/dev/null; then
+    echo egg-mkfont $* -o \"$egg\" \"$fontname.${dpi}pk\"
+    egg-mkfont $* -o "$egg" "$fontname.${dpi}pk"
     status=$?
   else
     echo Error running ttf2pk.
@@ -97,5 +118,17 @@ else
   status=1
 fi
 
-rm -f ttfonts1.map ttfonts.map $fontname.tfm $fontname.${dpi}pk
+rm -f ttfonts1.map ttfonts.map "$fontname.tfm" "$fontname.${dpi}pk"
+if [ $tempttf != "$ttf" ]; then
+  rm -f $tempttf
+fi
+
+if [ $status != 0 ]; then
+  echo ""
+  echo "***************************"
+  echo "*** Cannot convert $ttf ***"
+  echo "***************************"
+  echo ""
+fi
+
 exit $status
