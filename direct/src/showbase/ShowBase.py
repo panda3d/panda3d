@@ -52,6 +52,8 @@ class ShowBase(DirectObject.DirectObject):
         else:
             vfs = None
 
+        self.nextWindowIndex = 1
+
         # Store dconfig variables
         self.sfxActive = self.config.GetBool('audio-sfx-active', 1)
         self.musicActive = self.config.GetBool('audio-music-active', 1)
@@ -340,7 +342,7 @@ class ShowBase(DirectObject.DirectObject):
                     self.notify.info("Could not make graphics pipe %s." % (pipeType.getName()))
 
     def openWindow(self, props = None, pipe = None, gsg = None,
-                   type = None):
+                   type = None, name = None):
         """
         Creates a window and adds it to the list of windows that are
         to be updated every frame.
@@ -371,11 +373,23 @@ class ShowBase(DirectObject.DirectObject):
         if props == None:
             props = self.defaultWindowProps
 
-        if type == 'onscreen':
-            win = self.graphicsEngine.makeWindow(pipe, gsg)
-        elif type == 'offscreen':
-            win = self.graphicsEngine.makeBuffer(
-                pipe, gsg, props.getXSize(), props.getYSize(), 0)
+        if name == None:
+            name = 'window%s' % (self.nextWindowIndex)
+            self.nextWindowIndex += 1
+
+        # Temporary try .. except for old Pandas.
+        try:
+            if type == 'onscreen':
+                win = self.graphicsEngine.makeWindow(pipe, gsg, name)
+            elif type == 'offscreen':
+                win = self.graphicsEngine.makeBuffer(
+                    pipe, gsg, name, props.getXSize(), props.getYSize(), 0)
+        except:
+            if type == 'onscreen':
+                win = self.graphicsEngine.makeWindow(pipe, gsg)
+            elif type == 'offscreen':
+                win = self.graphicsEngine.makeBuffer(
+                    pipe, gsg, props.getXSize(), props.getYSize(), 0)
             
         if win == None:
             # Couldn't create a window!
