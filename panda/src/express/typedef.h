@@ -18,12 +18,16 @@
 #ifndef TYPEDEF_H
 #define TYPEDEF_H
 
-#include <pandabase.h>
+#include "pandabase.h"
+#include "numeric_types.h"
 
 typedef unsigned char uchar;
 typedef unsigned short ushort;
 typedef unsigned int uint;
 typedef unsigned long ulong;
+
+typedef PN_int64 longlong;
+typedef PN_uint64 ulonglong;
 
 
 #endif

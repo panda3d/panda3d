@@ -29,6 +29,9 @@
 #ifdef HAVE_JPEG
   #include "pnmFileTypeJPG.h"
 #endif
+#ifdef HAVE_JPEG2000
+  #include "pnmFileTypeJPG2000.h"
+#endif
 #include "sgi.h"
 
 #include <config_pnmimage.h>

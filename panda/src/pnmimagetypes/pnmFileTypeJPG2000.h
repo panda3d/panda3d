@@ -29,7 +29,11 @@
 #include <windows.h>  // we need to include this before jpeglib.
 #endif
 
+#include "typedef.h"  // jasper requires this first.
 #include <jasper/jasper.h>
+
+// Undo jasper-inflicted damage.
+#undef bool
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PNMFileTypeJPG2000
