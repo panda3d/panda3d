@@ -109,6 +109,14 @@ make_ctx() {
   }
   _ssl_ctx = SSL_CTX_new(SSLv23_client_method());
 
+#if defined(SSL_097) && !defined(NDEBUG)
+  // If we have debugging enabled, set a callback that allows us to
+  // report the SSL messages as they are sent and received.
+  if (downloader_cat.is_debug()) {
+    SSL_CTX_set_msg_callback(_ssl_ctx, ssl_msg_callback);
+  }
+#endif
+
   // By default, insist on verifying servers.
   set_verify_ssl(true);
 
@@ -248,22 +256,16 @@ get_http(const URLSpec &url, const string &body) {
 ////////////////////////////////////////////////////////////////////
 BIO *HTTPClient::
 get_https(const URLSpec &url, const string &body) {
-  BIO *sbio = BIO_new_ssl_connect(_ssl_ctx);
-  SSL *ssl;
-  BIO_get_ssl(sbio, &ssl);
-  nassertr(ssl != (SSL *)NULL, NULL);
-  SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
-
   ostringstream server;
   server << url.get_server() << ":" << url.get_port();
   string server_str = server.str();
 
-  BIO_set_conn_hostname(sbio, server_str.c_str());
+  BIO *bio = BIO_new_connect((char *)server_str.c_str());
 
   if (downloader_cat.is_debug()) {
     downloader_cat.debug() << "connecting to " << server_str << "\n";
   }
-  if (BIO_do_connect(sbio) <= 0) {
+  if (BIO_do_connect(bio) <= 0) {
     downloader_cat.info()
       << "Could not contact server " << server_str << "\n";
 #ifndef NDEBUG
@@ -271,6 +273,14 @@ get_https(const URLSpec &url, const string &body) {
 #endif
     return NULL;
   }
+
+  BIO *sbio = BIO_new_ssl(_ssl_ctx, true);
+  BIO_push(sbio, bio);
+
+  SSL *ssl;
+  BIO_get_ssl(sbio, &ssl);
+  nassertr(ssl != (SSL *)NULL, NULL);
+  SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
 
   if (downloader_cat.is_debug()) {
     downloader_cat.debug()
@@ -355,9 +365,11 @@ get_https_proxy(const URLSpec &url, const string &body) {
       << "\r\n";
     string request_str = request.str();
 
+#ifndef NDEBUG
     if (downloader_cat.is_debug()) {
-      downloader_cat.debug() << "send:\n" << request_str << "\n";
+      show_send(request_str);
     }
+#endif
     BIO_puts(bio, request_str.c_str());
   }
 
@@ -455,10 +467,101 @@ send_get_request(BIO *bio,
   }
 
   string request_str = request.str();
+#ifndef NDEBUG
   if (downloader_cat.is_debug()) {
-    downloader_cat.debug() << "send:\n" << request_str << "\n";
+    show_send(request_str);
   }
+#endif
   BIO_puts(bio, request_str.c_str());
 }
+
+#ifndef NDEBUG
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::show_send
+//       Access: Private, Static
+//  Description: Writes the outgoing message, one line at a time, to
+//               the debugging log.
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+show_send(const string &message) {
+  size_t start = 0;
+  size_t newline = message.find('\n', start);
+  while (newline != string::npos) {
+    downloader_cat.debug()
+      << "send: " << message.substr(start, newline - start + 1);
+    start = newline + 1;
+    newline = message.find('\n', start);
+  }
+
+  if (start < message.length()) {
+    downloader_cat.debug()
+      << "send: " << message.substr(start) << " (no newline)\n";
+  }
+}
+#endif   // NDEBUG
+
+#if defined(SSL_097) && !defined(NDEBUG)
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::ssl_msg_callback
+//       Access: Private, Static
+//  Description: This method is attached as a callback for SSL
+//               messages only when debug output is enabled.
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+ssl_msg_callback(int write_p, int version, int content_type,
+                 const void *, size_t len, SSL *, void *) {
+  ostringstream describe;
+  if (write_p) {
+    describe << "sent ";
+  } else {
+    describe << "received ";
+  }
+  switch (version) {
+  case SSL2_VERSION:
+    describe << "SSL 2.0 ";
+    break;
+
+  case SSL3_VERSION:
+    describe << "SSL 3.0 ";
+    break;
+
+  case TLS1_VERSION: 
+    describe << "TLS 1.0 ";
+    break;
+
+  default:
+    describe << "unknown protocol ";
+  }
+
+  describe << "message: ";
+
+  if (version != SSL2_VERSION) {
+    switch (content_type) {
+    case 20:
+      describe << "change cipher spec, ";
+      break;
+      
+    case 21:
+      describe << "alert, ";
+      break;
+      
+    case 22:
+      describe << "handshake, ";
+      break;
+      
+    case 23:
+      describe << "application data, ";
+      break;
+      
+    default:
+      describe << "unknown content type, ";
+    }
+  }
+
+  describe << len << " bytes.\n";
+
+  downloader_cat.debug() << describe.str();
+}
+#endif  // defined(SSL_097) && !defined(NDEBUG)
 
 #endif  // HAVE_SSL

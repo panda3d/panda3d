@@ -72,6 +72,16 @@ private:
                         const string &path, const string &server, 
                         const string &body) const;
 
+#ifndef NDEBUG
+  static void show_send(const string &message);
+#endif
+
+#if defined(SSL_097) && !defined(NDEBUG)
+  static void ssl_msg_callback(int write_p, int version, int content_type,
+                               const void *buf, size_t len, SSL *ssl,
+                               void *arg);
+#endif
+
   URLSpec _proxy;
   SSL_CTX *_ssl_ctx;
   bool _verify_ssl;
