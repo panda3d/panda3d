@@ -63,7 +63,7 @@ sub CTCvsLogin {
 	    # ok, the server line is in [0] and the password in [1].
 	    &CTUDebug( "server line from .cvspass is '" . $line[0] . "'\n" ) ;
 	    if ( $line[0] ne $_[0] ) {
-		local( $line ) = "cvs -d " . $_[0] . " login" ;
+		local( $line ) = "cvs -d " . $_[0] . " login >/dev/null" ;
 		&CTUDebug( "about to run '" . $line . "'\n" ) ;
 		$ret = &CTURetCode( system( $line )) ;
 	    } else {
@@ -72,7 +72,7 @@ sub CTCvsLogin {
 	    }
 	} else {
 	    &CTUDebug( $path . " file does not exist\n" ) ;
-	    local( $line ) = "cvs -d " . $_[0] . " login" ;
+	    local( $line ) = "cvs -d " . $_[0] . " login >/dev/null" ;
 	    &CTUDebug( "about to run '" . $line . "'\n" ) ;
 	    $ret = &CTURetCode( system( $line )) ;
 	}

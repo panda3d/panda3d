@@ -1,4 +1,7 @@
 forcetype DSearchPath
 forcetype Filename
+forcetype Notify
+forcetype NotifyCategory
+forcetype NotifySeverity
 
 
