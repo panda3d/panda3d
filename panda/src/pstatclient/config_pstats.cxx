@@ -7,7 +7,7 @@
 
 #include <dconfig.h>
 
-Configure(config_pstats);
+ConfigureDef(config_pstats);
 NotifyCategoryDef(pstats, "");
 
 ConfigureFn(config_pstats) {

@@ -111,6 +111,7 @@ send(const Datagram &datagram, const PT(Connection) &connection) {
   }
 }
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ConnectionWriter::send
 //       Access: Public
@@ -156,6 +157,17 @@ send(const Datagram &datagram, const PT(Connection) &connection,
   } else {
     return _queue.insert(copy);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionWriter::is_valid_for_udp
+//       Access: Public
+//  Description: Returns true if the datagram is small enough to be
+//               sent over a UDP packet, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool ConnectionWriter::
+is_valid_for_udp(const Datagram &datagram) const {
+  return (int)datagram.get_length() <= maximum_udp_datagram;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -5,6 +5,7 @@
 
 #include "config_pstats.h"
 #include "pStatClientControlMessage.h"
+#include "pStatClientVersion.h"
 
 #include <datagram.h>
 #include <datagramIterator.h>
@@ -68,7 +69,7 @@ encode(Datagram &datagram) const {
 //               Returns true on success, false on error.
 ////////////////////////////////////////////////////////////////////
 bool PStatClientControlMessage::
-decode(const Datagram &datagram) {
+decode(const Datagram &datagram, PStatClientVersion *version) {
   DatagramIterator source(datagram);
   _type = (Type)source.get_uint8();
   
@@ -91,7 +92,7 @@ decode(const Datagram &datagram) {
       _collectors.clear();
       for (int i = 0; i < num; i++) {
 	PStatCollectorDef *def = new PStatCollectorDef;
-	def->read_datagram(source);
+	def->read_datagram(source, version);
 	_collectors.push_back(def);
       }
     }
@@ -107,6 +108,10 @@ decode(const Datagram &datagram) {
       }
     }
     break;
+
+  case T_datagram:
+    // Not, strictly speaking, a control message.
+    return false;
 
   default:
     pstats_cat.error()

@@ -4,7 +4,7 @@
 #begin lib_target
   #define TARGET graph
   #define LOCAL_LIBS \
-    putil mathutil
+    pstatclient putil mathutil
 
   #define SOURCES \  
     allAttributesWrapper.I allAttributesWrapper.T  \

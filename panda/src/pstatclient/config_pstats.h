@@ -9,9 +9,11 @@
 #include <pandabase.h>
 
 #include <notifyCategoryProxy.h>
+#include <dconfig.h>
 
 // Configure variables for pstats package.
 
+ConfigureDecl(config_pstats, EXPCL_PANDA, EXPTP_PANDA);
 NotifyCategoryDecl(pstats, EXPCL_PANDA, EXPTP_PANDA);
 
 extern EXPCL_PANDA string get_pstats_name();

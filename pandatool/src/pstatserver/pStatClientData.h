@@ -10,6 +10,7 @@
 
 #include "pStatThreadData.h"
 
+#include <pStatClientVersion.h>
 #include <referenceCount.h>
 #include <pointerTo.h>
 
@@ -23,7 +24,7 @@ class PStatReader;
 //               with any one particular frame or thread: the list of
 //               collectors and threads, for instance.
 ////////////////////////////////////////////////////////////////////
-class PStatClientData : public ReferenceCount {
+class PStatClientData : public PStatClientVersion {
 public:
   PStatClientData(PStatReader *reader);
   ~PStatClientData();

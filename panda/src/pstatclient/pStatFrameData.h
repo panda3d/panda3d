@@ -14,6 +14,7 @@
 
 class Datagram;
 class DatagramIterator;
+class PStatClientVersion;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : PStatFrameData
@@ -47,7 +48,7 @@ public:
   INLINE float get_level(int n) const;
 
   void write_datagram(Datagram &destination) const;
-  void read_datagram(DatagramIterator &source);
+  void read_datagram(DatagramIterator &source, PStatClientVersion *version);
 
 private:  
   class DataPoint {

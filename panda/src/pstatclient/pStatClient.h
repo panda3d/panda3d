@@ -127,7 +127,7 @@ private:
     PStatFrameData _frame_data;
     bool _is_active;
     int _frame_number;
-    float _last_packet;
+    float _next_packet;
   };
   typedef vector<Thread> Threads;
   Threads _threads;

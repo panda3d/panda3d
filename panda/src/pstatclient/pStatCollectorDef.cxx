@@ -22,6 +22,7 @@ PStatCollectorDef() {
   _sort = -1;
   _suggested_scale = 0.0;
   _factor = 1.0;
+  _is_active = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -39,6 +40,7 @@ PStatCollectorDef(int index, const string &name) :
   _sort = -1;
   _suggested_scale = 0.0;
   _factor = 1.0;
+  _is_active = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -55,6 +57,7 @@ set_parent(const PStatCollectorDef &parent) {
   _level_units = parent._level_units;
   _suggested_scale = parent._suggested_scale;
   _factor = parent._factor;
+  _is_active = parent._is_active;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -81,7 +84,7 @@ write_datagram(Datagram &destination) const {
 //  Description: Extracts the collectorDef definition from the datagram.
 ////////////////////////////////////////////////////////////////////
 void PStatCollectorDef::
-read_datagram(DatagramIterator &source) {
+read_datagram(DatagramIterator &source, PStatClientVersion *) {
   _index = source.get_int16();
   _name = source.get_string();
   _parent_index = source.get_int16();

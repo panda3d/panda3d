@@ -5,6 +5,7 @@
 
 #include "wrt.h"
 
-// There's no real need to have this file, but it's sometimes a little
-// cleaner to guarantee that every .h file gets scanned when this
-// directory is built.
+#ifndef CPPPARSER
+PStatCollector _wrt_pcollector("WRT");
+PStatCollector _wrt_subtree_pcollector("WRT:subtree");
+#endif

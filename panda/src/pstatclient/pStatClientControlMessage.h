@@ -13,6 +13,7 @@
 #include <vector>
 
 class Datagram;
+class PStatClientVersion;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : PStatClientControlMessage
@@ -25,13 +26,14 @@ public:
   PStatClientControlMessage();
 
   void encode(Datagram &datagram) const;
-  bool decode(const Datagram &datagram);
+  bool decode(const Datagram &datagram, PStatClientVersion *version);
 
   enum Type {
-    T_invalid,
+    T_datagram = 0,
     T_hello,
     T_define_collectors,
     T_define_threads,
+    T_invalid
   };
 
   Type _type;

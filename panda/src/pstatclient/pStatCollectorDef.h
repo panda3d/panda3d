@@ -13,6 +13,7 @@
 class Datagram;
 class DatagramIterator;
 class PStatClient;
+class PStatClientVersion;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : PStatCollectorDef
@@ -26,7 +27,7 @@ public:
   void set_parent(const PStatCollectorDef &parent);
 
   void write_datagram(Datagram &destination) const;
-  void read_datagram(DatagramIterator &source);
+  void read_datagram(DatagramIterator &source, PStatClientVersion *version);
 
   int _index;
   string _name;
@@ -36,6 +37,7 @@ public:
   string _level_units;
   float _suggested_scale;
   float _factor;
+  bool _is_active;
 };
 
 #endif

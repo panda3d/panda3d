@@ -9,7 +9,9 @@
 
   #define SOURCES \
     config_pstats.cxx config_pstats.h pStatClient.I pStatClient.cxx \
-    pStatClient.h pStatClientControlMessage.cxx \
+    pStatClient.h \
+    pStatClientVersion.I pStatClientVersion.cxx pStatClientVersion.h \
+    pStatClientControlMessage.cxx \
     pStatClientControlMessage.h \
     pStatCollector.I pStatCollector.h \
     pStatCollectorDef.cxx \
@@ -22,6 +24,7 @@
 
   #define INSTALL_HEADERS \
     config_pstats.h pStatClient.I pStatClient.h \
+    pStatClientVersion.I pStatClientVersion.h \
     pStatClientControlMessage.h pStatCollector.I pStatCollector.h \
     pStatCollectorDef.h pStatFrameData.I pStatFrameData.h \
     pStatProperties.h \

@@ -392,7 +392,6 @@ cached_wrt_base(const Node *from,
 		InputIterator2 to_arcs_begin, InputIterator2 to_arcs_end,
 		TransitionWrapper &result,
 		TypeHandle graph_type) {
-
   UpdateSeq now = last_graph_update(graph_type);
 
   TransitionWrapper net_from_trans = TransitionWrapper::init_from(result);
@@ -506,6 +505,8 @@ wrt_base(const Node *from,
 	 InputIterator2 to_arcs_begin, InputIterator2 to_arcs_end,
 	 TransitionWrapper &result,
 	 TypeHandle graph_type) {
+  PStatTimer timer(_wrt_pcollector);
+
 #ifndef NDEBUG
   if (!cache_wrt) {
     uncached_wrt_base(from, from_arcs_begin, from_arcs_end,
@@ -874,6 +875,8 @@ template<class TransitionWrapper>
 INLINE_GRAPH Node *
 wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
 	    TransitionWrapper &result, TypeHandle graph_type) {
+  PStatTimer timer(_wrt_subtree_pcollector);
+
 #ifndef NDEBUG
   if (!cache_wrt) {
     // If we aren't caching wrt, compute it explicitly.

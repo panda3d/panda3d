@@ -13,6 +13,8 @@
 #include "config_graph.h"
 
 #include <typedObject.h>
+#include <pStatCollector.h>
+#include <pStatTimer.h>
 
 class Node;
 
@@ -127,6 +129,9 @@ INLINE_GRAPH Node *
 wrt_subtree(NodeRelation *arc, Node *to, UpdateSeq as_of, UpdateSeq now,
 	    TransitionWrapper &result, TypeHandle graph_type);
 
+// This is used to count the amount of time spend in calls to wrt().
+extern EXPCL_PANDA PStatCollector _wrt_pcollector;
+extern EXPCL_PANDA PStatCollector _wrt_subtree_pcollector;
 
 #ifndef DONT_INLINE_GRAPH
 #include "wrt.I"

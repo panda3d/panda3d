@@ -304,7 +304,7 @@ set_planes() {
   // transforming it with a -1 matrix.  We do this by ensuring that
   // the centroid is in front of all of the planes (actually, we only
   // need to test the first plane).
-  if (_planes[0].dist_to_plane(_centroid) >= 0) {
+  if (_planes[0].dist_to_plane(_centroid) > 0) {
     // Oops!  We're flipped!  Rebuild the planes in the opposite
     // direction.
     _planes[0] = Planef(_points[0], _points[2], _points[3]);

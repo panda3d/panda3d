@@ -158,8 +158,12 @@ receive_datagram(const NetDatagram &datagram) {
 
   if (connection == _tcp_connection) {
     PStatClientControlMessage message;
-    if (message.decode(datagram)) {
+    if (message.decode(datagram, _client_data)) {
       handle_client_control_message(message);
+
+    } else if (message._type == PStatClientControlMessage::T_datagram) {
+      handle_client_udp_data(datagram);
+      
     } else {
       nout << "Got unexpected message from client.\n";
     }
@@ -183,15 +187,16 @@ handle_client_control_message(const PStatClientControlMessage &message) {
   switch (message._type) {
   case PStatClientControlMessage::T_hello:
     {
-      int current_major_version = get_current_pstat_major_version();
-      int current_minor_version = get_current_pstat_minor_version();
+      _client_data->set_version(message._major_version, message._minor_version);
+      int server_major_version = get_current_pstat_major_version();
+      int server_minor_version = get_current_pstat_minor_version();
 
-      if (message._major_version != current_major_version ||
-          (message._major_version == current_major_version &&
-           message._minor_version > current_minor_version)) {
+      if (message._major_version != server_major_version ||
+          (message._major_version == server_major_version &&
+           message._minor_version > server_minor_version)) {
         _monitor->bad_version(message._client_hostname, message._client_progname,
                               message._major_version, message._minor_version,
-                              current_major_version, current_minor_version);
+                              server_major_version, server_minor_version);
         _monitor->close();
       } else {
         _monitor->hello_from(message._client_hostname, message._client_progname);
@@ -233,12 +238,26 @@ handle_client_control_message(const PStatClientControlMessage &message) {
 ////////////////////////////////////////////////////////////////////
 void PStatReader::
 handle_client_udp_data(const Datagram &datagram) {
+  if (!_monitor->is_client_known()) {
+    // If we haven't heard a "hello" from the client yet, we don't
+    // know what version data it will be sending us, so we can't
+    // decode the data.  Chances are good we can't display it sensibly
+    // yet anyway.  Ignore frame data until we get that hello.
+    return;
+  }
+
   DatagramIterator source(datagram);
+
+  if (_client_data->is_at_least(2, 1)) {
+    // Throw away the zero byte at the beginning.
+    int initial_byte = source.get_uint8();
+    nassertv(initial_byte == 0);
+  }
 
   int thread_index = source.get_uint16();
   int frame_number = source.get_uint32();
   PStatFrameData *frame_data = new PStatFrameData;
-  frame_data->read_datagram(source);
+  frame_data->read_datagram(source, _client_data);
 
   // Check to see if any new collectors have level data.
   int num_levels = frame_data->get_num_levels();

@@ -325,7 +325,7 @@ make_thread(const string &name) {
   Thread thread;
   thread._name = name;
   thread._is_active = false;
-  thread._last_packet = 0.0;
+  thread._next_packet = 0.0;
   thread._frame_number = 0;
 
   _threads.push_back(thread);
@@ -435,7 +435,7 @@ ns_disconnect() {
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     (*ti)._frame_number = 0;
     (*ti)._is_active = false;
-    (*ti)._last_packet = 0.0;
+    (*ti)._next_packet = 0.0;
     (*ti)._frame_data.clear();
   }
   
@@ -472,7 +472,8 @@ start(int collector_index, int thread_index, float as_of) {
   nassertv(collector_index >= 0 && collector_index < (int)_collectors.size());
   nassertv(thread_index >= 0 && thread_index < (int)_threads.size());
 
-  if (_threads[thread_index]._is_active) {
+  if (_collectors[collector_index]._def->_is_active &&
+      _threads[thread_index]._is_active) {
     if (_collectors[collector_index]._per_thread[thread_index]._nested_count == 0) {
       // This collector wasn't already started in this thread; record
       // a new data point.
@@ -494,7 +495,8 @@ stop(int collector_index, int thread_index, float as_of) {
   nassertv(collector_index >= 0 && collector_index < (int)_collectors.size());
   nassertv(thread_index >= 0 && thread_index < (int)_threads.size());
 
-  if (_threads[thread_index]._is_active) {
+  if (_collectors[collector_index]._def->_is_active &&
+      _threads[thread_index]._is_active) {
     if (_collectors[collector_index]._per_thread[thread_index]._nested_count == 0) {
       pstats_cat.warning()
 	<< "Collector " << get_collector_fullname(collector_index)
@@ -525,8 +527,11 @@ stop(int collector_index, int thread_index, float as_of) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 clear_level(int collector_index, int thread_index) {
-  _collectors[collector_index]._per_thread[thread_index]._has_level = false;
-  _collectors[collector_index]._per_thread[thread_index]._level = 0.0;
+  if (_collectors[collector_index]._def->_is_active &&
+      _threads[thread_index]._is_active) {
+    _collectors[collector_index]._per_thread[thread_index]._has_level = false;
+    _collectors[collector_index]._per_thread[thread_index]._level = 0.0;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -540,9 +545,12 @@ clear_level(int collector_index, int thread_index) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 set_level(int collector_index, int thread_index, float level) {
-  level *= _collectors[collector_index]._def->_factor;
-  _collectors[collector_index]._per_thread[thread_index]._has_level = true;
-  _collectors[collector_index]._per_thread[thread_index]._level = level;
+  if (_collectors[collector_index]._def->_is_active &&
+      _threads[thread_index]._is_active) {
+    level *= _collectors[collector_index]._def->_factor;
+    _collectors[collector_index]._per_thread[thread_index]._has_level = true;
+    _collectors[collector_index]._per_thread[thread_index]._level = level;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -558,9 +566,12 @@ set_level(int collector_index, int thread_index, float level) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 add_level(int collector_index, int thread_index, float increment) {
-  increment *= _collectors[collector_index]._def->_factor;
-  _collectors[collector_index]._per_thread[thread_index]._has_level = true;
-  _collectors[collector_index]._per_thread[thread_index]._level += increment;
+  if (_collectors[collector_index]._def->_is_active &&
+      _threads[thread_index]._is_active) {
+    increment *= _collectors[collector_index]._def->_factor;
+    _collectors[collector_index]._per_thread[thread_index]._has_level = true;
+    _collectors[collector_index]._per_thread[thread_index]._level += increment;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -626,23 +637,42 @@ void PStatClient::
 transmit_frame_data(int thread_index) {
   nassertv(thread_index >= 0 && thread_index < (int)_threads.size());
   if (_is_connected && _threads[thread_index]._is_active) {
-    
-    // We don't want to send too many packets in a hurry and flood the
-    // server.  In fact, we don't want to send more than
-    // _max_rate packets per second, per thread.
-    float min_packet_delay = 1.0 / _max_rate;
-    float now = _clock.get_real_time();
 
-    if (now - _threads[thread_index]._last_packet > min_packet_delay) {
-      nassertv(_got_udp_port);
+    // We don't want to send too many packets in a hurry and flood the
+    // server.  Check that enough time has elapsed for us to send a
+    // new packet.  If not, we'll drop this packet into the void and
+    // send a new one next time around.
+    float now = _clock.get_real_time();
+    if (now >= _threads[thread_index]._next_packet) {
+      // We don't want to send more than _max_rate UDP-size packets
+      // per second, per thread.
+      float packet_delay = 1.0 / _max_rate;
       
       // Send new data.
       NetDatagram datagram;
+      // We always start with a zero byte, to differentiate it from a
+      // control message.
+      datagram.add_uint8(0);
+
       datagram.add_uint16(thread_index);
       datagram.add_uint32(_threads[thread_index]._frame_number);
       _threads[thread_index]._frame_data.write_datagram(datagram);
-      _writer.send(datagram, _udp_connection, _server);
-      _threads[thread_index]._last_packet = now;
+
+      if (_writer.is_valid_for_udp(datagram)) {
+        nassertv(_got_udp_port);
+        _writer.send(datagram, _udp_connection, _server);
+
+      } else {
+        _writer.send(datagram, _tcp_connection);
+        // If our packets are so large that we must ship them via TCP,
+        // then artificially slow down the packet rate even further.
+        int packet_ratio = 
+          (datagram.get_length() + maximum_udp_datagram - 1) /
+          maximum_udp_datagram;
+        packet_delay *= (float)packet_ratio;
+      }
+
+      _threads[thread_index]._next_packet = now + packet_delay;
     }
   }
 }

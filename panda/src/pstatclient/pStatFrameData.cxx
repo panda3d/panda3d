@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pStatFrameData.h"
+#include "pStatClientVersion.h"
 
 #include <datagram.h>
 #include <datagramIterator.h>
@@ -35,7 +36,7 @@ write_datagram(Datagram &destination) const {
 //  Description: Extracts the FrameData definition from the datagram.
 ////////////////////////////////////////////////////////////////////
 void PStatFrameData::
-read_datagram(DatagramIterator &source) {
+read_datagram(DatagramIterator &source, PStatClientVersion *) {
   clear();
 
   int i;

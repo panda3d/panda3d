@@ -41,6 +41,8 @@ PUBLISHED:
 	    const PT(Connection) &connection,
 	    const NetAddress &address);
 
+  bool is_valid_for_udp(const Datagram &datagram) const;
+
   ConnectionManager *get_manager() const;
   bool is_immediate() const;
   int get_num_threads() const;
