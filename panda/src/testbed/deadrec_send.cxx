@@ -39,7 +39,7 @@ enum TelemetryToken { T_End = 1, T_Pos, T_Vel, T_Num, T_Time, T_Sync };
 
 static inline NetDatagram& add_time(NetDatagram& d) {
   d.add_uint8(T_Time);
-  d.add_float64(ClockObject::get_global_clock()->get_time());
+  d.add_float64(ClockObject::get_global_clock()->get_frame_time());
   return d;
 }
 

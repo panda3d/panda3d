@@ -141,7 +141,7 @@ static void* internal_monitor(void*) {
 	      float x;
 	      buff = get_float64(buff, x);
 	      if (doing_sync) {
-		clock_skew = ClockObject::get_global_clock()->get_time() - x;
+		clock_skew = ClockObject::get_global_clock()->get_frame_time() - x;
 		doing_sync = false;
 		cerr << "setting clock skew to: " << clock_skew << endl;
 	      } else
@@ -454,7 +454,7 @@ inline static void predict_linear(void) {
       }
     }
     if (time <= 0.) {
-      float rtime = ClockObject::get_global_clock()->get_time() - A_time;
+      float rtime = ClockObject::get_global_clock()->get_frame_time() - A_time;
       target_pos = (rtime * V) + A;
       target_vel = V;
       time = 0.5;

@@ -166,3 +166,41 @@ extrude(const LPoint2f &point2d, LPoint3f &origin, LVector3f &direction,
   direction = far_vector - near_vector;
   return true;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PerspectiveProjection::project
+//       Access: Public, Virtual
+//  Description: Given a 3-d point in space, determine the 2-d point
+//               this maps to, in the range (-1,1) in both dimensions,
+//               where (0,0) is the center of the projection and
+//               (-1,-1) is the lower-left corner.  Returns true if
+//               the 3-d point is in front of the projection and
+//               within the viewing frustum (in which case point2d is
+//               filled in), or false otherwise.
+////////////////////////////////////////////////////////////////////
+bool PerspectiveProjection::
+project(const LPoint3f &point3d, LPoint2f &point2d,
+	CoordinateSystem cs) const {
+  float f = point3d.dot(LVector3f::forward(cs));
+  if (f < _frustum._fnear || f > _frustum._ffar) {
+    // The point is outside the near or far clipping planes.
+    return false;
+  }
+
+  float r = point3d.dot(LVector3f::right(cs));
+  float u = point3d.dot(LVector3f::up(cs));
+
+  LPoint2f scaled(r * _frustum._fnear / f, u * _frustum._fnear / f);
+
+  if (scaled[0] < _frustum._l || scaled[0] > _frustum._r ||
+      scaled[1] < _frustum._b || scaled[1] > _frustum._t) {
+    // The point is outside of the edge planes.
+    return false;
+  }
+
+  point2d.set((scaled[0] - _frustum._l) * 2.0 / 
+	      (_frustum._r - _frustum._l) - 1.0,
+	      (scaled[1] - _frustum._b) * 2.0 / 
+	      (_frustum._t - _frustum._b) - 1.0);
+  return true;
+}

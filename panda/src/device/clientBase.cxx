@@ -184,7 +184,7 @@ void ClientBase::
 do_poll() {
   ClockObject *global_clock = ClockObject::get_global_clock();
   _last_poll_frame = global_clock->get_frame_count();
-  _last_poll_time = global_clock->get_time();
+  _last_poll_time = global_clock->get_frame_time();
 }
 
 #ifdef HAVE_IPC

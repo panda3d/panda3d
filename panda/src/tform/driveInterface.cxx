@@ -40,7 +40,7 @@ KeyHeld() {
 
 float DriveInterface::KeyHeld::
 get_effect(float ramp_up_time, float ramp_down_time) {
-  double elapsed = ClockObject::get_global_clock()->get_time() - _changed_time;
+  double elapsed = ClockObject::get_global_clock()->get_frame_time() - _changed_time;
 
   if (_down) {
     // We are currently holding down the key.  That means we base our
@@ -71,7 +71,7 @@ get_effect(float ramp_up_time, float ramp_down_time) {
 void DriveInterface::KeyHeld::
 set_key(bool down) {
   _down = down;
-  _changed_time = ClockObject::get_global_clock()->get_time();
+  _changed_time = ClockObject::get_global_clock()->get_frame_time();
   _effect_at_change = _effect;
 }
 

@@ -24,16 +24,18 @@ class EXPCL_PANDA Projection : public TypedReferenceCount {
 PUBLISHED:
   virtual Projection *make_copy() const=0;
 
+  virtual bool extrude(const LPoint2f &point2d,
+		       LPoint3f &origin, LVector3f &direction,
+		       CoordinateSystem cs = CS_default) const;
+  virtual bool project(const LPoint3f &point3d, LPoint2f &point2d,
+		       CoordinateSystem cs = CS_default) const;
+
 public:
   virtual LMatrix4f get_projection_mat(CoordinateSystem cs = CS_default) const=0;
   virtual Geom* make_geometry(const Colorf &color = Colorf(0.0, 1.0, 0.0, 1.0),
 			      CoordinateSystem cs = CS_default) const;
 
   virtual BoundingVolume *make_bounds(CoordinateSystem cs = CS_default) const;
-
-  virtual bool extrude(const LPoint2f &point2d,
-		       LPoint3f &origin, LVector3f &direction,
-		       CoordinateSystem cs = CS_default) const;
   
 public:
   virtual TypeHandle get_type() const {

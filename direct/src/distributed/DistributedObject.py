@@ -24,6 +24,12 @@ class DistributedObject(PandaObject):
         Inheritors should redefine this to take appropriate action on delete
         """
         pass
+
+    def generate(self):
+        """generate(self)
+        Inheritors should redefine this to take appropriate action on generate
+        """
+        pass
     
     def getDoId(self):
         """getDoId(self)

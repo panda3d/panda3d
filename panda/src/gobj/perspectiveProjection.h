@@ -32,6 +32,8 @@ public:
   virtual bool extrude(const LPoint2f &point2d,
 		       LPoint3f &origin, LVector3f &direction,
 		       CoordinateSystem cs = CS_default) const;
+  virtual bool project(const LPoint3f &point3d, LPoint2f &point2d,
+		       CoordinateSystem cs) const;
 
   INLINE const Frustumf &get_frustum() const;
   INLINE void set_frustum(const Frustumf &frust);

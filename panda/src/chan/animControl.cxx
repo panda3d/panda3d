@@ -68,7 +68,7 @@ play(int from, int to, const CPT_Event &stop_event) {
 
   nassertv(from >= 0 && from < get_num_frames());
   nassertv(to >= 0 && to < get_num_frames());
-  _as_of_time = ClockObject::get_global_clock()->get_time();
+  _as_of_time = ClockObject::get_global_clock()->get_frame_time();
   _playing = true;
 
   _actions = _user_actions;
@@ -92,7 +92,7 @@ void AnimControl::
 loop(bool restart) {
   nassertv(get_num_frames() > 0);
 
-  _as_of_time = ClockObject::get_global_clock()->get_time();
+  _as_of_time = ClockObject::get_global_clock()->get_frame_time();
   _playing = true;
 
   _actions = _user_actions;
@@ -122,7 +122,7 @@ loop(bool restart, int from, int to) {
 
   nassertv(from >= 0 && from < get_num_frames());
   nassertv(to >= 0 && to < get_num_frames());
-  _as_of_time = ClockObject::get_global_clock()->get_time();
+  _as_of_time = ClockObject::get_global_clock()->get_frame_time();
   _playing = true;
 
   _actions = _user_actions;
@@ -197,7 +197,7 @@ pose(int frame) {
   nassertv(get_num_frames() > 0);
 
   nassertv(frame >= 0 && frame < get_num_frames());
-  _as_of_time = ClockObject::get_global_clock()->get_time();
+  _as_of_time = ClockObject::get_global_clock()->get_frame_time();
   _playing = false;
 
   _actions = _user_actions;

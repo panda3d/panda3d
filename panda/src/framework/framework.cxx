@@ -391,7 +391,7 @@ void event_esc(CPT_Event) {
   }
 #endif
 
-  double now = ClockObject::get_global_clock()->get_time();
+  double now = ClockObject::get_global_clock()->get_frame_time();
   double delta = now - start_time;
 
   int frame_count = ClockObject::get_global_clock()->get_frame_count();
@@ -420,7 +420,7 @@ void event_esc(CPT_Event) {
 }
 
 void event_f(CPT_Event) {
-  double now = ClockObject::get_global_clock()->get_time();
+  double now = ClockObject::get_global_clock()->get_frame_time();
   double delta = now - start_time;
 
   int frame_count = ClockObject::get_global_clock()->get_frame_count();
@@ -533,7 +533,7 @@ void handle_framerate(void) {
     return;
   }
 
-  double now = ClockObject::get_global_clock()->get_time();
+  double now = ClockObject::get_global_clock()->get_frame_time();
 
   if (first_time) {
     if (prev_times == (double*)0L) {
@@ -1163,7 +1163,7 @@ int framework_main(int argc, char *argv[]) {
   // Tick the clock once so we won't count the time spent loading up
   // files, above, in our frame rate average.
   ClockObject::get_global_clock()->tick();
-  start_time = ClockObject::get_global_clock()->get_time();
+  start_time = ClockObject::get_global_clock()->get_frame_time();
   start_frame_count = ClockObject::get_global_clock()->get_frame_count();
 
   if (framework.Defined("clear-value")) {

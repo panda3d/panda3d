@@ -101,7 +101,7 @@ safe_to_transform() const {
 ////////////////////////////////////////////////////////////////////
 void Character::
 app_traverse() {
-  double now = ClockObject::get_global_clock()->get_time();
+  double now = ClockObject::get_global_clock()->get_frame_time();
   get_bundle()->advance_time(now);
 
   if (char_cat.is_debug()) {

@@ -99,6 +99,7 @@ class ClientRepository(DirectObject.DirectObject):
                                                        "." + \
                                                        cdc.name),
                                                   doId, di)
+        distObj.generate()
         return None
 
     def handleGenerateWithRequiredOther(self, di):
@@ -114,6 +115,7 @@ class ClientRepository(DirectObject.DirectObject):
                                                             "." + \
                                                             cdc.name),
                                                        doId, di)
+        distObj.generate()
         return None
 
     def generateWithRequiredFields(self, cdc, constructor, doId, di):

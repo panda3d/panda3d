@@ -48,13 +48,13 @@ PUBLISHED:
   INLINE void set_mode(Mode mode);
   INLINE Mode get_mode() const;
 
-  INLINE double get_time() const;
+  INLINE double get_frame_time() const;
   INLINE double get_intra_frame_time() const;
   INLINE double get_real_time() const;
 
   INLINE void reset();
-
-  void set_time(double time);
+  INLINE void set_real_time(double time);
+  INLINE void set_frame_time(double time);
   INLINE void set_frame_count(int frame_count);
 
   INLINE int get_frame_count() const;
@@ -67,13 +67,17 @@ PUBLISHED:
 
   INLINE static ClockObject *get_global_clock();
 
+  // Deprecated functions.
+  INLINE double get_time() const;
+  INLINE void set_time(double time);
+
 private:
   TrueClock *_true_clock;
   Mode _mode;
   double _start_time;
   int _frame_count;
-  double _frame_time;
-  double _reported_time;
+  double _actual_frame_time;
+  double _reported_frame_time;
   double _dt;
 
   static ClockObject *_global_clock;

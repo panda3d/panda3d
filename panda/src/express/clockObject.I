@@ -18,10 +18,10 @@ INLINE ClockObject::
 //  Description: Changes the mode of the clock, e.g. from normal
 //               (real-time) to non-real-time.  In non-real-time mode,
 //               tick() will add the value of dt to the value returned
-//               by get_time(), regardless of how much time has
+//               by get_frame_time(), regardless of how much time has
 //               actually passed.  In normal, real-time mode, tick()
-//               will set the value returned by get_time() to the
-//               current real time.
+//               will set the value returned by get_frame_time() to
+//               the current real time.
 ////////////////////////////////////////////////////////////////////
 INLINE void ClockObject::
 set_mode(ClockObject::Mode mode) {
@@ -40,7 +40,7 @@ get_mode() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClockObject::get_time
+//     Function: ClockObject::get_frame_time
 //       Access: Public
 //  Description: Returns the time in seconds as of the last time
 //               tick() was called (typically, this will be as of the
@@ -52,8 +52,8 @@ get_mode() const {
 //               frame remains in sync with each other.
 ////////////////////////////////////////////////////////////////////
 INLINE double ClockObject::
-get_time() const {
-  return _reported_time;
+get_frame_time() const {
+  return _reported_frame_time;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -71,7 +71,7 @@ get_time() const {
 ////////////////////////////////////////////////////////////////////
 INLINE double ClockObject::
 get_intra_frame_time() const {
-  return get_real_time() - _frame_time;
+  return get_real_time() - _actual_frame_time;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -95,15 +95,46 @@ get_real_time() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void ClockObject::
 reset() {
-  set_time(0.0);
+  set_real_time(0.0);
+  set_frame_time(0.0);
   set_frame_count(0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::set_real_time
+//       Access: Public
+//  Description: Resets the clock to the indicated time.  This
+//               changes only the real time of the clock as reported
+//               by get_real_time(), but does not immediately change
+//               the time reported by get_frame_time()--that will
+//               change after the next call to tick().  Also see
+//               reset(), set_frame_time(), and set_frame_count().
+////////////////////////////////////////////////////////////////////
+INLINE void ClockObject::
+set_real_time(double time) {
+  _start_time = _true_clock->get_real_time() - time;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::set_frame_time
+//       Access: Public
+//  Description: Changes the time as reported for the current frame to
+//               the indicated time.  Normally, the way to adjust the
+//               frame time is via tick(); this function is provided
+//               only for occasional special adjustments.
+////////////////////////////////////////////////////////////////////
+INLINE void ClockObject::
+set_frame_time(double time) {
+  _actual_frame_time = time;
+  _reported_frame_time = time;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::set_frame_count
 //       Access: Public
 //  Description: Resets the number of frames counted to the indicated
-//               number.  Also see reset() and set_time().
+//               number.  Also see reset(), set_real_time(), and
+//               set_frame_time().
 ////////////////////////////////////////////////////////////////////
 INLINE void ClockObject::
 set_frame_count(int frame_count) {
@@ -132,7 +163,7 @@ get_frame_count() const {
 ////////////////////////////////////////////////////////////////////
 INLINE double ClockObject::
 get_frame_rate() const {
-  return (double)get_frame_count() / get_time();
+  return (double)get_frame_count() / get_frame_time();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -177,4 +208,28 @@ get_global_clock() {
     _global_clock = new ClockObject;
   }
   return _global_clock;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::get_time
+//       Access: Public
+//  Description: Returns get_frame_time().  The use of this function
+//               is deprecated and the function will soon disappear;
+//               use get_frame_time() instead.
+////////////////////////////////////////////////////////////////////
+INLINE double ClockObject::
+get_time() const {
+  return get_frame_time();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::set_time
+//       Access: Public
+//  Description: Calls set_real_time().  The use of this function
+//               is deprecated and the function will soon disappear;
+//               use set_real_time() instead.
+////////////////////////////////////////////////////////////////////
+INLINE void ClockObject::
+set_time(double time) {
+  set_real_time(time);
 }
