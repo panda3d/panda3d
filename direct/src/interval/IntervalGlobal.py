@@ -1,6 +1,6 @@
 """IntervalGlobal module"""
 
-from DirectObject import *
+# from DirectObject import *
 from Interval import *
 from ActorInterval import *
 from FunctionInterval import *

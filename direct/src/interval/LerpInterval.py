@@ -1,6 +1,7 @@
 """LerpInterval module: contains the LerpInterval class"""
 
 from PandaModules import *
+from DirectNotifyGlobal import *
 import Interval
 import LerpBlendHelpers
 
@@ -293,10 +294,75 @@ class LerpPosHprScaleInterval(LerpInterval):
         # Initialize superclass
         LerpInterval.__init__(self, name, duration, functorFunc, blendType)
 
-# Class used to execute a function over time.  Function can access fromData
-# and toData to perform blend.  If fromData and toData not specified, will
-# execute the given function passing in values ranging from 0 to 1
-class LerpFunctionInterval(Interval):
+
+class LerpColorScaleInterval(LerpInterval):
+    # Name counter
+    lerpColorScaleNum = 1
+    # Class methods
+    def __init__(self, node, duration, startColor, endColor,
+                 other=None, blendType='noBlend', name=None):
+
+        def functorFunc(node=node, startColor=startColor, endColor=endColor, other=other):
+            assert(not node.isEmpty())
+            if callable(endColor):
+                # This may be a thunk that returns a point.
+                endColor = endColor()
+            if callable(startColor):
+                # This may be a thunk that returns a point.
+                startColor = startColor()
+            if (other != None):
+                functor = ColorScaleLerpFunctor(node, startColor, endColor, other)
+            else:
+                functor = ColorScaleLerpFunctor(node, startColor, endColor)
+            return functor
+
+        # Generate unique name if necessary
+        if (name == None):
+            name = 'LerpColorScaleInterval-%d' % LerpColorScaleInterval.lerpColorScaleNum
+            LerpColorScaleInterval.lerpColorScaleNum += 1
+        # Initialize superclass
+        LerpInterval.__init__(self, name, duration, functorFunc, blendType)
+
+
+
+class LerpColorInterval(LerpInterval):
+    # Name counter
+    lerpColorNum = 1
+    # Class methods
+    def __init__(self, node, duration, startColor, endColor,
+                 other=None, blendType='noBlend', name=None):
+
+        def functorFunc(node=node, startColor=startColor,
+                        endColor=endColor, other=other):
+            assert(not node.isEmpty())
+            if callable(endColor):
+                # This may be a thunk that returns a point.
+                endColor = endColor()
+            if callable(startColor):
+                # This may be a thunk that returns a point.
+                startColor = startColor()
+            if (other != None):
+                functor = ColorLerpFunctor(node, startColor, endColor, other)
+            else:
+                functor = ColorLerpFunctor(node, startColor, endColor)
+            return functor
+
+        # Generate unique name if necessary
+        if (name == None):
+            name = 'LerpColorInterval-%d' % LerpColorInterval.lerpColorNum
+            LerpColorInterval.lerpColorNum += 1
+        # Initialize superclass
+        LerpInterval.__init__(self, name, duration, functorFunc, blendType)
+
+
+
+class LerpFunctionInterval(Interval.Interval):
+    """
+    Class used to execute a function over time.  Function can access fromData
+    and toData to perform blend.  If fromData and toData not specified, will
+    execute the given function passing in values ranging from 0 to 1
+    """
+
     # Interval counter
     lerpFunctionIntervalNum = 1
     # create LerpFunctionInterval DirectNotify category
@@ -360,64 +426,3 @@ class LerpFunctionInterval(Interval):
 class LerpFunc(LerpFunctionInterval):
     def __init__(self, *args, **kw):
         LerpFunctionInterval.__init__(self, *args, **kw)
-
-
-class LerpColorScaleInterval(LerpInterval):
-    # Name counter
-    lerpColorScaleNum = 1
-    # Class methods
-    def __init__(self, node, duration, startColor, endColor,
-                 other=None, blendType='noBlend', name=None):
-
-        def functorFunc(node=node, startColor=startColor, endColor=endColor, other=other):
-            assert(not node.isEmpty())
-            if callable(endColor):
-                # This may be a thunk that returns a point.
-                endColor = endColor()
-            if callable(startColor):
-                # This may be a thunk that returns a point.
-                startColor = startColor()
-            if (other != None):
-                functor = ColorScaleLerpFunctor(node, startColor, endColor, other)
-            else:
-                functor = ColorScaleLerpFunctor(node, startColor, endColor)
-            return functor
-
-        # Generate unique name if necessary
-        if (name == None):
-            name = 'LerpColorScaleInterval-%d' % LerpColorScaleInterval.lerpColorScaleNum
-            LerpColorScaleInterval.lerpColorScaleNum += 1
-        # Initialize superclass
-        LerpInterval.__init__(self, name, duration, functorFunc, blendType)
-
-
-
-class LerpColorInterval(LerpInterval):
-    # Name counter
-    lerpColorNum = 1
-    # Class methods
-    def __init__(self, node, duration, startColor, endColor,
-                 other=None, blendType='noBlend', name=None):
-
-        def functorFunc(node=node, startColor=startColor,
-                        endColor=endColor, other=other):
-            assert(not node.isEmpty())
-            if callable(endColor):
-                # This may be a thunk that returns a point.
-                endColor = endColor()
-            if callable(startColor):
-                # This may be a thunk that returns a point.
-                startColor = startColor()
-            if (other != None):
-                functor = ColorLerpFunctor(node, startColor, endColor, other)
-            else:
-                functor = ColorLerpFunctor(node, startColor, endColor)
-            return functor
-
-        # Generate unique name if necessary
-        if (name == None):
-            name = 'LerpColorInterval-%d' % LerpColorInterval.lerpColorNum
-            LerpColorInterval.lerpColorNum += 1
-        # Initialize superclass
-        LerpInterval.__init__(self, name, duration, functorFunc, blendType)
-
