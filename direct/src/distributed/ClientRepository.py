@@ -255,6 +255,11 @@ class ClientRepository(DirectObject.DirectObject):
         return Task.cont
 
     def readerPollOnce(self):
+        # we simulate the network plug being pulled by setting tcpConn
+        # to None; enforce that condition
+        if not self.tcpConn:
+            return 0
+        
         if self.connectHttp:
             datagram = Datagram()
             if self.tcpConn.receiveDatagram(datagram):
@@ -287,6 +292,9 @@ class ClientRepository(DirectObject.DirectObject):
                 if self.qcm.getResetConnection(resetConnectionPointer):
                     resetConn = resetConnectionPointer.p()
                     self.qcm.closeConnection(resetConn)
+                    # if we've simulated a network plug pull, restore the
+                    # simulated plug
+                    self.restoreNetworkPlug()
                     if self.tcpConn.this == resetConn.this:
                         self.tcpConn = None
                         self.stopReaderPollTask()
@@ -620,3 +628,19 @@ class ClientRepository(DirectObject.DirectObject):
                     cdu.func = newMethod
                     foundIt = 1
         return foundIt
+
+    # debugging funcs for simulating a network-plug-pull
+    def pullNetworkPlug(self):
+        self.restoreNetworkPlug()
+        self.notify.warning('*** SIMULATING A NETWORK-PLUG-PULL ***')
+        self.hijackedTcpConn = self.tcpConn
+        self.tcpConn = None
+
+    def networkPlugPulled(self):
+        return hasattr(self, 'hijackedTcpConn')
+
+    def restoreNetworkPlug(self):
+        if self.networkPlugPulled():
+            self.notify.info('*** RESTORING SIMULATED PULLED-NETWORK-PLUG ***')
+            self.tcpConn = self.hijackedTcpConn
+            del self.hijackedTcpConn
