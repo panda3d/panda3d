@@ -53,7 +53,7 @@ private:
   static bool dispatch_vector_string_pair(const string &opt, const string &arg, void *var);
 
   void determine_removed_components();
-  bool remove_joints();
+  bool process_joints();
   EggJointData *find_best_parent(EggJointData *joint_data) const;
 
   bool apply_user_reparents();

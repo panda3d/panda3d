@@ -135,7 +135,7 @@ run() {
     // The meat of the program: determine which joints are to be
     // removed, and then actually remove them.
     determine_removed_components();
-    if (remove_joints()) {
+    if (process_joints()) {
       do_reparent();
     }
 
@@ -260,15 +260,16 @@ determine_removed_components() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggOptchar::remove_joints
+//     Function: EggOptchar::process_joints
 //       Access: Private
 //  Description: Effects the actual removal of joints flagged for
 //               removal by reparenting the hierarchy appropriately.
-//               Returns true if anything is done, false otherwise.
+//               Returns true if any joints are removed, false
+//               otherwise.
 ////////////////////////////////////////////////////////////////////
 bool EggOptchar::
-remove_joints() {
-  bool did_anything = false;
+process_joints() {
+  bool removed_any = false;
   int num_characters = _collection->get_num_characters();
   for (int ci = 0; ci < num_characters; ci++) {
     EggCharacterData *char_data = _collection->get_character(ci);
@@ -303,12 +304,15 @@ remove_joints() {
         } else if ((user_data->_flags & EggOptcharUserData::F_empty) != 0) {
           num_empty++;
         }
-        did_anything = true;
+        removed_any = true;
 
       } else {
         // This joint will be preserved, but maybe its parent will
         // change.
         joint_data->reparent_to(best_parent);
+        if ((user_data->_flags & EggOptcharUserData::F_expose) != 0) {
+          joint_data->expose();
+        }
         num_kept++;
       }
     }
@@ -324,7 +328,7 @@ remove_joints() {
     }
   }
 
-  return did_anything;
+  return removed_any;
 }
 
 ////////////////////////////////////////////////////////////////////
