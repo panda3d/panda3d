@@ -38,6 +38,8 @@ bool gl_show_fps_meter = config_wgldisplay.GetBool("show-fps-meter", false);
 float gl_fps_meter_update_interval = max(0.5,config_wgldisplay.GetFloat("fps-meter-update-interval", 1.7));
 int gl_forced_pixfmt=config_wgldisplay.GetInt("gl-force-pixfmt", 0);
 
+bool bResponsive_minimized_fullscreen_window = config_wgldisplay.GetBool("responsive-minimized-fullscreen-window",false);
+
 extern void AtExitFn(void);
 
 ////////////////////////////////////////////////////////////////////

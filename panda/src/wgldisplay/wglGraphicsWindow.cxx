@@ -279,6 +279,8 @@ void wglGraphicsWindow::config(void) {
 
     _exiting_window = false;
     _return_control_to_app = false;
+    
+    _active_minimized_fullscreen = false;
     _PandaPausedTimer = NULL;
     _mouse_input_enabled = false;
     _mouse_motion_enabled = false;
@@ -693,6 +695,17 @@ int wglGraphicsWindow::choose_visual(void) {
   for(pfnum=1;pfnum<=MaxPixFmtNum;pfnum++) {
       DescribePixelFormat(_hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
 
+    // official, nvidia sanctioned way.  should be equiv to my algorithm
+    if ( (pfd.dwFlags & PFD_GENERIC_FORMAT ) != 0 ) {
+        drvtype = Software;
+        continue;
+    }
+    else if ( pfd.dwFlags & PFD_GENERIC_ACCELERATED )
+        drvtype = MCD;
+    else
+        drvtype = ICD;
+
+#if MY_OLD_ALGORITHM
       if((pfd.dwFlags & PFD_GENERIC_ACCELERATED) && (pfd.dwFlags & PFD_GENERIC_FORMAT))
           drvtype=MCD;
        else if(!(pfd.dwFlags & PFD_GENERIC_ACCELERATED) && !(pfd.dwFlags & PFD_GENERIC_FORMAT))
@@ -701,6 +714,7 @@ int wglGraphicsWindow::choose_visual(void) {
          drvtype=Software;
          continue;  // skipping all SW fmts
        }
+#endif
 
       if(wgldisplay_cat.is_debug())
           wgldisplay_cat->debug() << "----------------" << endl;
@@ -1198,18 +1212,28 @@ LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
 void wglGraphicsWindow::deactivate_window(void) {
     // current policy is to suspend minimized or deactivated fullscreen windows, but leave
     // regular windows running normally
-#ifdef _DEBUG
-   if(wgldisplay_cat.is_spam())
-       wgldisplay_cat.spam()  << "deactivate_window called"  << endl;
-#endif
 
-   if((!_props._fullscreen) || _exiting_window || _window_inactive) 
+   if((!_props._fullscreen) || _exiting_window || _window_inactive || _active_minimized_fullscreen) {
+       #ifdef _DEBUG
+          if(wgldisplay_cat.is_spam())
+            wgldisplay_cat.spam()  << "deactivate_window called, but ignored in current mode"  << endl;
+       #endif
      return;
+   }
 
-   if(wgldisplay_cat.is_spam())
-       wgldisplay_cat.spam() << "WGL window deactivated, releasing gl context and waiting...\n";
-   _window_inactive = true;
-   unmake_current();
+   if(!bResponsive_minimized_fullscreen_window) {
+       if(wgldisplay_cat.is_spam())
+           wgldisplay_cat.spam() << "WGL window deactivated, releasing gl context and waiting...\n";
+
+      _window_inactive = true;
+      unmake_current();
+   } else {
+       _active_minimized_fullscreen = true;
+       assert(_props._fullscreen);
+
+       if(wgldisplay_cat.is_spam())
+           wgldisplay_cat.spam() << "WGL window minimized from fullscreen mode, remaining active...\n";
+   }
 
    // make sure window is minimized
 
@@ -1220,6 +1244,7 @@ void wglGraphicsWindow::deactivate_window(void) {
        wgldisplay_cat.error() << "GetWindowPlacement failed!\n";
        return;
    }
+
    if((wndpl.showCmd!=SW_MINIMIZE)&&(wndpl.showCmd!=SW_SHOWMINIMIZED)) {
        ShowWindow(_mwindow, SW_MINIMIZE);
    }
@@ -1227,14 +1252,16 @@ void wglGraphicsWindow::deactivate_window(void) {
    // revert to default display mode
    ChangeDisplaySettings(NULL,0x0);
 
-   _PandaPausedTimer = SetTimer(_mwindow,PAUSED_TIMER_ID,1500,NULL);
-   if(_PandaPausedTimer!=PAUSED_TIMER_ID) {
-       wgldisplay_cat.error() << "Error in SetTimer!\n";
+   if(!bResponsive_minimized_fullscreen_window) {
+       _PandaPausedTimer = SetTimer(_mwindow,PAUSED_TIMER_ID,1500,NULL);
+       if(_PandaPausedTimer!=PAUSED_TIMER_ID) {
+           wgldisplay_cat.error() << "Error in SetTimer!\n";
+       }
    }
 }
 
 void wglGraphicsWindow::reactivate_window(void) {
-    if(_window_inactive) {
+    if(_window_inactive ) {
         if(wgldisplay_cat.is_spam())
             wgldisplay_cat.spam() << "WGL window re-activated...\n";
 
@@ -1252,6 +1279,18 @@ void wglGraphicsWindow::reactivate_window(void) {
         
         GdiFlush();
         make_current();
+    } else if(_active_minimized_fullscreen) {
+        if(wgldisplay_cat.is_spam())
+            wgldisplay_cat.spam() << "redisplaying minimized fullscrn active WGL window...\n";
+
+        // move window to top of zorder,
+        SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOOWNERZORDER);
+
+        ChangeDisplaySettings(_pCurrent_display_settings,CDS_FULLSCREEN);
+        
+        GdiFlush();
+        make_current();
+        _active_minimized_fullscreen = false;
     }
 }
 
@@ -1308,8 +1347,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
               wgldisplay_cat.spam()  << "WM_EXITSIZEMOVE received"  << endl;
             #endif
             
-            if(_window_inactive)
-                 reactivate_window();
+            reactivate_window();
             handle_reshape();
             break;
 
@@ -1332,11 +1370,10 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                     break;
 
                 if((wparam==SIZE_MAXIMIZED) || (wparam==SIZE_RESTORED)) { // old comment -- added SIZE_RESTORED to handle 3dfx case  (what does this mean?)
-                    if(_window_inactive)
-                        reactivate_window();
+                     reactivate_window();
 
 //                  if((_props._xsize != width) || (_props._ysize != height))
-                        handle_reshape();
+                     handle_reshape();
                 }
                 break;
     }

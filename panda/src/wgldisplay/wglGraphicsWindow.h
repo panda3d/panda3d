@@ -119,6 +119,7 @@ private:
   DEVMODE           *_pCurrent_display_settings;
 
   bool              _window_inactive;
+  bool              _active_minimized_fullscreen;
   bool              _return_control_to_app;
   bool              _exiting_window;
 
