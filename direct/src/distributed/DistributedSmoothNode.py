@@ -70,7 +70,6 @@ class DistributedSmoothNode(DistributedNode.DistributedNode):
     This specializes DistributedNode to add functionality to smooth
     motion over time, via the SmoothMover C++ object defined in
     DIRECT.
-
     """
 
     def __init__(self, cr):
@@ -82,19 +81,15 @@ class DistributedSmoothNode(DistributedNode.DistributedNode):
 
             self.smoother = SmoothMover()
             self.smoothStarted = 0
-        return None
-
 
     ### Methods to handle computing and updating of the smoothed
     ### position.
 
     def smoothPosition(self):
-        """smoothPosition(self)
-
+        """
         This function updates the position of the node to its computed
         smoothed position.  This may be overridden by a derived class
         to specialize the behavior.
-
         """
         if self.smoother.computeSmoothPosition():
             self.setMat(self.smoother.getSmoothMat())
@@ -109,35 +104,23 @@ class DistributedSmoothNode(DistributedNode.DistributedNode):
         return 1
 
     def startSmooth(self):
-        """startSmooth(self)
-
+        """
         This function starts the task that ensures the node is
         positioned correctly every frame.  However, while the task is
         running, you won't be able to lerp the node or directly
         position it.
-        
         """
-        if not self.wantsSmoothing():
+        if not self.wantsSmoothing() or self.isLocal():
             return
-        
-        if self.isLocal():
-            # If we've just finished banging on localToon, reload the
-            # drive interface's concept of our position.
-            base.drive.node().setPos(self.getPos())
-            base.drive.node().setHpr(self.getHpr())
-
-        elif not self.smoothStarted:
+        if not self.smoothStarted:
             taskName = self.taskName("smooth")
             taskMgr.remove(taskName)
             self.reloadPosition()
             taskMgr.add(self.doSmoothTask, taskName)
             self.smoothStarted = 1
-            
-        return
 
     def stopSmooth(self):
-        """startSmooth(self)
-
+        """
         This function stops the task spawned by startSmooth(), and
         allows show code to move the node around directly.
         """
@@ -146,8 +129,6 @@ class DistributedSmoothNode(DistributedNode.DistributedNode):
             taskMgr.remove(taskName)
             self.forceToTruePosition()
             self.smoothStarted = 0
-        return
-        
 
 
     def forceToTruePosition(self):
