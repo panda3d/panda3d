@@ -66,14 +66,17 @@ Lerp& Lerp::operator=(const Lerp& c) {
 }
 
 void Lerp::step(void) {
-  if (is_done())
-    return;
   _t += _delta;
-  float t = scale_t(_t, _startt, _endt);
-  t = (_blend==(LerpBlendType*)0L)?t:(*_blend)(t);
-  (*_func)(t);
-  if (is_done() && !_event.empty())
-    throw_event(_event);
+  if (is_done()) {
+    (*_func)(1.0);
+    if (!_event.empty()) {
+      throw_event(_event);
+    }
+  } else {
+    float t = scale_t(_t, _startt, _endt);
+    t = (_blend==(LerpBlendType*)0L)?t:(*_blend)(t);
+    (*_func)(t);
+  }
 }
 
 void Lerp::set_step_size(float delta) {
@@ -183,6 +186,8 @@ std::string AutonomousLerp::get_end_event(void) const {
 }
 
 void AutonomousLerp::step(void) {
+  // Probably broken because it does not set the final value when t
+  // exceeds end_t. see fixed Lerp::step() above
   if (is_done()) {
     stop();
     return;
