@@ -10,19 +10,25 @@
   #define LOCAL_LIBS \
     express pandabase
 
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
+
   #define SOURCES \
-    config_net.cxx config_net.h connection.cxx connection.h \
-    connectionListener.cxx connectionListener.h connectionManager.N \
-    connectionManager.cxx connectionManager.h connectionReader.cxx \
-    connectionReader.h connectionWriter.cxx connectionWriter.h \
-    datagramQueue.cxx datagramQueue.h datagramTCPHeader.cxx \
-    datagramTCPHeader.h datagramUDPHeader.cxx datagramUDPHeader.h \
-    netAddress.cxx netAddress.h netDatagram.I netDatagram.cxx \
-    netDatagram.h pprerror.cxx pprerror.h queuedConnectionListener.I \
-    queuedConnectionListener.cxx queuedConnectionListener.h \
-    queuedConnectionManager.cxx queuedConnectionManager.h \
-    queuedConnectionReader.cxx queuedConnectionReader.h \
-    recentConnectionReader.cxx recentConnectionReader.h
+     config_net.h connection.h connectionListener.h  \
+     connectionManager.N connectionManager.h connectionReader.h  \
+     connectionWriter.h datagramQueue.h datagramTCPHeader.h  \
+     datagramUDPHeader.h netAddress.h netDatagram.I netDatagram.h  \
+     pprerror.h queuedConnectionListener.I  \
+     queuedConnectionListener.h queuedConnectionManager.h  \
+     queuedConnectionReader.h recentConnectionReader.h 
+
+  #define INCLUDED_SOURCES \ \
+     config_net.cxx connection.cxx connectionListener.cxx  \
+     connectionManager.cxx connectionReader.cxx  \
+     connectionWriter.cxx datagramQueue.cxx datagramTCPHeader.cxx  \
+     datagramUDPHeader.cxx netAddress.cxx netDatagram.cxx  \
+     pprerror.cxx queuedConnectionListener.cxx  \
+     queuedConnectionManager.cxx queuedConnectionReader.cxx  \
+     recentConnectionReader.cxx 
 
   #define INSTALL_HEADERS \
     config_net.h connection.h connectionListener.h connectionManager.h \
