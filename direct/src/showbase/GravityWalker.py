@@ -435,7 +435,8 @@ class GravityWalker(DirectObject.DirectObject):
         reverse = inputState.isSet("reverse")
         turnLeft = inputState.isSet("turnLeft")
         turnRight = inputState.isSet("turnRight")
-        slide = 0 #hack -- was: inputState.isSet("slide")
+        #slide = 0 #hack -- was: inputState.isSet("slide")
+        slide = inputState.isSet("slide")
         jump = inputState.isSet("jump")
         # Determine what the speeds are based on the buttons:
         self.speed=(forward and self.avatarControlForwardSpeed or 

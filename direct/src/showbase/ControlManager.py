@@ -72,7 +72,8 @@ class ControlManager:
         inputState.watch("run", "shift", "shift-up")
         
         # FYI, ghost mode uses jump for slide.
-        inputState.watch("slide", "slide-is-disabled", "slide-is-disabled")
+        #inputState.watch("slide", "slide-is-disabled", "slide-is-disabled")
+        inputState.watch("slide", "mouse3", "mouse3-up")
         
         #inputState.watch("slideLeft", "shift-arrow_left", "shift-arrow_left-up")
         #inputState.watch("slideLeft", "control-arrow_left", "control-arrow_left-up")
