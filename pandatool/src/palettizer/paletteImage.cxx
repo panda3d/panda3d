@@ -219,7 +219,7 @@ PaletteImage(PalettePage *page, int index) :
   // to have a filename extension.  Otherwise, an embedded dot in the
   // group's name would make everything following appear to be an
   // extension, which would get lost in the set_filename() call.
-  if (_basename.find('.') == string::npos) {
+  if (_basename.empty() || _basename[_basename.length() - 1] != '.') {
     _basename += '.';
   }
 
