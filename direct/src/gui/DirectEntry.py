@@ -25,14 +25,15 @@ class DirectEntry(DirectFrame):
             # Define type of DirectGuiWidget
             ('pgFunc',          PGEntry,          None),
             ('numStates',       3,                None),
-            ('font',            getDefaultFont(), self.setFont),
             ('width',           10,               self.setup),
             ('numLines',        5,                self.setup),
             ('focus',           0,                self.setFocus),
+            # Text used for the PGEntry text node
+            # NOTE: This overrides the DirectFrame text option
             ('initialText',     '',               INITOPT),
             # Command to be called on hitting Enter
-            ('command',        None,       None),
-            ('extraArgs',      [],         None),
+            ('command',        None,              None),
+            ('extraArgs',      [],                None),
             # Sounds to be used for button events
             ('rolloverSound',   getDefaultRolloverSound(), self.setRolloverSound),
             )
@@ -42,21 +43,46 @@ class DirectEntry(DirectFrame):
         # Initialize superclasses
         DirectFrame.__init__(self, parent)
 
+        # Create Text Node Component
+        self.onscreenText = self.createcomponent(
+            'text', (), None,
+            OnscreenText.OnscreenText,
+            (), parent = hidden,
+            # Pass in empty text to avoid extra work, since its really
+            # The PGEntry which will use the TextNode to generate geometry
+            text = '',
+            # PGEntry assumes left alignment
+            align = TMALIGNLEFT,
+            font = getDefaultFont(),
+            scale = 1,
+            # Don't get rid of the text node
+            mayChange = 1)
+        # We want to keep this sucker frozen since its not
+        # in the scene graph
+        self.onscreenText.freeze()
+        # We can also get rid of the node path since we're just using the
+        # onscreenText as an easy way to access a text node as a component
+        self.onscreenText.removeNode()
+
         # Bind command function
         self.bind(ACCEPT, self.commandFunc)
 
         # Call option initialization functions
         self.initialiseoptions(DirectEntry)
 
-        # Update entry if init text specified
+        # Update TextNodes for each state
+        for i in range(self['numStates']):
+            self.guiItem.setTextDef(i, self.onscreenText.textNode)
+
+        # Update initial text
         if self['initialText']:
-            self.guiItem.setText(self['initialText'])
+            self.set(self['initialText'])
 
     def setup(self):
         self.node().setup(self['width'], self['numLines'])
 
     def setFont(self):
-        self.guiItem.getTextNode().setFont(self['font'])
+        self.onscreenText.setFont(self['font'])
 
     def setFocus(self):
         PGEntry.setFocus(self.guiItem, self['focus'])

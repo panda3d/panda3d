@@ -114,8 +114,7 @@ class DirectCameraControl(PandaObject):
         # Spawn the new task
         t = Task.Task(self.XZTranslateOrHPanYZoomTask)
         # For HPanYZoom
-        coaDist = Vec3(self.coaMarker.getPos(direct.camera)).length()
-        t.zoomSF = (coaDist / direct.dr.near)
+        t.zoomSF = Vec3(self.coaMarker.getPos(direct.camera)).length()
         taskMgr.spawnTaskNamed(t, 'manipulateCamera')
 
     def spawnXZTranslateOrHPPan(self):
@@ -136,8 +135,7 @@ class DirectCameraControl(PandaObject):
         taskMgr.removeTasksNamed('manipulateCamera')
         # Spawn new task
         t = Task.Task(self.HPanYZoomTask)
-        coaDist = Vec3(self.coaMarker.getPos(direct.camera)).length()
-        t.zoomSF = (coaDist / direct.dr.near)
+        t.zoomSF = Vec3(self.coaMarker.getPos(direct.camera)).length()
         taskMgr.spawnTaskNamed(t, 'manipulateCamera')
 
     def spawnHPPan(self):
@@ -182,7 +180,7 @@ class DirectCameraControl(PandaObject):
             moveDir.normalize()
         else:
             moveDir = Vec3(Y_AXIS)
-        moveDir.assign(moveDir * (-2.0 * direct.dr.mouseDeltaY *
+        moveDir.assign(moveDir * (-1.0 * direct.dr.mouseDeltaY *
                                         state.zoomSF))
         if direct.dr.mouseDeltaY > 0.0:
             moveDir.setY(moveDir[1] * 1.0)
