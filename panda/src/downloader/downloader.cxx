@@ -540,6 +540,7 @@ download(const string &file_name, Filename file_dest,
   DownloadStatus status(_buffer->_buffer, event_name, first_byte, last_byte,
 			total_bytes, partial_content, id);
   bool got_any_data = false;
+  bool timeout_updated_bytes_in_buffer = false;
   
   for (;;) {
     if (_download_enabled) { 
@@ -573,13 +574,51 @@ download(const string &file_name, Filename file_dest,
       // Handle receive timeouts by trying again
       if (ans == RS_timeout) {
 	int extra_bytes = 0;
+
+	if (bytes > 0) {
+	  status._bytes_in_buffer += bytes;
+	  status._next_in += bytes;
+	  got_any_data = true;
+	  timeout_updated_bytes_in_buffer = true;
+	}
+
+	// Ensure we have enough room in the buffer to download read_size
+	// If we don't have enough room, write the buffer to disk
+	if (status._bytes_in_buffer + read_size > _buffer_size) {
+	  if (downloader_cat.is_debug())
+	    downloader_cat.debug()
+	      << "Downloader::download() - Flushing buffer" << endl;
+	  if (write_to_disk(status) == false)
+	    return false;
+	}
+
 	for (int r = 0; r < downloader_timeout_retries; r++) {
+	    extra_bytes = 0;
+
+	    // Ensure we have enough room in the buffer to download read_size
+	    // If we don't have enough room, write the buffer to disk
+	    if (status._bytes_in_buffer + read_size > _buffer_size) {
+	      if (downloader_cat.is_debug())
+		downloader_cat.debug()
+		  << "Downloader::download() - Flushing buffer" << endl;
+	      if (write_to_disk(status) == false)
+		return false;
+	    }
+
 	    ans = safe_receive(_socket, status._next_in, read_size,
 					(long)downloader_timeout, extra_bytes);
+
+	    if (extra_bytes > 0) {
+	      bytes += extra_bytes;
+	      status._bytes_in_buffer += bytes;
+	      status._next_in += bytes;
+	      got_any_data = true;
+	      timeout_updated_bytes_in_buffer = true;
+	    }
+
 	    if (ans != RS_timeout)
 	      break;
 	}
-	bytes += extra_bytes;
 
 	if (ans == RS_timeout) {
 	  // We've really timed out - throw an event
@@ -641,13 +680,21 @@ download(const string &file_name, Filename file_dest,
 	if (downloader_cat.is_debug())
 	  downloader_cat.debug()
 	    << "Downloader::download() - Got: " << bytes << " bytes" << endl;
-	status._bytes_in_buffer += bytes;
-   	status._next_in += bytes;
-	got_any_data = true;
 
+	// If the timeout read data and already updated these variables
+	// we do not want to update them again
+	if (timeout_updated_bytes_in_buffer == true) {
+	  // reset this variable and do not update the byte count
+	  timeout_updated_bytes_in_buffer = false;
+	} else {
+	  status._bytes_in_buffer += bytes;
+	  status._next_in += bytes;
+	  got_any_data = true;
+	}
+	
 	// Sleep for the requested frequency
 	nap();
-      }
+	}
     }
   }
 }

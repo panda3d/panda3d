@@ -606,7 +606,7 @@ parse_record_header(uchar *start, int size) {
 
   DatagramIterator di(_datagram);
   PN_int32 record_length = di.get_int32();
-  downloader_cat.debug()
+  downloader_cat.spam()
     << "Parsed record header length: " << record_length << endl;
 
   // If we got all the way here, must be done
@@ -666,7 +666,7 @@ parse_fr(uchar *start, int size) {
   fr->_name = di.extract_bytes(fr_name_length);
   fr->_version = di.get_int32();
   
-  downloader_cat.debug()
+  downloader_cat.spam()
     << "Parsed file record: " << fr->_name 
     << " version: " << fr->_version 
     << " hash: " << fr->_hash 
@@ -1017,7 +1017,7 @@ write_version_map(ofstream &write_stream) {
   _master_datagram.add_int32(_versions.size());
   for (vmi = _versions.begin(); vmi != _versions.end(); ++vmi) {
     string name = (*vmi).first;
-    downloader_cat.debug()
+    downloader_cat.spam()
       << "DownloadDb::write_version_map() - writing file: "
       << name << " of length: " << name.length() << endl;
     _master_datagram.add_int32(name.length());
@@ -1059,7 +1059,7 @@ read_version_map(ifstream &read_stream) {
     _master_datagram.append_data(buffer, sizeof(PN_int32)); 
     DatagramIterator di2(_master_datagram);
     int name_length = di2.get_int32();
-    downloader_cat.debug()
+    downloader_cat.spam()
       << "DownloadDb::read_version_map() - name length: " << name_length
       << endl;
 
@@ -1070,7 +1070,7 @@ read_version_map(ifstream &read_stream) {
     _master_datagram.append_data(namebuffer, name_length);
     DatagramIterator di4(_master_datagram);
     string name = di4.extract_bytes(name_length);
-    downloader_cat.debug()
+    downloader_cat.spam()
       << "DownloadDb::read_version_map() - name: " << name << endl;
 
     // Get number of hash values for name
@@ -1079,7 +1079,7 @@ read_version_map(ifstream &read_stream) {
     _master_datagram.append_data(buffer, sizeof(PN_int32));
     DatagramIterator di5(_master_datagram);
     int length = di5.get_int32();   
-    downloader_cat.debug()
+    downloader_cat.spam()
       << "DownloadDb::read_version_map() - number of values: " << length
       << endl;
 
