@@ -32,6 +32,17 @@ class DistributedNode(DistributedObject.DistributedObject, NodePath.NodePath):
     def generate(self):
         DistributedObject.DistributedObject.generate(self)
 
+    def __cmp__(self, other):
+        # DistributedNode inherits from NodePath, which inherits a
+        # definition of __cmp__ from FFIExternalObject that uses the
+        # NodePath's compareTo() method to compare different
+        # NodePaths.  But we don't want this behavior for
+        # DistributedNodes; DistributedNodes should only be compared
+        # pointerwise.  A NodePath that happens to reference the same
+        # node is still different from the DistributedNode.  Thus, we
+        # redefine __cmp__ to always return a failed comparison.
+        return 1
+
     ### setParent ###
 
     def b_setParent(self, parentString):

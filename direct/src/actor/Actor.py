@@ -213,7 +213,18 @@ class Actor(PandaObject, NodePath):
         except:
             self.Actor_deleted = 1
             self.cleanup()
- 
+
+    def __cmp__(self, other):
+        # Actor inherits from NodePath, which inherits a definition of
+        # __cmp__ from FFIExternalObject that uses the NodePath's
+        # compareTo() method to compare different NodePaths.  But we
+        # don't want this behavior for Actors; Actors should only be
+        # compared pointerwise.  A NodePath that happens to reference
+        # the same node is still different from the Actor.  Thus, we
+        # redefine __cmp__ to always return a failed comparison.
+        return 1
+
+
     def __str__(self):
         """__str__(self)
         Actor print function"""
