@@ -23,7 +23,7 @@ def unique(L1, L2):
 
 def indent(stream, numIndents, str):
     """
-    Write str to stream with numIndents in front it it
+    Write str to stream with numIndents in front of it
     """
     # To match emacs, instead of a tab character we will use 4 spaces
     stream.write('    ' * numIndents + str)
@@ -347,6 +347,14 @@ def sameElements(a, b):
         if elem not in a:
             return 0
     return 1
+
+def list2dict(L, value=None):
+    """creates dict using elements of list, all assigned to same value"""
+    return dict([(k,value) for k in L])
+
+def uniqueElements(L):
+    """are all elements of list unique?"""
+    return len(L) == len(list2dict(L))
 
 def contains(whole, sub):
     """
