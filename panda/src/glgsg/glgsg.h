@@ -35,6 +35,7 @@
 #define EXPCL_GL EXPCL_PANDAGL
 #define EXPTP_GL EXPTP_PANDAGL
 
+
 #ifdef WIN32_VC
 // Must include windows.h before gl.h on NT
 #include <windows.h>

@@ -66,6 +66,7 @@ class AlphaTestAttrib;
 class DepthTestAttrib;
 class DepthWriteAttrib;
 class TexGenAttrib;
+class CgShaderAttrib;
 class CullFaceAttrib;
 class StencilAttrib;
 class ClipPlaneAttrib;
@@ -192,6 +193,7 @@ public:
   virtual void issue_depth_offset(const DepthOffsetAttrib *) { }
   virtual void issue_color_blend(const ColorBlendAttrib *) { }
   virtual void issue_tex_gen(const TexGenAttrib *) { }
+  virtual void issue_cg_shader_bind(const CgShaderAttrib *){}
   virtual void issue_stencil(const StencilAttrib *) { }
   virtual void issue_clip_plane(const ClipPlaneAttrib *) { }
 

@@ -1,9 +1,7 @@
 #define BUILD_DIRECTORY $[HAVE_GL]
-
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-#define USE_PACKAGES gl
-
+#define USE_PACKAGES gl cg cggl
 #begin lib_target
   #define TARGET glgsg
   #define LOCAL_LIBS \

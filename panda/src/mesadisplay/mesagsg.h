@@ -41,6 +41,8 @@
 #define EXPCL_GL EXPCL_PANDAMESA
 #define EXPTP_GL EXPTP_PANDAMESA
 
+#undef HAVE_CGGL // Mesa does not support Nvidia Cg... make sure it tries to compile
+                 // without it
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/osmesa.h>

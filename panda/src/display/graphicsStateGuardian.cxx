@@ -228,8 +228,9 @@ release_geom(GeomContext *) {
 void GraphicsStateGuardian::
 set_state_and_transform(const RenderState *state,
                         const TransformState *transform) {
-  set_state(state);
+
   set_transform(transform);
+  set_state(state);
 }
 
 ////////////////////////////////////////////////////////////////////
