@@ -42,8 +42,8 @@ class Notifier:
         """error(self, string, Exception=StandardError)
         Raise an exception with given string and optional type:
         Exception: error"""
-        str = (self.getTime() + str(exception) + ": " + self.__name + ": " + errorString)
-        self.__log(str)
+        string = (self.getTime() + str(exception) + ": " + self.__name + ": " + errorString)
+        self.__log(string)
         raise exception(errorString)
 
     # warning funcs
@@ -51,9 +51,9 @@ class Notifier:
         """warning(self, string)
         Issue the warning message if warn flag is on"""
         if (self.__warning):
-            str = (self.getTime() + self.__name + '(warning): ' + warningString)
-            self.__log(str)
-            print(str)
+            string = (self.getTime() + self.__name + '(warning): ' + warningString)
+            self.__log(string)
+            print(string)
 
     def setWarning(self, bool):
         """setWarning(self, int)
@@ -70,9 +70,9 @@ class Notifier:
         """debug(self, string)
         Issue the debug message if debug flag is on"""
         if (self.__debug):
-            str = (self.getTime() + self.__name + '(debug): ' + debugString)
-            self.__log(str)
-            print(str)
+            string = (self.getTime() + self.__name + '(debug): ' + debugString)
+            self.__log(string)
+            print(string)
 
     def setDebug(self, bool):
         """setDebug(self, int)
@@ -89,9 +89,9 @@ class Notifier:
         """info(self, string)
         Print the given informational string, if info flag is on"""
         if (self.__info):
-            str = (self.getTime() + self.__name + '(info): ' + infoString)
-            self.__log(str)
-            print(str)
+            string = (self.getTime() + self.__name + '(info): ' + infoString)
+            self.__log(string)
+            print(string)
 
     def getInfo(self):
         """getInfo(self)
