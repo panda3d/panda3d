@@ -238,8 +238,9 @@ format_default_value(double num, string &formatted) const {
     {
       // Reverse the byte ordering for big-endian machines.
       string str;
-      str = reserve(8);
+      str.reserve(8);
 
+      int length = str.length();
       for (size_t i = 0; i < 8; i++) {
 	str += formatted[length - 1 - i];
       }
