@@ -367,10 +367,18 @@ void wglGraphicsWindow::config(void) {
     _bLoadedCustomCursor = false;
     if(!windows_mono_cursor_filename.empty()) {
         // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
-        // if icon is more than 8bpp
+        // if icon is more than 8bpp (because it was 'mapping' 16bpp colors to the device?)
+
+        DWORD load_flags = LR_LOADFROMFILE;
+
+        if(_props._fullscreen) {
+          // I think cursors should use LR_CREATEDIBSECTION since they should not be mapped to the device palette (in the case of 256-color cursors)
+          // since they are not going to be used on the desktop
+          load_flags |= LR_CREATEDIBSECTION;
+        }
 
         // loads a .cur fmt file
-        _hMouseCursor = (HCURSOR) LoadImage(NULL, windows_mono_cursor_filename.c_str(), IMAGE_CURSOR, 0, 0, LR_LOADFROMFILE);
+        _hMouseCursor = (HCURSOR) LoadImage(NULL, windows_mono_cursor_filename.c_str(), IMAGE_CURSOR, 0, 0, load_flags);
 
         if(_hMouseCursor==NULL) {
             wgldisplay_cat.warning() << "windows cursor filename '" << windows_mono_cursor_filename << "' not found!!\n";
@@ -649,10 +657,21 @@ check_for_color_cursor_support(void) {
 
     if(bSupportsColorCursor) {
         // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings)
-        // if icon is more than 8bpp
+        // if icon is more than 8bpp (because it was 'mapping' 16bpp colors to the device?)
+
+        DWORD load_flags = LR_LOADFROMFILE;
+
+        if(_props._fullscreen) {
+          // I think cursors should use LR_CREATEDIBSECTION since they should not be mapped to the device palette (in the case of 256-color cursors)
+          // since they are not going to be used on the desktop
+          load_flags |= LR_CREATEDIBSECTION;
+
+          // note: this is still doing weird stuff when it loads 8bpp colors, even with LR_CREATEDIBSECTION
+          // there is still a bug here  BUGBUG
+        }
 
         // loads a .cur fmt file
-        HCURSOR hNewMouseCursor = (HCURSOR) LoadImage(NULL, windows_color_cursor_filename.c_str(), IMAGE_CURSOR, 0, 0, LR_LOADFROMFILE);
+        HCURSOR hNewMouseCursor = (HCURSOR) LoadImage(NULL, windows_color_cursor_filename.c_str(), IMAGE_CURSOR, 0, 0, load_flags);
 
         if(hNewMouseCursor==NULL) {
             wgldisplay_cat.warning() << "windows color cursor filename '" << windows_color_cursor_filename << "' not found!!\n";
