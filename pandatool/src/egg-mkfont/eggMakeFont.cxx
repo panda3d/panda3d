@@ -19,6 +19,7 @@
 #include "eggMakeFont.h"
 #include "rangeIterator.h"
 #include "palettizer.h"
+#include "filenameUnifier.h"
 #include "eggFile.h"
 #include "textureImage.h"
 #include "sourceTextureImage.h"
@@ -243,6 +244,12 @@ handle_args(ProgramBase::Args &args) {
 ////////////////////////////////////////////////////////////////////
 void EggMakeFont::
 run() {
+  if (has_output_filename() && !get_output_filename().get_dirname().empty()) {
+    FilenameUnifier::set_rel_dirname(get_output_filename().get_dirname());
+  } else {
+    FilenameUnifier::set_rel_dirname(".");
+  }
+
   _text_maker = new PNMTextMaker(_input_font_filename, _face_index);
   if (!_text_maker->is_valid()) {
     exit(1);
