@@ -54,6 +54,7 @@ public:
 
   bool read(Filename filename);
   bool read(istream &in);
+  void merge(EggData &other);
 
   bool load_externals(const DSearchPath &searchpath = DSearchPath());
   int collapse_equivalent_textures();

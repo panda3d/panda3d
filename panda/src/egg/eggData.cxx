@@ -157,6 +157,18 @@ read(istream &in) {
   return (egg_error_count() == 0);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggData::merge
+//       Access: Public
+//  Description: Appends the other egg structure to the end of this
+//               one.  The other egg structure is invalidated.
+////////////////////////////////////////////////////////////////////
+void EggData::
+merge(EggData &other) {
+  other.set_coordinate_system(get_coordinate_system());
+  steal_children(other);
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggData::load_externals
