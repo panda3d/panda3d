@@ -87,7 +87,8 @@ MayaToEggConverter(const string &program_name) :
   _from_selection = false;
   _polygon_output = false;
   _polygon_tolerance = 0.01;
-  _respect_maya_double_sided = true;
+  _respect_maya_double_sided = maya_default_double_sided;
+  _always_show_vertex_color = maya_default_vertex_color;
   _transform_type = TT_model;
 }
 
@@ -98,7 +99,13 @@ MayaToEggConverter(const string &program_name) :
 ////////////////////////////////////////////////////////////////////
 MayaToEggConverter::
 MayaToEggConverter(const MayaToEggConverter &copy) :
-  _maya(copy._maya)
+  _from_selection(copy._from_selection),
+  _maya(copy._maya),
+  _polygon_output(copy._polygon_output),
+  _polygon_tolerance(copy._polygon_tolerance),
+  _respect_maya_double_sided(copy._respect_maya_double_sided),
+  _always_show_vertex_color(copy._always_show_vertex_color),
+  _transform_type(copy._transform_type)
 {
 }
 
@@ -1307,7 +1314,7 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
   // will be different from world space.
   LMatrix4d vertex_frame_inv = egg_group->get_vertex_frame_inv();
 
-  // Save these modeling flag for the a check below.
+  // Save these modeling flags for the check below.
   bool egg_vertex_color = false;
   bool egg_double_sided = false;
   if (egg_group->has_user_data(MayaEggGroupUserData::get_class_type())) {
@@ -1318,6 +1325,7 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
   }
 
   bool double_sided = _respect_maya_double_sided ? maya_double_sided : egg_double_sided;
+  cerr << "respect = " << _respect_maya_double_sided << " maya = " << maya_double_sided << " egg = " << egg_double_sided << " result = " << double_sided << "\n";
 
   while (!pi.isDone()) {
     EggPolygon *egg_poly = new EggPolygon;
@@ -1344,16 +1352,19 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
 
     // Should we extract the color from the vertices?  Normally, in
     // Maya a texture completely replaces the vertex color, so we
-    // should ignore the vertex color if we have a texture. 
+    // should ignore the vertex color if we have a texture.
 
     // However, this is an inconvenient property of Maya; sometimes we
     // really do want both vertex color and texture applied to the
     // same object.  To allow this, we define the special egg flag
     // "vertex-color", which when set indicates that we should
     // respect the vertex color anyway.
+
+    // Furthermore, if _always_show_vertex_color is true, we pretend
+    // that the "vertex-color" flag is always set.
     bool ignore_vertex_color = false;
     if (shader != (MayaShader *)NULL) {
-      ignore_vertex_color = color_def._has_texture && !egg_vertex_color;
+      ignore_vertex_color = color_def._has_texture && !(egg_vertex_color || _always_show_vertex_color);
     }
 
     // Get the vertices for the polygon.

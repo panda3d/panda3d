@@ -29,6 +29,19 @@ ConfigureFn(config_mayaegg) {
   init_libmayaegg();
 }
 
+// These control the default behavior of the mayaegg converter, but
+// not necessarily the default behavior of the maya2egg command-line
+// tool (which has its own defaults).
+
+// Should we respect the Maya double-sided flag (true) or ignore it
+// and assume everything is single-sided (false)?
+const bool maya_default_double_sided = config_mayaegg.GetBool("maya-default-double-sided", false);
+
+// Should we apply vertex color even when a texture is applied (true)
+// or only when no texture is applied or the vertex-color egg flag is
+// set (false)?
+const bool maya_default_vertex_color = config_mayaegg.GetBool("maya-default-vertex-color", true);
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libmayaegg
 //  Description: Initializes the library.  This must be called at

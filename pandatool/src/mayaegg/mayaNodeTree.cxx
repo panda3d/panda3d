@@ -24,6 +24,7 @@
 #include "eggTable.h"
 #include "eggXfmSAnim.h"
 #include "eggData.h"
+#include "dcast.h"
 
 #include "pre_maya_include.h"
 #include <maya/MString.h>
@@ -227,6 +228,8 @@ get_egg_group(MayaNodeDesc *node_desc) {
       egg_group->set_group_type(EggGroup::GT_joint);
     }
 
+    MayaEggGroupUserData *parent_user_data = NULL;
+
     if (node_desc->_parent == _root) {
       // The parent is the root.
       _egg_root->add_child(egg_group);
@@ -235,6 +238,10 @@ get_egg_group(MayaNodeDesc *node_desc) {
       // The parent is another node.
       EggGroup *parent_egg_group = get_egg_group(node_desc->_parent);
       parent_egg_group->add_child(egg_group);
+
+      if (parent_egg_group->has_user_data()) {
+        DCAST_INTO_R(parent_user_data, parent_egg_group->get_user_data(), NULL);
+      }
     }
 
     if (node_desc->has_dag_path()) {
@@ -278,7 +285,14 @@ get_egg_group(MayaNodeDesc *node_desc) {
       
       // And "vertex-color" and "double-sided" have meaning only to
       // this converter.
-      MayaEggGroupUserData *user_data = new MayaEggGroupUserData;
+      MayaEggGroupUserData *user_data;
+      if (parent_user_data == (MayaEggGroupUserData *)NULL) {
+        user_data = new MayaEggGroupUserData;
+      } else {
+        // Inherit the flags from above.
+        user_data = new MayaEggGroupUserData(*parent_user_data);
+      }
+
       if (egg_group->has_object_type("vertex-color")) {
         egg_group->remove_object_type("vertex-color");
         user_data->_vertex_color = true;
