@@ -29,6 +29,20 @@
 #end bin_target
 
 #begin bin_target
+  #define TARGET flt-info
+  #define LOCAL_LIBS \
+    progbase flt
+  #define OTHER_LIBS \
+    linmath:c panda:m \
+    express:c pandaexpress:m \
+    dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
+
+  #define SOURCES \
+    fltInfo.cxx fltInfo.h
+
+#end bin_target
+
+#begin bin_target
   #define TARGET flt2egg
   #define LOCAL_LIBS flt fltegg eggbase progbase
 
