@@ -131,7 +131,7 @@ class DoInterestManager(DirectObject.DirectObject):
     if __debug__:
         def printInterests(self):
             if not WantInterestPrintout:
-                return
+                return 1
             """
             Part of the new otp-server code.
             """
