@@ -3,18 +3,51 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+//#include "config_downloader.h"
+
 ////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::write_header
-//       Access: Private
-//  Description: Writes the header with platform-independent
-//               byte ordering
+//     Function: Patchfile::get_progress
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE float Patchfile::
+get_progress(void) const {
+  if (false == _initiated) {
+    express_cat.warning()
+      << "Patchfile::get_progress() - Patch has not been initiated" << endl;
+    return 0.0;
+  }
+  nassertr(_result_file_length > 0, 0.0);
+  return ((float)_total_bytes_processed / (float)_result_file_length);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Patchfile::set_footprint_length
+//       Access: Public
+//  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void Patchfile::
-write_header(ofstream &write_stream, const string &name) {
-  _datagram.clear();
-  _datagram.add_uint32(_magic_number);
-  _datagram.add_int32(name.length());
-  _datagram.append_data(name.c_str(), name.length());
-  string msg = _datagram.get_message();
-  write_stream.write((char *)msg.data(), msg.length());
+set_footprint_length(int length) {
+  nassertv(_footprint_length > 0);
+  _footprint_length = length;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Patchfile::get_footprint_length
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE int Patchfile::
+get_footprint_length() {
+  return _footprint_length;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Patchfile::reset_footprint_length
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void Patchfile::
+reset_footprint_length() {
+  _footprint_length = _DEFAULT_FOOTPRINT_LENGTH;
 }

@@ -7,7 +7,7 @@
 #define HASHVAL_H
 
 #include <pandabase.h>
-#include <typedef.h>
+#include "typedef.h"
 #include <notify.h>
 
 ////////////////////////////////////////////////////////////////////

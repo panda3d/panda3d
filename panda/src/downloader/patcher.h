@@ -15,16 +15,11 @@
 #include <patchfile.h>
 
 ////////////////////////////////////////////////////////////////////
-//       Class : Patcher 
-// Description : Applys a patch synchronously 
+//       Class : Patcher
+// Description : Applies a patch synchronously
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Patcher {
 PUBLISHED:
-  enum PatcherStatus {
-    PS_success = 1,
-    PS_error = -1,
-  };
-
   Patcher(void);
   Patcher(PT(Buffer) buffer);
   virtual ~Patcher(void);
@@ -32,9 +27,14 @@ PUBLISHED:
   int initiate(Filename &patch, Filename &infile);
   int run(void);
 
+  INLINE float get_progress(void) const;
+
 private:
   void init(PT(Buffer) buffer);
   PT(Buffer) _buffer;
+  Patchfile *_patchfile;
 };
+
+#include "patcher.I"
 
 #endif

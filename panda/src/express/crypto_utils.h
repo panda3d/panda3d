@@ -8,14 +8,14 @@
 
 #include <pandabase.h>
 #include <filename.h>
-#include <typedef.h>
+#include "typedef.h"
 
 class HashVal;
 
 BEGIN_PUBLISH
 
 EXPCL_PANDAEXPRESS void md5_a_file(const Filename &fname, HashVal &ret);
-EXPCL_PANDAEXPRESS void md5_a_buffer(uchar *buf, ulong len, HashVal &ret);
+EXPCL_PANDAEXPRESS void md5_a_buffer(const uchar *buf, ulong len, HashVal &ret);
 
 END_PUBLISH
 

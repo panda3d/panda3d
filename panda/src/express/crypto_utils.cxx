@@ -17,7 +17,7 @@
 USING_NAMESPACE(CryptoPP);
 USING_NAMESPACE(std);
 
-static uint 
+static uint
 read32(istream& is) {
   unsigned int ret = 0x0;
   for (int i=0; i<8; ++i) {
@@ -61,7 +61,7 @@ read32(istream& is) {
   return ret;
 }
 
-void 
+void
 md5_a_file(const Filename &name, HashVal &ret) {
   ostringstream os;
   MD5 md5;
@@ -78,8 +78,8 @@ md5_a_file(const Filename &name, HashVal &ret) {
   ret.hv[3] = read32(is);
 }
 
-void 
-md5_a_buffer(unsigned char* buf, unsigned long len, HashVal& ret) {
+void
+md5_a_buffer(const unsigned char* buf, unsigned long len, HashVal& ret) {
   MD5 md5;
 
   HashFilter hash(md5);

@@ -38,13 +38,16 @@ Patcher(PT(Buffer) buffer) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Patcher::Constructor
-//       Access: Private 
+//       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Patcher::
 init(PT(Buffer) buffer) {
   nassertv(!buffer.is_null());
   _buffer = buffer;
+
+  _patchfile = NULL;
+  _patchfile = new Patchfile(_buffer);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -54,27 +57,25 @@ init(PT(Buffer) buffer) {
 ////////////////////////////////////////////////////////////////////
 Patcher::
 ~Patcher(void) {
+  delete _patchfile;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Patcher::initiate
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int Patcher::
 initiate(Filename &patch, Filename &infile) {
-  Patchfile pfile(_buffer);
-  if (pfile.apply(patch, infile) == true)
-    return PS_success;
-  return PS_error;
+  return _patchfile->initiate(patch, infile);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Patcher::run
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 int Patcher::
 run(void) {
-  return PS_success;
+  return _patchfile->run();
 }
