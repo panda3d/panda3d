@@ -84,23 +84,6 @@
   #define EXPTP_SHADER extern
 #endif
 
-/* These are temporarily here until we move them to their proper homes. */
-#ifdef BUILDING_DIRECT
-  #define EXPCL_DIRECT __declspec(dllexport)
-  #define EXPTP_DIRECT
-#else
-  #define EXPCL_DIRECT __declspec(dllimport)
-  #define EXPTP_DIRECT extern
-#endif
-
-#ifdef BUILDING_TOONTOWN
-  #define EXPCL_TOONTOWN __declspec(dllexport)
-  #define EXPTP_TOONTOWN
-#else
-  #define EXPCL_TOONTOWN __declspec(dllimport)
-  #define EXPTP_TOONTOWN extern
-#endif
-
 #else   /* !PENV_WIN32 */
 
 #define EXPCL_PANDA
@@ -132,13 +115,6 @@
 
 #define EXPCL_FRAMEWORK
 #define EXPTP_FRAMEWORK
-
-/* These are temporarily here until we move them to their proper homes. */
-#define EXPCL_DIRECT
-#define EXPTP_DIRECT
-
-#define EXPCL_TOONTOWN
-#define EXPTP_TOONTOWN
 
 #endif  /* PENV_WIN32 */
 
