@@ -2,18 +2,20 @@
 from PandaModules import *
 import Task
 
+# These may be reassigned before the fade or iris transitions are
+# actually invoked to change the models that will be used.
+IrisModelName = "phase_3/models/misc/iris"
+FadeModelName = "phase_3/models/misc/fade"
+
 class Transitions:
     def __init__(self, loader):
-        self.iris = loader.loadModel("phase_3/models/misc/iris")
-        self.fade = loader.loadModel("phase_3/models/misc/fade")
-
-        self.iris.setPos(0,0,0)
-        self.fade.setScale(3)
+        self.iris = None
+        self.fade = None
 
         self.irisTaskName = "irisTask"
         self.fadeTaskName = "fadeTask"
         
-    def fadeInLerpDone(self, task):
+    def __fadeInLerpDone(self, task):
         # This is a helper function to the fadeIn sequence
         self.fade.reparentTo(hidden)
         return Task.done
@@ -28,6 +30,7 @@ class Transitions:
         """
         self.noTransitions()
 
+        self.loadFade()
         self.fade.reparentTo(aspect2d, FADE_SORT_INDEX)
 
         if (t == 0):
@@ -40,7 +43,7 @@ class Transitions:
                 self.fade.lerpColor(0,0,0,1,
                                     0,0,0,0,
                                     t),
-                Task.Task(self.fadeInLerpDone))
+                Task.Task(self.__fadeInLerpDone))
             # Spawn the sequence
             if not block:
                 taskMgr.spawnTaskNamed(task, self.fadeTaskName)
@@ -65,6 +68,7 @@ class Transitions:
         """
         self.noTransitions()
 
+        self.loadFade()
         self.fade.reparentTo(aspect2d, FADE_SORT_INDEX)
 
         if (t == 0):
@@ -74,12 +78,12 @@ class Transitions:
             # Spawn a lerp of the color from no alpha to full alpha
             if not block:
                 self.fade.lerpColor(0,0,0,0,
-                                0,0,0,1,
-                                t, task=self.fadeTaskName)
+                                    0,0,0,1,
+                                    t, task=self.fadeTaskName)
             else:
                 return self.fade.lerpColor(0,0,0,0,
-                                0,0,0,1,
-                                t)
+                                           0,0,0,1,
+                                           t)
 
     def fadeScreen(self, alpha=0.5):
         """
@@ -88,6 +92,7 @@ class Transitions:
         a dialog box for instance
         """
         self.noTransitions()
+        self.loadFade()
         self.fade.reparentTo(aspect2d, FADE_SORT_INDEX)
         self.fade.setColor(0,0,0,alpha)
 
@@ -114,9 +119,10 @@ class Transitions:
         Removes any current fade tasks and parents the fade polygon away
         """
         taskMgr.removeTasksNamed(self.fadeTaskName)
-        self.fade.reparentTo(hidden)
+        if self.fade != None:
+            self.fade.reparentTo(hidden)
         
-    def irisInLerpDone(self, task):
+    def __irisInLerpDone(self, task):
         # This is a helper function to the fadeIn sequence
         self.iris.reparentTo(hidden)
         return Task.done
@@ -131,6 +137,7 @@ class Transitions:
         """
         self.noTransitions()
 
+        self.loadIris()
         if (t == 0):
             self.iris.reparentTo(hidden)
         else:
@@ -141,7 +148,7 @@ class Transitions:
             task = Task.sequence(
                 self.iris.lerpScale(0.18, 0.18, 0.18,
                                     t, blendType="noBlend"),
-                Task.Task(self.irisInLerpDone))
+                Task.Task(self.__irisInLerpDone))
             # Spawn the sequence
             if not block:
                 taskMgr.spawnTaskNamed(task, self.irisTaskName)
@@ -171,6 +178,9 @@ class Transitions:
         aspect2d plane until you irisIn or call noIris.
         """
         self.noTransitions()
+
+        self.loadIris()
+        self.loadFade()  # we need this to cover up the hole.
         if (t == 0):
             self.iris.reparentTo(hidden)
         else:
@@ -211,8 +221,11 @@ class Transitions:
         Removes any current iris tasks and parents the iris polygon away
         """
         taskMgr.removeTasksNamed(self.irisTaskName)
-        self.iris.reparentTo(hidden)
-        # Actually we need to remove the fade to, because the iris effect uses it
+        if self.iris != None:
+            self.iris.reparentTo(hidden)
+
+        # Actually we need to remove the fade too,
+        # because the iris effect uses it.
         self.noFade()
     
 
@@ -222,3 +235,30 @@ class Transitions:
         """
         self.noFade()
         self.noIris()
+
+    def loadIris(self):
+        if self.iris == None:
+            self.iris = loader.loadModel(IrisModelName)
+            self.iris.setPos(0,0,0)
+
+    def loadFade(self):
+        if self.fade == None:
+            from DirectGui import *
+
+            # We create a DirectFrame for the fade polygon, instead of
+            # simply loading the polygon model and using it directly,
+            # so that it will also obscure mouse events for objects
+            # positioned behind it.
+            fadeModel = loader.loadModel(FadeModelName)
+
+            self.fade = DirectFrame(
+                parent = hidden,
+                guiId = 'fade',
+                relief = None,
+                image = fadeModel,
+                image_scale = 3.0,
+                state = NORMAL,
+                )
+                                    
+            fadeModel.removeNode()
+
