@@ -7,7 +7,7 @@
 
 firstarg="$1"
 extra_genPyCode_libs=""
-fSqueeze=""
+fSqueeze="squeezeMe"
 optimizeFlag=""
 ppythonOptimizeFlag=""
 
@@ -35,8 +35,8 @@ shift
 firstarg="$1"
 fi
 
-if [ "$firstarg" = "-s" ]; then
-fSqueeze="squeezeMe"
+if [ "$firstarg" = "-ns" ]; then
+fSqueeze=""
 shift
 firstarg="$1"
 fi
@@ -83,6 +83,10 @@ if [ "$fSqueeze" = "squeezeMe" ]; then
     rm -f PandaModules.py*
     pSqueezer=`cygpath -w $DIRECT/src/showbase/pandaSqueezer.py`
     ppython $ppythonOptimizeFlag $pSqueezer $optimizeFlag || exit
+else
+    echo RENAMING PandaModulesUnsqueezed.py to PandaModules.py
+    rm -f PandaModules.py*
+    mv PandaModulesUnsqueezed.py PandaModules.py
 fi
 
 echo DONE
