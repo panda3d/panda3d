@@ -554,6 +554,7 @@ wdxGraphicsWindow(GraphicsPipe* pipe, const
 //  Description:
 ////////////////////////////////////////////////////////////////////
 wdxGraphicsWindow::~wdxGraphicsWindow(void) {
+    ReleaseDC(_mwindow,_hdc);
     AtExitFn();
 }
 
@@ -779,7 +780,6 @@ dx_setup() {
     }
 
     FreeLibrary(DDHinst);    //undo LoadLib above, decrement ddrawl.dll refcnt (after DDrawCreate, since dont want to unload/reload)
-
 
     DDDEVICEIDENTIFIER2 dddi;
     pDD->GetDeviceIdentifier(&dddi,0x0);
