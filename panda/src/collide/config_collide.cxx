@@ -25,6 +25,7 @@
 #include "collisionHandlerPhysical.h"
 #include "collisionHandlerPusher.h"
 #include "collisionHandlerQueue.h"
+#include "collisionInvSphere.h"
 #include "collisionLine.h"
 #include "collisionNode.h"
 #include "collisionPlane.h"
@@ -86,6 +87,7 @@ init_libcollide() {
   CollisionHandlerPhysical::init_type();
   CollisionHandlerPusher::init_type();
   CollisionHandlerQueue::init_type();
+  CollisionInvSphere::init_type();
   CollisionLine::init_type();
   CollisionNode::init_type();
   CollisionPlane::init_type();
@@ -101,8 +103,7 @@ init_libcollide() {
   CollisionVisualizer::init_type();
 #endif
 
-  // Registration of writeable object's creation
-  // functions with BamReader's factory
+  CollisionInvSphere::register_with_read_factory();
   CollisionLine::register_with_read_factory();
   CollisionNode::register_with_read_factory();
   CollisionPlane::register_with_read_factory();

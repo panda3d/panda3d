@@ -1,3 +1,4 @@
+#include "collisionNode.cxx"
 #include "collisionPlane.cxx"
 #include "collisionPolygon.cxx"
 #include "collisionRay.cxx"

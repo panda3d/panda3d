@@ -7,7 +7,7 @@
 #include "collisionHandlerPhysical.cxx"
 #include "collisionHandlerPusher.cxx"
 #include "collisionHandlerQueue.cxx"
+#include "collisionInvSphere.cxx"
 #include "collisionLevelState.cxx"
 #include "collisionLine.cxx"
-#include "collisionNode.cxx"
 

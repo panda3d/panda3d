@@ -1,5 +1,5 @@
-// Filename: collisionSphere.cxx
-// Created by:  drose (24Apr00)
+// Filename: collisionInvSphere.cxx
+// Created by:  drose (05Jan05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
+#include "collisionInvSphere.h"
 #include "collisionSphere.h"
 #include "collisionLine.h"
 #include "collisionRay.h"
@@ -25,100 +25,66 @@
 #include "collisionEntry.h"
 #include "config_collide.h"
 
-#include "boundingSphere.h"
+#include "omniBoundingVolume.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "geomTristrip.h"
 #include "nearly_zero.h"
-#include "cmath.h"
-#include "mathNumbers.h"
 
-TypeHandle CollisionSphere::_type_handle;
+TypeHandle CollisionInvSphere::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::make_copy
+//     Function: CollisionInvSphere::make_copy
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-CollisionSolid *CollisionSphere::
+CollisionSolid *CollisionInvSphere::
 make_copy() {
-  return new CollisionSphere(*this);
+  return new CollisionInvSphere(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::test_intersection
+//     Function: CollisionInvSphere::test_intersection
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-PT(CollisionEntry) CollisionSphere::
-test_intersection(const CollisionEntry &entry) const {
-  return entry.get_into()->test_intersection_from_sphere(entry);
+PT(CollisionEntry) CollisionInvSphere::
+test_intersection(const CollisionEntry &) const {
+  report_undefined_from_intersection(get_type());
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::xform
-//       Access: Public, Virtual
-//  Description: Transforms the solid by the indicated matrix.
-////////////////////////////////////////////////////////////////////
-void CollisionSphere::
-xform(const LMatrix4f &mat) {
-  _center = _center * mat;
-
-  // This is a little cheesy and fails miserably in the presence of a
-  // non-uniform scale.
-  LVector3f radius_v = LVector3f(_radius, 0.0f, 0.0f) * mat;
-  _radius = length(radius_v);
-  mark_viz_stale();
-  mark_bound_stale();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::get_collision_origin
-//       Access: Public, Virtual
-//  Description: Returns the point in space deemed to be the "origin"
-//               of the solid for collision purposes.  The closest
-//               intersection point to this origin point is considered
-//               to be the most significant.
-////////////////////////////////////////////////////////////////////
-LPoint3f CollisionSphere::
-get_collision_origin() const {
-  return get_center();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::output
+//     Function: CollisionInvSphere::output
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void CollisionSphere::
+void CollisionInvSphere::
 output(ostream &out) const {
-  out << "sphere, c (" << get_center() << "), r " << get_radius();
+  out << "invsphere, c (" << get_center() << "), r " << get_radius();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::recompute_bound
+//     Function: CollisionInvSphere::recompute_bound
 //       Access: Protected, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-BoundingVolume *CollisionSphere::
+BoundingVolume *CollisionInvSphere::
 recompute_bound() {
-  BoundingVolume *bound = BoundedObject::recompute_bound();
-  nassertr(bound != (BoundingVolume*)0L, bound);
-  nassertr(!_center.is_nan() && !cnan(_radius), bound);
-  BoundingSphere sphere(_center, _radius);
-  bound->extend_by(&sphere);
-
-  return bound;
+  BoundedObject::recompute_bound();
+  // An inverse sphere always has an infinite bounding volume, since
+  // everything outside the sphere is solid matter.
+  return set_bound_ptr(new OmniBoundingVolume());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::test_intersection_from_sphere
+//     Function: CollisionInvSphere::test_intersection_from_sphere
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-PT(CollisionEntry) CollisionSphere::
+PT(CollisionEntry) CollisionInvSphere::
 test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
   DCAST_INTO_R(sphere, entry.get_from(), 0);
@@ -135,8 +101,8 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
 
   LVector3f vec = from_center - into_center;
   float dist2 = dot(vec, vec);
-  if (dist2 > (into_radius + from_radius) * (into_radius + from_radius)) {
-    // No intersection.
+  if (dist2 < (into_radius - from_radius) * (into_radius - from_radius)) {
+    // No intersection--the sphere is within the hollow.
     return NULL;
   }
 
@@ -155,24 +121,24 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     // is as good as any other.
     surface_normal.set(1.0, 0.0, 0.0);
   } else {
-    surface_normal = vec / vec_length;
+    surface_normal = -vec / vec_length;
   }
 
   LVector3f normal = (has_effective_normal() && sphere->get_respect_effective_normal()) ? get_effective_normal() : surface_normal;
 
   new_entry->set_surface_normal(normal);
-  new_entry->set_surface_point(into_center + surface_normal * into_radius);
+  new_entry->set_surface_point(into_center - surface_normal * into_radius);
   new_entry->set_interior_point(from_center - surface_normal * from_radius);
 
   return new_entry;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::test_intersection_from_line
+//     Function: CollisionInvSphere::test_intersection_from_line
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-PT(CollisionEntry) CollisionSphere::
+PT(CollisionEntry) CollisionInvSphere::
 test_intersection_from_line(const CollisionEntry &entry) const {
   const CollisionLine *line;
   DCAST_INTO_R(line, entry.get_from(), 0);
@@ -184,8 +150,9 @@ test_intersection_from_line(const CollisionEntry &entry) const {
 
   double t1, t2;
   if (!intersects_line(t1, t2, from_origin, from_direction)) {
-    // No intersection.
-    return NULL;
+    // The line is in the middle of space, and therefore intersects
+    // the sphere.
+    t1 = t2 = 0.0;
   }
 
   if (collide_cat.is_debug()) {
@@ -195,7 +162,7 @@ test_intersection_from_line(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LPoint3f into_intersection_point = from_origin + t1 * from_direction;
+  LPoint3f into_intersection_point = from_origin + t2 * from_direction;
   new_entry->set_surface_point(into_intersection_point);
 
   if (has_effective_normal() && line->get_respect_effective_normal()) {
@@ -203,18 +170,18 @@ test_intersection_from_line(const CollisionEntry &entry) const {
   } else {
     LVector3f normal = into_intersection_point - get_center();
     normal.normalize();
-    new_entry->set_surface_normal(normal);
+    new_entry->set_surface_normal(-normal);
   }
 
   return new_entry;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::test_intersection_from_ray
+//     Function: CollisionInvSphere::test_intersection_from_ray
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-PT(CollisionEntry) CollisionSphere::
+PT(CollisionEntry) CollisionInvSphere::
 test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
   DCAST_INTO_R(ray, entry.get_from(), 0);
@@ -226,16 +193,12 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
 
   double t1, t2;
   if (!intersects_line(t1, t2, from_origin, from_direction)) {
-    // No intersection.
-    return NULL;
+    // The ray is in the middle of space, and therefore intersects
+    // the sphere.
+    t1 = t2 = 0.0;
   }
 
-  if (t2 < 0.0) {
-    // Both intersection points are before the start of the ray.
-    return NULL;
-  }
-
-  t1 = max(t1, 0.0);
+  t2 = max(t2, 0.0);
 
   if (collide_cat.is_debug()) {
     collide_cat.debug()
@@ -244,7 +207,8 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LPoint3f into_intersection_point = from_origin + t1 * from_direction;
+  LPoint3f into_intersection_point;
+  into_intersection_point = from_origin + t2 * from_direction;
   new_entry->set_surface_point(into_intersection_point);
 
   if (has_effective_normal() && ray->get_respect_effective_normal()) {
@@ -252,18 +216,18 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   } else {
     LVector3f normal = into_intersection_point - get_center();
     normal.normalize();
-    new_entry->set_surface_normal(normal);
+    new_entry->set_surface_normal(-normal);
   }
 
   return new_entry;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::test_intersection_from_segment
+//     Function: CollisionInvSphere::test_intersection_from_segment
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-PT(CollisionEntry) CollisionSphere::
+PT(CollisionEntry) CollisionInvSphere::
 test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *segment;
   DCAST_INTO_R(segment, entry.get_from(), 0);
@@ -276,17 +240,34 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
 
   double t1, t2;
   if (!intersects_line(t1, t2, from_a, from_direction)) {
-    // No intersection.
+    // The segment is in the middle of space, and therefore intersects
+    // the sphere.
+    t1 = t2 = 0.0;
+  }
+  
+  double t;
+  if (t2 <= 0.0) {
+    // The segment is completely below the shell.
+    t = 0.0;
+
+  } else if (t1 >= 1.0) {
+    // The segment is completely above the shell.
+    t = 1.0;
+
+  } else if (t2 <= 1.0) {
+    // The bottom edge of the segment intersects the shell.
+    t = min(t2, 1.0);
+
+  } else if (t1 >= 0.0) {
+    // The top edge of the segment intersects the shell.
+    t = max(t1, 0.0);
+
+  } else {
+    // Neither edge of the segment intersects the shell.  It follows
+    // that both intersection points are within the hollow center of
+    // the sphere; therefore, there is no intersection.
     return NULL;
   }
-
-  if (t2 < 0.0 || t1 > 1.0) {
-    // Both intersection points are before the start of the segment or
-    // after the end of the segment.
-    return NULL;
-  }
-
-  t1 = max(t1, 0.0);
 
   if (collide_cat.is_debug()) {
     collide_cat.debug()
@@ -295,7 +276,7 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  LPoint3f into_intersection_point = from_a + t1 * from_direction;
+  LPoint3f into_intersection_point = from_a + t * from_direction;
   new_entry->set_surface_point(into_intersection_point);
 
   if (has_effective_normal() && segment->get_respect_effective_normal()) {
@@ -303,19 +284,19 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   } else {
     LVector3f normal = into_intersection_point - get_center();
     normal.normalize();
-    new_entry->set_surface_normal(normal);
+    new_entry->set_surface_normal(-normal);
   }
 
   return new_entry;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::fill_viz_geom
+//     Function: CollisionInvSphere::fill_viz_geom
 //       Access: Protected, Virtual
 //  Description: Fills the _viz_geom GeomNode up with Geoms suitable
 //               for rendering this solid.
 ////////////////////////////////////////////////////////////////////
-void CollisionSphere::
+void CollisionInvSphere::
 fill_viz_geom() {
   if (collide_cat.is_debug()) {
     collide_cat.debug()
@@ -337,8 +318,8 @@ fill_viz_geom() {
     verts.push_back(compute_point(0.0, longitude0));
     for (int st = 1; st < num_stacks; st++) {
       float latitude = (float)st / (float)num_stacks;
-      verts.push_back(compute_point(latitude, longitude0));
       verts.push_back(compute_point(latitude, longitude1));
+      verts.push_back(compute_point(latitude, longitude0));
     }
     verts.push_back(compute_point(1.0, longitude0));
 
@@ -353,131 +334,34 @@ fill_viz_geom() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::intersects_line
-//       Access: Protected
-//  Description: Determine the point(s) of intersection of a parametric
-//               line with the sphere.  The line is infinite in both
-//               directions, and passes through "from" and from+delta.
-//               If the line does not intersect the sphere, the
-//               function returns false, and t1 and t2 are undefined.
-//               If it does intersect the sphere, it returns true, and
-//               t1 and t2 are set to the points along the equation
-//               from+t*delta that correspond to the two points of
-//               intersection.
-////////////////////////////////////////////////////////////////////
-bool CollisionSphere::
-intersects_line(double &t1, double &t2,
-                const LPoint3f &from, const LVector3f &delta) const {
-  // Solve the equation for the intersection of a line with a sphere
-  // using the quadratic equation.
-
-  // A line segment from f to f+d is defined as all P such that
-  // P = f + td for 0 <= t <= 1.
-
-  // A sphere with radius r about point c is defined as all P such
-  // that r^2 = (P - c)^2.
-
-  // Subsituting P in the above we have:
-
-  // r^2 = (f + td - c)^2 =
-  // (f^2 + ftd - fc + ftd + t^2d^2 - tdc - fc - tdc + c^2) =
-  // t^2(d^2) + t(fd + fd - dc - dc) + (f^2 - fc - fc + c^2) =
-  // t^2(d^2) + t(2d(f - c)) + (f - c)^2
-
-  // Thus, the equation is quadratic in t, and we have
-  // at^2 + bt + c = 0
-
-  // Where  a = d^2
-  //        b = 2d(f - c)
-  //        c = (f - c)^2 - r^2
-
-  // Solving for t using the quadratic equation gives us the point of
-  // intersection along the line segment.  Actually, there are two
-  // solutions (since it is quadratic): one for the front of the
-  // sphere, and one for the back.  In the case where the line is
-  // tangent to the sphere, there is only one solution (and the
-  // radical is zero).
-
-  double A = dot(delta, delta);
-
-  nassertr(A != 0.0, false);
-
-  LVector3f fc = from - get_center();
-  double B = 2.0f* dot(delta, fc);
-  double fc_d2 = dot(fc, fc);
-  double C = fc_d2 - get_radius() * get_radius();
-
-  double radical = B*B - 4.0*A*C;
-
-  if (IS_NEARLY_ZERO(radical)) {
-    // Tangent.
-    t1 = t2 = -B /(2.0*A);
-    return true;
-
-  } else if (radical < 0.0) {
-    // No real roots: no intersection with the line.
-    return false;
-  }
-
-  double reciprocal_2A = 1.0/(2.0*A);
-  double sqrt_radical = sqrtf(radical);
-  t1 = ( -B - sqrt_radical ) * reciprocal_2A;
-  t2 = ( -B + sqrt_radical ) * reciprocal_2A;
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::compute_point
-//       Access: Protected
-//  Description: Returns a point on the surface of the sphere.
-//               latitude and longitude range from 0.0 to 1.0.  This
-//               is used by fill_viz_geom() to create a visible
-//               representation of the sphere.
-////////////////////////////////////////////////////////////////////
-Vertexf CollisionSphere::
-compute_point(float latitude, float longitude) const {
-  float s1, c1;
-  csincos(latitude * MathNumbers::pi_f, &s1, &c1);
-
-  float s2, c2;
-  csincos(longitude * 2.0f * MathNumbers::pi_f, &s2, &c2);
-
-  Vertexf p(s1 * c2, s1 * s2, c1);
-  return p * get_radius() + get_center();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::register_with_read_factory
+//     Function: CollisionInvSphere::register_with_read_factory
 //       Access: Public, Static
-//  Description: Factory method to generate a CollisionSphere object
+//  Description: Factory method to generate a CollisionInvSphere object
 ////////////////////////////////////////////////////////////////////
-void CollisionSphere::
+void CollisionInvSphere::
 register_with_read_factory() {
-  BamReader::get_factory()->register_factory(get_class_type(), make_CollisionSphere);
+  BamReader::get_factory()->register_factory(get_class_type(), make_CollisionInvSphere);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::write_datagram
+//     Function: CollisionInvSphere::write_datagram
 //       Access: Public
 //  Description: Function to write the important information in
 //               the particular object to a Datagram
 ////////////////////////////////////////////////////////////////////
-void CollisionSphere::
+void CollisionInvSphere::
 write_datagram(BamWriter *manager, Datagram &me) {
-  CollisionSolid::write_datagram(manager, me);
-  _center.write_datagram(me);
-  me.add_float32(_radius);
+  CollisionSphere::write_datagram(manager, me);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::make_CollisionSphere
+//     Function: CollisionInvSphere::make_CollisionInvSphere
 //       Access: Protected
-//  Description: Factory method to generate a CollisionSphere object
+//  Description: Factory method to generate a CollisionInvSphere object
 ////////////////////////////////////////////////////////////////////
-TypedWritable *CollisionSphere::
-make_CollisionSphere(const FactoryParams &params) {
-  CollisionSphere *me = new CollisionSphere;
+TypedWritable *CollisionInvSphere::
+make_CollisionInvSphere(const FactoryParams &params) {
+  CollisionInvSphere *me = new CollisionInvSphere;
   DatagramIterator scan;
   BamReader *manager;
 
@@ -487,16 +371,15 @@ make_CollisionSphere(const FactoryParams &params) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionSphere::fillin
+//     Function: CollisionInvSphere::fillin
 //       Access: Protected
 //  Description: Function that reads out of the datagram (or asks
 //               manager to read) all of the data that is needed to
 //               re-create this object and stores it in the appropiate
 //               place
 ////////////////////////////////////////////////////////////////////
-void CollisionSphere::
+void CollisionInvSphere::
 fillin(DatagramIterator& scan, BamReader* manager) {
-  CollisionSolid::fillin(scan, manager);
-  _center.read_datagram(scan);
-  _radius = scan.get_float32();
+  CollisionSphere::fillin(scan, manager);
 }
+

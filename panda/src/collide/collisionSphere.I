@@ -41,7 +41,7 @@ CollisionSphere(float cx, float cy, float cz, float radius) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSphere::Default constructor
-//       Access: Private
+//       Access: Protected
 //  Description: Creates an invalid sphere.  Only used when reading
 //               from a bam file.
 ////////////////////////////////////////////////////////////////////
