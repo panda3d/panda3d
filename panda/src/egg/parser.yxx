@@ -136,6 +136,8 @@ egg_cleanup_parser() {
    of the input stream. */
 %token START_EGG
 %token START_GROUP_BODY
+%token START_TEXTURE_BODY
+%token START_PRIMITIVE_BODY
 
 %type <_egg> node
 %type <_egg> coordsystem
@@ -178,6 +180,8 @@ egg_cleanup_parser() {
 grammar:
 	START_EGG egg
 	| START_GROUP_BODY group_body
+	| START_TEXTURE_BODY texture_body
+	| START_PRIMITIVE_BODY primitive_body
 	;
 
 /*

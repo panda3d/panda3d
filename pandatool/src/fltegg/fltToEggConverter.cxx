@@ -14,6 +14,7 @@
 #include <fltFace.h>
 #include <fltVertex.h>
 #include <fltVertexList.h>
+#include <fltExternalReference.h>
 #include <eggGroup.h>
 #include <eggSwitchCondition.h>
 #include <eggPrimitive.h>
@@ -21,6 +22,7 @@
 #include <eggPoint.h>
 #include <eggVertex.h>
 #include <eggVertexPool.h>
+#include <eggExternalReference.h>
 #include <string_utils.h>
 
 
@@ -41,8 +43,9 @@ FltToEggConverter(EggData &egg_data) : _egg_data(egg_data) {
 //  Description: Returns a newly-allocated EggData structure
 //               corresponding to the indicated flt structure.
 ////////////////////////////////////////////////////////////////////
-void FltToEggConverter::
+bool FltToEggConverter::
 convert_flt(const FltHeader *flt_header) {
+  _error = false;
   _flt_header = flt_header;
   
   if (_input_units == DU_invalid) {
@@ -79,13 +82,17 @@ convert_flt(const FltHeader *flt_header) {
   // they're assigned to (for instance, to apply a transparency or
   // something).
 
-  convert_record(_flt_header, (FltObject *)NULL, &_egg_data);
+  FltToEggLevelState state;
+  state._egg_parent = &_egg_data;
+  convert_record(_flt_header, state);
 
   if (_main_egg_vpool->empty()) {
     // If we didn't get any global vertices, remove the vertex pool
     // just for cleanliness.
     _egg_data.remove_child(_main_egg_vpool);
   }
+
+  return !_error;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -94,34 +101,36 @@ convert_flt(const FltHeader *flt_header) {
 //  Description: Converts the record and all of its children.
 ////////////////////////////////////////////////////////////////////
 void FltToEggConverter::
-convert_record(const FltRecord *flt_record, const FltObject *flt_object,
-	       EggGroupNode *egg_group) {
+convert_record(const FltRecord *flt_record, FltToEggLevelState &state) {
   int num_children = flt_record->get_num_children();
 
   for (int i = 0; i < num_children; i++) {
     const FltRecord *child = flt_record->get_child(i);
 
     if (child->is_of_type(FltLOD::get_class_type())) {
-      convert_lod(DCAST(FltLOD, child), flt_object, egg_group);
+      convert_lod(DCAST(FltLOD, child), state);
 
     } else if (child->is_of_type(FltGroup::get_class_type())) {
-      convert_group(DCAST(FltGroup, child), flt_object, egg_group);
+      convert_group(DCAST(FltGroup, child), state);
 
     } else if (child->is_of_type(FltObject::get_class_type())) {
-      convert_object(DCAST(FltObject, child), flt_object, egg_group);
+      convert_object(DCAST(FltObject, child), state);
 
     } else if (child->is_of_type(FltFace::get_class_type())) {
-      convert_face(DCAST(FltFace, child), flt_object, egg_group);
+      convert_face(DCAST(FltFace, child), state);
+
+    } else if (child->is_of_type(FltExternalReference::get_class_type())) {
+      convert_ext_ref(DCAST(FltExternalReference, child), state);
 
       // Fallbacks.
     } else if (child->is_of_type(FltBeadID::get_class_type())) {
-      convert_bead_id(DCAST(FltBeadID, child), flt_object, egg_group);
+      convert_bead_id(DCAST(FltBeadID, child), state);
 
     } else if (child->is_of_type(FltBead::get_class_type())) {
-      convert_bead(DCAST(FltBead, child), flt_object, egg_group);
+      convert_bead(DCAST(FltBead, child), state);
 
     } else {
-      convert_record(child, flt_object, egg_group);
+      convert_record(child, state);
     }
   }
 }
@@ -132,10 +141,9 @@ convert_record(const FltRecord *flt_record, const FltObject *flt_object,
 //  Description: Converts the LOD bead and all of its children.
 ////////////////////////////////////////////////////////////////////
 void FltToEggConverter::
-convert_lod(const FltLOD *flt_lod, const FltObject *flt_object,
-	    EggGroupNode *egg_parent) {
+convert_lod(const FltLOD *flt_lod, FltToEggLevelState &state) {
   EggGroup *egg_group = new EggGroup(flt_lod->get_id());
-  egg_parent->add_child(egg_group);
+  state._egg_parent->add_child(egg_group);
 
   EggSwitchConditionDistance lod
     (flt_lod->_switch_in, flt_lod->_switch_out,
@@ -143,7 +151,12 @@ convert_lod(const FltLOD *flt_lod, const FltObject *flt_object,
      flt_lod->_transition_range);
   egg_group->set_lod(lod);
 
-  convert_record(flt_lod, flt_object, egg_group);
+  set_transform(flt_lod, egg_group);
+  parse_comment(flt_lod, egg_group);
+
+  FltToEggLevelState next_state(state);
+  next_state._egg_parent = egg_group;
+  convert_record(flt_lod, next_state);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -152,10 +165,9 @@ convert_lod(const FltLOD *flt_lod, const FltObject *flt_object,
 //  Description: Converts the group and all of its children.
 ////////////////////////////////////////////////////////////////////
 void FltToEggConverter::
-convert_group(const FltGroup *flt_group, const FltObject *flt_object,
-	      EggGroupNode *egg_parent) {
+convert_group(const FltGroup *flt_group, FltToEggLevelState &state) {
   EggGroup *egg_group = new EggGroup(flt_group->get_id());
-  egg_parent->add_child(egg_group);
+  state._egg_parent->add_child(egg_group);
 
   if ((flt_group->_flags & FltGroup::F_forward_animation) != 0) {
     // It's a sequence animation.
@@ -163,13 +175,14 @@ convert_group(const FltGroup *flt_group, const FltObject *flt_object,
     egg_group->set_switch_fps(24.0);
   }
 
-  if (flt_group->has_transform()) {
-    egg_group->set_transform(flt_group->get_transform());
-  }
+  set_transform(flt_group, egg_group);
+  parse_comment(flt_group, egg_group);
 
   ///*** replicate count.
 
-  convert_record(flt_group, flt_object, egg_group);
+  FltToEggLevelState next_state(state);
+  next_state._egg_parent = egg_group;
+  convert_record(flt_group, next_state);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -178,16 +191,17 @@ convert_group(const FltGroup *flt_group, const FltObject *flt_object,
 //  Description: Converts the object and all of its children.
 ////////////////////////////////////////////////////////////////////
 void FltToEggConverter::
-convert_object(const FltObject *flt_object, const FltObject *,
-	       EggGroupNode *egg_parent) {
+convert_object(const FltObject *flt_object, FltToEggLevelState &state) {
   EggGroup *egg_group = new EggGroup(flt_object->get_id());
-  egg_parent->add_child(egg_group);
+  state._egg_parent->add_child(egg_group);
 
-  if (flt_object->has_transform()) {
-    egg_group->set_transform(flt_object->get_transform());
-  }
+  set_transform(flt_object, egg_group);
+  parse_comment(flt_object, egg_group);
 
-  convert_record(flt_object, flt_object, egg_group);
+  FltToEggLevelState next_state(state);
+  next_state._flt_object = flt_object;
+  next_state._egg_parent = egg_group;
+  convert_record(flt_object, next_state);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -197,16 +211,16 @@ convert_object(const FltObject *flt_object, const FltObject *,
 //               children.
 ////////////////////////////////////////////////////////////////////
 void FltToEggConverter::
-convert_bead_id(const FltBeadID *flt_bead, const FltObject *flt_object,
-		EggGroupNode *egg_parent) {
+convert_bead_id(const FltBeadID *flt_bead, FltToEggLevelState &state) {
   EggGroup *egg_group = new EggGroup(flt_bead->get_id());
-  egg_parent->add_child(egg_group);
+  state._egg_parent->add_child(egg_group);
 
-  if (flt_bead->has_transform()) {
-    egg_group->set_transform(flt_bead->get_transform());
-  }
+  set_transform(flt_bead, egg_group);
+  parse_comment(flt_bead, egg_group);
 
-  convert_record(flt_bead, flt_object, egg_group);
+  FltToEggLevelState next_state(state);
+  next_state._egg_parent = egg_group;
+  convert_record(flt_bead, next_state);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -216,16 +230,16 @@ convert_bead_id(const FltBeadID *flt_bead, const FltObject *flt_object,
 //               children.
 ////////////////////////////////////////////////////////////////////
 void FltToEggConverter::
-convert_bead(const FltBead *flt_bead, const FltObject *flt_object,
-	     EggGroupNode *egg_parent) {
+convert_bead(const FltBead *flt_bead, FltToEggLevelState &state) {
   EggGroup *egg_group = new EggGroup;
-  egg_parent->add_child(egg_group);
+  state._egg_parent->add_child(egg_group);
 
-  if (flt_bead->has_transform()) {
-    egg_group->set_transform(flt_bead->get_transform());
-  }
+  set_transform(flt_bead, egg_group);
+  parse_comment(flt_bead, "anonymous", egg_group);
 
-  convert_record(flt_bead, flt_object, egg_group);
+  FltToEggLevelState next_state(state);
+  next_state._egg_parent = egg_group;
+  convert_record(flt_bead, next_state);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -234,8 +248,7 @@ convert_bead(const FltBead *flt_bead, const FltObject *flt_object,
 //  Description: Converts the face and all of its children.
 ////////////////////////////////////////////////////////////////////
 void FltToEggConverter::
-convert_face(const FltFace *flt_face, const FltObject *flt_object,
-	     EggGroupNode *egg_parent) {
+convert_face(const FltFace *flt_face, FltToEggLevelState &state) {
   bool is_light;
   switch (flt_face->_draw_type) {
   case FltGeometry::DT_omni_light:
@@ -248,14 +261,12 @@ convert_face(const FltFace *flt_face, const FltObject *flt_object,
     is_light = false;
   }
 
-  EggPrimitive *egg_prim;
+  PT(EggPrimitive) egg_prim;
   if (is_light) {
     egg_prim = new EggPoint;
   } else {
     egg_prim = new EggPolygon;
   }
-
-  egg_parent->add_child(egg_prim);
 
   // Collect the vertices for this primitive.
   vector< PT(EggVertex) > vertices;
@@ -277,7 +288,25 @@ convert_face(const FltFace *flt_face, const FltObject *flt_object,
     }
   }
 
-  setup_geometry(flt_face, flt_object, egg_prim, _main_egg_vpool, vertices);
+  setup_geometry(flt_face, state, egg_prim, _main_egg_vpool, vertices);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltToEggConverter::convert_ext_ref
+//       Access: Private
+//  Description: Converts the external reference node.
+////////////////////////////////////////////////////////////////////
+void FltToEggConverter::
+convert_ext_ref(const FltExternalReference *flt_ext, FltToEggLevelState &state) {
+  // Get a group node to put the reference into.
+  EggGroupNode *egg_parent = 
+    state.get_synthetic_group("", flt_ext->get_transform());
+
+  Filename filename = flt_ext->get_ref_filename();
+  filename.set_extension("egg");
+
+  EggExternalReference *egg_ref = new EggExternalReference("", filename);
+  egg_parent->add_child(egg_ref);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -286,12 +315,20 @@ convert_face(const FltFace *flt_face, const FltObject *flt_object,
 //  Description: Applies the state indicated in the FltGeometry record
 //               to the indicated EggPrimitive and all of its
 //               indicated vertices, and then officially adds the
-//               vertices to the vertex pool and to the primitive.
+//               vertices to the vertex pool and to the primitive, and
+//               adds the primitive to its appropriate parent.
 ////////////////////////////////////////////////////////////////////
 void FltToEggConverter::
-setup_geometry(const FltGeometry *flt_geom, const FltObject *,
+setup_geometry(const FltGeometry *flt_geom, FltToEggLevelState &state,
 	       EggPrimitive *egg_prim, EggVertexPool *egg_vpool,
 	       const FltToEggConverter::EggVertices &vertices) {
+
+  // Add the primitive to its appropriate parent.
+  EggGroupNode *egg_parent = 
+    state.get_synthetic_group(flt_geom->get_id(), flt_geom->get_transform());
+  egg_parent->add_child(egg_prim);
+
+  // Now examine the vertices.
   EggVertices::const_iterator vi;
 
   if (flt_geom->has_color()) {
@@ -364,10 +401,112 @@ setup_geometry(const FltGeometry *flt_geom, const FltObject *,
     }
   }
 
+  if (flt_geom->_draw_type == FltGeometry::DT_solid_no_backface) {
+    // A double-sided polygon.
+    egg_prim->set_bface_flag(true);
+  }
+
   for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
     EggVertex *egg_vertex = egg_vpool->create_unique_vertex(*(*vi));
     egg_prim->add_vertex(egg_vertex);
   }
+
+  parse_comment(flt_geom, egg_prim);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltToEggConverter::set_transform
+//       Access: Private
+//  Description: Sets up the group to reflect the transform indicated
+//               by the given record, if any.
+////////////////////////////////////////////////////////////////////
+void FltToEggConverter::
+set_transform(const FltBead *flt_bead, EggGroup *egg_group) {
+  if (flt_bead->has_transform()) {
+    egg_group->set_transform(flt_bead->get_transform());
+    egg_group->set_group_type(EggGroup::GT_instance);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltToEggConverter::parse_comment
+//       Access: Private
+//  Description: Scans the comment on this record for "<egg> { ... }"
+//               and parses the enclosed string as if it appeared in
+//               the egg file.  Returns true on success, false on
+//               syntax error (in which case _error is also set to
+//               true).
+////////////////////////////////////////////////////////////////////
+bool FltToEggConverter::
+parse_comment(const FltBeadID *flt_bead, EggNode *egg_node) {
+  return parse_comment(flt_bead, flt_bead->get_id(), egg_node);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltToEggConverter::parse_comment
+//       Access: Private
+//  Description: Scans the comment on this record for "<egg> { ... }"
+//               and parses the enclosed string as if it appeared in
+//               the egg file.  Returns true on success, false on
+//               syntax error (in which case _error is also set to
+//               true).
+////////////////////////////////////////////////////////////////////
+bool FltToEggConverter::
+parse_comment(const FltRecord *flt_record, const string &name,
+	      EggNode *egg_node) {
+  if (!flt_record->has_comment()) {
+    // No comment.
+    return true;
+  }
+  string comment = flt_record->get_comment();
+
+  // Scan for <egg>.
+  size_t p;
+  p = 0;
+
+  static const string egg_str = "<egg>";
+
+  while (p < comment.length()) {
+    if (cmp_nocase(comment.substr(p, 5), egg_str) == 0) {
+      p += 5;
+      // Now scan past whitespace for the open curly brace.
+      while (p < comment.length() && isspace(comment[p])) {
+	++p;
+      }
+      if (p < comment.length() && comment[p] == '{') {
+	// Here's the beginning.  Now lop off the closing brace at the
+	// end.
+	++p;
+	size_t q = comment.length() - 1;
+	while (q > p && comment[q] != '}') {
+	  --q;
+	}
+	if (q == p) {
+	  nout << "No closing brace in comment for " 
+	       << name << "\n\n";
+	  _error = true;
+	  return false;
+	}
+	string egg_syntax = comment.substr(p, q - p);
+
+	if (!egg_node->parse_egg(egg_syntax)) {
+	  nout << "Syntax error in comment for "
+	       << name << "\n\n";
+	  _error = true;
+	  return false;
+	}
+	// Correctly parsed!
+	return true;
+      }
+      nout << "No opening brace in comment for " 
+	   << name << "\n\n";
+      _error = true;
+      return false;
+    }
+  }
+
+  // No <egg> appears in this comment.
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

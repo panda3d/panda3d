@@ -6,14 +6,12 @@
 #include "eggGroup.h"
 #include "eggMiscFuncs.h"
 #include "eggVertexPool.h"
+#include "lexerDefs.h"
 
 #include <indent.h>
 #include <string_utils.h>
 #include <lmatrix.h>
 
-extern int eggyyparse(void);
-#include "parserDefs.h"
-#include "lexerDefs.h"
 
 TypeHandle EggGroup::_type_handle;
 
@@ -354,26 +352,6 @@ determine_bin() {
     return this;
   }
   return EggGroupNode::determine_bin();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EggGroup::parse_egg
-//       Access: Public
-//  Description: Parses the egg syntax given in the indicate string as
-//               if it had been read from the egg file within the
-//               <Group> { ... } definition.  Updates the EggGroup
-//               accordingly.  Returns true if successful, false if
-//               there was some parse error.
-////////////////////////////////////////////////////////////////////
-bool EggGroup::
-parse_egg(const string &egg_syntax) {
-  istringstream in(egg_syntax);
-  egg_init_parser(in, "", this, this);
-  egg_start_group_body();
-  eggyyparse();
-  egg_cleanup_parser();
-
-  return (egg_error_count() == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -726,6 +704,21 @@ write_vertex_ref(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::egg_start_parse_body
+//       Access: Protected, Virtual
+//  Description: This function is called within parse_egg().  It
+//               should call the appropriate function on the lexer to
+//               initialize the parser into the state associated with
+//               this object.  If the object cannot be parsed into
+//               directly, it should return false.
+////////////////////////////////////////////////////////////////////
+bool EggGroup::
+egg_start_parse_body() {
+  egg_start_group_body();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::adjust_under
 //       Access: Protected, Virtual
 //  Description: This is called within update_under() after all the
@@ -740,6 +733,23 @@ adjust_under() {
   // Billboards without an explicit center are an implicit instance.
   bool is_billboard_instance = 
     (get_billboard_type() != BT_none && !has_billboard_center());
+
+  // If we have our own transform, it carries forward.
+
+  // As of 4/18/01, this now also affects the local_coord flag, below.
+  // This means that a <Transform> entry within an <Instance> node
+  // transforms the instance itself.
+  if (has_transform()) {
+    _under_flags |= UF_under_transform;
+
+    // Our own transform also affects our node frame.
+    _node_frame = 
+      new MatrixFrame(get_transform() * get_node_frame());
+    _node_frame_inv =
+      new MatrixFrame(invert(get_node_frame()));
+    _vertex_to_node =
+      new MatrixFrame(get_vertex_frame() * get_node_frame_inv());
+  }
 
   if (get_group_type() == GT_instance || is_billboard_instance) {
     _under_flags |= UF_under_instance;
@@ -756,20 +766,6 @@ adjust_under() {
     _vertex_frame = _node_frame;
     _vertex_frame_inv = _node_frame_inv;
     _vertex_to_node = NULL;
-  }
-
-  // If we have our own transform, it carries forward, but it doesn't
-  // have any effect on the local_coord flag, above.
-  if (has_transform()) {
-    _under_flags |= UF_under_transform;
-
-    // Our own transform also affects our node frame.
-    _node_frame = 
-      new MatrixFrame(get_transform() * get_node_frame());
-    _node_frame_inv =
-      new MatrixFrame(invert(get_node_frame()));
-    _vertex_to_node =
-      new MatrixFrame(get_vertex_frame() * get_node_frame_inv());
   }
 }
 

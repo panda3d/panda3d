@@ -15,6 +15,7 @@
 #include "eggMaterial.h"
 #include "eggRenderMode.h"
 #include "vector_PT_EggVertex.h"
+
 #include <pointerTo.h>
 #include <vector>
 
@@ -143,6 +144,7 @@ private:
 protected:
   void write_body(ostream &out, int indent_level) const;
 
+  virtual bool egg_start_parse_body();
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
 			   CoordinateSystem to_cs);
   virtual void r_flatten_transforms();

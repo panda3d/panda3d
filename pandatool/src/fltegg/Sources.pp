@@ -8,9 +8,11 @@
     m
 
   #define SOURCES \
-    fltToEggConverter.I fltToEggConverter.cxx fltToEggConverter.h
+    fltToEggConverter.I fltToEggConverter.cxx fltToEggConverter.h \
+    fltToEggLevelState.I fltToEggLevelState.cxx fltToEggLevelState.h
 
   #define INSTALL_HEADERS \
-    fltToEggConverter.I fltToEggConverter.h
+    fltToEggConverter.I fltToEggConverter.h \
+    fltToEggLevelState.I fltToEggLevelState.h
 
 #end ss_lib_target

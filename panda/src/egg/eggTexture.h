@@ -124,6 +124,9 @@ public:
   static FilterType string_filter_type(const string &string);
   static EnvType string_env_type(const string &string);
 
+protected:
+  virtual bool egg_start_parse_body();
+
 private:
   enum Flags {
     F_has_transform          = 0x0001,

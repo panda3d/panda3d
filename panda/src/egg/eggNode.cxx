@@ -10,6 +10,10 @@
 
 #include <algorithm>
 
+extern int eggyyparse(void);
+#include "parserDefs.h"
+#include "lexerDefs.h"
+
 TypeHandle EggNode::_type_handle;
 
 
@@ -117,6 +121,38 @@ determine_bin() {
   return _parent->determine_bin();
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggNode::parse_egg
+//       Access: Public
+//  Description: Parses the egg syntax given in the indicate string as
+//               if it had been read from the egg file within this
+//               object's definition.  Updates the object accordingly.
+//               Returns true if successful, false if there was some
+//               parse error or if the object does not support this
+//               functionality.
+////////////////////////////////////////////////////////////////////
+bool EggNode::
+parse_egg(const string &egg_syntax) {
+  EggGroupNode *group = get_parent();
+  if (is_of_type(EggGroupNode::get_class_type())) {
+    DCAST_INTO_R(group, this, false);
+  }
+
+  istringstream in(egg_syntax);
+  egg_init_parser(in, "", this, group);
+
+  if (!egg_start_parse_body()) {
+    egg_cleanup_parser();
+    return false;
+  }
+
+  eggyyparse();
+  egg_cleanup_parser();
+
+  return (egg_error_count() == 0);
+}
+
 #ifndef NDEBUG
 
 ////////////////////////////////////////////////////////////////////
@@ -156,6 +192,20 @@ test_under_integrity() const {
 
 #endif  // NDEBUG
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggNode::egg_start_parse_body
+//       Access: Protected, Virtual
+//  Description: This function is called within parse_egg().  It
+//               should call the appropriate function on the lexer to
+//               initialize the parser into the state associated with
+//               this object.  If the object cannot be parsed into
+//               directly, it should return false.
+////////////////////////////////////////////////////////////////////
+bool EggNode::
+egg_start_parse_body() {
+  return false;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggNode::update_under

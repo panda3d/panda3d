@@ -8,6 +8,8 @@
 
 #include <pandatoolbase.h>
 
+#include "fltToEggLevelState.h"
+
 #include <distanceUnit.h>
 
 #include <fltHeader.h>
@@ -25,6 +27,7 @@ class FltBead;
 class FltVertex;
 class FltGeometry;
 class FltFace;
+class FltExternalReference;
 class FltTexture;
 class EggGroupNode;
 class EggPrimitive;
@@ -45,30 +48,28 @@ public:
   INLINE void set_input_units(DistanceUnit input_units);
   INLINE void set_output_units(DistanceUnit output_units);
 
-  void convert_flt(const FltHeader *flt_header);
+  bool convert_flt(const FltHeader *flt_header);
 
 private:
   typedef vector< PT(EggVertex) > EggVertices;
 
-  void convert_record(const FltRecord *flt_record, const FltObject *flt_object,
-		      EggGroupNode *egg_group);
-  void convert_lod(const FltLOD *flt_lod, const FltObject *flt_object,
-		   EggGroupNode *egg_parent);
-  void convert_group(const FltGroup *flt_group, const FltObject *flt_object,
-		     EggGroupNode *egg_parent);
-  void convert_object(const FltObject *flt_object, const FltObject *,
-		      EggGroupNode *egg_parent);
-  void convert_bead_id(const FltBeadID *flt_bead, const FltObject *flt_object,
-		       EggGroupNode *egg_parent);
-  void convert_bead(const FltBead *flt_bead, const FltObject *flt_object,
-		    EggGroupNode *egg_parent);
-  void convert_face(const FltFace *flt_face, const FltObject *flt_object,
-		    EggGroupNode *egg_parent);
-
-
-  void setup_geometry(const FltGeometry *flt_geom, const FltObject *flt_object,
+  void convert_record(const FltRecord *flt_record, FltToEggLevelState &state);
+  void convert_lod(const FltLOD *flt_lod, FltToEggLevelState &state);
+  void convert_group(const FltGroup *flt_group, FltToEggLevelState &state);
+  void convert_object(const FltObject *flt_object, FltToEggLevelState &state);
+  void convert_bead_id(const FltBeadID *flt_bead, FltToEggLevelState &state);
+  void convert_bead(const FltBead *flt_bead, FltToEggLevelState &state);
+  void convert_face(const FltFace *flt_face, FltToEggLevelState &state);
+  void convert_ext_ref(const FltExternalReference *flt_ext, FltToEggLevelState &state);
+		    
+  void setup_geometry(const FltGeometry *flt_geom, FltToEggLevelState &state,
 		      EggPrimitive *egg_prim, EggVertexPool *egg_vpool,
 		      const EggVertices &vertices);
+
+  void set_transform(const FltBead *flt_bead, EggGroup *egg_group);
+  bool parse_comment(const FltBeadID *flt_bead, EggNode *egg_node);
+  bool parse_comment(const FltRecord *flt_record, const string &name,
+		     EggNode *egg_node);
 
   PT(EggVertex) make_egg_vertex(const FltVertex *flt_vertex);
   PT(EggTexture) make_egg_texture(const FltTexture *flt_texture);
@@ -83,6 +84,8 @@ private:
 
   typedef map<const FltTexture *, PT(EggTexture) > Textures;
   Textures _textures;
+
+  bool _error;
 };
 
 #include "fltToEggConverter.I"

@@ -59,7 +59,11 @@ run() {
   _data.set_coordinate_system(_coordinate_system);
 
   FltToEggConverter converter(_data);
-  converter.convert_flt(header);
+  if (!converter.convert_flt(header)) {
+    nout << "Errors in conversion.\n";
+    exit(1);
+  }
+
   write_egg_file();
 }
 

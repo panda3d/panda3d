@@ -76,7 +76,6 @@ public:
   ~EggGroup();
 
   virtual void write(ostream &out, int indent_level) const;
-  bool parse_egg(const string &egg_syntax);
 
   virtual EggRenderMode *determine_alpha_mode();
   virtual EggRenderMode *determine_depth_write_mode();
@@ -186,8 +185,8 @@ public:
 
 protected:
   void write_vertex_ref(ostream &out, int indent_level) const;
+  virtual bool egg_start_parse_body();
   virtual void adjust_under();
-
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
 			   CoordinateSystem to_cs);
   virtual void r_flatten_transforms();

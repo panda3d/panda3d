@@ -5,6 +5,7 @@
 
 #include "eggTexture.h"
 #include "eggMiscFuncs.h"
+#include "lexerDefs.h"
 
 #include <indent.h>
 #include <string_utils.h>
@@ -488,6 +489,21 @@ string_env_type(const string &string) {
   } else {
     return ET_unspecified;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTexture::egg_start_parse_body
+//       Access: Protected, Virtual
+//  Description: This function is called within parse_egg().  It
+//               should call the appropriate function on the lexer to
+//               initialize the parser into the state associated with
+//               this object.  If the object cannot be parsed into
+//               directly, it should return false.
+////////////////////////////////////////////////////////////////////
+bool EggTexture::
+egg_start_parse_body() {
+  egg_start_texture_body();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -25,8 +25,9 @@ public:
   INLINE EggObject(const EggObject &copy);
   INLINE EggObject &operator = (const EggObject &copy);
 
-  virtual ~EggObject() { }
+  virtual ~EggObject();
 
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }

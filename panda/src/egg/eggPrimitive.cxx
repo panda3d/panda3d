@@ -7,6 +7,7 @@
 #include "eggVertexPool.h"
 #include "eggMiscFuncs.h"
 #include "eggTextureCollection.h"
+#include "lexerDefs.h"
 
 #include <indent.h>
 #include <vector_int.h>
@@ -503,6 +504,21 @@ write_body(ostream &out, int indent_level) const {
       indent(out, indent_level) << "}\n";
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::egg_start_parse_body
+//       Access: Protected, Virtual
+//  Description: This function is called within parse_egg().  It
+//               should call the appropriate function on the lexer to
+//               initialize the parser into the state associated with
+//               this object.  If the object cannot be parsed into
+//               directly, it should return false.
+////////////////////////////////////////////////////////////////////
+bool EggPrimitive::
+egg_start_parse_body() {
+  egg_start_primitive_body();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

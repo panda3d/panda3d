@@ -56,6 +56,7 @@ public:
   virtual EggRenderMode *determine_bin();
 
   virtual void write(ostream &out, int indent_level) const=0;
+  bool parse_egg(const string &egg_syntax);
 
 #ifndef NDEBUG
   void test_under_integrity() const;
@@ -70,6 +71,8 @@ protected:
     UF_under_transform = 0x002,
     UF_local_coord     = 0x004,
   };
+
+  virtual bool egg_start_parse_body();
 
   virtual void update_under(int depth_offset);
   virtual void adjust_under();

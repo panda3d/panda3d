@@ -73,6 +73,16 @@ egg_start_group_body() {
   initial_token = START_GROUP_BODY;
 }
 
+void
+egg_start_texture_body() {
+  initial_token = START_TEXTURE_BODY;
+}
+
+void
+egg_start_primitive_body() {
+  initial_token = START_PRIMITIVE_BODY;
+}
+
 int
 egg_error_count() {
   return error_count;
@@ -159,8 +169,9 @@ input_chars(char *buffer, int &result, int max_size) {
       // from the stream, copy it into the current_line array.  This
       // is because the \n.* rule below, which fills current_line
       // normally, doesn't catch the first line.
-      strncpy(current_line, yytext, max_error_width);
-      current_line[max_error_width] = '\0';
+      int length = min(max_error_width, result);
+      strncpy(current_line, buffer, length);
+      current_line[length] = '\0';
       line_number++;
       col_number = 0;
 
