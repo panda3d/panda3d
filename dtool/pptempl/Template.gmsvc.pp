@@ -533,7 +533,7 @@ $[rgs_to_gen] : $[GENERATED_RGS_DEPENDENCIES]
 $[TAB] $[RGS_GENERATOR_RULE]
 #endif
 
-#define MIDL_COMMAND $[COMPILE_IDL] /cstub $[ODIR]/$[IDL_BASENAME].cpp /tlb $[ODIR]/$[IDL_BASENAME].tlb /h $[ODIR]/$[IDL_BASENAME].h /proxy $[ODIR]/$[IDL_BASENAME]_p.c /dlldata $[ODIR]/dlldata.c /iid $[ODIR]/$[IDL_BASENAME]_i.c $[ODIR]/$[IDL_BASENAME].idl
+#define MIDL_COMMAND $[COMPILE_IDL] /out $[ODIR] $[ODIR]/$[IDL_BASENAME].idl
 
 #define idl_to_gen $[filter %.idl, $[GENERATED_SOURCES]]
 #if $[idl_to_gen]
