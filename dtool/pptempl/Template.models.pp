@@ -254,6 +254,12 @@ $[TAB]maya2egg $[MAYA2EGG_OPTS] -o $[target] $[source]
 $[target] : $[source]
 $[TAB]maya2egg $[MAYA2EGG_OPTS] -p -a model -cn "$[CHAR_NAME]" -o $[target] $[source]
   #endif
+  #if $[NURBS_MODEL]
+    #define target $[EGG_PREFIX]$[NURBS_MODEL].egg
+    #define source $[MAYA_PREFIX]$[or $[MODEL],$[NURBS_MODEL]].mb
+$[target] : $[source]
+$[TAB]maya2egg $[MAYA2EGG_OPTS] -a model -cn "$[CHAR_NAME]" -o $[target] $[source]
+  #endif
 
 #end maya_char_egg
 
