@@ -99,6 +99,7 @@ public:
     GuiBehavior::init_type();
     register_type(_type_handle, "GuiListBox",
 		  GuiBehavior::get_class_type());
+    ListFunctor::init_type();
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

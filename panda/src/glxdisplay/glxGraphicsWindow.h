@@ -100,6 +100,12 @@ private:
   int				_entry_state;
   bool				_ignore_key_repeat;
 
+  // fps meter stuff
+  double _start_time;
+  long _start_frame_count;
+  long _cur_frame_count;
+  float _current_fps;
+
 public:
   static TypeHandle get_class_type(void);
   static void init_type(void);

@@ -104,6 +104,7 @@ public:
     GuiBehavior::init_type();
     register_type(_type_handle, "GuiChooser",
 		  GuiBehavior::get_class_type());
+    ChooseFunctor::init_type();
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

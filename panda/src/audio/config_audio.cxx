@@ -5,6 +5,7 @@
 
 #include "config_audio.h"
 #include "audio_sound.h"
+#include "audio_gui_functor.h"
 #include <dconfig.h>
 #include <filename.h>
 #include <load_dso.h>
@@ -32,6 +33,7 @@ int audio_thread_priority;
 
 ConfigureFn(config_audio) {
   AudioSound::init_type();
+  AudioGuiFunctor::init_type();
 
   Config::ConfigTable::Symbol mode;
   config_audio.GetAll("audio-mode-flag", mode);

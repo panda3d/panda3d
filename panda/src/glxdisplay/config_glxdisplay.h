@@ -11,5 +11,7 @@
 
 NotifyCategoryDecl(glxdisplay, EXPCL_PANDAGL, EXPTP_PANDAGL);
 
+extern bool gl_show_fps_meter;
+extern float gl_fps_meter_update_interval;
 
 #endif /* __CONFIG_GLXDISPLAY_H__ */

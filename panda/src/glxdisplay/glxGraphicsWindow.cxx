@@ -31,6 +31,8 @@ const char* glxGraphicsWindow::_glx_extensions = NULL;
 #define MOUSE_ENTERED 0
 #define MOUSE_EXITED 1
 
+#define FONT_BITMAP_OGLDISPLAYLISTNUM 1000  // some arbitrary #
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Constructor
 //       Access:
@@ -64,6 +66,9 @@ glxGraphicsWindow::~glxGraphicsWindow(void)
   // that will cause a seg fault on exit.
   //  unmake_current();
   //  glXDestroyContext(_display, _context);
+
+  if (gl_show_fps_meter)
+    glDeleteLists(FONT_BITMAP_OGLDISPLAYLISTNUM, 128);
 
   XDestroyWindow(_display, _xwindow);
   if (_colormap)
@@ -472,6 +477,22 @@ void glxGraphicsWindow::config( void )
   // to configure itself in the gsg
   make_current();
   make_gsg();
+
+  if (gl_show_fps_meter) {
+    // 128 handles all the ascii chars
+    // this creates a display list for each char.  displist numbering starts
+    // at FONT_BITMAP_OGLDISPLAYLISTNUM.  Might want to optimize just to save
+    // mem by just allocating bitmaps for chars we need (0-9,f,p,s,SPC)
+    XFontStruct* foo;
+    // I /know/ there has to be a way to get a useful handle to the default
+    // font, but I have to date been unable to find one
+    foo = XLoadQueryFont(_display, "-*-*-*-*-*--12-*-*-*-*-*-*-*");
+    glXUseXFont(foo->fid, 0, 128, FONT_BITMAP_OGLDISPLAYLISTNUM);
+    _start_time = ClockObject::get_global_clock()->get_real_time();
+    _start_frame_count = 0;
+    _cur_frame_count = 0;
+    _current_fps = 0.;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -593,6 +614,52 @@ void glxGraphicsWindow::setup_properties(void)
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsWindow::end_frame( void )
 {
+  if (gl_show_fps_meter) {
+    ClockObject* co = ClockObject::get_global_clock();
+    double now = co->get_real_time();
+    double time_delta = now - _start_time;
+    if (time_delta > gl_fps_meter_update_interval) {
+      double num_frames = _cur_frame_count - _start_frame_count;
+      _current_fps = num_frames / time_delta;
+      _start_time = now;
+      _start_frame_count = _cur_frame_count;
+    }
+    char fps_msg[20];
+    sprintf(fps_msg, "%7.02f fps", _current_fps);
+    glColor3f(0., 1., 1.);
+    GLboolean tex_was_on = glIsEnabled(GL_TEXTURE_2D);
+    if (tex_was_on)
+      glDisable(GL_TEXTURE_2D);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadMatrixf(LMatrix4f::ident_mat().get_data());
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadMatrixf(LMatrix4f::ident_mat().get_data());
+
+    glOrtho(_props._xorg,_props._xorg+_props._xsize,
+	    _props._yorg,_props._yorg+_props._ysize,-1.0,1.0);
+					
+    // these seem to be good for default font
+    glRasterPos2f(_props._xsize-75,_props._ysize-20);
+
+    // set up for a string-drawing display list call 
+    glListBase(FONT_BITMAP_OGLDISPLAYLISTNUM);
+ 
+    // draw a string using font display lists.  chars index their
+    // corresponding displist name
+    glCallLists(strlen(fps_msg), GL_UNSIGNED_BYTE, fps_msg);
+
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+
+    if(tex_was_on)
+      glEnable(GL_TEXTURE_2D);
+
+    _cur_frame_count++;  // only used by fps meter right now
+  }
+
   {
     PStatTimer timer(_swap_pcollector);
     glXSwapBuffers(_display, _xwindow);
