@@ -346,6 +346,28 @@ reset() {
   get_extra_extensions();
   report_extensions();
 
+  _supports_3d_texture = 
+    has_extension("GL_EXT_texture3D") || is_at_least_version(1, 2);
+
+  if (_supports_3d_texture) {
+    _glTexImage3D = (PFNGLTEXIMAGE3DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "TexImage3D");
+    _glTexSubImage3D = (PFNGLTEXSUBIMAGE3DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "TexSubImage3D");
+
+    if (_glTexImage3D == NULL || _glTexSubImage3D == NULL) {
+      GLCAT.warning()
+        << "3-D textures advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
+      _supports_3d_texture = false;
+    }
+  }
+
+  _supports_cube_map = 
+    has_extension("GL_ARB_texture_cube_map") || is_at_least_version(1, 3);
+
+  _supports_rescale_normal = 
+    has_extension("GL_EXT_rescale_normal") || is_at_least_version(1, 2);
+
   _supports_bgr = 
     has_extension("GL_EXT_bgra") || is_at_least_version(1, 2);
   _supports_rescale_normal = 
@@ -455,8 +477,17 @@ reset() {
   }
   
   GLP(GetIntegerv)(GL_MAX_TEXTURE_SIZE, &_max_texture_size);
-  GLP(GetIntegerv)(GL_MAX_3D_TEXTURE_SIZE, &_max_3d_texture_size);
-  GLP(GetIntegerv)(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &_max_cube_map_size);
+  if (_supports_3d_texture) {
+    GLP(GetIntegerv)(GL_MAX_3D_TEXTURE_SIZE, &_max_3d_texture_size);
+  } else {
+    _max_3d_texture_size = 0;
+  }
+
+  if (_supports_cube_map) {
+    GLP(GetIntegerv)(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &_max_cube_map_size);
+  } else {
+    _max_cube_map_size = 0;
+  }
 
   if (GLCAT.is_debug()) {
     GLCAT.debug()
@@ -488,10 +519,14 @@ reset() {
   // to force the point with some drivers that aren't strictly
   // compliant w.r.t. initial settings).
   GLP(FrontFace)(GL_CCW);
-  GLP(Disable)(GL_MULTISAMPLE);
   GLP(Disable)(GL_LINE_SMOOTH);
   GLP(Disable)(GL_POINT_SMOOTH);
   GLP(Disable)(GL_POLYGON_SMOOTH);
+
+  if (_supports_multisample) {
+    GLP(Disable)(GL_MULTISAMPLE);
+  }
+
 
   // Set up all the enabled/disabled flags to GL's known initial
   // values: everything off.
@@ -3180,6 +3215,7 @@ set_read_buffer(const RenderBuffer &rb) {
 void CLP(GraphicsStateGuardian)::
 bind_texture(TextureContext *tc) {
   CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);
+  report_my_gl_errors();
 
 #ifdef GSG_VERBOSE
   Texture *tex = tc->_texture;
@@ -3188,8 +3224,10 @@ bind_texture(TextureContext *tc) {
     << ")" << endl;
 #endif
 
-  GLP(BindTexture)(get_texture_target(tc->_texture->get_texture_type()), 
-                   gtc->_index);
+  GLenum target = get_texture_target(tc->_texture->get_texture_type());
+  if (target != GL_NONE) {
+    GLP(BindTexture)(target, gtc->_index);
+  }
 
   report_my_gl_errors();
 }
@@ -3202,6 +3240,10 @@ bind_texture(TextureContext *tc) {
 void CLP(GraphicsStateGuardian)::
 specify_texture(Texture *tex) {
   GLenum target = get_texture_target(tex->get_texture_type());
+  if (target == GL_NONE) {
+    // Unsupported target (e.g. 3-d texturing on GL 1.1).
+    return;
+  }
 
   GLP(TexParameteri)(target, GL_TEXTURE_WRAP_S,
                      get_texture_wrap_mode(tex->get_wrap_u()));
@@ -3358,6 +3400,7 @@ apply_texture_immediate(CLP(TextureContext) *gtc, Texture *tex) {
 
   if (max_dimension == 0) {
     // Guess this GL doesn't support cube mapping/3d textures.
+    report_my_gl_errors();
     return false;
   }
 
@@ -3437,6 +3480,11 @@ apply_texture_immediate(CLP(TextureContext) *gtc, Texture *tex) {
   if (tex->get_texture_type() == Texture::TT_cube_map) {
     // A cube map must load six different 2-d images (which are stored
     // as the six pages of the system ram image).
+    if (!_supports_cube_map) {
+      report_my_gl_errors();
+      return false;
+    }
+
     size_t page_size = height * width * texel_size;
     const unsigned char *image_base = image;
     
@@ -3499,9 +3547,11 @@ apply_texture_immediate(CLP(TextureContext) *gtc, Texture *tex) {
     }
 #endif
 
+    report_my_gl_errors();
     return true;
   }
 
+  report_my_gl_errors();
   return false;
 }
 
@@ -3518,6 +3568,11 @@ upload_texture_image(CLP(TextureContext) *gtc,
                      int width, int height, int depth,
                      GLint external_format, GLenum component_type, 
                      const unsigned char *image) {
+  if (target == GL_NONE) {
+    // Unsupported target (e.g. 3-d texturing on GL 1.1).
+    return false;
+  }
+
   if (uses_mipmaps) {
 #ifndef NDEBUG
     if (CLP(show_mipmaps) && target == GL_TEXTURE_2D) {
@@ -3530,6 +3585,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
       if (!_supports_generate_mipmap || !auto_generate_mipmaps) {
         // We only need to build the mipmaps by hand if the GL
         // doesn't support generating them automatically.
+        bool success = true;
         switch (target) {
         case GL_TEXTURE_1D:
           GLUP(Build1DMipmaps)(target, internal_format, width,
@@ -3537,11 +3593,16 @@ upload_texture_image(CLP(TextureContext) *gtc,
           break;
 
         case GL_TEXTURE_3D:
-          /* TODO: extension function.
+#ifdef GLU_VERSION_1_3
           GLUP(Build3DMipmaps)(target, internal_format,
                                width, height, depth,
                                external_format, component_type, image);
-          */
+#else  // GLU_VERSION_1_3
+          // Prior to GLU 1.3, there was no gluBuild3DMipmaps() call.
+          // Just fall through and load the texture without mipmaps.
+          GLP(TexParameteri)(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+          success = false;
+#endif  // GLU_VERSION_1_3
           break;
 
         default:
@@ -3551,7 +3612,9 @@ upload_texture_image(CLP(TextureContext) *gtc,
         }
 
         report_my_gl_errors();
-        return true;
+        if (success) {
+          return true;
+        }
       }
   }
 
@@ -3569,11 +3632,14 @@ upload_texture_image(CLP(TextureContext) *gtc,
       break;
 
     case GL_TEXTURE_3D:
-      /* TODO: extension function
-      GLP(TexImage3D)(target, 0, internal_format,
+      if (_supports_3d_texture) {
+        _glTexImage3D(target, 0, internal_format,
                       width, height, depth, 0,
                       external_format, component_type, image);
-      */
+      } else {
+        report_my_gl_errors();
+        return false;
+      }
       break;
 
     default:
@@ -3592,10 +3658,13 @@ upload_texture_image(CLP(TextureContext) *gtc,
       break;
 
     case GL_TEXTURE_3D:
-      /* TODO: extension function.
-      GLP(TexSubImage3D)(target, 0, 0, 0, 0, width, height, depth,
+      if (_supports_3d_texture) {
+        _glTexSubImage3D(target, 0, 0, 0, 0, width, height, depth,
                          external_format, component_type, image);
-      */
+      } else {
+        report_my_gl_errors();
+        return false;
+      }
       break;
 
     default:
@@ -3626,12 +3695,12 @@ upload_texture_image(CLP(TextureContext) *gtc,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::get_texture_target
-//       Access: Protected, Static
+//       Access: Protected
 //  Description: Maps from the Texture's texture type symbols to
 //               GL's.
 ////////////////////////////////////////////////////////////////////
 GLenum CLP(GraphicsStateGuardian)::
-get_texture_target(Texture::TextureType texture_type) {
+get_texture_target(Texture::TextureType texture_type) const {
   switch (texture_type) {
   case Texture::TT_1d_texture:
     return GL_TEXTURE_1D;
@@ -3640,10 +3709,18 @@ get_texture_target(Texture::TextureType texture_type) {
     return GL_TEXTURE_2D;
 
   case Texture::TT_3d_texture:
-    return GL_TEXTURE_3D;
+    if (_supports_3d_texture) {
+      return GL_TEXTURE_3D;
+    } else {
+      return GL_NONE;
+    }
 
   case Texture::TT_cube_map:
-    return GL_TEXTURE_CUBE_MAP;
+    if (_supports_cube_map) {
+      return GL_TEXTURE_CUBE_MAP;
+    } else {
+      return GL_NONE;
+    }
   }
 
   GLCAT.error() << "Invalid Texture::TextureType value!\n";
@@ -4521,14 +4598,21 @@ finish_modify_state() {
         break;
         
       case TexGenAttrib::M_cube_map:
-        GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
-        GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
-        GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
-        GLP(Enable)(GL_TEXTURE_GEN_S);
-        GLP(Enable)(GL_TEXTURE_GEN_T);
-        GLP(Enable)(GL_TEXTURE_GEN_R);
-        GLP(Disable)(GL_TEXTURE_GEN_Q);
-        force_normal = true;
+        if (_supports_cube_map) {
+          GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
+          GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
+          GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
+          GLP(Enable)(GL_TEXTURE_GEN_S);
+          GLP(Enable)(GL_TEXTURE_GEN_T);
+          GLP(Enable)(GL_TEXTURE_GEN_R);
+          GLP(Disable)(GL_TEXTURE_GEN_Q);
+          force_normal = true;
+        } else {
+          GLP(Disable)(GL_TEXTURE_GEN_S);
+          GLP(Disable)(GL_TEXTURE_GEN_T);
+          GLP(Disable)(GL_TEXTURE_GEN_R);
+          GLP(Disable)(GL_TEXTURE_GEN_Q);
+        }
         break;
 
       case TexGenAttrib::M_object_position:
@@ -4604,14 +4688,21 @@ finish_modify_state() {
         break;
         
       case TexGenAttrib::M_object_normal:
-        GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
-        GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
-        GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
-        GLP(Enable)(GL_TEXTURE_GEN_S);
-        GLP(Enable)(GL_TEXTURE_GEN_T);
-        GLP(Enable)(GL_TEXTURE_GEN_R);
-        GLP(Disable)(GL_TEXTURE_GEN_Q);
-        force_normal = true;
+        if (_supports_cube_map) {
+          GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
+          GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
+          GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
+          GLP(Enable)(GL_TEXTURE_GEN_S);
+          GLP(Enable)(GL_TEXTURE_GEN_T);
+          GLP(Enable)(GL_TEXTURE_GEN_R);
+          GLP(Disable)(GL_TEXTURE_GEN_Q);
+          force_normal = true;
+        } else {
+          GLP(Disable)(GL_TEXTURE_GEN_S);
+          GLP(Disable)(GL_TEXTURE_GEN_T);
+          GLP(Disable)(GL_TEXTURE_GEN_R);
+          GLP(Disable)(GL_TEXTURE_GEN_Q);
+        }
         break;
       }
     }
@@ -4725,7 +4816,20 @@ do_issue_texture() {
       // Stage i has changed.  Issue the texture on this stage.
       _glActiveTexture(GL_TEXTURE0 + i);
 
-      GLP(Enable)(get_texture_target(texture->get_texture_type()));
+      GLenum target = get_texture_target(texture->get_texture_type());
+      if (target == GL_NONE) {
+        // Unsupported texture mode.
+        GLP(Disable)(GL_TEXTURE_1D);
+        GLP(Disable)(GL_TEXTURE_2D);
+        if (_supports_3d_texture) {
+          GLP(Disable)(GL_TEXTURE_3D);
+        }
+        if (_supports_cube_map) {
+          GLP(Disable)(GL_TEXTURE_CUBE_MAP);
+        }
+        break;
+      }
+      GLP(Enable)(target);
       
       TextureContext *tc = texture->prepare_now(_prepared_objects, this);
       apply_texture(tc);
@@ -4844,8 +4948,12 @@ do_issue_texture() {
     _glActiveTexture(GL_TEXTURE0 + i);
     GLP(Disable)(GL_TEXTURE_1D);
     GLP(Disable)(GL_TEXTURE_2D);
-    GLP(Disable)(GL_TEXTURE_3D);
-    GLP(Disable)(GL_TEXTURE_CUBE_MAP);
+    if (_supports_3d_texture) {
+      GLP(Disable)(GL_TEXTURE_3D);
+    }
+    if (_supports_cube_map) {
+      GLP(Disable)(GL_TEXTURE_CUBE_MAP);
+    }
   }
 
   _current_texture = new_texture;

@@ -210,7 +210,7 @@ protected:
                             GLint external_format, GLenum component_type, 
                             const unsigned char *image);
 
-  static GLenum get_texture_target(Texture::TextureType texture_type);
+  GLenum get_texture_target(Texture::TextureType texture_type) const;
   GLenum get_texture_wrap_mode(Texture::WrapMode wm);
   static GLenum get_texture_filter_type(Texture::FilterType ft, bool ignore_mipmaps);
   static GLenum get_component_type(Texture::ComponentType component_type);
@@ -293,6 +293,12 @@ protected:
   pset<string> _extensions;
 
 public:
+  bool _supports_3d_texture;
+  PFNGLTEXIMAGE3DPROC _glTexImage3D;
+  PFNGLTEXSUBIMAGE3DPROC _glTexSubImage3D;
+
+  bool _supports_cube_map;
+
   GLint _max_texture_size;
   GLint _max_3d_texture_size;
   GLint _max_cube_map_size;
