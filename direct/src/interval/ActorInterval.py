@@ -64,7 +64,10 @@ class ActorInterval(Interval.Interval):
 
     def calcFrame(self, t):
         segmentLength = abs(self.finishTime - self.startTime)
-        offset = t % segmentLength
+        if segmentLength == 0:
+            offset = 0
+        else:
+            offset = t % segmentLength
         # Handle boundary case where we want to set the final frame
         if (t == self.getDuration() and offset < 0.0001):
             offset = segmentLength
