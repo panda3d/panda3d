@@ -181,6 +181,10 @@ AudioMusic* AudioPool::ns_load_music(Filename filename) {
     // this sample was previously loaded
     return (*si).second;
   }
+  if (!filename.exists()) {
+    audio_cat.info() << "'" << filename << "' does not exist" << endl;
+    return (AudioMusic*)0L;
+  }
   audio_cat.info() << "Loading music " << filename << "\n";
   AudioTraits::MusicClass* music = (AudioTraits::MusicClass*)0L;
   AudioTraits::PlayingClass* state = (AudioTraits::PlayingClass*)0L;
