@@ -28,6 +28,7 @@
 
 class HardwareChannel;
 class GraphicsOutput;
+class GraphicsWindow;
 class GraphicsStateGuardian;
 class FrameBufferProperties;
 
