@@ -86,21 +86,25 @@ resolve_egg_filename(Filename &egg_filename, const DSearchPath &searchpath) {
 //               messages.
 ////////////////////////////////////////////////////////////////////
 bool EggData::
-read(Filename filename) {
+read(Filename filename, string display_name) {
   filename.set_text();
   set_egg_filename(filename);
+
+  if (display_name.empty()) {
+    display_name = filename;
+  }
 
   if (use_vfs) {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
     
     istream *file = vfs->open_read_file(filename);
     if (file == (istream *)NULL) {
-      egg_cat.error() << "Unable to open " << filename << "\n";
+      egg_cat.error() << "Unable to open " << display_name << "\n";
       return false;
     }
     
     egg_cat.info()
-      << "Reading " << filename << "\n";
+      << "Reading " << display_name << "\n";
 
     bool read_ok = read(*file);
     delete file;
@@ -109,12 +113,12 @@ read(Filename filename) {
   } else {
     ifstream file;
     if (!filename.open_read(file)) {
-      egg_cat.error() << "Unable to open " << filename << "\n";
+      egg_cat.error() << "Unable to open " << display_name << "\n";
       return false;
     }
     
     egg_cat.info()
-      << "Reading " << filename << "\n";
+      << "Reading " << display_name << "\n";
     
     return read(file);
   }

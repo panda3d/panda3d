@@ -349,6 +349,48 @@ resolve_filenames(const DSearchPath &searchpath) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggGroupNode::force_filenames
+//       Access: Public
+//  Description: Similar to resolve_filenames, but each non-absolute
+//               filename encountered is arbitrarily taken to be in
+//               the indicated directory, whether or not the so-named
+//               filename exists.
+////////////////////////////////////////////////////////////////////
+void EggGroupNode::
+force_filenames(const Filename &directory) {
+  Children::iterator ci;
+  for (ci = _children.begin();
+       ci != _children.end();
+       ++ci) {
+    EggNode *child = *ci;
+    if (child->is_of_type(EggTexture::get_class_type())) {
+      EggTexture *tex = DCAST(EggTexture, child);
+      Filename tex_filename = tex->get_filename();
+      if (tex_filename.is_local()) {
+        tex->set_filename(Filename(directory, tex_filename));
+      }
+
+      if (tex->has_alpha_filename()) {
+        Filename alpha_filename = tex->get_alpha_filename();
+        if (alpha_filename.is_local()) {
+          tex->set_alpha_filename(Filename(directory, alpha_filename));
+        }
+      }
+
+    } else if (child->is_of_type(EggFilenameNode::get_class_type())) {
+      EggFilenameNode *fnode = DCAST(EggFilenameNode, child);
+      Filename filename = fnode->get_filename();
+      if (filename.is_local()) {
+        fnode->set_filename(Filename(directory, filename));
+      }
+
+    } else if (child->is_of_type(EggGroupNode::get_class_type())) {
+      DCAST(EggGroupNode, child)->force_filenames(directory);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggGroupNode::reverse_vertex_ordering
 //       Access: Public
 //  Description: Reverses the vertex ordering of all polygons defined

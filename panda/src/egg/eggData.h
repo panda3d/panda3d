@@ -52,7 +52,7 @@ public:
   static bool resolve_egg_filename(Filename &egg_filename,
                                    const DSearchPath &searchpath = DSearchPath());
 
-  bool read(Filename filename);
+  bool read(Filename filename, string display_name = string());
   bool read(istream &in);
   void merge(EggData &other);
 

@@ -112,6 +112,7 @@ public:
   EggNode *find_child(const string &name) const;
 
   void resolve_filenames(const DSearchPath &searchpath);
+  void force_filenames(const Filename &directory);
   void reverse_vertex_ordering();
 
   void recompute_vertex_normals(double threshold, CoordinateSystem cs = CS_default);
