@@ -22,22 +22,22 @@ class FSM(DirectObject.DirectObject):
     particular state, define a method named enterState() and/or
     exitState(), where "State" is the name of the state, e.g.:
 
-    def enterRed(self, oldState, newState):
+    def enterRed(self):
         ... do stuff ...
 
-    def exitRed(self, oldState, newState):
+    def exitRed(self):
         ... cleanup stuff ...
 
-    def enterYellow(self, oldState, newState):
+    def enterYellow(self):
         ... do stuff ...
 
-    def exitYellow(self, oldState, newState):
+    def exitYellow(self):
         ... cleanup stuff ...
 
-    def enterGreen(self, oldState, newState):
+    def enterGreen(self):
         ... do stuff ...
 
-    def exitGreen(self, oldState, newState):
+    def exitGreen(self):
         ... cleanup stuff ...
 
     Both functions are supplied the previous state name and the new
@@ -134,7 +134,7 @@ class FSM(DirectObject.DirectObject):
         bypasses the filterState() function, and just calls
         exitState() followed by enterState()."""
 
-        assert(isinstance(newState, types.StringType))
+        assert(isinstance(newState, types.StringTypes))
 
         self.__setState(newState)
 
@@ -147,13 +147,14 @@ class FSM(DirectObject.DirectObject):
 
         The return value is the same as the return value of
         filterState() (that is, None if the request does not provoke a
-        state transition, or the name of the new state otherwise.)
+        state transition, otherwise it is a tuple containing the name
+        of the state followed by any optional args.)
         
         If the FSM is currently in transition (i.e. in the middle of
         executing an enterState or exitState function), the request is
         denied and None is returned."""
 
-        assert(isinstance(request, types.StringType))
+        assert(isinstance(request, types.StringTypes))
         self.notify.debug("%s.request(%s, %s" % (self.name, request, str(args)[1:]))
 
         if not self.state:
@@ -167,8 +168,13 @@ class FSM(DirectObject.DirectObject):
             func = self.defaultFilter
         result = func(request, args)
         if result:
-            assert(isinstance(result, types.StringType))
-            self.__setState(result)
+            if isinstance(result, types.StringTypes):
+                # If the return value is a string, it's just the name
+                # of the state.  Wrap it in a tuple for consistency.
+                result = (result,)
+
+            # Otherwise, assume it's a (name, *args) tuple
+            self.__setState(*result)
 
         return result
 
@@ -182,14 +188,14 @@ class FSM(DirectObject.DirectObject):
 
         if request == 'Off':
             # We can always go to the "Off" state.
-            return request
+            return (request,) + args
 
         if self.defaultTransitions is None:
             # If self.defaultTransitions is None, it means to accept
             # all requests whose name begins with a capital letter.
             # These are direct requests to a particular state.
             if request[0] in string.uppercase:
-                return request
+                return (request,) + args
             
         else:
             # If self.defaultTransitions is not None, it is a map of
@@ -200,7 +206,7 @@ class FSM(DirectObject.DirectObject):
             if request in self.defaultTransitions.get(self.state, []):
                 # This transition is listed in the defaultTransitions map;
                 # accept it.
-                return request
+                return (request,) + args
 
             # If self.defaultTransitions is not None, it is an error
             # to request a direct state transition (capital letter
@@ -222,26 +228,29 @@ class FSM(DirectObject.DirectObject):
         return self.defaultFilter(request, args)
         
 
-    def __setState(self, newState):
+    def __setState(self, newState, *args):
         # Internal function to change unconditionally to the indicated
         # state.
         assert(self.state)
         
-        oldState = self.state
+        self.oldState = self.state
+        self.newState = newState
         self.state = None
-        self.__callTransitionFunc("exit" + oldState, oldState, newState)
-        self.__callTransitionFunc("enter" + newState, oldState, newState)
+        self.__callTransitionFunc("exit" + self.oldState)
+        self.__callTransitionFunc("enter" + self.newState, *args)
         self.state = newState
+        del self.oldState
+        del self.newState
         
 
-    def __callTransitionFunc(self, name, oldState, newState):
+    def __callTransitionFunc(self, name, *args):
         # Calls the appropriate enter or exit function when
         # transitioning between states, if it exists.
         assert(self.state == None)
         
         func = getattr(self, name, None)
         if func:
-            func(oldState, newState)
+            func(*args)
             
     def __repr__(self):
         return self.__str__()
