@@ -7,6 +7,7 @@ import fnmatch
 import string
 import signal
 
+
 # MRM: Need to make internal task variables like time, name, index
 # more unique (less likely to have name clashes)
 
@@ -62,19 +63,26 @@ class Task:
         self.id = Task.count
         Task.count += 1
         self.__call__ = callback
-        self._priority = priority
+        self.__priority = priority
         self.uponDeath = None
         self.dt = 0.0
         self.maxDt = 0.0
         self.avgDt = 0.0
         self.runningTotal = 0.0
         self.pstats = None
+        self.__removed = 0
+
+    def remove(self):
+        self.__removed = 1
+
+    def isRemoved(self):
+        return self.__removed
 
     def getPriority(self):
-        return self._priority
+        return self.__priority
 
     def setPriority(self, pri):
-        self._priority = pri
+        self.__priority = pri
 
     def setStartTimeFrame(self, startTime, startFrame):
         self.starttime = startTime
@@ -90,11 +98,18 @@ class Task:
             import PStatCollector
             self.pstats = PStatCollector.PStatCollector("App:Show code:" + name)
 
-def doLater(delayTime, task, taskName):
-    task.name = taskName
-    # make a sequence out of the delay and the task
-    seq = sequence(pause(delayTime), task)
-    return seq
+    def finishTask(self, verbose):
+        if self.uponDeath:
+            self.uponDeath(self)
+        if verbose:
+            # We regret to announce...
+            messenger.send('TaskManager-removeTask', sentArgs = [self, self.name])
+
+    def __repr__(self):
+        if hasattr(self, 'name'):
+            return ('Task id: %s, name %s' % (self.id, self.name))
+        else:
+            return ('Task id: %s, no name' % (self.id))
 
 def pause(delayTime):
     def func(self):
@@ -146,7 +161,7 @@ def make_sequence(taskList):
 
             # If we got to the end of the list, this sequence is done
             if (self.index >= len(self.taskList)):
-                # TaskManager.notify.debug('sequence done: ' + self.name)
+                TaskManager.notify.debug('sequence done: ' + self.name)
                 frameFinished = 1
                 taskDoneStatus = done
                 
@@ -201,21 +216,48 @@ def make_loop(taskList):
             elif (ret == exit):
                 taskDoneStatus = exit
                 frameFinished = 1
-
             # If we got to the end of the list, wrap back around
             if (self.index >= len(self.taskList)):
                 self.prevIndex = -1
                 self.index = 0
                 frameFinished = 1
-
         return taskDoneStatus
-
     task = Task(func)
     task.name = 'loop'
     task.taskList = taskList
     task.prevIndex = -1
     task.index = 0
     return task
+
+
+class TaskPriorityList(list):
+    def __init__(self, priority):
+        self.__priority = priority
+        self.__emptyIndex = 0
+    def getPriority(self):
+        return self.__priority
+    def getEmptyIndex(self):
+        return self.__emptyIndex
+    def setEmptyIndex(self, index):
+        self.__emptyIndex = index
+    def add(self, task):
+        if (self.__emptyIndex >= len(self)):
+            self.append(task)
+            self.__emptyIndex += 1
+        else:
+            self[self.__emptyIndex] = task
+            self.__emptyIndex += 1
+    def remove(self, i):
+        assert(i <= len(self))
+        if (len(self) == 1) and (i == 1):
+            self[i] = None
+            self.__emptyIndex = 0
+        else:
+            # Swap the last element for this one
+            lastElement = self[self.__emptyIndex-1]
+            self[i] = lastElement
+            self[self.__emptyIndex-1] = None
+            self.__emptyIndex -= 1
 
 
 class TaskManager:
@@ -226,6 +268,8 @@ class TaskManager:
         self.running = 0
         self.stepping = 0
         self.taskList = []
+        self.newTasks = []
+        self.doLaterList = []
         self.currentTime, self.currentFrame = self.__getTimeFrame()
         if (TaskManager.notify == None):
             TaskManager.notify = directNotify.newCategory("TaskManager")
@@ -236,6 +280,9 @@ class TaskManager:
         self.pStatsTasks = 0
         self.resumeFunc = None
         self.fVerbose = 0
+        self.nameDict = {}
+        self.add(self.__doLaterProcessor, "doLaterProcessor")
+        # Dictionary of task name to list of tasks with that name
 
     def stepping(self, value):
         self.stepping = value
@@ -252,6 +299,74 @@ class TaskManager:
             # Next time around use the default interrupt handler
             signal.signal(signal.SIGINT, signal.default_int_handler)
 
+    def hasTaskNamed(self, taskName):
+        # Get the tasks with this name
+        tasks = self.nameDict.get(taskName)
+        # If we found some, see if any of them are still active (not removed)
+        if tasks:
+            for task in tasks:
+                if not task.isRemoved():
+                    return 1
+        # Didnt find any, return 0
+        return 0
+
+    def __doLaterProcessor(self, task):
+        # Make a temp list of all the dolaters that expired this time
+        # through so we can remove them after we are done with the
+        # for loop. Removing them during the for loop is a bad idea
+        removedTasks = []
+        for dl in self.doLaterList:
+            if dl.isRemoved():
+                removedTasks.append(dl)
+                continue
+            # If the time now is less than the start of the doLater + delay
+            # then we are not ready yet, continue to next one
+            if task.time < dl.starttime + dl.delayTime:
+                # Since the list is sorted, the first one we get to, that
+                # is not ready to go, we can return
+                break
+            else:
+                removedTasks.append(dl)
+                dl.setStartTimeFrame(self.currentTime, self.currentFrame)
+                self.newTasks.append(dl)
+                continue
+        if removedTasks:
+            self.doLaterList = unique(self.doLaterList, removedTasks)
+        return cont
+
+    def __spawnDoLater(self, task):
+        if TaskManager.notify.getDebug():
+            TaskManager.notify.debug('spawning doLater named: ' + task.name)
+        # Add this task to the nameDict
+        nameList = ifAbsentPut(self.nameDict, task.name, [])
+        nameList.append(task)
+        task.setStartTimeFrame(self.currentTime, self.currentFrame)
+        # search from the beginning of the list to put this doLater in
+        # the list in order of execution from earliest to latest
+        # Assume it goes last unless we break out early
+        index = len(self.doLaterList) + 1
+        for i in range(len(self.doLaterList)):
+            dl = self.doLaterList[i]
+            remainingTime = ((dl.starttime + dl.delayTime) - self.currentTime)
+            if task.delayTime < remainingTime:
+                index = i
+                break
+        self.doLaterList.insert(index, task)
+        if self.fVerbose:
+            # Alert the world, a new task is born!
+            messenger.send('TaskManager-spawnDoLater',
+                           sentArgs = [task, task.name, index])
+        return task
+
+    def doLater(self, delayTime, task, taskName):
+        task.delayTime = delayTime
+        task.name = taskName
+        return self.__spawnDoLater(task)
+
+    def doMethodLater(self, delayTime, func, taskName):
+        task = Task(func)
+        return self.doLater(delayTime, task, taskName)
+
     def add(self, funcOrTask, name, priority = 0):
         """
         Add a new task to the taskMgr.
@@ -265,14 +380,6 @@ class TaskManager:
         else:
             self.notify.error('Tried to add a task that was not a Task or a func')
 
-    def remove(self, taskOrName):
-        if type(taskOrName) == type(''):
-            return self.__removeTasksNamed(taskOrName)
-        elif isinstance(taskOrName, Task):
-            return self.__removeTask(taskOrName)
-        else:
-            self.notify.error('remove takes a string or a Task')
-
     def __spawnMethodNamed(self, func, name, priority=0):
         task = Task(func, priority)
         return self.__spawnTaskNamed(task, name)
@@ -280,19 +387,45 @@ class TaskManager:
     def __spawnTaskNamed(self, task, name):
         if TaskManager.notify.getDebug():
             TaskManager.notify.debug('spawning task named: ' + name)
+        # Init params
         task.name = name
         task.setStartTimeFrame(self.currentTime, self.currentFrame)
+        nameList = ifAbsentPut(self.nameDict, name, [])
+        nameList.append(task)
+        # Put it on the list for the end of this frame
+        self.newTasks.append(task)
+
+    def __addNewTask(self, task):        
+        # The taskList is really an ordered list of TaskPriorityLists
         # search back from the end of the list until we find a
-        # task with a lower priority, or we hit the start of the list
+        # taskList with a lower priority, or we hit the start of the list
+        taskPriority = task.getPriority()
         index = len(self.taskList) - 1
         while (1):
             if (index < 0):
+                newList = TaskPriorityList(taskPriority)
+                newList.add(task)
+                # Add the new list to the beginning of the taskList
+                self.taskList.insert(0, newList)
                 break
-            if (self.taskList[index].getPriority() <= task.getPriority()):
+            taskListPriority = self.taskList[index].getPriority()
+            if (taskListPriority == taskPriority):
+                self.taskList[index].add(task)
                 break
-            index = index - 1
-        index = index + 1
-        self.taskList.insert(index, task)
+            elif (taskListPriority > taskPriority):
+                index = index - 1
+            elif (taskListPriority < taskPriority):
+                # Time to insert
+                newList = TaskPriorityList(taskPriority)
+                newList.add(task)
+                # Insert this new priority level
+                # If we are already at the end, just append it
+                if (index == len(self.taskList)-1):
+                    self.taskList.append(newList)
+                else:
+                    # Otherwise insert it
+                    self.taskList.insert(index+1, newList)
+                break
 
         if __debug__:
             if self.pStatsTasks and name != "igloop":
@@ -313,46 +446,13 @@ class TaskManager:
                 
         return task
 
-    def doMethodLater(self, delayTime, func, taskName):
-        task = Task(func)
-        seq = doLater(delayTime, task, taskName)
-        seq.laterTask = task
-        return self.__spawnTaskNamed(seq, taskName)
-
-    def __removeTask(self, task):
-        if TaskManager.notify.getDebug():
-            TaskManager.notify.debug('removing task: ' + `task`)
-        if task in self.taskList:
-            self.taskList.remove(task)
-            if task.uponDeath:
-                task.uponDeath(task)
-            if self.fVerbose:
-                # We regret to announce...
-                messenger.send('TaskManager-removeTask',
-                               sentArgs = [task, task.name])
-
-    def __removeTasksNamed(self, taskName):
-        if TaskManager.notify.getDebug():
-            TaskManager.notify.debug('removing tasks named: ' + taskName)
-
-        # Find the tasks that match by name and make a list of them
-        removedTasks = []
-        for task in self.taskList:
-           if (task.name == taskName):
-               removedTasks.append(task)
-
-        # Now iterate through the tasks we need to remove and remove them
-        for task in removedTasks:
-            self.__removeTask(task)
-
-        # Return the number of tasks removed
-        return len(removedTasks)
-
-    def hasTaskNamed(self, taskName):
-        for task in self.taskList:
-            if (task.name == taskName):
-                return 1
-        return 0
+    def remove(self, taskOrName):
+        if type(taskOrName) == type(''):
+            return self.__removeTasksNamed(taskOrName)
+        elif isinstance(taskOrName, Task):
+            return self.__removeTasksEqual(taskOrName)
+        else:
+            self.notify.error('remove takes a string or a Task')
 
     def removeTasksMatching(self, taskPattern):
         """removeTasksMatching(self, string taskPattern)
@@ -363,19 +463,79 @@ class TaskManager:
         """
         if TaskManager.notify.getDebug():
             TaskManager.notify.debug('removing tasks matching: ' + taskPattern)
-        removedTasks = []
+        num = 0
+        keyList = filter(lambda key: fnmatch.fnmatchcase(key, taskPattern), self.nameDict.keys())
+        for key in keyList:
+            num += self.__removeTasksNamed(key)
+        return num
 
-        # Find the tasks that match by name and make a list of them
-        for task in self.taskList:
-            if (fnmatch.fnmatchcase(task.name, taskPattern)):
-                removedTasks.append(task)
+    def __removeTasksEqual(self, task):
+        if TaskManager.notify.getDebug():
+            TaskManager.notify.debug('__removeTasksEqual: removing task: %s' % (task))
+        taskName = task.name
+        # Remove this task from the nameDict (should be a short list)
+        self.__removeTaskFromNameDict(task)
+        # Flag the task for removal from the real list
+        task.remove()
+        # Cleanup stuff
+        task.finishTask(self.fVerbose)
+        return 1
 
-        # Now iterate through the tasks we need to remove and remove them
-        for task in removedTasks:
-           self.__removeTask(task)
+    def __removeTasksNamed(self, taskName):
+        if TaskManager.notify.getDebug():
+            TaskManager.notify.debug('__removeTasksNamed: removing tasks named: %s' % (taskName))
+        if not self.nameDict.has_key(taskName):
+            return 0
+        for task in self.nameDict[taskName]:
+            # Flag for removal
+            task.remove()
+            # Cleanup stuff
+            task.finishTask(self.fVerbose)
+        # Record the number of tasks removed
+        num = len(self.nameDict[taskName])
+        # Blow away the nameDict entry completely
+        del self.nameDict[taskName]
+        return num
 
-        # Return the number of tasks removed
-        return len(removedTasks)
+    def __removeTaskFromNameDict(self, task):
+        taskName = task.name
+        # If this is the only task with that name, remove the dict entry
+        tasksWithName = self.nameDict.get(taskName)
+        if tasksWithName:
+            tasksWithName.remove(task)
+            if len(tasksWithName) == 0:
+                del self.nameDict[taskName]
+
+    def __executeTask(self, task, currentTime, currentFrame):
+        task.setCurrentTimeFrame(currentTime, currentFrame)
+        if not self.taskTimerVerbose:
+            # don't record timing info
+            ret = task(task)
+        else:
+            # Run the task and check the return value
+            if task.pstats:
+                task.pstats.start()
+            startTime = time.clock()
+            ret = task(task)
+            endTime = time.clock()
+            if task.pstats:
+                task.pstats.stop()
+
+            # Record the dt
+            dt = endTime - startTime
+            task.dt = dt
+
+            # See if this is the new max
+            if dt > task.maxDt:
+                task.maxDt = dt
+
+            # Record the running total of all dts so we can compute an average
+            task.runningTotal = task.runningTotal + dt
+            if (task.frame > 0):
+                task.avgDt = (task.runningTotal / task.frame)
+            else:
+                task.avgDt = 0
+        return ret
 
     def step(self):
         if TaskManager.notify.getDebug():
@@ -387,51 +547,57 @@ class TaskManager:
         self.fKeyboardInterrupt = 0
         self.interruptCount = 0
         signal.signal(signal.SIGINT, self.keyboardInterruptHandler)
-        for task in self.taskList:
-            task.setCurrentTimeFrame(self.currentTime, self.currentFrame)
 
-            if not self.taskTimerVerbose:
-                # don't record timing info
-                ret = task(task)
-            else:
-                # Run the task and check the return value
-                if task.pstats:
-                    task.pstats.start()
-                startTime = time.clock()
-                ret = task(task)
-                endTime = time.clock()
-                if task.pstats:
-                    task.pstats.stop()
-
-                # Record the dt
-                dt = endTime - startTime
-                task.dt = dt
-
-                # See if this is the new max
-                if dt > task.maxDt:
-                    task.maxDt = dt
-
-                # Record the running total of all dts so we can compute an average
-                task.runningTotal = task.runningTotal + dt
-                if (task.frame > 0):
-                    task.avgDt = (task.runningTotal / task.frame)
+        # Traverse the task list in order because it is in priority order
+        for taskPriList in self.taskList:
+            # Traverse the taskPriList with an iterator
+            i = 0
+            while (i < len(taskPriList)):
+                task = taskPriList[i]
+                # See if we are at the end of the real tasks
+                if task is None:
+                    TaskManager.notify.debug('step: end of priList %s' % (taskPriList.getPriority()))
+                    break
+                # See if this task has been removed in show code
+                if task.isRemoved():
+                    TaskManager.notify.debug('step: task is flagged for removal %s' % (task))
+                    task.finishTask(self.fVerbose)
+                    taskPriList.remove(i)
+                    # Do not increment the iterator
+                    continue
+                # Now actually execute the task
+                ret = self.__executeTask(task, self.currentTime, self.currentFrame)
+                # See if the task is done
+                if (ret == cont):
+                    # Leave it for next frame, its not done yet
+                    pass
+                elif ((ret == done) or (ret == exit)):
+                    TaskManager.notify.debug('step: task is finished %s' % (task))
+                    # Remove the task
+                    if not task.isRemoved():
+                        task.remove()
+                        task.finishTask(self.fVerbose)
+                        self.__removeTaskFromNameDict(task)
+                    taskPriList.remove(i)
+                    # Do not increment the iterator
+                    continue
                 else:
-                    task.avgDt = 0
+                    raise StandardError, "Task named %s did not return cont, exit, or done" % task.name
+                # Move to the next element
+                i += 1
+                
+        # Add all the new tasks now
+        for task in self.newTasks:
+            TaskManager.notify.debug('step: adding new task to list %s' % (task))
+            self.__addNewTask(task)
+        # Reset for next frame
+        self.newTasks = []
 
-            # See if the task is done
-            if (ret == cont):
-                continue
-            elif (ret == done):
-                self.__removeTask(task)
-            elif (ret == exit):
-                self.__removeTask(task)
-            else:
-                raise StandardError, "Task named %s did not return cont, exit, or done" % task.name
         # Restore default interrupt handler
         signal.signal(signal.SIGINT, signal.default_int_handler)
         if self.fKeyboardInterrupt:
             raise KeyboardInterrupt
-        return len(self.taskList)
+        return
 
     def run(self):
         # Set the clock to have last frame's time in case we were
@@ -467,29 +633,32 @@ class TaskManager:
 
     def replaceMethod(self, oldMethod, newFunction):
         import new
-        for task in self.taskList:
-            method = task.__call__
-            if (type(method) == types.MethodType):
-                function = method.im_func
-            else:
-                function = method
-            #print ('function: ' + `function` + '\n' +
-            #       'method: ' + `method` + '\n' +
-            #       'oldMethod: ' + `oldMethod` + '\n' +
-            #       'newFunction: ' + `newFunction` + '\n')
-            if (function == oldMethod):
-                newMethod = new.instancemethod(newFunction,
-                                               method.im_self,
-                                               method.im_class)
-                task.__call__ = newMethod
-                # Found it return true
-                return 1
+        for taskPriList in self.taskList:
+            for task in taskPriList:
+                if task is None:
+                    break
+                method = task.__call__
+                if (type(method) == types.MethodType):
+                    function = method.im_func
+                else:
+                    function = method
+                #print ('function: ' + `function` + '\n' +
+                #       'method: ' + `method` + '\n' +
+                #       'oldMethod: ' + `oldMethod` + '\n' +
+                #       'newFunction: ' + `newFunction` + '\n')
+                if (function == oldMethod):
+                    newMethod = new.instancemethod(newFunction,
+                                                   method.im_self,
+                                                   method.im_class)
+                    task.__call__ = newMethod
+                    # Found it return true
+                    return 1
         return 0
 
     def __repr__(self):
         import fpformat
         taskNameWidth = 32
-        dtWidth = 7
+        dtWidth = 10
         priorityWidth = 10
         totalDt = 0
         totalAvgDt = 0
@@ -500,23 +669,43 @@ class TaskManager:
                + 'priority'.rjust(priorityWidth)
                + '\n')
         str = str + '---------------------------------------------------------------\n'
-        for task in self.taskList:
-            totalDt = totalDt + task.dt
-            totalAvgDt = totalAvgDt + task.avgDt
-            if (self.taskTimerVerbose):
-                str = str + (task.name.ljust(taskNameWidth)
-                             + fpformat.fix(task.dt*1000, 2).rjust(dtWidth)
-                             + fpformat.fix(task.avgDt*1000, 2).rjust(dtWidth)
-                             + fpformat.fix(task.maxDt*1000, 2).rjust(dtWidth)
-                             + `task.getPriority()`.rjust(priorityWidth)
-                             + '\n')
+        for taskPriList in self.taskList:
+            priority = `taskPriList.getPriority()`
+            for task in taskPriList:
+                if task is None:
+                    break
+                totalDt = totalDt + task.dt
+                totalAvgDt = totalAvgDt + task.avgDt
+                if task.isRemoved():
+                    taskName = '(R)' + task.name
+                else:
+                    taskName = task.name
+                if (self.taskTimerVerbose):
+                    str = str + (taskName.ljust(taskNameWidth)
+                                 + fpformat.fix(task.dt*1000, 2).rjust(dtWidth)
+                                 + fpformat.fix(task.avgDt*1000, 2).rjust(dtWidth)
+                                 + fpformat.fix(task.maxDt*1000, 2).rjust(dtWidth)
+                                 + priority.rjust(priorityWidth)
+                                 + '\n')
+                else:
+                    str = str + (task.name.ljust(taskNameWidth)
+                                 + '----'.rjust(dtWidth)
+                                 + '----'.rjust(dtWidth)
+                                 + '----'.rjust(dtWidth)
+                                 + priority.rjust(priorityWidth)
+                                 + '\n')
+        str = str + '---------------------------------------------------------------\n'
+        str = str + ' doLaterList\n'
+        str = str + '---------------------------------------------------------------\n'
+        for task in self.doLaterList:
+            remainingTime = ((task.starttime + task.delayTime) - self.currentTime)
+            if task.isRemoved():
+                taskName = '(R)' + task.name
             else:
-                str = str + (task.name.ljust(taskNameWidth)
-                             + '----'.rjust(dtWidth)
-                             + '----'.rjust(dtWidth)
-                             + '----'.rjust(dtWidth)
-                             + `task.getPriority()`.rjust(priorityWidth)
-                             + '\n')
+                taskName = task.name
+            str = str + ('  ' + taskName.ljust(taskNameWidth-2)
+                         +  fpformat.fix(remainingTime, 2).rjust(dtWidth)
+                         + '\n')
         str = str + '---------------------------------------------------------------\n'
         if (self.taskTimerVerbose):
             str = str + ('total'.ljust(taskNameWidth)
@@ -531,6 +720,7 @@ class TaskManager:
         return str
 
     def resetStats(self):
+        # WARNING: this screws up your do-later timings
         for task in self.taskList:
             task.dt = 0
             task.avgDt = 0

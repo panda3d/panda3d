@@ -535,12 +535,10 @@ class DirectSession(PandaObject):
             # Temporarily set node path color
             nodePath.setColor(flashColor)
             # Clean up color in a few seconds
-            t = taskMgr.add(
-                Task.doLater(DIRECT_FLASH_DURATION,
-                             # This is just a dummy task
-                             Task.Task(self.flashDummy),
-                             'flashNodePath'),
-                'flashNodePath')
+            t = taskMgr.doMethodLater(DIRECT_FLASH_DURATION,
+                                      # This is just a dummy task
+                                      self.flashDummy,
+                                      'flashNodePath')
             t.nodePath = nodePath
             t.doneColor = doneColor
             # This really does all the work
@@ -729,9 +727,7 @@ class DirectSession(PandaObject):
         self.hideDirectMessageLater()
 
     def hideDirectMessageLater(self):
-        seq = Task.doLater(3.0, Task.Task(self.hideDirectMessage),
-                           'hideDirectMessage')
-        t = taskMgr.add(seq, 'hideDirectMessageLater')
+        taskMgr.doMethodLater(3.0, self.hideDirectMessage, 'hideDirectMessage')
 
     def hideDirectMessage(self, state):
         self.directMessageReadout.reparentTo(hidden)

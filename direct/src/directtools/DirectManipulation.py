@@ -52,11 +52,9 @@ class DirectManipulationControl(PandaObject):
             self.constraint = None
         # Check to see if we are moving the object
         # We are moving the object if we either wait long enough
-        taskMgr.add(
-            Task.doLater(MANIPULATION_MOVE_DELAY,
-                         Task.Task(self.switchToMoveMode),
-                         'manip-move-wait'),
-            'manip-move-wait')
+        taskMgr.doMethodLater(MANIPULATION_MOVE_DELAY,
+                              self.switchToMoveMode,
+                              'manip-move-wait')
         # Or we move far enough
         self.moveDir = None
         watchMouseTask = Task.Task(self.watchMouseTask)

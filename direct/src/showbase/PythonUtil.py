@@ -13,6 +13,11 @@ def ifAbsentPut(dict, key, newValue):
         dict[key] = newValue
         return newValue
 
+def unique(L1, L2):
+    """Return a list containing all items in 'L1' that are not in 'L2'"""
+    L2 = dict([(k,None) for k in L2])
+    return [item for item in L1 if item not in L2]
+
 def indent(stream, numIndents, str):
     """
     Write str to stream with numIndents in front it it
