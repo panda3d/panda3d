@@ -82,11 +82,10 @@
 // hardcoded in config_msvc.h to C:\Panda3d.
 
 // You may also override this for a particular tree by defining a
-// variable name like DTOOL_INSTALL or PANDA_INSTALL.  This variable
-// will have no effect when you are using the cttools to control your
-// attachment to the trees; in this case, the install directory for
-// each tree will by default be the root of the tree itself (although
-// this may be overridden).
+// variable name like DTOOL_INSTALL or PANDA_INSTALL.  (The
+// INSTALL_DIR variable will have no effect if you are using the
+// ctattach tools to control your attachment to the trees; but this
+// will be the case only if you are a member of the VR Studio.)
 
 // #define INSTALL_DIR /usr/local/panda
 
