@@ -62,9 +62,6 @@ fi
 
 if [ "$firstarg" = "install" ]; then
     # as installed on a machine without ctattach etc.
-    if [ $INSTALL ]; then
-      cd $INSTALL
-    fi
     exec bin/ppython -d bin/generatePythonCode -v -d lib/py -e ../direct/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs
     exit 1
 fi
