@@ -20,7 +20,11 @@ class EventManager:
             self.eventQueue = eventQueue
         else:
             self.eventQueue = EventQueue.getGlobalEventQueue()
-        self.eventHandler = EventHandler(self.eventQueue)
+        
+        try:
+            self.eventHandler = EventHandler.getGlobalEventHandler(self.eventQueue)
+        except:
+            self.eventHandler = EventHandler(self.eventQueue)
 
     def doEvents(self):
         """
@@ -46,9 +50,9 @@ class EventManager:
             return eventParameter.getDoubleValue()
         elif (eventParameter.isString()):
             return eventParameter.getStringValue()
-        # Must be some user defined type, return the ptr
-        # which will be downcast to that type
         else:
+            # Must be some user defined type, return the ptr
+            # which will be downcast to that type
             return eventParameter.getPtr()
         
     def processEvent(self, event):
@@ -75,9 +79,8 @@ class EventManager:
                 messenger.send(eventName)
             # Also send the event down into C++ land
             self.eventHandler.dispatchEvent(event)
-            
-        # An unnamed event from C++ is probably a bad thing
         else:
+            # An unnamed event from C++ is probably a bad thing
             EventManager.notify.warning('unnamed event in processEvent')
 
 
