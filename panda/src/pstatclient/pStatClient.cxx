@@ -43,6 +43,7 @@ PStatClient *PStatClient::_global_pstats = NULL;
 PStatCollector _total_size_pcollector("Memory usage");
 PStatCollector _cpp_size_pcollector("Memory usage:C++");
 PStatCollector _interpreter_size_pcollector("Memory usage:Interpreter");
+PStatCollector _pstats_pcollector("App:PStats");
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -558,6 +559,25 @@ is_active(int collector_index, int thread_index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatClient::is_started
+//       Access: Private
+//  Description: Returns true if the indicated collector/thread
+//               combination has been started, or false otherwise.
+//
+//               Normally you would not use this interface directly;
+//               instead, call PStatCollector::is_started().
+////////////////////////////////////////////////////////////////////
+bool PStatClient::
+is_started(int collector_index, int thread_index) const {
+  nassertr(collector_index >= 0 && collector_index < (int)_collectors.size(), false);
+  nassertr(thread_index >= 0 && thread_index < (int)_threads.size(), false);
+
+  return (_collectors[collector_index]._def->_is_active &&
+          _threads[thread_index]._is_active &&
+          _collectors[collector_index]._per_thread[thread_index]._nested_count != 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatClient::start
 //       Access: Private
 //  Description: Marks the indicated collector index as started.
@@ -798,6 +818,10 @@ new_frame(int thread_index) {
   thread._frame_data.clear();
   thread._frame_number++;
   start(0, thread_index, frame_start);
+
+  // Also record the time for the PStats operation itself.
+  start(_pstats_pcollector.get_index(), thread_index, frame_start);
+  stop(_pstats_pcollector.get_index(), thread_index, _clock.get_real_time());
 }
 
 ////////////////////////////////////////////////////////////////////

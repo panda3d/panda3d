@@ -67,6 +67,7 @@ PUBLISHED:
   INLINE void operator = (const PStatCollector &copy);
 
   INLINE bool is_active();
+  INLINE bool is_started();
   INLINE void start();
   INLINE void stop();
 
@@ -76,8 +77,11 @@ PUBLISHED:
   INLINE void sub_level(float decrement);
   INLINE float get_level();
 
+  INLINE int get_index() const;
+
 public:
   INLINE bool is_active(const PStatThread &thread);
+  INLINE bool is_started(const PStatThread &thread);
   INLINE void start(const PStatThread &thread);
   INLINE void start(const PStatThread &thread, float as_of);
   INLINE void stop(const PStatThread &thread);

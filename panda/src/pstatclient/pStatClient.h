@@ -104,6 +104,7 @@ private:
   PStatThread make_thread(const string &name);
 
   bool is_active(int collector_index, int thread_index) const;
+  bool is_started(int collector_index, int thread_index) const;
 
   void start(int collector_index, int thread_index);
   void start(int collector_index, int thread_index, float as_of);

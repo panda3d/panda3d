@@ -28,6 +28,7 @@
 #include "clearableRegion.h"
 
 #include "typedWritableReferenceCount.h"
+#include "pStatCollector.h"
 #include "notify.h"
 #include "pmutex.h"
 #include "filename.h"
@@ -153,6 +154,8 @@ protected:
   int _y_size;
   bool _has_size;
   bool _is_valid;
+
+  static PStatCollector _make_current_pcollector;
   
 public:
   static TypeHandle get_class_type() {

@@ -26,6 +26,7 @@
 #include "mouseButton.h"
 #include "glgsg.h"
 #include "clockObject.h"
+#include "pStatTimer.h"
 
 #include <errno.h>
 #include <sys/time.h>
@@ -75,6 +76,8 @@ glxGraphicsWindow::
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsWindow::
 make_current() {
+  PStatTimer timer(_make_current_pcollector);
+
   glxGraphicsStateGuardian *glxgsg;
   DCAST_INTO_V(glxgsg, _gsg);
   glXMakeCurrent(_display, _xwindow, glxgsg->_context);

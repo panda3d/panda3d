@@ -104,7 +104,6 @@ struct LevelCollectorProperties {
 };
 
 static TimeCollectorProperties time_properties[] = {
-  { 1, "Swap buffers",                     { 0.5, 1.0, 0.8 } },
   { 1, "App",                              { 0.0, 0.8, 0.4 },  1.0 / 30.0 },
   { 1, "App:Animation",                    { 1.0, 0.0, 1.0 } },
   { 1, "App:Collisions",                   { 1.0, 0.5, 0.0 } },
@@ -122,9 +121,11 @@ static TimeCollectorProperties time_properties[] = {
   { 1, "Cull:Show fps",                    { 0.5, 0.8, 1.0 } },
   { 1, "Cull:Bins",                        { 0.3, 0.6, 0.3 } },
   { 1, "Draw",                             { 1.0, 0.0, 0.0 },  1.0 / 30.0 },
+  { 1, "Draw:Make current",                { 0.4, 0.2, 0.6 } },
+  { 1, "Draw:Clear",                       { 0.0, 0.8, 0.6 } },
   { 1, "Draw:Sync",                        { 0.5, 0.7, 0.7 } },
   { 1, "Draw:Flip",                        { 1.0, 0.6, 0.3 } },
-  { 1, "Draw:Bins",                        { 0.3, 0.6, 0.3 } },
+  { 1, "Draw:Bins",                        { 0.3, 0.6, 0.0 } },
   { 0, "Draw:Primitive",                   { 0.0, 0.0, 0.5 } },
   { 0, NULL }
 };

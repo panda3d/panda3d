@@ -23,6 +23,7 @@
 
 #include "graphicsPipe.h"
 #include "glgsg.h"
+#include "pStatTimer.h"
 
 TypeHandle glxGraphicsBuffer::_type_handle;
 
@@ -60,7 +61,9 @@ glxGraphicsBuffer::
 //               is ready for drawing.
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsBuffer::
-make_current() {
+make_current() { 
+  PStatTimer timer(_make_current_pcollector);
+
   glxGraphicsStateGuardian *glxgsg;
   DCAST_INTO_V(glxgsg, _gsg);
   glXMakeCurrent(_display, _pbuffer, glxgsg->_context);

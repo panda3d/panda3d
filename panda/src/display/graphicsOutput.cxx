@@ -24,6 +24,10 @@
 
 TypeHandle GraphicsOutput::_type_handle;
 
+#ifndef CPPPARSER
+PStatCollector GraphicsOutput::_make_current_pcollector("Draw:Make current");
+#endif  // CPPPARSER
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::Constructor
 //       Access: Protected

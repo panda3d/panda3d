@@ -59,6 +59,7 @@ PStatCollector GraphicsStateGuardian::_transform_state_pcollector("State changes
 PStatCollector GraphicsStateGuardian::_texture_state_pcollector("State changes:Textures");
 PStatCollector GraphicsStateGuardian::_other_state_pcollector("State changes:Other");
 PStatCollector GraphicsStateGuardian::_draw_primitive_pcollector("Draw:Primitive");
+PStatCollector GraphicsStateGuardian::_clear_pcollector("Draw:Clear");
 
 #endif
 
@@ -346,6 +347,8 @@ set_depth_clear_value(const float value) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 clear(ClearableRegion *clearable) {
+  PStatTimer timer(_clear_pcollector);
+
   int clear_buffer_type = 0;
   if (clearable->get_clear_color_active()) {
     clear_buffer_type |= RenderBuffer::T_back;

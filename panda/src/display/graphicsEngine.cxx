@@ -39,7 +39,8 @@
 #endif
 
 #ifndef CPPPARSER
-PStatCollector GraphicsEngine::_show_code_pcollector("App:Show Code");
+PStatCollector GraphicsEngine::_app_pcollector("App");
+PStatCollector GraphicsEngine::_yield_pcollector("App:Yield");
 PStatCollector GraphicsEngine::_cull_pcollector("Cull");
 PStatCollector GraphicsEngine::_draw_pcollector("Draw");
 PStatCollector GraphicsEngine::_sync_pcollector("Draw:Sync");
@@ -91,8 +92,8 @@ GraphicsEngine(Pipeline *pipeline) :
 ////////////////////////////////////////////////////////////////////
 GraphicsEngine::
 ~GraphicsEngine() {
-  if (_show_code_pcollector.is_active()) {
-    _show_code_pcollector.stop();
+  if (_app_pcollector.is_started()) {
+    _app_pcollector.stop();
   }
 
   remove_all_windows();
@@ -347,9 +348,9 @@ is_empty() const {
 void GraphicsEngine::
 render_frame() {
   // Anything that happens outside of GraphicsEngine::render_frame()
-  // is deemed to be show code.
-  if (_show_code_pcollector.is_active()) {
-    _show_code_pcollector.stop();
+  // is deemed to be App.
+  if (_app_pcollector.is_started()) {
+    _app_pcollector.stop();
   }
 
   // We hold the GraphicsEngine mutex while we wait for all of the
@@ -384,7 +385,7 @@ render_frame() {
     _transform_states_unused_pcollector.set_level(TransformState::get_num_unused_states());
     _render_states_unused_pcollector.set_level(RenderState::get_num_unused_states());
   }
-  
+
   // Now signal all of our threads to begin their next frame.
   _app.do_frame(this);
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
@@ -409,6 +410,7 @@ render_frame() {
   if (yield_timeslice) { 
     // Nap for a moment to yield the timeslice, to be polite to other
     // running applications.
+    PStatTimer timer(_yield_pcollector);
     struct timeval tv;
     tv.tv_sec = 0;
     tv.tv_usec = 0;
@@ -416,8 +418,8 @@ render_frame() {
   }
 
   // Anything that happens outside of GraphicsEngine::render_frame()
-  // is deemed to be show code.
-  _show_code_pcollector.start();
+  // is deemed to be App.
+  _app_pcollector.start();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -138,6 +138,17 @@ is_active() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::is_started
+//       Access: Published
+//  Description: Returns true if this particular collector has been
+//               started on the default thread, or false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool PStatCollector::
+is_started() {
+  return _client->is_started(_index, 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatCollector::start
 //       Access: Published
 //  Description: Starts this particular timer ticking.  This should be
@@ -232,6 +243,17 @@ get_level() {
 INLINE bool PStatCollector::
 is_active(const PStatThread &thread) {
   return _client->is_active(_index, thread._index);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::is_started
+//       Access: Public
+//  Description: Returns true if this particular collector has been
+//               started on the indicated thread, or false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool PStatCollector::
+is_started(const PStatThread &thread) {
+  return _client->is_started(_index, thread._index);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -343,6 +365,17 @@ sub_level(const PStatThread &thread, float decrement) {
 INLINE float PStatCollector::
 get_level(const PStatThread &thread) {
   return _client->get_level(_index, thread._index);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::get_index
+//       Access: Public
+//  Description: Returns the index number of this particular collector
+//               within the PStatClient.
+////////////////////////////////////////////////////////////////////
+INLINE int PStatCollector::
+get_index() const {
+  return _index;
 }
 
 #else  // DO_PSTATS
