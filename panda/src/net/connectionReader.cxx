@@ -284,8 +284,9 @@ poll() {
   }
 
   SocketInfo *sinfo = get_next_available_socket(PR_INTERVAL_NO_WAIT, -2);
-  if (sinfo != (SocketInfo *)NULL) {
+  while (sinfo != (SocketInfo *)NULL) {
     process_incoming_data(sinfo);
+    sinfo = get_next_available_socket(PR_INTERVAL_NO_WAIT, -2);
   }
 }
 
