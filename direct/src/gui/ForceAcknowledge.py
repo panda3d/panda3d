@@ -89,4 +89,5 @@ class ForceAcknowledge(StateData.StateData):
 	return None
 
     def __handleOk(self):
-	messenger.send(self.doneEvent, [0])
+	self.doneStatus = "ok"	
+	messenger.send(self.doneEvent)
