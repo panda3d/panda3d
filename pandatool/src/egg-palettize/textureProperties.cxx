@@ -709,7 +709,11 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
   _minfilter = (EggTexture::FilterType)scan.get_int32();
   _magfilter = (EggTexture::FilterType)scan.get_int32();
-  _anisotropic_degree = scan.get_int32();
+  if (Palettizer::_read_pi_version >= 7) {
+    _anisotropic_degree = scan.get_int32();
+  } else {
+    _anisotropic_degree = 0;
+  }
   manager->read_pointer(scan);  // _color_type
   manager->read_pointer(scan);  // _alpha_type
 }
