@@ -58,3 +58,6 @@
 #endif
 
 #include $[PANDA_SOURCE]/Package.pp
+
+// Now define the intra-tree dependencies.
+#define DEPENDABLE_HEADER_DIRS $[DEPENDABLE_HEADER_DIRS] $[PANDA_INSTALL]/include

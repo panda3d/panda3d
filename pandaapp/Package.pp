@@ -57,3 +57,6 @@
 #endif
 
 #include $[PANDATOOL_SOURCE]/Package.pp
+
+// Now define the intra-tree dependencies.
+#define DEPENDABLE_HEADER_DIRS $[DEPENDABLE_HEADER_DIRS] $[PANDATOOL_INSTALL]/include

@@ -56,3 +56,6 @@
 #endif
 
 #include $[DTOOL_SOURCE]/Package.pp
+
+// Now define the intra-tree dependencies.
+#define DEPENDABLE_HEADER_DIRS $[DEPENDABLE_HEADER_DIRS] $[DTOOL_INSTALL]/include
