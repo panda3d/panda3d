@@ -172,7 +172,7 @@ class FFIExternalObject:
 
     def __repr__(self):
         # Print this info for all objects
-        baseRepr = ('<' + self.__class__.__name__ + ' instance at C++ pointer: ' + `self.this` + '>')
+        baseRepr = ('[' + self.__class__.__name__ + ' at: ' + `self.this` + ']')
         # Lots of Panda classes have an write or output function defined that takes an Ostream
         # We create a LineStream for the write or output function to write to, then we extract
         # the string out of it and return it as our repr
