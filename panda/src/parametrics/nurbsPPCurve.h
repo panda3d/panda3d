@@ -19,7 +19,7 @@
 #ifndef NURBSPPCURVE_H
 #define NURBSPPCURVE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "parametricCurve.h"
 #include "nurbsCurveInterface.h"

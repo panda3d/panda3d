@@ -19,7 +19,7 @@
 #ifndef CLOCKOBJECT_H
 #define CLOCKOBJECT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "trueClock.h"
 #include "config_express.h"

@@ -19,9 +19,9 @@
 #ifndef PSTATCOLLECTORDEF_H
 #define PSTATCOLLECTORDEF_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <luse.h>
+#include "luse.h"
 
 class Datagram;
 class DatagramIterator;

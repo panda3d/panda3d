@@ -19,7 +19,7 @@
 #ifndef LVECTOR4_H
 #define LVECTOR4_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include "cmath.h"
 #include "config_linmath.h"
 #include "lvecBase4.h"

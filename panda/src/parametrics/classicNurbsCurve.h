@@ -19,7 +19,7 @@
 #ifndef CLASSICNURBSCURVE_H
 #define CLASSICNURBSCURVE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "piecewiseCurve.h"
 #include "nurbsCurveInterface.h"

@@ -19,7 +19,7 @@
 #ifndef CLIENTTRACKERDEVICE_H
 #define CLIENTTRACKERDEVICE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "clientDevice.h"
 #include "trackerData.h"

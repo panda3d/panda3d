@@ -19,12 +19,12 @@
 #include <geom.h>
 #include <geomNode.h>
 #include "plist.h"
-#include <luse.h>
+#include "luse.h"
 #include "pmap.h"
 #include <math.h>
 #include <namedNode.h>
 #include <notify.h>
-#include <pandabase.h>
+#include "pandabase.h"
 #include <pta_Colorf.h>
 #include <pta_Normalf.h>
 #include <pta_TexCoordf.h>

@@ -19,7 +19,7 @@
 #ifndef CONFIG_GLGSG_H
 #define CONFIG_GLGSG_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include <notifyCategoryProxy.h>
 
 NotifyCategoryDecl(crgsg, EXPCL_PANDACR, EXPTP_PANDACR);

@@ -19,7 +19,7 @@
 #ifndef CHECKSUMHASHGENERATOR_H
 #define CHECKSUMHASHGENERATOR_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "hashGeneratorBase.h"
 

@@ -19,7 +19,7 @@
 #ifndef BOUNDINGHEXAHEDRON_H
 #define BOUNDINGHEXAHEDRON_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "finiteBoundingVolume.h"
 #include "frustum.h"

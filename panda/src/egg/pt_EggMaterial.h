@@ -19,10 +19,10 @@
 #ifndef PT_EGGMATERIAL_H
 #define PT_EGGMATERIAL_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggMaterial.h"
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PT_EggMaterial

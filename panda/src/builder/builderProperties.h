@@ -18,7 +18,7 @@
 #ifndef BUILDERPROPERTIES_H
 #define BUILDERPROPERTIES_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "builderTypes.h"
 

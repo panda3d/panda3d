@@ -19,7 +19,7 @@
 #ifndef DEG_2_RAD_H
 #define DEG_2_RAD_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "mathNumbers.h"
 

@@ -19,7 +19,7 @@
 #ifndef BOUNDINGSPHERE_H
 #define BOUNDINGSPHERE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "finiteBoundingVolume.h"
 

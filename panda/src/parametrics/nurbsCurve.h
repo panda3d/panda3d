@@ -22,7 +22,7 @@
 // This header file includes either ClassicNurbsCurve or NurbsPPCurve;
 // whichever one is actually typedeffed as "NurbsCurve".
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #ifdef HAVE_NURBSPP
 #include "nurbsPPCurve.h"

@@ -19,7 +19,7 @@
 #ifndef __LORIENTATION_H__
 #define __LORIENTATION_H__
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include <notify.h>
 #include "lquaternion.h"
 

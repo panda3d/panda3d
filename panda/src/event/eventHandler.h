@@ -19,7 +19,7 @@
 #ifndef EVENTHANDLER_H
 #define EVENTHANDLER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "event.h"
 #include "pt_Event.h"

@@ -19,12 +19,12 @@
 #ifndef CONNECTIONWRITER_H
 #define CONNECTIONWRITER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "datagramQueue.h"
 #include "connection.h"
 
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 #include <prthread.h>
 #include "pvector.h"

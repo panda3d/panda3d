@@ -19,7 +19,7 @@
 #ifndef ANIMCONTROL_H
 #define ANIMCONTROL_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "animBundle.h"
 #include "partGroup.h"

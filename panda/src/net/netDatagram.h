@@ -19,13 +19,13 @@
 #ifndef NETDATAGRAM_H
 #define NETDATAGRAM_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "connection.h"
 #include "netAddress.h"
 
 #include <datagram.h>
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 #include <string>
 

@@ -19,7 +19,7 @@
 #ifndef FINITEBOUNDINGVOLUME_H
 #define FINITEBOUNDINGVOLUME_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "geometricBoundingVolume.h"
 

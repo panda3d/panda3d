@@ -19,7 +19,7 @@
 #ifndef PNMWRITER_H
 #define PNMWRITER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "pnmImageHeader.h"
 

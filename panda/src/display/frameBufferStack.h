@@ -19,7 +19,7 @@
 #ifndef FRAMEBUFFERSTACK_H
 #define FRAMEBUFFERSTACK_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "savedFrameBuffer.h"
 

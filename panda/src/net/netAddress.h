@@ -19,7 +19,7 @@
 #ifndef NETADDRESS_H
 #define NETADDRESS_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include <numeric_types.h>
 
 #include <prio.h>

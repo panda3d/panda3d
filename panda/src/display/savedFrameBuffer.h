@@ -19,13 +19,13 @@
 #ifndef SAVEDFRAMEBUFFER_H
 #define SAVEDFRAMEBUFFER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "renderBuffer.h"
 #include "displayRegion.h"
 
 #include <typedReferenceCount.h>
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : SavedFrameBuffer

@@ -19,7 +19,7 @@
 #ifndef NAMABLE_H
 #define NAMABLE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "typedObject.h"
 #include <string>

@@ -19,7 +19,7 @@
 #ifndef PNMREADER_H
 #define PNMREADER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "pnmImageHeader.h"
 

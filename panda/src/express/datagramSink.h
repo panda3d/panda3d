@@ -19,7 +19,7 @@
 #ifndef DATAGRAMSINK_H
 #define DATAGRAMSINK_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "datagram.h"
 

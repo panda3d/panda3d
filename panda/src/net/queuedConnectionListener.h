@@ -19,7 +19,7 @@
 #ifndef QUEUEDCONNECTIONLISTENER_H
 #define QUEUEDCONNECTIONLISTENER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "connectionListener.h"
 #include "connection.h"

@@ -24,9 +24,9 @@
 #include "eggPrimitive.h"
 
 #include <indent.h>
-#include <luse.h>
+#include "luse.h"
 #include <lmatrix.h>
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <math.h>
 #include <algorithm>

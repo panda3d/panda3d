@@ -19,7 +19,7 @@
 #ifndef PSTATSERVERCONTROLMESSAGE_H
 #define PSTATSERVERCONTROLMESSAGE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "pvector.h"
 

@@ -19,7 +19,7 @@
 #ifndef DATAGRAMQUEUE_H
 #define DATAGRAMQUEUE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "netDatagram.h"
 

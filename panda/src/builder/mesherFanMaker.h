@@ -21,7 +21,7 @@
 
 #ifdef SUPPORT_FANS
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "mesherConfig.h"
 #include "builderAttrib.h"

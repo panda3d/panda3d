@@ -19,7 +19,7 @@
 #ifndef LMATRIX4_H
 #define LMATRIX4_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include <math.h>
 #include <typedObject.h>
 #include <datagram.h>

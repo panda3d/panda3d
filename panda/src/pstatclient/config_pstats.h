@@ -19,7 +19,7 @@
 #ifndef CONFIG_PSTATS_H
 #define CONFIG_PSTATS_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <notifyCategoryProxy.h>
 #include <dconfig.h>

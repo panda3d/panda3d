@@ -19,11 +19,11 @@
 #ifndef GEOMETRICBOUNDINGVOLUME_H
 #define GEOMETRICBOUNDINGVOLUME_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "boundingVolume.h"
 
-#include <luse.h>
+#include "luse.h"
 #include <lmatrix.h>
 
 ///////////////////////////////////////////////////////////////////

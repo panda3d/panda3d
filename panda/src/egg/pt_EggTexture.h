@@ -19,10 +19,10 @@
 #ifndef PT_EGGTEXTURE_H
 #define PT_EGGTEXTURE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggTexture.h"
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PT_EggTexture

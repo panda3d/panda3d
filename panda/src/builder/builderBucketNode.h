@@ -19,7 +19,7 @@
 #ifndef BUILDERBUCKETNODE_H
 #define BUILDERBUCKETNODE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "builderPrim.h"
 #include "builderBucket.h"

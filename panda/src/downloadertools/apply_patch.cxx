@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <pandabase.h>
+#include "pandabase.h"
 #ifndef HAVE_GETOPT
   #include <gnu_getopt.h>
 #else

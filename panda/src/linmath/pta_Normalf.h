@@ -19,7 +19,7 @@
 #ifndef PTA_NORMALF_H
 #define PTA_NORMALF_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "vector_Normalf.h"
 

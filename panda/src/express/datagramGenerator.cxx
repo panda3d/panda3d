@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "datagramGenerator.h"
 

@@ -19,7 +19,7 @@
 #ifndef CLIENTANALOGDEVICE_H
 #define CLIENTANALOGDEVICE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "clientDevice.h"
 

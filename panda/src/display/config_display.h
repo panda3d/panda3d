@@ -19,7 +19,7 @@
 #ifndef CONFIG_DISPLAY_H
 #define CONFIG_DISPLAY_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include <notifyCategoryProxy.h>
 #include <dconfig.h>
 

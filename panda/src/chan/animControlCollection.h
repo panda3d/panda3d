@@ -19,7 +19,7 @@
 #ifndef ANIMCONTROLCOLLECTION_H
 #define ANIMCONTROLCOLLECTION_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "animControl.h"
 

@@ -19,7 +19,7 @@
 #ifndef PSTATTHREAD_H
 #define PSTATTHREAD_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "pStatClient.h"
 

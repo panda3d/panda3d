@@ -19,7 +19,7 @@
 #ifndef GET_CONFIG_PATH_H
 #define GET_CONFIG_PATH_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <dSearchPath.h>
 

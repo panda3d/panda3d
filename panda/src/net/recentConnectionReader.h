@@ -19,7 +19,7 @@
 #ifndef RECENTCONNECTIONREADER_H
 #define RECENTCONNECTIONREADER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "connectionReader.h"
 #include "netDatagram.h"

@@ -19,7 +19,7 @@
 #ifndef CONFIG_DGRAPH_H
 #define CONFIG_DGRAPH_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <notifyCategoryProxy.h>
 

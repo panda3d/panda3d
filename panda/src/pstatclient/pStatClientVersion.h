@@ -19,10 +19,10 @@
 #ifndef PSTATCLIENTVERSION_H
 #define PSTATCLIENTVERSION_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <referenceCount.h>
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PStatClientVersion

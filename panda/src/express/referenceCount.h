@@ -19,7 +19,7 @@
 #ifndef REFERENCECOUNT_H
 #define REFERENCECOUNT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "typedObject.h"
 #include "memoryUsage.h"

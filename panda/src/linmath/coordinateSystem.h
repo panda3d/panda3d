@@ -19,7 +19,7 @@
 #ifndef COORDINATESYSTEM_H
 #define COORDINATESYSTEM_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <typedef.h>
 

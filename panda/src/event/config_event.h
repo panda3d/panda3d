@@ -19,7 +19,7 @@
 #ifndef CONFIG_EVENT_H
 #define CONFIG_EVENT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <notifyCategoryProxy.h>
 

@@ -21,11 +21,11 @@
 #ifndef LENSFLARENODE_H
 #define LENSFLARENODE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <namedNode.h>
 #include <texture.h>
-#include <luse.h>
+#include "luse.h"
 #include <pta_Colorf.h>
 #include <pta_float.h>
 #include <renderRelation.h>

@@ -19,7 +19,7 @@
 #ifndef PIECEWISECURVE_H
 #define PIECEWISECURVE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "parametricCurve.h"
 #include "pointerTo.h"

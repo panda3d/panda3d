@@ -19,7 +19,7 @@
 #ifndef TYPEDREFERENCECOUNT_H
 #define TYPEDREFERENCECOUNT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "typedObject.h"
 #include "referenceCount.h"

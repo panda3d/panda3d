@@ -19,7 +19,7 @@
 #ifndef CUBICCURVESEG_H
 #define CUBICCURVESEG_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "parametricCurve.h"
 

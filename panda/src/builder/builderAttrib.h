@@ -35,7 +35,7 @@
 //
 ///////////////////////////////////////////////////////////////////
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "builderAttribTempl.h"
 

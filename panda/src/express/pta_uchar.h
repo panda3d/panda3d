@@ -19,7 +19,7 @@
 #ifndef PTA_UCHAR_H
 #define PTA_UCHAR_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "pointerToArray.h"
 #include "vector_uchar.h"

@@ -19,7 +19,7 @@
 #ifndef CRGEOMNODECONTEXT_H
 #define CRGEOMNODECONTEXT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #ifdef WIN32_VC
 // Must include windows.h before gl.h on NT

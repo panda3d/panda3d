@@ -19,7 +19,7 @@
 #ifndef GEOMCONTEXT_H
 #define GEOMCONTEXT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "savedContext.h"
 

@@ -19,7 +19,7 @@
 #ifndef GLSAVEDFRAMEBUFFER_H
 #define GLSAVEDFRAMEBUFFER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <savedFrameBuffer.h>
 #include <texture.h>

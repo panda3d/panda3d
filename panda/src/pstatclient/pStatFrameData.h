@@ -19,7 +19,7 @@
 #ifndef PSTATFRAMEDATA_H
 #define PSTATFRAMEDATA_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <notify.h>
 

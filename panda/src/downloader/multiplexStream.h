@@ -19,7 +19,7 @@
 #ifndef MULTIPLEXSTREAM_H
 #define MULTIPLEXSTREAM_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "multiplexStreamBuf.h"
 

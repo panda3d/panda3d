@@ -19,7 +19,7 @@
 #ifndef LPOINT2_H
 #define LPOINT2_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "lvecBase2.h"
 #include "lvector2.h"

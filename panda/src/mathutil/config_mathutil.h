@@ -19,7 +19,7 @@
 #ifndef CONFIG_MATHUTIL_H
 #define CONFIG_MATHUTIL_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include <notifyCategoryProxy.h>
 
 NotifyCategoryDecl(mathutil, EXPCL_PANDA, EXPTP_PANDA);

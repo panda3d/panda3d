@@ -19,7 +19,7 @@
 #ifndef TRUECLOCK_H
 #define TRUECLOCK_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include "typedef.h"
 
 ////////////////////////////////////////////////////////////////////

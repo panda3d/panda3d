@@ -165,12 +165,12 @@
 
 
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "builderAttrib.h"
 #include "builderBucketNode.h"
 
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 #include "pset.h"
 

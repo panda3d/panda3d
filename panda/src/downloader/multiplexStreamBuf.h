@@ -19,7 +19,7 @@
 #ifndef MULTIPLEXSTREAMBUF_H
 #define MULTIPLEXSTREAMBUF_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #ifdef OLD_HAVE_IPC
 #include <ipc_mutex.h>

@@ -19,7 +19,7 @@
 #ifndef BUILDERNORMALVISUALIZER_H
 #define BUILDERNORMALVISUALIZER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "mesherConfig.h"
 

@@ -19,7 +19,7 @@
 #ifndef LPOINT4_H
 #define LPOINT4_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "lvecBase4.h"
 #include "lvector4.h"

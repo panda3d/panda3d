@@ -19,7 +19,7 @@
 #ifndef CONFIG_NET_H
 #define CONFIG_NET_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include <notifyCategoryProxy.h>
 
 // Configure variables for net package.

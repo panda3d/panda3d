@@ -19,7 +19,7 @@
 #ifndef REVERSEDNUMERICDATA_H
 #define REVERSEDNUMERICDATA_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <string.h>  // for memcpy()
 

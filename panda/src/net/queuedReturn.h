@@ -19,7 +19,7 @@
 #ifndef QUEUEDRETURN_H
 #define QUEUEDRETURN_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "connectionListener.h"
 #include "connection.h"

@@ -36,7 +36,7 @@
 // from the first convolution.  The entire process is then repeated for
 // each channel in the image.
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include <math.h>
 #include <cmath.h>
 

@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include "lmatrix.h"
 
 // This tells GCC to explicitly instantiate the templates defined in

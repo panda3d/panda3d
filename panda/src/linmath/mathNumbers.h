@@ -18,7 +18,7 @@
 #ifndef MATHNUMBERS_H
 #define MATHNUMBERS_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 class EXPCL_PANDA MathNumbers {
 PUBLISHED:

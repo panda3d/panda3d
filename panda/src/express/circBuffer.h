@@ -19,7 +19,7 @@
 #ifndef CIRCBUFFER_H
 #define CIRCBUFFER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CircBuffer

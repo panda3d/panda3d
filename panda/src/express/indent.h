@@ -19,7 +19,7 @@
 #ifndef INDENT_H
 #define INDENT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: indent

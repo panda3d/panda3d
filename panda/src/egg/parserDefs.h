@@ -19,11 +19,11 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggObject.h"
 
-#include <pointerTo.h>
+#include "pointerTo.h"
 #include <pointerToArray.h>
 #include <pta_double.h>
 

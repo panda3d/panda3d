@@ -19,7 +19,7 @@
 #ifndef LVECTOR2_H
 #define LVECTOR2_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include "cmath.h"
 #include "config_linmath.h"
 #include "lvecBase2.h"

@@ -19,12 +19,12 @@
 #ifndef PSTATCLIENT_H
 #define PSTATCLIENT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "pStatFrameData.h"
 
 #include <clockObject.h>
-#include <luse.h>
+#include "luse.h"
 #include "pmap.h"
 
 #ifdef HAVE_NET

@@ -19,7 +19,7 @@
 #ifndef DATAGRAMGENERATOR_H
 #define DATAGRAMGENERATOR_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "datagram.h"
 

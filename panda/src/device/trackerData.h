@@ -19,8 +19,8 @@
 #ifndef TRACKERDATA_H
 #define TRACKERDATA_H
 
-#include <pandabase.h>
-#include <luse.h>
+#include "pandabase.h"
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TrackerData

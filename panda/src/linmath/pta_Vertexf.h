@@ -19,7 +19,7 @@
 #ifndef PTA_VERTEXF_H
 #define PTA_VERTEXF_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "vector_Vertexf.h"
 

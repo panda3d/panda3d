@@ -19,10 +19,10 @@
 #ifndef PT_EGGVERTEX_H
 #define PT_EGGVERTEX_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "eggVertex.h"
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PT_EggVertex

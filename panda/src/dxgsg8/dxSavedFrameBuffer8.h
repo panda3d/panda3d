@@ -19,7 +19,7 @@
 #ifndef DXSAVEDFRAMEBUFFER8_H
 #define DXSAVEDFRAMEBUFFER8_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <savedFrameBuffer.h>
 #include <texture.h>

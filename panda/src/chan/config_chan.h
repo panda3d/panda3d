@@ -19,7 +19,7 @@
 #ifndef CONFIG_CHAN_H
 #define CONFIG_CHAN_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include <notifyCategoryProxy.h>
 
 // Configure variables for chan package.

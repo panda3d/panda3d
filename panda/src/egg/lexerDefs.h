@@ -19,7 +19,7 @@
 #ifndef LEXER_H
 #define LEXER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <typedef.h>
 

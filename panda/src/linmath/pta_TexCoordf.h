@@ -19,7 +19,7 @@
 #ifndef PTA_TEXCOORDF_H
 #define PTA_TEXCOORDF_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "vector_TexCoordf.h"
 

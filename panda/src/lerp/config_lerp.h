@@ -19,7 +19,7 @@
 #ifndef __CONFIG_LERP_H__
 #define __CONFIG_LERP_H__
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include <dconfig.h>
 #include <notifyCategoryProxy.h>
 

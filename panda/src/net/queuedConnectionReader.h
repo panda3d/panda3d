@@ -19,7 +19,7 @@
 #ifndef QUEUEDCONNECTIONREADER_H
 #define QUEUEDCONNECTIONREADER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "connectionReader.h"
 #include "netDatagram.h"

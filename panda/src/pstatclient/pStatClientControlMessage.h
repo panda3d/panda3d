@@ -19,7 +19,7 @@
 #ifndef PSTATCLIENTCONTROLMESSAGE_H
 #define PSTATCLIENTCONTROLMESSAGE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "pStatCollectorDef.h"
 

@@ -19,7 +19,7 @@
 #ifndef EVENTRECEIVER_H
 #define EVENTRECEIVER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <typedObject.h>
 

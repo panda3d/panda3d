@@ -31,7 +31,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include <math.h>
-#include <pandabase.h>
+#include "pandabase.h"
 #include "luse.h"
 
 BEGIN_PUBLISH

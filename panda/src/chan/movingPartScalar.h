@@ -19,7 +19,7 @@
 #ifndef MOVINGPARTSCALAR_H
 #define MOVINGPARTSCALAR_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "movingPart.h"
 #include "animChannel.h"

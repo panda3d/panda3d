@@ -19,7 +19,7 @@
 #ifndef BIGENDIAN_H
 #define BIGENDIAN_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "numeric_types.h"
 #include "nativeNumericData.h"

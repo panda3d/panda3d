@@ -19,7 +19,7 @@
 #ifndef OMNIBOUNDINGVOLUME_H
 #define OMNIBOUNDINGVOLUME_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "geometricBoundingVolume.h"
 

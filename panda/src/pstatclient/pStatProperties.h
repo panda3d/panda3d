@@ -19,7 +19,7 @@
 #ifndef PSTATPROPERTIES_H
 #define PSTATPROPERTIES_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 
 class PStatClient;

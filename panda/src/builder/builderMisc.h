@@ -18,9 +18,9 @@
 #ifndef BUILDERMISC_H
 #define BUILDERMISC_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <luse.h>
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: make_random_color

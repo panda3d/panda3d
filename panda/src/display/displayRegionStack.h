@@ -19,7 +19,7 @@
 #ifndef DISPLAYREGIONSTACK_H
 #define DISPLAYREGIONSTACK_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "displayRegion.h"
 

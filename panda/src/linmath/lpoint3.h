@@ -19,7 +19,7 @@
 #ifndef LPOINT3_H
 #define LPOINT3_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "coordinateSystem.h"
 #include "lvecBase3.h"

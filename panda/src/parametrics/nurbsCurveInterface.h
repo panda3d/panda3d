@@ -19,9 +19,9 @@
 #ifndef NURBSCURVEINTERFACE_H
 #define NURBSCURVEINTERFACE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <luse.h>
+#include "luse.h"
 #include <filename.h>
 
 class ParametricCurve;

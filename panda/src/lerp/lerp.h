@@ -19,7 +19,7 @@
 #ifndef __LERP_H__
 #define __LERP_H__
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "lerpfunctor.h"
 #include "lerpblend.h"

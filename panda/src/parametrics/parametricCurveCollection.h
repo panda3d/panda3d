@@ -19,13 +19,13 @@
 #ifndef NODEPATHCOLLECTION_H
 #define NODEPATHCOLLECTION_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "parametricCurve.h"
 
 #include <referenceCount.h>
-#include <pointerTo.h>
-#include <luse.h>
+#include "pointerTo.h"
+#include "luse.h"
 
 #include "pvector.h"
 #include "plist.h"

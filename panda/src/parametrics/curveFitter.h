@@ -19,9 +19,9 @@
 #ifndef CURVEFITTER_H
 #define CURVEFITTER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <luse.h>
+#include "luse.h"
 
 #include "parametricCurveCollection.h"
 

@@ -19,7 +19,7 @@
 #ifndef EVENTQUEUE_H
 #define EVENTQUEUE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "event.h"
 #include "pt_Event.h"

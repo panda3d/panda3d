@@ -19,11 +19,11 @@
 #ifndef PT_EVENT_H
 #define PT_EVENT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "event.h"
 
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PT_Event

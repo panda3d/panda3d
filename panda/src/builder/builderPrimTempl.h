@@ -19,7 +19,7 @@
 #ifndef BUILDERPRIMTEMPL_H
 #define BUILDERPRIMTEMPL_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "builderVertex.h"
 #include "builderAttrib.h"

@@ -19,7 +19,7 @@
 #ifndef __LERPFUNCTOR_H__
 #define __LERPFUNCTOR_H__
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include <typedReferenceCount.h>
 
 class EXPCL_PANDA LerpFunctor : public TypedReferenceCount {
@@ -141,7 +141,7 @@ private:
 template <class value>
 TypeHandle SimpleQueryLerpFunctor<value>::_type_handle;
 
-#include <luse.h>
+#include "luse.h"
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, SimpleLerpFunctor<int>)
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, SimpleLerpFunctor<float>)
@@ -192,7 +192,7 @@ typedef SimpleQueryLerpFunctor<LVector3f> LVector3fQueryLerpFunctor;
 typedef SimpleQueryLerpFunctor<LVector4f> LVector4fQueryLerpFunctor;
 
 #include "pset.h"
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 class EXPCL_PANDA MultiLerpFunctor : public LerpFunctor {
 private:

@@ -19,7 +19,7 @@
 #ifndef SAVEDCONTEXT_H
 #define SAVEDCONTEXT_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <typedObject.h>
 

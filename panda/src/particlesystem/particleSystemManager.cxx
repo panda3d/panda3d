@@ -19,7 +19,7 @@
 #include "particleSystemManager.h"
 #include "particleSystem.h"
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include <physicsManager.h>
 #include <clockObject.h>
 

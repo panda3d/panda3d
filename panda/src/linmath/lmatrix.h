@@ -19,7 +19,7 @@
 #ifndef LMATRIX_H
 #define LMATRIX_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include "config_linmath.h"
 
 #include "lmatrix3.h"

@@ -19,7 +19,7 @@
 #ifndef HASHGENERATORBASE_H
 #define HASHGENERATORBASE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : HashGeneratorBase

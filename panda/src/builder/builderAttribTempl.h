@@ -18,7 +18,7 @@
 #ifndef BUILDERATTRIBTEMPL_H
 #define BUILDERATTRIBTEMPL_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "builderTypes.h"
 

@@ -19,7 +19,7 @@
 #ifndef BOUNDINGLINE_H
 #define BOUNDINGLINE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "geometricBoundingVolume.h"
 

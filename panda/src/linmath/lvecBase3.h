@@ -19,7 +19,7 @@
 #ifndef LVECBASE3_H
 #define LVECBASE3_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include <typedObject.h>
 #include <notify.h>
 #include <datagram.h>

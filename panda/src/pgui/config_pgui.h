@@ -19,7 +19,7 @@
 #ifndef CONFIG_PGUI_H
 #define CONFIG_PGUI_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include <notifyCategoryProxy.h>
 
 NotifyCategoryDecl(pgui, EXPCL_PANDA, EXPTP_PANDA);

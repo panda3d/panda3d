@@ -19,12 +19,12 @@
 #ifndef ANIMCHANNELBASE_H
 #define ANIMCHANNELBASE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "animGroup.h"
 #include "animControl.h"
 
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AnimChannelBase

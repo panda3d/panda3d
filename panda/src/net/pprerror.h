@@ -19,7 +19,7 @@
 #ifndef PPRERROR_H
 #define PPRERROR_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 void pprerror(const char *format, ...);
 

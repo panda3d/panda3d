@@ -19,7 +19,7 @@
 #ifndef DATAGRAMITERATOR_H
 #define DATAGRAMITERATOR_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "datagram.h"
 #include "numeric_types.h"

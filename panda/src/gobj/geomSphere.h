@@ -19,7 +19,7 @@
 #ifndef GEOMSPHERE_H
 #define GEOMSPHERE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "geom.h"
 

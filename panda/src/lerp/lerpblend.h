@@ -19,7 +19,7 @@
 #ifndef __LERPBLEND_H__
 #define __LERPBLEND_H__
 
-#include <pandabase.h>
+#include "pandabase.h"
 #include <typedReferenceCount.h>
 
 class EXPCL_PANDA LerpBlendType : public TypedReferenceCount {

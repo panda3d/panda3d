@@ -19,12 +19,12 @@
 #ifndef MATERIALPOOL_H
 #define MATERIALPOOL_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "material.h"
 
 #include <indirectCompareTo.h>
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 #include "pset.h"
 

@@ -47,7 +47,7 @@
 //
 ///////////////////////////////////////////////////////////////////
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "builderAttrib.h"
 #include "builderVertexTempl.h"

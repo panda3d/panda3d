@@ -19,7 +19,7 @@
 #ifndef PNMFILETYPEREGISTRY_H
 #define PNMFILETYPEREGISTRY_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <typedObject.h>
 

@@ -19,7 +19,7 @@
 #ifndef _IO_PTA_DATAGRAM_LINMATH
 #define _IO_PTA_DATAGRAM_LINMATH
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "luse.h"
 #include "pta_Vertexf.h"

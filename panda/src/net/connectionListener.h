@@ -19,7 +19,7 @@
 #ifndef CONNECTIONLISTENER_H
 #define CONNECTIONLISTENER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "connectionReader.h"
 

@@ -19,12 +19,12 @@
 #ifndef PSTATCOLLECTOR_H
 #define PSTATCOLLECTOR_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "pStatThread.h"
 #include "pStatClient.h"
 
-#include <luse.h>
+#include "luse.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PStatCollector

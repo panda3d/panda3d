@@ -19,7 +19,7 @@
 #ifndef CLIENTDEVICE_H
 #define CLIENTDEVICE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <typedReferenceCount.h>
 

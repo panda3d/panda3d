@@ -19,7 +19,7 @@
 #ifndef AUTO_BIND_H
 #define AUTO_BIND_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "animControl.h"
 #include "animControlCollection.h"

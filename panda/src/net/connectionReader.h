@@ -19,11 +19,11 @@
 #ifndef CONNECTIONREADER_H
 #define CONNECTIONREADER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "connection.h"
 
-#include <pointerTo.h>
+#include "pointerTo.h"
 
 #include <prio.h>
 #include <prthread.h>

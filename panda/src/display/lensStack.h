@@ -19,7 +19,7 @@
 #ifndef LENSSTACK_H
 #define LENSSTACK_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "lens.h"
 
