@@ -89,6 +89,8 @@
   #define python_ipath $[wildcard $[PYTHON_IPATH]]
   #define python_lpath $[wildcard $[PYTHON_LPATH]]
   #define python_fpath $[wildcard $[PYTHON_FPATH]]
+  #define python_cflags $[PYTHON_CFLAGS]
+  #define python_lflags $[PYTHON_LFLAGS]
   #define python_libs $[PYTHON_LIBS]
   #define python_framework $[PYTHON_FRAMEWORK]
 #endif
@@ -354,6 +356,20 @@
 
   $[alt_cflags]
 #end get_cflags
+
+// This function returns the appropriate lflags for the target, based
+// on the various external packages this particular target claims to
+// require.
+#defun get_lflags
+  // hack to add stl,nspr,python.  should be removed
+  #define alt_lflags $[if $[IGNORE_LIB_DEFAULTS_HACK],,$[stl_lflags] $[nspr_lflags] $[python_lflags]]
+
+  #foreach package $[use_packages]
+    #set alt_lflags $[alt_lflags] $[$[package]_lflags]
+  #end package
+
+  $[alt_lflags]
+#end get_lflags
 
 // This function returns the appropriate include path for the target,
 // based on the various external packages this particular target

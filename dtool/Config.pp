@@ -587,10 +587,11 @@
 // $[sources] is the list of .o files.  $[libs] is a space-separated
 // list of dependent libraries, and $[lpath] is a space-separated list
 // of directories in which those libraries can be found.
-#defer LINK_BIN_C $[cc_ld] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]\
+#defer LINK_BIN_C $[cc_ld] -o $[target] $[sources] $[flags] $[lpath:%=-L%] $[libs:%=-l%]\
  $[fpath:%=-Wl,-F%] $[patsubst %,-framework %, $[frameworks]]
 #defer LINK_BIN_C++ $[cxx_ld]\
  -o $[target] $[sources]\
+ $[flags]\
  $[lpath:%=-L%] $[libs:%=-l%]\
  $[fpath:%=-Wl,-F%] $[patsubst %,-framework %, $[frameworks]]
 

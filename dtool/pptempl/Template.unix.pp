@@ -100,6 +100,7 @@
 // These are the complete set of extra flags the compiler requires.
 #defer cflags $[get_cflags] $[CFLAGS] $[CFLAGS_OPT$[OPTIMIZE]] 
 #defer c++flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] 
+#defer lflags $[get_lflags] $[LFLAGS] $[LFLAGS_OPT$[OPTIMIZE]] 
 
 // $[complete_lpath] is rather like $[complete_ipath]: the list of
 // directories (from within this tree) we should add to our -L list.
@@ -515,6 +516,7 @@ $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define sources $($[varname])
 #define cc_ld $[or $[get_ld],$[CC]]
 #define cxx_ld $[or $[get_ld],$[CXX]]
+#define flags $[lflags]
 $[target] : $[sources] $[static_lib_dependencies]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 $[TAB] $[LINK_BIN_C++]
@@ -559,6 +561,7 @@ $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define sources $($[varname])
 #define cc_ld $[or $[get_ld],$[CC]]
 #define cxx_ld $[or $[get_ld],$[CXX]]
+#define flags $[lflags]
 $[target] : $[sources] $[static_lib_dependencies]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 $[TAB] $[LINK_BIN_C++]
