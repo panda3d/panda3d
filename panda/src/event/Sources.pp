@@ -8,7 +8,7 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx
   
   #define SOURCES \
-     config_event.h event.I event.h eventHandler.h eventParameter.I \
+     config_event.h event.I event.h eventHandler.h eventHandler.I eventParameter.I \
      eventParameter.h eventQueue.I eventQueue.h eventReceiver.h \
      pt_Event.h throw_event.I throw_event.h 
     
@@ -18,7 +18,7 @@
      pt_Event.cxx
 
   #define INSTALL_HEADERS                                       \
-    event.I event.h eventHandler.h eventParameter.I eventParameter.h    \
+    event.I event.h eventHandler.h eventHandler.I eventParameter.I eventParameter.h    \
     eventQueue.h eventQueue.I throw_event.h throw_event.I       \
     eventReceiver.h                                             \
     pt_Event.h
