@@ -1135,7 +1135,7 @@ class LevelEditor(NodePath, PandaObject):
     def createNumWindowsMenu(self):
         
 	numberNodes = []
-        for i in range(4):
+        for i in range(5):
             node = OnscreenText(`i`, 0.0, 0.0)
             numberNodes.append(node)
 	numItems = len(numberNodes)
