@@ -173,11 +173,11 @@ class Particles(ParticleSystem.ParticleSystem):
 	"""stop(self)"""
 	taskMgr.removeTasksNamed('update-particles')
 
-    def saveFileData(self, filename):
+    def saveConfig(self, filename):
 	"""saveFileData(self, filename)"""
-	fname = Filename(filename)
-	fname.resolveFilename(getParticlePath())
-	fname.resolveFilename(getModelPath())
+	#fname = Filename(filename)
+	#fname.resolveFilename(getParticlePath())
+	#fname.resolveFilename(getModelPath())
         f = open(fname.toOsSpecific(), 'a')
         # Add a blank line
         f.write('\n')
@@ -186,15 +186,15 @@ class Particles(ParticleSystem.ParticleSystem):
         # Close the file
         f.close()
 
-    def getFileData(self, filename):
+    def loadConfig(self, filename):
 	"""getFileData(self, filename)
         Open the specified file and strip out unwanted whitespace and
         empty lines.  Return file as list, one file line per element.
         """
-        fname = Filename(filename)
-	fname.resolveFilename(getParticlePath())
-	fname.resolveFilename(getModelPath())
-	execfile(fname.toOsSpecific())
+        #fname = Filename(filename)
+	#fname.resolveFilename(getParticlePath())
+	#fname.resolveFilename(getModelPath())
+	execfile(filename.toOsSpecific())
 
     def printParams(self, file = sys.stdout):
 	"""printParams(self, file)"""
