@@ -24,6 +24,8 @@
 #include "ppmcmap.h"
 
 // Tiff will want to re-typedef these things.
+#define int8 tiff_int8
+#define uint8 tiff_uint8
 #define int32 tiff_int32
 #define uint32 tiff_uint32
 
