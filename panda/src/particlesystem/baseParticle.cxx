@@ -79,7 +79,7 @@ output(ostream &out) const {
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void BaseParticle::
-write(ostream &out, unsigned int indent) const {
+write(ostream &out, int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"BaseParticle:\n";
   out.width(indent+2); out<<""; out<<"_age "<<_age<<"\n";

@@ -34,26 +34,6 @@
 ////////////////////////////////////////////////////////////////////
 
 class EXPCL_PANDAPHYSICS LineParticleRenderer : public BaseParticleRenderer {
-private:
-  Colorf _head_color;
-  Colorf _tail_color;
-
-  PT(GeomLine) _line_primitive;
-
-  PTA_Vertexf _vertex_array;
-  PTA_Colorf _color_array;
-
-  int _max_pool_size;
-
-  LPoint3f _aabb_min, _aabb_max;
-
-  virtual void birth_particle(int index);
-  virtual void kill_particle(int index);
-  virtual void init_geoms();
-  virtual void render(pvector< PT(PhysicsObject) >& po_vector,
-                      int ttl_particles);
-  virtual void resize_pool(int new_size);
-
 PUBLISHED:
   LineParticleRenderer();
   LineParticleRenderer(const LineParticleRenderer& copy);
@@ -71,7 +51,29 @@ PUBLISHED:
   INLINE const Colorf& get_head_color() const;
   INLINE const Colorf& get_tail_color() const;
   
-  virtual void output(ostream &out, unsigned int indent=0) const;
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent=0) const;
+
+private:
+  Colorf _head_color;
+  Colorf _tail_color;
+
+  PT(GeomLine) _line_primitive;
+
+  PTA_Vertexf _vertex_array;
+  PTA_Colorf _color_array;
+
+  int _max_pool_size;
+
+  LPoint3f _aabb_min;
+  LPoint3f _aabb_max;
+
+  virtual void birth_particle(int index);
+  virtual void kill_particle(int index);
+  virtual void init_geoms();
+  virtual void render(pvector< PT(PhysicsObject) >& po_vector,
+                      int ttl_particles);
+  virtual void resize_pool(int new_size);
 };
 
 #include "lineParticleRenderer.I"

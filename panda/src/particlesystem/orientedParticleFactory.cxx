@@ -69,3 +69,30 @@ BaseParticle *OrientedParticleFactory::
 alloc_particle(void) const {
   return new OrientedParticle;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void OrientedParticleFactory::
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"OrientedParticleFactory";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void OrientedParticleFactory::
+write(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent); out<<""; out<<"OrientedParticleFactory:\n";
+  BaseParticleFactory::write(out, indent+2);
+  #endif //] NDEBUG
+}

@@ -73,3 +73,36 @@ populate_particle(BaseParticle *bp) {
 
   populate_child_particle(bp);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void BaseParticleFactory::
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"BaseParticleFactory";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void BaseParticleFactory::
+write(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent); out<<""; out<<"BaseParticleFactory:\n";
+  out.width(indent+2); out<<""; out<<"_lifespan_base "<<_lifespan_base<<"\n";
+  out.width(indent+2); out<<""; out<<"_lifespan_spread "<<_lifespan_spread<<"\n";
+  out.width(indent+2); out<<""; out<<"_mass_base "<<_mass_base<<"\n";
+  out.width(indent+2); out<<""; out<<"_mass_spread "<<_mass_spread<<"\n";
+  out.width(indent+2); out<<""; out<<"_terminal_velocity_base "<<_terminal_velocity_base<<"\n";
+  out.width(indent+2); out<<""; out<<"_terminal_velocity_spread "<<_terminal_velocity_spread<<"\n";
+  //ReferenceCount::write(out, indent+2);
+  #endif //] NDEBUG
+}

@@ -78,3 +78,31 @@ void PointEmitter::
 assign_initial_velocity(LVector3f& vel) {
   vel.set(0,0,0);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void PointEmitter::
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"PointEmitter";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void PointEmitter::
+write(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent); out<<""; out<<"PointEmitter:\n";
+  out.width(indent+2); out<<""; out<<"_location "<<_location<<"\n";
+  BaseParticleEmitter::write(out, indent+2);
+  #endif //] NDEBUG
+}

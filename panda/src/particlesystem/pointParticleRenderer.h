@@ -67,8 +67,12 @@ PUBLISHED:
   INLINE PointParticleBlendType get_blend_type() const;
   INLINE ParticleRendererBlendMethod get_blend_method() const;
 
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent=0) const;
+
 private:
-  Colorf _start_color, _end_color;
+  Colorf _start_color;
+  Colorf _end_color;
   float _point_size;
 
   PT(GeomPoint) _point_primitive;
@@ -81,7 +85,8 @@ private:
   PointParticleBlendType _blend_type;
   ParticleRendererBlendMethod _blend_method;
 
-  LPoint3f _aabb_min, _aabb_max;
+  LPoint3f _aabb_min;
+  LPoint3f _aabb_max;
 
   Colorf create_color(const BaseParticle *p);
 

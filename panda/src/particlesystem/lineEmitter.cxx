@@ -96,7 +96,24 @@ assign_initial_velocity(LVector3f& vel) {
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void LineEmitter::
-output(ostream &out, unsigned int indent) const {
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"LineEmitter";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void LineEmitter::
+write(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"LineEmitter:\n";
-  BaseParticleEmitter::output(out, indent+2);
+  out.width(indent+2); out<<""; out<<"_endpoint1 "<<_endpoint1<<"\n";
+  out.width(indent+2); out<<""; out<<"_endpoint2 "<<_endpoint2<<"\n";
+  BaseParticleEmitter::write(out, indent+2);
+  #endif //] NDEBUG
 }

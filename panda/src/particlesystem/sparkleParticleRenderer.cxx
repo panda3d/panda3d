@@ -262,3 +262,41 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   _line_primitive->set_bound(BoundingSphere(aabb_center, radius));
   get_render_node()->mark_bound_stale();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void SparkleParticleRenderer::
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"SparkleParticleRenderer";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void SparkleParticleRenderer::
+write(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent); out<<""; out<<"SparkleParticleRenderer:\n";
+  out.width(indent+2); out<<""; out<<"_center_color "<<_center_color<<"\n";
+  out.width(indent+2); out<<""; out<<"_edge_color "<<_edge_color<<"\n";
+  out.width(indent+2); out<<""; out<<"_birth_radius "<<_birth_radius<<"\n";
+  out.width(indent+2); out<<""; out<<"_death_radius "<<_death_radius<<"\n";
+  out.width(indent+2); out<<""; out<<"_line_primitive "<<_line_primitive<<"\n";
+  out.width(indent+2); out<<""; out<<"_vertex_array "<<_vertex_array<<"\n";
+  out.width(indent+2); out<<""; out<<"_color_array "<<_color_array<<"\n";
+  out.width(indent+2); out<<""; out<<"_max_pool_size "<<_max_pool_size<<"\n";
+  out.width(indent+2); out<<""; out<<"_life_scale "<<_life_scale<<"\n";
+  out.width(indent+2); out<<""; out<<"_aabb_min "<<_aabb_min<<"\n";
+  out.width(indent+2); out<<""; out<<"_aabb_max "<<_aabb_max<<"\n";
+  BaseParticleRenderer::write(out, indent+2);
+  #endif //] NDEBUG
+}

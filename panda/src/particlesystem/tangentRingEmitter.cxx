@@ -82,3 +82,33 @@ void TangentRingEmitter::
 assign_initial_velocity(LVector3f& vel) {
   vel.set(-_y, _x, 0.0f);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void TangentRingEmitter::
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"TangentRingEmitter";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void TangentRingEmitter::
+write(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent); out<<""; out<<"TangentRingEmitter:\n";
+  out.width(indent+2); out<<""; out<<"_radius "<<_radius<<"\n";
+  out.width(indent+2); out<<""; out<<"_x "<<_x<<"\n";
+  out.width(indent+2); out<<""; out<<"_y "<<_y<<"\n";
+  BaseParticleEmitter::write(out, indent+2);
+  #endif //] NDEBUG
+}

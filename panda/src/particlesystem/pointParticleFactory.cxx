@@ -69,3 +69,30 @@ BaseParticle *PointParticleFactory::
 alloc_particle() const {
   return new PointParticle;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void PointParticleFactory::
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"PointParticleFactory";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void PointParticleFactory::
+write(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent); out<<""; out<<"PointParticleFactory:\n";
+  BaseParticleFactory::write(out, indent+2);
+  #endif //] NDEBUG
+}

@@ -37,6 +37,9 @@ PUBLISHED:
   INLINE void set_radius(float r);
   INLINE float get_radius() const;
 
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent=0) const;
+
 private:
   float _radius;
 

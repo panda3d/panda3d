@@ -378,3 +378,50 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   _sprite_primitive->set_bound(BoundingSphere(aabb_center, radius));
   get_render_node()->mark_bound_stale();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void SpriteParticleRenderer::
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"SpriteParticleRenderer";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void SpriteParticleRenderer::
+write(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent); out<<""; out<<"SpriteParticleRenderer:\n";
+  out.width(indent+2); out<<""; out<<"_sprite_primitive "<<_sprite_primitive<<"\n";
+  out.width(indent+2); out<<""; out<<"_vertex_array "<<_vertex_array<<"\n";
+  out.width(indent+2); out<<""; out<<"_color_array "<<_color_array<<"\n";
+  out.width(indent+2); out<<""; out<<"_x_texel_array "<<_x_texel_array<<"\n";
+  out.width(indent+2); out<<""; out<<"_y_texel_array "<<_y_texel_array<<"\n";
+  out.width(indent+2); out<<""; out<<"_theta_array "<<_theta_array<<"\n";
+  out.width(indent+2); out<<""; out<<"_color "<<_color<<"\n";
+  out.width(indent+2); out<<""; out<<"_initial_x_texel_ratio "<<_initial_x_texel_ratio<<"\n";
+  out.width(indent+2); out<<""; out<<"_final_x_texel_ratio "<<_final_x_texel_ratio<<"\n";
+  out.width(indent+2); out<<""; out<<"_initial_y_texel_ratio "<<_initial_y_texel_ratio<<"\n";
+  out.width(indent+2); out<<""; out<<"_final_y_texel_ratio "<<_final_y_texel_ratio<<"\n";
+  out.width(indent+2); out<<""; out<<"_theta "<<_theta<<"\n";
+  out.width(indent+2); out<<""; out<<"_animate_x_ratio "<<_animate_x_ratio<<"\n";
+  out.width(indent+2); out<<""; out<<"_animate_y_ratio "<<_animate_y_ratio<<"\n";
+  out.width(indent+2); out<<""; out<<"_animate_theta "<<_animate_theta<<"\n";
+  out.width(indent+2); out<<""; out<<"_blend_method "<<_blend_method<<"\n";
+  out.width(indent+2); out<<""; out<<"_aabb_min "<<_aabb_min<<"\n";
+  out.width(indent+2); out<<""; out<<"_aabb_max "<<_aabb_max<<"\n";
+  out.width(indent+2); out<<""; out<<"_pool_size "<<_pool_size<<"\n";
+  out.width(indent+2); out<<""; out<<"_source_type "<<_source_type<<"\n";
+  BaseParticleRenderer::write(out, indent+2);
+  #endif //] NDEBUG
+}

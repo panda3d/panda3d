@@ -97,3 +97,31 @@ assign_initial_velocity(LVector3f& vel) {
   // along vector from center to position
   vel = _particle_pos / _radius;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void SphereVolumeEmitter::
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"SphereVolumeEmitter";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void SphereVolumeEmitter::
+write(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent); out<<""; out<<"SphereVolumeEmitter:\n";
+  out.width(indent+2); out<<""; out<<"_radius "<<_radius<<"\n";
+  BaseParticleEmitter::write(out, indent+2);
+  #endif //] NDEBUG
+}

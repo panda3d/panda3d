@@ -83,3 +83,31 @@ void SphereSurfaceEmitter::
 assign_initial_velocity(LVector3f& vel) {
   vel.set(0,0,0);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void SphereSurfaceEmitter::
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"SphereSurfaceEmitter";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void SphereSurfaceEmitter::
+write(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent); out<<""; out<<"SphereSurfaceEmitter:\n";
+  out.width(indent+2); out<<""; out<<"_radius "<<_radius<<"\n";
+  BaseParticleEmitter::write(out, indent+2);
+  #endif //] NDEBUG
+}

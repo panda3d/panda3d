@@ -40,8 +40,11 @@ PUBLISHED:
 
   virtual BaseParticleRenderer *make_copy();
 
-private:
+  virtual void output(ostream &out) const;
+  virtual void write_linear_forces(ostream &out, int indent=0) const;
+  virtual void write(ostream &out, int indent=0) const;
 
+private:
   PT(PandaNode) _geom_node;
 
   pvector< PT(PandaNode) > _node_vector;

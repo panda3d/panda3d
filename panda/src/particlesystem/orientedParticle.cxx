@@ -86,3 +86,30 @@ die() {
 void OrientedParticle::
 update() {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void OrientedParticle::
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"OrientedParticle";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void OrientedParticle::
+write(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent); out<<""; out<<"OrientedParticle:\n";
+  BaseParticle::write(out, indent+2);
+  #endif //] NDEBUG
+}

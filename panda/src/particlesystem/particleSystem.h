@@ -99,6 +99,11 @@ PUBLISHED:
   INLINE void induce_labor();
   void update(float dt);
 
+  virtual void output(ostream &out) const;
+  virtual void write_free_particle_fifo(ostream &out, int indent=0) const;
+  virtual void write_spawn_templates(ostream &out, int indent=0) const;
+  virtual void write(ostream &out, int indent=0) const;
+
 private:
   #ifdef PSSANITYCHECK
   int sanity_check();

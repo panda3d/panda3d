@@ -39,11 +39,13 @@ PUBLISHED:
 
   INLINE LPoint3f get_endpoint1() const;
   INLINE LPoint3f get_endpoint2() const;
-  
-  virtual void output(ostream &out, unsigned int indent=0) const;
+
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent=0) const;
 
 private:
-  LPoint3f _endpoint1, _endpoint2;
+  LPoint3f _endpoint1;
+  LPoint3f _endpoint2;
 
   // CUSTOM EMISSION PARAMETERS
   // none

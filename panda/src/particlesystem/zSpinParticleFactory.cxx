@@ -86,3 +86,37 @@ populate_child_particle(BaseParticle *bp) const {
   zsp->set_angular_velocity(_angular_velocity + SPREAD(_angular_velocity_spread));
   zsp->enable_angular_velocity(_bUseAngularVelocity);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void ZSpinParticleFactory::
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"ZSpinParticleFactory";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void ZSpinParticleFactory::
+write(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent); out<<""; out<<"ZSpinParticleFactory:\n";
+  out.width(indent+2); out<<""; out<<"_initial_angle "<<_initial_angle<<"\n";
+  out.width(indent+2); out<<""; out<<"_initial_angle_spread "<<_initial_angle_spread<<"\n";
+  out.width(indent+2); out<<""; out<<"_final_angle "<<_final_angle<<"\n";
+  out.width(indent+2); out<<""; out<<"_final_angle_spread "<<_final_angle_spread<<"\n";
+  out.width(indent+2); out<<""; out<<"_angular_velocity "<<_angular_velocity<<"\n";
+  out.width(indent+2); out<<""; out<<"_angular_velocity_spread "<<_angular_velocity_spread<<"\n";
+  out.width(indent+2); out<<""; out<<"_bUseAngularVelocity "<<_bUseAngularVelocity<<"\n";
+  BaseParticleFactory::write(out, indent+2);
+  #endif //] NDEBUG
+}

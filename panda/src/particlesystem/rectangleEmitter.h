@@ -39,11 +39,13 @@ PUBLISHED:
 
   INLINE LPoint2f get_min_bound() const;
   INLINE LPoint2f get_max_bound() const;
-  
-  virtual void output(ostream &out, unsigned int indent=0) const;
+
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent=0) const;
 
 private:
-  LPoint2f _vmin, _vmax;
+  LPoint2f _vmin;
+  LPoint2f _vmax;
 
   // CUSTOM EMISSION PARAMETERS
   // none

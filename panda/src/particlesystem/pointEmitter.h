@@ -28,14 +28,17 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS PointEmitter : public BaseParticleEmitter {
 PUBLISHED:
-  PointEmitter(void);
+  PointEmitter();
   PointEmitter(const PointEmitter &copy);
-  virtual ~PointEmitter(void);
+  virtual ~PointEmitter();
 
-  virtual BaseParticleEmitter *make_copy(void);
+  virtual BaseParticleEmitter *make_copy();
 
   INLINE void set_location(const LPoint3f& p);
-  INLINE LPoint3f get_location(void) const;
+  INLINE LPoint3f get_location() const;
+
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent=0) const;
 
 private:
   LPoint3f _location;

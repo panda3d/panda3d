@@ -57,6 +57,9 @@ public:
   INLINE void enable_angular_velocity(bool bEnabled);
   INLINE bool get_angular_velocity_enabled() const;
 
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent=0) const;
+
 private:
   float _initial_angle;
   float _final_angle;

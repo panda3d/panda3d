@@ -87,6 +87,9 @@ PUBLISHED:
   INLINE ParticleRendererBlendMethod get_alpha_blend_method() const;
   INLINE bool get_alpha_disable() const;
 
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent=0) const;
+
 private:
   PT(GeomSprite) _sprite_primitive;
   PTA_Vertexf _vertex_array;
@@ -97,16 +100,20 @@ private:
 
   Colorf _color;
 
-  float _initial_x_texel_ratio, _final_x_texel_ratio;
-  float _initial_y_texel_ratio, _final_y_texel_ratio;
+  float _initial_x_texel_ratio;
+  float _final_x_texel_ratio;
+  float _initial_y_texel_ratio;
+  float _final_y_texel_ratio;
   float _theta;
 
-  bool _animate_x_ratio, _animate_y_ratio;
+  bool _animate_x_ratio;
+  bool _animate_y_ratio;
   bool _animate_theta;
 
   ParticleRendererBlendMethod _blend_method;
 
-  Vertexf _aabb_min, _aabb_max;
+  Vertexf _aabb_min;
+  Vertexf _aabb_max;
 
   int _pool_size;
   SourceType _source_type;

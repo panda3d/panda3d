@@ -281,3 +281,41 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   _point_primitive->set_bound(BoundingSphere(aabb_center, radius));
   get_render_node()->mark_bound_stale();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void PointParticleRenderer::
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"PointParticleRenderer";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void PointParticleRenderer::
+write(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent); out<<""; out<<"PointParticleRenderer:\n";
+  out.width(indent+2); out<<""; out<<"_start_color "<<_start_color<<"\n";
+  out.width(indent+2); out<<""; out<<"_end_color "<<_end_color<<"\n";
+  out.width(indent+2); out<<""; out<<"_point_size "<<_point_size<<"\n";
+  out.width(indent+2); out<<""; out<<"_point_primitive "<<_point_primitive<<"\n";
+  out.width(indent+2); out<<""; out<<"_vertex_array "<<_vertex_array<<"\n";
+  out.width(indent+2); out<<""; out<<"_color_array "<<_color_array<<"\n";
+  out.width(indent+2); out<<""; out<<"_max_pool_size "<<_max_pool_size<<"\n";
+  out.width(indent+2); out<<""; out<<"_blend_type "<<_blend_type<<"\n";
+  out.width(indent+2); out<<""; out<<"_blend_method "<<_blend_method<<"\n";
+  out.width(indent+2); out<<""; out<<"_aabb_min "<<_aabb_min<<"\n";
+  out.width(indent+2); out<<""; out<<"_aabb_max "<<_aabb_max<<"\n";
+  BaseParticleRenderer::write(out, indent+2);
+  #endif //] NDEBUG
+}

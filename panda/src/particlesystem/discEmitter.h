@@ -48,12 +48,17 @@ PUBLISHED:
   INLINE float get_inner_magnitude() const;
   INLINE bool get_cubic_lerping() const;
 
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent=0) const;
+
 private:
   float _radius;
 
   // CUSTOM EMISSION PARAMETERS
-  float _outer_aoe, _inner_aoe;
-  float _outer_magnitude, _inner_magnitude;
+  float _inner_aoe;
+  float _outer_aoe;
+  float _inner_magnitude;
+  float _outer_magnitude;
   bool _cubic_lerping;
 
   ///////////////////////////////

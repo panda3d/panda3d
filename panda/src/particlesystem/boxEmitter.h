@@ -40,8 +40,12 @@ PUBLISHED:
   INLINE LPoint3f get_min_bound() const;
   INLINE LPoint3f get_max_bound() const;
 
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent=0) const;
+
 private:
-  LPoint3f _vmin, _vmax;
+  LPoint3f _vmin;
+  LPoint3f _vmax;
 
   // CUSTOM EMISSION PARAMETERS
   // none

@@ -44,6 +44,10 @@ PUBLISHED:
 
   void do_particles(float dt);
 
+  virtual void output(ostream &out) const;
+  virtual void write_ps_list(ostream &out, int indent=0) const;
+  virtual void write(ostream &out, int indent=0) const;
+
 private:
   plist< PT(ParticleSystem) > _ps_list;
 

@@ -90,3 +90,32 @@ void BoxEmitter::
 assign_initial_velocity(LVector3f& vel) {
   vel.set(0,0,0);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void BoxEmitter::
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"BoxEmitter";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void BoxEmitter::
+write(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent); out<<""; out<<"BoxEmitter:\n";
+  out.width(indent+2); out<<""; out<<"_vmin "<<_vmin<<"\n";
+  out.width(indent+2); out<<""; out<<"_vmax "<<_vmax<<"\n";
+  BaseParticleEmitter::write(out, indent+2);
+  #endif //] NDEBUG
+}

@@ -40,6 +40,9 @@ PUBLISHED:
   INLINE float get_radius() const;
   INLINE float get_angle() const;
 
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent=0) const;
+
 private:
   float _radius;
 

@@ -358,17 +358,17 @@ resize_pool(int size) {
 
           _physics_objects.push_back(new_particle);
         } else {
-#ifdef PSDEBUG
+          #ifdef PSDEBUG
           cout << "Error allocating new particle" << endl;
           _particle_pool_size--;
-#endif
+          #endif
         }
       }
     } else {
-#ifdef PSDEBUG
+      #ifdef PSDEBUG
       cout << "physics_object array is too large??" << endl;
       _particle_pool_size--;
-#endif
+      #endif
       po_delta = -po_delta;
       for (i = 0; i < po_delta; i++) {
         int delete_index = _physics_objects.size()-1;
@@ -406,10 +406,10 @@ resize_pool(int size) {
         _physics_objects.push_back(new_particle);
         _free_particle_fifo.push_back(free_index);
       } else {
-#ifdef PSDEBUG
+        #ifdef PSDEBUG
         cout << "Error allocating new particle" << endl;
         _particle_pool_size--;
-#endif
+        #endif
       }
     }
   } else {
@@ -420,25 +420,25 @@ resize_pool(int size) {
       BaseParticle *bp = (BaseParticle *) _physics_objects[delete_index].p();
 
       if (bp->get_alive()) {
-#ifdef PSDEBUG
+        #ifdef PSDEBUG
         cout << "WAS ALIVE" << endl;
-#endif
+        #endif
         kill_particle(delete_index);
         _free_particle_fifo.pop_back();
       } else {
-#ifdef PSDEBUG
+        #ifdef PSDEBUG
         cout << "WAS NOT ALIVE" << endl;
-#endif
+        #endif
         pdeque<int>::iterator i;
         i = find(_free_particle_fifo.begin(), _free_particle_fifo.end(), delete_index);
         if (i != _free_particle_fifo.end()) {
           _free_particle_fifo.erase(i);
         }
-#ifdef PSDEBUG
+        #ifdef PSDEBUG
         else {
           cout << "particle not found in free FIFO!!!!!!!!" << endl;
         }
-#endif
+        #endif
       }
 
       _physics_objects.pop_back();
@@ -447,9 +447,9 @@ resize_pool(int size) {
 
   _renderer->resize_pool(_particle_pool_size);
 
-#ifdef PARTICLE_SYSTEM_RESIZE_POOL_SENTRIES
+  #ifdef PARTICLE_SYSTEM_RESIZE_POOL_SENTRIES
   cout << "particle pool resized" << endl;
-#endif
+  #endif
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -467,22 +467,22 @@ update(float dt) {
   BaseParticle *bp;
   float age;
 
-#ifdef PSSANITYCHECK
+  #ifdef PSSANITYCHECK
   // check up on things
   if (sanity_check()) return;
-#endif
+  #endif
 
-#ifdef PARTICLE_SYSTEM_UPDATE_SENTRIES
+  #ifdef PARTICLE_SYSTEM_UPDATE_SENTRIES
   cout << "UPDATE: pool size: " << _particle_pool_size
        << ", live particles: " << _living_particles << endl;
-#endif
+  #endif
 
   // run through the particle array
   while (ttl_updates_left) {
     current_index = index_counter;
     index_counter++;
 
-#ifdef PSDEBUG
+    #ifdef PSDEBUG
     if (current_index >= _particle_pool_size) {
       cout << "ERROR: _living_particles is out of sync (too large)" << endl;
       cout << "pool size: " << _particle_pool_size
@@ -490,17 +490,17 @@ update(float dt) {
            << ", updates left: " << ttl_updates_left << endl;
       break;
     }
-#endif
+    #endif
 
     // get the current particle.
     bp = (BaseParticle *) _physics_objects[current_index].p();
 
-#ifdef PSDEBUG
+    #ifdef PSDEBUG
     if (!bp) {
       cout << "NULL ptr at index " << current_index << endl;
       continue;
     }
-#endif
+    #endif
 
     if (bp->get_alive() == false)
       continue;
@@ -526,9 +526,9 @@ update(float dt) {
     _tics_since_birth -= _birth_rate;
   }
 
-#ifdef PARTICLE_SYSTEM_UPDATE_SENTRIES
+  #ifdef PARTICLE_SYSTEM_UPDATE_SENTRIES
   cout << "particle update complete" << endl;
-#endif
+  #endif
 
 }
 
@@ -565,14 +565,14 @@ static int check_free_live_total_particles(pvector< PT(SC_valuenamepair) > live_
         int dead = dead_counts[d]->value;
         int total = total_counts[t]->value;
         if ((live + dead) != total) {
-#ifdef PSSCVERBOSE
+          #ifdef PSSCVERBOSE
           cout << "free/live/total count: "
                << live_counts[l]->name << " (" << live << ") + "
                << dead_counts[d]->name << " (" << dead << ") = "
                << live + dead << ", != "
                << total_counts[t]->name << " (" << total << ")"
                << endl;
-#endif
+          #endif
           val++;
         }
       }
@@ -592,10 +592,10 @@ sanity_check() {
   ///////////////////////////////////////////////////////////////////
   // check pool size
   if (_particle_pool_size != _physics_objects.size()) {
-#ifdef PSSCVERBOSE
+    #ifdef PSSCVERBOSE
     cout << "_particle_pool_size (" << _particle_pool_size
          << ") != particle array size (" << _physics_objects.size() << ")" << endl;
-#endif
+    #endif
     result++;
   }
   pool_size = min(_particle_pool_size, _physics_objects.size());
@@ -616,18 +616,18 @@ sanity_check() {
   }
 
   if (real_live_particle_count != _living_particles) {
-#ifdef PSSCVERBOSE
+    #ifdef PSSCVERBOSE
     cout << "manually counted live particle count (" << real_live_particle_count
          << ") != _living_particles (" << _living_particles << ")" << endl;
-#endif
+    #endif
     result++;
   }
 
   if (real_dead_particle_count != _free_particle_fifo.size()) {
-#ifdef PSSCVERBOSE
+    #ifdef PSSCVERBOSE
     cout << "manually counted dead particle count (" << real_dead_particle_count
          << ") != free particle fifo size (" << _free_particle_fifo.size() << ")" << endl;
-#endif
+    #endif
     result++;
   }
   ///////////////////////////////////////////////////////////////////
@@ -639,10 +639,10 @@ sanity_check() {
 
     // check that we're in bounds
     if (index >= pool_size) {
-#ifdef PSSCVERBOSE
+      #ifdef PSSCVERBOSE
       cout << "index from free particle fifo (" << index
            << ") is too large; pool size is " << pool_size << endl;
-#endif
+      #endif
       result++;
       continue;
     }
@@ -650,9 +650,9 @@ sanity_check() {
     // check that the particle is indeed dead
     bp = (BaseParticle *) _physics_objects[index].p();
     if (true == bp->get_alive()) {
-#ifdef PSSCVERBOSE
+      #ifdef PSSCVERBOSE
       cout << "particle " << index << " in free fifo is not dead" << endl;
-#endif
+      #endif
       result++;
     }
   }
@@ -678,3 +678,90 @@ sanity_check() {
   return result;
 }
 #endif
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void ParticleSystem::
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"ParticleSystem";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write_free_particle_fifo
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void ParticleSystem::
+write_free_particle_fifo(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent);
+  out<<""<<"_free_particle_fifo ("<<_free_particle_fifo.size()<<" forces)\n";
+  for (pdeque< int >::const_iterator i=_free_particle_fifo.begin();
+       i != _free_particle_fifo.end();
+       ++i) {
+    out.width(indent+2); out<<""; out<<(*i)<<"\n";
+  }
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write_spawn_templates
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void ParticleSystem::
+write_spawn_templates(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent);
+  out<<""<<"_spawn_templates ("<<_spawn_templates.size()<<" templates)\n";
+  for (pvector< PT(ParticleSystem) >::const_iterator i=_spawn_templates.begin();
+       i != _spawn_templates.end();
+       ++i) {
+    (*i)->write(out, indent+2);
+  }
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void ParticleSystem::
+write(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent); out<<""; out<<"ParticleSystem:\n";
+  out.width(indent+2); out<<""; out<<"_particle_pool_size "<<_particle_pool_size<<"\n";
+  out.width(indent+2); out<<""; out<<"_living_particles "<<_living_particles<<"\n";
+  out.width(indent+2); out<<""; out<<"_tics_since_birth "<<_tics_since_birth<<"\n";
+  out.width(indent+2); out<<""; out<<"_litter_size "<<_litter_size<<"\n";
+  out.width(indent+2); out<<""; out<<"_litter_spread "<<_litter_spread<<"\n";
+  out.width(indent+2); out<<""; out<<"_system_age "<<_system_age<<"\n";
+  out.width(indent+2); out<<""; out<<"_system_lifespan "<<_system_lifespan<<"\n";
+  out.width(indent+2); out<<""; out<<"_factory "<<_factory<<"\n";
+  out.width(indent+2); out<<""; out<<"_emitter "<<_emitter<<"\n";
+  out.width(indent+2); out<<""; out<<"_renderer "<<_renderer<<"\n";
+  out.width(indent+2); out<<""; out<<"_manager "<<_manager<<"\n";
+  out.width(indent+2); out<<""; out<<"_template_system_flag "<<_template_system_flag<<"\n";
+  out.width(indent+2); out<<""; out<<"_render_parent "<<_render_parent<<"\n";
+  out.width(indent+2); out<<""; out<<"_render_node "<<_render_node<<"\n";
+  out.width(indent+2); out<<""; out<<"_active_system_flag "<<_active_system_flag<<"\n";
+  out.width(indent+2); out<<""; out<<"_local_velocity_flag "<<_local_velocity_flag<<"\n";
+  out.width(indent+2); out<<""; out<<"_system_grows_older_flag "<<_system_grows_older_flag<<"\n";
+  out.width(indent+2); out<<""; out<<"_spawn_on_death_flag "<<_spawn_on_death_flag<<"\n";
+  out.width(indent+2); out<<""; out<<"_spawn_render_node "<<_spawn_render_node<<"\n";
+  out.width(indent+2); out<<""; out<<"_i_was_spawned_flag "<<_i_was_spawned_flag<<"\n";
+  write_free_particle_fifo(out, indent+2);
+  write_spawn_templates(out, indent+2);
+  Physical::write(out, indent+2);
+  #endif //] NDEBUG
+}

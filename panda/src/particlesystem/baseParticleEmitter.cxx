@@ -95,7 +95,26 @@ generate(LPoint3f& pos, LVector3f& vel) {
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void BaseParticleEmitter::
-output(ostream &out, unsigned int indent) const {
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"BaseParticleEmitter";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void BaseParticleEmitter::
+write(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"BaseParticleEmitter:\n";
-  //ReferenceCount::output(out, indent+2);
+  out.width(indent+2); out<<""; out<<"_emission_type "<<_emission_type<<"\n";
+  out.width(indent+2); out<<""; out<<"_amplitude "<<_amplitude<<"\n";
+  out.width(indent+2); out<<""; out<<"_amplitude_spread "<<_amplitude_spread<<"\n";
+  out.width(indent+2); out<<""; out<<"_offset_force "<<_offset_force<<"\n";
+  //ReferenceCount::write(out, indent+2);
+  #endif //] NDEBUG
 }

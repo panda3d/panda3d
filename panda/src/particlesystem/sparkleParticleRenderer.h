@@ -68,6 +68,9 @@ PUBLISHED:
   INLINE float get_death_radius() const;
   INLINE SparkleParticleLifeScale get_life_scale() const;
 
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent=0) const;
+
 private:
   Colorf _center_color;
   Colorf _edge_color;
@@ -83,7 +86,8 @@ private:
   int _max_pool_size;
 
   SparkleParticleLifeScale _life_scale;
-  LPoint3f _aabb_min, _aabb_max;
+  LPoint3f _aabb_min;
+  LPoint3f _aabb_max;
 
   INLINE float get_radius(BaseParticle *bp);
 

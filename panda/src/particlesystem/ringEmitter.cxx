@@ -102,3 +102,34 @@ assign_initial_velocity(LVector3f& vel) {
 
   vel.set(vel_x, vel_y, vel_z);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void RingEmitter::
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"RingEmitter";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void RingEmitter::
+write(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent); out<<""; out<<"RingEmitter:\n";
+  out.width(indent+2); out<<""; out<<"_radius "<<_radius<<"\n";
+  out.width(indent+2); out<<""; out<<"_aoe "<<_aoe<<"\n";
+  out.width(indent+2); out<<""; out<<"_sin_theta "<<_sin_theta<<"\n";
+  out.width(indent+2); out<<""; out<<"_cos_theta "<<_cos_theta<<"\n";
+  BaseParticleEmitter::write(out, indent+2);
+  #endif //] NDEBUG
+}

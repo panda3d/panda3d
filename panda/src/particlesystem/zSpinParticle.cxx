@@ -122,3 +122,35 @@ float ZSpinParticle::
 get_theta() const {
   return _cur_angle;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void ZSpinParticle::
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"ZSpinParticle";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void ZSpinParticle::
+write(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent); out<<""; out<<"ZSpinParticle:\n";
+  out.width(indent+2); out<<""; out<<"_initial_angle "<<_initial_angle<<"\n";
+  out.width(indent+2); out<<""; out<<"_final_angle "<<_final_angle<<"\n";
+  out.width(indent+2); out<<""; out<<"_cur_angle "<<_cur_angle<<"\n";
+  out.width(indent+2); out<<""; out<<"_angular_velocity "<<_angular_velocity<<"\n";
+  out.width(indent+2); out<<""; out<<"_bUseAngularVelocity "<<_bUseAngularVelocity<<"\n";
+  BaseParticle::write(out, indent+2);
+  #endif //] NDEBUG
+}

@@ -127,3 +127,39 @@ assign_initial_velocity(LVector3f& vel) {
 
   vel.set(vel_x, vel_y, vel_z);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void DiscEmitter::
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"DiscEmitter";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void DiscEmitter::
+write(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent); out<<""; out<<"DiscEmitter:\n";
+  out.width(indent+2); out<<""; out<<"_radius "<<_radius<<"\n";
+  out.width(indent+2); out<<""; out<<"_outer_aoe "<<_outer_aoe<<"\n";
+  out.width(indent+2); out<<""; out<<"_inner_aoe "<<_inner_aoe<<"\n";
+  out.width(indent+2); out<<""; out<<"_outer_magnitude "<<_outer_magnitude<<"\n";
+  out.width(indent+2); out<<""; out<<"_inner_magnitude "<<_inner_magnitude<<"\n";
+  out.width(indent+2); out<<""; out<<"_cubic_lerping "<<_cubic_lerping<<"\n";
+  out.width(indent+2); out<<""; out<<"_distance_from_center "<<_distance_from_center<<"\n";
+  out.width(indent+2); out<<""; out<<"_sinf_theta "<<_sinf_theta<<"\n";
+  out.width(indent+2); out<<""; out<<"_cosf_theta "<<_cosf_theta<<"\n";
+  BaseParticleEmitter::write(out, indent+2);
+  #endif //] NDEBUG
+}

@@ -59,8 +59,9 @@ PUBLISHED:
 
   INLINE void set_user_alpha(float ua);
   INLINE float get_user_alpha() const;
-  
-  virtual void output(ostream &out, unsigned int indent=0) const;
+
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent=0) const;
 
 public:
   virtual BaseParticleRenderer *make_copy() = 0;

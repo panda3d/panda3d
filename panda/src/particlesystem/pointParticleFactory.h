@@ -32,6 +32,9 @@ PUBLISHED:
   PointParticleFactory(const PointParticleFactory &copy);
   virtual ~PointParticleFactory();
 
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent=0) const;
+
 private:
   virtual BaseParticle *alloc_particle() const;
   virtual void populate_child_particle(BaseParticle *bp) const;

@@ -249,7 +249,30 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void LineParticleRenderer::
-output(ostream &out, unsigned int indent) const {
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"LineParticleRenderer";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void LineParticleRenderer::
+write(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
   out.width(indent); out<<""; out<<"LineParticleRenderer:\n";
-  BaseParticleRenderer::output(out, indent+2);
+  out.width(indent+2); out<<""; out<<"_head_color "<<_head_color<<"\n";
+  out.width(indent+2); out<<""; out<<"_tail_color "<<_tail_color<<"\n";
+  out.width(indent+2); out<<""; out<<"_line_primitive "<<_line_primitive<<"\n";
+  out.width(indent+2); out<<""; out<<"_vertex_array "<<_vertex_array<<"\n";
+  out.width(indent+2); out<<""; out<<"_color_array "<<_color_array<<"\n";
+  out.width(indent+2); out<<""; out<<"_max_pool_size "<<_max_pool_size<<"\n";
+  out.width(indent+2); out<<""; out<<"_aabb_min "<<_aabb_min<<"\n";
+  out.width(indent+2); out<<""; out<<"_aabb_max "<<_aabb_max<<"\n";
+  BaseParticleRenderer::write(out, indent+2);
+  #endif //] NDEBUG
 }

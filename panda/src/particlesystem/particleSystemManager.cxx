@@ -117,3 +117,51 @@ do_particles(float dt) {
   //  cout << "PSM::do_particles finished." << endl;
   //  cout << "ParticleSystemManager::doparticles exiting." << endl;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void ParticleSystemManager::
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"ParticleSystemManager";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write_ps_list
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void ParticleSystemManager::
+write_ps_list(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent);
+  out<<""<<"_ps_list ("<<_ps_list.size()<<" systems)\n";
+  for (plist< PT(ParticleSystem) >::const_iterator i=_ps_list.begin();
+       i != _ps_list.end();
+       ++i) {
+    (*i)->write(out, indent+2);
+  }
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void ParticleSystemManager::
+write(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent); out<<""; out<<"ParticleSystemManager:\n";
+  out.width(indent+2); out<<""; out<<"_nth_frame "<<_nth_frame<<"\n";
+  out.width(indent+2); out<<""; out<<"_cur_frame "<<_cur_frame<<"\n";
+  write_ps_list(out, indent+2);
+  #endif //] NDEBUG
+}

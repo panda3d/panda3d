@@ -214,3 +214,52 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     cur_node_iter++;
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void GeomParticleRenderer::
+output(ostream &out) const {
+  #ifndef NDEBUG //[
+  out<<"GeomParticleRenderer";
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write_linear_forces
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void GeomParticleRenderer::
+write_linear_forces(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent);
+  out<<""<<"_node_vector ("<<_node_vector.size()<<" forces)\n";
+  for (pvector< PT(PandaNode) >::const_iterator i=_node_vector.begin();
+       i != _node_vector.end();
+       ++i) {
+    (*i)->write(out, indent+2);
+  }
+  #endif //] NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : write
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void GeomParticleRenderer::
+write(ostream &out, int indent) const {
+  #ifndef NDEBUG //[
+  out.width(indent); out<<""; out<<"GeomParticleRenderer:\n";
+  out.width(indent+2); out<<""; out<<"_geom_node "<<_geom_node<<"\n";
+  out.width(indent+2); out<<""; out<<"_pool_size "<<_pool_size<<"\n";
+  write_linear_forces(out, indent+2);
+  BaseParticleRenderer::write(out, indent+2);
+  #endif //] NDEBUG
+}

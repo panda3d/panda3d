@@ -53,7 +53,7 @@ public:
   virtual PhysicsObject *make_copy() const = 0;
 
   virtual void output(ostream &out) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
+  virtual void write(ostream &out, int indent=0) const;
 
 protected:
   BaseParticle(int lifespan = 1, bool alive = false);

@@ -28,14 +28,17 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS SphereVolumeEmitter : public BaseParticleEmitter {
 PUBLISHED:
-  SphereVolumeEmitter(void);
+  SphereVolumeEmitter();
   SphereVolumeEmitter(const SphereVolumeEmitter &copy);
-  virtual ~SphereVolumeEmitter(void);
+  virtual ~SphereVolumeEmitter();
 
-  virtual BaseParticleEmitter *make_copy(void);
+  virtual BaseParticleEmitter *make_copy();
 
   INLINE void set_radius(float r);
-  INLINE float get_radius(void) const;
+  INLINE float get_radius() const;
+
+  virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent=0) const;
 
 private:
   float _radius;
