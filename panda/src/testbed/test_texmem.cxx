@@ -29,17 +29,20 @@ event_T(CPT_Event, void *data) {
 
   GraphicsStateGuardian *gsg = wf->get_graphics_window()->get_gsg();
   Camera *camera = wf->get_camera(0);
+  NodePath models = framework->get_models();
+  NodePath render = wf->get_render();
 
   if (!bogus_scene.is_empty()) {
     // We are undoing a previous shift-t.
     bogus_scene.remove_node();
-    camera->set_scene(wf->get_render());
+    models.show();
     return;
   }
 
-  // We are doing a new shift-t.  Create a bogus scene for the camera.
-  bogus_scene = NodePath("bogus");
-  camera->set_scene(bogus_scene);
+  // We are doing a new shift-t.  Hide the normal models, and create a
+  // new bogus node to show the texture grid object.
+  models.hide();
+  bogus_scene = render.attach_new_node("bogus");
 
   // Try to force a flush of the texture memory by making a scene with
   // lots of bogus textures.
