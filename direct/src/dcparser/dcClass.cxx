@@ -620,7 +620,19 @@ pack_required_field(DCPacker &packer, PyObject *distobj,
     PyObject *tuple = PyTuple_New(1);
     PyTuple_SET_ITEM(tuple, 0, result);
     result = tuple;
-  }        
+
+  } else {
+    // Otherwise, it had better already be a sequence or tuple of some
+    // sort.
+    if (!PySequence_Check(result)) {
+      ostringstream strm;
+      strm << "Since dclass " << get_name() << " method " << setter_name
+           << " is declared to have multiple parameters, Python function " 
+           << getter_name << " must return a list or tuple.\n";
+      nassert_raise(strm.str());
+      return false;
+    }
+  }
   
   // Now pack the arguments into the datagram.
   bool pack_ok = atom->pack_args(packer, result);
