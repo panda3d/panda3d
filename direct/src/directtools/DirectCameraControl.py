@@ -58,6 +58,8 @@ class DirectCameraControl(PandaObject):
             ['-', self.zoomCam, -2.0, t],
             ['_', self.zoomCam, -2.0, t],
             ]
+        # set this to true to prevent the camera from rolling
+        self.lockRoll = False
 
     def toggleMarkerVis(self):
         if direct.cameraControl.coaMarker.isHidden():
@@ -198,6 +200,9 @@ class DirectCameraControl(PandaObject):
                                 (0.5 * direct.dr.mouseDeltaX *
                                  direct.dr.fovH),
                                 0.0, 0.0)
+        if (self.lockRoll == True):
+            # flatten roll
+            direct.camera.setR(0)
         return Task.cont
 
     def HPPanTask(self, state):
@@ -238,6 +243,9 @@ class DirectCameraControl(PandaObject):
                                  (deltaX * direct.dr.fovH),
                                  (-deltaY * direct.dr.fovV),
                                  0.0)
+            if (self.lockRoll == True):
+                # flatten roll
+                direct.camera.setR(0)
             self.camManipRef.setPos(self.coaMarkerPos)
             self.camManipRef.setHpr(direct.camera, ZERO_POINT)
         else:
@@ -246,6 +254,9 @@ class DirectCameraControl(PandaObject):
                                     (-1 * deltaX * 180.0),
                                     (deltaY * 180.0),
                                     0.0)
+            if (self.lockRoll == True):
+                # flatten roll
+                self.camManipRef.setR(0)
             direct.camera.setTransform(self.camManipRef, wrt)
         return Task.cont
 
@@ -268,6 +279,9 @@ class DirectCameraControl(PandaObject):
         deltaAngle = angle - state.lastAngle
         state.lastAngle = angle
         self.camManipRef.setHpr(self.camManipRef, 0, 0, deltaAngle)
+        if (self.lockRoll == True):
+            # flatten roll
+            self.camManipRef.setR(0)
         direct.camera.setTransform(self.camManipRef, wrt)
         return Task.cont
 
