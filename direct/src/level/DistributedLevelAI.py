@@ -112,7 +112,7 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         def scheduleAutosave(self):
             if hasattr(self, 'autosaveTask'):
                 return
-            self.autosaveTaskName = self.uniqueName('saveSpec')
+            self.autosaveTaskName = self.uniqueName('autosaveSpec')
             self.autosaveTask = taskMgr.doMethodLater(
                 DistributedLevelAI.AutosavePeriod * 60,
                 self.autosaveSpec,
