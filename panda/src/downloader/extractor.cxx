@@ -209,6 +209,40 @@ step() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Extractor::get_progress
+//       Access: Public
+//  Description: Returns the fraction of the Multifile extracted so
+//               far.
+////////////////////////////////////////////////////////////////////
+float Extractor::
+get_progress() const {
+  if (!_initiated) {
+    return 0.0f;
+  }
+
+  float progress_through_file;
+
+  if (_read == (istream *)NULL) {
+    // Time to open the next subfile.
+    progress_through_file = 0.0f;
+
+  } else if (_subfile_pos >= _subfile_length) {
+    // Time to close this subfile.
+    progress_through_file = 1.0f;
+
+  } else {
+    // In the middle of processing a subfile.
+    progress_through_file = (float)_subfile_pos / (float)_subfile_length;
+  }
+
+  float progress_through_list =
+    (((float)_request_index + progress_through_file) / 
+     (float)(_requests.size() + 1));
+
+  return progress_through_list;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Extractor::run
 //       Access: Published
 //  Description: A convenience function to extract the Multifile all

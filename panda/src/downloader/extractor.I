@@ -15,17 +15,3 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
-
-#include "config_downloader.h"
-
-////////////////////////////////////////////////////////////////////
-//     Function: Extractor::get_progress
-//       Access: Public
-//  Description: Returns the fraction of the Multifile extracted so
-//               far.
-////////////////////////////////////////////////////////////////////
-INLINE float Extractor::
-get_progress() const {
-  nassertr(_initiated, 0.0f);
-  return ((float)_subfile_index / (float)(_multifile.get_num_subfiles() + 1));
-}

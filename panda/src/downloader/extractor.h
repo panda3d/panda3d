@@ -51,7 +51,7 @@ PUBLISHED:
   int request_all_subfiles();
 
   int step();
-  INLINE float get_progress(void) const;
+  float get_progress(void) const;
 
   bool run();
 
