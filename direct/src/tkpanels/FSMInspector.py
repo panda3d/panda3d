@@ -447,11 +447,11 @@ class StateInspector(Pmw.MegaArchetype):
 """
 # USING FINITE STATE INSPECTOR
 
-1)	in your Configrc add:
+1)      in your Configrc add:
 
 want-tk #t
 
-2)	start up the show and create a Finite State Machine
+2)      start up the show and create a Finite State Machine
 
 from ShowBaseGlobal import *
 
@@ -475,8 +475,6 @@ import FSMInspector
 
 inspector = FSMInspector.FSMInspector(fsm, title = fsm.getName())
 
-=======
-
 # Note, the inspectorPos argument is optional, the inspector will
 # automagically position states on startup
 fsm = FSM.FSM('stopLight', [
@@ -498,7 +496,7 @@ fsm = FSM.FSM('stopLight', [
         'red',
         'red')
 
-3) 	Pop open a viewer
+3)      Pop open a viewer
 
 import FSMInspector
 insp = FSMInspector.FSMInspector(fsm)
@@ -509,14 +507,14 @@ insp = FSMInspector.FSMInspector(fsm, title = fsm.getName())
 
 Features:
    -  Right mouse button over a state pops up a menu allowing you to
-	request a transition to that state
+        request a transition to that state
    -  Middle mouse button will grab the canvas and slide things around
-	if your state machine is bigger than the viewing area
+        if your state machine is bigger than the viewing area
    -  There are some self explanatory menu options up at the top, the most
-	useful being: "print FSM layout" which will print out python code
-	which will create an FSM augmented with layout information for the
-	viewer so everything shows up in the same place the next time you
-	inspect the state machine
+        useful being: "print FSM layout" which will print out python code
+        which will create an FSM augmented with layout information for the
+        viewer so everything shows up in the same place the next time you
+        inspect the state machine
 
 CAVEAT:
 
@@ -543,6 +541,5 @@ from ShowBaseGlobal import *
 import FSMInspector
 inspector = FSMInspector.FSMInspector(fsm, title = fsm.getName())
 
->>>>>>> 1.7
 """
 
