@@ -110,18 +110,18 @@ extract_words(const string &str, vector_string &words) {
   int num_words = 0;
 
   size_t pos = 0;
-  while (pos < str.length() && isspace(str[pos])) {
+  while (pos < str.length() && isspace((unsigned int)str[pos])) {
     pos++;
   }
   while (pos < str.length()) {
     size_t word_start = pos;
-    while (pos < str.length() && !isspace(str[pos])) {
+    while (pos < str.length() && !isspace((unsigned int)str[pos])) {
       pos++;
     }
     words.push_back(str.substr(word_start, pos - word_start));
     num_words++;
 
-    while (pos < str.length() && isspace(str[pos])) {
+    while (pos < str.length() && isspace((unsigned int)str[pos])) {
       pos++;
     }
   }
@@ -164,7 +164,7 @@ tokenize(const string &str, vector_string &words, const string &delimiters) {
 string
 trim_left(const string &str) {
   size_t begin = 0;
-  while (begin < str.size() && isspace(str[begin])) {
+  while (begin < str.size() && isspace((unsigned int)str[begin])) {
     begin++;
   }
 
@@ -180,7 +180,7 @@ string
 trim_right(const string &str) {
   size_t begin = 0;
   size_t end = str.size();
-  while (end > begin && isspace(str[end - 1])) {
+  while (end > begin && isspace((unsigned int)str[end - 1])) {
     end--;
   }
 
