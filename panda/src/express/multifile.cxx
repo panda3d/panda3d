@@ -281,19 +281,20 @@ write_to_multifile(ofstream &write_stream) {
 //		 Advances the start pointer as it writes.
 ////////////////////////////////////////////////////////////////////
 bool Multifile::Memfile::
-write(char *&start, int &size) {
+write(char *&start, int &size, const Filename &rel_path) {
   // Make sure we've got a complete header first
   if (parse_header(start, size) == false) 
     return false;
 
   // Try to open the file for writing
   if (_file_open == false) {
-    _name.set_binary();
-    _name.make_dir();
-    if ((_file_open = _name.open_write(_write_stream)) == false) {
+    Filename name = rel_path.get_fullpath() + _name.get_fullpath();
+    name.set_binary();
+    name.make_dir();
+    if ((_file_open = name.open_write(_write_stream)) == false) {
       express_cat.error()
         << "Multfile::Memfile::write() - Couldn't open file: "
-        << _name << endl;
+        << name << endl;
       return false;
     }
     _file_open = true;
@@ -573,13 +574,13 @@ write(char *&start, int &size) {
 //		 extracted to disk files.
 ////////////////////////////////////////////////////////////////////
 bool Multifile::
-write_extract(char *&start, int &size) {
+write_extract(char *&start, int &size, const Filename &rel_path) {
   if (parse_header(start, size) == false)
     return false;
   if (_current_mfile == (Memfile *)0L)
     _current_mfile = new Memfile;
   for (;;) {
-    if (_current_mfile->write(start, size) == false)
+    if (_current_mfile->write(start, size, rel_path) == false)
       return false;
     if (++_mfiles_written == _num_mfiles)
       return true;

@@ -29,9 +29,9 @@ public:
   ~Extractor(void);
 
   int request_extract(const Filename &source_file,
-			 const string &event_name);
+		 const string &event_name, const Filename &rel_path = "");
 
-  bool extract(Filename &source_file);
+  bool extract(Filename &source_file, const Filename &rel_path);
 
 private:
   void init(PT(Buffer) buffer);

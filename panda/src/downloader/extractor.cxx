@@ -26,14 +26,17 @@
 class ExtractorToken : public ReferenceCount {
 public:
   INLINE ExtractorToken(uint id, const Filename &source_file, 
-	   	    	const string &event_name) {
+	   	    	const string &event_name,
+			const Filename &rel_path) {
     _id = id;
     _source_file = source_file;
     _event_name = event_name;
+    _rel_path = rel_path;
   }
   int _id;
   Filename _source_file;
   string _event_name;
+  Filename _rel_path;
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -88,7 +91,8 @@ Extractor::
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 int Extractor::
-request_extract(const Filename &source_file, const string &event_name) {
+request_extract(const Filename &source_file, const string &event_name,
+		const Filename &rel_path) {
 
   PT(ExtractorToken) tok;
   if (_threads_enabled) {
@@ -115,7 +119,8 @@ request_extract(const Filename &source_file, const string &event_name) {
           << "Extract requested for file: " << source_file << endl;
       }
 
-      tok = new ExtractorToken(_next_token++, source_file, event_name);
+      tok = new ExtractorToken(_next_token++, source_file, event_name,
+						rel_path);
       _token_board->_waiting.insert(tok);
 
       _request_cond->signal();
@@ -135,7 +140,8 @@ request_extract(const Filename &source_file, const string &event_name) {
         << "Extract requested for file: " << source_file << endl; 
     }
 
-    tok = new ExtractorToken(_next_token++, source_file, event_name);
+    tok = new ExtractorToken(_next_token++, source_file, event_name,
+						rel_path);
     _token_board->_waiting.insert(tok);
     process_request();
   }
@@ -161,7 +167,7 @@ process_request() {
   // If there is actually a request token - process it
   while (!_token_board->_waiting.is_empty()) {
     PT(ExtractorToken) tok = _token_board->_waiting.extract();
-    if (extract(tok->_source_file)) {
+    if (extract(tok->_source_file, tok->_rel_path)) {
       _token_board->_done.insert(tok);
 
       // Throw a "done" event now.
@@ -188,7 +194,7 @@ process_request() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool Extractor::
-extract(Filename &source_file) {
+extract(Filename &source_file, const Filename &rel_path) {
 
   // Open source file
   ifstream read_stream;
@@ -229,7 +235,7 @@ extract(Filename &source_file) {
     // Write to the out file
     char *start = _buffer->_buffer;
     int size = source_buffer_length; 
-    if (mfile.write_extract(start, size) == true)
+    if (mfile.write_extract(start, size, rel_path) == true)
       handled_all_input = true;
 
     nap();
