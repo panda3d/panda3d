@@ -24,7 +24,7 @@
 class EXPCL_PANDA FLOATNAME(Plane) : public FLOATNAME(LVecBase4) {
 PUBLISHED:
   INLINE_MATHUTIL FLOATNAME(Plane)(void);
-  INLINE_MATHUTIL FLOATNAME(Plane)(const FLOATNAME(Plane) &copy);
+  INLINE_MATHUTIL FLOATNAME(Plane)(const FLOATNAME(LVecBase4) &copy);
   INLINE_MATHUTIL FLOATNAME(Plane)(const FLOATNAME(LPoint3) &a, 
                                    const FLOATNAME(LPoint3) &b,
                                    const FLOATNAME(LPoint3) &c);

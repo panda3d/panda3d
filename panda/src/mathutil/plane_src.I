@@ -37,7 +37,7 @@ FLOATNAME(Plane)(void) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_MATHUTIL FLOATNAME(Plane)::
-FLOATNAME(Plane)(const FLOATNAME(Plane) &copy) :
+FLOATNAME(Plane)(const FLOATNAME(LVecBase4) &copy) :
   FLOATNAME(LVecBase4)(copy)
 {
 }
