@@ -49,10 +49,10 @@ dispatch_event(const CPT_Event &event) {
   if (hi != _hooks.end()) {
     // Yes, it is!  Now walk through all the functions assigned to
     // that event name.
-    const Functions &functions = (*hi).second;
+    Functions copy_functions = (*hi).second;
 
     Functions::const_iterator fi;
-    for (fi = functions.begin(); fi != functions.end(); ++fi) {
+    for (fi = copy_functions.begin(); fi != copy_functions.end(); ++fi) {
       if (event_cat->is_spam())
 	event_cat->spam() << "calling callback 0x" << (void*)(*fi)
 			  << " for event '" << event->get_name() << "'"
@@ -67,10 +67,10 @@ dispatch_event(const CPT_Event &event) {
 
   if (cbhi != _cbhooks.end()) {
     // found one
-    const CallbackFunctions &functions = (*cbhi).second;
+    CallbackFunctions copy_functions = (*cbhi).second;
 
     CallbackFunctions::const_iterator cbfi;
-    for (cbfi = functions.begin(); cbfi != functions.end(); ++cbfi) {
+    for (cbfi = copy_functions.begin(); cbfi != copy_functions.end(); ++cbfi) {
       ((*cbfi).first)(event, (*cbfi).second);
     }
   }
