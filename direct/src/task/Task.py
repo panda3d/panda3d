@@ -1,6 +1,7 @@
 from libpandaexpressModules import *
 from DirectNotifyGlobal import *
 from PythonUtil import *
+from MessengerGlobal import *
 import time
 import fnmatch
 import string
