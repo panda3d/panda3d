@@ -110,6 +110,16 @@ class ClusterClient(DirectObject.DirectObject):
     def deselectNodePath(self, nodePath):
         self(self.getNodePathFindCmd(nodePath) + '.deselect()', 0)
 
+    def sendCamFrustum(self, focalLength, filmSize, filmOffset, serverList=[]):
+        self.notify.debug('updating camera %d frustum' % i)
+        print 'frustumData', serverList, 
+        print focalLength, filmSize[0],filmSize[1],filmOffset[0],filmOffset[1]
+        return
+        if not serverList:
+            serverList = self.serverList
+        for server in serverList:
+            server.sendCamFrustum(focalLength, filmSize, filmOffset)
+
     def loadModel(self, nodePath):
         pass
 
