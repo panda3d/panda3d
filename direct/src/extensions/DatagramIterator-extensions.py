@@ -56,6 +56,13 @@
                 retVal = []
                 for i in range(len):
                     retVal.append(self.getUint32())
+            elif subatomicType == STUint32uint8array:
+                len = self.getUint16() / 5
+                retVal = []
+                for i in range(len):
+                    a = self.getUint32()
+                    b = self.getUint8()
+                    retVal.append((a, b))
             else:
                 raise Exception("Error: No such type as: " + str(subAtomicType))
         else:
@@ -112,6 +119,13 @@
                 retVal = []
                 for i in range(len):
                     retVal.append(self.getUint32()/float(divisor))
+            elif subatomicType == STUint32uint8array:
+                len = self.getUint16() / 5
+                retVal = []
+                for i in range(len):
+                    a = self.getUint32()
+                    b = self.getUint8()
+                    retVal.append((a / float(divisor), b / float(divisor)))
             else:
                 raise Exception("Error: No such type as: " + str(subAtomicType))
 

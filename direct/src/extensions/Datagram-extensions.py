@@ -48,6 +48,11 @@
             self.addUint16(len(arg) << 2)
             for i in arg:
                 self.addUint32(int(i*divisor))
+        elif subatomicType == STUint32uint8array:
+            self.addUint16(len(arg) * 5)
+            for i in arg:
+                self.addUint32(int(i[0]*divisor))
+                self.addUint8(int(i[1]*divisor))
         else:
             raise Exception("Error: No such type as: " + subatomicType)
         return None
