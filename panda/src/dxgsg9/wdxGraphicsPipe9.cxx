@@ -820,8 +820,13 @@ make_device(void *scrn) {
 ////////////////////////////////////////////////////////////////////
 
 PT(GraphicsStateGuardian) wdxGraphicsPipe9::
-make_gsg(const FrameBufferProperties &properties) {
-
+make_gsg(const FrameBufferProperties &properties,
+         GraphicsStateGuardian *share_with) {
+  if (share_with != (GraphicsStateGuardian *)NULL) {
+    wdxdisplay9_cat.error()
+      << "wdxGraphicsPipe9 does not presently support sharing texture contexts.\n";
+    return NULL;
+  }
 
   // FrameBufferProperties really belongs as part of the window/renderbuffer specification
   // put here because of GLX multithreading requirement

@@ -80,8 +80,23 @@ pipe_constructor() {
 //               be called in the draw thread for the GSG.
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsStateGuardian) OsMesaGraphicsPipe::
-make_gsg(const FrameBufferProperties &properties) {
-  return new OSMesaGraphicsStateGuardian(properties);
+make_gsg(const FrameBufferProperties &properties, 
+         GraphicsStateGuardian *share_with) {
+
+  OSMesaGraphicsStateGuardian *share_gsg = NULL;
+
+  if (share_with != (GraphicsStateGuardian *)NULL) {
+    if (!share_with->is_exact_type(OSMesaGraphicsStateGuardian::get_class_type())) {
+      mesadisplay_cat.error()
+        << "Cannot share context between OSMesaGraphicsStateGuardian and "
+        << share_with->get_type() << "\n";
+      return NULL;
+    }
+
+    DCAST_INTO_R(share_gsg, share_with, NULL);
+  }
+
+  return new OSMesaGraphicsStateGuardian(properties, share_gsg);
 }
 
 ////////////////////////////////////////////////////////////////////

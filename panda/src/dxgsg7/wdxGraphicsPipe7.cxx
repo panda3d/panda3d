@@ -85,7 +85,13 @@ make_window(GraphicsStateGuardian *gsg, const string &name) {
 
 
 PT(GraphicsStateGuardian) wdxGraphicsPipe7::
-make_gsg(const FrameBufferProperties &properties) {
+make_gsg(const FrameBufferProperties &properties,
+         GraphicsStateGuardian *share_with) {
+  if (share_with != (GraphicsStateGuardian *)NULL) {
+    wdxdisplay7_cat.error()
+      << "wdxGraphicsPipe7 does not presently support sharing texture contexts.\n";
+    return NULL;
+  }
 
   // FrameBufferProperties really belongs as part of the window/renderbuffer specification
   // put here because of GLX multithreading requirement

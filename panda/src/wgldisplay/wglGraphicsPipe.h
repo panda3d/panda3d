@@ -37,7 +37,8 @@ public:
   static PT(GraphicsPipe) pipe_constructor();
 
 protected:
-  virtual PT(GraphicsStateGuardian) make_gsg(const FrameBufferProperties &properties);
+  virtual PT(GraphicsStateGuardian) make_gsg(const FrameBufferProperties &properties,
+                                             GraphicsStateGuardian *share_with);
   virtual PT(GraphicsWindow) make_window(GraphicsStateGuardian *gsg,
                                          const string &name);
   virtual PT(GraphicsBuffer) make_buffer(GraphicsStateGuardian *gsg, 

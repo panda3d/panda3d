@@ -77,7 +77,7 @@ get_auto_flip() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PT(GraphicsStateGuardian) GraphicsEngine::
 make_gsg(GraphicsPipe *pipe) {
-  return make_gsg(pipe, get_frame_buffer_properties());
+  return make_gsg(pipe, get_frame_buffer_properties(), NULL);
 }
 
 

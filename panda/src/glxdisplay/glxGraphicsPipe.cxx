@@ -161,11 +161,27 @@ pipe_constructor() {
 //               be called in the draw thread for the GSG.
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsStateGuardian) glxGraphicsPipe::
-make_gsg(const FrameBufferProperties &properties) {
+make_gsg(const FrameBufferProperties &properties,
+         GraphicsStateGuardian *share_with) {
   if (!_is_valid) {
     return NULL;
   }
-  
+
+  glxGraphicsStateGuardian *share_gsg = NULL;
+  GLXContext share_context = NULL;
+
+  if (share_with != (GraphicsStateGuardian *)NULL) {
+    if (!share_with->is_exact_type(glxGraphicsStateGuardian::get_class_type())) {
+      glxdisplay_cat.error()
+        << "Cannot share context between glxGraphicsStateGuardian and "
+        << share_with->get_type() << "\n";
+      return NULL;
+    }
+
+    DCAST_INTO_R(share_gsg, share_with, NULL);
+    share_context = share_gsg->_context;
+  }
+
   FrameBufferProperties new_properties = properties;
   GLXFBConfig fbconfig = choose_fbconfig(new_properties);
   if (fbconfig == None) {
@@ -174,7 +190,8 @@ make_gsg(const FrameBufferProperties &properties) {
 
   // Attempt to create a GL context.
   GLXContext context = 
-    glXCreateNewContext(_display, fbconfig, GLX_RGBA_TYPE, NULL, GL_TRUE);
+    glXCreateNewContext(_display, fbconfig, GLX_RGBA_TYPE, share_context,
+                        GL_TRUE);
   if (context == NULL) {
     glxdisplay_cat.error()
       << "Could not create GL context.\n";
@@ -183,7 +200,7 @@ make_gsg(const FrameBufferProperties &properties) {
 
   // Now we can make a GSG.
   PT(glxGraphicsStateGuardian) gsg = 
-    new glxGraphicsStateGuardian(new_properties, NULL, context, fbconfig,
+    new glxGraphicsStateGuardian(new_properties, share_gsg, context, fbconfig,
                                  _display, _screen);
   return gsg.p();
 }

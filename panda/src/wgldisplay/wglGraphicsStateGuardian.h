@@ -34,7 +34,9 @@
 ////////////////////////////////////////////////////////////////////
 class wglGraphicsStateGuardian : public GLGraphicsStateGuardian {
 public:
-  wglGraphicsStateGuardian(const FrameBufferProperties &properties, int pfnum);
+  wglGraphicsStateGuardian(const FrameBufferProperties &properties, 
+                           wglGraphicsStateGuardian *share_with,
+                           int pfnum);
   virtual ~wglGraphicsStateGuardian();
 
   INLINE int get_pfnum() const;
@@ -48,6 +50,13 @@ protected:
 
 private:
   void make_context(HDC hdc);
+  HGLRC get_share_context() const;
+  void redirect_share_pool(wglGraphicsStateGuardian *share_with);
+
+  // We have to save a pointer to the GSG we intend to share texture
+  // context with, since we don't create our own context in the
+  // constructor.
+  PT(wglGraphicsStateGuardian) _share_with;
 
   // All windows that share a particular GL context must also share
   // the same pixel format; therefore, we store the pixel format

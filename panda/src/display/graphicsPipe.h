@@ -93,7 +93,8 @@ protected:
   // The make_window() and make_gsg() interfaces on GraphicsPipe are
   // protected; don't try to call them directly.  Instead, use
   // the interface on GraphicsEngine to make a new window or gsg.
-  virtual PT(GraphicsStateGuardian) make_gsg(const FrameBufferProperties &properties);
+  virtual PT(GraphicsStateGuardian) make_gsg(const FrameBufferProperties &properties,
+                                             GraphicsStateGuardian *share_with);
   virtual void close_gsg(GraphicsStateGuardian *gsg);
   virtual PT(GraphicsWindow) make_window(GraphicsStateGuardian *gsg, 
                                          const string &name);

@@ -81,9 +81,23 @@ pipe_constructor() {
 //               be called in the draw thread for the GSG.
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsStateGuardian) wglGraphicsPipe::
-make_gsg(const FrameBufferProperties &properties) {
+make_gsg(const FrameBufferProperties &properties, 
+         GraphicsStateGuardian *share_with) {
   if (!_is_valid) {
     return NULL;
+  }
+
+  wglGraphicsStateGuardian *share_gsg = NULL;
+
+  if (share_with != (GraphicsStateGuardian *)NULL) {
+    if (!share_with->is_exact_type(wglGraphicsStateGuardian::get_class_type())) {
+      wgldisplay_cat.error()
+        << "Cannot share context between wglGraphicsStateGuardian and "
+        << share_with->get_type() << "\n";
+      return NULL;
+    }
+
+    DCAST_INTO_R(share_gsg, share_with, NULL);
   }
 
   // Make a copy of the supplied properties so we can possibly modify
@@ -109,7 +123,14 @@ make_gsg(const FrameBufferProperties &properties) {
   }
 
   PT(wglGraphicsStateGuardian) gsg = 
-    new wglGraphicsStateGuardian(properties, pfnum);
+    new wglGraphicsStateGuardian(properties, share_gsg, pfnum);
+
+  // Ideally, we should be able to detect whether the share_gsg will
+  // be successful, and return NULL if it won't work.  But we can't do
+  // that yet, because we can't try to actually share the gsg until we
+  // create the context, for which we need to have a window.  That
+  // means the app will just have to trust it will work; if it doesn't
+  // work, too bad.
 
   return gsg.p();
 }

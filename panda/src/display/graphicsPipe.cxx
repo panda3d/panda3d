@@ -124,7 +124,8 @@ make_device(void *scrn) {
 //               be called in the draw thread for the GSG.
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsStateGuardian) GraphicsPipe::
-make_gsg(const FrameBufferProperties &properties) {
+make_gsg(const FrameBufferProperties &properties, 
+         GraphicsStateGuardian *share_with) {
   display_cat.error()
     << "make_gsg() unimplemented by " << get_type() << "\n";
   return NULL;

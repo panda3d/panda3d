@@ -28,8 +28,10 @@ TypeHandle wglGraphicsStateGuardian::_type_handle;
 ////////////////////////////////////////////////////////////////////
 wglGraphicsStateGuardian::
 wglGraphicsStateGuardian(const FrameBufferProperties &properties,
+                         wglGraphicsStateGuardian *share_with,
                          int pfnum) : 
   GLGraphicsStateGuardian(properties),
+  _share_with(share_with),
   _pfnum(pfnum)
 {
   _made_context = false;
@@ -162,5 +164,73 @@ make_context(HDC hdc) {
     wgldisplay_cat.error()
       << "Could not create GL context.\n";
     return;
+  }
+
+  // Now share texture context with the indicated GSG.
+  if (_share_with != (wglGraphicsStateGuardian *)NULL) {
+    HGLRC share_context = _share_with->get_share_context();
+    if (share_context == NULL) {
+      // Whoops, the target context hasn't yet made its own context.
+      // In that case, it will share context with us.
+      _share_with->redirect_share_pool(this);
+
+    } else {
+      if (!wglShareLists(share_context, _context)) {
+        wgldisplay_cat.error()
+          << "Could not share texture contexts between wglGraphicsStateGuardians.\n";
+        // Too bad we couldn't detect this error sooner.  Now there's
+        // really no way to tell the application it's hosed.
+
+      } else {
+        _prepared_objects = _share_with->get_prepared_objects();
+      }
+    }
+
+    _share_with = (wglGraphicsStateGuardian *)NULL;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsStateGuardian::get_share_context
+//       Access: Private
+//  Description: Returns a wgl context handle for the purpose of
+//               sharing texture context with this GSG.  This will
+//               either be the GSG's own context handle, if it exists
+//               yet, or the context handle of some other GSG that
+//               this GSG is planning to share with.  If this returns
+//               NULL, none of the GSG's in this share pool have yet
+//               created their context.
+////////////////////////////////////////////////////////////////////
+HGLRC wglGraphicsStateGuardian::
+get_share_context() const {
+  if (_made_context) {
+    return _context;
+  }
+  if (_share_with != (wglGraphicsStateGuardian *)NULL) {
+    return _share_with->get_share_context();
+  }
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsStateGuardian::redirect_share_pool
+//       Access: Private
+//  Description: Directs the GSG (along with all GSG's it is planning
+//               to share a texture context with) to share texture
+//               context with the indicated GSG.
+//
+//               This assumes that this GSG's context has not yet been
+//               created, and neither have any of the GSG's it is
+//               planning to share texture context with; but the
+//               graphics context for the indicated GSG has already
+//               been created.
+////////////////////////////////////////////////////////////////////
+void wglGraphicsStateGuardian::
+redirect_share_pool(wglGraphicsStateGuardian *share_with) {
+  nassertv(!_made_context);
+  if (_share_with != (wglGraphicsStateGuardian *)NULL) {
+    _share_with->redirect_share_pool(share_with);
+  } else {
+    _share_with = share_with;
   }
 }

@@ -26,10 +26,17 @@ TypeHandle OSMesaGraphicsStateGuardian::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 OSMesaGraphicsStateGuardian::
-OSMesaGraphicsStateGuardian(const FrameBufferProperties &properties) : 
+OSMesaGraphicsStateGuardian(const FrameBufferProperties &properties,
+                            OSMesaGraphicsStateGuardian *share_with) : 
   MesaGraphicsStateGuardian(properties)
 {
-  _context = OSMesaCreateContext(OSMESA_RGBA, NULL);
+  OSMesaContext share_context = NULL;
+  if (share_with != (OSMesaGraphicsStateGuardian *)NULL) {
+    share_context = share_with->_context;
+    _prepared_objects = share_with->get_prepared_objects();
+  }
+
+  _context = OSMesaCreateContext(OSMESA_RGBA, share_context);
 
   // I think OSMesa always creates single-buffered contexts.  I don't
   // see any documentation to this effect, but it seems to be the

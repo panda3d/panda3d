@@ -183,9 +183,10 @@ get_threading_model() const {
 //               runs one more time.
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsStateGuardian) GraphicsEngine::
-make_gsg(GraphicsPipe *pipe, const FrameBufferProperties &properties) {
+make_gsg(GraphicsPipe *pipe, const FrameBufferProperties &properties,
+         GraphicsStateGuardian *share_with) {
   // TODO: ask the draw thread to make the GSG.
-  PT(GraphicsStateGuardian) gsg = pipe->make_gsg(properties);
+  PT(GraphicsStateGuardian) gsg = pipe->make_gsg(properties, share_with);
   if (gsg != (GraphicsStateGuardian *)NULL) {
     gsg->_threading_model = get_threading_model();
     gsg->_pipe = pipe;
