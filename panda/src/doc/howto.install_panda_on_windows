@@ -119,7 +119,15 @@ Step 3: Install Cygwin (v1.0)
 Step 4: Create your home directory
   - Create a HOME directory:
     > mkdir /usr/<yourname>
-  - Create/copy necessary files: .cshrc, .emacs, Configrc, Config.pp
+  - Copy important startup files into your home directory:
+    > cd /v/win/install/wintools/panda
+    > cp .cshrc .emacs Configrc Config.pp /usr/<yourname>
+  - Make sure the contents of .cshrc are correct for your setup.  In
+    particular, make sure the definition for PANDA_ROOT matches the
+    directory you have installed Cygwin to (normally C:\Cygwin), and
+    that CVSROOT is correct for your CVS login (if $USERNAME is not
+    the same as your CVS/Unix account name, edit the variable as
+    necessary).
   - Set the $HOME environment variable:
     - On WinNT use the Registry:
       - Select "My Computer" icon from the desktop.
@@ -141,10 +149,8 @@ Step 4: Create your home directory
 
 Step 5: Update /usr/local/etc:
   - Copy vspec files from $WINTOOLS to /usr/local/etc
-    > cd V:/win/install/wintools
+    > cd /v/win/install/wintools
     > cp_vspec 
-  - Copy Config.pp from $WINTOOLS to /usr/local/etc
-    > cp V:/win/install/wintools/panda/etc/Config.pp /usr/local/etc/.
   - (Optional) Add new username to vspec files
     - If you are setting up a new user, edit the *.vspec files
       in /usr/local/etc to reflect the new username and path to the player
@@ -168,14 +174,13 @@ Step 6: Grab the cvs trees
     > cvs co panda (only if local panda will be built)
     > cvs co direct (only if local direct will be built)
     > cvs co toontown (only if local toontown will be built)
-  - Choose which optimize level you want. This is set in
-      /usr/local/etc/Config.pp
-    or in the Config.pp in your $HOME directory (overides /usr/local/etc file)
-    Look for #define OPTIMIZE and follow instructions above that.
-    You can only choose an arbitrary optimize level if you are building
-    your own DTOOL and PANDA; otherwise, you must set it to the optimize
-    level corresponding to the version of DTOOL/PANDA you intend to attach
-    to (install is built OPTIMIZE 2, release is built OPTIMIZE 3).
+  - Choose which optimize level you want. This is set in Config.pp in
+    your $HOME directory.  Look for #define OPTIMIZE and follow
+    instructions above that.  You can only choose an arbitrary
+    optimize level if you are building your own DTOOL and PANDA;
+    otherwise, you must set it to the optimize level corresponding to
+    the version of DTOOL/PANDA you intend to attach to (install is
+    built OPTIMIZE 2, release is built OPTIMIZE 3).
 
 Step 7: (Optional) Build $DTOOL
   - Now you must use the tcsh shortcut to open a new shell - it should attach
