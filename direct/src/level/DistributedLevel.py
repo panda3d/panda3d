@@ -303,9 +303,6 @@ class DistributedLevel(DistributedObject.DistributedObject,
             self.titleText.cleanup()
             self.titleText = None
         self.zonesEnteredList = []
-        
-        # NOTE: this should be moved to ZoneEntity.disable
-        toonbase.localToon.chatMgr.chatInputSpeedChat.removeFactoryMenu()
 
     def delete(self):
         DistributedLevel.notify.debug('delete')
