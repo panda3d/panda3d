@@ -39,7 +39,7 @@ class DynamicTextFont;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DynamicTextPage : public Texture {
 public:
-  DynamicTextPage(DynamicTextFont *font);
+  DynamicTextPage(DynamicTextFont *font, int page_number);
 
   DynamicTextGlyph *slot_glyph(int x_size, int y_size, int margin);
 

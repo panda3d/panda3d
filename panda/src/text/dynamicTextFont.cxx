@@ -505,7 +505,7 @@ slot_glyph(int x_size, int y_size) {
     // No good; all recorded glyphs are actually in use.  We need to
     // make a new page.
     _preferred_page = _pages.size();
-    PT(DynamicTextPage) page = new DynamicTextPage(this);
+    PT(DynamicTextPage) page = new DynamicTextPage(this, _preferred_page);
     _pages.push_back(page);
     return page->slot_glyph(x_size, y_size, _texture_margin);
   }

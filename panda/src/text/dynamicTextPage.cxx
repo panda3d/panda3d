@@ -30,11 +30,16 @@ TypeHandle DynamicTextPage::_type_handle;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 DynamicTextPage::
-DynamicTextPage(DynamicTextFont *font) : 
+DynamicTextPage(DynamicTextFont *font, int page_number) : 
   _font(font)
 {
   _x_size = _font->get_page_x_size();
   _y_size = _font->get_page_y_size();
+
+  // Assign a name to the Texture.
+  ostringstream strm;
+  strm << font->get_name() << "_" << page_number;
+  set_name(strm.str());
 
   // Initialize the Texture to an empty, black (transparent) image of
   // the appropriate size.
