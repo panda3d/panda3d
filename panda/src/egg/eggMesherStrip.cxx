@@ -635,13 +635,17 @@ mate_pieces(EggMesherEdge *common_edge, EggMesherStrip &front,
 bool EggMesherStrip::
 mate_strips(EggMesherEdge *common_edge, EggMesherStrip &front, 
             EggMesherStrip &back, EggMesherStrip::PrimType type) {
-  // If we're flat-shaded, we don't allow ending up with an odd-length
-  // strip.
-  if (front._flat_shaded && 
-      ((front._type != PT_tri && back._type == PT_tri) ||
-       (front._type == PT_tri && back._type != PT_tri) ||
-       (front._type == PT_tristrip && back._type == PT_tristrip &&
-        ((front._verts.size() + back._verts.size()) & 1) != 0))) {
+  // We don't allow making odd-length strips at all.  Odd-length
+  // strips can't be rotated if they're flat-shaded, and they can't be
+  // joined end-to-end using degenerate triangles.  So forget 'em.
+
+  // This might not be the right place to impose this rule, because it
+  // tends to end up with lots of independent triangles in certain
+  // kinds of meshes, but it's the easiest place to impose it.
+  if ((front._type != PT_tri && back._type == PT_tri) ||
+      (front._type == PT_tri && back._type != PT_tri) ||
+      (front._type == PT_tristrip && back._type == PT_tristrip &&
+       ((front._verts.size() + back._verts.size()) & 1) != 0)) {
     return false;
   }
 
