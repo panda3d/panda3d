@@ -63,7 +63,7 @@ public:
   static PStatClient *get_global_pstats();
 
 PUBLISHED:
-  INLINE static bool connect(string hostname = string(), int port = -1);
+  INLINE static bool connect(const string &hostname = string(), int port = -1);
   INLINE static void disconnect();
   INLINE static bool is_connected();
 

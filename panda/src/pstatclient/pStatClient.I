@@ -66,8 +66,8 @@ get_max_rate() const {
 //               failure.
 ////////////////////////////////////////////////////////////////////
 INLINE bool PStatClient::
-connect(string hostname, int port) {
-  return get_global_pstats()->connect(hostname, port);
+connect(const string &hostname, int port) {
+  return get_global_pstats()->ns_connect(hostname, port);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -77,7 +77,7 @@ connect(string hostname, int port) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PStatClient::
 disconnect() {
-  get_global_pstats()->disconnect();
+  get_global_pstats()->ns_disconnect();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -88,5 +88,5 @@ disconnect() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PStatClient::
 is_connected() {
-  return get_global_pstats()->is_connected();
+  return get_global_pstats()->ns_is_connected();
 }
