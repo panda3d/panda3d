@@ -28,7 +28,7 @@ operator == (const HashVal &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HashVal::operator ==
+//     Function: HashVal::get_value
 //       Access: Public
 //  Description: Returns the integer value of the indicated component.
 ////////////////////////////////////////////////////////////////////
@@ -37,6 +37,19 @@ get_value(int val) const {
   nassertr(val >= 0 && val < 4, 0);
   return hv[val];
 }
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: HashVal::set_value
+//       Access: Public
+//  Description: Sets the hash value at index val
+////////////////////////////////////////////////////////////////////
+INLINE void HashVal::
+set_value(int val, uint hash) {
+  nassertv(val >= 0 && val < 4);
+  hv[val] = hash;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HashVal::output

@@ -19,6 +19,8 @@
 #include <pointerTo.h>
 #include <map>
 
+#include "hashVal.h"
+#include "crypto_utils.h"
 
 /*
 //////////////////////////////////////////////////
@@ -40,7 +42,6 @@ A Db is a Vector<MultifileRecord>
 MultifileRecord is a Vector<FileRecord>
 */
 
-typedef ulong Hash;
 typedef int Version;
 typedef int Phase;
 
@@ -96,8 +97,8 @@ public:
   INLINE int get_client_num_files(string mfname) const;
   INLINE int get_server_num_files(string mfname) const;
 
-  INLINE Hash get_client_file_hash(string mfname, string fname) const;
-  INLINE Hash get_server_file_hash(string mfname, string fname) const;
+  INLINE HashVal get_client_file_hash(string mfname, string fname) const;
+  INLINE HashVal get_server_file_hash(string mfname, string fname) const;
 
   INLINE string get_client_file_name(string mfname, int index) const;
   INLINE string get_server_file_name(string mfname, int index) const;
@@ -126,18 +127,18 @@ public:
   // Server side operations to create multifile records
   void create_new_server_db();
   void server_add_multifile(string mfname, Phase phase, Version version, int size, int status);
-  void server_add_file(string mfname, string fname, Version version, Hash hash);
+  void server_add_file(string mfname, string fname, Version version, HashVal hash);
 
 public:
 
   class EXPCL_PANDAEXPRESS FileRecord : public ReferenceCount {
   public:
     FileRecord(void);
-    FileRecord(string name, Version version, Hash hash);
+    FileRecord(string name, Version version, HashVal hash);
     void output(ostream &out) const;
     string _name;
     Version _version;
-    Hash _hash;
+    HashVal _hash;
   };
 
   typedef vector<PT(FileRecord)> FileRecords;
@@ -202,12 +203,12 @@ public:
   // Magic number for knowing this is a download Db
   static PN_uint32 _magic_number;  
 
-  typedef vector<unsigned long> vector_ulong;
-  typedef map<string, vector_ulong> VersionMap;
-  void add_version(const Filename &name, Hash hash, Version version);
-  void add_version(const string &name, Hash hash, Version version);
-  int get_version(const Filename &name, Hash hash);
-  int get_version(const string &name, Hash hash);
+  typedef vector<HashVal> vectorHash;
+  typedef map<string, vectorHash> VersionMap;
+  void add_version(const Filename &name, HashVal hash, Version version);
+  void add_version(const string &name, HashVal hash, Version version);
+  int get_version(const Filename &name, HashVal hash);
+  int get_version(const string &name, HashVal hash);
 
 protected:
   void write_version_map(ofstream &write_stream);

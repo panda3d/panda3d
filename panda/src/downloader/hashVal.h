@@ -19,9 +19,8 @@ public:
   INLINE HashVal();
   INLINE bool operator == (const HashVal &other) const;
   INLINE uint get_value(int val) const;
-
+  INLINE void set_value(int val, uint hash);
   INLINE void output(ostream &out) const;
-
   uint hv[4];
 };
 

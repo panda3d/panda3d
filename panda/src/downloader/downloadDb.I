@@ -282,7 +282,7 @@ set_client_file_version(string mfname, string fname, Version version) {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE Hash DownloadDb::
+INLINE HashVal DownloadDb::
 get_client_file_hash(string mfname, string fname) const {
   return ((_client_db.get_multifile_record_named(mfname))->get_file_record_named(fname))->_hash;
 }
@@ -292,7 +292,7 @@ get_client_file_hash(string mfname, string fname) const {
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE Hash DownloadDb::
+INLINE HashVal DownloadDb::
 get_server_file_hash(string mfname, string fname) const {
   return ((_server_db.get_multifile_record_named(mfname))->get_file_record_named(fname))->_hash;
 }

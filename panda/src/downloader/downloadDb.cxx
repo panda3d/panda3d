@@ -179,8 +179,8 @@ client_file_version_correct(string mfname, string filename) const {
 ////////////////////////////////////////////////////////////////////
 bool DownloadDb::
 client_file_hash_correct(string mfname, string filename) const {
-  Hash client_hash = get_client_file_hash(mfname, filename);
-  Hash server_hash = get_server_file_hash(mfname, filename);
+  HashVal client_hash = get_client_file_hash(mfname, filename);
+  HashVal server_hash = get_server_file_hash(mfname, filename);
   return (client_hash == server_hash);
 }
 
@@ -312,7 +312,7 @@ server_add_multifile(string mfname, Phase phase, Version version, int size, int 
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::
-server_add_file(string mfname, string fname, Version version, Hash hash) {
+server_add_file(string mfname, string fname, Version version, HashVal hash) {
   // Make the new file record
   PT(FileRecord) fr = new FileRecord(fname, version, hash);
 
@@ -900,7 +900,7 @@ DownloadDb::FileRecord::
 FileRecord(void) {
   _name = "";
   _version = 0;
-  _hash = 0;
+  _hash = HashVal();
 }
 
 
@@ -910,7 +910,7 @@ FileRecord(void) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DownloadDb::FileRecord::
-FileRecord(string name, Version version, Hash hash) {
+FileRecord(string name, Version version, HashVal hash) {
   _name = name;
   _version = version;
   _hash = hash;
@@ -935,7 +935,7 @@ output(ostream &out) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::
-add_version(const Filename &name, Hash hash, Version version) {
+add_version(const Filename &name, HashVal hash, Version version) {
   add_version(name.get_fullpath(), hash, version);
 }
 
@@ -945,14 +945,14 @@ add_version(const Filename &name, Hash hash, Version version) {
 //  Description: Note: version numbers start at 1
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::
-add_version(const string &name, Hash hash, Version version) {
+add_version(const string &name, HashVal hash, Version version) {
   // Try to find this name in the map
   VersionMap::iterator i = _versions.find(name);
   nassertv(version >= 1);
 
-  // If we did not find it, put a new vector_ulong at this name_code
+  // If we did not find it, put a new vectorHash at this name_code
   if (i == _versions.end()) {
-    vector_ulong v;
+    vectorHash v;
     nassertv(version == 1);
     v.push_back(hash);
     _versions[name] = v;
@@ -978,7 +978,7 @@ add_version(const string &name, Hash hash, Version version) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int DownloadDb::
-get_version(const Filename &name, Hash hash) {
+get_version(const Filename &name, HashVal hash) {
   return get_version(name.get_fullpath(), hash);
 }
 
@@ -988,15 +988,15 @@ get_version(const Filename &name, Hash hash) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int DownloadDb::
-get_version(const string &name, Hash hash) {
+get_version(const string &name, HashVal hash) {
   VersionMap::const_iterator vmi = _versions.find(name);
   if (vmi == _versions.end()) {
     downloader_cat.debug()
       << "DownloadDb::get_version() - can't find: " << name << endl;
     return -1;
   }
-  vector_ulong ulvec = (*vmi).second;
-  vector_ulong::iterator i = find(ulvec.begin(), ulvec.end(), hash);
+  vectorHash ulvec = (*vmi).second;
+  vectorHash::iterator i = find(ulvec.begin(), ulvec.end(), hash);
   if (i != ulvec.end())
     return (i - ulvec.begin() + 1);
   downloader_cat.debug()
@@ -1013,7 +1013,7 @@ void DownloadDb::
 write_version_map(ofstream &write_stream) {
   _master_datagram.clear();
   VersionMap::iterator vmi;
-  vector_ulong::iterator i;
+  vectorHash::iterator i;
   _master_datagram.add_int32(_versions.size());
   for (vmi = _versions.begin(); vmi != _versions.end(); ++vmi) {
     string name = (*vmi).first;
@@ -1023,8 +1023,15 @@ write_version_map(ofstream &write_stream) {
     _master_datagram.add_int32(name.length());
     _master_datagram.append_data(name.c_str(), name.length());
     _master_datagram.add_int32((*vmi).second.size());
-    for (i = (*vmi).second.begin(); i != (*vmi).second.end(); ++i)
-      _master_datagram.add_uint64((*i));
+    for (i = (*vmi).second.begin(); i != (*vmi).second.end(); ++i) {
+      // *i will point to a HashVal
+      HashVal hash = *i;
+      // Write out each uint separately
+      _master_datagram.add_uint32(hash.get_value(0));
+      _master_datagram.add_uint32(hash.get_value(1));
+      _master_datagram.add_uint32(hash.get_value(2));
+      _master_datagram.add_uint32(hash.get_value(3));
+    }
   }
   string msg = _master_datagram.get_message();
   write_stream.write((char *)msg.data(), msg.length());
@@ -1078,10 +1085,21 @@ read_version_map(ifstream &read_stream) {
 
     for (int j = 0; j < length; j++) {
       _master_datagram.clear();
-      read_stream.read(buffer, sizeof(PN_uint64));
-      _master_datagram.append_data(buffer, sizeof(PN_uint64));
+      // Read all 4 uint values for the hash
+      read_stream.read(buffer, sizeof(PN_uint32));
+      _master_datagram.append_data(buffer, sizeof(PN_uint32));
+      read_stream.read(buffer, sizeof(PN_uint32));
+      _master_datagram.append_data(buffer, sizeof(PN_uint32));
+      read_stream.read(buffer, sizeof(PN_uint32));
+      _master_datagram.append_data(buffer, sizeof(PN_uint32));
+      read_stream.read(buffer, sizeof(PN_uint32));
+      _master_datagram.append_data(buffer, sizeof(PN_uint32));
       DatagramIterator di3(_master_datagram);
-      int hash = di3.get_uint64();
+      HashVal hash;
+      hash.set_value(0, di3.get_uint32());
+      hash.set_value(1, di3.get_uint32());
+      hash.set_value(2, di3.get_uint32());
+      hash.set_value(3, di3.get_uint32());
       add_version(name, hash, j + 1);
     }
     delete namebuffer;
@@ -1099,12 +1117,17 @@ void DownloadDb::
 output_version_map(ostream &out) const {
   out << " Version Map: " << endl;
   VersionMap::const_iterator vmi;
-  vector_ulong::const_iterator i;
+  vectorHash::const_iterator i;
   for (vmi = _versions.begin(); vmi != _versions.end(); ++vmi) {
     out << "  Filename: " << (*vmi).first;
-    for (i = (*vmi).second.begin(); i != (*vmi).second.end(); ++i)
-      out << " " << (*i);
-    out << endl;
+    for (i = (*vmi).second.begin(); i != (*vmi).second.end(); ++i) {
+      HashVal hash = *i;
+      out << " [" << hash.get_value(0)
+	  << " " << hash.get_value(1)
+	  << " " << hash.get_value(2)
+	  << " " << hash.get_value(3);
+    }
+    out << "]" << endl;
   }
   out << endl;
 }
