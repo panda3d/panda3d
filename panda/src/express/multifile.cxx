@@ -236,6 +236,7 @@ bool Multifile::Memfile::
 write(void) {
   ofstream write_stream;
   _name.set_binary();
+  _name.make_dir();
   if (!_name.open_write(write_stream)) {
     express_cat.error()
       << "Multifile::Memfile::write() - Failed to open output file: "
@@ -287,6 +288,7 @@ write(char *&start, int &size) {
   // Try to open the file for writing
   if (_file_open == false) {
     _name.set_binary();
+    _name.make_dir();
     if ((_file_open = _name.open_write(_write_stream)) == false) {
       express_cat.error()
         << "Multfile::Memfile::write() - Couldn't open file: "

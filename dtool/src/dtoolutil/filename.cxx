@@ -810,6 +810,31 @@ rename_to(const Filename &other) const {
 		 other.to_os_specific().c_str()) == 0);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::mkdir
+//       Access: Public
+//  Description: Creates all the directories in the path to the file
+//		 specified in the filename (useful for writing).
+////////////////////////////////////////////////////////////////////
+bool Filename::
+make_dir() const {
+  size_t p = 0;
+  while (p < _filename.length()) {
+    size_t slash = _filename.find('/', p);
+    if (slash != string::npos) {
+      string component = _filename.substr(0, slash);
+      if (!(component == ".") || 
+          !(component == "..")) {
+        mkdir(component.c_str(), 0xffff);
+      }
+    }
+    p = slash;
+    while (p < _filename.length() && _filename[p] == '/')
+      p++;
+  }
+  return true;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::locate_basename

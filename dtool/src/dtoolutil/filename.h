@@ -134,6 +134,8 @@ public:
   bool unlink() const;
   bool rename_to(const Filename &other) const;
 
+  bool make_dir() const;
+
   // Comparison operators are handy.
   INLINE bool operator == (const string &other) const;
   INLINE bool operator != (const string &other) const;
