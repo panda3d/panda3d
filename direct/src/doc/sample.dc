@@ -52,8 +52,8 @@ struct AvatarObject {
 
   // You can also define "methods" on a struct, just as on a dclass.
   // This implies the existence of the corresponding get method
-  // (e.g. getObjectCode() in this case) method, to query the
-  // information at generate time.
+  // (e.g. getObjectCode() in this case), to query the information at
+  // generate time.
   setObjectCode(int8(0-50) code, DoId player);
 };
 
@@ -63,7 +63,9 @@ dclass DistributedObjectHolder : DistributedObject {
   dropObject(AvatarObject object);
 
   // You can also have an array of structs.  This specifies a
-  // fixed-length array of five elements.
+  // fixed-length array of five elements.  This is slightly more
+  // optimal than an array of unrestricted length, since the length
+  // prefix need not be transmitted as part of the message.
   setObjectList(AvatarObject objectArray[5]);
 
   // In addition to fixed-length arrays and unbounded arrays, you can
@@ -78,8 +80,9 @@ typedef uint8(0-25) DNAColor = 1;
   
 struct AvatarDNA {
   // This defines a character element that can be any one of the three
-  // specified.  (It is similar to the uint8 range restrictions,
-  // below.)
+  // specified.  (It is similar in form to the uint8 definitions
+  // below, except that the legal values are ASCII characters instead
+  // of numbers.)
   char('a','q','x') type;
 
   // These specify one-byte numeric elements that can be any of the
