@@ -37,17 +37,17 @@ GraphicsPipeSelection() {
   // case this constructor is running at static init time.
   ConfigVariableString load_display
     ("load-display", "*",
-     "Specify the name of the default graphics display library or "
-     "GraphicsPipe to load.  It is the name of a shared library (or * for "
-     "all libraries named in aux-display), optionally followed by the "
-     "name of the particular GraphicsPipe class to create.");
+     PRC_DESC("Specify the name of the default graphics display library or "
+              "GraphicsPipe to load.  It is the name of a shared library (or * for "
+              "all libraries named in aux-display), optionally followed by the "
+              "name of the particular GraphicsPipe class to create."));
   
   ConfigVariableList aux_display
     ("aux-display",
-     "Names each of the graphics display libraries that are available on "
-     "a particular platform.  This variable may be repeated several "
-     "times.  These libraries will be tried one at a time if the library "
-     "specified by load_display cannot be loaded.");
+     PRC_DESC("Names each of the graphics display libraries that are available on "
+              "a particular platform.  This variable may be repeated several "
+              "times.  These libraries will be tried one at a time if the library "
+              "specified by load_display cannot be loaded."));
 
   _default_display_module = load_display.get_word(0);
   _default_pipe_name = load_display.get_word(1);
@@ -61,7 +61,7 @@ GraphicsPipeSelection() {
   }
 
   // Also get the set of modules named in the various aux-display
-  // Configrc variables.  We'll want to know this when we call
+  // Config variables.  We'll want to know this when we call
   // load_modules() later.
   int num_aux = aux_display.get_num_unique_values();
   for (int i = 0; i < num_aux; i++) {
