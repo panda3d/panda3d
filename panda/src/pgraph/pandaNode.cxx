@@ -504,7 +504,7 @@ get_component(NodeChainComponent *parent, PandaNode *child_node) {
     // First, walk through the list of NodeChainComponents we already
     // have on the child, looking for one that already exists,
     // referencing the indicated parent component.
-    Chains::iterator ci;
+    Chains::const_iterator ci;
     for (ci = cdata_child->_chains.begin(); 
          ci != cdata_child->_chains.end(); 
          ++ci) {
