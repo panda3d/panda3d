@@ -628,6 +628,10 @@ $[TAB]rm -f $[texattrib_file:%.txa=%.boo]
 pi :
 $[TAB]egg-palettize $[PALETTIZE_OPTS] -af $[texattrib_file] -dm $[install_dir]/%g/maps -pi
 
+.PHONY: pi.txt
+pi.txt : 
+$[TAB]egg-palettize $[PALETTIZE_OPTS] -af $[texattrib_file] -dm $[install_dir]/%g/maps -pi >pi.txt
+
 #
 # pal-stats : report palettization statistics to standard output for the
 # user's perusal.
