@@ -198,6 +198,9 @@ $[TAB] rm -f $[patsubst %,$[%_obj],$[st_sources]]
 #if $[lib_targets] $[static_lib_targets] $[bin_targets] $[test_bin_targets]
 $[TAB] rm -f $[lib_targets] $[static_lib_targets] $[bin_targets] $[test_bin_targets]
 #endif
+#if $[yxx_st_sources] $[lxx_st_sources]
+$[TAB] rm -f $[patsubst %.yxx,%.cxx %.h,$[yxx_st_sources]] $[patsubst %.lxx,%.cxx,$[lxx_st_sources]]
+#endif
 #if $[py_sources]
 $[TAB] rm -f *.pyc *.pyo // Also scrub out old generated Python code.
 #endif
@@ -207,9 +210,6 @@ $[TAB] rm -f *.pyc *.pyo // Also scrub out old generated Python code.
 cleanall : clean
 #if $[st_sources]
 $[TAB] rm -rf $[ODIR]
-#endif
-#if $[yxx_st_sources] $[lxx_st_sources]
-$[TAB] rm -f $[patsubst %.yxx,%.cxx %.h,$[yxx_st_sources]] $[patsubst %.lxx,%.cxx,$[lxx_st_sources]]
 #endif
 #if $[ne $[DEPENDENCY_CACHE_FILENAME],]
 $[TAB] rm -f $[DEPENDENCY_CACHE_FILENAME]
