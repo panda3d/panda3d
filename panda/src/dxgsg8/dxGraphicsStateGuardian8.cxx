@@ -467,6 +467,7 @@ DXGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
 
     // may persist across dx_init's?  (for dx8.1 but not dx8.0?)
     _CurVertexShader = _CurPixelShader = NULL;
+    _pGlobalTexture = NULL;
 
     //    _max_light_range = __D3DLIGHT_RANGE_MAX;
 
@@ -523,7 +524,7 @@ free_d3d_device(void) {
     _bDXisReady = false;
     
     if(scrn.pD3DDevice!=NULL)
-     for(int i=0;D3D_MAXTEXTURESTAGES;i++)
+     for(int i=0;i<D3D_MAXTEXTURESTAGES;i++)
          scrn.pD3DDevice->SetTexture(i,NULL);  // d3d should release this stuff internally anyway, but whatever
 
     DeleteAllDeviceObjects();
@@ -4575,7 +4576,7 @@ dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled) {
     // Do a safe check for releasing the D3DDEVICE. RefCount should be zero.
     // if we're called from exit(), scrn.pD3DDevice may already have been released
     if (scrn.pD3DDevice!=NULL) {
-        for(int i=0;D3D_MAXTEXTURESTAGES;i++)
+        for(int i=0;i<D3D_MAXTEXTURESTAGES;i++)
            scrn.pD3DDevice->SetTexture(i,NULL);  // d3d should release this stuff internally anyway, but whatever
         RELEASE(scrn.pD3DDevice,dxgsg,"d3dDevice",RELEASE_DOWN_TO_ZERO);
     }
