@@ -16,7 +16,7 @@
     parametrics pnm \
     pnmimagetypes pnmimage sgattrib sgmanip sgraph sgraphutil \
     switchnode text tform tiff lerp loader putil effects \
-    audio gui pgui pandabase 
+    audio pgui pandabase 
 
 
 

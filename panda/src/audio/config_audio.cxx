@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_audio.h"
-#include "audio_gui_functor.h"
 #include <dconfig.h>
 
 Configure(config_audio);
@@ -57,8 +56,6 @@ string* audio_library_name;
 
 
 ConfigureFn(config_audio) {
-  AudioGuiFunctor::init_type();
-
   audio_dls_file = new string(
       config_audio.GetString("audio-dls-file", ""));
 

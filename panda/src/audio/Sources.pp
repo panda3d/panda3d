@@ -3,15 +3,14 @@
 
 #begin lib_target
   #define TARGET audio
-  #define LOCAL_LIBS putil gui
+  #define LOCAL_LIBS putil
 
   #define SOURCES \
     config_audio.cxx config_audio.h \
     audioManager.I audioManager.cxx audioManager.h \
     audioSound.cxx audioSound.h \
     nullAudioManager.cxx nullAudioManager.h \
-    nullAudioSound.cxx nullAudioSound.h \
-    audio_gui_functor.h audio_gui_functor.cxx
+    nullAudioSound.cxx nullAudioSound.h
 
   #define INSTALL_HEADERS \
     config_audio.h \
@@ -20,7 +19,6 @@
     audioSound.h \
     nullAudioManager.h \
     nullAudioSound.h \
-    audio_gui_functor.h
 
   #define IGATESCAN audio.h
 #end lib_target
