@@ -482,11 +482,16 @@ class Actor(PandaObject, NodePath):
 
         return controls[0].getPlayRate()
     
-    def setPlayRate(self, rate, animName=None, partName=None):
-        """getPlayRate(self, float, string=None, string=None)
+    def setPlayRate(self, rate, animName, partName=None):
+        """getPlayRate(self, float, string, string=None)
         Set the play rate of given anim for a given part.
         If no part is given, set for all parts in dictionary.
-        If no anim is given, find the current anim for the part.
+
+        It used to be legal to let the animName default to the
+        currently-playing anim, but this was confusing and could lead
+        to the wrong anim's play rate getting set.  Better to insist
+        on this parameter.
+        
         NOTE: sets play rate on all LODs"""
         for control in self.getAnimControls(animName, partName):
             control.setPlayRate(rate)
