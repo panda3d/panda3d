@@ -73,7 +73,8 @@ DynamicTextFont(const Filename &font_filename, int face_index) {
   }
 
   Filename path(font_filename);
-  if (!path.resolve_filename(get_model_path())) {
+  path.resolve_filename(get_model_path());
+  if (!path.exists()) {
     text_cat.error()
       << "Unable to find font file " << font_filename << "\n";
   } else {
