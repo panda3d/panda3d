@@ -3056,11 +3056,12 @@ r_find_matches(NodePathCollection &result,
   num_levels_remaining--;
 
   FindApproxLevel next_level;
+  bool okflag = true;
 
   // For each node in the current level, build up the set of possible
   // matches in the next level.
   FindApproxLevel::Vec::const_iterator li;
-  for (li = level._v.begin(); li != level._v.end(); ++li) {
+  for (li = level._v.begin(); li != level._v.end() && okflag; ++li) {
     const FindApproxLevelEntry &entry = (*li);
 
     if (entry.is_solution()) {
@@ -3071,12 +3072,18 @@ r_find_matches(NodePathCollection &result,
     }
 
     if (max_matches > 0 && result.get_num_paths() >= max_matches) {
-      return;
+      // Really, we just want to return here.  But returning from
+      // within the conditional within the for loop seems to sometimes
+      // cause a compiler fault in GCC.  We'll use a semaphore
+      // variable instead.
+      okflag = false;
     }
   }
 
   // Now recurse on the next level.
-  r_find_matches(result, next_level, max_matches, num_levels_remaining);
+  if (okflag) {
+    r_find_matches(result, next_level, max_matches, num_levels_remaining);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
