@@ -21,7 +21,6 @@
 
 #include "curve.h"
 #include "lineSegs.h"
-////#include <Performer/pr/pfLinMath.h>
 
 ////////////////////////////////////////////////////////////////////
 // Defines 
