@@ -162,6 +162,19 @@
 #define CRYPTO_LIBS cryptlib
 #defer HAVE_CRYPTO $[libtest $[CRYPTO_LPATH],$[CRYPTO_LIBS]]
 
+// Is libjpeg installed, and where?
+#define JPEG_IPATH
+#define JPEG_LPATH
+#define JPEG_LIBS jpeg
+#defer HAVE_JPEG $[libtest $[JPEG_LPATH],$[JPEG_LIBS]]
+
+// Is libtiff installed, and where?
+#define TIFF_IPATH
+#define TIFF_LPATH
+#define TIFF_LIBS tiff
+#defer HAVE_TIFF $[libtest $[TIFF_LPATH],$[TIFF_LIBS]]
+
+
 // Is VRPN installed, and where?
 #define VRPN_IPATH
 #define VRPN_LPATH

@@ -34,6 +34,12 @@ $[cdefine HAVE_NSPR]
 /* Define if we have crypto++ installed.  */
 $[cdefine HAVE_CRYPTO]
 
+/* Define if we have libjpeg installed.  */
+$[cdefine HAVE_JPEG]
+
+/* Define if we have libtiff installed.  */
+$[cdefine HAVE_TIFF]
+
 /* Define if we have VRPN installed.  */
 $[cdefine HAVE_VRPN]
 

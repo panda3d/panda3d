@@ -78,49 +78,71 @@
 #if $[HAVE_NSPR]
   #define nspr_ipath $[wildcard $[NSPR_IPATH]]
   #define nspr_lpath $[wildcard $[NSPR_LPATH]]
+  #define nspr_cflags $[NSPR_CFLAGS]
   #define nspr_libs $[NSPR_LIBS]
 #endif
 
 #if $[HAVE_CRYPTO]
   #define crypto_ipath $[wildcard $[CRYPTO_IPATH]]
   #define crypto_lpath $[wildcard $[CRYPTO_LPATH]]
+  #define crypto_cflags $[CRYPTO_CFLAGS]
   #define crypto_libs $[CRYPTO_LIBS]
 #endif
 
 #if $[HAVE_ZLIB]
   #define zlib_ipath $[wildcard $[ZLIB_IPATH]]
   #define zlib_lpath $[wildcard $[ZLIB_LPATH]]
+  #define zlib_cflags $[ZLIB_CFLAGS]
   #define zlib_libs $[ZLIB_LIBS]
 #endif
 
 #if $[HAVE_SOXST]
   #define soxst_ipath $[wildcard $[SOXST_IPATH]]
-  #define soxst_lpath $[wildcard $[SOXST_LPATH]]
+  #define soxst_lpath $[wildcard $[SOXST_LPATH]] 
+  #define soxst_cflags $[SOXST_CFLAGS]
   #define soxst_libs $[SOXST_LIBS]
 #endif
 
 #if $[HAVE_GL]
   #define gl_ipath $[wildcard $[GL_IPATH]]
   #define gl_lpath $[wildcard $[GL_LPATH]]
+  #define gl_cflags $[GL_CFLAGS]
   #define gl_libs $[GL_LIBS]
 #endif
 
 #if $[HAVE_GLX]
   #define glx_ipath $[wildcard $[GLX_IPATH]]
   #define glx_lpath $[wildcard $[GLX_LPATH]]
+  #define glx_cflags $[GLX_CFLAGS]
   #define glx_libs $[GLX_LIBS]
 #endif
 
 #if $[HAVE_GLUT]
   #define glut_ipath $[wildcard $[GLUT_IPATH]]
   #define glut_lpath $[wildcard $[GLUT_LPATH]]
+  #define glut_cflags $[GLUT_CFLAGS]
   #define glut_libs $[GLUT_LIBS]
 #endif
 
 #if $[HAVE_DX]
   #define dx_ipath $[wildcard $[DX_IPATH]]
   #define dx_lpath $[wildcard $[DX_LPATH]]
+  #define dx_cflags $[DX_CFLAGS]
   #define dx_libs $[DX_LIBS]
+#endif
+
+#if $[HAVE_JPEG]
+  #define jpeg_ipath $[wildcard $[JPEG_IPATH]]
+  #define jpeg_lpath $[wildcard $[JPEG_LPATH]]
+  #define jpeg_cflags $[JPEG_CFLAGS]
+  #define jpeg_libs $[JPEG_LIBS]
+#endif
+
+#if $[HAVE_TIFF]
+  #define tiff_ipath $[wildcard $[TIFF_IPATH]]
+  #define tiff_lpath $[wildcard $[TIFF_LPATH]]
+  #define tiff_cflags $[TIFF_CFLAGS]
+  #define tiff_libs $[TIFF_LIBS]
 #endif
 
 #if $[HAVE_VRPN]
@@ -187,6 +209,8 @@
      $[or $[not $[DIRECTORY_IF_RIB]],$[HAVE_RIB]], \
      $[or $[not $[DIRECTORY_IF_PS2]],$[HAVE_PS2]], \
      $[or $[not $[DIRECTORY_IF_SGIGL]],$[HAVE_SGIGL]], \
+     $[or $[not $[DIRECTORY_IF_JPEG]],$[HAVE_JPEG]], \
+     $[or $[not $[DIRECTORY_IF_TIFF]],$[HAVE_TIFF]], \
      $[or $[not $[DIRECTORY_IF_VRPN]],$[HAVE_VRPN]], \
      $[or $[not $[DIRECTORY_IF_GTKMM]],$[HAVE_GTKMM]], \
      $[or $[not $[DIRECTORY_IF_MAYA]],$[HAVE_MAYA]], \
@@ -213,6 +237,8 @@
      $[or $[not $[TARGET_IF_RIB]],$[HAVE_RIB]], \
      $[or $[not $[TARGET_IF_PS2]],$[HAVE_PS2]], \
      $[or $[not $[TARGET_IF_SGIGL]],$[HAVE_SGIGL]], \
+     $[or $[not $[TARGET_IF_JPEG]],$[HAVE_JPEG]], \
+     $[or $[not $[TARGET_IF_TIFF]],$[HAVE_TIFF]], \
      $[or $[not $[TARGET_IF_VRPN]],$[HAVE_VRPN]], \
      $[or $[not $[TARGET_IF_GTKMM]],$[HAVE_GTKMM]], \
      $[or $[not $[TARGET_IF_MAYA]],$[HAVE_MAYA]], \
@@ -246,6 +272,8 @@
 #defer get_sources \
   $[SOURCES] \
   $[if $[HAVE_CRYPTO],$[IF_CRYPTO_SOURCES]] \
+  $[if $[HAVE_JPEG],$[IF_JPEG_SOURCES]] \
+  $[if $[HAVE_TIFF],$[IF_TIFF_SOURCES]] \
   $[if $[HAVE_ZLIB],$[IF_ZLIB_SOURCES]] \
   $[if $[HAVE_IPC],$[IF_IPC_SOURCES]] \
   $[if $[HAVE_NET],$[IF_NET_SOURCES]] \
@@ -254,6 +282,8 @@
 #defer all_sources \
   $[SOURCES] \
   $[IF_CRYPTO_SOURCES] \
+  $[IF_JPEG_SOURCES] \
+  $[IF_TIFF_SOURCES] \
   $[IF_ZLIB_SOURCES] \
   $[IF_IPC_SOURCES] \
   $[IF_NET_SOURCES] \
@@ -323,6 +353,15 @@
   #if $[ne $[USE_NET] $[components $[USE_NET],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[net_cflags]
   #endif
+  #if $[ne $[USE_JPEG] $[components $[USE_JPEG],$[active_component_libs]],]
+    #set alt_cflags $[alt_cflags] $[jpeg_cflags]
+  #endif 
+  #if $[ne $[USE_TIFF] $[components $[USE_TIFF],$[active_component_libs]],]
+    #set alt_cflags $[alt_cflags] $[tiff_cflags]
+  #endif 
+  #if $[ne $[USE_VRPN] $[components $[USE_VRPN],$[active_component_libs]],]
+    #set alt_cflags $[alt_cflags] $[vrpn_cflags]
+  #endif 
   #if $[ne $[USE_AUDIO] $[components $[USE_AUDIO],$[active_component_libs]],]
     #set alt_cflags $[alt_cflags] $[audio_cflags]
   #endif
@@ -372,6 +411,15 @@
   #endif
   #if $[ne $[USE_NET] $[components $[USE_NET],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[net_ipath]
+  #endif
+  #if $[ne $[USE_JPEG] $[components $[USE_JPEG],$[active_component_libs]],]
+    #set alt_ipath $[alt_ipath] $[jpeg_ipath]
+  #endif
+  #if $[ne $[USE_TIFF] $[components $[USE_TIFF],$[active_component_libs]],]
+    #set alt_ipath $[alt_ipath] $[tiff_ipath]
+  #endif
+  #if $[ne $[USE_VRPN] $[components $[USE_VRPN],$[active_component_libs]],]
+    #set alt_ipath $[alt_ipath] $[vrpn_ipath]
   #endif
   #if $[ne $[USE_AUDIO] $[components $[USE_AUDIO],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[audio_ipath]
@@ -423,6 +471,15 @@
   #if $[ne $[USE_NET] $[components $[USE_NET],$[active_component_libs]],]
     #set alt_lpath $[alt_lpath] $[net_lpath]
   #endif
+  #if $[ne $[USE_JPEG] $[components $[USE_JPEG],$[active_component_libs]],]
+    #set alt_lpath $[alt_lpath] $[jpeg_lpath]
+  #endif
+  #if $[ne $[USE_TIFF] $[components $[USE_TIFF],$[active_component_libs]],]
+    #set alt_lpath $[alt_lpath] $[tiff_lpath]
+  #endif
+  #if $[ne $[USE_VRPN] $[components $[USE_VRPN],$[active_component_libs]],]
+    #set alt_lpath $[alt_lpath] $[vrpn_lpath]
+  #endif
   #if $[ne $[USE_AUDIO] $[components $[USE_AUDIO],$[active_component_libs]],]
     #set alt_lpath $[alt_lpath] $[audio_lpath]
   #endif
@@ -473,6 +530,15 @@
   #endif
   #if $[ne $[USE_NET] $[components $[USE_NET],$[active_component_libs]],]
     #set alt_libs $[alt_libs] $[net_libs]
+  #endif
+  #if $[ne $[USE_JPEG] $[components $[USE_JPEG],$[active_component_libs]],]
+    #set alt_libs $[alt_libs] $[jpeg_libs]
+  #endif
+  #if $[ne $[USE_TIFF] $[components $[USE_TIFF],$[active_component_libs]],]
+    #set alt_libs $[alt_libs] $[tiff_libs]
+  #endif
+  #if $[ne $[USE_VRPN] $[components $[USE_VRPN],$[active_component_libs]],]
+    #set alt_libs $[alt_libs] $[vrpn_libs]
   #endif
   #if $[ne $[USE_AUDIO] $[components $[USE_AUDIO],$[active_component_libs]],]
     #set alt_libs $[alt_libs] $[audio_libs]
