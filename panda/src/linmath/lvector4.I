@@ -222,7 +222,7 @@ template<class NumType>
 INLINE bool LVector4<NumType>::
 normalize() {
   NumType l2 = length_squared();
-  if (l2 == 0.0) {
+  if (l2 == (NumType)0.0) {
     set(0.0, 0.0, 0.0, 0.0);
     return false;
 
