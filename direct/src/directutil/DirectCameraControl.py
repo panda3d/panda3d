@@ -1,6 +1,7 @@
 from PandaObject import *
 
 CAM_MOVE_DURATION = 1.0
+Y_AXIS = Vec3(0,1,0)
 
 class DirectCameraControl(PandaObject):
     def __init__(self, direct):
@@ -34,7 +35,8 @@ class DirectCameraControl(PandaObject):
                 # If shift key is pressed, just perform horiz and vert pan:
                 self.spawnHPPan()
             else:
-                # Otherwise, check for a hit point based on current mouse position
+                # Otherwise, check for a hit point based on
+                # current mouse position
                 # And then spawn task to determine mouse mode
                 numEntries = self.direct.iRay.pickGeom(
                     render,chan.mouseX,chan.mouseY)
@@ -347,6 +349,43 @@ class DirectCameraControl(PandaObject):
                             self.chan.fovV),
                            0.0)
         return Task.cont
+
+    def fitOnWidget(self):
+        # Fit the node on the screen
+        
+        # stop any ongoing tasks
+        taskMgr.removeTasksNamed('manipulateCamera')
+
+        # How big is the node?
+        nodeScale = self.direct.widget.getScale(render)
+        maxScale = max(nodeScale[0],nodeScale[1],nodeScale[2])
+        maxDim = min(self.chan.nearWidth, self.chan.nearHeight)
+
+        # At what distance does the object fill 30% of the screen?
+        # Assuming radius of 1 on widget
+        camY = self.chan.near * (2.0 * maxScale)/(0.3 * maxDim)
+    
+        # What is the vector through the center of the screen?
+        centerVec = Y_AXIS * camY
+    
+        # Where is the node relative to the viewpoint
+        vWidget2Camera = self.direct.widget.getPos(self.camera)
+    
+        # How far do you move the camera to be this distance from the node?
+        deltaMove = vWidget2Camera - centerVec
+    
+        # Move a target there
+        self.relNodePath.setPos(self.camera, deltaMove)
+
+	parent = self.camera.getParent()
+	self.camera.wrtReparentTo(self.relNodePath)
+	fitTask = self.camera.lerpPos(Point3(0,0,0),
+                                      CAM_MOVE_DURATION,
+                                      blendType = 'easeInOut',
+                                      task = 'manipulateCamera')
+        # Upon death, reparent Cam to parent
+        fitTask.parent = parent
+        fitTask.uponDeath = self.reparentCam
 
     def enableMouseFly(self):
 	self.enableMouseInteraction()

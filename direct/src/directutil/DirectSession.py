@@ -73,7 +73,10 @@ class DirectSession(PandaObject):
 
             # Adjust widgets size
             self.widget.setScale(dnp.getRadius())
-            
+            # This is the additional scaling factor used to grow and
+            # shrink the widget
+            self.widget.setScalingFactor(1.0)
+
             # Spawn task to have object handles follow the selected object
             taskMgr.removeTasksNamed('followSelectedNodePath')
             t = Task.Task(self.followSelectedNodePathTask)

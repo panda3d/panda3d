@@ -1,3 +1,4 @@
+from PandaObject import *
 from Tkinter import *
 from tkSimpleDialog import askstring
 import Pmw
@@ -6,23 +7,27 @@ import operator
 
 DELTA = (5.0 / 360.) * 2.0 * math.pi
 
-class FSMInspector(Pmw.MegaToplevel):
+class FSMInspector(Pmw.MegaToplevel, PandaObject):
     def __init__(self, parent = None, **kw):
+        
         # Initialize instance variables
+        self.states = []
         self.stateInspectorDict = {}
         
         #define the megawidget options
         INITOPT = Pmw.INITOPT
         optiondefs = (
             ('title', 'FSM Viewer', None),
-            ('currentFSM', (), None),
+            ('FSM', (), None),
             ('gridSize', '0.25i', self._setGridSize),
             )
         self.defineoptions(kw, optiondefs)
 
         # Initialize the toplevel widget
         Pmw.MegaToplevel.__init__(self, parent)
-        
+
+        self.fsm = self['FSM']
+
         # Create the components
         oldInterior = Pmw.MegaToplevel.interior(self)
         # The Menu Bar
@@ -138,8 +143,8 @@ class FSMInspector(Pmw.MegaToplevel):
         for key in self.stateInspectorDict.keys():
             si = self.stateInspectorDict[key]
             state = si.state
-            if state.transitionArray:
-                for name in state.transitionArray:
+            if state.getTransitions():
+                for name in state.getTransitions():
                     self.connectStates(si, self.getStateInspector(name))
 
     def connectStates(self, fromState, toState):
@@ -199,29 +204,39 @@ class FSMInspector(Pmw.MegaToplevel):
         self._top = self._canvas.yview()[0]
 
     def createStateInspectors(self):
-        fsm = self['currentFSM']
-        # Number of rows/cols needed to fit inspectors in a grid 
-        dim = int(math.ceil(math.sqrt(len(fsm))))
+        fsm = self.fsm
+        self.states = fsm.getStates()
+        # Number of rows/cols needed to fit inspectors in a grid
+        dim = int(math.ceil(math.sqrt(len(self.states))))
         # Separation between nodes
         spacing = 2.5 * self._canvas.canvasx('0.375i')
         count = 0
-        for state in self['currentFSM']:
+        for state in self.states:
             si = self.addState(state)
-            if state.defaultPosition:
-                si.setPos(state.defaultPosition[0], state.defaultPosition[1])
+            if state.getDefaultPosition():
+                si.setPos(state.getDefaultPosition()[0],
+                          state.getDefaultPosition()[1])
             else:
                 row = int(math.floor(count / dim))
                 col = count % dim
                 si.setPos(col * spacing, row * spacing +
                           0.5 * (0, spacing)[col % 2])
+            # Add hooks
+            self.accept(fsm.getName() + '_' + si.getName() + '_entered',
+                        si.enteredState)
+            self.accept(fsm.getName() + '_' + si.getName() + '_exited',
+                        si.exitedState)
             count = count + 1
         self.drawConnections()
+        if fsm.getCurrentState():
+            self.enteredState(fsm.getCurrentState().getName())
 
     def getStateInspector(self, name):
         return self.stateInspectorDict.get(name, None)
 
     def addState(self, state):
-        si = self.stateInspectorDict[state.name] = StateInspector(self, state)
+        si = self.stateInspectorDict[state.getName()] = (
+            StateInspector(self, state))
         return si
 
     def enteredState(self, stateName):
@@ -263,12 +278,12 @@ class FSMInspector(Pmw.MegaToplevel):
             si = dict[key]
             center = si.center()
             print "'%s' : (%.3f, %.3f)," % \
-                  (si.state.name, center[0], center[1])
+                  (si.state.getName(), center[0], center[1])
         for key in keys[-1:]:
             si = dict[key]
             center = si.center()
             print "'%s' : (%.3f, %.3f)," % \
-                  (si.state.name, center[0], center[1])
+                  (si.state.getName(), center[0], center[1])
         print '}'
 
     def toggleBalloon(self):
@@ -287,8 +302,9 @@ class StateInspector(Pmw.MegaArchetype):
         self.state = state
         # Create a unique tag which you can use to move a marker and
         # and its corresponding text around together
-        self.tag = state.name
-
+        self.tag = state.getName()
+        self.fsm = inspector.fsm
+        
         # Pointers to the inspector's components
         self.scrolledCanvas = inspector.component('scrolledCanvas')
         self._canvas = self.scrolledCanvas.component('canvas')
@@ -313,11 +329,11 @@ class StateInspector(Pmw.MegaArchetype):
                                                (self.y + half),
                                               fill = 'CornflowerBlue',
                                               tags = (self.tag,'markers'))
-        self.text = self._canvas.create_text(0, 0, text = state.name, 
+        self.text = self._canvas.create_text(0, 0, text = state.getName(),
                                            justify = CENTER,
                                            tags = (self.tag,'labels'))
         # Is this state contain a sub machine?
-        if state.fsmArray:
+        if state.hasChildren():
             # reduce half by sqrt of 2.0
             half = half * 0.707106
             self.rect = self._canvas.create_rectangle((- half), (- half),
@@ -327,11 +343,11 @@ class StateInspector(Pmw.MegaArchetype):
 
         # The Popup State Menu
         self._popupMenu = Menu(self._canvas, tearoff = 0)
-        self._popupMenu.add_command(label = 'Request transistion to ' +
-                                    state.name,
+        self._popupMenu.add_command(label = 'Request transition to ' +
+                                    state.getName(),
                                     command = self.transitionTo)
-        if state.fsmArray:
-            self._popupMenu.add_command(label = 'Inspect ' + state.name +
+        if state.hasChildren():
+            self._popupMenu.add_command(label = 'Inspect ' + state.getName() +
                                         ' submachine',
                                         command = self.inspectSubMachine)
                     
@@ -356,7 +372,7 @@ class StateInspector(Pmw.MegaArchetype):
         c = self.center()
         self._canvas.coords(self.marker,
                             c[0] - half, c[1] - half, c[0] + half, c[1] + half)
-        if self.state.fsmArray:
+        if self.state.hasChildren():
             half = self.radius * 0.707106
             self._canvas.coords(self.rect,
                             c[0] - half, c[1] - half, c[0] + half, c[1] + half)
@@ -389,6 +405,9 @@ class StateInspector(Pmw.MegaArchetype):
         c = self._canvas.coords(self.marker)
         return (c[0] + c[2])/2.0, (c[1] + c[3])/2.0
 
+    def getName(self):
+        return self.tag
+
     # Event Handlers
     def mouseEnter(self, event):
         self._canvas.itemconfig(self.marker, width = 2)
@@ -416,7 +435,7 @@ class StateInspector(Pmw.MegaArchetype):
                              event.widget.winfo_pointery())
 
     def transitionTo(self):
-        print 'transition to ' + self.tag
+        self.fsm.request(self.getName())
 
     def inspectSubMachine(self):
         print 'inspect ' + self.tag + ' subMachine'
@@ -441,7 +460,7 @@ class dummyFSM:
         self.stateCollection = stateCollection
         if layout:
             for state in self.stateCollection:
-                pos = layout.get(state.name, None)
+                pos = layout.get(state.getName(), None)
                 if pos:
                     state.defaultPosition= pos
     def __getitem__(self, item):
@@ -465,5 +484,19 @@ if __name__ == '__main__':
                              'state-4' : (335.67, 143.86),
                              'state-5' : (239.76, 143.86),
                              'state-6' : (23.98, 71.93)})
-    fsmi = FSMInspector(title = 'My Little Viewer', currentFSM = fsm)
+    fsmi = FSMInspector(title = 'My Little Viewer', FSM = fsm)
     mainloop()
+"""
+def enterState():
+    print 'enterState'
+def exitState():
+    print 'exitState'
+fsm = FSM.FSM('stopLight',
+          [ State.State('red', enterState, exitState, ['green']),
+            State.State('yellow', enterState, exitState, ['red']),
+            State.State('green', enterState, exitState, ['yellow']) ],
+          'red',
+          'red')
+inspector = FSMInspector(FSM = fsm)
+"""
+

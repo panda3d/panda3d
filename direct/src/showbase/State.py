@@ -16,6 +16,7 @@ class State(DirectObject):
         self.setEnterFunc(enterFunc)
         self.setExitFunc(exitFunc)
         self.setTransitions(transitions)
+        self.setDefaultPosition([])
         self.__FSMList = None
 
 
@@ -52,6 +53,14 @@ class State(DirectObject):
     def setTransitions(self, stateTransitions):
         """setTransitions(self, string[])"""
         self.__transitions = stateTransitions
+
+    def getDefaultPosition(self):
+        """getDefaultPosition(self)"""
+        return(self.__defaultPosition)
+
+    def setDefaultPosition(self, defaultPosition):
+        """setDefaultPosition(self, x, y)"""
+        self.__defaultPosition = defaultPosition
 
 
     # support for HFSMs

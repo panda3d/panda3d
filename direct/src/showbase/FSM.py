@@ -97,6 +97,8 @@ class FSM(DirectObject):
         """__exitCurrent(self)
         Exit the current state"""
         FSM.notify.info("exiting %s" % self.__currentState.getName())
+        messenger.send(self.getName() + '_' +
+                       self.__currentState.getName() + '_exited')
         self.__currentState.exit()
         self.__currentState = None
                     
@@ -106,6 +108,8 @@ class FSM(DirectObject):
         if (aState in self.__states):
             self.__currentState = aState
             aState.enter()
+            messenger.send(self.getName() + '_' +
+                           aState.getName() + '_entered')
             FSM.notify.info("entering %s" % aState.getName())
         else:
             FSM.notify.error("enter: no such state")
