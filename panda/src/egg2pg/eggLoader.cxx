@@ -356,18 +356,6 @@ make_indexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
     return;
   }
 
-  bucket.set_coords(_comp_verts_maker._coords);
-  bucket.set_normals(_comp_verts_maker._norms);
-  bucket.set_colors(_comp_verts_maker._colors);
-
-  ComputedVerticesMaker::TexCoords::const_iterator tci;
-  for (tci = _comp_verts_maker._texcoords.begin();
-       tci != _comp_verts_maker._texcoords.end();
-       ++tci) {
-    const TexCoordName *name = (*tci).first;
-    bucket.set_texcoords(name, (*tci).second);
-  }
-
   LMatrix4d mat;
 
   if (transform != NULL) {
@@ -485,6 +473,22 @@ make_indexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
       _comp_verts_maker.add_color(Colorf(1.0, 1.0, 1.0, 1.0),
                                   EggMorphColorList());
     bprim.set_color(cindex);
+  }
+
+  // We have to set up the arrays after we have iterated through the
+  // vertices, because iterating through the vertices might discover
+  // additional texture coordinate sets that we didn't know about
+  // before.
+  bucket.set_coords(_comp_verts_maker._coords);
+  bucket.set_normals(_comp_verts_maker._norms);
+  bucket.set_colors(_comp_verts_maker._colors);
+
+  ComputedVerticesMaker::TexCoords::const_iterator tci;
+  for (tci = _comp_verts_maker._texcoords.begin();
+       tci != _comp_verts_maker._texcoords.end();
+       ++tci) {
+    const TexCoordName *name = (*tci).first;
+    bucket.set_texcoords(name, (*tci).second);
   }
 
   _builder.add_prim(bucket, bprim);
