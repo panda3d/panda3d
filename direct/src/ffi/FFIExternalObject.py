@@ -31,11 +31,11 @@ def funcToMethod(func,clas,method_name=None):
     func.im_class=clas
     func.im_func=func
     func.im_self=None
-    if not method_name: 
+    if not method_name:
         clas.__dict__[method_name]=func
     else:
         clas.__dict__[func.__name__]=func
-    
+
 
 def FFIInstance(classdef, this = 0, userManagesMemory = 0 ):
     answer = instance(classdef)
