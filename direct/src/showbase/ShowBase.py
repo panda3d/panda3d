@@ -13,6 +13,7 @@ from PythonUtil import *
 from ParticleManagerGlobal import *
 from PhysicsManagerGlobal import *
 from IntervalManager import ivalMgr
+from InputStateGlobal import inputState
 
 import Task
 import EventManager
