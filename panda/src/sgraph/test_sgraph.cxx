@@ -16,12 +16,40 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "camera.h"
+#include "geomNode.h"
 
-#include <notify.h>
+#include "pointerTo.h"
+#include "clockObject.h"
+#include "notify.h"
 
 int main() {
   nout << "running test_sgraph" << endl;
-  PT(Camera) cam = new Camera("camera");
+
+  ClockObject *c = ClockObject::get_global_clock();
+  int i;
+  int count = 100000;
+  double start, finish;
+  PT(Node) node;
+
+  node = new GeomNode("foo");
+  start = c->get_real_time();
+  for (i = 0; i < count; i++) {
+    node->is_of_type(GeomNode::get_class_type());
+  }
+  finish = c->get_real_time();
+
+  cerr << "test 1: " << (finish - start) / (double)count * 1000.0 
+       << " ms\n";
+
+  node = new NamedNode("foo");
+  start = c->get_real_time();
+  for (i = 0; i < count; i++) {
+    node->is_of_type(GeomNode::get_class_type());
+  }
+  finish = c->get_real_time();
+
+  cerr << "test 2: " << (finish - start) / (double)count * 1000.0
+       << " ms\n";
+
   return 0;
 }
