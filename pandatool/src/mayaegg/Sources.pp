@@ -16,6 +16,7 @@
 
   #define SOURCES \
     config_mayaegg.cxx config_mayaegg.h \
+    mayaEggGroupUserData.cxx mayaEggGroupUserData.I mayaEggGroupUserData.h \
     mayaToEggConverter.cxx mayaToEggConverter.h
 
 #end ss_lib_target

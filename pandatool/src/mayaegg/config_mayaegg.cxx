@@ -17,8 +17,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_mayaegg.h"
+#include "mayaEggGroupUserData.h"
 
-#include <dconfig.h>
+#include "dconfig.h"
 
 Configure(config_mayaegg);
 NotifyCategoryDef(mayaegg, ":maya");
@@ -42,5 +43,7 @@ init_libmayaegg() {
     return;
   }
   initialized = true;
+
+  MayaEggGroupUserData::init_type();
 }
 

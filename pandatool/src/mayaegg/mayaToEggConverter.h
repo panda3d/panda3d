@@ -86,6 +86,7 @@ private:
   bool process_model_node(const MDagPath &dag_path, EggGroupNode *egg_root);
   bool process_chan_node(const MDagPath &dag_path, EggGroupNode *egg_root);
   void get_transform(const MDagPath &dag_path, EggGroup *egg_group);
+  void get_joint_transform(const MDagPath &dag_path, EggGroup *egg_group);
 
   // I ran into core dumps trying to pass around a MFnMesh object by
   // value.  From now on, all MFn* objects will be passed around by

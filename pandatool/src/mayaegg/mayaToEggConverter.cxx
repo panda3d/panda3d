@@ -20,6 +20,7 @@
 #include "mayaShader.h"
 #include "maya_funcs.h"
 #include "config_mayaegg.h"
+#include "mayaEggGroupUserData.h"
 
 #include "eggData.h"
 #include "eggGroup.h"
@@ -462,7 +463,7 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
 
     for (ti = _tables.begin(); ti != _tables.end(); ++ti) {
       JointAnim *joint_anim = (*ti).second;
-      get_transform(joint_anim->_dag_path, tgroup);
+      get_joint_transform(joint_anim->_dag_path, tgroup);
       joint_anim->_anim->add_data(tgroup->get_transform());
     }
 
@@ -637,7 +638,7 @@ process_model_node(const MDagPath &dag_path, EggGroupNode *egg_root) {
 
       if (egg_group != (EggGroup *)NULL) {
         egg_group->set_group_type(EggGroup::GT_joint);
-        get_transform(dag_path, egg_group);
+        get_joint_transform(dag_path, egg_group);
       }
     }
 
@@ -722,11 +723,20 @@ process_model_node(const MDagPath &dag_path, EggGroupNode *egg_root) {
       return false;
 
     } else {
+      if (mayaegg_cat.is_debug()) {
+        mayaegg_cat.debug()
+          << "Locator at " << dag_path.fullPathName().asChar() << "\n";
+      }
+
       // Presumably, the locator's position has some meaning to the
       // end-user, so we will implicitly tag it with the DCS flag so it
       // won't get flattened out.
-      egg_group->set_dcs_type(EggGroup::DC_net);
       if (_animation_convert != AC_model) {
+        // For now, don't set the DCS flag on locators within
+        // character models, since egg-optchar doesn't understand
+        // this.  Perhaps there's no reason to ever change this, since
+        // locators within character models may not be meaningful.
+        egg_group->set_dcs_type(EggGroup::DC_net);
         get_transform(dag_path, egg_group);
       }
       make_locator(dag_path, dag_node, egg_group, egg_root);
@@ -843,20 +853,20 @@ get_transform(const MDagPath &dag_path, EggGroup *egg_group) {
   switch (_transform_type) {
   case TT_all:
     break;
-
+    
   case TT_model:
     if (!egg_group->get_model_flag() &&
         egg_group->get_dcs_type() == EggGroup::DC_none) {
       return;
     }
     break;
-
+    
   case TT_dcs: 
     if (egg_group->get_dcs_type() == EggGroup::DC_none) {
       return;
     }
     break;
-
+    
   case TT_none:
   case TT_invalid:
     return;
@@ -876,6 +886,67 @@ get_transform(const MDagPath &dag_path, EggGroup *egg_group) {
   m4d = m4d * egg_group->get_node_frame_inv();
   if (!m4d.almost_equal(LMatrix4d::ident_mat(), 0.0001)) {
     egg_group->add_matrix(m4d);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::get_joint_transform
+//       Access: Private
+//  Description: Extracts the transform on the indicated Maya node,
+//               as appropriate for a joint in an animated character,
+//               and applies it to the indicated node.  This is
+//               different from get_transform() in that it does not
+//               respect the _transform_type flag, and it does not
+//               consider the relative transforms within the egg file.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+get_joint_transform(const MDagPath &dag_path, EggGroup *egg_group) {
+  MStatus status;
+  MObject transformNode = dag_path.transform(&status);
+  // This node has no transform - i.e., it's the world node
+  if (!status && status.statusCode() == MStatus::kInvalidParameter) {
+    return;
+  }
+
+  MFnDagNode transform(transformNode, &status);
+  if (!status) {
+    status.perror("MFnDagNode constructor");
+    return;
+  }
+
+  MTransformationMatrix matrix(transform.transformationMatrix());
+
+  if (mayaegg_cat.is_spam()) {
+    mayaegg_cat.spam()
+      << "  translation: " << matrix.translation(MSpace::kWorld)
+      << "\n";
+    double d[3];
+    MTransformationMatrix::RotationOrder rOrder;
+
+    matrix.getRotation(d, rOrder, MSpace::kWorld);
+    mayaegg_cat.spam()
+      << "  rotation: ["
+      << d[0] << ", "
+      << d[1] << ", "
+      << d[2] << "]\n";
+    matrix.getScale(d, MSpace::kWorld);
+    mayaegg_cat.spam()
+      << "  scale: ["
+      << d[0] << ", "
+      << d[1] << ", "
+      << d[2] << "]\n";
+  }
+
+  MMatrix mat = matrix.asMatrix();
+  MMatrix ident_mat;
+  ident_mat.setToIdentity();
+
+  if (!mat.isEquivalent(ident_mat, 0.0001)) {
+    egg_group->set_transform
+      (LMatrix4d(mat[0][0], mat[0][1], mat[0][2], mat[0][3],
+                 mat[1][0], mat[1][1], mat[1][2], mat[1][3],
+                 mat[2][0], mat[2][1], mat[2][2], mat[2][3],
+                 mat[3][0], mat[3][1], mat[3][2], mat[3][3]));
   }
 }
 
@@ -1359,7 +1430,11 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
 
   // Save this modeling flag for the vertex color check later (see the
   // comment below).
-  bool egg_vertex_color = egg_group->has_object_type("vertex-color");
+  bool egg_vertex_color = false;
+  if (egg_group->has_user_data(MayaEggGroupUserData::get_class_type())) {
+    egg_vertex_color = 
+      DCAST(MayaEggGroupUserData, egg_group->get_user_data())->_vertex_color;
+  }
 
   while (!pi.isDone()) {
     EggPolygon *egg_poly = new EggPolygon;
@@ -1761,6 +1836,14 @@ r_get_egg_group(const string &name, const MDagPath &dag_path,
     if (egg_group->has_object_type("model")) {
       egg_group->remove_object_type("model");
       egg_group->set_model_flag(true);
+    }
+
+    // And "vertex-color" has meaning only to this converter.
+    if (egg_group->has_object_type("vertex-color")) {
+      egg_group->remove_object_type("vertex-color");
+      MayaEggGroupUserData *user_data = new MayaEggGroupUserData;
+      user_data->_vertex_color = true;
+      egg_group->set_user_data(user_data);
     }
   }
 
