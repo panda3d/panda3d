@@ -143,6 +143,7 @@ write(ostream &out, unsigned int indent) const {
   out.width(indent+2); out<<""; out<<"_velocity "<<_velocity<<"\n";
   out.width(indent+2); out<<""; out<<"(implicit velocity "<<get_implicit_velocity()<<")\n";
   out.width(indent+2); out<<""; out<<"_orientation "<<_orientation<<"\n";
+  out.width(indent+2); out<<""; out<<"(hpr "<<_orientation.get_hpr()<<")\n";
   out.width(indent+2); out<<""; out<<"_rotation "<<_rotation<<"\n";
   out.width(indent+2); out<<""; out<<"_terminal_velocity "<<_terminal_velocity<<"\n";
   out.width(indent+2); out<<""; out<<"_mass "<<_mass<<"\n";
