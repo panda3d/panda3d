@@ -70,8 +70,9 @@ class ScrollingLabel(PandaObject.PandaObject):
         # listen for the scroll buttons
         self.accept(self.name + "-left", self.handleLeftButton)
         self.accept(self.name + "-right", self.handleRightButton)
+        
         # listen for keyboard hits
-        self.setKeyFocus(1)
+        self.setKeyFocus(0)
 
         # set list to first element
         self.setItem(self.item)
@@ -140,6 +141,9 @@ class ScrollingLabel(PandaObject.PandaObject):
     def setKeyFocus(self, focus):
         self.keyFocus = focus
         if (focus == 1):
+            # ignore keyboard hits
+            self.ignore("left-up")
+            self.ignore("right-up")            
             # listen for keyboard hits
             self.accept("left-up", self.handleLeftArrow)
             self.accept("right-up", self.handleRightArrow)

@@ -22,6 +22,9 @@ class Messenger:
 
         if (Messenger.notify == None):
             Messenger.notify = directNotify.newCategory("Messenger")
+
+        # Messenger.notify.setDebug(1)
+            
         
     def accept(self, event, object, method, extraArgs=[], persistent=1):
         """ accept(self, string, DirectObject, Function, List, Boolean)

@@ -189,7 +189,7 @@ class TaskManager:
         self.currentTime, self.currentFrame = getTimeFrame()
         if (TaskManager.notify == None):
             TaskManager.notify = directNotify.newCategory("TaskManager")
-        #TaskManager.notify.setDebug(1)
+        # TaskManager.notify.setDebug(1)
 
     def stepping(value):
         self.stepping = value
