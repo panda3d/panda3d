@@ -235,6 +235,10 @@ GuiLabel* GuiLabel::make_model_label(Node* geom, float w, float h) {
   ret->_internal = new RenderRelation(ret->_geom, geom);
   ret->_internal->set_transition(
 				new ColorTransition(Colorf(ret->_foreground)));
+  gui_cat->debug() << "created model label 0x" << (void*)ret 
+		   << " from node 0x" << (void*)geom
+		   << ", set _type(" << (int)(ret->_type) << ") to MODEL("
+		   << (int)MODEL << ")" << endl;
   return ret;
 }
 
@@ -467,4 +471,43 @@ int GuiLabel::set_draw_order(int order) {
   }
   this->thaw();
   return ret;
+}
+
+void GuiLabel::write(ostream& os) const {
+  os << "GuiLabel: (0x" << (void*)this << ")" << endl;
+  os << "  refcount = " << this->get_ref_count() << endl;
+  os << "  _type = ";
+  switch (this->_type) {
+  case NONE:
+    os << "NONE";
+    break;
+  case SIMPLE_TEXTURE:
+    os << "SIMPLE_TEXTURE";
+    break;
+  case SIMPLE_TEXT:
+    os << "SIMPLE_TEXT";
+    break;
+  case SIMPLE_CARD:
+    os << "SIMPLE_CARD";
+    break;
+  case MODEL:
+    os << "MODEL";
+    break;
+  default:
+    os << "bad";
+  }
+  os << endl << "  _geom = 0x" << (void*)(this->_geom.p()) << endl;
+  os << "  _arc = 0x" << (void*)(this->_arc) << endl;
+  os << "  _tex = 0x" << (void*)(this->_tex.p()) << endl;
+  os << "  _internal = 0x" << (void*)(this->_internal) << endl;
+  os << "  _gset = 0x" << (void*)(this->_gset) << endl;
+  os << "  _scale = " << this->_scale << endl;
+  os << "  _pos = " << this->_pos << endl;
+  os << "  _foreground = " << this->_foreground << endl;
+  if (_have_background)
+    os << "  _background = " << this->_background << endl;
+  if (_have_width)
+    os << "  _width = " << this->_width << endl;
+  if (_have_height)
+    os << "  _height = " << this->_height << endl;
 }

@@ -2,15 +2,30 @@ from ShowBaseGlobal import *
 from DirectObject import *
 import GuiSign
 import GuiManager
+import GuiLabel
 
 guiMgr = GuiManager.GuiManager.getPtr(base.win, base.mak.node(), base.renderGui.node())
 
+font = (loader.loadModelOnce("phase_3/models/fonts/ttf-comic")).node()
+
 class Sign(DirectObject):
 
-    def __init__(self, name, label):
+    def __init__(self, name, label=None):
         self.name = name
-        self.label = label
-        self.sign = GuiSign.GuiSign(name, label)
+        # label in this case means GuiLabel
+        if not label:
+            self.label = GuiLabel.GuiLabel.makeSimpleTextLabel(self.name, font)
+            self.label.setForegroundColor(1., 0., 0., 1.)
+            self.label.setBackgroundColor(1., 1., 1., 0.)
+            self.label.thaw()
+        elif (type(label) == type('')):
+            self.label = GuiLabel.GuiLabel.makeSimpleTextLabel(label, font)
+            self.label.setForegroundColor(1., 0., 0., 1.)
+            self.label.setBackgroundColor(1., 1., 1., 0.)
+            self.label.thaw()
+        else:
+            self.label = label
+        self.sign = GuiSign.GuiSign(self.name, self.label)
         self.setScale(0.1)
         self.managed = 0
 	return None

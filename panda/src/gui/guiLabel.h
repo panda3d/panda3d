@@ -102,6 +102,8 @@ PUBLISHED:
   INLINE void set_priority(GuiLabel*, const PriorityType);
   int set_draw_order(int);
 
+  void write(ostream&) const;
+
 public:
   // type interface
   static TypeHandle get_class_type(void) {

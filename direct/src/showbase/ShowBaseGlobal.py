@@ -17,4 +17,4 @@ __builtin__.tkroot = base.tkroot
 __builtin__.taskMgr = base.taskMgr
 __builtin__.eventMgr = base.eventMgr
 __builtin__.messenger = base.messenger
-
+__builtin__.config = base.config
