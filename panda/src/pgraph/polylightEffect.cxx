@@ -166,34 +166,35 @@ do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const Tran
       // Calculate the distance of the node from the light
       //dist = light_iter->second->get_distance(data->_node_path.get_node_path());
       const NodePath lightnp = *light_iter;
-      LPoint3f avatar_position = data->_node_path.get_node_path().get_relative_point(lightnp, light->get_pos());
+      LPoint3f relative_point = data->_node_path.get_node_path().get_relative_point(lightnp, light->get_pos());
 
       if (_effect_center[2]) {
-        dist = (avatar_position - _effect_center).length(); // this counts height difference
+        dist = (relative_point - _effect_center).length(); // this counts height difference
       } else {
         // get distance as if the light is at the same height of player
-        LVector2f xz(avatar_position[0], avatar_position[1]);
+        LVector2f xz(relative_point[0], relative_point[1]);
         dist = xz.length(); // this does not count height difference
       }
 
       if (dist <= light_radius) { // If node is in range of this light
-      /*
         // as to Schuyler's suggestion, lets do some vector processing relative to camera
         LPoint3f light_position = light->get_pos();
-        LPoint3f camera_position = camera.get_relative_point(lightnp, light->get_pos());
-        LVector3f light_camera = camera_position - LPoint3f(0,0,0);
-        LVector3f light_avatar = avatar_position - LPoint3f(0,0,0);
+        //LPoint3f camera_position = camera.get_relative_point(lightnp, light->get_pos());
+        LPoint3f camera_position = lightnp.get_relative_point(camera, LPoint3f(0,0,0));
+        LPoint3f avatar_position = lightnp.get_relative_point(data->_node_path.get_node_path(), LPoint3f(0,0,0));
+        LVector3f light_camera = camera_position  - light_position;
+        LVector3f light_avatar = avatar_position - light_position;
         light_camera.normalize();
         light_avatar.normalize();
         float intensity = light_camera.dot(light_avatar);
         
         if (polylight_info) {
-          pgraph_cat.debug() << "light's position = " << light->get_pos() << endl;
+          pgraph_cat.debug() << "light position = " << light_position << endl;
           pgraph_cat.debug() << "relative avatar position = " << avatar_position << endl;
           pgraph_cat.debug() << "relative camera position = " << camera_position << endl;
-          pgraph_cat.debug() << "light_camera " << light_camera << endl;
-          pgraph_cat.debug() << "light_avatar " << light_avatar << endl;
-          pgraph_cat.info() << "light_camera dot light_avatar = " << intensity << endl;
+          pgraph_cat.debug() << "light->camera " << light_camera << endl;
+          pgraph_cat.debug() << "light->avatar " << light_avatar << endl;
+          pgraph_cat.debug() << "light->camera.light->avatar = " << intensity << endl;
           pgraph_cat.debug() << "effect center = " << _effect_center << endl;
           //pgraph_cat.debug() << "close to this light = " << light->get_name() << endl;
           pgraph_cat.debug() << "dist = " << dist << ";radius = " << light_radius << endl;
@@ -202,9 +203,8 @@ do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const Tran
         // map -1 to 1 into 0 to 1; and flip it
         intensity = 1.0 - ((intensity + 1.0) * 0.5);
         if (polylight_info) {
-          pgraph_cat.info() << "intensity = " << intensity << endl;
+          pgraph_cat.debug() << "remapped intensity = " << intensity << endl;
         }
-      */
 
         PolylightNode::Attenuation_Type light_attenuation = light->get_attenuation();
         Colorf light_color;
@@ -244,7 +244,7 @@ do_poly_light(const SceneSetup *scene, const CullTraverserData *data, const Tran
           light_scale = 1.0;
         }
 
-        //light_scale *= intensity;
+        light_scale *= intensity;
 
         if (min_dist > dist) {
           min_dist = dist;
