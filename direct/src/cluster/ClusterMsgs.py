@@ -29,7 +29,7 @@ SERVER_STARTUP_STRING = (
     '__builtin__.clusterSyncFlag = %d;' +
     '__builtin__.clusterDaemonClient = \'%s\';' +
     '__builtin__.clusterDaemonPort = %d;'
-    'from ShowBaseGlobal import *"')
+    'from ShowBaseGlobal import *; run()"')
 
 class ClusterMsgHandler:
     """ClusterMsgHandler: wrapper for PC clusters/multi-piping networking"""

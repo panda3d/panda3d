@@ -27,10 +27,10 @@ ClientConfigs = {
     'two-server'          : [{'display name' : 'display0',
                               'display mode' : 'client',
                               'pos' : Vec3(0),
-                              'hpr' : Vec3(-30,0,0)},
+                              'hpr' : Vec3(30,0,0)},
                              {'display name' : 'display1',
                               'pos' : Vec3(0),
-                              'hpr' : Vec3(30,0,0)}
+                              'hpr' : Vec3(-30,0,0)}
                              ],
     'mono-modelcave-pipe0': [{'display name' : 'display0',
                               'pos' : Vec3(0),
