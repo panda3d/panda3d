@@ -78,6 +78,28 @@ get_slider(const InternalName *name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SliderTable::has_slider
+//       Access: Published
+//  Description: Returns true if the table has a slider by the
+//               indicated name, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool SliderTable::
+has_slider(const InternalName *name) const {
+  return (get_slider(name) != (VertexSlider *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SliderTable::is_empty
+//       Access: Published
+//  Description: Returns true if the table has no sliders, false if it
+//               has at least one.
+////////////////////////////////////////////////////////////////////
+INLINE bool SliderTable::
+is_empty() const {
+  return _sliders.empty();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SliderTable::get_modified
 //       Access: Published
 //  Description: Returns a sequence number that's guaranteed to change

@@ -1952,17 +1952,78 @@ make_vertex_data(const EggRenderState *render_state,
   PT(qpGeomVertexFormat) temp_format = new qpGeomVertexFormat(array_format);
 
   PT(TransformBlendPalette) blend_palette;
-  string name;
+  PT(SliderTable) slider_table;
+  string name = _data->get_egg_filename().get_basename_wo_extension();
 
   if (is_dynamic) {
-    // If it's a dynamic object, we need a TransformBlendPalette, and
-    // another array that indexes into the palette per vertex.
+    // If it's a dynamic object, we need a TransformBlendPalette and
+    // maybe a SliderTable, and additional columns in the vertex data:
+    // one that indexes into the blend palette per vertex, and also
+    // one for each different type of morph delta.
     blend_palette = new TransformBlendPalette;
-    PT(qpGeomVertexArrayFormat) blend_array_format = new qpGeomVertexArrayFormat;
-    blend_array_format->add_data_type
+
+    PT(qpGeomVertexArrayFormat) anim_array_format = new qpGeomVertexArrayFormat;
+    anim_array_format->add_data_type
       (InternalName::get_transform_blend(), 1, 
        qpGeomVertexDataType::NT_uint16, qpGeomVertexDataType::C_index);
-    temp_format->add_array(blend_array_format);
+    temp_format->add_array(anim_array_format);
+
+    pset<string> slider_names;
+    EggVertexPool::const_iterator vi;
+    for (vi = vertex_pool->begin(); vi != vertex_pool->end(); ++vi) {
+      EggVertex *vertex = (*vi);
+      
+      EggMorphVertexList::const_iterator mvi;
+      for (mvi = vertex->_dxyzs.begin(); mvi != vertex->_dxyzs.end(); ++mvi) {
+        slider_names.insert((*mvi).get_name());
+        record_morph(anim_array_format, character_maker, (*mvi).get_name(),
+                     InternalName::get_vertex(), 3);
+      }
+      if (vertex->has_normal()) {
+        EggMorphNormalList::const_iterator mni;
+        for (mni = vertex->_dnormals.begin(); mni != vertex->_dnormals.end(); ++mni) {
+          slider_names.insert((*mni).get_name());
+          record_morph(anim_array_format, character_maker, (*mni).get_name(),
+                       InternalName::get_normal(), 3);
+        }
+      }
+      if (vertex->has_color()) {
+        EggMorphColorList::const_iterator mci;
+        for (mci = vertex->_drgbas.begin(); mci != vertex->_drgbas.end(); ++mci) {
+          slider_names.insert((*mci).get_name());
+          record_morph(anim_array_format, character_maker, (*mci).get_name(),
+                       InternalName::get_color(), 4);
+        }
+      }
+      EggVertex::const_uv_iterator uvi;
+      for (uvi = vertex->uv_begin(); uvi != vertex->uv_end(); ++uvi) {
+        EggVertexUV *egg_uv = (*uvi);
+        string name = egg_uv->get_name();
+        if (name == "default") {
+          name = string();
+        }
+        PT(InternalName) iname = InternalName::get_texcoord_name(name);
+
+        EggMorphTexCoordList::const_iterator mti;
+        for (mti = egg_uv->_duvs.begin(); mti != egg_uv->_duvs.end(); ++mti) {
+          slider_names.insert((*mti).get_name());
+          record_morph(anim_array_format, character_maker, (*mti).get_name(),
+                       iname, 2);
+        }
+      }
+    }
+
+    if (!slider_names.empty()) {
+      // If we have any sliders at all, create a table for them.
+
+      slider_table = new SliderTable;
+      
+      pset<string>::iterator si;
+      for (si = slider_names.begin(); si != slider_names.end(); ++si) {
+        VertexSlider *slider = character_maker->egg_to_slider(*si);
+        slider_table->add_slider(slider);
+      }
+    }
 
     // We'll also assign the character name to the vertex data, so it
     // will show up in PStats.
@@ -1980,28 +2041,56 @@ make_vertex_data(const EggRenderState *render_state,
   PT(qpGeomVertexData) vertex_data =
     new qpGeomVertexData(name, format, qpGeomUsageHint::UH_static);
 
-  if (is_dynamic) {
-    vertex_data->set_transform_blend_palette(blend_palette);
+  vertex_data->set_transform_blend_palette(blend_palette);
+  if (slider_table != (SliderTable *)NULL) {
+    vertex_data->set_slider_table(SliderTable::register_table(slider_table));
   }
 
   // And fill the data from the vertex pool.
   EggVertexPool::const_iterator vi;
   for (vi = vertex_pool->begin(); vi != vertex_pool->end(); ++vi) {
-    qpGeomVertexWriter gvi(vertex_data);
+    qpGeomVertexWriter gvw(vertex_data);
     EggVertex *vertex = (*vi);
-    gvi.set_vertex(vertex->get_index());
+    gvw.set_vertex(vertex->get_index());
 
-    gvi.set_data_type(InternalName::get_vertex());
-    gvi.add_data4f(LCAST(float, vertex->get_pos4() * transform));
+    gvw.set_data_type(InternalName::get_vertex());
+    gvw.add_data4f(LCAST(float, vertex->get_pos4() * transform));
+
+    EggMorphVertexList::const_iterator mvi;
+    for (mvi = vertex->_dxyzs.begin(); mvi != vertex->_dxyzs.end(); ++mvi) {
+      const EggMorphVertex &morph = (*mvi);
+      CPT(InternalName) delta_name = 
+        InternalName::get_morph(InternalName::get_vertex(), morph.get_name());
+      gvw.set_data_type(delta_name);
+      gvw.add_data3f(LCAST(float, morph.get_offset() * transform));
+    }
 
     if (vertex->has_normal()) {
-      gvi.set_data_type(InternalName::get_normal());
-      gvi.add_data3f(LCAST(float, vertex->get_normal() * transform));
+      gvw.set_data_type(InternalName::get_normal());
+      gvw.add_data3f(LCAST(float, vertex->get_normal() * transform));
+
+      EggMorphNormalList::const_iterator mni;
+      for (mni = vertex->_dnormals.begin(); mni != vertex->_dnormals.end(); ++mni) {
+        const EggMorphNormal &morph = (*mni);
+        CPT(InternalName) delta_name = 
+          InternalName::get_morph(InternalName::get_normal(), morph.get_name());
+        gvw.set_data_type(delta_name);
+        gvw.add_data3f(LCAST(float, morph.get_offset() * transform));
+      }
     }
 
     if (vertex->has_color()) {
-      gvi.set_data_type(InternalName::get_color());
-      gvi.add_data4f(vertex->get_color());
+      gvw.set_data_type(InternalName::get_color());
+      gvw.add_data4f(vertex->get_color());
+
+      EggMorphColorList::const_iterator mci;
+      for (mci = vertex->_drgbas.begin(); mci != vertex->_drgbas.end(); ++mci) {
+        const EggMorphColor &morph = (*mci);
+        CPT(InternalName) delta_name = 
+          InternalName::get_morph(InternalName::get_color(), morph.get_name());
+        gvw.set_data_type(delta_name);
+        gvw.add_data4f(morph.get_offset());
+      }
     }
 
     EggVertex::const_uv_iterator uvi;
@@ -2014,7 +2103,7 @@ make_vertex_data(const EggRenderState *render_state,
         name = string();
       }
       PT(InternalName) iname = InternalName::get_texcoord_name(name);
-      gvi.set_data_type(iname);
+      gvw.set_data_type(iname);
 
       BakeInUVs::const_iterator buv = render_state->_bake_in_uvs.find(iname);
       if (buv != render_state->_bake_in_uvs.end()) {
@@ -2022,7 +2111,16 @@ make_vertex_data(const EggRenderState *render_state,
         uv = uv * (*buv).second->get_transform();
       }
 
-      gvi.set_data2f(LCAST(float, uv));
+      gvw.set_data2f(LCAST(float, uv));
+
+      EggMorphTexCoordList::const_iterator mti;
+      for (mti = egg_uv->_duvs.begin(); mti != egg_uv->_duvs.end(); ++mti) {
+        const EggMorphTexCoord &morph = (*mti);
+        CPT(InternalName) delta_name = 
+          InternalName::get_morph(iname, morph.get_name());
+        gvw.set_data_type(delta_name);
+        gvw.add_data2f(LCAST(float, morph.get_offset()));
+      }
     }
 
     if (is_dynamic) {
@@ -2040,8 +2138,8 @@ make_vertex_data(const EggRenderState *render_state,
       blend.normalize_weights();
 
       int palette_index = blend_palette->add_blend(blend);
-      gvi.set_data_type(InternalName::get_transform_blend());
-      gvi.set_data1i(palette_index);
+      gvw.set_data_type(InternalName::get_transform_blend());
+      gvw.set_data1i(palette_index);
     }
   }
 
@@ -2050,6 +2148,26 @@ make_vertex_data(const EggRenderState *render_state,
   nassertr(inserted, vertex_data);
 
   return vertex_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggLoader::record_morph
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void EggLoader::
+record_morph(qpGeomVertexArrayFormat *array_format,
+             CharacterMaker *character_maker,
+             const string &morph_name, InternalName *data_type_name,
+             int num_components) {
+  CPT(InternalName) slider_name = InternalName::make(morph_name);
+  CPT(InternalName) delta_name = 
+    InternalName::get_morph(data_type_name, morph_name);
+  if (!array_format->has_data_type(delta_name)) {
+    array_format->add_data_type
+      (delta_name, num_components,
+       qpGeomVertexDataType::NT_float32, qpGeomVertexDataType::C_morph_delta);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

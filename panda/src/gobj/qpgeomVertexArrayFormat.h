@@ -106,6 +106,7 @@ PUBLISHED:
 
   const qpGeomVertexDataType *get_data_type(const InternalName *name) const;
   const qpGeomVertexDataType *get_data_type(int start_byte, int num_bytes) const;
+  INLINE bool has_data_type(const InternalName *name) const;
 
   bool is_data_subset_of(const qpGeomVertexArrayFormat &other) const;
 

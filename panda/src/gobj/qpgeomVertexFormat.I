@@ -94,6 +94,17 @@ get_array(int array) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexFormat::has_data_type
+//       Access: Published
+//  Description: Returns true if the format has the named data type,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool qpGeomVertexFormat::
+has_data_type(const InternalName *name) const {
+  return (get_data_type(name) != (qpGeomVertexDataType *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexFormat::get_num_morphs
 //       Access: Published
 //  Description: Returns the number of data types within the format

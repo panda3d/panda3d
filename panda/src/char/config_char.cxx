@@ -22,6 +22,7 @@
 #include "characterJoint.h"
 #include "characterJointBundle.h"
 #include "characterSlider.h"
+#include "characterVertexSlider.h"
 #include "computedVertices.h"
 #include "dynamicVertices.h"
 #include "jointVertexTransform.h"
@@ -64,6 +65,7 @@ init_libchar() {
   CharacterJoint::init_type();
   CharacterJointBundle::init_type();
   CharacterSlider::init_type();
+  CharacterVertexSlider::init_type();
   ComputedVertices::init_type();
   DynamicVertices::init_type();
   JointVertexTransform::init_type();
@@ -80,6 +82,7 @@ init_libchar() {
   CharacterJoint::register_with_read_factory();
   CharacterJointBundle::register_with_read_factory();
   CharacterSlider::register_with_read_factory();
+  CharacterVertexSlider::register_with_read_factory();
   ComputedVertices::register_with_read_factory();
   JointVertexTransform::register_with_read_factory();
 }

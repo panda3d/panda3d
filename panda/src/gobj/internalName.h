@@ -72,6 +72,7 @@ PUBLISHED:
   INLINE static PT(InternalName) get_texcoord_name(const string &name);
   INLINE static PT(InternalName) get_color();
   INLINE static PT(InternalName) get_transform_blend();
+  INLINE static PT(InternalName) get_morph(InternalName *data_type, const string &slider);
 
 private:
   PT(InternalName) _parent;

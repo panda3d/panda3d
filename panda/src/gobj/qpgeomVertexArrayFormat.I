@@ -103,6 +103,17 @@ get_data_type(int i) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexArrayFormat::has_data_type
+//       Access: Published
+//  Description: Returns true if the format has the named data type,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool qpGeomVertexArrayFormat::
+has_data_type(const InternalName *name) const {
+  return (get_data_type(name) != (qpGeomVertexDataType *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexArrayFormat::consider_sort_data_types
 //       Access: Private
 //  Description: Resorts the _data_types vector if necessary.

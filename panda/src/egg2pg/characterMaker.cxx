@@ -34,6 +34,7 @@
 #include "eggSurface.h"
 #include "eggCurve.h"
 #include "modelNode.h"
+#include "characterVertexSlider.h"
 #include "jointVertexTransform.h"
 #include "userVertexTransform.h"
 
@@ -204,6 +205,26 @@ create_slider(const string &name) {
   int index = _parts.size();
   _parts.push_back(slider);
   return index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CharacterMaker::egg_to_slider
+//       Access: Public
+//  Description: Returns the VertexSlider corresponding to the
+//               indicated egg slider name.
+////////////////////////////////////////////////////////////////////
+VertexSlider *CharacterMaker::
+egg_to_slider(const string &name) {
+  VertexSliders::iterator vi = _vertex_sliders.find(name);
+  if (vi != _vertex_sliders.end()) {
+    return (*vi).second;
+  }
+
+  int index = create_slider(name);
+  PT(VertexSlider) slider = 
+    new CharacterVertexSlider(DCAST(CharacterSlider, _parts[index]));
+  _vertex_sliders[name] = slider;
+  return slider;
 }
 
 

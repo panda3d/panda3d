@@ -146,6 +146,11 @@ private:
   (const EggRenderState *render_state, EggVertexPool *vertex_pool, 
    const LMatrix4d &transform, bool is_dynamic, 
    CharacterMaker *character_maker);
+  void record_morph
+  (qpGeomVertexArrayFormat *array_format,
+   CharacterMaker *character_maker, const string &morph_name, 
+   InternalName *data_type_name, int num_components);
+
   void make_primitive(const EggRenderState *render_state, 
                       EggPrimitive *egg_prim, Primitives &primitives);
 

@@ -56,6 +56,8 @@ PUBLISHED:
   INLINE static CPT(SliderTable) register_table(SliderTable *table);
 
   INLINE const VertexSlider *get_slider(const InternalName *name) const;
+  INLINE bool has_slider(const InternalName *name) const;
+  INLINE bool is_empty() const;
   INLINE UpdateSeq get_modified() const;
 
   void remove_slider(const InternalName *name);

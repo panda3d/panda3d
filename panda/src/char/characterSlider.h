@@ -23,6 +23,8 @@
 
 #include "movingPartScalar.h"
 
+class CharacterVertexSlider;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : CharacterSlider
 // Description : This is a morph slider within the character.  It's
@@ -37,9 +39,18 @@ protected:
 
 public:
   CharacterSlider(PartGroup *parent, const string &name);
+  virtual ~CharacterSlider();
 
   virtual PartGroup *make_copy() const;
 
+  virtual bool update_internals(PartGroup *parent, bool self_changed,
+                                bool parent_changed);
+
+private:
+  typedef pset<CharacterVertexSlider *> VertexSliders;
+  VertexSliders _vertex_sliders;
+
+public:
   static void register_with_read_factory();
 
   static TypedWritable *make_CharacterSlider(const FactoryParams &params);
@@ -60,6 +71,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class CharacterVertexSlider;
 };
 
 #endif

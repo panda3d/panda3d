@@ -23,6 +23,7 @@
 
 #include "computedVerticesMaker.h"
 #include "vertexTransform.h"
+#include "vertexSlider.h"
 #include "character.h"
 #include "vector_PartGroupStar.h"
 #include "typedef.h"
@@ -61,6 +62,7 @@ public:
   PandaNode *part_to_node(PartGroup *part) const;
 
   int create_slider(const string &name);
+  VertexSlider *egg_to_slider(const string &name);
 
 private:
   CharacterJointBundle *make_bundle();
@@ -87,6 +89,9 @@ private:
   typedef pmap<int, PT(VertexTransform) > VertexTransforms;
   VertexTransforms _vertex_transforms;
   PT(VertexTransform) _identity_transform;
+
+  typedef pmap<string, PT(VertexSlider) > VertexSliders;
+  VertexSliders _vertex_sliders;
 
   EggLoader &_loader;
   EggGroup *_egg_root;

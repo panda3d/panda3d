@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "characterSlider.h"
+#include "characterVertexSlider.h"
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "bamReader.h"
@@ -55,6 +56,16 @@ CharacterSlider(PartGroup *parent, const string &name)
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CharacterSlider::Destructor
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+CharacterSlider::
+~CharacterSlider() {
+  nassertv(_vertex_sliders.empty());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CharacterSlider::make_copy
 //       Access: Public, Virtual
 //  Description: Allocates and returns a new copy of the node.
@@ -63,6 +74,29 @@ CharacterSlider(PartGroup *parent, const string &name)
 PartGroup *CharacterSlider::
 make_copy() const {
   return new CharacterSlider(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CharacterSlider::update_internals
+//       Access: Public, Virtual
+//  Description: This is called by do_update() whenever the part or
+//               some ancestor has changed values.  It is a hook for
+//               derived classes to update whatever cache they may
+//               have that depends on these.
+//
+//               The return value is true if the part has changed as a
+//               result of the update, or false otherwise.
+////////////////////////////////////////////////////////////////////
+bool CharacterSlider::
+update_internals(PartGroup *, bool, bool) {
+  // Tell our related CharacterVertexSliders that they now need to
+  // recompute themselves.
+  VertexSliders::iterator vsi;
+  for (vsi = _vertex_sliders.begin(); vsi != _vertex_sliders.end(); ++vsi) {
+    (*vsi)->mark_modified();
+  }
+  
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

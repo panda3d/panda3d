@@ -191,6 +191,19 @@ get_transform_blend() {
   return _transform_blend;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: InternalName::get_morph
+//       Access: Published, Static
+//  Description: Returns an InternalName suitable for defining the
+//               morph deltas in the GeomVertexData to apply to the
+//               indicated data type name, using the named slider.
+////////////////////////////////////////////////////////////////////
+INLINE PT(InternalName) InternalName::
+get_morph(InternalName *data_type, const string &slider) {
+  // Returns data_type.morph.slider
+  return data_type->append("morph")->append(slider);
+}
+
 INLINE ostream &
 operator << (ostream &out, const InternalName &tcn) {
   tcn.output(out);
