@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "parameterRemapBasicStringToString.h"
-#include "wrapperBuilder.h"
+#include "interfaceMaker.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ParameterRemapBasicStringToString::Constructor
@@ -53,7 +53,7 @@ pass_parameter(ostream &out, const string &variable_name) {
 ////////////////////////////////////////////////////////////////////
 string ParameterRemapBasicStringToString::
 prepare_return_expr(ostream &out, int indent_level, const string &expression) {
-  WrapperBuilder::indent(out, indent_level)
+  InterfaceMaker::indent(out, indent_level)
     << "static basic_string<char> string_holder = " << expression << ";\n";
   return "string_holder";
 }

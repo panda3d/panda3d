@@ -23,7 +23,6 @@
 
 #include "interrogate_interface.h"
 #include "interrogate_request.h"
-#include "wrapperBuilder.h"
 
 #include <map>
 #include <set>
@@ -45,7 +44,6 @@ class CPPNameComponent;
 class CPPManifest;
 class InterrogateType;
 class InterrogateFunction;
-class ClassBuilder;
 class FunctionRemap;
 class InterfaceMaker;
 
@@ -109,20 +107,6 @@ private:
                CPPStructType *struct_type, CPPScope *scope,
                int flags, const string &expression = string());
 
-  /*
-  WrapperBuilder *get_wrapper_builder_c(const InterrogateFunction &ifunction);
-  WrapperBuilder *get_wrapper_builder_python(const InterrogateFunction &ifunction);
-  WrapperBuilder *get_wrapper_builder_python_obj(const InterrogateFunction &ifunction);
-
-  void make_wrappers();
-  FunctionWrapperIndex
-  get_wrapper(FunctionIndex function_index,
-              WrapperBuilder *wbuilder, CPPInstance *function,
-              string description, CPPStructType *struct_type, CPPScope *scope,
-              WrapperBuilder::Type wtype, const string &expression,
-              int num_default_parameters);
-  */
-
   TypeIndex get_atomic_string_type();
   TypeIndex get_type(CPPType *type, bool global);
 
@@ -131,7 +115,6 @@ private:
   void define_wrapped_type(InterrogateType &itype, CPPConstType *cpptype);
   void define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
                           TypeIndex type_index, bool forced);
-  void make_class_builders(TypeIndex type_index, CPPStructType *cpptype);
   void update_method_comment(CPPInstance *function, CPPStructType *struct_type,
                              CPPScope *scope);
   void define_method(CPPFunctionGroup *fgroup, InterrogateType &itype,
@@ -144,30 +127,11 @@ private:
 
   static string trim_blanks(const string &str);
 
-  /*
-  class NewFunction {
-  public:
-    CPPInstance *_function;
-    string _description;
-    CPPFunctionType *_ftype;
-    CPPStructType *_struct_type;
-    CPPScope *_scope;
-    WrapperBuilder::Type _wtype;
-    string _expression;
-    int _function_index;
-  };
-  typedef vector<NewFunction> NewFunctions;
-  NewFunctions _new_functions;
-  */
-
   typedef map<string, TypeIndex> TypesByName;
   typedef map<string, FunctionIndex> FunctionsByName;
 
   TypesByName _types_by_name;
   FunctionsByName _functions_by_name;
-
-  typedef vector<ClassBuilder *> ClassBuilders;
-  ClassBuilders _class_builders;
 
   typedef map<string, char> IncludeFiles;
   IncludeFiles _include_files;
@@ -181,9 +145,6 @@ private:
   Commands _noinclude;
 
   string _library_hash_name;
-
-  typedef map<string, WrapperBuilder *> OverloadedWrappers;
-  OverloadedWrappers _python_obj_wrappers;
 
   friend class FunctionRemap;
 };

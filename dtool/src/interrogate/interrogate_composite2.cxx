@@ -1,9 +1,6 @@
 
 #include "interrogate.cxx"
 #include "typeManager.cxx"
-#include "wrapperBuilder.cxx"
-#include "wrapperBuilderC.cxx"
-#include "wrapperBuilderPython.cxx"
 #include "parameterRemap.cxx"
 #include "parameterRemapBasicStringRefToString.cxx"
 #include "parameterRemapBasicStringToString.cxx"

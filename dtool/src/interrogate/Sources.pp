@@ -5,11 +5,8 @@
 #begin bin_target
   #define TARGET interrogate
 
-// While I'm working on this, I'll temporarily take out the composite
-// build.
-//  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx   
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx   
   #define SOURCES \
-     classBuilder.h classBuilderPythonObj.h \
      functionRemap.h \
      functionWriter.h \
      functionWriterPtrFromPython.h functionWriterPtrToPython.h \
@@ -28,12 +25,9 @@
      parameterRemapReferenceToConcrete.h  \
      parameterRemapReferenceToPointer.h parameterRemapThis.h  \
      parameterRemapToString.h parameterRemapUnchanged.h  \
-     typeManager.h wrapperBuilder.h wrapperBuilderC.h  \
-     wrapperBuilderPython.h wrapperBuilderPythonObj.h
+     typeManager.h
 
-// #define INCLUDED_SOURCES  \
- #define SOURCES $[SOURCES] \
-     classBuilder.cxx classBuilderPythonObj.cxx \
+#define INCLUDED_SOURCES  \
      functionRemap.cxx \
      functionWriter.cxx \
      functionWriterPtrFromPython.cxx functionWriterPtrToPython.cxx \
@@ -52,8 +46,7 @@
      parameterRemapReferenceToConcrete.cxx  \
      parameterRemapReferenceToPointer.cxx parameterRemapThis.cxx  \
      parameterRemapToString.cxx parameterRemapUnchanged.cxx  \
-     typeManager.cxx wrapperBuilder.cxx wrapperBuilderC.cxx  \
-     wrapperBuilderPython.cxx wrapperBuilderPythonObj.cxx
+     typeManager.cxx
 
 #end bin_target
 
