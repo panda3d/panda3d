@@ -280,8 +280,8 @@ GuiLabel* GuiLabel::make_model_label(Node* geom, float left, float right,
   GuiLabel* ret = new GuiLabel();
   ret->_type = MODEL;
   ret->_geom = new NamedNode("GUI label");
-  ret->_model_pos = LVector3f::rfu((left - right) * 0.5, 0.,
-				   (bottom - top) * 0.5);
+  ret->_model_pos = LVector3f::rfu(-(left + right) * 0.5, 0.,
+				   -(bottom + top) * 0.5);
   ret->_model_width = right - left;
   ret->_model_height = top - bottom;
   ret->_internal = new RenderRelation(ret->_geom, geom);
