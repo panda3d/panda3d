@@ -187,7 +187,7 @@ atomic_element:
 }
         atomic_element_definition
 {
-  current_atomic->_elements.push_back(atomic_element)
+  current_atomic->_elements.push_back(atomic_element);
 }
         ;
 
