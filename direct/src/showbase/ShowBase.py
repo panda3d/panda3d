@@ -319,20 +319,19 @@ class ShowBase:
             PStatClient.connect()
 
     def createAudioManager(self):
-        if self.wantAnySound:
-            if self.wantSfx:
-                self.sfxManager = AudioManager.createAudioManager()
-                if not self.sfxManager.isValid():
-                    self.wantSfx=None
-            if self.wantMusic:
-                self.musicManager = AudioManager.createAudioManager()
-                # Turn down the music globally
-                # Eventually we may want to control this in the options page
-                self.musicManager.setVolume(0.7)
-                if not self.musicManager.isValid():
-                    self.wantMusic=None
-            if not (self.wantSfx or self.wantMusic):
-                self.wantAnySound=None
+        if self.wantSfx:
+            self.sfxManager = AudioManager.createAudioManager()
+            if not self.sfxManager.isValid():
+                self.wantSfx=None
+        if self.wantMusic:
+            self.musicManager = AudioManager.createAudioManager()
+            # Turn down the music globally
+            # Eventually we may want to control this in the options page
+            self.musicManager.setVolume(0.7)
+            if not self.musicManager.isValid():
+                self.wantMusic=None
+
+        self.wantAnySound = (self.wantSfx or self.wantMusic)
 
     def loadSfx(self, name):
         if (name and base.wantSfx):
@@ -703,14 +702,21 @@ class ShowBase:
 
     # these are meant to be called in response to a user request
     def EnableMusic(self, bEnableMusic):
-        if(self.musicManager == None):
-            # would need to createaudiomanager/loadsfx for this to work.  would that be safe after startup?
-            self.notify.warning("Cant toggle music, must set audio-music-active #t in Configrc at startup")
-            return 0
         self.wantMusic = bEnableMusic
+        self.wantAnySound = (self.wantSfx or self.wantMusic)
+
+        if (self.wantMusic and self.musicManager == None):
+            self.createAudioManager()
+
+            if not self.wantMusic:
+                # Oops, it didn't work.
+                self.notify.warning("Unable to toggle music on.")
+                return 0
+
         # dont setActive(1) if no audiofocus
         if(not (self.wantMusic and not self.AppHasAudioFocus)):
-                self.musicManager.setActive(bEnableMusic)
+                self.musicManager.setActive(self.wantMusic)
+
         if(self.wantMusic):
             self.notify.debug("Enabling music")
         else:
@@ -718,14 +724,21 @@ class ShowBase:
         return 1
 
     def EnableSoundEffects(self, bEnableSoundEffects):
-        if(self.sfxManager == None):
-            # would need to createaudiomanager/loadsfx for this to work.  would that be safe after startup?
-            self.notify.warning("Cant toggle music, must set audio-music-active #t in Configrc at startup")
-            return 0
         self.wantSfx = bEnableSoundEffects
+        self.wantAnySound = (self.wantSfx or self.wantMusic)
+
+        if (self.wantSfx and self.sfxManager == None):
+            self.createAudioManager()
+
+            if not self.wantSfx:
+                # Oops, it didn't work.
+                self.notify.warning("Unable to toggle sound effects on.")
+                return 0
+
         # dont setActive(1) if no audiofocus
         if(not (self.wantSfx and not self.AppHasAudioFocus)):
-            self.sfxManager.setActive(bEnableSoundEffects)
+            self.sfxManager.setActive(self.wantSfx)
+
         if(self.wantSfx):
             self.notify.debug("Enabling sound effects")
         else:
