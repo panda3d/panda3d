@@ -869,7 +869,6 @@ class ShowBase(DirectObject.DirectObject):
             # minimized, not just the main window.  But it will do for
             # now until someone complains.
             time.sleep(0.1)
-            print "\n\nmain window minimized."
 
         # Lerp stuff needs this event, and it must be generated in
         # C++, not in Python.
