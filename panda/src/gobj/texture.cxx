@@ -693,10 +693,19 @@ make_Texture(const FactoryParams &params) {
 
   PT(Texture) me;
 
-  if (alpha_filename.empty()) {
-    me = TexturePool::load_texture(filename);
+  if (filename.empty()) {
+    // This texture has no filename; since we don't have an image to
+    // load, we can't actually create the texture.
+    gobj_cat.info()
+      << "Cannot create texture '" << name << "' with no filename.\n";
+
   } else {
-    me = TexturePool::load_texture(filename, alpha_filename);
+    // This texture does have a filename, so try to load it from disk.
+    if (alpha_filename.empty()) {
+      me = TexturePool::load_texture(filename);
+    } else {
+      me = TexturePool::load_texture(filename, alpha_filename);
+    }
   }
 
   if (me == (Texture *)NULL) {
