@@ -55,7 +55,7 @@ class MsgHandler:
         dgi = DatagramIterator(datagram)
         number = dgi.getUint32()
         type = dgi.getUint8()
-        self.notify.info( ("Packet %d type %d recieved" % (number,type)) )
+        self.notify.debug( ("Packet %d type %d recieved" % (number,type)) )
         return (type,dgi)        
 
     def blockingRead(self,qcr):
