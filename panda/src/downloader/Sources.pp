@@ -10,6 +10,7 @@
   #define SOURCES							\
     config_downloader.cxx						\
     config_downloader.h downloadDb.I					\
+    asyncUtility.I asyncUtility.cxx asyncUtility.h			\
     downloadDb.cxx downloadDb.h						\
     downloader.I downloader.cxx downloader.h extractor.cxx extractor.h	\
     hashVal.cxx hashVal.I hashVal.h \
