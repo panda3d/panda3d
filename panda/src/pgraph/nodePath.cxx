@@ -3717,9 +3717,16 @@ void NodePath::
 r_find_matches(NodePathCollection &result,
                const FindApproxLevel &level,
                int max_matches, int num_levels_remaining) const {
+  if (pgraph_cat.is_debug()) {
+    pgraph_cat.debug()
+      << "r_find_matches(" << result << ", level, "
+      << max_matches << ", " << num_levels_remaining << ")\n";
+    level.write(pgraph_cat.debug(false));
+  }
+
   // Go on to the next level.  If we exceeded the requested maximum
-  // depth, stop.
-  if (num_levels_remaining <= 0) {
+  // depth (or if there are no more levels to visit), stop.
+  if (num_levels_remaining <= 0 || level._v.empty()) {
     return;
   }
   num_levels_remaining--;
