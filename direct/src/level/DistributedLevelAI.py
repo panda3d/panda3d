@@ -61,9 +61,7 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
 
         if __debug__:
             # listen for requests to save the spec
-            editMgrEntId = self.entType2ids['editMgr'][0]
-            editMgr = self.getEntity(editMgrEntId)
-            self.accept(editMgr.getSpecSaveEvent(), self.saveSpec)
+            self.accept(self.editMgrEntity.getSpecSaveEvent(), self.saveSpec)
 
     def createEntityCreator(self):
         """Create the object that will be used to create Entities.

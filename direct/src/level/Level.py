@@ -52,21 +52,6 @@ class Level:
         self.entType2ids = self.levelSpec.getEntType2ids(
             self.levelSpec.getAllEntIds())
 
-        # there should be one and only one levelMgr
-        assert len(self.entType2ids['levelMgr']) == 1
-        self.levelMgrEntity = self.entType2ids['levelMgr'][0]
-        assert self.levelMgrEntity.entId == LevelConstants.LevelMgrEntId
-
-        if __debug__:
-            # there should be one and only one editMgr
-            assert len(self.entType2ids['editMgr']) == 1
-            self.editMgrEntity = self.entType2ids['editMgr'][0]
-            assert self.editMgrEntity.entId == LevelConstants.EditMgrEntId
-
-        # make sure the uberzone is there
-        assert LevelConstants.UberZoneEntId in self.entType2ids['zone']
-        self.UberZoneEntity = self.getEntity(LevelConstants.UberZoneEntId)
-
         # this list contains the entIds of entities that we have actually
         # created, in order of creation
         self.createdEntIds = []
@@ -76,6 +61,21 @@ class Level:
         # create all the entities
         # TODO: maybe we should leave this to a subclass or the level user
         self.createAllEntities(priorityTypes=['levelMgr','zone'])
+
+        # there should be one and only one levelMgr
+        assert len(self.entType2ids['levelMgr']) == 1
+        self.levelMgrEntity = self.getEntity(self.entType2ids['levelMgr'][0])
+        assert self.levelMgrEntity.entId == LevelConstants.LevelMgrEntId
+
+        if __debug__:
+            # there should be one and only one editMgr
+            assert len(self.entType2ids['editMgr']) == 1
+            self.editMgrEntity = self.getEntity(self.entType2ids['editMgr'][0])
+            assert self.editMgrEntity.entId == LevelConstants.EditMgrEntId
+
+        # make sure the uberzone is there
+        assert LevelConstants.UberZoneEntId in self.entType2ids['zone']
+        self.UberZoneEntity = self.getEntity(LevelConstants.UberZoneEntId)
 
         self.initialized = 1
 
