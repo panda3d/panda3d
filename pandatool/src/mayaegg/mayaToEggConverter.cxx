@@ -607,10 +607,8 @@ convert_hierarchy(EggGroupNode *egg_root) {
   _tree.clear_egg(&get_egg_data(), egg_root, NULL);
   for (int i = 0; i < num_nodes; i++) {
     MayaNodeDesc *node = _tree.get_node(i);
-    if (node->is_tagged()) {
-      if (!process_model_node(node)) {
-        return false;
-      }
+    if (!process_model_node(node)) {
+      return false;
     }
   }
 
@@ -693,15 +691,17 @@ process_model_node(MayaNodeDesc *node_desc) {
   } else if (dag_path.hasFn(MFn::kNurbsSurface)) {
     EggGroup *egg_group = _tree.get_egg_group(node_desc);
     get_transform(node_desc, dag_path, egg_group);
-    
-    MFnNurbsSurface surface(dag_path, &status);
-    if (!status) {
-      mayaegg_cat.info()
-        << "Error in node " << path
-        << ":\n"
-        << "  it appears to have a NURBS surface, but does not.\n";
-    } else {
-      make_nurbs_surface(dag_path, surface, egg_group);
+
+    if (node_desc->is_tagged()) {
+      MFnNurbsSurface surface(dag_path, &status);
+      if (!status) {
+        mayaegg_cat.info()
+          << "Error in node " << path
+          << ":\n"
+          << "  it appears to have a NURBS surface, but does not.\n";
+      } else {
+        make_nurbs_surface(dag_path, surface, egg_group);
+      }
     }
 
   } else if (dag_path.hasFn(MFn::kNurbsCurve)) {
@@ -711,14 +711,16 @@ process_model_node(MayaNodeDesc *node_desc) {
     if (_animation_convert != AC_model) {
       EggGroup *egg_group = _tree.get_egg_group(node_desc);
       get_transform(node_desc, dag_path, egg_group);
-      
-      MFnNurbsCurve curve(dag_path, &status);
-      if (!status) {
-        mayaegg_cat.info()
-          << "Error in node " << path << ":\n"
-          << "  it appears to have a NURBS curve, but does not.\n";
-      } else {
-        make_nurbs_curve(dag_path, curve, egg_group);
+
+      if (node_desc->is_tagged()) {
+        MFnNurbsCurve curve(dag_path, &status);
+        if (!status) {
+          mayaegg_cat.info()
+            << "Error in node " << path << ":\n"
+            << "  it appears to have a NURBS curve, but does not.\n";
+        } else {
+          make_nurbs_curve(dag_path, curve, egg_group);
+        }
       }
     }
       
@@ -726,13 +728,15 @@ process_model_node(MayaNodeDesc *node_desc) {
     EggGroup *egg_group = _tree.get_egg_group(node_desc);
     get_transform(node_desc, dag_path, egg_group);
 
-    MFnMesh mesh(dag_path, &status);
-    if (!status) {
-      mayaegg_cat.info()
-        << "Error in node " << path << ":\n"
-        << "  it appears to have a polygon mesh, but does not.\n";
-    } else {
-      make_polyset(dag_path, mesh, egg_group);
+    if (node_desc->is_tagged()) {
+      MFnMesh mesh(dag_path, &status);
+      if (!status) {
+        mayaegg_cat.info()
+          << "Error in node " << path << ":\n"
+          << "  it appears to have a polygon mesh, but does not.\n";
+      } else {
+        make_polyset(dag_path, mesh, egg_group);
+      }
     }
 
   } else if (dag_path.hasFn(MFn::kLocator)) {
@@ -742,19 +746,21 @@ process_model_node(MayaNodeDesc *node_desc) {
       mayaegg_cat.debug()
         << "Locator at " << path << "\n";
     }
-    
-    // Presumably, the locator's position has some meaning to the
-    // end-user, so we will implicitly tag it with the DCS flag so it
-    // won't get flattened out.
-    if (_animation_convert != AC_model) {
-      // For now, don't set the DCS flag on locators within
-      // character models, since egg-optchar doesn't understand
-      // this.  Perhaps there's no reason to ever change this, since
-      // locators within character models may not be meaningful.
-      egg_group->set_dcs_type(EggGroup::DC_net);
+
+    if (node_desc->is_tagged()) {
+      // Presumably, the locator's position has some meaning to the
+      // end-user, so we will implicitly tag it with the DCS flag so it
+      // won't get flattened out.
+      if (_animation_convert != AC_model) {
+        // For now, don't set the DCS flag on locators within
+        // character models, since egg-optchar doesn't understand
+        // this.  Perhaps there's no reason to ever change this, since
+        // locators within character models may not be meaningful.
+        egg_group->set_dcs_type(EggGroup::DC_net);
+      }
+      get_transform(node_desc, dag_path, egg_group);
+      make_locator(dag_path, dag_node, egg_group);
     }
-    get_transform(node_desc, dag_path, egg_group);
-    make_locator(dag_path, dag_node, egg_group);
 
   } else {
     // Just a generic node.
