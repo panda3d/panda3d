@@ -127,6 +127,8 @@ MilesAudioManager() {
           audio_debug("  using default audio_dls_file");
           get_gm_file_path(*audio_dls_file);
         }
+
+#if 0
         audio_debug("  audio_dls_file=\""<<*audio_dls_file<<"\"");
         _dls_field=AIL_DLS_load_file(dls, audio_dls_file->c_str(), 0);
         if (!_dls_field) {
@@ -142,6 +144,7 @@ MilesAudioManager() {
         } else {
           audio_debug("  using Miles software midi");
         }
+#endif
       }
 
       if (use_vfs) {
@@ -244,7 +247,7 @@ load(Filename file_name) {
   }
    
   if (!audio) {
-    audio_debug("  MilesAudioManager::load failed "<<AIL_last_error());
+    audio_error("  MilesAudioManager::load failed "<< AIL_last_error());
   }
   return audio;
 }
