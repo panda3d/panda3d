@@ -226,6 +226,7 @@ private:
   Pipeline *_pipeline;
   Windows _windows;
   bool _windows_sorted;
+  unsigned int _window_sort_index;
 
   WindowRenderer _app;
   typedef pmap<string, PT(RenderThread) > Threads;

@@ -31,6 +31,7 @@
     firstOfPairLess.I firstOfPairLess.h \
     globalPointerRegistry.I globalPointerRegistry.h \
     indirectCompareNames.I indirectCompareNames.h \
+    indirectCompareSort.I indirectCompareSort.h \
     indirectCompareTo.I indirectCompareTo.h \
     ioPtaDatagramFloat.h ioPtaDatagramInt.h \
     ioPtaDatagramShort.h keyboardButton.h lineStream.I \
@@ -103,8 +104,9 @@
     firstOfPairCompare.I firstOfPairCompare.h \
     firstOfPairLess.I firstOfPairLess.h \
     globalPointerRegistry.I globalPointerRegistry.h \
-    indirectCompareNames.I indirectCompareNames.h indirectCompareTo.I \
-    indirectCompareTo.h \
+    indirectCompareNames.I indirectCompareNames.h \
+    indirectCompareSort.I indirectCompareSort.h \
+    indirectCompareTo.I indirectCompareTo.h \
     ioPtaDatagramFloat.h ioPtaDatagramInt.h \
     ioPtaDatagramShort.h iterator_types.h keyboardButton.h lineStream.I \
     lineStream.h lineStreamBuf.I lineStreamBuf.h \

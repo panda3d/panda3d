@@ -170,6 +170,7 @@ private:
   void do_determine_display_regions();
 
   int _sort;
+  unsigned int _internal_sort_index;
 
 protected:
   bool _active;

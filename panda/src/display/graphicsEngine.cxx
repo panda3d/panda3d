@@ -71,6 +71,7 @@ GraphicsEngine(Pipeline *pipeline) :
   }
 
   _windows_sorted = true;
+  _window_sort_index = 0;
 
   // Default frame buffer properties.
   _frame_buffer_properties = FrameBufferProperties::get_default();
@@ -1174,6 +1175,13 @@ void GraphicsEngine::
 do_add_window(GraphicsOutput *window, GraphicsStateGuardian *gsg,
               const GraphicsThreadingModel &threading_model) {
   MutexHolder holder(_lock);
+
+  // We have a special counter that is unique per window that allows
+  // us to assure that recently-added windows end up on the end of the
+  // list.
+  window->_internal_sort_index = _window_sort_index;
+  _window_sort_index++;
+
   _windows_sorted = false;
   _windows.push_back(window);
   
@@ -1464,7 +1472,7 @@ resort_windows() {
     for (wi = _window.begin(); wi != _window.end(); ++wi) {
       GraphicsOutput *win = (*wi);
       display_cat.debug(false)
-        << " " << (void *)win;
+        << " " << win->get_name() << "(" << win->get_sort() << ")";
     }
     display_cat.debug(false)
       << "\n";

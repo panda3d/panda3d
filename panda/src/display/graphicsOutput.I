@@ -340,7 +340,7 @@ operator < (const GraphicsOutput &other) const {
   if (_sort != other._sort) {
     return _sort < other._sort;
   }
-  return this < &other;
+  return _internal_sort_index < other._internal_sort_index;
 }
 
 

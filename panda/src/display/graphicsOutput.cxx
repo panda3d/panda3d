@@ -57,6 +57,7 @@ GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   _flip_ready = false;
   _needs_context = true;
   _sort = 0;
+  _internal_sort_index = 0;
   _active = true;
   _one_shot = false;
   _inverted = window_inverted;
@@ -204,12 +205,12 @@ setup_render_texture() {
   _texture->set_wrapu(Texture::WM_clamp);
   _texture->set_wrapv(Texture::WM_clamp);
 
-  if (has_size()) {
-    // If we know our size now, go ahead and tell the texture.
-    PixelBuffer *pb = _texture->_pbuffer;
-    pb->set_xsize(get_x_size());
-    pb->set_ysize(get_y_size());
-  }
+  // Go ahead and tell the texture our anticipated size, even if it
+  // might be inaccurate (particularly if this is a GraphicsWindow,
+  // which has system-imposed restrictions on size).
+  PixelBuffer *pb = _texture->_pbuffer;
+  pb->set_xsize(get_x_size());
+  pb->set_ysize(get_y_size());
 
   _copy_texture = true;
   _render_texture = false;
@@ -585,6 +586,12 @@ reset_window(bool swapchain) {
 ////////////////////////////////////////////////////////////////////
 bool GraphicsOutput::
 begin_frame() {
+  if (display_cat.is_spam()) {
+    display_cat.spam()
+      << "begin_frame(): " << get_type() << " " 
+      << get_name() << " " << (void *)this << "\n";
+  }
+
   if (_gsg == (GraphicsStateGuardian *)NULL) {
     return false;
   }
@@ -619,6 +626,12 @@ begin_frame() {
 void GraphicsOutput::
 clear() {
   if (is_any_clear_active()) {
+    if (display_cat.is_spam()) {
+      display_cat.spam()
+        << "clear(): " << get_type() << " " 
+        << get_name() << " " << (void *)this << "\n";
+    }
+
     nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 
     DisplayRegionStack old_dr = _gsg->push_display_region(_default_display_region);
@@ -636,6 +649,12 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
 end_frame() {
+  if (display_cat.is_spam()) {
+    display_cat.spam()
+      << "end_frame(): " << get_type() << " " 
+      << get_name() << " " << (void *)this << "\n";
+  }
+
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
   _gsg->end_frame();
 
@@ -652,7 +671,7 @@ end_frame() {
     if (_render_texture) {
       if (display_cat.is_debug()) {
         display_cat.debug()
-          << "Locking texture for " << (void *)this << " at frame end.\n";
+          << "Locking texture for " << get_name() << " at frame end.\n";
       }
       if (!_gsg->framebuffer_bind_to_texture(this, get_texture())) {
         display_cat.warning()
@@ -664,7 +683,7 @@ end_frame() {
     if (!_render_texture) {
       if (display_cat.is_debug()) {
         display_cat.debug()
-          << "Copying texture for " << (void *)this << " at frame end.\n";
+          << "Copying texture for " << get_name() << " at frame end.\n";
       }
       RenderBuffer buffer = _gsg->get_render_buffer(get_draw_buffer_type());
       _gsg->copy_texture(get_texture(), _default_display_region, buffer);

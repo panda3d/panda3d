@@ -258,8 +258,13 @@ flatten(GraphicsOutput *window) {
     choose_texture_size(x_size, y_size, model_stage, uv_scale,
                         window);
 
+    static int multitex_id = 1;
+    ostringstream multitex_name_strm;
+    multitex_name_strm << "multitex" << multitex_id;
+    multitex_id++;
+
     GraphicsOutput *buffer = 
-      window->make_texture_buffer("multitex", x_size, y_size);
+      window->make_texture_buffer(multitex_name_strm.str(), x_size, y_size);
     buffer->set_one_shot(true);
     Texture *tex = buffer->get_texture();
     tex->set_anisotropic_degree(aniso_degree);

@@ -147,6 +147,17 @@ void GraphicsWindow::
 request_properties(const WindowProperties &requested_properties) {
   MutexHolder holder(_properties_lock);
   _requested_properties.add_properties(requested_properties);
+
+  if (!_has_size && _requested_properties.has_size()) {
+    // If we just requested a particular size, anticipate that it will
+    // stick.  This is helpful for the MultitexReducer, which needs to
+    // know the size of the textures that it will be working with,
+    // even if the texture hasn't been fully generated yet.
+    _x_size = _requested_properties.get_x_size();
+    _y_size = _requested_properties.get_y_size();
+
+    // Don't set _has_size yet, because we don't really know yet.
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
