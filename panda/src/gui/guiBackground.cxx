@@ -10,6 +10,10 @@ TypeHandle GuiBackground::_type_handle;
 
 void GuiBackground::recompute_frame(void) {
   _item->recompute();
+  _bg->set_width(_item->get_width());
+  _bg->set_height(_item->get_height());
+  _bg->set_pos(LVector3f::rfu((_item->get_left() + _item->get_right())*0.5, 0.,
+			      (_item->get_bottom() + _item->get_top())*0.5));
   _bg->recompute();
   GuiItem::recompute_frame();
 }

@@ -17,3 +17,7 @@ INLINE void GuiBackground::set_color(const Colorf& c) {
 INLINE Colorf GuiBackground::get_color(void) const {
   return _bg->get_foreground_color();
 }
+
+INLINE void GuiBackground::reassert(void) {
+  _item->set_priority(_bg, P_High);
+}

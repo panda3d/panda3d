@@ -38,6 +38,8 @@ PUBLISHED:
 
   virtual void output(ostream&) const;
 
+  INLINE void reassert(void);
+
 public:
   // type interface
   static TypeHandle get_class_type(void) {
