@@ -122,7 +122,8 @@ class DirectSession(PandaObject):
                           'shift', 'shift-up', 'alt', 'alt-up',
                           'page_up', 'page_down', 
                           '[', '{', ']', '}',
-                          'A', 'b', 'l', 'p', 'r', 'R', 's', 't', 'v', 'w']
+                          'A', 'b', 'l', 'L', 'p', 'r', 'R', 's',
+                          't', 'v', 'w']
         self.mouseEvents = ['mouse1', 'mouse1-up',
                             'mouse2', 'mouse2-up',
                             'mouse3', 'mouse3-up']
@@ -250,6 +251,8 @@ class DirectSession(PandaObject):
             base.toggleBackface()
         elif input == 'l':
             self.lights.toggle()
+        elif input == 'L':
+            self.cameraControl.toggleCOALock()
         elif input == 'p':
             if self.selected.last:
                 self.setActiveParent(self.selected.last)

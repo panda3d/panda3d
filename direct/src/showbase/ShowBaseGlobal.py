@@ -33,7 +33,7 @@ directNotify.setDconfigLevels()
 
 def inspect(anObject):
     import Inspector
-    Inspector.inspect(anObject)
+    return Inspector.inspect(anObject)
 
 __builtin__.inspect = inspect
 

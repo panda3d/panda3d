@@ -5,7 +5,7 @@
 
 import string
 from Tkinter import *
-from TkGlobal import *
+import Pmw
 
 
 ### public API
@@ -14,6 +14,7 @@ def inspect(anObject):
     inspector = inspectorFor(anObject)
     inspectorWindow = InspectorWindow(inspector)
     inspectorWindow.open()
+    return inspectorWindow
 
 ### private
 
@@ -237,12 +238,19 @@ class InspectorWindow:
         scrollbar.config(command = listWidget.yview)
         scrollbar.pack(side=RIGHT, fill=Y)
         listWidget.pack(side=LEFT, fill=BOTH, expand=1)
+        # If you click in the list box, take focus so you can navigate
+        # with the cursor keys
+        listWidget.bind('<ButtonPress-1>',
+                        lambda e, s = self: s.listWidget.focus_set())
         listWidget.bind('<ButtonRelease-1>',  self.listSelectionChanged)
+        listWidget.bind('<Up>',  self.listSelectionChanged)
+        listWidget.bind('<Down>',  self.listSelectionChanged)
+        listWidget.bind('<Return>',  self.popOrDive)
         listWidget.bind("<Double-Button-1>", self.popOrDive)
 
     def createTextWidget(self):
-        self.textWidget = Text(self.top)
-        self.textWidget.pack(side=RIGHT, fill=BOTH, expand=1)
+        self.textWidget = Pmw.ScrolledText(self.top)
+        self.textWidget.pack(fill=BOTH, expand=1)
         # self.textWidget.grid(row=0, column=1, columnspan=2, sticky=N+W+S+E)
 
     def createMenus(self):

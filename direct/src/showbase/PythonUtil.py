@@ -160,10 +160,11 @@ def _varnames(function):
     return function.func_code.co_varnames
 
 def _getcode(f):
-    """_getcode(f)
-
+    """
+    _getcode(f)
     This function returns the name and function object of a callable
-    object."""
+    object.
+    """
     def method_get(f):
         return f.__name__, f.im_func
     def function_get(f):
@@ -189,13 +190,14 @@ def _getcode(f):
                  types.MethodType       : method_get,
                  types.FunctionType     : function_get,
                  types.InstanceType     : instance_get,
-                 types.ClassType        : class_get
+                 types.ClassType        : class_get,
                  }
     try:
         return codedict[type(f)](f)
     except KeyError:
         if callable(f): # eg, built-in functions and methods
-            raise ValueError, "type %s not supported yet." % type(f)
+            # raise ValueError, "type %s not supported yet." % type(f)
+            return f.__name__, None
         else:
             raise TypeError, ("object %s of type %s is not callable." %
                                      (f, type(f)))
@@ -239,19 +241,22 @@ class Signature:
             pass
         return mapping
     def __repr__(self):
-        defaults = self.defaults()
-        specials = self.special_args()
-        l = []
-        for arg in self.ordinary_args():
-            if defaults.has_key(arg):
-                l.append( arg + '=' + str(defaults[arg]) )
-            else:
-                l.append( arg )
-        if specials.has_key('positional'):
-            l.append( '*' + specials['positional'] )
-        if specials.has_key('keyword'):
-            l.append( '**' + specials['keyword'] )
-        return "%s(%s)" % (self.name, string.join(l, ', '))
+        if self.func:
+            defaults = self.defaults()
+            specials = self.special_args()
+            l = []
+            for arg in self.ordinary_args():
+                if defaults.has_key(arg):
+                    l.append( arg + '=' + str(defaults[arg]) )
+                else:
+                    l.append( arg )
+            if specials.has_key('positional'):
+                l.append( '*' + specials['positional'] )
+            if specials.has_key('keyword'):
+                l.append( '**' + specials['keyword'] )
+            return "%s(%s)" % (self.name, string.join(l, ', '))
+        else:
+            return "%s(?)" % self.name
 
 
 def aproposAll(obj):

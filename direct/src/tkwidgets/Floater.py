@@ -188,6 +188,16 @@ class Floater(Pmw.MegaWidget):
     def reset(self):
         self.set(self['initialValue'])
 
+    def disable(self):
+        self.scale['state'] = 'disabled'
+        self.label['state'] = 'disabled'
+        self.component('entry')['state'] = 'disabled'
+
+    def enable(self):
+        self.scale['state'] = 'normal'
+        self.label['state'] = 'normal'
+        self.component('entry')['state'] = 'normal'
+
     def onReturn(self, *args):
         """ User redefinable callback executed on <Return> in entry """
         pass
@@ -320,7 +330,6 @@ class FloaterGroup(Pmw.MegaToplevel):
 
     def reset(self):
         self.set(self['initialValue'])
-
 
 
 ## SAMPLE CODE

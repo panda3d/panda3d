@@ -14,10 +14,12 @@ class DirectCameraControl(PandaObject):
         self.coaDist = 100
         self.coaMarker = loader.loadModel('models/misc/sphere')
         self.coaMarker.setName('DirectCameraCOAMarker')
+        self.coaMarker.setTransparency(1)
         self.coaMarker.setColor(1,0,0)
         self.coaMarker.setPos(0,100,0)
         useDirectRenderStyle(self.coaMarker)
         self.coaMarkerPos = Point3(0)
+        self.fUpdateCOA = 1
 	self.camManipRef = direct.group.attachNewNode('camManipRef')
         t = CAM_MOVE_DURATION
         self.actionEvents = [
@@ -68,7 +70,7 @@ class DirectCameraControl(PandaObject):
             node, hitPt, hitPtDist = direct.iRay.pickGeom(
                 fIntersectUnpickable = 1)
             coa = Point3(0)
-            if node:
+            if self.fUpdateCOA and node:
                 # Set center of action
                 coa.assign(hitPt)
                 coaDist = hitPtDist
@@ -82,7 +84,7 @@ class DirectCameraControl(PandaObject):
                         coa.set(0,100,0)
                         coaDist = 100
             else:
-                # If no intersection point:
+                # If no intersection point or COA is locked:
                 # Use existing point
                 coa.assign(self.coaMarker.getPos(direct.camera))
                 coaDist = Vec3(coa - ZERO_POINT).length()
@@ -96,7 +98,8 @@ class DirectCameraControl(PandaObject):
             self.spawnXZTranslateOrHPanYZoom()
             # END MOUSE IN CENTRAL REGION
         else:
-            if ((abs(direct.dr.mouseX) > 0.9) and (abs(direct.dr.mouseY) > 0.9)):
+            if ((abs(direct.dr.mouseX) > 0.9) and
+                (abs(direct.dr.mouseY) > 0.9)):
                 # Mouse is in corners, spawn roll task
                 self.spawnMouseRollTask()
             else:
@@ -266,6 +269,15 @@ class DirectCameraControl(PandaObject):
         direct.camera.setMat(self.camManipRef, wrtMat)
         return Task.cont
 
+    def lockCOA(self):
+        self.fUpdateCOA = 0
+
+    def unlockCOA(self):
+        self.fUpdateCOA = 1
+
+    def toggleCOALock(self):
+        self.fUpdateCOA = 1 - self.fUpdateCOA
+
     def updateCoa(self, cam2point, coaDist = None):
         self.coa.set(cam2point[0], cam2point[1], cam2point[2])
         if coaDist:
@@ -290,6 +302,9 @@ class DirectCameraControl(PandaObject):
         if sf == 0.0:
             sf = 0.1
         self.coaMarker.setScale(sf)
+        # Lerp color to fade out
+        self.coaMarker.lerpColor(VBase4(1,0,0,1), VBase4(1,0,0,0), 3.0,
+                                 task = 'fadeAway')
 
     def homeCam(self):
         # Record undo point

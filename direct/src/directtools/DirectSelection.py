@@ -4,7 +4,7 @@ from DirectSelection import *
 import __builtin__
 
 UNPICKABLE = ['x-disc-visible', 'y-disc-visible', 'z-disc-visible',
-              'gridBack']
+              'gridBack', 'unpickable']
 
 # MRM: To do: handle broken node paths in selected and deselected dicts
 class DirectNodePath(NodePath):
