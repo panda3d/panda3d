@@ -135,27 +135,23 @@ Step 6: Create a shortcut to rxvt
   # Note: You need to install $TOOL before the shortcut will be able to
   # attach to $TOOL correctly (Step 7).
 
-Step 7: Grab the tarballs
-  > mkdir /install
-  > cd /install
-  # Get tool.tgz, panda.tgz, and direct.tgz from /for/program/tarballs
-  # or copy them if they have already been ftp'd over.
-  > tar zxvf tool.tgz
-  > tar zxvf panda.tgz
-  > tar zxvf direct.tgz
- 
+Step 7: Grab the cvs trees
+  > cd ~
+  > mkdir player
+  > cd player
+  > cvs co dtool
+  > cvs co panda
+  > cvs co direct
+  # Choose which optimize level you want. This is set in /usr/local/etc/Config.pp
+  # Look for #defing OPTIMIZE and follow instructions above that
+
 Step 8: Build $TOOL
   # Now you must use the rxvt shortcut to open a shell - it should attach
   # to $TOOL automatically.
   # You can ignore the tcsh warnings (don't recognize "xterm") - this is
   # a Cygwin - rxvt conflict that's not trivial to resolve.
-  # Choose which optimize level you want:
-  #  setenv OPTIMIZE 1 (default) - fast build, runs slower
-  #  setenv OPTIMIZE 2 (recommended) - slower build, faster, has asserts
-  #  setenv OPTIMIZE 3 - debug symbols, but no asserts
-  #  setenv OPTIMIZE 4 (release mode) - no debug symbols
-  > setenv OPTIMIZE 2
   > cd $TOOL
+  > ppremake
   > ctmake
 
 Step 9: (Optional) Install DirectX
@@ -175,13 +171,41 @@ Step 9: Build $PANDA
   # Open a new shell using the rxvt shortcut.
   > cta panda
   > cd $PANDA
+  > ppremake
   > ctmake
   # You can now run "demo" to test the install and build - you should
   # see a window pop up with a triangle in it.  To see the triangle with
   # a texture on it, you'll need to be in $PANDA/src/all/testbed/ when
   # you run "demo".
 
-Step 10: Build $DIRECT
+Step 10: Install Python
+  # get /for/program/tarballs/python16.exe
+  # run python16.exe to install python into C:/Python16 (the default
+  location)
+
+Step 11: Install Emacs
+  # get /for/program/tarballs/emacs-20.7-fullbin-i386.tar.gz
+  # install emacs into C:/emacs-20.7/ (not in program files)
+  > Copy $DIRECT/src/directscripts/python-mode.el to C:/emacs-20.7/lisp/progmodes/
+
+Step 12: Update environment variables (win2000)
+  # right click on your computer icon at the top left of the screen
+  # select "properties"
+  # click on the "Advanced" tab
+  # click on "Environment Variables..."
+  # double click on the "Path" variable in the bottom pane (system variables)
+  # add  C:\emacs-20.7\bin  to the end of the path (semicolon separated)
+  # add  C:\PYTHON16  to the end of the path (semicolon separated)
+  # click ok - ok - ok to exit (you must exit for the change to take effect)
+
+Step 12: Build $DIRECT
   > cta direct
   > cd $DIRECT
+  > ppremake
   > ctmake
+  # Generate Python Code
+  > cd $DIRECT/bin
+  > ppython generatePythonCode
+  # Follow instructions presented there
+
+

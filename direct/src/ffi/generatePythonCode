@@ -16,11 +16,14 @@ Example:
 Linux:
   ppython -d generatePythonCode -v -d $DIRECT/lib/py -e $DIRECT/src/extensions -i libdtool libpandaexpress libpanda libdirect libtoontown
 
-Windows:
+Windows debug:
   ppython -d generatePythonCode -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtool libpandaexpress libpanda libdirect libtoontown
 
 Windows release:
-  ppython -O generatePythonCode -O -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtool libpandaexpress libpanda libdirect libtoontown
+  ppython generatePythonCode -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtool libpandaexpress libpanda libdirect libtoontown
+
+Windows publish (no assertions, no comments, no docstrings):
+  ppython -OO generatePythonCode -O -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtool libpandaexpress libpanda libdirect libtoontown
 
 
 Options:
