@@ -171,7 +171,7 @@ class DirectSessionPanel(AppShell):
         
         self.backgroundColor = VectorWidgets.ColorEntry(
             bkgrdFrame, text = 'Background Color')
-        self.backgroundColor['command'] = self.setBackgroundColor
+        self.backgroundColor['command'] = self.setBackgroundColorVec
         self.backgroundColor.pack(fill = X, expand = 0)
         self.bind(self.backgroundColor, 'Set background color')
         bkgrdFrame.pack(fill = BOTH, expand = 0)
@@ -706,7 +706,9 @@ class DirectSessionPanel(AppShell):
 
     ## ENVIRONMENT CONTROLS ##
     # Background # 
-    def setBackgroundColor(self, color):
+    def setBackgroundColor(self, r,g,b):
+        self.setBackgroundColor(Vec3(r,g,b))
+    def setBackgroundColorVec(self, color):
         base.win.getGsg().setColorClearValue(
             VBase4(color[0]/255.0,
                    color[1]/255.0,
