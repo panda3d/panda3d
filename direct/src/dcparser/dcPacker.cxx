@@ -804,7 +804,7 @@ unpack_and_format(ostream &out) {
     break;
 
   case PT_string:
-    out << '"' << unpack_string() << '"';
+    enquote_string(out, '"', unpack_string());
     break;
 
   default:
@@ -944,4 +944,30 @@ set_unpack_data(const char *unpack_data, size_t unpack_length,
   _unpack_data = unpack_data;
   _unpack_length = unpack_length;
   _owns_unpack_data = owns_unpack_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::enquote_string
+//       Access: Private
+//  Description: Outputs the indicated string within quotation marks.
+////////////////////////////////////////////////////////////////////
+void DCPacker::
+enquote_string(ostream &out, char quote_mark, const string &str) const {
+  out << quote_mark;
+  for (string::const_iterator pi = str.begin();
+       pi != str.end();
+       ++pi) {
+    if ((*pi) == quote_mark || (*pi) == '\\') {
+      out << '\\' << (*pi);
+
+    } else if (!isprint(*pi)) {
+      char buffer[10];
+      sprintf(buffer, "%02x", (unsigned int)(*pi));
+      out << "\\x" << buffer;
+
+    } else {
+      out << (*pi);
+    }
+  }
+  out << quote_mark;
 }

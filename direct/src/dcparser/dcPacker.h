@@ -130,6 +130,7 @@ private:
   void clear();
   void set_unpack_data(const char *unpack_data, size_t unpack_length, 
                        bool owns_unpack_data);
+  void enquote_string(ostream &out, char quote_mark, const string &str) const;
 
 private:
   enum Mode {

@@ -168,7 +168,7 @@ read_char(int &line, int &col) {
 // scan_quoted_string reads a string delimited by quotation marks and
 // returns it.
 static string
-scan_quoted_string() {
+scan_quoted_string(char quote_mark) {
   string result;
 
   // We don't touch the current line number and column number during
@@ -185,9 +185,96 @@ scan_quoted_string() {
 
   int c;
   c = read_char(line, col);
-  while (c != '"' && c != EOF) {
-    result += c;
-    c = read_char(line, col);
+  while (c != quote_mark && c != EOF) {
+    // A newline is not allowed within a string unless it is escaped.
+    if (c == '\n') {
+      c = EOF;
+      break;
+
+    } else if (c == '\\') {
+      // Backslash escapes the following character.  We also respect
+      // some C conventions.
+      c = read_char(line, col);
+      switch (c) {
+      case 'a':
+        result += '\a';
+        c = read_char(line, col);
+        break;
+
+      case 'n':
+        result += '\n';
+        c = read_char(line, col);
+        break;
+
+      case 'r':
+        result += '\r';
+        c = read_char(line, col);
+        break;
+
+      case 't':
+        result += '\t';
+        c = read_char(line, col);
+        break;
+
+      case 'x':
+        {
+          int hex = 0;
+          c = read_char(line, col);
+          for (int i = 0; i < 2 && isxdigit(c); i++) {
+            hex = hex * 16 + (isdigit(c) ? c - '0' : tolower(c) - 'a' + 10);
+            c = read_char(line, col);
+          }
+
+          result += hex;
+        }
+        break;
+
+      case '0':
+        {
+          int oct = 0;
+          c = read_char(line, col);
+          for (int i = 0; i < 3 && (c >= '0' && c < '7'); i++) {
+            oct = oct * 8 + (c - '0');
+            c = read_char(line, col);
+          }
+
+          result += oct;
+        }
+        break;
+
+      case '1':
+      case '2':
+      case '3':
+      case '4':
+      case '5':
+      case '6':
+      case '7':
+      case '8':
+      case '9':
+        {
+          int dec = 0;
+          c = read_char(line, col);
+          for (int i = 0; i < 3 && isdigit(c); i++) {
+            dec = dec * 10 + (c - '0');
+            c = read_char(line, col);
+          }
+
+          result += dec;
+        }
+        break;
+
+      case EOF:
+        break;
+
+      default:
+        result += c;
+        c = read_char(line, col);
+      }
+
+    } else {
+      result += c;
+      c = read_char(line, col);
+    }
   }
 
   if (c == EOF) {
@@ -628,7 +715,14 @@ REALNUM              ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
 ["] {
   // Quoted string.
   accept();
-  dcyylval.str = scan_quoted_string();
+  dcyylval.str = scan_quoted_string('"');
+  return STRING;
+}
+
+['] {
+  // Single-quoted string.
+  accept();
+  dcyylval.str = scan_quoted_string('\'');
   return STRING;
 }
 
