@@ -254,11 +254,11 @@ write_cdata(Datagram &packet, const PipelineCyclerBase &cycler) {
 //
 //               The writing object should call this prior to writing
 //               out a PointerToArray.  It will return true if the
-//               same pointer has been previously, in which case the
-//               writing object need do nothing further; or it will
-//               return false if this particular pointer has not yet
-//               been written, in which case the writing object must
-//               then write out the contents of the array.
+//               same pointer has been written previously, in which
+//               case the writing object need do nothing further; or
+//               it will return false if this particular pointer has
+//               not yet been written, in which case the writing
+//               object must then write out the contents of the array.
 //
 //               Also see the WRITE_PTA() macro, which consolidates
 //               the work that must be done to write a PTA.

@@ -399,8 +399,10 @@ read_handle(DatagramIterator &scan) {
 //  Description: The interface for reading a pointer to another object
 //               from a Bam file.  Objects reading themselves from a
 //               Bam file should call this when they expect to read a
-//               pointer, passing in the datagram iterator and a
-//               pointer to their own object, i.e. 'this'.
+//               pointer to some other object.  This function reads
+//               whatever is stored in the bam file to represent the
+//               pointer, and advances the datagram iterator
+//               accordingly.
 //
 //               Rather than returning a pointer immediately, this
 //               function reads the internal pointer information from
