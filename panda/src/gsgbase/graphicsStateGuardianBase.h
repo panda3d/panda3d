@@ -189,9 +189,6 @@ public:
   virtual void issue_point_shape(const PointShapeAttribute *) { }
   virtual void issue_polygon_offset(const PolygonOffsetAttribute *) { }
 
-  virtual void begin_decal(GeomNode *) { }
-  virtual void end_decal(GeomNode *) { }
-
 PUBLISHED:
   static TypeHandle get_class_type() {
     return _type_handle;
