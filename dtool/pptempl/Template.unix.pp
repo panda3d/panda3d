@@ -149,7 +149,8 @@
     $[if $[dep_sources],$[DEPENDENCY_CACHE_FILENAME]] \
     $[if $[so_sources],$[so_dir]] \
     $[if $[st_sources],$[st_dir]] \
-    $[sort $[lib_targets] $[static_lib_targets] $[bin_targets]]
+    $[sort $[lib_targets] $[static_lib_targets] $[bin_targets]] \
+    $[TARGET(special_target)]
 all : $[all_targets]
 
 // The 'test' rule makes all the test_bin_targets.
@@ -672,6 +673,14 @@ $[install_config_dir]/$[file] : $[file]
 #define dest $[install_config_dir]
 	$[INSTALL]
 #end file
+
+// Finally, all the special targets.  These are commands that just need
+// to be invoked; we don't pretend to know what they are.
+#forscopes special_target
+$[TARGET] :
+	$[COMMAND]
+
+#end special_target
 
 
 // Finally, the rules to freshen the Makefile itself.

@@ -735,6 +735,14 @@ $[install_config_dir]/$[file] : $[file]
 	cp -f $[local] $[dest]
 #end file
 
+// Finally, all the special targets.  These are commands that just need
+// to be invoked; we don't pretend to know what they are.
+#forscopes special_target
+$[TARGET] :
+	$[COMMAND]
+
+#end special_target
+
 
 // Finally, the rules to freshen the Makefile itself.
 Makefile : $[SOURCE_FILENAME]
