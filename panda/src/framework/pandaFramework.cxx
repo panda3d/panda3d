@@ -261,7 +261,6 @@ open_window(const WindowProperties &props, GraphicsPipe *pipe,
   GraphicsWindow *win = wf->open_window(props, &_engine, pipe, gsg);
   if (win == (GraphicsWindow *)NULL) {
     // Oops, couldn't make an actual window.
-    delete wf;
     return NULL;
   }
 
