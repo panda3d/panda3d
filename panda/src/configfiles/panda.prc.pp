@@ -58,5 +58,6 @@ egg-object-type-portal          <Scalar> portal { 1 }
 egg-object-type-polylight       <Scalar> polylight { 1 }
 egg-object-type-seq24           <Switch> { 1 } <Scalar> fps { 24 }
 egg-object-type-seq12           <Switch> { 1 } <Scalar> fps { 12 }
+egg-object-type-indexed         <Scalar> indexed { 1 }
 
 #end 20_panda.prc

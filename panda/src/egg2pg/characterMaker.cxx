@@ -291,7 +291,8 @@ make_static_primitive(EggPrimitive *egg_primitive, EggGroupNode *prim_home) {
     egg_primitive->get_vertex_frame() *
     prim_home->get_node_frame_inv();
 
-  _loader.make_nonindexed_primitive(egg_primitive, node, &transform);
+  _loader.make_nonindexed_primitive(egg_primitive, node, &transform,
+                                    _comp_verts_maker);
 }
 
 ////////////////////////////////////////////////////////////////////

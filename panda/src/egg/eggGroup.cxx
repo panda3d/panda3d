@@ -210,11 +210,16 @@ write(ostream &out, int indent_level) const {
   write_render_mode(out, indent_level + 2);
 
   if (get_portal_flag()) {
-    indent(out, indent_level) << "<Portal> { 1 }\n";
+    indent(out, indent_level) << "<Scalar> portal { 1 }\n";
   }
 
   if (get_polylight_flag()) {
-    indent(out, indent_level) << "<Polylight> { 1 }\n";
+    indent(out, indent_level) << "<Scalar> polylight { 1 }\n";
+  }
+
+  if (has_indexed_flag()) {
+    indent(out, indent_level) 
+      << "<Scalar> indexed { " << get_indexed_flag() << " }\n";
   }
 
   // We have to write the children nodes before we write the vertex
@@ -512,6 +517,25 @@ determine_bin() {
     return this;
   }
   return EggGroupNode::determine_bin();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::determine_indexed
+//       Access: Public, Virtual
+//  Description: Walks back up the hierarchy, looking for an EggGroup
+//               at this level or above that has the "indexed" scalar
+//               set.  Returns the value of the indexed scalar if it
+//               is found, or false if it is not.
+//
+//               In other words, returns true if the "indexed" flag is
+//               in effect for the indicated node, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggGroup::
+determine_indexed() {
+  if (has_indexed_flag()) {
+    return get_indexed_flag();
+  }
+  return EggGroupNode::determine_indexed();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -38,6 +38,7 @@
 #include "textureStage.h"
 #include "texGenAttrib.h"
 #include "eggTransform3d.h"
+#include "computedVerticesMaker.h"
 
 class EggNode;
 class EggBin;
@@ -47,7 +48,6 @@ class EggNurbsSurface;
 class EggPrimitive;
 class EggPolygon;
 class EggMaterial;
-class ComputedVerticesMaker;
 class RenderRelation;
 class CollisionSolid;
 class CollisionNode;
@@ -73,11 +73,12 @@ public:
   void reparent_decals();
 
   void make_nonindexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
-                                 const LMatrix4d *transform = NULL);
+                                 const LMatrix4d *transform,
+                                 ComputedVerticesMaker &comp_verts_maker);
 
   void make_indexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
                               const LMatrix4d *transform,
-                              ComputedVerticesMaker &_comp_verts_maker);
+                              ComputedVerticesMaker &comp_verts_maker);
 
 private:
   class TextureDef {
@@ -187,6 +188,8 @@ private:
   Decals _decals;
 
   DeferredNodes _deferred_nodes;
+
+  ComputedVerticesMaker _comp_verts_maker;
 
 public:
   PT(PandaNode) _root;

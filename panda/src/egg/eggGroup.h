@@ -116,6 +116,7 @@ PUBLISHED:
   virtual EggRenderMode *determine_visibility_mode();
   virtual EggRenderMode *determine_draw_order();
   virtual EggRenderMode *determine_bin();
+  virtual bool determine_indexed();
 
   void set_group_type(GroupType type);
   INLINE GroupType get_group_type() const;
@@ -179,6 +180,11 @@ PUBLISHED:
 
   INLINE void set_polylight_flag(bool flag);
   INLINE bool get_polylight_flag() const;
+
+  INLINE void set_indexed_flag(bool flag);
+  INLINE void clear_indexed_flag();
+  INLINE bool has_indexed_flag() const;
+  INLINE bool get_indexed_flag() const;
 
   INLINE void set_collide_mask(CollideMask mask);
   INLINE void clear_collide_mask();
@@ -272,6 +278,8 @@ private:
     F2_dcs_type              = 0x00000030,
     F2_portal_flag           = 0x00000040,
     F2_polylight_flag        = 0x00000080,
+    F2_indexed_flag          = 0x00000100,
+    F2_has_indexed_flag      = 0x00000200,
   };
 
   int _flags;

@@ -1137,6 +1137,8 @@ group_body:
     group->set_portal_flag(value != 0);
   } else if (cmp_nocase_uh(name, "polylight") == 0) {
     group->set_polylight_flag(value != 0);
+  } else if (cmp_nocase_uh(name, "indexed") == 0) {
+    group->set_indexed_flag(value != 0);
   } else {
     eggyywarning("Unknown group scalar " + name);
   }

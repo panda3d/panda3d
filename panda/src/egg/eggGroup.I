@@ -515,6 +515,53 @@ get_polylight_flag() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::set_indexed_flag
+//       Access: Public
+//  Description: If this flag is true, geometry at this node and below
+//               will be generated as indexed geometry.
+////////////////////////////////////////////////////////////////////
+INLINE void EggGroup::
+set_indexed_flag(bool flag) {
+  if (flag) {
+    _flags2 |= F2_indexed_flag;
+  } else {
+    _flags2 &= ~F2_indexed_flag;
+  }
+  _flags2 |= F2_has_indexed_flag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::clear_indexed_flag
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void EggGroup::
+clear_indexed_flag() {
+  _flags2 &= ~(F2_indexed_flag | F2_has_indexed_flag);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::has_indexed_flag
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool EggGroup::
+has_indexed_flag() const {
+  return (_flags2 & F2_has_indexed_flag) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::get_indexed_flag
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE bool EggGroup::
+get_indexed_flag() const {
+  nassertr(has_indexed_flag(), false);
+  return ((_flags2 & F2_indexed_flag) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::set_collide_mask
 //       Access: Public
 //  Description:

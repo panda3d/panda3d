@@ -79,6 +79,7 @@ PUBLISHED:
   virtual EggRenderMode *determine_visibility_mode();
   virtual EggRenderMode *determine_draw_order();
   virtual EggRenderMode *determine_bin();
+  virtual bool determine_indexed();
 
   virtual void write(ostream &out, int indent_level) const=0;
   bool parse_egg(const string &egg_syntax);

@@ -177,6 +177,26 @@ determine_bin() {
   return _parent->determine_bin();
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggNode::determine_indexed
+//       Access: Public, Virtual
+//  Description: Walks back up the hierarchy, looking for an EggGroup
+//               at this level or above that has the "indexed" scalar
+//               set.  Returns the value of the indexed scalar if it
+//               is found, or false if it is not.
+//
+//               In other words, returns true if the "indexed" flag is
+//               in effect for the indicated node, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool EggNode::
+determine_indexed() {
+  if (_parent == (EggGroupNode *)NULL) {
+    // Too bad; we're done.
+    return false;
+  }
+  return _parent->determine_indexed();
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggNode::parse_egg

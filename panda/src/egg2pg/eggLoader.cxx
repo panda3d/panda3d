@@ -238,7 +238,16 @@ reparent_decals() {
 ////////////////////////////////////////////////////////////////////
 void EggLoader::
 make_nonindexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
-                          const LMatrix4d *transform) {
+                          const LMatrix4d *transform,
+                          ComputedVerticesMaker &comp_verts_maker) {
+  if (egg_prim->determine_indexed()) {
+    // Whoops, the primitive inherits the "indexed" flag.  This means
+    // it should be an indexed primitive, even though the caller asked
+    // for a nonindexed primitive.
+    make_indexed_primitive(egg_prim, parent, transform, comp_verts_maker);
+    return;
+  }
+
   BuilderBucket bucket;
   BakeInUVs bake_in_uvs;
   setup_bucket(bucket, bake_in_uvs, parent, egg_prim);
@@ -347,7 +356,7 @@ make_nonindexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
 void EggLoader::
 make_indexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
                        const LMatrix4d *transform,
-                       ComputedVerticesMaker &_comp_verts_maker) {
+                       ComputedVerticesMaker &comp_verts_maker) {
   BuilderBucket bucket;
   BakeInUVs bake_in_uvs;
   setup_bucket(bucket, bake_in_uvs, parent, egg_prim);
@@ -375,16 +384,16 @@ make_indexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
   if (egg_prim->has_normal()) {
     // Define the transform space of the polygon normal.  This will be
     // the average of all the vertex transform spaces.
-    _comp_verts_maker.begin_new_space();
+    comp_verts_maker.begin_new_space();
     EggPrimitive::const_iterator vi;
     for (vi = egg_prim->begin(); vi != egg_prim->end(); ++vi) {
       EggVertex *egg_vert = *vi;
-      _comp_verts_maker.add_vertex_joints(egg_vert, egg_prim);
+      comp_verts_maker.add_vertex_joints(egg_vert, egg_prim);
     }
-    _comp_verts_maker.mark_space();
+    comp_verts_maker.mark_space();
 
     int nindex =
-      _comp_verts_maker.add_normal(egg_prim->get_normal(),
+      comp_verts_maker.add_normal(egg_prim->get_normal(),
                                    egg_prim->_dnormals, mat);
 
     bprim.set_normal(nindex);
@@ -392,7 +401,7 @@ make_indexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
 
   if (egg_prim->has_color() && !egg_false_color) {
     int cindex =
-      _comp_verts_maker.add_color(egg_prim->get_color(),
+      comp_verts_maker.add_color(egg_prim->get_color(),
                                   egg_prim->_drgbas);
     bprim.set_color(cindex);
   }
@@ -410,18 +419,18 @@ make_indexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
     } else {
       // Set up the ComputedVerticesMaker for the coordinate space of
       // the vertex.
-      _comp_verts_maker.begin_new_space();
-      _comp_verts_maker.add_vertex_joints(egg_vert, egg_prim);
-      _comp_verts_maker.mark_space();
+      comp_verts_maker.begin_new_space();
+      comp_verts_maker.add_vertex_joints(egg_vert, egg_prim);
+      comp_verts_maker.mark_space();
       
       int vindex =
-        _comp_verts_maker.add_vertex(egg_vert->get_pos3(),
+        comp_verts_maker.add_vertex(egg_vert->get_pos3(),
                                      egg_vert->_dxyzs, mat);
       BuilderVertexI bvert(vindex);
       
       if (egg_vert->has_normal()) {
         int nindex =
-          _comp_verts_maker.add_normal(egg_vert->get_normal(),
+          comp_verts_maker.add_normal(egg_vert->get_normal(),
                                        egg_vert->_dnormals,
                                        mat);
         bvert.set_normal(nindex);
@@ -429,7 +438,7 @@ make_indexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
       
       if (egg_vert->has_color() && !egg_false_color) {
         int cindex =
-          _comp_verts_maker.add_color(egg_vert->get_color(),
+          comp_verts_maker.add_color(egg_vert->get_color(),
                                       egg_vert->_drgbas);
         bvert.set_color(cindex);
       } else {
@@ -458,7 +467,7 @@ make_indexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
         }
         
         int tindex =
-          _comp_verts_maker.add_texcoord(uv_name, uv, uv_obj->_duvs, mat);
+          comp_verts_maker.add_texcoord(uv_name, uv, uv_obj->_duvs, mat);
         bvert.set_texcoord(uv_name, tindex);
       }
       
@@ -470,7 +479,7 @@ make_indexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
   // vertex color, make it white.
   if (!egg_prim->has_color() && !has_vert_color && !egg_false_color) {
     int cindex =
-      _comp_verts_maker.add_color(Colorf(1.0, 1.0, 1.0, 1.0),
+      comp_verts_maker.add_color(Colorf(1.0, 1.0, 1.0, 1.0),
                                   EggMorphColorList());
     bprim.set_color(cindex);
   }
@@ -479,13 +488,13 @@ make_indexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
   // vertices, because iterating through the vertices might discover
   // additional texture coordinate sets that we didn't know about
   // before.
-  bucket.set_coords(_comp_verts_maker._coords);
-  bucket.set_normals(_comp_verts_maker._norms);
-  bucket.set_colors(_comp_verts_maker._colors);
+  bucket.set_coords(comp_verts_maker._coords);
+  bucket.set_normals(comp_verts_maker._norms);
+  bucket.set_colors(comp_verts_maker._colors);
 
   ComputedVerticesMaker::TexCoords::const_iterator tci;
-  for (tci = _comp_verts_maker._texcoords.begin();
-       tci != _comp_verts_maker._texcoords.end();
+  for (tci = comp_verts_maker._texcoords.begin();
+       tci != comp_verts_maker._texcoords.end();
        ++tci) {
     const TexCoordName *name = (*tci).first;
     bucket.set_texcoords(name, (*tci).second);
@@ -1708,7 +1717,7 @@ make_node(EggPrimitive *egg_prim, PandaNode *parent) {
       // so we need to create a placeholder now.
       PandaNode *group = new PandaNode(egg_prim->get_name());
       parent->add_child(group);
-      make_nonindexed_primitive(egg_prim, group);
+      make_nonindexed_primitive(egg_prim, group, NULL, _comp_verts_maker);
       return group;
     }
 
@@ -1716,7 +1725,7 @@ make_node(EggPrimitive *egg_prim, PandaNode *parent) {
     // primitive is within its parent's list of children, and in fact
     // we want to allow it to be combined with other polygons added to
     // the same parent.
-    make_nonindexed_primitive(egg_prim, parent);
+    make_nonindexed_primitive(egg_prim, parent, NULL, _comp_verts_maker);
   }
   return (PandaNode *)NULL;
 }
