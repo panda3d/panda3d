@@ -1585,7 +1585,7 @@ bool wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
         }
     }
 
-    // must ALWAYS use search_for_valid_displaymode even if we know a-priori that res is valid so we can 
+    // must ALWAYS use search_for_valid_displaymode even if we know a-priori that res is valid so we can
     // get a valid pixfmt
     search_for_valid_displaymode(xsize,ysize,bNeedZBuffer,bNeedStencilBuffer,
                                  &_dxgsg->scrn.SupportedScreenDepthsMask,&bCouldntFindValidZBuf,
@@ -1650,7 +1650,7 @@ special_check_fullscreen_resolution(UINT xsize,UINT ysize) {
               I dont have a complete list of intel deviceIDs (missing 82830, 845, etc)
             // Intel i810,i815,82810
             if((DeviceId==0x7121)||(DeviceId==0x7123)||(DeviceId==0x7125)||
-               (DeviceId==0x1132)) 
+               (DeviceId==0x1132))
              */
             {
                 if((xsize==640)&&(ysize==480))
@@ -2079,13 +2079,13 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
                  wdxdisplay_cat.error() << "CheckDeviceFormat failed for device #" <<_dxgsg->scrn.CardIDNum << D3DERRORSTRING(hr);
                  exit(1);
              }
-        } 
+        }
 
         bool bIs16bppRenderTgt = IS_16BPP_DISPLAY_FORMAT(dispmode.Format);
         float RendTgtMinMemReqmt;
 
         // if we have a valid memavail value, try to determine if we have enough space
-        if( (_dxgsg->scrn.MaxAvailVidMem!=UNKNOWN_VIDMEM_SIZE) && 
+        if( (_dxgsg->scrn.MaxAvailVidMem!=UNKNOWN_VIDMEM_SIZE) &&
             (!(special_check_fullscreen_resolution(RequestedXsize,RequestedYsize)))) {
             // assume user is testing fullscreen, not windowed, so use the dwTotal value
             // see if 3 scrnbufs (front/back/z)at 16bpp at xsize*ysize will fit with a few
@@ -2282,9 +2282,9 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
         if(!_dxgsg->scrn.bIsLowVidMemCard) {
 
             bool bUseDefaultSize=dx_pick_best_screenres&&
-                                 ((_dxgsg->scrn.MaxAvailVidMem == UNKNOWN_VIDMEM_SIZE) || 
+                                 ((_dxgsg->scrn.MaxAvailVidMem == UNKNOWN_VIDMEM_SIZE) ||
                                   is_badvidmem_card(&_dxgsg->scrn.DXDeviceID));
-                
+
             if(dx_pick_best_screenres && !bUseDefaultSize) {
                 typedef struct {
                     UINT memlimit;
@@ -2505,7 +2505,9 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
     // it changes your WM_ACTIVATEAPP from true to false, causing us
     // to go into a 'wait-for WM_ACTIVATEAPP true' loop, and the event never comes so we hang
     // in fullscreen wait.  also doing this for windowed mode since it was requested.
-    SetForegroundWindow(Display.hWnd);
+    if(!SetForegroundWindow(Display.hWnd)) {
+      wdxdisplay_cat.warning() << "SetForegroundWindow() failed!\n";
+    }
 
     if(_props._fullscreen) {
         pPresParams->SwapEffect = D3DSWAPEFFECT_DISCARD;  // we dont care about preserving contents of old frame
@@ -3049,13 +3051,13 @@ void wdxGraphicsWindow::
 get_framebuffer_format(PixelBuffer::Type &fb_type, PixelBuffer::Format &fb_format) {
     assert(_dxgsg!=NULL);
 
-    fb_type = PixelBuffer::T_unsigned_byte; 
+    fb_type = PixelBuffer::T_unsigned_byte;
     // this is sortof incorrect, since for F_rgb5 it's really 5 bits per channel
     //would have to change a lot of texture stuff to make this correct though
 
-    if(IS_16BPP_DISPLAY_FORMAT(_dxgsg->scrn.PresParams.BackBufferFormat)) 
-        fb_format = PixelBuffer::F_rgb5; 
-     else fb_format = PixelBuffer::F_rgb; 
+    if(IS_16BPP_DISPLAY_FORMAT(_dxgsg->scrn.PresParams.BackBufferFormat))
+        fb_format = PixelBuffer::F_rgb5;
+     else fb_format = PixelBuffer::F_rgb;
 }
 */
 // Global system parameters we want to modify during our run

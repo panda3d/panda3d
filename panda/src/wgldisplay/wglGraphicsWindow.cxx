@@ -457,7 +457,9 @@ void wglGraphicsWindow::config() {
       ShowWindow(_mwindow, SW_SHOWNORMAL);
       ShowWindow(_mwindow, SW_SHOWNORMAL);
 
-      SetForegroundWindow(_mwindow);
+      if(!SetForegroundWindow(_mwindow)) {
+          wgldisplay_cat.warning() << "SetForegroundWindow() failed!\n";
+      }
 
       int chg_result = ChangeDisplaySettings(&dm, CDS_FULLSCREEN);
 
@@ -531,7 +533,7 @@ void wglGraphicsWindow::config() {
   // However, this function doesn't work for Win98; on this OS, we
   // have to use ImmGetCompositionStringA() instead, which returns an
   // encoded string in shift-jis (which we then have to decode).
-  
+
   // For now, this is user-configurable, to allow testing of this code
   // on both OS's.  After we verify that truth of the above claim, we
   // should base this decision on GetVersionEx() or maybe
@@ -831,7 +833,7 @@ int wglGraphicsWindow::find_pixfmtnum(bool bLookforHW) {
       wgldisplay_cat.error() << "config() - multisample not supported"<< endl;
       mask &= ~W_MULTISAMPLE;
     }
-    
+
     if(wgldisplay_cat.is_debug())
        wgldisplay_cat.debug() << "mask =0x" << (void*) mask << endl;
 
@@ -853,7 +855,7 @@ int wglGraphicsWindow::find_pixfmtnum(bool bLookforHW) {
         DescribePixelFormat(_hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
 
       // official, nvidia sanctioned way.  should be equiv to my algorithm
-      if ((pfd.dwFlags & PFD_GENERIC_FORMAT) != 0) 
+      if ((pfd.dwFlags & PFD_GENERIC_FORMAT) != 0)
           drvtype = Software;
       else if (pfd.dwFlags & PFD_GENERIC_ACCELERATED)
           drvtype = MCD;
@@ -869,13 +871,13 @@ int wglGraphicsWindow::find_pixfmtnum(bool bLookforHW) {
            continue;  // skipping all SW fmts
          }
   #endif
-  
+
          // skip driver types we are not looking for
          if(bLookforHW) {
-             if(drvtype==Software) 
+             if(drvtype==Software)
                 continue;
          } else {
-             if(drvtype!=Software) 
+             if(drvtype!=Software)
                  continue;
          }
 
@@ -965,7 +967,7 @@ int wglGraphicsWindow::choose_visual(void) {
           }
 
           if(pfnum==0) {
-            wgldisplay_cat.error() 
+            wgldisplay_cat.error()
               << "make sure OpenGL driver is installed, and try reducing the screen size, reducing the\n"
               << "desktop screen pixeldepth to 16bpp,and check your panda window properties\n";
             exit(1);
@@ -1582,15 +1584,15 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                 if(iVal & 0x8000)             \
                   iVal -= 0x10000;            \
         }
-        
+
         if(!_tracking_mouse_leaving) {
             // need to re-call TrackMouseEvent every time mouse re-enters window
             track_mouse_leaving(hwnd);
         }
-    
+
         SET_MOUSE_COORD(x,LOWORD(lparam));
         SET_MOUSE_COORD(y,HIWORD(lparam));
-    
+
         handle_mouse_motion(x, y);
 
         break;
@@ -1607,7 +1609,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       }
       break;
     }
-    
+
     case WM_NCMOUSELEAVE: {
         if(!_props._bCursorIsVisible) {
             // wgldisplay_cat.error() << "NCMOUSELEAVE show=false\n";
@@ -1618,14 +1620,14 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     }
 
     case WM_MOUSELEAVE: {
-       _tracking_mouse_leaving=false;  
+       _tracking_mouse_leaving=false;
        handle_mouse_exit();
        break;
     }
-    
+
     case WM_CREATE: {
       track_mouse_leaving(hwnd);
-    
+
       _cursor_in_windowclientarea=false;
       if(!_props._bCursorIsVisible)
           ShowCursor(false);
@@ -1735,7 +1737,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         if (!_input_devices.empty()) {
           HIMC hIMC = ImmGetContext(hwnd);
           nassertr(hIMC != 0, 0);
-          
+
           static const int max_ime_result = 128;
           static char ime_result[max_ime_result];
 
@@ -1751,15 +1753,15 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                                        ime_result, max_ime_result);
 
             // Add this string into the text buffer of the application.
-          
+
             // ImmGetCompositionStringW() returns a string, but it's
             // filled in with wstring data: every two characters defines a
             // 16-bit unicode char.  The docs aren't clear on the
             // endianness of this.  I guess it's safe to assume all Win32
             // machines are little-endian.
             for (DWORD i = 0; i < result_size; i += 2) {
-              int result = 
-                ((int)(unsigned char)ime_result[i + 1] << 8) | 
+              int result =
+                ((int)(unsigned char)ime_result[i + 1] << 8) |
                 (unsigned char)ime_result[i];
               _input_devices[0].keystroke(result);
             }
@@ -1822,7 +1824,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
     case WM_SYSCOMMAND:
       if(wparam==SC_KEYMENU) {
-          // if Alt is released (alone w/o other keys), defwindproc will send 
+          // if Alt is released (alone w/o other keys), defwindproc will send
           // this command, which will 'activate' the title bar menu (we have none)
           // and give focus to it.  we dont want this to happen, so kill this msg
           return 0;
@@ -1838,7 +1840,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
       // Handle Cntrl-V paste from clipboard.  Is there a better way
       // to detect this hotkey?
-      if ((wparam=='V') && (GetKeyState(VK_CONTROL) < 0) && 
+      if ((wparam=='V') && (GetKeyState(VK_CONTROL) < 0) &&
           !_input_devices.empty()) {
         HGLOBAL hglb;
         char *lptstr;
@@ -1848,7 +1850,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
         if (!OpenClipboard(NULL))
           return 0;
-        
+
         // Maybe we should support CF_UNICODETEXT if it is available
         // too?
         hglb = GetClipboardData(CF_TEXT);
