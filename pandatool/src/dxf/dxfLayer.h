@@ -20,7 +20,7 @@
 #define DXFLAYER_H
 
 #include "pandatoolbase.h"
-#include "dxfVertexMap.h"
+#include "namable.h"
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : DXFLayer
@@ -29,21 +29,13 @@
 //               the file, or it may be implicitly defined by an
 //               entity's having referenced it.
 //
-//               The DXFLayer class provides a facility for collapsing
-//               identical vertices, via the _vmap member; however,
-//               this is not automatic and must be done explicitly by
-//               user code.
-//
 //               User code may derive from DXFLayer to associate
 //               private data with each layer, if desired.
 ////////////////////////////////////////////////////////////////////
-class DXFLayer {
+class DXFLayer : public Namable {
 public:
-  DXFLayer(const string &name) : _name(name) { }
-  virtual ~DXFLayer() { }
-  
-  string _name;
-  DXFVertexMap _vmap;
+  DXFLayer(const string &name);
+  virtual ~DXFLayer();
 };
 
 #endif

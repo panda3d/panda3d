@@ -19,10 +19,11 @@
 #include "config_ptloader.h"
 #include "loaderFileTypePandatool.h"
 
-#include "config_lwo.h"
-#include "fltToEggConverter.h"
 #include "config_flt.h"
+#include "fltToEggConverter.h"
+#include "config_lwo.h"
 #include "lwoToEggConverter.h"
+#include "dxfToEggConverter.h"
 
 /*
 #ifdef HAVE_DX
@@ -80,6 +81,9 @@ init_libptloader() {
   init_libflt();
   LwoToEggConverter *lwo = new LwoToEggConverter;
   reg->register_type(new LoaderFileTypePandatool(lwo));
+
+  DXFToEggConverter *dxf = new DXFToEggConverter;
+  reg->register_type(new LoaderFileTypePandatool(dxf));
 
   /*
 #ifdef HAVE_DX

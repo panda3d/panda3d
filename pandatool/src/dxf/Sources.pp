@@ -8,10 +8,11 @@
   #define UNIX_SYS_LIBS m
   
   #define SOURCES \
-    dxfFile.cxx dxfFile.h dxfLayer.h dxfLayerMap.cxx dxfLayerMap.h \
-    dxfVertex.cxx dxfVertex.h dxfVertexMap.cxx dxfVertexMap.h
+    dxfFile.cxx dxfFile.h dxfLayer.h dxfLayer.cxx \
+    dxfLayerMap.cxx dxfLayerMap.h \
+    dxfVertex.cxx dxfVertex.h
 
   #define INSTALL_HEADERS \
-    dxfFile.h dxfLayer.h dxfLayerMap.h dxfVertex.h dxfVertexMap.h
+    dxfFile.h dxfLayer.h dxfLayerMap.h dxfVertex.h
 
 #end ss_lib_target

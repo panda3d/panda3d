@@ -656,7 +656,7 @@ change_section(Section new_section) {
 ////////////////////////////////////////////////////////////////////
 void DXFFile::
 change_layer(const string &layer_name) {
-  if (_layer == NULL || _layer->_name != layer_name) {
+  if (_layer == NULL || _layer->get_name() != layer_name) {
     _layer = _layers.get_layer(layer_name, this);
   }
 }

@@ -1,4 +1,4 @@
-// Filename: dxfVertexMap.cxx
+// Filename: dxfLayer.cxx
 // Created by:  drose (04May04)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,33 +16,23 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "dxfVertexMap.h"
+#include "dxfLayer.h"
+
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXFVertexMap::get_vertex_index
+//     Function: DXFLayer::Constructor
 //       Access: Public
-//  Description: Looks up the vertex in the map, and returns an index
-//               unique to that vertex.  If the vertex has been used
-//               before, returns the index used previously; otherwise,
-//               assigns a new, unique index to the vertex and returns
-//               that.
+//  Description:
 ////////////////////////////////////////////////////////////////////
-int DXFVertexMap::
-get_vertex_index(const DXFVertex &vert) {
-  iterator vmi;
-  vmi = find(vert);
-  if (vmi != end()) {
-    // The vertex was already here.
-    return (*vmi).second;
-  }
-
-  // Nope, need a new vertex.
-  int index = size();
-  (*this)[vert] = index;
-
-  // That should have added one to the map.
-  nassertr((int)size() == index+1, index);
-
-  return index;
+DXFLayer::
+DXFLayer(const string &name) : Namable(name) {
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: DXFLayer::Destructor
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+DXFLayer::
+~DXFLayer() {
+}
