@@ -30,11 +30,18 @@
 #defer install_model_dir $[install_dir]/$[phase_prefix]$[INSTALL_TO]
 #define filter_dirs $[TARGET_DIR(filter_egg optchar_egg)]
 
-#define build_eggs $[sort \
-   $[SOURCES(flt_egg):%.flt=%.egg] \
-   $[forscopes soft_char_egg,$[POLY_MODEL:%=$[EGG_PREFIX]%.egg] $[NURBS_MODEL:%=$[EGG_PREFIX]%.egg]] \
-   $[forscopes soft_char_egg,$[ANIMS:%=$[EGG_PREFIX]%.egg]] \
-   ]
+#defer source_prefix $[SOURCE_DIR:%=%/]
+
+#define build_models \
+   $[SOURCES(flt_egg):%.flt=%.egg]
+
+#define build_chars \
+   $[forscopes soft_char_egg,$[POLY_MODEL:%=$[EGG_PREFIX]%.egg] $[NURBS_MODEL:%=$[EGG_PREFIX]%.egg]]
+
+#define build_anims \
+   $[forscopes soft_char_egg,$[ANIMS:%=$[EGG_PREFIX]%.egg]]
+
+#define build_eggs $[sort $[build_models] $[build_chars] $[build_anims]]
 #define install_eggs $[sort $[SOURCES(install_egg)] $[UNPAL_SOURCES(install_egg)]]
 
 #define install_egg_dirs $[sort $[forscopes install_egg,$[install_model_dir]]]
@@ -64,7 +71,7 @@ egg : $[egg_targets]
 
 #define filter_targets \
     $[filter_dirs] \
-    $[forscopes install_egg,$[patsubst %,$[SOURCE_DIR:%=%/]%,$[SOURCES] $[UNPAL_SOURCES]]]
+    $[forscopes install_egg,$[patsubst %,$[source_prefix]%,$[SOURCES] $[UNPAL_SOURCES]]]
 filter : egg $[filter_targets]
 
 pal : filter $[if $[pal_egg_targets],$[pal_egg_dir]] $[pal_egg_targets]
@@ -157,8 +164,12 @@ $[target] : $[source]
     #define target $[EGG_PREFIX]$[anim].egg
     #define scene $[SCENE_PREFIX]$[anim].1-0.dsc
     #define source $[DATABASE]/SCENES/$[scene]
-    #define begin $[or $[$[anim]_b],1]
-    #define end $[$[anim]_e]
+    #define begin 1
+    #define end
+    #if $[$[anim]_frames]
+      #set begin $[word 1,$[$[anim]_frames]]
+      #set end $[word 2,$[$[anim]_frames]]
+    #endif
 $[target] : $[source]
 	soft2egg $[SOFT2EGG_OPTS] -a -A $[target] -N $[CHAR_NAME] -d $[DATABASE] -s $[scene] $[begin:%=-b%] $[end:%=-e%]
   #end anim
@@ -167,7 +178,6 @@ $[target] : $[source]
 
 // Generic egg filters.
 #forscopes filter_egg
-  #define source_prefix $[SOURCE_DIR:%=%/]
   #foreach egg $[SOURCES]
     #define source $[source_prefix]$[egg]
     #define target $[TARGET_DIR]/$[egg]
@@ -178,7 +188,6 @@ $[target] : $[source] $[pt]
 
 // Character optimization.
 #forscopes optchar_egg
-  #define source_prefix $[SOURCE_DIR:%=%/]
   #define sources $[SOURCES:%=$[source_prefix]%]
   #define target $[TARGET_DIR]/$[notdir $[firstword $[SOURCES]]]
 
@@ -198,8 +207,8 @@ $[target] : $[sources]
 // Palettization rules.
 #forscopes install_egg
   #foreach egg $[SOURCES]
-    #define pt $[egg:%.egg=$[SOURCE_DIR]/%.pt]
-    #define source $[SOURCE_DIR]/$[egg]
+    #define pt $[egg:%.egg=$[source_prefix]%.pt]
+    #define source $[source_prefix]$[egg]
     #define target $[pal_egg_dir]/$[egg]
 $[target] : $[source] $[pt]
     #if $[PHASE]
@@ -225,7 +234,7 @@ $[target] : $[source]
 
   #end egg
   #foreach egg $[UNPAL_SOURCES]
-    #define source $[SOURCE_DIR]/$[egg]
+    #define source $[source_prefix]$[egg]
     #define target $[bam_dir]/$[egg:%.egg=%.bam]
 $[target] : $[source]
 	egg2bam -o $[target] $[source]
@@ -257,7 +266,7 @@ $[dest]/$[local] : $[sourcedir]/$[local]
 
 // Bam file installation.
 #forscopes install_egg
-  #foreach egg $[SOURCES] $[UNPAL_SOURCE]
+  #foreach egg $[SOURCES] $[UNPAL_SOURCES]
     #define local $[egg:%.egg=%.bam]
     #define sourcedir $[bam_dir]
     #define dest $[install_model_dir]
@@ -269,6 +278,16 @@ $[dest]/$[local] : $[sourcedir]/$[local]
 
 #end Makefile
 
+
+
+
+//////////////////////////////////////////////////////////////////////
+#elif $[eq $[DIR_TYPE], models_group]
+//////////////////////////////////////////////////////////////////////
+
+// This is a group directory: a directory above a collection of source
+// directories, e.g. $DTOOL/src.  We don't need to output anything in
+// this directory.
 
 
 
