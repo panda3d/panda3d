@@ -403,6 +403,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.attributeDictionary['streetTexture'] = 'street_street_tex'
 	self.attributeDictionary['sidewalkTexture'] = 'street_sidewalk_tex'
         self.dnaOutputFile = 'toontown_central_working.dna'
+        self.editMenu.selectitem('Toontown Central')
 
     def editDonaldsDock(self):
 	self.levelMap.setPos(0.0,0.0,0.0)
@@ -416,6 +417,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.attributeDictionary['sidewalkTexture'] = (
             'street_sidewalk_dock_tex')
         self.dnaOutputFile = 'donalds_dock_working.dna'
+        self.panel.editMenu.selectitem('Donalds Dock')
 
     def editMinniesMelodyLand(self):
 	self.levelMap.setPos(0.0,0.0,0.0)
@@ -429,6 +431,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.attributeDictionary['sidewalkTexture'] = (
             'street_sidewalk_dock_tex')
         self.dnaOutputFile = 'minnies_melody_land_working.dna'
+        self.panel.editMenu.selectitem('Minnies Melody Land')
 
     def editTheBurrrgh(self):
 	self.levelMap.setPos(0.0,0.0,0.0)
@@ -442,6 +445,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.attributeDictionary['sidewalkTexture'] = (
             'street_sidewalk_dock_tex')
         self.dnaOutputFile = 'the_burrrgh_working.dna'
+        self.panel.editMenu.selectitem('The Burrrgh')
 
     def showMap(self, mapName):
         if self.activeMap:
