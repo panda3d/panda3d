@@ -52,23 +52,23 @@
 ////////////////////////////////////////////////////////////////////
 BamToEgg::
 BamToEgg() :
-  SomethingToEgg("Bam", ".bam")
+  SomethingToEgg("bam", ".bam")
 {
   add_path_replace_options();
   add_path_store_options();
 
   set_program_description
-    ("This program converts native Panda Bam files to egg.  The conversion "
+    ("This program converts native Panda bam files to egg.  The conversion "
      "is somewhat incomplete; running egg2bam followed by bam2egg should not "
-     " be expected to yield the same egg file you started with.");
+     "be expected to yield the same egg file you started with.");
 
   redescribe_option
     ("cs",
      "Specify the coordinate system of the input " + _format_name +
-     " file.  By default, this is taken from the Configrc file, which "
-     "is currently " + format_string(default_coordinate_system) + ".");
+     " file.  By default, this is taken from the Config.prc file, which "
+     "is currently " + format_string(get_default_coordinate_system()) + ".");
 
-  _coordinate_system = default_coordinate_system;
+  _coordinate_system = get_default_coordinate_system();
 }
 
 ////////////////////////////////////////////////////////////////////
