@@ -41,6 +41,29 @@ got_hello() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextMonitor::got_bad_version
+//       Access: Public, Virtual
+//  Description: Like got_hello(), this is called when the "hello"
+//               message has been received from the client.  At this
+//               time, the client's hostname and program name will be
+//               known.  However, the client appears to be an
+//               incompatible version and the connection will be
+//               terminated; the monitor should issue a message to
+//               that effect.
+////////////////////////////////////////////////////////////////////
+void TextMonitor::
+got_bad_version(int client_major, int client_minor,
+                int server_major, int server_minor) {
+  nout
+    << "Rejected connection by " << get_client_progname()
+    << " from " << get_client_hostname()
+    << ".  Client uses PStats version "
+    << client_major << "." << client_minor
+    << ", while server expects PStats version "
+    << server_major << "." << server_minor << ".\n";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextMonitor::new_data
 //       Access: Public, Virtual
 //  Description: Called as each frame's data is made available.  There
