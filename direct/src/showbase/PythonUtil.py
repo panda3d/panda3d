@@ -687,6 +687,34 @@ def findPythonModule(module):
         
     return None
 
+def describeException(backTrace = 4):
+    # When called in an exception handler, returns a string describing
+    # the current exception.
+    
+    infoArr = sys.exc_info()
+    exception = infoArr[0]
+    exceptionName = getattr(exception, '__name__', None)
+    extraInfo = infoArr[1]
+    trace = infoArr[2]
+
+    stack = []
+    while trace.tb_next:
+        module = trace.tb_frame.f_globals.get('__name__', None)
+        lineno = trace.tb_lineno
+        stack.append("%s:%s, " % (module, lineno))
+        trace = trace.tb_next
+
+    module = trace.tb_frame.f_globals.get('__name__', None)
+    lineno = trace.tb_lineno
+    stack.append("%s:%s, " % (module, lineno))
+
+    description = ""
+    for i in range(len(stack) - 1, max(len(stack) - backTrace, 0) - 1, -1):
+        description += stack[i]
+        
+    description += "%s: %s" % (exceptionName, extraInfo)
+    return description
+
 class PureVirtual:
     """ Python classes that want to have C++-style pure-virtual functions
     can derive from this class and call 'derivedMustOverride' from their
@@ -698,3 +726,4 @@ class PureVirtual:
         and are not meant to be chained down to. This simulates C++
         pure-virtual methods. """
         raise 'error: derived class must implement %s' % callerInfo()[2]
+

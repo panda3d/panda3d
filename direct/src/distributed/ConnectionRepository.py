@@ -238,6 +238,11 @@ class ConnectionRepository(DirectObject.DirectObject):
                     return 1
             return 0
 
+    def flush(self):
+        # Ensure the latest has been sent to the server.
+        if self.tcpConn:
+            self.tcpConn.flush()
+
     def ensureValidConnection(self):
         # Was the connection reset?
         if self.connectHttp:
