@@ -10,6 +10,9 @@
 
 #include <luse.h>
 
+class Datagram;
+class DatagramIterator;
+
 ////////////////////////////////////////////////////////////////////
 // 	 Class : ColorProperty
 // Description : This class defines the scene graph color property
@@ -32,6 +35,10 @@ public:
 
   INLINE int compare_to(const ColorProperty &other) const;
   void output(ostream &out) const;
+
+public:
+  void write_datagram(Datagram &destination);
+  void read_datagram(DatagramIterator &source);
 
 private:
   Colorf _color;

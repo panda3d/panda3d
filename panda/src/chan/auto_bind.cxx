@@ -14,6 +14,7 @@
 #include <nullAttributeWrapper.h>
 #include <nullLevelState.h>
 #include <renderRelation.h>
+#include <string_utils.h>
 
 typedef set<AnimBundleNode *> AnimNodes;
 typedef map<string, AnimNodes> Anims;
@@ -78,8 +79,20 @@ bind_anims(const PartNodes &parts, const AnimNodes &anims,
 
       PT(AnimControl) control = 
 	part->bind_anim(anim, hierarchy_match_flags);
+      string name = anim->get_name();
       if (control != (AnimControl *)NULL) {
-	controls.store_anim(control, anim->get_name());
+	if (controls.find_anim(name) != (AnimControl *)NULL) {
+	  // That name's already used; synthesize another one.
+	  int index = 0;
+	  string new_name;
+	  do {
+	    index++;
+	    new_name = name + '.' + format_string(index);
+	  } while (controls.find_anim(new_name) != (AnimControl *)NULL);
+	  name = new_name;
+	}
+
+	controls.store_anim(control, name);
       }
 
       if (chan_cat.is_info()) {
@@ -89,7 +102,8 @@ bind_anims(const PartNodes &parts, const AnimNodes &anims,
 	} else {
 	  chan_cat.info()
 	    << "Bind succeeded, index "
-	    << control->get_channel_index() << "\n";
+	    << control->get_channel_index() << "; accessible as " 
+	    << name << "\n";
 	}
       }
     }
@@ -132,8 +146,11 @@ void auto_bind(Node *root_node, AnimControlCollection &controls,
       // But here we have (at least one) match!
       bind_anims((*pi).second, (*ai).second, controls, 
 		 hierarchy_match_flags);
-      ++ai;
       ++pi;
+
+      // We don't increment the anim counter yet.  That way, the same
+      // anim may bind to multiple parts, if they all share the same
+      // name.
     }
   }
 }

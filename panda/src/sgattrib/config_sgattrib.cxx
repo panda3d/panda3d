@@ -188,6 +188,7 @@ ConfigureFn(config_sgattrib) {
   //functions with BamReader's factory
   BillboardTransition::register_with_read_factory();
   ColorMatrixTransition::register_with_read_factory();
+  ColorTransition::register_with_read_factory();
   CullFaceTransition::register_with_read_factory();
   DecalTransition::register_with_read_factory();
   DepthTestTransition::register_with_read_factory();

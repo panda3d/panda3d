@@ -7,6 +7,10 @@
 #include "colorAttribute.h"
 
 #include <indent.h>
+#include <datagram.h>
+#include <datagramIterator.h>
+#include <bamReader.h>
+#include <bamWriter.h>
 
 TypeHandle ColorTransition::_type_handle;
 
@@ -77,4 +81,56 @@ output_value(ostream &out) const {
 void ColorTransition::
 write_value(ostream &out, int indent_level) const {
   indent(out, indent_level) << _value << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorTransition::register_with_read_factory
+//       Access: Public, Static
+//  Description: Factory method to generate a ColorTransition object
+////////////////////////////////////////////////////////////////////
+void ColorTransition::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_ColorTransition);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorTransition::write_datagram
+//       Access: Public
+//  Description: Function to write the important information in
+//               the particular object to a Datagram
+////////////////////////////////////////////////////////////////////
+void ColorTransition::
+write_datagram(BamWriter *manager, Datagram &me) {
+  OnOffTransition::write_datagram(manager, me);
+  _value.write_datagram(me);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorTransition::make_ColorTransition
+//       Access: Protected
+//  Description: Factory method to generate a ColorTransition object
+////////////////////////////////////////////////////////////////////
+TypedWritable *ColorTransition::
+make_ColorTransition(const FactoryParams &params) {
+  ColorTransition *me = new ColorTransition;
+  DatagramIterator scan;
+  BamReader *manager;
+
+  parse_params(params, scan, manager);
+  me->fillin(scan, manager);
+  return me;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorTransition::fillin
+//       Access: Protected
+//  Description: Function that reads out of the datagram (or asks
+//               manager to read) all of the data that is needed to
+//               re-create this object and stores it in the appropiate
+//               place
+////////////////////////////////////////////////////////////////////
+void ColorTransition::
+fillin(DatagramIterator& scan, BamReader* manager) {
+  OnOffTransition::fillin(scan, manager);
+  _value.read_datagram(scan);
 }
