@@ -16,8 +16,19 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "collide_headers.h"
-#pragma hdrstop
+#include "collisionTraverser.h"
+#include "collisionNode.h"
+#include "collisionSphere.h"
+#include "collisionPlane.h"
+#include "collisionHandlerPusher.h"
+
+#include <namedNode.h>
+#include <pt_NamedNode.h>
+#include <pointerTo.h>
+#include <transformTransition.h>
+#include <luse.h>
+#include <get_rel_pos.h>
+#include <renderRelation.h>
 
 int
 main(int argc, char *argv[]) {

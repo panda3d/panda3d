@@ -39,17 +39,13 @@
 #include <get_rel_pos.h>
 #include <indent.h>
 #include <lightTransition.h>
-#include <luse.h>
-#include <namedNode.h>
 #include <nearly_zero.h>
 #include <nodePath.h>
 #include <omniBoundingVolume.h>
-#include <pointerTo.h>
 #include <pointerToArray.h>
 #include <projection.h>
 #include <projectionNode.h>
 #include <pStatTimer.h>
-#include <pt_NamedNode.h>
 #include <renderModeTransition.h>
 #include <renderRelation.h>
 #include <textureTransition.h>
