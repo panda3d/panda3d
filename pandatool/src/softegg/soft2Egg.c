@@ -90,7 +90,7 @@ class soft2egg : public EggBase
         make_pose = 0;
         animData.is_z_up = FALSE;
         nurbs_step = 1;
-         anim_start = -1000;
+        anim_start = -1000;
         anim_end = -1000;
         anim_rate = 24;
         pose_frame = -1;

@@ -36,6 +36,8 @@
 #include "string_utils.h"
 #include "dcast.h"
 
+SoftToEggConverter stec;
+
 static const int    TEX_PER_MAT = 1;
 
 ////////////////////////////////////////////////////////////////////
@@ -521,41 +523,6 @@ GetTextureName( SAA_Scene *scene, SAA_Elem *texture ) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GetModelNoteInfo
-//       Access: Public
-//  Description: Given an element, return a string containing the
-//                 contents of its MODEL NOTE entry 
-////////////////////////////////////////////////////////////////////
-char *SoftToEggConverter::
-GetModelNoteInfo( SAA_Scene *scene, SAA_Elem *model ) {
-  int size;
-  char *modelNote = NULL;
-  SAA_Boolean bigEndian;
-
-  SAA_elementGetUserDataSize( scene, model, "MNOT", &size );
-
-  if ( size != 0 ) {
-    // allocate modelNote string
-    modelNote = new char[size + 1];
-    
-    // get ModelNote data from this model
-    SAA_elementGetUserData( scene, model, "MNOT", size, 
-                            &bigEndian, (void *)modelNote );
-    
-    //strip off newline, if present
-    char *eol = strchr( modelNote, '\n' );
-    if ( eol != NULL)
-      *eol = '\0';
-    else
-      modelNote[size] = '\0';
-    
-    cout << "\nmodelNote = " << modelNote << endl;    
-  }
-  
-  return modelNote;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: SoftToEggConverter::convert_file
 //       Access: Public, Virtual
 //  Description: Handles the reading of the input file and converting
@@ -604,10 +571,11 @@ convert_soft(bool from_selection) {
     exit(1);
   }
 
-  char *temp = NULL;
-  all_ok = _tree.build_complete_hierarchy(scene, database, &temp);
-  if (temp)
-    _character_name = temp;
+  all_ok = _tree.build_complete_hierarchy(scene, database);
+  char *root_name = _tree.GetRootName( eggFileName );
+  cout << "main group name: " << root_name << endl;
+  if (root_name)
+    _character_name = root_name;
 
   if (!convert_char_model()) {
     all_ok = false;
@@ -845,10 +813,10 @@ convert_hierarchy(EggGroupNode *egg_root) {
 ////////////////////////////////////////////////////////////////////
 bool SoftToEggConverter::
 process_model_node(SoftNodeDesc *node_desc) {
-  SAA_ModelType type;
+  EggGroup *egg_group = NULL;
   char *name = NULL;
   char *fullname = NULL;
-  EggGroup *egg_group = NULL;
+  SAA_ModelType type;
 
   // Get the name of the model
   if ( use_prefix ) {
@@ -867,6 +835,9 @@ process_model_node(SoftNodeDesc *node_desc) {
   switch(type){
   case SAA_MNILL:
     cout << "null\n";
+    egg_group = _tree.get_egg_group(node_desc);
+    node_desc->get_transform(&scene, egg_group);
+    handle_null(node_desc->get_model(), egg_group, type, name);
     break;
   case SAA_MPTCH:
     cout << "patch\n";
@@ -877,8 +848,8 @@ process_model_node(SoftNodeDesc *node_desc) {
   case SAA_MSMSH:
     cout << "mesh\n";
     egg_group = _tree.get_egg_group(node_desc);
-    get_transform(node_desc, egg_group);
-    make_polyset(node_desc->get_model(), egg_group, type, name);
+    node_desc->get_transform(&scene, egg_group);
+    make_polyset(node_desc, egg_group, type, name);
     break;
   case SAA_MJNT:
     cout << "joint\n";
@@ -906,32 +877,6 @@ process_model_node(SoftNodeDesc *node_desc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SoftToEggConverter::get_transform
-//       Access: Private
-//  Description: Extracts the transform on the indicated Soft node,
-//               and applies it to the corresponding Egg node.
-////////////////////////////////////////////////////////////////////
-void SoftToEggConverter::
-get_transform(SoftNodeDesc *node_desc, EggGroup *egg_group) {
-  // Get the model's matrix
-  SAA_modelGetMatrix( &scene, node_desc->get_model(), SAA_COORDSYS_GLOBAL,  matrix );
-
-  cout << "model matrix = " << matrix[0][0] << " " << matrix[0][1] << " " << matrix[0][2] << " " << matrix[0][3] << "\n";
-  cout << "model matrix = " << matrix[1][0] << " " << matrix[1][1] << " " << matrix[1][2] << " " << matrix[1][3] << "\n";
-  cout << "model matrix = " << matrix[2][0] << " " << matrix[2][1] << " " << matrix[2][2] << " " << matrix[2][3] << "\n";
-  cout << "model matrix = " << matrix[3][0] << " " << matrix[3][1] << " " << matrix[3][2] << " " << matrix[3][3] << "\n";
-
-  LMatrix4d m4d(matrix[0][0], matrix[0][1], matrix[0][2], matrix[0][3],
-                matrix[1][0], matrix[1][1], matrix[1][2], matrix[1][3],
-                matrix[2][0], matrix[2][1], matrix[2][2], matrix[2][3],
-                matrix[3][0], matrix[3][1], matrix[3][2], matrix[3][3]);
-  if (!m4d.almost_equal(LMatrix4d::ident_mat(), 0.0001)) {
-    egg_group->add_matrix(m4d);
-    cout << "added matrix in egg_group\n";
-  }
-  return;
-}
-////////////////////////////////////////////////////////////////////
 //     Function: SoftToEggConverter::make_polyset
 //       Access: Private
 //  Description: Converts the indicated Soft polyset to a bunch of
@@ -939,38 +884,22 @@ get_transform(SoftNodeDesc *node_desc, EggGroup *egg_group) {
 //               group.
 ////////////////////////////////////////////////////////////////////
 void SoftToEggConverter::
-make_polyset(SAA_Elem *model, EggGroup *egg_group, SAA_ModelType type, char *node_name) {
+make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type, char *node_name) {
   string name = node_name;
   int id = 0;
-  int numTri;
-  int numShapes;
-  int numTexLoc = 0;
-  int numTexGlb = 0;
 
-  float *uScale = NULL; 
-  float *vScale = NULL;
-  float *uOffset = NULL;
-  float *vOffset = NULL;
   float *uCoords = NULL;
   float *vCoords = NULL;
-  
+
+
   SAA_Boolean valid;
-  SAA_Boolean uv_swap;
   SAA_Boolean visible;
-  SAA_Elem *textures = NULL;
-  SAA_Elem *materials = NULL;
-  SAA_SubElem *triangles = NULL;
-  SAA_GeomType gtype = SAA_GEOM_ORIGINAL;
 
   int i, idx;
   
-  // Get the number of key shapes
-  SAA_modelGetNbShapes( &scene, model, &numShapes );
-  cout << "make_polyset: num shapes: " << numShapes << "\n";
-
-  SAA_modelGetNodeVisibility( &scene, model, &visible ); 
-  cout << "model visibility: " << visible << "\n";
-
+  SAA_modelGetNodeVisibility( &scene, node_desc->get_model(), &visible ); 
+  cout << "model visibility: " << visible << endl; 
+  
   ///////////////////////////////////////////////////////////////////////
   // Only create egg polygon data if: the node is visible, and its not
   // a NULL or a Joint, and we're outputing polys (or if we are outputing 
@@ -985,191 +914,9 @@ make_polyset(SAA_Elem *model, EggGroup *egg_group, SAA_ModelType type, char *nod
          ((type == SAA_MSMSH) || (type == SAA_MFACE )) ))
        )
     {
-      // If the model is a NURBS in soft, set its step before tesselating
-      if ( type == SAA_MNSRF )
-        SAA_nurbsSurfaceSetStep( &scene, model, nurbs_step, nurbs_step );
+      // load all node data from soft for this node_desc
+      node_desc->load_model(&scene, type, node_name);
 
-      // If the model is a PATCH in soft, set its step before tesselating
-      else if ( type == SAA_MPTCH )
-        SAA_patchSetStep( &scene, model, nurbs_step, nurbs_step );
- 
-      // Get the number of triangles    
-      result = SAA_modelGetNbTriangles( &scene, model, gtype, id, &numTri);
-      cout << "triangles: " << numTri << "\n";
-
-      if ( result != SI_SUCCESS ) {
-        cout << "Error: couldn't get number of triangles!\n";
-        cout << "\tbailing on model: " << name << "\n";
-        return;    
-      }
-
-      // check to see if surface is also skeleton...
-      SAA_Boolean isSkeleton = FALSE;
-      
-      SAA_modelIsSkeleton( &scene, model, &isSkeleton );
-
-      // check to see if this surface is used as a skeleton
-      // or is animated via constraint only ( these nodes are
-      // tagged by the animator with the keyword "joint"
-      // somewhere in the nodes name)
-      cout << "is Skeleton? " << isSkeleton << "\n";
-
-      /*************************************************************************************/
-
-      // model is not a null and has no triangles!
-      if ( !numTri ) {
-        cout << "no triangles!\n";
-      }
-      else {
-        // allocate array of triangles
-        triangles = (SAA_SubElem *) new SAA_SubElem[numTri];
-        if (!triangles) {
-          cout << "Not enough Memory for triangles...\n";
-          exit(1);
-        }
-        // triangulate model and read the triangles into array
-        SAA_modelGetTriangles( &scene, model, gtype, id, numTri, triangles );
-        cout << "got triangles\n";
-
-        /***********************************************************************************/
-        
-        // allocate array of materials (Asad: it gives a warning if try top get one triangle
-        //                                    at a time...investigate later
-        // read each triangle's material into array  
-        materials = (SAA_Elem*) new SAA_Elem[numTri];
-        SAA_triangleGetMaterials( &scene, model, numTri, triangles, materials );
-        if (!materials) {
-          cout << "Not enough Memory for materials...\n";
-          exit(1);
-        }
-        cout << "got materials\n";
-        
-        /***********************************************************************************/
-        
-        // allocate array of textures per triangle
-        int *numTexTri = new int[numTri];
-        const void *relinfo;
-        
-        // find out how many local textures per triangle
-        for (i = 0; i < numTri; i++) {    
-          result = SAA_materialRelationGetT2DLocNbElements( &scene, &materials[i], FALSE, 
-                                                            &relinfo, &numTexTri[i] );
-          // polytex    
-          if ( result == SI_SUCCESS )
-            numTexLoc += numTexTri[i];
-        }
-        
-        // don't need this anymore...
-        //free( numTexTri ); 
-        
-        // get local textures if present
-        if ( numTexLoc ) {
-          cout << "numTexLoc = " << numTexLoc << endl;
-
-          // allocate arrays of texture info
-          uScale = new float[numTri];
-          vScale = new float[numTri];
-          uOffset = new float[numTri];
-          vOffset = new float[numTri];
-          texNameArray = new char *[numTri];
-
-          // ASSUME only one texture per material
-          textures = new SAA_Elem[numTri];
-
-          for ( i = 0; i < numTri; i++ ) {
-            // and read all referenced local textures into array
-            SAA_materialRelationGetT2DLocElements( &scene, &materials[i],
-                                                   TEX_PER_MAT , &textures[i] );
-            // initialize the array value
-            texNameArray[i] = NULL;
-
-            // check to see if texture is present
-            result = SAA_elementIsValid( &scene, &textures[i], &valid );
-               
-            if ( result != SI_SUCCESS )
-              cout << "SAA_elementIsValid failed!!!!\n";
- 
-            // texture present - get the name and uv info 
-            if ( valid ) {
-              // according to drose, we don't need to convert .pic files to .rgb,
-              // panda can now read the .pic files.
-              texNameArray[i] = GetTextureName(&scene, &textures[i]);
-             
-              cout << " tritex[" << i << "] named: " << texNameArray[i] << endl;
-
-              SAA_texture2DGetUVSwap( &scene, &textures[i], &uv_swap );
-
-              if ( uv_swap == TRUE )
-                cout << " swapping u and v...\n" ;
-
-              SAA_texture2DGetUScale( &scene, &textures[i], &uScale[i] );
-              SAA_texture2DGetVScale( &scene, &textures[i], &vScale[i] );
-              SAA_texture2DGetUOffset( &scene, &textures[i], &uOffset[i] );
-              SAA_texture2DGetVOffset( &scene, &textures[i], &vOffset[i] );
-
-              cout << "tritex[" << i << "] uScale: " << uScale[i] << " vScale: " << vScale[i] << endl;
-              cout << " uOffset: " << uOffset[i] << " vOffset: " << vOffset[i] << endl;
-              
-              SAA_texture2DGetRepeats( &scene, &textures[i], &uRepeat, &vRepeat );
-              cout << "uRepeat = " << uRepeat << ", vRepeat = " << vRepeat << endl;
-            }
-            else {
-              cout << "Invalid texture...\n";
-              cout << " tritex[" << i << "] named: (null)\n";
-            }
-          }
-        }
-        else { // if no local textures, try to get global textures
-          SAA_modelRelationGetT2DGlbNbElements( &scene, model,
-                                                FALSE, &relinfo, &numTexGlb );
-          if ( numTexGlb ) {
-            // ASSUME only one texture per model
-            textures = new SAA_Elem;
-            // get the referenced texture
-            SAA_modelRelationGetT2DGlbElements( &scene, model, 
-                                                TEX_PER_MAT, textures ); 
-            cout << "numTexGlb = " << numTexGlb << endl;
-            // check to see if texture is present
-            SAA_elementIsValid( &scene, textures, &valid );
-            if ( valid ) {  // texture present - get the name and uv info 
-              SAA_texture2DGetUVSwap( &scene, textures, &uv_swap );
-              
-              if ( uv_swap == TRUE )
-                cout << " swapping u and v...\n";
-            
-              // according to drose, we don't need to convert .pic files to .rgb,
-              // panda can now read the .pic files.
-              texNameArray = new char *[1];
-              *texNameArray = GetTextureName(&scene, textures);
-              
-              cout << " global tex named: " << *texNameArray << endl;
-              
-              // allocate arrays of texture info
-              uScale = new float;
-              vScale = new float;
-              uOffset = new float;
-              vOffset = new float;
-              
-              SAA_texture2DGetUScale( &scene, textures, uScale );
-              SAA_texture2DGetVScale( &scene, textures, vScale );
-              SAA_texture2DGetUOffset( &scene, textures, uOffset );
-              SAA_texture2DGetVOffset( &scene, textures, vOffset );
-              
-              cout << " global tex uScale: " << *uScale << " vScale: " << *vScale << endl;
-              cout << "            uOffset: " << *uOffset << " vOffset: " << *vOffset << endl;
-              
-              SAA_texture2DGetRepeats(  &scene, textures, &uRepeat, &vRepeat );
-              cout << "uRepeat = " << uRepeat << ", vRepeat = " << vRepeat << endl;
-            }
-            else {
-              cout << "Invalid Texture...\n";
-            }
-          }
-        }
-      }
-      cout << "got textures" << endl;
-  /***************************************************************************************/
-  
       string vpool_name = name + ".verts";
       EggVertexPool *vpool = new EggVertexPool(vpool_name);
       egg_group->add_child(vpool);
@@ -1185,12 +932,12 @@ make_polyset(SAA_Elem *model, EggGroup *egg_group, SAA_ModelType type, char *nod
       LMatrix4d vertex_frame_inv = egg_group->get_vertex_frame_inv();
       
       // Asad: change from soft2egg.c. Here I am trying to get one triangles vertices not all
-      for (idx=0; idx<numTri; ++idx) {
+      for (idx=0; idx<node_desc->numTri; ++idx) {
         EggPolygon *egg_poly = new EggPolygon;
         egg_group->add_child(egg_poly);
         
         // Is this a double sided polygon? meaning check for back face flag
-        char *modelNoteStr = GetModelNoteInfo( &scene, model );
+        char *modelNoteStr = _tree.GetModelNoteInfo( &scene, node_desc->get_model() );
         if ( modelNoteStr != NULL ) {
           if ( strstr( modelNoteStr, "bface" ) != NULL )
             egg_poly->set_bface_flag(TRUE);
@@ -1198,27 +945,27 @@ make_polyset(SAA_Elem *model, EggGroup *egg_group, SAA_ModelType type, char *nod
         
         // read each triangle's control vertices into array
         SAA_SubElem cvertices[3];
-        SAA_triangleGetCtrlVertices( &scene, model, gtype, id, 1, triangles+idx, cvertices );
+        SAA_triangleGetCtrlVertices( &scene, node_desc->get_model(), node_desc->gtype, id, 1, node_desc->triangles+idx, cvertices );
         
         // read control vertices in this triangle
         SAA_DVector cvertPos[3];
-        SAA_ctrlVertexGetPositions( &scene, model, 3, cvertices, cvertPos);
+        SAA_ctrlVertexGetPositions( &scene, node_desc->get_model(), 3, cvertices, cvertPos);
         
         // read indices of each vertices in this triangle
         int indices[3];
         indices[0] = indices[1] = indices[2] = 0;
-        SAA_ctrlVertexGetIndices( &scene, model, 3, cvertices, indices );
+        SAA_ctrlVertexGetIndices( &scene, node_desc->get_model(), 3, cvertices, indices );
         
         // read each control vertex's normals into an array
         SAA_DVector normals[3];
-        SAA_ctrlVertexGetNormals( &scene, model, 3, cvertices, normals );
+        SAA_ctrlVertexGetNormals( &scene, node_desc->get_model(), 3, cvertices, normals );
         for (i=0; i<3; ++i)
           cout << "normals[" << i <<"] = " << normals[i].x << " " <<  normals[i].y
                << " " << normals[i].z << " " <<  normals[i].w << "\n";
         
         // allocate arrays for u & v coords
-        if (textures) {
-          if (numTexLoc) {
+        if (node_desc->textures) {
+          if (node_desc->numTexLoc) {
             // allocate arrays for u & v coords
             // I think there are one texture per triangle hence we need only 3 corrdinates
             uCoords = new float[3];
@@ -1230,7 +977,7 @@ make_polyset(SAA_Elem *model, EggGroup *egg_group, SAA_ModelType type, char *nod
                 uCoords[i] = vCoords[i] = 0.0f;
               
               // TODO: investigate the coord_cnt parameter...
-              SAA_ctrlVertexGetUVTxtCoords( &scene, model, 3, cvertices,
+              SAA_ctrlVertexGetUVTxtCoords( &scene, node_desc->get_model(), 3, cvertices,
                                             3, uCoords, vCoords );
             }
             else
@@ -1241,19 +988,19 @@ make_polyset(SAA_Elem *model, EggGroup *egg_group, SAA_ModelType type, char *nod
               cout << "texcoords[" << i << "] = ( " << uCoords[i] << " , " << vCoords[i] <<" )\n";
 #endif
           }
-          else if (numTexGlb) {
+          else if (node_desc->numTexGlb) {
             // allocate arrays for u & v coords
-            uCoords = new float[numTexGlb*3];
-            vCoords = new float[numTexGlb*3];
+            uCoords = new float[node_desc->numTexGlb*3];
+            vCoords = new float[node_desc->numTexGlb*3];
             
-            for ( i = 0; i < numTexGlb*3; i++ ) {
+            for ( i = 0; i < node_desc->numTexGlb*3; i++ ) {
               uCoords[i] = vCoords[i] = 0.0f;
             }                
             
             // read the u & v coords into the arrays
             if ( uCoords != NULL && vCoords != NULL) {
-              SAA_triCtrlVertexGetGlobalUVTxtCoords( &scene, model, 3, cvertices, 
-                                                     numTexGlb, textures, uCoords, vCoords );
+              SAA_triCtrlVertexGetGlobalUVTxtCoords( &scene, node_desc->get_model(), 3, cvertices, 
+                                                     node_desc->numTexGlb, node_desc->textures, uCoords, vCoords );
             }
             else
               cout << "Not enough Memory for texture coords...\n";
@@ -1267,7 +1014,7 @@ make_polyset(SAA_Elem *model, EggGroup *egg_group, SAA_ModelType type, char *nod
           SAA_DVector local = cvertPos[i];
           SAA_DVector global = {0};
           
-          _VCT_X_MAT( global, local, matrix );
+          _VCT_X_MAT( global, local, node_desc->matrix );
           
           cout << "indices[" << i << "] = " << indices[i] << "\n";
           cout << "cvert[" << i << "] = " << cvertPos[i].x << " " << cvertPos[i].y
@@ -1281,7 +1028,7 @@ make_polyset(SAA_Elem *model, EggGroup *egg_group, SAA_ModelType type, char *nod
           vert.set_pos(p3d);
           
           local = normals[i];
-          _VCT_X_MAT( global, local, matrix );
+          _VCT_X_MAT( global, local, node_desc->matrix );
           
           cout << "normals[" << i <<"] = " << normals[i].x << " " <<  normals[i].y
                << " " << normals[i].z << " " <<  normals[i].w << "\n";
@@ -1294,11 +1041,11 @@ make_polyset(SAA_Elem *model, EggGroup *egg_group, SAA_ModelType type, char *nod
           
           // check to see if material is present
           float r,g,b,a;
-          SAA_elementIsValid( &scene, &materials[idx/3], &valid );
+          SAA_elementIsValid( &scene, &node_desc->materials[idx/3], &valid );
           // material present - get the color 
           if ( valid ) {
-            SAA_materialGetDiffuse( &scene, &materials[idx/3], &r, &g, &b );
-            SAA_materialGetTransparency( &scene, &materials[idx/3], &a );
+            SAA_materialGetDiffuse( &scene, &node_desc->materials[idx/3], &r, &g, &b );
+            SAA_materialGetTransparency( &scene, &node_desc->materials[idx/3], &a );
             vert.set_color(Colorf(r, g, b, 1.0));
             cout << "color r = " << r << " g = " << g << " b = " << b << " a = " << a << "\n";
           }
@@ -1308,7 +1055,7 @@ make_polyset(SAA_Elem *model, EggGroup *egg_group, SAA_ModelType type, char *nod
           }
           
           // if texture present set the texture coordinates
-          if (textures) {
+          if (node_desc->textures) {
             float u, v;
             
             u = uCoords[i];
@@ -1325,11 +1072,11 @@ make_polyset(SAA_Elem *model, EggGroup *egg_group, SAA_ModelType type, char *nod
         }
         
         // Now apply the shader.
-        if (textures != NULL) {
-          if (numTexLoc)
-            set_shader_attributes(*egg_poly, textures[idx]);
+        if (node_desc->textures != NULL) {
+          if (node_desc->numTexLoc)
+            set_shader_attributes(node_desc, *egg_poly, node_desc->texNameArray[idx]);
           else
-            set_shader_attributes(*egg_poly, textures[0]);
+            set_shader_attributes(node_desc, *egg_poly, node_desc->texNameArray[0]);
         }
       }
 #if 0
@@ -1374,6 +1121,74 @@ make_polyset(SAA_Elem *model, EggGroup *egg_group, SAA_ModelType type, char *nod
 #endif
     }
 }
+////////////////////////////////////////////////////////////////////
+//     Function: SoftToEggConverter::make_polyset
+//       Access: Private
+//  Description: Converts the indicated Soft polyset to a bunch of
+//               EggPolygons and parents them to the indicated egg
+//               group.
+////////////////////////////////////////////////////////////////////
+void SoftToEggConverter::
+handle_null(SAA_Elem *model, EggGroup *egg_group, SAA_ModelType type, char *node_name) {
+  char *name = node_name;
+  SAA_AlgorithmType    algo;
+  
+  SAA_modelGetAlgorithm( &scene, model, &algo );
+  cout << "null algorithm: " << algo << endl;
+  
+  if ( algo == SAA_ALG_INV_KIN ) {
+    //    MakeJoint( &scene, lastJoint, lastAnim,  model, name );
+    cout << "encountered IK root: " << name << endl;
+  }
+  else if ( algo == SAA_ALG_INV_KIN_LEAF ) {
+    //    MakeJoint( &scene, lastJoint, lastAnim, model, name );
+    cout << "encountered IK leaf: " << name << endl;
+  }
+  else if ( algo == SAA_ALG_STANDARD ) {
+    SAA_Boolean isSkeleton = FALSE;
+    cout << "encountered Standard null: " << name << endl;
+
+    SAA_modelIsSkeleton( &scene, model, &isSkeleton );
+
+    // check to see if this NULL is used as a skeleton
+    // or is animated via constraint only ( these nodes are
+    // tagged by the animator with the keyword "joint"
+    // somewhere in the nodes name)
+    if ( isSkeleton || (strstr( name, "joint" ) != NULL) ) {
+      //      MakeJoint( &scene, lastJoint, lastAnim, model, name );
+      cout << "animating Standard null!!!\n";
+    }
+  }
+  else
+    cout << "encountered some other NULL: " << algo << endl;
+
+#if 0 // no need to follow children, _tree already contains all the model nodes
+  // check for children...
+  int numChildren;
+  int thisChild;
+  SAA_Elem *children;
+  
+  SAA_modelGetNbChildren( &scene, model, &numChildren );
+  cout << "Model children: " << numChildren << endl;
+
+  if ( numChildren ) {
+    children = new SAA_Elem[numChildren];
+    SAA_modelGetChildren( &scene, model, numChildren, children );
+    if ( children != NULL ) {
+      for ( thisChild = 0; thisChild < numChildren; thisChild++ ) {
+        cout << "\negging child " << thisChild << "...\n";
+        //        MakeEgg( parent, lastJoint, lastAnim, scene, 
+        //                 &children[thisChild] );
+      }
+    }
+    else
+      cout << "Not enough Memory for children...\n";
+  }
+  else
+    cout << "Don't descend this branch!\n";
+#endif
+}
+
 #if 0
 ////////////////////////////////////////////////////////////////////
 //     Function: SoftToEggConverter::make_locator
@@ -1533,15 +1348,15 @@ get_vertex_weights(const MDagPath &dag_path, const MFnMesh &mesh,
 //               egg primitive.
 ////////////////////////////////////////////////////////////////////
 void SoftToEggConverter::
-set_shader_attributes(EggPrimitive &primitive, SAA_Elem &shader) {
-  EggTexture tex(*texNameArray, "");
+set_shader_attributes(SoftNodeDesc *node_desc, EggPrimitive &primitive, char *texName) {
+  EggTexture tex(texName, "");
 
-  Filename filename = Filename::from_os_specific(*texNameArray);
+  Filename filename = Filename::from_os_specific(texName);
   Filename fullpath = _path_replace->match_path(filename, get_texture_path());
   tex.set_filename(_path_replace->store_path(fullpath));
   tex.set_fullpath(fullpath);
   //  tex.set_format(EggTexture::F_rgb);
-  apply_texture_properties(tex);
+  apply_texture_properties(tex, node_desc->uRepeat, node_desc->vRepeat);
 
   EggTexture *new_tex = _textures.create_unique_texture(tex, ~EggTexture::E_tref_name);
   primitive.set_texture(new_tex);
@@ -1555,7 +1370,7 @@ set_shader_attributes(EggPrimitive &primitive, SAA_Elem &shader) {
 //               matrix.
 ////////////////////////////////////////////////////////////////////
 void SoftToEggConverter::
-apply_texture_properties(EggTexture &tex) {
+apply_texture_properties(EggTexture &tex, int uRepeat, int vRepeat) {
   // Let's mipmap all textures by default.
   tex.set_minfilter(EggTexture::FT_linear_mipmap_linear);
   tex.set_magfilter(EggTexture::FT_linear);
@@ -1725,8 +1540,6 @@ string_transform_type(const string &arg) {
 /////////////////////////////////////////////////////////////////////////
 extern "C" int init_soft2egg (int argc, char **argv)
 {
-  SoftToEggConverter stec;
-
   stec._commandName = argv[0];
   stec.rsrc_path = "c:\\Softimage\\SOFT3D_3.9.2\\3D\\rsrc";
   if (stec.DoGetopts(argc, argv)) {

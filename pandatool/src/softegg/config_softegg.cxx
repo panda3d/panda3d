@@ -18,6 +18,7 @@
 
 #include "config_softegg.h"
 #include "softEggGroupUserData.h"
+#include "softNodeDesc.h"
 
 #include "dconfig.h"
 
@@ -58,6 +59,6 @@ init_libsoftegg() {
   initialized = true;
 
   SoftEggGroupUserData::init_type();
-  //  SoftNodeDesc::init_type();
+  SoftNodeDesc::init_type();
 }
 

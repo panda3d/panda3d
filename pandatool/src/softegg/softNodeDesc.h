@@ -19,6 +19,13 @@
 #ifndef SOFTNODEDESC_H
 #define SOFTNODEDESC_H
 
+#ifdef _MIN
+#undef _MIN
+#endif
+#ifdef _MAX
+#undef _MAX
+#endif
+
 #include "pandatoolbase.h"
 
 #include "referenceCount.h"
@@ -59,6 +66,9 @@ private:
   //  void mark_joint_parent();
   //  void check_pseudo_joints(bool joint_above);
 
+  SAA_ModelType type;
+  char *fullname;
+
   SAA_Elem *_model;
 
   EggGroup *_egg_group;
@@ -74,8 +84,34 @@ private:
   };
   JointType _joint_type;
 
-
 public:
+
+  char **texNameArray;
+  int uRepeat, vRepeat;
+  float        matrix[4][4];
+
+  int numTri;
+  //  int numShapes;
+  int numTexLoc;
+  int numTexGlb;
+
+  float *uScale;
+  float *vScale;
+  float *uOffset;
+  float *vOffset;
+  
+  SAA_Boolean valid;
+  SAA_Boolean uv_swap;
+  //  SAA_Boolean visible;
+  SAA_Elem *textures;
+  SAA_Elem *materials;
+  SAA_SubElem *triangles;
+  SAA_GeomType gtype;
+
+
+  void get_transform(SAA_Scene *scene, EggGroup *egg_group);
+  void load_model(SAA_Scene *scene, SAA_ModelType type, char *name);
+
   static TypeHandle get_class_type() {
     return _type_handle;
   }
@@ -92,5 +128,8 @@ private:
 
   friend class SoftNodeTree;
 };
+
+class SoftToEggConverter;
+extern SoftToEggConverter stec;
 
 #endif

@@ -97,6 +97,68 @@ GetFullName( SAA_Scene *scene, SAA_Elem *element )
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GetModelNoteInfo
+//       Access: Public
+//  Description: Given an element, return a string containing the
+//               contents of its MODEL NOTE entry 
+////////////////////////////////////////////////////////////////////
+char *SoftNodeTree::
+GetModelNoteInfo( SAA_Scene *scene, SAA_Elem *model ) {
+  int size;
+  char *modelNote = NULL;
+  SAA_Boolean bigEndian;
+
+  SAA_elementGetUserDataSize( scene, model, "MNOT", &size );
+
+  if ( size != 0 ) {
+    // allocate modelNote string
+    modelNote = new char[size + 1];
+    
+    // get ModelNote data from this model
+    SAA_elementGetUserData( scene, model, "MNOT", size,
+                            &bigEndian, (void *)modelNote );
+    
+    //strip off newline, if present
+    char *eol = strchr( modelNote, '\n' );
+    if ( eol != NULL)
+      *eol = '\0';
+    else
+      modelNote[size] = '\0';
+    
+    cout << "\nmodelNote = " << modelNote << endl;
+  }
+  
+  return modelNote;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GetRootName
+//       Access: Public
+//  Description: Given a string, return a copy of the string up to
+//                 the first occurence of '-'. 
+////////////////////////////////////////////////////////////////////
+char *SoftNodeTree::
+GetRootName( const char *name ) {
+  char *hyphen;
+  char *root;
+  int len;
+  
+  hyphen = strchr( name, '-' );
+  len = hyphen-name;
+  
+  if ( (hyphen != NULL) && len ) {
+    root = new char[len+1];
+    strncpy( root, name, len );
+    root[len] = '\0';
+  }
+  else {
+    root = new char[strlen(name)+1];
+    strcpy( root, name );
+  }
+  return( root );
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SoftNodeTree::build_node
 //       Access: Public
 //  Description: Returns a pointer to the node corresponding to the
@@ -118,7 +180,7 @@ build_node(SAA_Elem *model, const char *name) {
 //               up the corresponding tree.
 ////////////////////////////////////////////////////////////////////
 bool SoftNodeTree::
-build_complete_hierarchy(SAA_Scene &scene, SAA_Database &database, char **root_name) {
+build_complete_hierarchy(SAA_Scene &scene, SAA_Database &database) {
   SI_Error status;
 
   // Get the entire Soft scene.
@@ -142,12 +204,10 @@ build_complete_hierarchy(SAA_Scene &scene, SAA_Database &database, char **root_n
         int level;
         status = SAA_elementGetHierarchyLevel( &scene, &models[i], &level );
         cout << "level " << level << endl;
-        char *name = GetName(&scene, &models[i]);
-        if ( !level ) {
-          // this is the root node, so this should be the name of the model
-          *root_name = name;
-        }
-        SoftNodeDesc *node_desc = build_node(&models[i], name);
+        //        if (!level) {
+          char *name = GetName(&scene, &models[i]);
+          SoftNodeDesc *node_desc = build_node(&models[i], name);
+          //        }
         cout << "status is " << status << "\n";
       }
     }

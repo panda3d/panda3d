@@ -86,7 +86,6 @@ private:
   bool convert_hierarchy(EggGroupNode *egg_root);
   bool process_model_node(SoftNodeDesc *node_desc);
 
-  void get_transform(SoftNodeDesc *node_Desc, EggGroup *egg_group);
   /*
   void get_joint_transform(const MDagPath &dag_path, EggGroup *egg_group);
 
@@ -104,18 +103,16 @@ private:
                         const MFnNurbsCurve &curve,
                         EggGroup *group);
   */
-  void make_polyset(SAA_Elem *model, EggGroup *egg_group, SAA_ModelType type, char *node_name);
+  void make_polyset(SoftNodeDesc *node_Desc, EggGroup *egg_group, SAA_ModelType type, char *node_name);
+  void handle_null(SAA_Elem *model, EggGroup *egg_group, SAA_ModelType type, char *node_name);
   /*
   void make_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
                     EggGroup *egg_group);
   bool get_vertex_weights(const MDagPath &dag_path, const MFnMesh &mesh,
                           pvector<EggGroup *> &joints, MFloatArray &weights);
   */
-  char *GetTextureName( SAA_Scene *scene, SAA_Elem *texture );
-  char *GetModelNoteInfo( SAA_Scene *, SAA_Elem * );
-  void set_shader_attributes(EggPrimitive &primitive,
-                             SAA_Elem &shader);
-  void apply_texture_properties(EggTexture &tex);
+  void set_shader_attributes(SoftNodeDesc *node_desc, EggPrimitive &primitive, char *texName);
+  void apply_texture_properties(EggTexture &tex, int uRepeat, int vRepeat);
   /*
   bool compare_texture_properties(EggTexture &tex, 
                                   const MayaShaderColorDef &color_def);
@@ -153,10 +150,6 @@ public:
   char        *tex_filename;
   char        *search_prefix;
 
-  char **texNameArray;
-  int uRepeat, vRepeat;
-  float        matrix[4][4];
-
   int                    nurbs_step;
   int                    anim_start;
   int                    anim_end;
@@ -179,7 +172,10 @@ public:
   bool                make_dart;
   bool                has_morph;
   bool                make_pose;
+
   
+  char *GetTextureName( SAA_Scene *scene, SAA_Elem *texture );
+
   /*
   MayaShaders _shaders;
   */
