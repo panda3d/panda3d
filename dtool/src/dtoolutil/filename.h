@@ -109,7 +109,6 @@ public:
   INLINE Type get_type() const;
 
   void standardize();
-  void extend_by(const Filename &local_name);
 
   // The following functions deal with the outside world.
 

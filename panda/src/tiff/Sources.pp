@@ -17,6 +17,8 @@
 // Somehow, g3states.h should be generated at compile time by running
 // mkg3states.  Deal with this soon.
 
+  #define CFLAGS -DBSDTYPES
+
 #end lib_target
 
 #begin test_bin_target
