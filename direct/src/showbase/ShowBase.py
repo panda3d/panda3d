@@ -450,6 +450,7 @@ class ShowBase:
             self.oobeButtonEventsType = TypeRegistry.ptr().findType('ButtonEvents_ButtonEventDataTransition')
 
             self.oobeVis = loader.loadModelOnce('models/misc/camera')
+            self.oobeVis.arc().setFinal(1)
             self.oobeCullFrustum = None
 
             # Make sure the MouseValve is monitoring the Control key.

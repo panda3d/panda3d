@@ -188,6 +188,21 @@ class Actor(PandaObject, NodePath):
             
             # copy the anim dictionary from other
             self.__copyAnimControls(other)
+
+        # For now, all Actors will by default set their top bounding
+        # volume to be the "final" bounding volume: the bounding
+        # volumes below the top volume will not be tested.  If a cull
+        # test passes the top bounding volume, the whole Actor is
+        # rendered.
+
+        # We do this partly because an Actor is likely to be a fairly
+        # small object relative to the scene, and is pretty much going
+        # to be all onscreen or all offscreen anyway; and partly
+        # because of the Character bug that doesn't update the
+        # bounding volume for pieces that animate away from their
+        # original position.  It's disturbing to see someone's hands
+        # disappear; better to cull the whole object or none of it.
+        self.__geomNode.arc().setFinal(1)
             
     def delete(self):
         try:
