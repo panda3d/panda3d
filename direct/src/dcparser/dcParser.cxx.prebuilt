@@ -1891,7 +1891,7 @@ case 98:
   if (yyvsp[-3].u.parameter == (DCParameter *)NULL) {
     yyval.u.parameter = NULL;
   } else {
-    yyval.u.parameter = new DCArrayParameter(yyvsp[-3].u.parameter, uint_range);
+    yyval.u.parameter = yyvsp[-3].u.parameter->append_array_specification(uint_range);
   }
 }
     break;
@@ -1939,7 +1939,7 @@ case 101:
 case 102:
 #line 855 "dcParser.yxx"
 {
-  yyval.u.parameter = new DCArrayParameter(yyvsp[-3].u.parameter, uint_range);
+  yyval.u.parameter = yyvsp[-3].u.parameter->append_array_specification(uint_range);
 }
     break;
 case 103:
