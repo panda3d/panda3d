@@ -105,9 +105,6 @@ get_default_control() const {
 //               well as on all of its Controls in order to
 //               successfully use modifier buttons to switch the
 //               valves automatically.
-//
-//               This need not match the set of ModifierButtons set on
-//               the window, but it may be less confusing if it does.
 ////////////////////////////////////////////////////////////////////
 INLINE void DataValve::
 set_modifier_buttons(const ModifierButtons &mods) {
