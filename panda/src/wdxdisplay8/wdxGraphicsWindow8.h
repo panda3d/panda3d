@@ -86,11 +86,13 @@ public:
 
 protected:
   ButtonHandle lookup_key(WPARAM wparam) const;
-//  virtual void config(void);
   void config_single_window(void);
   void config_window(wdxGraphicsWindowGroup *pParentGroup);
   void finish_window_setup(void);
   bool search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevinfo);
+  void search_for_valid_displaymode(UINT RequestedXsize,UINT RequestedYsize,bool bWantZBuffer,bool bWantStencil,
+                                    UINT *pSupportedScreenDepthsMask,bool *pCouldntFindAnyValidZBuf,
+                                    D3DFORMAT *pSuggestedPixFmt);
   bool FindBestDepthFormat(DXScreenData &Display,D3DDISPLAYMODE &TestDisplayMode,D3DFORMAT *pBestFmt,bool bWantStencil) const;
   void init_resized_window(void);
   bool reset_device_resize_window(RECT &viewrect);

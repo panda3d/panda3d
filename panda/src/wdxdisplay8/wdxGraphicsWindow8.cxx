@@ -1193,172 +1193,79 @@ HRESULT WINAPI EnumDisplayModesCallBack(LPDDSURFACEDESC2 lpDDSurfaceDesc,LPVOID 
       return DDENUMRET_OK;
 
     assert(pDMI->cNumSurfDescs < MAX_DISPLAY_MODES);
-    memcpy( &(pDMI->pDDSD_Arr[pDMI->cNumSurfDescs]), lpDDSurfaceDesc, sizeof(DDSURFACEDESC2) );
+    memcpy(&(pDMI->pDDSD_Arr[pDMI->cNumSurfDescs]), lpDDSurfaceDesc, sizeof(DDSURFACEDESC2) );
     pDMI->cNumSurfDescs++;
     pDMI->supportedBitDepths |= BitDepth_2_DDBDMask(lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount);
 
     return DDENUMRET_OK;
 }
 #endif
-/*
-BOOL WINAPI DriverEnumCallback_Voodoo1( GUID* pGUID, TCHAR* strDesc,TCHAR* strName,
-                                VOID *argptr, HMONITOR hm) {
 
-    if(hm!=NULL)  // skip over non-primary and non-voodoo-type display devices
-        return DDENUMRET_OK;
-
-    GUID null_guid;
-    ZeroMemory(&null_guid,sizeof(GUID));
-
-    // primary display driver will have NULL guid
-    // ignore that and save any non-null value, which
-    // indicates a secondary driver, which is usually voodoo1/2
-    if((pGUID!=NULL) && !IsEqualGUID(null_guid,*pGUID)) {
-        memcpy(argptr,pGUID,sizeof(GUID));
-    }
-
-    return DDENUMRET_OK;
-}
-
-
-BOOL WINAPI save_devinfo( GUID* pGUID, TCHAR* strDesc,TCHAR* strName,VOID *argptr, HMONITOR hm) {
-
-    DXDeviceInfoVec *pDevInfoArr = (DXDeviceInfoVec *) argptr;
-   
-    DXDeviceInfo devinfo;
-    ZeroMemory(&devinfo,sizeof(devinfo));
-
-    // primary display driver will have NULL guid
-    if(pGUID!=NULL) {
-        memcpy(&devinfo.guidDeviceIdentifier,pGUID,sizeof(GUID));
-    }
-    if(strDesc!=NULL) {
-        _tcsncpy(devinfo.szDescription,
-            strDesc,
-            MAX_DEVICE_IDENTIFIER_STRING);
-    }
-    if(strName!=NULL) {
-        _tcsncpy(devinfo.szDriver,strName,MAX_DEVICE_IDENTIFIER_STRING);
-    }
-    devinfo.hMon=hm;
-
-    pDevInfoArr->push_back(devinfo);
-    return DDENUMRET_OK;
-}
-
-BOOL WINAPI DriverEnumCallback_MultiMon( GUID* pGUID, TCHAR* strDesc,TCHAR* strName,VOID *argptr, HMONITOR hm) {
-    if(hm==NULL) {
-         // skip over the 'primary' since it will duplicated later as an explicit device
-        return DDENUMRET_OK;
-    }
-
-    return save_devinfo(pGUID,strDesc,strName,argptr,hm);
-}
-*/
-
-// this handles external programmatic requests for resizing
+// this handles external programmatic requests for resizing (usually fullscrn resize)
 void wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
-
-    wdxdisplay_cat.error() << "resize not implemented for dx8 yet!\n";
-    exit(1);
-
-#if 0
-   if (!_props._fullscreen) {
+    
+    if(!_props._fullscreen) {
        if(wdxdisplay_cat.is_debug())
           wdxdisplay_cat.debug() << "resize("<<xsize<<","<<ysize<<") called\n";
-
+    
         // is this enough?
         SetWindowPos(_dxgsg->scrn.hWnd, NULL, 0,0, xsize, ysize, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSENDCHANGING);
         // WM_ERASEBKGND will be ignored, because _WindowAdjustingType!=NotAdjusting because 
         // we dont want to redraw as user is manually resizing window, so need to force explicit
         // background clear for the programmatic resize fn call
          _WindowAdjustingType=NotAdjusting;
-        
-         // this doesnt seem to be working in toontown resize, so I put ddraw blackblt in handle_reshape instead
-         //window_proc(_mwindow, WM_ERASEBKGND,(WPARAM)_hdc,0x0);  
+         
+         //window_proc(_mwindow, WM_ERASEBKGND,(WPARAM)_hdc,0x0);  // this doesnt seem to be working in toontown resize, so I put ddraw blackblt in handle_windowed_resize instead
         handle_windowed_resize(_dxgsg->scrn.hWnd,true);
         return;
-   }
+    }
+    
+    assert(IS_VALID_PTR(_dxgsg));
+    
+    if(wdxdisplay_cat.is_info())
+      wdxdisplay_cat.info() << "fullscrn resize("<<xsize<<","<<ysize<<") called\n";
+    
+    _dxgsg->SetDXReady(false);
+    
+    bool bCouldntFindValidZBuf;
+    D3DFORMAT pixFmt;
+    bool bNeedZBuffer = (_dxgsg->scrn.PresParams.EnableAutoDepthStencil!=false);
+    bool bNeedStencilBuffer = IS_STENCIL_FORMAT(_dxgsg->scrn.PresParams.AutoDepthStencilFormat);
+    
+    search_for_valid_displaymode(xsize,ysize,bNeedZBuffer,bNeedStencilBuffer,
+                                     &_dxgsg->scrn.SupportedScreenDepthsMask,
+                                     &bCouldntFindValidZBuf,
+                                     &pixFmt);
+    
+    if(pixFmt==D3DFMT_UNKNOWN) {
+      wdxdisplay_cat.fatal() << "resize() failed: "
+        << (bCouldntFindValidZBuf ? "Couldnt find valid zbuffer format to go with FullScreen mode" : "No supported FullScreen modes")
+        << " at " << xsize << "x" << ysize << " for device #" << _dxgsg->scrn.CardIDNum <<endl;
+      return;
+    }
 
-   if(wdxdisplay_cat.is_info())
-      wdxdisplay_cat.info() << "resize("<<xsize<<","<<ysize<<") called\n";
+    _dxgsg->scrn.DisplayMode.Width=xsize;
+    _dxgsg->scrn.DisplayMode.Height=ysize;
+    _dxgsg->scrn.DisplayMode.Format = pixFmt;
+    _dxgsg->scrn.DisplayMode.RefreshRate = D3DPRESENT_RATE_DEFAULT;  
 
-   _dxgsg->SetDXReady(false);
-
-   HRESULT hr;
-
-   DX_DECLARE_CLEAN(DDSURFACEDESC2,ddsd_curmode);
-
-   if(FAILED(hr = _dxgsg->scrn.pDD->GetDisplayMode(&ddsd_curmode))) {
-       wdxdisplay_cat.fatal() << "resize() - GetDisplayMode failed, result = " << ConvD3DErrorToString(hr) << endl;
-       exit(1);
-   }
-
-   DX_DECLARE_CLEAN(DDSURFACEDESC2,ddsd_search);
-
-   ddsd_search.dwFlags = DDSD_HEIGHT | DDSD_WIDTH;
-   ddsd_search.dwWidth=xsize;  ddsd_search.dwHeight=ysize;
-
-   // not requesting same refresh rate since changing res might not support same refresh rate
-
-   DDSURFACEDESC2 DDSD_Arr[MAX_DISPLAY_MODES];
-   DisplayModeInfo DMI;
-   ZeroMemory(&DDSD_Arr,sizeof(DDSD_Arr));
-   ZeroMemory(&DMI,sizeof(DMI));
-   DMI.maxWidth=xsize;  DMI.maxHeight=ysize;
-   DMI.pDDSD_Arr=DDSD_Arr;
-
-   if(FAILED(hr = _dxgsg->scrn.pDD->EnumDisplayModes(DDEDM_REFRESHRATES,&ddsd_search,&DMI,EnumDisplayModesCallBack))) {
-       wdxdisplay_cat.fatal() << "resize() - EnumDisplayModes failed, result = " << ConvD3DErrorToString(hr) << endl;
-       return;
-   }
-
-   DMI.supportedBitDepths &= _dxgsg->scrn.D3DDevDesc.dwDeviceRenderBitDepth;
-
-   DWORD dwFullScreenBitDepth;
-   DWORD requested_bpp=ddsd_curmode.ddpfPixelFormat.dwRGBBitCount;
-
-   // would like to match current bpp first.  if that is not possible, try 16bpp, then 32
-   DWORD requested_bpp_DDBD = BitDepth_2_DDBDMask(requested_bpp);
-
-   if(DMI.supportedBitDepths & requested_bpp_DDBD) {
-       dwFullScreenBitDepth=requested_bpp;
-   } else if(DMI.supportedBitDepths & DDBD_16) {
-       dwFullScreenBitDepth=16;
-   } else if(DMI.supportedBitDepths & DDBD_32) {
-       dwFullScreenBitDepth=32;
-   } else {
-       wdxdisplay_cat.error()
-          << "resize failed, no fullScreen resolutions at " << xsize << "x" << ysize << endl;
-       return;
-   }
-
-   if(FAILED(hr = _dxgsg->scrn.pDD->TestCooperativeLevel())) {
-        wdxdisplay_cat.error() << "TestCooperativeLevel failed : result = " << ConvD3DErrorToString(hr) << endl;
-        wdxdisplay_cat.error() << "Full screen app failed to get exclusive mode on resize, exiting...\n";
-        return;
-   }
-
-   _dxgsg->free_dxgsg_objects();
-
-   // let driver choose default refresh rate (hopefully its >=60Hz)   
-   if(FAILED( hr = _dxgsg->scrn.pDD->SetDisplayMode( xsize,ysize,dwFullScreenBitDepth, 0L, 0L ))) {
-        wdxdisplay_cat.error() << "resize failed to reset display mode to (" << xsize <<"x"<<ysize<<"x"<<dwFullScreenBitDepth<<"): result = " << ConvD3DErrorToString(hr) << endl;
-   }
-
-   if(wdxdisplay_cat.is_debug()) {
-      DX_DECLARE_CLEAN(DDSURFACEDESC2,ddsd34); 
-      _dxgsg->scrn.pDD->GetDisplayMode(&ddsd34);
-      wdxdisplay_cat.debug() << "set displaymode to " << ddsd34.dwWidth << "x" << ddsd34.dwHeight << " at "<< ddsd34.ddpfPixelFormat.dwRGBBitCount << "bpp, " << ddsd34.dwRefreshRate<< "Hz\n";
-   }
-
-   _dxgsg->scrn.dwRenderWidth=xsize;
-   _dxgsg->scrn.dwRenderHeight=ysize;
-
-   CreateScreenBuffersAndDevice(_dxgsg->scrn);
-   _dxgsg->RecreateAllVideoSurfaces();
-   _dxgsg->SetDXReady(true);
-   #endif
+    _dxgsg->scrn.PresParams.BackBufferFormat = pixFmt;   // make reset_device_resize use presparams or displaymode??
+    
+    resized(xsize,ysize);
+    
+    RECT view_rect;
+    view_rect.top = view_rect.left = 0;
+    view_rect.right = xsize; view_rect.bottom = ysize;
+        
+    bool bResizeSucceeded=reset_device_resize_window(view_rect);  // create the new resized rendertargets
+    
+    if(!bResizeSucceeded) {
+      // bugbug: need to do failure fallback to 16bpp, and lower resolutions
+      wdxdisplay_cat.fatal() << "resize() failed with OUT-OF-MEMORY error!\n";
+      exit(1);
+    }
+    
+    _dxgsg->SetDXReady(true);
 }
 
 unsigned int wdxGraphicsWindow::
@@ -1562,7 +1469,88 @@ bool wdxGraphicsWindow::FindBestDepthFormat(DXScreenData &Display,D3DDISPLAYMODE
 
     return (*pBestFmt != D3DFMT_UNKNOWN);
 }
-    
+
+// all ptr args are output parameters
+void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT RequestedYsize,bool bWantZBuffer,bool bWantStencil,
+                                                     UINT *pSupportedScreenDepthsMask,bool *pCouldntFindAnyValidZBuf,
+                                                     D3DFORMAT *pSuggestedPixFmt) {
+    assert(!IsBadWritePtr(_dxgsg,sizeof(void*)));
+    assert(!IsBadWritePtr(_dxgsg->scrn.pD3D8,sizeof(void*)));
+    HRESULT hr;
+
+    *pSuggestedPixFmt = D3DFMT_UNKNOWN;
+                                                     
+    *pSupportedScreenDepthsMask = 0x0;
+    int cNumModes=_dxgsg->scrn.pD3D8->GetAdapterModeCount(_dxgsg->scrn.CardIDNum);
+    D3DDISPLAYMODE BestDispMode;        
+    ZeroMemory(&BestDispMode,sizeof(BestDispMode));
+
+    *pCouldntFindAnyValidZBuf=false;
+
+    for(int i=0;i<cNumModes;i++) {
+        D3DDISPLAYMODE dispmode;
+        hr = _dxgsg->scrn.pD3D8->EnumAdapterModes(_dxgsg->scrn.CardIDNum,i,&dispmode);
+        if(FAILED(hr)) {
+            wdxdisplay_cat.error() << "EnumAdapterDisplayMode failed for device #"<<_dxgsg->scrn.CardIDNum<<": result = " << D3DERRORSTRING(hr);
+            exit(1); 
+        }
+
+        if((dispmode.RefreshRate<60) && (dispmode.RefreshRate>1)) {
+            // dont want refresh rates under 60Hz, but 0 or 1 might indicate a default refresh rate, which is usually >=60
+            continue;
+        }
+
+        if((dispmode.Width!=RequestedXsize) || (dispmode.Height!=RequestedYsize))
+            continue;
+
+        hr = _dxgsg->scrn.pD3D8->CheckDeviceFormat(_dxgsg->scrn.CardIDNum,D3DDEVTYPE_HAL,dispmode.Format,
+                                                   D3DUSAGE_RENDERTARGET,D3DRTYPE_SURFACE,dispmode.Format);
+        if(FAILED(hr)) {
+           if(hr==D3DERR_NOTAVAILABLE)
+               continue;
+             else {
+                 wdxdisplay_cat.error() << "CheckDeviceFormat failed for device #"<<_dxgsg->scrn.CardIDNum<<": result = " << D3DERRORSTRING(hr);
+                 exit(1); 
+             }
+        }
+
+        if(bWantZBuffer) {
+            D3DFORMAT junk;
+            if(!FindBestDepthFormat(_dxgsg->scrn,dispmode,&junk,bWantStencil)) {
+                *pCouldntFindAnyValidZBuf=true;
+                continue;
+            }
+        }
+
+        switch(dispmode.Format) {
+            case D3DFMT_X1R5G5B5:
+                *pSupportedScreenDepthsMask |= X1R5G5B5_FLAG;
+                break;
+            case D3DFMT_X8R8G8B8:
+                *pSupportedScreenDepthsMask |= X8R8G8B8_FLAG;
+                break;
+            case D3DFMT_R8G8B8:
+                *pSupportedScreenDepthsMask |= R8G8B8_FLAG;
+                break;
+            case D3DFMT_R5G6B5:
+                *pSupportedScreenDepthsMask |= R5G6B5_FLAG;
+                break;
+            default:
+                //Render target formats should be only D3DFMT_X1R5G5B5, D3DFMT_R5G6B5, D3DFMT_X8R8G8B8 (or R8G8B8?)
+                wdxdisplay_cat.debug() << "unrecognized supported screen D3DFMT returned by EnumAdapterDisplayModes!\n";
+        }
+    }
+
+    // note: this chooses 32bpp, which may not be preferred over 16 for memory & speed reasons on some older cards in particular
+    if(*pSupportedScreenDepthsMask & X8R8G8B8_FLAG) 
+        *pSuggestedPixFmt = D3DFMT_X8R8G8B8;
+    else if(*pSupportedScreenDepthsMask & R8G8B8_FLAG) 
+        *pSuggestedPixFmt = D3DFMT_R8G8B8;
+    else if(*pSupportedScreenDepthsMask & R5G6B5_FLAG) 
+        *pSuggestedPixFmt = D3DFMT_R5G6B5;
+    else if(*pSupportedScreenDepthsMask & X1R5G5B5_FLAG)
+        *pSuggestedPixFmt = D3DFMT_X1R5G5B5;
+}
 
 // returns true if successful
 bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevInfo) {
@@ -1592,15 +1580,18 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
          exit(1);
     }
 
+    //search_for_valid_displaymode needs these to be set
+    memcpy(&_dxgsg->scrn.d3dcaps,&d3dcaps,sizeof(D3DCAPS8));  
+    _dxgsg->scrn.CardIDNum=pDevInfo->cardID; 
+
     if(d3dcaps.MaxStreams==0) {
-       wdxdisplay_cat.info() << "Warning: video driver is a pre-DX8-class driver\n";
+       wdxdisplay_cat.info() << "Note: video driver is a pre-DX8-class driver\n";
     }
 
     if((bWantStencil) && (d3dcaps.StencilCaps==0x0)) {
             wdxdisplay_cat.fatal() << "Stencil ability requested, but device #" << pDevInfo->cardID << " (" << _dxgsg->scrn.DXDeviceID.Description<<"), has no stencil capability!\n";
             exit(1);
     }
-
     _dxgsg->scrn.bIsTNLDevice=((d3dcaps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT)!=0);
 
 #ifdef DO_LOWVIDMEM_CHKS
@@ -1648,7 +1639,6 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
     _dxgsg->scrn.MaxAvailVidMem = 350000000;
 #endif
 
-
     bool bNeedZBuffer = ((!(d3dcaps.RasterCaps & D3DPRASTERCAPS_ZBUFFERLESSHSR )) 
                          && (_props._mask & W_DEPTH));
 
@@ -1658,92 +1648,19 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
 
     if(_props._fullscreen) {
         _props._xorg = _props._yorg = 0;
-
-        _dxgsg->scrn.SupportedScreenDepthsMask = 0x0;
-        int cNumModes=pD3D8->GetAdapterModeCount(pDevInfo->cardID);
-        D3DDISPLAYMODE BestDispMode;        
-        ZeroMemory(&BestDispMode,sizeof(BestDispMode));
-
-        bool bCouldntFindValidZBuf=false;
-
-        for(int i=0;i<cNumModes;i++) {
-            D3DDISPLAYMODE dispmode;
-            if(FAILED(hr = pD3D8->EnumAdapterModes(pDevInfo->cardID,i,&dispmode))) {
-                wdxdisplay_cat.error() << "EnumAdapterDisplayMode failed for device #"<<pDevInfo->cardID<<": result = " << D3DERRORSTRING(hr);
-                exit(1); 
-            }
-
-            if((dispmode.RefreshRate<60) && (dispmode.RefreshRate>1)) {
-                // dont want refresh rates under 60Hz, but 0 or 1 might indicate a default refresh rate, which is usually >=60
-                continue;
-            }
-
-            if((dispmode.Width==dwRenderWidth) && (dispmode.Height==dwRenderHeight))  {
-                if(FAILED(hr = pD3D8->CheckDeviceFormat(pDevInfo->cardID,D3DDEVTYPE_HAL,dispmode.Format,
-                                                        D3DUSAGE_RENDERTARGET,D3DRTYPE_SURFACE,dispmode.Format))) {
-                   if(hr==D3DERR_NOTAVAILABLE)
-                       continue;
-                     else {
-                         wdxdisplay_cat.error() << "CheckDeviceFormat failed for device #"<<pDevInfo->cardID<<": result = " << D3DERRORSTRING(hr);
-                         exit(1); 
-                     }
-                }
-
-                if(bNeedZBuffer) {
-                    D3DFORMAT junk;
-                    if(!FindBestDepthFormat(_dxgsg->scrn,dispmode,&junk,bWantStencil)) {
-                        bCouldntFindValidZBuf=true;
-                        continue;
-                    }
-                }
-
-                switch(dispmode.Format) {
-                    case D3DFMT_X1R5G5B5:
-                        _dxgsg->scrn.SupportedScreenDepthsMask |= X1R5G5B5_FLAG;
-                        break;
-                    case D3DFMT_X8R8G8B8:
-                        _dxgsg->scrn.SupportedScreenDepthsMask |= X8R8G8B8_FLAG;
-                        break;
-                    case D3DFMT_R8G8B8:
-                        _dxgsg->scrn.SupportedScreenDepthsMask |= R8G8B8_FLAG;
-                        break;
-                    case D3DFMT_R5G6B5:
-                        _dxgsg->scrn.SupportedScreenDepthsMask |= R5G6B5_FLAG;
-                        break;
-                    default:
-                        //Render target formats should be only D3DFMT_X1R5G5B5, D3DFMT_R5G6B5, D3DFMT_X8R8G8B8 (or R8G8B8?)
-                        wdxdisplay_cat.debug() << "unrecognized supported screen D3DFMT returned by EnumAdapterDisplayModes!\n";
-                }
-            }
-        }
-/*        
-        if(wdxdisplay_cat.is_info())
-           wdxdisplay_cat.info() << "Before fullscreen switch: GetAvailableVidMem for device #"<<devnum<<" returns Total: " << dwVidMemTotal/1000000.0 << "  Free: " << dwVidMemFree/1000000.0 << endl;
         
-        // Now we try to figure out if we can use requested screen resolution and best
-        // rendertarget bpp and still have at least 2 meg of texture vidmem
-        
-        DMI.supportedBitDepths &= _dxgsg->scrn.D3DDevDesc.dwDeviceRenderBitDepth;
-*/
+        bool bCouldntFindValidZBuf;
+        search_for_valid_displaymode(dwRenderWidth,dwRenderHeight,bNeedZBuffer,bWantStencil,
+                                     &_dxgsg->scrn.SupportedScreenDepthsMask,
+                                     &bCouldntFindValidZBuf,
+                                     &pixFmt);
+
         // note I'm not saving refresh rate, will just use adapter default at given res for now
 
-        // note: this chooses 32bpp, which may not be preferred over 16 for memory & speed reasons on some older cards in particular
-
-        if(_dxgsg->scrn.SupportedScreenDepthsMask & X8R8G8B8_FLAG) 
-            pixFmt = D3DFMT_X8R8G8B8;
-        else if(_dxgsg->scrn.SupportedScreenDepthsMask & R8G8B8_FLAG) 
-            pixFmt = D3DFMT_R8G8B8;
-        else if(_dxgsg->scrn.SupportedScreenDepthsMask & R5G6B5_FLAG) 
-            pixFmt = D3DFMT_R5G6B5;
-        else if(_dxgsg->scrn.SupportedScreenDepthsMask & X1R5G5B5_FLAG)
-            pixFmt = D3DFMT_X1R5G5B5;
-        else {
-           if(bCouldntFindValidZBuf) {
-               wdxdisplay_cat.fatal() << "Couldnt find valid zbuffer format to go with FullScreen mode at " << dwRenderWidth << "x" << dwRenderHeight 
-                   << " for device #" << pDevInfo->cardID << " (" << _dxgsg->scrn.DXDeviceID.Description<<"), skipping device...\n";
-           } else
-               wdxdisplay_cat.fatal() << "No supported FullScreen modes at " << dwRenderWidth << "x" << dwRenderHeight 
-                   << " for device #" << pDevInfo->cardID << " (" << _dxgsg->scrn.DXDeviceID.Description<<"), skipping device...\n";
+        if(pixFmt==D3DFMT_UNKNOWN) {
+            wdxdisplay_cat.fatal() 
+                << (bCouldntFindValidZBuf ? "Couldnt find valid zbuffer format to go with FullScreen mode" : "No supported FullScreen modes")
+                << " at " << dwRenderWidth << "x" << dwRenderHeight << " for device #" << _dxgsg->scrn.CardIDNum <<endl;
            return false;
         }
         
@@ -1784,8 +1701,6 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
     _dxgsg->scrn.DisplayMode.Format = pixFmt;
     _dxgsg->scrn.DisplayMode.RefreshRate = D3DPRESENT_RATE_DEFAULT;  
     _dxgsg->scrn.hMon=pDevInfo->hMon;
-    _dxgsg->scrn.CardIDNum=pDevInfo->cardID; 
-    _dxgsg->scrn.d3dcaps=d3dcaps;
     return true;
 }
 
@@ -1886,43 +1801,6 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
 
     assert(pD3D8!=NULL);
     assert(pD3DCaps->DevCaps & D3DDEVCAPS_HWRASTERIZATION);
-
-/*
-    // select the best device if the caller does not provide one
-    D3DDEVICEDESC7 d3ddevs[2];  // put HAL in 0, TnLHAL in 1    
-
-    if(pD3DDevDesc==NULL) {
-        // just look for HAL and TnL devices right now.  I dont think
-        // we have any interest in the sw rasts at this point
-
-        ZeroMemory(d3ddevs,2*sizeof(D3DDEVICEDESC7));
-    
-        hr = pD3DI->EnumDevices(EnumDevicesCallback,d3ddevs);
-        if(hr != DD_OK) {
-            wdxdisplay_cat.fatal() << "EnumDevices failed : result = " << ConvD3DErrorToString(hr) << endl;
-            exit(1);
-        }
-
-        WORD DeviceIdx=REGHALIDX;
-
-        if(!(d3ddevs[DeviceIdx].dwDevCaps & D3DDEVCAPS_HWRASTERIZATION )) {
-            wdxdisplay_cat.fatal() << "No 3D HW present, exiting..." << endl;
-            exit(1);
-        }
-
-        // select TNL if present
-        if(d3ddevs[TNLHALIDX].dwDevCaps & D3DDEVCAPS_HWRASTERIZATION) {
-            DeviceIdx=TNLHALIDX;
-        }
-
-        pD3DDevDesc=&d3ddevs[DeviceIdx];
-    }
-*/  
-
-//   DX_DECLARE_CLEAN(DDCAPS,DDCaps);
-//   pDD->GetCaps(&DDCaps,NULL);
-
-    // find zbuffer format
 
     #ifndef NDEBUG
       if(!(_props._mask & W_DEPTH)) {

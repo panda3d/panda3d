@@ -58,14 +58,15 @@
 #endif
 
 #define ISPOW2(X) (((X) & ((X)-1))==0)
+#define IS_VALID_PTR(PTR)  (!IsBadWritePtr(PTR,sizeof(void*)))
 
 #define DX_DECLARE_CLEAN(type, var) \
     type var;                       \
     ZeroMemory(&var, sizeof(type)); \
     var.dwSize = sizeof(type);
 
-#define SAFE_DELETE(p)       { if(p) { delete (p);     (p)=NULL; } }
-#define SAFE_DELETE_ARRAY(p) { if(p) { delete[] (p);   (p)=NULL; } }
+#define SAFE_DELETE(p)       { if(p) { assert(IS_VALID_PTR(p));   delete (p);     (p)=NULL; } }
+#define SAFE_DELETE_ARRAY(p) { if(p) { assert(IS_VALID_PTR(p));   delete[] (p);   (p)=NULL; } }
 
 // this is bDoDownToZero argument to RELEASE()
 #define RELEASE_DOWN_TO_ZERO true
@@ -75,7 +76,7 @@
 
 #ifdef DEBUG_RELEASES
 #define RELEASE(OBJECT,MODULE,DBGSTR,bDoDownToZero)             \
-   if(((OBJECT)!=NULL)&&(!IsBadWritePtr((OBJECT),4))) {         \
+   if(((OBJECT)!=NULL) && IS_VALID_PTR(OBJECT)) {               \
         refcnt = (OBJECT)->Release();                           \
         MODULE##_cat.debug() << DBGSTR << " released, refcnt = " << refcnt << endl;  \
         if((bDoDownToZero) && (refcnt>0)) {                     \
@@ -168,8 +169,8 @@ typedef struct {
       bool              bIsLowVidMemCard;
       bool              bIsTNLDevice;
       bool              bIsDX81;
-      DWORD             SupportedScreenDepthsMask;
-      DWORD             SupportedTexFmtsMask;
+      UINT              SupportedScreenDepthsMask;
+      UINT              SupportedTexFmtsMask;
       D3DCAPS8          d3dcaps;
       D3DDISPLAYMODE    DisplayMode;
       D3DPRESENT_PARAMETERS PresParams;  // not redundant with DisplayMode since width/height must be 0 for windowed mode
