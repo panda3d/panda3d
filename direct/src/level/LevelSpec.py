@@ -92,17 +92,17 @@ class LevelSpec:
         def setFilename(self, filename):
             self.filename = filename
 
-        def setAttribChange(self, entId, attrib, value):
+        def setAttribChange(self, entId, attrib, value, username):
             """ we're being asked to change an attribute """
-            LevelSpec.notify.debug("setAttribChange: %s, %s = '%s'" %
-                                   (entId, attrib, repr(value)))
+            LevelSpec.notify.debug("setAttribChange(%s): %s, %s = '%s'" %
+                                   (username, entId, attrib, repr(value)))
             assert entId in self.entId2specDict
             specDict = self.entId2specDict[entId]
             assert specDict[entId].has_key(attrib)
             specDict[entId][attrib] = value
             # let the level know that this attribute value has
             # officially changed
-            self.level.handleAttribChange(entId, attrib, value)
+            self.level.handleAttribChange(entId, attrib, value, username)
 
         def insertEntity(self, entId, entType, parentEntId):
             LevelSpec.notify.debug('inserting entity %s' % entId)

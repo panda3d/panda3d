@@ -440,26 +440,12 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
     if __debug__:
         # level editing stuff
-        def setAttribChange(self, entId, attribName, valueStr):
+        def setAttribChange(self, entId, attribName, valueStr, username):
+            """every time the spec is edited, we get this message
+            from the AI"""
             value = eval(valueStr)
-            self.levelSpec.setAttribChange(entId, attribName, value)
+            self.levelSpec.setAttribChange(entId, attribName, value, username)
 
-        """
-    if __debug__:
-        # if someone has edited the level, we'll get the full up-to-date
-        # spec in this message
-        def setLevelSpecOverride(self, specStr):
-            if self.levelSpec is not None:
-                return
-
-            try:
-                self.levelSpec = eval(specStr)
-            except Exception, e:
-                print ('Exception in %s(%s):\n\t%s' %
-                       (lineInfo()[2], specStr, e))
-                raise e
-            """
-            
     def spawnTitleText(self):
         def getDescription(zoneId, self=self):
             entId = self.zoneNum2entId.get(zoneId)
@@ -528,4 +514,3 @@ class DistributedLevel(DistributedObject.DistributedObject,
         assert(DistributedLevel.notify.debug("hideTitleTextTask()"))
         self.smallTitleText.hide()
         return Task.done
-            

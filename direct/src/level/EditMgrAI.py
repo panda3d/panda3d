@@ -1,13 +1,13 @@
 """EditMgrAI module: contains the EditMgrAI class"""
 
 import EditMgrBase
+if __debug__:
+    from PythonUtil import list2dict
+    import EditorGlobals
 
 class EditMgrAI(EditMgrBase.EditMgrBase):
     """This class handles AI-side editor-specific functionality"""
     if __debug__:
-        from PythonUtil import list2dict
-        import EditorGlobals
-        
         def setRequestNewEntity(self, data):
             # pick an unused entId
             spec = self.level.levelSpec

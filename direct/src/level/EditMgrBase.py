@@ -15,6 +15,9 @@ class EditMgrBase(Entity.Entity):
 
     if __debug__:
         def setInsertEntity(self, data):
+            # tell the level who created this entity
+            self.level.setEntityCreatorUsername(data['entId'], data['username'])
+            # create the entity
             self.level.levelSpec.insertEntity(data['entId'],
                                               data['entType'],
                                               data['parentEntId'],

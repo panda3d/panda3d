@@ -24,6 +24,9 @@ def assertReadyToEdit():
     assert editUsername in username2entIdBase, (
         "unknown editor username '%s'; see %s.py" % (editUsername, __name__))
 
+def getEditUsername():
+    return editUsername
+
 def getEntIdAllocRange():
     """range of valid entId values for this user.
     returns [min, max+1] (values taken by range() and xrange())"""

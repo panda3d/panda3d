@@ -277,13 +277,19 @@ class Level:
             return 'removeEntity-%s' % self.levelId
         
         # these handlers are called directly by our levelSpec
-        def handleAttribChange(self, entId, attrib, value):
+        def handleAttribChange(self, entId, attrib, value, username=None):
             entity = self.getEntity(entId)
             # the entity might be AI- or client-only
             if entity is not None:
                 entity.handleAttribChange(attrib, value)
             messenger.send(self.getAttribChangeEventName(),
-                           [entId, attrib, value])
+                           [entId, attrib, value, username])
+
+        def setEntityCreatorUsername(self, entId, editUsername):
+            # this is called just before an entity is inserted, with the
+            # entId of the new entity and the username of the editor
+            # that requested its creation.
+            pass
 
         def handleEntityInsert(self, entId):
             self.createEntity(entId)
