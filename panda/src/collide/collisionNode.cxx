@@ -150,6 +150,7 @@ combine_with(Node *other) {
       const PT(CollisionSolid) *solids_begin = &cother->_solids[0];
       const PT(CollisionSolid) *solids_end = solids_begin + cother->_solids.size();
       _solids.insert(_solids.end(), solids_begin, solids_end);
+      mark_bound_stale();
       return this;
     }
   }
