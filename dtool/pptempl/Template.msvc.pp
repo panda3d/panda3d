@@ -35,6 +35,9 @@
   #end file
 #end decygwin
 
+// should overwrite read-only files
+#define NT_COPYCMD xcopy /Y /Q /R 
+
 #define dtool_ver_dir_cyg $[DTOOL_INSTALL]/src/dtoolbase
 #define dtool_ver_dir $[decygwin %,%,$[dtool_ver_dir_cyg]]
 
@@ -155,8 +158,8 @@
 
 // These are the complete set of extra flags the compiler requires,
 // from the context of a particular file, given in $[file].
-#defer cflags $[all_sources $[get_cflags] $[CFLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]] $[if $[>= $[OPTIMIZE],2],$[OPTFLAGS]]
-#defer c++flags $[all_sources $[get_cflags] $[C++FLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]] $[if $[>= $[OPTIMIZE],2],$[OPTFLAGS]]
+#defer cflags $[all_sources $[get_cflags] $[CFLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]] 
+#defer c++flags $[all_sources $[get_cflags] $[C++FLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]] 
 
 // These are the same flags, sans the compiler optimizations.
 #defer noopt_c++flags $[all_sources $[get_cflags] $[C++FLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]]
@@ -370,19 +373,19 @@ uninstall-lib$[TARGET] :
 $[install_lib_dir]\lib$[TARGET]$[dllext].dll : $[so_dir]\lib$[TARGET]$[dllext].dll
 #define local lib$[TARGET]$[dllext].dll
 #define dest $[install_lib_dir]
-	copy $[so_dir]\$[local] $[dest]
+	$[NT_COPYCMD] $[so_dir]\$[local] $[dest]
 #endif
 
 $[install_lib_dir]\lib$[TARGET]$[dllext].lib : $[so_dir]\lib$[TARGET]$[dllext].lib
 #define local lib$[TARGET]$[dllext].lib
 #define dest $[install_lib_dir]
-	copy $[so_dir]\$[local] $[dest]
+	$[NT_COPYCMD] $[so_dir]\$[local] $[dest]
 
 #if $[and $[build_dlls],$[build_pdbs]]
 $[install_lib_dir]\lib$[TARGET]$[dllext].pdb : $[so_dir]\lib$[TARGET]$[dllext].pdb
 #define local lib$[TARGET]$[dllext].pdb
 #define dest $[install_lib_dir]
-	copy $[so_dir]\$[local] $[dest]
+	$[NT_COPYCMD] $[so_dir]\$[local] $[dest]
 #endif
 
 #if $[igatescan]
@@ -401,7 +404,7 @@ $[install_lib_dir]\lib$[TARGET]$[dllext].pdb : $[so_dir]\lib$[TARGET]$[dllext].p
 $[install_igatedb_dir]\$[igatedb] : $[so_dir]\$[igatedb]
 #define local $[igatedb]
 #define dest $[install_igatedb_dir]
-	copy $[so_dir]\$[local] $[dest]
+	$[NT_COPYCMD] $[so_dir]\$[local] $[dest]
 
 lib$[TARGET]_igatescan = $[osfilename $[igatescan]]
 $[so_dir]\$[igatedb] $[so_dir]\$[igateoutput] : $[sort $[patsubst %.h,%.h,%.I,%.I,%,,$[dependencies $[igatescan]] $[igatescan:%=./%]]]
@@ -509,7 +512,7 @@ uninstall-lib$[TARGET] :
 $[install_lib_dir]\lib$[TARGET]$[dllext].lib : $[st_dir]\lib$[TARGET]$[dllext].lib
 #define local lib$[TARGET]$[dllext].lib
 #define dest $[install_lib_dir]
-	copy $[st_dir]\$[local] $[dest]
+	$[NT_COPYCMD] $[st_dir]\$[local] $[dest]
 
 #end static_lib_target ss_lib_target
 
@@ -543,7 +546,7 @@ uninstall-$[TARGET] :
 #define local $[TARGET]
 #define dest $[install_bin_dir]
 $[install_bin_dir]\$[TARGET] : $[st_dir]\$[TARGET]
-	copy $[st_dir]\$[local] $[dest]
+	$[NT_COPYCMD] $[st_dir]\$[local] $[dest]
 
 #end sed_bin_target
 
@@ -598,13 +601,13 @@ uninstall-$[TARGET] :
 $[install_bin_dir]\$[TARGET].exe : $[st_dir]\$[TARGET].exe
 #define local $[TARGET].exe
 #define dest $[install_bin_dir]
-	copy $[st_dir]\$[local] $[dest]
+	$[NT_COPYCMD] $[st_dir]\$[local] $[dest]
 
 #if $[build_pdbs]
 $[install_bin_dir]\$[TARGET].pdb : $[st_dir]\$[TARGET].pdb
 #define local $[TARGET].pdb
 #define dest $[install_bin_dir]
-	copy $[st_dir]\$[local] $[dest]
+	$[NT_COPYCMD] $[st_dir]\$[local] $[dest]
 #endif
 
 #end bin_target
@@ -743,35 +746,35 @@ $[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.cxx]
 $[install_bin_dir]\$[file] : $[file]
 #define local $[file]
 #define dest $[install_bin_dir]
-	copy $[local] $[dest]
+	$[NT_COPYCMD] $[local] $[dest]
 #end file
 
 #foreach file $[install_headers]
 $[install_headers_dir]\$[file] : $[file]
 #define local $[file]
 #define dest $[install_headers_dir]
-	copy $[local] $[dest]
+	$[NT_COPYCMD] $[local] $[dest]
 #end file
 
 #foreach file $[install_parser_inc]
 $[install_parser_inc_dir]\$[file] : $[file]
 #define local $[file]
 #define dest $[install_parser_inc_dir]
-	copy $[local] $[dest]
+	$[NT_COPYCMD] $[local] $[dest]
 #end file
 
 #foreach file $[install_data]
 $[install_data_dir]\$[file] : $[file]
 #define local $[file]
 #define dest $[install_data_dir]
-	copy $[local] $[dest]
+	$[NT_COPYCMD] $[local] $[dest]
 #end file
 
 #foreach file $[install_config]
 $[install_config_dir]\$[file] : $[file]
 #define local $[file]
 #define dest $[install_config_dir]
-	copy $[local] $[dest]
+	$[NT_COPYCMD] $[local] $[dest]
 #end file
 
 // Finally, all the special targets.  These are commands that just need
@@ -881,7 +884,7 @@ $[install_headers_dir] :
 $[install_headers_dir]\$[CONFIG_HEADER] : $[CONFIG_HEADER]
 #define local $[CONFIG_HEADER]
 #define dest $[install_headers_dir]
-	copy $[local] $[dest]
+	$[NT_COPYCMD] $[local] $[dest]
 #endif
 
 #end Makefile

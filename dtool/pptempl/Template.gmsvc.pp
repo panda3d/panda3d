@@ -72,7 +72,7 @@
 // $[bin_targets] the list of binaries.  $[test_bin_targets] is the
 // list of binaries that are to be built only when specifically asked
 // for.
-#define lib_targets $[patsubst %,$[so_dir]/lib%$[dllext].dll,$[active_target(metalib_target noinst_lib_target)] $[real_lib_targets]]
+#define lib_targets $[patsubst %,$[so_dir]/lib%$[dllext].$[dlllib],$[active_target(metalib_target noinst_lib_target)] $[real_lib_targets]]
 #define static_lib_targets $[active_target(static_lib_target ss_lib_target):%=$[st_dir]/lib%$[dllext].lib]
 #define bin_targets \
     $[active_target(bin_target noinst_bin_target):%=$[st_dir]/%.exe] \
@@ -153,8 +153,8 @@
 
 // These are the complete set of extra flags the compiler requires,
 // from the context of a particular file, given in $[file].
-#defer cflags $[all_sources $[get_cflags] $[CFLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]] $[if $[>= $[OPTIMIZE],2],$[OPTFLAGS]]
-#defer c++flags $[all_sources $[get_cflags] $[C++FLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]] $[if $[>= $[OPTIMIZE],2],$[OPTFLAGS]]
+#defer cflags $[all_sources $[get_cflags] $[CFLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]] 
+#defer c++flags $[all_sources $[get_cflags] $[C++FLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]] 
 
 // These are the same flags, sans the compiler optimizations.
 #defer noopt_c++flags $[all_sources $[get_cflags] $[C++FLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]]
@@ -339,7 +339,7 @@ $[directory]/stamp :
    $[components $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[RELDIR]/$[so_dir]/%.obj,%,,$[get_sources] $[get_igateoutput]]],$[active_component_libs]]
   #define varname $[subst -,_,lib$[TARGET]_so]
 $[varname] = $[sources]
-  #define target $[so_dir]/lib$[TARGET]$[dllext].dll
+  #define target $[so_dir]/lib$[TARGET]$[dllext].$[dlllib]
   #define sources $($[varname])
   #define flags   $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
   #define mybasename $[basename $[notdir $[target]]]  
@@ -481,7 +481,7 @@ $[target] : $[source] $[so_dir]/stamp
 #forscopes noinst_lib_target
 #define varname $[subst -,_,lib$[TARGET]_so]
 $[varname] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]/%.obj,%,,$[get_sources]]]
-#define target $[so_dir]/lib$[TARGET]$[dllext].dll
+#define target $[so_dir]/lib$[TARGET]$[dllext].$[dlllib]
 #define sources $($[varname])
 $[target] : $[sources] $[so_dir]/stamp
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]

@@ -59,29 +59,31 @@
 #define BROWSEINFO_FLAG
 #endif
 
+#define CFLAGS_SHARED
+
 // Define LINK_ALL_STATIC to generate static libs instead of DLL's.
-#if $[LINK_ALL_STATIC]
+#if $[ne $[LINK_ALL_STATIC],]
   #define dlink_all_static LINK_ALL_STATIC
   #define build_dlls
+  #define build_libs yes  
   #define dlllib lib
 #else
   #define dlink_all_static
   #define build_dlls yes
+  #define build_libs  
   #define dlllib dll
 #endif
-
-#define CFLAGS_SHARED
 
 #if $[eq $[USE_COMPILER], MSVC]
   #define COMPILER cl
   #define LINKER link
   #define LIBBER lib
   #define COMMONFLAGS /Gi-
-  #define OPTFLAGS /O2 /Ob1 /Ogity /G6
+  #define OPTFLAGS /O2 /Ob1 /G6
   #defer DEBUGFLAGS /MDd /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
   #define RELEASEFLAGS /MD
   #define EXTRA_LIBPATH
-
+  #define EXTRA_INCPATH  
 #elif $[eq $[USE_COMPILER], BOUNDS]
   #define COMPILER nmcl
   #define LINKER nmlink
@@ -91,7 +93,7 @@
   #defer DEBUGFLAGS /MDd /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
   #define RELEASEFLAGS /MD
   #define EXTRA_LIBPATH
-
+  #define EXTRA_INCPATH
 #elif $[eq $[USE_COMPILER], INTEL]
   #define COMPILER icl
   #define LINKER xilink
@@ -102,7 +104,7 @@
   #define RELEASEFLAGS /MD
   // We assume the Intel compiler installation dir is mounted as /ia32.
   #define EXTRA_LIBPATH /ia32/lib
-
+  #define EXTRA_INCPATH /ia32/include  
 #else
   #error Invalid value specified for USE_COMPILER.
 #endif
@@ -112,7 +114,7 @@
 #defer CDEFINES_OPT3 $[dlink_all_static]
 #defer CDEFINES_OPT4 NDEBUG $[dlink_all_static]
 
-#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS]
+#defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=/D%] $[COMMONFLAGS] /GZ $[DEBUGFLAGS]
 #defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=/D%] $[COMMONFLAGS] $[DEBUGFLAGS] $[OPTFLAGS]
 #defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS]
 #defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=/D%] $[COMMONFLAGS] $[RELEASEFLAGS] $[OPTFLAGS]
@@ -157,23 +159,22 @@
 
 #defer extra_cflags /EHsc /Zm250 /DWIN32_VC /DWIN32 $[WARNING_LEVEL_FLAG]
 
-#defer COMPILE_C $[COMPILER] /nologo /c /Fo"$[osfilename $[target]]" $[decygwin %,/I"%",$[ipath]] $[flags] $[extra_cflags] $[source]
+#defer COMPILE_C $[COMPILER] /nologo /c /Fo"$[osfilename $[target]]" $[decygwin %,/I"%",$[EXTRA_INCPATH] $[ipath]] $[flags] $[extra_cflags] $[source]
 #defer COMPILE_C++ $[COMPILE_C]
 
 #defer STATIC_LIB_C $[LIBBER] /nologo $[sources] /OUT:"$[osfilename $[target]]" 
 #defer STATIC_LIB_C++ $[STATIC_LIB_C]
 
 //#defer ver_resource $[directory]\ver.res
-//#defer SHARED_LIB_C $[LINKER] /nologo /dll /VERBOSE:LIB $[LDFLAGS_OPT$[OPTIMIZE]] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] 
-#defer SHARED_LIB_C $[LINKER] /nologo /dll  $[LDFLAGS_OPT$[OPTIMIZE]] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] 
+//#defer SHARED_LIB_C link /nologo /dll /VERBOSE:LIB $[LDFLAGS_OPT$[OPTIMIZE]] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] 
+#defer SHARED_LIB_C $[LINKER] /nologo /dll  $[LDFLAGS_OPT$[OPTIMIZE]] /OUT:"$[osfilename $[target]]" $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] 
 #defer SHARED_LIB_C++ $[SHARED_LIB_C]
 
-#defer LINK_BIN_C $[LINKER] /nologo $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
+#defer LINK_BIN_C $[LINKER] /nologo $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] /OUT:"$[osfilename $[target]]"
 #defer LINK_BIN_C++ $[LINK_BIN_C]
 
-#if $[LINK_ALL_STATIC]
+#if $[ne $[LINK_ALL_STATIC],]
   #defer SHARED_LIB_C $[STATIC_LIB_C]
   #defer SHARED_LIB_C++ $[STATIC_LIB_C++]
   #defer ODIR_SHARED $[ODIR_STATIC]
 #endif
-
