@@ -7,7 +7,7 @@ import string
 # For mono-modelcave-pipe0, I decided to set the offsets in the
 # actual configuration for the display.
 
-ClientConfigs = {'mono-modelcave-pipe0': [ [Vec3(0,0,0),Vec3(0,0,0)] ]
+ClientConfigs = {'mono-modelcave-pipe0': [ [Vec3(0,0,0),Vec3(0,0,0)] ] }
 
 # The following is a fake configuration to show an example with two servers.
 # 'two-server' : [ [Vec3(0,0,0),Vec3(-60,0,0)],
