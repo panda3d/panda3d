@@ -61,7 +61,13 @@ void CMetaInterval::
 clear_intervals() {
   // Better not do this unless you have serviced all of the
   // outstanding events!
-  nassertv(_event_queue.empty());
+  bool lost_events = false;
+  if (!_event_queue.empty()) {
+    interval_cat.warning()
+      << "Losing outstanding events for " << *this << "\n";
+    _event_queue.clear();
+    lost_events = true;
+  }
 
   clear_events();
 
@@ -83,6 +89,12 @@ clear_intervals() {
 
   _current_nesting_level = 0;
   _next_event_index = 0;
+
+#ifndef NDEBUG
+  if (verify_intervals) {
+    nassertv(!lost_events);
+  }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
