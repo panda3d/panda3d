@@ -189,12 +189,11 @@ handle_entries() {
                     sd._valid = false;
                   }
 
-                } else if (fabs(d) < 0.1) {
-                  // These two shoves are largely at 90 degress to
-                  // each other.  If they are both from polygons
-                  // that are a child of the same node, try to
-                  // determine the shape of the corner (convex or
-                  // concave).
+                } else {
+                  // These two shoves are not in the same direction.
+                  // If they are both from polygons that are a child
+                  // of the same node, try to determine the shape of
+                  // the corner (convex or concave).
                   const CollisionSolid *s1 = sd._entry->get_into();
                   const CollisionSolid *s2 = sd2._entry->get_into();
                   if (s1 != (CollisionSolid *)NULL &&
