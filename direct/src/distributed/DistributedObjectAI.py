@@ -139,6 +139,11 @@ class DistributedObjectAI(DirectObject.DirectObject):
         def addInterest(self, zoneId, note="", event=None):
             self.air.addInterest(self.getDoId(), zoneId, note, event)
 
+        def setLocation(self, parentId, zoneId):
+           # The store must run first so we know the old location
+            self.air.setLocation(self.doId, parentId, zoneId)
+
+
         if 0: # this is untested:
             def setLocation(self, parentId, zoneId):
                 # The store must run first so we know the old location
