@@ -41,6 +41,8 @@
 ////////////////////////////////////////////////////////////////////
 TypeHandle wglGraphicsWindow::_type_handle;
 
+static bool wc_registered = false;
+
 #define MOUSE_ENTERED 0
 #define MOUSE_EXITED 1
 
@@ -388,14 +390,17 @@ void wglGraphicsWindow::config(void) {
         _hMouseCursor = LoadCursor(NULL, IDC_ARROW);
     }
 
-    wc.hCursor = _hMouseCursor;
-    wc.hbrBackground  = (HBRUSH)GetStockObject(BLACK_BRUSH);
-    wc.lpszMenuName   = NULL;
-    wc.lpszClassName  = WGL_WINDOWCLASSNAME;
+    if (!wc_registered) {
+      // We only need to register the window class once per session.
+      wc.hCursor = _hMouseCursor;
+      wc.hbrBackground  = (HBRUSH)GetStockObject(BLACK_BRUSH);
+      wc.lpszMenuName   = NULL;
+      wc.lpszClassName  = WGL_WINDOWCLASSNAME;
     
-    if(!RegisterClass(&wc)) {
-        wgldisplay_cat.fatal() << "could not register window class!" << endl;
-        exit(1);
+      if(!RegisterClass(&wc)) {
+        wgldisplay_cat.error() << "could not register window class!" << endl;
+      }
+      wc_registered = true;
     }
 
 //  from MSDN:    
