@@ -8,6 +8,8 @@
 firstarg="$1"
 extra_genPyCode_libs=""
 fSqueeze=""
+optimizeFlag=""
+ppythonOptimizeFlag=""
 
 if [ "$firstarg" = "-t" ]; then
 extra_genPyCode_libs="$extra_genPyCode_libs libtoontown"
@@ -61,6 +63,8 @@ if [ "$firstarg" = "win-publish" ]; then
     # no assertions, no comments, no docstrings
     cd $DIRECT/bin
     ppython -OO generatePythonCode -O -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
+    optimizeFlag="-O"
+    ppythonOptimizeFlag="-OO"
 fi
 
 if [ "$firstarg" = "install" ]; then
@@ -74,9 +78,11 @@ if [ "$firstarg" = "release" ]; then
 fi
 
 if [ "$fSqueeze" = "squeezeMe" ]; then
-    echo SQUEEZING ShowBaseGlobals
-    cd $DIRECT/src/showbase
-    ppython pandaSqueezer.py || exit
+    echo SQUEEZING PandaModules
+    cd $DIRECT/lib/py
+    rm -f PandaModules.py*
+    pSqueezer=`cygpath -w $DIRECT/src/showbase/pandaSqueezer.py`
+    ppython $ppythonOptimizeFlag $pSqueezer $optimizeFlag || exit
 fi
 
 echo DONE

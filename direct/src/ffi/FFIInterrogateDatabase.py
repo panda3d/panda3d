@@ -704,8 +704,9 @@ class FFIInterrogateDatabase:
             file.write('from ' + CModuleName + 'Modules import *\n')
         file.close()
 
-        FFIConstants.notify.info( 'Compiling code...')
-        compileall.compile_dir(codeDir)
+        # Commented out based upon assumption that squeeze will do the compile
+        #FFIConstants.notify.info( 'Compiling code...')
+        #compileall.compile_dir(codeDir)
 
     def generateCodeLib(self, codeDir, extensionsDir, CModuleName):
         # Reset the environment so we are clean from any old modules
