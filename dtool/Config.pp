@@ -70,7 +70,7 @@
 #elif $[eq $[PLATFORM], Cygwin]
   #define BUILD_TYPE gmsvc
 #elif $[eq $[PLATFORM], osx]
-  #define BUILD_TYPE osx
+  #define BUILD_TYPE unix
 #else
   #define BUILD_TYPE unix
 #endif
