@@ -431,3 +431,30 @@ INLINE bool DriveInterface::
 get_force_mouse() const {
   return _force_mouse;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: DriveInterface::set_stop_this_frame
+//       Access: Published
+//  Description: If stop_this_frame is true, the next time the frame
+//               is computed no motion will be allowed, and then the
+//               flag is reset to false.  This can be used to prevent
+//               too much movement when we know a long time has
+//               artificially elapsed, for instance when we take a
+//               screenshot, without munging the clock for everything
+//               else.
+////////////////////////////////////////////////////////////////////
+INLINE void DriveInterface::
+set_stop_this_frame(bool stop_this_frame) {
+  _stop_this_frame = stop_this_frame;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DriveInterface::get_stop_this_frame
+//       Access: Published
+//  Description: Returns the current setting of the stop_this_frame
+//               flag.  See set_stop_this_frame().
+////////////////////////////////////////////////////////////////////
+INLINE bool DriveInterface::
+get_stop_this_frame() const {
+  return _stop_this_frame;
+}

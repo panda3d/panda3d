@@ -139,6 +139,7 @@ DriveInterface(const string &name) :
 
   _ignore_mouse = false;
   _force_mouse = false;
+  _stop_this_frame = false;
 
   _mods.add_button(MouseButton::one());
   _mods.add_button(MouseButton::two());
@@ -345,6 +346,11 @@ apply(double x, double y, bool any_button) {
   // Now how far did we move based on the amount of time elapsed?
   float distance = ClockObject::get_global_clock()->get_dt() * _speed;
   float rotation = ClockObject::get_global_clock()->get_dt() * _rot_speed;
+  if (_stop_this_frame) {
+    distance = 0.0f;
+    rotation = 0.0f;
+    _stop_this_frame = false;
+  }
 
   // Now apply the vectors.
 

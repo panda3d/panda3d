@@ -97,6 +97,9 @@ PUBLISHED:
   INLINE void set_force_mouse(bool force_mouse);
   INLINE bool get_force_mouse() const;
 
+  INLINE void set_stop_this_frame(bool stop_this_frame);
+  INLINE bool get_stop_this_frame() const;
+
   void set_mat(const LMatrix4f &mat);
   const LMatrix4f &get_mat();
 
@@ -128,6 +131,7 @@ private:
   LVector3f _vel;
   bool _ignore_mouse;
   bool _force_mouse;
+  bool _stop_this_frame;
 
   // This is only used to return a temporary value in get_mat().
   LMatrix4f _mat;
