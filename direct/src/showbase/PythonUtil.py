@@ -271,7 +271,7 @@ def doc(obj):
        (isinstance(obj, types.FunctionType)):
         print obj.__doc__
 
-def adjust(command = None, parent = None, **kw):
+def adjust(command = None, dim = 1, parent = None, **kw):
     """
     adjust(command = None, parent = None, **kw)
     Popup and entry scale to adjust a parameter
@@ -284,29 +284,28 @@ def adjust(command = None, parent = None, **kw):
     text: The label on the slider
     
     These values can be accessed and/or changed after the fact
-    >>> es = adjust()
-    >>> es['min']
+    >>> vg = adjust()
+    >>> vg['min']
     0.0
-    >>> es['min'] = 10.0
-    >>> es['min']
+    >>> vg['min'] = 10.0
+    >>> vg['min']
     10.0
     """
     # Make sure we enable Tk
-    import TkGlobal
-    import Tkinter
-    import Slider
-    import Pmw
-    # Create toplevel if needed
-    if not parent:
-        parent = Tkinter.Toplevel()
-        parent.title('Parameter Adjust')
+    import Valuator
     # Set command if specified
     if command:
-        kw['command'] = command
-    es = apply(Slider.Slider, (parent,), kw)
-    es.pack(expand = 1, fill = 'x')
-    es.parent = parent
-    return es
+        kw['command'] = lambda x: apply(command, x)
+        if parent is None:
+            kw['title'] = command.__name__
+    kw['dim'] = dim
+    # Create toplevel if needed
+    if not parent:
+        vg = apply(Valuator.ValuatorGroupPanel, (parent,), kw)
+    else:
+        vg = apply(Valuator.ValuatorGroup,(parent,), kw)
+        vg.pack(expand = 1, fill = 'x')
+    return vg
 
 def intersection(a, b):
     """

@@ -77,8 +77,7 @@ panel = None
 def getDefaultRolloverSound():
     global defaultRolloverSound
     if defaultRolloverSound == None:
-        defaultRolloverSound = base.loadSfx(
-            "phase_3/audio/sfx/GUI_rollover.mp3")
+        defaultRolloverSound = base.loadSfx("audio/sfx/GUI_rollover.mp3")
     return defaultRolloverSound
 
 def setDefaultRolloverSound(newSound):
@@ -88,8 +87,7 @@ def setDefaultRolloverSound(newSound):
 def getDefaultClickSound():
     global defaultClickSound
     if defaultClickSound == None:
-        defaultClickSound = base.loadSfx(
-            "phase_3/audio/sfx/GUI_create_toon_fwd.mp3")
+        defaultClickSound = base.loadSfx("audio/sfx/GUI_click.mp3")
     return defaultClickSound
 
 def setDefaultClickSound(newSound):
@@ -109,8 +107,7 @@ def setDefaultFont(newFont):
 def getDefaultDialogGeom():
     global defaultDialogGeom
     if defaultDialogGeom == None:
-        defaultDialogGeom = loader.loadModelOnce(
-            'phase_3/models/gui/dialog_box_gui')
+        defaultDialogGeom = loader.loadModelOnce('models/gui/dialog_box_gui')
     return defaultDialogGeom
 
 def setDefaultDialogGeom(newDialogGeom):
