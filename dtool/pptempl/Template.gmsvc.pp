@@ -382,7 +382,8 @@ $[install_igatedb_dir]/$[igatedb] : $[so_dir]/$[igatedb] $[so_dir]/stamp
 lib$[TARGET]_igatescan = $[igatescan]
 $[so_dir]/$[igatedb] $[so_dir]/$[igateoutput] : $[filter-out %.c %.cxx,$[igatescan]] $[so_dir]/stamp
 // We use forward slash for interrogate because it prefers those.
-	interrogate -od $[so_dir]/$[igatedb] -oc $[so_dir]/$[igateoutput] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
+	interrogate -od $[so_dir]/$[igatedb] -oc $[so_dir]/$[igateoutput].tmp $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
+	mv $[so_dir]/$[igateoutput].tmp $[so_dir]/$[igateoutput]
 
 #define target $[igateoutput:%.cxx=$[so_dir]/%.obj]
 #define source $[so_dir]/$[igateoutput]
