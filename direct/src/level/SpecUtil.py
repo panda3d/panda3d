@@ -117,9 +117,11 @@ def privUpdateSpec(spec, modelPath, entTypeModule):
         for zoneNum in removedZoneNums:
             if zoneNum in visDict:
                 del visDict[zoneNum]
+        """
         for zoneNum in newZoneNums:
             if zoneNum not in visDict:
                 visDict[zoneNum]=None
+                """
         visList = visDict.keys()
         visList.sort()
         spec.doSetAttrib(entId, 'visibility', visList)
