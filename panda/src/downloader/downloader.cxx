@@ -426,6 +426,9 @@ run(void) {
           return DS_error_write;
       }
       _dest_stream.close();
+      // The "Connection: close" line tells the server to close the 
+      // connection when the download is complete
+      _connected == false;
       return DS_success;
     } else {
       if (downloader_cat.is_debug())
