@@ -68,6 +68,7 @@ class DirectScrolledList(DirectFrame):
         optiondefs = (
             # Define type of DirectGuiWidget
             ('items',              [],        None),
+            ('items_align', TextNode.ACenter, INITOPT),
             ('command',            None,      None),
             ('extraArgs',          [],        None),
             ('itemMakeFunction',   None,      None),
@@ -256,7 +257,9 @@ class DirectScrolledList(DirectFrame):
                     item = apply(self['itemMakeFunction'],
                                  (item, i, self['itemMakeExtraArgs']))
                 else:
-                    item = DirectFrame(text = item, relief = None)
+                    item = DirectFrame(text = item,
+                                       text_align = self['items_align'],
+                                       relief = None)
                 # Then add the newly formed item back into the normal item list
                 self["items"][i] = item
                 item.reparentTo(self.itemFrame)
