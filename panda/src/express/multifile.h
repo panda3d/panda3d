@@ -57,7 +57,8 @@ PUBLISHED:
   void set_scale_factor(size_t scale_factor);
   INLINE size_t get_scale_factor() const;
 
-  string add_subfile(const string &subfile_name, const Filename &filename);
+  string add_subfile(const string &subfile_name, const Filename &filename,
+                     int compression_level);
   bool flush();
   bool repack();
 
@@ -69,6 +70,8 @@ PUBLISHED:
   void remove_subfile(int index);
   const string &get_subfile_name(int index) const;
   size_t get_subfile_length(int index) const;
+  bool is_subfile_compressed(int index) const;
+  size_t get_subfile_compressed_length(int index) const;
 
   void read_subfile(int index, Datagram &datagram);
   bool extract_subfile(int index, const Filename &filename);
@@ -81,7 +84,8 @@ public:
   bool open_read(istream *multifile_stream);
   bool open_write(ostream *multifile_stream);
   bool open_read_write(iostream *multifile_stream);
-  string add_subfile(const string &subfile_name, istream *subfile_data);
+  string add_subfile(const string &subfile_name, istream *subfile_data,
+                     int compression_level);
 
   bool extract_subfile_to(int index, ostream &out);
   istream *open_read_subfile(int index);
@@ -91,6 +95,7 @@ private:
     SF_deleted        = 0x0001,
     SF_index_invalid  = 0x0002,
     SF_data_invalid   = 0x0004,
+    SF_compressed     = 0x0008,
   };
 
   class Subfile {
@@ -112,9 +117,11 @@ private:
     streampos _index_start;
     streampos _data_start;
     size_t _data_length;
+    size_t _uncompressed_length;
     istream *_source;
     Filename _source_filename;
     int _flags;
+    int _compression_level;  // Not preserved on disk.
   };
 
   INLINE streampos word_to_streampos(size_t word) const;
@@ -122,7 +129,8 @@ private:
   INLINE streampos normalize_streampos(streampos fpos) const;
   streampos pad_to_streampos(streampos fpos);
 
-  string add_new_subfile(const string &subfile_name, Subfile *subfile);
+  string add_new_subfile(const string &subfile_name, Subfile *subfile,
+                         int compression_level);
   void clear_subfiles();
   bool read_index();
   bool write_header();

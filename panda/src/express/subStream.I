@@ -27,6 +27,16 @@ ISubStream() : istream(&_buf) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ISubStream::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE ISubStream::
+ISubStream(istream *source, streampos start, streampos end) : istream(&_buf) {
+  open(source, start, end);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ISubStream::open
 //       Access: Public
 //  Description: Starts the SubStream reading from the indicated
@@ -39,10 +49,11 @@ ISubStream() : istream(&_buf) {
 //               If end is zero, it indicates that the ISubStream will
 //               continue until the end of the source stream.
 ////////////////////////////////////////////////////////////////////
-INLINE void ISubStream::
+INLINE ISubStream &ISubStream::
 open(istream *source, streampos start, streampos end) {
   clear(0);
   _buf.open(source, start, end);
+  return *this;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -51,8 +62,9 @@ open(istream *source, streampos start, streampos end) {
 //  Description: Resets the SubStream to empty, but does not actually
 //               close the source istream.
 ////////////////////////////////////////////////////////////////////
-INLINE void ISubStream::
+INLINE ISubStream &ISubStream::
 close() {
   _buf.close();
+  return *this;
 }
 

@@ -120,6 +120,7 @@ Subfile() {
   _data_length = 0;
   _source = (istream *)NULL;
   _flags = 0;
+  _compression_level = 0;
 }
 
 ////////////////////////////////////////////////////////////////////

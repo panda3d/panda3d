@@ -24,6 +24,7 @@
 #endif
 #include "multifile.h"
 #include "filename.h"
+#include "pset.h"
 #include <stdio.h>
 
 
@@ -32,12 +33,15 @@ bool append = false;      // -r
 bool list = false;        // -t
 bool extract = false;     // -x
 bool verbose = false;     // -v
+bool compress = false;    // -z
+int default_compression_level = 6;
 Filename multifile_name;  // -f
 bool got_multifile_name = false;
 bool to_stdout = false;   // -O
 Filename chdir_to;        // -C
 bool got_chdir_to = false;
 size_t scale_factor = 0;  // -F
+pset<string> dont_compress; // -Z
 
 void 
 usage() {
@@ -73,6 +77,25 @@ is_named(const string &subfile_name, int argc, char *argv[]) {
   return false;
 }
 
+int
+get_compression_level(const Filename &subfile_name) {
+  // Returns the appropriate compression level for the named file.
+  if (!compress) {
+    // Don't compress anything.
+    return 0;
+  }
+
+  string ext = subfile_name.get_extension();
+  if (dont_compress.find(ext) != dont_compress.end()) {
+    // This extension is listed on the -Z parameter list; don't
+    // compress it.
+    return 0;
+  }
+
+  // Go ahead and compress this file.
+  return default_compression_level;
+}
+
 bool
 add_directory(Multifile &multifile, const Filename &directory_name) {
   vector_string files;
@@ -95,7 +118,8 @@ add_directory(Multifile &multifile, const Filename &directory_name) {
 
     } else {
       string new_subfile_name =
-        multifile.add_subfile(subfile_name, subfile_name);
+        multifile.add_subfile(subfile_name, subfile_name,
+                              get_compression_level(subfile_name));
       if (new_subfile_name.empty()) {
         cerr << "Unable to add " << subfile_name << ".\n";
         okflag = false;
@@ -144,7 +168,8 @@ add_files(int argc, char *argv[]) {
 
     } else {
       string new_subfile_name =
-        multifile.add_subfile(subfile_name, subfile_name);
+        multifile.add_subfile(subfile_name, subfile_name,
+                              get_compression_level(subfile_name));
       if (new_subfile_name.empty()) {
         cerr << "Unable to add " << subfile_name << ".\n";
         okflag = false;
@@ -228,9 +253,19 @@ list_files(int argc, char *argv[]) {
     for (int i = 0; i < num_subfiles; i++) {
       string subfile_name = multifile.get_subfile_name(i);
       if (is_named(subfile_name, argc, argv)) {
-        printf("%12d  %s\n", 
-               multifile.get_subfile_length(i),
-               subfile_name.c_str());
+        if (multifile.is_subfile_compressed(i)) {
+          double ratio = 
+            (double)multifile.get_subfile_compressed_length(i) /
+            (double)multifile.get_subfile_length(i);
+          printf("%12d %3.0f%%  %s\n",
+                 multifile.get_subfile_length(i),
+                 100.0 - ratio * 100.0,
+                 subfile_name.c_str());
+        } else {
+          printf("%12d       %s\n", 
+                 multifile.get_subfile_length(i),
+                 subfile_name.c_str());
+        }
       }
     }
     fflush(stdout);
@@ -252,6 +287,21 @@ list_files(int argc, char *argv[]) {
   return true;
 }
 
+void
+tokenize_extensions(const string &str, pset<string> &extensions) {
+  size_t p = 0;
+  while (p < str.length()) {
+    size_t q = str.find_first_of(",", p);
+    if (q == string::npos) {
+      extensions.insert(str.substr(p));
+      return;
+    }
+    extensions.insert(str.substr(p, q - p));
+    p = q + 1;
+  }
+  extensions.insert(string());
+}
+
 int
 main(int argc, char *argv[]) {
   if (argc < 2) {
@@ -270,9 +320,12 @@ main(int argc, char *argv[]) {
     }
   }
 
+  // Default extensions not to compress.  May be overridden with -Z.
+  string dont_compress_str = "jpg,mp3";
+
   extern char *optarg;
   extern int optind;
-  static const char *optflags = "crtxvf:OC:F:h";
+  static const char *optflags = "crtxvz123456789Z:f:OC:F:h";
   int flag = getopt(argc, argv, optflags);
   Filename rel_path;
   while (flag != EOF) {
@@ -291,6 +344,48 @@ main(int argc, char *argv[]) {
       break;
     case 'v':
       verbose = true;
+      break;
+    case 'z':
+      compress = true;
+      break;
+    case '1':
+      default_compression_level = 1;
+      compress = true;
+      break;
+    case '2':
+      default_compression_level = 2;
+      compress = true;
+      break;
+    case '3':
+      default_compression_level = 3;
+      compress = true;
+      break;
+    case '4':
+      default_compression_level = 4;
+      compress = true;
+      break;
+    case '5':
+      default_compression_level = 5;
+      compress = true;
+      break;
+    case '6':
+      default_compression_level = 6;
+      compress = true;
+      break;
+    case '7':
+      default_compression_level = 7;
+      compress = true;
+      break;
+    case '8':
+      default_compression_level = 8;
+      compress = true;
+      break;
+    case '9':
+      default_compression_level = 9;
+      compress = true;
+      break;
+    case 'Z':
+      dont_compress_str = optarg;
       break;
     case 'f':
       multifile_name = Filename::from_os_specific(optarg);
@@ -343,20 +438,13 @@ main(int argc, char *argv[]) {
   }
 
   if (!got_multifile_name) {
-    if (argc <= 1) {
-      usage();
-      return 1;
-    }
-
-    // For now, we allow -f to be omitted, and use the first argument
-    // as the archive name, for backward compatibility.  Later we will
-    // remove this.
-    multifile_name = Filename::from_os_specific(argv[1]);
-    cerr << "Warning: using " << multifile_name
-         << " as archive name.  Use -f in the future to specify this.\n";
-    argc--;
-    argv++;
+    cerr << "Multifile name not specified.\n";
+    usage();
+    return 1;
   }
+
+  // Split out the extensions named by -Z into different words.
+  tokenize_extensions(dont_compress_str, dont_compress);
 
   bool okflag = true;
   if (create || append) {

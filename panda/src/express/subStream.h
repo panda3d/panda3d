@@ -37,9 +37,10 @@
 class EXPCL_PANDAEXPRESS ISubStream : public istream {
 public:
   INLINE ISubStream();
+  INLINE ISubStream(istream *source, streampos start, streampos end);
 
-  INLINE void open(istream *source, streampos start, streampos end);
-  INLINE void close();
+  INLINE ISubStream &open(istream *source, streampos start, streampos end);
+  INLINE ISubStream &close();
 
 private:
   SubStreamBuf _buf;

@@ -21,6 +21,7 @@
 #include "config_express.h"
 #include "streamWriter.h"
 #include "streamReader.h"
+#include "zStream.h"
 
 #include <algorithm>
 
@@ -63,6 +64,9 @@ const int Multifile::_current_minor_ver = 0;
 //   uint32     The address of this subfile's data record.
 //   uint32     The length in bytes of this subfile's data record.
 //   uint16     The Subfile::_flags member.
+//  [uint32]    The original, uncompressed length of the subfile, if it
+//               is compressed.  This field is only present if the
+//               SF_compressed bit is set in _flags.
 //   uint16     The length in bytes of the subfile's name.
 //   char[n]    The subfile's name.
 //
@@ -295,7 +299,8 @@ set_scale_factor(size_t scale_factor) {
 //               been modified slightly), or empty string on failure.
 ////////////////////////////////////////////////////////////////////
 string Multifile::
-add_subfile(const string &subfile_name, const Filename &filename) {
+add_subfile(const string &subfile_name, const Filename &filename,
+            int compression_level) {
   nassertr(is_write_valid(), string());
 
   if (!filename.exists()) {
@@ -305,7 +310,7 @@ add_subfile(const string &subfile_name, const Filename &filename) {
   subfile->_source_filename = filename;
   subfile->_source_filename.set_binary();
 
-  return add_new_subfile(subfile_name, subfile);
+  return add_new_subfile(subfile_name, subfile, compression_level);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -670,12 +675,41 @@ get_subfile_name(int index) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: Multifile::get_subfile_length
 //       Access: Published
-//  Description: Returns the data length of the nth subfile.  This
-//               might return 0 if the subfile has recently been added
-//               and flush() has not yet been called.
+//  Description: Returns the uncompressed data length of the nth
+//               subfile.  This might return 0 if the subfile has
+//               recently been added and flush() has not yet been
+//               called.
 ////////////////////////////////////////////////////////////////////
 size_t Multifile::
 get_subfile_length(int index) const {
+  nassertr(index >= 0 && index < (int)_subfiles.size(), 0);
+  return _subfiles[index]->_uncompressed_length;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::is_subfile_compressed
+//       Access: Published
+//  Description: Returns true if the indicated subfile has been
+//               compressed when stored within the archive, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+is_subfile_compressed(int index) const {
+  nassertr(index >= 0 && index < (int)_subfiles.size(), 0);
+  return (_subfiles[index]->_flags & SF_compressed) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::get_subfile_compressed_length
+//       Access: Published
+//  Description: Returns the number of bytes the indicated subfile
+//               consumes within the archive.  For compressed
+//               subfiles, this will generally be smaller than
+//               get_subfile_length(); for noncompressed subfiles, it
+//               will be equal.
+////////////////////////////////////////////////////////////////////
+size_t Multifile::
+get_subfile_compressed_length(int index) const {
   nassertr(index >= 0 && index < (int)_subfiles.size(), 0);
   return _subfiles[index]->_data_length;
 }
@@ -818,7 +852,7 @@ open_read_write(iostream *multifile_stream) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Multifile::add_subfile
-//       Access: Published
+//       Access: Public
 //  Description: Adds a file on disk as a subfile to the Multifile.
 //               The indicated istream will be read and its contents
 //               added to the Multifile at the next call to flush().
@@ -827,13 +861,14 @@ open_read_write(iostream *multifile_stream) {
 //               been modified slightly), or empty string on failure.
 ////////////////////////////////////////////////////////////////////
 string Multifile::
-add_subfile(const string &subfile_name, istream *subfile_data) {
+add_subfile(const string &subfile_name, istream *subfile_data,
+            int compression_level) {
   nassertr(is_write_valid(), string());
 
   Subfile *subfile = new Subfile;
   subfile->_source = subfile_data;
 
-  return add_new_subfile(subfile_name, subfile);
+  return add_new_subfile(subfile_name, subfile, compression_level);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -903,9 +938,17 @@ open_read_subfile(int index) {
   // Return an ISubStream object that references into the open
   // Multifile istream.
   nassertr(subfile->_data_start != (streampos)0, new fstream);
-  ISubStream *stream = new ISubStream;
-  stream->open(_read, subfile->_data_start,
-               subfile->_data_start + (streampos)subfile->_data_length); 
+  istream *stream = 
+    new ISubStream(_read, subfile->_data_start,
+                   subfile->_data_start + (streampos)subfile->_data_length); 
+  
+  if ((subfile->_flags & SF_compressed) != 0) {
+    // Oops, the subfile is compressed.  So actually, return an
+    // IDecompressStream that wraps around the ISubStream.
+    IDecompressStream *wrapper = new IDecompressStream(stream, true);
+    stream = wrapper;
+  }
+
   return stream;
 }
 
@@ -937,7 +980,13 @@ pad_to_streampos(streampos fpos) {
 //               Multifile.
 ////////////////////////////////////////////////////////////////////
 string Multifile::
-add_new_subfile(const string &subfile_name, Subfile *subfile) {
+add_new_subfile(const string &subfile_name, Subfile *subfile,
+                int compression_level) {
+  if (compression_level != 0) {
+    subfile->_flags |= SF_compressed;
+    subfile->_compression_level = compression_level;
+  }
+
   if (_next_index != (streampos)0) {
     // If we're adding a Subfile to an already-existing Multifile, we
     // will eventually need to repack the file.
@@ -1160,6 +1209,11 @@ read_index(istream &read, streampos fpos, Multifile *multifile) {
   _data_start = multifile->word_to_streampos(reader.get_uint32());
   _data_length = reader.get_uint32();
   _flags = reader.get_uint16();
+  if ((_flags & SF_compressed) != 0) {
+    _uncompressed_length = reader.get_uint32();
+  } else {
+    _uncompressed_length = _data_length;
+  }
   size_t name_length = reader.get_uint16();
   if (read.eof() || read.fail()) {
     _flags |= SF_index_invalid;
@@ -1207,6 +1261,9 @@ write_index(ostream &write, streampos fpos, Multifile *multifile) {
   dg.add_uint32(multifile->streampos_to_word(_data_start));
   dg.add_uint32(_data_length);
   dg.add_uint16(_flags);
+  if ((_flags & SF_compressed) != 0) {
+    dg.add_uint32(_uncompressed_length);
+  }
   dg.add_uint16(_name.length());
 
   // For no real good reason, we'll invert all the bits in the name.
@@ -1243,8 +1300,9 @@ write_index(ostream &write, streampos fpos, Multifile *multifile) {
 //               effective end of the file.  Returns the position
 //               within the file of the next data record.
 //
-//               The _data_start and _data_length members are updated
-//               by this operation.
+//               The _data_start, _data_length, and
+//               _uncompressed_length members are updated by this
+//               operation.
 //
 //               If the "read" pointer is non-NULL, it is the readable
 //               istream of a Multifile in which the Subfile might
@@ -1265,6 +1323,7 @@ write_data(ostream &write, istream *read, streampos fpos) {
         << "Unable to read " << _source_filename << ".\n";
       _flags |= SF_data_invalid;
       _data_length = 0;
+      _uncompressed_length = 0;
     } else {
       source = &source_file;
     }
@@ -1295,12 +1354,30 @@ write_data(ostream &write, istream *read, streampos fpos) {
   } else {
     // We do have source data.  Copy it in, and also measure its
     // length.
-    _data_length = 0;
-    int byte = source->get();
-    while (!source->eof() && !source->fail()) {
-      _data_length++;
-      write.put(byte);
-      byte = source->get();
+    if ((_flags & SF_compressed) != 0) {
+      // Write it compressed.
+      streampos write_start = write.tellp();
+      _uncompressed_length = 0;
+      OCompressStream zstream(&write, false, _compression_level);
+      int byte = source->get();
+      while (!source->eof() && !source->fail()) {
+        _uncompressed_length++;
+        zstream.put(byte);
+        byte = source->get();
+      }
+      zstream.close();
+      streampos write_end = write.tellp();
+      _data_length = (size_t)(write_end - write_start);
+    } else {
+      // Write it uncompressed.
+      _uncompressed_length = 0;
+      int byte = source->get();
+      while (!source->eof() && !source->fail()) {
+        _uncompressed_length++;
+        write.put(byte);
+        byte = source->get();
+      }
+      _data_length = _uncompressed_length;
     }
   }
 
@@ -1334,6 +1411,10 @@ rewrite_index_data_start(ostream &write, Multifile *multifile) {
   StreamWriter writer(write);
   writer.add_uint32(multifile->streampos_to_word(_data_start));
   writer.add_uint32(_data_length);
+  writer.add_uint16(_flags);
+  if ((_flags & SF_compressed) != 0) {
+    writer.add_uint32(_uncompressed_length);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

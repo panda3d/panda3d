@@ -4,7 +4,7 @@
 
 #begin lib_target
   #define TARGET express
-  #define USE_PACKAGES nspr crypto net
+  #define USE_PACKAGES nspr crypto net zlib
   
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 
@@ -44,6 +44,7 @@
     typeRegistry.I typeRegistry.h \
     typeRegistryNode.I typeRegistryNode.h \
     vector_uchar.h \
+    zStream.I zStream.h zStreamBuf.h \
     $[if $[HAVE_CRYPTO], \
        crypto_utils.cxx crypto_utils.h patchfile.I \
        patchfile.cxx patchfile.h ]
@@ -66,7 +67,8 @@
     subStream.cxx subStreamBuf.cxx \
     trueClock.cxx typeHandle.cxx \
     typedObject.cxx typedReferenceCount.cxx \
-    typeRegistry.cxx typeRegistryNode.cxx vector_uchar.cxx
+    typeRegistry.cxx typeRegistryNode.cxx vector_uchar.cxx \
+    zStream.cxx zStreamBuf.cxx
 
   #define INSTALL_HEADERS  \
     bigEndian.h buffer.I buffer.h checksumHashGenerator.I  \
@@ -98,7 +100,8 @@
     typedReferenceCount.h typedef.h \
     typeRegistry.I typeRegistry.h \
     typeRegistryNode.I typeRegistryNode.h \
-    vector_uchar.h
+    vector_uchar.h \
+    zStream.I zStream.h zStreamBuf.h
 
   #define IGATESCAN all
 
@@ -125,3 +128,17 @@
   #define OTHER_LIBS $[OTHER_LIBS] pystub
 
 #end test_bin_target
+
+
+#if $[HAVE_ZLIB]
+#begin test_bin_target
+  #define TARGET test_zstream
+  #define USE_PACKAGES zlib
+  #define LOCAL_LIBS $[LOCAL_LIBS] express
+  #define OTHER_LIBS pystub
+
+  #define SOURCES \
+    test_zstream.cxx
+
+#end test_bin_target
+#endif

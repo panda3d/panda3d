@@ -19,4 +19,6 @@
 #include "typeRegistry.cxx"
 #include "typeRegistryNode.cxx"
 #include "vector_uchar.cxx"
+#include "zStream.cxx"
+#include "zStreamBuf.cxx"
 
