@@ -3807,7 +3807,7 @@ apply_texture_immediate(Texture *tex) {
   int wanted_size = 
     compute_gl_image_size(pb->get_xsize(), pb->get_ysize(),
                           external_format, type);
-  nassertr(wanted_size == pb->_image.size(), false);
+  nassertr(wanted_size == (int)pb->_image.size(), false);
 #endif  // NDEBUG
 
   set_unpack_alignment(1);
@@ -4444,7 +4444,7 @@ save_mipmap_images(Texture *tex) {
   Filename filename = tex->get_name();
   string name;
   if (filename.empty()) {
-    static index = 0;
+    static int index = 0;
     name = "texture" + format_string(index);
     index++;
   } else {
@@ -4535,7 +4535,6 @@ dump_state(void)
         {
           dump << "\t\t\t\t" << "GL_LIGHT" << i << " " << _light_info[i]._enabled << " " << (bool)glIsEnabled(GL_LIGHT0+i) << "\n";
         }
-      dump << "\t\t" << "GL_COLOR_MATERIAL " << _color_material_enabled << " " << (bool)glIsEnabled(GL_COLOR_MATERIAL) << "\n";
       dump << "\t\t" << "GL_SCISSOR_TEST " << _scissor_enabled << " " << (bool)glIsEnabled(GL_SCISSOR_TEST) << "\n";
       dump << "\t\t" << "GL_TEXTURE_2D " << _texturing_enabled << " " << (bool)glIsEnabled(GL_TEXTURE_2D) << "\n";
       dump << "\t\t" << "GL_DITHER " << _dither_enabled << " " << (bool)glIsEnabled(GL_DITHER) << "\n";
