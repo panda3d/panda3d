@@ -42,6 +42,7 @@ public:
 
 PUBLISHED:
   virtual DCAtomicField *as_atomic_field();
+  virtual const DCAtomicField *as_atomic_field() const;
 
   int get_num_elements() const;
   DCParameter *get_element(int n) const;

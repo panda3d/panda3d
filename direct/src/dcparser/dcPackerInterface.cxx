@@ -82,12 +82,32 @@ as_field() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCPackerInterface::as_switch
+//     Function: DCPackerInterface::as_field
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+const DCField *DCPackerInterface::
+as_field() const {
+  return (DCField *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::as_switch_parameter
 //       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 DCSwitchParameter *DCPackerInterface::
 as_switch_parameter() {
+  return (DCSwitchParameter *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::as_switch_parameter
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+const DCSwitchParameter *DCPackerInterface::
+as_switch_parameter() const {
   return (DCSwitchParameter *)NULL;
 }
 
@@ -98,6 +118,16 @@ as_switch_parameter() {
 ////////////////////////////////////////////////////////////////////
 DCClassParameter *DCPackerInterface::
 as_class_parameter() {
+  return (DCClassParameter *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::as_class_parameter
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+const DCClassParameter *DCPackerInterface::
+as_class_parameter() const {
   return (DCClassParameter *)NULL;
 }
 

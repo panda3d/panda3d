@@ -93,6 +93,16 @@ as_class_parameter() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCClassParameter::as_class_parameter
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+const DCClassParameter *DCClassParameter::
+as_class_parameter() const {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCClassParameter::make_copy
 //       Access: Published, Virtual
 //  Description: 

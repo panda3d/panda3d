@@ -75,6 +75,16 @@ as_class() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCClass::as_class
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+const DCClass *DCClass::
+as_class() const {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCClass::get_name
 //       Access: Published
 //  Description: Returns the name of this class.
@@ -465,7 +475,7 @@ direct_update(PyObject *distobj, const string &field_name,
 bool DCClass::
 pack_required_field(DCPacker &packer, PyObject *distobj, 
                     const DCField *field) const {
-  const DCParameter *parameter = ((DCField *)field)->as_parameter();
+  const DCParameter *parameter = field->as_parameter();
   if (parameter != (DCParameter *)NULL) {
     // This is the easy case: to pack a parameter, we just look on the
     // class object for the data element.
@@ -490,7 +500,7 @@ pack_required_field(DCPacker &packer, PyObject *distobj,
     return pack_ok;
   }
 
-  const DCAtomicField *atom = ((DCField *)field)->as_atomic_field();
+  const DCAtomicField *atom = field->as_atomic_field();
   if (atom == (DCAtomicField *)NULL) {
     ostringstream strm;
     strm << "Cannot pack non-atomic field " << field->get_name()

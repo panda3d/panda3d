@@ -45,6 +45,18 @@ as_molecular_field() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCMolecularField::as_molecular_field
+//       Access: Published, Virtual
+//  Description: Returns the same field pointer converted to a
+//               molecular field pointer, if this is in fact a
+//               molecular field; otherwise, returns NULL.
+////////////////////////////////////////////////////////////////////
+const DCMolecularField *DCMolecularField::
+as_molecular_field() const {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCMolecularField::get_num_atomics
 //       Access: Published
 //  Description: Returns the number of atomic fields that make up this

@@ -40,7 +40,9 @@ public:
 
 PUBLISHED:
   virtual DCClass *as_class();
+  virtual const DCClass *as_class() const;
   virtual DCSwitch *as_switch();
+  virtual const DCSwitch *as_switch() const;
 
 public:
   virtual void write(ostream &out, bool brief, int indent_level) const=0;

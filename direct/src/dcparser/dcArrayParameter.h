@@ -39,6 +39,7 @@ public:
 
 PUBLISHED:
   virtual DCArrayParameter *as_array_parameter();
+  virtual const DCArrayParameter *as_array_parameter() const;
   virtual DCParameter *make_copy() const;
   virtual bool is_valid() const;
 

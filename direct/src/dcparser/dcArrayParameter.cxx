@@ -98,6 +98,16 @@ as_array_parameter() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCArrayParameter::as_array_parameter
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+const DCArrayParameter *DCArrayParameter::
+as_array_parameter() const {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCArrayParameter::make_copy
 //       Access: Published, Virtual
 //  Description: 

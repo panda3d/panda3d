@@ -352,7 +352,7 @@ seek(const string &field_name) {
 
     const DCPackerCatalog::Entry &entry = _live_catalog->get_entry(entry_index);
 
-    if (((DCPackerInterface *)entry._parent)->as_switch_parameter() != (DCSwitchParameter *)NULL) {
+    if (entry._parent->as_switch_parameter() != (DCSwitchParameter *)NULL) {
       // If the parent is a DCSwitch, that can only mean that the
       // seeked field is a switch parameter.  We can't support seeking
       // to a switch parameter and modifying it directly--what would
@@ -683,7 +683,7 @@ pack_object(PyObject *object) {
     bool is_instance = false;
 
     const DCClass *dclass = NULL;
-    const DCClassParameter *class_param = ((DCPackerInterface *)get_current_field())->as_class_parameter();
+    const DCClassParameter *class_param = get_current_field()->as_class_parameter();
     if (class_param != (DCClassParameter *)NULL) {
       dclass = class_param->get_class();
 
@@ -817,7 +817,7 @@ unpack_object() {
 
   case PT_class:
     {
-      const DCClassParameter *class_param = ((DCPackerInterface *)get_current_field())->as_class_parameter();
+      const DCClassParameter *class_param = get_current_field()->as_class_parameter();
       if (class_param != (DCClassParameter *)NULL) {
         const DCClass *dclass = class_param->get_class();
         if (dclass->has_class_def()) {
@@ -1127,7 +1127,7 @@ pack_class_object(const DCClass *dclass, PyObject *object) {
   Py_DECREF(str);
   push();
   while (more_nested_fields()) {
-    const DCField *field = ((DCPackerInterface *)get_current_field())->as_field();
+    const DCField *field = get_current_field()->as_field();
     nassertv(field != (DCField *)NULL);
 
     if (!dclass->pack_required_field(*this, object, field)) {
@@ -1165,7 +1165,7 @@ unpack_class_object(const DCClass *dclass) {
   push();
   if (object == (PyObject *)NULL && more_nested_fields()) {
     // The first nested field will be the constructor.
-    const DCField *field = ((DCPackerInterface *)get_current_field())->as_field();
+    const DCField *field = get_current_field()->as_field();
     nassertr(field != (DCField *)NULL, object);
     nassertr(field == dclass->get_constructor(), object);
 
@@ -1177,7 +1177,7 @@ unpack_class_object(const DCClass *dclass) {
     }
   }
   while (more_nested_fields()) {
-    const DCField *field = ((DCPackerInterface *)get_current_field())->as_field();
+    const DCField *field = get_current_field()->as_field();
     nassertr(field != (DCField *)NULL, object);
 
     set_class_element(class_def, object, field);
@@ -1211,7 +1211,7 @@ set_class_element(PyObject *class_def, PyObject *&object,
       // the class.
       push();
       while (more_nested_fields()) {
-        const DCField *field = ((DCPackerInterface *)get_current_field())->as_field();
+        const DCField *field = get_current_field()->as_field();
         nassertv(field != (DCField *)NULL);
         nassertv(object != (PyObject *)NULL);
         set_class_element(class_def, object, field);

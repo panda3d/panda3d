@@ -44,10 +44,13 @@ PUBLISHED:
   int get_number() const;
 
   virtual DCField *as_field();
+  virtual const DCField *as_field() const;
   virtual DCAtomicField *as_atomic_field();
+  virtual const DCAtomicField *as_atomic_field() const;
   virtual DCMolecularField *as_molecular_field();
+  virtual const DCMolecularField *as_molecular_field() const;
   virtual DCParameter *as_parameter();
-  virtual DCSwitch *as_switch();
+  virtual const DCParameter *as_parameter() const;
 
   string format_data(const string &packed_data);
   string parse_string(const string &formatted_string);

@@ -37,6 +37,7 @@ public:
 
 PUBLISHED:
   virtual DCSwitchParameter *as_switch_parameter();
+  virtual const DCSwitchParameter *as_switch_parameter() const;
   virtual DCParameter *make_copy() const;
   virtual bool is_valid() const;
 

@@ -77,8 +77,11 @@ PUBLISHED:
   INLINE const string &get_name() const;
 
   virtual DCField *as_field();
+  virtual const DCField *as_field() const;
   virtual DCSwitchParameter *as_switch_parameter();
+  virtual const DCSwitchParameter *as_switch_parameter() const;
   virtual DCClassParameter *as_class_parameter();
+  virtual const DCClassParameter *as_class_parameter() const;
 
 public:
   INLINE void set_name(const string &name);

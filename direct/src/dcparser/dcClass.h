@@ -39,6 +39,7 @@ public:
 
 PUBLISHED:
   virtual DCClass *as_class();
+  virtual const DCClass *as_class() const;
 
   const string &get_name() const;
   int get_number() const;

@@ -41,6 +41,7 @@ public:
 
 PUBLISHED:
   virtual DCSwitch *as_switch();
+  virtual const DCSwitch *as_switch() const;
 
   const string &get_name() const;
   DCParameter *get_key_parameter() const;

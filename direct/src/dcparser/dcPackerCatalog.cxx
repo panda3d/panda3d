@@ -215,7 +215,7 @@ r_fill_catalog(const string &name_prefix, const DCPackerInterface *field,
     next_name_prefix += ".";
   }
 
-  const DCSwitchParameter *switch_parameter = ((DCPackerInterface *)field)->as_switch_parameter();
+  const DCSwitchParameter *switch_parameter = field->as_switch_parameter();
   if (switch_parameter != (DCSwitchParameter *)NULL) {
     // If we come upon a DCSwitch while building the catalog, save the
     // name_prefix at this point so we'll have it again when we later

@@ -226,6 +226,16 @@ as_simple_parameter() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCSimpleParameter::as_simple_parameter
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+const DCSimpleParameter *DCSimpleParameter::
+as_simple_parameter() const {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCSimpleParameter::make_copy
 //       Access: Published, Virtual
 //  Description: 

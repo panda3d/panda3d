@@ -38,6 +38,7 @@ public:
 
 PUBLISHED:
   virtual DCMolecularField *as_molecular_field();
+  virtual const DCMolecularField *as_molecular_field() const;
 
   int get_num_atomics() const;
   DCAtomicField *get_atomic(int n) const;

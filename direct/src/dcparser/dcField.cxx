@@ -74,6 +74,16 @@ as_field() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCField::as_field
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+const DCField *DCField::
+as_field() const {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCField::as_atomic_field
 //       Access: Published, Virtual
 //  Description: Returns the same field pointer converted to an atomic
@@ -82,6 +92,18 @@ as_field() {
 ////////////////////////////////////////////////////////////////////
 DCAtomicField *DCField::
 as_atomic_field() {
+  return (DCAtomicField *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::as_atomic_field
+//       Access: Published, Virtual
+//  Description: Returns the same field pointer converted to an atomic
+//               field pointer, if this is in fact an atomic field;
+//               otherwise, returns NULL.
+////////////////////////////////////////////////////////////////////
+const DCAtomicField *DCField::
+as_atomic_field() const {
   return (DCAtomicField *)NULL;
 }
 
@@ -98,6 +120,18 @@ as_molecular_field() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCField::as_molecular_field
+//       Access: Published, Virtual
+//  Description: Returns the same field pointer converted to a
+//               molecular field pointer, if this is in fact a
+//               molecular field; otherwise, returns NULL.
+////////////////////////////////////////////////////////////////////
+const DCMolecularField *DCField::
+as_molecular_field() const {
+  return (DCMolecularField *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCField::as_parameter
 //       Access: Published, Virtual
 //  Description: 
@@ -108,13 +142,13 @@ as_parameter() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCField::as_switch
+//     Function: DCField::as_parameter
 //       Access: Published, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-DCSwitch *DCField::
-as_switch() {
-  return (DCSwitch *)NULL;
+const DCParameter *DCField::
+as_parameter() const {
+  return (DCParameter *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

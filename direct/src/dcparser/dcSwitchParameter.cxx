@@ -93,6 +93,16 @@ as_switch_parameter() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCSwitchParameter::as_switch_parameter
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+const DCSwitchParameter *DCSwitchParameter::
+as_switch_parameter() const {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCSwitchParameter::make_copy
 //       Access: Published, Virtual
 //  Description: 

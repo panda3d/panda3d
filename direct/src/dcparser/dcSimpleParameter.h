@@ -40,6 +40,7 @@ public:
 
 PUBLISHED:
   virtual DCSimpleParameter *as_simple_parameter();
+  virtual const DCSimpleParameter *as_simple_parameter() const;
   virtual DCParameter *make_copy() const;
   virtual bool is_valid() const;
 

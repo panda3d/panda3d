@@ -60,6 +60,18 @@ as_atomic_field() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::as_atomic_field
+//       Access: Published, Virtual
+//  Description: Returns the same field pointer converted to an atomic
+//               field pointer, if this is in fact an atomic field;
+//               otherwise, returns NULL.
+////////////////////////////////////////////////////////////////////
+const DCAtomicField *DCAtomicField::
+as_atomic_field() const {
+  return this;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::get_num_elements
 //       Access: Published
 //  Description: Returns the number of elements (parameters) of the
