@@ -69,12 +69,11 @@ convert_pathname(const string &unix_style_pathname) {
     // This is a pathname that begins with a single letter.  That must
     // be the drive letter.
     windows_pathname = 
-      toupper(unix_style_pathname[1]) + ":" +
+      string(1, toupper(unix_style_pathname[1])) + ":" +
       front_to_back_slash(unix_style_pathname.substr(2));
 
   } else {
     // It does not begin with a single letter, so prefix "PANDA_ROOT".
-
     static string panda_root;
     static bool got_panda_root = false;
 
