@@ -18,6 +18,10 @@
 
 #include "eggMakeFont.h"
 #include "rangeIterator.h"
+#include "palettizer.h"
+#include "eggFile.h"
+#include "textureImage.h"
+#include "sourceTextureImage.h"
 #include "pnmTextMaker.h"
 #include "pnmTextGlyph.h"
 #include "eggGroup.h"
@@ -43,24 +47,14 @@ EggMakeFont() : EggWriter(true, false) {
      "rendering text, even if FreeType is not compiled into "
      "the executing Panda.\n\n"
 
-     "It is strongly recommended that the resulting egg file "
-     "be subsequently passed through egg-palettize to consolidate the many "
-     "generated texture images into a single texture image to "
-     "improve rendering performance.  This can also reduce the "
-     "texture images to achieve antialiasing.");
+     "The generated egg file is normally run through egg-palettize "
+     "automatically as part of the generation process, which collects "
+     "the individual glyph textures into a small number of texture "
+     "maps.");
 
   clear_runlines();
   add_runline("[opts] -o output.egg font");
   add_runline("[opts] font output.egg");
-
-  add_option
-    ("i", "pattern", 0,
-     "The pattern to be used to generate the texture images.  This string "
-     "will be passed to sprintf to generate the actual file name; it "
-     "should contain the string %d or %x (or some variant such as %03d) "
-     "which will be filled in with the Unicode number of each symbol.  "
-     "If it is omitted, the default is based on the name of the egg file.",
-     &EggMakeFont::dispatch_string, NULL, &_output_image_pattern);
 
   add_option
     ("fg", "r,g,b[,a]", 0,
@@ -136,14 +130,7 @@ EggMakeFont() : EggWriter(true, false) {
      "or more fixed-size fonts instead of a scalable font, the scale factor "
      "may be automatically adjusted as necessary to scale the closest-"
      "matching font to the desired pixel size.",
-     &EggMakeFont::dispatch_double, NULL, &_scale_factor);
-
-  add_option
-    ("nr", "", 0,
-     "Don't actually reduce the images after applying the scale factor, but "
-     "leave them at their inflated sizes.  Presumably you will reduce "
-     "them later, for instance with egg-palettize.",
-     &EggMakeFont::dispatch_none, &_no_reduce);
+     &EggMakeFont::dispatch_double, &_got_scale_factor, &_scale_factor);
 
   add_option
     ("noaa", "", 0,
@@ -154,6 +141,45 @@ EggMakeFont() : EggWriter(true, false) {
      &EggMakeFont::dispatch_none, &_no_native_aa);
 
   add_option
+    ("nopal", "", 0,
+     "Don't run egg-palettize automatically on the output file, but "
+     "just output the raw egg file and all of its individual texture "
+     "images, one for each glyph.",
+     &EggMakeFont::dispatch_none, &_no_palettize);
+
+  add_option
+    ("nr", "", 0,
+     "Don't actually reduce the images after applying the scale factor, but "
+     "leave them at their inflated sizes.  Presumably you will reduce "
+     "them later, for instance with egg-palettize.  This has no effect "
+     "unless -nopal is specified.",
+     &EggMakeFont::dispatch_none, &_no_reduce);
+
+  add_option
+    ("gp", "pattern", 0,
+     "The pattern to be used to generate the glyph texture images.  This "
+     "string will be passed to sprintf to generate the actual file name; it "
+     "should contain the string %d or %x (or some variant such as %03d) "
+     "which will be filled in with the Unicode number of each symbol.  "
+     "If it is omitted, the default is based on the name of the egg file.  "
+     "This has no effect unless -nopal is specified.",
+     &EggMakeFont::dispatch_string, NULL, &_output_glyph_pattern);
+
+  add_option
+    ("pp", "pattern", 0,
+     "The pattern to be used to generate the palette texture images.  This "
+     "string is effectively passed to egg-palettize as the -tn option, and "
+     "thus should contain %i for the palette index number.  This is used "
+     "if -nopal is not specified.",
+     &EggMakeFont::dispatch_string, NULL, &_output_palette_pattern);
+
+  add_option
+    ("ps", "xsize,ysize", 0,
+     "Specify the size of the palette texture images.  This is used if "
+     "-nopal is not specified.",
+     &EggMakeFont::dispatch_int_pair, NULL, _palette_size);
+  
+  add_option
     ("face", "index", 0,
      "Specify the face index of the particular face within the font file "
      "to use.  Some font files contain multiple faces, indexed beginning "
@@ -162,12 +188,12 @@ EggMakeFont() : EggWriter(true, false) {
 
   _fg.set(1.0, 1.0, 1.0, 1.0);
   _bg.set(1.0, 1.0, 1.0, 0.0);
-  _interior.set(1.0, 1.0, 1.0, 0.0);
+  _interior.set(1.0, 1.0, 1.0, 1.0);
   _pixels_per_unit = 30.0;
   _point_size = 10.0;
   _poly_margin = 1.0;
   _tex_margin = 2;
-  _scale_factor = 2.0;
+  _palette_size[0] = _palette_size[1] = 256;
   _face_index = 0;
 
   _text_maker = NULL;
@@ -208,15 +234,46 @@ run() {
     exit(1);
   }
 
-  if (_no_reduce) {
+  if (_got_interior) {
+    _no_native_aa = true;
+  }
+
+  if (!_got_scale_factor) {
+    // The default scale factor is 4 if we are not using FreeType's
+    // antialias, or 2 if we are.
+    if (_no_native_aa) {
+      _scale_factor = 4.0;
+    } else {
+      _scale_factor = 2.0;
+    }
+  }
+
+  _palettize_scale_factor = _scale_factor;
+  if (_no_reduce || !_no_palettize) {
+    // If _no_reduce is true (-nr was specified), we want to keep the
+    // glyph textures full-sized, because the user asked for that.
+
+    // If _no_palettize is false (-nopal was not specified), we still
+    // want to keep the glyph textures full-sized, because the
+    // palettizer will reduce them later.
+
     _tex_margin *= _scale_factor;
     _poly_margin *= _scale_factor;
     _pixels_per_unit *= _scale_factor;
     _scale_factor = 1.0;
   }
 
+  if (_no_reduce) {
+    // If -nr was specified, but we're still palettizing, we don't
+    // even want to reduce the palette images.  Instead, we'll
+    // generate extra-large palette images.
+    _palette_size[0] *= _palettize_scale_factor;
+    _palette_size[1] *= _palettize_scale_factor;
+    _palettize_scale_factor = 1.0;
+  }
+
   _text_maker->set_point_size(_point_size);
-  _text_maker->set_native_antialias(!_no_native_aa && !_got_interior);
+  _text_maker->set_native_antialias(!_no_native_aa);
   _text_maker->set_interior_flag(_got_interior);
   _text_maker->set_pixels_per_unit(_pixels_per_unit);
   _text_maker->set_scale_factor(_scale_factor);
@@ -226,9 +283,13 @@ run() {
     // set.
     _range.add_range(0x20, 0x7e);
   }
-  if (_output_image_pattern.empty()) {
+  if (_output_glyph_pattern.empty()) {
     // Create a default texture filename pattern.
-    _output_image_pattern = get_output_filename().get_fullpath_wo_extension() + "%03d.rgb";
+    _output_glyph_pattern = get_output_filename().get_fullpath_wo_extension() + "%03d.rgb";
+  }
+  if (_output_palette_pattern.empty()) {
+    // Create a default texture filename pattern.
+    _output_palette_pattern = get_output_filename().get_fullpath_wo_extension() + "_%i.rgb";
   }
 
   // Figure out how many channels we need based on the foreground and
@@ -249,6 +310,7 @@ run() {
         // one-channel image.
         _fg[0] = _fg[1] = _fg[2] = _fg[3];
         _bg[0] = _bg[1] = _bg[2] = _bg[3];
+        _interior[0] = _interior[1] = _interior[2] = _interior[3];
         _num_channels = 1;
         _format = EggTexture::F_alpha;
       } else {
@@ -266,6 +328,28 @@ run() {
     }
   }      
 
+  // Create a global Palettizer object.  We'll use this even if the
+  // user specified -nopal, if nothing else just to hold all of the
+  // TextureImage pointers.
+  pal = new Palettizer;
+  pal->_generated_image_pattern = _output_palette_pattern;
+  pal->_omit_solitary = true;
+  pal->_round_uvs = false;
+
+  // Generate a txa script for the palettizer.  We have the palettizer
+  // reduce all of the texture images by the inverse of our scale
+  // factor.
+  char buffer[1024];
+  sprintf(buffer, ":margin 0;:background %f %f %f %f;:palette %d %d;*: %f%% keep-format", 
+          _bg[0], _bg[1], _bg[2], _bg[3],
+          _palette_size[0], _palette_size[1],
+          100.0 / _palettize_scale_factor);
+  istringstream txa_script(buffer);
+  pal->read_txa_file(txa_script, "default script");
+
+  pal->all_params_set();
+
+  // Now create all the egg structures.
   _group = new EggGroup();
   _data.add_child(_group);
 
@@ -291,7 +375,33 @@ run() {
     add_character(ri.get_code());
   } while (ri.next());
 
-  write_egg_file();
+  if (_no_palettize) {
+    // Ok, no palettize step; just write out the egg file and all of
+    // the textures.
+    Textures::iterator ti;
+    for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
+      TextureImage *texture = (*ti);
+      texture->write(texture->read_source_image());
+    }
+
+    write_egg_file();
+
+  } else {
+    // Pass the generated egg structure through egg-palettize, without
+    // writing it to disk first.
+    string name = get_output_filename().get_basename();
+    EggFile *egg_file = pal->get_egg_file(name);
+    egg_file->from_command_line(&_data, "", get_output_filename(),
+                                get_exec_command());
+
+    pal->add_command_line_egg(egg_file);
+    pal->process_all(true, "");
+    pal->optimal_resize();
+    pal->generate_images(true);
+    if (!pal->write_eggs()) {
+      exit(1);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -427,13 +537,13 @@ get_tref(PNMTextGlyph *glyph, int character) {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMakeFont::make_tref
 //       Access: Private
-//  Description: Writes out the texture image for an indicated glyph,
+//  Description: Generates a texture image for the indicated glyph,
 //               and returns its egg reference.
 ////////////////////////////////////////////////////////////////////
 EggTexture *EggMakeFont::
 make_tref(PNMTextGlyph *glyph, int character) {
   char buffer[1024];
-  sprintf(buffer, _output_image_pattern.c_str(), character);
+  sprintf(buffer, _output_glyph_pattern.c_str(), character);
 
   Filename texture_filename = buffer;
   PNMImage image(glyph->get_width() + _tex_margin * 2,
@@ -450,13 +560,20 @@ make_tref(PNMTextGlyph *glyph, int character) {
                  glyph->get_top() + _tex_margin, _fg);
   }
 
-  if (!image.write(texture_filename)) {
-    nout << "Unable to write " << texture_filename << "\n";
-  }
+  // We don't write the image to disk immediately, since it might just
+  // get palettized.  But we do record it in a TextureImage object
+  // within the global Palettizer, so that it may be written out
+  // later.
 
-  EggTexture *tref = 
-    new EggTexture(texture_filename.get_basename_wo_extension(),
-                   texture_filename);
+  string name = texture_filename.get_basename_wo_extension();
+  TextureImage *texture = pal->get_texture(name);
+  _textures.push_back(texture);
+  texture->set_filename("", texture_filename);
+  SourceTextureImage *source = texture->get_source(texture_filename, "", 0);
+  texture->set_source_image(image);
+  source->set_header(image);
+
+  EggTexture *tref = new EggTexture(name, texture_filename);
   tref->set_format(_format);
   tref->set_wrap_mode(EggTexture::WM_clamp);
   tref->set_minfilter(EggTexture::FT_linear_mipmap_linear);

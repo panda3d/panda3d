@@ -1,5 +1,5 @@
-// Filename: config_egg_palettize.cxx
-// Created by:  drose (01Dec00)
+// Filename: config_palettizer.cxx
+// Created by:  drose (12Sep03)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_egg_palettize.h"
+#include "config_palettizer.h"
 #include "palettizer.h"
 #include "eggFile.h"
 #include "paletteGroup.h"
@@ -34,14 +34,14 @@
 
 #include "dconfig.h"
 
-Configure(config_egg_palettize);
+Configure(config_palettizer);
 
-ConfigureFn(config_egg_palettize) {
-  init_egg_palettize();
+ConfigureFn(config_palettizer) {
+  init_palettizer();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: init_libegg_palettize
+//     Function: init_libpalettizer
 //  Description: Initializes the library.  This must be called at
 //               least once before any of the functions or classes in
 //               this library can be used.  Normally it will be
@@ -49,7 +49,7 @@ ConfigureFn(config_egg_palettize) {
 //               called explicitly, but special cases exist.
 ////////////////////////////////////////////////////////////////////
 void
-init_egg_palettize() {
+init_palettizer() {
   static bool initialized = false;
   if (initialized) {
     return;

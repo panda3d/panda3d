@@ -64,6 +64,8 @@ public:
   EggFile *get_egg_file(const string &name);
   bool remove_egg_file(const string &name);
 
+  void add_command_line_egg(EggFile *egg_file);
+
   PaletteGroup *get_palette_group(const string &name);
   PaletteGroup *test_palette_group(const string &name) const;
   PaletteGroup *get_default_group();
@@ -100,6 +102,7 @@ public:
   Filename _shadow_dirname;
   Filename _rel_dirname;
   int _pal_x_size, _pal_y_size;
+  Colord _background;
   int _margin;
   bool _omit_solitary;
   double _coverage_threshold;
@@ -169,10 +172,13 @@ public:
 private:
   static TypeHandle _type_handle;
 
-  friend class EggPalettize;
   friend class TxaLine;
 };
 
+// This is a global Palettizer pointer that may be filled in when the
+// Palettizer is created, for convenience in referencing it from
+// multiple places.  (Generally, a standalone program will only create
+// one Palettizer object in a session.)
 extern Palettizer *pal;
 
 #endif

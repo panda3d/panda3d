@@ -64,6 +64,7 @@ public:
   EggTexture::Format _format;
   bool _force_format;  // true when format has been explicitly specified
   bool _generic_format; // true if 'generic' keyword, meaning rgba8 -> rgba.
+  bool _keep_format;   // true if 'keep-format' keyword.
   EggTexture::FilterType _minfilter, _magfilter;
   int _anisotropic_degree;
   PNMFileType *_color_type;

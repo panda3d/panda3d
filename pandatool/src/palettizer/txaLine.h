@@ -71,6 +71,7 @@ private:
   EggTexture::Format _format;
   bool _force_format;
   bool _generic_format;
+  bool _keep_format;
   EggRenderMode::AlphaMode _alpha_mode;
 
   int _aniso_degree;

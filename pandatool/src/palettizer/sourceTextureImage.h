@@ -24,6 +24,7 @@
 #include "imageFile.h"
 
 class TextureImage;
+class PNMImageHeader;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : SourceTextureImage
@@ -45,6 +46,7 @@ public:
 
   bool get_size();
   bool read_header();
+  void set_header(const PNMImageHeader &header);
 
 private:
   TextureImage *_texture;

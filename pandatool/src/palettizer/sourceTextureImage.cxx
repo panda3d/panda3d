@@ -140,6 +140,19 @@ read_header() {
     return false;
   }
 
+  set_header(header);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SourceTextureImage::set_header
+//       Access: Public
+//  Description: Sets the header information associated with this
+//               image, as if it were loaded from the disk.
+////////////////////////////////////////////////////////////////////
+void SourceTextureImage::
+set_header(const PNMImageHeader &header) {
   _x_size = header.get_x_size();
   _y_size = header.get_y_size();
   int num_channels = header.get_num_channels();
@@ -155,8 +168,6 @@ read_header() {
 
   _size_known = true;
   _successfully_read_header = true;
-
-  return true;
 }
 
 

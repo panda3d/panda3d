@@ -3,7 +3,7 @@
 #define USE_PACKAGES freetype
 
 #define LOCAL_LIBS \
-  eggbase progbase
+  palettizer eggbase progbase
 #define OTHER_LIBS \
   pnmtext:c pnmimagetypes:c pnmimage:c \
   egg:c linmath:c putil:c express:c pandaegg:m panda:m pandaexpress:m \

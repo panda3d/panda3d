@@ -25,11 +25,11 @@
 #include "sourceTextureImage.h"
 #include "filenameUnifier.h"
 
-#include <indent.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
+#include "indent.h"
+#include "datagram.h"
+#include "datagramIterator.h"
+#include "bamReader.h"
+#include "bamWriter.h"
 
 #include <algorithm>
 
@@ -96,15 +96,18 @@ operator = (const PaletteImage::ClearedRegion &copy) {
 ////////////////////////////////////////////////////////////////////
 void PaletteImage::ClearedRegion::
 clear(PNMImage &image) {
+  RGBColord rgb(pal->_background[0], pal->_background[1], pal->_background[2]);
+  double alpha = pal->_background[3];
+
   for (int y = _y; y < _y + _y_size; y++) {
     for (int x = _x; x < _x + _x_size; x++) {
-      image.set_xel_val(x, y, 0);
+      image.set_xel(x, y, rgb);
     }
   }
   if (image.has_alpha()) {
     for (int y = _y; y < _y + _y_size; y++) {
       for (int x = _x; x < _x + _x_size; x++) {
-        image.set_alpha_val(x, y, 0);
+        image.set_alpha(x, y, alpha);
       }
     }
   }
@@ -216,7 +219,7 @@ PaletteImage(PalettePage *page, int index) :
   // to have a filename extension.  Otherwise, an embedded dot in the
   // group's name would make everything following appear to be an
   // extension, which would get lost in the set_filename() call.
-  if (_basename.empty() || _basename[_basename.length() - 1] != '.') {
+  if (_basename.find('.') == string::npos) {
     _basename += '.';
   }
 
@@ -752,6 +755,11 @@ get_image() {
   _cleared_regions.clear();
 
   _image.clear(get_x_size(), get_y_size(), _properties.get_num_channels());
+  _image.fill(pal->_background[0], pal->_background[1], pal->_background[2]);
+  if (_image.has_alpha()) {
+    _image.alpha_fill(pal->_background[3]);
+  }
+
   _new_image = false;
   _got_image = true;
 

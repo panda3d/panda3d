@@ -41,12 +41,13 @@ Palettizer *pal = (Palettizer *)NULL;
 // allows us to easily update egg-palettize to write out additional
 // information to its pi file, without having it increment the bam
 // version number for all bam and boo files anywhere in the world.
-int Palettizer::_pi_version = 12;
+int Palettizer::_pi_version = 13;
 // Updated to version 8 on 3/20/03 to remove extensions from texture key names.
 // Updated to version 9 on 4/13/03 to add a few properties in various places.
 // Updated to version 10 on 4/15/03 to add _alpha_file_channel.
 // Updated to version 11 on 4/30/03 to add TextureReference::_tref_name.
 // Updated to version 12 on 9/11/03 to add _generated_image_pattern.
+// Updated to version 13 on 9/13/03 to add _keep_format and _background.
 
 int Palettizer::_min_pi_version = 8;
 // Dropped support for versions 7 and below on 7/14/03.
@@ -113,6 +114,7 @@ Palettizer() {
   _shadow_color_type = (PNMFileType *)NULL;
   _shadow_alpha_type = (PNMFileType *)NULL;
   _pal_x_size = _pal_y_size = 512;
+  _background.set(0.0, 0.0, 0.0, 1.0);
 
   _round_uvs = true;
   _round_unit = 0.1;
@@ -146,6 +148,7 @@ report_pi() const {
     << "  egg relative directory: "
     << FilenameUnifier::make_user_filename(_rel_dirname) << "\n"
     << "  palettize size: " << _pal_x_size << " by " << _pal_y_size << "\n"
+    << "  background: " << _background << "\n"
     << "  margin: " << _margin << "\n"
     << "  coverage threshold: " << _coverage_threshold << "\n"
     << "  force textures to power of 2: " << yesno(_force_power_2) << "\n"
@@ -733,6 +736,19 @@ remove_egg_file(const string &name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Palettizer::add_command_line_egg
+//       Access: Public
+//  Description: Adds the indicated EggFile to the list of eggs that
+//               are considered to have been read on the command line.
+//               These will be processed by
+//               process_command_line_eggs().
+////////////////////////////////////////////////////////////////////
+void Palettizer::
+add_command_line_egg(EggFile *egg_file) {
+  _command_line_eggs.push_back(egg_file);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Palettizer::get_palette_group
 //       Access: Public
 //  Description: Returns the PaletteGroup with the given name.  If
@@ -804,6 +820,7 @@ get_texture(const string &name) {
   image->set_name(name);
   //  image->set_filename(name);
   _textures.insert(Textures::value_type(name, image));
+
   return image;
 }
 
@@ -892,6 +909,10 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   datagram.add_string(FilenameUnifier::make_bam_filename(_rel_dirname));
   datagram.add_int32(_pal_x_size);
   datagram.add_int32(_pal_y_size);
+  datagram.add_float64(_background[0]);
+  datagram.add_float64(_background[1]);
+  datagram.add_float64(_background[2]);
+  datagram.add_float64(_background[3]);
   datagram.add_int32(_margin);
   datagram.add_bool(_omit_solitary);
   datagram.add_float64(_coverage_threshold);
@@ -1029,6 +1050,12 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   FilenameUnifier::set_rel_dirname(_rel_dirname);
   _pal_x_size = scan.get_int32();
   _pal_y_size = scan.get_int32();
+  if (_read_pi_version >= 13) {
+    _background[0] = scan.get_float64();
+    _background[1] = scan.get_float64();
+    _background[2] = scan.get_float64();
+    _background[3] = scan.get_float64();
+  }
   _margin = scan.get_int32();
   _omit_solitary = scan.get_bool();
   _coverage_threshold = scan.get_float64();

@@ -25,11 +25,13 @@
 #include "eggWriter.h"
 #include "eggTexture.h"
 #include "pmap.h"
+#include "pvector.h"
 
 class PNMTextMaker;
 class PNMTextGlyph;
 class EggVertexPool;
 class EggGroup;
+class TextureImage;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggMakeFont
@@ -67,13 +69,18 @@ private:
   double _point_size;
   double _poly_margin;
   int _tex_margin;
+  bool _got_scale_factor;
   double _scale_factor;
   bool _no_reduce;
   bool _no_native_aa;
+  bool _no_palettize;
+  int _palette_size[2];
 
+  double _palettize_scale_factor;
   Filename _input_font_filename;
   int _face_index;
-  string _output_image_pattern;
+  string _output_glyph_pattern;
+  string _output_palette_pattern;
 
   PNMTextMaker *_text_maker;
   
@@ -84,6 +91,9 @@ private:
 
   typedef pmap<PNMTextGlyph *, EggTexture *> TRefs;
   TRefs _trefs;
+
+  typedef pvector<TextureImage *> Textures;
+  Textures _textures;
 };
 
 

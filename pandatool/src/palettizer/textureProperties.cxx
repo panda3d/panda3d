@@ -39,6 +39,7 @@ TextureProperties() {
   _format = EggTexture::F_unspecified;
   _force_format = false;
   _generic_format = false;
+  _keep_format = false;
   _minfilter = EggTexture::FT_unspecified;
   _magfilter = EggTexture::FT_unspecified;
   _anisotropic_degree = 0;
@@ -56,6 +57,7 @@ TextureProperties(const TextureProperties &copy) :
   _format(copy._format),
   _force_format(copy._force_format),
   _generic_format(copy._generic_format),
+  _keep_format(copy._keep_format),
   _minfilter(copy._minfilter),
   _magfilter(copy._magfilter),
   _anisotropic_degree(copy._anisotropic_degree),
@@ -76,6 +78,7 @@ void TextureProperties::
 operator = (const TextureProperties &copy) {
   _force_format = copy._force_format;
   _generic_format = copy._generic_format;
+  _keep_format = copy._keep_format;
   _minfilter = copy._minfilter;
   _magfilter = copy._magfilter;
   _anisotropic_degree = copy._anisotropic_degree;
@@ -336,7 +339,7 @@ fully_define() {
 
   // Make sure the format reflects the number of channels, although we
   // accept a format that ignores an alpha channel.
-  if (!_force_format) {
+  if (!_force_format && !_keep_format) {
     switch (_num_channels) {
     case 1:
       switch (_format) {
@@ -783,6 +786,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   datagram.add_int32((int)_format);
   datagram.add_bool(_force_format);
   datagram.add_bool(_generic_format);
+  datagram.add_bool(_keep_format);
   datagram.add_int32((int)_minfilter);
   datagram.add_int32((int)_magfilter);
   datagram.add_int32(_anisotropic_degree);
@@ -856,6 +860,10 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _generic_format = false;
   if (Palettizer::_read_pi_version >= 9) {
     _generic_format = scan.get_bool();
+  }
+  _keep_format = false;
+  if (Palettizer::_read_pi_version >= 13) {
+    _keep_format = scan.get_bool();
   }
   _minfilter = (EggTexture::FilterType)scan.get_int32();
   _magfilter = (EggTexture::FilterType)scan.get_int32();

@@ -331,7 +331,7 @@ post_txa_file() {
     _y_size = _request._y_size;
   }
 
-  if (_properties.has_num_channels()) {
+  if (_properties.has_num_channels() && !_request._keep_format) {
     int num_channels = _properties.get_num_channels();
     // Examine the image to determine if we can downgrade the number
     // of channels, for instance from color to grayscale.
@@ -352,11 +352,13 @@ post_txa_file() {
   }
 
   _properties._generic_format = _request._generic_format;
+  _properties._keep_format = _request._keep_format;
 
   if (_request._format != EggTexture::F_unspecified) {
     _properties._format = _request._format;
     _properties._force_format = _request._force_format;
   }
+
   if (_request._minfilter != EggTexture::FT_unspecified) {
     _properties._minfilter = _request._minfilter;
   }
@@ -748,6 +750,21 @@ read_source_image() {
   }
 
   return _source_image;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureImage::set_source_image
+//       Access: Public
+//  Description: Accepts the indicated source image as if it had been
+//               read from disk.  This image is copied into the
+//               structure, and will be returned by future calls to
+//               read_source_image().
+////////////////////////////////////////////////////////////////////
+void TextureImage::
+set_source_image(const PNMImage &image) {
+  _source_image = image;
+  _read_source_image = true;
+  _ever_read_image = true;
 }
 
 ////////////////////////////////////////////////////////////////////

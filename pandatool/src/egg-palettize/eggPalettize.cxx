@@ -192,7 +192,7 @@ EggPalettize() : EggMultiFilter(true) {
      "may invalidate other egg files which share this palette.",
      &EggPalettize::dispatch_none, &_optimal);
 
-  // This isn't even implement yet.  Presently, we never lock anyway.
+  // This isn't even implemented yet.  Presently, we never lock anyway.
   // Dangerous, but hard to implement reliable file locking across
   // NFS/Samba and between multiple OS's.
   /*
@@ -322,6 +322,11 @@ describe_input_file() {
             "match the number of channels.  As above, any valid egg texture "
             "format may be used, e.g. force-rgba12, force-rgb5, etc.\n\n");
 
+  show_text("  keep-format", 10,
+            "This specifies that the image format requested by an egg file "
+            "should be exactly preserved, without attempting to optimize "
+            "it by, for instance, automatically downgrading.\n\n");
+
   show_text("  generic", 10,
             "Specifies that any image format requested by an egg file "
             "that requests a particular bitdepth should be replaced by "
@@ -390,6 +395,12 @@ describe_input_file() {
             "texture image to help prevent color bleeding between "
             "neighboring images within the same palette.  The default "
             "is 2.\n\n");
+
+  show_text("  :background r g b a", 10,
+            "Specifies the background color of the generated palette "
+            "images.  Normally, this is black, and it doesn't matter much "
+            "since the background color is, by definition, the color "
+            "of the palette images where nothing is used.\n\n");
 
   show_text("  :coverage area", 10,
             "The 'coverage' of a texture refers to the fraction of "
@@ -715,7 +726,7 @@ run() {
     egg_file->from_command_line(egg_data, source_filename, dest_filename,
                                 egg_comment);
 
-    pal->_command_line_eggs.push_back(egg_file);
+    pal->add_command_line_egg(egg_file);
   }
 
   if (_optimal) {

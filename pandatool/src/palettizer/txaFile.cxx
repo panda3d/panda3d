@@ -71,6 +71,9 @@ read(istream &in, const string &filename) {
       } else if (words[0] == ":margin") {
         okflag = parse_margin_line(words);
 
+      } else if (words[0] == ":background") {
+        okflag = parse_background_line(words);
+
       } else if (words[0] == ":coverage") {
         okflag = parse_coverage_line(words);
 
@@ -301,6 +304,34 @@ parse_margin_line(const vector_string &words) {
 
   if (pal->_margin < 0) {
     nout << "Invalid margin: " << pal->_margin << "\n";
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TxaFile::parse_background_line
+//       Access: Private
+//  Description: Handles the line in a .txa file that begins with the
+//               keyword ":background" and indicates the palette
+//               background color.
+////////////////////////////////////////////////////////////////////
+bool TxaFile::
+parse_background_line(const vector_string &words) {
+  if (words.size() != 5) {
+    nout << "Exactly four parameter required for :background: the "
+         << "four [r g b a] components of the background color.\n";
+    return false;
+  }
+
+  if (!string_to_double(words[1], pal->_background[0]) ||
+      !string_to_double(words[2], pal->_background[1]) ||
+      !string_to_double(words[3], pal->_background[2]) ||
+      !string_to_double(words[4], pal->_background[3])) {
+    nout << "Invalid color: "
+         << words[1] << " " << words[2] << " "
+         << words[3] << " " << words[4] << " " << "\n";
     return false;
   }
 

@@ -19,11 +19,11 @@
 #ifndef PALETTEIMAGE_H
 #define PALETTEIMAGE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "imageFile.h"
 
-#include <pnmImage.h>
+#include "pnmImage.h"
 
 class PalettePage;
 class TexturePlacement;

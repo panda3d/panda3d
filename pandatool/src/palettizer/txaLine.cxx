@@ -43,6 +43,7 @@ TxaLine() {
   _format = EggTexture::F_unspecified;
   _force_format = false;
   _generic_format = false;
+  _keep_format = false;
   _alpha_mode = EggRenderMode::AM_unspecified;
   _got_margin = false;
   _margin = 0;
@@ -255,6 +256,10 @@ parse(const string &line) {
         // rgba.
         _generic_format = true;
 
+      } else if (word == "keep-format") {
+        // Keep whatever image format was specified.
+        _keep_format = true;
+
       } else {
         // Maybe it's a group name.
         PaletteGroup *group = pal->test_palette_group(word);
@@ -433,6 +438,10 @@ match_texture(TextureImage *texture) const {
 
   if (_generic_format) {
     request._generic_format = true;
+  }
+
+  if (_keep_format) {
+    request._keep_format = true;
   }
 
   if (_alpha_mode != EggRenderMode::AM_unspecified) {
