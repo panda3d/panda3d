@@ -7,6 +7,44 @@
 
 Panda3D Install --- using the 'makepanda' system.
 
+MAKE SURE YOU HAVE ALL OF THE SOURCE CODE
+
+There are two ways to obtain panda source.  One is to download a
+complete distribution from the panda website, panda3d.etc.cmu.edu.
+Look for something like this on the downloads page:
+
+   Panda Source + Windows Tools: panda3d-1.0.0.zip
+   Panda Source + Linux Tools: panda3d-1.0.0.tar.gz 
+
+If you choose to download one of these files, you will have everything
+you need to build panda.  In that case, skip to the next section.
+
+The other way to obtain panda source is to check it out from
+sourceforge.  If you choose to do this, you will end up with all the
+source code, but you will be missing certain tools needed to use
+makepanda.  In particular, you will be missing two directories.  The
+top level of the panda tree looks like this:
+
+	direct
+	dmodels
+	doc
+	dtool
+	makepanda
+	models
+	panda
+	pandaapp
+	pandatool
+	ppremake
+	samples
+	SceneEditor
+	thirdparty
+
+You will be missing the "thirdparty" and "samples" directories.  At
+present, the only way to obtain the contents of these two directories
+is to download a complete distribution from the panda website.  You
+can then extract these two directories, and insert them into your
+CVS tree.
+
 INVOKING MAKEPANDA
 
 Makepanda is a script that builds panda, all the way through. To
@@ -186,7 +224,7 @@ be any three integers separated by dots.
 
 	makepanda/maketarball.py 58.23.95
 
-This builds panda3d-58.23.95.tar.gz and panda3d-58-23-95.zip.  Once
+This builds panda3d-58.23.95.tar.gz and panda3d-58.23.95.zip.  Once
 you have the tar-ball, it is easy to turn it into a binary RPM:
 
 	rpmbuild -tb panda3d-58.23.95.tar.gz
