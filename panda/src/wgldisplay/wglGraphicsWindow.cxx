@@ -70,6 +70,11 @@ unsigned int hardcoded_modifier_buttons[NUM_MODIFIER_KEYS]={VK_SHIFT,VK_MENU,VK_
                                          VK_UP,VK_DOWN,VK_LEFT,VK_RIGHT,VK_PRIOR,VK_NEXT,VK_HOME,VK_END,
                                          VK_INSERT,VK_DELETE,VK_ESCAPE};
 
+// dont pick any video modes < MIN_REFRESH_RATE Hz
+#define MIN_REFRESH_RATE 60
+// EnumDisplaySettings may indicate 0 or 1 for refresh rate, which means use driver default rate (assume its >min_refresh_rate)
+#define ACCEPTABLE_REFRESH_RATE(RATE) ((RATE >= MIN_REFRESH_RATE) || (RATE==0) || (RATE==1))
+
 void PrintErrorMessage(DWORD msgID) {
    LPTSTR pMessageBuffer;
 
@@ -276,6 +281,27 @@ static DWORD GetAvailVidMem(void) {
     return dwFree;
 }
 
+bool find_acceptable_display_mode(DWORD dwWidth,DWORD dwHeight,DWORD bpp,DEVMODE &dm) {
+    int modenum=0;
+
+    // look for acceptable mode
+    while(1) {
+        ZeroMemory( &dm, sizeof( dm ) );
+        dm.dmSize = sizeof( dm );
+
+        if(!EnumDisplaySettings(NULL,modenum,&dm))
+          break;
+
+        if((dm.dmPelsWidth==dwWidth) && (dm.dmPelsHeight==dwHeight) &&
+           (dm.dmBitsPerPel==bpp) && ACCEPTABLE_REFRESH_RATE(dm.dmDisplayFrequency)) {
+           return true;
+        }
+        modenum++;
+    }
+
+    return false;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: config
 //       Access:
@@ -292,7 +318,7 @@ void wglGraphicsWindow::config(void) {
 
     _exiting_window = false;
     _return_control_to_app = false;
-    
+    _bIsLowVidMemCard = false; 
     _active_minimized_fullscreen = false;
     _PandaPausedTimer = NULL;
     _mouse_input_enabled = false;
@@ -379,14 +405,9 @@ void wglGraphicsWindow::config(void) {
 
       DWORD dwFullScreenBitDepth=cur_bitdepth;
 
-      // dont pick any video modes < MIN_REFRESH_RATE Hz
-      #define MIN_REFRESH_RATE 60
-      
-      // EnumDisplaySettings may indicate 0 or 1 for refresh rate, which means use driver default rate
-      #define ACCEPTABLE_REFRESH_RATE(RATE) ((RATE >= MIN_REFRESH_RATE) || (RATE==0) || (RATE==1))
-      
       #define LOWVIDMEMTHRESHOLD 3500000
       if(GetAvailVidMem() < LOWVIDMEMTHRESHOLD) {
+          _bIsLowVidMemCard = true;
           wgldisplay_cat.debug() << "small video memory card detect, switching fullscreen to minimum 640x480x16 config\n";
           // we're going to need  640x480 at 16 bit to save enough tex vidmem
           dwFullScreenBitDepth=16;
@@ -395,29 +416,8 @@ void wglGraphicsWindow::config(void) {
       }
 
       DEVMODE dm;
-      bool bGoodModeFound=false;
-      BOOL bGotNewMode;
-      int j=0;
-
-      while(1) {
-          memset( &dm, 0, sizeof( dm ) );
-          dm.dmSize = sizeof( dm );
-
-          bGotNewMode=EnumDisplaySettings(NULL,j,&dm);
-          if(!bGotNewMode)
-            break;
-
-          if((dm.dmPelsWidth==dwWidth) && (dm.dmPelsHeight==dwHeight) &&
-             (dm.dmBitsPerPel==dwFullScreenBitDepth) &&
-             ACCEPTABLE_REFRESH_RATE(dm.dmDisplayFrequency)) {
-              bGoodModeFound=true;
-              break;
-          }
-          j++;
-      }
-
-      if(!bGoodModeFound) {
-          wgldisplay_cat.fatal() << "Videocard has no supported display resolutions at specified res ( " << dwWidth << " X " << dwHeight << " X " << dwFullScreenBitDepth <<" )\n";
+      if(!find_acceptable_display_mode(dwWidth,dwHeight,dwFullScreenBitDepth,dm)) {
+          wgldisplay_cat.fatal() << "Videocard has no supported display resolutions at specified res (" << dwWidth << " X " << dwHeight << " X " << dwFullScreenBitDepth <<")\n";
           exit(1);
       }
 
@@ -427,7 +427,7 @@ void wglGraphicsWindow::config(void) {
                 window_style,0,0,dwWidth,dwHeight,hDesktopWindow, NULL, hinstance, 0);
 
       // move window to top of zorder,
-      SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE);
+      SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE);  
     
       ShowWindow(_mwindow, SW_SHOWNORMAL);
       ShowWindow(_mwindow, SW_SHOWNORMAL);
@@ -911,7 +911,7 @@ void wglGraphicsWindow::end_frame(void) {
     // double-buffered mode.  Instead we have to use glBitMap display
     // lists created by wglUseFontBitmaps
 
-    glColor3f(0.0,1.0,1.0);
+    glColor3f(0.0f,1.0f,1.0f);
 
     GLboolean tex_was_on = glIsEnabled(GL_TEXTURE_2D);
 
@@ -925,9 +925,9 @@ void wglGraphicsWindow::end_frame(void) {
     glPushMatrix();
     glLoadIdentity();
 
-    glOrtho(0,_props._xsize,
-            0,_props._ysize,
-            -1.0,1.0);
+    glOrtho(0.0f,_props._xsize,
+            0.0f,_props._ysize,
+            -1.0f,1.0f);
 
     glRasterPos2f(_props._xsize-70,_props._ysize-20);  // these seem to be good for default font
 
@@ -950,7 +950,8 @@ void wglGraphicsWindow::end_frame(void) {
 
   {
     PStatTimer timer(_swap_pcollector);
-     if(_is_synced) glFinish();
+     if(_is_synced) 
+        glFinish();
      else SwapBuffers(_hdc);
   }
   GraphicsWindow::end_frame();
@@ -962,7 +963,107 @@ void wglGraphicsWindow::end_frame(void) {
 //  Description: Swaps the front and back buffers explicitly.
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::swap(void) {
-    if(_is_synced)SwapBuffers(_hdc);
+  if(_is_synced)
+    SwapBuffers(_hdc);
+}
+
+void wglGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
+    if (!_props._fullscreen) {
+        // resizing windowed mode is easy
+        SetWindowPos(_mwindow, NULL, 0,0, xsize,ysize, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSENDCHANGING);
+    } else {
+      DWORD dwWidth =  xsize;
+      DWORD dwHeight = ysize;
+
+      HWND hDesktopWindow = GetDesktopWindow();
+      HDC scrnDC=GetDC(hDesktopWindow);
+      DWORD dwFullScreenBitDepth=GetDeviceCaps(scrnDC,BITSPIXEL);
+      ReleaseDC(hDesktopWindow,scrnDC);
+
+      // resize will always leave screen bitdepth unchanged
+
+      // allowing resizing of lowvidmem cards to > 640x480.  why?  I'll assume
+      // check was already done by caller, so he knows what he wants
+
+      DEVMODE dm;
+      if(!find_acceptable_display_mode(dwWidth,dwHeight,dwFullScreenBitDepth,dm)) {
+          wgldisplay_cat.fatal() << "window resize(" << xsize << "," << ysize << ") failed, no compatible fullscreen display mode found!\n";
+          return;
+      }
+
+      // this causes WM_SIZE msg to be produced
+      SetWindowPos(_mwindow, NULL, 0,0, xsize, ysize, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSENDCHANGING);
+
+      int chg_result = ChangeDisplaySettings(&dm, CDS_FULLSCREEN);
+    
+      if(chg_result!=DISP_CHANGE_SUCCESSFUL) {
+            wgldisplay_cat.fatal() << "resize ChangeDisplaySettings failed (error code: " << chg_result <<") for specified res ( " << dwWidth << " X " << dwHeight << " X " << dwFullScreenBitDepth <<" ), " << dm.dmDisplayFrequency  << "Hz\n";
+            exit(1);
+      }
+
+      // this assertion could be violated if we eventually allow dynamic fullscrn/windowed mode switching
+      assert(_pCurrent_display_settings!=NULL);
+      memcpy(_pCurrent_display_settings,&dm,sizeof(DEVMODE));
+    } 
+}
+
+unsigned int wglGraphicsWindow::
+verify_window_sizes(unsigned int numsizes,unsigned int *dimen) {
+  // see if window sizes are supported (i.e. in fullscrn mode)
+  // dimen is an array containing contiguous x,y pairs specifying
+  // possible display sizes, it is numsizes*2 long.  fn will zero
+  // out any invalid x,y size pairs.  return value is number of valid 
+  // sizes that were found.
+  // 
+  // note: it might be better to implement some sort of query
+  //       interface that returns an array of supported sizes,
+  //       but this way is somewhat simpler and will do the job 
+  //       on most cards, assuming they handle the std sizes the app
+  //       knows about.
+
+  if (!_props._fullscreen || (numsizes==0)) {
+      return numsizes;
+  }
+
+  assert(dimen!=NULL);
+
+  HWND hDesktopWindow = GetDesktopWindow();
+  HDC scrnDC=GetDC(hDesktopWindow);
+  DWORD dwFullScreenBitDepth=GetDeviceCaps(scrnDC,BITSPIXEL);
+  ReleaseDC(hDesktopWindow,scrnDC);
+
+  // gonna do an n^2 loop alg for simplicity.  if speed is necessary, 
+  // could do linear time with some kind of STL hash container I guess
+
+  DEVMODE dm;
+  int modenum=0;
+  int goodmodes=0;
+  unsigned int *cur_dim_pair=dimen;
+  for(;modenum<numsizes;modenum++,cur_dim_pair+=2) {
+      bool bIsGoodmode;
+      DWORD dwWidth=cur_dim_pair[0];
+      DWORD dwHeight=cur_dim_pair[1];
+
+      if((dwWidth==0)||(dwHeight==0)) {
+          bIsGoodmode=false;
+      } else {
+          if(_bIsLowVidMemCard) {
+              bIsGoodmode=((dwWidth*dwHeight)<=(640*480));
+          } else {
+              bIsGoodmode = find_acceptable_display_mode(dwWidth,dwHeight,dwFullScreenBitDepth,dm);
+          }
+      }
+
+      if(bIsGoodmode) {
+         goodmodes++;
+      } else {
+         // zero out the bad mode
+         cur_dim_pair[0]=0;
+         cur_dim_pair[1]=0;
+      }
+  }
+
+  return goodmodes;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -53,9 +53,11 @@ TypeHandle wglGraphicsPipe::get_class_type(void) {
   return _type_handle;
 }
 
+const char *pipe_type_name="wglGraphicsPipe";
+
 void wglGraphicsPipe::init_type(void) {
   InteractiveGraphicsPipe::init_type();
-  register_type(_type_handle, "wglGraphicsPipe",
+  register_type(_type_handle, pipe_type_name,
         InteractiveGraphicsPipe::get_class_type());
 }
 
@@ -65,17 +67,16 @@ TypeHandle wglGraphicsPipe::get_type(void) const {
 
 wglGraphicsPipe::wglGraphicsPipe(void) {
   wgldisplay_cat.error()
-    << "wglGraphicsPipes should not be created with the default constructor"
-    << endl;
+    << pipe_type_name <<"s should not be created with the default constructor" << endl;
 }
 
 wglGraphicsPipe::wglGraphicsPipe(const wglGraphicsPipe&) {
   wgldisplay_cat.error()
-    << "wglGraphicsPipes should not be copied" << endl;
+    << pipe_type_name << "s should not be copied" << endl;
 }
 
 wglGraphicsPipe& wglGraphicsPipe::operator=(const wglGraphicsPipe&) {
-  wgldisplay_cat.error()
-    << "wglGraphicsPipes should not be assigned" << endl;
+  wgldisplay_cat.error() 
+  << pipe_type_name << "s should not be assigned" << endl;
   return *this;
 }

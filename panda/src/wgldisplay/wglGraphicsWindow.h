@@ -117,6 +117,7 @@ private:
   UINT_PTR          _PandaPausedTimer;
 
   DEVMODE           *_pCurrent_display_settings;
+  bool              _bIsLowVidMemCard;
 
   bool              _window_inactive;
   bool              _active_minimized_fullscreen;
@@ -130,6 +131,7 @@ private:
   int               _entry_state;
   bool              _ignore_key_repeat;
   int               _full_height, _full_width;
+
 
   // vars for frames/sec meter
   DWORD _start_time;
@@ -150,6 +152,9 @@ public:
   void DestroyMe(bool bAtExitFnCalled);
   virtual void deactivate_window(void);
   virtual void reactivate_window(void);
+
+  virtual void resize(unsigned int xsize,unsigned int ysize);
+  virtual unsigned int verify_window_sizes(unsigned int numsizes,unsigned int *dimen);
 
 protected:
   virtual void do_close_window();
