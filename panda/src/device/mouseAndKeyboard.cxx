@@ -46,6 +46,19 @@ MouseAndKeyboard(GraphicsWindow *window, int device, const string &name) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MouseAndKeyboard::set_source
+//       Access: Public
+//  Description: Redirects the class to get the data from the mouse
+//               and keyboard associated with a different window
+//               and/or device number.
+////////////////////////////////////////////////////////////////////
+void MouseAndKeyboard::
+set_source(GraphicsWindow *window, int device) {
+  _window = window;
+  _device = device;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MouseAndKeyboard::do_transmit_data
 //       Access: Protected, Virtual
 //  Description: The virtual implementation of transmit_data().  This

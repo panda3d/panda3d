@@ -49,8 +49,8 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA MouseAndKeyboard : public DataNode {
 PUBLISHED:
-  MouseAndKeyboard(GraphicsWindow *window, int device,
-                     const string &name);
+  MouseAndKeyboard(GraphicsWindow *window, int device, const string &name);
+  void set_source(GraphicsWindow *window, int device);
 
 protected:
   // Inherited from DataNode
