@@ -201,9 +201,10 @@ class ShowBase(DirectObject.DirectObject):
 
         # Start Tk and DIRECT if specified by Configrc
         self.startTk(self.config.GetBool('want-tk', 0))
-        self.startDirect(self.config.GetBool('want-directtools', 0))
-
-        self.restart()
+        # Start DIRECT if specified in Configrc or in cluster mode
+        fDirect = (self.config.GetBool('want-directtools', 0) or
+                   (base.config.GetString("cluster-mode", '') != ''))
+        self.startDirect(fDirect)
 
     def exitfunc(self):
         """exitfunc(self)
