@@ -7,11 +7,16 @@
   #define BUILDING_DLL BUILDING_MILES_AUDIO
   #define LOCAL_LIBS audio
   #define WIN_SYS_LIBS $[WIN_SYS_LIBS] Mss32.lib user32.lib advapi32.lib
+  
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx  
 
   #define SOURCES \
-      config_milesAudio.cxx config_milesAudio.h \
-      milesAudioManager.cxx milesAudioManager.h \
-      milesAudioSound.I milesAudioSound.cxx milesAudioSound.h
+      config_milesAudio.h \
+      milesAudioManager.h \
+      milesAudioSound.I milesAudioSound.h
+      
+  #define INCLUDED_SOURCES \
+      config_milesAudio.cxx milesAudioManager.cxx milesAudioSound.cxx 
 
 #end lib_target
 
