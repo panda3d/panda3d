@@ -814,7 +814,7 @@ class Actor(PandaObject, NodePath):
         not extend beyond backPart, and that backPart is mostly flat
         (not self-occluding).
 
-        If mode >= 0, the frontPart geometry is placed in the 'fixed'
+        If mode > 0, the frontPart geometry is placed in the 'fixed'
         bin, with the indicated drawing order.  This will cause it to
         be drawn after almost all other geometry.  In this case, the
         backPartName is actually unused.
