@@ -23,15 +23,14 @@
 #include "dxGraphicsStateGuardian.h"
 #include "pnmImage.h"
 
-
 static const DWORD g_LowByteMask = 0x000000FF;
 
 //#define FORCE_16bpp_1555
 
-#define PANDA_ARGB_ORDER
+#define PANDA_BGRA_ORDER
 
-#ifdef PANDA_ARGB_ORDER
-// assume Panda uses int ARGB format in PixelBuffers natively  (byte-order BGRA or BGR)
+#ifdef PANDA_BGRA_ORDER
+// assume Panda uses byte-order BGRA/LA to store pixels, which when read into little-endian word is ARGB/AL
 // these macros GET from PixelBuffer, (wont work from DDSurface)
 #define GET_RED_BYTE(PIXEL_DWORD)  ((BYTE)((PIXEL_DWORD >> 16) & g_LowByteMask))
 #define GET_BLUE_BYTE(PIXEL_DWORD) ((BYTE)((PIXEL_DWORD)       & g_LowByteMask))
@@ -229,7 +228,7 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
         case Conv32to32:
         case Conv32to32_NoAlpha: {
 
-#ifdef PANDA_ARGB_ORDER
+#ifdef PANDA_BGRA_ORDER
                 if(ConvNeeded==Conv32to32) {
                     memcpy(pDDSurfBytes,(BYTE*) pbuf,dwOrigWidth*dwOrigHeight*sizeof(DWORD));
                 } else {
@@ -374,7 +373,7 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
 
 
         case Conv24to24: {
-            #ifdef PANDA_ARGB_ORDER
+            #ifdef PANDA_BGRA_ORDER
                 memcpy(pDDSurfBytes,(BYTE*)pbuf,dwOrigHeight*dwOrigWidth*3);
             #else
                 BYTE *pSrcWord = (BYTE *) pbuf;
@@ -412,7 +411,7 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                     for(DWORD x=0; x<dwOrigWidth; x++,pSrcWord+=3,pDstWord++) {
                         BYTE r,g,b;
 
-                    #ifdef PANDA_ARGB_ORDER
+                    #ifdef PANDA_BGRA_ORDER
                         b = *pSrcWord       >> 3;
                         r = *(pSrcWord+2)   >> 3;
                     #else
@@ -439,7 +438,7 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                     for(DWORD x=0; x<dwOrigWidth; x++,pSrcWord+=3,pDstWord++) {
                         BYTE r,g,b;
 
-                    #ifdef PANDA_ARGB_ORDER
+                    #ifdef PANDA_BGRA_ORDER
                         b = *pSrcWord       >> 3;
                         g = *(pSrcWord+1)   >> 2;
                         r = *(pSrcWord+2)   >> 3;
@@ -467,7 +466,7 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                         // pixel buffer is in ABGR format(it stores big-endian RGBA)
                         // need to change byte order to ARGB
 
-                    #ifdef PANDA_ARGB_ORDER
+                    #ifdef PANDA_BGRA_ORDER
                         b = *pSrcWord;
                         r = *(pSrcWord+2);
                     #else
@@ -490,8 +489,8 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                     pDstWord = (DWORD *)pDDSurfBytes;
 
                     for(DWORD x=0; x<dwOrigWidth; x++,pSrcWord++,pDstWord++) {
-                        // pixel buffer is in ABGR format(it stores big-endian RGBA)
-                        // need to change byte order to ARGB
+                        // pixel buffer stores LA bytes, which in a little-endian word is AL
+
                         DWORD dwPixel=*pSrcWord;
                         BYTE lum,a;
 
@@ -763,14 +762,14 @@ HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) 
 
             case 32: {
                     DWORD *pSrcWord;
-                   #ifdef PANDA_ARGB_ORDER 
+                   #ifdef PANDA_BGRA_ORDER 
                     BYTE *pDstLine = (BYTE*)pDstWord;
                    #endif
 
                     pDDSurfBytes+=ddsd.lPitch*(dwYWindowOffset+dwCopyHeight-1);
                     for(DWORD y=0; y<dwCopyHeight; y++,pDDSurfBytes-=ddsd.lPitch) {
                         pSrcWord = ((DWORD*)pDDSurfBytes)+dwXWindowOffset;
-                        #ifdef PANDA_ARGB_ORDER 
+                        #ifdef PANDA_BGRA_ORDER 
                             memcpy(pDstLine,pSrcWord,ddsd.lPitch);
                             pDstLine+=ddsd.lPitch;
                         #else
@@ -803,7 +802,7 @@ HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) 
                             g = *pSrcByte++;
                             r = *pSrcByte++;
 
-                            #ifdef PANDA_ARGB_ORDER                             
+                            #ifdef PANDA_BGRA_ORDER                             
                                *pDstWord = 0xFF000000 | (r << 16) | (g << 8) | b;
                             #else
                                *pDstWord = 0xFF000000 | (b << 16) | (g << 8) | r;                           
@@ -858,7 +857,7 @@ HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) 
                             g = (dwPixel & greenmask) >> greenshift;
                             r = (dwPixel & redmask) >> redshift;
 
-                            #ifdef PANDA_ARGB_ORDER
+                            #ifdef PANDA_BGRA_ORDER
                               *pDstWord = 0xFF000000 | (r << 16) | (g << 8) | b;
                             #else
                               *pDstWord = 0xFF000000 | (b << 16) | (g << 8) | r;   
@@ -887,7 +886,7 @@ HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) 
                             g = (BYTE)((dwPixel>> 8) & g_LowByteMask);
                             b = (BYTE)((dwPixel    ) & g_LowByteMask);
 
-                            #ifdef PANDA_ARGB_ORDER
+                            #ifdef PANDA_BGRA_ORDER
                                 *pDstByte++ = b;
                                 *pDstByte++ = g;
                                 *pDstByte++ = r;                            
@@ -907,7 +906,7 @@ HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) 
                         pDDSurfBytes+=ddsd.lPitch*(dwYWindowOffset+dwCopyHeight-1);
                         for(DWORD y=0; y<dwCopyHeight; y++,pDDSurfBytes-=ddsd.lPitch) {
                             pSrcByte = pDDSurfBytes+dwXWindowOffset*3*sizeof(BYTE);
-                         #ifdef PANDA_ARGB_ORDER 
+                         #ifdef PANDA_BGRA_ORDER 
                             memcpy(pDstByte,pSrcByte,ddsd.lPitch);
                             pDstByte+=ddsd.lPitch;
                          #else
@@ -976,7 +975,7 @@ HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) 
                             g = (dwPixel & greenmask) >> greenshift;
                             r = (dwPixel & redmask) >> redshift;
 
-                            #ifdef PANDA_ARGB_ORDER
+                            #ifdef PANDA_BGRA_ORDER
                                 *pDstByte++ = b;
                                 *pDstByte++ = g;
                                 *pDstByte++ = r;
