@@ -19,23 +19,22 @@
 #include "audio_manager.h"
 #include "config_audio.h"
 
-AudioManager* AudioManager::_global_ptr = (AudioManager*)0L;
-AudioManager::UpdateFunc* AudioManager::_update_func =
-    (AudioManager::UpdateFunc*)0L;
-AudioManager::ShutdownFunc* AudioManager::_shutdown_func =
-    (AudioManager::ShutdownFunc*)0L;
+// Statics (all default to zero):
+AudioManager* AudioManager::_global_ptr;
+AudioManager::UpdateFunc* AudioManager::_update_func;
+AudioManager::ShutdownFunc* AudioManager::_shutdown_func;
 mutex AudioManager::_manager_mutex;
 bool AudioManager::_quit;
-thread* AudioManager::_spawned = (thread*)0L;
-AudioManager::LoopSet* AudioManager::_loopset = (AudioManager::LoopSet*)0L;
-AudioManager::LoopSet* AudioManager::_loopcopy = (AudioManager::LoopSet*)0L;
-bool AudioManager::_sfx_active = false;
-bool AudioManager::_music_active = false;
-bool AudioManager::_hard_sfx_active = false;
-bool AudioManager::_hard_music_active = false;
-bool AudioManager::_master_volume_change = false;
-float AudioManager::_master_sfx_volume = 0.;
-float AudioManager::_master_music_volume = 0.;
+thread* AudioManager::_spawned;
+AudioManager::LoopSet* AudioManager::_loopset;
+AudioManager::LoopSet* AudioManager::_loopcopy;
+bool AudioManager::_sfx_active;
+bool AudioManager::_music_active;
+bool AudioManager::_hard_sfx_active;
+bool AudioManager::_hard_music_active;
+bool AudioManager::_master_volume_change;
+float AudioManager::_master_sfx_volume;
+float AudioManager::_master_music_volume;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AudioManager::destructor
@@ -45,7 +44,7 @@ float AudioManager::_master_music_volume = 0.;
 AudioManager::
 ~AudioManager() {
   shutdown();
-  _global_ptr = (AudioManager*)0L;
+  _global_ptr = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -87,7 +86,8 @@ void AudioManager::
 ns_update() {
   // handle looping
   if (_loopcopy) {
-    for (LoopSet::iterator i=_loopcopy->begin(); i!=_loopcopy->end(); ++i) {
+    LoopSet::iterator i=_loopcopy->begin();
+    for (; i!=_loopcopy->end(); ++i) {
       AudioSound* sound = *i;
       if (sound->status() == AudioSound::READY) {
         audio_debug("AudioManager::ns_update looping '" 
@@ -179,7 +179,7 @@ ns_set_loop(AudioSound* sound, bool state) {
   }
   if (state) {
     _loopset->insert(sound);
-  } else if (_loopset->find(sound) != _loopset->end()) {
+  } else {
     _loopset->erase(sound);
   }
 }

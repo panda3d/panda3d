@@ -53,16 +53,18 @@ ConfigureFn(config_audio) {
   Config::ConfigTable::Symbol::iterator i;
   audio_mode_flags = new string;
   for (i=mode.begin(); i!=mode.end(); ++i) {
-    if (!audio_mode_flags->empty())
+    if (!audio_mode_flags->empty()) {
       *audio_mode_flags += " ";
+    }
     *audio_mode_flags += (*i).Val();
   }
   Config::ConfigTable::Symbol parms;
   config_audio.GetAll("audio-driver-param", parms);
   audio_driver_params = new string;
   for (i=parms.begin(); i!=parms.end(); ++i) {
-    if (!audio_driver_params->empty())
+    if (!audio_driver_params->empty()) {
       *audio_driver_params += " ";
+    }
     *audio_driver_params += (*i).Val();
   }
 
@@ -70,33 +72,37 @@ ConfigureFn(config_audio) {
                                                    "/dev/dsp"));
 
   string stmp = config_audio.GetString("audio-thread-priority", "NORMAL");
-  for (string::iterator q=stmp.begin(); q!=stmp.end(); ++q)
+  for (string::iterator q=stmp.begin(); q!=stmp.end(); ++q) {
     (*q) = toupper(*q);
-  if (stmp == "LOW")
+  }
+  if (stmp == "LOW") {
     audio_thread_priority = 0;
-  else if (stmp == "NORMAL")
+  } else if (stmp == "NORMAL") {
     audio_thread_priority = 1;
-  else if (stmp == "HIGH")
+  } else if (stmp == "HIGH") {
     audio_thread_priority = 2;
-  else
+  } else{
     audio_thread_priority = -1;
+  }
 }
 
 void audio_load_loaders() {
   static bool did_load = false;
 
-  if (did_load)
+  if (did_load) {
     return;
+  }
   Config::ConfigTable::Symbol::iterator i;
   Config::ConfigTable::Symbol loaders;
   config_audio.GetAll("audio-loader", loaders);
   for (i=loaders.begin(); i!=loaders.end(); ++i) {
     Filename dlname = Filename::dso_filename("libaudio_load_" + (*i).Val() +
                                              ".so");
-    audio_cat->info() << "loading '" << (*i).Val() << "' loader" << endl;
+    audio_info("loading '" << (*i).Val() << "' loader");
     void* tmp = load_dso(dlname);
-    if (tmp == (void*)0L)
-      audio_cat->info() << "unable to load: " << load_dso_error() << endl;
+    if (tmp == (void*)0L) {
+      audio_info("unable to load: " << load_dso_error());
+    }
   }
   did_load = true;
 }
