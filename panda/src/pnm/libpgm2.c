@@ -56,7 +56,7 @@ putus( n, file )
     FILE* file;
     {
     if ( n >= 10 )
-        putus( n / 10, file );
+        putus((unsigned short)( n / 10), file );
     (void) putc( n % 10 + '0', file );
     }
 
@@ -101,7 +101,8 @@ pgm_writepgmrowplain(FILE* file,gray* grayrow,int cols,gray maxval)
         if ( *gP > maxval )
             pm_error( "value out of bounds (%u > %u)", *gP, maxval );
 #endif /*DEBUG*/
-        putus( (unsigned long) *gP, file );
+//        putus( (unsigned long) *gP, file );
+        putus( (unsigned short) *gP, file );
         charcount += 3;
         }
     if ( charcount > 0 )

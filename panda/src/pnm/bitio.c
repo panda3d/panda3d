@@ -15,6 +15,9 @@
  * without express or implied warranty.
  *
  * $Log$
+ * Revision 1.3  2001/06/14 01:16:55  cxgeorge
+ * fix warnings
+ *
  * Revision 1.2  2001/05/25 16:13:01  drose
  * *** empty log message ***
  *
@@ -39,7 +42,7 @@
 \*/
 
 #include "bitio.h"
-
+#include <assert.h>
 struct bitstream
 {
         FILE *
@@ -156,7 +159,11 @@ pm_bitread(struct bitstream *b, unsigned long nbits, unsigned long *val)
         if(!b)
                 return -1;
 
-        while (b->nbitbuf < nbits)
+        #ifdef _DEBUG
+          assert(((signed long)nbits) > 0);
+        #endif
+        
+        while (b->nbitbuf < (signed long)nbits)
         {
                 if((c = getc(b->f)) == EOF)
                 {

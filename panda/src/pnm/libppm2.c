@@ -57,7 +57,7 @@ static void
 putus(unsigned short n, FILE* file)
     {
     if ( n >= 10 )
-        putus( n / 10, file );
+        putus( (unsigned short)(n / 10), file );
     (void) putc( n % 10 + '0', file );
     }
 

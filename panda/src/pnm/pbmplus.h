@@ -15,6 +15,10 @@
 
 #include <pandabase.h>
 
+#ifdef WIN32_VC
+#define MSDOS
+#endif
+
 #include <sys/types.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -109,16 +113,21 @@ extern int rand();
 
 #else /* SYSV or AMIGA */
 
+#ifndef WIN32_VC
 #include <strings.h>
 extern void srandom();
 extern long random();
+#endif
 
 #endif /*SYSV or AMIGA*/
 
 #if (defined(MSDOS) || defined(AMIGA) )
+#include <string.h>
 #include <fcntl.h>
 #include <time.h>
 #include <stdlib.h>
+#define index(s,c) strchr(s,c)
+#define rindex(s,c) strrchr(s,c)
 #else
 #ifndef __cplusplus
 extern int atoi();
