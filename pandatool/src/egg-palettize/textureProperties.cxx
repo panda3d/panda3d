@@ -18,7 +18,7 @@
 
 #include "textureProperties.h"
 #include "palettizer.h"
-
+#include <stdio.h>
 #include "pnmFileType.h"
 #include "datagram.h"
 #include "datagramIterator.h"
@@ -40,6 +40,7 @@ TextureProperties() {
   _force_format = false;
   _minfilter = EggTexture::FT_unspecified;
   _magfilter = EggTexture::FT_unspecified;
+  _anisotropic_degree = 0;
   _color_type = (PNMFileType *)NULL;
   _alpha_type = (PNMFileType *)NULL;
 }
@@ -57,6 +58,7 @@ TextureProperties(const TextureProperties &copy) :
   _force_format(copy._force_format),
   _minfilter(copy._minfilter),
   _magfilter(copy._magfilter),
+  _anisotropic_degree(copy._anisotropic_degree),
   _color_type(copy._color_type),
   _alpha_type(copy._alpha_type)
 {
@@ -75,6 +77,7 @@ operator = (const TextureProperties &copy) {
   _force_format = copy._force_format;
   _minfilter = copy._minfilter;
   _magfilter = copy._magfilter;
+  _anisotropic_degree = copy._anisotropic_degree;
   _color_type = copy._color_type;
   _alpha_type = copy._alpha_type;
 }
@@ -153,9 +156,11 @@ get_string() const {
     num << _num_channels;
     result += num.str();
   }
+
   result += get_format_string(_format);
   result += get_filter_string(_minfilter);
   result += get_filter_string(_magfilter);
+  result += get_anisotropic_degree_string(_anisotropic_degree);
   result += get_type_string(_color_type, _alpha_type);
   return result;
 }
@@ -182,6 +187,7 @@ update_properties(const TextureProperties &other) {
 
   _minfilter = union_filter(_minfilter, other._minfilter);
   _magfilter = union_filter(_magfilter, other._magfilter);
+  _anisotropic_degree = max(_anisotropic_degree, other._anisotropic_degree);
 
   if (_color_type == (PNMFileType *)NULL) {
     _color_type = other._color_type;
@@ -244,23 +250,23 @@ fully_define() {
       case EggTexture::F_alpha:
       case EggTexture::F_luminance:
         break;
-        
+
       default:
         _format = EggTexture::F_luminance;
       }
       break;
-      
+
     case 2:
       switch (_format) {
       case EggTexture::F_luminance_alpha:
       case EggTexture::F_luminance_alphamask:
         break;
-        
+
       default:
         _format = EggTexture::F_luminance_alpha;
       }
       break;
-      
+
     case 3:
       switch (_format) {
       case EggTexture::F_rgb:
@@ -269,21 +275,21 @@ fully_define() {
       case EggTexture::F_rgb5:
       case EggTexture::F_rgb332:
         break;
-        
+
       case EggTexture::F_rgba8:
         _format = EggTexture::F_rgb8;
         break;
-        
+
       case EggTexture::F_rgba5:
       case EggTexture::F_rgba4:
         _format = EggTexture::F_rgb5;
         break;
-        
+
       default:
         _format = EggTexture::F_rgb;
       }
       break;
-      
+
     case 4:
       switch (_format) {
       case EggTexture::F_rgba:
@@ -293,7 +299,7 @@ fully_define() {
       case EggTexture::F_rgba4:
       case EggTexture::F_rgba5:
         break;
-        
+
       default:
         _format = EggTexture::F_rgba;
       }
@@ -339,6 +345,7 @@ update_egg_tex(EggTexture *egg_tex) const {
   egg_tex->set_format(_format);
   egg_tex->set_minfilter(_minfilter);
   egg_tex->set_magfilter(_minfilter);
+  egg_tex->set_anisotropic_degree(_anisotropic_degree);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -353,7 +360,8 @@ bool TextureProperties::
 egg_properties_match(const TextureProperties &other) const {
   return (_format == other._format &&
           _minfilter == other._minfilter &&
-          _magfilter == other._magfilter);
+          _magfilter == other._magfilter &&
+          _anisotropic_degree == other._anisotropic_degree);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -371,6 +379,9 @@ operator < (const TextureProperties &other) const {
   }
   if (_magfilter != other._magfilter) {
     return (int)_magfilter < (int)other._magfilter;
+  }
+  if (_anisotropic_degree != other._anisotropic_degree) {
+    return _anisotropic_degree < other._anisotropic_degree;
   }
   if (_color_type != other._color_type) {
     return _color_type < other._color_type;
@@ -393,6 +404,7 @@ operator == (const TextureProperties &other) const {
   return (_format == other._format &&
           _minfilter == other._minfilter &&
           _magfilter == other._magfilter &&
+          _anisotropic_degree == other._anisotropic_degree &&
           _color_type == other._color_type &&
           (_color_type == (PNMFileType *)NULL ||
            _alpha_type == other._alpha_type));
@@ -487,29 +499,44 @@ get_format_string(EggTexture::Format format) {
 string TextureProperties::
 get_filter_string(EggTexture::FilterType filter_type) {
   switch (filter_type) {
-  case EggTexture::FT_unspecified:
-    return "u";
+      case EggTexture::FT_unspecified:
+        return "u";
 
-  case EggTexture::FT_nearest:
-    return "n";
+      case EggTexture::FT_nearest:
+        return "n";
 
-  case EggTexture::FT_linear:
-    return "l";
+      case EggTexture::FT_linear:
+        return "l";
 
-  case EggTexture::FT_nearest_mipmap_nearest:
-    return "m1";
+      case EggTexture::FT_nearest_mipmap_nearest:
+        return "m1";
 
-  case EggTexture::FT_linear_mipmap_nearest:
-    return "m2";
+      case EggTexture::FT_linear_mipmap_nearest:
+        return "m2";
 
-  case EggTexture::FT_nearest_mipmap_linear:
-    return "m3";
+      case EggTexture::FT_nearest_mipmap_linear:
+        return "m3";
 
-  case EggTexture::FT_linear_mipmap_linear:
-    return "m";
+      case EggTexture::FT_linear_mipmap_linear:
+        return "m";
   }
 
   return "x";
+}
+
+string TextureProperties::
+get_anisotropic_degree_string(int aniso_degree) {
+    if(aniso_degree<=1)
+        return "";
+     else {
+         char deg_str[20];
+
+           deg_str[0]='a';
+           deg_str[1]='n';
+           sprintf(deg_str+2,"%d",aniso_degree);
+           string result(deg_str);
+           return result;
+     }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -612,6 +639,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   datagram.add_bool(_force_format);
   datagram.add_int32((int)_minfilter);
   datagram.add_int32((int)_magfilter);
+  datagram.add_int32(_anisotropic_degree);
   writer->write_pointer(datagram, _color_type);
   writer->write_pointer(datagram, _alpha_type);
 }
@@ -681,6 +709,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
   _minfilter = (EggTexture::FilterType)scan.get_int32();
   _magfilter = (EggTexture::FilterType)scan.get_int32();
+  _anisotropic_degree = scan.get_int32();
   manager->read_pointer(scan);  // _color_type
   manager->read_pointer(scan);  // _alpha_type
 }

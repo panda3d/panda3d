@@ -104,6 +104,7 @@ from_egg(EggFile *egg_file, EggData *data, EggTexture *egg_tex) {
   _properties._format = _egg_tex->get_format();
   _properties._minfilter = _egg_tex->get_minfilter();
   _properties._magfilter = _egg_tex->get_magfilter();
+  _properties._anisotropic_degree = _egg_tex->get_anisotropic_degree();
 
   string name = filename.get_basename();
   TextureImage *texture = pal->get_texture(name);
@@ -402,15 +403,19 @@ write(ostream &out, int indent_level) const {
   }
 
   switch (_properties._minfilter) {
-  case EggTexture::FT_nearest_mipmap_nearest:
-  case EggTexture::FT_linear_mipmap_nearest:
-  case EggTexture::FT_nearest_mipmap_linear:
-  case EggTexture::FT_linear_mipmap_linear:
-    out << " mipmap";
-    break;
+      case EggTexture::FT_nearest_mipmap_nearest:
+      case EggTexture::FT_linear_mipmap_nearest:
+      case EggTexture::FT_nearest_mipmap_linear:
+      case EggTexture::FT_linear_mipmap_linear:
+        out << " mipmap";
+        break;
 
-  default:
-    break;
+      default:
+        break;
+  }
+
+  if(_properties._anisotropic_degree>1) {
+        out << " aniso " << _properties._anisotropic_degree;
   }
 
   out << "\n";

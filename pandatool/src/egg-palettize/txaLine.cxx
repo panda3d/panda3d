@@ -38,6 +38,7 @@ TxaLine() {
   _scale = 0.0;
   _x_size = 0;
   _y_size = 0;
+  _aniso_degree = 0;
   _num_channels = 0;
   _format = EggTexture::F_unspecified;
   _force_format = false;
@@ -189,6 +190,26 @@ parse(const string &line) {
         }
         _got_margin = true;
 
+      } else if (word == "aniso") {
+        ++wi;
+        if (wi == words.end()) {
+          nout << "Integer argument required for 'aniso'.\n";
+          return false;
+        }
+
+        const string &arg = (*wi);
+        if (!string_to_int(arg, _aniso_degree)) {
+          nout << "Not an integer: " << arg << "\n";
+          return false;
+        }
+        if ((_aniso_degree < 2) || (_aniso_degree > 16)) {
+          // make it an error to specific degree 0 or 1, which means no anisotropy so it's probably an input mistake
+          nout << "Invalid anistropic degree (range is 2-16): " << _aniso_degree << "\n";
+          return false;
+        }
+
+        _keywords.push_back(KW_anisotropic);
+
       } else if (word == "coverage") {
         ++wi;
         if (wi == words.end()) {
@@ -225,7 +246,7 @@ parse(const string &line) {
         PaletteGroup *group = pal->test_palette_group(word);
         if (group != (PaletteGroup *)NULL) {
           _palette_groups.insert(group);
-          
+
         } else {
           // Maybe it's a format name.  This suggests an image format,
           // but may be overridden to reflect the number of channels in
@@ -240,7 +261,7 @@ parse(const string &line) {
             EggRenderMode::AlphaMode am = EggRenderMode::string_alpha_mode(word);
             if (am != EggRenderMode::AM_unspecified) {
               _alpha_mode = am;
-              
+
             } else {
               // Maybe it's an image file request.
               if (!parse_image_type_request(word, _color_type, _alpha_type)) {
@@ -295,6 +316,7 @@ match_egg(EggFile *egg_file) const {
     case KW_nearest:
     case KW_linear:
     case KW_mipmap:
+    case KW_anisotropic:
       // These mean nothing to an egg file.
       break;
 
@@ -419,6 +441,10 @@ match_texture(TextureImage *texture) const {
     case KW_mipmap:
       request._minfilter = EggTexture::FT_linear_mipmap_linear;
       request._magfilter = EggTexture::FT_linear_mipmap_linear;
+      break;
+
+    case KW_anisotropic:
+      request._anisotropic_degree = _aniso_degree;
       break;
 
     case KW_cont:

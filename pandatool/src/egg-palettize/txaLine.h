@@ -72,6 +72,7 @@ private:
   bool _force_format;
   EggRenderMode::AlphaMode _alpha_mode;
 
+  int _aniso_degree;
   bool _got_margin;
   int _margin;
   bool _got_coverage_threshold;
@@ -82,7 +83,8 @@ private:
     KW_nearest,
     KW_linear,
     KW_mipmap,
-    KW_cont
+    KW_cont,
+    KW_anisotropic
   };
 
   typedef pvector<Keyword> Keywords;

@@ -61,17 +61,20 @@ public:
   EggTexture::Format _format;
   bool _force_format;
   EggTexture::FilterType _minfilter, _magfilter;
+  int _anisotropic_degree;
   PNMFileType *_color_type;
   PNMFileType *_alpha_type;
 
 private:
   static string get_format_string(EggTexture::Format format);
   static string get_filter_string(EggTexture::FilterType filter_type);
+  static string get_anisotropic_degree_string(int aniso_degree);
   static string get_type_string(PNMFileType *color_type,
                                 PNMFileType *alpha_type);
 
   static EggTexture::Format union_format(EggTexture::Format a,
                                          EggTexture::Format b);
+
   static EggTexture::FilterType union_filter(EggTexture::FilterType a,
                                              EggTexture::FilterType b);
   // The TypedWritable interface follows.

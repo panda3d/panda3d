@@ -48,6 +48,7 @@ public:
   bool _force_format;
   EggTexture::FilterType _minfilter;
   EggTexture::FilterType _magfilter;
+  int _anisotropic_degree;
   EggRenderMode::AlphaMode _alpha_mode;
   bool _omit;
   int _margin;
