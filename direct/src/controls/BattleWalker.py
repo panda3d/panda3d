@@ -2,6 +2,12 @@
 from direct.showbase.ShowBaseGlobal import *
 import GravityWalker
 
+BattleStrafe = 0
+
+def ToggleStrafe():
+    global BattleStrafe
+    BattleStrafe = not BattleStrafe
+
 class BattleWalker(GravityWalker.GravityWalker):
     def __init__(self):
         GravityWalker.GravityWalker.__init__(self)
@@ -19,9 +25,9 @@ class BattleWalker(GravityWalker.GravityWalker):
         # If targetNp is not available, revert back to GravityWalker.handleAvatarControls.
         # This situation occurs when the target dies, but we aren't switched out of
         # battle walker control mode.
-
+        
         targetNp = self.avatarNodePath.currentTarget
-        if targetNp == None or targetNp.isEmpty():
+        if not BattleStrafe or targetNp == None or targetNp.isEmpty():
             return GravityWalker.GravityWalker.handleAvatarControls(self, task)
         
         # get the button states:
@@ -96,6 +102,12 @@ class BattleWalker(GravityWalker.GravityWalker):
             distance = dt * self.speed
             slideDistance = dt * self.slideSpeed
             rotation = dt * self.rotationSpeed
+
+            # Prevent avatar from getting too close to target
+            d = self.avatarNodePath.getPos(targetNp)
+            if (d[0]*d[0]+d[1]*d[1] < .1):
+                print "toooo close"
+                distance = 0
 
             # Take a step in the direction of our previous heading.
             self.vel=Vec3(Vec3.forward() * distance + 
