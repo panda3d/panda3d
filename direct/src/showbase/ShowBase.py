@@ -78,6 +78,14 @@ class ShowBase(DirectObject.DirectObject):
         fsmRedefine = self.config.GetBool('fsm-redefine', 0)
         State.FsmRedefine = fsmRedefine
 
+        # This is used for syncing multiple PCs in a distributed cluster
+        try:
+            # Has the cluster sync variable been set externally?
+            self.clusterSyncFlag = clusterSyncFlag
+        except NameError:
+            # Has the clusterSyncFlag been set via a config variable
+            self.clusterSyncFlag = base.config.GetBool('cluster-sync', 0)
+
         self.hidden = NodePath('hidden')
 
         # We need a graphics engine to manage the actual rendering.
@@ -110,8 +118,9 @@ class ShowBase(DirectObject.DirectObject):
         self.camList = []
         self.camNode = None
         self.camLens = None
-        self.groupList = []
-        self.camera = self.render.attachNewNode('camera')
+        #self.camera = self.render.attachNewNode('camera')
+        self.camera = None
+        self.cameraList = []
         self.camera2d = self.render2d.attachNewNode('camera2d')
 
         # Now that we've set up the window structures, assign an exitfunc.
@@ -566,21 +575,20 @@ class ShowBase(DirectObject.DirectObject):
         """
 
         for i in range(chanConfig.getNumGroups()):
-            cam = NodePath(chanConfig.getGroupNode(i)).find('**/+Camera')
-            lens = cam.node().getLens()
-
+            # Create a top level camera node for this group
+            camera = self.render.attachNewNode(chanConfig.getGroupNode(i))
+            self.cameraList.append(camera)
+            # Extract camera
+            cam = camera.find('**/+Camera')
+            self.camList.append(cam)
             # Enforce our expected aspect ratio, overriding whatever
             # nonsense ChanConfig put in there.
+            lens = cam.node().getLens()
             lens.setAspectRatio(self.aspectRatio)
-            
-            cam.reparentTo(self.camera)
-            self.camList.append(cam)
-            
-        # this is how we know which display region cameras belong to which
-        # camera group.  display region i belongs to group self.groupList[i]
-        for i in range(chanConfig.getNumDrs()):
-            self.groupList.append(chanConfig.getGroupMembership(i))
 
+        # Update main camera variables
+        if self.camera == None:
+            self.camera = self.cameraList[0]
         if self.cam == None:
             self.cam = self.camList[0]
             # If you need to get a handle to the camera node itself,
@@ -781,7 +789,9 @@ class ShowBase(DirectObject.DirectObject):
     def igloop(self, state):
         # Finally, render the frame.
         self.graphicsEngine.renderFrame()
-
+        if self.clusterSyncFlag:
+            base.graphicsEngine.syncFrame()
+    
         if self.mainWinMinimized:
             # If the main window is minimized, slow down the app a bit
             # by sleeping here in igloop so we don't use all available

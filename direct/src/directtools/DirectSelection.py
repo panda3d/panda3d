@@ -19,12 +19,10 @@ class DirectNodePath(NodePath):
         center = self.bbox.getCenter()
         # Create matrix to hold the offset between the nodepath
         # and its center of action (COA)
-        self.mCoa2Dnp = Mat4()
-        if direct.coaMode == COA_ORIGIN:
-            self.mCoa2Dnp.assign(Mat4.identMat())
-        else:
-            self.mCoa2Dnp.assign(Mat4.identMat())
+        self.mCoa2Dnp = Mat4(Mat4.identMat())
+        if direct.coaMode == COA_CENTER:
             self.mCoa2Dnp.setRow(3, Vec4(center[0], center[1], center[2], 1))
+            
         # Transform from nodePath to widget
         self.tDnp2Widget = TransformState.makeIdentity()
 
@@ -233,12 +231,28 @@ class DirectBoundingBox:
         # Record the node path
         self.nodePath = nodePath
         # Compute bounds, min, max, etc.
-        self.computeBounds()
+        self.computeTightBounds()
         # Generate the bounding box
         self.lines = self.createBBoxLines()
 
+    def computeTightBounds(self):
+        # Compute bounding box using tighter calcTightBounds function
+        # Need to clear out existing transform on node path
+        tMat = Mat4()
+        tMat.assign(self.nodePath.getMat())
+        self.nodePath.clearMat()
+        # Get bounds
+        self.min = Point3(0)
+        self.max = Point3(0)
+        self.nodePath.calcTightBounds(self.min,self.max)
+        # Calc center and radius
+        self.center = Point3((self.min + self.max)/2.0)
+        self.radius = Vec3(self.max - self.min).length()
+        # Restore transform
+        self.nodePath.setMat(tMat)
+        del tMat
+        
     def computeBounds(self):
-        #self.bounds = self.nodePath.getBounds()
         self.bounds = self.getBounds()
         if self.bounds.isEmpty() or self.bounds.isInfinite():
             self.center = Point3(0)

@@ -2,6 +2,7 @@ from PandaObject import *
 from DirectGlobals import *
 from DirectUtil import *
 from DirectGeometry import *
+import Task
 
 class DirectManipulationControl(PandaObject):
     def __init__(self):

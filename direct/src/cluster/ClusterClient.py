@@ -156,7 +156,7 @@ class ClusterClientSync(ClusterClient):
                 server.sendSwapNow()
             self.notify.debug(
                 "------------------------------START swap----------")
-            base.win.swap()
+            base.graphicsEngine.flipFrame()
             self.notify.debug(
                 "------------------------------------------END swap")
         return Task.cont
@@ -335,12 +335,11 @@ def createClusterClient():
                 displayConfigs.append(cci)
     # Create Cluster Managers (opening connections to servers)
     # Are the servers going to be synced?
-    clusterSyncFlag = base.config.GetBool('cluster-sync', 0)
-    if clusterSyncFlag:
-        base.win.setSync(1)
-        return ClusterClientSync(displayConfigs, clusterSyncFlag)
+    if base.clusterSyncFlag:
+        base.graphicsEngine.setAutoFlip(0)
+        return ClusterClientSync(displayConfigs, base.clusterSyncFlag)
     else:
-        return ClusterClient(displayConfigs, clusterSyncFlag)
+        return ClusterClient(displayConfigs, base.clusterSyncFlag)
     
     
 class DummyClusterClient(DirectObject.DirectObject):

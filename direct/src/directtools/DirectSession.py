@@ -17,6 +17,7 @@ import SceneGraphExplorer
 import OnscreenText
 import types
 import string
+import Loader
 
 class DirectSession(PandaObject):
 
@@ -35,7 +36,7 @@ class DirectSession(PandaObject):
         self.drList = DisplayRegionList()
         self.iRayList = map(lambda x: x.iRay, self.drList)
         self.dr = self.drList[0]
-        self.camera = base.cameraList[0]
+        self.camera = base.camera
         self.trueCamera = self.camera
         self.iRay = self.dr.iRay
         self.coaMode = COA_ORIGIN
@@ -124,7 +125,8 @@ class DirectSession(PandaObject):
         
         # One run through the context task to init everything
         self.drList.updateContext()
-        self.drList.camUpdate('')
+        for dr in self.drList:
+            dr.camUpdate()
 
         self.actionEvents = [
             ['select', self.select],
@@ -183,7 +185,7 @@ class DirectSession(PandaObject):
         if self.clusterMode == 'client':
             self.cluster = createClusterClient()
         elif self.clusterMode == 'server':
-            self.cluster = ClusterServer(base.cameraList[0], base.camList[0])
+            self.cluster = ClusterServer(base.camera, base.cam)
         else:
             self.cluster = DummyClusterClient()
         __builtins__['cluster'] = self.cluster
@@ -768,133 +770,17 @@ class DirectSession(PandaObject):
         for iRay in self.iRayList:
             iRay.removeUnpickable(item)
 
-class DisplayRegionList(PandaObject):
-    def __init__(self):
-        self.displayRegionList = []
-        self.displayRegionLookup = {}
-        i = 0
-
-        # Things are funky if we are oobe
-        if (hasattr(base, 'oobeMode') and base.oobeMode):
-            # assume we only have one cam at this point
-            self.displayRegionList.append(DisplayRegionContext(base.win, base.cam, base.groupList[0]))
-        else:
-            for cameraGroup in base.cameraList:
-                # This is following the old way of setting up
-                # display regions.  A display region is set up for
-                # each camera node in the scene graph.  This was done
-                # so that only display regions in the scene graph are
-                # considered.  The right way to do this is to set up
-                # a display region for each real display region, and then
-                # keep track of which are currently active (e.g. use a flag)
-                # processing only them.
-                camList=cameraGroup.findAllMatches('**/+Camera')
-                for cameraIndex in range(camList.getNumPaths()):
-                    camera = camList[cameraIndex]
-                    if camera.getName()=='<noname>':
-                        camera.setName('Camera%d' % cameraIndex)
-                    group = base.groupList[cameraIndex]
-                    self.displayRegionList.append(
-                        DisplayRegionContext(base.win,
-                                             camera,group))
-                    if camera.getName()!='<noname>' or len(camera.getName())==0:
-                        self.displayRegionLookup[camera.getName()]=i
-                        i = i + 1
-
-        self.accept("CamChange",self.camUpdate)
-        self.accept("DIRECT-mouse1",self.mouseUpdate)
-        self.accept("DIRECT-mouse2",self.mouseUpdate)
-        self.accept("DIRECT-mouse3",self.mouseUpdate)
-        self.accept("DIRECT-mouse1Up",self.mouseUpdate)
-        self.accept("DIRECT-mouse2Up",self.mouseUpdate)
-        self.accept("DIRECT-mouse3Up",self.mouseUpdate)
-
-        #setting up array of camera nodes
-        cameraList = []
-        for dr in self.displayRegionList:
-            cameraList.append(dr.cam)
-
-    def __getitem__(self, index):
-        return self.displayRegionList[index]
-
-    def __len__(self):
-        return len(self.displayRegionList)
-
-    def updateContext(self):
-        self.contextTask(None)
-
-    def setNearFar(self, near, far):
-        for dr in self.displayRegionList:
-            dr.camLens.setNearFar(near, far)
-    
-    def setNear(self, near):
-        for dr in self.displayRegionList:
-            dr.camLens.setNear(near)
-    
-    def setFar(self, far):
-        for dr in self.displayRegionList:
-            dr.camLens.setFar(far)
-
-    def setFov(self, hfov, vfov):
-        for dr in self.displayRegionList:
-            dr.setFov(hfov, vfov)
-
-    def setHfov(self, fov):
-        for dr in self.displayRegionList:
-            dr.setHfov(fov)
-
-    def setVfov(self, fov):
-        for dr in self.displayRegionList:
-            dr.setVfov(fov)
-
-    def camUpdate(self, camName):
-        if self.displayRegionLookup.has_key(camName):
-            self.displayRegionList[self.displayRegionLookup[camName]].camUpdate()
-        else:
-            for dr in self.displayRegionList:
-                dr.camUpdate()
-
-    def mouseUpdate(self, modifiers = DIRECT_NO_MOD):
-        for dr in self.displayRegionList:
-            dr.mouseUpdate()
-        direct.dr = self.getCurrentDr()
-
-    def getCurrentDr(self):
-        for dr in self.displayRegionList:
-            if (dr.mouseX >= -1.0 and dr.mouseX <= 1.0 and
-                dr.mouseY >= -1.0 and dr.mouseY <= 1.0):
-                return dr
-        return self.displayRegionList[0]
-
-    def start(self):
-        # First shutdown any existing task
-        self.stop()
-        # Start a new context task
-        self.spawnContextTask()
-
-    def stop(self):
-        # Kill the existing context task
-        taskMgr.remove('DIRECTContextTask')
-
-    def spawnContextTask(self):
-        taskMgr.add(self.contextTask, 'DIRECTContextTask')
-
-    def removeContextTask(self):
-        taskMgr.remove('DIRECTContextTask')
-
-    def contextTask(self, state):
-        # Window Data
-        self.mouseUpdate()
-        # hack to test movement
-        return Task.cont
-
-class DisplayRegionContext:
-    def __init__(self, win, cam, group):
-        self.win = win
+class DisplayRegionContext(PandaObject):
+    regionCount = 0
+    def __init__(self, cam):
         self.cam = cam
         self.camNode = self.cam.node()
         self.camLens = self.camNode.getLens()
-        self.group = group
+        # set lens change callback
+        changeEvent = 'dr%d-change-event' % DisplayRegionContext.regionCount
+        DisplayRegionContext.regionCount += 1
+        self.camLens.setChangeEvent(changeEvent)
+        self.accept(changeEvent, self.camUpdate)
         self.iRay = SelectionRay(self.cam)
         self.nearVec = Vec3(0)
         self.mouseX = 0.0
@@ -923,7 +809,8 @@ class DisplayRegionContext:
         return self.__dict__[key]
 
     def setOrientation(self):
-        hpr = self.cam.getHpr(base.cameraList[self.group])
+        # MRM This assumes orientation is set on transform above cam
+        hpr = self.cam.getHpr()
         if hpr[2] < 135 and hpr[2]>45 or hpr[2]>225 and hpr[2]<315:
             self.isSideways = 1
         elif hpr[2] > -135 and hpr[2] < -45 or hpr[2] < -225 and hpr[2] > -315:
@@ -964,8 +851,6 @@ class DisplayRegionContext:
             
     def camUpdate(self):
         # Window Data
-        self.width = self.win.getWidth()
-        self.height = self.win.getHeight()
         self.near = self.camLens.getNear()
         self.far = self.camLens.getFar()
         self.fovH = self.camLens.getHfov()
@@ -995,6 +880,108 @@ class DisplayRegionContext:
         self.nearVec.set((self.nearWidth*0.5) * self.mouseX,
                          self.near,
                          (self.nearHeight*0.5) * self.mouseY)
+
+class DisplayRegionList(PandaObject):
+    def __init__(self):
+        self.displayRegionList = []
+        i = 0
+        # Things are funky if we are oobe
+        if (hasattr(base, 'oobeMode') and base.oobeMode):
+            # assume we only have one cam at this point
+            drc = DisplayRegionContext(base.cam)
+            self.displayRegionList.append(drc)
+        else:
+            # MRM: Doesn't properly handle multiple camera groups anymore
+            # Assumes everything is under main camera
+            for cameraGroup in base.cameraList:
+                # This is following the old way of setting up
+                # display regions.  A display region is set up for
+                # each camera node in the scene graph.  This was done
+                # so that only display regions in the scene graph are
+                # considered.  The right way to do this is to set up
+                # a display region for each real display region, and then
+                # keep track of which are currently active (e.g. use a flag)
+                # processing only them.
+                for camIndex in range(len(base.camList)):
+                    cam = base.camList[camIndex]
+                    if cam.getName()=='<noname>':
+                        cam.setName('Camera%d' % camIndex)
+                    drc = DisplayRegionContext(cam)
+                    self.displayRegionList.append(drc)
+
+        self.accept("DIRECT-mouse1",self.mouseUpdate)
+        self.accept("DIRECT-mouse2",self.mouseUpdate)
+        self.accept("DIRECT-mouse3",self.mouseUpdate)
+        self.accept("DIRECT-mouse1Up",self.mouseUpdate)
+        self.accept("DIRECT-mouse2Up",self.mouseUpdate)
+        self.accept("DIRECT-mouse3Up",self.mouseUpdate)
+
+    def __getitem__(self, index):
+        return self.displayRegionList[index]
+
+    def __len__(self):
+        return len(self.displayRegionList)
+
+    def updateContext(self):
+        self.contextTask(None)
+
+    def setNearFar(self, near, far):
+        for dr in self.displayRegionList:
+            dr.camLens.setNearFar(near, far)
+    
+    def setNear(self, near):
+        for dr in self.displayRegionList:
+            dr.camLens.setNear(near)
+    
+    def setFar(self, far):
+        for dr in self.displayRegionList:
+            dr.camLens.setFar(far)
+
+    def setFov(self, hfov, vfov):
+        for dr in self.displayRegionList:
+            dr.setFov(hfov, vfov)
+
+    def setHfov(self, fov):
+        for dr in self.displayRegionList:
+            dr.setHfov(fov)
+
+    def setVfov(self, fov):
+        for dr in self.displayRegionList:
+            dr.setVfov(fov)
+
+    def mouseUpdate(self, modifiers = DIRECT_NO_MOD):
+        for dr in self.displayRegionList:
+            dr.mouseUpdate()
+        direct.dr = self.getCurrentDr()
+
+    def getCurrentDr(self):
+        for dr in self.displayRegionList:
+            if (dr.mouseX >= -1.0 and dr.mouseX <= 1.0 and
+                dr.mouseY >= -1.0 and dr.mouseY <= 1.0):
+                return dr
+        return self.displayRegionList[0]
+
+    def start(self):
+        # First shutdown any existing task
+        self.stop()
+        # Start a new context task
+        self.spawnContextTask()
+
+    def stop(self):
+        # Kill the existing context task
+        taskMgr.remove('DIRECTContextTask')
+
+    def spawnContextTask(self):
+        taskMgr.add(self.contextTask, 'DIRECTContextTask')
+
+    def removeContextTask(self):
+        taskMgr.remove('DIRECTContextTask')
+
+    def contextTask(self, state):
+        # Window Data
+        self.mouseUpdate()
+        # hack to test movement
+        return Task.cont
 
 # Create one
 __builtins__['direct'] = base.direct = DirectSession()

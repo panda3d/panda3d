@@ -166,7 +166,7 @@ class ClusterServer(DirectObject.DirectObject):
             pass
         elif (type == CLUSTER_SWAP_NOW):
             self.notify.debug('swapping')
-            base.win.swap()
+            base.graphicsEngine.flipFrame()
         else:
             self.notify.warning("Received unknown packet type:" % type)
         return type
