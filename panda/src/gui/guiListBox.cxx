@@ -43,6 +43,9 @@ void GuiListBox::recompute_frame(void) {
       btm = frm[2];
     if (frm[3] > tp)
       tp = frm[3];
+    (*i)->freeze();
+    gui_cat->debug() << "in recompute: freeze lvl (" << (*i)->get_name()
+		     << ") = " << (*i)->thaw() << endl;
   }
   _left = lft;
   _right = rgt;
@@ -65,7 +68,8 @@ void GuiListBox::visible_patching(void) {
       _arrow_top = false;
       _visible[0]->unmanage();
       _visible[0] = *(_top_stack.begin());
-      _visible[0]->manage(_mgr, *_eh);
+      if (_mgr != (GuiManager*)0L)
+	_visible[0]->manage(_mgr, *_eh);
       _top_stack.pop_back();
     }
   } else {
@@ -76,7 +80,8 @@ void GuiListBox::visible_patching(void) {
       _visible[0]->unmanage();
       _top_stack.push_back(_visible[0]);
       _visible[0] = _up_arrow;
-      _up_arrow->manage(_mgr, *_eh);
+      if (_mgr != (GuiManager*)0L)
+	_up_arrow->manage(_mgr, *_eh);
     }
   }
 
@@ -198,15 +203,28 @@ int GuiListBox::freeze(void) {
   ItemVector::iterator i;
   ItemDeque::iterator j;
 
+  gui_cat->debug() << "GuiListBox::freeze()" << endl;
   for (i=_top_stack.begin(); i!=_top_stack.end(); ++i) {
+    if (*i == _up_arrow)
+      continue;
+    if (*i == _down_arrow)
+      continue;
     int count = (*i)->freeze();
     result = max(result, count);
   }
   for (i=_visible.begin(); i!=_visible.end(); ++i) {
+    if (*i == _up_arrow)
+      continue;
+    if (*i == _down_arrow)
+      continue;
     int count = (*i)->freeze();
     result = max(result, count);
   }
   for (j=_bottom_stack.begin(); j!=_bottom_stack.end(); ++j) {
+    if (*j == _up_arrow)
+      continue;
+    if (*j == _down_arrow)
+      continue;
     int count = (*j)->freeze();
     result = max(result, count);
   }
@@ -220,15 +238,28 @@ int GuiListBox::thaw(void) {
   ItemVector::iterator i;
   ItemDeque::iterator j;
 
+  gui_cat->debug() << "GuiListBox::thaw()" << endl;
   for (i=_top_stack.begin(); i!=_top_stack.end(); ++i) {
+    if (*i == _up_arrow)
+      continue;
+    if (*i == _down_arrow)
+      continue;
     int count = (*i)->thaw();
     result = max(result, count);
   }
   for (i=_visible.begin(); i!=_visible.end(); ++i) {
+    if (*i == _up_arrow)
+      continue;
+    if (*i == _down_arrow)
+      continue;
     int count = (*i)->thaw();
     result = max(result, count);
   }
   for (j=_bottom_stack.begin(); j!=_bottom_stack.end(); ++j) {
+    if (*j == _up_arrow)
+      continue;
+    if (*j == _down_arrow)
+      continue;
     int count = (*j)->thaw();
     result = max(result, count);
   }

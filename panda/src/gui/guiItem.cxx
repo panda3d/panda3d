@@ -29,6 +29,7 @@ int GuiItem::freeze() {
 }
 
 int GuiItem::thaw() {
+  gui_cat->debug() << "GuiItem::thaw" << endl;
   return 0;
 }
 
