@@ -23,10 +23,14 @@
 class EXPCL_PANDA MathNumbers {
 PUBLISHED:
   static const float pi_f;
+  static const float rad_2_deg_f;
+  static const float deg_2_rad_f;
   static const float ln2_f;
 
   static const double pi;
   static const double ln2;
+  static const double rad_2_deg;
+  static const double deg_2_rad;
 };
 
 #endif
