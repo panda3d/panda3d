@@ -133,7 +133,7 @@ public:
   virtual void deactivate_window();
   virtual void reactivate_window();
 
-  virtual void resize(unsigned int xsize,unsigned int ysize);
+  virtual bool resize(unsigned int xsize,unsigned int ysize);
   virtual unsigned int verify_window_sizes(unsigned int numsizes,unsigned int *dimen);
 
 protected:

@@ -1000,7 +1000,7 @@ void wcrGraphicsWindow::swap() {
     chromium.SwapBuffers();
 }
 
-void wcrGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
+bool wcrGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
     if (!_props._fullscreen) {
         // resizing windowed mode is easy
         SetWindowPos(_mwindow, NULL, 0,0, xsize,ysize, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSENDCHANGING);
@@ -1021,7 +1021,7 @@ void wcrGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
       DEVMODE dm;
       if (!find_acceptable_display_mode(dwWidth,dwHeight,dwFullScreenBitDepth,dm)) {
           wcrdisplay_cat.fatal() << "window resize(" << xsize << "," << ysize << ") failed, no compatible fullscreen display mode found!\n";
-          return;
+          return false;
       }
 
       // this causes WM_SIZE msg to be produced
@@ -1038,6 +1038,7 @@ void wcrGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
       assert(_pCurrent_display_settings!=NULL);
       memcpy(_pCurrent_display_settings,&dm,sizeof(DEVMODE));
     }
+    return true;
 }
 
 unsigned int wcrGraphicsWindow::
