@@ -62,7 +62,9 @@ calculate_normal(Normald &result, CoordinateSystem cs) const {
 
   // Project the polygon into each of the three major planes and
   // calculate the area of each 2-d projection.  This becomes the
-  // polygon normal.
+  // polygon normal.  This works because the ratio between these
+  // different areas corresponds to the angle at which the polygon is
+  // tilted toward each plane.
   size_t num_verts = size();
   for (size_t i = 0; i < num_verts; i++) {
     Vertexd p0 = get_vertex(i)->get_pos3();
