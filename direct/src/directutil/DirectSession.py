@@ -28,7 +28,7 @@ class DirectSession(PandaObject):
         self.useObjectHandles()
         self.grid = DirectGrid()
         self.grid.disable()
-        self.lights = DirectLights()
+        self.lights = DirectLights(direct.group)
         # Create some default lights
         self.lights.createDefaultLights()
         # But turn them off
@@ -83,7 +83,7 @@ class DirectSession(PandaObject):
                           'shift', 'shift-up', 'alt', 'alt-up',
                           'control', 'control-up',
                           'page_up', 'page_down',
-                          'b', 'c', 'f', 'l', 't', 'v', 'w']
+                          'b', 'c', 'f', 'l', 's', 't', 'v', 'w']
         self.mouseEvents = ['mouse1', 'mouse1-up',
                             'mouse2', 'mouse2-up',
                             'mouse3', 'mouse3-up']
@@ -191,6 +191,8 @@ class DirectSession(PandaObject):
         elif input == 'escape':
             self.deselectAll()
         elif input == 'l':
+            self.lights.toggle()
+        elif input == 's':
             if self.selected.last:
                 self.select(self.selected.last)
         elif input == 'delete':

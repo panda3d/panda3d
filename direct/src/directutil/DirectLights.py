@@ -42,7 +42,7 @@ class DirectLights(NodePath):
             light.setColor(VBase4(1))
         elif type == 'spot':
             self.spotCount += 1
-            light = SpotLight('spot_' + `self.spotCount`)
+            light = Spotlight('spot_' + `self.spotCount`)
             light.setColor(VBase4(1))
         # Add the new light
         self.addLight(light)
@@ -57,6 +57,7 @@ class DirectLights(NodePath):
 
     def addLight(self, light):
         # Attach node to self
+        # MRM: This doesn't work for spotlights!
         nodePath = self.attachNewNode(light.upcastToNamedNode())
         # Store it in the lists
         self.lightList.append(light)
@@ -70,6 +71,13 @@ class DirectLights(NodePath):
     def allOff(self):
         """ Turn off all DIRECT lights """
         base.initialState.clearAttribute(LightTransition.getClassType())
+
+    def toggle(self):
+        """ Toggles light attribute, but doesn't toggle individual lights """
+        if base.initialState.hasAttribute(LightTransition.getClassType()):
+            self.allOff()
+        else:
+            self.allOn()
 
     def setOnNum(self, index):
         self.setOn(self.lightList[index])

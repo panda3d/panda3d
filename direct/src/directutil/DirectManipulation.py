@@ -64,10 +64,10 @@ class DirectManipulationControl(PandaObject):
         taskMgr.spawnTaskNamed(
             Task.doLater(MANIPULATION_MOVE_DELAY,
                          Task.Task(self.switchToMoveMode),
-                         'manip-switch-to-move'),
+                         'manip-move-wait'),
             'manip-move-wait')
         """
-        # Or if we move far enough
+        # Begin manipulating once we move far enough
         self.moveDir = None
         watchMouseTask = Task.Task(self.watchMouseTask)
         watchMouseTask.initX = direct.dr.mouseX
@@ -84,7 +84,6 @@ class DirectManipulationControl(PandaObject):
         if (((abs (state.initX - direct.dr.mouseX)) > 0.01) |
             ((abs (state.initY - direct.dr.mouseY)) > 0.01)):
             taskMgr.removeTasksNamed('manip-move-wait')
-            taskMgr.removeTasksNamed('manip-switch-to-move')
             self.mode = 'move'
             self.manipulateObject()
             return Task.done
@@ -94,7 +93,6 @@ class DirectManipulationControl(PandaObject):
     def manipulationStop(self):
         taskMgr.removeTasksNamed('manipulateObject')
         taskMgr.removeTasksNamed('manip-move-wait')
-        taskMgr.removeTasksNamed('manip-switch-to-move')
         taskMgr.removeTasksNamed('manip-watch-mouse')
         # depending on flag.....
         if self.mode == 'select':
