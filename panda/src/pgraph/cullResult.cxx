@@ -23,6 +23,30 @@
 #include "renderState.h"
 #include "clockObject.h"
 
+// This value is used instead of 1.0 to represent the alpha level of a
+// pixel that is to be considered "opaque" for the purposes of M_dual.
+
+// Ideally, 1.0 is the only correct value for this.  Realistically, we
+// have to fudge it lower for two reasons:
+
+// (1) The modelers tend to paint textures with very slight
+// transparency levels in places that are not intended to be
+// transparent, without realizing it.  These very faint transparency
+// regions are normally (almost) invisible, but when rendered with
+// M_dual they may be revealed as regions of poor alpha sorting.
+
+// (2) There seems to be some problem in DX where, in certain
+// circumstances apparently related to automatic texture management,
+// it spontaneously drops out the bottom two bits of an eight-bit
+// alpha channel, causing a value of 255 to become a value of 252
+// instead.
+
+// We use 256 as the denominator here (instead of, say, 255) because a
+// fractional power of two will have a terminating representation in
+// base 2, and thus will be more likely to have a precise value in
+// whatever internal representation the graphics API will use.
+static const float dual_opaque_level = 252.0f / 256.0f;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CullResult::make_next
 //       Access: Public
@@ -274,7 +298,7 @@ get_dual_transparent_state_decals() {
     // test of < 1.0 instead of > 0.0.  This makes us draw big empty
     // pixels where the alpha values are 0.0, but we don't overwrite
     // the decals where the pixels are 1.0.
-    state = RenderState::make(AlphaTestAttrib::make(AlphaTestAttrib::M_less, 1.0f),
+    state = RenderState::make(AlphaTestAttrib::make(AlphaTestAttrib::M_less, dual_opaque_level),
                               TransparencyAttrib::make(TransparencyAttrib::M_alpha),
                               RenderState::get_max_priority());
   }
@@ -305,7 +329,7 @@ CPT(RenderState) CullResult::
 get_dual_opaque_state() {
   static CPT(RenderState) state = NULL;
   if (state == (const RenderState *)NULL) {
-    state = RenderState::make(AlphaTestAttrib::make(AlphaTestAttrib::M_equal, 1.0f),
+    state = RenderState::make(AlphaTestAttrib::make(AlphaTestAttrib::M_greater_equal, dual_opaque_level),
                               TransparencyAttrib::make(TransparencyAttrib::M_none),
                               RenderState::get_max_priority());
   }
