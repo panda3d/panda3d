@@ -589,7 +589,7 @@ process_model_node(const MDagPath &dag_path, EggGroupNode *egg_root) {
 
   if (mayaegg_cat.is_debug()) {
     mayaegg_cat.debug()
-      << dag_path.fullPathName() << ": " << dag_node.typeName();
+      << dag_path.fullPathName().asChar() << ": " << dag_node.typeName();
 
     if (MAnimUtil::isAnimated(dag_path)) {
       mayaegg_cat.debug(false)
@@ -602,25 +602,29 @@ process_model_node(const MDagPath &dag_path, EggGroupNode *egg_root) {
   if (dag_node.inUnderWorld()) {
     if (mayaegg_cat.is_debug()) {
       mayaegg_cat.debug()
-        << "Ignoring underworld node " << dag_path.fullPathName() << "\n";
+        << "Ignoring underworld node " << dag_path.fullPathName().asChar()
+        << "\n";
     }
 
   } else if (dag_node.isIntermediateObject()) {
     if (mayaegg_cat.is_debug()) {
       mayaegg_cat.debug()
-        << "Ignoring intermediate object " << dag_path.fullPathName() << "\n";
+        << "Ignoring intermediate object " << dag_path.fullPathName().asChar()
+        << "\n";
     }
 
   } else if (dag_path.hasFn(MFn::kCamera)) {
     if (mayaegg_cat.is_debug()) {
       mayaegg_cat.debug()
-        << "Ignoring camera node " << dag_path.fullPathName() << "\n";
+        << "Ignoring camera node " << dag_path.fullPathName().asChar()
+        << "\n";
     }
 
   } else if (dag_path.hasFn(MFn::kLight)) {
     if (mayaegg_cat.is_debug()) {
       mayaegg_cat.debug()
-        << "Ignoring light node " << dag_path.fullPathName() << "\n";
+        << "Ignoring light node " << dag_path.fullPathName().asChar()
+        << "\n";
     }
 
   } else if (dag_path.hasFn(MFn::kJoint)) {
@@ -653,7 +657,8 @@ process_model_node(const MDagPath &dag_path, EggGroupNode *egg_root) {
       MFnNurbsSurface surface(dag_path, &status);
       if (!status) {
         mayaegg_cat.info()
-          << "Error in node " << dag_path.fullPathName() << ":\n"
+          << "Error in node " << dag_path.fullPathName().asChar()
+          << ":\n"
           << "  it appears to have a NURBS surface, but does not.\n";
       } else {
         make_nurbs_surface(dag_path, surface, egg_group, egg_root);
@@ -677,7 +682,7 @@ process_model_node(const MDagPath &dag_path, EggGroupNode *egg_root) {
         MFnNurbsCurve curve(dag_path, &status);
         if (!status) {
           mayaegg_cat.info()
-            << "Error in node " << dag_path.fullPathName() << ":\n"
+            << "Error in node " << dag_path.fullPathName().asChar() << ":\n"
             << "  it appears to have a NURBS curve, but does not.\n";
         } else {
           make_nurbs_curve(dag_path, curve, egg_group, egg_root);
@@ -701,11 +706,26 @@ process_model_node(const MDagPath &dag_path, EggGroupNode *egg_root) {
       MFnMesh mesh(dag_path, &status);
       if (!status) {
         mayaegg_cat.info()
-          << "Error in node " << dag_path.fullPathName() << ":\n"
+          << "Error in node " << dag_path.fullPathName().asChar() << ":\n"
           << "  it appears to have a polygon mesh, but does not.\n";
       } else {
         make_polyset(dag_path, mesh, egg_group, egg_root);
       }
+    }
+
+  } else if (dag_path.hasFn(MFn::kLocator)) {
+    EggGroup *egg_group = get_egg_group(dag_path, egg_root);
+
+    if (egg_group == (EggGroup *)NULL) {
+      mayaegg_cat.error()
+        << "Cannot determine group node.\n";
+      return false;
+
+    } else {
+      if (_animation_convert != AC_model) {
+        get_transform(dag_path, egg_group);
+      }
+      make_locator(dag_path, dag_node, egg_group, egg_root);
     }
 
   } else {
@@ -744,7 +764,7 @@ process_chan_node(const MDagPath &dag_path, EggGroupNode *egg_root) {
 
     if (mayaegg_cat.is_debug()) {
       mayaegg_cat.debug()
-        << dag_path.fullPathName() << ": " << dag_node.typeName();
+        << dag_path.fullPathName().asChar() << ": " << dag_node.typeName();
       
       if (MAnimUtil::isAnimated(dag_path)) {
         mayaegg_cat.debug(false)
@@ -838,54 +858,20 @@ get_transform(const MDagPath &dag_path, EggGroup *egg_group) {
     return;
   }
 
-  MFnDagNode dagNode(transformNode, &status);
+  // Extract the matrix from the dag path, and convert it to the local
+  // frame.
+  MMatrix mat = dag_path.inclusiveMatrix(&status);
   if (!status) {
-    status.perror("MFnDagNode constructor");
+    status.perror("Can't get transform matrix");
     return;
   }
-
-  MTransformationMatrix matrix(dagNode.transformationMatrix());
-
-  if (mayaegg_cat.is_spam()) {
-    mayaegg_cat.spam()
-      << "  translation: " << matrix.translation(MSpace::kWorld)
-      << "\n";
-    double d[3];
-    MTransformationMatrix::RotationOrder rOrder;
-
-    matrix.getRotation(d, rOrder, MSpace::kWorld);
-    mayaegg_cat.spam()
-      << "  rotation: ["
-      << d[0] << ", "
-      << d[1] << ", "
-      << d[2] << "]\n";
-    matrix.getScale(d, MSpace::kWorld);
-    mayaegg_cat.spam()
-      << "  scale: ["
-      << d[0] << ", "
-      << d[1] << ", "
-      << d[2] << "]\n";
-  }
-
-  MMatrix mat = matrix.asMatrix();
   LMatrix4d m4d(mat[0][0], mat[0][1], mat[0][2], mat[0][3],
                 mat[1][0], mat[1][1], mat[1][2], mat[1][3],
                 mat[2][0], mat[2][1], mat[2][2], mat[2][3],
                 mat[3][0], mat[3][1], mat[3][2], mat[3][3]);
-
-  // Now convert the matrix to the local frame.
-  mat = dag_path.inclusiveMatrix(&status);
-  if (!status) {
-    status.perror("Can't get coordinate space for matrix");
-    return;
-  }
-  LMatrix4d n2w(mat[0][0], mat[0][1], mat[0][2], mat[0][3],
-                mat[1][0], mat[1][1], mat[1][2], mat[1][3],
-                mat[2][0], mat[2][1], mat[2][2], mat[2][3],
-                mat[3][0], mat[3][1], mat[3][2], mat[3][3]);
-  m4d = m4d * n2w * egg_group->get_node_frame_inv();
+  m4d = m4d * egg_group->get_node_frame_inv();
   if (!m4d.almost_equal(LMatrix4d::ident_mat(), 0.0001)) {
-    egg_group->set_transform(m4d);
+    egg_group->add_matrix(m4d);
   }
 }
 
@@ -1508,6 +1494,68 @@ make_polyset(const MDagPath &dag_path, const MFnMesh &mesh,
       }
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::make_locator
+//       Access: Private
+//  Description: Locators are used in Maya to indicate a particular
+//               position in space to the user or the modeler.  We
+//               represent that in egg with an ordinary Group node,
+//               which we transform by the locator's position, so that
+//               the indicated point becomes the origin at this node
+//               and below.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+make_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
+             EggGroup *egg_group, EggGroupNode *egg_root) {
+  MStatus status;
+
+  unsigned int num_children = dag_node.childCount();
+  MObject locator;
+  bool found_locator = false;
+  for (unsigned int ci = 0; ci < num_children && !found_locator; ci++) {
+    locator = dag_node.child(ci);
+    found_locator = (locator.apiType() == MFn::kLocator);
+  }
+
+  if (!found_locator) {
+    mayaegg_cat.error()
+      << "Couldn't find locator within locator node " 
+      << dag_path.fullPathName().asChar() << "\n";
+    return;
+  }
+
+  LPoint3d p3d;
+  if (!get_vec3d_attribute(locator, "localPosition", p3d)) {
+    mayaegg_cat.error()
+      << "Couldn't get position of locator " 
+      << dag_path.fullPathName().asChar() << "\n";
+    return;
+  }
+
+  // We need to convert the position to world coordinates.  For some
+  // reason, Maya can only tell it to us in local coordinates.
+  MMatrix mat = dag_path.inclusiveMatrix(&status);
+  if (!status) {
+    status.perror("Can't get coordinate space for locator");
+    return;
+  }
+  LMatrix4d n2w(mat[0][0], mat[0][1], mat[0][2], mat[0][3],
+                mat[1][0], mat[1][1], mat[1][2], mat[1][3],
+                mat[2][0], mat[2][1], mat[2][2], mat[2][3],
+                mat[3][0], mat[3][1], mat[3][2], mat[3][3]);
+  p3d = p3d * n2w;
+
+  // Now convert the locator point into the group's space.
+  p3d = p3d * egg_group->get_node_frame_inv();
+
+  egg_group->add_translate(p3d);
+
+  // Presumably, the locator's position has some meaning to the
+  // end-user, so we will implicitly tag it with the DCS flag so it
+  // won't get flattened out.
+  egg_group->set_dcs_flag(true);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -42,6 +42,7 @@ class EggXfmSAnim;
 class MayaShaderColorDef;
 
 class MDagPath;
+class MFnDagNode;
 class MFnNurbsSurface;
 class MFnNurbsCurve;
 class MFnMesh;
@@ -103,6 +104,8 @@ private:
                     const MFnMesh &mesh,
                     EggGroup *egg_group, EggGroupNode *egg_root,
                     MayaShader *default_shader = NULL);
+  void make_locator(const MDagPath &dag_path, const MFnDagNode &dag_node,
+                    EggGroup *egg_group, EggGroupNode *egg_root);
   bool get_vertex_weights(const MDagPath &dag_path, const MFnMesh &mesh,
                           EggGroupNode *egg_root,
                           pvector<EggGroup *> &joints, MFloatArray &weights);

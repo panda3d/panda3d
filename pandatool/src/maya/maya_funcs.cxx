@@ -210,6 +210,43 @@ get_vec2d_attribute(MObject &node, const string &attribute_name,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: get_vec3d_attribute
+//  Description: Extracts the named three-component vector from the
+//               MObject.
+////////////////////////////////////////////////////////////////////
+bool
+get_vec3d_attribute(MObject &node, const string &attribute_name,
+                    LVecBase3d &value) {
+  MStatus status;
+
+  MObject vec3d_object;
+  if (!get_maya_attribute(node, attribute_name, vec3d_object)) {
+    maya_cat.error()
+      << "Attribute " << attribute_name
+      << " does not have a vec3d object value.\n";
+    describe_maya_attribute(node, attribute_name);
+    return false;
+  }
+
+  MFnNumericData data(vec3d_object, &status);
+  if (!status) {
+    maya_cat.error()
+      << "Attribute " << attribute_name << " is of type "
+      << vec3d_object.apiTypeStr() << ", not a NumericData.\n";
+    return false;
+  }
+
+  status = data.getData(value[0], value[1], value[2]);
+  if (!status) {
+    maya_cat.error()
+      << "Unable to extract 3 doubles from " << attribute_name
+      << ", of type " << vec3d_object.apiTypeStr() << "\n";
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: get_mat4d_attribute
 //  Description: Extracts the named 4x4 matrix from the MObject.
 ////////////////////////////////////////////////////////////////////
@@ -482,19 +519,19 @@ list_maya_attributes(MObject &node) {
   status = node_fn.getConnections(connections);
   if (!status) {
     status.perror("MFnDependencyNode::getConnections");
-    return;
-  }
 
-  maya_cat.info()
-    << name << " has " << connections.length() << " connections.\n";
-  for (i = 0; i < connections.length(); i++) {
-    MPlug plug = connections[i];
-    maya_cat.info(false)
-      << "  " << i << ". " << plug.name().asChar() << ", "
-      << plug.attribute().apiTypeStr() << ", " 
-      << plug.node().apiTypeStr() << "\n";
+  } else {
+    maya_cat.info()
+      << name << " has " << connections.length() << " connections.\n";
+    for (i = 0; i < connections.length(); i++) {
+      MPlug plug = connections[i];
+      maya_cat.info(false)
+        << "  " << i << ". " << plug.name().asChar() << ", "
+        << plug.attribute().apiTypeStr() << ", " 
+        << plug.node().apiTypeStr() << "\n";
+    }
   }
-  
+    
   maya_cat.info()
     << name << " has " << node_fn.attributeCount() << " attributes.\n";
   for (i = 0; i < node_fn.attributeCount(); i++) {
