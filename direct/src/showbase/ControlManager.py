@@ -84,7 +84,9 @@ class ControlManager:
     def useWalkControls(self):
         assert(self.debugPrint("useWalkControls()"))
         self.currentControls.disableAvatarControls()
+        self.currentControls.collisionsOff()
         self.currentControls = self.walkControls
+        self.currentControls.collisionsOn()
         if self.isEnabled:
             self.currentControls.enableAvatarControls()
 

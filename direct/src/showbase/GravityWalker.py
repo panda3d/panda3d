@@ -291,7 +291,7 @@ class GravityWalker(DirectObject.DirectObject):
             self.rotationSpeed = 0
             jump = 0
 
-        if 1:
+        if 0:
             onScreenDebug.add("airborneHeight", self.lifter.getAirborneHeight()) #*#
             onScreenDebug.add("falling", self.falling) #*#
             onScreenDebug.add("isOnGround", self.lifter.isOnGround()) #*#
