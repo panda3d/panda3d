@@ -1534,6 +1534,10 @@ compute_seg_col(int c,
       LVecBase4f ov = GB * LVecBase4f(3.0*t*t, 2.0*t, 1.0, 0.0);
       if (parametrics_cat.is_debug()) {
 	parametrics_cat.debug()
+	  << "Matrix is:\n";
+	GB.write(parametrics_cat.debug(false), 2);
+	parametrics_cat.debug(false)
+	  << "vector is " << LVecBase4f(3.0*t*t, 2.0*t, 1.0, 0.0) << "\n"
 	  << "orig tangent = " << ov << "\n";
       }
       P.set_col(c, ov);
