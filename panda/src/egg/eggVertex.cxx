@@ -152,11 +152,12 @@ set_uv(const string &name, const TexCoordd &uv) {
 
   if (uv_obj.is_null()) {
     uv_obj = new EggVertexUV(name, uv);
-
   } else {
     uv_obj = new EggVertexUV(*uv_obj);
     uv_obj->set_uv(uv);
   }
+
+  nassertv(get_uv(name) == uv);
 }
 
 ////////////////////////////////////////////////////////////////////
