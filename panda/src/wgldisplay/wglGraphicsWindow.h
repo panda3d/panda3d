@@ -39,8 +39,10 @@ public:
   virtual void begin_flip();
 
 protected:
-  virtual bool open_window();
   virtual void close_window();
+  virtual bool open_window();
+  virtual void reconsider_fullscreen_size(DWORD &x_size, DWORD &y_size, 
+                                          DWORD &bitdepth);
 
 private:
   int choose_pfnum() const;

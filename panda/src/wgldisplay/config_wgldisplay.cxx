@@ -58,3 +58,8 @@ int gl_force_pixfmt = config_wgldisplay.GetInt("gl-force-pixfmt", 0);
 // Set this true to force all GL windows to fail to open correctly.
 bool gl_force_invalid = config_wgldisplay.GetBool("gl-force-invalid", false);
 
+// This is true to insist that low-memory cards open only 640x480
+// fullscreen windows, no matter what resolution of window was
+// requested.  It only affects fullscreen windows.
+bool gl_do_vidmemsize_check = config_wgldisplay.GetBool("gl-do-vidmemsize-check", true);
+
