@@ -1985,15 +1985,6 @@ do_expand_object_type(EggGroup *egg_group, const pset<string> &expanded,
     } else if (cmp_nocase_uh(object_type, "model") == 0) {
       egg_syntax = "<Model> { 1 }";
       
-    } else if (cmp_nocase_uh(object_type, "decal") == 0) {
-      egg_syntax = "<Scalar> decal { 1 }";
-      
-    } else if (cmp_nocase_uh(object_type, "billboard") == 0) {
-      egg_syntax = "<Billboard> { axis }";
-      
-    } else if (cmp_nocase_uh(object_type, "billboard-point") == 0) {
-      egg_syntax = "<Billboard> { point }";
-      
     } else if (cmp_nocase_uh(object_type, "backstage") == 0) {
       // Ignore "backstage" geometry.
       return false;
