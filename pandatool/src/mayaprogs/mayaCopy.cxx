@@ -71,6 +71,12 @@ MayaCopy() {
 ////////////////////////////////////////////////////////////////////
 void MayaCopy::
 run() {
+  _maya = MayaApi::open_api(_program_name);
+  if (!_maya->is_valid()) {
+    nout << "Unable to initialize Maya.\n";
+    exit(1);
+  }
+
   SourceFiles::iterator fi;
   for (fi = _source_files.begin(); fi != _source_files.end(); ++fi) {
     ExtraData ed;
@@ -149,14 +155,6 @@ filter_filename(const string &source) {
 bool MayaCopy::
 copy_maya_file(const Filename &source, const Filename &dest,
                CVSSourceDirectory *dir) {
-  if (_maya.is_null()) {
-    _maya = MayaApi::open_api(_program_name);
-    if (!_maya->is_valid()) {
-      nout << "Unable to initialize Maya.\n";
-      exit(1);
-    }
-  }
-
   if (!_maya->read(source)) {
     maya_cat.error()
       << "Unable to read " << source << "\n";
