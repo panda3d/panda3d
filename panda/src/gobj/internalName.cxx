@@ -210,7 +210,12 @@ make_texcoord_from_bam(const FactoryParams &params) {
   parse_params(params, scan, manager);
 
   string name = scan.get_string();
-  PT(InternalName) me = get_texcoord_name(name);
+  PT(InternalName) me;
+  if (name == "default") {
+    me = get_texcoord();
+  } else {
+    me = get_texcoord_name(name);
+  }
 
   me->ref();
   manager->register_finalize(me);
