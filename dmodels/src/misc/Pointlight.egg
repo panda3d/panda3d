@@ -4,7 +4,7 @@
   "MaxEggPlugin nul.max -o 'E:\sshadhan\Desktop\Pointlight.egg'"
 }
 <Texture> Tex1 {
-  "PointLight.tif"
+  "../maps/Pointlight.png"
   <Scalar> format { rgb }
   <Scalar> wrapu { repeat }
   <Scalar> wrapv { repeat }

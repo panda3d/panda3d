@@ -4,7 +4,7 @@
   "MaxEggPlugin nul.max -o 'E:\sshadhan\Desktop\Dirlight.egg'"
 }
 <Texture> Tex1 {
-  "DirLight.tif"
+  "../maps/Dirlight.png"
   <Scalar> format { rgb }
   <Scalar> wrapu { repeat }
   <Scalar> wrapv { repeat }
