@@ -8,11 +8,14 @@ class ZoneEntity(ZoneEntityBase.ZoneEntityBase, BasicEntities.NodePathAttribs):
         ZoneEntityBase.ZoneEntityBase.__init__(self, level, entId)
 
         self.nodePath = self.level.getZoneNode(self.entId)
-        if __dev__:
-            if self.nodePath is None:
+        if self.nodePath is None:
+            if __dev__:
                 self.level.reportModelSpecSyncError(
                     'unknown zoneNum %s; zone was removed from model?' %
                     self.entId)
+            else:
+                self.notify.error('zone %s not found in level model' %
+                                  self.entId)
         BasicEntities.NodePathAttribs.initNodePathAttribs(self, doReparent=0)
 
         # dict of zoneNum to 'visible' reference count
@@ -22,7 +25,7 @@ class ZoneEntity(ZoneEntityBase.ZoneEntityBase, BasicEntities.NodePathAttribs):
         self.incrementRefCounts(self.visibility)
 
     def destroy(self):
-        # no need to dec our reference counts
+        # no need to dec our visibility reference counts
         BasicEntities.NodePathAttribs.destroy(self)
         ZoneEntityBase.ZoneEntityBase.destroy(self)
 
