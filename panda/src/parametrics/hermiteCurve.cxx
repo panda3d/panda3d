@@ -899,6 +899,7 @@ wrap_hpr(const LVector3f &hpr1, LVector3f &hpr2) {
 ////////////////////////////////////////////////////////////////////
 void HermiteCurve::
 invalidate_cv(int n, bool redo_all) {
+#if 0 //[////todo:skyler
   double t1 = 0.0, t2 = get_max_t();
   if (n>0 && _points[n-1]._type!=HC_CUT) {
     const HermiteCurveCV &p1 = _points[n-1];
@@ -933,6 +934,7 @@ invalidate_cv(int n, bool redo_all) {
       invalidate(t1, t2);
     }
   }
+#endif //]
 }
 
 
@@ -968,6 +970,7 @@ find_cv(double t) {
 ////////////////////////////////////////////////////////////////////
 void HermiteCurve::
 recompute_basis() {
+#if 0 //[////todo:skyler
   int n;
   for (n = 0; n<_segs.size(); n++) {
     if (_points[n]._type==HC_CUT) {
@@ -983,5 +986,6 @@ recompute_basis() {
       get_curveseg(n)->hermite_basis(p1, p2, get_tlength(n));
     }
   }
+#endif //]
 }
 

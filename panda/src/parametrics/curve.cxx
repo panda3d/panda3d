@@ -262,6 +262,80 @@ compute_t(double start_t, double length_offset, double guess,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ParametricCurve::convert_to_hermite
+//       Access: Public, Scheme
+//  Description: Stores an equivalent curve representation in the
+//               indicated Hermite curve, if possible.  Returns true
+//               if successful, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool ParametricCurve::
+convert_to_hermite(HermiteCurve &hc) const {
+#if 0 //[////todo:skyler
+  BezierSegs bz_segs;
+  if (!GetBezierSegs(bz_segs)) {
+    return false;
+  }
+
+  // Now convert the Bezier segments to a Hermite.  Normally, the
+  // Beziers will match up head-to-tail, but if they don't, that's a
+  // cut.
+  hc.remove_all_cvs();
+  hc.set_curve_type(_curve_type);
+
+  int i, n;
+  if (!bz_segs.empty()) {
+    double scale_in = 0.0;
+    double scale_out = bz_segs[0]._t;
+    n = hc.append_cv(HC_SMOOTH, bz_segs[0]._v[0]);
+    hc.set_cv_out(n, 3.0 * (bz_segs[0]._v[1] - bz_segs[0]._v[0]) / scale_out);
+
+    for (i = 0; i < bz_segs.size()-1; i++) {
+      scale_in = scale_out;
+      scale_out = bz_segs[i+1]._t - bz_segs[i]._t;
+
+      if (!bz_segs[i]._v[3].almostEqual(bz_segs[i+1]._v[0], 0.0001)) {
+	// Oops, we have a cut.
+	hc.set_cv_type(n, HC_CUT);
+      }
+
+      n = hc.append_cv(HC_FREE, bz_segs[i+1]._v[0]);
+      hc.set_cv_in(n, 3.0 * (bz_segs[i]._v[3] - bz_segs[i]._v[2]) / scale_in);
+      hc.set_cv_tstart(n, bz_segs[i]._t);
+
+      hc.set_cv_out(n, 3.0 * (bz_segs[i+1]._v[1] - bz_segs[i+1]._v[0]) / scale_out);
+    }
+
+    // Now the last CV.
+    scale_in = scale_out;
+    i = bz_segs.size()-1;
+    n = hc.append_cv(HC_SMOOTH, bz_segs[i]._v[3]);
+    hc.set_cv_in(n, 3.0 * (bz_segs[i]._v[3] - bz_segs[i]._v[2]) / scale_in);
+    hc.set_cv_tstart(n, bz_segs[i]._t);
+  }
+
+  // Finally, go through and figure out which CV's are smooth or G1.
+  int num_cvs = hc.get_num_cvs();
+  for (n = 1; n < num_cvs-1; n++) {
+    if (hc.get_cv_type(n)!=HC_CUT) {
+      pfVec3 in = hc.get_cv_in(n);
+      pfVec3 out = hc.get_cv_out(n);
+      
+      if (in.almostEqual(out, 0.0001)) {
+	hc.set_cv_type(n, HC_SMOOTH);
+      } else {
+	in.normalize();
+	out.normalize();
+	if (in.almostEqual(out, 0.0001)) {
+	  hc.set_cv_type(n, HC_G1);
+	}
+      }
+    }
+  }
+#endif //]
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ParametricCurve::convert_to_nurbs
 //       Access: Public
 //  Description: Stores in the indicated NurbsCurve a NURBS
