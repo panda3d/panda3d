@@ -254,6 +254,8 @@ write_datagram(BamWriter *manager, Datagram &me) {
   }
 
   me.add_bool(compress_channels);
+  me.add_bool(temp_hpr_fix);
+
   if (!compress_channels) {
     // Write out everything uncompressed, as a stream of floats.
     for (int i = 0; i < num_matrix_components; i++) {
@@ -268,7 +270,6 @@ write_datagram(BamWriter *manager, Datagram &me) {
     FFTCompressor compressor;
     compressor.set_quality(compress_chan_quality);
     compressor.set_use_error_threshold(true);
-    me.add_bool(temp_hpr_fix);
     compressor.write_header(me);
 
     // First, write out the scales and shears.
@@ -312,8 +313,17 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   bool wrote_compressed = scan.get_bool();
 
+  bool new_hpr = false;
+  if (manager->get_file_minor_ver() >= 14) {
+    // Beginning in bam 4.14, we encode a bool to indicate whether
+    // we used the old hpr or the new hpr calculation.  Previously,
+    // we assume all bams used the old hpr calculation.
+    new_hpr = scan.get_bool();
+  }
+
   if (!wrote_compressed) {
     // Regular floats.
+
     for (int i = 0; i < num_matrix_components; i++) {
       if (manager->get_file_minor_ver() < 6 && i >= 3 && i < 6) {
         // Old bam files didn't store a shear component.
@@ -329,6 +339,41 @@ fillin(DatagramIterator &scan, BamReader *manager) {
       }
     }
 
+    if (!new_hpr && temp_hpr_fix) {
+      // Convert the old HPR form to the new HPR form.
+      size_t num_hprs = max(max(_tables[6].size(), _tables[7].size()),
+                            _tables[8].size());
+
+      LVecBase3f default_hpr(0.0, 0.0, 0.0);
+      if (!_tables[6].empty()) {
+        default_hpr[0] = _tables[6][0];
+      }
+      if (!_tables[7].empty()) {
+        default_hpr[1] = _tables[7][0];
+      }
+      if (!_tables[8].empty()) {
+        default_hpr[2] = _tables[8][0];
+      }
+
+      PTA_float h_table = PTA_float::empty_array(num_hprs);
+      PTA_float p_table = PTA_float::empty_array(num_hprs);
+      PTA_float r_table = PTA_float::empty_array(num_hprs);
+
+      for (size_t hi = 0; hi < num_hprs; hi++) {
+        float h = (hi < _tables[6].size() ? _tables[6][hi] : default_hpr[0]);
+        float p = (hi < _tables[7].size() ? _tables[7][hi] : default_hpr[1]);
+        float r = (hi < _tables[8].size() ? _tables[8][hi] : default_hpr[2]);
+
+        LVecBase3f hpr = old_to_new_hpr(LVecBase3f(h, p, r));
+        h_table[hi] = hpr[0];
+        p_table[hi] = hpr[1];
+        r_table[hi] = hpr[2];
+      }
+      _tables[6] = h_table;
+      _tables[7] = p_table;
+      _tables[8] = r_table;
+    }
+
   } else {
     // Compressed channels.
     if (!read_compressed_channels) {
@@ -336,14 +381,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
         << "Not reading compressed animation channels.\n";
       clear_all_tables();
       return;
-    }
-
-    bool new_hpr = false;
-    if (manager->get_file_minor_ver() >= 14) {
-      // Beginning in bam 4.14, we encode a bool to indicate whether
-      // we used the old hpr or the new hpr calculation.  Previously,
-      // we assume all bams used the old hpr calculation.
-      new_hpr = scan.get_bool();
     }
 
     FFTCompressor compressor;
