@@ -81,6 +81,21 @@ add_forces_from(const ForceNode &other) {
 //  Description : remove operation
 ////////////////////////////////////////////////////////////////////
 void ForceNode::
+remove_force(BaseForce *f) {
+  vector< PT(BaseForce) >::iterator found;
+  PT(BaseForce) ptbf = f;
+  found = find(_forces.begin(), _forces.end(), ptbf);
+  if (found == _forces.end())
+    return;
+  _forces.erase(found);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : remove_force
+//       Access : public
+//  Description : remove operation
+////////////////////////////////////////////////////////////////////
+void ForceNode::
 remove_force(int index) {
   nassertv(index >= 0 && index <= (int)_forces.size());
 

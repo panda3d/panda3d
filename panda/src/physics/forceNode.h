@@ -38,6 +38,7 @@ PUBLISHED:
   INLINE void add_force(BaseForce *force);
 
   void add_forces_from(const ForceNode &other);
+  void remove_force(BaseForce *f);
   void remove_force(int index);
 
 public:
