@@ -254,7 +254,6 @@ begin_frame() {
 void wdxGraphicsWindow8::
 end_flip() {
   if (_dxgsg != (DXGraphicsStateGuardian8 *)NULL && is_active()) {
-    make_current();
     //    wdxdisplay8_cat.debug() << "current swapchain from end_flip is " << _wcontext.pSwapChain << "\n";
     _dxgsg->show_frame();
   }

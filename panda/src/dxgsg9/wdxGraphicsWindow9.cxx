@@ -255,7 +255,6 @@ begin_frame() {
 void wdxGraphicsWindow9::
 end_flip() {
   if (_dxgsg != (DXGraphicsStateGuardian9 *)NULL && is_active()) {
-    make_current();
     //wdxdisplay9_cat.debug() << "current swapchain from end_flip is " << _wcontext.pSwapChain << "\n";
     _dxgsg->show_frame();
   }

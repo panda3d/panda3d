@@ -208,7 +208,11 @@ begin_flip() {
     // calling SwapBuffers() on a Matrix card, we crash a horrible
     // death.  This is a pity since make_current() seems unnecessary
     // on other cards, and does incur some performance overhead.
-    make_current();
+
+    // Let's see if this is still necessary now that we guarantee
+    // begin_flip() is not called until end_frame() has successfully
+    // rendered.
+    //make_current();
 
     SwapBuffers(_hdc);
   }
