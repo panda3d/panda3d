@@ -146,16 +146,19 @@ class TaskManagerWidget(PandaObject):
         taskNames = []
         self.__taskDict = {}
         count = 0
-        for task in self.taskMgr.taskList:
-            taskNames.append(task.name)
-            self.__taskDict[count] = task
-            count += 1
-        self.taskListBox.setlist(taskNames)
-        # And set current index (so keypresses will start with index 0)
-        self.taskListBox.component('listbox').activate(0)
-        # Select first item
-        self.taskListBox.select_set(0)
-        self.setCurrentTask()
+        for taskPriList in self.taskMgr.taskList:
+            for task in taskPriList:
+                if ((task is not None) and (not task.isRemoved())):
+                    taskNames.append(task.name)
+                    self.__taskDict[count] = task
+                    count += 1
+        if taskNames:
+            self.taskListBox.setlist(taskNames)
+            # And set current index (so keypresses will start with index 0)
+            self.taskListBox.component('listbox').activate(0)
+            # Select first item
+            self.taskListBox.select_set(0)
+            self.setCurrentTask()
 
     def toggleTaskMgrVerbose(self):
         taskMgr.setVerbose(self.taskMgrVerbose.get())
