@@ -26,6 +26,7 @@
 
 TypeHandle wglGraphicsBuffer::_type_handle;
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsBuffer::Constructor
 //       Access: Public
@@ -86,6 +87,36 @@ begin_frame() {
   }
 
   return GraphicsBuffer::begin_frame();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsBuffer::select_cube_map
+//       Access: Public, Virtual
+//  Description: Called internally when the window is in
+//               render-to-a-texture mode and we are in the process of
+//               rendering the six faces of a cube map.  This should
+//               do whatever needs to be done to switch the buffer to
+//               the indicated face.
+////////////////////////////////////////////////////////////////////
+void wglGraphicsBuffer::
+select_cube_map(int cube_map_index) {
+  wglGraphicsStateGuardian *wglgsg;
+  DCAST_INTO_V(wglgsg, _gsg);
+
+  nassertv(wglgsg->_wglSetPbufferAttribARB != NULL);
+
+  static const int max_attrib_list = 64;
+  int iattrib_list[max_attrib_list];
+  int ni = 0;
+
+  iattrib_list[ni++] = WGL_CUBE_MAP_FACE_ARB;
+  iattrib_list[ni++] = WGL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB + cube_map_index;
+
+  // Terminate the list.
+  nassertv(ni <= max_attrib_list);
+  iattrib_list[ni] = 0;
+
+  wglgsg->_wglSetPbufferAttribARB(_pbuffer, iattrib_list);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -293,6 +324,8 @@ make_pbuffer(HDC twindow_dc) {
   int ni = 0;
 
   if (_rtm_mode == RTM_bind_texture) {
+    nassertr(_texture != (Texture *)NULL, false);
+
     if (_gsg->get_properties().get_frame_buffer_mode() & FrameBufferProperties::FM_alpha) {
       iattrib_list[ni++] = WGL_TEXTURE_FORMAT_ARB;
       iattrib_list[ni++] = WGL_TEXTURE_RGBA_ARB;
@@ -300,8 +333,27 @@ make_pbuffer(HDC twindow_dc) {
       iattrib_list[ni++] = WGL_TEXTURE_FORMAT_ARB;
       iattrib_list[ni++] = WGL_TEXTURE_RGB_ARB;
     }
-    iattrib_list[ni++] = WGL_TEXTURE_TARGET_ARB;
-    iattrib_list[ni++] = WGL_TEXTURE_2D_ARB;
+
+    if (_texture->uses_mipmaps()) {
+      iattrib_list[ni++] = WGL_MIPMAP_TEXTURE_ARB;
+      iattrib_list[ni++] = 1;
+    }
+
+    switch (_texture->get_texture_type()) {
+    case Texture::TT_cube_map:
+      iattrib_list[ni++] = WGL_TEXTURE_TARGET_ARB;
+      iattrib_list[ni++] = WGL_TEXTURE_CUBE_MAP_ARB;
+      break;
+
+    case Texture::TT_1d_texture:
+      iattrib_list[ni++] = WGL_TEXTURE_TARGET_ARB;
+      iattrib_list[ni++] = WGL_TEXTURE_1D_ARB;
+      break;
+
+    default:
+      iattrib_list[ni++] = WGL_TEXTURE_TARGET_ARB;
+      iattrib_list[ni++] = WGL_TEXTURE_2D_ARB;
+    }
   }    
 
   // Terminate the list.

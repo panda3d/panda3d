@@ -47,6 +47,7 @@ public:
   virtual ~wglGraphicsBuffer();
 
   virtual bool begin_frame();
+  virtual void select_cube_map(int cube_map_index);
 
   virtual void make_current();
   virtual void release_gsg();
