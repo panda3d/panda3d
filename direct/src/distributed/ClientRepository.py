@@ -56,8 +56,8 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             ##
             ## Top level Interest Manager
             ##
-            self.__interest_id_assign = 1
-            self.__interests = {}
+            self._interestIdAssign = 1
+            self._interests = {}
         
     
     def abruptCleanup(self):
@@ -669,11 +669,11 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             """
             Part of the new otp-server code.
             """
-            self.__interest_id_assign += 1
-            self.__interests[self.__interest_id_assign] = description
-            contextId = self.__interest_id_assign
-            self.__sendAddInterest(contextId, parentId, zoneId)
-            self.printInterests()
+            self._interestIdAssign += 1
+            self._interests[self._interestIdAssign] = description
+            contextId = self._interestIdAssign
+            self._sendAddInterest(contextId, parentId, zoneId)
+            assert self.printInterests()
             return contextId
             
         def removeInterest(self,  contextId):        
@@ -681,11 +681,11 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             Part of the new otp-server code.
             """
             answer = 0
-            if  self.__interests.has_key(contextId):
-                self.__sendRemoveInterest(contextId)
-                del self.__interests[contextId]
+            if  self._interests.has_key(contextId):
+                self._sendRemoveInterest(contextId)
+                del self._interests[contextId]
                 answer = 1                                
-            self.printInterests()            
+            assert self.printInterests()            
             return answer
 
         def alterInterest(self, contextId, parentId, zoneId, description):        
@@ -694,23 +694,25 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
                 Removes old and adds new.. 
             """
             answer = 0
-            if  self.__interests.has_key(contextId):
-                self.__interests[contextId] = description
-                self.__sendAlterInterest(contextId, parentId, zoneId)
+            if  self._interests.has_key(contextId):
+                self._interests[contextId] = description
+                self._sendAlterInterest(contextId, parentId, zoneId)
                 answer = 1
-            self.printInterests()            
+            assert self.printInterests()            
             return answer
             
-        def printInterests(self):
-            """
-            Part of the new otp-server code.        
-            """
-            print "*********************** Interest Sets **************"
-            for i in self.__interests.keys():
-                 print "Interest ID:%s, Description=%s"%(i,self.__interests[i])
-            print "****************************************************"
+        if __debug__:
+            def printInterests(self):
+                """
+                Part of the new otp-server code.        
+                """
+                print "*********************** Interest Sets **************"
+                for i in self._interests.keys():
+                     print "Interest ID:%s, Description=%s"%(i, self._interests[i])
+                print "****************************************************"
+                return 1 # for assert()
         
-        def __sendAddInterest(self, contextId, parentId, zoneId):
+        def _sendAddInterest(self, contextId, parentId, zoneId):
             """
             Part of the new otp-server code.
 
@@ -727,7 +729,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             datagram.addUint32(zoneId)
             self.send(datagram)
 
-        def __sendAlterInterest(self, contextId, parentId, zoneId):
+        def _sendAlterInterest(self, contextId, parentId, zoneId):
             """
             Part of the new otp-server code.
 
@@ -744,7 +746,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             datagram.addUint32(zoneId)
             self.send(datagram)
 
-        def __sendRemoveInterest(self, contextId):
+        def _sendRemoveInterest(self, contextId):
             """
             Part of the new otp-server code.
 
