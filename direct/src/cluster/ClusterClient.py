@@ -113,11 +113,14 @@ class ClusterClient(DirectObject.DirectObject):
     def loadModel(self, nodePath):
         pass
 
-    def __call__(self, commandString, fLocally = 1, serverNum = None):
+    def __call__(self, commandString, fLocally = 1, serverList = []):
         # Execute remotely
-        if serverNum is not None:
-            self.serverList[serverNum].sendCommandString(commandString)
+        if serverList:
+            # Passed in list of servers
+            for serverNum in serverList:
+                self.serverList[serverNum].sendCommandString(commandString)
         else:
+            # All servers
             for server in self.serverList:
                 server.sendCommandString(commandString)
         if fLocally:
