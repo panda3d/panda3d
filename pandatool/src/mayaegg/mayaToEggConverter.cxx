@@ -595,7 +595,19 @@ process_model_node(const MDagPath &dag_path, EggGroupNode *egg_root) {
     mayaegg_cat.debug(false) << "\n";
   }
 
-  if (dag_path.hasFn(MFn::kCamera)) {
+  if (dag_node.inUnderWorld()) {
+    if (mayaegg_cat.is_debug()) {
+      mayaegg_cat.debug()
+        << "Ignoring underworld node " << dag_path.fullPathName() << "\n";
+    }
+
+  } else if (dag_node.isIntermediateObject()) {
+    if (mayaegg_cat.is_debug()) {
+      mayaegg_cat.debug()
+        << "Ignoring intermediate object " << dag_path.fullPathName() << "\n";
+    }
+
+  } else if (dag_path.hasFn(MFn::kCamera)) {
     if (mayaegg_cat.is_debug()) {
       mayaegg_cat.debug()
         << "Ignoring camera node " << dag_path.fullPathName() << "\n";
