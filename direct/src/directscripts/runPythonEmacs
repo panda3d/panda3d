@@ -90,10 +90,10 @@ if [ "$PARALLAX" ]; then
     PARALLAX=`cygpath -w $PARALLAX`
     export PARALLAX
 fi
-if [ "$MRM" ]; then
-    if [ "$debug" ]; then echo "MRM   $MRM"; fi
-    MRM=`cygpath -w $MRM`
-    export MRM
+if [ "$KUKA" ]; then
+    if [ "$debug" ]; then echo "KUKA   $KUKA"; fi
+    KUKA=`cygpath -w $KUKA`
+    export KUKA
 fi
 if [ "$WINTOOLS" ]; then
     if [ "$debug" ]; then echo "WINTOOLS  $WINTOOLS"; fi
