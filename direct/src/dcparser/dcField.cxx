@@ -532,31 +532,45 @@ unpack_args(DCPacker &packer) const {
 ////////////////////////////////////////////////////////////////////
 void DCField::
 receive_update(DCPacker &packer, PyObject *distobj) const {
-  if (!PyObject_HasAttrString(distobj, (char *)_name.c_str())) {
-    // If there's no Python method to receive this message, don't
-    // bother unpacking it to a Python tuple--just skip past the
-    // message.
-    packer.unpack_skip();
+  if (as_parameter() != (DCParameter *)NULL) {
+    // If it's a parameter-type field, just store a new value on the
+    // object.
+    PyObject *value = unpack_args(packer);
+    if (value != (PyObject *)NULL) {
+      PyObject_SetAttrString(distobj, (char *)_name.c_str(), value);
+    }
+    Py_DECREF(value);
 
   } else {
-    // Otherwise, get a Python tuple from the args and call the Python
-    // method.
-    PyObject *args = unpack_args(packer);
+    // Otherwise, it must be an atomic or molecular field, so call the
+    // corresponding method.
 
-    if (args != (PyObject *)NULL) {
-      PyObject *func = PyObject_GetAttrString(distobj, (char *)_name.c_str());
-      nassertv(func != (PyObject *)NULL);
+    if (!PyObject_HasAttrString(distobj, (char *)_name.c_str())) {
+      // If there's no Python method to receive this message, don't
+      // bother unpacking it to a Python tuple--just skip past the
+      // message.
+      packer.unpack_skip();
+
+    } else {
+      // Otherwise, get a Python tuple from the args and call the Python
+      // method.
+      PyObject *args = unpack_args(packer);
+
+      if (args != (PyObject *)NULL) {
+        PyObject *func = PyObject_GetAttrString(distobj, (char *)_name.c_str());
+        nassertv(func != (PyObject *)NULL);
       
-      PyObject *result;
-      {
+        PyObject *result;
+        {
 #ifdef WITHIN_PANDA
-        PStatTimer timer(((DCField *)this)->_field_update_pcollector);
+          PStatTimer timer(((DCField *)this)->_field_update_pcollector);
 #endif
-        result = PyObject_CallObject(func, args);
+          result = PyObject_CallObject(func, args);
+        }
+        Py_XDECREF(result);
+        Py_DECREF(func);
+        Py_DECREF(args);
       }
-      Py_XDECREF(result);
-      Py_DECREF(func);
-      Py_DECREF(args);
     }
   }
 }

@@ -381,11 +381,10 @@ receive_update_broadcast_required(PyObject *distobj, DatagramIterator &di) const
   int num_fields = get_num_inherited_fields();
   for (int i = 0; i < num_fields && !PyErr_Occurred(); ++i) {
     DCField *field = get_inherited_field(i);
-    DCAtomicField *atom = field->as_atomic_field();
-    if (atom != (DCAtomicField *)NULL &&
-        atom->is_required() && atom->is_broadcast()) {
-      packer.begin_unpack(atom);
-      atom->receive_update(packer, distobj);
+    if (field->as_molecular_field() == (DCMolecularField *)NULL &&
+        field->is_required() && field->is_broadcast()) {
+      packer.begin_unpack(field);
+      field->receive_update(packer, distobj);
       if (!packer.end_unpack()) {
         break;
       }
@@ -416,10 +415,10 @@ receive_update_all_required(PyObject *distobj, DatagramIterator &di) const {
   int num_fields = get_num_inherited_fields();
   for (int i = 0; i < num_fields && !PyErr_Occurred(); ++i) {
     DCField *field = get_inherited_field(i);
-    DCAtomicField *atom = field->as_atomic_field();
-    if (atom != (DCAtomicField *)NULL && atom->is_required()) {
-      packer.begin_unpack(atom);
-      atom->receive_update(packer, distobj);
+    if (field->as_molecular_field() == (DCMolecularField *)NULL &&
+        field->is_required()) {
+      packer.begin_unpack(field);
+      field->receive_update(packer, distobj);
       if (!packer.end_unpack()) {
         break;
       }
@@ -563,14 +562,16 @@ pack_required_field(DCPacker &packer, PyObject *distobj,
     return pack_ok;
   }
 
-  const DCAtomicField *atom = field->as_atomic_field();
-  if (atom == (DCAtomicField *)NULL) {
+  if (field->as_molecular_field() != (DCMolecularField *)NULL) {
     ostringstream strm;
     strm << "Cannot pack molecular field " << field->get_name()
          << " for generate";
     nassert_raise(strm.str());
     return false;
   }
+
+  const DCAtomicField *atom = field->as_atomic_field();
+  nassertr(atom != (DCAtomicField *)NULL, false);
 
   // We need to get the initial value of this field.  There isn't a
   // good, robust way to get this; presently, we just mangle the
