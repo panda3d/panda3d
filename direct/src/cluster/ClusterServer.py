@@ -201,5 +201,8 @@ class ClusterServer(DirectObject.DirectObject):
     def handleCommandString(self, dgi):
         """ Handle arbitrary command string from client """
         command = self.msgHandler.parseCommandStringDatagram(dgi)
-        exec( command, globals() )
+        try:
+            exec( command, globals() )
+        except:
+            pass
         
