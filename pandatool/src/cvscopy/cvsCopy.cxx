@@ -285,6 +285,10 @@ verify_file(const Filename &, const Filename &,
 ////////////////////////////////////////////////////////////////////
 bool CVSCopy::
 verify_binary_file(Filename source, Filename dest) {
+  if (source == dest) {
+    return true;
+  }
+
   source.set_binary();
   dest.set_binary();
 
@@ -335,6 +339,10 @@ verify_binary_file(Filename source, Filename dest) {
 ////////////////////////////////////////////////////////////////////
 bool CVSCopy::
 copy_binary_file(Filename source, Filename dest) {
+  if (source == dest) {
+    return true;
+  }
+
   source.set_binary();
   dest.set_binary();
 
