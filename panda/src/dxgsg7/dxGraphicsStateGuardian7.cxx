@@ -268,6 +268,10 @@ DXGraphicsStateGuardian7(const FrameBufferProperties &properties) :
     _cur_read_pixel_buffer=RenderBuffer::T_front;
 
     set_color_clear_value(_color_clear_value);
+
+    // DirectX drivers seem to consistently invert the texture when
+    // they copy framebuffer-to-texture.  Ok.
+    _copy_texture_inverted = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3563,7 +3567,7 @@ copy_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr) {
     nassertr(pb != NULL && dr != NULL, false);
 
     int xo, yo, w, h;
-    dr->get_region_pixels(xo, yo, w, h);
+    dr->get_region_pixels_i(xo, yo, w, h);
 
     // only handled simple case
     nassertr(xo == 0 && yo==0 && w == pb->get_xsize() && h == pb->get_ysize(), false);

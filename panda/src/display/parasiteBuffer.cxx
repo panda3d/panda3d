@@ -49,6 +49,7 @@ ParasiteBuffer(GraphicsOutput *host, const string &name,
   _x_size = x_size;
   _y_size = y_size;
   _has_size = true;
+  _default_display_region->compute_pixels(_x_size, _y_size);
 
   _is_valid = true;
 
