@@ -358,11 +358,13 @@ check_solitary() {
     Placements::const_iterator pi;
     for (pi = _placements.begin(); pi != _placements.end(); ++pi) {
       TexturePlacement *placement = (*pi);
+      /*
       if (!(placement->get_omit_reason() == OR_none ||
             placement->get_omit_reason() == OR_solitary)) {
         cerr << "texture " << *placement->get_texture() << " is omitted for "
              << placement->get_omit_reason() << "\n";
       }
+      */
       nassertv(placement->get_omit_reason() == OR_none ||
                placement->get_omit_reason() == OR_solitary);
       placement->not_solitary();

@@ -105,7 +105,6 @@ place_all() {
   Assigned::const_iterator ai;
   for (ai = _assigned.begin(); ai != _assigned.end(); ++ai) {
     TexturePlacement *placement = (*ai);
-    cerr << "Placing " << *placement->get_texture() << "\n";
     place(placement);
   }
 
