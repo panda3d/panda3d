@@ -8,6 +8,7 @@ class PieMenu(NodePath, PandaObject):
         NodePath.__init__(self)
         # Create a toplevel node for aspect ratio scaling
         self.assign(hidden.attachNewNode('PieMenu'))
+        self.dr = direct.dr
         # Attach the menu
         self.visibleMenu = visibleMenu
         # Try to flatten the visibleMenu (note, flattenStrong is too strong
@@ -45,15 +46,14 @@ class PieMenu(NodePath, PandaObject):
         taskMgr.remove('pieMenuTask')
 
         # Where did the user press the button?
-        self.originX = direct.dr.mouseX
-        self.originY = direct.dr.mouseY
+        self.originX = self.dr.mouseX
+        self.originY = self.dr.mouseY
 
         # Pop up menu
         self.reparentTo(render2d)
         self.setPos(self.originX,0.0,self.originY)
         # Compensate for window aspect ratio
         self.setScale(1.0, 1.0,1.0)
-        #direct.dr.width/float(direct.dr.height))
         # Start drawing the selection line
         self.lines.reset()
         self.lines.moveTo(0,0,0)
@@ -65,8 +65,8 @@ class PieMenu(NodePath, PandaObject):
         taskMgr.add(self.pieMenuTask, 'pieMenuTask')
 
     def pieMenuTask(self,state):
-        mouseX = direct.dr.mouseX
-        mouseY = direct.dr.mouseY
+        mouseX = self.dr.mouseX
+        mouseY = self.dr.mouseY
         deltaX = mouseX - self.originX
         deltaY = mouseY - self.originY
 
@@ -124,7 +124,14 @@ class TextPieMenu(PieMenu):
         newMenu = hidden.attachNewNode('TextMenu')
         # Compute angle per item
         angle = deg2Rad(360.0/numItems)
-        aspectRatio = direct.dr.getWidth()/float(direct.dr.getHeight())
+        prop = base.win.getProperties()
+        if prop.hasSize():
+            width = prop.getXSize()
+            height = prop.getYSize()
+        else:
+            width = 640
+            height = 480
+        aspectRatio = width/float(height)
         # Add items
         from DirectGuiGlobals import getDefaultFont
         for i in range (numItems):
