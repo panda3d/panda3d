@@ -265,6 +265,8 @@ convert_maya(bool from_selection) {
     output_frame_rate = input_frame_rate;
   }
 
+  frame_inc = frame_inc * input_frame_rate / output_frame_rate;
+
   bool all_ok = true;
 
   if (_from_selection) {
@@ -387,7 +389,7 @@ convert_flip(double start_frame, double end_frame, double frame_inc,
   get_egg_data().add_child(sequence_node);
   if (_animation_convert == AC_flip) { 
     sequence_node->set_switch_flag(true);
-    sequence_node->set_switch_fps(output_frame_rate / frame_inc);
+    sequence_node->set_switch_fps(output_frame_rate);
   }
 
   MTime frame(start_frame, MTime::uiUnit());
@@ -455,7 +457,7 @@ convert_char_chan(double start_frame, double end_frame, double frame_inc,
 
   // Set the frame rate before we start asking for anim tables to be
   // created.
-  _tree._fps = output_frame_rate / frame_inc;
+  _tree._fps = output_frame_rate;
   _tree.clear_egg(&get_egg_data(), NULL, skeleton_node);
 
   // Now we can get the animation data by walking through all of the
