@@ -987,7 +987,7 @@ FillDDSurfTexturePixels(void) {
       bUsingTempPixBuf=true;
       
       USHORT *pOutPix=pTempPixBuf;
-      BYTE *pSrcPix=pPixels;
+      BYTE *pSrcPix=pPixels + component_width - 1;
       for (UINT y = 0; y < OrigHeight; y++) {
         for (UINT x = 0; 
              x < OrigWidth; 
@@ -1018,7 +1018,7 @@ FillDDSurfTexturePixels(void) {
       }
       bUsingTempPixBuf=true;
 
-      BYTE *pSrcPix = pPixels;
+      BYTE *pSrcPix = pPixels + component_width - 1;
       for (int i = 0; i < num_pixels; i++) {
         pTempPixBuf[i] = *pSrcPix;
         pSrcPix += component_width;

@@ -679,8 +679,6 @@ HRESULT ConvertDDSurftoPixBuf(PixelBuffer *pixbuf,LPDIRECTDRAWSURFACE7 pDDSurf) 
 
     DWORD dwNumComponents=pixbuf->get_num_components();
 
-    assert(pixbuf->get_component_width()==sizeof(BYTE));   // cant handle anything else now
-    assert(pixbuf->get_image_type()==PixelBuffer::T_unsigned_byte);   // cant handle anything else now
     assert((dwNumComponents==3) || (dwNumComponents==4));  // cant handle anything else now
 
     BYTE *pbuf=pixbuf->_image.p();
@@ -1040,14 +1038,6 @@ LPDIRECTDRAWSURFACE7 DXTextureContext7::CreateTexture(LPDIRECT3DDEVICE7 pd3dDevi
     DWORD bpp = get_bits_per_pixel(pbuf->get_format(), &cNumAlphaBits);
     PixelBuffer::Type pixbuf_type = pbuf->get_image_type();
     DWORD cNumColorChannels = pbuf->get_num_components();
-
-    assert(pbuf->get_component_width()==sizeof(BYTE));   // cant handle anything else now
-    assert(pixbuf_type==PixelBuffer::T_unsigned_byte);   // cant handle anything else now
-
-    if((pixbuf_type != PixelBuffer::T_unsigned_byte) || (pbuf->get_component_width()!=1)) {
-        dxgsg7_cat.error() << "CreateTexture failed, havent handled non 8-bit channel pixelbuffer types yet! \n";
-        return NULL;
-    }
 
     DWORD dwOrigWidth  = (DWORD)pbuf->get_xsize();
     DWORD dwOrigHeight = (DWORD)pbuf->get_ysize();
@@ -1652,6 +1642,22 @@ LPDIRECTDRAWSURFACE7 DXTextureContext7::CreateTexture(LPDIRECT3DDEVICE7 pd3dDevi
     return NULL;
 }
 
+// Converts from multiple bytes per component to a single byte per
+// component, for the convenience of the routines in this module which
+// assume just one byte per component.  This loses precision on
+// high-precision textures, too bad.
+PTA_uchar
+downsample_image(uchar *source, int num_pixels, int component_width) {
+  PTA_uchar result = PTA_uchar::empty_array(num_pixels);
+  uchar *p = source + component_width - 1;
+  for (int ti = 0; ti < num_pixels; ti++) {
+    result[ti] = *p;
+    p += component_width;
+  }
+
+  return result;
+}
+
 HRESULT DXTextureContext7::
 FillDDSurfTexturePixels(void) {
     
@@ -1662,7 +1668,14 @@ FillDDSurfTexturePixels(void) {
       return E_FAIL;
     }
 
-    HRESULT hr = ConvertPixBuftoDDSurf((ConversionType)_PixBufConversionType,pbuf->_image.p(),_surface);
+    PTA_uchar image = pbuf->_image;
+    if (pbuf->get_component_width() != 1) {
+       image = downsample_image(image, 
+         pbuf->get_xsize() * pbuf->get_ysize() * pbuf->get_num_components(),
+         pbuf->get_component_width());
+    }
+
+    HRESULT hr = ConvertPixBuftoDDSurf((ConversionType)_PixBufConversionType,image.p(),_surface);
     if(FAILED(hr)) {
         return hr;
     }
@@ -1679,8 +1692,6 @@ FillDDSurfTexturePixels(void) {
 
         curxsize=ddsd.dwWidth; curysize=ddsd.dwHeight;
 
-        assert(pbuf->get_image_type()==PixelBuffer::T_unsigned_byte);    // cant handle anything else now
-
         // all mipmap sublevels require 1/3 of total original space. alloc 1/2 for safety
         BYTE *pMipMapPixBufSpace = new BYTE[((curxsize*curysize*cNumColorChannels)/2)+1024];
 
@@ -1688,7 +1699,7 @@ FillDDSurfTexturePixels(void) {
         pCurDDSurf->AddRef();  // so final release doesnt release the surface
 
         BYTE *pDstWord = pMipMapPixBufSpace;
-        BYTE *pLastMipLevelStart  = (BYTE *) pbuf->_image.p();
+        BYTE *pLastMipLevelStart  = (BYTE *) image.p();
 //    clock_t  start1,finish1;
 //    start1=clock();
         for(i=1;i<ddsd.dwMipMapCount;i++) {
