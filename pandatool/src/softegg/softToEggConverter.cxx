@@ -1156,16 +1156,18 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
           }
           
           // if texture present set the texture coordinates
-          if (node_desc->textures && node_desc->numTexTri[idx]) {
+          if (node_desc->textures) {
             float u, v;
             
-            u = uCoords[i];
-            v = 1.0f - vCoords[i];
-            softegg_cat.spam() << "texcoords[" << i << "] = " << u << " " 
-                                << v << endl;
-            
-            vert.set_uv(TexCoordd(u, v));
-            //        vert.set_uv(TexCoordd(uCoords[i], vCoords[i]));
+            if (uCoords && vCoords) {
+              u = uCoords[i];
+              v = 1.0f - vCoords[i];
+              softegg_cat.spam() << "texcoords[" << i << "] = " << u << " " 
+                                 << v << endl;
+              
+              vert.set_uv(TexCoordd(u, v));
+              //        vert.set_uv(TexCoordd(uCoords[i], vCoords[i]));
+            }
           }
           vert.set_external_index(indices[i]);
           egg_poly->add_vertex(vpool->create_unique_vertex(vert));
