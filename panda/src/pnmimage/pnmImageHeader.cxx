@@ -38,7 +38,6 @@ read_header(const Filename &filename, PNMFileType *type) {
   PNMReader *reader = make_reader(filename, type);
   if (reader != (PNMReader *)NULL) {
     (*this) = (*reader);
-    _type = reader->get_type();
     delete reader;
     return true;
   }

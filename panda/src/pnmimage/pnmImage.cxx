@@ -195,7 +195,6 @@ read(PNMReader *reader) {
   }
 
   copy_header_from(*reader);
-  _type = reader->get_type();
 
   // We reassign y_size after reading because we might have read a
   // truncated file.
