@@ -805,7 +805,7 @@ dx_init( void) {
     _alpha_func = D3DCMP_ALWAYS;
     _alpha_func_refval = 1.0f;
     scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHAFUNC, _alpha_func);
-    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, _alpha_func_refval);
+    scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHAREF, (_alpha_func_refval*255.0f));
     _alpha_test_enabled = false;
     scrn.pD3DDevice->SetRenderState(D3DRENDERSTATE_ALPHATESTENABLE, _alpha_test_enabled);
 
