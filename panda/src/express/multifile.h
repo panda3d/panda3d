@@ -44,7 +44,7 @@ PUBLISHED:
 
   bool read(Filename &name);
   bool write(Filename name);
-  bool write(char *&start, int &size);
+  bool write(char *&start, int &size, const Filename &rel_path = "");
   bool write_extract(char *&start, int &size, const Filename &rel_path = "");
   bool extract(const Filename &name, const Filename &rel_path = "");
   void extract_all(const Filename &rel_path = "");
