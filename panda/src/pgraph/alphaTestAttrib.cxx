@@ -1,4 +1,4 @@
-// Filename: textureApplyAttrib.cxx
+// Filename: alphaTestAttrib.cxx
 // Created by:  drose (04Mar02)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,7 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "textureApplyAttrib.h"
+#include "alphaTestAttrib.h"
 #include "graphicsStateGuardianBase.h"
 #include "dcast.h"
 #include "bamReader.h"
@@ -24,21 +24,21 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 
-TypeHandle TextureApplyAttrib::_type_handle;
+TypeHandle AlphaTestAttrib::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureApplyAttrib::make
+//     Function: AlphaTestAttrib::make
 //       Access: Published, Static
-//  Description: Constructs a new TextureApplyAttrib object.
+//  Description: Constructs a new AlphaTestAttrib object.
 ////////////////////////////////////////////////////////////////////
-CPT(RenderAttrib) TextureApplyAttrib::
-make(TextureApplyAttrib::Mode mode) {
-  TextureApplyAttrib *attrib = new TextureApplyAttrib(mode);
+CPT(RenderAttrib) AlphaTestAttrib::
+make(AlphaTestAttrib::Mode mode, unsigned int reference_value) {
+  AlphaTestAttrib *attrib = new AlphaTestAttrib(mode,reference_value);
   return return_new(attrib);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureApplyAttrib::issue
+//     Function: AlphaTestAttrib::issue
 //       Access: Public, Virtual
 //  Description: Calls the appropriate method on the indicated GSG
 //               to issue the graphics commands appropriate to the
@@ -46,98 +46,110 @@ make(TextureApplyAttrib::Mode mode) {
 //               (indirectly) only from
 //               GraphicsStateGuardian::set_state() or modify_state().
 ////////////////////////////////////////////////////////////////////
-void TextureApplyAttrib::
+void AlphaTestAttrib::
 issue(GraphicsStateGuardianBase *gsg) const {
-  gsg->issue_texture_apply(this);
+  gsg->issue_alpha_test(this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureApplyAttrib::output
+//     Function: AlphaTestAttrib::output
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void TextureApplyAttrib::
+void AlphaTestAttrib::
 output(ostream &out) const {
   out << get_type() << ":";
   switch (get_mode()) {
-  case M_modulate:
-    out << "modulate";
-    break;
+      case M_always:
+        out << "always";
+        break;
 
-  case M_decal:
-    out << "decal";
-    break;
-
-  case M_blend:
-    out << "blend";
-    break;
-
-  case M_replace:
-    out << "replace";
-    break;
-
-  case M_add:
-    out << "add";
-    break;
+      case M_never:
+        out << "never";
+        break;
+    
+      case M_less:
+        out << "less";
+        break;
+    
+      case M_equal:
+        out << "equal";
+        break;
+    
+      case M_less_equal:
+        out << "less_equal";
+        break;
+    
+      case M_greater:
+        out << "greater";
+        break;
+    
+      case M_not_equal:
+        out << "not_equal";
+        break;
+    
+      case M_greater_equal:
+        out << "greater_equal";
+        break;
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureApplyAttrib::compare_to_impl
+//     Function: AlphaTestAttrib::compare_to_impl
 //       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived TextureApplyAttrib
+//  Description: Intended to be overridden by derived AlphaTestAttrib
 //               types to return a unique number indicating whether
-//               this TextureApplyAttrib is equivalent to the other one.
+//               this AlphaTestAttrib is equivalent to the other one.
 //
-//               This should return 0 if the two TextureApplyAttrib objects
+//               This should return 0 if the two AlphaTestAttrib objects
 //               are equivalent, a number less than zero if this one
 //               should be sorted before the other one, and a number
 //               greater than zero otherwise.
 //
-//               This will only be called with two TextureApplyAttrib
+//               This will only be called with two AlphaTestAttrib
 //               objects whose get_type() functions return the same.
 ////////////////////////////////////////////////////////////////////
-int TextureApplyAttrib::
+int AlphaTestAttrib::
 compare_to_impl(const RenderAttrib *other) const {
-  const TextureApplyAttrib *ta;
+  const AlphaTestAttrib *ta;
   DCAST_INTO_R(ta, other, 0);
   return (int)_mode - (int)ta->_mode;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureApplyAttrib::make_default_impl
+//     Function: AlphaTestAttrib::make_default_impl
 //       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived TextureApplyAttrib
+//  Description: Intended to be overridden by derived AlphaTestAttrib
 //               types to specify what the default property for a
-//               TextureApplyAttrib of this type should be.
+//               AlphaTestAttrib of this type should be.
 //
-//               This should return a newly-allocated TextureApplyAttrib of
+//               This should return a newly-allocated AlphaTestAttrib of
 //               the same type that corresponds to whatever the
-//               standard default for this kind of TextureApplyAttrib is.
+//               standard default for this kind of AlphaTestAttrib is.
 ////////////////////////////////////////////////////////////////////
-RenderAttrib *TextureApplyAttrib::
+RenderAttrib *AlphaTestAttrib::
 make_default_impl() const {
-  return new TextureApplyAttrib;
+  return new AlphaTestAttrib;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureApplyAttrib::register_with_read_factory
+//     Function: AlphaTestAttrib::register_with_read_factory
 //       Access: Public, Static
 //  Description: Tells the BamReader how to create objects of type
-//               TextureApplyAttrib.
+//               AlphaTestAttrib.
 ////////////////////////////////////////////////////////////////////
-void TextureApplyAttrib::
+void AlphaTestAttrib::
 register_with_read_factory() {
   BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureApplyAttrib::write_datagram
+//     Function: AlphaTestAttrib::write_datagram
 //       Access: Public, Virtual
 //  Description: Writes the contents of this object to the datagram
 //               for shipping out to a Bam file.
 ////////////////////////////////////////////////////////////////////
-void TextureApplyAttrib::
+void AlphaTestAttrib::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
 
@@ -145,16 +157,16 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureApplyAttrib::make_from_bam
+//     Function: AlphaTestAttrib::make_from_bam
 //       Access: Protected, Static
 //  Description: This function is called by the BamReader's factory
-//               when a new object of type TextureApplyAttrib is encountered
-//               in the Bam file.  It should create the TextureApplyAttrib
+//               when a new object of type AlphaTestAttrib is encountered
+//               in the Bam file.  It should create the AlphaTestAttrib
 //               and extract its information from the file.
 ////////////////////////////////////////////////////////////////////
-TypedWritable *TextureApplyAttrib::
+TypedWritable *AlphaTestAttrib::
 make_from_bam(const FactoryParams &params) {
-  TextureApplyAttrib *attrib = new TextureApplyAttrib;
+  AlphaTestAttrib *attrib = new AlphaTestAttrib;
   DatagramIterator scan;
   BamReader *manager;
 
@@ -165,13 +177,13 @@ make_from_bam(const FactoryParams &params) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureApplyAttrib::fillin
+//     Function: AlphaTestAttrib::fillin
 //       Access: Protected
 //  Description: This internal function is called by make_from_bam to
 //               read in all of the relevant data from the BamFile for
-//               the new TextureApplyAttrib.
+//               the new AlphaTestAttrib.
 ////////////////////////////////////////////////////////////////////
-void TextureApplyAttrib::
+void AlphaTestAttrib::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 

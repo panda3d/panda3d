@@ -29,11 +29,7 @@ TypeHandle DepthWriteAttrib::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: DepthWriteAttrib::make
 //       Access: Published, Static
-//  Description: Constructs a new DepthWriteAttrib object that specifies
-//               how to cull geometry.  By Panda convention, vertices
-//               are ordered counterclockwise when seen from the
-//               front, so the M_cull_clockwise will cull backfacing
-//               polygons.
+//  Description: Constructs a new DepthWriteAttrib object.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) DepthWriteAttrib::
 make(DepthWriteAttrib::Mode mode) {

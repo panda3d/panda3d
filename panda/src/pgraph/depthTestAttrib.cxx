@@ -29,11 +29,7 @@ TypeHandle DepthTestAttrib::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: DepthTestAttrib::make
 //       Access: Published, Static
-//  Description: Constructs a new DepthTestAttrib object that specifies
-//               how to cull geometry.  By Panda convention, vertices
-//               are ordered counterclockwise when seen from the
-//               front, so the M_cull_clockwise will cull backfacing
-//               polygons.
+//  Description: Constructs a new DepthTestAttrib object.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) DepthTestAttrib::
 make(DepthTestAttrib::Mode mode) {

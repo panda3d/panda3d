@@ -6,6 +6,7 @@
   #define TARGET pgraph
   
   #define SOURCES \
+    alphaTestAttrib.I alphaTestAttrib.h \  
     ambientLight.I ambientLight.h \
     billboardEffect.I billboardEffect.h \
     binCullHandler.I binCullHandler.h \
@@ -76,6 +77,7 @@
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
   #define INCLUDED_SOURCES \
+    alphaTestAttrib.cxx \  
     ambientLight.cxx \
     billboardEffect.cxx \
     binCullHandler.cxx \
@@ -151,6 +153,7 @@
   #endif
 
   #define INSTALL_HEADERS \
+    alphaTestAttrib.I alphaTestAttrib.h \  
     ambientLight.I ambientLight.h \
     billboardEffect.I billboardEffect.h \
     binCullHandler.I binCullHandler.h \

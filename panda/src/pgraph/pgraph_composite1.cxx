@@ -22,6 +22,7 @@
 #include "depthOffsetAttrib.cxx"
 #include "depthTestAttrib.cxx"
 #include "depthWriteAttrib.cxx"
+#include "alphaTestAttrib.cxx"
 #include "directionalLight.cxx"
 #include "drawCullHandler.cxx"
 #include "findApproxPath.cxx"
@@ -31,3 +32,5 @@
 #include "fogAttrib.cxx"
 #include "geomNode.cxx"
 #include "geomTransformer.cxx"
+
+

@@ -29,11 +29,7 @@ TypeHandle ColorWriteAttrib::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: ColorWriteAttrib::make
 //       Access: Published, Static
-//  Description: Constructs a new ColorWriteAttrib object that specifies
-//               how to cull geometry.  By Panda convention, vertices
-//               are ordered counterclockwise when seen from the
-//               front, so the M_cull_clockwise will cull backfacing
-//               polygons.
+//  Description: Constructs a new ColorWriteAttrib object.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ColorWriteAttrib::
 make(ColorWriteAttrib::Mode mode) {
