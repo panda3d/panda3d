@@ -435,6 +435,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         self.curZoneNum = None
 
         self.visChangedThisFrame = 0
+        self.sentFirstSetZone = 0
 
         # listen for camera-ray/floor collision events
         def handleCameraRayFloorCollision(collEntry, self=self):
@@ -611,8 +612,12 @@ class DistributedLevel(DistributedObject.DistributedObject,
                 for rz in removedZoneNums:
                     self.hideZone(rz)
 
-        if vizZonesChanged:
+        # it's important for us to send a setZone request on the first
+        # frame, whether or not the visibility is different from what
+        # we already have
+        if vizZonesChanged or not self.sentFirstSetZone:
             self.setVisibility(visibleZoneNums.keys())
+            self.sentFirstSetZone = 1
 
         self.curZoneNum = zoneNum
         self.curVisibleZoneNums = visibleZoneNums
