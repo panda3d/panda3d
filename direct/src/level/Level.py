@@ -202,7 +202,12 @@ class Level:
         # entity is initialized, add it to the list of entities
         # if this assert fails, check distributed entities to make sure
         # they're calling down to Entity.destroy
-        assert not entId in self.entities
+        if __debug__:
+            if entId in self.entities:
+                self.notify.warning(
+                    'entity %s already in entity table... '
+                    'make sure distributedEntity is calling down to '
+                    'Entity.destroy!')
         self.entities[entId] = entity
 
     def getEntity(self, entId):
