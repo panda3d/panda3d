@@ -34,21 +34,41 @@
 //               to use a pallocator.
 ////////////////////////////////////////////////////////////////////
 
-#ifdef OLD_STYLE_ALLOCATOR
-// Early versions of gcc used its own kind of allocator, somewhat
-// different from the STL standard.
+#if defined(OLD_STYLE_ALLOCATOR)
+// Early versions of gcc wanted to use its own kind of allocator,
+// somewhat different from the STL standard.  Irix uses this one too.
+// It might be inherited from an early draft of the STL standard.
 
 template<class Type>
 class pallocator : public alloc {
 public:
 #ifndef NDEBUG
-  static void *allocate(size_t n);
-  static void deallocate(void *p, size_t n);
+  INLINE static Type *allocate(size_t n);
+  INLINE static void deallocate(void *p, size_t n);
 #endif  // NDEBUG
 };
 
-#else  // OLD_STYLE_ALLOCATOR
+#elif defined(GNU_STYLE_ALLOCATOR)
+// Later versions of gcc want to use a still different, nonstandard
+// definition.  Sheesh.
 
+template<class Type>
+class pallocator : public allocator<Type> {
+public:
+#ifndef NDEBUG
+  INLINE Type *allocate(size_t n);
+  INLINE void deallocate(void *p, size_t n);
+#endif  // NDEBUG
+
+  template <class _Tp1> struct rebind {
+    typedef pallocator<_Tp1> other;
+  };
+};
+
+#else  // *_STYLE_ALLOCATOR
+
+// This is the correct allocator declaration as the current C++
+// standard defines it.
 template<class Type>
 class pallocator : public allocator<Type> {
 public:
@@ -57,8 +77,16 @@ public:
   //  INLINE void deallocate(pointer p, size_type n);
   INLINE void deallocate(void *p, size_type n);
 #endif  // NDEBUG
+
+#ifdef __GNUC__
+  // Some versions of the gcc library require this structure to be
+  // declared.  I don't know what it's all about.
+  template <class _Tp1> struct rebind {
+    typedef pallocator<_Tp1> other;
+  };
+#endif
 };
-#endif  // OLD_STYLE_ALLOCATOR
+#endif  // *_STYLE_ALLOCATOR
 
 #include "pallocator.T"
 

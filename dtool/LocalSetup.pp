@@ -190,8 +190,9 @@ $[cdefine HAVE_RTTI]
 /* Must global operator new and delete functions throw exceptions? */
 $[cdefine GLOBAL_OPERATOR_NEW_EXCEPTIONS]
 
-/* Do we expect the old style STL allocator? */
+/* What style STL allocator should we declare? */
 $[cdefine OLD_STYLE_ALLOCATOR]
+$[cdefine GNU_STYLE_ALLOCATOR]
 
 #end dtool_config.h
 

@@ -16,13 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifdef OLD_STYLE_ALLOCATOR
+#if defined(OLD_STYLE_ALLOCATOR)
 
 #ifndef NDEBUG
 template<class Type>
-INLINE void *pallocator<Type>::
+INLINE Type *pallocator<Type>::
 allocate(size_t n) {
-  return (*global_operator_new)(n);
+  return (Type *)(*global_operator_new)(n);
 }
 
 template<class Type>
@@ -32,7 +32,23 @@ deallocate(void *p, size_t) {
 }
 #endif  // NDEBUG
 
-#else  // OLD_STYLE_ALLOCATOR
+#elif defined(GNU_STYLE_ALLOCATOR)
+
+#ifndef NDEBUG
+template<class Type>
+INLINE Type *pallocator<Type>::
+allocate(size_t n) {
+  return (Type *)(*global_operator_new)(n);
+}
+
+template<class Type>
+INLINE void pallocator<Type>::
+deallocate(void *p, size_t) {
+  (*global_operator_delete)(p);
+}
+#endif  // NDEBUG
+
+#else  // *_STYLE_ALLOCATOR
 
 #ifndef NDEBUG
 template<class Type>
@@ -49,4 +65,4 @@ deallocate(void *p, allocator<Type>::size_type) {
 }
 #endif  // NDEBUG
 
-#endif  // OLD_STYLE_ALLOCATOR
+#endif  // *_STYLE_ALLOCATOR
