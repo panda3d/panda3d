@@ -53,6 +53,8 @@ public:
   typedef pvector<MayaShaderColorDef *> ColorDef;
   ColorDef _color;
 
+  bool _alpha_is_luminance;
+
 private:
   bool read_surface_shader(MObject shader);
 };

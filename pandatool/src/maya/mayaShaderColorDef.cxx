@@ -58,6 +58,8 @@ MayaShaderColorDef() {
   _wrap_u = true;
   _wrap_v = true;
 
+  _alpha_is_luminance = false;
+
   _repeat_uv.set(1.0, 1.0);
   _offset.set(0.0, 0.0);
   _rotate_uv = 0.0;
@@ -94,6 +96,8 @@ MayaShaderColorDef(MayaShaderColorDef &copy) {
   _stagger = copy._stagger;
   _wrap_u = copy._wrap_u;
   _wrap_v = copy._wrap_v;
+
+  _alpha_is_luminance = copy._alpha_is_luminance;
 
   _repeat_uv = copy._repeat_uv;
   _offset = copy._offset;
@@ -256,6 +260,8 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
     get_vec2f_attribute(color, "translateFrame", _translate_frame);
     get_angle_attribute(color, "rotateFrame", _rotate_frame);
 
+    get_bool_attribute(color, "alphaIsLuminance", _alpha_is_luminance);
+
     get_bool_attribute(color, "mirror", _mirror);
     get_bool_attribute(color, "stagger", _stagger);
     get_bool_attribute(color, "wrapU", _wrap_u);
@@ -309,6 +315,10 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
     //shader->_multi_texture = true;
     //get_enum_attribute(color,"blendMode",shader->_blend_mode);
     //maya_cat.debug() << "blend mode :" << shader->_blend_mode << endl;
+
+    get_bool_attribute(color, "alphaIsLuminance", shader->_alpha_is_luminance);
+    //    get_bool_attribute(color, "isVisible", test_b);
+
     MFnDependencyNode layered_fn(color);
     MPlugArray color_pa;
     MStatus status = layered_fn.getConnections(color_pa);
@@ -351,10 +361,10 @@ read_surface_color(MayaShader *shader, MObject color, bool trans) {
       /*
       string blah;
       get_enum_attribute(pl.node(),"blendMode",blah);
-      maya_cat.debug() << "blend mode :" << blah << endl;
+      maya_cat.info() << "rsc layer: blend mode :" << blah << endl;
       float alpha;
       get_maya_attribute(pl.node(),"alpha",alpha);
-      maya_cat.debug() << "alpha :" << alpha << endl;
+      maya_cat.info() << "rsc layer: alpha :" << alpha << endl;
       */
     }
   } else {

@@ -2281,13 +2281,19 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader, const M
           //tex.set_format(EggTexture::F_rgb);
         }
         
-        /*
         // if multi-textured, first texture in maya is on top, so
-        // default it to decal
-        if ((shader._color.size() > 1) && (i!=shader._color.size()-1))
-          tex.set_env_type(EggTexture::ET_decal);
-        */
-        
+        if (shader._color.size() > 1) {
+          if (i!=shader._color.size()-1) {
+            // read the _alpha_is_luminance to figure out env_type
+            if (!shader._alpha_is_luminance)
+              tex.set_env_type(EggTexture::ET_decal);
+          }
+          if (color_def->_alpha_is_luminance) {
+            // multitexture modulate mode may specify, desired alpha on/off
+            if (color_def->_alpha_is_luminance)
+              tex.set_alpha_mode(EggRenderMode::AM_off);  // Force alpha to be 'off'
+          }
+        }
       } else {  // trans_def._has_texture
         // We have a texture on transparency only.  Apply it as the
         // primary filename, and set the format accordingly.

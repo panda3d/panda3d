@@ -50,6 +50,8 @@ MayaShader(MObject engine) {
       << "Reading shading engine " << get_name() << "\n";
   }
 
+  _alpha_is_luminance = true;
+
   bool found_shader = false;
   MPlug shader_plug = engine_fn.findPlug("surfaceShader");
   if (!shader_plug.isNull()) {

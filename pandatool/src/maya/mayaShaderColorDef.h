@@ -80,6 +80,8 @@ public:
   bool _stagger;
   bool _wrap_u;
   bool _wrap_v;
+
+  bool _alpha_is_luminance;
   
   LVector2f _repeat_uv;
   LVector2f _offset;
