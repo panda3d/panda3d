@@ -17,6 +17,7 @@ extern bool dx_cull_traversal;
 extern bool dx_ignore_mipmaps;
 extern bool dx_force_16bpp_screenbuffers;
 extern bool dx_show_fps_meter;
+extern bool dx_no_vertex_fog;
 extern float dx_fps_meter_update_interval;
 
 #ifdef _DEBUG

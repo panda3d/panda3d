@@ -183,14 +183,13 @@ reset() {
 	GraphicsStateGuardian::reset();
 	_buffer_mask = 0;
 
-	// All implementations have the following buffers. (?)
+	// All implementations have the following buffers. 
 	_buffer_mask = (RenderBuffer::T_color |
 					RenderBuffer::T_depth |
-					RenderBuffer::T_stencil |
-					RenderBuffer::T_accum );
-
-	// WBD  for now, let's assume a back buffer too);
-	_buffer_mask |= RenderBuffer::T_back;
+					RenderBuffer::T_back  
+//					RenderBuffer::T_stencil |
+//					RenderBuffer::T_accum 
+					);
 
 	_current_projection_mat = LMatrix4f::ident_mat();
 	_projection_mat_stack_count = 0;
@@ -885,6 +884,22 @@ render_subgraph(RenderTraverser *traverser,
 	_current_projection_mat = projection_mat;
 	_projection_mat_stack_count++;
 
+#ifdef _DEBUG 
+   {
+   	  static bool bPrintedMsg=false;
+
+	  if((!bPrintedMsg) && !IS_NEARLY_EQUAL(projection_mat(2,3),1.0f)) {
+	     bPrintedMsg=true;
+   	     dxgsg_cat.info() << "non w-compliant render_subgraph projection matrix [2][3]: " << projection_mat(2,3) << endl;
+  	     dxgsg_cat.info() << "cur projection matrix: " << projection_mat << endl;
+	  }
+
+	  // note: a projection matrix that does not have a [3][4] value of 1.0 is
+	  //       not w-compliant and could cause problems with fog
+
+	}
+#endif
+
 	// We load the projection matrix directly.
 	HRESULT res = 
 	_d3dDevice->SetTransform(D3DTRANSFORMSTATE_PROJECTION,
@@ -917,9 +932,7 @@ render_subgraph(RenderTraverser *traverser,
 
 
 	// We must now restore the projection matrix from before.  We could
-	// do a push/pop matrix, but OpenGL doesn't promise more than 2
-	// levels in the projection matrix stack, so we'd better do it in
-	// the CPU.
+	// do a push/pop matrix if we were using D3DX
 	if (_projection_mat_stack_count > 0)
 		_d3dDevice->SetTransform(D3DTRANSFORMSTATE_PROJECTION,
 								 (LPD3DMATRIX) _current_projection_mat.get_data());
@@ -3259,16 +3272,10 @@ apply_texture(TextureContext *tc) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 release_texture(TextureContext *tc) {
-	activate();
 	DXTextureContext *gtc = DCAST(DXTextureContext, tc);
 	Texture *tex = tc->_texture;
 
-#ifdef WBD_GL_MODE
-	glDeleteTextures(1, &gtc->_index);
-	gtc->_index = 0;
-#else
 	gtc->DeleteTexture();
-#endif              // WBD_GL_MODE
 	bool erased = unmark_prepared_texture(gtc);
 
 	// If this assertion fails, a texture was released that hadn't been
@@ -3280,6 +3287,14 @@ release_texture(TextureContext *tc) {
 	delete gtc;
 }
 
+#if 1
+
+void DXGraphicsStateGuardian::
+copy_texture(TextureContext *tc, const DisplayRegion *dr) {
+	dxgsg_cat.fatal() << "DX copy_texture unimplemented!!!";
+}
+
+#else
 static int logs[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048,
 	4096, 0};
 
@@ -3301,10 +3316,7 @@ static int binary_log_cap(const int x) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 copy_texture(TextureContext *tc, const DisplayRegion *dr) {
-	dxgsg_cat.fatal() << "DX copy_texture unimplemented!!!";
-	return;
 
-#if 0
 	nassertv(tc != NULL && dr != NULL);
 	activate();
 
@@ -3331,14 +3343,13 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr) {
 	pb->set_ysize(h);
 
 
-//#ifdef WBD_GL_MODE
 	bind_texture(tc);
 	glCopyTexImage2D( GL_TEXTURE_2D, tex->get_level(), 
 					  get_internal_image_format(pb->get_format()),
 					  pb->get_xorg(), pb->get_yorg(),
 					  pb->get_xsize(), pb->get_ysize(), pb->get_border() );
-#endif              // WBD_GL_MODE
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::copy_texture
@@ -3722,22 +3733,30 @@ void DXGraphicsStateGuardian::apply_material( const Material* material ) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 apply_fog(Fog *fog) {
-      // need to re-examine this fog stuff
 
 	Fog::Mode panda_fogmode = fog->get_mode();
 	D3DFOGMODE d3dfogmode = get_fog_mode_type(panda_fogmode);
 
 	if(_D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_FOGTABLE ) {
   	   _d3dDevice->SetRenderState(D3DRENDERSTATE_FOGTABLEMODE, d3dfogmode);
-	} else if(_D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_FOGVERTEX ) {
-	  _d3dDevice->SetRenderState(D3DRENDERSTATE_FOGVERTEXMODE, d3dfogmode);
+	} else {
+
+	  // vtx fog looks crappy if you have large polygons in the foreground
+	  if(dx_no_vertex_fog)
+		  return;
+
+		//if(_D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_FOGVERTEX )
+		// every card is going to have vertex fog, since it's implemented in d3d runtime
+
+      _d3dDevice->SetRenderState(D3DRENDERSTATE_FOGVERTEXMODE, d3dfogmode);
 	}
 
 	switch (panda_fogmode) {
 		case Fog::M_linear:
 			{
-				float fog_start = fog->get_start();   
-				float fog_end = fog->get_end();   
+				float fog_start,fog_end;
+				fog->get_range(fog_start,fog_end);
+
 				_d3dDevice->SetRenderState( D3DRENDERSTATE_FOGSTART, 
 							*((LPDWORD) (&fog_start)) );
 				_d3dDevice->SetRenderState( D3DRENDERSTATE_FOGEND, 
@@ -3745,14 +3764,12 @@ apply_fog(Fog *fog) {
 			}
 			break;
 		case Fog::M_exponential:
-		case Fog::M_super_exponential:
+		case Fog::M_exponential_squared:
 			{
 				float fog_density = fog->get_density();   
 				_d3dDevice->SetRenderState( D3DRENDERSTATE_FOGDENSITY, 
 							*((LPDWORD) (&fog_density)) );
 			}
-			break;
-		case Fog::M_spline:
 			break;
 	}
 
@@ -4561,7 +4578,6 @@ issue_depth_test(const DepthTestAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_depth_write(const DepthWriteAttribute *attrib) {
-	activate();
 	_d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, attrib->is_on());
 }
 
@@ -4572,9 +4588,18 @@ issue_depth_write(const DepthWriteAttribute *attrib) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_stencil(const StencilAttribute *attrib) {
-	activate();
+  
+  StencilProperty::Mode mode = attrib->get_mode();
 
-	StencilProperty::Mode mode = attrib->get_mode();
+#if 1
+  if (mode != StencilProperty::M_none) {
+	dxgsg_cat.error() << "stencil buffering unimplemented for DX GSG renderer!!!\n";    
+	// to implement stenciling, need to change wdxGraphicsWindow to create a stencil 
+	// z-buffer or maybe do a SetRenderTarget on a new zbuffer
+  }
+	
+#else
+
 	if (mode == StencilProperty::M_none) {
 		enable_stencil_test(false);
 
@@ -4585,6 +4610,7 @@ issue_stencil(const StencilAttribute *attrib) {
 		_d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILFAIL, get_stencil_action_type(attrib->get_action()));
 		_d3dDevice->SetRenderState(D3DRENDERSTATE_STENCILZFAIL, get_stencil_action_type(attrib->get_action()));
 	}
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4769,7 +4795,6 @@ issue_transparency(const TransparencyAttribute *attrib ) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 issue_linesmooth(const LinesmoothAttribute *attrib) {
-	activate();
 	enable_line_smooth(attrib->is_on());
 }
 
@@ -5049,7 +5074,7 @@ set_read_buffer(const RenderBuffer &rb) {
 //               GL's.
 ////////////////////////////////////////////////////////////////////
 INLINE D3DTEXTUREADDRESS DXGraphicsStateGuardian::
-get_texture_wrap_mode(Texture::WrapMode wm) {
+get_texture_wrap_mode(Texture::WrapMode wm) const {
 
 	if (wm == Texture::WM_clamp)
 		return D3DTADDRESS_CLAMP;
@@ -5083,6 +5108,9 @@ get_depth_func_type(DepthTestProperty::Mode m) const {
 	<< "Invalid DepthTestProperty::Mode value" << endl;
 	return D3DCMP_LESS;
 }
+
+#if 0
+// ifdef out until stencil zbuf creation works in wdxGraphicsWindow.c
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::get_stencil_func_type
@@ -5127,6 +5155,7 @@ get_stencil_action_type(StencilProperty::Action a) const {
 	return D3DSTENCILOP_KEEP;
 }
 
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::get_fog_mode_type
@@ -5138,12 +5167,11 @@ get_fog_mode_type(Fog::Mode m) const {
 	switch (m) {
 		case Fog::M_linear: return D3DFOG_LINEAR;
 		case Fog::M_exponential: return D3DFOG_EXP;
-		case Fog::M_super_exponential: return D3DFOG_EXP2;
+		case Fog::M_exponential_squared: return D3DFOG_EXP2;
 	}
 	dxgsg_cat.error() << "Invalid Fog::Mode value" << endl;
 	return D3DFOG_EXP;
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::free_pointers

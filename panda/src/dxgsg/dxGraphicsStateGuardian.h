@@ -230,6 +230,15 @@ protected:
   INLINE void enable_fog(bool val);
   INLINE void set_shademode(D3DSHADEMODE val);
 
+  INLINE D3DTEXTUREADDRESS get_texture_wrap_mode(Texture::WrapMode wm) const;
+  INLINE D3DCMPFUNC get_depth_func_type(DepthTestProperty::Mode m) const;
+  INLINE D3DFOGMODE get_fog_mode_type(Fog::Mode m) const;
+
+  #if 0
+    INLINE D3DCMPFUNC get_stencil_func_type(StencilProperty::Mode m) const;
+    INLINE D3DSTENCILOP get_stencil_action_type(StencilProperty::Action a) const;
+  #endif
+
 /*  INLINE void enable_multisample_alpha_one(bool val);
   INLINE void enable_multisample_alpha_mask(bool val);
   INLINE void enable_multisample(bool val, LPDIRECT3DDEVICE7 d3dDevice);
@@ -246,12 +255,6 @@ protected:
   INLINE void enable_dither(bool val);
   INLINE void enable_stencil_test(bool val);
   bool enable_light(int light, bool val);
-
-  INLINE D3DTEXTUREADDRESS get_texture_wrap_mode(Texture::WrapMode wm);
-  INLINE D3DCMPFUNC get_depth_func_type(DepthTestProperty::Mode m) const;
-  INLINE D3DCMPFUNC get_stencil_func_type(StencilProperty::Mode m) const;
-  INLINE D3DSTENCILOP get_stencil_action_type(StencilProperty::Action a) const;
-  INLINE D3DFOGMODE get_fog_mode_type(Fog::Mode m) const;
 
   void draw_prim_inner_loop(int nVerts, const Geom *geom, DWORD perFlags);
   size_t draw_prim_setup(const Geom *geom) ;

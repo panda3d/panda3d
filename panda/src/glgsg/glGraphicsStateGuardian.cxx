@@ -329,6 +329,9 @@ reset() {
       << "Setting glHint() for fastest textures.\n";
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
   }
+
+  // use per-vertex fog if per-pixel fog requires SW renderer
+  glHint(GL_FOG_HINT,GL_DONT_CARE);  
 }
 
 
@@ -2222,17 +2225,18 @@ void GLGraphicsStateGuardian::apply_material(const Material *material) {
 ////////////////////////////////////////////////////////////////////
 void GLGraphicsStateGuardian::
 apply_fog(Fog *fog) {
-  call_glFogMode(get_fog_mode_type(fog->get_mode()));
-  switch(fog->get_mode()) {
+  Fog::Mode fmode=fog->get_mode();
+  call_glFogMode(get_fog_mode_type(fmode));
+  switch(fmode) {
     case Fog::M_linear:
-      call_glFogStart(fog->get_start());
-      call_glFogEnd(fog->get_end());
+		float fog_start,fog_end;
+		fog->get_range(fog_start,fog_end);
+		call_glFogStart(fog_start);
+		call_glFogEnd(fog_end);
       break;
     case Fog::M_exponential:
-    case Fog::M_super_exponential:
+    case Fog::M_exponential_squared:
       call_glFogDensity(fog->get_density());
-      break;
-    case Fog::M_spline:
       break;
   }
   call_glFogColor(fog->get_color());
@@ -3856,7 +3860,7 @@ get_fog_mode_type(Fog::Mode m) const {
   switch(m) {
     case Fog::M_linear: return GL_LINEAR;
     case Fog::M_exponential: return GL_EXP;
-    case Fog::M_super_exponential: return GL_EXP2;
+    case Fog::M_exponential_squared: return GL_EXP2;
 #ifdef GL_FOG_FUNC_SGIS
     case Fog::M_spline: return GL_FOG_FUNC_SGIS;
 #endif
