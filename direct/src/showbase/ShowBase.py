@@ -487,7 +487,7 @@ class ShowBase(DirectObject.DirectObject):
         """
         # First, we need to make a new layer on the window.
         chan = win.getChannel(0)
-        layer = chan.makeLayer()
+        layer = chan.makeLayer(10)
 
         # And make a display region to cover the whole layer.
         dr = layer.makeDisplayRegion()
