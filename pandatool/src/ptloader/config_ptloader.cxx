@@ -24,10 +24,12 @@
 #include "config_flt.h"
 #include "lwoToEggConverter.h"
 
+/*
 #ifdef HAVE_DX
 #include "config_xfile.h"
 #include "xFileToEggConverter.h"
 #endif
+*/
 
 #ifdef HAVE_MAYA
 #include "config_mayaegg.h"
@@ -72,11 +74,13 @@ init_libptloader() {
   LwoToEggConverter *lwo = new LwoToEggConverter;
   reg->register_type(new LoaderFileTypePandatool(lwo));
 
+  /*
 #ifdef HAVE_DX
   init_libxfile();
   XFileToEggConverter *xfile = new XFileToEggConverter;
   reg->register_type(new LoaderFileTypePandatool(xfile));
 #endif
+  */
 
 #ifdef HAVE_MAYA
   init_libmayaegg();
