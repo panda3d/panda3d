@@ -54,6 +54,8 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         """
         Set up the avatar for collisions
         """
+        assert not avatarNodePath.isEmpty()
+
         self.cTrav = collisionTraverser
         self.avatarNodePath = avatarNodePath
 
