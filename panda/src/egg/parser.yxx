@@ -14,6 +14,7 @@
 #include "eggVertexPool.h"
 #include "eggPolygon.h"
 #include "eggPoint.h"
+#include "eggLine.h"
 #include "eggNurbsSurface.h"
 #include "eggNurbsCurve.h"
 #include "eggTable.h"
@@ -121,7 +122,7 @@ egg_cleanup_parser() {
 %token DYNAMICVERTEXPOOL EXTERNAL_FILE
 %token FLIGHT GROUP HIP INTANGENT
 %token JOINT KNOTS INCLUDE
-%token INSTANCE LOOP MATERIAL MATRIX3 MATRIX4 MODEL MREF NORMAL
+%token INSTANCE LINE LOOP MATERIAL MATRIX3 MATRIX4 MODEL MREF NORMAL
 %token NURBSCURVE NURBSSURFACE OBJECTTYPE ORDER
 %token OUTTANGENT POINTLIGHT POLYGON REF RGBA ROTATE ROTX ROTY ROTZ
 %token SANIM SCALAR SCALE SEQUENCE SHADING SWITCH SWITCHCONDITION
@@ -146,8 +147,9 @@ egg_cleanup_parser() {
 %type <_egg> external_reference
 %type <_egg> vertex_pool
 %type <_egg> group
-%type <_egg> joint
 %type <_egg> instance
+%type <_egg> joint
+%type <_egg> line
 %type <_egg> polygon
 %type <_egg> point_light
 %type <_egg> nurbs_surface
@@ -218,6 +220,7 @@ node:
         | instance
         | polygon
         | point_light
+        | line
         | nurbs_surface
         | nurbs_curve
         | table
@@ -1349,6 +1352,25 @@ point_light:
         POINTLIGHT optional_name
 {
   egg_stack.push_back(new EggPoint($2));
+}
+        '{' primitive_body '}'
+{
+  $$ = egg_stack.back();
+  egg_stack.pop_back();
+}
+        ;
+
+/*
+ * line
+ *
+ * enter:
+ * exit: returns a new EggLine.
+ *
+ */
+line:
+        LINE optional_name
+{
+  egg_stack.push_back(new EggLine($2));
 }
         '{' primitive_body '}'
 {

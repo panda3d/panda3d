@@ -1,5 +1,5 @@
-// Filename: eggPoint.I
-// Created by:  drose (15Dec99)
+// Filename: eggLine.I
+// Created by:  drose (14Oct03)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,30 +18,30 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggPoint::Constructor
+//     Function: EggLine::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE EggPoint::
-EggPoint(const string &name) : EggPrimitive(name) {
+INLINE EggLine::
+EggLine(const string &name) : EggPrimitive(name) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggPoint::Copy constructor
+//     Function: EggLine::Copy constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE EggPoint::
-EggPoint(const EggPoint &copy) : EggPrimitive(copy) {
+INLINE EggLine::
+EggLine(const EggLine &copy) : EggPrimitive(copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggPoint::Copy assignment operator
+//     Function: EggLine::Copy assignment operator
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE EggPoint &EggPoint::
-operator = (const EggPoint &copy) {
+INLINE EggLine &EggLine::
+operator = (const EggLine &copy) {
   EggPrimitive::operator = (copy);
   return *this;
 }

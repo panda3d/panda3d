@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_builder.h"
 
 template <class PrimType>
 INLINE MesherStrip<PrimType>::
@@ -1496,8 +1495,8 @@ remove_all_edges() {
 template <class PrimType>
 bool MesherStrip<PrimType>::
 pick_mate(const MesherStrip &a_strip, const MesherStrip &b_strip,
-         const Edge &a_edge, const Edge &b_edge,
-         const BuilderBucket &bucket) const {
+          const Edge &a_edge, const Edge &b_edge,
+          const BuilderBucket &bucket) const {
   // First, try to avoid polluting quads, quadstrips, and tristrips
   // with arbitrary triangles.  When we mate a tri or tristrip to a
   // quadstrip, we end up with a tristrip that may be less versatile

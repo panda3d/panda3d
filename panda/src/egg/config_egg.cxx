@@ -29,6 +29,7 @@
 #include "eggFilenameNode.h"
 #include "eggGroup.h"
 #include "eggGroupNode.h"
+#include "eggLine.h"
 #include "eggMaterial.h"
 #include "eggNameUniquifier.h"
 #include "eggNamedObject.h"
@@ -100,6 +101,7 @@ init_libegg() {
   EggFilenameNode::init_type();
   EggGroup::init_type();
   EggGroupNode::init_type();
+  EggLine::init_type();
   EggMaterial::init_type();
   EggNameUniquifier::init_type();
   EggNamedObject::init_type();

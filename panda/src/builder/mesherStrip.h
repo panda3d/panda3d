@@ -19,11 +19,12 @@
 #ifndef MESHERSTRIP_H
 #define MESHERSTRIP_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "mesherConfig.h"
 #include "builderTypes.h"
 #include "builderBucket.h"
+#include "config_builder.h"
 
 #include "plist.h"
 #include <math.h>

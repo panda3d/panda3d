@@ -12,6 +12,7 @@
 #include "eggGroup.cxx"
 #include "eggGroupNode.cxx"
 #include "eggGroupUniquifier.cxx"
+#include "eggLine.cxx"
 #include "eggMaterial.cxx"
 #include "eggMaterialCollection.cxx"
 #include "eggMiscFuncs.cxx"
@@ -21,4 +22,3 @@
 #include "eggNode.cxx"
 #include "eggNurbsCurve.cxx"
 #include "eggNurbsSurface.cxx"
-

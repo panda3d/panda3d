@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "builderTypes.h"
-#include <notify.h>
+#include "notify.h"
 
 ostream &operator << (ostream &out, BuilderAttribFlags baf) {
   const char *space = "";
@@ -107,6 +107,8 @@ ostream &operator << (ostream &out, BuilderPrimType bpt) {
     return out << "quad";
   case BPT_quadstrip:
     return out << "quadstrip";
+  case BPT_linestrip:
+    return out << "linestrip";
   }
   nassertr(false, out);
   return out << "(**invalid**)";

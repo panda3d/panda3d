@@ -18,13 +18,13 @@
 #ifndef BUILDERTYPES_H
 #define BUILDERTYPES_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <luse.h>
-#include <pta_TexCoordf.h>
-#include <pta_Vertexf.h>
-#include <pta_Normalf.h>
-#include <pta_Colorf.h>
+#include "luse.h"
+#include "pta_TexCoordf.h"
+#include "pta_Vertexf.h"
+#include "pta_Normalf.h"
+#include "pta_Colorf.h"
 
 typedef TexCoordf BuilderTC;
 typedef Vertexf BuilderV;
@@ -72,6 +72,7 @@ enum BuilderPrimType {
   BPT_trifan,
   BPT_quad,
   BPT_quadstrip,
+  BPT_linestrip,
 };
 
 ostream &operator << (ostream &out, BuilderPrimType bpt);

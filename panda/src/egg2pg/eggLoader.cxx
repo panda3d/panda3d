@@ -47,6 +47,7 @@
 #include "string_utils.h"
 #include "eggPrimitive.h"
 #include "eggPoint.h"
+#include "eggLine.h"
 #include "eggTextureCollection.h"
 #include "eggNurbsCurve.h"
 #include "eggNurbsSurface.h"
@@ -253,10 +254,12 @@ make_nonindexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
     make_nurbs_surface(DCAST(EggNurbsSurface, egg_prim), parent, mat);
 
   } else {
-    // A normal primitive: polygon or point.
+    // A normal primitive: polygon, line, or point.
     BuilderPrim bprim;
     bprim.set_type(BPT_poly);
-    if (egg_prim->is_of_type(EggPoint::get_class_type())) {
+    if (egg_prim->is_of_type(EggLine::get_class_type())) {
+      bprim.set_type(BPT_linestrip);
+    } else if (egg_prim->is_of_type(EggPoint::get_class_type())) {
       bprim.set_type(BPT_point);
     }
     
@@ -344,7 +347,9 @@ make_indexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
 
   BuilderPrimI bprim;
   bprim.set_type(BPT_poly);
-  if (egg_prim->is_of_type(EggPoint::get_class_type())) {
+  if (egg_prim->is_of_type(EggLine::get_class_type())) {
+    bprim.set_type(BPT_linestrip);
+  } else if (egg_prim->is_of_type(EggPoint::get_class_type())) {
     bprim.set_type(BPT_point);
   }
 

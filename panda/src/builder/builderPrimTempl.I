@@ -792,6 +792,9 @@ is_valid() const {
     return num_verts >= 1;
 
   case BPT_line:
+    return num_verts == 2;
+
+  case BPT_linestrip:
     return num_verts >= 2;
 
   case BPT_tri:

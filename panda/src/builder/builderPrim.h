@@ -61,16 +61,12 @@
 //
 ///////////////////////////////////////////////////////////////////
 
-
-
-#include <pandabase.h>
-
+#include "pandabase.h"
 #include "builderPrimTempl.h"
 #include "builderBucket.h"
 #include "builderTypes.h"
-
-#include <pta_ushort.h>
-#include <geom.h>
+#include "pta_ushort.h"
+#include "geom.h"
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, BuilderPrimTempl<BuilderVertex>);
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, BuilderPrimTempl<BuilderVertexI>);

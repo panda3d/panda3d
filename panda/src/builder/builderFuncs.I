@@ -20,9 +20,8 @@
 #include "mesherTempl.h"
 #include "builderNormalVisualizer.h"
 #include "config_builder.h"
-
-#include <geom.h>
-#include <geomprimitives.h>
+#include "geom.h"
+#include "geomprimitives.h"
 
 #include <algorithm>
 
@@ -401,20 +400,40 @@ expand_points(const PrimType &prim, BuilderBucket &,
 ////////////////////////////////////////////////////////////////////
 template <class PrimType, class OutputIterator>
 static bool
-expand_lines(const PrimType &prim, BuilderBucket &,
+expand_lines(PrimType &prim, BuilderBucket &,
              OutputIterator result) {
-  // Each line segment goes in its own primitive.  This breaks up the
-  // linestrips already defined; we'll re-strip them later if the
-  // generate-tstrips flag is enabled.
-
-  int num_verts = prim.get_num_verts();
-  for (int i = 1; i < num_verts; i++) {
-    PrimType new_prim(prim);
-    new_prim.clear_vertices();
-    new_prim.add_vertex(prim.get_vertex(i-1));
-    new_prim.add_vertex(prim.get_vertex(i));
-    *result++ = new_prim;
+  // Actually, we don't have support for meshing linestrips right now,
+  // so let's not break up the linestrips we're supplied with.
+  /*
+  if (bucket._subdivide_polys) {
+    // If we're subdividing, each line segment goes in its own
+    // primitive.  This breaks up the linestrips already defined;
+    // we'll re-strip them later if the generate-tstrips flag is
+    // enabled.
+    prim.set_type(BPT_line);
+    
+    int num_verts = prim.get_num_verts();
+    for (int i = 1; i < num_verts; i++) {
+      PrimType new_prim(prim);
+      new_prim.clear_vertices();
+      new_prim.add_vertex(prim.get_vertex(i-1));
+      new_prim.add_vertex(prim.get_vertex(i));
+      *result++ = new_prim;
+    }
+    return true;
   }
+  */
+
+  // If we're not to subdivide the polys, then just pass them through
+  // as they are.  Two vertices is a BPT_line; more than that is a
+  // BPT_linestrip.
+  if (prim.get_num_verts() > 2) {
+    prim.set_type(BPT_linestrip);
+  } else {
+    prim.set_type(BPT_line);
+  }
+  *result++ = prim;
+  
   return true;
 }
 
@@ -467,6 +486,7 @@ expand(const PrimType &prim, BuilderBucket &bucket, OutputIterator result) {
     return expand_points(new_prim, bucket, result);
 
   case BPT_line:
+  case BPT_linestrip:
     new_prim.remove_doubled_verts(false);
     return expand_lines(new_prim, bucket, result);
 
@@ -614,6 +634,7 @@ build_geoms(InputIterator first, InputIterator last,
 
   Geom *geom = NULL;
   BuilderPrimType type = (*first).get_type();
+
   switch (type) {
   case BPT_poly:
     geom = new GeomPolygon;
@@ -632,6 +653,11 @@ build_geoms(InputIterator first, InputIterator last,
 
   case BPT_line:
     geom = new GeomLine;
+    break;
+
+  case BPT_linestrip:
+    geom = new GeomLinestrip;
+    want_lengths = true;
     break;
 
   case BPT_point:

@@ -18,7 +18,7 @@
 #ifndef MESHERTEMPL_H
 #define MESHERTEMPL_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "mesherConfig.h"
 #include "builderBucket.h"

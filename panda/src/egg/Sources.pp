@@ -18,6 +18,7 @@
      eggExternalReference.I eggExternalReference.h  \
      eggFilenameNode.I eggFilenameNode.h eggGroup.I eggGroup.h  \
      eggGroupNode.I eggGroupNode.h eggGroupUniquifier.h  \
+     eggLine.I eggLine.h \
      eggMaterial.I eggMaterial.h eggMaterialCollection.I  \
      eggMaterialCollection.h eggMiscFuncs.I eggMiscFuncs.h  \
      eggMorph.I eggMorph.h eggMorphList.I eggMorphList.h  \
@@ -44,7 +45,7 @@
      eggBinMaker.cxx eggComment.cxx eggCoordinateSystem.cxx  \
      eggCurve.cxx eggData.cxx eggExternalReference.cxx  \
      eggFilenameNode.cxx eggGroup.cxx eggGroupNode.cxx  \
-     eggGroupUniquifier.cxx eggMaterial.cxx  \
+     eggGroupUniquifier.cxx eggLine.cxx eggMaterial.cxx  \
      eggMaterialCollection.cxx eggMiscFuncs.cxx eggMorphList.cxx  \
      eggNamedObject.cxx eggNameUniquifier.cxx eggNode.cxx  \
      eggNurbsCurve.cxx eggNurbsSurface.cxx eggObject.cxx  \
@@ -67,7 +68,9 @@
     eggCurve.h eggData.I eggData.h eggExternalReference.I \
     eggExternalReference.h eggFilenameNode.I eggFilenameNode.h \
     eggGroup.I eggGroup.h eggGroupNode.I eggGroupNode.h \
-    eggGroupUniquifier.h eggMaterial.I \
+    eggGroupUniquifier.h \
+    eggLine.I eggLine.h \
+    eggMaterial.I \
     eggMaterial.h eggMaterialCollection.I eggMaterialCollection.h \
     eggMorph.I eggMorph.h eggMorphList.I eggMorphList.h \
     eggNamedObject.I eggNamedObject.h eggNameUniquifier.h eggNode.I eggNode.h \

@@ -451,6 +451,10 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   accept();
   return INSTANCE;
 }
+"<LINE>" {
+  accept();
+  return LINE;
+}
 "<LOOP>" {
   accept();
   return LOOP;

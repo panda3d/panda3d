@@ -18,7 +18,7 @@
 #ifndef MESHER_H
 #define MESHER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "mesherConfig.h"
 #include "mesherFanMaker.h"
