@@ -95,15 +95,29 @@ if os.path.exists(docdir):
         os.remove(file)
     os.rmdir(docdir)
 
+# Generate the autoconf scripts for ppremake.
+if MODULE == 'ppremake':
+    ppremakedir = basename
+else:
+    ppremakedir = basename + os.sep + 'ppremake'
+if os.path.exists(ppremakedir):
+    cmd = 'cd "./%s" && aclocal && autoheader && automake --foreign -a && autoconf' % (ppremakedir)
+    if os.system(cmd) != 0:
+        sys.exit(1)
+
 # Generate the tarball.
-cmd = 'tar cvzf "%s" "%s"' % (tarfile, basename)
+print 'Generating %s' % (tarfile)
+if os.path.exists(tarfile):
+    os.remove(tarfile)
+cmd = 'tar cf - "%s" | gzip -9 > "%s"' % (basename, tarfile)
 if os.system(cmd) != 0:
     sys.exit(1)
 
-# Also generate a .zip file.
+# Also generate a zip file.
+print 'Generating %s' % (zipfile)
 if os.path.exists(zipfile):
     os.remove(zipfile)
-cmd = 'zip -9r "%s" "%s"' % (zipfile, basename)
+cmd = 'zip -9rq "%s" "%s"' % (zipfile, basename)
 if os.system(cmd) != 0:
     sys.exit(1)
 
