@@ -36,8 +36,8 @@ CollisionEntry(const CollisionEntry &copy) :
   _into_space(copy._into_space),
   _wrt_space(copy._wrt_space),
   _inv_wrt_space(copy._inv_wrt_space),
+  _wrt_prev_space(copy._wrt_prev_space),
   _flags(copy._flags),
-  _from_pos_delta(copy._from_pos_delta),
   _into_intersection_point(copy._into_intersection_point),
   _into_surface_normal(copy._into_surface_normal),
   _into_depth(copy._into_depth)
@@ -60,8 +60,8 @@ operator = (const CollisionEntry &copy) {
   _into_space = copy._into_space;
   _wrt_space = copy._wrt_space;
   _inv_wrt_space = copy._inv_wrt_space;
+  _wrt_prev_space = copy._wrt_prev_space;
   _flags = copy._flags;
-  _from_pos_delta = copy._from_pos_delta;
   _into_intersection_point = copy._into_intersection_point;
   _into_surface_normal = copy._into_surface_normal;
   _into_depth = copy._into_depth;

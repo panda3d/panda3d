@@ -133,8 +133,10 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   LPoint3f from_a = sphere->get_center() * entry.get_wrt_mat();
   LPoint3f from_b = from_a;
 
-  if (entry.has_from_pos_delta()) {
-    from_a = (sphere->get_center() - entry.get_from_pos_delta()) * entry.get_wrt_mat();
+  if (entry.get_wrt_prev_space() != entry.get_wrt_space()) {
+    // If the sphere is moving relative to the tube, it becomes a tube
+    // itself.
+    from_a = sphere->get_center() * entry.get_wrt_prev_mat();
   }
 
   LVector3f from_direction = from_b - from_a;

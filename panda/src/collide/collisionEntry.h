@@ -65,15 +65,13 @@ PUBLISHED:
   INLINE const TransformState *get_into_space() const;
   INLINE const TransformState *get_wrt_space() const;
   INLINE const TransformState *get_inv_wrt_space() const;
+  INLINE const TransformState *get_wrt_prev_space() const;
 
   INLINE const LMatrix4f &get_from_mat() const;
   INLINE const LMatrix4f &get_into_mat() const;
   INLINE const LMatrix4f &get_wrt_mat() const;
   INLINE const LMatrix4f &get_inv_wrt_mat() const;
-
-  INLINE void set_from_pos_delta(const LVector3f &vel);
-  INLINE bool has_from_pos_delta() const;
-  INLINE const LVector3f &get_from_pos_delta() const;
+  INLINE const LMatrix4f &get_wrt_prev_mat() const;
 
   INLINE void set_into_intersection_point(const LPoint3f &point);
   INLINE bool has_into_intersection_point() const;
@@ -113,6 +111,7 @@ private:
   CPT(TransformState) _into_space;
   CPT(TransformState) _wrt_space;
   CPT(TransformState) _inv_wrt_space;
+  CPT(TransformState) _wrt_prev_space;
 
   enum Flags {
     F_has_into_intersection_point = 0x0001,
@@ -120,12 +119,10 @@ private:
     F_has_from_surface_normal     = 0x0004,
     F_has_into_depth              = 0x0008,
     F_has_from_depth              = 0x0010,
-    F_has_from_pos_delta          = 0x0020,
   };
 
   int _flags;
 
-  LVector3f _from_pos_delta;
   LPoint3f _into_intersection_point;
   LVector3f _into_surface_normal;
   LVector3f _from_surface_normal;

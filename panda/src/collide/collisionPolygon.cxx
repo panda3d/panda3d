@@ -277,13 +277,14 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   LPoint3f from_center = orig_center;
   bool moved_from_center = false;
 
-  if (entry.has_from_pos_delta()) {
-    // If we have a pos_delta indication, we use that to determine some
-    // more properties of the collision.
+  if (entry.get_wrt_prev_space() != entry.get_wrt_space()) {
+    // If we have a delta between the previous position and the
+    // current position, we use that to determine some more properties
+    // of the collision.
     LPoint3f b = from_center;
-    LPoint3f a = (sphere->get_center() - entry.get_from_pos_delta()) * entry.get_wrt_mat();
-
+    LPoint3f a = sphere->get_center() * entry.get_wrt_prev_mat();
     LVector3f delta = b - a;
+
     // First, there is no collision if the "from" object is moving in
     // the same direction as the plane's normal.
     float dot = delta.dot(get_normal());

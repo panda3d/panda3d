@@ -29,6 +29,7 @@ CollisionEntry() {
   _into_space = TransformState::make_identity();
   _wrt_space = TransformState::make_identity();
   _inv_wrt_space = TransformState::make_identity();
+  _wrt_prev_space = TransformState::make_identity();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -143,7 +144,8 @@ get_into_space() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_wrt_space
 //       Access: Published
-//  Description:
+//  Description: Returns the relative transform of the from node as
+//               seen from the into node.
 ////////////////////////////////////////////////////////////////////
 INLINE const TransformState *CollisionEntry::
 get_wrt_space() const {
@@ -153,11 +155,25 @@ get_wrt_space() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_inv_wrt_space
 //       Access: Published
-//  Description:
+//  Description: Returns the relative transform of the into node as
+//               seen from the from node.
 ////////////////////////////////////////////////////////////////////
 INLINE const TransformState *CollisionEntry::
 get_inv_wrt_space() const {
   return _inv_wrt_space;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::get_wrt_prev_space
+//       Access: Published
+//  Description: Returns the relative transform of the from node as
+//               seen from the into node, as of the previous frame
+//               (according to set_prev_transform(), set_fluid_pos(),
+//               etc.)
+////////////////////////////////////////////////////////////////////
+INLINE const TransformState *CollisionEntry::
+get_wrt_prev_space() const {
+  return _wrt_prev_space;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -188,7 +204,8 @@ get_into_mat() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_wrt_mat
 //       Access: Published
-//  Description:
+//  Description: Returns the relative transform of the from node as
+//               seen from the into node.
 ////////////////////////////////////////////////////////////////////
 INLINE const LMatrix4f &CollisionEntry::
 get_wrt_mat() const {
@@ -198,7 +215,8 @@ get_wrt_mat() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionEntry::get_inv_wrt_mat
 //       Access: Published
-//  Description:
+//  Description: Returns the relative transform of the into node as
+//               seen from the from node.
 ////////////////////////////////////////////////////////////////////
 INLINE const LMatrix4f &CollisionEntry::
 get_inv_wrt_mat() const {
@@ -206,43 +224,16 @@ get_inv_wrt_mat() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::set_from_pos_delta
+//     Function: CollisionEntry::get_wrt_prev_mat
 //       Access: Published
-//  Description: Indicates the pos_delta associated with the "from"
-//               object, in the object's coordinate space.
+//  Description: Returns the relative transform of the from node as
+//               seen from the into node, as of the previous frame
+//               (according to set_prev_transform(), set_fluid_pos(),
+//               etc.)
 ////////////////////////////////////////////////////////////////////
-INLINE void CollisionEntry::
-set_from_pos_delta(const LVector3f &vel) {
-  _from_pos_delta = vel;
-  _flags |= F_has_from_pos_delta;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::has_from_pos_delta
-//       Access: Published
-//  Description: Returns true if the objects appeared to be moving
-//               relative to each other, false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool CollisionEntry::
-has_from_pos_delta() const {
-  return (_flags & F_has_from_pos_delta) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::get_from_pos_delta
-//       Access: Published
-//  Description: Returns the position delta between the two objects,
-//               in the coordinate space of the "from" object.  This
-//               is the delta between their relative position in the
-//               previous frame and their relative position this
-//               frame.
-////////////////////////////////////////////////////////////////////
-INLINE const LVector3f &CollisionEntry::
-get_from_pos_delta() const {
-  if (!has_from_pos_delta()) {
-    return LVector3f::zero();
-  }
-  return _from_pos_delta;
+INLINE const LMatrix4f &CollisionEntry::
+get_wrt_prev_mat() const {
+  return _wrt_prev_space->get_mat();
 }
 
 ////////////////////////////////////////////////////////////////////

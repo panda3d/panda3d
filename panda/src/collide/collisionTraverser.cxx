@@ -462,20 +462,11 @@ r_traverse(CollisionLevelState &level_state) {
           entry._wrt_space = entry._into_space->invert_compose(entry._from_space);
           entry._inv_wrt_space = entry._from_space->invert_compose(entry._into_space);
           if (_respect_prev_transform) {
+            CPT(TransformState) into_prev_space = entry._into_node_path.get_net_prev_transform();
             CPT(TransformState) from_prev_space = level_state.get_prev_space(c);
-            CPT(TransformState) inv_wrt_prev_space = from_prev_space->invert_compose(entry._into_node_path.get_net_prev_transform());
-            
-            LVector3f into_delta = entry._inv_wrt_space->get_pos() - inv_wrt_prev_space->get_pos();
-            LVector3f delta = from_delta - into_delta;
-            if (delta != LVector3f::zero()) {
-              /*
-                if (entry._from_node->get_name() == "cSphereNode" && entry._into_node->get_name() == "MickeyBlatherSphere") {
-                cerr << "from_delta = " << from_delta << " into_delta = "
-                << into_delta << " delta = " << delta << "\n";
-                }
-              */
-              entry.set_from_pos_delta(delta);
-            }
+            entry._wrt_prev_space = into_prev_space->invert_compose(from_prev_space);
+          } else {
+            entry._wrt_prev_space = entry._wrt_space;
           }
 
           compare_collider_to_node(entry, 
