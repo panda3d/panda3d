@@ -10,6 +10,9 @@
 
 #include "nodeTransition.h"
 #include "transitionDirection.h"
+#include "multiTransitionHelpers.h"
+
+#include <indent.h>
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : MultiTransition
@@ -43,7 +46,7 @@ protected:
   MultiTransition(const MultiTransition &copy);
   void operator = (const MultiTransition &copy);
 
-public:
+PUBLISHED:
   void clear();
   bool is_identity() const;
 
@@ -71,6 +74,7 @@ public:
   bool is_on(const Property &prop) const;
   bool is_off(const Property &prop) const;
 
+public:
   virtual NodeTransition *make_identity() const=0;
 
   virtual NodeTransition *compose(const NodeTransition *other) const;

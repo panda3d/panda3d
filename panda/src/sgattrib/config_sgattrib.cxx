@@ -64,29 +64,44 @@ Configure(config_sgattrib);
 NotifyCategoryDef(sgattrib, "");
 
 
-// For performance testing reasons, it may be useful to support decals
-// (specially rendered coplanar geometry) to varying
-// less-than-complete degrees.  Modify the variable support-decals to
-// change this.  The legal values are:
+// For performance testing reasons, it may be useful to support
+// certain rendering special effects that require a special-case
+// direct render traversal to varying less-than-complete degrees.  The
+// variables support-decals, support-subrender, or support-direct may
+// be set to change these.  support-decals specifically controls the
+// rendering of decal geometry (polygons against a coplanar
+// background), while support-subrender controls other effects such as
+// LOD's and billboards.  support-direct controls any effect which
+// requires switching to DirectRenderTraverser from a CullTraverser,
+// including decals and things specifically flagged with a
+// DirectRenderTransition.
 //
-//   on - This is the default, and causes decals to be rendered
+// The legal values for each variable are:
+//
+//   on - This is the default, and causes the effect to be rendered
 //        properly (if supported by the gsg backend).  This could have
 //        performance implications in fill, transform, and
 //        state-sorting.  This is equivalent to #t.
 //
-//  off - Decals are rendered as if they were not decalled at all.
-//        The result will generally be horrible looking, with each
-//        decal Z-fighting with its base.  This is equivalent to #f.
+//  off - The special effect is ignored, and the geometry is rendered
+//        as if the effect were not set at all.  The result will
+//        generally be horrible looking, for instance with decals
+//        Z-fighting with the base geometry.  This is equivalent to
+//        #f.
 //
-// hide - Decals are not drawn at all.
+// hide - The nested geometry--the decals, or the billboards, or
+//        whatever--is not drawn at all.
 //
-// If compiled in NDEBUG mode, this variable is ignored and decals are
-// always on.
+// If compiled in NDEBUG mode, this variable is ignored and decals
+// etc. are always on.
 //
-SupportDecals support_decals = SD_on;
+SupportDirect support_decals = SD_on;
+SupportDirect support_subrender = SD_on;
+SupportDirect support_direct = SD_on;
 
-static SupportDecals
-parse_support_decals(const string &type) {
+static SupportDirect
+get_support_direct(const string &varname) {
+  string type = config_sgattrib.GetString(varname, "");
   if (type == "on") {
     return SD_on;
   } else if (type == "off") {
@@ -94,18 +109,19 @@ parse_support_decals(const string &type) {
   } else if (type == "hide") {
     return SD_hide;
   }
-  return SD_invalid;
+
+  // None of the above, so use #t/#f.
+  if (config_sgattrib.GetBool(varname, true)) {
+    return SD_on;
+  } else {
+    return SD_off;
+  }
 }
 
 ConfigureFn(config_sgattrib) {
-  string support_decals_str = config_sgattrib.GetString("support-decals", "");
-  if (!support_decals_str.empty()) {
-    support_decals = parse_support_decals(support_decals_str);
-    if (support_decals == SD_invalid) {
-      support_decals = 
-	config_sgattrib.GetBool("support-decals", true) ? SD_on : SD_off;
-    }
-  }
+  support_decals = get_support_direct("support-decals");
+  support_subrender = get_support_direct("support-subrender");
+  support_direct = get_support_direct("support-direct");
 
   // MPG - we want to ensure that texture transitions are applied
   // before texgen transitions, so the texture transition must be

@@ -130,10 +130,15 @@ reached_node(Node *node, AllAttributesWrapper &render_state,
 
   AllTransitionsWrapper new_trans;
 
-  if (!node->sub_render(render_state, new_trans, this)) {
-    return false;
-  }
-  render_state.apply_in_place(new_trans);
+#ifndef NDEBUG
+  if (support_subrender == SD_on)
+#endif
+    {
+      if (!node->sub_render(render_state, new_trans, this)) {
+	return false;
+      }
+      render_state.apply_in_place(new_trans);
+    }
 
   if (node->is_of_type(GeomNode::get_class_type())) {
     _gsg->set_state(render_state.get_attributes(), true);
@@ -190,15 +195,20 @@ forward_arc(NodeRelation *arc, AllTransitionsWrapper &trans,
 
   mark_forward_arc(arc);
 
-  AllTransitionsWrapper::const_iterator nti;
-  for (nti = trans.begin(); nti != trans.end(); ++nti) {
-    NodeTransition *t = (*nti).second.get_trans();
-    AllTransitionsWrapper new_trans;
-    if (!t->sub_render(arc, post, new_trans, this)) {
-      carry_on = false;
+#ifndef NDEBUG
+  if (support_subrender == SD_on) 
+#endif
+    {
+      AllTransitionsWrapper::const_iterator nti;
+      for (nti = trans.begin(); nti != trans.end(); ++nti) {
+	NodeTransition *t = (*nti).second.get_trans();
+	AllTransitionsWrapper new_trans;
+	if (!t->sub_render(arc, post, new_trans, this)) {
+	  carry_on = false;
+	}
+	post.apply_in_place(new_trans);
+      }
     }
-    post.apply_in_place(new_trans);
-  }
 
   if (!carry_on) {
     mark_backward_arc(arc);

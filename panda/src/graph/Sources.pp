@@ -22,9 +22,12 @@
     lmatrix4fTransition.cxx lmatrix4fTransition.h \
     matrixAttribute.I matrixAttribute.h matrixTransition.I \
     matrixTransition.h \
+    multiAttribute.I multiAttribute.h \
     multiNodeAttribute.I \
     multiNodeAttribute.cxx multiNodeAttribute.h multiNodeTransition.I \
-    multiNodeTransition.cxx multiNodeTransition.h namedNode.I \
+    multiNodeTransition.cxx multiNodeTransition.h \
+    multiTransition.I multiTransition.h multiTransitionHelpers.I \
+    multiTransitionHelpers.h namedNode.I \
     namedNode.cxx namedNode.h node.I node.cxx node.h nodeAttribute.I \
     nodeAttribute.N nodeAttribute.cxx nodeAttribute.h \
     nodeAttributeWrapper.I nodeAttributeWrapper.cxx \

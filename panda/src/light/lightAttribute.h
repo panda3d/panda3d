@@ -26,9 +26,10 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, MULTIATTRIBUTE_LIGHT);
 // Description : See LightTransition.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA LightAttribute : public MultiAttribute<PT_Light, LightNameClass> {
-public:
+PUBLISHED:
   INLINE LightAttribute();
 
+public:
   virtual TypeHandle get_handle() const;
   virtual NodeAttribute *make_copy() const;
   virtual NodeAttribute *make_initial() const;

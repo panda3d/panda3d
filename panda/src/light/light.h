@@ -25,18 +25,19 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA Light : virtual public ReferenceCount
 {
-    public:
+    PUBLISHED:
 	
 	Light( void ) { _color.set(0.0, 0.0, 0.0, 1.0); }
 	virtual ~Light( void ) { }
-
-	virtual void apply( GraphicsStateGuardian* gsg ) = 0;
 
 	INLINE Colorf get_color(void) const { return _color; }
  	INLINE void set_color(const Colorf& color) { _color = color; }
 
  	virtual void output(ostream &out) const=0;
  	virtual void write(ostream &out, int indent_level = 0) const=0;
+
+    public:
+	virtual void apply( GraphicsStateGuardian* gsg ) = 0;
 
     protected:
 

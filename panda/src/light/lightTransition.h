@@ -30,10 +30,11 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, MULTITRANSITION_LIGHT);
 //               indicated lights in effect.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA LightTransition : public MultiTransition<PT_Light, LightNameClass> {
-public:
+PUBLISHED:
   INLINE LightTransition();
   INLINE static LightTransition all_off();
-  
+
+public:  
   virtual NodeTransition *make_copy() const;
   virtual NodeAttribute *make_attrib() const;
   virtual NodeTransition *make_identity() const;

@@ -27,17 +27,19 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA AmbientLight : public Light, public NamedNode
 {
-  public:
+  PUBLISHED:
 
     AmbientLight( const string& name = "" );
     ~AmbientLight( void ) { }
 
-    virtual void apply( GraphicsStateGuardian* gsg ) {
-      gsg->apply_light( this );
-    }
+  public:
 
     virtual void output( ostream &out ) const;
     virtual void write( ostream &out, int indent_level = 0 ) const;
+
+    virtual void apply( GraphicsStateGuardian* gsg ) {
+      gsg->apply_light( this );
+    }
 
   public:
 

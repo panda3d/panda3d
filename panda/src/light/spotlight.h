@@ -29,17 +29,10 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA Spotlight : public Light, public ProjectionNode
 {
-  public:
+  PUBLISHED:
 
     Spotlight( const string& name = "" );
     ~Spotlight( void ) { }
-
-    virtual void apply( GraphicsStateGuardian* gsg ) {
-      gsg->apply_light( this );
-    }
-
-    virtual void output( ostream &out ) const;
-    virtual void write( ostream &out, int indent_level = 0 ) const;
 
     INLINE float get_exponent( void ) const;
     INLINE void set_exponent( float exponent );
@@ -57,6 +50,15 @@ class EXPCL_PANDA Spotlight : public Light, public ProjectionNode
 
     INLINE float get_quadratic_attenuation( void ) const;
     INLINE void set_quadratic_attenuation( float att );
+
+  public:
+
+    virtual void output( ostream &out ) const;
+    virtual void write( ostream &out, int indent_level = 0 ) const;
+
+    virtual void apply( GraphicsStateGuardian* gsg ) {
+      gsg->apply_light( this );
+    }
 
     bool make_image(Texture* texture, float radius = 0.7);
     NamedNode* make_geometry(float intensity = 0.05, float length = 20.0,

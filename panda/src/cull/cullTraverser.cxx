@@ -408,6 +408,32 @@ forward_arc(NodeRelation *arc, NullTransitionWrapper &,
 	arc->has_transition(DecalTransition::get_class_type());
     }
 
+#ifndef NDEBUG
+  if (support_subrender == SD_off) {
+    node_has_sub_render = false;
+    arc_has_sub_render = false;
+
+  } else if (support_subrender == SD_hide) {
+    if ((node_has_sub_render || arc_has_sub_render) &&
+	!arc->has_transition(DecalTransition::get_class_type())) {
+      return false;
+    }
+    node_has_sub_render = false;
+    arc_has_sub_render = false;
+  }
+#endif
+
+#ifndef NDEBUG
+  if (support_direct == SD_off) {
+    has_direct_render = false;
+
+  } else if (support_direct == SD_hide) {
+    if (has_direct_render) {
+      return false;
+    }
+  }
+#endif
+
   if (arc_has_sub_render) {
     level_state._now = UpdateSeq::fresh();
   }

@@ -27,17 +27,10 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PointLight : public Light, public NamedNode
 {
-  public:
+  PUBLISHED:
 
     PointLight( const string& name = "" );
     ~PointLight( void ) { }
-
-    virtual void apply( GraphicsStateGuardian* gsg ) {
-      gsg->apply_light( this );
-    }
-
-    virtual void output( ostream &out ) const;
-    virtual void write( ostream &out, int indent_level = 0 ) const;
 
     INLINE Colorf get_specular( void ) const;
     INLINE void set_specular( const Colorf& color );
@@ -50,6 +43,15 @@ class EXPCL_PANDA PointLight : public Light, public NamedNode
 
     INLINE float get_quadratic_attenuation( void ) const;
     INLINE void set_quadratic_attenuation( float att );
+
+  public:
+
+    virtual void output( ostream &out ) const;
+    virtual void write( ostream &out, int indent_level = 0 ) const;
+
+    virtual void apply( GraphicsStateGuardian* gsg ) {
+      gsg->apply_light( this );
+    }
 
   protected:
 

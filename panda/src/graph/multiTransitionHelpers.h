@@ -8,6 +8,8 @@
 
 #include <pandabase.h>
 
+#include "transitionDirection.h"
+
 ////////////////////////////////////////////////////////////////////
 //     Function: dmap_compose
 //  Description: Accepts two DirectionMaps, and builds a new

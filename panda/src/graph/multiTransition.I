@@ -3,10 +3,9 @@
 // 
 ////////////////////////////////////////////////////////////////////
 
-#include "multiTransitionHelpers.h"
+/* okcircular */
 #include "multiAttribute.h"
 
-#include <indent.h>
 
 template<class Property, class NameClass>
 TypeHandle MultiTransition<Property, NameClass>::_type_handle;

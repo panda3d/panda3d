@@ -41,10 +41,9 @@ class EXPCL_PANDA GraphicsStateGuardian : public GraphicsStateGuardianBase {
 public:
   GraphicsStateGuardian(GraphicsWindow *win);
 
+PUBLISHED:
   INLINE void set_render_traverser(RenderTraverser *rt);
   INLINE RenderTraverser *get_render_traverser() const;
-
-  void release_all_textures();
 
   virtual void set_color_clear_value(const Colorf& value);
   virtual void set_depth_clear_value(const float value);
@@ -62,6 +61,10 @@ public:
   INLINE Colorf get_accum_clear_value(void) const {
     return _accum_clear_value;
   }
+
+public:
+  void release_all_textures();
+
   virtual void clear(const RenderBuffer &buffer)=0;
   virtual void clear(const RenderBuffer &buffer, const DisplayRegion* region)=0;
 
@@ -187,8 +190,7 @@ private:
 public:
   INLINE GraphicsWindow* get_window(void) const { return _win; }
 
-
-PUBLISHED:
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }

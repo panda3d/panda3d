@@ -27,20 +27,22 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA DirectionalLight : public Light, public NamedNode
 {
-  public:
+  PUBLISHED:
 
     DirectionalLight( const string& name = "" );
     ~DirectionalLight( void ) { }
 
-    virtual void apply( GraphicsStateGuardian* gsg ) {
-      gsg->apply_light( this );
-    }
-
     INLINE Colorf get_specular( void ) const;
     INLINE void set_specular( const Colorf& color );
 
+  public:
+
     virtual void output( ostream &out ) const;
     virtual void write( ostream &out, int indent_level = 0 ) const;
+
+    virtual void apply( GraphicsStateGuardian* gsg ) {
+      gsg->apply_light( this );
+    }
 
   protected:
 	

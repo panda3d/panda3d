@@ -9,6 +9,10 @@
 #include <pandabase.h>
 
 #include "nodeAttribute.h"
+#include "multiTransitionHelpers.h"
+
+#include <indent.h>
+#include <algorithm>
 
 template<class Property, class NameClass>
 class MultiTransition;
@@ -27,7 +31,7 @@ protected:
   MultiAttribute(const MultiAttribute &copy);
   void operator = (const MultiAttribute &copy);
 
-public:
+PUBLISHED:
   void set_on(const Property &prop);
   void set_off(const Property &prop);
 
@@ -36,6 +40,7 @@ public:
 
   INLINE bool get_properties_is_on() const;
 
+public:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
