@@ -62,33 +62,28 @@ PUBLISHED:
   INLINE bool is_tangible() const;
 
 public:
-  virtual int
-  test_intersection(CollisionHandler *record,
-                    const CollisionEntry &entry,
-                    const CollisionSolid *into) const=0;
+  virtual PT(CollisionEntry)
+  test_intersection(const CollisionEntry &entry) const;
 
   virtual void xform(const LMatrix4f &mat)=0;
 
-  GeomNode *get_viz();
+  GeomNode *get_viz() const;
 
 PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;
 
 protected:
-  virtual int
-  test_intersection_from_sphere(CollisionHandler *record,
-                                const CollisionEntry &entry) const;
-  virtual int
-  test_intersection_from_ray(CollisionHandler *record,
-                             const CollisionEntry &entry) const;
-  virtual int
-  test_intersection_from_segment(CollisionHandler *record,
-                                 const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
+  test_intersection_from_sphere(const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
+  test_intersection_from_ray(const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
+  test_intersection_from_segment(const CollisionEntry &entry) const;
 
-  static void
-  report_undefined_intersection_test(TypeHandle from_type,
-                                     TypeHandle into_type);
+  static void report_undefined_intersection_test(TypeHandle from_type,
+                                                 TypeHandle into_type);
+  static void report_undefined_from_intersection(TypeHandle from_type);
 
   INLINE void mark_viz_stale();
   virtual void fill_viz_geom();

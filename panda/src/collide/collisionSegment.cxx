@@ -51,10 +51,9 @@ make_copy() {
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-int CollisionSegment::
-test_intersection(CollisionHandler *record, const CollisionEntry &entry,
-                  const CollisionSolid *into) const {
-  return into->test_intersection_from_segment(record, entry);
+PT(CollisionEntry) CollisionSegment::
+test_intersection(const CollisionEntry &entry) const {
+  return entry.get_into()->test_intersection_from_segment(entry);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -49,10 +49,9 @@ make_copy() {
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-int CollisionRay::
-test_intersection(CollisionHandler *record, const CollisionEntry &entry,
-                  const CollisionSolid *into) const {
-  return into->test_intersection_from_ray(record, entry);
+PT(CollisionEntry) CollisionRay::
+test_intersection(const CollisionEntry &entry) const {
+  return entry.get_into()->test_intersection_from_ray(entry);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -30,13 +30,23 @@
 #include "pset.h"
 
 class CollisionNode;
+class CollisionRecorder;
 class Geom;
 class NodePath;
 class CollisionEntry;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CollisionTraverser
-// Description :
+// Description : This class manages the traversal through the scene
+//               graph to detect collisions.  It holds ownership of a
+//               number of collider objects, each of which is a
+//               CollisionNode and an associated CollisionHandler.
+//
+//               When traverse() is called, it begins at the indicated
+//               root and detects all collisions with any of its
+//               collider objects against nodes at or below the
+//               indicated root, calling the appropriate
+//               CollisionHandler for each detected collision.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA CollisionTraverser {
 PUBLISHED:
@@ -52,6 +62,13 @@ PUBLISHED:
   void clear_colliders();
 
   void traverse(const NodePath &root);
+
+#ifdef DO_COLLISION_RECORDING
+  void set_recorder(CollisionRecorder *recorder);
+  INLINE bool has_recorder() const;
+  INLINE CollisionRecorder *get_recorder() const;
+  INLINE void clear_recorder();
+#endif  // DO_COLLISION_RECORDING
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;
@@ -87,6 +104,10 @@ private:
 
   typedef pmap<PT(CollisionHandler), int> Handlers;
   Handlers _handlers;
+
+#ifdef DO_COLLISION_RECORDING
+  CollisionRecorder *_recorder;
+#endif  // DO_COLLISION_RECORDING
 
   // Statistics
   static PStatCollector _collisions_pcollector;

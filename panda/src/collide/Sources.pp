@@ -21,10 +21,13 @@
     collisionNode.I collisionNode.h \
     collisionPlane.I collisionPlane.h  \
     collisionPolygon.I collisionPolygon.h collisionRay.I  \
-    collisionRay.h collisionSegment.I collisionSegment.h  \
+    collisionRay.h \
+    collisionRecorder.I collisionRecorder.h \
+    collisionSegment.I collisionSegment.h  \
     collisionSolid.I collisionSolid.h collisionSphere.I  \
     collisionSphere.h \
     collisionTraverser.I collisionTraverser.h  \
+    collisionVisualizer.I collisionVisualizer.h \
     config_collide.h
     
  #define INCLUDED_SOURCES \
@@ -38,9 +41,12 @@
     collisionLevelState.cxx \
     collisionNode.cxx \
     collisionPlane.cxx  \
-    collisionPolygon.cxx collisionRay.cxx collisionSegment.cxx  \
+    collisionPolygon.cxx collisionRay.cxx \
+    collisionRecorder.cxx \
+    collisionSegment.cxx  \
     collisionSolid.cxx collisionSphere.cxx  \
     collisionTraverser.cxx \
+    collisionVisualizer.cxx \
     config_collide.cxx 
 
   #define INSTALL_HEADERS \
@@ -55,10 +61,12 @@
     collisionNode.I collisionNode.h \
     collisionPlane.I collisionPlane.h \
     collisionPolygon.I collisionPolygon.h collisionRay.I collisionRay.h \
+    collisionRecorder.I collisionRecorder.h \
     collisionSegment.I collisionSegment.h \
     collisionSolid.I collisionSolid.h collisionSphere.I \
     collisionSphere.h \
-    collisionTraverser.I collisionTraverser.h
+    collisionTraverser.I collisionTraverser.h \
+    collisionVisualizer.I collisionVisualizer.h
 
   #define IGATESCAN all
 

@@ -1,4 +1,3 @@
-
 #include "config_collide.cxx"
 #include "collisionEntry.cxx"
 #include "collisionHandler.cxx"

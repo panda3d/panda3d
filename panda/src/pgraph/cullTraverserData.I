@@ -39,6 +39,37 @@ CullTraverserData(const NodePath &start,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullTraverserData::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE CullTraverserData::
+CullTraverserData(const CullTraverserData &copy) :
+  _node_path(copy._node_path),
+  _render_transform(copy._render_transform),
+  _net_transform(copy._net_transform),
+  _state(copy._state),
+  _view_frustum(copy._view_frustum),
+  _guard_band(copy._guard_band)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverserData::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void CullTraverserData::
+operator = (const CullTraverserData &copy) {
+  _node_path = copy._node_path;
+  _render_transform = copy._render_transform;
+  _net_transform = copy._net_transform;
+  _state = copy._state;
+  _view_frustum = copy._view_frustum;
+  _guard_band = copy._guard_band;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullTraverserData::Constructor
 //       Access: Public
 //  Description: This constructor creates a CullTraverserData object
@@ -53,28 +84,6 @@ CullTraverserData(const CullTraverserData &parent, PandaNode *child) :
   _view_frustum(parent._view_frustum),
   _guard_band(parent._guard_band)
 {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverserData::Copy Constructor
-//       Access: Private
-//  Description: Do not copy CullTraverserData objects.
-////////////////////////////////////////////////////////////////////
-INLINE CullTraverserData::
-CullTraverserData(const CullTraverserData &copy) :
-  _node_path(NodePath())
-{
-  nassertv(false);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverserData::Copy Assignment Operator
-//       Access: Private
-//  Description: Do not copy CullTraverserData objects.
-////////////////////////////////////////////////////////////////////
-INLINE void CullTraverserData::
-operator = (const CullTraverserData &copy) {
-  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -127,3 +136,17 @@ is_in_view(const DrawMask &camera_mask) {
   // Otherwise, compare the bounding volume to the frustum.
   return is_in_view_impl();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverserData::apply_transform_and_state
+//       Access: Public
+//  Description: Applies the transform and state from the current
+//               node onto the current data.  This also evaluates
+//               billboards, etc.
+////////////////////////////////////////////////////////////////////
+INLINE void CullTraverserData::
+apply_transform_and_state(CullTraverser *trav) {
+  apply_transform_and_state(trav, node()->get_transform(),
+                            node()->get_state(), node()->get_effects());
+}
+

@@ -21,8 +21,10 @@
 
 #include "pandabase.h"
 
+#include "collisionTraverser.h"
 #include "collisionSolid.h"
 #include "collisionNode.h"
+#include "collisionRecorder.h"
 
 #include "typedReferenceCount.h"
 #include "luse.h"
@@ -91,6 +93,8 @@ PUBLISHED:
   INLINE float get_from_depth() const;
 
 private:
+  INLINE void test_intersection(CollisionHandler *record, 
+                                const CollisionTraverser *trav) const;
   void compute_from_surface_normal();
 
   CPT(CollisionSolid) _from;

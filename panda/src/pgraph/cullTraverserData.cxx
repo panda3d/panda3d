@@ -27,21 +27,20 @@
 #include "compassEffect.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullTraverserData::apply_transform_and_state
+//     Function: CullTraverserData::apply_specific_transform
 //       Access: Public
-//  Description: Applies the transform and state from the current
-//               node onto the current data.  This also evaluates
-//               billboards, etc.
+//  Description: Applies the indicated transform and state changes
+//               (e.g. as extracted from a node) onto the current
+//               data.  This also evaluates billboards, etc.
 ////////////////////////////////////////////////////////////////////
 void CullTraverserData::
-apply_transform_and_state(CullTraverser *trav) {
-  CPT(TransformState) node_transform = node()->get_transform();
-
+apply_transform_and_state(CullTraverser *trav, 
+                          CPT(TransformState) node_transform, 
+                          CPT(RenderState) node_state,
+                          CPT(RenderEffects) node_effects) {
   // First, compute the _net_transform, because we need it for the
   // compass and billboard effects.
   _net_transform = _net_transform->compose(node_transform);
-
-  const RenderEffects *node_effects = node()->get_effects();
 
   const CompassEffect *compass = node_effects->get_compass();
   if (compass != (const CompassEffect *)NULL) {
@@ -92,10 +91,8 @@ apply_transform_and_state(CullTraverser *trav) {
     }
   }
 
-  const RenderState *node_state = node()->get_state();
   _state = _state->compose(node_state);
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverserData::is_in_view_impl

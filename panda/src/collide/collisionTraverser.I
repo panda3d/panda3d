@@ -15,3 +15,42 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
+
+
+#ifdef DO_COLLISION_RECORDING
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionTraverser::has_recorder
+//       Access: Public
+//  Description: Returns true if the CollisionTraverser has a
+//               CollisionRecorder object currently assigned, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool CollisionTraverser::
+has_recorder() const {
+  return _recorder != (CollisionRecorder *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionTraverser::get_recorder
+//       Access: Public
+//  Description: Returns the CollisionRecorder currently assigned, or
+//               NULL if no recorder is assigned.
+////////////////////////////////////////////////////////////////////
+INLINE CollisionRecorder *CollisionTraverser::
+get_recorder() const {
+  return _recorder;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionTraverser::clear_recorder
+//       Access: Public
+//  Description: Removes the CollisionRecorder from the traverser and
+//               restores normal low-overhead operation.
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionTraverser::
+clear_recorder() {
+  set_recorder((CollisionRecorder *)NULL);
+}
+
+#endif  // DO_COLLISION_RECORDING

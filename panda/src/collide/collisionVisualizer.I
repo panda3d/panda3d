@@ -1,5 +1,5 @@
-// Filename: config_collide.h
-// Created by:  drose (24Apr00)
+// Filename: collisionVisualizer.I
+// Created by:  drose (17Apr03)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,16 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONFIG_COLLIDE_H
-#define CONFIG_COLLIDE_H
 
-#include "pandabase.h"
-#include "notifyCategoryProxy.h"
-
-NotifyCategoryDecl(collide, EXPCL_PANDA, EXPTP_PANDA);
-
-extern const bool auto_clear_velocity;
-
-extern EXPCL_PANDA void init_libcollide();
-
-#endif
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionVisualizer::SolidInfo::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE CollisionVisualizer::SolidInfo::
+SolidInfo() {
+  _detected_count = 0;
+  _missed_count = 0;
+}

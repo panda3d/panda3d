@@ -20,6 +20,7 @@
 #include "collisionNode.h"
 #include "collisionEntry.h"
 #include "collisionPolygon.h"
+#include "collisionRecorder.h"
 #include "config_collide.h"
 
 #include "transformState.h"
@@ -40,6 +41,9 @@ PStatCollector CollisionTraverser::_collisions_pcollector("App:Collisions");
 ////////////////////////////////////////////////////////////////////
 CollisionTraverser::
 CollisionTraverser() {
+#ifdef DO_COLLISION_RECORDING
+  _recorder = (CollisionRecorder *)NULL;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -49,6 +53,9 @@ CollisionTraverser() {
 ////////////////////////////////////////////////////////////////////
 CollisionTraverser::
 ~CollisionTraverser() {
+#ifdef DO_COLLISION_RECORDING
+  clear_recorder();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -229,6 +236,12 @@ void CollisionTraverser::
 traverse(const NodePath &root) {
   PStatTimer timer(_collisions_pcollector);
 
+#ifdef DO_COLLISION_RECORDING
+  if (has_recorder()) {
+    get_recorder()->begin_traversal();
+  }
+#endif  // DO_COLLISION_RECORDING
+
   CollisionLevelState level_state(root);
   prepare_colliders(level_state);
 
@@ -262,7 +275,60 @@ traverse(const NodePath &root) {
       node->clear_velocity();
     }
   }
+
+#ifdef DO_COLLISION_RECORDING
+  if (has_recorder()) {
+    get_recorder()->end_traversal();
+  }
+#endif  // DO_COLLISION_RECORDING
 }
+
+#ifdef DO_COLLISION_RECORDING
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionTraverser::set_recorder
+//       Access: Public
+//  Description: Uses the indicated CollisionRecorder object to start
+//               recording the intersection tests made by each
+//               subsequent call to traverse() on this object.  A
+//               particular CollisionRecorder object can only record
+//               one traverser at a time; if this object has already
+//               been assigned to another traverser, that assignment
+//               is broken.
+//
+//               This is intended to be used in a debugging mode to
+//               try to determine what work is being performed by the
+//               collision traversal.  Usually, attaching a recorder
+//               will impose significant runtime overhead.
+//
+//               This does not transfer ownership of the
+//               CollisionRecorder pointer; maintenance of that
+//               remains the caller's responsibility.  If the
+//               CollisionRecorder is destructed, it will cleanly
+//               remove itself from the traverser.
+////////////////////////////////////////////////////////////////////
+void CollisionTraverser::
+set_recorder(CollisionRecorder *recorder) {
+  if (recorder != _recorder) {
+    // Remove the old recorder, if any.
+    if (_recorder != (CollisionRecorder *)NULL) {
+      nassertv(_recorder->_trav == this);
+      _recorder->_trav = (CollisionTraverser *)NULL;
+    }
+    
+    _recorder = recorder;
+    
+    // Tell the new recorder about his new owner.
+    if (_recorder != (CollisionRecorder *)NULL) {
+      nassertv(_recorder->_trav != this);
+      if (_recorder->_trav != (CollisionTraverser *)NULL) {
+        _recorder->_trav->clear_recorder();
+      }
+      nassertv(_recorder->_trav == (CollisionTraverser *)NULL);
+      _recorder->_trav = this;
+    }
+  }
+}
+#endif  // DO_COLLISION_RECORDING
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionTraverser::output
@@ -567,7 +633,7 @@ compare_collider_to_solid(CollisionEntry &entry,
     Colliders::const_iterator ci;
     ci = _colliders.find(entry.get_from_node());
     nassertv(ci != _colliders.end());
-    entry.get_from()->test_intersection((*ci).second, entry, entry.get_into());
+    entry.test_intersection((*ci).second, this);
   }
 }
 
@@ -604,7 +670,7 @@ compare_collider_to_geom(CollisionEntry &entry, Geom *geom,
         entry._into =
           new CollisionPolygon(coords[tris[i]], coords[tris[i + 1]],
                                coords[tris[i + 2]]);
-        entry.get_from()->test_intersection((*ci).second, entry, entry.get_into());
+        entry.test_intersection((*ci).second, this);
       }
     }
   }

@@ -121,20 +121,6 @@ verify_points(const LPoint3f *begin, const LPoint3f *end) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionPolygon::test_intersection
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-int CollisionPolygon::
-test_intersection(CollisionHandler *, const CollisionEntry &,
-                  const CollisionSolid *into) const {
-  // Polygons cannot currently be intersected from, only into.  Do not
-  // add a CollisionPolygon to a CollisionTraverser.
-  nassertr(false, 0);
-  return 0;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::xform
 //       Access: Public, Virtual
 //  Description: Transforms the solid by the indicated matrix.
@@ -227,14 +213,15 @@ recompute_bound() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::test_intersection_from_sphere
-//       Access: Public, Virtual
-//  Description:
+//       Access: Protected, Virtual
+//  Description: This is part of the double-dispatch implementation of
+//               test_intersection().  It is called when the "from"
+//               object is a sphere.
 ////////////////////////////////////////////////////////////////////
-int CollisionPolygon::
-test_intersection_from_sphere(CollisionHandler *record,
-                              const CollisionEntry &entry) const {
+PT(CollisionEntry) CollisionPolygon::
+test_intersection_from_sphere(const CollisionEntry &entry) const {
   if (_points.size() < 3) {
-    return 0;
+    return NULL;
   }
 
   const CollisionSphere *sphere;
@@ -255,7 +242,7 @@ test_intersection_from_sphere(CollisionHandler *record,
     // the same direction as the plane's normal.
     float dot = delta.dot(get_normal());
     if (dot > 0.0f) {
-      return 0;
+      return NULL;
     }
 
     if (IS_NEARLY_ZERO(dot)) {
@@ -289,7 +276,7 @@ test_intersection_from_sphere(CollisionHandler *record,
   float dist = dist_to_plane(from_center);
   if (dist > from_radius || dist < -from_radius) {
     // No intersection.
-    return 0;
+    return NULL;
   }
 
   // Ok, we intersected the plane, but did we intersect the polygon?
@@ -351,7 +338,7 @@ test_intersection_from_sphere(CollisionHandler *record,
 
         } else {
           // No intersection.
-          return 0;
+          return NULL;
         }
       }
     }
@@ -376,22 +363,23 @@ test_intersection_from_sphere(CollisionHandler *record,
   new_entry->set_into_surface_normal(get_normal());
   new_entry->set_from_surface_normal(from_normal);
   new_entry->set_from_depth(from_depth);
-  new_entry->set_into_intersection_point(from_center);
 
-  record->add_entry(new_entry);
-  return 1;
+  new_entry->set_into_intersection_point(from_center - get_normal() * dist);
+
+  return new_entry;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::test_intersection_from_ray
-//       Access: Public, Virtual
-//  Description:
+//       Access: Protected, Virtual
+//  Description: This is part of the double-dispatch implementation of
+//               test_intersection().  It is called when the "from"
+//               object is a ray.
 ////////////////////////////////////////////////////////////////////
-int CollisionPolygon::
-test_intersection_from_ray(CollisionHandler *record,
-                           const CollisionEntry &entry) const {
+PT(CollisionEntry) CollisionPolygon::
+test_intersection_from_ray(const CollisionEntry &entry) const {
   if (_points.size() < 3) {
-    return 0;
+    return NULL;
   }
 
   const CollisionRay *ray;
@@ -403,18 +391,18 @@ test_intersection_from_ray(CollisionHandler *record,
   float t;
   if (!get_plane().intersects_line(t, from_origin, from_direction)) {
     // No intersection.
-    return 0;
+    return NULL;
   }
 
   if (t < 0.0f) {
     // The intersection point is before the start of the ray.
-    return 0;
+    return NULL;
   }
 
   LPoint3f plane_point = from_origin + t * from_direction;
   if (!is_inside(to_2d(plane_point))) {
     // Outside the polygon's perimeter.
-    return 0;
+    return NULL;
   }
 
   if (collide_cat.is_debug()) {
@@ -427,20 +415,20 @@ test_intersection_from_ray(CollisionHandler *record,
   new_entry->set_into_surface_normal(get_normal());
   new_entry->set_into_intersection_point(plane_point);
 
-  record->add_entry(new_entry);
-  return 1;
+  return new_entry;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::test_intersection_from_segment
 //       Access: Public, Virtual
-//  Description:
+//  Description: This is part of the double-dispatch implementation of
+//               test_intersection().  It is called when the "from"
+//               object is a segment.
 ////////////////////////////////////////////////////////////////////
-int CollisionPolygon::
-test_intersection_from_segment(CollisionHandler *record,
-                               const CollisionEntry &entry) const {
+PT(CollisionEntry) CollisionPolygon::
+test_intersection_from_segment(const CollisionEntry &entry) const {
   if (_points.size() < 3) {
-    return 0;
+    return NULL;
   }
 
   const CollisionSegment *segment;
@@ -453,19 +441,19 @@ test_intersection_from_segment(CollisionHandler *record,
   float t;
   if (!get_plane().intersects_line(t, from_a, from_direction)) {
     // No intersection.
-    return 0;
+    return NULL;
   }
 
   if (t < 0.0f || t > 1.0f) {
     // The intersection point is before the start of the segment or
     // after the end of the segment.
-    return 0;
+    return NULL;
   }
 
   LPoint3f plane_point = from_a + t * from_direction;
   if (!is_inside(to_2d(plane_point))) {
     // Outside the polygon's perimeter.
-    return 0;
+    return NULL;
   }
 
   if (collide_cat.is_debug()) {
@@ -478,8 +466,7 @@ test_intersection_from_segment(CollisionHandler *record,
   new_entry->set_into_surface_normal(get_normal());
   new_entry->set_into_intersection_point(plane_point);
 
-  record->add_entry(new_entry);
-  return 1;
+  return new_entry;
 }
 
 ////////////////////////////////////////////////////////////////////

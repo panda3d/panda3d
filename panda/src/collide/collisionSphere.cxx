@@ -49,10 +49,9 @@ make_copy() {
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-int CollisionSphere::
-test_intersection(CollisionHandler *record, const CollisionEntry &entry,
-                  const CollisionSolid *into) const {
-  return into->test_intersection_from_sphere(record, entry);
+PT(CollisionEntry) CollisionSphere::
+test_intersection(const CollisionEntry &entry) const {
+  return entry.get_into()->test_intersection_from_sphere(entry);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -117,9 +116,8 @@ recompute_bound() {
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-int CollisionSphere::
-test_intersection_from_sphere(CollisionHandler *record,
-                              const CollisionEntry &entry) const {
+PT(CollisionEntry) CollisionSphere::
+test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
   DCAST_INTO_R(sphere, entry.get_from(), 0);
 
@@ -135,7 +133,7 @@ test_intersection_from_sphere(CollisionHandler *record,
   float dist2 = dot(vec, vec);
   if (dist2 > (into_radius + from_radius) * (into_radius + from_radius)) {
     // No intersection.
-    return 0;
+    return NULL;
   }
 
   if (collide_cat.is_debug()) {
@@ -160,8 +158,7 @@ test_intersection_from_sphere(CollisionHandler *record,
   // (especially including non-uniform scales) is rather complicated.
   new_entry->set_from_depth(into_depth);
 
-  record->add_entry(new_entry);
-  return 1;
+  return new_entry;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -169,9 +166,8 @@ test_intersection_from_sphere(CollisionHandler *record,
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-int CollisionSphere::
-test_intersection_from_ray(CollisionHandler *record,
-                           const CollisionEntry &entry) const {
+PT(CollisionEntry) CollisionSphere::
+test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
   DCAST_INTO_R(ray, entry.get_from(), 0);
 
@@ -181,12 +177,12 @@ test_intersection_from_ray(CollisionHandler *record,
   double t1, t2;
   if (!intersects_line(t1, t2, from_origin, from_direction)) {
     // No intersection.
-    return 0;
+    return NULL;
   }
 
   if (t2 < 0.0) {
     // Both intersection points are before the start of the ray.
-    return 0;
+    return NULL;
   }
 
   if (collide_cat.is_debug()) {
@@ -204,8 +200,7 @@ test_intersection_from_ray(CollisionHandler *record,
   }
   new_entry->set_into_intersection_point(into_intersection_point);
 
-  record->add_entry(new_entry);
-  return 1;
+  return new_entry;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -213,9 +208,8 @@ test_intersection_from_ray(CollisionHandler *record,
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-int CollisionSphere::
-test_intersection_from_segment(CollisionHandler *record,
-                               const CollisionEntry &entry) const {
+PT(CollisionEntry) CollisionSphere::
+test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *segment;
   DCAST_INTO_R(segment, entry.get_from(), 0);
 
@@ -226,13 +220,13 @@ test_intersection_from_segment(CollisionHandler *record,
   double t1, t2;
   if (!intersects_line(t1, t2, from_a, from_direction)) {
     // No intersection.
-    return 0;
+    return NULL;
   }
 
   if (t2 < 0.0 || t1 > 1.0) {
     // Both intersection points are before the start of the segment or
     // after the end of the segment.
-    return 0;
+    return NULL;
   }
 
   if (collide_cat.is_debug()) {
@@ -254,8 +248,7 @@ test_intersection_from_segment(CollisionHandler *record,
   }
   new_entry->set_into_intersection_point(into_intersection_point);
 
-  record->add_entry(new_entry);
-  return 1;
+  return new_entry;
 }
 
 ////////////////////////////////////////////////////////////////////

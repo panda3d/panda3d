@@ -70,6 +70,21 @@ CollisionSolid::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::test_intersection
+//       Access: Public, Virtual
+//  Description: Tests for a collision between this object (which is
+//               also the "from" object in the entry) and the "into"
+//               object.  If a collision is detected, returns a new
+//               CollisionEntry object that records the collision;
+//               otherwise, returns NULL.
+////////////////////////////////////////////////////////////////////
+PT(CollisionEntry) CollisionSolid::
+test_intersection(const CollisionEntry &) const {
+  report_undefined_from_intersection(get_type());
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::get_viz
 //       Access: Public
 //  Description: Returns a GeomNode that may be rendered to visualize
@@ -78,15 +93,15 @@ CollisionSolid::
 //               made visible.
 ////////////////////////////////////////////////////////////////////
 GeomNode *CollisionSolid::
-get_viz() {
+get_viz() const {
   if (_viz_geom_stale) {
     if (_viz_geom == (GeomNode *)NULL) {
-      _viz_geom = new GeomNode("viz");
+      ((CollisionSolid *)this)->_viz_geom = new GeomNode("viz");
     } else {
       _viz_geom->remove_all_geoms();
     }
-    fill_viz_geom();
-    _viz_geom_stale = false;
+    ((CollisionSolid *)this)->fill_viz_geom();
+    ((CollisionSolid *)this)->_viz_geom_stale = false;
   }
   return _viz_geom;
 }
@@ -114,42 +129,62 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::test_intersection_from_sphere
 //       Access: Protected, Virtual
-//  Description:
+//  Description: This is part of the double-dispatch implementation of
+//               test_intersection().  It is called when the "from"
+//               object is a sphere.
 ////////////////////////////////////////////////////////////////////
-int CollisionSolid::
-test_intersection_from_sphere(CollisionHandler *,
-                              const CollisionEntry &) const {
+PT(CollisionEntry) CollisionSolid::
+test_intersection_from_sphere(const CollisionEntry &) const {
   report_undefined_intersection_test(CollisionSphere::get_class_type(),
                                      get_type());
-  return 0;
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::test_intersection_from_ray
 //       Access: Protected, Virtual
-//  Description:
+//  Description: This is part of the double-dispatch implementation of
+//               test_intersection().  It is called when the "from"
+//               object is a ray.
 ////////////////////////////////////////////////////////////////////
-int CollisionSolid::
-test_intersection_from_ray(CollisionHandler *,
-                           const CollisionEntry &) const {
+PT(CollisionEntry) CollisionSolid::
+test_intersection_from_ray(const CollisionEntry &) const {
   report_undefined_intersection_test(CollisionRay::get_class_type(),
                                      get_type());
-  return 0;
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::test_intersection_from_segment
 //       Access: Protected, Virtual
-//  Description:
+//  Description: This is part of the double-dispatch implementation of
+//               test_intersection().  It is called when the "from"
+//               object is a segment.
 ////////////////////////////////////////////////////////////////////
-int CollisionSolid::
-test_intersection_from_segment(CollisionHandler *,
-                               const CollisionEntry &) const {
+PT(CollisionEntry) CollisionSolid::
+test_intersection_from_segment(const CollisionEntry &) const {
   report_undefined_intersection_test(CollisionSegment::get_class_type(),
                                      get_type());
-  return 0;
+  return NULL;
 }
 
+#ifndef NDEBUG
+class CollisionSolidUndefinedPair {
+public:
+  CollisionSolidUndefinedPair(TypeHandle a, TypeHandle b) :
+    _a(a), _b(b)
+  {}
+  bool operator < (const CollisionSolidUndefinedPair &other) const {
+    if (_a != other._a) {
+      return _a < other._a;
+    }
+    return _b < other._b;
+  }
+
+  TypeHandle _a;
+  TypeHandle _b;
+};
+#endif  // NDEBUG
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CollisionSolid::report_undefined_intersection_test
@@ -161,22 +196,47 @@ test_intersection_from_segment(CollisionHandler *,
 void CollisionSolid::
 report_undefined_intersection_test(TypeHandle from_type, TypeHandle into_type) {
 #ifndef NDEBUG
-  typedef pmap<TypeHandle, TypeHandle> Reported;
+  typedef pset<CollisionSolidUndefinedPair> Reported;
   static Reported reported;
 
-  if (reported.insert(Reported::value_type(from_type, into_type)).second) {
+  if (reported.insert(CollisionSolidUndefinedPair(from_type, into_type)).second) {
     collide_cat.error()
       << "Invalid attempt to detect collision from " << from_type << " into "
-      << into_type << "!\n"
+      << into_type << "!\n\n"
 
-      "This means that a " << from_type << " object attempted to test for a\n"
+      "This means that a " << from_type << " object attempted to test for an\n"
       "intersection into a " << into_type << " object.  This intersection\n"
       "test has not yet been defined; it is possible the " << into_type << "\n"
       "object is not intended to be collidable.  Consider calling\n"
       "set_into_collide_mask(0) on the " << into_type << " object, or\n"
-      "set_from_collide_mask(0) on the " << from_type << " object.\n";
+      "set_from_collide_mask(0) on the " << from_type << " object.\n\n";
   }
-#endif
+#endif  // NDEBUG
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::report_undefined_from_intersection
+//       Access: Protected, Static
+//  Description: Outputs a message the first time an intersection test
+//               is attempted that isn't defined, and explains a bit
+//               about what it means.
+////////////////////////////////////////////////////////////////////
+void CollisionSolid::
+report_undefined_from_intersection(TypeHandle from_type) {
+#ifndef NDEBUG
+  typedef pset<TypeHandle> Reported;
+  static Reported reported;
+
+  if (reported.insert(from_type).second) {
+    collide_cat.error()
+      << "Invalid attempt to detect collision from " << from_type << "!\n\n"
+      
+      "This means that a " << from_type << " object was added to a\n"
+      "CollisionTraverser as if it were a colliding object.  However,\n"
+      "no implementation for this kind of object has yet been defined\n"
+      "to collide with other objects.\n\n";
+  }
+#endif  // NDEBUG
 }
 
 ////////////////////////////////////////////////////////////////////

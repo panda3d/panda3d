@@ -28,10 +28,12 @@
 #include "collisionPlane.h"
 #include "collisionPolygon.h"
 #include "collisionRay.h"
+#include "collisionRecorder.h"
 #include "collisionSegment.h"
 #include "collisionSolid.h"
 #include "collisionSphere.h"
-#include <dconfig.h>
+#include "collisionVisualizer.h"
+#include "dconfig.h"
 
 Configure(config_collide);
 NotifyCategoryDef(collide, "");
@@ -76,8 +78,13 @@ init_libcollide() {
   CollisionSolid::init_type();
   CollisionSphere::init_type();
 
-  //Registration of writeable object's creation
-  //functions with BamReader's factory
+#ifdef DO_COLLISION_RECORDING
+  CollisionRecorder::init_type();
+  CollisionVisualizer::init_type();
+#endif
+
+  // Registration of writeable object's creation
+  // functions with BamReader's factory
   CollisionNode::register_with_read_factory();
   CollisionPlane::register_with_read_factory();
   CollisionPolygon::register_with_read_factory();

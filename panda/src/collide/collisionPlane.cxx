@@ -47,20 +47,6 @@ make_copy() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionPlane::test_intersection
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-int CollisionPlane::
-test_intersection(CollisionHandler *, const CollisionEntry &,
-                  const CollisionSolid *) const {
-  // Planes cannot currently be intersected from, only into.  Do not
-  // add a CollisionPlane to a CollisionTraverser.
-  nassertr(false, 0);
-  return 0;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CollisionPlane::xform
 //       Access: Public, Virtual
 //  Description: Transforms the solid by the indicated matrix.
@@ -117,9 +103,8 @@ recompute_bound() {
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-int CollisionPlane::
-test_intersection_from_sphere(CollisionHandler *record,
-                              const CollisionEntry &entry) const {
+PT(CollisionEntry) CollisionPlane::
+test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
   DCAST_INTO_R(sphere, entry.get_from(), 0);
 
@@ -131,7 +116,7 @@ test_intersection_from_sphere(CollisionHandler *record,
   float dist = dist_to_plane(from_center);
   if (dist > from_radius) {
     // No intersection.
-    return 0;
+    return NULL;
   }
 
   if (collide_cat.is_debug()) {
@@ -147,10 +132,9 @@ test_intersection_from_sphere(CollisionHandler *record,
   new_entry->set_into_surface_normal(get_normal());
   new_entry->set_from_surface_normal(from_normal);
   new_entry->set_from_depth(from_depth);
-  new_entry->set_into_intersection_point(from_center);
+  new_entry->set_into_intersection_point(from_center - get_normal() * dist);
 
-  record->add_entry(new_entry);
-  return 1;
+  return new_entry;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -158,9 +142,8 @@ test_intersection_from_sphere(CollisionHandler *record,
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-int CollisionPlane::
-test_intersection_from_ray(CollisionHandler *record,
-                           const CollisionEntry &entry) const {
+PT(CollisionEntry) CollisionPlane::
+test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
   DCAST_INTO_R(ray, entry.get_from(), 0);
 
@@ -170,12 +153,12 @@ test_intersection_from_ray(CollisionHandler *record,
   float t;
   if (!_plane.intersects_line(t, from_origin, from_direction)) {
     // No intersection.
-    return 0;
+    return NULL;
   }
 
   if (t < 0.0f) {
     // The intersection point is before the start of the ray.
-    return 0;
+    return NULL;
   }
 
   if (collide_cat.is_debug()) {
@@ -189,8 +172,7 @@ test_intersection_from_ray(CollisionHandler *record,
   new_entry->set_into_surface_normal(get_normal());
   new_entry->set_into_intersection_point(into_intersection_point);
 
-  record->add_entry(new_entry);
-  return 1;
+  return new_entry;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -41,11 +41,6 @@ PUBLISHED:
 public:
   virtual CollisionSolid *make_copy();
 
-  virtual int
-  test_intersection(CollisionHandler *record,
-                    const CollisionEntry &entry,
-                    const CollisionSolid *into) const;
-
   virtual void xform(const LMatrix4f &mat);
   virtual LPoint3f get_collision_origin() const;
 
@@ -62,12 +57,10 @@ protected:
   virtual BoundingVolume *recompute_bound();
 
 protected:
-  virtual int
-  test_intersection_from_sphere(CollisionHandler *record,
-                                const CollisionEntry &entry) const;
-  virtual int
-  test_intersection_from_ray(CollisionHandler *record,
-                             const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
+  test_intersection_from_sphere(const CollisionEntry &entry) const;
+  virtual PT(CollisionEntry)
+  test_intersection_from_ray(const CollisionEntry &entry) const;
 
   virtual void fill_viz_geom();
 

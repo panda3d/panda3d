@@ -412,3 +412,30 @@ get_from_depth() const {
   nassertr(has_from_depth(), 0.0);
   return _from_depth;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::test_intersection
+//       Access: Private
+//  Description: This is intended to be called only by the
+//               CollisionTraverser.  It requests the CollisionEntry
+//               to start the intersection test between the from and
+//               into solids stored within it, passing the result (if
+//               positive) to the indicated CollisionHandler.
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionEntry::
+test_intersection(CollisionHandler *record, 
+                  const CollisionTraverser *trav) const {
+  PT(CollisionEntry) result = get_from()->test_intersection(*this);
+#ifdef DO_COLLISION_RECORDING
+  if (trav->has_recorder()) {
+    if (result != (CollisionEntry *)NULL) {
+      trav->get_recorder()->collision_tested(*result, true);
+    } else {
+      trav->get_recorder()->collision_tested(*this, false);
+    }
+  }
+#endif  // DO_COLLISION_RECORDING
+  if (result != (CollisionEntry *)NULL) {
+    record->add_entry(result);
+  }
+}

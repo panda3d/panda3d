@@ -1,5 +1,5 @@
-// Filename: config_collide.h
-// Created by:  drose (24Apr00)
+// Filename: collisionRecorder.I
+// Created by:  drose (17Apr03)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,16 +16,15 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONFIG_COLLIDE_H
-#define CONFIG_COLLIDE_H
 
-#include "pandabase.h"
-#include "notifyCategoryProxy.h"
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionRecorder::get_type_index
+//       Access: Published
+//  Description: Duplicates the functionality of
+//               TypedObject::get_type_index().
+////////////////////////////////////////////////////////////////////
+INLINE int CollisionRecorder::
+get_type_index() const {
+  return get_type().get_index();
+}
 
-NotifyCategoryDecl(collide, EXPCL_PANDA, EXPTP_PANDA);
-
-extern const bool auto_clear_velocity;
-
-extern EXPCL_PANDA void init_libcollide();
-
-#endif

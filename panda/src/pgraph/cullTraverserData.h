@@ -53,20 +53,20 @@ public:
                            const RenderState *state,
                            GeometricBoundingVolume *view_frustum,
                            GeometricBoundingVolume *guard_band);
-  INLINE CullTraverserData(const CullTraverserData &parent, 
-                           PandaNode *child);
-
-private:
   INLINE CullTraverserData(const CullTraverserData &copy);
   INLINE void operator = (const CullTraverserData &copy); 
-
-public:
+  INLINE CullTraverserData(const CullTraverserData &parent, 
+                           PandaNode *child);
   INLINE ~CullTraverserData();
 
   INLINE PandaNode *node() const;
 
   INLINE bool is_in_view(const DrawMask &camera_mask);
-  void apply_transform_and_state(CullTraverser *trav);
+  INLINE void apply_transform_and_state(CullTraverser *trav);
+  void apply_transform_and_state(CullTraverser *trav, 
+                                 CPT(TransformState) node_transform, 
+                                 CPT(RenderState) node_state,
+                                 CPT(RenderEffects) node_effects);
 
   WorkingNodePath _node_path;
   CPT(TransformState) _render_transform;
