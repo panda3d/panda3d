@@ -104,5 +104,8 @@ print $ENV{'PATH'},"\n";
 print $args[0]." ".$args[1]." ".$args[2]."\n";
 system(@args);
 
+print "do cp tmp/dllbase.txt ~/player/dtool/src/dtoolbase\n";
+
 exit(0);
+
 
