@@ -55,7 +55,7 @@ class DirectDialog(DirectFrame):
             buttonHotKeyList     List of hotkeys to bind to each button.
                                  Typing hotkey is equivalent to pressing
                                  the corresponding button.
-            supressKeys          Set to true if you wish to supress keys
+            suppressKeys         Set to true if you wish to suppress keys
                                  (i.e. Dialog eats key event), false if
                                  you wish Dialog to pass along key event
             buttonSize           4-tuple used to specify custom size for
