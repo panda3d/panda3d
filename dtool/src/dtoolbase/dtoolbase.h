@@ -78,6 +78,13 @@
 
 #include "dtoolsymbols.h"
 
+#ifdef __GNUC__
+// Large file >2GB support
+// this needs be be before systypes.h and other C headers
+#define _FILE_OFFSET_BITS 64
+#define _LARGEFILE_SOURCE 1
+#endif
+
 #ifdef HAVE_MALLOC_H
 #include <malloc.h>
 #endif

@@ -17,6 +17,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "dtool_config.h"
+#include "dtoolbase.h"
 
 #ifndef HAVE_GETOPT
 #include "gnu_getopt.h"

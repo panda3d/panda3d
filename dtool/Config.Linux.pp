@@ -127,7 +127,3 @@
 // What is the syntax of the STL allocator declaration?  See
 // LocalSetup.pp for allowable values.
 #define STL_ALLOCATOR GNU
-
-// large file >2GB support
-#define _LARGEFILE_SOURCE 1
-#define _FILE_OFFSET_BITS 64
