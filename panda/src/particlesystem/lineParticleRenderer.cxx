@@ -1,0 +1,219 @@
+// Filename: lineParticleRenderer.cxx
+// Created by:  darren (06Oct00)
+//
+////////////////////////////////////////////////////////////////////
+
+#include "lineParticleRenderer.h"
+
+#include <boundingSphere.h>
+
+////////////////////////////////////////////////////////////////////
+//    Function : LineParticleRenderer
+//      Access : Public
+// Description : Default Constructor
+////////////////////////////////////////////////////////////////////
+
+LineParticleRenderer::
+LineParticleRenderer(void) :
+  _head_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)),
+  _tail_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f)) {
+  _line_primitive = new GeomLine;
+  init_geoms();
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : LineParticleRenderer
+//      Access : Public
+// Description : Constructor
+////////////////////////////////////////////////////////////////////
+
+LineParticleRenderer::
+LineParticleRenderer(const Colorf& head,
+                     const Colorf& tail,
+                     ParticleRendererAlphaMode alpha_mode) :
+  _head_color(head), _tail_color(tail),
+  BaseParticleRenderer(alpha_mode) {
+  _line_primitive = new GeomLine;
+  init_geoms();
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : LineParticleRenderer
+//      Access : Public
+// Description : Copy Constructor
+////////////////////////////////////////////////////////////////////
+
+LineParticleRenderer::
+LineParticleRenderer(const LineParticleRenderer& copy) :
+  BaseParticleRenderer(copy) {
+  _head_color = copy._head_color;
+  _tail_color = copy._tail_color;
+
+  _line_primitive = new GeomLine;
+  init_geoms();
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : ~LineParticleRenderer
+//      Access : Public
+// Description : Destructor
+////////////////////////////////////////////////////////////////////
+
+LineParticleRenderer::
+~LineParticleRenderer(void) {
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : make copy
+//      Access : Public
+// Description : child virtual for spawning systems
+////////////////////////////////////////////////////////////////////
+
+BaseParticleRenderer *LineParticleRenderer::
+make_copy(void) {
+  return new LineParticleRenderer(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : birth_particle
+//      Access : Private, virtual
+// Description : child birth
+////////////////////////////////////////////////////////////////////
+
+void LineParticleRenderer::
+birth_particle(int) {
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : kill_particle
+//      Access : Private, virtual
+// Description : child kill
+////////////////////////////////////////////////////////////////////
+
+void LineParticleRenderer::
+kill_particle(int) {
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : resize_pool
+//      Access : private
+// Description : resizes the render pool.  Reference counting
+//               makes this easy.
+////////////////////////////////////////////////////////////////////
+
+void LineParticleRenderer::
+resize_pool(int new_size) {
+  _vertex_array = PTA_Vertexf(new_size * 2);
+  _color_array = PTA_Colorf(new_size * 2);
+
+  _line_primitive->set_coords(_vertex_array, G_PER_VERTEX);
+  _line_primitive->set_colors(_color_array, G_PER_VERTEX);
+
+  _max_pool_size = new_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : init_geoms
+//      Access : private
+// Description : initializes the geomnodes
+////////////////////////////////////////////////////////////////////
+
+void LineParticleRenderer::
+init_geoms(void) {
+  _line_primitive->set_num_prims(0);
+
+  _interface_node->clear();
+  _interface_node->add_geom(_line_primitive);
+}
+
+////////////////////////////////////////////////////////////////////
+//    Function : render
+//      Access : private
+// Description : populates the GeomLine
+////////////////////////////////////////////////////////////////////
+
+void LineParticleRenderer::
+render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
+
+  if (!ttl_particles)
+    return;
+
+  BaseParticle *cur_particle;
+
+  int cur_index = 0;
+  int remaining_particles = ttl_particles;
+  int i;
+
+  Vertexf *cur_vert = &_vertex_array[0];
+  Colorf *cur_color = &_color_array[0];
+
+  // init the aabb
+
+  _aabb_min.set(99999.0f, 99999.0f, 99999.0f);
+  _aabb_max.set(-99999.0f, -99999.0f, -99999.0f);
+
+  // run through the array
+
+  for (i = 0; i < po_vector.size(); i++) {
+    cur_particle = (BaseParticle *) po_vector[i].p();
+
+    if (cur_particle->get_alive() == false)
+      continue;
+
+    // adjust the aabb
+
+    if (cur_particle->get_position().get_x() > _aabb_max.get_x())
+      _aabb_max[0] = cur_particle->get_position().get_x();
+    else if (cur_particle->get_position().get_x() < _aabb_min.get_x())
+      _aabb_min[0] = cur_particle->get_position().get_x();
+
+    if (cur_particle->get_position().get_y() > _aabb_max.get_y())
+      _aabb_max[1] = cur_particle->get_position().get_y();
+    else if (cur_particle->get_position().get_y() < _aabb_min.get_y())
+      _aabb_min[1] = cur_particle->get_position().get_y();
+
+    if (cur_particle->get_position().get_z() > _aabb_max.get_z())
+      _aabb_max[2] = cur_particle->get_position().get_z();
+    else if (cur_particle->get_position().get_z() < _aabb_min.get_z())
+      _aabb_min[2] = cur_particle->get_position().get_z();
+
+    // draw the particle.
+
+    LPoint3f pos = cur_particle->get_position();
+    Colorf head_color = _head_color;
+    Colorf tail_color = _tail_color;
+
+    // handle alpha
+
+    if (_alpha_mode != PR_ALPHA_NONE) {
+      float alpha = cur_particle->get_parameterized_age();
+
+      if (_alpha_mode == PR_ALPHA_OUT)
+        alpha = 1.0f - alpha;
+
+      head_color[3] = alpha;
+      tail_color[3] = alpha;
+    }
+
+    // 1 line from current position to last position
+
+    *cur_vert++ = cur_particle->get_position();
+    *cur_vert++ = cur_particle->get_last_position();
+
+    *cur_color++ = head_color;
+    *cur_color++ = tail_color;
+
+    remaining_particles--;
+    if (remaining_particles == 0)
+      break;
+  }
+
+  _line_primitive->set_num_prims(ttl_particles);
+
+  // done filling geomline node, now do the bb stuff
+
+  LPoint3f aabb_center = _aabb_min + ((_aabb_max - _aabb_min) * 0.5f);
+  float radius = (aabb_center - _aabb_min).length();
+
+  _interface_node->set_bound(BoundingSphere(aabb_center, radius));
+}

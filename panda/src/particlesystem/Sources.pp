@@ -34,7 +34,8 @@
     spriteParticleRenderer.h tangentRingEmitter.I \
     tangentRingEmitter.cxx tangentRingEmitter.h zSpinParticle.I \
     zSpinParticle.cxx zSpinParticle.h zSpinParticleFactory.I \
-    zSpinParticleFactory.cxx zSpinParticleFactory.h
+    zSpinParticleFactory.cxx zSpinParticleFactory.h \
+    particleCommonFuncs.h
 
   #define INSTALL_HEADERS \
     baseParticle.I baseParticle.h baseParticleEmitter.I \
@@ -55,7 +56,8 @@
     sphereSurfaceEmitter.h sphereVolumeEmitter.I sphereVolumeEmitter.h \
     spriteParticleRenderer.I spriteParticleRenderer.h \
     tangentRingEmitter.I tangentRingEmitter.h zSpinParticle.I \
-    zSpinParticle.h zSpinParticleFactory.I zSpinParticleFactory.h
+    zSpinParticle.h zSpinParticleFactory.I zSpinParticleFactory.h \
+    particleCommonFuncs.h
 
   #define IGATESCAN all
 
