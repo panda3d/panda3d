@@ -706,34 +706,6 @@ heads_up(float x, float y, float z) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpNodePath::look_at_preserve_scale
-//       Access: Published
-//  Description: Functions like look_at(), but preforms additional
-//               work to preserve any scales that may already be
-//               present on the node.  Normally, look_at() blows away
-//               the scale because scale and rotation are represented
-//               in the same part of the matrix.
-////////////////////////////////////////////////////////////////////
-INLINE void qpNodePath::
-look_at_preserve_scale(float x, float y, float z) {
-  look_at_preserve_scale(LPoint3f(x, y, z));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpNodePath::heads_up_preserve_scale
-//       Access: Published
-//  Description: Functions like heads_up(), but preforms additional
-//               work to preserve any scales that may already be
-//               present on the node.  Normally, heads_up() blows away
-//               the scale because scale and rotation are represented
-//               in the same part of the matrix.
-////////////////////////////////////////////////////////////////////
-INLINE void qpNodePath::
-heads_up_preserve_scale(float x, float y, float z) {
-  heads_up_preserve_scale(LPoint3f(x, y, z));
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: qpNodePath::set_pos
 //       Access: Published
 //  Description: Sets the translation component of the transform,
@@ -863,11 +835,9 @@ set_pos_hpr_scale(const qpNodePath &other,
 ////////////////////////////////////////////////////////////////////
 //     Function: qpNodePath::look_at
 //       Access: Published
-//  Description: Sets the transform on this qpNodePath so that it
-//               rotates to face the indicated point in space, which
-//               is relative to the other qpNodePath.  This
-//               will overwrite any previously existing scale on the
-//               node, although it will preserve any translation.
+//  Description: Sets the hpr on this NodePath so that it rotates to
+//               face the indicated point in space, which is relative
+//               to the other NodePath.
 ////////////////////////////////////////////////////////////////////
 INLINE void qpNodePath::
 look_at(const qpNodePath &other, float x, float y, float z) {
@@ -884,34 +854,6 @@ look_at(const qpNodePath &other, float x, float y, float z) {
 INLINE void qpNodePath::
 heads_up(const qpNodePath &other, float x, float y, float z) {
   heads_up(other, LPoint3f(x, y, z));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpNodePath::look_at_preserve_scale
-//       Access: Published
-//  Description: Functions like look_at(), but preforms additional
-//               work to preserve any scales that may already be
-//               present on the node.  Normally, look_at() blows away
-//               the scale because scale and rotation are represented
-//               in the same part of the matrix.
-////////////////////////////////////////////////////////////////////
-INLINE void qpNodePath::
-look_at_preserve_scale(const qpNodePath &other, float x, float y, float z) {
-  look_at_preserve_scale(other, LPoint3f(x, y, z));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpNodePath::heads_up_preserve_scale
-//       Access: Published
-//  Description: Functions like heads_up(), but preforms additional
-//               work to preserve any scales that may already be
-//               present on the node.  Normally, heads_up() blows away
-//               the scale because scale and rotation are represented
-//               in the same part of the matrix.
-////////////////////////////////////////////////////////////////////
-INLINE void qpNodePath::
-heads_up_preserve_scale(const qpNodePath &other, float x, float y, float z) {
-  heads_up_preserve_scale(other, LPoint3f(x, y, z));
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -710,11 +710,8 @@ get_color_scale() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: qpNodePath::look_at
 //       Access: Published
-//  Description: Sets the transform on this qpNodePath so that it
-//               rotates to face the indicated point in space.  This
-//               will overwrite any previously existing scale on the
-//               node, although it will preserve any translation.  See
-//               also look_at_preserve_scale().
+//  Description: Sets the hpr on this qpNodePath so that it
+//               rotates to face the indicated point in space.
 ////////////////////////////////////////////////////////////////////
 void qpNodePath::
 look_at(const LPoint3f &point, const LVector3f &up) {
@@ -722,10 +719,12 @@ look_at(const LPoint3f &point, const LVector3f &up) {
 
   LPoint3f pos = get_pos();
 
-  LMatrix4f mat;
+  LMatrix3f mat;
   ::look_at(mat, point - pos, up);
-  mat.set_row(3, pos);
-  set_mat(mat);
+  LVecBase3f scale, hpr;
+  decompose_matrix(mat, scale, hpr);
+ 
+  set_hpr(hpr);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -741,107 +740,12 @@ heads_up(const LPoint3f &point, const LVector3f &up) {
 
   LPoint3f pos = get_pos();
 
-  LMatrix4f mat;
+  LMatrix3f mat;
   ::heads_up(mat, point - pos, up);
-  mat.set_row(3, pos);
-  set_mat(mat);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpNodePath::look_at_preserve_scale
-//       Access: Published
-//  Description: Functions like look_at(), but preforms additional
-//               work to preserve any scales that may already be
-//               present on the node.  Normally, look_at() blows away
-//               the scale because scale and rotation are represented
-//               in the same part of the matrix.
-////////////////////////////////////////////////////////////////////
-void qpNodePath::
-look_at_preserve_scale(const LPoint3f &point, const LVector3f &up) {
-  nassertv(!is_empty());
-
-  LMatrix4f mat = get_mat();
-
-  // Extract the axes from the matrix.
-  LVector3f x, y, z;
-
-  mat.get_row3(x,0);
-  mat.get_row3(y,1);
-  mat.get_row3(z,2);
-
-  // The lengths of the axes defines the scale.
-
-  float scale_0 = length(x);
-  float scale_1 = length(y);
-  float scale_2 = length(z);
-
-  LPoint3f pos;
-  mat.get_row3(pos,3);
-  ::look_at(mat, point - pos, up);
-
-  // Now reapply the scale and position.
-
-  mat.get_row3(x,0);
-  mat.get_row3(y,1);
-  mat.get_row3(z,2);
-
-  x *= scale_0;
-  y *= scale_1;
-  z *= scale_2;
-
-  mat.set_row(0, x);
-  mat.set_row(1, y);
-  mat.set_row(2, z);
-  mat.set_row(3, pos);
-  set_mat(mat);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpNodePath::heads_up_preserve_scale
-//       Access: Published
-//  Description: Functions like heads_up(), but preforms additional
-//               work to preserve any scales that may already be
-//               present on the node.  Normally, heads_up() blows away
-//               the scale because scale and rotation are represented
-//               in the same part of the matrix.
-////////////////////////////////////////////////////////////////////
-void qpNodePath::
-heads_up_preserve_scale(const LPoint3f &point, const LVector3f &up) {
-  nassertv(!is_empty());
-
-  LMatrix4f mat = get_mat();
-
-  // Extract the axes from the matrix.
-  LVector3f x, y, z;
-  mat.get_row3(x,0);
-  mat.get_row3(y,1);
-  mat.get_row3(z,2);
-
-  float scale_0 = length(x);
-  float scale_1 = length(y);
-  float scale_2 = length(z);
-
-  // The lengths of the axes defines the scale.
-  LPoint3f pos;
-  mat.get_row3(pos,3);
-
-  ::heads_up(mat, point - pos, up);
-
-  // Now reapply the scale and position.
-
-  mat.get_row3(x,0);
-  mat.get_row3(y,1);
-  mat.get_row3(z,2);
-
-  x *= scale_0;
-  y *= scale_1;
-  z *= scale_2;
-
-  mat.set_row(0, x);
-  mat.set_row(1, y);
-  mat.set_row(2, z);
-  mat.set_row(3, pos);
-  set_mat(mat);
+  LVecBase3f scale, hpr;
+  decompose_matrix(mat, scale, hpr);
+ 
+  set_hpr(hpr);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1131,15 +1035,17 @@ void qpNodePath::
 look_at(const qpNodePath &other, const LPoint3f &point, const LVector3f &up) {
   nassertv(!is_empty());
 
-  LPoint3f pos = get_pos();
-
   qpNodePath parent = get_parent();
   LPoint3f rel_point = point * other.get_mat(parent);
 
-  LMatrix4f mat;
+  LPoint3f pos = get_pos();
+
+  LMatrix3f mat;
   ::look_at(mat, rel_point - pos, up);
-  mat.set_row(3, pos);
-  set_mat(mat);
+  LVecBase3f scale, hpr;
+  decompose_matrix(mat, scale, hpr);
+ 
+  set_hpr(hpr);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1153,118 +1059,17 @@ void qpNodePath::
 heads_up(const qpNodePath &other, const LPoint3f &point, const LVector3f &up) {
   nassertv(!is_empty());
 
+  qpNodePath parent = get_parent();
+  LPoint3f rel_point = point * other.get_mat(parent);
+
   LPoint3f pos = get_pos();
 
-  qpNodePath parent = get_parent();
-  LPoint3f rel_point = point * other.get_mat(parent);
-
-  LMatrix4f mat;
+  LMatrix3f mat;
   ::heads_up(mat, rel_point - pos, up);
-  mat.set_row(3, pos);
-  set_mat(mat);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpNodePath::look_at_preserve_scale
-//       Access: Published
-//  Description: Functions like look_at(), but preforms additional
-//               work to preserve any scales that may already be
-//               present on the node.  Normally, look_at() blows away
-//               the scale because scale and rotation are represented
-//               in the same part of the matrix.
-////////////////////////////////////////////////////////////////////
-void qpNodePath::
-look_at_preserve_scale(const qpNodePath &other, const LPoint3f &point,
-                       const LVector3f &up) {
-  nassertv(!is_empty());
-
-  LMatrix4f mat = get_mat();
-
-  // Extract the axes from the matrix.
-  LVector3f x, y, z;
-  mat.get_row3(x,0);
-  mat.get_row3(y,1);
-  mat.get_row3(z,2);
-
-  // The lengths of the axes defines the scale.
-  float scale_0 = length(x);
-  float scale_1 = length(y);
-  float scale_2 = length(z);
-
-  LPoint3f pos;
-  mat.get_row3(pos,3);
-
-  qpNodePath parent = get_parent();
-  LPoint3f rel_point = point * other.get_mat(parent);
-
-  ::look_at(mat, rel_point - pos, up);
-
-  // Now reapply the scale and position.
-
-  mat.get_row3(x,0);
-  mat.get_row3(y,1);
-  mat.get_row3(z,2);
-
-  x *= scale_0;
-  y *= scale_1;
-  z *= scale_2;
-
-  mat.set_row(0, x);
-  mat.set_row(1, y);
-  mat.set_row(2, z);
-  mat.set_row(3, pos);
-  set_mat(mat);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: qpNodePath::heads_up_preserve_scale
-//       Access: Published
-//  Description: Functions like heads_up(), but preforms additional
-//               work to preserve any scales that may already be
-//               present on the node.  Normally, heads_up() blows away
-//               the scale because scale and rotation are represented
-//               in the same part of the matrix.
-////////////////////////////////////////////////////////////////////
-void qpNodePath::
-heads_up_preserve_scale(const qpNodePath &other, const LPoint3f &point,
-                        const LVector3f &up) {
-  nassertv(!is_empty());
-
-  LMatrix4f mat = get_mat();
-
-  // Extract the axes from the matrix.
-  LVector3f x, y, z;
-  mat.get_row3(x,0);
-  mat.get_row3(y,1);
-  mat.get_row3(z,2);
-
-  // The lengths of the axes defines the scale.
-  float scale_0 = length(x);
-  float scale_1 = length(y);
-  float scale_2 = length(z);
-
-  LPoint3f pos;
-  mat.get_row3(pos,3);
-
-  qpNodePath parent = get_parent();
-  LPoint3f rel_point = point * other.get_mat(parent);
-
-  ::heads_up(mat, rel_point - pos, up);
-
-  // Now reapply the scale and position.
-  mat.get_row3(x,0);
-  mat.get_row3(y,1);
-  mat.get_row3(z,2);
-
-  x *= scale_0;
-  y *= scale_1;
-  z *= scale_2;
-
-  mat.set_row(0, x);
-  mat.set_row(1, y);
-  mat.set_row(2, z);
-  mat.set_row(3, pos);
-  set_mat(mat);
+  LVecBase3f scale, hpr;
+  decompose_matrix(mat, scale, hpr);
+ 
+  set_hpr(hpr);
 }
 
 ////////////////////////////////////////////////////////////////////

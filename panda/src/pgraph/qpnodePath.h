@@ -293,11 +293,6 @@ PUBLISHED:
   INLINE void heads_up(float x, float y, float z);
   void heads_up(const LPoint3f &point, const LVector3f &up = LVector3f::up());
 
-  INLINE void look_at_preserve_scale(float x, float y, float z);
-  void look_at_preserve_scale(const LPoint3f &point, const LVector3f &up = LVector3f::up());
-  INLINE void heads_up_preserve_scale(float x, float y, float z);
-  void heads_up_preserve_scale(const LPoint3f &point, const LVector3f &up = LVector3f::up());
-
   // Methods that get and set the matrix transforms relative to some
   // other node in the scene graph.  These perform an implicit wrt().
 
@@ -368,17 +363,6 @@ PUBLISHED:
   void heads_up(const qpNodePath &other,
                 const LPoint3f &point = LPoint3f(0.0, 0.0, 0.0),
                 const LVector3f &up = LVector3f::up());
-
-  INLINE void look_at_preserve_scale(const qpNodePath &other,
-                                     float x, float y, float z);
-  void look_at_preserve_scale(const qpNodePath &other,
-                              const LPoint3f &point = LPoint3f(0.0, 0.0, 0.0),
-                              const LVector3f &up = LVector3f::up());
-  INLINE void heads_up_preserve_scale(const qpNodePath &other,
-                                      float x, float y, float z);
-  void heads_up_preserve_scale(const qpNodePath &other,
-                               const LPoint3f &point = LPoint3f(0.0, 0.0, 0.0),
-                               const LVector3f &up = LVector3f::up());
 
   INLINE float get_distance(const qpNodePath &other) const;
 
