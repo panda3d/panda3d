@@ -20,7 +20,7 @@ class EntityCreatorBase:
                               (entType, entId))
 
         # inheritor must define doCreateEntity
-        self.doCreateEntity(self.entType2Ctor[entType], entId)
+        return self.doCreateEntity(self.entType2Ctor[entType], entId)
 
     def privRegisterType(self, entType, ctor):
         if self.entType2Ctor.has_key(entType):

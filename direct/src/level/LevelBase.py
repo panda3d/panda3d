@@ -74,9 +74,15 @@ class LevelBase:
         self.removeEntityCreationHandlers()
 
     def destroyLevel(self):
-        for entity in self.createdEntities:
-            entity.destroy()
-        del self.createdEntities
+        if hasattr(self, 'createdEntities'):
+            # destroy the entities in reverse order
+            while len(self.createdEntities) > 0:
+                entity = self.createdEntities.pop()
+                self.notify.debug('destroying %s entity %s' %
+                                  (self.getEntityType(entity.entId),
+                                   entity.entId))
+                entity.destroy()
+            del self.createdEntities
         del self.entities
         del self.entId2spec
         del self.spec

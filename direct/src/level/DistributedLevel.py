@@ -102,7 +102,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
     def handleLevelMgrCreated(self):
         # as soon as the levelMgr has been created, load up the model
         # and extract zone info
-        self.geom = loader.loadModel(self.modelFilename)
+        self.geom = self.levelMgr.geom
 
         def findNumberedNodes(baseString, model=self.geom, self=self):
             # finds nodes whose name follows the pattern 'baseString#'
@@ -182,6 +182,10 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
     def disable(self):
         self.notify.debug('disable')
+
+        # geom is owned by the levelMgr
+        del self.geom
+
         self.destroyLevel()
         DistributedObject.DistributedObject.disable(self)
         self.ignoreAll()
