@@ -100,6 +100,7 @@ run() {
 
   // Copy in the animation parameters.
   converter.set_animation_convert(_animation_convert);
+  converter.set_character_name(_character_name);
   if (_got_start_frame) {
     converter.set_start_frame(_start_frame);
   }

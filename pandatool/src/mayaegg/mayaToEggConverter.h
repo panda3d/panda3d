@@ -69,6 +69,7 @@ public:
   void close_api();
 
 private:
+  bool convert_char_model();
   bool convert_flip(double start_frame, double end_frame, double frame_inc,
                     double output_frame_rate);
   bool convert_hierarchy(EggGroupNode *egg_root);

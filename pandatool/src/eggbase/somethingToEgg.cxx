@@ -111,6 +111,13 @@ add_animation_options() {
      &SomethingToEgg::dispatch_animation_convert, NULL, &_animation_convert);
 
   add_option
+    ("cn", "name", 40,
+     "Specifies the name of the animation character.  This should match "
+     "between all of the model files and all of the channel files for a "
+     "particular model and its associated channels.",
+     &SomethingToEgg::dispatch_string, NULL, &_character_name);
+
+  add_option
     ("sf", "start-frame", 40,
      "Specifies the starting frame of animation to extract.  If omitted, "
      "the first frame of the time slider will be used.",

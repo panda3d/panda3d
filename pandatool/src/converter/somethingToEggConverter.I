@@ -90,6 +90,30 @@ get_animation_convert() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::set_character_name
+//       Access: Public
+//  Description: Specifies the name of the character generated.  This
+//               name should match between all the model and channel
+//               egg files for a particular character and its
+//               associated animations.
+////////////////////////////////////////////////////////////////////
+INLINE void SomethingToEggConverter::
+set_character_name(const string &character_name) {
+  _character_name = character_name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::get_character_name
+//       Access: Public
+//  Description: Returns the name of the character generated.  See
+//               set_character_name().
+////////////////////////////////////////////////////////////////////
+INLINE const string &SomethingToEggConverter::
+get_character_name() const {
+  return _character_name;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SomethingToEggConverter::set_start_frame
 //       Access: Public
 //  Description: Specifies the starting frame of the animation to

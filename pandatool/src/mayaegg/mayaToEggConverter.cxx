@@ -160,6 +160,11 @@ convert_file(const Filename &filename) {
       << "Unable to read " << filename << "\n";
     return false;
   }
+
+  if (_character_name.empty()) {
+    _character_name = filename.get_basename_wo_extension();
+  }
+
   return convert_maya();
 }
 
@@ -229,12 +234,13 @@ convert_maya() {
 
   case AC_none:
     // none: just get out a static model, no animation.
-    // fall through
+    all_ok = convert_hierarchy(&get_egg_data());
+    break;
 
   case AC_model:
     // model: get out an animatable model with joints and vertex
     // membership.
-    all_ok = convert_hierarchy(&get_egg_data());
+    all_ok = convert_char_model();
     break;
 
   case AC_flip:
@@ -286,6 +292,21 @@ close_api() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::convert_char_model
+//       Access: Private
+//  Description: Converts the animation as an animatable character
+//               model, with joints and vertex membership.
+////////////////////////////////////////////////////////////////////
+bool MayaToEggConverter::
+convert_char_model() {
+  EggGroup *char_node = new EggGroup(_character_name);
+  get_egg_data().add_child(char_node);
+  char_node->set_dart_type(EggGroup::DT_default);
+
+  return convert_hierarchy(char_node);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MayaToEggConverter::convert_flip
 //       Access: Private
 //  Description: Converts the animation as a series of models that
@@ -301,7 +322,7 @@ convert_flip(double start_frame, double end_frame, double frame_inc,
              double output_frame_rate) {
   bool all_ok = true;
 
-  EggGroup *sequence_node = new EggGroup("model");
+  EggGroup *sequence_node = new EggGroup(_character_name);
   get_egg_data().add_child(sequence_node);
   sequence_node->set_switch_flag(true);
   sequence_node->set_switch_fps(output_frame_rate / frame_inc);
@@ -443,24 +464,29 @@ process_node(const MDagPath &dag_path, EggGroupNode *egg_root) {
     }
 
   } else if (dag_path.hasFn(MFn::kNurbsCurve)) {
-    EggGroup *egg_group = get_egg_group(dag_path, egg_root);
-
-    if (egg_group == (EggGroup *)NULL) {
-      nout << "Cannot determine group node.\n";
-
-    } else {
-      get_transform(dag_path, egg_group);
-
-      MFnNurbsCurve curve(dag_path, &status);
-      if (!status) {
-        mayaegg_cat.info()
-          << "Error in node " << dag_path.fullPathName() << ":\n"
-          << "  it appears to have a NURBS curve, but does not.\n";
+    // Only convert NurbsCurves if we aren't making an animated model.
+    // Animated models, as a general rule, don't want these sorts of
+    // things in them.
+    if (_animation_convert != AC_model) {
+      EggGroup *egg_group = get_egg_group(dag_path, egg_root);
+      
+      if (egg_group == (EggGroup *)NULL) {
+        nout << "Cannot determine group node.\n";
+        
       } else {
-        make_nurbs_curve(dag_path, curve, egg_group, egg_root);
+        get_transform(dag_path, egg_group);
+        
+        MFnNurbsCurve curve(dag_path, &status);
+        if (!status) {
+          mayaegg_cat.info()
+            << "Error in node " << dag_path.fullPathName() << ":\n"
+            << "  it appears to have a NURBS curve, but does not.\n";
+        } else {
+          make_nurbs_curve(dag_path, curve, egg_group, egg_root);
+        }
       }
     }
-
+      
   } else if (dag_path.hasFn(MFn::kMesh)) {
     EggGroup *egg_group = get_egg_group(dag_path, egg_root);
 

@@ -62,6 +62,9 @@ public:
   INLINE void set_animation_convert(AnimationConvert animation_convert);
   INLINE AnimationConvert get_animation_convert() const;
 
+  INLINE void set_character_name(const string &character_name);
+  INLINE const string &get_character_name() const;
+
   INLINE void set_start_frame(double start_frame);
   INLINE bool has_start_frame() const;
   INLINE double get_start_frame() const;
@@ -132,6 +135,7 @@ protected:
   Filename _mpc_directory;
 
   AnimationConvert _animation_convert;
+  string _character_name;
   double _start_frame;
   double _end_frame;
   double _frame_inc;

@@ -69,6 +69,7 @@ protected:
   DistanceUnit _output_units;
 
   AnimationConvert _animation_convert;
+  string _character_name;
   double _start_frame;
   double _end_frame;
   double _frame_inc;
