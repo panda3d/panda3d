@@ -40,7 +40,7 @@
   #define TARGET audio_load_mp3
   #define BUILDING_DLL BUILDING_MISC
   #define LOCAL_LIBS \
-    audio mpg123
+    audio mpg123 express
   #define CFLAGS -DGENERIC -DNOXFERMEM
 
   #define SOURCES \
