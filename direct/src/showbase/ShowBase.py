@@ -186,6 +186,11 @@ class ShowBase:
         del self.winList
         del self.pipe
 
+        try:
+            direct.panel.destroy()
+        except StandardError:
+            pass
+
         if self.oldexitfunc:
             self.oldexitfunc()
 
