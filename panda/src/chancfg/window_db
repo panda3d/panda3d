@@ -56,6 +56,12 @@
                            2 setup-mono-plain 3 setup-mono-plain
                            4 setup-mono-plain 5 setup-mono-plain))
                 (720 640) #t #t))
+(cave5passive (layout5x2 ((0 setup-mono-plain 1 setup-mono-plain
+                           2 setup-mono-plain 3 setup-mono-plain
+                           4 setup-mono-plain 5 setup-mono-plain
+                           6 setup-mono-plain 7 setup-mono-plain
+                           8 setup-mono-plain 9 setup-mono-plain))
+                (720 640) #t #t))
 (mono-modelcave-pipe0 (layout2x2-vflip-2last ((0 setup-mono-cave 1 setup-mono-cave
                                    2 setup-mono-cave)) (1280 1440) #f #t))
 (mono-modelcave-pipe1 (layout1x2 ((0 setup-mono-cave 1 setup-mono-cave))
