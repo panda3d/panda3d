@@ -276,6 +276,28 @@ get_file_size() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::reset
+//       Access: Published
+//  Description: Stops whatever file transaction is currently in
+//               progress, closes the connection, and resets to begin
+//               anew.  You shouldn't ever need to call this, since
+//               the channel should be able to reset itself cleanly
+//               between requests, but it is provided in case you are
+//               an especially nervous type.
+//
+//               Don't call this after every request unless you set
+//               set_persistent_connection() to false, since calling
+//               reset() rudely closes the connection regardless of
+//               whether we have told the server we intend to keep it
+//               open or not.
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPChannel::
+reset() {
+  reset_for_new_request();
+  free_bio();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::post_form
 //       Access: Published
 //  Description: Posts form data to a particular URL and retrieves the

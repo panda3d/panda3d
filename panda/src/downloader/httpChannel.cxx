@@ -1214,13 +1214,7 @@ run_download_to_ram() {
 void HTTPChannel::
 begin_request(const string &method, const URLSpec &url, const string &body,
               bool nonblocking, size_t first_byte, size_t last_byte) {
-  reset_download_to();
-  _status_code = 0;
-  _status_string = string();
-  _redirect_trail.clear();
-  _last_status_code = 0;
-  _file_size = 0;
-  _bytes_downloaded = 0;
+  reset_for_new_request();
 
   // Changing the proxy, or the nonblocking state, is grounds for
   // dropping the old connection, if any.
@@ -1274,6 +1268,23 @@ begin_request(const string &method, const URLSpec &url, const string &body,
   }
 
   _done_state = S_read_header;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::reset_for_new_request
+//       Access: Private
+//  Description: Resets the internal state variables in preparation
+//               for beginning a new request.
+////////////////////////////////////////////////////////////////////
+void HTTPChannel::
+reset_for_new_request() {
+  reset_download_to();
+  _status_code = 0;
+  _status_string = string();
+  _redirect_trail.clear();
+  _last_status_code = 0;
+  _file_size = 0;
+  _bytes_downloaded = 0;
 }
 
 ////////////////////////////////////////////////////////////////////

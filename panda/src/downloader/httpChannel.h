@@ -99,6 +99,8 @@ PUBLISHED:
 
   void write_headers(ostream &out) const;
 
+  INLINE void reset();
+
   INLINE bool post_form(const URLSpec &url, const string &body);
   INLINE bool get_document(const URLSpec &url);
   INLINE bool get_subdocument(const URLSpec &url, 
@@ -142,6 +144,7 @@ private:
   void begin_request(const string &method, const URLSpec &url, 
                      const string &body, bool nonblocking,
                      size_t first_byte, size_t last_byte);
+  void reset_for_new_request();
 
   bool http_getline(string &str);
   bool http_send(const string &str);
