@@ -134,6 +134,23 @@ get_path() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: URLSpec::get_path_and_query
+//       Access: Published
+//  Description: Returns the path (or "/" if no path is specified),
+//               followed by the query if it is specified.
+////////////////////////////////////////////////////////////////////
+string URLSpec::
+get_path_and_query() const {
+  if (has_path()) {
+    return _url.substr(_path_start);
+  }
+  if (has_query()) {
+    return "/?" + get_query();
+  }
+  return "/";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: URLSpec::set_scheme
 //       Access: Published
 //  Description: Replaces the scheme part of the URL specification.

@@ -3003,7 +3003,7 @@ make_header() {
   } else {
     // If we'll be asking the server directly for the document, we
     // just want its path relative to the server.
-    request_path = _request.get_url().get_path();
+    request_path = _request.get_url().get_path_and_query();
   }
 
   // HTTP syntax always requires something in the request path.  If it
@@ -3171,7 +3171,7 @@ make_request_text() {
     string authorization = 
     _request_text += "Authorization: ";
     _request_text +=
-      _www_auth->generate(_method, _request.get_url().get_path(), _www_username, _body);
+      _www_auth->generate(_method, _request.get_url().get_path_and_query(), _www_username, _body);
     _request_text += "\r\n";
   }
 
