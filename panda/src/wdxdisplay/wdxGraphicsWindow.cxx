@@ -28,6 +28,8 @@ TypeHandle wdxGraphicsWindow::_type_handle;
 //         need to replace this with global hwnd->wdx classptr STL map obj
 wdxGraphicsWindow* global_dxwin = NULL;
 
+extern bool dx_full_screen_antialiasing;
+
 #define MOUSE_ENTERED 0
 #define MOUSE_EXITED 1
 
@@ -952,6 +954,12 @@ dx_setup() {
                                  DDSCAPS_FLIP | DDSCAPS_COMPLEX;
         ddsd.dwBackBufferCount = 1;
 
+        if(dx_full_screen_antialiasing) {
+            // cant check that d3ddevice has this capability yet, so got to set it anyway.
+            // hope this is OK.
+            ddsd.ddsCaps.dwCaps2 |= DDSCAPS2_HINTANTIALIASING; 
+        }
+
         PRINTVIDMEM(pDD,&ddsd.ddsCaps,"initial primary & backbuf");
 
         // Create the primary surface
@@ -1086,6 +1094,12 @@ dx_setup() {
         SurfaceDesc.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_3DDEVICE | DDSCAPS_VIDEOMEMORY;
         SurfaceDesc.dwWidth  = dwRenderWidth;
         SurfaceDesc.dwHeight = dwRenderHeight;
+
+        if(dx_full_screen_antialiasing) {
+            // cant check that d3ddevice has this capability yet, so got to set it anyway.
+            // hope this is OK.
+            SurfaceDesc.ddsCaps.dwCaps2 |= DDSCAPS2_HINTANTIALIASING; 
+        }
 
         PRINTVIDMEM(pDD,&SurfaceDesc.ddsCaps,"initial backbuf");
 

@@ -20,6 +20,7 @@
 #pragma hdrstop
 
 
+//#define DISABLE_DECALING
 #define DISABLE_POLYGON_OFFSET_DECALING
 // currently doesnt work well enough in toontown models for us to use
 // prob is when viewer gets close to decals, they disappear into wall poly, need to investigate
@@ -422,6 +423,15 @@ init_dx(  LPDIRECTDRAW7     context,
 #endif
 
     _d3dDevice->SetRenderState(D3DRENDERSTATE_SHADEMODE, _CurShadeMode);
+
+    if(dx_full_screen_antialiasing) {
+      if(_D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ANTIALIASSORTINDEPENDENT) {
+        _d3dDevice->SetRenderState(D3DRENDERSTATE_ANTIALIAS,D3DANTIALIAS_SORTINDEPENDENT);
+        dxgsg_cat.debug() << "enabling full-screen anti-aliasing\n";
+      } else {
+        dxgsg_cat.debug() << "device doesnt support full-screen anti-aliasing\n";
+      }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4882,6 +4892,8 @@ begin_decal(GeomNode *base_geom) {
         _d3dDevice->SetRenderState(D3DRENDERSTATE_ZBIAS, POLYGON_OFFSET_MULTIPLIER * _decal_level); // _decal_level better not be higher than 8!
     } else
 #endif
+
+#ifndef DISABLE_DECALING
     {
         if (_decal_level > 1)
             base_geom->draw(this);  // If we're already decaling, just draw the geometry.
@@ -4897,6 +4909,9 @@ begin_decal(GeomNode *base_geom) {
             // buffer write off during this.
         }
     }
+#else
+            base_geom->draw(this);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4908,9 +4923,13 @@ begin_decal(GeomNode *base_geom) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 end_decal(GeomNode *base_geom) {
-    nassertv(base_geom != (GeomNode *)NULL);
-
     _decal_level--;
+
+#ifdef DISABLE_DECALING
+    return;
+#endif
+
+    nassertv(base_geom != (GeomNode *)NULL);
 //  nassertv(_decal_level >= 1);
 
 #ifndef DISABLE_POLYGON_OFFSET_DECALING
