@@ -122,10 +122,12 @@ PUBLISHED:
   INLINE bool had_error() const;
   INLINE size_t get_num_unpacked_bytes() const;
 
-  INLINE string get_string() const;
   INLINE size_t get_length() const;
+  INLINE string get_string() const;
 public:
+  INLINE void get_string(string &data) const;
   INLINE const char *get_data() const;
+  INLINE char *take_data();
 
   INLINE void append_data(const char *buffer, size_t size);
   INLINE char *get_write_pointer(size_t size);

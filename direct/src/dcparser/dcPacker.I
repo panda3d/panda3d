@@ -618,17 +618,6 @@ get_num_unpacked_bytes() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCPacker::get_string
-//       Access: Published
-//  Description: Returns the packed data buffer as a string.  Also see
-//               get_data().
-////////////////////////////////////////////////////////////////////
-INLINE string DCPacker::
-get_string() const {
-  return _pack_data.get_string();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DCPacker::get_length
 //       Access: Published
 //  Description: Returns the current length of the buffer.  This is
@@ -641,17 +630,60 @@ get_length() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::get_string
+//       Access: Published
+//  Description: Returns the packed data buffer as a string.  Also see
+//               get_data().
+////////////////////////////////////////////////////////////////////
+INLINE string DCPacker::
+get_string() const {
+  return _pack_data.get_string();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::get_string
+//       Access: Published
+//  Description: Copies the packed data into the indicated string.
+//               Also see get_data().
+////////////////////////////////////////////////////////////////////
+INLINE void DCPacker::
+get_string(string &data) const {
+  data.assign(_pack_data.get_data(), _pack_data.get_length());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPacker::get_data
 //       Access: Public
 //  Description: Returns the beginning of the data buffer.  The buffer
 //               is not null-terminated, but see also get_string().
 //
 //               This may be used in conjunction with get_length() to
-//               copy all of the bytes out of the buffer.
+//               copy all of the bytes out of the buffer.  Also see
+//               take_data() to get the packed data without a copy
+//               operation.
 ////////////////////////////////////////////////////////////////////
 INLINE const char *DCPacker::
 get_data() const {
   return _pack_data.get_data();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::take_data
+//       Access: Public
+//  Description: Returns the pointer to the beginning of the data
+//               buffer, and transfers ownership of the buffer to the
+//               caller.  The caller is now responsible for ultimately
+//               freeing the returned pointer with delete[], if it is
+//               non-NULL.  This may (or may not) return NULL if the
+//               buffer is empty.
+//
+//               This also empties the DCPackData structure, and sets
+//               its length to zero (so you should call get_length()
+//               before calling this method).
+////////////////////////////////////////////////////////////////////
+INLINE char *DCPacker::
+take_data() {
+  return _pack_data.take_data();
 }
 
 ////////////////////////////////////////////////////////////////////

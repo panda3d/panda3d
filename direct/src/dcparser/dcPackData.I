@@ -160,7 +160,9 @@ get_data() const {
 //               non-NULL.  This may (or may not) return NULL if the
 //               buffer is empty.
 //
-//               This also empties the DCPackData structure.
+//               This also empties the DCPackData structure, and sets
+//               its length to zero (so you should call get_length()
+//               before calling this method).
 ////////////////////////////////////////////////////////////////////
 INLINE char *DCPackData::
 take_data() {
