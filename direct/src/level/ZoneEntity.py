@@ -8,6 +8,11 @@ class ZoneEntity(ZoneEntityBase.ZoneEntityBase, BasicEntities.NodePathAttribs):
         ZoneEntityBase.ZoneEntityBase.__init__(self, level, entId)
 
         self.nodePath = self.level.getZoneNode(self.modelZoneNum)
+        if __dev__:
+            if self.nodePath is None:
+                self.level.reportModelSpecSyncError(
+                    'unknown modelZoneNum %s; zone was removed from model?' %
+                    self.modelZoneNum)
         BasicEntities.NodePathAttribs.initNodePathAttribs(self, doReparent=0)
 
         # dict of zoneNum to 'visible' reference count

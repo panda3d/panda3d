@@ -147,6 +147,14 @@ class DistributedLevel(DistributedObject.DistributedObject,
             self.privGotSpec(levelSpec)
 
     if __dev__:
+        def reportModelSpecSyncError(self, msg):
+            DistributedLevel.notify.error(
+                '%s\n'
+                '\n'
+                'your spec does not match the level model\n'
+                'use SpecUtil.updateSpec, then restart your AI and client' %
+                (msg))
+
         def setSpecDeny(self, reason):
             DistributedLevel.notify.error(reason)
             
@@ -186,9 +194,8 @@ class DistributedLevel(DistributedObject.DistributedObject,
         modelZoneNums = self.zoneNums
         entityZoneNums = self.zoneNum2entId.keys()
         if not sameElements(modelZoneNums, entityZoneNums):
-            DistributedLevel.notify.error(
-                'model zone nums (%s) do not match entity zone nums (%s)\n'
-                'use SpecUtil.updateSpec' %
+            self.reportModelSpecSyncError(
+                'model zone nums (%s) do not match entity zone nums (%s)' %
                 (modelZoneNums, entityZoneNums))
 
         # load stuff
@@ -324,7 +331,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         self.stopOuch()
         
     def getZoneNode(self, zoneNum):
-        return self.zoneNum2node[zoneNum]
+        return self.zoneNum2node.get(zoneNum)
 
     def requestReparent(self, entity, parentId):
         if __debug__:
