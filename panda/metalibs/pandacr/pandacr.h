@@ -6,7 +6,7 @@
 #ifndef PANDACR_H
 #define PANDACR_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 EXPCL_PANDACR void init_libpandacr();
 

@@ -19,7 +19,7 @@
 #ifndef MESHEREDGE_H
 #define MESHEREDGE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "mesherConfig.h"
 #include "builderBucket.h"

@@ -6,7 +6,7 @@
 #ifndef PANDAFX_H
 #define PANDAFX_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 EXPCL_PANDAFX void init_libpandafx();
 

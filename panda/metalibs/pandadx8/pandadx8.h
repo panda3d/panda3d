@@ -6,7 +6,7 @@
 #ifndef PANDADX8_H
 #define PANDADX8_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 EXPCL_PANDADX void init_libpandadx8();
 

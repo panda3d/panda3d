@@ -6,7 +6,7 @@
 #ifndef PANDAGL_H
 #define PANDAGL_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 EXPCL_PANDAGL void init_libpandagl();
 

@@ -19,7 +19,7 @@
 #ifndef ANIMCHANNELFIXED_H
 #define ANIMCHANNELFIXED_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "animChannel.h"
 

@@ -6,7 +6,7 @@
 #ifndef PANDA_H
 #define PANDA_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 EXPCL_PANDA void init_libpanda();
 

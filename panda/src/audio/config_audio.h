@@ -19,8 +19,8 @@
 #ifndef __CONFIG_AUDIO_H__
 #define __CONFIG_AUDIO_H__
 
-#include <pandabase.h>
-#include <notifyCategoryProxy.h>
+#include "pandabase.h"
+#include "notifyCategoryProxy.h"
 
 #ifdef WIN32_VC
 #pragma warning (disable : 4231)

@@ -20,7 +20,7 @@
 #ifndef __FMOD_AUDIO_SOUND_H__
 #define __FMOD_AUDIO_SOUND_H__
 
-#include <pandabase.h>
+#include "pandabase.h"
 #ifdef HAVE_FMOD //[
 
 #include "audioSound.h"

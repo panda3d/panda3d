@@ -18,7 +18,7 @@
 #ifndef MESHERCONFIG_H
 #define MESHERCONFIG_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 // This is just a file to declare a definition or two global to the
 // mesher compilation.

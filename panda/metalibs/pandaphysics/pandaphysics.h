@@ -6,7 +6,7 @@
 #ifndef PANDAPHYSICS_H
 #define PANDAPHYSICS_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 EXPCL_PANDAPHYSICS void init_libpandaphysics();
 

@@ -6,7 +6,7 @@
 #ifndef PANDAEGG_H
 #define PANDAEGG_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 EXPCL_PANDAEGG void init_libpandaegg();
 

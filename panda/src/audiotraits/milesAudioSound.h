@@ -20,7 +20,7 @@
 #ifndef __MILES_AUDIO_SOUND_H__
 #define __MILES_AUDIO_SOUND_H__
 
-#include <pandabase.h>
+#include "pandabase.h"
 #ifdef HAVE_RAD_MSS //[
 
 #include "audioSound.h"
