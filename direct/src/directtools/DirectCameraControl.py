@@ -26,6 +26,7 @@ class DirectCameraControl(PandaObject):
             ['c', self.centerCamIn, 0.5],
             ['f', self.fitOnWidget],
             ['h', self.homeCam],
+            ['i', self.toggleMarkerVis],
             ['m', self.moveToFit],
             ['u', self.orbitUprightCam],
             ['U', self.uprightCam],
@@ -45,6 +46,12 @@ class DirectCameraControl(PandaObject):
             ['-', self.zoomCam, -2.0, t],
             ['_', self.zoomCam, -2.0, t],
             ]
+
+    def toggleMarkerVis(self):
+        if direct.cameraControl.coaMarker.isHidden():
+            direct.cameraControl.coaMarker.show()
+        else:
+            direct.cameraControl.coaMarker.hide()
 
     def mouseFlyStart(self):
         # Record undo point
