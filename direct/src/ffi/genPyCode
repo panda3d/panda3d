@@ -78,14 +78,14 @@ if [ "$firstarg" = "install" ]; then
     # as installed on a machine without ctattach etc.
     pyDir=install/lib/py
     install/bin/ppython -d install/bin/generatePythonCode -O -v -d $pyDir -e direct/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
-    pSqueezer=../../direct/src/showbase/pandaSqueezer.py
+    pSqueezer=`pwd`/direct/src/showbase/pandaSqueezer.py
 fi
 
 if [ "$firstarg" = "release" ]; then
     # as installed on a machine without ctattach etc. 
     pyDir=install/lib/py
     install/bin/ppython install/bin/generatePythonCode -v -d $pyDir -e direct/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
-    pSqueezer=../../direct/src/showbase/pandaSqueezer.py
+    pSqueezer=`pwd`/direct/src/showbase/pandaSqueezer.py
 fi
 
 if [ "$fSqueeze" = "squeezeMe" ]; then
