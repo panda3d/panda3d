@@ -1133,13 +1133,17 @@ draw_prim_setup(const Geom *geom) {
 
         if (_issued_color_enabled) {
             p_colr = _issued_color_D3DCOLOR;  // set primitive color if there is one.
-        } else if(ColorBinding == G_OVERALL){
-            GET_NEXT_COLOR();
-        } 
 
-        perVertex &= ~PER_COLOR;
-        perPrim &= ~PER_COLOR;
-        perComp &= ~PER_COLOR;
+            perVertex &= ~PER_COLOR;
+            perPrim &= ~PER_COLOR;
+            perComp &= ~PER_COLOR;
+         } else if(ColorBinding == G_OVERALL){
+            GET_NEXT_COLOR();
+
+            perVertex &= ~PER_COLOR;
+            perPrim &= ~PER_COLOR;
+            perComp &= ~PER_COLOR;
+        } 
    }
 
    if (geom->get_binding(G_NORMAL) != G_OFF) {
