@@ -26,30 +26,33 @@ class ClusterServer(DirectObject.DirectObject):
     MSG_NUM = 2000000
 
     def __init__(self,cameraGroup,camera):
+        # Store information about the cluster's camera
+        self.cameraGroup = cameraGroup
+        self.camera = camera
+        self.lens = camera.node().getLens()
+        # Initialize camera offsets
+        self.posOffset = Vec3(0,0,0)
+        self.hprOffset = Vec3(0,0,0)
+        # Create network layer objects
+        self.lastConnection = None
         self.qcm = QueuedConnectionManager()
         self.qcl = QueuedConnectionListener(self.qcm, 0)
         self.qcr = QueuedConnectionReader(self.qcm, 0)
         self.cw = ConnectionWriter(self.qcm,0)
         port = base.config.GetInt("cluster-server-port",CLUSTER_PORT)
         self.tcpRendezvous = self.qcm.openTCPServerRendezvous(port, 1)
-        print self.tcpRendezvous
-        self.cameraGroup = cameraGroup
-        self.camera = camera
-        self.lens = camera.node().getLens()
         self.qcl.addConnection(self.tcpRendezvous)
         self.msgHandler = MsgHandler(ClusterServer.MSG_NUM,self.notify)
+        # Start cluster tasks
         self.startListenerPollTask()
         self.startReaderPollTask()
-        self.posOffset = Vec3(0,0,0)
-        self.hprOffset = Vec3(0,0,0)
-        return None
 
     def startListenerPollTask(self):
-        task = Task.Task(self.listenerPoll)
-        taskMgr.add(task, "serverListenerPollTask")
-        return None
+        taskMgr.add(self.listenerPollTask, "serverListenerPollTask",-40)
 
-    def listenerPoll(self, task):
+    def listenerPollTask(self, task):
+        """ Task to listen for a new connection from the client """
+        # Run this task after the dataloop
         if self.qcl.newConnectionAvailable():
             print "New connection is available"
             rendezvous = PointerToConnection()
@@ -69,26 +72,38 @@ class ClusterServer(DirectObject.DirectObject):
         return Task.cont
 
     def startReaderPollTask(self):
-        task = Task.Task(self.readerPollUntilEmpty,-10)
-        taskMgr.add(task, "serverReaderPollTask")
-        return None
+        """ Task to handle datagrams from client """
+        # Run this task just after the listener poll task and dataloop
+        taskMgr.add(self.readerPollTask, "serverReaderPollTask", -39)
 
-    def readerPollUntilEmpty(self, task):
-        while self.readerPollOnce():
-            pass
-        return Task.cont
-
-    def readerPollOnce(self):
-        availGetVal = self.qcr.dataAvailable()
-        if availGetVal:
+    def readerPollTask(self):
+        while self.qcr.dataAvailable():
             datagram = NetDatagram()
             readRetVal = self.qcr.getData(datagram)
             if readRetVal:
                 self.handleDatagram(datagram)
             else:
                 self.notify.warning("getData returned false")
-        return availGetVal
+        return Task.cont
 
+    def handleDatagram(self, datagram):
+        (type, dgi) = self.msgHandler.nonBlockingRead(self.qcr)
+        if type==CLUSTER_CAM_OFFSET:
+            self.handleCamOffset(dgi)
+        elif type==CLUSTER_CAM_FRUSTUM:
+            self.handleCamFrustum(dgi)
+        elif type==CLUSTER_POS_UPDATE:
+            self.handleCamMovement(dgi)
+        elif type==CLUSTER_SWAP_READY:
+            pass
+        elif type==CLUSTER_SWAP_NOW:
+            pass
+        elif type==CLUSTER_COMMAND_STRING:
+            self.handleCommandString(dgi)
+        else:
+            self.notify.warning("recieved unknown packet")
+        return type
+    
     def handleCamOffset(self,dgi):
         x=dgi.getFloat32()
         y=dgi.getFloat32()
@@ -129,83 +144,40 @@ class ClusterServer(DirectObject.DirectObject):
         finalR = r + self.hprOffset[2]
         self.cameraGroup.setPosHpr(render,finalX,finalY,finalZ,
                                    finalH,finalP,finalR)
+
+    def handleCommandString(self, dgi):
+        command = dgi.getString()
+        exec( command, globals() )
         
-    def handleDatagram(self, datagram):
-        (type, dgi) = self.msgHandler.nonBlockingRead(self.qcr)
-        if type==CLUSTER_CAM_OFFSET:
-            self.handleCamOffset(dgi)
-        elif type==CLUSTER_CAM_FRUSTUM:
-            self.handleCamFrustum(dgi)
-        elif type==CLUSTER_POS_UPDATE:
-            self.handleCamMovement(dgi)
-        elif type==CLUSTER_SWAP_READY:
-            pass
-        elif type==CLUSTER_SWAP_NOW:
-            pass
-        else:
-            self.notify.warning("recieved unknown packet")
-        return type
-    
 class ClusterServerSync(ClusterServer):
 
     def __init__(self,cameraGroup,camera):
         self.notify.info('starting ClusterServerSync')
-        self.startReading = 0
         self.posRecieved = 0
         ClusterServer.__init__(self,cameraGroup,camera)
         self.startSwapCoordinator()
         return None
 
-    def startListenerPollTask(self):
-        task = Task.Task(self.listenerPoll,-2)
-        taskMgr.add(task, "serverListenerPollTask")
-        return None
-
-    def listenerPoll(self, task):
-        if self.qcl.newConnectionAvailable():
-            print "New connection is available"
-            rendezvous = PointerToConnection()
-            netAddress = NetAddress()
-            newConnection = PointerToConnection()
-            retVal = self.qcl.getNewConnection(rendezvous, netAddress,
-                                               newConnection)
-            if retVal:
-                # Crazy dereferencing
-                newConnection=newConnection.p()
-                self.qcr.addConnection(newConnection)
-                print "Got a connection!"
-                self.lastConnection = newConnection
+    def readerPollTask(self, task):
+        if self.lastConnection is None:
+            pass
+        elif self.qcr.isConnectionOk(self.lastConnection):
+            # Process datagrams till you get a postion update
+            type = CLUSTER_NOTHING
+            while type != CLUSTER_POS_UPDATE:
                 datagram = self.msgHandler.blockingRead(self.qcr)
                 (type,dgi) = self.msgHandler.readHeader(datagram)
-                if type==CLUSTER_CAM_OFFSET:
+                if type == CLUSTER_POS_UPDATE:
+                    # Move camera
+                    self.handleCamMovement(dgi)
+                    # Set flag for swap coordinator
+                    self.posRecieved = 1
+                elif type == CLUSTER_CAM_OFFSET:
+                    # Update camera offset                    
                     self.handleCamOffset(dgi)
-                else:
-                    self.notify.warning("Wanted cam offset, got something else")
-                self.startReading = 1
-                # now that we have the offset read, can start reading
-            else:
-                self.notify.warning("getNewConnection returned false")
-        return Task.cont
-
-    def startReaderPollTask(self):
-        task = Task.Task(self.readPos,-1)
-        taskMgr.add(task, "serverReadPosTask")
-        return None
-
-    def readPos(self, task):
-        if self.startReading and self.qcr.isConnectionOk(self.lastConnection):
-            datagram = self.msgHandler.blockingRead(self.qcr)
-            (type,dgi) = self.msgHandler.readHeader(datagram)
-            if type == CLUSTER_POS_UPDATE:
-                self.posRecieved = 1
-                self.handleCamMovement(dgi)
-            elif type == CLUSTER_CAM_OFFSET:
-                self.handleCamOffset(dgi)
-            else:
-                self.notify.warning('expected pos or orientation, instead got %d' % type)
-        else:
-            self.startReading = 0 # keep this 0 as long as connection not ok
-
+                elif type == CLUSTER_COMMAND_STRING:
+                    # Got a command, execute it
+                    self.handleCommandString(dgi)
         return Task.cont
 
     def sendSwapReady(self):
@@ -215,30 +187,18 @@ class ClusterServerSync(ClusterServer):
         self.cw.send(datagram, self.lastConnection)
 
     def startSwapCoordinator(self):
-        task = Task.Task(self.swapCoordinatorTask, 51)
-        taskMgr.add(task, "serverSwapCoordinator")
+        taskMgr.add(self.swapCoordinatorTask, "serverSwapCoordinator", 51)
         return None
 
     def swapCoordinatorTask(self, task):
         if self.posRecieved:
             self.posRecieved = 0
-            localClock = ClockObject()
-#            print "START send-------------------------------"
-            t1 = localClock.getRealTime()
             self.sendSwapReady()
-#            print "-----------START read--------------------"
-            t2 = localClock.getRealTime()
             datagram = self.msgHandler.blockingRead(self.qcr)
             (type,dgi) = self.msgHandler.readHeader(datagram)
             if type == CLUSTER_SWAP_NOW:
                 self.notify.debug('swapping')
-#                print "---------------------START SWAP----------"
-                t3 = localClock.getRealTime()
                 base.win.swap()
-                t4 = localClock.getRealTime()
-#                print "---------------------------------END SWAP"
-#                print "times=",t1,t2,t3,t4
-#                print "deltas=",t2-t1,t3-t2,t4-t3
             else:
                 self.notify.warning("did not get expected swap now")
         return Task.cont

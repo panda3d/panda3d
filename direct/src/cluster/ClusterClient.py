@@ -92,6 +92,11 @@ class DisplayConnection:
         datagram = self.msgHandler.makeSwapNowDatagram()
         self.cw.send(datagram, self.tcpConn)
         
+    def sendCommandString(self, commandString):
+        ClusterManager.notify.debug("send command string: %s" % commandString)
+        datagram = self.msgHandler.makeCommandStringDatagram(commandString)
+        self.cw.send(datagram, self.tcpConn)
+
 class ClusterManager(DirectObject.DirectObject):
     notify = DirectNotifyGlobal.directNotify.newCategory("ClusterClient")
     MGR_NUM = 1000000
@@ -128,10 +133,16 @@ class ClusterManager(DirectObject.DirectObject):
 
     def moveCameraTask(self,task):
         self.moveCamera(
-            base.camera.getPos(render),
-            base.camera.getHpr(render))
+            direct.camera.getPos(render),
+            direct.camera.getHpr(render))
         return Task.cont
         
+    def clusterCommand(self, commandString):
+        # Execute remotely
+        for server in self.serverList:
+            server.sendCommandString(commandString)
+        # Execute locally
+        exec( commandString, globals() )
 
 class ClusterManagerSync(ClusterManager):
 
@@ -153,24 +164,17 @@ class ClusterManagerSync(ClusterManager):
             self.waitForSwap=0
             self.notify.debug(
                 "START get swaps----------------------------------")
-            localClock = ClockObject()
-            t1 = localClock.getRealTime()
             for server in self.serverList:
                 server.getSwapReady()
             self.notify.debug(
                 "----------------START swap now--------------------")
-            t2 = localClock.getRealTime()
             for server in self.serverList:
                 server.sendSwapNow()
             self.notify.debug(
                 "------------------------------START swap----------")
-            t3 = localClock.getRealTime()
             base.win.swap()
-            t4 = localClock.getRealTime()
             self.notify.debug(
                 "------------------------------------------END swap")
-            self.notify.debug( ("times=%f %f %f %f" % (t1,t2,t3,t4)) )
-            self.notify.debug( ("deltas=%f %f %f" % (t2-t1,t3-t2,t4-t3)) )
         return Task.cont
 
     def moveCamera(self,xyz,hpr):

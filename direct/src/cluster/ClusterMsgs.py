@@ -14,6 +14,7 @@ CLUSTER_CAM_FRUSTUM = 2
 CLUSTER_POS_UPDATE = 3
 CLUSTER_SWAP_READY = 4
 CLUSTER_SWAP_NOW   = 5
+CLUSTER_COMMAND_STRING = 6
 
 #Port number for cluster rendering
 CLUSTER_PORT = 1970
@@ -49,7 +50,6 @@ class MsgHandler:
         else:
             type = CLUSTER_NOTHING
             dgi = None
-
         return (type,dgi)
 
     def readHeader(self,datagram):
@@ -60,21 +60,16 @@ class MsgHandler:
         return (type,dgi)        
 
     def blockingRead(self,qcr):
-        availGetVal = 0
-        while not availGetVal:
-            availGetVal = qcr.dataAvailable()
-            if not availGetVal:
-                # The following may not be necessary.
-                # I just wanted some
-                # time given to the operating system while
-                # busy waiting.
-                time.sleep(0.002)
-                type = CLUSTER_NOTHING
+        while not qcr.dataAvailable():
+            # The following may not be necessary.
+            # I just wanted some
+            # time given to the operating system while
+            # busy waiting.
+            time.sleep(0.002)
         datagram = NetDatagram()
         readRetVal = qcr.getData(datagram)
         if not readRetVal:
             self.notify.warning("getData returned false")
-                
         return datagram
 
     def makeCamOffsetDatagram(self,xyz,hpr):
@@ -88,6 +83,14 @@ class MsgHandler:
         datagram.addFloat32(hpr[0])
         datagram.addFloat32(hpr[1])
         datagram.addFloat32(hpr[2])
+        return datagram
+
+    def makeCommandStringDatagram(self, commandString):
+        datagram = Datagram.Datagram()
+        datagram.addUint32(self.packetNumber)
+        self.packetNumber = self.packetNumber + 1
+        datagram.addUint8(CLUSTER_COMMAND_STRING)
+        datagram.addString(commandString)
         return datagram
 
     def makeCamFrustumDatagram(self,focalLength, filmSize, filmOffset):
