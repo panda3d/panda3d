@@ -27,12 +27,16 @@
 #include <getopt.h>
 #endif
 
+bool output_decimal = false;
+bool suppress_filename = false;
+ofstream binary_output;
+
 void
 usage() {
   cerr << 
     "\n"
     "Usage:\n\n"
-    "check_md5 [-q] [-d] [-i \"input string\"] [file1 file2 ...]\n"
+    "check_md5 [-q] [-d] [-b filename] [-i \"input string\"] [file1 file2 ...]\n"
     "check_md5 -h\n\n";
 }
 
@@ -46,12 +50,14 @@ help() {
     "An MD5 hash is a 128-bit value.  The output is presented as a 32-digit\n"
     "hexadecimal string by default, but with -d, it is presented as four\n"
     "big-endian unsigned 32-bit decimal integers.  Normally the filename\n"
-    "of each file is printed along with the hash; -q suppresses this.\n\n";
+    "of each file is printed along with the hash; -q suppresses this.\n\n"
+    
+    "To write the 16 bytes (per input file) of the output directly to a\n"
+    "binary file, use -b with the name of the file to receive the output.\n";
 }
 
 void
-output_hash(const string &filename, const HashVal &hash, 
-            bool output_decimal, bool suppress_filename) {
+output_hash(const string &filename, const HashVal &hash) {
   if (!suppress_filename && !filename.empty()) {
     cout << filename << " ";
   }
@@ -61,6 +67,10 @@ output_hash(const string &filename, const HashVal &hash,
     hash.output_hex(cout);
   }
   cout << "\n";
+
+  // Also output to the binary_output file if it is open.  No sweat if
+  // it's not.
+  hash.output_binary(binary_output);
 }
   
 
@@ -68,12 +78,11 @@ int
 main(int argc, char *argv[]) {
   extern char *optarg;
   extern int optind;
-  const char *optstr = "i:dqh";
+  const char *optstr = "i:db:qh";
 
   bool got_input_string = false;
   string input_string;
-  bool output_decimal = false;
-  bool suppress_filename = false;
+  Filename binary_output_filename;
 
   int flag = getopt(argc, argv, optstr);
 
@@ -86,6 +95,10 @@ main(int argc, char *argv[]) {
 
     case 'd':
       output_decimal = true;
+      break;
+
+    case 'b':
+      binary_output_filename = Filename::binary_filename(optarg);
       break;
 
     case 'q':
@@ -110,10 +123,17 @@ main(int argc, char *argv[]) {
     exit(1);
   }
 
+  if (!binary_output_filename.empty()) {
+    if (!binary_output_filename.open_write(binary_output)) {
+      cerr << "Unable to open " << binary_output_filename << ".\n";
+      exit(1);
+    }
+  }
+
   if (got_input_string) {
     HashVal hash;
     hash.hash_string(input_string);
-    output_hash("", hash, output_decimal, true);
+    output_hash("", hash);
   }
 
   bool okflag = true;
@@ -130,8 +150,7 @@ main(int argc, char *argv[]) {
         cerr << "Unable to read " << source_file << "\n";
         okflag = false;
       } else {
-        output_hash(source_file.get_basename(), hash, 
-                    output_decimal, suppress_filename);
+        output_hash(source_file.get_basename(), hash);
       }
     }
   }
