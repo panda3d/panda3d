@@ -75,6 +75,9 @@ PUBLISHED:
   INLINE const Datagram &get_datagram() const;
   INLINE size_t get_current_index() const;
 
+  void output(ostream &out) const;
+  void write(ostream &out, unsigned int indent=0) const;
+
 private:
   const Datagram *_datagram;
   size_t _current_index;
