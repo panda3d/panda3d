@@ -47,9 +47,15 @@ void AudioManager::set_update_func(AudioManager::UpdateFunc* func) {
 void AudioManager::ns_update(void) {
   // handle looping
   if (_loopset != (LoopSet*)0L)
-    for (LoopSet::iterator i=_loopset->begin(); i!=_loopset->end(); ++i)
-      if ((*i)->status() == AudioSound::READY)
-	AudioManager::play(*i);
+    for (LoopSet::iterator i=_loopset->begin(); i!=_loopset->end(); ++i) {
+      AudioSound* sound = *i;
+      if (sound->status() == AudioSound::READY) {
+	if (audio_cat->is_debug())
+	  audio_cat->debug() << "AudioManager::ns_update looping '"
+			     << sound->get_name() << "'" << endl;
+	AudioManager::play(sound);
+      }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////
