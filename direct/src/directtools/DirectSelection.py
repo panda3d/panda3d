@@ -437,8 +437,6 @@ class SelectionQueue(CollisionHandlerQueue):
         # Turn this mask all off since we're not testing for collisions against
         # collision solids
         self.collisionNode.setFromCollideMask(bitMask)
-        # Don't test against actual geometry
-        self.collisionNode.setCollideGeom(0)
 
     def collideWithGeom(self):
         # The into collide mask is the bit pattern colliders look at
@@ -450,9 +448,7 @@ class SelectionQueue(CollisionHandlerQueue):
         # compares against the into collide mask of candidate collision solids
         # Turn this mask all off since we're not testing for collisions against
         # collision solids
-        self.collisionNode.setFromCollideMask(BitMask32().allOff())
-        # What we want to test against is actual geometry
-        self.collisionNode.setCollideGeom(1)
+        self.collisionNode.setFromCollideMask(GeomNode.getDefaultCollideMask())
 
     def collideWithWidget(self):
         # This collision node should not be tested against by any other
@@ -463,8 +459,6 @@ class SelectionQueue(CollisionHandlerQueue):
         mask = BitMask32()
         mask.setWord(0x80000000)
         self.collisionNode.setFromCollideMask(mask)
-        # But in this case, don't test against actual geometry
-        self.collisionNode.setCollideGeom(0)
 
     def addUnpickable(self, item):
         if item not in self.unpickable:
