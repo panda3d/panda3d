@@ -10,6 +10,7 @@ echo $WINTOOLS/sdk/python/Python-2.2.2/PCbuild/python22.dll
 echo $WINTOOLS/sdk/python/Python-2.2.2/PCbuild/_sre.pyd
 echo $WINTOOLS/sdk/python/Python-2.2.2/PCbuild/_tkinter.pyd
 echo $WINTOOLS/sdk/python/Python-2.2.2/PCbuild/_socket.pyd
+echo $WINTOOLS/sdk/python/Python-2.2.2/PCbuild/zlib.pyd
 
 echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/lib-tk
 echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/Pmw
@@ -41,6 +42,7 @@ echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/inspect.py
 echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/dis.py
 echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/tokenize.py
 echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/token.py
+echo $WINTOOLS/sdk/python/Python-2.2.2/Lib/ihooks.py
 
 
 # Libraries
@@ -97,3 +99,4 @@ echo $PANDA/etc/window_db
 
 # Generated code for libpanda
 echo $DIRECT/lib/py/PandaModules.py
+echo $DIRECT/lib/py/PandaModules.pyz
