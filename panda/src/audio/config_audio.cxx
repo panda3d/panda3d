@@ -60,7 +60,7 @@ ConfigureFn(config_audio) {
   AudioGuiFunctor::init_type();
 
   audio_dls_file = new string(
-      config_audio.GetString("audio-dls-file", "GM.DLS"));
+      config_audio.GetString("audio-dls-file", ""));
 
   audio_library_name = new string(
       config_audio.GetString("audio-library-name", "miles_audio"));
