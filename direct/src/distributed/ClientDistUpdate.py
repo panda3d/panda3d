@@ -74,6 +74,7 @@ class ClientDistUpdate:
             datagram.putArg(args[i], self.types[i], self.divisors[i])
     
     def sendUpdate(self, cr, do, args, sendToId = None):
+        assert(self.notify.debug("sendUpdate() name="+str(self.name)))
         datagram = Datagram.Datagram()
         # Add message type
         datagram.addUint16(CLIENT_OBJECT_UPDATE_FIELD)
