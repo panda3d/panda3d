@@ -4,7 +4,7 @@
   #define OTHER_LIBS \
     egg:c event:c pandaegg:m \
     mathutil:c linmath:c putil:c express:c panda:m \
-    interrogatedb:c dconfig:c dtoolconfig:m \
+    interrogatedb:c prc:c dconfig:c dtoolconfig:m \
     dtoolutil:c dtoolbase:c dtool:m
 
   #define SOURCES \

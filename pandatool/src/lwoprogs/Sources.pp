@@ -8,7 +8,7 @@
     pnmimagetypes:c pnmimage:c \
     putil:c panda:m \
     express:c pandaexpress:m \
-    dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
+    dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
 
   #define SOURCES \
     lwoToEgg.cxx lwoToEgg.h
@@ -23,7 +23,7 @@
     egg:c pandaegg:m \
     linmath:c pnmimagetypes:c pnmimage:c putil:c panda:m \
     express:c pandaexpress:m \
-    dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
+    dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
 
   #define SOURCES \
     lwoScan.cxx lwoScan.h

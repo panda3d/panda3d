@@ -7,7 +7,7 @@
     progbase pstatserver
   #define OTHER_LIBS \
     pstatclient:c linmath:c putil:c net:c express:c pandaexpress:m panda:m \
-    dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m \
+    dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m \
     pystub
 
   #define SOURCES \

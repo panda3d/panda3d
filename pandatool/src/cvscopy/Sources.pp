@@ -5,7 +5,7 @@
 
   #define OTHER_LIBS \
     express:c dtoolutil:c dtoolbase:c pnmimagetypes:c pnmimage:c putil:c \
-    linmath:c panda:m dconfig:c dtool:m pystub
+    linmath:c panda:m prc:c dconfig:c dtool:m pystub
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
     
@@ -25,7 +25,7 @@
   #define LOCAL_LIBS cvscopy
 
   #define OTHER_LIBS \
-    dconfig:c dtool:m pystub
+    prc:c dconfig:c dtool:m pystub
 
   #define SOURCES \
     testCopy.cxx testCopy.h

@@ -8,7 +8,7 @@
     pnmimagetypes:c pnmimage:c pgraph:c gobj:c putil:c \
     lerp:c mathutil:c linmath:c event:c express:c \
     pandaegg:m panda:m pandaexpress:m \
-    interrogatedb:c dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
   #define UNIX_SYS_LIBS \
     m
 
@@ -29,7 +29,7 @@
     pgraph:c parametrics:c pnmimagetypes:c pnmimage:c putil:c \
     text:c tform:c \
     pandaegg:m panda:m pandaexpress:m \
-    interrogatedb:c dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
   #define UNIX_SYS_LIBS \
     m
 
@@ -48,7 +48,7 @@
     downloader:c mathutil:c \
     gobj:c lerp:c pnmimagetypes:c pnmimage:c pstatclient:c \
     putil:c linmath:c event:c express:c panda:m pandaexpress:m \
-    interrogatedb:c dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
   #define UNIX_SYS_LIBS \
     m
 

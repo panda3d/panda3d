@@ -13,7 +13,7 @@
     downloader:c \
     event:c gsgbase:c lerp:c panda:m \
     express:c pandaexpress:m \
-    interrogatedb:c dconfig:c dtoolconfig:m \
+    interrogatedb:c prc:c dconfig:c dtoolconfig:m \
     dtoolutil:c dtoolbase:c dtool:m
   #define UNIX_SYS_LIBS \
     m

@@ -6,7 +6,7 @@
     egg:c pgraph:c linmath:c putil:c express:c pnmimage:c pnmimagetypes:c \
     event:c mathutil:c \
     pandaegg:m panda:m pandaexpress:m \
-    dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m
+    dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m
   
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx     
 

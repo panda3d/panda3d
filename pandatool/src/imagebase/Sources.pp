@@ -6,7 +6,7 @@
     pnmimage:c panda:m \
     pystub \
     express:c linmath:c putil:c \
-    interrogatedb:c dconfig:c dtoolconfig:m \
+    interrogatedb:c prc:c dconfig:c dtoolconfig:m \
     dtoolutil:c dtoolbase:c dtool:m
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 

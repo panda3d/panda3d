@@ -4,7 +4,7 @@
     eggbase progbase
   #define OTHER_LIBS \
     egg:c event:c express:c linmath:c mathutil:c pnmimage:c putil:c panda:m pystub \
-    interrogatedb:c dconfig:c dtooolconfig:m \
+    interrogatedb:c prc:c dconfig:c dtooolconfig:m \
     dtoolutil:c dtoolbase:c dtool:m
   #define USE_PACKAGES zlib
     

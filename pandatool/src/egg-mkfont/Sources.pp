@@ -7,7 +7,7 @@
 #define OTHER_LIBS \
   pnmtext:c pnmimagetypes:c pnmimage:c \
   egg:c linmath:c putil:c express:c pandaegg:m panda:m pandaexpress:m \
-  dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
+  dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub
 
 #begin bin_target
   #define TARGET egg-mkfont
