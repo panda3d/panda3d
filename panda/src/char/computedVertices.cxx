@@ -322,31 +322,30 @@ write(ostream &out, Character *character) const {
 //               the particular object to a Datagram
 ////////////////////////////////////////////////////////////////////
 void ComputedVertices::
-write_datagram(BamWriter *manager, Datagram &me)
-{
+write_datagram(BamWriter *manager, Datagram &me) {
   int i;
 
-  me.add_uint16(_transforms.size());
+  me.add_uint32(_transforms.size());
   for(i = 0; i < (int)_transforms.size(); i++){
     _transforms[i].write_datagram(me);
   }
 
-  me.add_uint16(_vertex_morphs.size());
+  me.add_uint32(_vertex_morphs.size());
   for(i = 0; i < (int)_vertex_morphs.size(); i++){
     _vertex_morphs[i].write_datagram(me);
   }
 
-  me.add_uint16(_normal_morphs.size());
+  me.add_uint32(_normal_morphs.size());
   for(i = 0; i < (int)_normal_morphs.size(); i++){
     _normal_morphs[i].write_datagram(me);
   }
 
-  me.add_uint16(_texcoord_morphs.size());
+  me.add_uint32(_texcoord_morphs.size());
   for(i = 0; i < (int)_texcoord_morphs.size(); i++){
     _texcoord_morphs[i].write_datagram(me);
   }
 
-  me.add_uint16(_color_morphs.size());
+  me.add_uint32(_color_morphs.size());
   for(i = 0; i < (int)_color_morphs.size(); i++){
     _color_morphs[i].write_datagram(me);
   }
@@ -367,39 +366,58 @@ write_datagram(BamWriter *manager, Datagram &me)
 //               place
 ////////////////////////////////////////////////////////////////////
 void ComputedVertices::
-fillin(DatagramIterator& scan, BamReader* manager)
-{
+fillin(DatagramIterator &scan, BamReader *manager) {
   int i, size;
 
-  size = scan.get_uint16();
+  if (manager->get_file_minor_ver() < 10) {
+    size = scan.get_uint16();
+  } else {
+    size = scan.get_uint32();
+  }
   for(i = 0; i < size; i++){
     VertexTransform vt;
     vt.read_datagram(scan);
      _transforms.push_back(vt);
   }
 
-  size = scan.get_uint16();
+  if (manager->get_file_minor_ver() < 10) {
+    size = scan.get_uint16();
+  } else {
+    size = scan.get_uint32();
+  }
   for(i = 0; i < size; i++){
     ComputedVerticesMorphVertex vm;
     vm.read_datagram(scan);
     _vertex_morphs.push_back(vm);
   }
 
-  size = scan.get_uint16();
+  if (manager->get_file_minor_ver() < 10) {
+    size = scan.get_uint16();
+  } else {
+    size = scan.get_uint32();
+  }
   for(i = 0; i < size; i++){
     ComputedVerticesMorphNormal nm;
     nm.read_datagram(scan);
     _normal_morphs.push_back(nm);
   }
 
-  size = scan.get_uint16();
+  if (manager->get_file_minor_ver() < 10) {
+    size = scan.get_uint16();
+  } else {
+    size = scan.get_uint32();
+  }
   for(i = 0; i < size; i++){
     ComputedVerticesMorphTexCoord tm;
     tm.read_datagram(scan);
     _texcoord_morphs.push_back(tm);
   }
 
-  size = scan.get_uint16();
+  if (manager->get_file_minor_ver() < 10) {
+    size = scan.get_uint16();
+  } else {
+    size = scan.get_uint32();
+  }
   for(i = 0; i < size; i++){
     ComputedVerticesMorphColor cm;
     cm.read_datagram(scan);
