@@ -222,7 +222,7 @@ $[cdefine GLOBAL_OPERATOR_NEW_EXCEPTIONS]
 #define NO_STYLE_ALLOCATOR
 #if $[eq $[OPTIMIZE], 4]
   // In optimize level 4, we never try to use custom allocators.
-  #define NO_STYLE_ALLOCATOR 1
+  #set NO_STYLE_ALLOCATOR 1
 #elif $[eq $[STL_ALLOCATOR], OLD]
   // "OLD": Irix 6.2-era STL.
   #set OLD_STYLE_ALLOCATOR 1
