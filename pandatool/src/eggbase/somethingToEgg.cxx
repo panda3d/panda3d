@@ -318,6 +318,37 @@ apply_units_scale(EggData &data) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEgg::apply_animation_parameters
+//       Access: Protected
+//  Description: Copies the animation parameters specified by the user
+//               on the command line (if add_animation_options() was
+//               used) to the converter.
+////////////////////////////////////////////////////////////////////
+void SomethingToEgg::
+apply_animation_parameters(SomethingToEggConverter &converter) {
+  converter.set_animation_convert(_animation_convert);
+  converter.set_character_name(_character_name);
+  if (_got_start_frame) {
+    converter.set_start_frame(_start_frame);
+  }
+  if (_got_end_frame) {
+    converter.set_end_frame(_end_frame);
+  }
+  if (_got_frame_inc) {
+    converter.set_frame_inc(_frame_inc);
+  }
+  if (_got_neutral_frame) {
+    converter.set_neutral_frame(_neutral_frame);
+  }
+  if (_got_input_frame_rate) {
+    converter.set_input_frame_rate(_input_frame_rate);
+  }
+  if (_got_output_frame_rate) {
+    converter.set_output_frame_rate(_output_frame_rate);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SomethingToEgg::handle_args
 //       Access: Protected
 //  Description:

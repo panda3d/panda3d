@@ -99,26 +99,7 @@ run() {
   converter._ignore_transforms = _ignore_transforms;
 
   // Copy in the animation parameters.
-  converter.set_animation_convert(_animation_convert);
-  converter.set_character_name(_character_name);
-  if (_got_start_frame) {
-    converter.set_start_frame(_start_frame);
-  }
-  if (_got_end_frame) {
-    converter.set_end_frame(_end_frame);
-  }
-  if (_got_frame_inc) {
-    converter.set_frame_inc(_frame_inc);
-  }
-  if (_got_neutral_frame) {
-    converter.set_neutral_frame(_neutral_frame);
-  }
-  if (_got_input_frame_rate) {
-    converter.set_input_frame_rate(_input_frame_rate);
-  }
-  if (_got_output_frame_rate) {
-    converter.set_output_frame_rate(_output_frame_rate);
-  }
+  apply_animation_parameters(converter);
 
   // Set the coordinate system to match Maya's.
   if (!_got_coordinate_system) {

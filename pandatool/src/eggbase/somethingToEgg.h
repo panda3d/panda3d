@@ -19,12 +19,12 @@
 #ifndef SOMETHINGTOEGG_H
 #define SOMETHINGTOEGG_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "eggConverter.h"
 
-#include <distanceUnit.h>
-#include <somethingToEggConverter.h>
+#include "distanceUnit.h"
+#include "somethingToEggConverter.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -50,6 +50,7 @@ public:
 
 protected:
   void apply_units_scale(EggData &data);
+  void apply_animation_parameters(SomethingToEggConverter &converter);
 
   virtual bool handle_args(Args &args);
   virtual bool post_command_line();

@@ -1,7 +1,7 @@
 #begin ss_lib_target
   #define TARGET eggbase
   #define LOCAL_LIBS \
-    progbase
+    progbase converter
   #define OTHER_LIBS \
     egg:c linmath:c panda:m
     
