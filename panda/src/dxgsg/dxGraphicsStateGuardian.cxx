@@ -5483,141 +5483,159 @@ HRESULT DXGraphicsStateGuardian::RestoreAllVideoSurfaces(void) {
 ////////////////////////////////////////////////////////////////////
 //     Function: show_frame 
 //       Access:
-//       Description:   Repaint primary buffer from back buffer  (windowed mode only)
+//       Description:   Repaint primary buffer from back buffer
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::show_frame(void) {
-	PStatTimer timer(_win->_swap_pcollector);  // this times just the flip, so it must go here in dxgsg, instead of wdxdisplay, which would time the whole frame
+  PStatTimer timer(_win->_swap_pcollector);  // this times just the flip, so it must go here in dxgsg, instead of wdxdisplay, which would time the whole frame
 
 	if(_pri==NULL)
 		return;
 
 	if(dx_full_screen) {
-		HRESULT hr = _pri->Flip( NULL, DDFLIP_WAIT );  // bugbug:  dont we want triple buffering instead of wasting time waiting for vsync?
+    show_full_screen_frame();
+  } else {
+    show_windowed_frame();
+  }
+}
 
-		if(hr == DDERR_SURFACELOST || hr == DDERR_SURFACEBUSY) {
-			//full screen app has been switched away
-			HRESULT hr;
+////////////////////////////////////////////////////////////////////
+//     Function: show_full_screen_frame 
+//       Access:
+//       Description:   Repaint primary buffer from back buffer
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::show_full_screen_frame(void) {
+  HRESULT hr = _pri->Flip( NULL, DDFLIP_WAIT );  // bugbug:  dont we want triple buffering instead of wasting time waiting for vsync?
 
-			// TestCooperativeLevel returns DD_OK: If the current mode is same as the one which the App set.
-			// The following error is returned only for exclusivemode apps.
-			// DDERR_NOEXCLUSIVEMODE: Some other app took exclusive mode.
-			hr = _pDD->TestCooperativeLevel();
-
-			while(hr == DDERR_NOEXCLUSIVEMODE) {
-						// This means that mode changes had taken place, surfaces
-						// were lost but still we are in the original mode, so we
-						// simply restore all surfaces and keep going.
-				_dx_ready = FALSE;
-
-				#ifdef _DEBUG
-				  dxgsg_cat.spam() << "DXGraphicsStateGuardian:: no exclusive mode, waiting...\n";
-				#endif
-						
-				Sleep( 500 );	// Dont consume CPU.
-				throw_event("PandaPaused");   // throw panda event to invoke network-only processing
-
-				_win->process_events();
-				hr = _pDD->TestCooperativeLevel();
-			}
-
-			if(FAILED(hr)) {
-				dxgsg_cat.error() << "DXGraphicsStateGuardian::unexpected return code from TestCoopLevel: " << ConvD3DErrorToString(hr) << endl;   
-				return;
-			}
-
-			#ifdef _DEBUG
-			   dxgsg_cat.debug() << "DXGraphicsStateGuardian:: regained exclusive mode, refilling surfs...\n";
-			#endif
-			
-			RestoreAllVideoSurfaces();
-
-			#ifdef _DEBUG
-			   dxgsg_cat.debug() << "DXGraphicsStateGuardian:: refill done...\n";			
-			#endif
-			
-			_dx_ready = TRUE;
-			
-			return;	 // need to re-render scene before we can display it
-		}
-
-		if(hr != DD_OK) {
-			dxgsg_cat.error() << "DXGraphicsStateGuardian::show_frame() - Flip failed w/unexpected error code: " << ConvD3DErrorToString(hr) << endl;
-			exit(1);
-		}
-
-	} else {
-		DX_DECLARE_CLEAN(DDBLTFX, bltfx);
-
-		bltfx.dwDDFX |= DDBLTFX_NOTEARING;
-		HRESULT hr = _pri->Blt( &_view_rect, _back,  NULL, DDBLT_DDFX | DDBLT_WAIT, &bltfx );
-
-		if(FAILED(hr)) {
-			if(hr == DDERR_SURFACELOST || hr == DDERR_SURFACEBUSY) {
-
-				HRESULT hr;
-
+  if(hr == DDERR_SURFACELOST || hr == DDERR_SURFACEBUSY) {
+    //full screen app has been switched away
+    HRESULT hr;
+    
+    // TestCooperativeLevel returns DD_OK: If the current mode is same as the one which the App set.
+    // The following error is returned only for exclusivemode apps.
+    // DDERR_NOEXCLUSIVEMODE: Some other app took exclusive mode.
+    hr = _pDD->TestCooperativeLevel();
+    
+    while(hr == DDERR_NOEXCLUSIVEMODE) {
+      // This means that mode changes had taken place, surfaces
+      // were lost but still we are in the original mode, so we
+      // simply restore all surfaces and keep going.
+      _dx_ready = FALSE;
+      
+#ifdef _DEBUG
+      dxgsg_cat.spam() << "DXGraphicsStateGuardian:: no exclusive mode, waiting...\n";
+#endif
+      
+      Sleep( 500 );	// Dont consume CPU.
+      throw_event("PandaPaused");   // throw panda event to invoke network-only processing
+      
+      _win->process_events();
+      hr = _pDD->TestCooperativeLevel();
+    }
+    
+    if(FAILED(hr)) {
+      dxgsg_cat.error() << "DXGraphicsStateGuardian::unexpected return code from TestCoopLevel: " << ConvD3DErrorToString(hr) << endl;   
+      return;
+    }
+    
+#ifdef _DEBUG
+    dxgsg_cat.debug() << "DXGraphicsStateGuardian:: regained exclusive mode, refilling surfs...\n";
+#endif
+    
+    RestoreAllVideoSurfaces();
+    
+#ifdef _DEBUG
+    dxgsg_cat.debug() << "DXGraphicsStateGuardian:: refill done...\n";			
+#endif
+    
+    _dx_ready = TRUE;
+    
+    return;	 // need to re-render scene before we can display it
+  }
+  
+  if(hr != DD_OK) {
+    dxgsg_cat.error() << "DXGraphicsStateGuardian::show_frame() - Flip failed w/unexpected error code: " << ConvD3DErrorToString(hr) << endl;
+    exit(1);
+  }
+}
+  
+////////////////////////////////////////////////////////////////////
+//     Function: show_windowed_frame 
+//       Access:
+//       Description:   Repaint primary buffer from back buffer  (windowed mode only)
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::show_windowed_frame(void) {
+  DX_DECLARE_CLEAN(DDBLTFX, bltfx);
+  
+  bltfx.dwDDFX |= DDBLTFX_NOTEARING;
+  HRESULT hr = _pri->Blt( &_view_rect, _back,  NULL, DDBLT_DDFX | DDBLT_WAIT, &bltfx );
+  
+  if(FAILED(hr)) {
+    if(hr == DDERR_SURFACELOST || hr == DDERR_SURFACEBUSY) {
+      
+      HRESULT hr;
+      
 			// TestCooperativeLevel returns DD_OK: If the current mode is same as the one which the App set.
 			// The following two errors are returned to NORMALMODE (windowed)apps only.
 			//
 			// DDERR_WRONGMODE: If the App is a windowed app and the current mode is
 			//                  not the same as the one in which the app was created.
 			// DDERR_EXCLUSIVEMODEALREADYSET: If another app took exclusivemode access
-				hr = _pDD->TestCooperativeLevel();
-				while(hr == DDERR_EXCLUSIVEMODEALREADYSET) {
+      hr = _pDD->TestCooperativeLevel();
+      while(hr == DDERR_EXCLUSIVEMODEALREADYSET) {
 				// This means that mode changes had taken place, surfaces
 				// were lost but still we are in the original mode, so we
 				// simply restore all surfaces and keep going.
-
-					_dx_ready = FALSE;
-	
-				#ifdef _DEBUG
-					dxgsg_cat.spam() << "DXGraphicsStateGuardian:: another app has exclusive mode, waiting...\n";
-				#endif
-							
-					Sleep( 500 );	// Dont consume CPU.
-					throw_event("PandaPaused");   // throw panda event to invoke network-only processing
-
-					hr = _pDD->TestCooperativeLevel();
-				}
-
-				if(hr==DDERR_WRONGMODE) {
+        
+        _dx_ready = FALSE;
+        
+#ifdef _DEBUG
+        dxgsg_cat.spam() << "DXGraphicsStateGuardian:: another app has exclusive mode, waiting...\n";
+#endif
+        
+        Sleep( 500 );	// Dont consume CPU.
+        throw_event("PandaPaused");   // throw panda event to invoke network-only processing
+        
+        hr = _pDD->TestCooperativeLevel();
+      }
+      
+      if(hr==DDERR_WRONGMODE) {
 				// This means that the desktop mode has changed
 				// need to destroy all of dx stuff and recreate everything back again, which is a big hit
-					dxgsg_cat.error() << "DXGraphicsStateGuardian:: detected display mode change in TestCoopLevel, must recreate all DDraw surfaces, D3D devices, this is not handled yet.  " << ConvD3DErrorToString(hr) << endl;   
-					exit(1);
-					return;
-				}
-
-				if(FAILED(hr)) {
-					dxgsg_cat.error() << "DXGraphicsStateGuardian::unexpected return code from TestCoopLevel: " << ConvD3DErrorToString(hr) << endl;   
-					return;
-				}
-
-			#ifdef _DEBUG
-			    dxgsg_cat.debug() << "DXGraphicsStateGuardian:: other app relinquished exclusive mode, refilling surfs...\n";
-			#endif
-				RestoreAllVideoSurfaces();  
-			#ifdef _DEBUG
-			    dxgsg_cat.debug() << "DXGraphicsStateGuardian:: refill done...\n";			
-			#endif
-
-				_dx_ready = TRUE;
-				return;	 // need to re-render scene before we can display it
-			} else {
-				dxgsg_cat.error() << "DXGraphicsStateGuardian::show_frame() - Blt failed : " << ConvD3DErrorToString(hr) << endl;
-				exit(1);
-			}
-		}
-
-		// right now, we force sync to v-blank  (time from now up to vblank is wasted)
-		// this keeps calling processes from trying to render more frames than the refresh
-		// rate since (as implemented right now) they expect this call to block
-		hr =  _pDD->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
-		if(hr != DD_OK) {
-			dxgsg_cat.error() << "DXGraphicsStateGuardian::WaitForVerticalBlank() failed : " << ConvD3DErrorToString(hr) << endl;
-			exit(1);
-		}
-	}
+        dxgsg_cat.error() << "DXGraphicsStateGuardian:: detected display mode change in TestCoopLevel, must recreate all DDraw surfaces, D3D devices, this is not handled yet.  " << ConvD3DErrorToString(hr) << endl;   
+        exit(1);
+        return;
+      }
+      
+      if(FAILED(hr)) {
+        dxgsg_cat.error() << "DXGraphicsStateGuardian::unexpected return code from TestCoopLevel: " << ConvD3DErrorToString(hr) << endl;   
+        return;
+      }
+      
+#ifdef _DEBUG
+      dxgsg_cat.debug() << "DXGraphicsStateGuardian:: other app relinquished exclusive mode, refilling surfs...\n";
+#endif
+      RestoreAllVideoSurfaces();  
+#ifdef _DEBUG
+      dxgsg_cat.debug() << "DXGraphicsStateGuardian:: refill done...\n";			
+#endif
+      
+      _dx_ready = TRUE;
+      return;	 // need to re-render scene before we can display it
+    } else {
+      dxgsg_cat.error() << "DXGraphicsStateGuardian::show_frame() - Blt failed : " << ConvD3DErrorToString(hr) << endl;
+      exit(1);
+    }
+  }
+  
+  // right now, we force sync to v-blank (time from now up to vblank
+  // is wasted) this keeps calling processes from trying to render
+  // more frames than the refresh rate since (as implemented right
+  // now) they expect this call to block
+  hr =  _pDD->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
+  if(hr != DD_OK) {
+    dxgsg_cat.error() << "DXGraphicsStateGuardian::WaitForVerticalBlank() failed : " << ConvD3DErrorToString(hr) << endl;
+    exit(1);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

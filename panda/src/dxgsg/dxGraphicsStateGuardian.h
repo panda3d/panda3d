@@ -397,6 +397,8 @@ public:
   void  dx_cleanup();
   void  dx_setup_after_resize(RECT viewrect,HWND mwindow) ;
   void  show_frame();
+  void  show_full_screen_frame();
+  void  show_windowed_frame();
   void  init_dx(  LPDIRECTDRAW7		context,
 		  LPDIRECTDRAWSURFACE7  pri,
 		  LPDIRECTDRAWSURFACE7  back,
