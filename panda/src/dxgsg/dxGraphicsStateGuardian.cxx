@@ -747,7 +747,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
 
 		 if(SUCCEEDED(_back->GetDC(&hDC))) {
 			 char fps_msg[15];
-			 sprintf(fps_msg, "%.02f fps", _current_fps);
+			 sprintf(fps_msg, "%7.02f fps", _current_fps);
 			 SetTextColor(hDC, RGB(255,255,0) );
 			 SetBkMode(hDC, TRANSPARENT );
 
@@ -4489,9 +4489,11 @@ void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyProperty::Mode Tex
 ////////////////////////////////////////////////////////////////////
 INLINE void DXGraphicsStateGuardian::
 enable_texturing(bool val) {
-	if (_texturing_enabled != val) {  // this check is mostly for internal gsg calls, panda already screens out redundant state changes
-		_texturing_enabled = val;
-	}
+//	if (_texturing_enabled == val) {  // this check is mostly for internal gsg calls, panda already screens out redundant state changes
+//        return;        
+//	}
+
+	_texturing_enabled = val;
 
 //  assert(_pCurTexContext!=NULL);  we're definitely called with it NULL for both true and false
 //  I'm going to allow enabling texturing even if no tex has been set yet, seems to cause no probs
