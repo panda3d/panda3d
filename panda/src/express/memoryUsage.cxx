@@ -248,7 +248,8 @@ choose_bucket(double age) const {
       return i;
     }
   }
-  nassertr(false, 0);
+  express_cat.error()
+    << "No suitable bucket for age " << age << "\n";
   return 0;
 }
 
