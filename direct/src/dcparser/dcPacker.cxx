@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "dcPacker.h"
+#include "dcSwitch.h"
 #include "dcParserDefs.h"
 #include "dcLexerDefs.h"
 
@@ -32,15 +33,11 @@ DCPacker() {
   _unpack_length = 0;
   _owns_unpack_data = false;
   _unpack_p = 0;
-  _root = NULL;
-  _catalog = NULL;
   _live_catalog = NULL;
-  _current_field = NULL;
-  _current_parent = NULL;
-  _current_field_index = 0;
-  _num_nested_fields = 0;
   _pack_error = false;
   _range_error = false;
+  
+  clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -272,14 +269,14 @@ seek(const string &field_name) {
     }
     nassertr(_catalog != (DCPackerCatalog *)NULL, false);
 
-    int entry_index = _catalog->find_entry_by_name(field_name);
+    int entry_index = _live_catalog->find_entry_by_name(field_name);
     if (entry_index < 0) {
       // The field was not known.
       _pack_error = true;
       return false;
     }
 
-    const DCPackerCatalog::Entry &entry = _catalog->get_entry(entry_index);
+    const DCPackerCatalog::Entry &entry = _live_catalog->get_entry(entry_index);
 
     // If we are seeking, we don't need to remember our current stack
     // position.
@@ -289,6 +286,13 @@ seek(const string &field_name) {
     _current_field_index = entry._field_index;
     _num_nested_fields = _current_parent->get_num_nested_fields();
     _unpack_p = _live_catalog->get_begin(entry_index);
+
+    // We don't really need _push_marker and _pop_marker now, except
+    // that we should set _push_marker in case we have just seeked to
+    // a switch parameter, and we should set _pop_marker to 0 just so
+    // it won't get in the way.
+    _push_marker = _unpack_p;
+    _pop_marker = 0;
 
     return true;
 
@@ -302,14 +306,24 @@ seek(const string &field_name) {
       return false;
     }
 
-    int entry_index = _catalog->find_entry_by_name(field_name);
+    int entry_index = _live_catalog->find_entry_by_name(field_name);
     if (entry_index < 0) {
       // The field was not known.
       _pack_error = true;
       return false;
     }
 
-    const DCPackerCatalog::Entry &entry = _catalog->get_entry(entry_index);
+    const DCPackerCatalog::Entry &entry = _live_catalog->get_entry(entry_index);
+
+    if (((DCPackerInterface *)entry._parent)->as_switch() != (DCSwitch *)NULL) {
+      // If the parent is a DCSwitch, that can only mean that the
+      // seeked field is a switch parameter.  We can't support seeking
+      // to a switch parameter and modifying it directly--what would
+      // happen to all of the related fields?  Instead, you'll have to
+      // seek to the switch itself and repack the whole entity.
+      _pack_error = true;
+      return false;
+    }
 
     size_t begin = _live_catalog->get_begin(entry_index);
     if (begin < _unpack_p) {
@@ -337,8 +351,13 @@ seek(const string &field_name) {
     _current_field = entry._field;
     _current_parent = entry._parent;
     _current_field_index = entry._field_index;
-    _num_nested_fields = 0;  // this makes advance() stop after this field.
+    _num_nested_fields = 1;
     _unpack_p = _live_catalog->get_end(entry_index);
+
+    // Set up push_marker and pop_marker so we won't try to advance
+    // beyond this field.
+    _push_marker = begin;
+    _pop_marker = _live_catalog->get_end(entry_index);
 
     return true;
   }
@@ -370,6 +389,7 @@ push() {
     element._current_parent = _current_parent;
     element._current_field_index = _current_field_index;
     element._push_marker = _push_marker;
+    element._pop_marker = _pop_marker;
     _stack.push_back(element);
     _current_parent = _current_field;
 
@@ -383,12 +403,14 @@ push() {
       // Reserve length_bytes for when we figure out what the length
       // is.
       _push_marker = _pack_data.get_length();
+      _pop_marker = 0;
       _pack_data.append_junk(length_bytes);
 
     } else if (_mode == M_unpack) {
       // Read length_bytes to determine the end of this nested
       // sequence.
-      _push_marker = 0;
+      _push_marker = _unpack_p;
+      _pop_marker = 0;
 
       if (length_bytes != 0) {
         if (_unpack_p + length_bytes > _unpack_length) {
@@ -400,13 +422,13 @@ push() {
             length = DCPackerInterface::do_unpack_uint32
               (_unpack_data + _unpack_p);
             _unpack_p += 4;
-            _push_marker = _unpack_p + length;
+            _pop_marker = _unpack_p + length;
           } else {
             length = DCPackerInterface::do_unpack_uint16
               (_unpack_data + _unpack_p);
             _unpack_p += 2;
           }
-          _push_marker = _unpack_p + length;
+          _pop_marker = _unpack_p + length;
         
           // The explicit length trumps the number of nested fields
           // reported by get_num_nested_fields().
@@ -452,8 +474,8 @@ pop() {
     // Oops, didn't pack or unpack enough values.
     _pack_error = true;
 
-  } else if (_mode == M_unpack && _push_marker != 0 && 
-             _unpack_p != _push_marker) {
+  } else if (_mode == M_unpack && _pop_marker != 0 && 
+             _unpack_p != _pop_marker) {
     // Didn't unpack the right number of values.
     _pack_error = true;
   }
@@ -488,6 +510,7 @@ pop() {
     _current_parent = _stack.back()._current_parent;
     _current_field_index = _stack.back()._current_field_index;
     _push_marker = _stack.back()._push_marker;
+    _pop_marker = _stack.back()._pop_marker;
     _num_nested_fields = (_current_parent == NULL) ? 0 : _current_parent->get_num_nested_fields();
     _stack.pop_back();
   }
@@ -791,6 +814,7 @@ unpack_and_format(ostream &out) {
         break;
 
       case PT_field:
+      case PT_switch:
         out << '(';
         break;
 
@@ -816,6 +840,7 @@ unpack_and_format(ostream &out) {
         break;
 
       case PT_field:
+      case PT_switch:
         out << ')';
         break;
 
@@ -826,6 +851,54 @@ unpack_and_format(ostream &out) {
       }
     }
     break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::handle_switch
+//       Access: Private
+//  Description: When we advance past the key field on a switch
+//               record, we suddenly have more fields available--all
+//               the appropriate alternate fields in the switch.
+//
+//               This function is called when we detect this
+//               condition; it switches the _current_parent to the
+//               appropriate case of the switch record.
+////////////////////////////////////////////////////////////////////
+void DCPacker::
+handle_switch(const DCSwitch *dswitch) {
+  // First, get the value from the key.  This is either found in the
+  // unpack or the pack data, depending on what mode we're in.
+  const DCPackerInterface *new_parent = NULL;
+
+  if (_mode == M_pack || _mode == M_repack) {
+    const char *data = _pack_data.get_data();
+    new_parent = dswitch->apply_switch(data + _push_marker,
+                                       _pack_data.get_length() - _push_marker);
+
+  } else if (_mode == M_unpack) {
+    new_parent = dswitch->apply_switch(_unpack_data + _push_marker,
+                                       _unpack_p - _push_marker);
+
+  }
+
+  if (new_parent == (DCPackerInterface *)NULL) {
+    // This means an invalid value was packed for the key.
+    _pack_error = true;
+    return;
+  }
+
+  _last_switch = dswitch;
+
+  // Now substitute in the switch case for the previous parent (which
+  // replaces the switch node itself).  This will suddenly make a slew
+  // of new fields appear.
+  _current_parent = new_parent;
+  _num_nested_fields = _current_parent->get_num_nested_fields();
+
+  if (_num_nested_fields < 0 ||
+      _current_field_index < _num_nested_fields) {
+    _current_field = _current_parent->get_nested_field(_current_field_index);
   }
 }
 
@@ -842,6 +915,9 @@ clear() {
   _current_parent = NULL;
   _current_field_index = 0;
   _num_nested_fields = 0;
+  _push_marker = 0;
+  _pop_marker = 0;
+  _last_switch = NULL;
 
   if (_live_catalog != (DCPackerCatalog::LiveCatalog *)NULL) {
     _catalog->release_live_catalog(_live_catalog);

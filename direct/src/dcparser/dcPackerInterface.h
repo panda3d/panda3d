@@ -22,6 +22,7 @@
 #include "dcbase.h"
 #include "dcSubatomicType.h"
 
+class DCSwitch;
 class DCPackData;
 class DCPackerCatalog;
 
@@ -48,6 +49,7 @@ enum DCPackType {
   PT_array,
   PT_field,
   PT_class,
+  PT_switch,
 };
 END_PUBLISH
 
@@ -70,10 +72,13 @@ public:
 PUBLISHED:
   INLINE const string &get_name() const;
 
+  virtual DCSwitch *as_switch();
+
 public:
   INLINE void set_name(const string &name);
   INLINE bool has_fixed_byte_size() const;
   INLINE size_t get_fixed_byte_size() const;
+  INLINE bool has_fixed_structure() const;
   INLINE size_t get_num_length_bytes() const;
 
   INLINE bool has_nested_fields() const;
@@ -152,6 +157,7 @@ protected:
   string _name;
   bool _has_fixed_byte_size;
   size_t _fixed_byte_size;
+  bool _has_fixed_structure;
   size_t _num_length_bytes;
   bool _has_nested_fields;
   int _num_nested_fields;
@@ -159,9 +165,6 @@ protected:
 
 private:
   void make_catalog();
-  void r_fill_catalog(DCPackerCatalog *catalog, const string &name_prefix,
-                      DCPackerInterface *parent, int field_index);
-                    
 
   DCPackerCatalog *_catalog;
 };

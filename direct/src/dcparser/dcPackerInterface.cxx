@@ -30,6 +30,7 @@ DCPackerInterface(const string &name) :
 {
   _has_fixed_byte_size = false;
   _fixed_byte_size = 0;
+  _has_fixed_structure = false;
   _num_length_bytes = 0;
   _has_nested_fields = false;
   _num_nested_fields = -1;
@@ -47,6 +48,7 @@ DCPackerInterface(const DCPackerInterface &copy) :
   _name(copy._name),
   _has_fixed_byte_size(copy._has_fixed_byte_size),
   _fixed_byte_size(copy._fixed_byte_size),
+  _has_fixed_structure(copy._has_fixed_structure),
   _num_length_bytes(copy._num_length_bytes),
   _has_nested_fields(copy._has_nested_fields),
   _num_nested_fields(copy._num_nested_fields),
@@ -65,6 +67,16 @@ DCPackerInterface::
   if (_catalog != (DCPackerCatalog *)NULL) {
     delete _catalog;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::as_switch
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+DCSwitch *DCPackerInterface::
+as_switch() {
+  return (DCSwitch *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -303,39 +315,7 @@ make_catalog() {
     for (int i = 0; i < num_nested; i++) {
       DCPackerInterface *nested = get_nested_field(i);
       if (nested != (DCPackerInterface *)NULL) {
-        nested->r_fill_catalog(_catalog, "", this, i);
-      }
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCPackerInterface::r_fill_catalog
-//       Access: Private
-//  Description: Called internally to recursively fill up the new
-//               DCPackerCatalog object.
-////////////////////////////////////////////////////////////////////
-void DCPackerInterface::
-r_fill_catalog(DCPackerCatalog *catalog, const string &name_prefix,
-               DCPackerInterface *parent, int field_index) {
-  string next_name_prefix = name_prefix;
-
-  if (!get_name().empty()) {
-    // Record this entry in the catalog.
-    next_name_prefix += get_name();
-    catalog->add_entry(next_name_prefix, this, parent, field_index);
-
-    next_name_prefix += ".";
-  }
-
-  // Add any children.
-  if (has_nested_fields()) {
-    int num_nested = get_num_nested_fields();
-    // As above, it's ok if num_nested is -1.
-    for (int i = 0; i < num_nested; i++) {
-      DCPackerInterface *nested = get_nested_field(i);
-      if (nested != (DCPackerInterface *)NULL) {
-        nested->r_fill_catalog(catalog, next_name_prefix, this, i);
+        _catalog->r_fill_catalog("", nested, this, i);
       }
     }
   }

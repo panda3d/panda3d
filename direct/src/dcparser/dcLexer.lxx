@@ -370,6 +370,16 @@ REALNUM          ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   return KW_TYPEDEF;
 }
 
+"switch" {
+  accept();
+  return KW_SWITCH;
+}
+
+"case" {
+  accept();
+  return KW_CASE;
+}
+
 "int8" {
   accept();
   return KW_INT8;

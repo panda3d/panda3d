@@ -23,6 +23,41 @@
 #include "dcmsgtypes.h"
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCClass::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+DCClass::
+DCClass(const string &name, bool is_struct, bool bogus_class) : 
+  _name(name),
+  _is_struct(is_struct),
+  _bogus_class(bogus_class)
+{
+  _number = -1;
+      
+#ifdef HAVE_PYTHON
+  _class_def = NULL;
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCClass::Destructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+DCClass::
+~DCClass() {
+  Fields::iterator fi;
+  for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
+    delete (*fi);
+  }
+
+#ifdef HAVE_PYTHON
+  Py_XDECREF(_class_def);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCClass::get_name
 //       Access: Published
 //  Description: Returns the name of this class.
@@ -541,39 +576,6 @@ ai_format_generate(PyObject *distobj, int do_id,
 #endif  // HAVE_PYTHON
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCClass::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-DCClass::
-DCClass(const string &name, bool is_struct, bool bogus_class) : 
-  _name(name),
-  _is_struct(is_struct),
-  _bogus_class(bogus_class)
-{
-#ifdef HAVE_PYTHON
-  _class_def = NULL;
-#endif
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCClass::Destructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-DCClass::
-~DCClass() {
-  Fields::iterator fi;
-  for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
-    delete (*fi);
-  }
-
-#ifdef HAVE_PYTHON
-  Py_XDECREF(_class_def);
-#endif
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DCClass::write
 //       Access: Public, Virtual
 //  Description: Generates a parseable description of the object to
@@ -599,7 +601,7 @@ write(ostream &out, bool brief, int indent_level) const {
   }
 
   out << " {";
-  if (!brief) {
+  if (!brief && _number >= 0) {
     out << "  // index " << _number;
   }
   out << "\n";

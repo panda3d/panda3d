@@ -40,10 +40,12 @@ DCClassParameter(DCClass *dclass) :
   // fields).
   _has_fixed_byte_size = true;
   _fixed_byte_size = 0;
+  _has_fixed_structure = true;
   for (int i = 0; i < _num_nested_fields && _has_fixed_byte_size; i++) {
     DCPackerInterface *field = get_nested_field(i);
-    _has_fixed_byte_size = field->has_fixed_byte_size();
+    _has_fixed_byte_size = _has_fixed_byte_size && field->has_fixed_byte_size();
     _fixed_byte_size += field->get_fixed_byte_size();
+    _has_fixed_structure = _has_fixed_structure && field->has_fixed_structure();
   }
 }
 

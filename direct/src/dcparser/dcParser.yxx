@@ -8,6 +8,7 @@
 #include "dcParserDefs.h"
 #include "dcFile.h"
 #include "dcClass.h"
+#include "dcSwitch.h"
 #include "dcAtomicField.h"
 #include "dcMolecularField.h"
 #include "dcClassParameter.h"
@@ -27,6 +28,7 @@
 
 static DCFile *dc_file = (DCFile *)NULL;
 static DCClass *current_class = (DCClass *)NULL;
+static DCSwitch *current_switch = (DCSwitch *)NULL;
 static DCAtomicField *current_atomic = (DCAtomicField *)NULL;
 static DCMolecularField *current_molecular = (DCMolecularField *)NULL;
 static DCAtomicField::ElementType atomic_element(new DCSimpleParameter(ST_invalid));
@@ -71,6 +73,8 @@ dc_cleanup_parser() {
 %token KW_FROM 
 %token KW_IMPORT 
 %token KW_TYPEDEF 
+%token KW_SWITCH
+%token KW_CASE
 
 %token KW_INT8
 %token KW_INT16
@@ -111,6 +115,11 @@ dc_cleanup_parser() {
 %type <u.flag> kw_struct_or_kw_dclass
 %type <u.dclass> dclass_name
 %type <u.atomic> atomic_name
+%type <u.field> dclass_field
+%type <u.field> switch_field
+%type <u.field> atomic_field
+%type <u.field> molecular_field
+%type <u.field> switch
 %type <u.subatomic> type_token
 %type <u.parameter> type_name
 %type <u.parameter> type_definition
@@ -120,6 +129,7 @@ dc_cleanup_parser() {
 %type <u.parameter> parameter_definition
 %type <str> import_identifier
 %type <str> slash_identifier
+%type <str> optional_name
 %type <u.real> number
 
 %%
@@ -263,13 +273,7 @@ base_list:
 dclass_fields:
         empty
         | dclass_fields ';'
-        | dclass_fields atomic_field
-        | dclass_fields molecular_field
-        | dclass_fields unnamed_parameter ';'
-{
-  current_class->add_field($2);
-}
-        | dclass_fields named_parameter
+        | dclass_fields dclass_field
 {
   if (!current_class->add_field($2)) {
     yyerror("Duplicate field name: " + $2->get_name());
@@ -277,32 +281,30 @@ dclass_fields:
 }
         ;
 
+dclass_field:
+	atomic_field
+	| molecular_field
+	| switch
+	| unnamed_parameter ';'
+{
+  $$ = $1;
+}
+	| named_parameter
+{
+  $$ = $1;
+}
+	;
+
 atomic_field:
         IDENTIFIER '('
 {
   current_atomic = new DCAtomicField($1);
-  if (!current_class->add_field(current_atomic)) {
-    yyerror("Duplicate field name: " + current_atomic->get_name());
-  }
 }
         parameter_list ')' atomic_flags
-        ;
-
-atomic_name:
-        IDENTIFIER
 {
-  DCField *field = current_class->get_field_by_name($1);
-  $$ = (DCAtomicField *)NULL;
-  if (field == (DCField *)NULL) {
-    yyerror("Unknown field: " + $1);
-  } else {
-    $$ = field->as_atomic_field();
-    if ($$ == (DCAtomicField *)NULL) {
-      yyerror("Not an atomic field: " + $1);
-    }
-  }
+  $$ = current_atomic;
 }
-	;
+        ;
 
 parameter_list:
         empty
@@ -794,12 +796,28 @@ molecular_field:
         IDENTIFIER ':'
 {
   current_molecular = new DCMolecularField($1);
-  if (!current_class->add_field(current_molecular)) {
-    yyerror("Duplicate field name: " + current_molecular->get_name());
-  }
 }
         molecular_atom_list
+{
+  $$ = current_molecular;
+}
         ;
+
+atomic_name:
+        IDENTIFIER
+{
+  DCField *field = current_class->get_field_by_name($1);
+  $$ = (DCAtomicField *)NULL;
+  if (field == (DCField *)NULL) {
+    yyerror("Unknown field: " + $1);
+  } else {
+    $$ = field->as_atomic_field();
+    if ($$ == (DCAtomicField *)NULL) {
+      yyerror("Not an atomic field: " + $1);
+    }
+  }
+}
+	;
 
 molecular_atom_list:
         atomic_name
@@ -820,6 +838,70 @@ molecular_atom_list:
   }
 }
         ;
+
+optional_name:
+        empty
+{
+  $$ = "";
+}
+	| IDENTIFIER
+	;
+
+switch:
+	KW_SWITCH optional_name '(' parameter ')' '{'
+{
+  $$ = current_switch;
+  current_switch = new DCSwitch($2, $4);
+}
+	switch_fields '}'
+{
+  $$ = current_switch;
+  current_switch = (DCSwitch *)$<u.parameter>7;
+}
+	;
+
+
+switch_fields:
+        empty
+        | switch_fields ';'
+        | switch_fields switch_case
+        | switch_fields switch_field
+{
+  if (current_switch->get_num_cases() == 0) {
+    yyerror("case declaration required before first element");
+  } else if (!current_switch->add_field($2)) {
+    yyerror("Duplicate field name: " + $2->get_name());
+  }
+}
+        ;
+
+switch_case:
+	KW_CASE
+{
+  current_packer = &default_packer;
+  current_packer->begin_pack(current_switch->get_switch_parameter());
+}
+	parameter_value ':'
+{
+  if (!current_packer->end_pack()) {
+    yyerror("Invalid value for switch parameter");
+  } else {
+    current_switch->add_case(current_packer->get_string());
+  }
+}
+	;
+
+switch_field:
+	switch
+	| unnamed_parameter ';'
+{
+  $$ = $1;
+}
+	| named_parameter
+{
+  $$ = $1;
+}
+	;
 
 empty:
         ;

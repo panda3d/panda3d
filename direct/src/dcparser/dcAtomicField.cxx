@@ -317,7 +317,7 @@ write(ostream &out, bool brief, int indent_level) const {
   }
 
   out << ";";
-  if (!brief) {
+  if (!brief && _number >= 0) {
     out << "  // field " << _number;
   }
   out << "\n";
@@ -371,6 +371,9 @@ add_element(const DCAtomicField::ElementType &element) {
   if (_has_fixed_byte_size) {
     _has_fixed_byte_size = element._param->has_fixed_byte_size();
     _fixed_byte_size += element._param->get_fixed_byte_size();
+  }
+  if (_has_fixed_structure) {
+    _has_fixed_structure = element._param->has_fixed_structure();
   }
 }
 

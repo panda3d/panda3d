@@ -33,6 +33,10 @@ class DCParameter;
 //               input .dc file.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DIRECT DCClass : public DCDeclaration {
+public:
+  DCClass(const string &name, bool is_struct, bool bogus_class);
+  ~DCClass();
+
 PUBLISHED:
   const string &get_name() const;
   int get_number() const;
@@ -76,9 +80,6 @@ PUBLISHED:
 #endif 
 
 public:
-  DCClass(const string &name, bool is_struct, bool bogus_class);
-  ~DCClass();
-
   virtual void write(ostream &out, bool brief, int indent_level) const;
   void generate_hash(HashGenerator &hashgen) const;
 

@@ -166,6 +166,7 @@ DCSimpleParameter(DCSubatomicType type, int divisor) :
   case ST_invalid:
     break;
   }
+  _has_fixed_structure = _has_fixed_byte_size;
 
   set_divisor(divisor);
 
@@ -412,9 +413,11 @@ set_range(const DCDoubleRange &range) {
       _num_length_bytes = 0;
       _has_fixed_byte_size = true;
       _fixed_byte_size = _uint_range.get_one_value();
+      _has_fixed_structure = true;
     } else {
       _num_length_bytes = 2;
       _has_fixed_byte_size = false;
+      _has_fixed_structure = false;
     }
     break;
 
@@ -431,9 +434,11 @@ set_range(const DCDoubleRange &range) {
       _num_length_bytes = 0;
       _has_fixed_byte_size = true;
       _fixed_byte_size = _uint_range.get_one_value();
+      _has_fixed_structure = true;
     } else {
       _num_length_bytes = 4;
       _has_fixed_byte_size = false;
+      _has_fixed_structure = false;
     }
     break;
 

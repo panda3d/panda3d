@@ -28,13 +28,15 @@
 ////////////////////////////////////////////////////////////////////
 DCField::
 DCField(const string &name) : DCPackerInterface(name) {
-  _number = 0;
+  _number = -1;
+
   _has_nested_fields = true;
   _num_nested_fields = 0;
   _pack_type = PT_field;
 
   _has_fixed_byte_size = true;
   _fixed_byte_size = 0;
+  _has_fixed_structure = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -90,6 +92,16 @@ as_molecular_field() {
 DCParameter *DCField::
 as_parameter() {
   return (DCParameter *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::as_switch
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+DCSwitch *DCField::
+as_switch() {
+  return (DCSwitch *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

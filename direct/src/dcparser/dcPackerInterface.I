@@ -61,6 +61,24 @@ get_fixed_byte_size() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::has_fixed_structure
+//       Access: Public
+//  Description: Returns true if this field type always has the same
+//               structure regardless of the data in the stream, or
+//               false if its structure may vary.  This is almost, but
+//               not quite, the same thing as has_fixed_byte_size.
+//               The difference is that a DCSwitch may have multiple
+//               cases all with the same byte size, but they will
+//               still (presumably) have different structures, in the
+//               sense that the actual list of fields varies according
+//               to the live data.
+////////////////////////////////////////////////////////////////////
+INLINE bool DCPackerInterface::
+has_fixed_structure() const {
+  return _has_fixed_structure;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::get_num_length_bytes
 //       Access: Public
 //  Description: Returns the number of bytes that should be written

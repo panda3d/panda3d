@@ -24,6 +24,7 @@
 
 class DCFile;
 class DCClass;
+class DCField;
 class DCAtomicField;
 class DCParameter;
 class DCPacker;
@@ -48,6 +49,7 @@ public:
     double real;
     bool flag;
     DCClass *dclass;
+    DCField *field;
     DCAtomicField *atomic;
     DCSubatomicType subatomic;
     DCParameter *parameter;

@@ -26,6 +26,7 @@
      dcPackerInterface.h dcPackerInterface.I \
      dcParameter.h dcClassParameter.h dcArrayParameter.h dcSimpleParameter.h \
      dcNumericRange.h dcNumericRange.I \
+     dcSwitch.h \
      dcTypedef.h \
      dcPython.h \
      dcbase.h dcindent.h hashGenerator.h  \
@@ -42,6 +43,7 @@
      dcPackerInterface.cxx \
      dcParameter.cxx dcClassParameter.cxx \
      dcArrayParameter.cxx dcSimpleParameter.cxx \
+     dcSwitch.cxx \
      dcTypedef.cxx \
      dcindent.cxx  \
      hashGenerator.cxx primeNumberGenerator.cxx 

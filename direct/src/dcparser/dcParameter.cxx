@@ -31,6 +31,7 @@ DCParameter::
 DCParameter() {
   _typedef = NULL;
   _has_fixed_byte_size = false;
+  _has_fixed_structure = false;
   _num_nested_fields = -1;
 }
 
@@ -139,9 +140,12 @@ output(ostream &out, bool brief) const {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void DCParameter::
-write(ostream &out, bool brief, int indent_level) const {
+write(ostream &out, bool, int indent_level) const {
+  // we must always output the name when the parameter occurs by
+  // itself within a class, so we ignore brief and pass false up to
+  // output().
   indent(out, indent_level);
-  output(out, brief);
+  output(out, false);
   out << ";\n";
 }
 
@@ -168,4 +172,6 @@ output_typedef_name(ostream &out, const string &prename, const string &name,
 ////////////////////////////////////////////////////////////////////
 void DCParameter::
 generate_hash(HashGenerator &) const {
+  // We specifically don't call up to DCField::generate_hash(), since
+  // the parameter name is not actually significant to the hash.
 }

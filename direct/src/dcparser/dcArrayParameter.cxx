@@ -40,6 +40,7 @@ DCArrayParameter(DCParameter *element_type, const DCUnsignedIntRange &size) :
   if (_array_size >= 0 && _element_type->has_fixed_byte_size()) {
     _has_fixed_byte_size = true;
     _fixed_byte_size = _array_size * _element_type->get_fixed_byte_size();
+    _has_fixed_structure = true;
     
   } else {
     // We only need to store the length bytes if the array has a

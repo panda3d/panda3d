@@ -23,6 +23,7 @@
 
 class DCPackerInterface;
 class DCPacker;
+class DCSwitch;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DCPackerCatalog
@@ -35,6 +36,7 @@ class DCPacker;
 class EXPCL_DIRECT DCPackerCatalog {
 private:
   DCPackerCatalog(const DCPackerInterface *root);
+  DCPackerCatalog(const DCPackerCatalog &copy);
   ~DCPackerCatalog();
 
 public:
@@ -62,9 +64,16 @@ public:
     INLINE size_t get_begin(int n) const;
     INLINE size_t get_end(int n) const;
 
+    INLINE int get_num_entries() const;
+    INLINE const Entry &get_entry(int n) const;
+    INLINE int find_entry_by_name(const string &name) const;
+    INLINE int find_entry_by_field(const DCPackerInterface *field) const;
+
   private:
     typedef pvector<LiveCatalogEntry> LiveEntries;
     LiveEntries _live_entries;
+
+    const DCPackerCatalog *_catalog;
     friend class DCPackerCatalog;
   };
 
@@ -75,11 +84,19 @@ public:
 
   const LiveCatalog *get_live_catalog(const char *data, size_t length) const;
   void release_live_catalog(const LiveCatalog *live_catalog) const;
-    
+
 private:
   void add_entry(const string &name, const DCPackerInterface *field,
                  const DCPackerInterface *parent, int field_index);
-  void r_fill_live_catalog(LiveCatalog *live_catalog, DCPacker &packer) const;
+  
+  void r_fill_catalog(const string &name_prefix, const DCPackerInterface *field,
+                      const DCPackerInterface *parent, int field_index);
+  void r_fill_live_catalog(LiveCatalog *live_catalog, DCPacker &packer,
+                           const DCSwitch *&last_switch) const;
+
+  const DCPackerCatalog *update_switch_fields(const DCSwitch *dswitch,
+                                              const DCPackerInterface *switch_case) const;
+    
 
   const DCPackerInterface *_root;
   LiveCatalog *_live_catalog;
@@ -92,6 +109,12 @@ private:
 
   typedef pmap<const DCPackerInterface *, int> EntriesByField;
   EntriesByField _entries_by_field;
+
+  typedef pmap<const DCPackerInterface *, DCPackerCatalog *> SwitchCatalogs;
+  SwitchCatalogs _switch_catalogs;
+
+  typedef pmap<const DCSwitch *, string> SwitchPrefixes;
+  SwitchPrefixes _switch_prefixes;
 
   friend class DCPackerInterface;
 };

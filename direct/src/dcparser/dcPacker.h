@@ -26,6 +26,8 @@
 #include "dcPackerCatalog.h"
 #include "dcPython.h"
 
+class DCSwitch;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : DCPacker
 // Description : This class can be used for packing a series of
@@ -64,7 +66,9 @@ PUBLISHED:
   INLINE int get_num_nested_fields() const;
   INLINE bool more_nested_fields() const;
 
+  INLINE const DCPackerInterface *get_current_parent() const;
   INLINE const DCPackerInterface *get_current_field() const;
+  INLINE const DCSwitch *get_last_switch() const;
   INLINE DCPackType get_pack_type() const;
 
   void push();
@@ -109,6 +113,7 @@ public:
 
 private:
   INLINE void advance();
+  void handle_switch(const DCSwitch *dswitch);
   void clear();
   void set_unpack_data(const char *unpack_data, size_t unpack_length, 
                        bool owns_unpack_data);
@@ -138,6 +143,7 @@ private:
     const DCPackerInterface *_current_parent;
     int _current_field_index;
     size_t _push_marker;
+    size_t _pop_marker;
   };
   typedef pvector<StackElement> Stack;
 
@@ -146,12 +152,17 @@ private:
   const DCPackerInterface *_current_parent;
   int _current_field_index;
 
-  // In pack mode, _push_marker marks the beginning of the push record
-  // (so we can go back and write in the length later).  In unpack
-  // mode, it marks the end of the push record (so we know when we've
-  // reached the end).
+  // _push_marker marks the beginning of the push record (so we can go
+  // back and write in the length later, or figure out the switch
+  // parameter).
   size_t _push_marker;
+  // _pop_marker is used in unpack mode with certain data structures
+  // (like dynamic arrays) to mark the end of the push record (so we
+  // know when we've reached the end).  It is zero when it is not in
+  // use.
+  size_t _pop_marker;
   int _num_nested_fields;
+  const DCSwitch *_last_switch;
 
   bool _pack_error;
   bool _range_error;

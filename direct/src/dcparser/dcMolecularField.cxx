@@ -96,6 +96,9 @@ add_atomic(DCAtomicField *atomic) {
     _has_fixed_byte_size = atomic->has_fixed_byte_size();
     _fixed_byte_size += atomic->get_fixed_byte_size();
   }
+  if (_has_fixed_structure) {
+    _has_fixed_structure = atomic->has_fixed_structure();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

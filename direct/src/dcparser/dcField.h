@@ -26,6 +26,7 @@
 class DCAtomicField;
 class DCMolecularField;
 class DCParameter;
+class DCSwitch;
 class HashGenerator;
 
 ////////////////////////////////////////////////////////////////////
@@ -44,6 +45,7 @@ PUBLISHED:
   virtual DCAtomicField *as_atomic_field();
   virtual DCMolecularField *as_molecular_field();
   virtual DCParameter *as_parameter();
+  virtual DCSwitch *as_switch();
 
   string format_data(const string &packed_data);
   string parse_string(const string &formatted_string);

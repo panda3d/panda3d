@@ -43,6 +43,52 @@ get_end(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPackerCatalog::LiveCatalog::get_num_entries
+//       Access: Public
+//  Description: Returns the number of entries in the catalog.
+////////////////////////////////////////////////////////////////////
+INLINE int DCPackerCatalog::LiveCatalog::
+get_num_entries() const {
+  return _catalog->get_num_entries();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerCatalog::LiveCatalog::get_entry
+//       Access: Public
+//  Description: Returns the nth entry in the catalog.
+////////////////////////////////////////////////////////////////////
+INLINE const DCPackerCatalog::Entry &DCPackerCatalog::LiveCatalog::
+get_entry(int n) const {
+  return _catalog->get_entry(n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerCatalog::LiveCatalog::find_entry_by_name
+//       Access: Public
+//  Description: Returns the index number of the entry with the
+//               indicated name, or -1 if no entry has the indicated
+//               name.  The return value is suitable for passing to
+//               get_entry().
+////////////////////////////////////////////////////////////////////
+int DCPackerCatalog::LiveCatalog::
+find_entry_by_name(const string &name) const {
+  return _catalog->find_entry_by_name(name);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPackerCatalog::LiveCatalog::find_entry_by_field
+//       Access: Public
+//  Description: Returns the index number of the entry with the
+//               indicated field, or -1 if no entry has the indicated
+//               field.  The return value is suitable for passing to
+//               get_entry().
+////////////////////////////////////////////////////////////////////
+int DCPackerCatalog::LiveCatalog::
+find_entry_by_field(const DCPackerInterface *field) const {
+  return _catalog->find_entry_by_field(field);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPackerCatalog::get_num_entries
 //       Access: Public
 //  Description: Returns the number of entries in the catalog.

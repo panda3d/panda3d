@@ -7,4 +7,5 @@
 #include "dcFile.cxx"
 #include "dcMolecularField.cxx"
 #include "dcSubatomicType.cxx"
+#include "dcSwitch.cxx"
 #include "dcTypedef.cxx"

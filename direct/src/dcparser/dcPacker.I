@@ -45,6 +45,12 @@ has_nested_fields() const {
 //               The return value may be -1 to indicate that a
 //               variable number of nested fields are accepted by this
 //               field type (e.g. a variable-length array).
+//
+//               Note that this method is unreliable to determine how
+//               many fields you must traverse before you can call
+//               pop(), since particularly in the presence of a
+//               DCSwitch, it may change during traversal.  Use
+//               more_nested_fields() instead.
 ////////////////////////////////////////////////////////////////////
 INLINE int DCPacker::
 get_num_nested_fields() const {
@@ -64,6 +70,19 @@ more_nested_fields() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::get_current_parent
+//       Access: Published
+//  Description: Returns the field that we left in our last call to
+//               push(): the owner of the current level of fields.
+//               This may be NULL at the beginning of the pack
+//               operation.
+////////////////////////////////////////////////////////////////////
+INLINE const DCPackerInterface *DCPacker::
+get_current_parent() const {
+  return _current_parent;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPacker::get_current_field
 //       Access: Published
 //  Description: Returns the field that will be referenced by the next
@@ -74,6 +93,24 @@ more_nested_fields() const {
 INLINE const DCPackerInterface *DCPacker::
 get_current_field() const {
   return _current_field;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::get_last_switch
+//       Access: Published
+//  Description: Returns a pointer to the last DCSwitch instance that
+//               we have passed by and selected one case of during the
+//               pack/unpack process.  Each time we encounter a new
+//               DCSwitch and select a case, this will change state.
+//
+//               This may be used to detect when a DCSwitch has been
+//               selected.  At the moment this changes state,
+//               get_current_parent() will contain the particular
+//               SwitchCase that was selected by the switch.
+////////////////////////////////////////////////////////////////////
+INLINE const DCSwitch *DCPacker::
+get_last_switch() const {
+  return _last_switch;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -470,8 +507,16 @@ advance() {
     // call pop().
     _current_field = NULL;
 
-  } else if (_mode == M_unpack && _push_marker != 0 &&
-             _unpack_p >= _push_marker) {
+    // But if the parent is a switch record, we make a special case so
+    // we can get the alternate fields.
+    if (_current_parent != (DCPackerInterface *)NULL) {
+      const DCSwitch *dswitch = ((DCPackerInterface *)_current_parent)->as_switch();
+      if (dswitch != (DCSwitch *)NULL) {
+        handle_switch(dswitch);
+      }
+    }
+
+  } else if (_pop_marker != 0 && _unpack_p >= _pop_marker) {
     // Done with all the fields on this parent.  The caller must now
     // call pop().
     _current_field = NULL;
