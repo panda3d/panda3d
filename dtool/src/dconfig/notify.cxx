@@ -392,7 +392,11 @@ assert_failure(const char *expression, int line,
   nout << "Assertion failed: " << _assert_error_message << "\n";
 
   if (get_assert_abort()) {
+#ifdef WIN32
+    assert(false);
+#else
     abort();
+#endif
   }
 
   return true;
