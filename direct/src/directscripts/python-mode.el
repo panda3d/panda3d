@@ -106,7 +106,7 @@ See the Python Mode home page for details:
   :type 'string
   :group 'python)
 
-(defcustom pyd-python-command "ppython -d"
+(defcustom pyd-python-command "ppython"
   "*Shell command used to start Python interpreter."
   :type 'string
   :group 'python)
@@ -140,6 +140,13 @@ mode buffer is visited during an Emacs session.  After that, use
   "*List of string arguments to be used when starting a Python shell."
   :type '(repeat string)
   :group 'python)
+
+
+(defcustom pyd-python-command-args '("-d -i")
+  "*List of string arguments to be used when starting a Python shell."
+  :type '(repeat string)
+  :group 'python)
+
 
 (defcustom py-jpython-command-args '("-i")
   "*List of string arguments to be used when starting a JPython shell."
@@ -1139,10 +1146,12 @@ If an exception occurred return t, otherwise return nil.  BUF must exist."
 (defvar py-which-shell nil)
 (defvar pyd-which-shell nil)
 (defvar py-which-args  py-python-command-args)
+(defvar pyd-which-args  pyd-python-command-args)
 (defvar py-which-bufname "Python")
 (make-variable-buffer-local 'py-which-shell)
 (make-variable-buffer-local 'pyd-which-shell)
 (make-variable-buffer-local 'py-which-args)
+(make-variable-buffer-local 'pyd-which-args)
 (make-variable-buffer-local 'py-which-bufname)
 
 (defun py-toggle-shells (arg)
@@ -1174,6 +1183,7 @@ Programmatically, ARG can also be one of the symbols `cpython' or
       (setq py-which-shell py-python-command
 	    pyd-which-shell pyd-python-command
 	    py-which-args py-python-command-args
+	    pyd-which-args pyd-python-command-args
 	    py-which-bufname "Python"
 	    msg "CPython"
 	    mode-name "Python"))
@@ -1257,7 +1267,7 @@ filter."
   ;; Set the default shell if not already set
   (when (null pyd-which-shell)
     (py-toggle-shells py-default-interpreter))
-  (let ((args py-which-args))
+  (let ((args pyd-which-args))
     (when (and argprompt
 	       (interactive-p)
 	       (fboundp 'split-string))
