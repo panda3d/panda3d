@@ -79,16 +79,6 @@ thaw() {
 //  Description: Sets the font that will be used when making text.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-set_font(Node *font_def) {
-  set_font(new TextFont(font_def));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextNode::set_font
-//       Access: Published
-//  Description: Sets the font that will be used when making text.
-////////////////////////////////////////////////////////////////////
-INLINE void TextNode::
 set_font(TextFont *font) {
   _font = font;
   rebuild(true);
