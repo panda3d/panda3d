@@ -25,6 +25,10 @@ $[cdefine HAVE_NAMESPACE]
 /* Define if the C++ iostream library supports ios::binary.  */
 $[cdefine HAVE_IOS_BINARY]
 
+/* Define if we can trust the compiler not to insert extra bytes in
+   structs between base structs and derived structs. */
+$[cdefine SIMPLE_STRUCT_POINTERS]
+
 /* Define if we have Dinkumware STL installed.  */
 $[cdefine HAVE_DINKUM]
 

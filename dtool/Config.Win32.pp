@@ -20,6 +20,14 @@
 // Does the C++ compiler support ios::binary?
 #define HAVE_IOS_BINARY 1
 
+// Will the compiler avoid inserting extra bytes in structs between a
+// base struct and its derived structs?  It is safe to define this
+// true if you don't know, but if you know that you can get away with
+// this you may gain a tiny performance gain by defining this false.
+// If you define this false incorrectly, you will get lots of
+// assertion failures on execution.
+#define SIMPLE_STRUCT_POINTERS 1
+
 // Do we have a gettimeofday() function?
 #define HAVE_GETTIMEOFDAY
 
