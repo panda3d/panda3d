@@ -290,7 +290,7 @@ call_glStencilFunc(GLenum func,GLint ref,GLuint mask) {
       glgsg_cat.spam(false) << "unknown, ";
       break;
     }
-    glgsg_cat.spam(false) << (int)ref << (unsigned int)mask << ")\n";
+    glgsg_cat.spam(false) << (int)ref << ", " << (int)mask << ")\n";
 #endif
     glStencilFunc(func, ref, mask);
 }

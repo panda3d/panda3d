@@ -19,7 +19,7 @@
 #ifndef GLGRAPHICSSTATEGUARDIAN_H
 #define GLGRAPHICSSTATEGUARDIAN_H
 
-//#define GSG_VERBOSE 1
+#define GSG_VERBOSE 1
 
 #include "pandabase.h"
 
