@@ -64,13 +64,6 @@ class OnscreenText(PandaObject, NodePath):
         Set the text of the onscreen text
         """
         self.node().setText(string)
-
-    def setScale(self, scale):
-        """setScale(self, float)
-        Override NodePath setScale to account for aspect ratio
-        """
-        # assume 4:3 aspect ratio
-        NodePath.setScale(self, scale, 1.0, scale * (4.0/3.0))
         
     def setPos(self, x, y):
         """setPos(self, float, float)

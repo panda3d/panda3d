@@ -74,6 +74,24 @@ class ShowBase:
         # Set up a 2-d layer for drawing things behind Gui labels.
         self.render2d = NodePath(setupPanda2d(self.win, "render2d"))
 
+        # The normal 2-d layer has an aspect ratio that matches the
+        # window, but its coordinate system is square.  This means
+        # anything we parent to render2d gets stretched.  For things
+        # where that makes a difference, we set up aspect2d, which
+        # scales things back to the right aspect ratio.
+
+        # For now, we assume that the window will have an aspect ratio
+        # matching that of a traditional PC screen.
+        self.aspectRatio = 4.0 / 3.0
+        self.aspect2d = self.render2d.attachNewNode("aspect2d")
+        self.aspect2d.setScale(1.0 / self.aspectRatio, 1.0, 1.0)
+
+        # It's important to know the bounds of the aspect2d screen.
+        self.a2dTop = 1.0
+        self.a2dBottom = -1.0
+        self.a2dLeft = -self.aspectRatio
+        self.a2dRight = self.aspectRatio
+
         # Set up another 2-d layer for drawing the Gui labels themselves.
         self.renderGui = NodePath(setupPanda2d(self.win, "renderGui"))
 
