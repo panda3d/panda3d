@@ -228,26 +228,16 @@
 
 // Is OpenGL installed, and where?  This should include libGL as well
 // as libGLU, if they are in different places.
+
 #define GL_IPATH
 #define GL_LPATH /usr/X11R6/lib
-#if $[eq $[PLATFORM],Win32]
-  #define GL_LIBS \
-     opengl32.lib glu32.lib winmm.lib kernel32.lib \
-     oldnames.lib mswsock.lib wsock32.lib \
-     advapi32.lib user32.lib gdi32.lib comdlg32.lib winspool.lib
-#else
-  #define GL_LIBS GL GLU
-#endif
+#define GL_LIBS GL GLU
 #defer HAVE_GL $[libtest $[GL_LPATH],$[GL_LIBS]]
 
 // How about GLX?
 #define GLX_IPATH
 #define GLX_LPATH
-#if $[eq $[PLATFORM],Win32]
-  #defer HAVE_GLX
-#else
-  #defer HAVE_GLX $[HAVE_GL]
-#endif
+#defer HAVE_GLX $[HAVE_GL]
 
 // Glut?
 #define GLUT_IPATH
@@ -265,7 +255,7 @@
 #define DX_IPATH
 #define DX_LPATH
 #define DX_LIBS
-#define HAVE_DX
+#defer HAVE_DX $[libtest $[DX_LPATH],$[DX_LIBS]]
 
 // Do you want to build the Renderman interface?
 #define HAVE_RIB
