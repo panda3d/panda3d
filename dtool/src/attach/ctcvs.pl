@@ -345,7 +345,9 @@ sub CTCvsIHave {
 	    } elsif ( $item =~ /^cvs/ ) {
 		# messages from the server are also ignored
 	    } elsif ( $item =~ /^P/ ) {
-		# messages from the server are also ignored
+		# new files are ignored
+	    } elsif ( $item =~ /^U/ ) {
+		# updates are ignored
 	    } elsif ( $item =~ /^M/ ) {
 		# here's one we modified
 		local( @foo ) = split( / /, $item ) ;
