@@ -226,12 +226,14 @@ set_type(PNMFileType *type) {
 INLINE void PNMImageHeader::
 record_color(PNMImageHeader::Histogram &hist, 
              const PNMImageHeader::PixelSpec &color) {
-  Histogram::iterator hi = hist.find(color);
-  if (hi == hist.end()) {
-    hist.insert(Histogram::value_type(color, 1));
-  } else {
-    (*hi).second++;
-  }
+  // First, try to add the color with a count of 0, in case it does
+  // not already exist in the table.
+  Histogram::iterator hi = hist.insert(Histogram::value_type(color, 0)).first;
+
+  // Now that either succeeded or failed, but either way hi is now the
+  // iterator to the count value in the table associated with the
+  // given color.  Increment that count.
+  (*hi).second++;
 }
 
 ////////////////////////////////////////////////////////////////////
