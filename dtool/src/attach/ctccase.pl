@@ -406,12 +406,7 @@ sub CTCcaseMv {
     $ret = system( "cleartool co -nc $parent\n" ) ;
     if ( $ret == 0 ) {
 	$ret = system( "cleartool co -nc $parent2\n" ) ;
-	if ( $ret == 0 ) {
-	    # now move the element
-	    $ret = &CTURetCode( system( "cleartool mv $elem $elem2\n" )) ;
-	} else {
-	    $ret = 0 ;
-	}
+	$ret = &CTURetCode( system( "cleartool mv $elem $elem2\n" )) ;
     } else {
 	$ret = 0 ;
     }
