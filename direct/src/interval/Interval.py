@@ -40,11 +40,6 @@ class Interval(DirectObject):
         """
         return self.duration
 
-    def setOpenEnded(self, openEnded):
-        """ setOpenEnded(openEnded)
-        """
-        self.openEnded = openEnded
-
     def getOpenEnded(self):
         """ getOpenEnded()
         """
