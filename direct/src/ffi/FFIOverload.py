@@ -79,7 +79,7 @@ def getTypeName(classTypeDesc, typeDesc):
             return 'types.NoneType'
 
         else:
-            FFIConstants.notify.error("Unknown atomicType: " + typeDesc.atomicType)
+            FFIConstants.notify.error("Unknown atomicType: %s" % (typeDesc.atomicType))
         
     # If the type is an enum, we really want to treat it like an int
     # To handle this, the type will have __enum__ in the name
