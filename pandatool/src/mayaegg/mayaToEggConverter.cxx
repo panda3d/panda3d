@@ -181,6 +181,13 @@ convert_file(const Filename &filename) {
       << "Maya is not available.\n";
     return false;
   }
+  
+  // We must ensure our Maya pointers are cleared before we reset the
+  // Maya scene, because resetting the Maya scene will invalidate all
+  // the Maya pointers we are holding and cause a crash if we try to
+  // free them later.
+  clear();
+
   if (!_maya->read(filename)) {
     mayaegg_cat.error()
       << "Unable to read " << filename << "\n";
@@ -220,8 +227,8 @@ get_input_units() {
 bool MayaToEggConverter::
 convert_maya(bool from_selection) {
   _from_selection = from_selection;
-  _textures.clear();
-  _shaders.clear();
+
+  clear();
 
   if (!open_api()) {
     mayaegg_cat.error()
@@ -364,9 +371,24 @@ open_api() {
 ////////////////////////////////////////////////////////////////////
 void MayaToEggConverter::
 close_api() {
-  // We have to clear the shaders before we release the Maya API.
-  _shaders.clear();
+  // We have to clear the shaders, at least, before we release the
+  // Maya API.
+  clear();
   _maya.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::clear
+//       Access: Public
+//  Description: Frees all of the Maya pointers kept within this
+//               object, in preparation for loading a new scene or
+//               releasing the Maya API.
+////////////////////////////////////////////////////////////////////
+void MayaToEggConverter::
+clear() {
+  _tree.clear();
+  _textures.clear();
+  _shaders.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -561,6 +583,7 @@ process_model_node(MayaNodeDesc *node_desc) {
   MFnDagNode dag_node(dag_path, &status);
   if (!status) {
     status.perror("MFnDagNode constructor");
+    mayaegg_cat.error() << dag_path.fullPathName() << "\n";
     return false;
   }
 

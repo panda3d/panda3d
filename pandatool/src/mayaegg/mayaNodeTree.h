@@ -41,6 +41,7 @@ public:
   int get_num_nodes() const;
   MayaNodeDesc *get_node(int n) const;
 
+  void clear();
   void clear_egg(EggData *egg_data, EggGroupNode *egg_root, 
                  EggGroupNode *skeleton_node);
   EggGroup *get_egg_group(MayaNodeDesc *node_desc);

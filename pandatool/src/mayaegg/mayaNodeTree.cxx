@@ -192,6 +192,23 @@ get_node(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MayaNodeTree::clear
+//       Access: Public
+//  Description: Resets the entire tree in preparation for
+//               repopulating with a new scene.
+////////////////////////////////////////////////////////////////////
+void MayaNodeTree::
+clear() {
+  _root = new MayaNodeDesc;
+  _fps = 0.0;
+  _egg_data = (EggData *)NULL;
+  _egg_root = (EggGroupNode *)NULL;
+  _skeleton_node = (EggGroupNode *)NULL;
+  _nodes_by_path.clear();
+  _nodes.clear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MayaNodeTree::clear_egg
 //       Access: Public
 //  Description: Removes all of the references to generated egg
