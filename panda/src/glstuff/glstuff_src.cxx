@@ -25,5 +25,7 @@
 #include "glTextureContext_src.cxx"
 #include "glGeomContext_src.cxx"
 #include "glSavedFrameBuffer_src.cxx"
+#include "glCgShaderContext_src.cxx"
 #include "glGraphicsStateGuardian_src.cxx"
+
 

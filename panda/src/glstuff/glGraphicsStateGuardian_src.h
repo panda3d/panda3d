@@ -30,7 +30,8 @@
 #include "fog.h"
 #include "graphicsWindow.h"
 #include "pset.h"
-
+#include "pmap.h"
+#include "cgShader.h"
 class PlaneNode;
 class Light;
 
@@ -104,6 +105,7 @@ public:
   virtual void issue_fog(const FogAttrib *attrib);
   virtual void issue_depth_offset(const DepthOffsetAttrib *attrib);
   virtual void issue_tex_gen(const TexGenAttrib *attrib);
+  virtual void issue_cg_shader_bind(const CgShaderAttrib *attrib);
   //  virtual void issue_stencil(const StencilAttrib *attrib);
 
   virtual void bind_light(PointLight *light, int light_id);
@@ -297,6 +299,11 @@ protected:
   int _projection_mat_stack_count;
 
   CPT(DisplayRegion) _actual_display_region;
+#ifdef HAVE_CGGL
+  PT(CgShader) _cg_shader; // The current CgShader object
+  typedef pmap< PT(CgShader), PT(CLP(CgShaderContext)) > CGSHADERCONTEXTS;
+  CGSHADERCONTEXTS _gl_cg_shader_contexts;// Associate CgShader with GLCgShaderContext
+#endif
 
   int _pass_number;
 

@@ -39,6 +39,7 @@
 #include "colorWriteAttrib.h"
 #include "texMatrixAttrib.h"
 #include "texGenAttrib.h"
+#include "cgShaderAttrib.h"
 #include "materialAttrib.h"
 #include "renderModeAttrib.h"
 #include "fogAttrib.h"
@@ -51,7 +52,6 @@
 #include "pvector.h"
 #include "vector_string.h"
 #include "string_utils.h"
-
 #ifdef DO_PSTATS
 #include "pStatTimer.h"
 #endif
@@ -241,6 +241,9 @@ CLP(GraphicsStateGuardian)(const FrameBufferProperties &properties) :
   GraphicsStateGuardian(properties) 
 {
   _error_count = 0;
+#ifdef HAVE_CGGL
+  _cg_shader = (CgShader *)NULL;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -383,6 +386,10 @@ reset() {
   // Antialiasing.
   enable_line_smooth(false);
   enable_multisample(true);
+
+#ifdef HAVE_CGGL
+  _cg_shader = (CgShader *)NULL;
+#endif
 
   // Should we normalize lighting normals?
   if (CLP(auto_normalize_lighting)) {
@@ -1411,6 +1418,7 @@ draw_quad(GeomQuad *geom, GeomContext *gc) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 draw_tristrip(GeomTristrip *geom, GeomContext *gc) {
+  
 #ifdef GSG_VERBOSE
   GLCAT.spam() << "draw_tristrip()" << endl;
 #endif
@@ -1503,6 +1511,7 @@ draw_tristrip(GeomTristrip *geom, GeomContext *gc) {
 
   report_my_gl_errors();
   DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
+  
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1713,6 +1722,8 @@ TextureContext *CLP(GraphicsStateGuardian)::
 prepare_texture(Texture *tex) {
   CLP(TextureContext) *gtc = new CLP(TextureContext)(tex);
   GLP(GenTextures)(1, &gtc->_index);
+  //cerr << "preparing texture " << tex->get_name() << ", assigning "
+  //     << gtc->_index << "\n";
 
   bind_texture(gtc);
   GLP(PrioritizeTextures)(1, &gtc->_index, &gtc->_priority);
@@ -2190,6 +2201,49 @@ issue_tex_matrix(const TexMatrixAttrib *attrib) {
   GLP(MatrixMode)(GL_TEXTURE);
   GLP(LoadMatrixf)(attrib->get_mat().get_data());
   report_my_gl_errors();
+}
+
+
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::issue_cg_shader_bind
+//       Access: Public, Virtual
+//  Description: Bind shader of current node
+//               and unbind the shader of the previous node
+//               Create a new GLCgShaderContext if this shader
+//               object is coming in for the first time
+//               Also maintain the map of CgShader objects to
+//               respective GLCgShaderContexts
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+issue_cg_shader_bind(const CgShaderAttrib *attrib) {
+#ifdef HAVE_CGGL
+  if (attrib->is_off()) { //Current node has no shaders
+    if (_cg_shader != (CgShader *) NULL) {
+      _gl_cg_shader_contexts[_cg_shader]->un_bind();// Prev node had shaders
+    }    
+    _cg_shader = attrib->get_cg_shader();//Store current node.. here NULL 
+  } else {// Current node has shaders
+    if (_cg_shader != (CgShader *) NULL) {
+      _gl_cg_shader_contexts[_cg_shader]->un_bind();// Prev node had shaders
+    }
+    _cg_shader = attrib->get_cg_shader();//Store current node  
+    CGSHADERCONTEXTS::const_iterator csci;
+    csci = _gl_cg_shader_contexts.find(_cg_shader);
+    if (csci != _gl_cg_shader_contexts.end()) { // Already have context?
+      (*csci).second->bind(this); // Bind the current shader
+    } else {// First time CgShader object...need to make a new GLCgShaderContext
+      PT(CLP(CgShaderContext)) csc = new CLP(CgShaderContext)(_cg_shader);
+      bool result = _cg_shader->load_shaders(); // Profiles created lets load from HD
+      csc->load_shaders(); // Programs loaded, compile and download to GPU
+      CGSHADERCONTEXTS::value_type shader_and_context(_cg_shader, csc);
+      _gl_cg_shader_contexts.insert(shader_and_context);
+      csc->bind(this);// Bind the new shader
+    }
+  }
+#endif
+
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -1,6 +1,6 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-
+#define USE_PACKAGES gl cggl
 // Most of the files here are not actually compiled into anything;
 // they're just included by various other directories.
 
@@ -8,7 +8,8 @@
   #define TARGET glstuff
   #define LOCAL_LIBS \
     gsgmisc gsgbase gobj display \
-    putil linmath mathutil pnmimage
+    putil linmath mathutil pnmimage \
+    effects
     
   #define INSTALL_HEADERS \
      glext.h \
@@ -26,7 +27,10 @@
      glSavedFrameBuffer_src.h \
      glTextureContext_src.cxx \
      glTextureContext_src.I \
-     glTextureContext_src.h
+     glTextureContext_src.h \
+     glCgShaderContext_src.cxx \
+     glCgShaderContext_src.h \
+     glCgShaderContext_src.I \
 
   #define SOURCES \
     $[INSTALL_HEADERS] glpure.cxx
