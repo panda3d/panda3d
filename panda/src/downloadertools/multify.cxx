@@ -335,9 +335,12 @@ list_files(int argc, char *argv[]) {
       string subfile_name = multifile.get_subfile_name(i);
       if (is_named(subfile_name, argc, argv)) {
         if (multifile.is_subfile_compressed(i)) {
-          double ratio = 
-            (double)multifile.get_subfile_compressed_length(i) /
-            (double)multifile.get_subfile_length(i);
+          size_t orig_length = multifile.get_subfile_length(i);
+          size_t compressed_length = multifile.get_subfile_compressed_length(i);
+          double ratio = 1.0;
+          if (orig_length != 0) {
+            ratio = (double)compressed_length / (double)orig_length;
+          }
           printf("%12d %3.0f%%  %s\n",
                  multifile.get_subfile_length(i),
                  100.0 - ratio * 100.0,
