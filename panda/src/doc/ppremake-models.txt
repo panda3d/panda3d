@@ -1,0 +1,284 @@
+The model tree contains model and animation files, for instance in
+MultiGen or SoftImage format, and contains rules for generating egg
+files, creating character model and animation files, palettizing and
+scaling textures, and creating final bam files for loading into an
+application.
+
+The egg format is Panda's working file format for storing general
+models and animation files.  Typically, the build process for a given
+model involves the following steps:
+
+1. Convert from the source format (MultiGen or SoftImage) into egg.
+
+2. If the model represents an animated character or animation, run
+   egg-optchar on the egg model file and its associated animation
+   files to optimize animation performance.
+
+3. Sometimes, additional filters are also run on the egg files, for
+   instance to scale them or rotate them appropriately after
+   conversion.
+
+4. Run egg-palettize on the egg model file to optionally reduce the
+   textures, and also pack the textures together onto palette images.
+   The final textures are copied into the install directory at this
+   point.
+
+5. Run egg2bam to convert the final egg files to bam format and copy
+   the resulting bam files into the install directory.
+
+
+The ppremake system is set up to generate makefiles that automatically
+perform these steps.  To use it, you must create a Sources.pp file in
+the directory with the models (or in the directory above the SoftImage
+tree in the case of SoftImage models).
+
+The Sources.pp file for a directory in a model tree normally begins
+with the line:
+
+  #define DIR_TYPE models
+
+which identifies this as a subdirectory in a model tree.  The rest of
+the Sources.pp file contains blocks of the form:
+
+#begin <build-type>
+  #define SOURCES <source-filenames>
+  ...
+#end <build-type>
+
+where <source-filenames> is a list of input filenames for this rule,
+and <build-type> defines the type of build rule and may be one of
+flt_egg, soft_char_egg, install_egg, or a few others (the complete
+list appears below).  Some kinds of build rules require other
+parameters in addition to the list of source filenames.
+
+
+The available build rules are:
+
+flt_egg - Runs flt2egg to convert files from MultiGen (.flt) format to
+  egg.
+
+  SOURCES - a list of MultiGen files to convert.  These will have the
+    extension .flt.  Each named MultiGen file will be converted to an
+    egg file of the same name, with the extension .egg replacing .flt.
+
+    We often use the syntax $[wildcard *.flt] in place of an explicit
+    list of filenames to automatically pick up all the files with a
+    .flt extension in the directory.
+
+  Example:
+    #begin flt_egg
+      #define SOURCES $[wildcard *.flt]
+    #end flt_egg
+
+
+install_egg - Runs egg-palettize on the named egg files, then runs
+  egg2bam to convert to bam file format, and then copies them into the
+  install directory.
+
+  SOURCES - a list of egg files to install.  Usually, these files are
+    generated from a previous step (for instance, a previous flt_egg
+    rule), but they may be ordinary egg files that are checked into
+    the tree as source files.  Generally, you cannot use the wildcard
+    syntax here (unlike in the flt_egg rule), because the egg files
+    may not exist at the time ppremake is run; you must name each egg
+    file explicitly.
+
+  UNPAL_SOURCES - a list of egg files to install, omitting the
+    egg-palettize step.  This is normally done for animation files
+    that do not contain any geometry; there is no point in attempting
+    to palettize these files since they contain to textures, and
+    omitting the palettize step saves a bit of time building the model
+    tree.
+
+  SOURCE_DIR - if all of the source egg files can be found in some
+    other directory than the current directory, this can optionally be
+    defined to indicate that source directory (relative to the current
+    directory).  Normally, this will only be the case when installing
+    egg files that were generated from some intermediate step (for
+    instance, a command specified by filter_egg; see filter_egg,
+    below).  It is also possible to include the source directory as a
+    part of each egg filename given in the SOURCES list, above.
+
+  INSTALL_TO - the name of the install directory into which these
+    models should be copied.  This is relative to the root of the
+    tree, and may also be implicitly prefixed by phase_n/, where n is
+    the phase number (see PHASE, below).  Since the install directory
+    is usually the same for all files in a particular source
+    directory, we usually define this variable globally at the top of
+    the Sources.pp file; if it is defined there, it need not appear
+    within the #begin .. #end scoping of install_egg.
+
+  PHASE - the number of the phase directory into which these models
+    should be copied.  This is optional, but if it is specified, it
+    implicitly prefixes the INSTALL_TO directory with the name
+    phase_n, where n is the phase number.  This is in support of
+    building separate trees for a phased download.
+
+    This phase number should match the phase number assigned to these
+    egg files in the textures.txa file, so egg-palettize will know to
+    install the textures into the same phase directory.
+
+  Example:
+
+    #begin install_egg
+      #define SOURCES \
+        trolley_station_DD.egg \
+        DD_A1.egg DD_A2.egg DD_B1.egg DD_B2.egg DD_C1.egg DD_D1.egg \
+        neighborhood_tunnel_DD.egg safe_zone_entrance_tunnel_DD.egg \
+        safe_zone_tunnel_DD.egg DD_doors.egg DD_doors_practical.egg
+      #define PHASE 6
+    #end install_egg
+
+
+soft_char_egg - Runs soft2egg to convert a model or animation tables
+  from a SoftImage database to one or more egg files.
+
+  DATABASE - Specifies the root directory of the SoftImage database.
+    Often, this will be the same for all soft2egg rules in a
+    particular directory, so we usually define this once at the top of
+    the file instead of within each soft_char_egg rule.  This is
+    usually a subdirectory within the current directory.
+
+  SCENE_PREFIX - Specifies the name of the SoftImage scene; this is
+    the prefix that SoftImage applies to each model and animation
+    filename in the scene.
+
+  MODEL - Specifies the name of the SoftImage model within the scene
+    to extract.  The actual filename of the model will be generated
+    from the concatenation of SCENE_PREFIX with MODEL;
+    e.g. $[SCENE_PREFIX]$[MODEL].1-0.dsc.
+
+  EGG_PREFIX - Specifies an optional prefix to be given to any egg
+    filenames generated by this rule.  We usually set this to the same
+    as SCENE_PREFIX, especially when we are converting from several
+    different scenes in a SoftImage database, to help associate the
+    egg files from the SoftImage scene they originated from.
+
+  POLY_MODEL - Specifies that a polygonal model should be extracted
+    from SoftImage.  This is the name of the egg file that will be
+    generated from the SoftImage scene and model (the actual filename
+    is prefixed with EGG_PREFIX, e.g. $[EGG_PREFIX]$[POLY_MODEL].egg).
+
+  NURBS_MODEL - As above, but specifies that a NURBS model instead of
+    a polygonal model should be extracted.  In this case, it will
+    likely be necessary to tesselate the generated egg model, for
+    instance with qtess, before using it in the player.
+
+  ANIMS - Specifies a list of animations to extract from SoftImage.
+    Each word in ANIMS defines a different animation; the name of the
+    SoftImage file that contains the anim is derived from
+    SCENE_PREFIX, e.g. $[SCENE_PREFIX]$[anim].1-0.dsc.  Each anim is
+    written to an egg file whose filename is derived from EGG_PREFIX,
+    e.g. $[EGG_PREFIX]$[anim].egg.
+
+  CHAR_NAME - Specifies the name of the character that is to be
+    assigned to the models and animations generated in this rule.
+    This name is written within each generated egg file, and should be
+    different for each different character; it allows Panda to ensure
+    at runtime that a given animation file is being played on the
+    correct model file.
+ 
+  SOFT2EGG_OPTS - Specifies some additional command-line options that
+    are passed to soft2egg.  One common option is -F, which generates
+    a flat joint hierarchy and sometimes fixes animation problems (at
+    the cost of some runtime performance).
+
+  Example:
+    
+    #begin soft_char_egg
+      #define SCENE_PREFIX suitA-
+      #defer EGG_PREFIX suitA-
+      #define POLY_MODEL lose-mod
+      #define MODEL lose
+      #define ANIMS lose
+      #define CHAR_NAME suitA-lose
+    #end soft_char_egg
+
+    
+optchar_egg - Runs egg-optchar on a character model and all of its
+  associated animations.  This step removes unnecessary joints for
+  optimal runtime performance, exposes joints that are needed for show
+  code operations, and can also perform other operations like scaling
+  and rotating a character and its animation files together.
+
+  It is important to run egg-optchar on the model together with all of
+  its animation files at the same time; since egg-optchar operates the
+  joint hierarchy, it must make any adjustments to all of the related
+  animation files together.
+
+  SOURCES - Specifies the list of egg files that are to be read.  This
+    should include all models and animations that are associated the
+    the same character.
+
+  SOURCE_DIR - As with the install_egg rule, above, this optionally
+    specifies the directory in which all of the egg files can be read,
+    if it is not the current directory.
+
+  TARGET_DIR - Specifies the subdirectory to which all of the
+    resulting egg files should be written.
+
+  OPTCHAR_OPTS - Specifies additional command-line arguments to pass
+    to egg-optchar.  This normally includes rules to expose joints
+    and/or transform models.  Common options to egg-optchar are:
+
+       -no             - strip surface normals from the model.
+       -Dp joint-name  - expose joint-name to the show code.
+       -TR x,y,z       - rotate about x, y, and z axes.
+       -TS scale       - scale model by the indicated factor.
+
+  Example:
+
+    #begin optchar_egg
+      #define TARGET_DIR optchar
+      #define SOURCES \
+        regexp/suitA-lose-mod.egg \
+        suitA-lose.egg
+      #define OPTCHAR_OPTS \
+         -no -TR 0,180,0 -TS 0.25 \
+         -Dp joint-Rhold \
+         -Dp joint-Lhold -Dp joint-head \
+         -Dp joint-shadow \
+         -Dp joint-nameTag 
+    #end optchar_egg
+       
+
+filter_egg - Runs an arbitrary egg command on one or more named egg
+  files, one at a time.  This is usually done when an egg file
+  generated by one of the above steps (particularly soft2egg) needs
+  additional processing.  The modified egg files are written into a
+  specified directory to differentiate them from the source egg files;
+  a later rule (for instance, optchar_egg or install_egg) should then
+  specify to take its source egg files from this directory.
+
+  SOURCES - The list of egg files to process.
+
+  SOURCE_DIR - As above, the source directory in which to read the egg
+    files, if it is not the current directory.
+
+  TARGET_DIR - The subdirectory in which to write the generated egg
+    files.
+
+  COMMAND - The egg command to run.  This should include the string
+    $[source], which will be replaced with the name of the source egg
+    file, and $[target], which will be replaced with the target egg
+    file.  Note that this variable should be defined with the #defer
+    command instead of the #define command, to prevent the premature
+    evaluation of $[target] and $[source].
+
+  Example:
+
+    #begin filter_egg
+      #define TARGET_DIR regexp
+      #define SOURCES suitA-mod.egg suitA-lose-mod.egg
+    
+      #defer COMMAND \
+        egg-regexp \
+            -n 'TheHandL'=hands \
+            -n 'TheHandR'=hands \
+    	-n 'TheArmL'=arms \
+            -n 'TheArmR'=arms \
+    	-n 'TheTorso'=torso \
+            -n 'TheLegL'=legs \
+    	-n 'TheLegR'=legs \
+            -o $[target] $[source]
+    #end filter_egg
