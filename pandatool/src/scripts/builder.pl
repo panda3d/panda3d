@@ -260,7 +260,7 @@ sub archivetree() {
         ($devicenum,$inodenum,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,$blksize,$blocks)
            = stat($inst_dirs[2]);
         ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) 
-           = localtime($ctime);
+           = localtime($mtime);
         $mon++;
 
         $newdayarchivedirname=$inst_dirs[$ARCHIVENUM]."\\".($mon<10 ? "0":"").$mon."-".($mday<10 ? "0":"").$mday;
