@@ -51,8 +51,10 @@ TypeHandle DXGraphicsStateGuardian::_type_handle;
 // and so I dont have to write code that reallocs light arrays
 #define DXGSG_MAX_LIGHTS 8
 
-// debugging-only flag to test non-optimized general geom pipe for all models
-//#define DONT_USE_DRAWPRIMSTRIDED
+// test non-optimized general geom pipe for all models
+// apparently DPStrided faults for some color G_OVERALL cases, so comment out for now
+// not clear that it is actually faster in practice, it may even be slightly slower
+#define DONT_USE_DRAWPRIMSTRIDED
 
 static D3DMATRIX matIdentity;
 
