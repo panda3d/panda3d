@@ -217,11 +217,11 @@ run() {
     if (_nonblocking && _download_throttle) {
       double now = ClockObject::get_global_clock()->get_real_time();
       double elapsed = now - _last_run_time;
-      _last_run_time = now;
       if (elapsed < _seconds_per_update) {
         // Come back later.
         return true;
       }
+      _last_run_time = now;
       _bytes_requested += _bytes_per_update;
     }
     switch (_download_dest) {
