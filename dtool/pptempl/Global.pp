@@ -305,7 +305,7 @@
      $[or $[not $[TARGET_IF_MAYA]],$[HAVE_MAYA]], \
      $[or $[not $[TARGET_IF_IPC]],$[HAVE_IPC]], \
      $[or $[not $[TARGET_IF_NET]],$[HAVE_NET]], \
-     $[or $[not $[TARGET_IF_AUDIO]],$[HAVE_AUDIO]], \
+     $[or $[not $[TARGET_IF_RAD_MSS]],$[HAVE_RAD_MSS]], \
       1 ]
 
 // This takes advantage of the above two variables to get the actual
