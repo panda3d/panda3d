@@ -194,8 +194,8 @@ class DisplayConnection:
     def __init__(self,qcm,serverName,port,msgHandler):
         self.msgHandler = msgHandler
         gameServerTimeoutMs = base.config.GetInt(
-            "game-server-timeout-ms", 20000)
-        # A big old 20 second timeout.
+            "cluster-server-timeout-ms", 300000)
+        # A giant 300 second timeout.
         self.tcpConn = qcm.openTCPClientConnection(
             serverName, port, gameServerTimeoutMs)
         # Test for bad connection
