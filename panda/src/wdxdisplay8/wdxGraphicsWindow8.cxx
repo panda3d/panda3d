@@ -802,7 +802,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             //    windowed apps currently run regardless of if its window is in the foreground
             //    so we cannot rely on window messages to reawaken app
 
-            if((wparam==_PandaPausedTimer) && (!_window_active||_active_minimized_fullscreen)) {
+            if((wparam==_PandaPausedTimer) && ((!_window_active)||_active_minimized_fullscreen)) {
                 assert(_dxgsg!=NULL);
                 _dxgsg->CheckCooperativeLevel(DO_REACTIVATE_WINDOW);
 
@@ -968,7 +968,7 @@ void wdxGraphicsWindow::deactivate_window(void) {
     // current policy is to suspend minimized or deactivated fullscreen windows, but leave
     // regular windows running normally
 
-   if(!_window_active || _exiting_window || _active_minimized_fullscreen) {
+   if((!_window_active) || _exiting_window || _active_minimized_fullscreen) {
        #ifdef _DEBUG
           if(wdxdisplay_cat.is_spam())
             wdxdisplay_cat.spam()  << "deactivate_window called, but ignored in current mode\n";
@@ -2546,21 +2546,33 @@ void wdxGraphicsWindow::init_resized_window(void) {
 
     if(pDisplay->PresParams.Windowed) {
         POINT ul,lr;
-        RECT view_rect;
+        RECT client_rect;
 
-        // need to figure out x,y origin offset of window (we already know the client area size)
-        GetClientRect( pDisplay->hWnd, &view_rect );
-        ul.x=view_rect.left;  ul.y=view_rect.top;
-        lr.x=view_rect.right;  lr.y=view_rect.bottom;
+        // need to figure out x,y origin offset of window client area on screen
+        // (we already know the client area size)
+
+        GetClientRect(pDisplay->hWnd, &client_rect);
+        ul.x=client_rect.left;  ul.y=client_rect.top;
+        lr.x=client_rect.right;  lr.y=client_rect.bottom;
         ClientToScreen(pDisplay->hWnd, &ul);
         ClientToScreen(pDisplay->hWnd, &lr);
-        view_rect.left=ul.x; view_rect.top=ul.y;
-        view_rect.right=lr.x; view_rect.bottom=lr.y;
-        _props._xorg = view_rect.left;  // _props should reflect view rectangle
-        _props._yorg = view_rect.top;
+        client_rect.left=ul.x; client_rect.top=ul.y;
+        client_rect.right=lr.x; client_rect.bottom=lr.y;
+        _props._xorg = client_rect.left;  // _props should reflect view rectangle
+        _props._yorg = client_rect.top;
 
-        // make sure GDI and DX agree on window client area size
-        assert((RECT_XSIZE(view_rect)==newWidth)&&(RECT_YSIZE(view_rect)==newHeight));
+        #ifdef _DEBUG
+          // try to make sure GDI and DX agree on window client area size        
+          // but client rect will not include any offscreen areas, so dont
+          // do check if window was bigger than screen (there are other bad
+          // cases too, like when window is positioned partly offscreen,
+          // or if window trim border make size bigger than screen)
+
+          RECT desktop_rect;
+          GetClientRect(GetDesktopWindow(), &desktop_rect);
+          if((_props._xsize<RECT_XSIZE(desktop_rect)) && (_props._ysize<RECT_YSIZE(desktop_rect)))
+              assert((RECT_XSIZE(client_rect)==newWidth)&&(RECT_YSIZE(client_rect)==newHeight));
+        #endif
     } 
 
     resized(newWidth,newHeight);  // update panda channel/display rgn info, _props.xsize, _props.ysize
@@ -2775,7 +2787,7 @@ void INLINE wdxGraphicsWindow::process_events(void) {
       // Get 1 msg at a time until no more are left and we block and sleep,
       // or message changes _return_control_to_app or _window_active status
 
-      while(!_window_active && (!_return_control_to_app)) {
+      while((!_window_active) && (!_return_control_to_app)) {
           process_1_event();
       }
       _return_control_to_app = false;
