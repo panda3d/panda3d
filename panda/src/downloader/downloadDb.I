@@ -44,39 +44,6 @@ get_server_multifile_name(int index) const {
   return _server_db.get_multifile_name(index);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: DownloadDb::
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE Version DownloadDb::
-get_client_multifile_version(string mfname) const {
-  return (_client_db.get_multifile_record_named(mfname))->_version;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DownloadDb::
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE void DownloadDb::
-set_client_multifile_version(string mfname, Version version) {
-  (_client_db.get_multifile_record_named(mfname))->_version = version;
-  write_db(_client_db._filename, _client_db);    
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DownloadDb::
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE Version DownloadDb::
-get_server_multifile_version(string mfname) const {
-  return (_server_db.get_multifile_record_named(mfname))->_version;
-}
-
-
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::
@@ -198,8 +165,8 @@ set_client_multifile_decompressed(string mfname) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void DownloadDb::
-set_client_multifile_expanded(string mfname) {
-  (_client_db.get_multifile_record_named(mfname))->_status = Status_expanded;
+set_client_multifile_extracted(string mfname) {
+  (_client_db.get_multifile_record_named(mfname))->_status = Status_extracted;
   write_db(_client_db._filename, _client_db);
 }
 
@@ -241,58 +208,4 @@ get_client_file_name(string mfname, int index) const {
 INLINE string DownloadDb::
 get_server_file_name(string mfname, int index) const {
   return (_server_db.get_multifile_record_named(mfname))->get_file_name(index);  
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DownloadDb::
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE Version DownloadDb::
-get_client_file_version(string mfname, string fname) const {
-  return ((_client_db.get_multifile_record_named(mfname))->get_file_record_named(fname))->_version;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DownloadDb::
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE Version DownloadDb::
-get_server_file_version(string mfname, string fname) const {
-  return ((_server_db.get_multifile_record_named(mfname))->get_file_record_named(fname))->_version;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DownloadDb::
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE void DownloadDb::
-set_client_file_version(string mfname, string fname, Version version) {
-  ((_client_db.get_multifile_record_named(mfname))->get_file_record_named(fname))->_version = version;
-  write_db(_client_db._filename, _client_db);
-}
-
-
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: DownloadDb::
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE HashVal DownloadDb::
-get_client_file_hash(string mfname, string fname) const {
-  return ((_client_db.get_multifile_record_named(mfname))->get_file_record_named(fname))->_hash;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DownloadDb::
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE HashVal DownloadDb::
-get_server_file_hash(string mfname, string fname) const {
-  return ((_server_db.get_multifile_record_named(mfname))->get_file_record_named(fname))->_hash;
 }

@@ -49,12 +49,12 @@ PUBLISHED:
   // Status of a multifile is stored in this enum
   // Note these values are in increasing order of "doneness"
   // So if you are decompressed, you are complete
-  // If you are expanded, you are decompressed and complete
+  // If you are extracted, you are decompressed and complete
   enum Status {
     Status_incomplete = 0,
     Status_complete = 1,
     Status_decompressed = 2,
-    Status_expanded = 3
+    Status_extracted = 3
   };
 
   DownloadDb(void);
@@ -74,10 +74,6 @@ PUBLISHED:
   INLINE string get_client_multifile_name(int index) const;
   INLINE string get_server_multifile_name(int index) const;
 
-  INLINE Version get_client_multifile_version(string mfname) const;
-  INLINE void set_client_multifile_version(string mfname, Version version);
-  INLINE Version get_server_multifile_version(string mfname) const;
-
   INLINE int get_client_multifile_size(string mfname) const;
   INLINE void set_client_multifile_size(string mfname, int size);
   INLINE int set_client_multifile_delta_size(string mfname, int size);
@@ -90,32 +86,19 @@ PUBLISHED:
   INLINE void set_client_multifile_incomplete(string mfname);
   INLINE void set_client_multifile_complete(string mfname);
   INLINE void set_client_multifile_decompressed(string mfname);
-  INLINE void set_client_multifile_expanded(string mfname);
+  INLINE void set_client_multifile_extracted(string mfname);
 
   INLINE int get_client_num_files(string mfname) const;
   INLINE int get_server_num_files(string mfname) const;
 
-  INLINE HashVal get_client_file_hash(string mfname, string fname) const;
-  INLINE HashVal get_server_file_hash(string mfname, string fname) const;
-
   INLINE string get_client_file_name(string mfname, int index) const;
   INLINE string get_server_file_name(string mfname, int index) const;
-
-  INLINE Version get_client_file_version(string mfname, string fname) const;
-  INLINE Version get_server_file_version(string mfname, string fname) const;
-  INLINE void set_client_file_version(string mfname, string fname, Version version);
-
-  // Check client db against server db
-  bool client_db_current_version(void) const;
 
   // Queries from the Launcher
   bool client_multifile_exists(string mfname) const;
   bool client_multifile_complete(string mfname) const;
   bool client_multifile_decompressed(string mfname) const;
-  bool client_multifile_expanded(string mfname) const;
-  bool client_multifile_version_correct(string mfname) const;
-  bool client_file_version_correct(string mfname, string filename) const;
-  bool client_file_hash_correct(string mfname, string filename) const;
+  bool client_multifile_extracted(string mfname) const;
 
   // Operations on multifiles
   void delete_client_multifile(string mfname);
@@ -124,19 +107,17 @@ PUBLISHED:
 
   // Server side operations to create multifile records
   void create_new_server_db();
-  void server_add_multifile(string mfname, Phase phase, Version version, int size, int status);
-  void server_add_file(string mfname, string fname, Version version, HashVal hash);
+  void server_add_multifile(string mfname, Phase phase, int size, int status);
+  void server_add_file(string mfname, string fname);
 
 public:
 
   class EXPCL_PANDAEXPRESS FileRecord : public ReferenceCount {
   public:
     FileRecord(void);
-    FileRecord(string name, Version version, HashVal hash);
+    FileRecord(string name);
     void output(ostream &out) const;
     string _name;
-    Version _version;
-    HashVal _hash;
   };
 
   typedef vector<PT(FileRecord)> FileRecords;
@@ -144,7 +125,7 @@ public:
   class EXPCL_PANDAEXPRESS MultifileRecord : public ReferenceCount {
   public:
     MultifileRecord(void);
-    MultifileRecord(string name, Phase phase, Version version, int size, int status);
+    MultifileRecord(string name, Phase phase, int size, int status);
     void output(ostream &out) const;
     int get_num_files(void) const;
     string get_file_name(int index) const;
@@ -153,7 +134,6 @@ public:
     void add_file_record(PT(FileRecord) fr);
     string _name;
     Phase _phase;
-    Version _version;
     int _size;
     int _status;
     PN_int32 _num_files;
@@ -177,7 +157,6 @@ public:
     PT(FileRecord) parse_fr(uchar *start, int size);
     bool read(ifstream &read_stream);
     bool write(ofstream &write_stream);
-    Version _version;
     Filename _filename;
     MultifileRecords _mfile_records;
   private:

@@ -99,16 +99,6 @@ write_server_db(Filename &file) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool DownloadDb::
-client_db_current_version(void) const {
-  return (_client_db._version == _server_db._version);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DownloadDb::
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-bool DownloadDb::
 client_multifile_exists(string mfname) const {
   return (_client_db.multifile_exists(mfname));
 }
@@ -118,7 +108,7 @@ client_multifile_exists(string mfname) const {
 //       Access: Public
 //  Description: A multifile is complete when it is completely 
 //               downloaded. Note: it may already be decompressed
-//               or expanded and it is still complete
+//               or extracted and it is still complete
 ////////////////////////////////////////////////////////////////////
 bool DownloadDb::
 client_multifile_complete(string mfname) const {
@@ -143,45 +133,9 @@ client_multifile_decompressed(string mfname) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool DownloadDb::
-client_multifile_expanded(string mfname) const {
+client_multifile_extracted(string mfname) const {
   int client_status = _client_db.get_multifile_record_named(mfname)->_status;
-  return (client_status >= Status_expanded);  
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DownloadDb::
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-bool DownloadDb::
-client_multifile_version_correct(string mfname) const {
-  Version client_version = get_client_multifile_version(mfname);
-  Version server_version = get_server_multifile_version(mfname);
-  return (client_version == server_version);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DownloadDb::
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-bool DownloadDb::
-client_file_version_correct(string mfname, string filename) const {
-  Version client_version = get_client_file_version(mfname, filename);
-  Version server_version = get_server_file_version(mfname, filename);
-  return (client_version == server_version);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DownloadDb::
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-bool DownloadDb::
-client_file_hash_correct(string mfname, string filename) const {
-  HashVal client_hash = get_client_file_hash(mfname, filename);
-  HashVal server_hash = get_server_file_hash(mfname, filename);
-  return (client_hash == server_hash);
+  return (client_status >= Status_extracted);  
 }
 
 // Operations on multifiles
@@ -206,7 +160,6 @@ add_client_multifile(string server_mfname) {
   PT(MultifileRecord) client_mfr = new MultifileRecord;
   client_mfr->_name = server_mfr->_name;
   client_mfr->_phase = server_mfr->_phase;
-  client_mfr->_version = server_mfr->_version;
   _client_db.add_multifile_record(client_mfr);
 }
 
@@ -300,8 +253,8 @@ create_new_server_db(void) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::
-server_add_multifile(string mfname, Phase phase, Version version, int size, int status) {
-  PT(MultifileRecord) mfr = new MultifileRecord(mfname, phase, version, size, status);
+server_add_multifile(string mfname, Phase phase, int size, int status) {
+  PT(MultifileRecord) mfr = new MultifileRecord(mfname, phase, size, status);
   _server_db.add_multifile_record(mfr);
 }
 
@@ -312,9 +265,9 @@ server_add_multifile(string mfname, Phase phase, Version version, int size, int 
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::
-server_add_file(string mfname, string fname, Version version, HashVal hash) {
+server_add_file(string mfname, string fname) {
   // Make the new file record
-  PT(FileRecord) fr = new FileRecord(fname, version, hash);
+  PT(FileRecord) fr = new FileRecord(fname);
 
   // Find the multifile with mfname
   vector<PT(MultifileRecord)>::iterator i = _server_db._mfile_records.begin();
@@ -346,7 +299,6 @@ DownloadDb::MultifileRecord::
 MultifileRecord(void) {
   _name = "";
   _phase = 0;
-  _version = 0;
   _size = 0;
   _status = Status_incomplete;
 }
@@ -358,10 +310,9 @@ MultifileRecord(void) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DownloadDb::MultifileRecord::
-MultifileRecord(string name, Phase phase, Version version, int size, int status) {
+MultifileRecord(string name, Phase phase, int size, int status) {
   _name = name;
   _phase = phase;
-  _version = version;
   _size = size;
   _status = status;
 }
@@ -377,7 +328,6 @@ output(ostream &out) const {
   out << "==================================================" << endl;
   out << "MultifileRecord: " << _name    << endl
       << "    phase: " << _phase   << endl
-      << "  version: " << _version << endl
       << "     size: " << _size    << endl
       << "   status: " << _status  << endl;
   out << "--------------------------------------------------" << endl;
@@ -631,14 +581,13 @@ parse_mfr(uchar *start, int size) {
   PN_int32 mfr_name_length = di.get_int32();
   mfr->_name = di.extract_bytes(mfr_name_length);
   mfr->_phase = di.get_int32();
-  mfr->_version = di.get_int32();
   mfr->_size = di.get_int32();
   mfr->_status = di.get_int32();
   mfr->_num_files = di.get_int32();
   
   downloader_cat.debug()
     << "Parsed multifile record: " << mfr->_name << " phase: " << mfr->_phase 
-    << " version: " << mfr->_version << " size: " << mfr->_size
+     << " size: " << mfr->_size
     << " status: " << mfr->_status << " num_files: " << mfr->_num_files << endl;
 
   // Return the new MultifileRecord
@@ -664,13 +613,9 @@ parse_fr(uchar *start, int size) {
   DatagramIterator di(_datagram);
   PN_int32 fr_name_length = di.get_int32();
   fr->_name = di.extract_bytes(fr_name_length);
-  fr->_version = di.get_int32();
   
   downloader_cat.spam()
-    << "Parsed file record: " << fr->_name 
-    << " version: " << fr->_version 
-    << " hash: " << fr->_hash 
-    << endl;
+    << "Parsed file record: " << fr->_name << endl;
 
   // Return the new MultifileRecord
   return fr;
@@ -782,7 +727,6 @@ write(ofstream &write_stream) {
   // Declare these outside the loop so we do not keep creating
   // and deleting them
   PN_int32 phase;
-  PN_int32 version;
   PN_int32 size;
   PN_int32 status;
   PN_int32 num_files;
@@ -796,7 +740,6 @@ write(ofstream &write_stream) {
     
     // Cache some properties so we do not have to keep asking for them
     phase = (*i)->_phase;
-    version = (*i)->_version;
     size = (*i)->_size;
     status = (*i)->_status;
     num_files = (*i)->get_num_files();
@@ -807,7 +750,7 @@ write(ofstream &write_stream) {
       sizeof(header_length) +  // Size of this header length
       sizeof(name_length) +    // Size of the size of the name string
       (*i)->_name.length() +      // Size of the name string
-      sizeof(phase) + sizeof(version) + sizeof(size) + 
+      sizeof(phase) + sizeof(size) + 
       sizeof(status) + sizeof(num_files);
       
     // Add the length of this entire datagram
@@ -820,7 +763,6 @@ write(ofstream &write_stream) {
 
     // Add all the properties
     _datagram.add_int32(phase);
-    _datagram.add_int32(version);
     _datagram.add_int32(size);
     _datagram.add_int32(status);
     _datagram.add_int32(num_files);
@@ -836,15 +778,13 @@ write(ofstream &write_stream) {
       // Clear the datagram before we jam a bunch of stuff on it
       _datagram.clear();
 
-      version = (*j)->_version;
       name_length = (*j)->_name.length();
 
       // Compute the length of this datagram
       header_length = 
 	sizeof(header_length) +  // Size of this header length
 	sizeof(name_length) +    // Size of the size of the name string
-	(*j)->_name.length() +      // Size of the name string
-	sizeof(version);
+	(*j)->_name.length();    // Size of the name string
       
       // Add the length of this entire datagram
       _datagram.add_int32(header_length);
@@ -853,9 +793,6 @@ write(ofstream &write_stream) {
       _datagram.add_int32(name_length);
       // Add the name
       _datagram.append_data((*j)->_name.c_str(), (*j)->_name.length());
-
-      // Add all the properties
-      _datagram.add_int32(version);
 
       // Now put this datagram on the write stream
       string msg = _datagram.get_message();
@@ -907,8 +844,6 @@ write_header(ofstream &write_stream) {
 DownloadDb::FileRecord::
 FileRecord(void) {
   _name = "";
-  _version = 0;
-  _hash = HashVal();
 }
 
 
@@ -918,10 +853,8 @@ FileRecord(void) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DownloadDb::FileRecord::
-FileRecord(string name, Version version, HashVal hash) {
+FileRecord(string name) {
   _name = name;
-  _version = version;
-  _hash = hash;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -931,10 +864,7 @@ FileRecord(string name, Version version, HashVal hash) {
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::FileRecord::
 output(ostream &out) const {
-  out << " FileRecord: " << _name 
-      << " version: " << _version 
-      << " hash: " << _hash
-      << endl;
+  out << " FileRecord: " << _name << endl;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -954,9 +884,10 @@ add_version(const Filename &name, HashVal hash, Version version) {
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::
 add_version(const string &name, HashVal hash, Version version) {
+  nassertv(version >= 1);
+
   // Try to find this name in the map
   VersionMap::iterator i = _versions.find(name);
-  nassertv(version >= 1);
 
   // If we did not find it, put a new vectorHash at this name_code
   if (i == _versions.end()) {
@@ -967,8 +898,8 @@ add_version(const string &name, HashVal hash, Version version) {
   } else {
     int size = (*i).second.size();
 
-    // Assert that this version is the next version in the list
-    nassertv(version<=size);
+    // Assert that this version is less than or equal to next version in the list
+    nassertv(version<=size+1);
 
     // If you are overwriting an old hash value, just insert the new value
     if (version-1 < size) {

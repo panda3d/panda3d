@@ -638,6 +638,7 @@ DownloadStatus(char *buffer, int first_byte, int last_byte,
   _first_byte = first_byte;
   _last_byte = last_byte;
   _total_bytes = total_bytes;
+  _total_bytes_written = 0;
   _partial_content = partial_content;
   reset();
 }
@@ -653,5 +654,4 @@ reset(void) {
   _start = _buffer;
   _next_in = _start;
   _bytes_in_buffer = 0;
-  _total_bytes_written = 0;
 }
