@@ -247,5 +247,9 @@ get_element(int n) const {
 ////////////////////////////////////////////////////////////////////
 const XFileDataObject *XFileDataNodeTemplate::
 get_element(const string &name) const {
+  int child_index = _template->find_child_index(name);
+  if (child_index >= 0) {
+    return get_element(child_index);
+  }
   return NULL;
 }

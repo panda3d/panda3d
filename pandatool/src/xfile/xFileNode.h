@@ -50,6 +50,7 @@ public:
   INLINE int get_num_children() const;
   INLINE XFileNode *get_child(int n) const;
   XFileNode *find_child(const string &name) const;
+  int find_child_index(const string &name) const;
   XFileNode *find_descendent(const string &name) const;
 
   virtual bool has_guid() const;
@@ -73,7 +74,7 @@ protected:
   typedef pvector< PT(XFileNode) > Children;
   Children _children;
 
-  typedef pmap<string, XFileNode *> ChildrenByName;
+  typedef pmap<string, int> ChildrenByName;
   ChildrenByName _children_by_name;
 
 public:

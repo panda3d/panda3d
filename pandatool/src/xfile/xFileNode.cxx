@@ -57,10 +57,27 @@ find_child(const string &name) const {
   ChildrenByName::const_iterator ni;
   ni = _children_by_name.find(name);
   if (ni != _children_by_name.end()) {
-    return (*ni).second;
+    return get_child((*ni).second);
   }
 
   return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileNode::find_child_index
+//       Access: Public
+//  Description: Returns the index number of the child with the
+//               indicated name, if any, or -1 if none.
+////////////////////////////////////////////////////////////////////
+int XFileNode::
+find_child_index(const string &name) const {
+  ChildrenByName::const_iterator ni;
+  ni = _children_by_name.find(name);
+  if (ni != _children_by_name.end()) {
+    return (*ni).second;
+  }
+
+  return -1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -117,13 +134,13 @@ get_guid() const {
 ////////////////////////////////////////////////////////////////////
 void XFileNode::
 add_child(XFileNode *node) {
-  _children.push_back(node);
   if (node->has_name()) {
-    _children_by_name[node->get_name()] = node;
+    _children_by_name[node->get_name()] = (int)_children.size();
   }
   if (node->has_guid()) {
     _x_file->_nodes_by_guid[node->get_guid()] = node;
   }
+  _children.push_back(node);
 }
 
 ////////////////////////////////////////////////////////////////////
