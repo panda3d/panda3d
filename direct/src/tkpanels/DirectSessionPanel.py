@@ -732,6 +732,7 @@ class DirectSessionPanel(AppShell):
         dr = self.activeDisplayRegion
         if dr:
             dr.camLens.setFar(far)
+            cluster('base.camLens.setFar(%f)' % far, 0)
 
     def setHFov(self, hFov):
         dr = self.activeDisplayRegion
