@@ -141,7 +141,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE_GRAPH ostream & operator << (ostream &out, const Node &node);
+EXPCL_PANDA INLINE_GRAPH ostream & operator << (ostream &out, const Node &node);
 
 EXPCL_PANDA NodeRelation *
 find_arc(Node *parent, Node *child, TypeHandle graph_type);

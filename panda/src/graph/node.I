@@ -22,7 +22,7 @@ remove_child(Node *parent, Node *child, TypeHandle graph_type) {
   return false;
 }
 
-INLINE_GRAPH ostream &
+EXPCL_PANDA INLINE_GRAPH ostream &
 operator << (ostream &out, const Node &node) {
   node.output(out);
   return out;
