@@ -24,6 +24,7 @@
 #include <pandabase.h>
 #include <graphicsWindow.h>
 #include "dxGraphicsStateGuardian8.h"
+#include <dxInput8.h>
 
 ////////////////////////////////////////////////////////////////////
 // Defines

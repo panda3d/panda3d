@@ -48,6 +48,8 @@ bool dx_pick_best_screenres = config_wdxdisplay.GetBool("pick-best-screenres", f
 // this config variable with an actual OS detection.
 bool ime_composition_w = config_wdxdisplay.GetBool("ime-composition-w", true);
 
+bool dx_use_joystick = config_wdxdisplay.GetBool("use-joystick", false);
+
 extern void AtExitFn(void);
 
 ////////////////////////////////////////////////////////////////////

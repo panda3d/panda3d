@@ -29,12 +29,13 @@ extern bool bResponsive_minimized_fullscreen_window;
 extern bool dx_force_16bpp_zbuffer;
 extern bool dx_preserve_fpu_state;
 extern bool dx_do_vidmemsize_check;
-extern bool dx_pick_best_screenres;
 extern int dx_preferred_deviceID;
+extern bool dx_pick_best_screenres;
 extern Filename get_icon_filename();
 extern Filename get_mono_cursor_filename();
 extern Filename get_color_cursor_filename();
 extern bool ime_composition_w;
+extern bool dx_use_joystick;
 
 extern EXPCL_PANDADX void init_libwdxdisplay8();
 

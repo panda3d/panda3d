@@ -46,6 +46,9 @@ TypeHandle wdxGraphicsWindow::_type_handle;
 #define WDX_WINDOWCLASSNAME_NOCURSOR WDX_WINDOWCLASSNAME "_NoCursor"
 #define DEFAULT_CURSOR IDC_ARROW
 
+// define this to enable debug testing of dinput joystick
+//#define DINPUT_DEBUG_POLL
+
 typedef map<HWND,wdxGraphicsWindow *> HWND_PANDAWIN_MAP;
 
 // CardIDVec is used in DX7 lowmem card-classification pass so DX8 can
@@ -67,7 +70,8 @@ wdxGraphicsWindow* global_wdxwinptr = NULL;  // need this for temporary windproc
 
 #define MAX_DISPLAYS 20
 
-#define PAUSED_TIMER_ID  7   // completely arbitrary choice
+#define PAUSED_TIMER_ID        7   // completely arbitrary choice
+#define JOYSTICK_POLL_TIMER_ID 8
 #define DX_IS_READY ((_dxgsg!=NULL)&&(_dxgsg->GetDXReady()))
 
 LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam,LPARAM lparam);
@@ -828,6 +832,25 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                 // do we still need to do this since I return control to app periodically using timer msgs?
                 // does app need to know to avoid major computation?
             }
+
+         #ifdef DINPUT_DEBUG_POLL
+            // probably want to get rid of this in favor of event-based input
+            if(dx_use_joystick && (wparam==_pParentWindowGroup->_pDInputInfo->_JoystickPollTimer)) {
+                DIJOYSTATE2 js;
+                ZeroMemory(&js,sizeof(js));
+                if(_pParentWindowGroup->_pDInputInfo->ReadJoystick(0,js)) {
+                    // for now just print stuff out to make sure it works
+                    wdxdisplay_cat.debug() << "joyPos (X: " << js.lX << ",Y: " << js.lY << ",Z: " << js.lZ << ")\n";
+                    for(int i=0;i<128;i++) {
+                        if(js.rgbButtons[i]!=0)
+                            wdxdisplay_cat.debug() << "joyButton "<< i << " pressed\n";
+                    }
+                } else {
+                    wdxdisplay_cat.error() << "read of Joystick failed!\n";
+                    exit(1);
+                }
+            }
+          #endif
             return 0;
 
         case WM_CLOSE:
@@ -1032,6 +1055,9 @@ void wdxGraphicsWindow::deactivate_window(void) {
            wdxdisplay_cat.error() << "Error in SetTimer!\n";
        }
 //   }
+
+
+     // bugbug: need to handle dinput devices
 }
 
 // currently this should only be called from CheckCoopLvl to return from Alt-tab
@@ -2178,7 +2204,7 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
                 } Memlimres;
 
                 const Memlimres MemRes[] = {
-                                             {       0,  640, 480},                  
+                                             {       0,  640, 480},
                                              { 8000000,  800, 600},
                                              {16000000, 1024, 768},
                                              {32000000, 1280,1024},  // 32MB cards will choose this
@@ -2198,15 +2224,15 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
                                          &_dxgsg->scrn.SupportedScreenDepthsMask,
                                          &bCouldntFindValidZBuf,
                                          &pixFmt);
-    
-            
+
+
                         // note I'm not saving refresh rate, will just use adapter default at given res for now
-            
+
                         if(pixFmt==D3DFMT_UNKNOWN) {
                             wdxdisplay_cat.debug() << "skipping scrnres; "
                                 << (bCouldntFindValidZBuf ? "Couldnt find valid zbuffer format to go with FullScreen mode" : "No supported FullScreen modes")
                                 << " at " << dwRenderWidth << "x" << dwRenderHeight << " for device #" << _dxgsg->scrn.CardIDNum << endl;
-                        } else 
+                        } else
                             break;
                     }
                 }
@@ -2218,10 +2244,10 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
                                          &_dxgsg->scrn.SupportedScreenDepthsMask,
                                          &bCouldntFindValidZBuf,
                                          &pixFmt);
-    
-    
+
+
                 // note I'm not saving refresh rate, will just use adapter default at given res for now
-    
+
                 if(pixFmt==D3DFMT_UNKNOWN) {
                     wdxdisplay_cat.fatal()
                         << (bCouldntFindValidZBuf ? "Couldnt find valid zbuffer format to go with FullScreen mode" : "No supported FullScreen modes")
@@ -2408,7 +2434,7 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
         if(pPresParams->MultiSampleType != D3DMULTISAMPLE_NONE)
             assert(pPresParams->SwapEffect == D3DSWAPEFFECT_DISCARD);  // only valid effect for multisample
         #endif
-        
+
         ClearToBlack(Display.hWnd,_props);
 
         hr = pD3D8->CreateDevice(Display.CardIDNum, D3DDEVTYPE_HAL, _pParentWindowGroup->_hParentWindow,
@@ -3018,6 +3044,8 @@ void wdxGraphicsWindowGroup::initWindowGroup(void) {
     _hMouseCursor = NULL;
     _bLoadedCustomCursor = false;
 
+    _pDInputInfo = NULL;
+
     // can only get multimon HW acceleration in fullscrn on DX7
 
     UINT numMonitors = GetSystemMetrics(SM_CMONITORS);
@@ -3179,6 +3207,32 @@ void wdxGraphicsWindowGroup::initWindowGroup(void) {
     for(UINT i=0;i<num_windows;i++) {
         _windows[i]->_dxgsg->SetDXReady(true);
     }
+
+  #ifdef DINPUT_DEBUG_POLL
+    if(dx_use_joystick) {
+        _pDInputInfo = new DInput8Info;
+        assert(_pDInputInfo !=NULL);
+       if(!_pDInputInfo->InitDirectInput()) {
+           wdxdisplay_cat.error() << "InitDirectInput failed!\n";
+           exit(1);
+       }
+
+       if(!_pDInputInfo->CreateJoystickOrPad(_hParentWindow)) {  // associate w/parent window of group for now
+           wdxdisplay_cat.error() << "CreateJoystickOrPad failed!\n";
+           exit(1);
+       }
+
+        // for now, just set up a WM_TIMER to poll the joystick.
+        // could configure it to do event-based input, and that is default w/action mapping
+        // which would be better, less processor intensive
+
+        #define POLL_FREQUENCY_HZ  3
+        _pDInputInfo->_JoystickPollTimer = SetTimer(_hParentWindow, JOYSTICK_POLL_TIMER_ID, 1000/POLL_FREQUENCY_HZ, NULL);
+        if(_pDInputInfo->_JoystickPollTimer!=JOYSTICK_POLL_TIMER_ID) {
+           wdxdisplay_cat.error() << "Error in joystick SetTimer!\n";
+       }
+    }
+  #endif
 }
 
 wdxGraphicsWindowGroup::wdxGraphicsWindowGroup(GraphicsPipe *pipe,int num_windows,GraphicsWindow::Properties *WinPropArray) {
@@ -3211,6 +3265,8 @@ wdxGraphicsWindow::wdxGraphicsWindow(GraphicsPipe* pipe, const GraphicsWindow::P
 wdxGraphicsWindowGroup::~wdxGraphicsWindowGroup() {
     // this fn must be called before windows are actually closed
     _bClosingAllWindows= true;
+
+    SAFE_DELETE(_pDInputInfo);
 
     for(UINT i=0;i<_windows.size();i++) {
         _windows[i]->close_window();
