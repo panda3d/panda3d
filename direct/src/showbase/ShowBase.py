@@ -378,6 +378,7 @@ class ShowBase(DirectObject.DirectObject):
             self.nextWindowIndex += 1
 
         # Temporary try .. except for old Pandas.
+        win = None
         try:
             if type == 'onscreen':
                 win = self.graphicsEngine.makeWindow(gsg, name, 0)
@@ -487,7 +488,7 @@ class ShowBase(DirectObject.DirectObject):
             # This doesn't really need to be an error condition, but I
             # figure any app that includes ShowBase really wants to
             # have a window open.
-            self.notify.error("Unable to open %s window." % (self.windowType))
+            self.notify.error("Unable to open '%s' window." % (self.windowType))
 
         return (self.win != None)
 
