@@ -30,6 +30,16 @@ TypeHandle ButtonEventDataTransition::_type_handle;
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ButtonEventDataTransition::swap
+//       Access: Public
+//  Description: Swaps the data in the queue with that in the other.
+////////////////////////////////////////////////////////////////////
+void ButtonEventDataTransition::
+swap(ButtonEventDataTransition *other) {
+  _buttons.swap(other->_buttons);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ButtonEventDataTransition::update_mods
 //       Access: Public
 //  Description: Updates the indicated ModifierButtons object with all

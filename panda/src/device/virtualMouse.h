@@ -1,5 +1,5 @@
-// Filename: mouse.h
-// Created by:  mike (09Jan97)
+// Filename: virtualMouse.h
+// Created by:  drose (13Dec01)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -15,43 +15,39 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
-#ifndef MOUSE_H
-#define MOUSE_H
+
+#ifndef VIRTUALMOUSE_H
+#define VIRTUALMOUSE_H
 
 #include "pandabase.h"
 
 #include "dataNode.h"
+#include "buttonHandle.h"
+#include "buttonEvent.h"
 #include "vec3DataTransition.h"
 #include "buttonEventDataTransition.h"
-#include "graphicsWindow.h"
 #include "pointerTo.h"
 #include "allTransitionsWrapper.h"
 
-
 ////////////////////////////////////////////////////////////////////
-//       Class : MouseAndKeyboard
-// Description : Reads the mouse and/or keyboard data sent from a
-//               GraphicsWindow, and transmits it down the data graph.
-//
-//               The mouse and keyboard devices are bundled together
-//               into one device here, because they interrelate so
-//               much.  A mouse might be constrained by the holding
-//               down of the shift key, for instance, or the clicking
-//               of the mouse button might be handled in much the same
-//               way as a keyboard key.
-//
-//               Mouse data is sent down the data graph as an x,y
-//               position as well as the set of buttons currently
-//               being held down; keyboard data is sent down as a set
-//               of keypress events in an EventDataTransition.  To
-//               throw these events to the system, you must child an
-//               EventThrower to the MouseAndKeyboard object;
-//               otherwise, the events will be discarded.
+//       Class : VirtualMouse
+// Description : Poses as a MouseAndKeyboard object in the datagraph,
+//               but accepts input from user calls, rather than
+//               reading the actual mouse and keyboard from an input
+//               device.  The user can write high-level code to put
+//               the mouse wherever he/she wants, and to insert
+//               keypresses on demand.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA MouseAndKeyboard : public DataNode {
+class EXPCL_PANDA VirtualMouse : public DataNode {
 PUBLISHED:
-  MouseAndKeyboard(GraphicsWindow *window, int device,
-                   const string& name = "");
+  VirtualMouse(const string &name = "");
+
+  void set_mouse_pos(int x, int y);
+  void set_window_size(int width, int height);
+  void set_mouse_on(bool flag);
+  
+  void press_button(ButtonHandle button);
+  void release_button(ButtonHandle button);
 
 public:
   virtual void transmit_data(AllTransitionsWrapper &data);
@@ -68,9 +64,11 @@ public:
   static TypeHandle _xyz_type;
   static TypeHandle _button_events_type;
 
-protected:
-  PT(GraphicsWindow) _window;
-  int _device;
+private:
+  int _mouse_x, _mouse_y;
+  int _win_width, _win_height;
+  bool _mouse_on;
+  PT(ButtonEventDataTransition) _next_button_events;
 
 public:
   virtual TypeHandle get_type() const {

@@ -54,6 +54,7 @@ public:
 
   INLINE void clear();
   INLINE void push_back(const ButtonEvent &event);
+  void swap(ButtonEventDataTransition *other);
 
   void update_mods(ModifierButtons &mods) const;
 

@@ -16,14 +16,14 @@
      clientDialDevice.h clientTrackerDevice.I  \
      clientTrackerDevice.h config_device.h dialNode.I dialNode.h  \
      mouse.h trackerData.I trackerData.h trackerNode.I  \
-     trackerNode.h
+     trackerNode.h virtualMouse.h
 
   #define INCLUDED_SOURCES \
      analogNode.cxx buttonNode.cxx clientAnalogDevice.cxx  \
      clientBase.cxx clientButtonDevice.cxx clientDevice.cxx  \
      clientDialDevice.cxx clientTrackerDevice.cxx  \
      config_device.cxx dialNode.cxx mouse.cxx trackerData.cxx  \
-     trackerNode.cxx
+     trackerNode.cxx virtualMouse.cxx
 
   #define INSTALL_HEADERS \
     analogNode.I analogNode.h \
@@ -37,7 +37,7 @@
     config_device.h mouse.h \
     dialNode.I dialNode.h \
     trackerData.I trackerData.h \
-    trackerNode.I trackerNode.h
+    trackerNode.I trackerNode.h virtualMouse.h
 
   #define IGATESCAN all
 
