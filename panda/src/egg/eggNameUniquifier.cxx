@@ -64,6 +64,11 @@ clear() {
 void EggNameUniquifier::
 uniquify(EggNode *node) {
   string category = get_category(node);
+  if (egg_cat.is_debug()) {
+    egg_cat.debug()
+      << "Uniquifying " << node->get_name() << ", category = " << category
+      << "\n";
+  }
 
   if (!category.empty()) {
     string name = filter_name(node);
@@ -78,6 +83,12 @@ uniquify(EggNode *node) {
       _index++;
       name = generate_name(node, category, _index);
       inserted = names.insert(UsedNames::value_type(name, node)).second;
+    }
+
+    if (egg_cat.is_debug()) {
+      egg_cat.debug()
+        << "Uniquifying " << node->get_name() << " to "
+        << name << "\n";
     }
 
     node->set_name(name);
