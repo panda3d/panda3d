@@ -659,19 +659,16 @@ class SelectionSphere(SelectionQueue):
     
     def isEntryBackfacing(self, entry):
         # If dot product of collision point surface normal and
-        # ray from sphere origin to collision point is positive, we are
-        # looking at the backface of the polygon
-        ip = entry.getFromIntersectionPoint()
-        c = entry.getFrom().getCenter()
-        n = entry.getFromSurfaceNormal()
+        # ray from sphere origin to collision point is positive, 
+        # center is on the backside of the polygon
         v = Vec3(entry.getFromIntersectionPoint() -
                  entry.getFrom().getCenter())
-        # Normalize and check angle between to vectors
-        print '(%0.2f, %0.2f, %0.2f), (%0.2f, %0.2f, %0.2f), (%0.2f, %0.2f, %0.2f), %0.2f' %(ip[0],ip[1],ip[2],c[0],c[1],c[2],n[0],n[1],n[2], v.dot(n))
+        n = entry.getFromSurfaceNormal()
+        # If points almost on top of each other, reject face
+        # (treat as backfacing)
         if v.length() < 0.05:
-            # Points almost on top of each other, 
-            # reject face (treat as backfacing)
             return 1
+        # Normalize and check angle between to vectors
         v.normalize()
         return v.dot(n) >= 0
 
