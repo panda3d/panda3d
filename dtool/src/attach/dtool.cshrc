@@ -34,15 +34,15 @@ else
 endif
 
 # Setup the initial manpath
-if ( $OS == "Linux" ) then
-setenv MANPATH "/usr/local/man:/usr/man/preformat:/usr/man:/usr/X11R6/man"
-else if ( $OS == "IRIX64" ) then
-setenv MANPATH "/usr/share/catman:/usr/catman:/usr/local/share/catman:/usr/local/share/man:/usr/local/man"
-else if (( $OS == "CYGWIN_NT-5.1") || ( $OS == "CYGWIN_NT-5.0") || ( $OS == "CYGWIN_NT-4.0" ) || ( $OS == "CYGWIN_98-4.10" ) || ( $OS == "WIN95" )) then
-setenv MANPATH "/usr/man:/contrib/man"
-else
-setenv MANPATH "/usr/share/catman:/usr/catman:/usr/local/share/catman:/usr/local/share/man:/usr/local/man"
-endif
+#if ( $OS == "Linux" ) then
+#setenv MANPATH "/usr/local/man:/usr/man/preformat:/usr/man:/usr/X11R6/man"
+#else if ( $OS == "IRIX64" ) then
+#setenv MANPATH "/usr/share/catman:/usr/catman:/usr/local/share/catman:/usr/local/share/man:/usr/local/man"
+#else if (( $OS == "CYGWIN_NT-5.1") || ( $OS == "CYGWIN_NT-5.0") || ( $OS == "CYGWIN_NT-4.0" ) || ( $OS == "CYGWIN_98-4.10" ) || ( $OS == "WIN95" )) then
+#setenv MANPATH "/usr/man:/contrib/man"
+#else
+#setenv MANPATH "/usr/share/catman:/usr/catman:/usr/local/share/catman:/usr/local/share/man:/usr/local/man"
+#endif
 
 setenv CT_INCLUDE_PATH "."
 set cdpath = ( . )

@@ -15,16 +15,16 @@ else
 fi
 
 # Setup the initial manpath
-if [ $OS = "Linux" ]; then
-  MANPATH=/usr/local/man:/usr/man/preformat:/usr/man:/usr/X11R6/man
-elif [ $OS = "IRIX64" ]; then
-  MANPATH=/usr/share/catman:/usr/catman:/usr/local/share/catman:/usr/local/share/man:/usr/local/man
-elif [ $OS = "CYGWIN_98-4.10" ]; then
-  MANPATH=/usr/local/man
-else
-  MANPATH=/usr/share/catman:/usr/catman:/usr/local/share/catman:/usr/local/share/man:/usr/local/man
-fi
-export MANPATH
+#if [ $OS = "Linux" ]; then
+#  MANPATH=/usr/local/man:/usr/man/preformat:/usr/man:/usr/X11R6/man
+#elif [ $OS = "IRIX64" ]; then
+#  MANPATH=/usr/share/catman:/usr/catman:/usr/local/share/catman:/usr/local/share/man:/usr/local/man
+#elif [ $OS = "CYGWIN_98-4.10" ]; then
+#  MANPATH=/usr/local/man
+#else
+#  MANPATH=/usr/share/catman:/usr/catman:/usr/local/share/catman:/usr/local/share/man:/usr/local/man
+#fi
+#export MANPATH
 
 LD_LIBRARY_PATH="."
 export LD_LIBRARY_PATH
