@@ -596,8 +596,10 @@ PT(GuiListBox) lb1;
 static void test11(GuiManager* mgr, Node* font) {
   GuiLabel* ul = GuiLabel::make_simple_text_label("upup", font);
   GuiSign* us = new GuiSign("up_arrow", ul);
+  us->set_scale(0.1);
   GuiLabel* dl = GuiLabel::make_simple_text_label("dndn", font);
   GuiSign* ds = new GuiSign("down_arrow", dl);
+  ds->set_scale(0.1);
   lb1 = new GuiListBox("list_box", 4, us, ds);
   GuiLabel* l1 = GuiLabel::make_simple_text_label("hyena", font);
   GuiSign* s1 = new GuiSign("hyena", l1);
@@ -629,6 +631,13 @@ static void test11(GuiManager* mgr, Node* font) {
   l3->set_width(w);
   l4->set_width(w);
   l5->set_width(w);
+  ul->set_background_color(0., 0., 0., 1.);
+  dl->set_background_color(0., 0., 0., 1.);
+  l1->set_background_color(0., 0., 0., 1.);
+  l2->set_background_color(0., 0., 0., 1.);
+  l3->set_background_color(0., 0., 0., 1.);
+  l4->set_background_color(0., 0., 0., 1.);
+  l5->set_background_color(0., 0., 0., 1.);
   lb1->add_item(s1);
   lb1->add_item(s2);
   lb1->add_item(s3);
@@ -636,6 +645,7 @@ static void test11(GuiManager* mgr, Node* font) {
   lb1->add_item(s5);
   lb1->thaw();
   lb1->manage(mgr, event_handler);
+  cout << *lb1;
 }
 
 static void test12(GuiManager* mgr, Node* font) {
@@ -686,9 +696,9 @@ static void setup_gui(void) {
   // test 10
   //  test10(mgr, font);
   // test 11
-  //  test11(mgr, font);
+  test11(mgr, font);
   // test 12
-  test12(mgr, font);
+  //  test12(mgr, font);
 }
 
 static void event_2(CPT_Event) {
@@ -789,12 +799,10 @@ void gui_keys(EventHandler&) {
   have_dlight = true;
 
   event_handler.add_hook("2", event_2);
-  /*
   // for tests 7-11
   event_handler.add_hook("3", event_3);
   // for test 11
   event_handler.add_hook("4", event_4);
-  */
   event_handler.add_hook("demo-event-thing", event_demo);
 }
 

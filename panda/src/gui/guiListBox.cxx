@@ -24,6 +24,7 @@ void GuiListBox::ListFunctor::doit(GuiBehavior* b) {
 
 void GuiListBox::recompute_frame(void) {
   GuiBehavior::recompute_frame();
+  this->freeze();
   LVector3f p = _pos;
   float lft = 100000.;
   float rgt = -100000.;
@@ -31,7 +32,7 @@ void GuiListBox::recompute_frame(void) {
   float btm = 100000.;
   LVector4f frm;
   for (ItemVector::iterator i=_visible.begin(); i!=_visible.end();
-       p+=((*i)->get_height() * LVector3f::up()), ++i) {
+       p-=((*i)->get_height() * LVector3f::up()), ++i) {
     (*i)->set_pos(p);
     frm = (*i)->get_frame();
     if (frm[0] < lft)
@@ -47,6 +48,7 @@ void GuiListBox::recompute_frame(void) {
   _right = rgt;
   _top = tp;
   _bottom = btm;
+  this->thaw();
 }
 
 void GuiListBox::visible_patching(void) {
@@ -193,26 +195,51 @@ void GuiListBox::add_item(GuiItem* item) {
 
 int GuiListBox::freeze(void) {
   int result = 0;
+  ItemVector::iterator i;
+  ItemDeque::iterator j;
 
-  for (ItemVector::iterator i=_visible.begin(); i!=_visible.end(); ++i) {
+  for (i=_top_stack.begin(); i!=_top_stack.end(); ++i) {
     int count = (*i)->freeze();
     result = max(result, count);
   }
+  for (i=_visible.begin(); i!=_visible.end(); ++i) {
+    int count = (*i)->freeze();
+    result = max(result, count);
+  }
+  for (j=_bottom_stack.begin(); j!=_bottom_stack.end(); ++j) {
+    int count = (*j)->freeze();
+    result = max(result, count);
+  }
+  _up_arrow->freeze();
+  _down_arrow->freeze();
   return result;
 }
 
 int GuiListBox::thaw(void) {
   int result = 0;
+  ItemVector::iterator i;
+  ItemDeque::iterator j;
 
-  for (ItemVector::iterator i=_visible.begin(); i!=_visible.end(); ++i) {
+  for (i=_top_stack.begin(); i!=_top_stack.end(); ++i) {
     int count = (*i)->thaw();
     result = max(result, count);
   }
+  for (i=_visible.begin(); i!=_visible.end(); ++i) {
+    int count = (*i)->thaw();
+    result = max(result, count);
+  }
+  for (j=_bottom_stack.begin(); j!=_bottom_stack.end(); ++j) {
+    int count = (*j)->thaw();
+    result = max(result, count);
+  }
+  _up_arrow->thaw();
+  _down_arrow->thaw();
   return result;
 }
 
 void GuiListBox::manage(GuiManager* mgr, EventHandler& eh) {
   if (_mgr == (GuiManager*)0L) {
+    this->recompute_frame();
     for (ItemVector::iterator i=_visible.begin(); i!=_visible.end(); ++i)
       (*i)->manage(mgr, eh);
     GuiBehavior::manage(mgr, eh);
@@ -331,14 +358,14 @@ void GuiListBox::output(ostream& os) const {
   os << "    Top stack (" << _top_stack.size() << "):" << endl;
   ItemVector::const_iterator i;
   for (i=_top_stack.begin(); i!=_top_stack.end(); ++i)
-    os << "      0x" << (void*)(*i) << endl;
+    os << "      0x" << (void*)(*i) << " (" << (*i)->get_name() << ")" << endl;
   os << "    Visible (" << _visible.size() << "):" << endl;
   for (i=_visible.begin(); i!=_visible.end(); ++i)
-    os << "      0x" << (void*)(*i) << endl;
+    os << "      0x" << (void*)(*i) << " (" << (*i)->get_name() << ")" << endl;
   os << "    Bottom stack (" << _bottom_stack.size() << "):" << endl;
   ItemDeque::const_iterator j;
   for (j=_bottom_stack.begin(); j!=_bottom_stack.end(); ++j)
-    os << "      0x" << (void*)(*j) << endl;
+    os << "      0x" << (void*)(*j) << " (" << (*j)->get_name() << ")" << endl;
   for (i=_top_stack.begin(); i!=_top_stack.end(); ++i)
     os << *(*i);
   for (i=_visible.begin(); i!=_visible.end(); ++i)
