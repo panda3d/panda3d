@@ -16,11 +16,13 @@ public:
   virtual ~LerpFunctor(void);
   LerpFunctor& operator=(const LerpFunctor&);
   virtual void operator()(float) = 0;
-public:
-  // now for typehandle stuff
+
+PUBLISHED:
   static TypeHandle get_class_type(void) {
     return _type_handle;
   }
+
+public:
   static void init_type(void) {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "LerpFunctor",
@@ -54,11 +56,13 @@ public:
   virtual ~SimpleLerpFunctor(void);
   SimpleLerpFunctor<value>& operator=(const SimpleLerpFunctor<value>&);
   virtual void operator()(float) = 0;
-public:
-  // now for typehandle stuff
+
+PUBLISHED:
   static TypeHandle get_class_type(void) {
     return _type_handle;
   }
+
+public:
   static void init_type(void) {
     LerpFunctor::init_type();
     do_init_type(value);
@@ -121,11 +125,13 @@ public:
   virtual void operator()(float);
   void add_functor(LerpFunctor*);
   void remove_functor(LerpFunctor*);
-public:
-  // now for typehandle stuff
+
+PUBLISHED:
   static TypeHandle get_class_type(void) {
     return _type_handle;
   }
+
+public:
   static void init_type(void) {
     LerpFunctor::init_type();
     register_type(_type_handle, "MultiLerpFunctor",
