@@ -11,7 +11,7 @@
 // this case, we must read all of the environment variables directly
 // and cache them locally.
 
-#ifdef STATIC_INIT_GETENV
+#ifndef STATIC_INIT_GETENV
 #define PREREAD_ENVIRONMENT
 #endif
 
@@ -185,6 +185,8 @@ read_environment_variables() {
     }
     ch = proc.get();
   }
+#else
+  cerr << "Warning: environment variables unavailable to dconfig.\n";
 #endif
 }
 
@@ -238,5 +240,7 @@ read_args() {
 
     ch = proc.get();
   }
+#else
+  cerr << "Warning: command line parameters unavailable to dconfig.\n";
 #endif
 }
