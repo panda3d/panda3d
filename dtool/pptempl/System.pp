@@ -41,8 +41,8 @@
 // PLATFORM variable, and help it to control the effects of functions
 // like $[os] and $[isfullpath].
 
-// True if we are building on some flavor of Unix.
-#define UNIX_PLATFORM $[ne $[PLATFORM],Win32]
-
 // True if we are building on some flavor of Windows.
-#define WINDOWS_PLATFORM $[eq $[PLATFORM],Win32]
+#define WINDOWS_PLATFORM $[or $[eq $[PLATFORM],Win32]$[eq $[PLATFORM],Cygwin]]
+
+// True if we are building on some flavor of Unix.
+#define UNIX_PLATFORM $[not $[WINDOWS_PLATFORM]]

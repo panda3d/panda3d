@@ -66,8 +66,10 @@
 //              not taking advantage of distributed make, because of
 //              the overhead associated with Cygwin fork() calls.
 
-#if $[eq $[PLATFORM],Win32]
+#if $[eq $[PLATFORM], Win32]
   #define BUILD_TYPE gmsvc
+#elif $[eq $[PLATFORM], Cygwin]
+  #define BUILD_TYPE msvc
 #else
   #define BUILD_TYPE unix
 #endif
@@ -401,7 +403,7 @@
 
 #if $[eq $[PLATFORM], Win32]
 #if $[eq $[USE_COMPILER],]
-  #define USE_COMPILER MSVC
+  #define USE_COMPILER MSVC7
 #endif    
 #elif $[eq $[PLATFORM], Irix]
   #define USE_COMPILER MIPS
