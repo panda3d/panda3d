@@ -16,9 +16,8 @@
 #ifndef _BITIO_H_
 #define _BITIO_H_
 
-#include <pandabase.h>
-
-#include "pbmplus.h"
+#include "pandabase.h"
+#include "pnmimage_base.h"
 
 typedef struct bitstream        *BITSTREAM;
 

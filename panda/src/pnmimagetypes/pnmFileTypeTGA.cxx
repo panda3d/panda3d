@@ -49,10 +49,10 @@
 #include "pnmFileTypeTGA.h"
 #include "config_pnmimagetypes.h"
 
-#include <pnmFileTypeRegistry.h>
-#include <bamReader.h>
+#include "pnmFileTypeRegistry.h"
+#include "bamReader.h"
+#include "pnmimage_base.h"
 
-#include <ppm.h>
 #include <string.h>
 
 static const char * const extensions_TGA[] = {

@@ -88,7 +88,7 @@ make_reader(const Filename &filename, PNMFileType *type) const {
     }
     owns_file = true;
     string os_specific = actual_name.to_os_specific();
-    file = pm_openr((char *)os_specific.c_str());
+    file = fopen((char *)os_specific.c_str(), "rb");
   }
 
   if (file == (FILE *)NULL) {
@@ -143,7 +143,7 @@ make_reader(FILE *file, bool owns_file, const Filename &filename,
           << "Image file appears to be empty.\n";
       }
       if (owns_file) {
-        pm_close(file);
+        fclose(file);
       }
       return NULL;
     }
@@ -200,14 +200,14 @@ make_reader(FILE *file, bool owns_file, const Filename &filename,
         write_types(pnmimage_cat.error(false), 2);
     }
     if (owns_file) {
-      pm_close(file);
+      fclose(file);
     }
     return NULL;
   }
 
   PNMReader *reader = type->make_reader(file, owns_file, magic_number);
   if (reader == NULL && owns_file) {
-    pm_close(file);
+    fclose(file);
   }
 
   if (!reader->is_valid()) {
@@ -253,7 +253,7 @@ make_writer(const Filename &filename, PNMFileType *type) const {
   } else {
     owns_file = true;
     string os_specific = actual_name.to_os_specific();
-    file = pm_openw((char *)os_specific.c_str());
+    file = fopen((char *)os_specific.c_str(), "wb");
   }
 
   if (file == (FILE *)NULL) {
@@ -328,14 +328,14 @@ make_writer(FILE *file, bool owns_file, const Filename &filename,
         << "Cannot determine type of image file " << filename << ".\n";
     }
     if (owns_file) {
-      pm_close(file);
+      fclose(file);
     }
     return NULL;
   }
 
   PNMWriter *writer = type->make_writer(file, owns_file);
   if (writer == NULL && owns_file) {
-    pm_close(file);
+    fclose(file);
   }
 
   return writer;

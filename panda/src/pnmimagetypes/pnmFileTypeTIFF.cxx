@@ -19,15 +19,15 @@
 #include "pnmFileTypeTIFF.h"
 #include "config_pnmimagetypes.h"
 
-#include <pnmFileTypeRegistry.h>
-#include <bamReader.h>
+#include "pnmFileTypeRegistry.h"
+#include "bamReader.h"
+#include "ppmcmap.h"
 
 // Tiff will want to re-typedef these things.
 #define int32 tiff_int32
 #define uint32 tiff_uint32
 
 extern "C" {
-#include "../pnm/ppmcmap.h"
 #include <tiff.h>
 #include <tiffio.h>
 }

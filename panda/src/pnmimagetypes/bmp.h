@@ -19,9 +19,8 @@
 #ifndef _BMP_H_
 #define _BMP_H_
 
-#include <pandabase.h>
-
-#include        "pbmplus.h"
+#include "pandabase.h"
+#include "pnmimage_base.h"
 
 /* prototypes */
 static unsigned long BMPlenfileheader(int classv);

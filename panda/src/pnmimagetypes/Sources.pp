@@ -5,7 +5,7 @@
 #begin lib_target
   #define TARGET pnmimagetypes
   #define LOCAL_LIBS \
-    pnm pnmimage
+    pnmimage
 
   #define COMBINED_SOURCES \
      $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx \
@@ -14,7 +14,7 @@
 
   #define SOURCES  \
      config_pnmimagetypes.h pnmFileTypeAlias.h pnmFileTypeBMP.h  \
-     pnmFileTypeIMG.h pnmFileTypePNM.h pnmFileTypeRadiance.h  \
+     pnmFileTypeIMG.h pnmFileTypeRadiance.h  \
      pnmFileTypeSGI.h pnmFileTypeSoftImage.h  \
      pnmFileTypeTGA.h pnmFileTypeYUV.h color.c colrops.c resolu.c  \
      header.c \
@@ -25,7 +25,7 @@
   #define INCLUDED_SOURCES  \
      config_pnmimagetypes.cxx pnmFileTypeAlias.cxx  \
      pnmFileTypeBMPReader.cxx pnmFileTypeBMPWriter.cxx  \
-     pnmFileTypeIMG.cxx pnmFileTypePNM.cxx pnmFileTypeBMP.cxx  \
+     pnmFileTypeIMG.cxx pnmFileTypeBMP.cxx  \
      pnmFileTypeRadiance.cxx pnmFileTypeSGI.cxx  \
      pnmFileTypeSGIReader.cxx pnmFileTypeSGIWriter.cxx  \
      pnmFileTypeSoftImage.cxx \

@@ -19,12 +19,12 @@
 #ifndef PNMIMAGEHEADER_H
 #define PNMIMAGEHEADER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "pnmimage_base.h"
 
-#include <typedObject.h>
-#include <filename.h>
+#include "typedObject.h"
+#include "filename.h"
 
 class PNMFileType;
 class PNMReader;

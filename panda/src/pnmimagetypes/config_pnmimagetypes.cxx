@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_pnmimagetypes.h"
-#include "pnmFileTypePNM.h"
 #include "pnmFileTypeSGI.h"
 #include "pnmFileTypeAlias.h"
 #include "pnmFileTypeRadiance.h"
@@ -123,7 +122,6 @@ init_libpnmimagetypes() {
   initialized = true;
 
   init_libpnmimage();
-  PNMFileTypePNM::init_type();
   PNMFileTypeSGI::init_type();
   PNMFileTypeAlias::init_type();
   PNMFileTypeRadiance::init_type();
@@ -169,7 +167,6 @@ init_libpnmimagetypes() {
   // Register each type with the PNMFileTypeRegistry.
   PNMFileTypeRegistry *tr = PNMFileTypeRegistry::get_ptr();
 
-  tr->register_type(new PNMFileTypePNM);
   tr->register_type(new PNMFileTypeSGI);
   tr->register_type(new PNMFileTypeAlias);
   tr->register_type(new PNMFileTypeRadiance);
@@ -189,7 +186,6 @@ init_libpnmimagetypes() {
 #endif
 
   // Also register with the Bam reader.
-  PNMFileTypePNM::register_with_read_factory();
   PNMFileTypeSGI::register_with_read_factory();
   PNMFileTypeAlias::register_with_read_factory();
   PNMFileTypeRadiance::register_with_read_factory();

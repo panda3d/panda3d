@@ -18,11 +18,8 @@
 
 #include "pnmFileTypeBMP.h"
 #include "config_pnmimagetypes.h"
-
-extern "C" {
-  #include "bmp.h"
-  #include "../pnm/bitio.h"
-}
+#include "bmp.h"
+#include "pnmbitio.h"
 
 // Much code in this file is borrowed from Netpbm, specifically bmptoppm.c.
 /*
@@ -46,17 +43,17 @@ extern "C" {
  * Utilities
  */
 
-static int GetByte ARGS((FILE * fp));
-static short GetShort ARGS((FILE * fp));
-static long GetLong ARGS((FILE * fp));
-static void readto ARGS((FILE *fp, unsigned long *ppos, unsigned long dst));
-static void BMPreadfileheader ARGS((FILE *fp, unsigned long *ppos,
-    unsigned long *poffBits));
-static void BMPreadinfoheader ARGS((FILE *fp, unsigned long *ppos,
+static int GetByte (FILE * fp);
+static short GetShort (FILE * fp);
+static long GetLong (FILE * fp);
+static void readto (FILE *fp, unsigned long *ppos, unsigned long dst);
+static void BMPreadfileheader (FILE *fp, unsigned long *ppos,
+    unsigned long *poffBits);
+static void BMPreadinfoheader (FILE *fp, unsigned long *ppos,
     unsigned long *pcx, unsigned long *pcy, unsigned short *pcBitCount,
-    int *pclassv));
-static int BMPreadrgbtable ARGS((FILE *fp, unsigned long *ppos,
-    unsigned short cBitCount, int classv, pixval *R, pixval *G, pixval *B));
+    int *pclassv);
+static int BMPreadrgbtable (FILE *fp, unsigned long *ppos,
+    unsigned short cBitCount, int classv, pixval *R, pixval *G, pixval *B);
 
 static const char *ifname = "BMP";
 static char     er_read[] = "%s: read error";

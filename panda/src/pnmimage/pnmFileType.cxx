@@ -144,6 +144,9 @@ init_pnm() {
   if (!_did_init_pnm) {
     _did_init_pnm = true;
 
+    // No reason to do anything here now.
+    /*
+      
     // Make an argc/argv style copy of the ExecutionEnvironment's
     // args.  We do this because pm_init() might attempt to change
     // this (for instance, to remove arguments it finds).
@@ -164,6 +167,8 @@ init_pnm() {
     // library might keep pointers to it.  But this is a one-time
     // leak.
     delete[] argv;
+
+    */
   }
 }
 

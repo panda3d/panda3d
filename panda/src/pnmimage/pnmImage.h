@@ -19,11 +19,11 @@
 #ifndef PNMIMAGE_H
 #define PNMIMAGE_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "pnmImageHeader.h"
 
-#include <luse.h>
+#include "luse.h"
 
 class PNMReader;
 class PNMWriter;
@@ -31,7 +31,17 @@ class PNMFileType;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PNMImage
-// Description : Conceptually, a PNMImage is a two-dimensional array
+// Description : The name of this class derives from the fact that we
+//               originally implemented it as a layer on top of the
+//               "pnm library", based on netpbm, which was built to
+//               implement pbm, pgm, and pbm files, and is the
+//               underlying support of a number of public-domain image
+//               file converters.  Nowadays we are no longer derived
+//               directly from the pnm library, mainly to allow
+//               support of C++ iostreams instead of the C stdio FILE
+//               interface.
+//
+//               Conceptually, a PNMImage is a two-dimensional array
 //               of xels, which are the PNM-defined generic pixel
 //               type.  Each xel may have a red, green, and blue
 //               component, or (if the image is grayscale) a gray
@@ -43,11 +53,8 @@ class PNMFileType;
 //               numbered from top to bottom, left to right, beginning
 //               at zero.
 //
-//               Files can be specified by filename, or by a
-//               stdio-style FILE pointer.  Unfortunately, C++ streams
-//               cannot be supported, because of the underlying C code
-//               in libpnm.  The filename "-" refers to stdin or
-//               stdout.
+//               Files can be specified by filename, or by an iostream
+//               pointer.  The filename "-" refers to stdin or stdout.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA PNMImage : public PNMImageHeader {
 public:

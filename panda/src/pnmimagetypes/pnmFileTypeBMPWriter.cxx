@@ -19,14 +19,12 @@
 #include "pnmFileTypeBMP.h"
 #include "config_pnmimagetypes.h"
 
-#include <pnmImage.h>
-#include <pnmWriter.h>
+#include "pnmImage.h"
+#include "pnmWriter.h"
 
-extern "C" {
-  #include "bmp.h"
-  #include "../pnm/ppmcmap.h"
-  #include "../pnm/bitio.h"
-}
+#include "bmp.h"
+#include "ppmcmap.h"
+#include "pnmbitio.h"
 
 // Much code in this file is borrowed from Netpbm, specifically ppmtobmp.c.
 /*
@@ -55,19 +53,19 @@ extern "C" {
 static char     er_write[] = "stdout: write error";
 
 /* prototypes */
-static void PutByte ARGS((FILE *fp, char v));
-static void PutShort ARGS((FILE *fp, short v));
-static void PutLong ARGS((FILE *fp, long v));
-static int BMPwritefileheader ARGS((FILE *fp, int classv, unsigned long bitcount,
-    unsigned long x, unsigned long y));
-static int BMPwriteinfoheader ARGS((FILE *fp, int classv, unsigned long bitcount,
-    unsigned long x, unsigned long y));
-static int BMPwritergb ARGS((FILE *fp, int classv, pixval R, pixval G, pixval B));
-static int BMPwritergbtable ARGS((FILE *fp, int classv, int bpp, int colors,
-    pixval *R, pixval *G, pixval *B));
-static int colorstobpp ARGS((int colors));
-static void BMPEncode ARGS((FILE *fp, int classv, int x, int y, pixel **pixels,
-    int colors, colorhash_table cht, pixval *R, pixval *G, pixval *B));
+static void PutByte (FILE *fp, char v);
+static void PutShort (FILE *fp, short v);
+static void PutLong (FILE *fp, long v);
+static int BMPwritefileheader (FILE *fp, int classv, unsigned long bitcount,
+    unsigned long x, unsigned long y);
+static int BMPwriteinfoheader (FILE *fp, int classv, unsigned long bitcount,
+    unsigned long x, unsigned long y);
+static int BMPwritergb (FILE *fp, int classv, pixval R, pixval G, pixval B);
+static int BMPwritergbtable (FILE *fp, int classv, int bpp, int colors,
+    pixval *R, pixval *G, pixval *B);
+static int colorstobpp (int colors);
+static void BMPEncode (FILE *fp, int classv, int x, int y, pixel **pixels,
+    int colors, colorhash_table cht, pixval *R, pixval *G, pixval *B);
 static void
 PutByte(
         FILE           *fp,

@@ -21,16 +21,6 @@
 #include "pnmWriter.h"
 #include "config_pnmimage.h"
 
-extern "C" {
-#include "../pnm/pnm.h"
-#include "../pnm/ppm.h"
-#include "../pnm/pgm.h"
-#include "../pnm/pbm.h"
-#include "../pnm/libppm.h"
-#include "../pnm/libpgm.h"
-#include "../pnm/libpbm.h"
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::clear
 //       Access: Public

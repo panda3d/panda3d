@@ -13,7 +13,7 @@
  * without express or implied warranty.
  */
 
-#include "bitio.h"
+#include "pnmbitio.h"
 #include <assert.h>
 struct bitstream
 {

@@ -12,9 +12,7 @@
 ** implied warranty.
 */
 
-#include "ppm.h"
 #include "ppmcmap.h"
-#include "libppm.h"
 
 #define HASH_SIZE 20023
 
@@ -25,10 +23,9 @@
 #endif /*PPM_PACKCOLORS*/
 
 colorhist_vector
-ppm_computecolorhist( pixels, cols, rows, maxcolors, colorsP )
-    pixel** pixels;
-    int cols, rows, maxcolors;
-    int* colorsP;
+ppm_computecolorhist(pixel** pixels,
+                     int cols, int rows, int maxcolors,
+                     int* colorsP)
     {
     colorhash_table cht;
     colorhist_vector chv;
@@ -42,11 +39,11 @@ ppm_computecolorhist( pixels, cols, rows, maxcolors, colorsP )
     }
 
 void
-ppm_addtocolorhist( chv, colorsP, maxcolors, colorP, value, position )
-    colorhist_vector chv;
-    pixel* colorP;
-    int* colorsP;
-    int maxcolors, value, position;
+ppm_addtocolorhist(colorhist_vector chv,
+                   int* colorsP,
+                   int maxcolors,
+                   pixel* colorP,
+                   int value, int position)
     {
     int i, j;
 
@@ -81,10 +78,9 @@ ppm_addtocolorhist( chv, colorsP, maxcolors, colorP, value, position )
     }
 
 colorhash_table
-ppm_computecolorhash( pixels, cols, rows, maxcolors, colorsP )
-    pixel** pixels;
-    int cols, rows, maxcolors;
-    int* colorsP;
+ppm_computecolorhash(pixel** pixels,
+                     int cols, int rows, int maxcolors,
+                     int* colorsP)
     {
     colorhash_table cht;
     register pixel* pP;
@@ -141,10 +137,9 @@ ppm_alloccolorhash( )
     }
 
 int
-ppm_addtocolorhash( cht, colorP, value )
-    colorhash_table cht;
-    pixel* colorP;
-    int value;
+ppm_addtocolorhash(colorhash_table cht,
+                   pixel* colorP,
+                   int value)
     {
     register int hash;
     register colorhist_list chl;
@@ -161,9 +156,8 @@ ppm_addtocolorhash( cht, colorP, value )
     }
 
 colorhist_vector
-ppm_colorhashtocolorhist( cht, maxcolors )
-    colorhash_table cht;
-    int maxcolors;
+ppm_colorhashtocolorhist(colorhash_table cht,
+                         int maxcolors)
     {
     colorhist_vector chv;
     colorhist_list chl;
@@ -190,9 +184,8 @@ ppm_colorhashtocolorhist( cht, maxcolors )
     }
 
 colorhash_table
-ppm_colorhisttocolorhash( chv, colors )
-    colorhist_vector chv;
-    int colors;
+ppm_colorhisttocolorhash(colorhist_vector chv,
+                         int colors)
     {
     colorhash_table cht;
     int i, hash;
@@ -223,9 +216,8 @@ ppm_colorhisttocolorhash( chv, colors )
     }
 
 int
-ppm_lookupcolor( cht, colorP )
-    colorhash_table cht;
-    pixel* colorP;
+ppm_lookupcolor(colorhash_table cht,
+                pixel* colorP)
     {
     int hash;
     colorhist_list chl;
@@ -239,15 +231,13 @@ ppm_lookupcolor( cht, colorP )
     }
 
 void
-ppm_freecolorhist( chv )
-    colorhist_vector chv;
+ppm_freecolorhist(colorhist_vector chv)
     {
     free( (char*) chv );
     }
 
 void
-ppm_freecolorhash( cht )
-    colorhash_table cht;
+ppm_freecolorhash(colorhash_table cht)
     {
     int i;
     colorhist_list chl, chlnext;

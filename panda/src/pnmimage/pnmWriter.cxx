@@ -26,7 +26,7 @@
 PNMWriter::
 ~PNMWriter() {
   if (_owns_file) {
-    pm_close(_file);
+    fclose(_file);
   }
 }
 

@@ -19,15 +19,13 @@
 #ifndef PNMFILETYPETGA_H
 #define PNMFILETYPETGA_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <pnmFileType.h>
-#include <pnmReader.h>
-#include <pnmWriter.h>
-
-extern "C" {
-#include <ppmcmap.h>
-}
+#include "pnmFileType.h"
+#include "pnmReader.h"
+#include "pnmWriter.h"
+#include "ppmcmap.h"
+#include "pnmimage_base.h"
 
 struct ImageHeader;
 
