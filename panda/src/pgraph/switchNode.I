@@ -60,14 +60,3 @@ set_visible_child(int index) {
   CDWriter cdata(_cycler);
   cdata->_visible_child = index;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: SwitchNode::get_visible_child
-//       Access: Published
-//  Description: Returns the index of the child that should be visible.
-////////////////////////////////////////////////////////////////////
-INLINE int SwitchNode::
-get_visible_child() const {
-  CDReader cdata(_cycler);
-  return cdata->_visible_child;
-}

@@ -91,6 +91,8 @@ public:
   virtual bool has_selective_visibility() const;
   virtual int get_first_visible_child() const;
   virtual int get_next_visible_child(int n) const;
+  virtual bool has_single_child_visibility() const;
+  virtual int get_visible_child() const;
 
 PUBLISHED:
   PT(PandaNode) copy_subgraph() const;

@@ -135,6 +135,38 @@ cull_callback(CullTraverser *, CullTraverserData &) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SwitchNode::has_single_child_visibility
+//       Access: Public, Virtual
+//  Description: Should be overridden by derived classes to return
+//               true if this kind of node has the special property
+//               that just one of its children is visible at any given
+//               time, and furthermore that the particular visible
+//               child can be determined without reference to any
+//               external information (such as a camera).  At present,
+//               only SequenceNodes and SwitchNodes fall into this
+//               category.
+//
+//               If this function returns true, get_visible_child()
+//               can be called to return the index of the
+//               currently-visible child.
+////////////////////////////////////////////////////////////////////
+bool SwitchNode::
+has_single_child_visibility() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SwitchNode::get_visible_child
+//       Access: Published, Virtual
+//  Description: Returns the index of the child that should be visible.
+////////////////////////////////////////////////////////////////////
+int SwitchNode::
+get_visible_child() const {
+  CDReader cdata(_cycler);
+  return cdata->_visible_child;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SwitchNode::register_with_read_factory
 //       Access: Public, Static
 //  Description: Tells the BamReader how to create objects of type

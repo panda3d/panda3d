@@ -447,10 +447,22 @@ r_traverse(CollisionLevelState &level_state) {
     }
   }
 
-  int num_children = node->get_num_children();
-  for (int i = 0; i < num_children; i++) {
-    CollisionLevelState next_state(level_state, node->get_child(i));
-    r_traverse(next_state);
+  if (node->has_single_child_visibility()) {
+    // If it's a switch node or sequence node, visit just the one
+    // visible child.
+    int index = node->get_visible_child();
+    if (index >= 0 && index < node->get_num_children()) {
+      CollisionLevelState next_state(level_state, node->get_child(index));
+      r_traverse(next_state);
+    }
+
+  } else {
+    // Otherwise, visit all the children.
+    int num_children = node->get_num_children();
+    for (int i = 0; i < num_children; i++) {
+      CollisionLevelState next_state(level_state, node->get_child(i));
+      r_traverse(next_state);
+    }
   }
 }
 

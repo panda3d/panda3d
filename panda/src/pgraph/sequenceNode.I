@@ -106,24 +106,6 @@ set_visible_child(int index) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SequenceNode::get_visible_child
-//       Access: Published
-//  Description: Returns the index of the child that should be visible
-//               for this particular frame, if there are any children.
-////////////////////////////////////////////////////////////////////
-INLINE int SequenceNode::
-get_visible_child() const {
-  int num_children = get_num_children();
-  if (num_children == 0) {
-    return 0;
-  }
-
-  float frame = calc_frame();
-
-  return ((int)frame) % num_children;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: SequenceNode::calc_frame
 //       Access: Private
 //  Description: Returns the floating-point frame number at the

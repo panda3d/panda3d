@@ -745,6 +745,39 @@ get_next_visible_child(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::has_single_child_visibility
+//       Access: Public, Virtual
+//  Description: Should be overridden by derived classes to return
+//               true if this kind of node has the special property
+//               that just one of its children is visible at any given
+//               time, and furthermore that the particular visible
+//               child can be determined without reference to any
+//               external information (such as a camera).  At present,
+//               only SequenceNodes and SwitchNodes fall into this
+//               category.
+//
+//               If this function returns true, get_visible_child()
+//               can be called to return the index of the
+//               currently-visible child.
+////////////////////////////////////////////////////////////////////
+bool PandaNode::
+has_single_child_visibility() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_visible_child
+//       Access: Public, Virtual
+//  Description: Returns the index number of the currently visible
+//               child of this node.  This is only meaningful if
+//               has_single_child_visibility() has returned true.
+////////////////////////////////////////////////////////////////////
+int PandaNode::
+get_visible_child() const {
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::copy_subgraph
 //       Access: Published
 //  Description: Allocates and returns a complete copy of this

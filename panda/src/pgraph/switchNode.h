@@ -40,10 +40,11 @@ public:
 
   virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
+  virtual bool has_single_child_visibility() const;
 
 PUBLISHED:
   INLINE void set_visible_child(int index);
-  INLINE int get_visible_child() const;
+  virtual int get_visible_child() const;
 
 private:
   class EXPCL_PANDA CData : public CycleData {
