@@ -55,7 +55,8 @@ DynamicTextFont(const Filename &font_filename, int face_index) {
   _page_x_size = text_page_x_size;
   _page_y_size = text_page_y_size;
   _point_size = text_point_size;
-  _pixels_per_unit = text_pixels_per_unit;
+  _tex_pixels_per_unit = text_pixels_per_unit;
+  _scale_factor = text_scale_factor;
   _small_caps = text_small_caps;
   _small_caps_scale = text_small_caps_scale;
 
@@ -337,14 +338,19 @@ update_filters() {
 ////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextFont::reset_scale
 //       Access: Private
-//  Description: Resets the font to use the current _point_size and
-//               _pixels_per_unit.  Returns true if successful, false
-//               otherwise.
+//  Description: Resets the font based on the current values for
+//               _point_size, _tex_pixels_per_unit, and _scale_factor.
+//               Returns true if successful, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool DynamicTextFont::
 reset_scale() {
+  // The font may be rendered larger (by a factor of _scale_factor),
+  // and then reduced into the texture.  Hence the difference between
+  // _font_pixels_per_unit aned _tex_pixels_per_unit.
+  _font_pixels_per_unit = _tex_pixels_per_unit * _scale_factor;
+
   float units_per_inch = (points_per_inch / points_per_unit);
-  int dpi = (int)(_pixels_per_unit * units_per_inch);
+  int dpi = (int)(_font_pixels_per_unit * units_per_inch);
   
   int error = FT_Set_Char_Size(_face,
                                (int)(_point_size * 64), (int)(_point_size * 64),
@@ -353,7 +359,7 @@ reset_scale() {
     // If we were unable to set a particular char size, perhaps we
     // have a non-scalable font.  Try to figure out the closest
     // available size.
-    int desired_height = (int)(_pixels_per_unit * _point_size / points_per_unit + 0.5f);
+    int desired_height = (int)(_font_pixels_per_unit * _point_size / points_per_unit + 0.5f);
     int best_size = -1;
     if (_face->num_fixed_sizes > 0) {
       best_size = 0;
@@ -375,7 +381,8 @@ reset_scale() {
           << "Using " << pixel_height << "-pixel font for "
           << get_name() << "\n";
 
-        _pixels_per_unit = pixel_height * points_per_unit / _point_size;
+        _font_pixels_per_unit = pixel_height * points_per_unit / _point_size;
+        _tex_pixels_per_unit = _font_pixels_per_unit;
       }
     }
   }
@@ -388,7 +395,7 @@ reset_scale() {
     return false;
   }
 
-  _line_height = _face->size->metrics.height / (_pixels_per_unit * 64.0f);
+  _line_height = _face->size->metrics.height / (_font_pixels_per_unit * 64.0f);
 
   // Determine the correct width for a space.
   error = FT_Load_Char(_face, ' ', FT_LOAD_DEFAULT);
@@ -397,7 +404,7 @@ reset_scale() {
     _space_advance = 0.25f * _line_height;
 
   } else {
-    _space_advance = _face->glyph->advance.x / (_pixels_per_unit * 64.0f);
+    _space_advance = _face->glyph->advance.x / (_font_pixels_per_unit * 64.0f);
   }
 
   return true;
@@ -427,74 +434,187 @@ make_glyph(int glyph_index) {
 
   if (bitmap.width == 0 || bitmap.rows == 0) {
     // If we got an empty bitmap, it's a special case.
-    PT(DynamicTextGlyph) glyph = new DynamicTextGlyph(advance / _pixels_per_unit);
+    PT(DynamicTextGlyph) glyph = 
+      new DynamicTextGlyph(advance / _font_pixels_per_unit);
     _empty_glyphs.push_back(glyph);
     return glyph;
 
   } else {
-    DynamicTextGlyph *glyph = slot_glyph(bitmap.width, bitmap.rows);
+    DynamicTextGlyph *glyph;
 
-    if (bitmap.pixel_mode == ft_pixel_mode_grays && bitmap.num_grays == 256) {
-      // This is the easy case: we can memcpy the rendered glyph
-      // directly into our texture image, one row at a time.
-      unsigned char *buffer_row = bitmap.buffer;
-      for (int yi = 0; yi < bitmap.rows; yi++) {
-        unsigned char *texture_row = glyph->get_row(yi);
-        nassertr(texture_row != (unsigned char *)NULL, (DynamicTextGlyph *)NULL);
-        memcpy(texture_row, buffer_row, bitmap.width);
-        buffer_row += bitmap.pitch;
-      }
-
-    } else if (bitmap.pixel_mode == ft_pixel_mode_mono) {
-      // This is a little bit more work: we have to expand the
-      // one-bit-per-pixel bitmap into a one-byte-per-pixel texture.
-      unsigned char *buffer_row = bitmap.buffer;
-      for (int yi = 0; yi < bitmap.rows; yi++) {
-        unsigned char *texture_row = glyph->get_row(yi);
-        nassertr(texture_row != (unsigned char *)NULL, (DynamicTextGlyph *)NULL);
-
-        int bit = 0x80;
-        unsigned char *b = buffer_row;
-        for (int xi = 0; xi < bitmap.width; xi++) {
-          if (*b & bit) {
-            texture_row[xi] = 0xff;
-          } else {
-            texture_row[xi] = 0x00;
-          }
-          bit >>= 1;
-          if (bit == 0) {
-            ++b;
-            bit = 0x80;
-          }
-        }
-
-        buffer_row += bitmap.pitch;
-      }
-      
-
-    } else if (bitmap.pixel_mode == ft_pixel_mode_grays) {
-      // Here we must expand a grayscale pixmap with n levels of gray
-      // into our 256-level texture.
-      unsigned char *buffer_row = bitmap.buffer;
-      for (int yi = 0; yi < bitmap.rows; yi++) {
-        unsigned char *texture_row = glyph->get_row(yi);
-        nassertr(texture_row != (unsigned char *)NULL, (DynamicTextGlyph *)NULL);
-        for (int xi = 0; xi < bitmap.width; xi++) {
-          texture_row[xi] = (int)(buffer_row[xi] * 255) / (bitmap.num_grays - 1);
-        }
-        buffer_row += bitmap.pitch;
-      }
+    if (_tex_pixels_per_unit == _font_pixels_per_unit) {
+      // If the bitmap produced from the font doesn't require scaling
+      // before it goes to the texture, we can just copy it directly
+      // into the texture.
+      glyph = slot_glyph(bitmap.width, bitmap.rows);
+      copy_bitmap_to_texture(bitmap, glyph);
 
     } else {
-      text_cat.error()
-        << "Unexpected pixel mode in bitmap: " << (int)bitmap.pixel_mode << "\n";
-    }
+      // Otherwise, we need to copy to a PNMImage first, so we can
+      // scale it; and then copy it to the texture from there.
+      int tex_x_size = (int)(bitmap.width / _scale_factor + 0.5f);
+      int tex_y_size = (int)(bitmap.rows / _scale_factor + 0.5f);
+      glyph = slot_glyph(tex_x_size, tex_y_size);
 
+      PNMImage image(bitmap.width, bitmap.rows, PNMImage::CT_grayscale);
+      copy_bitmap_to_pnmimage(bitmap, image);
+
+      PNMImage reduced(tex_x_size, tex_y_size, PNMImage::CT_grayscale);
+      reduced.quick_filter_from(image);
+      copy_pnmimage_to_texture(reduced, glyph);
+    }
+      
     glyph->_page->mark_dirty(Texture::DF_image);
     
-    glyph->make_geom(slot->bitmap_top, slot->bitmap_left, advance,
-                     _poly_margin, _pixels_per_unit);
+    glyph->make_geom(slot->bitmap_top, slot->bitmap_left, advance, _poly_margin,
+                     _font_pixels_per_unit, _tex_pixels_per_unit);
     return glyph;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::copy_bitmap_to_texture
+//       Access: Private
+//  Description: Copies a bitmap as rendered by FreeType directly into
+//               the texture memory image for the indicated glyph,
+//               without any scaling of pixels.
+////////////////////////////////////////////////////////////////////
+void DynamicTextFont::
+copy_bitmap_to_texture(const FT_Bitmap &bitmap, DynamicTextGlyph *glyph) {
+  if (bitmap.pixel_mode == ft_pixel_mode_grays && bitmap.num_grays == 256) {
+    // This is the easy case: we can memcpy the rendered glyph
+    // directly into our texture image, one row at a time.
+    unsigned char *buffer_row = bitmap.buffer;
+    for (int yi = 0; yi < bitmap.rows; yi++) {
+      
+      unsigned char *texture_row = glyph->get_row(yi);
+      nassertv(texture_row != (unsigned char *)NULL);
+      memcpy(texture_row, buffer_row, bitmap.width);
+      buffer_row += bitmap.pitch;
+    }
+    
+  } else if (bitmap.pixel_mode == ft_pixel_mode_mono) {
+    // This is a little bit more work: we have to expand the
+    // one-bit-per-pixel bitmap into a one-byte-per-pixel texture.
+    unsigned char *buffer_row = bitmap.buffer;
+    for (int yi = 0; yi < bitmap.rows; yi++) {
+      unsigned char *texture_row = glyph->get_row(yi);
+      nassertv(texture_row != (unsigned char *)NULL);
+      
+      int bit = 0x80;
+      unsigned char *b = buffer_row;
+      for (int xi = 0; xi < bitmap.width; xi++) {
+        if (*b & bit) {
+          texture_row[xi] = 0xff;
+        } else {
+          texture_row[xi] = 0x00;
+        }
+        bit >>= 1;
+        if (bit == 0) {
+          ++b;
+          bit = 0x80;
+        }
+      }
+      
+      buffer_row += bitmap.pitch;
+    }
+    
+    
+  } else if (bitmap.pixel_mode == ft_pixel_mode_grays) {
+    // Here we must expand a grayscale pixmap with n levels of gray
+    // into our 256-level texture.
+    unsigned char *buffer_row = bitmap.buffer;
+    for (int yi = 0; yi < bitmap.rows; yi++) {
+      unsigned char *texture_row = glyph->get_row(yi);
+      nassertv(texture_row != (unsigned char *)NULL);
+      for (int xi = 0; xi < bitmap.width; xi++) {
+        texture_row[xi] = (int)(buffer_row[xi] * 255) / (bitmap.num_grays - 1);
+      }
+      buffer_row += bitmap.pitch;
+    }
+    
+  } else {
+    text_cat.error()
+      << "Unexpected pixel mode in bitmap: " << (int)bitmap.pixel_mode << "\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::copy_bitmap_to_pnmimage
+//       Access: Private
+//  Description: Copies a bitmap as rendered by FreeType into a
+//               PNMImage, so it can be rescaled.
+////////////////////////////////////////////////////////////////////
+void DynamicTextFont::
+copy_bitmap_to_pnmimage(const FT_Bitmap &bitmap, PNMImage &image) {
+  if (bitmap.pixel_mode == ft_pixel_mode_grays && 
+      bitmap.num_grays == (int)image.get_maxval() + 1) {
+    // This is the easy case: we can copy the rendered glyph
+    // directly into our image, one pixel at a time.
+    unsigned char *buffer_row = bitmap.buffer;
+    for (int yi = 0; yi < bitmap.rows; yi++) {
+      for (int xi = 0; xi < bitmap.width; xi++) {
+        image.set_gray_val(xi, yi, buffer_row[xi]);
+      }
+      buffer_row += bitmap.pitch;
+    }
+    
+  } else if (bitmap.pixel_mode == ft_pixel_mode_mono) {
+    // This is a little bit more work: we have to expand the
+    // one-bit-per-pixel bitmap into a one-byte-per-pixel image.
+    unsigned char *buffer_row = bitmap.buffer;
+    for (int yi = 0; yi < bitmap.rows; yi++) {
+      xelval maxval = image.get_maxval();
+      int bit = 0x80;
+      unsigned char *b = buffer_row;
+      for (int xi = 0; xi < bitmap.width; xi++) {
+        if (*b & bit) {
+          image.set_gray_val(xi, yi, maxval);
+        } else {
+          image.set_gray_val(xi, yi, 0);
+        }
+        bit >>= 1;
+        if (bit == 0) {
+          ++b;
+          bit = 0x80;
+        }
+      }
+      
+      buffer_row += bitmap.pitch;
+    }
+    
+    
+  } else if (bitmap.pixel_mode == ft_pixel_mode_grays) {
+    // Here we must expand a grayscale pixmap with n levels of gray
+    // into our 256-level texture.
+    unsigned char *buffer_row = bitmap.buffer;
+    for (int yi = 0; yi < bitmap.rows; yi++) {
+      for (int xi = 0; xi < bitmap.width; xi++) {
+        image.set_gray(xi, yi, (float)buffer_row[xi] / (bitmap.num_grays - 1));
+      }
+      buffer_row += bitmap.pitch;
+    }
+    
+  } else {
+    text_cat.error()
+      << "Unexpected pixel mode in bitmap: " << (int)bitmap.pixel_mode << "\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::copy_pnmimage_to_texture
+//       Access: Private
+//  Description: Copies a bitmap stored in a PNMImage into
+//               the texture memory image for the indicated glyph.
+////////////////////////////////////////////////////////////////////
+void DynamicTextFont::
+copy_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph) {
+  for (int yi = 0; yi < image.get_y_size(); yi++) {
+    unsigned char *texture_row = glyph->get_row(yi);
+    nassertv(texture_row != (unsigned char *)NULL);
+    for (int xi = 0; xi < image.get_x_size(); xi++) {
+      texture_row[xi] = image.get_gray_val(xi, yi);
+    }
   }
 }
 

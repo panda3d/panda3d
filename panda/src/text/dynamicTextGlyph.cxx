@@ -108,18 +108,21 @@ erase() {
 //               the pen should be advanced after drawing this glyph.
 ////////////////////////////////////////////////////////////////////
 void DynamicTextGlyph::
-make_geom(int bitmap_top, int bitmap_left, 
-          float advance, float poly_margin, float pixels_per_unit) {
+make_geom(int bitmap_top, int bitmap_left, float advance, float poly_margin, 
+          float font_pixels_per_unit, float tex_pixels_per_unit) {
   nassertv(_page != (DynamicTextPage *)NULL);
 
   // This function should not be called twice.
   nassertv(_geom_count == 0);
 
   // Determine the corners of the rectangle in geometric units.
-  float top = (bitmap_top + poly_margin) / pixels_per_unit;
-  float left = (bitmap_left - poly_margin) / pixels_per_unit;
-  float bottom = (bitmap_top - _y_size - poly_margin) / pixels_per_unit;
-  float right = (bitmap_left + _x_size + poly_margin) / pixels_per_unit;
+  float tex_poly_margin = poly_margin / tex_pixels_per_unit;
+  float origin_y = bitmap_top / font_pixels_per_unit;
+  float origin_x = bitmap_left / font_pixels_per_unit;
+  float top = origin_y + tex_poly_margin;
+  float left = origin_x - tex_poly_margin;
+  float bottom = origin_y - _y_size / tex_pixels_per_unit - tex_poly_margin;
+  float right = origin_x + _x_size / tex_pixels_per_unit + tex_poly_margin;
 
   // And the corresponding corners in UV units.
   float uv_top = 1.0f - (float)(_y - poly_margin) / _page->get_y_size();
@@ -162,7 +165,7 @@ make_geom(int bitmap_top, int bitmap_left,
   _state = RenderState::make(TextureAttrib::make(_page),
                              TransparencyAttrib::make(TransparencyAttrib::M_alpha));
 
-  _advance = advance / pixels_per_unit;
+  _advance = advance / font_pixels_per_unit;
 }
 
 

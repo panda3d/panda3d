@@ -67,7 +67,7 @@ set_pixels_per_unit(float pixels_per_unit) {
   // If this assertion fails, you didn't call clear() first.  RTFM.
   nassertr(get_num_pages() == 0, false);
 
-  _pixels_per_unit = pixels_per_unit;
+  _tex_pixels_per_unit = pixels_per_unit;
   return reset_scale();
 }
 
@@ -79,7 +79,43 @@ set_pixels_per_unit(float pixels_per_unit) {
 ////////////////////////////////////////////////////////////////////
 INLINE float DynamicTextFont::
 get_pixels_per_unit() const {
-  return _pixels_per_unit;
+  return _tex_pixels_per_unit;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::set_scale_factor
+//       Access: Published
+//  Description: Sets the factor by which the font is rendered larger
+//               by the FreeType library before being filtered down to
+//               its actual size in the texture as specified by
+//               set_pixels_per_unit().  This may be set to a number
+//               larger than 1.0 to improve the font's antialiasing
+//               (since FreeType doesn't really do a swell job of
+//               antialiasing by itself).  There is some performance
+//               implication for setting this different than 1.0.
+//
+//               This should only be called before any characters have
+//               been requested out of the font, or immediately after
+//               calling clear().
+////////////////////////////////////////////////////////////////////
+INLINE bool DynamicTextFont::
+set_scale_factor(float scale_factor) {
+  // If this assertion fails, you didn't call clear() first.  RTFM.
+  nassertr(get_num_pages() == 0, false);
+
+  _scale_factor = scale_factor;
+  return reset_scale();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::get_scale_factor
+//       Access: Published
+//  Description: Returns the antialiasing scale factor.  See
+//               set_scale_factor().
+////////////////////////////////////////////////////////////////////
+INLINE float DynamicTextFont::
+get_scale_factor() const {
+  return _scale_factor;
 }
 
 ////////////////////////////////////////////////////////////////////

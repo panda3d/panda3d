@@ -51,7 +51,7 @@ public:
   unsigned char *get_row(int y);
   void erase();
   void make_geom(int top, int left, float advance, float poly_margin,
-                 float pixels_per_unit);
+                 float font_pixels_per_unit, float tex_pixels_per_unit);
 
   DynamicTextPage *_page;
   int _geom_count;

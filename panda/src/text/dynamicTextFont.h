@@ -53,6 +53,9 @@ PUBLISHED:
   INLINE bool set_pixels_per_unit(float pixels_per_unit);
   INLINE float get_pixels_per_unit() const;
 
+  INLINE bool set_scale_factor(float scale_factor);
+  INLINE float get_scale_factor() const;
+
   INLINE void set_small_caps(bool small_caps);
   INLINE bool get_small_caps() const;
   INLINE void set_small_caps_scale(float small_caps_scale);
@@ -94,12 +97,17 @@ private:
   void update_filters();
   bool reset_scale();
   DynamicTextGlyph *make_glyph(int glyph_index);
+  void copy_bitmap_to_texture(const FT_Bitmap &bitmap, DynamicTextGlyph *glyph);
+  void copy_bitmap_to_pnmimage(const FT_Bitmap &bitmap, PNMImage &image);
+  void copy_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph);
   DynamicTextGlyph *slot_glyph(int x_size, int y_size);
 
   static void initialize_ft_library();
 
   float _point_size;
-  float _pixels_per_unit;
+  float _tex_pixels_per_unit;
+  float _scale_factor;
+  float _font_pixels_per_unit;
   bool _small_caps;
   float _small_caps_scale;
   int _texture_margin;
