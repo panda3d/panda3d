@@ -62,8 +62,19 @@ class Interval(DirectObject):
         state = self.getState()
         if state == CInterval.SInitial:
             self.privInitialize(t)
+            if self.isPlaying():
+                self.setupResume()
         elif state == CInterval.SFinal:
             self.privReverseInitialize(t)
+            if self.isPlaying():
+                self.setupResume()
+        elif state == CInterval.SStarted:
+            # Support modifying t while the interval is playing.  We
+            # assume is_playing() will be true in this state.
+            assert(self.isPlaying())
+            self.privInterrupt()
+            self.privStep(t)
+            self.setupResume()
         else:
             self.privStep(t)
         self.privPostEvent()

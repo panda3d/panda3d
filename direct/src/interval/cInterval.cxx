@@ -70,10 +70,25 @@ set_t(double t) {
   switch (get_state()) {
   case S_initial:
     priv_initialize(t);
+    if (is_playing()) {
+      setup_resume();
+    }
     break;
 
   case S_final:
     priv_reverse_initialize(t);
+    if (is_playing()) {
+      setup_resume();
+    }
+    break;
+
+  case S_started:
+    // Support modifying t while the interval is playing.  We assume
+    // is_playing() will be true in this state.
+    nassertv(is_playing());
+    priv_interrupt();
+    priv_step(t);
+    setup_resume();
     break;
 
   default:
