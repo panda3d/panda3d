@@ -21,10 +21,10 @@ class PathEntity(BasicEntities.NodePathEntity):
         assert (len(self.path) > 1)
 
         # end with the starting point at the end, so we have a continuous loop
-        self.path = self.path + [self.path[0]]
-        for pointIndex in range(len(self.path) - 1):
-            startPoint = self.path[pointIndex]
-            endPoint = self.path[pointIndex + 1]
+        path = self.path + [self.path[0]]
+        for pointIndex in range(len(path) - 1):
+            startPoint = path[pointIndex]
+            endPoint = path[pointIndex + 1]
             # Face the endpoint
             v = startPoint - endPoint
 
