@@ -22,6 +22,9 @@
 #include "transformState.h"
 #include "colorAttrib.h"
 #include "sceneGraphReducer.h"
+#include "qpgeom.h"
+#include "qpgeomTristrips.h"
+#include "qpgeomVertexWriter.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -55,39 +58,82 @@ generate() {
   }
 
   PT(GeomNode) gnode = new GeomNode(get_name());
-  Geom *geom = new GeomTristrip;
-  gnode->add_geom(geom);
 
   float left = _frame[0];
   float right = _frame[1];
   float bottom = _frame[2];
   float top = _frame[3];
 
-  PTA_int lengths=PTA_int::empty_array(0);
-  lengths.push_back(4);
+  if (use_qpgeom) {
+    CPT(qpGeomVertexFormat) format;
+    if (_has_uvs) {
+      format = qpGeomVertexFormat::get_v3cpt2();
+    } else {
+      format = qpGeomVertexFormat::get_v3cp();
+    }
 
-  PTA_Vertexf verts;
-  verts.push_back(Vertexf::rfu(left, 0.0f, top));
-  verts.push_back(Vertexf::rfu(left, 0.0f, bottom));
-  verts.push_back(Vertexf::rfu(right, 0.0f, top));
-  verts.push_back(Vertexf::rfu(right, 0.0f, bottom));
+    PT(qpGeomVertexData) vdata = new qpGeomVertexData
+      ("card", format, qpGeomUsageHint::UH_static);
+    qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
+    qpGeomVertexWriter color(vdata, InternalName::get_color());
 
-  geom->set_num_prims(1);
-  geom->set_lengths(lengths);
+    vertex.add_data3f(Vertexf::rfu(left, 0.0f, top));
+    vertex.add_data3f(Vertexf::rfu(left, 0.0f, bottom));
+    vertex.add_data3f(Vertexf::rfu(right, 0.0f, top));
+    vertex.add_data3f(Vertexf::rfu(right, 0.0f, bottom));
 
-  geom->set_coords(verts);
+    color.add_data4f(_color);
+    color.add_data4f(_color);
+    color.add_data4f(_color);
+    color.add_data4f(_color);
 
-  PTA_Colorf colors;
-  colors.push_back(_color);
-  geom->set_colors(colors, G_OVERALL);
+    if (_has_uvs) {
+      qpGeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
+      texcoord.add_data2f(_ll[0], _ur[1]);
+      texcoord.add_data2f(_ll[0], _ll[1]);
+      texcoord.add_data2f(_ur[0], _ur[1]);
+      texcoord.add_data2f(_ur[0], _ll[1]);
+    }
 
-  if (_has_uvs) {
-    PTA_TexCoordf uvs;
-    uvs.push_back(TexCoordf(_ll[0], _ur[1]));
-    uvs.push_back(TexCoordf(_ll[0], _ll[1]));
-    uvs.push_back(TexCoordf(_ur[0], _ur[1]));
-    uvs.push_back(TexCoordf(_ur[0], _ll[1]));
-    geom->set_texcoords(uvs, G_PER_VERTEX);
+    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeomUsageHint::UH_static);
+    strip->add_next_vertices(4);
+
+    PT(qpGeom) geom = new qpGeom;
+    geom->set_vertex_data(vdata);
+    geom->add_primitive(strip);
+
+    gnode->add_geom(geom);
+
+  } else {
+    Geom *geom = new GeomTristrip;
+    gnode->add_geom(geom);
+
+    PTA_int lengths = PTA_int::empty_array(0);
+    lengths.push_back(4);
+    
+    PTA_Vertexf verts;
+    verts.push_back(Vertexf::rfu(left, 0.0f, top));
+    verts.push_back(Vertexf::rfu(left, 0.0f, bottom));
+    verts.push_back(Vertexf::rfu(right, 0.0f, top));
+    verts.push_back(Vertexf::rfu(right, 0.0f, bottom));
+    
+    geom->set_num_prims(1);
+    geom->set_lengths(lengths);
+    
+    geom->set_coords(verts);
+    
+    PTA_Colorf colors;
+    colors.push_back(_color);
+    geom->set_colors(colors, G_OVERALL);
+    
+    if (_has_uvs) {
+      PTA_TexCoordf uvs;
+      uvs.push_back(TexCoordf(_ll[0], _ur[1]));
+      uvs.push_back(TexCoordf(_ll[0], _ll[1]));
+      uvs.push_back(TexCoordf(_ur[0], _ur[1]));
+      uvs.push_back(TexCoordf(_ur[0], _ll[1]));
+      geom->set_texcoords(uvs, G_PER_VERTEX);
+    }
   }
   
   return gnode.p();

@@ -133,15 +133,14 @@ draw_to(float x, float y, float z) {
 //               created with the color and thickness established by
 //               calls to set_color() and set_thick().
 //
-//               If frame_accurate is true, the line segments will be
-//               created as a frame-accurate index, so that later
-//               calls to set_vertex or set_vertex_color will be
-//               visually correct.
+//               If dynamic is true, the line segments will be created
+//               with the dynamic Geom setting, optimizing them for
+//               runtime vertex animation.
 ////////////////////////////////////////////////////////////////////
 INLINE GeomNode *LineSegs::
-create(bool frame_accurate) {
+create(bool dynamic) {
   GeomNode *gnode = new GeomNode(get_name());
-  return create(gnode, frame_accurate);
+  return create(gnode, dynamic);
 }
 
 ////////////////////////////////////////////////////////////////////

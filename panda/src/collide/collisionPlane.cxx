@@ -327,7 +327,7 @@ fill_viz_geom() {
 
   if (use_qpgeom) {
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("collision", qpGeomVertexFormat::get_v3cp(),
+      ("collision", qpGeomVertexFormat::get_v3(),
        qpGeomUsageHint::UH_static);
     qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
 

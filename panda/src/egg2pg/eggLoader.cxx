@@ -420,7 +420,7 @@ make_indexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
 
     int nindex =
       comp_verts_maker.add_normal(egg_prim->get_normal(),
-                                   egg_prim->_dnormals, mat);
+                                  egg_prim->_dnormals, mat);
 
     bprim.set_normal(nindex);
   }
@@ -428,7 +428,7 @@ make_indexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
   if (egg_prim->has_color() && !egg_false_color) {
     int cindex =
       comp_verts_maker.add_color(egg_prim->get_color(),
-                                  egg_prim->_drgbas);
+                                 egg_prim->_drgbas);
     bprim.set_color(cindex);
   }
 
@@ -1541,6 +1541,28 @@ make_node(EggBin *egg_bin, PandaNode *parent) {
   case EggBinner::BN_lod:
     return make_lod(egg_bin, parent);
 
+  case EggBinner::BN_nurbs_surface:
+    {
+      nassertr(!egg_bin->empty(), NULL);
+      EggNode *child = egg_bin->get_first_child();
+      EggNurbsSurface *egg_nurbs;
+      DCAST_INTO_R(egg_nurbs, child, NULL);
+      const LMatrix4d &mat = egg_nurbs->get_vertex_to_node();
+      make_nurbs_surface(egg_nurbs, parent, mat);
+    }
+    return NULL;
+
+  case EggBinner::BN_nurbs_curve:
+    {
+      nassertr(!egg_bin->empty(), NULL);
+      EggNode *child = egg_bin->get_first_child();
+      EggNurbsCurve *egg_nurbs;
+      DCAST_INTO_R(egg_nurbs, child, NULL);
+      const LMatrix4d &mat = egg_nurbs->get_vertex_to_node();
+      make_nurbs_curve(egg_nurbs, parent, mat);
+    }
+    return NULL;
+
   case EggBinner::BN_none:
     break;
   }
@@ -1929,7 +1951,8 @@ make_vertex_data(const EggRenderState *render_state,
        qpGeomVertexColumn::NT_float32, qpGeomVertexColumn::C_vector);
   }
 
-  if (vertex_pool->has_colors()) {
+  bool has_colors = vertex_pool->has_nonwhite_colors();
+  if (has_colors) {
     array_format->add_column
       (InternalName::get_color(), 1, 
        qpGeomVertexColumn::NT_packed_dabc, qpGeomVertexColumn::C_color);
@@ -1994,7 +2017,7 @@ make_vertex_data(const EggRenderState *render_state,
                        InternalName::get_normal(), 3);
         }
       }
-      if (vertex->has_color()) {
+      if (has_colors && vertex->has_color()) {
         EggMorphColorList::const_iterator mci;
         for (mci = vertex->_drgbas.begin(); mci != vertex->_drgbas.end(); ++mci) {
           slider_names.insert((*mci).get_name());
@@ -2090,7 +2113,7 @@ make_vertex_data(const EggRenderState *render_state,
       }
     }
 
-    if (vertex->has_color()) {
+    if (has_colors && vertex->has_color()) {
       gvw.set_column(InternalName::get_color());
       gvw.add_data4f(vertex->get_color());
 
@@ -2372,13 +2395,8 @@ make_sphere(EggGroup *egg_group, EggGroup::CollideFlags flags,
       //egg2pg_cat.debug() << "make_sphere radius: " << radius << "\n";
       vi = vertices.begin();
       EggVertex *clr_vtx = (*vi);
-      if (clr_vtx->has_color()) {
-        color = clr_vtx->get_color();
-      } else {
-        color = Colorf(1.0,1.0,1.0,1.0);
-      }
+      color = clr_vtx->get_color();
       success = true;
-
     }
   }
   return success;

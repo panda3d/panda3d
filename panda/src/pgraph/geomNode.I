@@ -122,27 +122,6 @@ set_geom_state(int n, const RenderState *state) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GeomNode::add_geom
-//       Access: Published
-//  Description: Adds a new Geom to the node.  The geom is given the
-//               indicated state (which may be
-//               RenderState::make_empty(), to completely inherit its
-//               state from the scene graph).
-//
-//               The return value is the index number of the new Geom.
-////////////////////////////////////////////////////////////////////
-INLINE int GeomNode::
-add_geom(Geom *geom, const RenderState *state) {
-  nassertr(geom != (Geom *)NULL, -1);
-  nassertr(state != (RenderState *)NULL, -1);
-  CDWriter cdata(_cycler);
-
-  cdata->_geoms.push_back(GeomEntry(geom, state));
-  mark_bound_stale();
-  return cdata->_geoms.size() - 1;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::remove_geom
 //       Access: Published
 //  Description: Removes the nth geom from the node.

@@ -330,6 +330,17 @@ transform_vertices(const LMatrix4f &mat) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Geom::check_valid
+//       Access: Published
+//  Description: This is only here temporarily; it has meaning at the
+//               qpGeom level.
+////////////////////////////////////////////////////////////////////
+bool Geom::
+check_valid() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Geom::set_coords
 //       Access: Published
 //  Description:

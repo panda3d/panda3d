@@ -324,7 +324,13 @@ set_color(Geom *geom, const Colorf &color) {
     CPT(qpGeomVertexData) &new_data = _qpfcolors[sc];
     if (new_data.is_null()) {
       // We have not yet converted these colors.  Do so now.
-      new_data = sc._vertex_data->set_color(color);
+      if (sc._vertex_data->has_column(InternalName::get_color())) {
+        new_data = sc._vertex_data->set_color(color);
+      } else {
+        new_data = sc._vertex_data->set_color
+          (color, 1, qpGeomVertexColumn::NT_packed_dabc,
+           qpGeomVertexColumn::C_color);
+      }
     }
 
     qpgeom->set_vertex_data(new_data);
@@ -399,7 +405,13 @@ transform_colors(Geom *geom, const LVecBase4f &scale) {
     CPT(qpGeomVertexData) &new_data = _qptcolors[sc];
     if (new_data.is_null()) {
       // We have not yet converted these colors.  Do so now.
-      new_data = sc._vertex_data->scale_color(scale);
+      if (sc._vertex_data->has_column(InternalName::get_color())) {
+        new_data = sc._vertex_data->scale_color(scale);
+      } else {
+        new_data = sc._vertex_data->set_color
+          (scale, 1, qpGeomVertexColumn::NT_packed_dabc,
+           qpGeomVertexColumn::C_color);
+      }
     }
 
     qpgeom->set_vertex_data(new_data);

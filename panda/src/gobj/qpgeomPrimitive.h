@@ -139,6 +139,8 @@ PUBLISHED:
   INLINE int get_data_size_bytes() const;
   INLINE UpdateSeq get_modified() const;
 
+  bool check_valid(const qpGeomVertexData *vertex_data) const;
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
 

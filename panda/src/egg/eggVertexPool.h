@@ -96,6 +96,7 @@ PUBLISHED:
   int get_num_dimensions() const;
   bool has_normals() const;
   bool has_colors() const;
+  bool has_nonwhite_colors() const;
   bool has_uvs() const;
   void get_uv_names(vector_string &uv_names) const;
 

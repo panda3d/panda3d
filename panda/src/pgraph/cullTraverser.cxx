@@ -33,6 +33,9 @@
 #include "boundingHexahedron.h"
 #include "geomSphere.h"
 #include "portalClipper.h"
+#include "qpgeom.h"
+#include "qpgeomTristrips.h"
+#include "qpgeomVertexWriter.h"
 
 PStatCollector CullTraverser::_nodes_pcollector("Nodes");
 PStatCollector CullTraverser::_geom_nodes_pcollector("Nodes:GeomNodes");
@@ -293,15 +296,47 @@ make_bounds_viz(const BoundingVolume &vol) {
 
   } else if (vol.is_of_type(BoundingSphere::get_class_type())) {
     const BoundingSphere *sphere = DCAST(BoundingSphere, &vol);
-    
-    geom = new GeomSphere;
-    PTA_Vertexf verts;
-    LPoint3f center = sphere->get_center();
-    verts.push_back(center);
-    center[0] += sphere->get_radius();
-    verts.push_back(center);
-    geom->set_coords(verts);
-    geom->set_num_prims(1);
+
+    if (use_qpgeom) {
+      static const int num_slices = 16;
+      static const int num_stacks = 8;
+
+      PT(qpGeomVertexData) vdata = new qpGeomVertexData
+        ("collision", qpGeomVertexFormat::get_v3(),
+         qpGeomUsageHint::UH_stream);
+      qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
+      
+      PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeomUsageHint::UH_stream);
+      for (int sl = 0; sl < num_slices; ++sl) {
+        float longitude0 = (float)sl / (float)num_slices;
+        float longitude1 = (float)(sl + 1) / (float)num_slices;
+        vertex.add_data3f(compute_point(sphere, 0.0, longitude0));
+        for (int st = 1; st < num_stacks; ++st) {
+          float latitude = (float)st / (float)num_stacks;
+          vertex.add_data3f(compute_point(sphere, latitude, longitude0));
+          vertex.add_data3f(compute_point(sphere, latitude, longitude1));
+        }
+        vertex.add_data3f(compute_point(sphere, 1.0, longitude0));
+        
+        strip->add_next_vertices(num_stacks * 2);
+        strip->close_primitive();
+      }
+      
+      PT(qpGeom) qpgeom = new qpGeom;
+      qpgeom->set_vertex_data(vdata);
+      qpgeom->add_primitive(strip);
+      geom = qpgeom.p();
+
+    } else {
+      geom = new GeomSphere;
+      PTA_Vertexf verts;
+      LPoint3f center = sphere->get_center();
+      verts.push_back(center);
+      center[0] += sphere->get_radius();
+      verts.push_back(center);
+      geom->set_coords(verts);
+      geom->set_num_prims(1);
+    }
     
   } else {
     pgraph_cat.warning()
@@ -310,6 +345,25 @@ make_bounds_viz(const BoundingVolume &vol) {
   }
 
   return geom;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::compute_point
+//       Access: Private, Static
+//  Description: Returns a point on the surface of the sphere.
+//               latitude and longitude range from 0.0 to 1.0.  
+////////////////////////////////////////////////////////////////////
+Vertexf CullTraverser::
+compute_point(const BoundingSphere *sphere, 
+              float latitude, float longitude) {
+  float s1, c1;
+  csincos(latitude * MathNumbers::pi_f, &s1, &c1);
+
+  float s2, c2;
+  csincos(longitude * 2.0f * MathNumbers::pi_f, &s2, &c2);
+
+  Vertexf p(s1 * c2, s1 * s2, c1);
+  return p * sphere->get_radius() + sphere->get_center();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -463,6 +463,19 @@ get_num_bytes() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPrimitive::check_valid
+//       Access: Published
+//  Description: Verifies that the primitive only references vertices
+//               that actually exist within the indicated
+//               GeomVertexData.  Returns true if the primitive
+//               appears to be valid, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool qpGeomPrimitive::
+check_valid(const qpGeomVertexData *vertex_data) const {
+  return get_max_vertex() < vertex_data->get_num_vertices();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPrimitive::output
 //       Access: Published, Virtual
 //  Description: 

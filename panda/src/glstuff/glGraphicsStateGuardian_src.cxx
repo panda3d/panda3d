@@ -2324,6 +2324,10 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
     GLP(EnableClientState)(GL_COLOR_ARRAY);
   } else {
     GLP(DisableClientState)(GL_COLOR_ARRAY);
+
+    // Since we don't have per-vertex color, the implicit color is
+    // white.
+    GLP(Color4f)(1.0f, 1.0f, 1.0f, 1.0f);
   }
 
   // Now set up each of the active texture coordinate stages--or at

@@ -76,7 +76,7 @@ PUBLISHED:
   INLINE int get_num_primitives() const;
   INLINE const qpGeomPrimitive *get_primitive(int i) const;
   INLINE qpGeomPrimitive *modify_primitive(int i);
-  INLINE void set_primitive(int i, const qpGeomPrimitive *primitive);
+  void set_primitive(int i, const qpGeomPrimitive *primitive);
   void add_primitive(const qpGeomPrimitive *primitive);
   void remove_primitive(int i);
   void clear_primitives();
@@ -84,10 +84,14 @@ PUBLISHED:
   int get_num_bytes() const;
   INLINE UpdateSeq get_modified() const;
 
+  // Temporarily virtual.
   virtual void transform_vertices(const LMatrix4f &mat);
 
   void munge_geom(const qpGeomMunger *munger,
                   CPT(qpGeom) &result, CPT(qpGeomVertexData) &data) const;
+
+  // Temporarily virtual.
+  virtual bool check_valid() const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
@@ -108,6 +112,9 @@ public:
 
 protected:
   virtual BoundingVolume *recompute_bound();
+
+private:
+  bool check_will_be_valid(const qpGeomVertexData *vertex_data) const;
 
 private:
   typedef pvector<PT(qpGeomPrimitive) > Primitives;

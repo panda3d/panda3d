@@ -38,6 +38,8 @@ public:
   virtual PT(qpGeomPrimitive) make_copy() const;
   virtual PrimitiveType get_primitive_type() const;
 
+  virtual int get_min_num_vertices_per_primitive() const;
+
 public:
   virtual void draw(GraphicsStateGuardianBase *gsg) const;
 

@@ -27,6 +27,7 @@
 #include "geomLine.h"
 #include "geomLinestrip.h"
 #include "geomNode.h"
+#include "qpgeomVertexData.h"
 #include "namable.h"
 
 #include "pvector.h"
@@ -58,8 +59,8 @@ PUBLISHED:
   const Vertexf &get_current_position();
   bool is_empty();
 
-  INLINE GeomNode *create(bool frame_accurate = false);
-  GeomNode *create(GeomNode *previous, bool frame_accurate = false);
+  INLINE GeomNode *create(bool dynamic = false);
+  GeomNode *create(GeomNode *previous, bool dynamic = false);
 
   // Functions to move the line vertices after they have been created.
   INLINE int get_num_vertices() const;
@@ -93,6 +94,7 @@ private:
 
   PTA_Vertexf _created_verts;
   PTA_Colorf _created_colors;
+  PT(qpGeomVertexData) _created_data;
 };
 
 #include "lineSegs.I"

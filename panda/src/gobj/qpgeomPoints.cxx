@@ -95,6 +95,17 @@ get_num_vertices_per_primitive() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomPoints::get_min_num_vertices_per_primitive
+//       Access: Public, Virtual
+//  Description: Returns the minimum number of vertices that must be
+//               added before close_primitive() may legally be called.
+////////////////////////////////////////////////////////////////////
+int qpGeomPoints::
+get_min_num_vertices_per_primitive() const {
+  return 1;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomPoints::draw
 //       Access: Public, Virtual
 //  Description: Calls the appropriate method on the GSG to draw the

@@ -19,6 +19,8 @@
 #include "eggBinner.h"
 #include "eggRenderState.h"
 #include "eggPrimitive.h"
+#include "eggNurbsSurface.h"
+#include "eggNurbsCurve.h"
 #include "eggSwitchCondition.h"
 #include "eggGroup.h"
 #include "dcast.h"
@@ -58,7 +60,13 @@ prepare_node(EggNode *node) {
 ////////////////////////////////////////////////////////////////////
 int EggBinner::
 get_bin_number(const EggNode *node) {
-  if (node->is_of_type(EggPrimitive::get_class_type())) {
+  if (node->is_of_type(EggNurbsSurface::get_class_type())) {
+    return (int)BN_nurbs_surface;
+
+  } else if (node->is_of_type(EggNurbsCurve::get_class_type())) {
+    return (int)BN_nurbs_curve;
+
+  } else if (node->is_of_type(EggPrimitive::get_class_type())) {
     return (int)BN_polyset;
 
   } else if (node->is_of_type(EggGroup::get_class_type())) {
@@ -115,6 +123,11 @@ sorts_less(int bin_number, const EggNode *a, const EggNode *b) {
       // Group LOD nodes in order by switching center.
       return (swda._center.compare_to(swdb._center) < 0);
     }
+
+  case BN_nurbs_surface:
+  case BN_nurbs_curve:
+    // Nurbs curves and surfaces are always binned individually.
+    return a < b;
       
   case BN_none:
     break;

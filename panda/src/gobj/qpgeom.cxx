@@ -133,10 +133,47 @@ modify_vertex_data() {
 ////////////////////////////////////////////////////////////////////
 void qpGeom::
 set_vertex_data(const qpGeomVertexData *data) {
+  nassertv(check_will_be_valid(data));
   clear_cache();
   CDWriter cdata(_cycler);
   cdata->_data = (qpGeomVertexData *)data;
   mark_bound_stale();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::set_primitive
+//       Access: Published
+//  Description: Replaces the ith GeomPrimitive object stored within
+//               the Geom with the new object.
+////////////////////////////////////////////////////////////////////
+void qpGeom::
+set_primitive(int i, const qpGeomPrimitive *primitive) {
+  clear_cache();
+  CDWriter cdata(_cycler);
+  nassertv(i >= 0 && i < (int)cdata->_primitives.size());
+  nassertv(primitive->check_valid(cdata->_data));
+
+  // All primitives within a particular Geom must have the same
+  // fundamental primitive type (triangles, points, or lines).
+  nassertv(cdata->_primitive_type == qpGeomPrimitive::PT_none ||
+           cdata->_primitive_type == primitive->get_primitive_type());
+
+  if (cdata->_got_usage_hint &&
+      cdata->_primitives[i]->get_usage_hint() != primitive->get_usage_hint()) {
+    if (cdata->_primitives[i]->get_usage_hint() < primitive->get_usage_hint()) {
+      // If we're reducing the usage hint, we might also be reducing
+      // the minimum usage hit.
+      cdata->_usage_hint = min(cdata->_usage_hint, primitive->get_usage_hint());
+    } else { // (cdata->_primitives[i]->get_usage_hint() > primitive->get_usage_hint())
+      // If we're increasing it, we might have to rederive the minimum.
+      if (cdata->_usage_hint == cdata->_primitives[i]->get_usage_hint()) {
+        cdata->_got_usage_hint = false;
+      }
+    }
+  }
+  cdata->_primitives[i] = (qpGeomPrimitive *)primitive;
+  cdata->_primitive_type = primitive->get_primitive_type();
+  cdata->_modified = qpGeom::get_next_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -151,8 +188,11 @@ void qpGeom::
 add_primitive(const qpGeomPrimitive *primitive) {
   clear_cache();
   CDWriter cdata(_cycler);
+
+  nassertv(primitive->check_valid(cdata->_data));
+
   // All primitives within a particular Geom must have the same
-  // primitive type.
+  // fundamental primitive type (triangles, points, or lines).
   nassertv(cdata->_primitive_type == qpGeomPrimitive::PT_none ||
            cdata->_primitive_type == primitive->get_primitive_type());
 
@@ -341,6 +381,30 @@ munge_geom(const qpGeomMunger *munger,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::check_valid
+//       Access: Published
+//  Description: Verifies that the all of the primitives within the
+//               geom reference vertices that actually exist within
+//               the geom's GeomVertexData.  Returns true if the geom
+//               appears to be valid, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool qpGeom::
+check_valid() const {
+  CDReader cdata(_cycler);
+
+  Primitives::const_iterator pi;
+  for (pi = cdata->_primitives.begin(); 
+       pi != cdata->_primitives.end();
+       ++pi) {
+    if (!(*pi)->check_valid(cdata->_data)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeom::output
 //       Access: Published
 //  Description: 
@@ -521,6 +585,32 @@ recompute_bound() {
   }
 
   return bound;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::check_will_be_valid
+//       Access: Private
+//  Description: Verifies that the all of the primitives within the
+//               geom reference vertices that actually exist within
+//               the indicated GeomVertexData (presumably in
+//               preparation for assigning the geom to use this data).
+//               Returns true if the data appears to be valid, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool qpGeom::
+check_will_be_valid(const qpGeomVertexData *vertex_data) const {
+  CDReader cdata(_cycler);
+
+  Primitives::const_iterator pi;
+  for (pi = cdata->_primitives.begin(); 
+       pi != cdata->_primitives.end();
+       ++pi) {
+    if (!(*pi)->check_valid(vertex_data)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

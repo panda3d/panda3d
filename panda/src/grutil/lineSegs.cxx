@@ -19,6 +19,10 @@
 #include "lineSegs.h"
 #include "renderState.h"
 #include "renderModeAttrib.h"
+#include "qpgeom.h"
+#include "qpgeomLinestrips.h"
+#include "qpgeomPoints.h"
+#include "qpgeomVertexWriter.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LineSegs::Constructor
@@ -140,86 +144,141 @@ get_current_position() {
 //               thickness established by calls to set_color() and
 //               set_thick().
 //
-//               If frame_accurate is true, the line segments will be
-//               created as a frame-accurate index, so that later
-//               calls to set_vertex or set_vertex_color will be
-//               visually correct.
+//               If dynamic is true, the line segments will be created
+//               with the dynamic Geom setting, optimizing them for
+//               runtime vertex animation.
 ////////////////////////////////////////////////////////////////////
 GeomNode *LineSegs::
-create(GeomNode *previous, bool) {
+create(GeomNode *previous, bool dynamic) {
   if (!_list.empty()) {
     _created_verts.clear();
     _created_colors.clear();
-
-    // One array each for the indices into these arrays for points
-    // and lines, and one for our line-segment lengths array.
-    PTA_ushort point_index;
-    PTA_ushort line_index;
-    PTA_int lengths;
-
-    // Now fill up the arrays.
-    int v = 0;
-    LineList::const_iterator ll;
-    SegmentList::const_iterator sl;
-
-    for (ll = _list.begin(); ll != _list.end(); ll++) {
-      const SegmentList &segs = (*ll);
-
-      if (segs.size() < 2) {
-        point_index.push_back(v);
-      } else {
-        lengths.push_back(segs.size());
-      }
-
-      for (sl = segs.begin(); sl != segs.end(); sl++) {
-        if (segs.size() >= 2) {
-          line_index.push_back(v);
-        }
-        _created_verts.push_back((*sl)._point);
-        _created_colors.push_back((*sl)._color);
-        v++;
-        nassertr(v == (int)_created_verts.size(), previous);
-      }
-    }
-
+    _created_data = NULL;
+      
     CPT(RenderAttrib) thick = RenderModeAttrib::make(RenderModeAttrib::M_unchanged, _thick);
     CPT(RenderState) state = RenderState::make(thick);
 
-    // Now create the lines.
-    if (line_index.size() > 0) {
-      // Create a new Geom and add the line segments.
-      Geom *geom;
-      if (line_index.size() <= 2) {
-        // Here's a special case: just one line segment.
-        GeomLine *geom_line = new GeomLine;
-        geom_line->set_num_prims(1);
-        geom = geom_line;
+    if (use_qpgeom) {
+      PT(qpGeomVertexData) vdata = new qpGeomVertexData
+        ("lineSegs", qpGeomVertexFormat::get_v3cp(),
+         dynamic ? qpGeomUsageHint::UH_dynamic : qpGeomUsageHint::UH_static);
+      qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
+      qpGeomVertexWriter color(vdata, InternalName::get_color());
 
-      } else {
-        // The more normal case: multiple line segments, connected
-        // end-to-end like a series of linestrips.
-        GeomLinestrip *geom_linestrip = new GeomLinestrip;
-        geom_linestrip->set_num_prims(lengths.size());
-        geom_linestrip->set_lengths(lengths);
-        geom = geom_linestrip;
+      PT(qpGeomLinestrips) lines = new qpGeomLinestrips(qpGeomUsageHint::UH_static);
+      PT(qpGeomPoints) points = new qpGeomPoints(qpGeomUsageHint::UH_static);
+
+      int v = 0;
+      LineList::const_iterator ll;
+      SegmentList::const_iterator sl;
+
+      for (ll = _list.begin(); ll != _list.end(); ll++) {
+        const SegmentList &segs = (*ll);
+        
+        if (segs.size() < 2) {
+          // A segment of length 1 is just a point.
+          for (sl = segs.begin(); sl != segs.end(); sl++) {
+            points->add_vertex(v);
+            vertex.add_data3f((*sl)._point);
+            color.add_data4f((*sl)._color);
+            v++;
+          }
+          points->close_primitive();
+
+        } else {
+          // A segment of length 2 or more is a line segment or
+          // segments.
+          for (sl = segs.begin(); sl != segs.end(); sl++) {
+            lines->add_vertex(v);
+            vertex.add_data3f((*sl)._point);
+            color.add_data4f((*sl)._color);
+            v++;
+          }
+          lines->close_primitive();
+        }
       }
 
-      geom->set_colors(_created_colors, G_PER_VERTEX, line_index);
-      geom->set_coords(_created_verts, line_index);
+      if (lines->get_num_vertices() != 0) {
+        PT(qpGeom) geom = new qpGeom;
+        geom->set_vertex_data(vdata);
+        geom->add_primitive(lines);
+        previous->add_geom(geom, state);
+      }
+      if (points->get_num_vertices() != 0) {
+        PT(qpGeom) geom = new qpGeom;
+        geom->set_vertex_data(vdata);
+        geom->add_primitive(points);
+        previous->add_geom(geom, state);
+      }
 
-      previous->add_geom(geom, state);
-    }
+    } else {
+      // One array each for the indices into these arrays for points
+      // and lines, and one for our line-segment lengths array.
+      PTA_ushort point_index;
+      PTA_ushort line_index;
+      PTA_int lengths;
+      
+      // Now fill up the arrays.
+      int v = 0;
+      LineList::const_iterator ll;
+      SegmentList::const_iterator sl;
+      
+      for (ll = _list.begin(); ll != _list.end(); ll++) {
+        const SegmentList &segs = (*ll);
+        
+        if (segs.size() < 2) {
+          point_index.push_back(v);
+        } else {
+          lengths.push_back(segs.size());
+        }
+        
+        for (sl = segs.begin(); sl != segs.end(); sl++) {
+          if (segs.size() >= 2) {
+            line_index.push_back(v);
+          }
+          _created_verts.push_back((*sl)._point);
+          _created_colors.push_back((*sl)._color);
+          v++;
+          nassertr(v == (int)_created_verts.size(), previous);
+        }
+      }
+      
+      // Now create the lines.
+      if (line_index.size() > 0) {
+        // Create a new Geom and add the line segments.
+        Geom *geom;
+        if (line_index.size() <= 2) {
+          // Here's a special case: just one line segment.
+          GeomLine *geom_line = new GeomLine;
+          geom_line->set_num_prims(1);
+          geom = geom_line;
+          
+        } else {
+          // The more normal case: multiple line segments, connected
+          // end-to-end like a series of linestrips.
+          GeomLinestrip *geom_linestrip = new GeomLinestrip;
+          geom_linestrip->set_num_prims(lengths.size());
+          geom_linestrip->set_lengths(lengths);
+          geom = geom_linestrip;
+        }
+        
+        geom->set_colors(_created_colors, G_PER_VERTEX, line_index);
+        geom->set_coords(_created_verts, line_index);
+        
+        previous->add_geom(geom, state);
+      }
 
-    // And now create the points.
-    if (point_index.size() > 0) {
-      // Create a new Geom and add the points.
-      GeomPoint *geom = new GeomPoint;
-
-      geom->set_num_prims(point_index.size());
-      geom->set_colors(_created_colors, G_PER_VERTEX, point_index);
-      geom->set_coords(_created_verts, point_index);
-
-      previous->add_geom(geom, state);
+      // And now create the points.
+      if (point_index.size() > 0) {
+        // Create a new Geom and add the points.
+        GeomPoint *geom = new GeomPoint;
+        
+        geom->set_num_prims(point_index.size());
+        geom->set_colors(_created_colors, G_PER_VERTEX, point_index);
+        geom->set_coords(_created_verts, point_index);
+        
+        previous->add_geom(geom, state);
+      }
     }
 
     // And reset for next time.

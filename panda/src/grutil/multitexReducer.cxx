@@ -37,6 +37,9 @@
 #include "config_grutil.h"
 #include "config_gobj.h"
 #include "dcast.h"
+#include "qpgeom.h"
+#include "qpgeomVertexWriter.h"
+#include "qpgeomVertexReader.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MultitexReducer::Constructor
@@ -804,25 +807,39 @@ transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
   GeomList::const_iterator gi;
   for (gi = geom_list.begin(); gi != geom_list.end(); ++gi) {
     const GeomInfo &geom_info = (*gi);
-    
-    PT(Geom) geom = 
-      geom_info._geom_node->get_geom(geom_info._index)->make_copy();
+    const Geom *orig_geom = geom_info._geom_node->get_geom(geom_info._index);
 
-    PTA_Vertexf coords = PTA_Vertexf::empty_array(0);
-    PTA_TexCoordf texcoords = geom->get_texcoords_array(_target_stage->get_texcoord_name());
-    if (!texcoords.empty()) {
-      coords.reserve(texcoords.size());
-      for (size_t i = 0; i < texcoords.size(); i++) {
-        const TexCoordf &tc = texcoords[i];
-        Vertexf v(tc[0], 0.0f, tc[1]);
-        coords.push_back(v);
+    if (orig_geom->is_of_type(qpGeom::get_class_type())) {
+      PT(qpGeom) geom = new qpGeom(*DCAST(qpGeom, orig_geom));
+      PT(qpGeomVertexData) vdata = geom->modify_vertex_data();
+
+      if (vdata->has_column(_target_stage->get_texcoord_name())) {
+        qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
+        qpGeomVertexReader texcoord(vdata, _target_stage->get_texcoord_name());
+
+        while (!texcoord.is_at_end()) {
+          const LVecBase2f &tc = texcoord.get_data2f();
+          vertex.set_data3f(tc[0], 0.0f, tc[1]);
+        }
       }
-      
-      geom->set_coords(coords, geom->get_texcoords_index(_target_stage->get_texcoord_name()));
-      if (texcoord_name != (const InternalName *)NULL) {
-        geom->set_texcoords(InternalName::get_texcoord(),
-                            geom->get_texcoords_array(texcoord_name),
-                            geom->get_texcoords_index(texcoord_name));
+
+      if (texcoord_name != (const InternalName *)NULL &&
+          texcoord_name != InternalName::get_texcoord()) {
+        // Copy the texture coordinates from the indicated name over
+        // to the default name.
+        const qpGeomVertexColumn *column = 
+          vdata->get_format()->get_column(texcoord_name);
+        vdata = vdata->replace_column
+          (InternalName::get_texcoord(), column->get_num_components(),
+           column->get_numeric_type(), column->get_contents(),
+           qpGeomUsageHint::UH_stream, true);
+        geom->set_vertex_data(vdata);
+
+        qpGeomVertexReader from(vdata, texcoord_name);
+        qpGeomVertexWriter to(vdata, InternalName::get_texcoord());
+        while (!from.is_at_end()) {
+          to.add_data2f(from.get_data2f());
+        }
       }
 
       CPT(RenderState) geom_state = RenderState::make_empty();
@@ -839,6 +856,42 @@ transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
       }
       
       geom_node->add_geom(geom, geom_state);
+
+    } else {
+      PT(Geom) geom = orig_geom->make_copy();
+
+      PTA_Vertexf coords = PTA_Vertexf::empty_array(0);
+      PTA_TexCoordf texcoords = geom->get_texcoords_array(_target_stage->get_texcoord_name());
+      if (!texcoords.empty()) {
+        coords.reserve(texcoords.size());
+        for (size_t i = 0; i < texcoords.size(); i++) {
+          const TexCoordf &tc = texcoords[i];
+          Vertexf v(tc[0], 0.0f, tc[1]);
+          coords.push_back(v);
+        }
+      
+        geom->set_coords(coords, geom->get_texcoords_index(_target_stage->get_texcoord_name()));
+        if (texcoord_name != (const InternalName *)NULL) {
+          geom->set_texcoords(InternalName::get_texcoord(),
+                              geom->get_texcoords_array(texcoord_name),
+                              geom->get_texcoords_index(texcoord_name));
+        }
+
+        CPT(RenderState) geom_state = RenderState::make_empty();
+        if (preserve_color) {
+          // Be sure to preserve whatever colors are on the geom.
+          const RenderAttrib *ca = geom_info._geom_net_state->get_attrib(ColorAttrib::get_class_type());
+          if (ca != (const RenderAttrib *)NULL) {
+            geom_state = geom_state->add_attrib(ca);
+          }
+          const RenderAttrib *csa = geom_info._geom_net_state->get_attrib(ColorScaleAttrib::get_class_type());
+          if (csa != (const RenderAttrib *)NULL) {
+            geom_state = geom_state->add_attrib(csa);
+          }
+        }
+      
+        geom_node->add_geom(geom, geom_state);
+      }
     }
   }
 }

@@ -43,6 +43,8 @@ public:
     BN_none = 0,
     BN_polyset,
     BN_lod,
+    BN_nurbs_surface,
+    BN_nurbs_curve,
   };
 
   EggBinner(EggLoader &loader);

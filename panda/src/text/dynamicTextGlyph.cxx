@@ -125,21 +125,15 @@ make_geom(int bitmap_top, int bitmap_left, float advance, float poly_margin,
   // Create a corresponding tristrip.
   if (use_qpgeom) {
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      (string(), qpGeomVertexFormat::get_v3cpt2(),
+      (string(), qpGeomVertexFormat::get_v3t2(),
        qpGeomUsageHint::UH_static);
     qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
-    qpGeomVertexWriter color(vdata, InternalName::get_color());
     qpGeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
 
     vertex.add_data3f(left, 0, top);
     vertex.add_data3f(left, 0, bottom);
     vertex.add_data3f(right, 0, top);
     vertex.add_data3f(right, 0, bottom);
-
-    color.add_data4f(1.0f, 1.0f, 1.0f, 1.0f);
-    color.add_data4f(1.0f, 1.0f, 1.0f, 1.0f);
-    color.add_data4f(1.0f, 1.0f, 1.0f, 1.0f);
-    color.add_data4f(1.0f, 1.0f, 1.0f, 1.0f);
     
     texcoord.add_data2f(uv_left, uv_top);
     texcoord.add_data2f(uv_left, uv_bottom);

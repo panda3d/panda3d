@@ -251,6 +251,28 @@ has_colors() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggVertexPool::has_nonwhite_colors
+//       Access: Public
+//  Description: Returns true if any vertex in the pool has a color
+//               defined other than white, false if no vertices have
+//               colors, or if all colors are white.
+////////////////////////////////////////////////////////////////////
+bool EggVertexPool::
+has_nonwhite_colors() const {
+  IndexVertices::const_iterator ivi;
+  for (ivi = _index_vertices.begin(); ivi != _index_vertices.end(); ++ivi) {
+    EggVertex *vertex = (*ivi).second;
+    if (vertex->has_color() && 
+        (vertex->get_color() != Colorf(1.0, 1.0, 1.0, 1.0) ||
+         !vertex->_drgbas.empty())) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggVertexPool::has_uvs
 //       Access: Public
 //  Description: Returns true if any vertex in the pool has a uv

@@ -819,7 +819,7 @@ draw_polygon(GeomNode *viz_geom_node, GeomNode *bounds_viz_geom_node,
 
   if (use_qpgeom) {
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      ("collision", qpGeomVertexFormat::get_v3cp(),
+      ("collision", qpGeomVertexFormat::get_v3(),
        qpGeomUsageHint::UH_static);
     qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
 

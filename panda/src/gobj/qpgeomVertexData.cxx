@@ -590,6 +590,9 @@ convert_to(const qpGeomVertexFormat *new_format) const {
 //       Access: Published
 //  Description: Returns a new GeomVertexData object with the color
 //               table modified in-place to apply the indicated scale.
+//
+//               If the vertex data does not include a color column, a
+//               new one will not be added.
 ////////////////////////////////////////////////////////////////////
 CPT(qpGeomVertexData) qpGeomVertexData::
 scale_color(const LVecBase4f &color_scale) const {
@@ -665,6 +668,9 @@ scale_color(const LVecBase4f &color_scale, int num_components,
 //       Access: Published
 //  Description: Returns a new GeomVertexData object with the color
 //               data modified in-place with the new value.
+//
+//               If the vertex data does not include a color column, a
+//               new one will not be added.
 ////////////////////////////////////////////////////////////////////
 CPT(qpGeomVertexData) qpGeomVertexData::
 set_color(const Colorf &color) const {

@@ -136,6 +136,7 @@ public:
 
 PUBLISHED:
   virtual void transform_vertices(const LMatrix4f &mat);
+  virtual bool check_valid() const;
 
   void set_coords(const PTA_Vertexf &coords,
                   const PTA_ushort &vindex = PTA_ushort());

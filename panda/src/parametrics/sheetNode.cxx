@@ -27,6 +27,9 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "pStatTimer.h"
+#include "qpgeom.h"
+#include "qpgeomTristrips.h"
+#include "qpgeomVertexWriter.h"
 
 TypeHandle SheetNode::_type_handle;
 
@@ -261,82 +264,148 @@ do_recompute_bound(const NodePath &rel_to) {
 ////////////////////////////////////////////////////////////////////
 void SheetNode::
 render_sheet(CullTraverser *trav, CullTraverserData &data, 
-              NurbsSurfaceResult *result) {
+             NurbsSurfaceResult *result) {
   bool use_vertex_color = get_use_vertex_color();
-
-  PTA_Vertexf verts;
-  PTA_Normalf normals;
-  PTA_TexCoordf uvs;
-  PTA_Colorf colors;
-  PTA_int lengths;
-
-  // We define a series of triangle strips, parallel to the V
-  // direction.
 
   int num_u_segments = result->get_num_u_segments();
   int num_v_segments = result->get_num_v_segments();
   int num_u_verts = get_num_u_subdiv() + 1;
   int num_v_verts = get_num_v_subdiv() + 1;
 
-  for (int ui = 0; ui < num_u_segments; ui++) {
-    for (int uni = 0; uni < num_u_verts; uni++) {
-      float u0 = (float)uni / (float)num_u_verts;
-      float u1 = (float)(uni + 1) / (float)num_u_verts;
-      float u0_tc = result->get_segment_u(ui, u0);
-      float u1_tc = result->get_segment_u(ui, u1);
+  if (use_qpgeom) {
+    CPT(qpGeomVertexFormat) format;
+    if (use_vertex_color) {
+      format = qpGeomVertexFormat::get_v3n3cpt2();
+    } else {
+      format = qpGeomVertexFormat::get_v3n3t2();
+    }
+    PT(qpGeomVertexData) vdata = new qpGeomVertexData
+      ("sheet", format, qpGeomUsageHint::UH_stream);
+    qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
+    qpGeomVertexWriter normal(vdata, InternalName::get_normal());
+    qpGeomVertexWriter color(vdata, InternalName::get_color());
+    qpGeomVertexWriter texcoord(vdata, InternalName::get_texcoord());
+    
+    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeomUsageHint::UH_stream);
+    for (int ui = 0; ui < num_u_segments; ui++) {
+      for (int uni = 0; uni < num_u_verts; uni++) {
+        float u0 = (float)uni / (float)num_u_verts;
+        float u1 = (float)(uni + 1) / (float)num_u_verts;
+        float u0_tc = result->get_segment_u(ui, u0);
+        float u1_tc = result->get_segment_u(ui, u1);
 
-      for (int vi = 0; vi < num_v_segments; vi++) {
-        for (int vni = 0; vni < num_v_verts; vni++) {
-          float v = (float)vni / (float)(num_v_verts - 1);
-          float v_tc = result->get_segment_v(vi, v);
+        for (int vi = 0; vi < num_v_segments; vi++) {
+          for (int vni = 0; vni < num_v_verts; vni++) {
+            float v = (float)vni / (float)(num_v_verts - 1);
+            float v_tc = result->get_segment_v(vi, v);
 
-          LPoint3f point;
-          LVector3f normal;
-          result->eval_segment_point(ui, vi, u0, v, point);
-          result->eval_segment_normal(ui, vi, u0, v, normal);
-          verts.push_back(point);
-          normals.push_back(normal);
-          uvs.push_back(TexCoordf(u0_tc, v_tc));
+            LPoint3f point;
+            LVector3f norm;
+            result->eval_segment_point(ui, vi, u0, v, point);
+            result->eval_segment_normal(ui, vi, u0, v, norm);
+            vertex.add_data3f(point);
+            normal.add_data3f(norm);
+            texcoord.add_data2f(u0_tc, v_tc);
 
-          result->eval_segment_point(ui, vi, u1, v, point);
-          result->eval_segment_normal(ui, vi, u1, v, normal);
-          verts.push_back(point);
-          normals.push_back(normal);
-          uvs.push_back(TexCoordf(u1_tc, v_tc));
+            result->eval_segment_point(ui, vi, u1, v, point);
+            result->eval_segment_normal(ui, vi, u1, v, norm);
+            vertex.add_data3f(point);
+            normal.add_data3f(norm);
+            texcoord.add_data2f(u1_tc, v_tc);
 
-          if (use_vertex_color) {
-            Colorf c0, c1;
-            result->eval_segment_extended_points(ui, vi, u0, v, 0, &c0[0], 4);
-            result->eval_segment_extended_points(ui, vi, u1, v, 0, &c1[0], 4);
+            if (use_vertex_color) {
+              Colorf c0, c1;
+              result->eval_segment_extended_points(ui, vi, u0, v, 0, &c0[0], 4);
+              result->eval_segment_extended_points(ui, vi, u1, v, 0, &c1[0], 4);
 
-            colors.push_back(c0);
-            colors.push_back(c1);
+              color.add_data4f(c0);
+              color.add_data4f(c1);
+            }
           }
+          strip->add_next_vertices(num_v_verts * 2);
+          strip->close_primitive();
         }
-        lengths.push_back(num_v_verts * 2);
       }
     }
-  }
 
-  colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
-  
-  PT(GeomTristrip) geom = new GeomTristrip;
-  geom->set_num_prims(lengths.size());
-  geom->set_coords(verts);
-  geom->set_normals(normals, G_PER_VERTEX);
-  geom->set_texcoords(uvs, G_PER_VERTEX);
+    PT(qpGeom) geom = new qpGeom;
+    geom->set_vertex_data(vdata);
+    geom->add_primitive(strip);
 
-  if (use_vertex_color) {
-    geom->set_colors(colors, G_PER_VERTEX);
+    CullableObject *object = new CullableObject(geom, data._state,
+                                                data._render_transform);
+    trav->get_cull_handler()->record_object(object);
+
   } else {
+    PTA_Vertexf verts;
+    PTA_Normalf normals;
+    PTA_TexCoordf uvs;
+    PTA_Colorf colors;
+    PTA_int lengths;
+
+    // We define a series of triangle strips, parallel to the V
+    // direction.
+
+    for (int ui = 0; ui < num_u_segments; ui++) {
+      for (int uni = 0; uni < num_u_verts; uni++) {
+        float u0 = (float)uni / (float)num_u_verts;
+        float u1 = (float)(uni + 1) / (float)num_u_verts;
+        float u0_tc = result->get_segment_u(ui, u0);
+        float u1_tc = result->get_segment_u(ui, u1);
+
+        for (int vi = 0; vi < num_v_segments; vi++) {
+          for (int vni = 0; vni < num_v_verts; vni++) {
+            float v = (float)vni / (float)(num_v_verts - 1);
+            float v_tc = result->get_segment_v(vi, v);
+
+            LPoint3f point;
+            LVector3f normal;
+            result->eval_segment_point(ui, vi, u0, v, point);
+            result->eval_segment_normal(ui, vi, u0, v, normal);
+            verts.push_back(point);
+            normals.push_back(normal);
+            uvs.push_back(TexCoordf(u0_tc, v_tc));
+
+            result->eval_segment_point(ui, vi, u1, v, point);
+            result->eval_segment_normal(ui, vi, u1, v, normal);
+            verts.push_back(point);
+            normals.push_back(normal);
+            uvs.push_back(TexCoordf(u1_tc, v_tc));
+
+            if (use_vertex_color) {
+              Colorf c0, c1;
+              result->eval_segment_extended_points(ui, vi, u0, v, 0, &c0[0], 4);
+              result->eval_segment_extended_points(ui, vi, u1, v, 0, &c1[0], 4);
+
+              colors.push_back(c0);
+              colors.push_back(c1);
+            }
+          }
+          lengths.push_back(num_v_verts * 2);
+        }
+      }
+    }
+
     colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
-    geom->set_colors(colors, G_OVERALL);
-  }
-  geom->set_lengths(lengths);
   
-  CullableObject *object = new CullableObject(geom, data._state,
-                                              data._render_transform);
-  trav->get_cull_handler()->record_object(object);
+    PT(GeomTristrip) geom = new GeomTristrip;
+    geom->set_num_prims(lengths.size());
+    geom->set_coords(verts);
+    geom->set_normals(normals, G_PER_VERTEX);
+    geom->set_texcoords(uvs, G_PER_VERTEX);
+
+    if (use_vertex_color) {
+      geom->set_colors(colors, G_PER_VERTEX);
+    } else {
+      colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+      geom->set_colors(colors, G_OVERALL);
+    }
+    geom->set_lengths(lengths);
+  
+    CullableObject *object = new CullableObject(geom, data._state,
+                                                data._render_transform);
+    trav->get_cull_handler()->record_object(object);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -23,6 +23,11 @@
 #include "transformState.h"
 #include "workingNodePath.h"
 #include "switchNode.h"
+#include "qpgeom.h"
+#include "qpgeomTristrips.h"
+#include "qpgeomVertexWriter.h"
+#include "qpgeomVertexReader.h"
+#include "qpgeomVertexRewriter.h"
 
 TypeHandle ProjectionScreen::_type_handle;
 
@@ -193,88 +198,144 @@ generate_screen(const NodePath &projector, const string &screen_name,
   NodePath this_np(this);
   rel_mat = projector.get_mat(this_np);
 
+  // Create a GeomNode to hold this mesh.
+  PT(GeomNode) geom_node = new GeomNode(screen_name);
+
   // Now compute all the vertices for the screen.  These are arranged
   // in order from left to right and bottom to top.
   int num_verts = num_x_verts * num_y_verts;
   Lens *lens = projector_node->get_lens();
   float t = (distance - lens->get_near()) / (lens->get_far() - lens->get_near());
 
-  PTA_Vertexf coords;
-  PTA_Normalf norms;
-  coords.reserve(num_verts);
   float x_scale = 2.0f / (num_x_verts - 1);
   float y_scale = 2.0f / (num_y_verts - 1);
-  
-  for (int yi = 0; yi < num_y_verts; yi++) {
-    for (int xi = 0; xi < num_x_verts; xi++) {
-      LPoint2f film = LPoint2f((float)xi * x_scale - 1.0f,
-                               (float)yi * y_scale - 1.0f);
 
-      // Reduce the image by the fill ratio.
-      film *= fill_ratio;
+  if (use_qpgeom) {
+    PT(qpGeomVertexData) vdata = new qpGeomVertexData
+      ("projectionScreen", qpGeomVertexFormat::get_v3n3(),
+       qpGeomUsageHint::UH_dynamic);
+    qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
+    qpGeomVertexWriter normal(vdata, InternalName::get_normal());
+    
+    for (int yi = 0; yi < num_y_verts; yi++) {
+      for (int xi = 0; xi < num_x_verts; xi++) {
+        LPoint2f film = LPoint2f((float)xi * x_scale - 1.0f,
+                                 (float)yi * y_scale - 1.0f);
+        
+        // Reduce the image by the fill ratio.
+        film *= fill_ratio;
+        
+        LPoint3f near_point, far_point;
+        lens->extrude(film, near_point, far_point);
+        LPoint3f point = near_point + t * (far_point - near_point);
+        
+        // Normals aren't often needed on projection screens, but you
+        // never know.
+        LVector3f norm;
+        lens->extrude_vec(film, norm);
 
-      LPoint3f near_point, far_point;
-      lens->extrude(film, near_point, far_point);
-      LPoint3f point = near_point + t * (far_point - near_point);
-
-      // Normals aren't often needed on projection screens, but you
-      // never know.
-      LVector3f normal;
-      lens->extrude_vec(film, normal);
-
-      coords.push_back(point * rel_mat);
-      norms.push_back(-normalize(normal * rel_mat));
+        vertex.add_data3f(point * rel_mat);
+        normal.add_data3f(-normalize(norm * rel_mat));
+      }
     }
-  }
-  nassertr((int)coords.size() == num_verts, NULL);
+    nassertr(vdata->get_num_vertices() == num_verts, NULL);
 
-  // Now synthesize a triangle mesh.  We run triangle strips
-  // horizontally across the grid.
-  int num_tstrips = (num_y_verts-1);
-  int tstrip_length = 2*(num_x_verts-1)+2;
-
-  PTA_int lengths;
-  PTA_ushort vindex;
-
-  // Set the lengths array.  we are creating num_tstrips t-strips,
-  // each of which has tstrip_length vertices.
-  lengths.reserve(num_tstrips);
-  int n;
-  for (n = 0; n < num_tstrips; n++) {
-    lengths.push_back(tstrip_length);
-  }
-  nassertr((int)lengths.size() == num_tstrips, NULL);
-
-  // Now fill up the index array into the vertices.  This lays out the
-  // order of the vertices in each t-strip.
-  vindex.reserve(num_tstrips * tstrip_length);
-  n = 0;
-  int ti, si;
-  for (ti = 1; ti < num_y_verts; ti++) {
-    vindex.push_back(ti * num_x_verts);
-    for (si = 1; si < num_x_verts; si++) {
-      vindex.push_back((ti - 1) * num_x_verts + (si-1));
-      vindex.push_back(ti * num_x_verts + si);
+    // Now synthesize a triangle mesh.  We run triangle strips
+    // horizontally across the grid.
+    PT(qpGeomTristrips) strip = new qpGeomTristrips(qpGeomUsageHint::UH_static);
+    // Fill up the index array into the vertices.  This lays out the
+    // order of the vertices in each tristrip.
+    int ti, si;
+    for (ti = 1; ti < num_y_verts; ti++) {
+      strip->add_vertex(ti * num_x_verts);
+      for (si = 1; si < num_x_verts; si++) {
+        strip->add_vertex((ti - 1) * num_x_verts + (si-1));
+        strip->add_vertex(ti * num_x_verts + si);
+      }
+      strip->add_vertex((ti - 1) * num_x_verts + (num_x_verts-1));
+      strip->close_primitive();
     }
-    vindex.push_back((ti - 1) * num_x_verts + (num_x_verts-1));
+
+    PT(qpGeom) geom = new qpGeom;
+    geom->set_vertex_data(vdata);
+    geom->add_primitive(strip);
+
+    geom_node->add_geom(geom);
+
+  } else {
+    PTA_Vertexf coords;
+    PTA_Normalf norms;
+    coords.reserve(num_verts);
+    
+    for (int yi = 0; yi < num_y_verts; yi++) {
+      for (int xi = 0; xi < num_x_verts; xi++) {
+        LPoint2f film = LPoint2f((float)xi * x_scale - 1.0f,
+                                 (float)yi * y_scale - 1.0f);
+        
+        // Reduce the image by the fill ratio.
+        film *= fill_ratio;
+        
+        LPoint3f near_point, far_point;
+        lens->extrude(film, near_point, far_point);
+        LPoint3f point = near_point + t * (far_point - near_point);
+        
+        // Normals aren't often needed on projection screens, but you
+        // never know.
+        LVector3f normal;
+        lens->extrude_vec(film, normal);
+        
+        coords.push_back(point * rel_mat);
+        norms.push_back(-normalize(normal * rel_mat));
+      }
+    }
+    nassertr((int)coords.size() == num_verts, NULL);
+
+    // Now synthesize a triangle mesh.  We run triangle strips
+    // horizontally across the grid.
+    int num_tstrips = (num_y_verts-1);
+    int tstrip_length = 2*(num_x_verts-1)+2;
+    
+    PTA_int lengths;
+    PTA_ushort vindex;
+    
+    // Set the lengths array.  we are creating num_tstrips t-strips,
+    // each of which has tstrip_length vertices.
+    lengths.reserve(num_tstrips);
+    int n;
+    for (n = 0; n < num_tstrips; n++) {
+      lengths.push_back(tstrip_length);
+    }
+    nassertr((int)lengths.size() == num_tstrips, NULL);
+    
+    // Now fill up the index array into the vertices.  This lays out the
+    // order of the vertices in each t-strip.
+    vindex.reserve(num_tstrips * tstrip_length);
+    n = 0;
+    int ti, si;
+    for (ti = 1; ti < num_y_verts; ti++) {
+      vindex.push_back(ti * num_x_verts);
+      for (si = 1; si < num_x_verts; si++) {
+        vindex.push_back((ti - 1) * num_x_verts + (si-1));
+        vindex.push_back(ti * num_x_verts + si);
+      }
+      vindex.push_back((ti - 1) * num_x_verts + (num_x_verts-1));
+    }
+    nassertr((int)vindex.size() == num_tstrips * tstrip_length, NULL);
+
+    GeomTristrip *geom = new GeomTristrip;
+    geom->set_num_prims(num_tstrips);
+    geom->set_lengths(lengths);
+
+    geom->set_coords(coords, G_PER_VERTEX, vindex);
+    geom->set_normals(norms, G_PER_VERTEX, vindex);
+
+    // Make it white.
+    PTA_Colorf colors;
+    colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+    geom->set_colors(colors, G_OVERALL);
+
+    geom_node->add_geom(geom);
   }
-  nassertr((int)vindex.size() == num_tstrips * tstrip_length, NULL);
-
-  GeomTristrip *geom = new GeomTristrip;
-  geom->set_num_prims(num_tstrips);
-  geom->set_lengths(lengths);
-
-  geom->set_coords(coords, G_PER_VERTEX, vindex);
-  geom->set_normals(norms, G_PER_VERTEX, vindex);
-
-  // Make it white.
-  PTA_Colorf colors;
-  colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
-  geom->set_colors(colors, G_OVERALL);
-
-  // Now create a GeomNode to hold this mesh.
-  PT(GeomNode) geom_node = new GeomNode(screen_name);
-  geom_node->add_geom(geom);
 
   _stale = true;
   ++_last_screen;
@@ -535,55 +596,106 @@ recompute_geom(Geom *geom, const LMatrix4f &rel_mat) {
      0.0f,-0.5f, 0.0f,
      0.5f, 0.5f, 1.0f);
 
-  PTA_TexCoordf uvs;
-  PTA_ushort color_index;
   Lens *lens = _projector_node->get_lens();
   nassertv(lens != (Lens *)NULL);
 
   const LMatrix3f &to_uv = _invert_uvs ? lens_to_uv_inverted : lens_to_uv;
 
-  // Iterate through all the vertices in the Geom.
-  int num_vertices = geom->get_num_vertices();
-  Geom::VertexIterator vi = geom->make_vertex_iterator();
+  if (geom->is_of_type(qpGeom::get_class_type())) {
+    qpGeom *qpgeom = DCAST(qpGeom, geom);
+    // Iterate through all the vertices in the Geom.
 
-  for (int i = 0; i < num_vertices; i++) {
-    const Vertexf &vert = geom->get_next_vertex(vi);
-
-    // For each vertex, project to the film plane.
-    LPoint2f film(0.0, 0.0);
-    bool good = lens->project(vert * rel_mat, film);
-
-    // Now the lens gives us coordinates in the range [-1, 1].
-    // Rescale these to [0, 1].
-    uvs.push_back(film * to_uv);
-
-    // If we have vignette color in effect, color the vertex according
-    // to whether it fell in front of the lens or not.
-    if (_vignette_on) {
-      color_index.push_back(good ? 1 : 0);
+    CPT(qpGeomVertexData) vdata = qpgeom->get_vertex_data();
+    if (!vdata->has_column(_texcoord_name)) {
+      // We need to add a new column for the new texcoords.
+      vdata = vdata->replace_column
+        (_texcoord_name, 2, qpGeomVertexColumn::NT_float32,
+         qpGeomVertexColumn::C_texcoord, qpGeomUsageHint::UH_dynamic, true);
+      qpgeom->set_vertex_data(vdata);
     }
-  }
+    if (_vignette_on && !vdata->has_column(InternalName::get_color())) {
+      // We need to add a column for color.
+      vdata = vdata->replace_column
+        (InternalName::get_color(), 1, qpGeomVertexColumn::NT_packed_dabc,
+         qpGeomVertexColumn::C_color, qpGeomUsageHint::UH_dynamic, true);
+      qpgeom->set_vertex_data(vdata);
+    }
 
-  // Now set the UV's.  If the geom already has indexed UV's, we need
-  // to make a new index for the geom.
-  geom->remove_texcoords(_texcoord_name);
-  if (!geom->are_texcoords_indexed()) {
-    // Simple case: no indexing needed.
-    geom->set_texcoords(_texcoord_name, uvs);
+    qpGeomVertexWriter texcoord(qpgeom->modify_vertex_data(), _texcoord_name);
+    qpGeomVertexWriter color(qpgeom->modify_vertex_data());
+    qpGeomVertexReader vertex(qpgeom->get_vertex_data(), InternalName::get_vertex());
+
+    if (_vignette_on) {
+      color.set_column(InternalName::get_color());
+    }
+
+    while (!vertex.is_at_end()) {
+      Vertexf vert = vertex.get_data3f();
+      
+      // For each vertex, project to the film plane.
+      LPoint2f film(0.0, 0.0);
+      bool good = lens->project(vert * rel_mat, film);
+      
+      // Now the lens gives us coordinates in the range [-1, 1].
+      // Rescale these to [0, 1].
+      texcoord.set_data2f(film * to_uv);
+
+      // If we have vignette color in effect, color the vertex according
+      // to whether it fell in front of the lens or not.
+      if (_vignette_on) {
+        if (good) {
+          color.set_data4f(_frame_color);
+        } else {
+          color.set_data4f(_vignette_color);
+        }
+      }
+    }
 
   } else {
-    // Harder case: we need to make up an index.  But this isn't
-    // terribly hard.
-    PTA_ushort index = PTA_ushort::empty_array(num_vertices);
+    // Iterate through all the vertices in the Geom.
+    PTA_TexCoordf uvs;
+    PTA_ushort color_index;
+    int num_vertices = geom->get_num_vertices();
+    Geom::VertexIterator vi = geom->make_vertex_iterator();
+
     for (int i = 0; i < num_vertices; i++) {
-      index[i] = i;
+      const Vertexf &vert = geom->get_next_vertex(vi);
+      
+      // For each vertex, project to the film plane.
+      LPoint2f film(0.0, 0.0);
+      bool good = lens->project(vert * rel_mat, film);
+      
+      // Now the lens gives us coordinates in the range [-1, 1].
+      // Rescale these to [0, 1].
+      uvs.push_back(film * to_uv);
+      
+      // If we have vignette color in effect, color the vertex according
+      // to whether it fell in front of the lens or not.
+      if (_vignette_on) {
+        color_index.push_back(good ? 1 : 0);
+      }
     }
-    geom->set_texcoords(_texcoord_name, uvs, index);
-  }
 
+    // Now set the UV's.  If the geom already has indexed UV's, we need
+    // to make a new index for the geom.
+    geom->remove_texcoords(_texcoord_name);
+    if (!geom->are_texcoords_indexed()) {
+      // Simple case: no indexing needed.
+      geom->set_texcoords(_texcoord_name, uvs);
+      
+    } else {
+      // Harder case: we need to make up an index.  But this isn't
+      // terribly hard.
+      PTA_ushort index = PTA_ushort::empty_array(num_vertices);
+      for (int i = 0; i < num_vertices; i++) {
+        index[i] = i;
+      }
+      geom->set_texcoords(_texcoord_name, uvs, index);
+    }
 
-  if (_vignette_on) {
-    geom->set_colors(_colors, G_PER_VERTEX, color_index);
+    if (_vignette_on) {
+      geom->set_colors(_colors, G_PER_VERTEX, color_index);
+    }
   }
 }
 
@@ -702,29 +814,49 @@ make_mesh_geom_node(const WorkingNodePath &np, const NodePath &camera,
 ////////////////////////////////////////////////////////////////////
 PT(Geom) ProjectionScreen::
 make_mesh_geom(const Geom *geom, Lens *lens, LMatrix4f &rel_mat) {
-  Geom *new_geom = geom->make_copy();
-  PT(Geom) result = new_geom;
+  if (geom->is_of_type(qpGeom::get_class_type())) {
+    PT(qpGeom) new_geom = new qpGeom(*DCAST(qpGeom, geom));
 
-  PTA_Vertexf coords;
-  GeomBindType bind;
-  PTA_ushort vindex;
+    qpGeomVertexRewriter vertex(new_geom->modify_vertex_data(), 
+                                InternalName::get_vertex());
+    while (!vertex.is_at_end()) {
+      Vertexf vert = vertex.get_data3f();
+      
+      // Project each vertex into the film plane, but use three
+      // dimensions so the Z coordinate remains meaningful.
+      LPoint3f film(0.0f, 0.0f, 0.0f);
+      lens->project(vert * rel_mat, film);
+      
+      vertex.set_data3f(film);
+    }      
 
-  new_geom->get_coords(coords, bind, vindex);
+    return new_geom.p();
+    
+  } else {
+    Geom *new_geom = geom->make_copy();
+    PT(Geom) result = new_geom;
 
-  PTA_Vertexf new_coords;
-  new_coords.reserve(coords.size());
-  for (int i = 0; i < (int)coords.size(); i++) {
-    const Vertexf &vert = coords[i];
+    PTA_Vertexf coords;
+    GeomBindType bind;
+    PTA_ushort vindex;
+    
+    new_geom->get_coords(coords, bind, vindex);
+    
+    PTA_Vertexf new_coords;
+    new_coords.reserve(coords.size());
+    for (int i = 0; i < (int)coords.size(); i++) {
+      const Vertexf &vert = coords[i];
+      
+      // Project each vertex into the film plane, but use three
+      // dimensions so the Z coordinate remains meaningful.
+      LPoint3f film(0.0f, 0.0f, 0.0f);
+      lens->project(vert * rel_mat, film);
+      
+      new_coords.push_back(film);
+    }
+    
+    new_geom->set_coords(new_coords, bind, vindex);
 
-    // Project each vertex into the film plane, but use three
-    // dimensions so the Z coordinate remains meaningful.
-    LPoint3f film(0.0f, 0.0f, 0.0f);
-    lens->project(vert * rel_mat, film);
-
-    new_coords.push_back(film);
+    return result;
   }
-
-  new_geom->set_coords(new_coords, bind, vindex);
-
-  return result;
 }

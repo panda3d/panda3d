@@ -62,7 +62,7 @@ PUBLISHED:
   INLINE const RenderState *get_geom_state(int n) const;
   INLINE void set_geom_state(int n, const RenderState *state);
 
-  INLINE int add_geom(Geom *geom, const RenderState *state = RenderState::make_empty());
+  int add_geom(Geom *geom, const RenderState *state = RenderState::make_empty());
   void add_geoms_from(const GeomNode *other);
   INLINE void remove_geom(int n);
   INLINE void remove_all_geoms();

@@ -30,6 +30,10 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "pStatTimer.h"
+#include "qpgeom.h"
+#include "qpgeomLinestrips.h"
+#include "qpgeomTristrips.h"
+#include "qpgeomVertexWriter.h"
 
 TypeHandle RopeNode::_type_handle;
 

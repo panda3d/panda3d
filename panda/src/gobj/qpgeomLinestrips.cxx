@@ -80,6 +80,17 @@ get_primitive_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomLinestrips::get_min_num_vertices_per_primitive
+//       Access: Public, Virtual
+//  Description: Returns the minimum number of vertices that must be
+//               added before close_primitive() may legally be called.
+////////////////////////////////////////////////////////////////////
+int qpGeomLinestrips::
+get_min_num_vertices_per_primitive() const {
+  return 2;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomLinestrips::draw
 //       Access: Public, Virtual
 //  Description: Calls the appropriate method on the GSG to draw the

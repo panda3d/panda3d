@@ -94,6 +94,8 @@ public:
 private:
   void show_bounds(CullTraverserData &data);
   PT(Geom) make_bounds_viz(const BoundingVolume &vol);
+  static Vertexf compute_point(const BoundingSphere *sphere, 
+                               float latitude, float longitude);
   CPT(RenderState) get_bounds_outer_viz_state();
   CPT(RenderState) get_bounds_inner_viz_state();
   CPT(RenderState) get_depth_offset_state();

@@ -406,6 +406,28 @@ get_legal_collide_mask() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::add_geom
+//       Access: Published
+//  Description: Adds a new Geom to the node.  The geom is given the
+//               indicated state (which may be
+//               RenderState::make_empty(), to completely inherit its
+//               state from the scene graph).
+//
+//               The return value is the index number of the new Geom.
+////////////////////////////////////////////////////////////////////
+int GeomNode::
+add_geom(Geom *geom, const RenderState *state) {
+  nassertr(geom != (Geom *)NULL, -1);
+  nassertr(geom->check_valid(), -1);
+  nassertr(state != (RenderState *)NULL, -1);
+  CDWriter cdata(_cycler);
+
+  cdata->_geoms.push_back(GeomEntry(geom, state));
+  mark_bound_stale();
+  return cdata->_geoms.size() - 1;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::add_geoms_from
 //       Access: Published
 //  Description: Copies the Geoms (and their associated RenderStates)
@@ -415,15 +437,16 @@ void GeomNode::
 add_geoms_from(const GeomNode *other) {
   CDReader cdata_other(other->_cycler);
   CDWriter cdata(_cycler);
+  mark_bound_stale();
 
   Geoms::const_iterator gi;
   for (gi = cdata_other->_geoms.begin(); 
        gi != cdata_other->_geoms.end(); 
        ++gi) {
     const GeomEntry &entry = (*gi);
+    nassertv(entry._geom->check_valid());
     cdata->_geoms.push_back(entry);
   }
-  mark_bound_stale();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -1060,7 +1060,7 @@ load_image_as_model(const Filename &filename) {
 
   if (use_qpgeom) {
     PT(qpGeomVertexData) vdata = new qpGeomVertexData
-      (string(), qpGeomVertexFormat::get_v3cpt2(),
+      (string(), qpGeomVertexFormat::get_v3t2(),
        qpGeomUsageHint::UH_static);
     qpGeomVertexWriter vertex(vdata, InternalName::get_vertex());
     qpGeomVertexWriter texcoord(vdata, InternalName::get_texcoord());

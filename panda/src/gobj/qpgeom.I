@@ -108,40 +108,6 @@ modify_primitive(int i) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeom::set_primitive
-//       Access: Published
-//  Description: Replaces the ith GeomPrimitive object stored within
-//               the Geom with the new object.
-////////////////////////////////////////////////////////////////////
-INLINE void qpGeom::
-set_primitive(int i, const qpGeomPrimitive *primitive) {
-  clear_cache();
-  CDWriter cdata(_cycler);
-  nassertv(i >= 0 && i < (int)cdata->_primitives.size());
-
-  // All primitives within a particular Geom must have the same
-  // primitive type.
-  nassertv(cdata->_primitive_type == qpGeomPrimitive::PT_none ||
-           cdata->_primitive_type == primitive->get_primitive_type());
-  if (cdata->_got_usage_hint &&
-      cdata->_primitives[i]->get_usage_hint() != primitive->get_usage_hint()) {
-    if (cdata->_primitives[i]->get_usage_hint() < primitive->get_usage_hint()) {
-      // If we're reducing the usage hint, we might also be reducing
-      // the minimum usage hit.
-      cdata->_usage_hint = min(cdata->_usage_hint, primitive->get_usage_hint());
-    } else { // (cdata->_primitives[i]->get_usage_hint() > primitive->get_usage_hint())
-      // If we're increasing it, we might have to rederive the minimum.
-      if (cdata->_usage_hint == cdata->_primitives[i]->get_usage_hint()) {
-        cdata->_got_usage_hint = false;
-      }
-    }
-  }
-  cdata->_primitives[i] = (qpGeomPrimitive *)primitive;
-  cdata->_primitive_type = primitive->get_primitive_type();
-  cdata->_modified = qpGeom::get_next_modified();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: qpGeom::get_modified
 //       Access: Published
 //  Description: Returns a sequence number which is guaranteed to
