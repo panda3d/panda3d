@@ -339,8 +339,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
       }
     }
 
-    if (!new_hpr && temp_hpr_fix) {
-      // Convert the old HPR form to the new HPR form.
+    if ((!new_hpr && temp_hpr_fix) || (new_hpr && !temp_hpr_fix)) {
+      // Convert between the old HPR form and the new HPR form.
       size_t num_hprs = max(max(_tables[6].size(), _tables[7].size()),
                             _tables[8].size());
 
@@ -364,7 +364,12 @@ fillin(DatagramIterator &scan, BamReader *manager) {
         float p = (hi < _tables[7].size() ? _tables[7][hi] : default_hpr[1]);
         float r = (hi < _tables[8].size() ? _tables[8][hi] : default_hpr[2]);
 
-        LVecBase3f hpr = old_to_new_hpr(LVecBase3f(h, p, r));
+        LVecBase3f hpr;
+        if (temp_hpr_fix) {
+          hpr = old_to_new_hpr(LVecBase3f(h, p, r));
+        } else {
+          hpr = new_to_old_hpr(LVecBase3f(h, p, r));
+        }
         h_table[hi] = hpr[0];
         p_table[hi] = hpr[1];
         r_table[hi] = hpr[2];
@@ -418,6 +423,13 @@ fillin(DatagramIterator &scan, BamReader *manager) {
       if (!new_hpr && temp_hpr_fix) {
         // Convert the old HPR form to the new HPR form.
         LVecBase3f hpr = old_to_new_hpr(hprs[i]);
+        h_table[i] = hpr[0];
+        p_table[i] = hpr[1];
+        r_table[i] = hpr[2];
+
+      } else if (new_hpr && !temp_hpr_fix) {
+        // Convert the new HPR form to the old HPR form.
+        LVecBase3f hpr = new_to_old_hpr(hprs[i]);
         h_table[i] = hpr[0];
         p_table[i] = hpr[1];
         r_table[i] = hpr[2];
