@@ -31,6 +31,7 @@ TypeHandle CollisionHandlerPhysical::_type_handle;
 ////////////////////////////////////////////////////////////////////
 CollisionHandlerPhysical::
 CollisionHandlerPhysical() {
+  _has_contact = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -54,6 +55,7 @@ void CollisionHandlerPhysical::
 begin_group() {
   CollisionHandlerEvent::begin_group();
   _from_entries.clear();
+  _has_contact = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -85,6 +87,7 @@ add_entry(CollisionEntry *entry) {
     }
 
     _from_entries[entry->get_from_node_path()].push_back(entry);
+    _has_contact = true;
   }
 }
 

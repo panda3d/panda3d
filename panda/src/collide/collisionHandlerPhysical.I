@@ -64,6 +64,20 @@ has_center() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerPhysical::has_contact
+//       Access: Public
+//  Description: Did the handler make any contacts with anything
+//               on the last collision pass?  Depending on how your
+//               world is setup, this can be used to tell if the
+//               handler is out of the world (i.e. out of bounds).
+//               That is the original use of this call.
+////////////////////////////////////////////////////////////////////
+INLINE bool CollisionHandlerPhysical::
+has_contact() const {
+  return _has_contact;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerPhysical::ColliderDef::set_target
 //       Access: Public
 //  Description:

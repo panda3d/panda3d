@@ -71,18 +71,6 @@ is_on_ground() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerGravity::is_in_outer_space
-//       Access: Public
-//  Description: The object is in outer space if there is no
-//               ground/floor anywhere below it (I guess you could
-//               also say the height is infinite).
-////////////////////////////////////////////////////////////////////
-INLINE bool CollisionHandlerGravity::
-is_in_outer_space() const {
-  return _outer_space;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerGravity::get_impact_velocity
 //       Access: Public
 //  Description: How hard did the object hit the ground.

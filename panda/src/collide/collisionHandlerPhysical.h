@@ -56,6 +56,11 @@ PUBLISHED:
   INLINE void clear_center();
   INLINE const NodePath &get_center() const;
   INLINE bool has_center() const;
+  INLINE bool has_contact() const;
+
+protected:
+  bool _has_contact; // Are we in contact with anything?
+
 
 protected:
   class ColliderDef {

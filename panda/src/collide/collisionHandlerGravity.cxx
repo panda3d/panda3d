@@ -38,7 +38,6 @@ CollisionHandlerGravity() {
   _gravity = 32.174f;
   _current_velocity = 0.0f;
   _max_velocity = 400.0f;
-  _outer_space = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -68,7 +67,6 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
   float max_height = 0.0f;
   CollisionEntry *highest = NULL;
 
-  _outer_space = entries.empty();
   Entries::const_iterator ei;
   for (ei = entries.begin(); ei != entries.end(); ++ei) {
     CollisionEntry *entry = (*ei);
@@ -90,6 +88,7 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
       }
     }
   }
+  //#*#_has_contact = got_max;
 
   #if 0
     cout<<"\ncolliding with:\n";
