@@ -17,8 +17,7 @@
 #begin metalib_target
   #define TARGET pandadx
   #define SOURCES pandadx.cxx  
-  #define TARGET_LIBS \
-     ddraw.lib d3dim.lib dxguid.lib   \
-     winmm.lib kernel32.lib gdi32.lib \
-     user32.lib
+  #define WIN_SYS_LIBS \
+     ddraw.lib d3dim.lib dxguid.lib winmm.lib \
+     kernel32.lib gdi32.lib user32.lib $[WIN_SYS_LIBS]
 #end metalib_target
