@@ -1185,14 +1185,14 @@ draw_point(GeomPoint *geom, GeomContext *gc) {
         return;
     }
 
-#ifdef _DEBUG
-    static bool bPrintedMsg=false;
-
-    if (!bPrintedMsg && (geom->get_size()!=1.0f)) {
-        bPrintedMsg=true;
-        dxgsg9_cat.warning() << "D3D does not support drawing points of non-unit size, setting point size to 1.0f!\n";
-    }
-#endif
+    //#ifdef _DEBUG
+    //    static bool bPrintedMsg=false;
+    //
+    //    if (!bPrintedMsg && (geom->get_size()!=1.0f)) {
+    //        bPrintedMsg=true;
+    //        dxgsg9_cat.warning() << "D3D does not support drawing points of non-unit size, setting point size to 1.0f!\n";
+    //    }
+    //#endif
 
     nassertv(nPrims < PANDA_MAXNUMVERTS );
 
@@ -1247,17 +1247,17 @@ draw_line(GeomLine* geom, GeomContext *gc) {
     DO_PSTATS_STUFF(PStatTimer timer(_draw_primitive_pcollector));
     DO_PSTATS_STUFF(_vertices_other_pcollector.add_level(geom->get_num_vertices()));
 
-#ifdef _DEBUG
-    static bool bPrintedMsg=false;
-
-    // note: need to implement approximation of non-1.0 width lines with quads
-
-    if (!bPrintedMsg && (geom->get_width()!=1.0f)) {
-        bPrintedMsg=true;
-        if(dxgsg9_cat.is_debug())
-            dxgsg9_cat.debug() << "DX does not support drawing lines with a non-1.0f pixel width, setting width to 1.0f!\n";
-    }
-#endif
+    //#ifdef _DEBUG
+    //    static bool bPrintedMsg=false;
+    //
+    //    // note: need to implement approximation of non-1.0 width lines with quads
+    //
+    //    if (!bPrintedMsg && (geom->get_width()!=1.0f)) {
+    //        bPrintedMsg=true;
+    //        if(dxgsg9_cat.is_debug())
+    //            dxgsg9_cat.debug() << "DX does not support drawing lines with a non-1.0f pixel width, setting width to 1.0f!\n";
+    //    }
+    //#endif
 
     int nPrims = geom->get_num_prims();
 
@@ -1333,14 +1333,14 @@ draw_line(GeomLine* geom, GeomContext *gc) {
 void DXGraphicsStateGuardian9::
 draw_linestrip(GeomLinestrip* geom, GeomContext *gc) {
 
-#ifdef _DEBUG
-    static BOOL bPrintedMsg=false;
-
-    if (!bPrintedMsg && (geom->get_width()!=1.0f)) {
-        bPrintedMsg=true;
-        dxgsg9_cat.warning() << "DX does not support drawing lines with a non-1.0f pixel width, setting width to 1.0f!\n";
-    }
-#endif
+  //#ifdef _DEBUG
+  //    static BOOL bPrintedMsg=false;
+  //
+  //    if (!bPrintedMsg && (geom->get_width()!=1.0f)) {
+  //        bPrintedMsg=true;
+  //        dxgsg9_cat.warning() << "DX does not support drawing lines with a non-1.0f pixel width, setting width to 1.0f!\n";
+  //    }
+  //#endif
 
   draw_linestrip_base(geom,gc,false);
 }
