@@ -22,7 +22,7 @@
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
 
-NotifyCategoryDecl(framework, EXPCL_FRAMEWORK, EXPCL_FRAMEWORK);
+NotifyCategoryDecl(framework, EXPCL_FRAMEWORK, EXPTP_FRAMEWORK);
 
 // Configure variables for framework package.
 extern const int win_width;
