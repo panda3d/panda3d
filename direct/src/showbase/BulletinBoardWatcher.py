@@ -3,9 +3,9 @@ from direct.showbase.PythonUtil import Functor
 from direct.showbase import DirectObject
 
 class BulletinBoardWatcher(DirectObject.DirectObject):
-    """This class allows you to wait for N posts to be made to the bulletin
-    board, and give you a notification when all posts have been made. Values
-    of posts are not examined."""
+    """This class allows you to wait for a set of posts to be made to the
+    bulletin board, and give you a notification when all posts have been
+    made. Values of posts are not examined."""
     notify = DirectNotifyGlobal.directNotify.newCategory('BulletinBoardWatcher')
 
     def __init__(self, name, postNames, callback):
