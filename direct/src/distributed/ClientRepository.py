@@ -775,7 +775,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
                 self.old_setzone_interest_handle = None
 
 
-        def  sendSetLocation(self,doId,parentId,zoneId):
+        def sendSetLocation(self,doId,parentId,zoneId):
             datagram = PyDatagram()
             datagram.addUint16(CLIENT_OBJECT_LOCATION)
             datagram.addUint32(doId)
