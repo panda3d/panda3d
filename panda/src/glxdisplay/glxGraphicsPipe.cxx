@@ -588,7 +588,6 @@ make_hidden_cursor() {
 
   unsigned int x_size, y_size;
   XQueryBestCursor(_display, _root, 1, 1, &x_size, &y_size);
-  cerr << "best size is " << x_size << " x " << y_size << "\n";
 
   Pixmap empty = XCreatePixmap(_display, _root, x_size, y_size, 1);
 
