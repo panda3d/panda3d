@@ -73,7 +73,7 @@ public:
                              CPT(TransformState) &node_transform,
                              CPT(RenderState) &node_state) const;
 
-  CPT(RenderAttrib) do_poly_light(const CullTraverserData *data, const TransformState *node_transform) const;
+  CPT(RenderAttrib) do_poly_light(const NodePath &root, const CullTraverserData *data, const TransformState *node_transform) const;
 
   virtual void output(ostream &out) const;
 

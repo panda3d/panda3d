@@ -115,12 +115,12 @@ Colorf PolylightNode::flicker() const {
   }
   
   //variation += _offset;
-  variation *= _scale;
+  //variation *= _scale;
 
   //printf("Variation: %f\n",variation);
-  r+=variation;
-  g+=variation;
-  b+=variation;
+  r += r * variation;
+  g += g * variation;
+  b += b * variation;
  
   /* CLAMPING
   if (fabs(r - color[0]) > 0.5 || fabs(g - color[1]) > 0.5 || fabs(b - color[2]) > 0.5) {

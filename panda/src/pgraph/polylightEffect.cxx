@@ -104,10 +104,10 @@ has_cull_callback() const {
 //               level.
 ////////////////////////////////////////////////////////////////////
 void PolylightEffect::
-cull_callback(CullTraverser *, CullTraverserData &data,
+cull_callback(CullTraverser *trav, CullTraverserData &data,
               CPT(TransformState) &node_transform,
               CPT(RenderState) &node_state) const {
-  CPT(RenderAttrib) poly_light_attrib = do_poly_light(&data, node_transform); 
+  CPT(RenderAttrib) poly_light_attrib = do_poly_light(trav->get_scene()->get_scene_root(), &data, node_transform); 
   CPT(RenderState) poly_light_state = RenderState::make(poly_light_attrib);
   node_state = node_state->compose(poly_light_state); 
 }
@@ -123,7 +123,7 @@ cull_callback(CullTraverser *, CullTraverserData &data,
 //               in respect to that light's proximity.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) PolylightEffect::
-do_poly_light(const CullTraverserData *data, const TransformState *node_transform) const {
+do_poly_light(const NodePath & root, const CullTraverserData *data, const TransformState *node_transform) const {
   //static bool was_under_polylight = false;
   float dist; // To calculate the distance of each light from the node
   float r,g,b; // To hold the color calculation
@@ -138,11 +138,9 @@ do_poly_light(const CullTraverserData *data, const TransformState *node_transfor
   Rcollect = Gcollect = Bcollect = 0.0;
 
   // get the avatar's base color scale
-  NodePath parent = data->_node_path.get_node_path().get_parent();
-  Colorf scene_color = parent.get_color_scale();
+  Colorf scene_color = root.get_color_scale();
   if (polylight_info) {
-    pgraph_cat.info() << "parent node name " << parent.get_name() << endl;
-    pgraph_cat.info() << "parent color scale = " << scene_color << endl;
+    pgraph_cat.info() << "scene color scale = " << scene_color << endl;
   }
   min_dist = 100000.0;
   // Cycle through all the lights in this effect's lightgroup
@@ -167,7 +165,16 @@ do_poly_light(const CullTraverserData *data, const TransformState *node_transfor
         dist = xz.length(); // this does not count height difference
       }
 
+      if (polylight_info) {
+        pgraph_cat.debug() << "light's position = " << light->get_pos() << endl;
+        pgraph_cat.debug() << "relative position = " << point << endl;
+        pgraph_cat.debug() << "effect center = " << _effect_center << endl;
+        //pgraph_cat.info() << "close to this light = " << light->get_name() << endl;
+        pgraph_cat.info() << "dist = " << dist << ";radius = " << light_radius << endl;
+      }
+
       if (dist <= light_radius) { // If node is in range of this light
+        /*
         if (polylight_info) {
           pgraph_cat.debug() << "light's position = " << light->get_pos() << endl;
           pgraph_cat.debug() << "relative position = " << point << endl;
@@ -175,6 +182,7 @@ do_poly_light(const CullTraverserData *data, const TransformState *node_transfor
           //pgraph_cat.info() << "close to this light = " << light->get_name() << endl;
           pgraph_cat.info() << "dist = " << dist << ";radius = " << light_radius << endl;
         }
+        */
 
         PolylightNode::Attenuation_Type light_attenuation = light->get_attenuation();
         Colorf light_color;
