@@ -11,7 +11,7 @@
 //               reading with no errors so far detected, or false
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
-bool BamFile::
+INLINE bool BamFile::
 is_valid_read() const {
   return (_reader != (BamReader *)NULL);
 }
@@ -24,7 +24,7 @@ is_valid_read() const {
 //               writing with no errors so far detected, or false
 //               otherwise.
 ////////////////////////////////////////////////////////////////////
-bool BamFile::
+INLINE bool BamFile::
 is_valid_write() const {
   return (_writer != (BamWriter *)NULL);
 }
