@@ -1,0 +1,6 @@
+// Filename: guiCollection.I
+// Created by:  cary (07Mar01)
+// 
+////////////////////////////////////////////////////////////////////
+
+INLINE GuiCollection::GuiCollection(void) {}
