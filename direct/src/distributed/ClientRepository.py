@@ -324,6 +324,3 @@ class ClientRepository(DirectObject.DirectObject):
                     cdu.func = newMethod
                     foundIt = 1
         return foundIt
-                    
-            
-                

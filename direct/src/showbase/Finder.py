@@ -66,7 +66,7 @@ def rebindClass(builtins, filename):
             parenLoc = classHeader.find('(')
             if parenLoc > 0:
                 className = classHeader[:parenLoc]
-                # print 'found className: ' + className
+                print 'Rebinding class name: ' + className
                 found = 1
                 foundLine = i
                 foundChar = parenLoc
@@ -156,6 +156,12 @@ def replaceStateFunc(oldFunc, newFunc):
         print ('replaced state exit function: ' + newFunc.__name__)
 
 def replaceTcrFunc(oldFunc, newFunc):
-    res = toonbase.tcr.replaceMethod(oldFunc, newFunc)
+    try:
+        res = toonbase.tcr.replaceMethod(oldFunc, newFunc)
+    except:
+        try:
+            res = simbase.air.replaceMethod(oldFunc, newFunc)
+        except:
+            res = None
     if res:
         print ('replaced DistributedObject function: ' + newFunc.__name__)
