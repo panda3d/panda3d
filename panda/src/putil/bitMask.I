@@ -124,6 +124,27 @@ bit(int index) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BitMask::Named range constructor
+//       Access: Published, Static
+//  Description: Returns a BitMask whose size bits, beginning at
+//               low_bit, are on.
+////////////////////////////////////////////////////////////////////
+template<class WordType, int num_bits>
+INLINE BitMask<WordType, num_bits> BitMask<WordType, num_bits>::
+range(int low_bit, int size) {
+  BitMask result;
+  if (size <= 0) {
+    result._word = 0;
+  } else if (size >= num_bits) {
+    result._word = ~0;
+  } else {
+    result._word = ((WordType)1 << size) - 1;
+  }
+  result._word <<= low_bit;
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BitMask::Destructor
 //       Access: Published
 //  Description:

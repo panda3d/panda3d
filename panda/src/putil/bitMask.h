@@ -46,6 +46,7 @@ PUBLISHED:
   INLINE static BitMask<WordType, num_bits> all_off();
   INLINE static BitMask<WordType, num_bits> lower_on(int on_bits);
   INLINE static BitMask<WordType, num_bits> bit(int index);
+  INLINE static BitMask<WordType, num_bits> range(int low_bit, int size);
 
   INLINE ~BitMask();
 
