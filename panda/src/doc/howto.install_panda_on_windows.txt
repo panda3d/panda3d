@@ -115,6 +115,7 @@ Step 2:
     Building libpandadx requires this step (needs DX7 headers/libs)
     
 Step 3: Install Cygwin (v1.3.5 or above should work)
+  - Latest version currently is 1.5.7-1 (Jan 31 2004)
   - As of 1.3.11, cygwin seems stable enough to install from the internet, 
     go to http://cygwin.com and click on the "install cygwin now" link.  
     The most reliable download server is http://mirrors.rcn.net.  Make 
@@ -258,16 +259,16 @@ Step 3.5: Set up the Cygwin environment:
 
 Step 4: Create your home directory
   - Create a HOME directory:
-      > mkdir /usr/<yourname>
-    or
       > mkdir /home/<yourname>
+    or
+      > mkdir /usr/<yourname>
 
   - Set the $HOME environment variable in the Registry:
   - You must be logged into your computer on an account with Administrator access
   - Select "Start Menu->Control Panel"
   - Select "System" icon.
   - Select "Advanced->Environment" button.
-  - Create the variable "HOME" with the value "/usr/<yourname>".
+  - Create the variable "HOME" with the value "c:\cygwin\<HOME directory>".
   - click ok - ok - ok to exit (you must exit for the change to take effect)
   - Now open a new shell so the registry is read by the shell to get the changes.
   Note: We've seen a problem where we can't source ~/.cshrc if the home 
