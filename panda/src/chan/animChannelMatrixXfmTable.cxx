@@ -312,7 +312,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
       return;
     }
 
-    if (!read_compressed) {
+    if (!read_compressed_channels) {
       chan_cat.info()
 	<< "Not reading compressed animation channels.\n";
       clear_all_tables();

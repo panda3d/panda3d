@@ -60,7 +60,7 @@ int compress_chan_quality = config_chan.GetInt("compress-chan-quality", 95);
 // even if the decompression code is available.  The only reason you
 // might want to do this would be to speed load time when you don't
 // care about what the animation looks like.
-bool read_compressed = config_chan.GetBool("read-compressed", true);
+bool read_compressed_channels = config_chan.GetBool("read-compressed-channels", true);
 
 ConfigureFn(config_chan) {
   AnimBundle::init_type();
