@@ -387,6 +387,15 @@ class DistributedLevel(DistributedObject.DistributedObject,
     def getZoneNode(self, zoneEntId):
         return self.zoneNum2node.get(zoneEntId)
 
+    def warpToZone(self, zoneNum):
+        """put avatar at the origin of the given zone"""
+        zoneNode = self.getZoneNode(zoneNum)
+        if zoneNode is None:
+            return
+        toonbase.localToon.setPos(zoneNode,0,0,0)
+        toonbase.localToon.setHpr(zoneNode,0,0,0)
+        self.enterZone(zoneNum)
+
     def showZone(self, zoneNum):
         zone = self.getZoneNode(zoneNum)
         zone.unstash()
