@@ -411,7 +411,7 @@ inline static void correction_lerp(void) {
 
   if (reinit_correction) {
     if (new_telemetry) {
-      prev_pos = save_pos = telemetry_pos;
+      prev_pos = save_pos = target_pos;
       reinit_correction = false;
       have_both = false;
     }
@@ -420,7 +420,7 @@ inline static void correction_lerp(void) {
       if (new_telemetry) {
 	time = 0.;
 	prev_pos = my_pos;
-	save_pos = telemetry_pos;
+	save_pos = target_pos;
       } else {
 	// half second lerp
 	float tmp = time * 2.;
@@ -429,7 +429,7 @@ inline static void correction_lerp(void) {
       }
     } else {
       if (new_telemetry) {
-	save_pos = telemetry_pos;
+	save_pos = target_pos;
 	my_pos = prev_pos;
 	time = 0.;
 	have_both = true;
