@@ -6,7 +6,7 @@
 // parameters, in particular the default display types.
 //
 
-#output 40_direct.prc
+#output 40_direct.prc notouch
 #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[notdir $[THISFILENAME]].
 ################################# DO NOT EDIT ###########################
 

@@ -5,7 +5,7 @@
 // ppremake time.
 //
 
-#output 30_pandatool.prc
+#output 30_pandatool.prc notouch
 #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[notdir $[THISFILENAME]].
 ################################# DO NOT EDIT ###########################
 

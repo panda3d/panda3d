@@ -6,7 +6,7 @@
 // parameters, in particular the default display types.
 //
 
-#output 20_panda.prc
+#output 20_panda.prc notouch
 #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[notdir $[THISFILENAME]].
 ################################# DO NOT EDIT ###########################
 
