@@ -138,7 +138,6 @@ protected:
   void keystroke(int keycode);
   void global_keyboard_press(const MouseWatcherParameter &param);
   void global_keyboard_release(const MouseWatcherParameter &param);
-  void global_keystroke(const MouseWatcherParameter &param);
 
   INLINE void within_region(MouseWatcherRegion *region, const MouseWatcherParameter &param);
   INLINE void without_region(MouseWatcherRegion *region, const MouseWatcherParameter &param);

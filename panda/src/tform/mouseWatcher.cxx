@@ -694,21 +694,34 @@ keystroke(int keycode) {
   param.set_modifier_buttons(_mods);
   param.set_mouse(_mouse);
 
-  // Send the event to every region that wants keyboard buttons,
-  // regardless of the mouse position.
-  if (_preferred_region != (MouseWatcherRegion *)NULL) {
-    // Our current region, the one under the mouse, always get
-    // all the keyboard events, even if it doesn't set its
-    // keyboard flag.
-    _preferred_region->keystroke(param);
+  // Keystrokes go to all those regions that want keyboard events,
+  // regardless of which is the "preferred" region (that is, without
+  // respect to the mouse position).  However, we do set the outside
+  // flag according to whether the given region is preferred region or
+  // not.
+
+  Regions::const_iterator ri;
+  for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
+    MouseWatcherRegion *region = (*ri);
+
+    if (region->get_keyboard()) {
+      param.set_outside(region != _preferred_region);
+      region->keystroke(param);
+    }
   }
 
-  if ((_suppress_flags & MouseWatcherRegion::SF_other_button) == 0) {
-    // All the other regions only get the keyboard events if they
-    // set their global keyboard flag, *and* the current region does
-    // not suppress keyboard buttons.
-    param.set_outside(true);
-    global_keystroke(param);
+  // Also check all of our sub-groups.
+  Groups::const_iterator gi;
+  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+    MouseWatcherGroup *group = (*gi);
+    for (ri = group->_regions.begin(); ri != group->_regions.end(); ++ri) {
+      MouseWatcherRegion *region = (*ri);
+
+      if (region->get_keyboard()) {
+        param.set_outside(region != _preferred_region);
+        region->keystroke(param);
+      }
+    }
   }
 }
 
@@ -770,38 +783,6 @@ global_keyboard_release(const MouseWatcherParameter &param) {
 
       if (region != _preferred_region && region->get_keyboard()) {
         region->release(param);
-      }
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MouseWatcher::global_keystroke
-//       Access: Protected
-//  Description: Calls keystroke() on all regions that are interested
-//               in receiving global keyboard events, except for the
-//               current region (which already received this one).
-////////////////////////////////////////////////////////////////////
-void MouseWatcher::
-global_keystroke(const MouseWatcherParameter &param) {
-  Regions::const_iterator ri;
-  for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
-    MouseWatcherRegion *region = (*ri);
-
-    if (region != _preferred_region && region->get_keyboard()) {
-      region->keystroke(param);
-    }
-  }
-
-  // Also check all of our sub-groups.
-  Groups::const_iterator gi;
-  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
-    MouseWatcherGroup *group = (*gi);
-    for (ri = group->_regions.begin(); ri != group->_regions.end(); ++ri) {
-      MouseWatcherRegion *region = (*ri);
-
-      if (region != _preferred_region && region->get_keyboard()) {
-        region->keystroke(param);
       }
     }
   }

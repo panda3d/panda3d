@@ -439,7 +439,7 @@ get_release_event(const ButtonHandle &button) const {
 ////////////////////////////////////////////////////////////////////
 INLINE string PGItem::
 get_keystroke_event() const {
-  return get_keystroke_prefix() + "-" + get_id();
+  return get_keystroke_prefix() + get_id();
 }
 
 ////////////////////////////////////////////////////////////////////

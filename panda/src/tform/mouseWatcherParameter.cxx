@@ -32,6 +32,14 @@ output(ostream &out) const {
     output_anything = true;
   }
 
+  if (has_keycode()) {
+    if (output_anything) {
+      out << ", ";
+    }
+    out << "key" << _keycode;
+    output_anything = true;
+  }
+
   if (_mods.is_any_down()) {
     if (output_anything) {
       out << ", ";
