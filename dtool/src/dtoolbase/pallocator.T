@@ -18,7 +18,6 @@
 
 #if defined(OLD_STYLE_ALLOCATOR)
 
-#ifndef NDEBUG
 template<class Type>
 INLINE Type *pallocator<Type>::
 allocate(size_t n) {
@@ -30,7 +29,6 @@ INLINE void pallocator<Type>::
 deallocate(void *p, size_t) {
   (*global_operator_delete)(p);
 }
-#endif  // NDEBUG
 
 #elif defined(GNU_STYLE_ALLOCATOR)
 
@@ -45,7 +43,6 @@ INLINE pallocator<Type>::
 pallocator(const pallocator<_Tp1> &) {
 }
 
-#ifndef NDEBUG
 template<class Type>
 INLINE Type *pallocator<Type>::
 allocate(size_t n) {
@@ -57,11 +54,9 @@ INLINE void pallocator<Type>::
 deallocate(void *p, size_t) {
   (*global_operator_delete)(p);
 }
-#endif  // NDEBUG
 
-#else  // *_STYLE_ALLOCATOR
+#elif VC6_STYLE_ALLOCATOR
 
-#ifndef NDEBUG
 template<class Type>
 INLINE pallocator<Type>::pointer pallocator<Type>::
 allocate(pallocator<Type>::size_type n, allocator<void>::const_pointer) {
@@ -74,6 +69,25 @@ INLINE void pallocator<Type>::
 deallocate(void *p, allocator<Type>::size_type) {
   (*global_operator_delete)(p);
 }
-#endif  // NDEBUG
+
+#elif MODERN_STYLE_ALLOCATOR
+
+template<class Type>
+INLINE pallocator<Type>::
+pallocator() throw() {
+}
+
+template<class Type>
+INLINE pallocator<Type>::pointer pallocator<Type>::
+allocate(pallocator<Type>::size_type n, allocator<void>::const_pointer) {
+  return (pallocator<Type>::pointer)(*global_operator_new)(n * sizeof(Type));
+}
+
+template<class Type>
+INLINE void pallocator<Type>::
+//deallocate(pallocator<Type>::pointer p, allocator<Type>::size_type) {
+deallocate(void *p, allocator<Type>::size_type) {
+  (*global_operator_delete)(p);
+}
 
 #endif  // *_STYLE_ALLOCATOR

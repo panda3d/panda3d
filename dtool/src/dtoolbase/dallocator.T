@@ -18,7 +18,6 @@
 
 #if defined(OLD_STYLE_ALLOCATOR)
 
-#ifndef NDEBUG
 template<class Type>
 INLINE Type *dallocator<Type>::
 allocate(size_t n) {
@@ -30,7 +29,6 @@ INLINE void dallocator<Type>::
 deallocate(void *p, size_t) {
   default_operator_delete(p);
 }
-#endif  // NDEBUG
 
 #elif defined(GNU_STYLE_ALLOCATOR)
 
@@ -45,7 +43,6 @@ INLINE dallocator<Type>::
 dallocator(const dallocator<_Tp1> &) {
 }
 
-#ifndef NDEBUG
 template<class Type>
 INLINE Type *dallocator<Type>::
 allocate(size_t n) {
@@ -57,11 +54,19 @@ INLINE void dallocator<Type>::
 deallocate(void *p, size_t) {
   default_operator_delete(p);
 }
-#endif  // NDEBUG
 
-#else  // *_STYLE_ALLOCATOR
+#elif MODERN_STYLE_ALLOCATOR
 
-#ifndef NDEBUG
+template<class Type>
+INLINE dallocator<Type>::
+dallocator() {
+}
+
+template<class Type>
+INLINE dallocator<Type>::
+dallocator(const allocator<Type> &copy) {
+}
+
 template<class Type>
 INLINE dallocator<Type>::pointer dallocator<Type>::
 allocate(dallocator<Type>::size_type n, allocator<void>::const_pointer) {
@@ -74,6 +79,5 @@ INLINE void dallocator<Type>::
 deallocate(void *p, allocator<Type>::size_type) {
   default_operator_delete(p);
 }
-#endif  // NDEBUG
 
 #endif  // *_STYLE_ALLOCATOR

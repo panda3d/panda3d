@@ -23,7 +23,9 @@
 #include "pallocator.h"
 #include <list>
 
-#ifdef UNKNOWN_ALLOCATOR
+#ifdef NO_STYLE_ALLOCATOR
+// If we're not using custom allocators, just use the standard class
+// definition.
 #define plist list
 
 #else
@@ -50,5 +52,5 @@ public:
   typedef list<Type, pallocator<Type> >::const_reverse_iterator const_reverse_iterator;
 };
 
-#endif
+#endif  // NO_STYLE_ALLOCATOR
 #endif

@@ -24,8 +24,11 @@
 #include "dtoolbase.h"
 #include "pallocator.h"
 
-#ifdef UNKNOWN_ALLOCATOR
+#ifdef NO_STYLE_ALLOCATOR
+// If we're not using custom allocators, just use the standard class
+// definition.
 #define pvector vector
+
 #else
 
 ////////////////////////////////////////////////////////////////////
@@ -45,6 +48,6 @@ public:
   pvector(const Type *begin, const Type *end) : vector<Type, pallocator<Type> >(begin, end) { }
 };
 
-#endif
+#endif  // NO_STYLE_ALLOCATOR
 #endif
 

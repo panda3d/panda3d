@@ -71,10 +71,6 @@
 #endif
 #endif  /* WIN32_VC */
 
-#if defined(USE_UNKNOWN_ALLOCATOR) && !defined(UNKNOWN_ALLOCATOR)
-#define UNKNOWN_ALLOCATOR 1
-#endif
-
 #include "dtoolsymbols.h"
 
 #ifdef HAVE_MALLOC_H

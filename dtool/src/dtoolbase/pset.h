@@ -24,7 +24,9 @@
 
 #include <set>
 
-#ifdef UNKNOWN_ALLOCATOR
+#ifdef NO_STYLE_ALLOCATOR
+// If we're not using custom allocators, just use the standard class
+// definition.
 #define pset set
 #define pmultiset multiset
 #else
@@ -59,5 +61,5 @@ public:
   pmultiset(const Compare &comp) : multiset<Key, Compare, pallocator<Key> >(comp) { }
 };
 
-#endif
+#endif  // NO_STYLE_ALLOCATOR
 #endif

@@ -19,9 +19,7 @@
 #ifndef VECTOR_STRING_H
 #define VECTOR_STRING_H
 
-#include <dtoolbase.h>
-
-#include <vector>
+#include "dtoolbase.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : vector_string

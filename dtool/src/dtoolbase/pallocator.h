@@ -34,21 +34,22 @@
 //               to use a pallocator.
 ////////////////////////////////////////////////////////////////////
 
-#if defined(UNKNOWN_ALLOCATOR)
+#if defined(NO_STYLE_ALLOCATOR)
+// If we're not trying to make custom allocators (either we don't know
+// what kind of syntax this STL library wants, or we're compiling with
+// OPTIMIZE 4), then simply use the standard allocator.
 #define pallocator allocator
 
 #elif defined(OLD_STYLE_ALLOCATOR)
-// Early versions of gcc wanted to use its own kind of allocator,
+// Early versions of gcc wanted to use their own kind of allocator,
 // somewhat different from the STL standard.  Irix uses this one too.
 // It might be inherited from an early draft of the STL standard.
 
 template<class Type>
 class pallocator : public alloc {
 public:
-#ifndef NDEBUG
   INLINE static Type *allocate(size_t n);
   INLINE static void deallocate(void *p, size_t n);
-#endif  // NDEBUG
 };
 
 #elif defined(GNU_STYLE_ALLOCATOR)
@@ -62,31 +63,48 @@ public:
   template<class _Tp1>
   INLINE pallocator(const pallocator<_Tp1> &other);
 
-#ifndef NDEBUG
   INLINE Type *allocate(size_t n);
   INLINE void deallocate(void *p, size_t n);
-#endif  // NDEBUG
 
   template <class _Tp1> struct rebind {
     typedef pallocator<_Tp1> other;
   };
 };
 
-#else  // *_STYLE_ALLOCATOR
+#elif defined(VC6_STYLE_ALLOCATOR)
 
-// This is the correct allocator declaration as the current C++
-// standard defines it.
+// The VC6-era definition.
 template<class Type>
 class pallocator : public allocator<Type> {
 public:
-#ifndef NDEBUG
   INLINE pointer allocate(size_type n, allocator<void>::const_pointer hint = 0);
   INLINE void deallocate(void *p, size_type n);
-#endif  // NDEBUG
 };
+
+#elif defined(MODERN_STYLE_ALLOCATOR)
+
+// The final specification?
+template<class Type>
+class pallocator : public allocator<Type> {
+public:
+  INLINE pallocator() throw();
+
+  // template member functions in VC++ can only be defined in-class.
+  template<class U>
+  INLINE pallocator(const pallocator<U> &copy) throw() { }
+
+  INLINE pointer allocate(size_type n, allocator<void>::const_pointer hint = 0);
+  INLINE void deallocate(void *p, size_type n);
+
+  template<class U>
+  struct rebind { typedef pallocator<U> other; };
+};
+
+#else
+#error Unrecognized allocator symbol defined!
 #endif  // *_STYLE_ALLOCATOR
 
-#if !defined(UNKNOWN_ALLOCATOR)
+#ifndef NO_STYLE_ALLOCATOR
 #include "pallocator.T"
 #endif
 

@@ -15,8 +15,6 @@
   #define RELEASEFLAGS /MD
   #define WARNING_LEVEL_FLAG /W3  
   
-  #define CDEFINES_OPT4 UNKNOWN_ALLOCATOR
-
   // NODEFAULTLIB ensures static libs linked in will connect to the correct msvcrt, so no debug/release mixing occurs    
   #define LDFLAGS_OPT1 /NODEFAULTLIB:MSVCRT.LIB 
   #define LDFLAGS_OPT2 /NODEFAULTLIB:MSVCRT.LIB 
@@ -61,11 +59,10 @@
      #endif 
   #endif 
   
-  // remove 1-3 when allocator stuff is rewritten to build with VC7 STL
-  #define CDEFINES_OPT1 UNKNOWN_ALLOCATOR
-  #define CDEFINES_OPT2 UNKNOWN_ALLOCATOR
-  #define CDEFINES_OPT3 UNKNOWN_ALLOCATOR
-  #define CDEFINES_OPT4 UNKNOWN_ALLOCATOR      
+  #define CDEFINES_OPT1
+  #define CDEFINES_OPT2
+  #define CDEFINES_OPT3
+  #define CDEFINES_OPT4
 
   // NODEFAULTLIB ensures static libs linked in will connect to the correct msvcrt, so no debug/release mixing occurs  
   #define LDFLAGS_OPT1 /NODEFAULTLIB:MSVCRT.LIB 
@@ -126,8 +123,6 @@
      #define LDFLAGS_OPT4 /Qipo
   #endif   
   
-  #define CDEFINES_OPT4 UNKNOWN_ALLOCATOR  
-
   // NODEFAULTLIB ensures static libs linked in will connect to the correct msvcrt, so no debug/release mixing occurs
   #define LDFLAGS_OPT1 /NODEFAULTLIB:MSVCRT.LIB 
   #define LDFLAGS_OPT2 /NODEFAULTLIB:MSVCRT.LIB 

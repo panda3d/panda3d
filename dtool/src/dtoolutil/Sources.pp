@@ -11,7 +11,7 @@
      vector_string.h gnu_getopt.c gnu_getopt.h gnu_getopt1.c  \
      pfstreamBuf.h vector_src.h 
 
-  #define INCLUDED_SOURCES  \
+  #define INCLUDED_SOURCES \
      executionEnvironment.cxx filename.cxx load_dso.cxx  \
      dSearchPath.cxx vector_string.cxx \
      pfstreamBuf.cxx pfstream.cxx 

@@ -23,7 +23,9 @@
 #include "pallocator.h"
 #include <deque>
 
-#ifdef UNKNOWN_ALLOCATOR
+#ifdef NO_STYLE_ALLOCATOR
+// If we're not using custom allocators, just use the standard class
+// definition.
 #define pdeque deque 
 
 #else
@@ -44,5 +46,5 @@ public:
   pdeque(size_type n, const Type &value) : deque<Type, pallocator<Type> >(n, value) { }
 };
 
-#endif
+#endif  // NO_STYLE_ALLOCATOR
 #endif

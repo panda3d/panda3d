@@ -105,5 +105,6 @@
 // Must global operator new and delete functions throw exceptions?
 #define GLOBAL_OPERATOR_NEW_EXCEPTIONS
 
-// Do we expect the old STL allocator?
-#define OLD_STYLE_ALLOCATOR 1
+// What is the syntax of the STL allocator declaration?  See
+// LocalSetup.pp for allowable values.
+#define STL_ALLOCATOR OLD

@@ -24,7 +24,9 @@
 
 #include <map>
 
-#ifdef UNKNOWN_ALLOCATOR
+#ifdef NO_STYLE_ALLOCATOR
+// If we're not using custom allocators, just use the standard class
+// definition.
 #define pmap map
 #define pmultimap multimap
 #else
@@ -59,5 +61,5 @@ public:
   pmultimap(const Compare &comp) : multimap<Key, Value, Compare, pallocator<Value> >(comp) { }
 };
 
-#endif
+#endif  // NO_STYLE_ALLOCATOR
 #endif

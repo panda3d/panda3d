@@ -38,6 +38,9 @@ $[cdefine HAVE_PYTHON]
 /* Define if we want to track callbacks from within the show code.  */
 $[cdefine TRACK_IN_INTERPRETER]
 
+/* Define if we want to enable track-memory-usage.  */
+$[cdefine DO_MEMORY_USAGE]
+
 /* Define if we want to compile in support for pipelining.  */
 $[cdefine DO_PIPELINING]
 
@@ -212,13 +215,36 @@ $[cdefine HAVE_RTTI]
 $[cdefine GLOBAL_OPERATOR_NEW_EXCEPTIONS]
 
 /* What style STL allocator should we declare? */
-
-// Use this to force UNKNOWN_ALLOCATOR for non-Opt4 (it is already default for Opt4 using /DUNKNOWN_ALLOCATOR)
-// see dtoolbase.h
-$[cdefine USE_UNKNOWN_ALLOCATOR]
-
+#define OLD_STYLE_ALLOCATOR
+#define GNU_STYLE_ALLOCATOR
+#define VC6_STYLE_ALLOCATOR
+#define MODERN_STYLE_ALLOCATOR
+#define NO_STYLE_ALLOCATOR
+#if $[eq $[OPTIMIZE], 4]
+  // In optimize level 4, we never try to use custom allocators.
+  #define NO_STYLE_ALLOCATOR 1
+#elif $[eq $[STL_ALLOCATOR], OLD]
+  // "OLD": Irix 6.2-era STL.
+  #set OLD_STYLE_ALLOCATOR 1
+#elif $[eq $[STL_ALLOCATOR], ECGS]
+  // "GNU": gcc 2.95-era.
+  #set GNU_STYLE_ALLOCATOR 1
+#elif $[eq $[STL_ALLOCATOR], VC6]
+  // "VC6": Microsoft Visual C++ 6.
+  #set VC6_STYLE_ALLOCATOR 1
+#elif $[eq $[STL_ALLOCATOR], MODERN]
+  // "MODERN": Have we finally come to a standard?
+  #set MODERN_STYLE_ALLOCATOR 1
+#else
+  // Anything else is "unknown".  We won't try to define allocators at
+  // all.
+  #set NO_STYLE_ALLOCATOR 1
+#endif
 $[cdefine OLD_STYLE_ALLOCATOR]
 $[cdefine GNU_STYLE_ALLOCATOR]
+$[cdefine VC6_STYLE_ALLOCATOR]
+$[cdefine MODERN_STYLE_ALLOCATOR]
+$[cdefine NO_STYLE_ALLOCATOR]
 
 #end dtool_config.h
 

@@ -91,7 +91,7 @@
 //   3 - Full compiler optimizations, no debug symbols
 //   4 - Full optimizations, no debug symbols, and asserts removed
 //
-
+#define OPTIMIZE 3
 
 // NOTE: In the following, to indicate "yes" to a yes/no question,
 // define the variable to be a nonempty string.  To indicate "no",
@@ -153,6 +153,13 @@
 // useful unless we're building a debug tree anyway.  The default is
 // to enable it only for optimize levels 1 and 2.
 #defer TRACK_IN_INTERPRETER $[<= $[OPTIMIZE], 2]
+
+// Do you want to compile in support for tracking memory usage?  This
+// enables you to define the variable "track-memory-usage" at runtime
+// to help track memory leaks, and also report total memory usage on
+// PStats.  There is some small overhead for having this ability
+// available, even if it is unused.
+#defer DO_MEMORY_USAGE $[<= $[OPTIMIZE], 3]
 
 // Do you want to compile in support for pipelining?  This enables
 // setting and accessing multiple different copies of frame-specific

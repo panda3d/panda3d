@@ -52,7 +52,7 @@
   #ifdef HAVE_DINKUM
 // With the Dinkum library, we must first export the base class,
 // _Vector_val.
-    #define VV_BASE std::_Vector_val<TYPE, std::allocator<TYPE> >
+    #define VV_BASE std::_Vector_val<TYPE, pallocator<TYPE> >
 #pragma warning (disable : 4231)
 EXPORT_TEMPLATE_CLASS(EXPCL, EXPTP, VV_BASE)
     #undef VV_BASE

@@ -22,8 +22,7 @@
 #include <dtoolbase.h>
 
 #include "config_setup.h"
-
-#include <vector>
+#include "pvector.h"
 
 namespace Config {
 
@@ -67,7 +66,7 @@ class EXPCL_DTOOLCONFIG SymbolEnt {
 
 namespace Config {
 
-typedef std::vector<SymbolEnt> vector_SymbolEnt;
+typedef ::vector_SymbolEnt vector_SymbolEnt;
 
 #include "symbolEnt.I"
 
