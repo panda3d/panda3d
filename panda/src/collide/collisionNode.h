@@ -44,6 +44,7 @@ public:
   virtual ~CollisionNode();
   virtual Node *make_copy() const;
   virtual void xform(const LMatrix4f &mat);
+  virtual bool preserve_name() const;
 
 PUBLISHED:
   INLINE void set_collide_mask(CollideMask mask);

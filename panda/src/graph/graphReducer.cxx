@@ -223,6 +223,9 @@ flatten_siblings(Node *root) {
 ////////////////////////////////////////////////////////////////////
 bool GraphReducer::
 consider_arc(NodeRelation *arc) {
+  // On reflection, there's no reason to forbid the removal of arcs
+  // with sub_render transitions.  It should all work out properly.
+  /*
   if (arc->has_sub_render_trans()) {
     if (graph_cat.is_debug()) {
       graph_cat.debug()
@@ -231,6 +234,7 @@ consider_arc(NodeRelation *arc) {
     }
     return false;
   }
+  */
   return true;
 }
 
@@ -246,7 +250,22 @@ bool GraphReducer::
 consider_siblings(Node *, NodeRelation *arc1, NodeRelation *arc2) {
   // Don't attempt to combine any sibling arcs with different
   // transitions.
-  return (arc1->compare_transitions_to(arc2) == 0);
+  if (arc1->compare_transitions_to(arc2) != 0) {
+    return false;
+  }
+
+  // We can't collapse siblings with arcs that contain sub_render
+  // transitions.  That could be bad.
+  if (arc1->has_sub_render_trans()) {
+    if (graph_cat.is_debug()) {
+      graph_cat.debug()
+        << "Not combining " << *arc1 << " and " << *arc2
+        << " because they contain a sub_render transition.\n";
+    }
+    return false;
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -317,17 +336,26 @@ collapse_siblings(Node *parent, NodeRelation *arc1, NodeRelation *arc2) {
   PT_Node node1 = arc1->get_child();
   PT_Node node2 = arc2->get_child();
 
+  if (graph_cat.is_debug()) {
+    graph_cat.debug()
+      << "Collapsing " << *node1 << " and " << *node2 << "\n";
+  }
+
   PT_Node new_node = collapse_nodes(node1, node2, true);
   if (new_node == (Node *)NULL) {
-    graph_cat.debug()
-      << "Decided not to collapse " << *node1 << " and " << *node2 << "\n";
+    if (graph_cat.is_debug()) {
+      graph_cat.debug()
+        << "Decided not to collapse " << *node1 << " and " << *node2 << "\n";
+    }
     return NULL;
   }
+
+  choose_name(new_node, node1, node2);
 
   move_children(new_node, node1);
   move_children(new_node, node2);
 
-  arc1->change_parent_and_child(parent, node1);
+  arc1->change_child(new_node);
   remove_arc(arc2);
 
   return arc1;
@@ -384,24 +412,27 @@ choose_name(Node *preserve, Node *source1, Node *source2) {
   NamedNode *named_preserve;
   DCAST_INTO_V(named_preserve, preserve);
 
+  string name;
+  bool got_name = false;
+
   if (source1->is_of_type(NamedNode::get_class_type())) {
     NamedNode *named_source1;
     DCAST_INTO_V(named_source1, source1);
-
-    if (!named_source1->get_name().empty()) {
-      named_preserve->set_name(named_source1->get_name());
-      return;
-    }
+    name = named_source1->get_name();
+    got_name = !name.empty() || named_source1->preserve_name();
   }
 
   if (source2->is_of_type(NamedNode::get_class_type())) {
     NamedNode *named_source2;
     DCAST_INTO_V(named_source2, source2);
-
-    if (!named_source2->get_name().empty()) {
-      named_preserve->set_name(named_source2->get_name());
-      return;
+    if (named_source2->preserve_name() || !got_name) {
+      name = named_source2->get_name();
+      got_name = !name.empty() || named_source2->preserve_name();
     }
+  }
+
+  if (got_name) {
+    named_preserve->set_name(name);
   }
 }
 
@@ -414,10 +445,16 @@ choose_name(Node *preserve, Node *source1, Node *source2) {
 void GraphReducer::
 move_children(Node *to, Node *from) {
   if (to != from) {
+    /*
+    if (graph_cat.is_debug()) {
+      graph_cat.debug()
+        << "Moving children to " << *to << " from " << *from << "\n";
+    }
+    */
+
     int num_children = from->get_num_children(_graph_type);
     while (num_children > 0) {
-      NodeRelation *arc =
-        from->get_child(_graph_type, 0);
+      NodeRelation *arc = from->get_child(_graph_type, 0);
       arc->change_parent(to);
       num_children--;
       nassertv(num_children == from->get_num_children(_graph_type));

@@ -66,6 +66,18 @@ safe_to_transform() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ModelNode::preserve_name
+//       Access: Public, Virtual
+//  Description: Returns true if the node's name has extrinsic meaning
+//               and must be preserved across a flatten operation,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool ModelNode::
+preserve_name() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ModelNode::register_with_factory
 //       Access: Public, Static
 //  Description: Factory method to generate a node object

@@ -39,6 +39,9 @@ public:
   virtual ~NamedNode();
 
   virtual Node *make_copy() const;
+
+  virtual bool preserve_name() const;
+
   virtual void output(ostream &out) const;
 
   static void register_with_read_factory(void);

@@ -132,6 +132,18 @@ xform(const LMatrix4f &mat) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionNode::preserve_name
+//       Access: Public, Virtual
+//  Description: Returns true if the node's name has extrinsic meaning
+//               and must be preserved across a flatten operation,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool CollisionNode::
+preserve_name() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionNode::draw_traverse
 //       Access: Public, Virtual
 //  Description: This is called by the Draw traversal by virtue of the

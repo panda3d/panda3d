@@ -47,6 +47,19 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NamedNode::preserve_name
+//       Access: Public, Virtual
+//  Description: Returns true if the node's name has extrinsic meaning
+//               and must be preserved across a flatten operation,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool NamedNode::
+preserve_name() const {
+  return false;
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: NamedNode::Output
 //       Access: Public, Virtual
 //  Description: Writes a brief description of the node to the

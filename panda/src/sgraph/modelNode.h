@@ -50,6 +50,7 @@ public:
 
   virtual bool safe_to_flatten() const;
   virtual bool safe_to_transform() const;
+  virtual bool preserve_name() const;
 
 public:
   static void register_with_read_factory(void);
