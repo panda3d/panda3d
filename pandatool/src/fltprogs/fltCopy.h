@@ -19,12 +19,12 @@
 #ifndef FLTCOPY_H
 #define FLTCOPY_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "cvsCopy.h"
 
-#include <dSearchPath.h>
-#include <pointerTo.h>
+#include "dSearchPath.h"
+#include "pointerTo.h"
 
 #include "pset.h"
 
@@ -68,8 +68,8 @@ private:
                     bool new_file);
 
 
-  typedef pset<PT(FltExternalReference)> Refs;
-  typedef pset<PT(FltTexture)> Textures;
+  typedef pset< PT(FltExternalReference) > Refs;
+  typedef pset< PT(FltTexture) > Textures;
 
   void scan_flt(FltRecord *record, Refs &refs, Textures &textures);
 
