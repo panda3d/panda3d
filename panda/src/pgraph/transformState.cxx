@@ -695,10 +695,12 @@ do_compose(const TransformState *other) const {
   nassertr((other->_flags & F_is_invalid) == 0, other);
 
   if (compose_componentwise && 
-      components_given() && has_uniform_scale() && 
-      other->components_given()) {
-    // We will do this operation componentwise if both transforms were
-    // given componentwise, and no non-uniform scale is involved.
+      has_uniform_scale() && 
+      ((components_given() && other->has_components()) ||
+       (other->components_given() && has_components()))) {
+    // We will do this operation componentwise if *either* transform
+    // was given componentwise (and there is no non-uniform scale in
+    // the way).
 
     LVecBase3f pos = get_pos();
     LQuaternionf quat = get_quat();
@@ -746,11 +748,12 @@ do_invert_compose(const TransformState *other) const {
   nassertr((other->_flags & F_is_invalid) == 0, other);
 
   if (compose_componentwise && 
-      components_given() && has_uniform_scale() && 
-      (other->is_identity() || 
-       (other->components_given()))) {
-    // We will do this operation componentwise if both transforms were
-    // given componentwise, and no non-uniform scale is involved.
+      has_uniform_scale() && 
+      ((components_given() && other->has_components()) ||
+       (other->components_given() && has_components()))) {
+    // We will do this operation componentwise if *either* transform
+    // was given componentwise (and there is no non-uniform scale in
+    // the way).
 
     LVecBase3f pos = get_pos();
     LQuaternionf quat = get_quat();
