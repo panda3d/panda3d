@@ -258,6 +258,17 @@ get_egg_group(MayaNodeDesc *node_desc) {
         egg_group->add_object_type(object_type);
       }
 
+      // Is the node flagged to be invisible?  If it is, and is has no
+      // other egg flags, it is implicitly tagged "backstage", so it
+      // won't get converted.  (But it might be an invisible collision
+      // solid, which is why we do this only if it has no other egg
+      // flags.)
+      bool visible = true;
+      get_bool_attribute(dag_object, "visibility", visible);
+      if (!visible && egg_group->get_num_object_types() == 0) {
+        egg_group->add_object_type("backstage");
+      }
+
       // We treat the object type "billboard" as a special case: we
       // apply this one right away and also flag the group as an
       // instance.

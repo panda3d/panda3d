@@ -534,15 +534,9 @@ process_model_node(MayaNodeDesc *node_desc) {
   }
 
   MObject node = dag_path.transform(&status);
-
-  bool visible;
-  if (!get_bool_attribute(node, "visibility", visible)) {
-    if (mayaegg_cat.is_debug()) {
-      mayaegg_cat.debug()
-        << "Couldn't get visibility attribute for " << dag_node.name()
-        << "\n";
-    }
-    visible = true;
+  if (!status) {
+    status.perror("dag_path.transform()");
+    return false;
   }
 
   string path = dag_path.fullPathName().asChar();
@@ -556,11 +550,6 @@ process_model_node(MayaNodeDesc *node_desc) {
         << " (animated)";
     }
 
-    if (!visible) {
-      mayaegg_cat.debug(false)
-        << " (invisible)";
-    }
-
     mayaegg_cat.debug(false) << "\n";
   }
 
@@ -570,13 +559,6 @@ process_model_node(MayaNodeDesc *node_desc) {
     if (_animation_convert == AC_model) { 
       EggGroup *egg_group = _tree.get_egg_group(node_desc);
       get_joint_transform(dag_path, egg_group);
-    }
-
-  } else if (!visible) {
-    if (mayaegg_cat.is_debug()) {
-      mayaegg_cat.debug()
-        << "Ignoring invisible node " << path
-        << "\n";
     }
 
   } else if (dag_node.inUnderWorld()) {
