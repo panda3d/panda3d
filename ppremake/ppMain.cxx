@@ -172,6 +172,14 @@ process_all() {
 ////////////////////////////////////////////////////////////////////
 bool PPMain::
 process(const string &dirname) {
+  string cache_filename = _def_scope->expand_variable("DEPENDENCY_CACHE_FILENAME");
+
+  if (cache_filename.empty()) {
+    cerr << "Warning: no definition given for $[DEPENDENCY_CACHE_FILENAME].\n";
+  } else {
+    _tree.read_file_dependencies(cache_filename);
+  }
+
   PPDirectory *dir = _tree.find_dirname(dirname);
   if (dir == (PPDirectory *)NULL) {
     cerr << "Unknown directory: " << dirname << "\n";
@@ -183,7 +191,15 @@ process(const string &dirname) {
     return false;
   }
 
-  return p_process(dir);
+  if (!p_process(dir)) {
+    return false;
+  }
+
+  if (!cache_filename.empty()) {
+    _tree.update_file_dependencies(cache_filename);
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -239,6 +239,7 @@ get_dependency(int n) {
 void PPDependableFile::
 get_complete_dependencies(vector<PPDependableFile *> &files) {
   set<PPDependableFile *> files_set;
+  get_complete_dependencies(files_set);
 
   copy(files_set.begin(), files_set.end(), back_inserter(files));
   sort(files.begin(), files.end(), SortDependableFilesByName());
