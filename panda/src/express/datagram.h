@@ -19,14 +19,13 @@
 #ifndef DATAGRAM_H
 #define DATAGRAM_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "numeric_types.h"
 #include "typedObject.h"
 #include "littleEndian.h"
 #include "bigEndian.h"
-
-#include <string>
+#include "pta_uchar.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Datagram
@@ -86,11 +85,11 @@ PUBLISHED:
   INLINE void add_z_string(string str);
   INLINE void add_fixed_string(const string &str, size_t size);
 
-  INLINE void pad_bytes(size_t size);
-  INLINE void append_data(const void *data, size_t size);
+  void pad_bytes(size_t size);
+  void append_data(const void *data, size_t size);
   INLINE void append_data(const string &data);
 
-  INLINE const string &get_message() const;
+  INLINE string get_message() const;
   INLINE const void *get_data() const;
   INLINE size_t get_length() const;
 
@@ -99,7 +98,7 @@ PUBLISHED:
   INLINE bool operator < (const Datagram &other) const;
 
 private:
-  string _message;
+  PTA_uchar _data;
 
 
 public:

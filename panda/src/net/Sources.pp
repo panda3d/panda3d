@@ -15,8 +15,10 @@
   #define SOURCES \
      config_net.h connection.h connectionListener.h  \
      connectionManager.N connectionManager.h connectionReader.h  \
-     connectionWriter.h datagramQueue.h datagramTCPHeader.h  \
-     datagramUDPHeader.h netAddress.h netDatagram.I netDatagram.h  \
+     connectionWriter.h datagramQueue.h \
+     datagramTCPHeader.I datagramTCPHeader.h  \
+     datagramUDPHeader.I datagramUDPHeader.h  \
+     netAddress.h netDatagram.I netDatagram.h  \
      pprerror.h queuedConnectionListener.I  \
      queuedConnectionListener.h queuedConnectionManager.h  \
      queuedConnectionReader.h recentConnectionReader.h 
@@ -33,7 +35,9 @@
   #define INSTALL_HEADERS \
     config_net.h connection.h connectionListener.h connectionManager.h \
     connectionReader.h connectionWriter.h datagramQueue.h \
-    datagramTCPHeader.h datagramUDPHeader.h netAddress.h netDatagram.I \
+    datagramTCPHeader.I datagramTCPHeader.h \
+    datagramUDPHeader.I datagramUDPHeader.h \
+    netAddress.h netDatagram.I \
     netDatagram.h pprerror.h queuedConnectionListener.I \
     queuedConnectionListener.h queuedConnectionManager.h \
     queuedConnectionReader.h queuedReturn.I queuedReturn.h \

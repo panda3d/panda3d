@@ -19,9 +19,11 @@
 #ifndef DATAGRAMUDPHEADER_H
 #define DATAGRAMUDPHEADER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "netDatagram.h"
+
+#include "datagramIterator.h"
 
 #include <prtypes.h>
 
@@ -42,9 +44,8 @@ public:
   DatagramUDPHeader(const NetDatagram &datagram);
   DatagramUDPHeader(const void *data);
 
-  int get_datagram_checksum() const;
-
-  const string &get_header() const;
+  INLINE int get_datagram_checksum() const;
+  INLINE string get_header() const;
 
   bool verify_datagram(const NetDatagram &datagram) const;
 
@@ -54,6 +55,8 @@ private:
   // packing and unpacking the header.
   NetDatagram _header;
 };
+
+#include "datagramUDPHeader.I"
 
 #endif
 

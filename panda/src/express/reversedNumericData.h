@@ -52,10 +52,10 @@ static const int max_numeric_size = 8;
 class EXPCL_PANDAEXPRESS ReversedNumericData {
 public:
   INLINE ReversedNumericData(const void *data, size_t length);
-  INLINE ReversedNumericData(const string &data, size_t start, size_t length);
+  INLINE ReversedNumericData(const void *data, size_t start, size_t length);
 
-  INLINE void store_value(void *dest, size_t length);
-  INLINE void append_to(string &dest, size_t length);
+  INLINE void store_value(void *dest, size_t length) const;
+  INLINE const void *get_data() const;
 
 private:
   void reverse_assign(const char *source, size_t length);

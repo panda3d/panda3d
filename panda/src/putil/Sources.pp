@@ -25,14 +25,14 @@
      lineStream.h lineStreamBuf.I lineStreamBuf.h \
      modifierButtons.I modifierButtons.h mouseButton.h \
      mouseData.h nameUniquifier.I nameUniquifier.h \
-     pointerToArray.I pointerToArray.h pta_double.h \
-     pta_float.h pta_int.h pta_uchar.h pta_ushort.h \
+     pta_double.h \
+     pta_float.h pta_int.h \
      string_utils.I string_utils.N string_utils.h \
      timedCycle.I timedCycle.h typedWritable.I \
      typedWritable.h typedWritableReferenceCount.I \
      typedWritableReferenceCount.h updateSeq.I updateSeq.h \
      vector_double.h vector_float.h vector_typedWritable.h \
-     vector_uchar.h vector_ushort.h vector_writable.h \
+     vector_ushort.h vector_writable.h \
      writable.I writable.h writableConfigurable.h \
      writableParam.I writableParam.h 
     
@@ -46,11 +46,11 @@
      keyboardButton.cxx lineStream.cxx lineStreamBuf.cxx \
      modifierButtons.cxx mouseButton.cxx mouseData.cxx \
      nameUniquifier.cxx pta_double.cxx pta_float.cxx \
-     pta_int.cxx pta_uchar.cxx pta_ushort.cxx \
+     pta_int.cxx pta_ushort.cxx \
      string_utils.cxx timedCycle.cxx typedWritable.cxx \
      typedWritableReferenceCount.cxx updateSeq.cxx \
      vector_double.cxx vector_float.cxx \
-     vector_typedWritable.cxx vector_uchar.cxx \
+     vector_typedWritable.cxx \
      vector_ushort.cxx vector_writable.cxx writable.cxx \
      writableConfigurable.cxx writableParam.cxx 
 
@@ -70,13 +70,13 @@
     ioPtaDatagramShort.h iterator_types.h keyboardButton.h lineStream.I \
     lineStream.h lineStreamBuf.I lineStreamBuf.h modifierButtons.I \
     modifierButtons.h mouseButton.h mouseData.h nameUniquifier.I \
-    nameUniquifier.h pointerToArray.I pointerToArray.h pta_double.h \
-    pta_float.h pta_int.h pta_uchar.h pta_ushort.h string_utils.I \
+    nameUniquifier.h pta_double.h \
+    pta_float.h pta_int.h pta_ushort.h string_utils.I \
     string_utils.h timedCycle.I timedCycle.h typedWritable.I \
     typedWritable.h typedWritableReferenceCount.I \
     typedWritableReferenceCount.h updateSeq.I updateSeq.h \
     vector_double.h vector_float.h vector_typedWritable.h \
-    vector_uchar.h vector_ushort.h vector_writable.h writable.I \
+    vector_ushort.h vector_writable.h writable.I \
     writable.h writableConfigurable.h writableParam.I \
     writableParam.h
 

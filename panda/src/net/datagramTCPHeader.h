@@ -19,9 +19,11 @@
 #ifndef DATAGRAMTCPHEADER_H
 #define DATAGRAMTCPHEADER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include "netDatagram.h"
+
+#include "datagramIterator.h"
 
 #include <prtypes.h>
 
@@ -42,9 +44,8 @@ public:
   DatagramTCPHeader(const NetDatagram &datagram);
   DatagramTCPHeader(const void *data);
 
-  int get_datagram_size() const;
-
-  const string &get_header() const;
+  INLINE int get_datagram_size() const;
+  INLINE string get_header() const;
 
   bool verify_datagram(const NetDatagram &datagram) const;
 
@@ -54,6 +55,8 @@ private:
   // packing and unpacking the header.
   NetDatagram _header;
 };
+
+#include "datagramTCPHeader.I"
 
 #endif
 

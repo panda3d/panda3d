@@ -18,7 +18,7 @@
 
 
 #include "datagramIterator.h"
-#include <notify.h>
+#include "notify.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DatagramIterator::get_string
@@ -33,13 +33,12 @@ get_string() {
   nassertr(_datagram != (const Datagram *)NULL &&
            _current_index + s_len <= _datagram->get_length(), "");
 
-  string s =
-    _datagram->get_message().substr(_current_index, s_len);
+  const char *ptr = (const char *)_datagram->get_data();
+  int last_index = _current_index;
 
-  nassertr(s.length() == s_len, "");
   _current_index += s_len;
 
-  return s;
+  return string(ptr + last_index, s_len);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -53,17 +52,17 @@ get_z_string() {
   nassertr(_datagram != (const Datagram *)NULL, "");
 
   // First, determine the length of the string.
-  const string &message = _datagram->get_message();
+  const char *ptr = (const char *)_datagram->get_data();
+  size_t length = _datagram->get_length();
   size_t p = _current_index;
-  while (p < message.length() && message[p] != '\0') {
+  while (p < length && ptr[p] != '\0') {
   }
-  nassertr(p < message.length(), "");  // no NULL character?
+  nassertr(p < length, "");  // no NULL character?
 
-  string s =
-    _datagram->get_message().substr(_current_index, p - _current_index);
+  int last_index = _current_index;
   _current_index = p + 1;
 
-  return s;
+  return string(ptr + last_index, p - last_index);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -78,8 +77,9 @@ get_fixed_string(size_t size) {
   nassertr(_datagram != (const Datagram *)NULL &&
            _current_index + size <= _datagram->get_length(), "");
 
-  string s =
-    _datagram->get_message().substr(_current_index, size);
+  const char *ptr = (const char *)_datagram->get_data();
+  string s(ptr + _current_index, size);
+
   _current_index += size;
 
   size_t zero_byte = s.find('\0');
@@ -97,9 +97,12 @@ extract_bytes(size_t size) {
   nassertr((int)size >= 0, "");
   nassertr(_datagram != (const Datagram *)NULL &&
            _current_index + size <= _datagram->get_length(), "");
-  int start = _current_index;
+
+  const char *ptr = (const char *)_datagram->get_data();
+  int last_index = _current_index;
 
   _current_index += size;
-  return _datagram->get_message().substr(start, size);
+
+  return string(ptr + last_index, size);
 }
 

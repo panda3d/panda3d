@@ -97,7 +97,8 @@ get_int8() {
   nassertr(_datagram != (const Datagram *)NULL &&
            _current_index < _datagram->get_length(), 0);
 
-  PN_int8 tempvar = (PN_int8)_datagram->get_message()[_current_index];
+  const char *ptr = (const char *)_datagram->get_data();
+  PN_int8 tempvar = (PN_int8)ptr[_current_index];
   _current_index++;
 
   return tempvar;
@@ -113,7 +114,8 @@ get_uint8() {
   nassertr(_datagram != (const Datagram *)NULL &&
            _current_index < _datagram->get_length(), 0);
 
-  PN_uint8 tempvar = (PN_uint8)_datagram->get_message()[_current_index];
+  const char *ptr = (const char *)_datagram->get_data();
+  PN_uint8 tempvar = (PN_uint8)ptr[_current_index];
   _current_index++;
 
   return tempvar;
@@ -130,7 +132,7 @@ get_int16() {
            _current_index < _datagram->get_length(), 0);
 
   PN_int16 tempvar;
-  LittleEndian s(_datagram->get_message(), _current_index, sizeof(tempvar));
+  LittleEndian s(_datagram->get_data(), _current_index, sizeof(tempvar));
   s.store_value(&tempvar, sizeof(tempvar));
   _current_index += sizeof(tempvar);
 
@@ -148,7 +150,7 @@ get_int32() {
            _current_index < _datagram->get_length(), 0);
 
   PN_int32 tempvar;
-  LittleEndian s(_datagram->get_message(), _current_index, sizeof(tempvar));
+  LittleEndian s(_datagram->get_data(), _current_index, sizeof(tempvar));
   s.store_value(&tempvar, sizeof(tempvar));
   _current_index += sizeof(tempvar);
 
@@ -166,7 +168,7 @@ get_int64() {
            _current_index < _datagram->get_length(), 0);
 
   PN_int64 tempvar;
-  LittleEndian s(_datagram->get_message(), _current_index, sizeof(tempvar));
+  LittleEndian s(_datagram->get_data(), _current_index, sizeof(tempvar));
   s.store_value(&tempvar, sizeof(tempvar));
   _current_index += sizeof(tempvar);
 
@@ -184,7 +186,7 @@ get_uint16() {
            _current_index < _datagram->get_length(), 0);
 
   PN_uint16 tempvar;
-  LittleEndian s(_datagram->get_message(), _current_index, sizeof(tempvar));
+  LittleEndian s(_datagram->get_data(), _current_index, sizeof(tempvar));
   s.store_value(&tempvar, sizeof(tempvar));
   _current_index += sizeof(tempvar);
 
@@ -202,7 +204,7 @@ get_uint32() {
            _current_index < _datagram->get_length(), 0);
 
   PN_uint32 tempvar;
-  LittleEndian s(_datagram->get_message(), _current_index, sizeof(tempvar));
+  LittleEndian s(_datagram->get_data(), _current_index, sizeof(tempvar));
   s.store_value(&tempvar, sizeof(tempvar));
   _current_index += sizeof(tempvar);
 
@@ -220,7 +222,7 @@ get_uint64() {
            _current_index < _datagram->get_length(), 0);
 
   PN_uint64 tempvar;
-  LittleEndian s(_datagram->get_message(), _current_index, sizeof(tempvar));
+  LittleEndian s(_datagram->get_data(), _current_index, sizeof(tempvar));
   s.store_value(&tempvar, sizeof(tempvar));
   _current_index += sizeof(tempvar);
 
@@ -245,7 +247,7 @@ get_float32() {
            _current_index < _datagram->get_length(), 0.0);
 
   float tempvar;
-  LittleEndian s(_datagram->get_message(), _current_index, sizeof(tempvar));
+  LittleEndian s(_datagram->get_data(), _current_index, sizeof(tempvar));
   s.store_value(&tempvar, sizeof(tempvar));
   _current_index += sizeof(tempvar);
 
@@ -263,7 +265,7 @@ get_float64() {
            _current_index < _datagram->get_length(), 0.0);
 
   PN_float64 tempvar;
-  LittleEndian s(_datagram->get_message(), _current_index, sizeof(tempvar));
+  LittleEndian s(_datagram->get_data(), _current_index, sizeof(tempvar));
   s.store_value(&tempvar, sizeof(tempvar));
   _current_index += sizeof(tempvar);
 
@@ -281,7 +283,7 @@ get_be_int16() {
            _current_index < _datagram->get_length(), 0);
 
   PN_int16 tempvar;
-  BigEndian s(_datagram->get_message(), _current_index, sizeof(tempvar));
+  BigEndian s(_datagram->get_data(), _current_index, sizeof(tempvar));
   s.store_value(&tempvar, sizeof(tempvar));
   _current_index += sizeof(tempvar);
 
@@ -299,7 +301,7 @@ get_be_int32() {
            _current_index < _datagram->get_length(), 0);
 
   PN_int32 tempvar;
-  BigEndian s(_datagram->get_message(), _current_index, sizeof(tempvar));
+  BigEndian s(_datagram->get_data(), _current_index, sizeof(tempvar));
   s.store_value(&tempvar, sizeof(tempvar));
   _current_index += sizeof(tempvar);
 
@@ -317,7 +319,7 @@ get_be_int64() {
            _current_index < _datagram->get_length(), 0);
 
   PN_int64 tempvar;
-  BigEndian s(_datagram->get_message(), _current_index, sizeof(tempvar));
+  BigEndian s(_datagram->get_data(), _current_index, sizeof(tempvar));
   s.store_value(&tempvar, sizeof(tempvar));
   _current_index += sizeof(tempvar);
 
@@ -335,7 +337,7 @@ get_be_uint16() {
            _current_index < _datagram->get_length(), 0);
 
   PN_uint16 tempvar;
-  BigEndian s(_datagram->get_message(), _current_index, sizeof(tempvar));
+  BigEndian s(_datagram->get_data(), _current_index, sizeof(tempvar));
   s.store_value(&tempvar, sizeof(tempvar));
   _current_index += sizeof(tempvar);
 
@@ -353,7 +355,7 @@ get_be_uint32() {
            _current_index < _datagram->get_length(), 0);
 
   PN_uint32 tempvar;
-  BigEndian s(_datagram->get_message(), _current_index, sizeof(tempvar));
+  BigEndian s(_datagram->get_data(), _current_index, sizeof(tempvar));
   s.store_value(&tempvar, sizeof(tempvar));
   _current_index += sizeof(tempvar);
 
@@ -371,7 +373,7 @@ get_be_uint64() {
            _current_index < _datagram->get_length(), 0);
 
   PN_uint64 tempvar;
-  BigEndian s(_datagram->get_message(), _current_index, sizeof(tempvar));
+  BigEndian s(_datagram->get_data(), _current_index, sizeof(tempvar));
   s.store_value(&tempvar, sizeof(tempvar));
   _current_index += sizeof(tempvar);
 
@@ -396,7 +398,7 @@ get_be_float32() {
            _current_index < _datagram->get_length(), 0.0);
 
   float tempvar;
-  BigEndian s(_datagram->get_message(), _current_index, sizeof(tempvar));
+  BigEndian s(_datagram->get_data(), _current_index, sizeof(tempvar));
   s.store_value(&tempvar, sizeof(tempvar));
   _current_index += sizeof(tempvar);
 
@@ -414,7 +416,7 @@ get_be_float64() {
            _current_index < _datagram->get_length(), 0.0);
 
   PN_float64 tempvar;
-  BigEndian s(_datagram->get_message(), _current_index, sizeof(tempvar));
+  BigEndian s(_datagram->get_data(), _current_index, sizeof(tempvar));
   s.store_value(&tempvar, sizeof(tempvar));
   _current_index += sizeof(tempvar);
 
@@ -444,7 +446,10 @@ INLINE string DatagramIterator::
 get_remaining_bytes() const {
   nassertr(_datagram != (const Datagram *)NULL &&
            _current_index <= _datagram->get_length(), "");
-  return _datagram->get_message().substr(_current_index);
+
+  const char *ptr = (const char *)_datagram->get_data();
+  int remaining_size = _datagram->get_length() - _current_index;
+  return string(ptr + _current_index, remaining_size);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -1,4 +1,4 @@
-// Filename: pta_uchar.h
+// Filename: vector_uchar.h
 // Created by:  drose (10May00)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,30 +16,28 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef PTA_UCHAR_H
-#define PTA_UCHAR_H
+#ifndef VECTOR_UCHAR_H
+#define VECTOR_UCHAR_H
 
 #include <pandabase.h>
 
-#include "pointerToArray.h"
-#include "vector_uchar.h"
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : PTA_uchar
-// Description : A pta of uchars.  This class is defined once here,
-//               and exported to PANDA.DLL; other packages that want
-//               to use a pta of this type (whether they need to
-//               export it or not) should include this header file,
-//               rather than defining the pta again.
+//       Class : vector_uchar
+// Description : A vector of uchars.  This class is defined once here,
+//               and exported to PANDAEXPRESS.DLL; other packages that
+//               want to use a vector of this type (whether they need
+//               to export it or not) should include this header file,
+//               rather than defining the vector again.
 ////////////////////////////////////////////////////////////////////
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, RefCountObj<vector_uchar>);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, PointerToBase<RefCountObj<vector_uchar> >);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, PointerToArray<unsigned char>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, ConstPointerToArray<unsigned char>)
+#define EXPCL EXPCL_PANDAEXPRESS
+#define EXPTP EXPTP_PANDAEXPRESS
+#define TYPE unsigned char
+#define NAME vector_uchar
 
-typedef PointerToArray<unsigned char> PTA_uchar;
-typedef ConstPointerToArray<unsigned char> CPTA_uchar;
+#include <vector_src.h>
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

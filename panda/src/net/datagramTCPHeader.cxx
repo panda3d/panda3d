@@ -52,30 +52,6 @@ DatagramTCPHeader(const void *data) : _header(data, datagram_tcp_header_size) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DatagramTCPHeader::get_datagram_size
-//       Access: Public
-//  Description: Returns the number of bytes in the associated
-//               datagram.
-////////////////////////////////////////////////////////////////////
-int DatagramTCPHeader::
-get_datagram_size() const {
-  DatagramIterator di(_header);
-  return di.get_uint16();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramTCPHeader::get_header
-//       Access: Public
-//  Description: Returns a pointer to a block of data of length
-//               datagram_tcp_header_size, which can be written to the
-//               network as the header information.
-////////////////////////////////////////////////////////////////////
-const string &DatagramTCPHeader::
-get_header() const {
-  return _header.get_message();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DatagramTCPHeader::verify_datagram
 //       Access: Public
 //  Description: Verifies that the indicated datagram has the

@@ -31,7 +31,8 @@ Datagram() {
 //  Description: Constructs a datagram from an existing block of data.
 ////////////////////////////////////////////////////////////////////
 INLINE Datagram::
-Datagram(const void *data, size_t size) : _message((const char *)data, size) {
+Datagram(const void *data, size_t size) {
+  append_data(data, size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -40,7 +41,8 @@ Datagram(const void *data, size_t size) : _message((const char *)data, size) {
 //  Description: Constructs a datagram from an existing block of data.
 ////////////////////////////////////////////////////////////////////
 INLINE Datagram::
-Datagram(const string &data) : _message(data) {
+Datagram(const string &data) {
+  append_data(data);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -50,7 +52,7 @@ Datagram(const string &data) : _message(data) {
 ////////////////////////////////////////////////////////////////////
 INLINE Datagram::
 Datagram(const Datagram &copy) :
-  _message(copy._message)
+  _data(copy._data)
 {
 }
 
@@ -61,7 +63,7 @@ Datagram(const Datagram &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
 operator = (const Datagram &copy) {
-  _message = copy._message;
+  _data = copy._data;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -81,7 +83,7 @@ add_bool(bool b) {
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
 add_int8(PN_int8 value) {
-  _message += (char)value;
+  append_data(&value, 1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -91,7 +93,7 @@ add_int8(PN_int8 value) {
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
 add_uint8(PN_uint8 value) {
-  _message += (char)value;
+  append_data(&value, 1);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -102,7 +104,7 @@ add_uint8(PN_uint8 value) {
 INLINE void Datagram::
 add_int16(PN_int16 value) {
   LittleEndian s(&value, sizeof(value));
-  s.append_to(_message, sizeof(value));
+  append_data(s.get_data(), sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -113,7 +115,7 @@ add_int16(PN_int16 value) {
 INLINE void Datagram::
 add_int32(PN_int32 value) {
   LittleEndian s(&value, sizeof(value));
-  s.append_to(_message, sizeof(value));
+  append_data(s.get_data(), sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -124,7 +126,7 @@ add_int32(PN_int32 value) {
 INLINE void Datagram::
 add_int64(PN_int64 value) {
   LittleEndian s(&value, sizeof(value));
-  s.append_to(_message, sizeof(value));
+  append_data(s.get_data(), sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -135,7 +137,7 @@ add_int64(PN_int64 value) {
 INLINE void Datagram::
 add_uint16(PN_uint16 value) {
   LittleEndian s(&value, sizeof(value));
-  s.append_to(_message, sizeof(value));
+  append_data(s.get_data(), sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -146,7 +148,7 @@ add_uint16(PN_uint16 value) {
 INLINE void Datagram::
 add_uint32(PN_uint32 value) {
   LittleEndian s(&value, sizeof(value));
-  s.append_to(_message, sizeof(value));
+  append_data(s.get_data(), sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -157,7 +159,7 @@ add_uint32(PN_uint32 value) {
 INLINE void Datagram::
 add_uint64(PN_uint64 value) {
   LittleEndian s(&value, sizeof(value));
-  s.append_to(_message, sizeof(value));
+  append_data(s.get_data(), sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -175,7 +177,7 @@ add_float32(float value) {
   // is different, we will have to convert.
   nassertv(sizeof(value) == 4);
   LittleEndian s(&value, sizeof(value));
-  s.append_to(_message, sizeof(value));
+  append_data(s.get_data(), sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -186,7 +188,7 @@ add_float32(float value) {
 INLINE void Datagram::
 add_float64(PN_float64 value) {
   LittleEndian s(&value, sizeof(value));
-  s.append_to(_message, sizeof(value));
+  append_data(s.get_data(), sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -198,7 +200,7 @@ add_float64(PN_float64 value) {
 INLINE void Datagram::
 add_be_int16(PN_int16 value) {
   BigEndian s(&value, sizeof(value));
-  s.append_to(_message, sizeof(value));
+  append_data(s.get_data(), sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -210,7 +212,7 @@ add_be_int16(PN_int16 value) {
 INLINE void Datagram::
 add_be_int32(PN_int32 value) {
   BigEndian s(&value, sizeof(value));
-  s.append_to(_message, sizeof(value));
+  append_data(s.get_data(), sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -222,7 +224,7 @@ add_be_int32(PN_int32 value) {
 INLINE void Datagram::
 add_be_int64(PN_int64 value) {
   BigEndian s(&value, sizeof(value));
-  s.append_to(_message, sizeof(value));
+  append_data(s.get_data(), sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -234,7 +236,7 @@ add_be_int64(PN_int64 value) {
 INLINE void Datagram::
 add_be_uint16(PN_uint16 value) {
   BigEndian s(&value, sizeof(value));
-  s.append_to(_message, sizeof(value));
+  append_data(s.get_data(), sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -246,7 +248,7 @@ add_be_uint16(PN_uint16 value) {
 INLINE void Datagram::
 add_be_uint32(PN_uint32 value) {
   BigEndian s(&value, sizeof(value));
-  s.append_to(_message, sizeof(value));
+  append_data(s.get_data(), sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -258,7 +260,7 @@ add_be_uint32(PN_uint32 value) {
 INLINE void Datagram::
 add_be_uint64(PN_uint64 value) {
   BigEndian s(&value, sizeof(value));
-  s.append_to(_message, sizeof(value));
+  append_data(s.get_data(), sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -276,7 +278,7 @@ add_be_float32(float value) {
   // is different, we will have to convert.
   nassertv(sizeof(value) == 4);
   BigEndian s(&value, sizeof(value));
-  s.append_to(_message, sizeof(value));
+  append_data(s.get_data(), sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -288,7 +290,7 @@ add_be_float32(float value) {
 INLINE void Datagram::
 add_be_float64(PN_float64 value) {
   BigEndian s(&value, sizeof(value));
-  s.append_to(_message, sizeof(value));
+  append_data(s.get_data(), sizeof(value));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -306,7 +308,7 @@ add_string(const string &str) {
   add_uint16(str.length());
 
   // Add the string
-  _message += str;
+  append_data(str);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -320,10 +322,10 @@ add_z_string(string str) {
   // We must not have any nested null characters in the string.
   size_t null_pos = str.find('\0');
   // Add the string (sans the null character).
-  _message += str.substr(0, null_pos);
+  append_data(str.substr(0, null_pos));
 
   // And the null character.
-  _message += '\0';
+  add_uint8('\0');
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -338,36 +340,12 @@ add_z_string(string str) {
 INLINE void Datagram::
 add_fixed_string(const string &str, size_t size) {
   if (str.length() < size) {
-    _message += str;
-    _message += string(size - str.length(), '\0');
+    append_data(str);
+    pad_bytes(size - str.length());
 
   } else { // str.length() >= size
-    _message += str.substr(0, size);
+    append_data(str.substr(0, size));
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Datagram::pad_bytes
-//       Access: Public
-//  Description: Adds the indicated number of zero bytes to the
-//               datagram.
-////////////////////////////////////////////////////////////////////
-INLINE void Datagram::
-pad_bytes(size_t size) {
-  nassertv((int)size >= 0);
-  _message += string(size, '\0');
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Datagram::append_data
-//       Access: Public
-//  Description: Appends some more raw data to the end of the
-//               datagram.
-////////////////////////////////////////////////////////////////////
-INLINE void Datagram::
-append_data(const void *data, size_t size) {
-  nassertv((int)size >= 0);
-  _message += string((const char *)data, size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -378,7 +356,7 @@ append_data(const void *data, size_t size) {
 ////////////////////////////////////////////////////////////////////
 INLINE void Datagram::
 append_data(const string &data) {
-  _message += data;
+  append_data(data.data(), data.length());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -386,9 +364,9 @@ append_data(const string &data) {
 //       Access: Public
 //  Description: Returns the datagram's data as a string.
 ////////////////////////////////////////////////////////////////////
-INLINE const string &Datagram::
+INLINE string Datagram::
 get_message() const {
-  return _message;
+  return string((const char *)_data.p(), _data.size());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -399,7 +377,7 @@ get_message() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const void *Datagram::
 get_data() const {
-  return _message.data();
+  return _data.p();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -409,7 +387,7 @@ get_data() const {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t Datagram::
 get_length() const {
-  return _message.length();
+  return _data.size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -419,7 +397,13 @@ get_length() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Datagram::
 operator == (const Datagram &other) const {
-  return _message == other._message;
+  if (_data == other._data) {
+    return true;
+  }
+  if (_data != (uchar *)NULL && other._data != (uchar *)NULL) {
+    return _data.v() == other._data.v();
+  }
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -429,7 +413,7 @@ operator == (const Datagram &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Datagram::
 operator != (const Datagram &other) const {
-  return _message != other._message;
+  return !operator == (other);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -439,5 +423,16 @@ operator != (const Datagram &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Datagram::
 operator < (const Datagram &other) const {
-  return _message < other._message;
+  if (_data == other._data) {
+    // Same pointers.
+    return false;
+  }
+
+  if (_data != (uchar *)NULL && other._data != (uchar *)NULL) {
+    // Different pointers, neither NULL.
+    return _data.v() < other._data.v();
+  }
+
+  // One of the pointers is NULL, but not the other one.
+  return _data.size() < other._data.size();
 }

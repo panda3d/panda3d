@@ -54,30 +54,6 @@ DatagramUDPHeader(const void *data) : _header(data, datagram_udp_header_size) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DatagramUDPHeader::get_datagram_checksum
-//       Access: Public
-//  Description: Returns the checksum appropriate for the indicated
-//               datagram.
-////////////////////////////////////////////////////////////////////
-int DatagramUDPHeader::
-get_datagram_checksum() const {
-  DatagramIterator di(_header);
-  return di.get_uint16();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DatagramUDPHeader::get_header
-//       Access: Public
-//  Description: Returns a pointer to a block of data of length
-//               datagram_udp_header_size, which can be written to the
-//               network as the header information.
-////////////////////////////////////////////////////////////////////
-const string &DatagramUDPHeader::
-get_header() const {
-  return _header.get_message();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DatagramUDPHeader::verify_datagram
 //       Access: Public
 //  Description: Verifies that the indicated datagram has the

@@ -19,7 +19,7 @@
 #ifndef NATIVENUMERICDATA_H
 #define NATIVENUMERICDATA_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 #include <string.h>  // for memcpy()
 
@@ -48,10 +48,10 @@
 class EXPCL_PANDAEXPRESS NativeNumericData {
 public:
   INLINE NativeNumericData(const void *data, size_t length);
-  INLINE NativeNumericData(const string &data, size_t start, size_t length);
+  INLINE NativeNumericData(const void *data, size_t start, size_t length);
 
-  INLINE void store_value(void *dest, size_t length);
-  INLINE void append_to(string &dest, size_t length);
+  INLINE void store_value(void *dest, size_t length) const;
+  INLINE const void *get_data() const;
 
 private:
   const void *_source;
