@@ -702,7 +702,7 @@ dx_init(  LPDIRECTDRAW7     context,
     // turn on dithering if the rendertarget is < 8bits/color channel
     DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd_back);
     _back->GetSurfaceDesc(&ddsd_back);
-    _dither_enabled = ((ddsd_back.ddpfPixelFormat.dwRGBBitCount < 24) &&
+    _dither_enabled = (!dx_no_dithering) && ((ddsd_back.ddpfPixelFormat.dwRGBBitCount < 24) &&
                        (_D3DDevDesc.dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_DITHER));
     _d3dDevice->SetRenderState(D3DRENDERSTATE_DITHERENABLE, _dither_enabled);
 

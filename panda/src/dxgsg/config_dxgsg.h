@@ -35,11 +35,12 @@ extern bool dx_auto_normalize_lighting;
 extern bool dx_use_rangebased_fog;
 extern const bool link_tristrips;
 
-// debug flags
+// debug flags we might want to use in full optimized build
 extern bool dx_ignore_mipmaps;
 extern bool dx_mipmap_everything;
 extern bool dx_show_transforms;
 extern bool dx_force_16bpptextures;
+extern bool dx_no_dithering;
 
 #ifndef NDEBUG
 extern int dx_force_backface_culling;
