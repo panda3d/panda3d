@@ -40,6 +40,7 @@
 #include <pointerToArray.h>
 #include <planeNode.h>
 
+#include "dxGeomNodeContext.h"
 #include "dxTextureContext.h"
 
 extern char * ConvD3DErrorToString(const HRESULT &error);   // defined in wdxGraphicsPipe.cxx
@@ -120,6 +121,10 @@ public:
   virtual void draw_tristrip(GeomTristrip *geom, GeomContext *gc);
   virtual void draw_trifan(GeomTrifan *geom, GeomContext *gc);
   virtual void draw_sphere(GeomSphere *geom, GeomContext *gc);
+
+  virtual GeomNodeContext *prepare_geom_node(GeomNode *node);
+  virtual void draw_geom_node(GeomNode *node, GeomNodeContext *gnc);
+  virtual void release_geom_node(GeomNodeContext *gnc);
 
   virtual TextureContext *prepare_texture(Texture *tex);
   virtual void apply_texture(TextureContext *tc);

@@ -85,7 +85,6 @@
 
 #include <mmsystem.h>
 
-
 // print out simple drawprim stats every few secs
 //#define COUNT_DRAWPRIMS
 
@@ -127,13 +126,26 @@ static D3DMATRIX matIdentity;
 #define Colorf_to_D3DCOLOR(out_color) (D3DRGBA((out_color)[0], (out_color)[1], (out_color)[2], (out_color)[3]))
 
 #ifdef COUNT_DRAWPRIMS
+
 static DWORD cDPcount=0;
 static DWORD cVertcount=0;
 static DWORD cTricount=0;
+static DWORD cGeomcount=0;
+
+static LPDIRECTDRAWSURFACE7 pLastTexture=NULL;
+static DWORD cDP_noTexChangeCount=0;
+static LPDIRECT3DDEVICE7 global_pD3DDevice = NULL;
+
 static void CountDPs(DWORD nVerts,DWORD nTris) {
     cDPcount++;
     cVertcount+=nVerts;
     cTricount+=nTris;
+
+    LPDIRECTDRAWSURFACE7 pCurTexture;
+    global_pD3DDevice->GetTexture(0,&pCurTexture);
+    if(pCurTexture==pLastTexture) {
+        cDP_noTexChangeCount++;
+    } else pLastTexture = pCurTexture;
 }
 #else
 #define CountDPs(nv,nt)
@@ -306,6 +318,10 @@ init_dx(  LPDIRECTDRAW7     context,
     _d3d = pD3D;
     _d3dDevice = pDevice;
     _view_rect = viewrect;
+
+#ifdef COUNT_DRAWPRIMS
+     global_pD3DDevice = pDevice;
+#endif
 
     _last_testcooplevel_result = S_OK;
 
@@ -885,21 +901,29 @@ render_frame(const AllAttributesWrapper &initial_state) {
             float verts_per_frame = cVertcount/numframes;
             float tris_per_frame = cTricount/numframes;
             float DPs_per_frame = cDPcount/numframes;
+            float DPs_notexchange_per_frame = cDP_noTexChangeCount/numframes;
             float verts_per_DP = cVertcount/(float)cDPcount;
             float verts_per_sec = cVertcount/delta_secs;
             float tris_per_sec = cTricount/delta_secs;
+            float Geoms_per_frame = cGeomcount/numframes;
+            float DrawPrims_per_Geom = cDPcount/(float)cGeomcount;
+            float verts_per_Geom = cVertcount/(float)cGeomcount;
 
-            dxgsg_cat.spam() 
+            dxgsg_cat.spam() << "==================================="
                 << "\n Avg Verts/sec:\t\t" << verts_per_sec
                 << "\n Avg Tris/sec:\t\t" << tris_per_sec
                 << "\n Avg Verts/frame:\t" << verts_per_frame
                 << "\n Avg Tris/frame:\t" << tris_per_frame
                 << "\n Avg DrawPrims/frm:\t" << DPs_per_frame
                 << "\n Avg Verts/DrawPrim:\t" << verts_per_DP 
+                << "\n Avg DrawPrims w/no Texture Change from prev DrawPrim/frm:\t" << DPs_notexchange_per_frame
+                << "\n Avg Geoms/frm:\t" << Geoms_per_frame
+                << "\n Avg DrawPrims/Geom:\t" << DrawPrims_per_Geom
+                << "\n Avg Verts/Geom:\t" << verts_per_Geom
                 << endl;
 
             LastDPInfoFrame=_cur_frame_count;
-            cDPcount = cVertcount=cTricount=0;
+            cDPcount = cVertcount=cTricount=cDP_noTexChangeCount=cGeomcount=0;
             LastTickCount=CurTickCount;
         }
     }
@@ -1167,7 +1191,7 @@ typedef enum {DrawPrim,DrawPrimStrided} DP_Type;
 
 void INLINE TestDrawPrimFailure(DP_Type dptype,HRESULT hr,LPDIRECTDRAW7 pDD,DWORD nVerts,DWORD nTris) {
         if(FAILED(hr)) {
-            // loss of exclusive mode is not a real DrawPrim problem
+            // loss of exclusive mode is not a real DrawPrim problem, ignore it
             HRESULT testcooplvl_hr = pDD->TestCooperativeLevel();
             if((testcooplvl_hr != DDERR_NOEXCLUSIVEMODE)||(testcooplvl_hr != DDERR_EXCLUSIVEMODEALREADYSET)) {
                 dxgsg_cat.fatal() << ((dptype==DrawPrimStrided) ? "DrawPrimStrided" : "DrawPrim") << " failed: result = " << ConvD3DErrorToString(hr) << endl;
@@ -2136,6 +2160,10 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
     }
 #endif
 
+#ifdef COUNT_DRAWPRIMS
+    cGeomcount++;
+#endif
+
     int nPrims = geom->get_num_prims();
     HRESULT hr;
 
@@ -2460,12 +2488,16 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
     const int *pLengthArr = geom->get_lengths();
     HRESULT hr;
 
-    if (nPrims==0) {
+    if(nPrims==0) {
         #ifdef _DEBUG
           dxgsg_cat.warning() << "draw_multitri() called with ZERO vertices!!" << endl;
         #endif
         return;
     }
+
+#ifdef COUNT_DRAWPRIMS
+    cGeomcount++;
+#endif
 
     PTA_Vertexf coords;
     PTA_Normalf norms;
@@ -2486,19 +2518,18 @@ draw_multitri(Geom *geom, D3DPRIMITIVETYPE trilisttype) {
 #else
     GeomVrtFmt=FlatVerts;
 
-    // first determine if we're indexed or non-indexed
-
-    if ((vindexes!=NULL)&&(cindexes!=NULL)&&(tindexes!=NULL)&&(nindexes!=NULL)) {
-        GeomVrtFmt=IndexedVerts;
-        //make sure array sizes are consistent, we can only pass 1 size to DrawIPrm
-        //      nassertv(coords.size==norms.size);      nassertv(coords.size==colors.size);     nassertv(coords.size==texcoords.size);  need to assert only if we have this w/same binding
-        // indexed mode requires all used norms,colors,texcoords,coords array be the same
-        // length, or 0 or 1 (dwStride==0), also requires all elements to use the same index array
-    } else if (!((vindexes==NULL)&&(cindexes==NULL)&&(tindexes==NULL)&&(nindexes==NULL)))
-        GeomVrtFmt=MixedFmtVerts;
-
     if(!geom->uses_components()) {
        GeomVrtFmt=MixedFmtVerts; // dont need efficiency here, just use simpler codepath
+    } else {
+        // first determine if we're indexed or non-indexed
+        if((vindexes!=NULL)&&(cindexes!=NULL)&&(tindexes!=NULL)&&(nindexes!=NULL)) {
+            GeomVrtFmt=IndexedVerts;
+            //make sure array sizes are consistent, we can only pass 1 size to DrawIPrm
+            //      nassertv(coords.size==norms.size);      nassertv(coords.size==colors.size);     nassertv(coords.size==texcoords.size);  need to assert only if we have this w/same binding
+            // indexed mode requires all used norms,colors,texcoords,coords array be the same
+            // length, or 0 or 1 (dwStride==0), also requires all elements to use the same index array
+        } else if (!((vindexes==NULL)&&(cindexes==NULL)&&(tindexes==NULL)&&(nindexes==NULL)))
+            GeomVrtFmt=MixedFmtVerts;
     }
 #endif
 
@@ -5939,3 +5970,168 @@ HRESULT SetViewMatrix( D3DMATRIX& mat, D3DVECTOR& vFrom, D3DVECTOR& vAt,
 }
 
 #endif
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::prepare_geom_node
+//       Access: Public, Virtual
+//  Description: Prepares the indicated GeomNode for retained-mode
+//               rendering.  If this function returns non-NULL, the
+//               value returned will be passed back to a future call
+//               to draw_geom_node(), which is expected to draw the
+//               contents of the node.
+////////////////////////////////////////////////////////////////////
+GeomNodeContext *DXGraphicsStateGuardian::
+prepare_geom_node(GeomNode *node) {
+#if 1
+  return NULL;
+#else
+  // Make sure we have at least some static Geoms in the GeomNode;
+  // otherwise there's no point in building a display list.
+  int num_geoms = node->get_num_geoms();
+  bool all_dynamic = true;
+  int i;
+
+  for (i = 0; (i < num_geoms) && all_dynamic; i++) {
+    dDrawable *geom = node->get_geom(i);
+    all_dynamic = geom->is_dynamic();
+  }
+  if (all_dynamic) {
+    // Never mind.
+    return (GeomNodeContext *)NULL;
+  }
+
+  // Ok, we've got something; use it.
+  DXGeomNodeContext *ggnc = new DXGeomNodeContext(node);
+
+#if 0
+  ggnc->_index = DXGenLists(1);
+  if (ggnc->_index == 0) {
+    DXgsg_cat.error() << "Ran out of display list indices.\n";
+    delete ggnc;
+    return (GeomNodeContext *)NULL;
+  }
+#endif
+
+  // We need to temporarily force normals and UV's on, so the display
+  // list will have them built in.
+  bool old_normals_enabled = _normals_enabled;
+  bool old_texturing_enabled = _texturing_enabled;
+  bool old_vertex_colors_enabled = _vertex_colors_enabled;
+  _normals_enabled = true;
+  _texturing_enabled = true;
+  _vertex_colors_enabled = true;
+
+#ifdef DO_PSTATS
+  // Count up the number of vertices we're about to render, by
+  // checking the PStats vertex counters now, and at the end.  This is
+  // kind of hacky, but this is debug code.
+  float num_verts_before = 
+    _vertices_tristrip_pcollector.get_level() +
+    _vertices_trifan_pcollector.get_level() +
+    _vertices_tri_pcollector.get_level() +
+    _vertices_other_pcollector.get_level();
+#endif
+
+  // Now define the display list.
+  DXNewList(ggnc->_index, DX_COMPILE);
+  for (i = 0; i < num_geoms; i++) {
+    dDrawable *geom = node->get_geom(i);
+    if (geom->is_dynamic()) {
+      // Wait, this is a dynamic Geom.  We can't safely put it in the
+      // display list, because it may change from one frame to the
+      // next; instead, we'll keep it out.
+      ggnc->_dynamic_geoms.push_back(geom);
+    } else {
+      // A static Geom becomes part of the display list.
+      geom->draw(this);
+    }
+  }
+  DXEndList();
+
+#ifdef DO_PSTATS
+  float num_verts_after = 
+    _vertices_tristrip_pcollector.get_level() +
+    _vertices_trifan_pcollector.get_level() +
+    _vertices_tri_pcollector.get_level() +
+    _vertices_other_pcollector.get_level();
+  float num_verts = num_verts_after - num_verts_before;
+  ggnc->_num_verts = (int)(num_verts + 0.5);
+#endif
+
+  _normals_enabled = old_normals_enabled;
+  _texturing_enabled = old_texturing_enabled;
+  _vertex_colors_enabled = old_vertex_colors_enabled;
+
+  bool inserted = mark_prepared_geom_node(ggnc);
+
+  // If this assertion fails, the same GeomNode was prepared twice,
+  // which shouldn't be possible, since the GeomNode itself should
+  // detect this.
+  nassertr(inserted, NULL);
+
+  return ggnc;
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::draw_geom_node
+//       Access: Public, Virtual
+//  Description: Draws a GeomNode previously indicated by a call to
+//               prepare_geom_node().
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+draw_geom_node(GeomNode *node, GeomNodeContext *gnc) {
+#if 0
+  if (gnc == (GeomNodeContext *)NULL) {
+    // We don't have a saved context; just draw the GeomNode in
+    // immediate mode.
+    int num_geoms = node->get_num_geoms();
+    for (int i = 0; i < num_geoms; i++) {
+      node->get_geom(i)->draw(this);
+    }
+
+  } else {
+    // We do have a saved context; use it.
+    add_to_geom_node_record(gnc);
+    DXGeomNodeContext *ggnc = DCAST(DXGeomNodeContext, gnc);
+    DXCallList(ggnc->_index);
+
+#ifdef DO_PSTATS
+    _vertices_display_list_pcollector.add_level(ggnc->_num_verts);
+#endif
+
+    // Also draw all the dynamic Geoms.
+    int num_geoms = ggnc->_dynamic_geoms.size();
+    for (int i = 0; i < num_geoms; i++) {
+      ggnc->_dynamic_geoms[i]->draw(this);
+    }
+  }
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::release_geom_node
+//       Access: Public, Virtual
+//  Description: Frees the resources previously allocated via a call
+//               to prepare_geom_node(), including deleting the
+//               GeomNodeContext itself, if necessary.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+release_geom_node(GeomNodeContext *gnc) {
+#if 0
+  if (gnc != (GeomNodeContext *)NULL) {
+    DXGeomNodeContext *ggnc = DCAST(DXGeomNodeContext, gnc);
+    DXDeleteLists(ggnc->_index, 1);
+
+    bool erased = unmark_prepared_geom_node(ggnc);
+
+    // If this assertion fails, a GeomNode was released that hadn't
+    // been prepared (or a GeomNode was released twice).
+    nassertv(erased);
+    
+    ggnc->_node->clear_gsg(this);
+    delete ggnc;
+  }
+#endif
+}

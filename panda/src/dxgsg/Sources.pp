@@ -17,10 +17,10 @@
     config_dxgsg.h dxGraphicsStateGuardian.I \
     dxGraphicsStateGuardian.cxx dxGraphicsStateGuardian.h \
     dxSavedFrameBuffer.I dxSavedFrameBuffer.h \
-    dxTextureContext.I dxTextureContext.h
+    dxTextureContext.I dxTextureContext.h dxGeomNodeContext.h dxGeomNodeContext.I
     
   #define INCLUDED_SOURCES \
-    config_dxgsg.cxx dxSavedFrameBuffer.cxx dxTextureContext.cxx 
+    config_dxgsg.cxx dxSavedFrameBuffer.cxx dxTextureContext.cxx dxGeomNodeContext.cxx
     
   #define INSTALL_HEADERS \
     config_dxgsg.h dxGraphicsStateGuardian.I dxGraphicsStateGuardian.h \
