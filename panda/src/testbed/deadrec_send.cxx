@@ -12,7 +12,7 @@
 
 #include <dconfig.h>
 
-NotifyCategoryDeclNoExport(deadrec, EXPCL_MISC, EXPTP_MISC);
+NotifyCategoryDeclNoExport(deadrec);
 NotifyCategoryDef(deadrec, "");
 
 Configure(deadrec);
