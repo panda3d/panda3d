@@ -11,6 +11,8 @@ class BulletinBoardWatcher(DirectObject.DirectObject):
     def __init__(self, name, postNames, callback):
         self.notify.debug('__init__: %s, %s, %s' % (name, postNames, callback))
         self.name = name
+        if type(postNames) == type(''):
+            postNames = [postNames]
         self.postNames = postNames
         self.callback = callback
         self.waitingOn = {}
