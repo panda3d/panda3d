@@ -198,6 +198,9 @@ convert_object(const FltObject *flt_object, FltToEggLevelState &state) {
 ////////////////////////////////////////////////////////////////////
 void FltToEggConverter::
 convert_bead_id(const FltBeadID *flt_bead, FltToEggLevelState &state) {
+  nout << "Don't know how to convert beads of type " << flt_bead->get_type()
+       << "\n";
+  exit(1);
   EggGroup *egg_group = new EggGroup(flt_bead->get_id());
   state._egg_parent->add_child(egg_group);
 
@@ -217,6 +220,9 @@ convert_bead_id(const FltBeadID *flt_bead, FltToEggLevelState &state) {
 ////////////////////////////////////////////////////////////////////
 void FltToEggConverter::
 convert_bead(const FltBead *flt_bead, FltToEggLevelState &state) {
+  nout << "Don't know how to convert beads of type " << flt_bead->get_type()
+       << "\n";
+  exit(1);
   EggGroup *egg_group = new EggGroup;
   state._egg_parent->add_child(egg_group);
 

@@ -24,6 +24,8 @@ public:
 
   int _instance_index;
 
+  FltInstanceDefinition *get_instance() const;
+
   virtual void write(ostream &out, int indent_level = 0) const;
 
 protected:

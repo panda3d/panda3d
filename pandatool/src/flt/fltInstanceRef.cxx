@@ -22,6 +22,17 @@ FltInstanceRef(FltHeader *header) : FltBead(header) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FltInstanceRef::get_instance
+//       Access: Public
+//  Description: Returns the instance subtree referenced by this node,
+//               or NULL if the reference is invalid.
+////////////////////////////////////////////////////////////////////
+FltInstanceDefinition *FltInstanceRef::
+get_instance() const {
+  return _header->get_instance(_instance_index);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FltInstanceRef::write
 //       Access: Public
 //  Description: Writes a multiple-line description of the record and
