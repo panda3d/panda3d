@@ -4,62 +4,6 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodeRelation::Constructor
-//       Access: Public
-//  Description: Creates a new arc of the scene graph, and immediately
-//               attaches it.
-////////////////////////////////////////////////////////////////////
-INLINE NodeRelation::
-NodeRelation(Node *parent, Node *to, int sort, TypeHandle graph_type) :
-  _parent(parent), _child(to), _sort(sort), 
-  _graph_type(graph_type), _num_transitions(0)
-{
-  _top_subtree = NULL;
-  _attached = false;
-  attach();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodeRelation::Constructor
-//       Access: Protected
-//  Description: Creates a new, unattached arc.  This constructor is
-//               only intended for passing through the factory to
-//               create an arc based on a particular type using
-//               create_typed_arc(), below.  You shouldn't, in
-//               general, attempt to create an unattached arc.
-////////////////////////////////////////////////////////////////////
-INLINE NodeRelation::
-NodeRelation(TypeHandle graph_type) :
-  _graph_type(graph_type)
-{
-  _parent = NULL;
-  _child = NULL;
-  _sort = 0;
-  _top_subtree = NULL;
-  _attached = false;
-  _num_transitions = 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodeRelation::Constructor
-//       Access: Protected
-//  Description: Creates a new, unattached arc.  This constructor is
-//               only intended for being called in make_NodeRelation. 
-//               You shouldn't, in general, attempt to create an 
-//               unattached arc.
-////////////////////////////////////////////////////////////////////
-INLINE NodeRelation::
-NodeRelation(void) {
-  _parent = NULL;
-  _child = NULL;
-  _sort = 0;
-  _top_subtree = NULL;
-  _attached = false;
-  _graph_type = get_class_type();
-  _num_transitions = 0;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: remove_arc
 //  Description: Removes the arc from the graph, which incidentally
 //               will also delete the arc unless there are some

@@ -66,7 +66,7 @@ protected:
     INLINE ArcComponent(Node *node);
     INLINE ArcComponent(NodeRelation *arc, ArcComponent *next);
     INLINE ArcComponent(const ArcComponent &copy);
-    INLINE void operator = (const ArcComponent &copy);
+    void operator = (const ArcComponent &copy);
     INLINE ~ArcComponent();
 
     INLINE bool has_arc() const;

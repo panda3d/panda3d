@@ -8,6 +8,30 @@
 #include "namedNode.h"
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ArcChain::ArcComponent::Copy Assignment Operator
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void ArcChain::ArcComponent::
+operator = (const ArcComponent &copy) {
+  _next = copy._next;
+
+  if (has_arc()) {
+    // Ref the new one before unreffing the old one, so we don't
+    // accidentally delete in the interim.
+    copy._p._arc->ref();
+    copy._p._arc->ref_parent();
+    _p._arc->unref_parent();
+    unref_delete(_p._arc);
+    _p._arc = copy._p._arc;
+  } else {
+    copy._p._node->ref();
+    unref_delete(_p._node);
+    _p._node = copy._p._node;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ArcChain::r_output
 //       Access: Private
 //  Description: The recursive implementation of output(), this writes

@@ -47,17 +47,13 @@ extern EXPCL_PANDA UpdateSeq &last_graph_update(TypeHandle graph_type);
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA NodeRelation : public TypedWriteableReferenceCount, public BoundedObject {
 public:
-  INLINE NodeRelation(Node *from, Node *to, int sort, TypeHandle graph_type);
+  NodeRelation(Node *from, Node *to, int sort, TypeHandle graph_type);
 
 protected:
   // Normally, this should only be used from derived classes for
   // passing to the factory.  Don't attempt to create an unattached
   // arc directly.
-  INLINE NodeRelation(TypeHandle graph_type);
-
-  //make_NodeRelation needs to have a construct that takes nothing
-  //since it creates the object before it has any information
-  INLINE NodeRelation(void);
+  NodeRelation(TypeHandle graph_type);
 
 private:
   // It is an error to attempt to copy an arc.
@@ -81,6 +77,9 @@ PUBLISHED:
   INLINE Node *get_child() const;
   INLINE int get_sort() const;
   INLINE TypeHandle get_graph_type() const;
+
+  void ref_parent();
+  void unref_parent();
 
   INLINE void change_parent(Node *parent);
   INLINE void change_parent(Node *parent, int sort);
@@ -145,6 +144,7 @@ private:
   int _sort;
   TypeHandle _graph_type;
   bool _attached;
+  int _parent_ref;
 
 private:
   // This is the set of transitions assigned to the arc.  You should

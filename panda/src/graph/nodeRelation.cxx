@@ -263,6 +263,45 @@ internal_remove_arc(ArcList &alist, NodeRelation *arc) {
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::Constructor
+//       Access: Public
+//  Description: Creates a new arc of the scene graph, and immediately
+//               attaches it.
+////////////////////////////////////////////////////////////////////
+NodeRelation::
+NodeRelation(Node *parent, Node *to, int sort, TypeHandle graph_type) :
+  _parent(parent), _child(to), _sort(sort), 
+  _graph_type(graph_type), _num_transitions(0)
+{
+  _top_subtree = NULL;
+  _attached = false;
+  _parent_ref = 0;
+  attach();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::Constructor
+//       Access: Protected
+//  Description: Creates a new, unattached arc.  This constructor is
+//               only intended for passing through the factory to
+//               create an arc based on a particular type using
+//               create_typed_arc(), below.  You shouldn't, in
+//               general, attempt to create an unattached arc.
+////////////////////////////////////////////////////////////////////
+NodeRelation::
+NodeRelation(TypeHandle graph_type) :
+  _graph_type(graph_type)
+{
+  _parent = NULL;
+  _child = NULL;
+  _sort = 0;
+  _top_subtree = NULL;
+  _attached = false;
+  _parent_ref = 0;
+  _num_transitions = 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodeRelation::Copy Constructor
 //       Access: Private
 //  Description: It's not legal to copy a NodeRelation.
@@ -296,6 +335,11 @@ NodeRelation::
   // delete an arc.  You should use remove_arc() instead.
   nassertv(!_attached);
 
+  // Similarly, we shouldn't be deleting arcs with a nonzero
+  // parent_ref.  This means someone lost a reference count somewhere,
+  // or someone was sloppy calling ref_parent()/unref_parent().
+  nassertv(_parent_ref == 0);
+
   _transitions.remove_all_from_arc(this);
 }
 
@@ -325,6 +369,65 @@ output(ostream &out) const {
     out << " (unattached)";
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::ref_parent
+//       Access: Public
+//  Description: Normally, the arc keeps a reference count to its
+//               child node, but not to its parent node.  This allows
+//               the arc (and all of its children) to be destructed
+//               when its parent node destructs.
+//
+//               Sometimes this behavior is not desirable, and you'd
+//               like to have an arc keep a reference count to its
+//               parent.  This is particularly true when you have a
+//               reference-counting pointer to the arc in some other
+//               context, and you'd like to ensure that its parent and
+//               child node pointers are always valid while you keep
+//               the pointer.
+//
+//               In this case, you should call ref_parent() to
+//               increment the reference count on the parent node.  Be
+//               sure to call unref_parent() explicitly when you lose
+//               your reference to the arc, or you will leak reference
+//               counts.
+//
+//               Note that if the parent of the arc changes while
+//               ref_parent() is held, the old parent will
+//               automatically be dereferenced and the new parent will
+//               be referenced instead, as if it were a normal
+//               reference-counting pointer.
+////////////////////////////////////////////////////////////////////
+void NodeRelation::
+ref_parent() {
+  nassertv(_parent_ref >= 0);
+  if (_parent_ref == 0 && _attached) {
+    // If we are the first to request a reference count on the parent,
+    // actually increment it now.
+    _parent->ref();
+  }
+  _parent_ref++;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodeRelation::unref_parent
+//       Access: Public
+//  Description: Removes the reference count on the arc's parent node
+//               and allows the arc to be deleted normally.  See
+//               ref_parent().
+////////////////////////////////////////////////////////////////////
+void NodeRelation::
+unref_parent() {
+  nassertv(_parent_ref > 0);
+
+  _parent_ref--;
+  if (_parent_ref == 0 && _attached) {
+    // If we are the last to request a reference count on the parent,
+    // actually decrement it now.
+    _parent->unref();
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeRelation::copy_transitions_from
@@ -507,6 +610,9 @@ attach() {
   nassertv(!_attached);
 
   _attached = true;
+  if (_parent_ref != 0) {
+    _parent->ref();
+  }
 
   DownRelationPointers &parent_list = _parent->_children[_graph_type];
   UpRelationPointers &child_list = _child->_parents[_graph_type];
@@ -568,6 +674,9 @@ detach() {
   nassertr(removed_two, result);
 
   _attached = false;
+  if (_parent_ref != 0) {
+    _parent->unref();
+  }
 
   // Blow out the cache and increment the current update sequence.
   _net_transitions.clear();
@@ -813,13 +922,13 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager)
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodeRelation::make_NodeRelation
-//       Access: Protected
+//       Access: Protected, Static
 //  Description: Factory method to generate a NodeRelation object
 ////////////////////////////////////////////////////////////////////
 TypedWriteable* NodeRelation::
 make_NodeRelation(const FactoryParams &params)
 {
-  NodeRelation *me = new NodeRelation;
+  NodeRelation *me = new NodeRelation(get_class_type());
   BamReader *manager;
   Datagram packet;
 

@@ -893,6 +893,21 @@ remove_node() {
   nassertv(has_arcs());
 
   PT(NodeRelation) darc = arc();
+
+  // Set the chain to stop here, so that any NodePaths sharing this
+  // one will now begin at this "deleted" node.
+  (*_head) = ArcComponent(_head->get_node());
+
+  // Now remove our own chain reference.  If there were no other
+  // sharing NodePaths, this will also delete the complete chain,
+  // including the above newly-changed _head node, and all of the
+  // nodes at this point and below.
+
+  // If there *are* some sharing NodePaths, they will keep this node
+  // from being actually destructed (although it has been removed from
+  // the scene graph), and they will now believe they are rooted at
+  // that destructed node, cut off from the rest of the world.
+
   clear();
   remove_arc(darc);
 }
@@ -2414,14 +2429,19 @@ r_as_string(const ArcComponent *comp, string &result, int skip_nodes) const {
 	// previous node and this node.
 
 	NodeRelation *darc = comp->get_arc();
-	if (!(darc->get_child() == (Node *)NULL ||
-	      darc->get_parent() == comp->get_next()->get_node())) {
-	  // Unless the path is broken here.  In this case, insert a
-	  // visual indication of the break.
-	  result += "/.../" + format_node_name(darc->get_parent());
+	if (darc->get_child() == (Node *)NULL &&
+	    darc->get_parent() == (Node *)NULL) {
+	  // Here's a deleted arc.  Indicate this.
+	  result += "/(...deleted...)";
+	} else {
+	  if (darc->get_parent() != comp->get_next()->get_node() &&
+	      comp->get_next()->get_node() != (Node *)NULL) {
+	    // It's not a deleted arc, but something's broken.
+	    result += "/.../" + format_node_name(darc->get_parent());
+	  }
+	  result += format_arc_name(darc);
+	  result += format_node_name(darc->get_child());
 	}
-	result += format_arc_name(darc);
-	result += format_node_name(darc->get_child());
       }
     }
     return nodes_before + 1;
@@ -2476,7 +2496,6 @@ r_get_net_transitions(const ArcComponent *comp,
 ////////////////////////////////////////////////////////////////////
 string NodePath::
 format_node_name(Node *dnode) const {
-  nassertr(dnode != (Node *)NULL, string());
   if (dnode == (Node *)NULL) {
     return "(NULL)";
   }

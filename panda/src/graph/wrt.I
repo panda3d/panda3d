@@ -53,6 +53,7 @@ describe_ambiguous_wrt(const Node *node,
 	    << "\n    " << *(*ri)->get_parent() << "/"
 	    << *(*ri)->get_child();
 	}
+	ri_last = ri;
 	++ri;
       } 
       wrt_cat.warning(false) << "\n";

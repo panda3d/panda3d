@@ -35,6 +35,7 @@ ArcComponent(NodeRelation *arc, ArcComponent *next) :
   nassertv(arc != (NodeRelation *)NULL);
   _p._arc = arc;
   _p._arc->ref();
+  _p._arc->ref_parent();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -49,24 +50,7 @@ ArcComponent(const ArcComponent &copy) :
   if (has_arc()) {
     _p._arc = copy._p._arc;
     _p._arc->ref();
-  } else {
-    _p._node = copy._p._node;
-    _p._node->ref();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ArcChain::ArcComponent::Copy Assignment Operator
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE void ArcChain::ArcComponent::
-operator = (const ArcComponent &copy) {
-  _next = copy._next;
-
-  if (has_arc()) {
-    _p._arc = copy._p._arc;
-    _p._arc->ref();
+    _p._arc->ref_parent();
   } else {
     _p._node = copy._p._node;
     _p._node->ref();
@@ -82,9 +66,10 @@ operator = (const ArcComponent &copy) {
 INLINE ArcChain::ArcComponent::
 ~ArcComponent() {
   if (has_arc()) {
-    _p._arc->unref();
+    _p._arc->unref_parent();
+    unref_delete(_p._arc);
   } else {
-    _p._node->unref();
+    unref_delete(_p._node);
   }
 }
 
