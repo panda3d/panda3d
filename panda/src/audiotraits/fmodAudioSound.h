@@ -81,12 +81,10 @@ public:
   // Controls the position of this sound's emitter.
   // pos is a pointer to an xyz triplet of the emitter's position.
   // vel is a pointer to an xyz triplet of the emitter's velocity.
-  // You can pass NULL to either value for either function to ignore that value
-  // if you only want to set/get one of them for some reason.
-  void set_3d_attributes(float px = NULL, float py = NULL, float pz = NULL,
-                         float vx = NULL, float vy = NULL, float vz = NULL);
-  void get_3d_attributes(float px = NULL, float py = NULL, float pz = NULL, 
-                         float vx = NULL, float vy = NULL, float vz = NULL);
+  void set_3d_attributes(float px, float py, float pz,
+                         float vx, float vy, float vz);
+  void get_3d_attributes(float *px, float *py, float *pz, 
+                         float *vx, float *vy, float *vz);
   
   AudioSound::SoundStatus status() const;
 

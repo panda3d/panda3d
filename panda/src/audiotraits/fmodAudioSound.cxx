@@ -432,7 +432,7 @@ set_3d_attributes(float px, float py, float pz, float vx, float vy, float vz) {
 //  Description: Get position and velocity of this sound
 ////////////////////////////////////////////////////////////////////
 void FmodAudioSound::
-get_3d_attributes(float px, float py, float pz, float vx, float vy, float vz) {
+get_3d_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *vz) {
     audio_error("get3dAttributes: Currently unimplemented. Get the attributes of the attached object.");
     // NOTE: swap the +y with the +z axis to convert between FMOD
     //       coordinates and Panda3D coordinates

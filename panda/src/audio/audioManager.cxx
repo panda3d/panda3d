@@ -102,3 +102,96 @@ get_null_sound() {
   return _null_sound;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::audio_3d_update
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void AudioManager::
+audio_3d_update() {
+    // intentionally blank.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::audio_3d_set_listener_attributes
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void AudioManager::
+audio_3d_set_listener_attributes(float px, float py, float pz, float vx, float vy, float vz, float fx, float fy, float fz, float ux, float uy, float uz) {
+    // intentionally blank.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::audio_3d_get_listener_attributes
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void AudioManager::
+audio_3d_get_listener_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *vz, float *fx, float *fy, float *fz, float *ux, float *uy, float *uz) {
+    // intentionally blank.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::audio_3d_set_distance_factor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void AudioManager::
+audio_3d_set_distance_factor(float factor) {
+    // intentionally blank.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::audio_3d_get_distance_factor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+float AudioManager::
+audio_3d_get_distance_factor() const {
+    // intentionally blank.
+    return 0.0f;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::audio_3d_set_doppler_factor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void AudioManager::
+audio_3d_set_doppler_factor(float factor) {
+    // intentionally blank.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::audio_3d_get_doppler_factor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+float AudioManager::
+audio_3d_get_doppler_factor() const {
+    // intentionally blank.
+    return 0.0f;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::audio_3d_set_drop_off_factor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void AudioManager::
+audio_3d_set_drop_off_factor(float factor) {
+    // intentionally blank.
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::audio_3d_get_drop_off_factor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+float AudioManager::
+audio_3d_get_drop_off_factor() const {
+    // intentionally blank.
+    return 0.0f;
+}

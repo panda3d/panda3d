@@ -26,7 +26,7 @@
 INLINE CLP(CgShaderContext)::
 CLP(CgShaderContext)(PT(CgShader) cg_shader) :
   CgShaderContext(cg_shader) {
-  bool res = init_cg_shader_context();
+  init_cg_shader_context();
 }
 
 ////////////////////////////////////////////////////////////////////

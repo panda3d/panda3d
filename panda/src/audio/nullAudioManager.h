@@ -59,10 +59,10 @@ public:
                                                 float vx, float vy, float vz,
                                                 float fx, float fy, float fz,
                                                 float ux, float uy, float uz);
-  virtual void audio_3d_get_listener_attributes(float px = NULL, float py = NULL, float pz = NULL,
-                                                float vx = NULL, float vy = NULL, float vz = NULL,
-                                                float fx = NULL, float fy = NULL, float fz = NULL,
-                                                float ux = NULL, float uy = NULL, float uz = NULL);
+  virtual void audio_3d_get_listener_attributes(float *px, float *py, float *pz,
+                                                float *vx, float *vy, float *vz,
+                                                float *fx, float *fy, float *fz,
+                                                float *ux, float *uy, float *uz);
   
   virtual void audio_3d_set_distance_factor(float factor);
   virtual float audio_3d_get_distance_factor() const;

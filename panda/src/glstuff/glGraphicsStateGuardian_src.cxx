@@ -2365,7 +2365,7 @@ issue_cg_shader_bind(const CgShaderAttrib *attrib) {
       (*csci).second->bind(this); // Bind the current shader
     } else {// First time CgShader object...need to make a new GLCgShaderContext
       PT(CLP(CgShaderContext)) csc = new CLP(CgShaderContext)(_cg_shader);
-      bool result = _cg_shader->load_shaders(); // Profiles created lets load from HD
+      _cg_shader->load_shaders(); // Profiles created lets load from HD
       csc->load_shaders(); // Programs loaded, compile and download to GPU
       CGSHADERCONTEXTS::value_type shader_and_context(_cg_shader, csc);
       _gl_cg_shader_contexts.insert(shader_and_context);

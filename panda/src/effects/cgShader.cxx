@@ -270,7 +270,7 @@ CgShader(const string &name, const string &vertex_shader,
   _name = name;
   _vertex_shader = vertex_shader;
   _fragment_shader = fragment_shader;
-  bool res = init_cg();
+  init_cg();
 }
 
   

@@ -22,7 +22,7 @@
 
 namespace {
   static const string blank="";
-  static float no_attributes [] = {0.0f,0.0f,0.0f, 0.0f,0.0f,0.0f};
+  //  static float no_attributes [] = {0.0f,0.0f,0.0f, 0.0f,0.0f,0.0f};
 }
 
 ////////////////////////////////////////////////////////////////////
