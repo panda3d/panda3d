@@ -872,13 +872,16 @@ class ShowBase(DirectObject.DirectObject):
         self.eventMgr.shutdown()
 
     def getBackgroundColor(self):
-        """ Returns the current window background color.  This assumes
+        """
+        Returns the current window background color.  This assumes
         the window is set up to clear the color each frame (this is
-        the normal setting). """
+        the normal setting).
+        """
         return VBase4(self.win.getClearColor())
 
     def setBackgroundColor(self, *args):
-        """ Sets the window background color to the indicated value.
+        """
+        Sets the window background color to the indicated value.
         This assumes the window is set up to clear the color each
         frame (this is the normal setting).
 
