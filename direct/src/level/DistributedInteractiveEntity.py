@@ -20,7 +20,7 @@ class DistributedInteractiveEntity(DistributedEntity.DistributedEntity):
     def __init__(self, cr):
         """constructor for the DistributedInteractiveEntity"""
         DistributedEntity.DistributedEntity.__init__(self, cr)
-        assert(self.debugPrint("__init()"))
+        assert(self.debugPrint("DistributedInteractiveEntity()"))
 
         self.fsm = FSM.FSM('DistributedInteractiveEntity',
                            [State.State('off',
@@ -45,7 +45,7 @@ class DistributedInteractiveEntity(DistributedEntity.DistributedEntity):
         # self.generate will be called automatically.
         
     def generate(self):
-        """generate(self)
+        """
         This method is called when the DistributedEntity is introduced
         to the world, either for the first time or from the cache.
         """
