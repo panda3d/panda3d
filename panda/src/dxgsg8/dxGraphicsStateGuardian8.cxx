@@ -4392,7 +4392,6 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
   nassertv(color_write_mode == _color_write_mode);
 #if 0
   if(color_write_mode == ColorWriteAttrib::M_off) {
-    enable_alpha_test(false);
     set_color_writemask(0x0);
     return;
   }
@@ -4405,19 +4404,16 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
 
   case ColorBlendAttrib::M_multiply:
     enable_blend(true);
-    enable_alpha_test(false);
     call_dxBlendFunc(D3DBLEND_DESTCOLOR, D3DBLEND_ZERO);
     return;
 
   case ColorBlendAttrib::M_add:
     enable_blend(true);
-    enable_alpha_test(false);
     call_dxBlendFunc(D3DBLEND_ONE, D3DBLEND_ONE);
     return;
 
   case ColorBlendAttrib::M_multiply_add:
     enable_blend(true);
-    enable_alpha_test(false);
     call_dxBlendFunc(D3DBLEND_DESTCOLOR, D3DBLEND_ONE);
     return;
 
@@ -4430,21 +4426,16 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
   // No color blend; is there a transparency set?
   switch (transparency_mode) {
   case TransparencyAttrib::M_none:
+  case TransparencyAttrib::M_binary:
     break;
 
   case TransparencyAttrib::M_alpha:
   case TransparencyAttrib::M_alpha_sorted:
   case TransparencyAttrib::M_multisample:
   case TransparencyAttrib::M_multisample_mask:
+  case TransparencyAttrib::M_dual:
     enable_blend(true);
-    enable_alpha_test(false);
     call_dxBlendFunc(D3DBLEND_SRCALPHA, D3DBLEND_INVSRCALPHA);
-    return;
-
-  case TransparencyAttrib::M_binary:
-    enable_blend(false);
-    enable_alpha_test(true);
-    call_dxAlphaFunc(D3DCMP_EQUAL, 1.0f);
     return;
 
   default:
@@ -4455,7 +4446,6 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
 
   // Nothing's set, so disable blending.
   enable_blend(false);
-  enable_alpha_test(false);
 }
 
 ////////////////////////////////////////////////////////////////////
