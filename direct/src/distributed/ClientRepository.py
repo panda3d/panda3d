@@ -25,7 +25,8 @@ class ClientRepository(DirectObject.DirectObject):
         self.doId2cdc={}
         self.parseDcFile(dcFileName)
         self.cache=CRCache.CRCache()
-
+        self.serverDelta = 0
+        
         # Set this to 'http' to establish a connection to the server
         # using the HTTPClient interface, which ultimately uses the
         # OpenSSL socket library (even though SSL is not involved).
@@ -52,6 +53,22 @@ class ClientRepository(DirectObject.DirectObject):
 
         self.tcpConn = None
         return None
+
+    def setServerDelta(self, delta):
+        """
+        Indicates the approximate difference in seconds between the
+        client's clock and the server's clock, in universal time (not
+        including timezone shifts).  This is mainly useful for
+        reporting synchronization information to the logs; don't
+        depend on it for any precise timing requirements.
+
+        Also see Notify.setServerDelta(), which also accounts for a
+        timezone shift.
+        """
+        self.serverDelta = delta
+
+    def getServerDelta(self):
+        return self.serverDelta
 
     def parseDcFile(self, dcFileName):
         self.dcFile = DCFile()
