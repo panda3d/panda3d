@@ -110,6 +110,8 @@ read_all() {
       if (!read(filename)) {
         return false;
       }
+    } else {
+      cerr << "DCFile::read_all Already read " << filename << "\n";
     }
   }
 
@@ -134,7 +136,7 @@ bool DCFile::
 read(Filename filename) {
   ifstream in;
 
-#ifdef WITHIN_PANDA
+  #ifdef WITHIN_PANDA
   filename.set_text();
   if (use_vfs) {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
@@ -149,19 +151,19 @@ read(Filename filename) {
     // the in pointer does not call the appropriate global delete
     // function; instead apparently calling the system delete
     // function.  So we call the delete function by hand instead.
-#ifndef NDEBUG
+    #ifndef NDEBUG
     in->~istream();
     (*global_operator_delete)(in);
-#else
+    #else
     delete in;
-#endif
+    #endif
 
     return okflag;
   }
   filename.open_read(in);
-#else
+  #else
   in.open(filename.c_str());
-#endif
+  #endif
 
   if (!in) {
     cerr << "Cannot open " << filename << " for reading.\n";
@@ -189,6 +191,7 @@ read(Filename filename) {
 ////////////////////////////////////////////////////////////////////
 bool DCFile::
 read(istream &in, const string &filename) {
+  cerr << "DCFile::read of " << filename << "\n";
   dc_init_parser(in, filename, *this);
   dcyyparse();
   dc_cleanup_parser();

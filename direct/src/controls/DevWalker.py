@@ -74,7 +74,7 @@ class DevWalker(DirectObject.DirectObject):
         """
         For debug use.
         """
-        onScreenDebug.add("controls", "DevWalker")
+        onScreenDebug.add("w controls", "DevWalker")
 
     def handleAvatarControls(self, task):
         """

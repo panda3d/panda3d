@@ -26,6 +26,7 @@ import math
 class PhysicsWalker(DirectObject.DirectObject):
 
     notify = DirectNotifyGlobal.directNotify.newCategory("PhysicsWalker")
+    wantDebugIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
     wantAvatarPhysicsIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
     
     useLifter = 0
@@ -64,7 +65,7 @@ class PhysicsWalker(DirectObject.DirectObject):
     """
     def spawnTest(self):
         assert(self.debugPrint("\n\nspawnTest()\n"))
-        if not self.wantAvatarPhysicsIndicator:
+        if not self.wantDebugIndicator:
             return
         from pandac.PandaModules import *
         from direct.interval.IntervalGlobal import *
@@ -401,12 +402,30 @@ class PhysicsWalker(DirectObject.DirectObject):
                 tempCTrav.addCollider(self.cRayNodePath, self.cRayQueue)
         tempCTrav.traverse(render)
 
+    def displayDebugInfo(self):
+        """
+        For debug use.
+        """
+        onScreenDebug.add("w controls", "PhysicsWalker")
+        
+        onScreenDebug.add("w airborneHeight", self.lifter.getAirborneHeight())
+        onScreenDebug.add("w falling", self.falling)
+        onScreenDebug.add("w isOnGround", self.lifter.isOnGround())
+        #onScreenDebug.add("w gravity", self.lifter.getGravity())
+        #onScreenDebug.add("w jumpForce", self.avatarControlJumpForce)
+        onScreenDebug.add("w contact normal", self.lifter.getContactNormal().pPrintValues())
+        onScreenDebug.add("w mayJump", self.mayJump)
+        onScreenDebug.add("w impact", self.lifter.getImpactVelocity())
+        onScreenDebug.add("w velocity", self.lifter.getVelocity())
+        onScreenDebug.add("w isAirborne", self.isAirborne)
+        onScreenDebug.add("w hasContact", self.lifter.hasContact())
+
     def handleAvatarControls(self, task):
         """
         Check on the arrow keys and update the avatar.
         """
         if __debug__:
-            if self.wantAvatarPhysicsIndicator:
+            if self.wantDebugIndicator:
                 onScreenDebug.append("localAvatar pos = %s\n"%(base.localAvatar.getPos().pPrintValues(),))
                 onScreenDebug.append("localAvatar h = % 10.4f\n"%(base.localAvatar.getH(),))
                 onScreenDebug.append("localAvatar anim = %s\n"%(base.localAvatar.animFSM.getCurrentState().getName(),))
@@ -422,6 +441,9 @@ class PhysicsWalker(DirectObject.DirectObject):
             self.reset()
             self.avatarNodePath.setZ(50.0)
             messenger.send("walkerIsOutOfWorld", [self.avatarNodePath])
+           
+        if self.wantDebugIndicator:
+            self.displayDebugInfo()
 
         # get the button states:
         forward = inputState.isSet("forward")
@@ -468,7 +490,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         #    # We must copy the vector to preserve it:
         #    self.__oldPosDelta=Vec3(posDelta)
         if __debug__:
-            if self.wantAvatarPhysicsIndicator:
+            if self.wantDebugIndicator:
                 onScreenDebug.add("posDelta1",
                     self.avatarNodePath.getPosDelta(render).pPrintValues())
                 
@@ -678,7 +700,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         assert(self.debugPrint("  velocity=%s"%(velocity,)))
         self.priorParent.setVector(Vec3(velocity))
         if __debug__:
-            if self.wantAvatarPhysicsIndicator:
+            if self.wantDebugIndicator:
                 onScreenDebug.add("velocity", velocity.pPrintValues())
     
     def reset(self):
@@ -731,7 +753,7 @@ class PhysicsWalker(DirectObject.DirectObject):
     
     if __debug__:
         def setupAvatarPhysicsIndicator(self):
-            if self.wantAvatarPhysicsIndicator:
+            if self.wantDebugIndicator:
                 indicator=loader.loadModelCopy('phase_5/models/props/dagger')
                 #self.walkControls.setAvatarPhysicsIndicator(indicator)
 
