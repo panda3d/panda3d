@@ -6,6 +6,7 @@ from PythonUtil import Functor, sameElements, list2dict, uniqueElements
 from IntervalGlobal import *
 from ToontownMsgTypes import *
 import ToontownGlobals
+import OTPGlobals
 import DistributedObject
 import Level
 import LevelConstants
@@ -633,7 +634,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # always include Toontown and factory uberZones
         uberZone = self.getZoneId(LevelConstants.UberZoneEntId)
         # the level itself is in the 'level zone'
-        visibleZoneIds = [ToontownGlobals.UberZone, self.levelZone, uberZone]
+        visibleZoneIds = [OTPGlobals.UberZone, self.levelZone, uberZone]
         for vz in vizList:
             visibleZoneIds.append(self.getZoneId(vz))
         assert(uniqueElements(visibleZoneIds))

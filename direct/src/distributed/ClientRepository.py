@@ -11,7 +11,9 @@ import PythonUtil
 import ParentMgr
 import RelatedObjectMgr
 import time
+from ClockDelta import *
 from PyDatagram import PyDatagram
+from PyDatagramIterator import PyDatagramIterator
 
 class ClientRepository(ConnectionRepository.ConnectionRepository):
     notify = DirectNotifyGlobal.directNotify.newCategory("ClientRepository")
@@ -39,6 +41,12 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         # The RelatedObjectMgr helps distributed objects find each
         # other.
         self.relatedObjectMgr = RelatedObjectMgr.RelatedObjectMgr(self)
+
+        # Keep track of how recently we last sent a heartbeat message.
+        # We want to keep these coming at heartbeatInterval seconds.
+        self.heartbeatInterval = base.config.GetDouble('heartbeat-interval', 10)
+        self.heartbeatStarted = 0
+        self.lastHeartbeat = 0
     
     def abruptCleanup(self):
         """
@@ -47,6 +55,18 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         state for creating more distributed objects.
         """
         self.relatedObjectMgr.abortAllRequests()
+
+    def sendDisconnect(self):
+        if self.tcpConn:
+            # Tell the game server that we're going:
+            datagram = PyDatagram()
+            # Add message type
+            datagram.addUint16(CLIENT_DISCONNECT)
+            # Send the message
+            self.send(datagram)
+            self.notify.info("Sent disconnect message to server")
+            self.disconnect()
+        self.stopHeartbeat()
 
     def setServerDelta(self, delta):
         """
@@ -316,12 +336,10 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             ClientRepository.notify.warning(
                 "Server is booting us out with no explanation.")
 
-
     def handleServerHeartbeat(self, di):
         # Got a heartbeat message from the server.
         if base.config.GetBool('server-heartbeat-info', 1):
             ClientRepository.notify.info("Server heartbeat.")
-        
 
     def handleUnexpectedMsgType(self, msgType, di):
         if msgType == CLIENT_GO_GET_LOST:
@@ -373,6 +391,69 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
 
         # send the message
         self.send(datagram)
+
+    def handleDatagram(self, datagram):
+        if self.notify.getDebug():
+            print "ClientRepository received datagram:"
+            datagram.dumpHex(ostream)
+        di = PyDatagramIterator(datagram)
+        msgType = di.getUint16()
+        if self.notify.getDebug():
+            self.notify.debug("handleDatagram: msgType: " + `msgType`)
+        # watch for setZoneDones
+        if msgType == CLIENT_DONE_SET_ZONE_RESP:
+            self.handleSetZoneDone()
+        if self.handler == None:
+            self.handleUnexpectedMsgType(msgType, di)
+        else:
+            self.handler(msgType, di)
+        # If we're processing a lot of datagrams within one frame, we
+        # may forget to send heartbeats.  Keep them coming!
+        self.considerHeartbeat()
+
+    def sendHeartbeat(self):
+        datagram = PyDatagram()
+        # Add message type
+        datagram.addUint16(CLIENT_HEARTBEAT)
+        # Send it!
+        self.send(datagram)
+        self.lastHeartbeat = globalClock.getRealTime()
+        # This is important enough to consider flushing immediately
+        # (particularly if we haven't run readerPollTask recently).
+        if self.tcpConn:
+            self.tcpConn.considerFlush()
+
+    def considerHeartbeat(self):
+        """Send a heartbeat message if we haven't sent one recently."""
+        if not self.heartbeatStarted:
+            self.notify.debug("Heartbeats not started; not sending.")
+            return
+        
+        elapsed = globalClock.getRealTime() - self.lastHeartbeat
+        if elapsed < 0 or elapsed > self.heartbeatInterval:
+            # It's time to send the heartbeat again (or maybe someone
+            # reset the clock back).
+            self.notify.info("Sending heartbeat mid-frame.")
+            self.startHeartbeat()
+
+    def stopHeartbeat(self):
+        taskMgr.remove("heartBeat")
+        self.heartbeatStarted = 0
+
+    def startHeartbeat(self):
+        self.stopHeartbeat()
+        self.heartbeatStarted = 1
+        self.sendHeartbeat()
+        self.waitForNextHeartBeat()
+
+    def sendHeartbeatTask(self, task):
+        self.sendHeartbeat()
+        self.waitForNextHeartBeat()
+        return Task.done
+
+    def waitForNextHeartBeat(self):
+        taskMgr.doMethodLater(self.heartbeatInterval, self.sendHeartbeatTask,
+                              "heartBeat")        
         
     def sendUpdate(self, do, fieldName, args, sendToId = None):
         # Get the DO id
