@@ -44,10 +44,10 @@ extDir=$DIRECT/src/extensions
 pSqueezer=$DIRECT/src/showbase/pandaSqueezer.py
 
 if [ $(uname) = "CYGWIN_NT-5.0" ]; then
-  install_dir=$(cygpath -am $install_dir)
-  pyDir=$(cygpath -m $pyDir)
-  extDir=$(cygpath -m $extDir)
-  pSqueezer=$(cygpath -m $pSqueezer)
+  install_dir="$(cygpath -aw $install_dir)"
+  pyDir="$(cygpath -w $pyDir)"
+  extDir="$(cygpath -w $extDir)"
+  pSqueezer="$(cygpath -w $pSqueezer)"
 fi
 
 if [ "$buildType" = "linux" ]; then
