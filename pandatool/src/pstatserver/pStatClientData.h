@@ -28,6 +28,7 @@
 #include "pointerTo.h"
 
 #include "pvector.h"
+#include "vector_int.h"
 
 class PStatReader;
 
@@ -86,7 +87,7 @@ private:
   typedef pvector<Collector> Collectors;
   Collectors _collectors;
 
-  typedef pvector<int> ToplevelCollectors;
+  typedef vector_int ToplevelCollectors;
   ToplevelCollectors _toplevel_collectors;
   
   class Thread {
