@@ -129,7 +129,7 @@ class DirectScrolledList(DirectFrame):
                     # If there is a function to create the item
                     item = apply(self['itemMakeFunction'], (item, i, self['itemMakeExtraArgs']))
                 else:
-                    item = DirectFrame(text = item)
+                    item = DirectFrame(text = item, relief = None)
                 # Then add the newly formed item back into the normal item list
                 self["items"][i] = item
                 item.reparentTo(self.itemFrame)
