@@ -425,9 +425,6 @@ BEFORE_DBGBUILD:
 
 AFTER_DBGBUILD:
 
-&myexecstr("cvs checkout -R ".$dirstodostr." |& egrep -v 'Updating|^\\?'",
-          "cvs checkout failed!","DO_LOG","NO_PANDA_ATTACH");
-
 # tmp save debug build in "debug subdir"
 # we can only hold 1 dbg and 1 opt build in same src tree and these are used by opt2 & opt4, so 
 # move current tree to local dir until we are finished building, when we can copy it
@@ -494,12 +491,19 @@ sub archivetree() {
     &myrename($olddirname,$archdirname);
 
     # now delete old objs/pdbs/etc out of archived trees (just blow away the Opt[Win32] dir)
+    
     foreach my $dir1 (@dirstodolist) {    
         # NT cmd 'for' always returns 144 for some reason, impossible to detect error cond, so just dont check retval
         &myexecstr("( for /D /R ".$archdirname."\\".$dir1."\\src %i in (Opt*Win32) do rd /s /q %i )","nomsg","DO_LOG","NT cmd");
-        # delete old browse files
-        &myexecstr("del /q ".$archdirname."\\debug\\*.bsc ".$dirstodostr,"nomsg","DO_LOG","NT cmd");
+
+        # doing this twice since samba-link seems to screw up and cause some files to not be deleted
+        &myexecstr("( for /D /R ".$archdirname."\\".$dir1."\\src %i in (Opt*Win32) do rd /s /q %i )","nomsg","DO_LOG","NT cmd");
     }
+
+    # delete old browse files
+    &myexecstr("del /q ".$archdirname."\\*.bsc ".$dirstodostr,"nomsg","DO_LOG","NT cmd");
+
+    # could also move .pdb from metalibs to lib, then del metalibs, include, src dirs
 }
 
 #goto 'StartTreeCopy';  #DBG
