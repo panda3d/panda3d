@@ -2345,10 +2345,10 @@ issue_tex_matrix(const TexMatrixAttrib *attrib) {
 //               Also maintain the map of CgShader objects to
 //               respective GLCgShaderContexts
 ////////////////////////////////////////////////////////////////////
-#ifdef HAVE_CGGL
+
 void CLP(GraphicsStateGuardian)::
 issue_cg_shader_bind(const CgShaderAttrib *attrib) {
-
+#ifdef HAVE_CGGL
   if (attrib->is_off()) { //Current node has no shaders
     if (_cg_shader != (CgShader *) NULL) {
       _gl_cg_shader_contexts[_cg_shader]->un_bind();// Prev node had shaders
@@ -2373,9 +2373,9 @@ issue_cg_shader_bind(const CgShaderAttrib *attrib) {
     }
   }
 
-
-}
 #endif
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CLP(GraphicsStateGuardian)::issue_tex_gen
 //       Access: Public, Virtual
