@@ -225,7 +225,7 @@ clean-igate :
 	-del /f $[so_dir]\$[igateoutput] $[igateoutput:%.cxx=$[so_dir]\%.obj]
   #endif
   #if $[igatemout]
-	-del /f $[so_dir]\$[igatemout] $[igatemout:%.cxx=$[so_dir]/%.obj]
+	-del /f $[so_dir]\$[igatemout] $[igatemout:%.cxx=$[so_dir]\%.obj]
   #endif
 #end metalib_target lib_target ss_lib_target
 

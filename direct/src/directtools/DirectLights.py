@@ -117,10 +117,10 @@ class DirectLights(NodePath):
 
     def setOn(self, directLight):
         """ setOn(directLight) """
-        self.la.setOn(directLight.getLight().upcastToLight())
+        self.la.setOn(directLight.getLight())
 
     def setOff(self, directLight):
         """ setOff(directLight)"""
-        self.la.setOff(directLight.getLight().upcastToLight())
+        self.la.setOff(directLight.getLight())
 
 
