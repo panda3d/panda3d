@@ -3,9 +3,13 @@
 
 from DirectObject import *
 
+import DirectNotifyGlobal
+
 class StateData(DirectObject):
 
     """StateData class: """
+
+    notify = DirectNotifyGlobal.directNotify.newCategory('StateData')
 
     def __init__(self, doneEvent):
         """__init__(self, Event)
@@ -32,7 +36,7 @@ class StateData(DirectObject):
 	# Use isLoaded to avoid redundant loading
 	if self.isLoaded == 0:
 	    self.load()
-	print "Called StateData enter function"
+	self.notify.debug('enter()')
 	return None
 
     def exit(self):
@@ -41,7 +45,7 @@ class StateData(DirectObject):
 	if self.isEntered == 0:
 	    return None
 	self.isEntered = 0
-	print "Called StateData exit function"
+	self.notify.debug('exit()')
 	return None
 
     def load(self):
@@ -50,7 +54,7 @@ class StateData(DirectObject):
 	if self.isLoaded == 1:
 	    return None
 	self.isLoaded = 1
-	print "Called StateData load function"
+	self.notify.debug('load()')
 	return None
 	
     def unload(self):
@@ -60,7 +64,7 @@ class StateData(DirectObject):
 	    return None
 	self.isLoaded = 0
 	self.exit()
-	print "Called StateData unload function"
+	self.notify.debug('unload()')
 	return None
 
     def getDoneStatus(self):
