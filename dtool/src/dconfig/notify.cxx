@@ -408,6 +408,26 @@ ptr() {
 //               assertion.
 ////////////////////////////////////////////////////////////////////
 bool Notify::
+assert_failure(const string &expression, int line,
+               const char *source_file) {
+  return assert_failure(expression.c_str(), line, source_file);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Notify::assert_failure
+//       Access: Public
+//  Description: This function is not intended to be called directly
+//               by user code.  It's called from the nassertr() and
+//               assertv() macros when an assertion test fails; it
+//               handles the job of printing the warning message and
+//               deciding what to do about it.
+//
+//               If this function returns true, the calling function
+//               should return out of its function; if it returns
+//               false, the calling function should ignore the
+//               assertion.
+////////////////////////////////////////////////////////////////////
+bool Notify::
 assert_failure(const char *expression, int line,
                const char *source_file) {
   ostringstream message_str;

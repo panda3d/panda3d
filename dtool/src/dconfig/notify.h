@@ -77,6 +77,8 @@ PUBLISHED:
 public:
   static ios_fmtflags get_literal_flag();
 
+  bool assert_failure(const string &expression, int line,
+                      const char *source_file);
   bool assert_failure(const char *expression, int line,
                       const char *source_file);
 
@@ -151,6 +153,8 @@ private:
     } \
   }
 
+#define nassert_raise(message) 
+
 #else   // NDEBUG
 
 #define nassertr(condition, return_value) \
@@ -177,6 +181,8 @@ private:
 
 #define nassertr_always(condition, return_value) nassertr(condition, return_value)
 #define nassertv_always(condition) nassertv(condition)
+
+#define nassert_raise(message) Notify::ptr()->assert_failure(message, __LINE__, __FILE__)
 
 
 #endif  // NDEBUG
