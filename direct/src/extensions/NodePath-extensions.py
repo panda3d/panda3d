@@ -443,12 +443,13 @@
             raise Exception("Error: NodePath.lerpHpr: bad number of args")
     
     def lerpHprHPR(self, h, p, r, time, other=None,
-                   blendType="noBlend", auto=None, task=None):
+                   blendType="noBlend", auto=None, task=None, shortest=1):
         """lerpHprHPR(self, float, float, float, float, string="noBlend",
         string=none, string=none, NodePath=none)
         Perform a hpr lerp with three floats as the end point
         """
-        def functorFunc(self = self, h = h, p = p, r = r, other = other):
+        def functorFunc(self = self, h = h, p = p, r = r,
+                        other = other, shortest=shortest):
             import HprLerpFunctor
             # it's individual hpr components
             if (other != None):
@@ -458,14 +459,16 @@
                     self,
                     startHpr[0], startHpr[1], startHpr[2],
                     h, p, r, other)
-                functor.takeShortest()
+                if shortest:
+                    functor.takeShortest()
             else:
                 startHpr = self.getHpr()
                 functor = HprLerpFunctor.HprLerpFunctor(
                     self,
                     startHpr[0], startHpr[1], startHpr[2],
                     h, p, r)
-                functor.takeShortest()
+                if shortest:
+                    functor.takeShortest()
             return functor
         #determine whether to use auto, spawned, or blocking lerp
         if (auto != None):
@@ -476,23 +479,26 @@
             return self.__lerp(functorFunc, time, blendType)
     
     def lerpHprVBase3(self, hpr, time, other=None,
-                      blendType="noBlend", auto=None, task=None):
+                      blendType="noBlend", auto=None, task=None, shortest=1):
         """lerpHprVBase3(self, VBase3, float, string="noBlend", string=none,
         string=none, NodePath=None)
         Perform a hpr lerp with a VBase3 as the end point
         """
-        def functorFunc(self = self, hpr = hpr, other = other):
+        def functorFunc(self = self, hpr = hpr,
+                        other = other, shortest=shortest):
             import HprLerpFunctor
             # it's a vbase3 hpr
             if (other != None):
                 # lerp wrt other
                 functor = HprLerpFunctor.HprLerpFunctor(
                     self, (self.getHpr(other)), hpr, other)
-                functor.takeShortest()
+                if shortest:
+                    functor.takeShortest()
             else:
                 functor = HprLerpFunctor.HprLerpFunctor(
                     self, (self.getHpr()), hpr)
-                functor.takeShortest()
+                if shortest:
+                    functor.takeShortest()
             return functor
         #determine whether to use auto, spawned, or blocking lerp
         if (auto != None):
@@ -586,11 +592,12 @@
             raise Exception("Error: NodePath.lerpPosHpr: bad number of args")
 
     def lerpPosHprPoint3VBase3(self, pos, hpr, time, other=None,
-                               blendType="noBlend", auto=None, task=None):
+                               blendType="noBlend", auto=None, task=None, shortest=1):
         """lerpPosHprPoint3VBase3(self, Point3, VBase3, string="noBlend",
         string=none, string=none, NodePath=None)
         """
-        def functorFunc(self = self, pos = pos, hpr = hpr, other = other):
+        def functorFunc(self = self, pos = pos, hpr = hpr,
+                        other = other, shortest=shortest):
             import PosHprLerpFunctor
             if (other != None):
                 # lerp wrt other
@@ -599,14 +606,16 @@
                 functor = PosHprLerpFunctor.PosHprLerpFunctor(
                     self, startPos, pos,
                     startHpr, hpr, other)
-                functor.takeShortest()
+                if shortest:
+                    functor.takeShortest()
             else:
                 startPos = self.getPos()
                 startHpr = self.getHpr()
                 functor = PosHprLerpFunctor.PosHprLerpFunctor(
                     self, startPos, pos,
                     startHpr, hpr)
-                functor.takeShortest()
+                if shortest:
+                    functor.takeShortest()
             return functor
         #determine whether to use auto, spawned, or blocking lerp
         if (auto != None):
@@ -617,12 +626,12 @@
             return self.__lerp(functorFunc, time, blendType)
 
     def lerpPosHprXYZHPR(self, x, y, z, h, p, r, time, other=None,
-                         blendType="noBlend", auto=None, task=None):
+                         blendType="noBlend", auto=None, task=None, shortest=1):
         """lerpPosHpr(self, float, string="noBlend", string=none,
         string=none, NodePath=None)
         """
         def functorFunc(self = self, x = x, y = y, z = z,
-                        h = h, p = p, r = r, other = other):
+                        h = h, p = p, r = r, other = other, shortest=shortest):
             import PosHprLerpFunctor
             if (other != None):
                 # lerp wrt other
@@ -634,7 +643,8 @@
                                             startHpr[0], startHpr[1],
                                             startHpr[2], h, p, r,
                                             other)
-                functor.takeShortest()
+                if shortest:
+                    functor.takeShortest()
             else:
                 startPos = self.getPos()
                 startHpr = self.getHpr()
@@ -643,7 +653,8 @@
                                             startPos[2], x, y, z,
                                             startHpr[0], startHpr[1],
                                             startHpr[2], h, p, r)
-                functor.takeShortest()
+                if shortest:
+                    functor.takeShortest()
             return functor
         #determine whether to use auto, spawned, or blocking lerp
         if (auto != None):
@@ -655,14 +666,14 @@
 
 
     def lerpPosHprScale(self, pos, hpr, scale, time, other=None,
-                        blendType="noBlend", auto=None, task=None):
+                        blendType="noBlend", auto=None, task=None, shortest=1):
         """lerpPosHpr(self, Point3, VBase3, float, float, string="noBlend",
         string=none, string=none, NodePath=None)
         Only one case, no need for extra args. Call the appropriate lerp
         (auto, spawned, or blocking) based on how(if) a task name is given
         """
         def functorFunc(self = self, pos = pos, hpr = hpr,
-                        scale = scale, other = other):
+                        scale = scale, other = other, shortest=shortest):
             import PosHprScaleLerpFunctor
             if (other != None):
                 # lerp wrt other
@@ -673,7 +684,8 @@
                                                  startPos, pos,
                                                  startHpr, hpr,
                                                  startScale, scale, other)
-                functor.takeShortest()
+                if shortest:
+                    functor.takeShortest()
             else:
                 startPos = self.getPos()
                 startHpr = self.getHpr()
@@ -682,8 +694,8 @@
                                                  startPos, pos,
                                                  startHpr, hpr,
                                                  startScale, scale)
-
-                functor.takeShortest()
+                if shortest:
+                    functor.takeShortest()
             return functor
         #determine whether to use auto, spawned, or blocking lerp
         if (auto != None):

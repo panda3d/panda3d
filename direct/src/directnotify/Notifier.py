@@ -2,6 +2,7 @@
    for the programmer/user"""
 
 from LoggerGlobal import *
+import time
 
 class Notifier:
 
@@ -23,28 +24,34 @@ class Notifier:
         self.__debug = 0
         self.__logging = 0
 
+    def getTime(self):
+        """
+        Return the time as a string suitable for printing at the
+        head of any notify message
+        """
+        return time.strftime(":%m-%d-%Y %H:%M:%S: ", time.localtime(time.time()))
+
     def __str__(self):
         """__str__(self)
         Print handling routine"""
         return "%s: info = %d, warning = %d, debug = %d, logging = %d" % \
                (self.__name, self.__info, self.__warning, self.__debug, self.__logging)
     
-        
     # error funcs
     def error(self, errorString, exception=StandardError):
         """error(self, string, Exception=StandardError)
         Raise an exception with given string and optional type:
         Exception: error"""
-        self.__log(str(exception) + ": " + self.__name + ": " + errorString)
+        str = (self.getTime() + str(exception) + ": " + self.__name + ": " + errorString)
+        self.__log(str)
         raise exception(errorString)
-
 
     # warning funcs
     def warning(self, warningString):
         """warning(self, string)
         Issue the warning message if warn flag is on"""
         if (self.__warning):
-            str = ':' + self.__name + '(warning): ' + warningString
+            str = (self.getTime() + self.__name + '(warning): ' + warningString)
             self.__log(str)
             print(str)
 
@@ -58,14 +65,12 @@ class Notifier:
         Return whether the printing of warning messages is on or off"""
         return(self.__warning)
 
-
-
     # debug funcs
     def debug(self, debugString):
         """debug(self, string)
         Issue the debug message if debug flag is on"""
         if (self.__debug):
-            str = ':' + self.__name + '(debug): ' + debugString
+            str = (self.getTime() + self.__name + '(debug): ' + debugString)
             self.__log(str)
             print(str)
 
@@ -79,14 +84,12 @@ class Notifier:
         Return whether the printing of debug messages is on or off"""
         return(self.__debug)
 
-
-
     # info funcs
     def info(self, infoString):
         """info(self, string)
         Print the given informational string, if info flag is on"""
         if (self.__info):
-            str = ':' + self.__name + '(info): ' + infoString
+            str = (self.getTime() + self.__name + '(info): ' + infoString)
             self.__log(str)
             print(str)
 
@@ -99,7 +102,6 @@ class Notifier:
         """setInfo(self, int)
         Enable/Disable informational message  printing"""
         self.__info = bool
-
 
     # log funcs
     def __log(self, logEntry):

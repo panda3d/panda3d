@@ -41,6 +41,9 @@ class Task:
     def getPriority(self):
         return self._priority
 
+    def setPriority(self, pri):
+        self._priority = pri
+
     def setStartTimeFrame(self, startTime, startFrame):
         self.starttime = startTime
         self.startframe = startFrame
