@@ -155,6 +155,7 @@ class ShowBase(DirectObject.DirectObject):
         self.camLens = None
         self.camera = None
         self.camera2d = None
+        self.camera2dp = None
         self.camFrustumVis = None
 
         # This is used for syncing multiple PCs in a distributed cluster
@@ -172,6 +173,7 @@ class ShowBase(DirectObject.DirectObject):
 
         self.setupRender()
         self.setupRender2d()
+        self.setupRender2dp()
         self.setupDataGraph()        
 
         # This is a placeholder for a CollisionTraverser.  If someone
@@ -241,7 +243,9 @@ class ShowBase(DirectObject.DirectObject):
 
         __builtins__["base"] = self
         __builtins__["render2d"] = self.render2d
+        __builtins__["render2dp"] = self.render2dp
         __builtins__["aspect2d"] = self.aspect2d
+        __builtins__["aspect2dp"] = self.aspect2dp
         __builtins__["render"] = self.render
         __builtins__["hidden"] = self.hidden
         __builtins__["camera"] = self.camera
@@ -558,6 +562,7 @@ class ShowBase(DirectObject.DirectObject):
             if isinstance(self.win, GraphicsWindow):
                 self.setupMouse(self.win)
             self.makeCamera2d(self.win)
+            self.makeCamera2dp(self.win)
 
             if oldLens != None:
                 # Restore the previous lens properties.
@@ -647,6 +652,52 @@ class ShowBase(DirectObject.DirectObject):
         self.a2dBottom = -1.0
         self.a2dLeft = -aspectRatio
         self.a2dRight = aspectRatio
+
+    def setupRender2dp(self):
+        """
+        Creates a render2d scene graph, the secondary scene graph for
+        2-d objects and gui elements that are superimposed over the
+        2-d and 3-d geometry in the window.
+        """
+        self.render2dp = NodePath('render2dp')
+
+        # Set up some overrides to turn off certain properties which
+        # we probably won't need for 2-d objects.
+
+        # It's probably important to turn off the depth test, since
+        # many 2-d objects will be drawn over each other without
+        # regard to depth position.
+
+        # We used to avoid clearing the depth buffer before drawing
+        # render2d, but nowadays we clear it anyway, since we
+        # occasionally want to put 3-d geometry under render2d, and
+        # it's simplest (and seems to be easier on graphics drivers)
+        # if the 2-d scene has been cleared first.
+        
+        dt = DepthTestAttrib.make(DepthTestAttrib.MNone)
+        dw = DepthWriteAttrib.make(DepthWriteAttrib.MOff)
+        #lt = LightTransition.allOff()
+        self.render2dp.node().setAttrib(dt)
+        self.render2dp.node().setAttrib(dw)
+        #self.render2dp.node().setAttrib(lt, 1)
+
+        self.render2dp.setMaterialOff(1)
+        self.render2dp.setTwoSided(1)
+        
+        # The normal 2-d layer has an aspect ratio that matches the
+        # window, but its coordinate system is square.  This means
+        # anything we parent to render2d gets stretched.  For things
+        # where that makes a difference, we set up aspect2d, which
+        # scales things back to the right aspect ratio.
+        aspectRatio = self.getAspectRatio()
+        self.aspect2dp = self.render2dp.attachNewNode(PGTop("aspect2d"))
+        self.aspect2dp.setScale(1.0 / aspectRatio, 1.0, 1.0)
+
+        # It's important to know the bounds of the aspect2d screen.
+        self.a2dpTop = 1.0
+        self.a2dpBottom = -1.0
+        self.a2dpLeft = -aspectRatio
+        self.a2dpRight = aspectRatio
 
     def getAspectRatio(self, win = None):
         # Returns the actual aspect ratio of the indicated (or main
@@ -770,6 +821,48 @@ class ShowBase(DirectObject.DirectObject):
 
         return camera2d
 
+    def makeCamera2dp(self, win, chan = None, layer = None, layerSort = 20,
+                     displayRegion = (0, 1, 0, 1), coords = (-1, 1, -1, 1)):
+        """
+        Makes a new camera2dp associated with the indicated window, and
+        assigns it to render the indicated subrectangle of render2dp.
+        """
+        if chan == None:
+            chan = win.getChannel(0)
+
+        if layer == None:
+            # Make a new layer on the window.
+            layer = chan.makeLayer(layerSort)
+
+        # And make a display region on this layer of the requested
+        # area.
+        dr = layer.makeDisplayRegion(*displayRegion)
+
+        # Enable clearing of the depth buffer on this new display
+        # region (see the comment in setupRender2d, above).
+        dr.setClearDepthActive(1)
+
+        left, right, bottom, top = coords
+
+        # Now make a new Camera node.
+        cam2dNode = Camera('cam2d')
+        lens = OrthographicLens()
+        lens.setFilmSize(right - left, top - bottom)
+        lens.setFilmOffset((right + left) * 0.5, (top + bottom) * 0.5)
+        lens.setNearFar(-1000, 1000)
+        cam2dNode.setLens(lens)
+        cam2dNode.setScene(self.render2dp)
+
+        # self.camera2d is the analog of self.camera, although it's
+        # not as clear how useful it is.
+        if self.camera2dp == None:
+            self.camera2dp = self.render2dp.attachNewNode('camera2dp')
+            
+        camera2dp = self.camera2dp.attachNewNode(cam2dNode)
+        dr.setCamera(camera2dp)
+
+        return camera2dp
+
 
     def setupDataGraph(self):
         """
@@ -870,6 +963,7 @@ class ShowBase(DirectObject.DirectObject):
 
         # Tell the gui system about our new mouse watcher.
         self.aspect2d.node().setMouseWatcher(self.mouseWatcherNode)
+        self.aspect2dp.node().setMouseWatcher(self.mouseWatcherNode)
         self.mouseWatcherNode.addRegion(PGMouseWatcherBackground())
 
     def enableSoftwareMousePointer(self):
