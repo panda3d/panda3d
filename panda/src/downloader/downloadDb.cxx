@@ -33,6 +33,21 @@ PN_uint32 DownloadDb::_magic_number = 0xfeedfeed;
 // probably interrupted in the middle of the write.
 PN_uint32 DownloadDb::_bogus_magic_number = 0x11111111;
 
+
+static string
+back_to_front_slash(const string &str) {
+  string result = str;
+  string::iterator si;
+  for (si = result.begin(); si != result.end(); ++si) {
+    if ((*si) == '\\') {
+      (*si) = '/';
+    }
+  }
+
+  return result;
+}
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::Constructor
 //       Access: Public
@@ -46,6 +61,22 @@ DownloadDb(Ramfile &server_file, Filename &client_file) {
   _client_db = read_db(client_file, 0);
   _client_db._filename = client_file;
   _server_db = read_db(server_file, 1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DownloadDb::Constructor
+//       Access: Public
+//  Description: Create a download db with these client and server dbs
+////////////////////////////////////////////////////////////////////
+DownloadDb::
+DownloadDb(Filename &server_file, Filename &client_file) {
+  if (downloader_cat.is_debug())
+    downloader_cat.debug()
+      << "DownloadDb constructor called" << endl;
+  _client_db = read_db(client_file, 0);
+  _client_db._filename = client_file;
+  _server_db = read_db(server_file, 1);
+  _server_db._filename = server_file;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -702,6 +733,11 @@ parse_mfr(uchar *start, int size) {
   mfr->_size = di.get_int32();
   mfr->_status = di.get_int32();
   mfr->_num_files = di.get_int32();
+
+  // At one time, we stored files in the database with a backslash
+  // separator.  Nowadays we use a forward slash, but we should make
+  // sure we properly convert any old records we might read.
+  mfr->_name = back_to_front_slash(mfr->_name);
   
   // Read the hash value
   HashVal hash;
@@ -740,6 +776,11 @@ parse_fr(uchar *start, int size) {
   PN_int32 fr_name_length = di.get_int32();
   fr->_name = di.extract_bytes(fr_name_length);
 
+  // At one time, we stored files in the database with a backslash
+  // separator.  Nowadays we use a forward slash, but we should make
+  // sure we properly convert any old records we might read.
+  fr->_name = back_to_front_slash(fr->_name);
+
   downloader_cat.spam()
     << "Parsed file record: " << fr->_name << endl;
 
@@ -762,6 +803,10 @@ read(istream &read_stream, bool want_server_info) {
   uchar *header_buf = new uchar[_header_length];
   // Read the header
   read_stream.read((char *)header_buf, _header_length);
+  if (read_stream.gcount() != _header_length) {
+    downloader_cat.error() << "DownloadDb::read() - Empty file" << endl;
+    return false;
+  }
 
   // Parse the header
   int num_multifiles = parse_header(header_buf, _header_length);
@@ -1031,20 +1076,10 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::add_version
 //       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DownloadDb::
-add_version(const Filename &name, HashVal hash, Version version) {
-  add_version(name.get_fullpath(), hash, version);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DownloadDb::add_version
-//       Access: Public
 //  Description: Note: version numbers start at 1
 ////////////////////////////////////////////////////////////////////
 void DownloadDb::
-add_version(const string &name, HashVal hash, Version version) {
+add_version(const Filename &name, HashVal hash, Version version) {
   nassertv(version >= 1);
 
   // Try to find this name in the map
@@ -1073,22 +1108,27 @@ add_version(const string &name, HashVal hash, Version version) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DownloadDb::get_version
+//     Function: DownloadDb::has_version
 //       Access: Public
-//  Description:
+//  Description: Returns true if the indicated file has version
+//               information, false otherwise.  Some files recorded in
+//               the database may not bother to track versions.
 ////////////////////////////////////////////////////////////////////
-int DownloadDb::
-get_version(const Filename &name, HashVal hash) {
-  return get_version(name.get_fullpath(), hash);
+bool DownloadDb::
+has_version(const Filename &name) {
+  return (_versions.find(name) != _versions.end());
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::get_version
 //       Access: Public
-//  Description:
+//  Description: Returns the version number of this particular file,
+//               determined by looking up the hash generated from the
+//               file.  Returns -1 if the version number cannot be
+//               determined.
 ////////////////////////////////////////////////////////////////////
 int DownloadDb::
-get_version(const string &name, HashVal hash) {
+get_version(const Filename &name, HashVal hash) {
   VersionMap::const_iterator vmi = _versions.find(name);
   if (vmi == _versions.end()) {
     downloader_cat.debug()

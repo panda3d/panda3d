@@ -183,16 +183,6 @@ set_client_multifile_extracted(string mfname) {
   write_client_db(_client_db._filename);
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: DownloadDb::
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE int DownloadDb::
-get_client_num_files(string mfname) const {
-  return _client_db.get_multifile_record_named(mfname)->get_num_files();
-}
 ////////////////////////////////////////////////////////////////////
 //     Function: DownloadDb::
 //       Access: Public

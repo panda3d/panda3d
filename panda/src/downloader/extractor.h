@@ -42,21 +42,32 @@ PUBLISHED:
   Extractor();
   ~Extractor();
 
-  int initiate(const Filename &multifile_name, const Filename &extract_to = "");
-  int run();
+  bool set_multifile(const Filename &multifile_name);
+  void set_extract_dir(const Filename &extract_dir);
 
-  bool extract(const Filename &multifile_name, const Filename &extract_to = "");
+  void reset();
 
+  bool request_subfile(const Filename &subfile_name);
+  int request_all_subfiles();
+
+  int step();
   INLINE float get_progress(void) const;
 
-private:
-  void cleanup();
+  bool run();
 
-  bool _initiated;
+private:
   Filename _multifile_name;
-  Filename _extract_to;
   Multifile _multifile;
 
+  Filename _extract_dir;
+
+  typedef pvector<int> Requests;
+  Requests _requests;
+  
+  bool _initiated;
+
+  // These are used only while processing.
+  int _request_index;
   int _subfile_index;
   size_t _subfile_pos;
   size_t _subfile_length;

@@ -55,6 +55,17 @@ MultifileRecord is a Vector<FileRecord>
 typedef int Version;
 typedef float Phase;
 
+////////////////////////////////////////////////////////////////////
+//       Class : DownloadDb
+// Description : A listing of files within multifiles for management
+//               of client-side synchronization with a server-provided
+//               set of files.
+//
+//               This class manages one copy of the database for the
+//               client, representing the files on the client system,
+//               and another copy for the server, representing the
+//               files the server has available.
+////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS DownloadDb {
 PUBLISHED:
   // Status of a multifile is stored in this enum
@@ -70,6 +81,7 @@ PUBLISHED:
 
   DownloadDb(void);
   DownloadDb(Ramfile &server_file, Filename &client_file);
+  DownloadDb(Filename &server_file, Filename &client_file);
   ~DownloadDb(void);
 
   void output(ostream &out) const;
@@ -99,11 +111,7 @@ PUBLISHED:
   INLINE void set_client_multifile_decompressed(string mfname);
   INLINE void set_client_multifile_extracted(string mfname);
 
-  INLINE int get_client_num_files(string mfname) const;
   INLINE int get_server_num_files(string mfname) const;
-
-  // The client does not store the names of all the files anymore
-  // INLINE string get_client_file_name(string mfname, int index) const;
   INLINE string get_server_file_name(string mfname, int index) const;
 
   // Queries from the Launcher
@@ -203,13 +211,12 @@ public:
   static PN_uint32 _magic_number;
   static PN_uint32 _bogus_magic_number;
   typedef pvector<HashVal> vectorHash;
-  typedef pmap<string, vectorHash> VersionMap;
+  typedef pmap<Filename, vectorHash> VersionMap;
 
 PUBLISHED:
   void add_version(const Filename &name, HashVal hash, Version version);
-  void add_version(const string &name, HashVal hash, Version version);
+  bool has_version(const Filename &name);
   int get_version(const Filename &name, HashVal hash);
-  int get_version(const string &name, HashVal hash);
 
 protected:
   void write_version_map(ofstream &write_stream);
