@@ -7,7 +7,7 @@ if __debug__:
 
 class EditMgrAI(EditMgrBase.EditMgrBase):
     """This class handles AI-side editor-specific functionality"""
-    if __debug__:
+    if __dev__:
         def setRequestNewEntity(self, data):
             # pick an unused entId
             spec = self.level.levelSpec

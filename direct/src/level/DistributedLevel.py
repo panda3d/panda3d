@@ -136,8 +136,8 @@ class DistributedLevel(DistributedObject.DistributedObject,
     def initializeLevel(self, levelSpec):
         """subclass should call this as soon as it's located its level spec.
         Must be called after obj has been generated."""
-        if __debug__:
-            # if we're in debug, give the server the opportunity to send us
+        if __dev__:
+            # if we're in dev, give the server the opportunity to send us
             # a full spec
             self.candidateSpec = levelSpec
             self.sendUpdate('requestCurrentLevelSpec',
@@ -146,7 +146,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         else:
             self.privGotSpec(levelSpec)
 
-    if __debug__:
+    if __dev__:
         def setSpecDeny(self, reason):
             DistributedLevel.notify.error(reason)
             
@@ -633,7 +633,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
             self.visChangedThisFrame = 0
         return Task.cont
 
-    if __debug__:
+    if __dev__:
         # level editing stuff
         def setAttribChange(self, entId, attribName, valueStr, username):
             """every time the spec is edited, we get this message

@@ -44,7 +44,7 @@ class Level:
         self.scenarioIndex = scenarioIndex
 
         self.levelSpec.setScenario(self.scenarioIndex)
-        if __debug__:
+        if __dev__:
             self.levelSpec.setLevel(self)
 
         # create some handy tables
@@ -84,11 +84,10 @@ class Level:
         assert self.entType2ids['levelMgr'][0] == LevelConstants.LevelMgrEntId
         self.levelMgrEntity = self.getEntity(LevelConstants.LevelMgrEntId)
 
+        # there should be one and only one editMgr
+        assert len(self.entType2ids['editMgr']) == 1
+        assert self.entType2ids['editMgr'][0] == LevelConstants.EditMgrEntId
         if __debug__:
-            # there should be one and only one editMgr
-            assert len(self.entType2ids['editMgr']) == 1
-            assert self.entType2ids['editMgr'][0] == \
-                   LevelConstants.EditMgrEntId
             self.editMgrEntity = self.getEntity(LevelConstants.EditMgrEntId)
 
         # there should be one and only one UberZone
@@ -349,7 +348,7 @@ class Level:
         """the zone visibility lists have changed"""
         pass
     
-    if __debug__:
+    if __dev__:
         # the level generates these events when the spec changes
         def getAttribChangeEventName(self):
             return 'attribChange-%s' % self.levelId

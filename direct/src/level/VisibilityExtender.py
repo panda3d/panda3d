@@ -46,7 +46,7 @@ class VisibilityExtender(Entity.Entity):
         self.destroyVisExt()
         Entity.Entity.destroy(self)
 
-    if __debug__:
+    if __dev__:
         def setNewZones(self, newZones):
             # we need to call destroyVisExt before accepting the new zone set
             self.destroyVisExt()

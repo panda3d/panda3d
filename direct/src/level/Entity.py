@@ -88,6 +88,12 @@ class Entity(DirectObject):
         self.__dict__[attrib] = value
 
     if __debug__:
+        def debugPrint(self, message):
+            """for debugging"""
+            return self.notify.debug(
+                    str(self.__dict__.get('entId', '?'))+' '+message)
+
+    if __dev__:
         # support for level editing
         def handleAttribChange(self, attrib, value):
             # call callback function if it exists
@@ -110,8 +116,3 @@ class Entity(DirectObject):
             in your derived class
             """
             pass
-
-        def debugPrint(self, message):
-            """for debugging"""
-            return self.notify.debug(
-                    str(self.__dict__.get('entId', '?'))+' '+message)

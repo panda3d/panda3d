@@ -13,7 +13,7 @@ class EditMgrBase(Entity.Entity):
         Entity.Entity.destroy(self)
         self.ignoreAll()
 
-    if __debug__:
+    if __dev__:
         def setInsertEntity(self, data):
             # tell the level who created this entity
             self.level.setEntityCreatorUsername(data['entId'], data['username'])

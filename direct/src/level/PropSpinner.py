@@ -47,7 +47,7 @@ class PropSpinner(Entity.Entity):
             self.spinTracks.pause()
             del self.spinTracks
 
-    if __debug__:
+    if __dev__:
         def attribChanged(self, *args):
             self.destroyProps()
             self.initProps()

@@ -30,7 +30,7 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         self.presentAvIds = list(self.avIdList)
         self.notify.debug("expecting avatars: %s" % str(self.avIdList))
 
-        if __debug__:
+        if __dev__:
             self.modified = 0
 
     def generate(self, levelSpec):
@@ -57,7 +57,7 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
 
     def delete(self):
         self.notify.debug('delete')
-        if __debug__:
+        if __dev__:
             self.removeAutosaveTask()
         self.destroyLevel()
         self.ignoreAll()
@@ -79,7 +79,7 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
 
         Level.Level.initializeLevel(self, self.doId, levelSpec, scenarioIndex)
 
-        if __debug__:
+        if __dev__:
             # listen for requests to save the spec
             self.accept(self.editMgrEntity.getSpecSaveEvent(), self.saveSpec)
 
@@ -125,7 +125,7 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         if av and (penalty > 0):
             av.takeDamage(penalty)
         
-    if __debug__:
+    if __dev__:
         # level editors should call this func to tweak attributes of level
         # entities
         def setAttribChange(self, entId, attribName, value, username='SYSTEM'):

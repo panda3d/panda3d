@@ -5,7 +5,7 @@ from PythonUtil import list2dict, uniqueElements
 import string
 import LevelConstants
 import types
-if __debug__:
+if __dev__:
     import os
 
 class LevelSpec:
@@ -19,17 +19,17 @@ class LevelSpec:
         If not passed in, will create a new spec."""
         newSpec = 0
         if type(spec) is types.ModuleType:
-            if __debug__:
+            if __dev__:
                 # reload the spec module to pick up changes
                 reload(spec)
             self.specDict = spec.levelSpec
-            if __debug__:
+            if __dev__:
                 self.setFilename(spec.__file__)
         elif type(spec) is types.DictType:
             # we need this for repr/eval-ing LevelSpecs
             self.specDict = spec
         elif spec is None:
-            if __debug__:
+            if __dev__:
                 newSpec = 1
                 self.specDict = {
                     'globalEntities': {},
@@ -52,7 +52,7 @@ class LevelSpec:
 
         self.setScenario(scenario)
 
-        if __debug__:
+        if __dev__:
             if newSpec:
                 # add required entities
 
@@ -139,7 +139,7 @@ class LevelSpec:
     def privGetScenarioEntityDict(self, scenario):
         return self.specDict['scenarios'][scenario][0]
 
-    if __debug__:
+    if __dev__:
         def setLevel(self, level):
             self.level = level
 

@@ -31,7 +31,7 @@ class DistributedEntityAI(DistributedObjectAI.DistributedObjectAI,
     def getEntId(self):
         return self.entId
 
-    if __debug__:
+    if __dev__:
         def setParentEntId(self, parentEntId):
             self.parentEntId = parentEntId
             # switch to new zone

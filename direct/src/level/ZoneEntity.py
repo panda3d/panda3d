@@ -40,7 +40,7 @@ class ZoneEntity(ZoneEntityBase.ZoneEntityBase, BasicEntities.NodePathAttribs):
             if self.visibleZoneNums[zoneNum] == 0:
                 del self.visibleZoneNums[zoneNum]
 
-    if __debug__:
+    if __dev__:
         def setVisibility(self, visibility):
             self.decrementRefCounts(self.visibility)
             self.visibility = visibility

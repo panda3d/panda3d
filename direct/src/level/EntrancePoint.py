@@ -32,7 +32,7 @@ class EntrancePoint(BasicEntities.NodePathEntity):
             if self.level.entranceId2entity.has_key(self.entranceId):
                 del self.level.entranceId2entity[self.entranceId]
 
-    if __debug__:
+    if __dev__:
         def attribChanged(self, *args):
             BasicEntities.NodePathEntity.attribChanged(self, *args)
             self.destroyEntrancePoint()

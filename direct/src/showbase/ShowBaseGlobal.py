@@ -13,4 +13,4 @@ def inspect(anObject):
     return Inspector.inspect(anObject)
 
 __builtins__["inspect"] = inspect
-
+__builtins__["__dev__"] = base.config.GetBool('want-dev', 0)

@@ -21,7 +21,7 @@ class NodePathEntityBase:
         self.getNodePath().setName('%s-%s' %
                                    (self.__class__.__name__, self.entId))
 
-        if __debug__:
+        if __dev__:
             # for the editor
             self.getNodePath().setTag('entity', '1')
 
@@ -30,7 +30,7 @@ class NodePathEntityBase:
         self.level.requestReparent(self, self.parentEntId)
 
     def destroy(self):
-        if __debug__:
+        if __dev__:
             # for the editor
             self.getNodePath().clearTag('entity')
 
