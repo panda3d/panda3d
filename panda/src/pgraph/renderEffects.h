@@ -29,6 +29,7 @@
 
 class BillboardEffect;
 class CompassEffect;
+class PolylightEffect;
 class FactoryParams;
 
 ////////////////////////////////////////////////////////////////////
@@ -91,6 +92,7 @@ public:
   INLINE const BillboardEffect *get_billboard() const;
   INLINE bool has_decal() const;
   INLINE const CompassEffect *get_compass() const;
+  INLINE const PolylightEffect *get_polylight() const;
   INLINE bool has_show_bounds() const;
 
 private:
@@ -98,6 +100,7 @@ private:
   void determine_billboard();
   void determine_decal();
   void determine_compass();
+  void determine_polylight();
   void determine_show_bounds();
 
 private:
@@ -133,6 +136,7 @@ private:
   // state, if they exist.
   const BillboardEffect *_billboard;
   const CompassEffect *_compass;
+  const PolylightEffect *_polylight;
 
   enum Flags {
     F_checked_billboard    = 0x0001,
@@ -141,8 +145,10 @@ private:
     F_checked_show_bounds  = 0x0008,
     F_has_show_bounds      = 0x0010,
     F_checked_compass      = 0x0020,
+	F_checked_polylight    = 0x0040,
   };
   short _flags;
+
 
 public:
   static void register_with_read_factory();

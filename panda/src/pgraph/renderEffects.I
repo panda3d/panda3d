@@ -201,6 +201,25 @@ get_compass() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderEffects::get_polylight
+//       Access: Public
+//  Description: This function is provided as an optimization, to
+//               speed up the render-time checking for the existance
+//               of a PolylightEffect on this state.  It returns a
+//               pointer to the PolylightEffect, if there is one, or
+//               NULL if there is not.
+////////////////////////////////////////////////////////////////////
+INLINE const PolylightEffect *RenderEffects::
+get_polylight() const {
+  if ((_flags & F_checked_polylight) == 0) {
+    // We pretend this function is const, even though it transparently
+    // modifies the internal polylight cache.
+    ((RenderEffects *)this)->determine_polylight();
+  }
+  return _polylight;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderEffects::has_show_bounds
 //       Access: Public
 //  Description: This function is provided as an optimization, to

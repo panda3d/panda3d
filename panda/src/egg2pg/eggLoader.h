@@ -52,6 +52,7 @@ class CollisionNode;
 class CollisionPlane;
 class CollisionPolygon;
 class PortalNode;
+class PolylightNode;
 
 ///////////////////////////////////////////////////////////////////
 //       Class : EggLoader
@@ -113,7 +114,7 @@ private:
   void set_portal_polygon(EggGroup *egg_group, PortalNode *pnode);
   EggPolygon *find_first_polygon(EggGroup *egg_group);
 
-  bool make_sphere(EggGroup *start_group, LPoint3f &center, float &radius);
+  bool make_sphere(EggGroup *start_group, LPoint3f &center, float &radius, Colorf &color);
 
   void make_collision_solids(EggGroup *start_group, EggGroup *egg_group,
                              CollisionNode *cnode);

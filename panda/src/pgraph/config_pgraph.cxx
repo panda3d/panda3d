@@ -62,6 +62,8 @@
 #include "pandaNode.h"
 #include "planeNode.h"
 #include "pointLight.h"
+#include "polylightNode.h"
+#include "polylightEffect.h"
 #include "portalNode.h"
 #include "portalClipper.h"
 #include "renderAttrib.h"
@@ -203,12 +205,15 @@ init_libpgraph() {
   LoaderFileTypeBam::init_type();
   MaterialAttrib::init_type();
   ModelNode::init_type();
+
   ModelRoot::init_type();
   NodePath::init_type();
   NodePathComponent::init_type();
   PandaNode::init_type();
   PlaneNode::init_type();
   PointLight::init_type();
+  PolylightNode::init_type();
+  PolylightEffect::init_type();
   PortalNode::init_type();
   PortalClipper::init_type();
   RenderAttrib::init_type();

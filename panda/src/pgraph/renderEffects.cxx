@@ -20,6 +20,7 @@
 #include "billboardEffect.h"
 #include "decalEffect.h"
 #include "compassEffect.h"
+#include "polylightEffect.h"
 #include "showBoundsEffect.h"
 #include "config_pgraph.h"
 #include "bamReader.h"
@@ -475,6 +476,23 @@ determine_compass() {
   }
   _flags |= F_checked_compass;
 }
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderEffects::determine_polylight
+//       Access: Private
+//  Description: This is the private implementation of has_polylight().
+////////////////////////////////////////////////////////////////////
+void RenderEffects::
+determine_polylight() {
+  const RenderEffect *effect = get_effect(PolylightEffect::get_class_type());
+  _polylight = (const PolylightEffect *)NULL;
+  if (effect != (const RenderEffect *)NULL) {
+    _polylight = DCAST(PolylightEffect, effect);
+  }
+  _flags |= F_checked_polylight;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderEffects::determine_show_bounds

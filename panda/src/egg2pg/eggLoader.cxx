@@ -42,6 +42,7 @@
 #include "sequenceNode.h"
 #include "switchNode.h"
 #include "portalNode.h"
+#include "polylightNode.h"
 #include "lodNode.h"
 #include "modelNode.h"
 #include "modelRoot.h"
@@ -1626,8 +1627,25 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     if (pnode->get_num_vertices() == 0) {
       egg2pg_cat.warning()
         << "Portal " << egg_group->get_name() << " has no vertices!\n";
-    }
+	}
 
+  } else if (egg_group->get_polylight_flag()) {
+    // Create a polylight instead of a regular polyset.
+    // use make_sphere to get the center, radius and color
+    //egg2pg_cat.debug() << "polylight node\n";
+    LPoint3f center;
+	Colorf color;
+	float radius;
+	
+	if(!make_sphere(egg_group,center,radius,color)) {
+      egg2pg_cat.warning()
+        << "Polylight " << egg_group->get_name() << " make_sphere failed!\n";
+	}
+	PolylightNode *pnode = new PolylightNode(egg_group->get_name(),
+	  center[0], center[1], center[2], color[0], color[1], color[2], 
+	  radius, "linear", false, "random");
+    node = pnode;
+    
   } else {
     // A normal group; just create a normal node, and traverse.
     node = new PandaNode(egg_group->get_name());
@@ -1832,7 +1850,7 @@ find_first_polygon(EggGroup *egg_group) {
 //               Polylight sphere. It could be used for other spheres.
 ////////////////////////////////////////////////////////////////////
 bool EggLoader::
-make_sphere(EggGroup *egg_group, LPoint3f &center, float &radius) {
+make_sphere(EggGroup *egg_group, LPoint3f &center, float &radius, Colorf &color) {
   bool success=false;
   EggGroup *geom_group = find_collision_geometry(egg_group);
   if (geom_group != (EggGroup *)NULL) {
@@ -1863,6 +1881,7 @@ make_sphere(EggGroup *egg_group, LPoint3f &center, float &radius) {
 
     if (num_vertices > 0) {
       d_center /= (double)num_vertices;
+	  //egg2pg_cat.debug() << "make_sphere d_center: " << d_center << "\n";
 
       LMatrix4d mat = egg_group->get_vertex_to_node();
       d_center = d_center * mat;
@@ -1872,13 +1891,23 @@ make_sphere(EggGroup *egg_group, LPoint3f &center, float &radius) {
       for (vi = vertices.begin(); vi != vertices.end(); ++vi) {
         EggVertex *vtx = (*vi);
         LPoint3d p3 = vtx->get_pos3();
-        LVector3d v = p3 * mat - d_center;
+		LVector3d v = p3 * mat - d_center;
         radius2 = max(radius2, v.length_squared());
       }
 
       center = LCAST(float,d_center);
-      float radius = sqrtf(radius2);
+      radius = sqrtf(radius2);
+	  //egg2pg_cat.debug() << "make_sphere radius: " << radius << "\n";
+	  vi = vertices.begin();
+	  EggVertex *clr_vtx = (*vi);
+	  if (clr_vtx->has_color()) {
+	    color = clr_vtx->get_color();
+	  }
+	  else {
+	    color = Colorf(1.0,1.0,1.0,1.0);
+	  }
       success = true;
+
     }
   }
   return success;
@@ -2015,7 +2044,8 @@ make_collision_sphere(EggGroup *egg_group, CollisionNode *cnode,
                       EggGroup::CollideFlags flags) {
   LPoint3f center;
   float radius;
-  if (make_sphere(egg_group, center, radius)) {
+  Colorf dummycolor;
+  if (make_sphere(egg_group, center, radius, dummycolor)) {
     CollisionSphere *cssphere =
       new CollisionSphere(center, radius);
     apply_collision_flags(cssphere, flags);
@@ -2479,6 +2509,9 @@ expand_object_types(EggGroup *egg_group, const pset<string> &expanded,
         // Ignorable group; stop here.
         return false;
       }
+      //else
+        //egg2pg_cat.debug() << "returned true\n";
+
     }
   }
 
@@ -2551,6 +2584,7 @@ do_expand_object_type(EggGroup *egg_group, const pset<string> &expanded,
       egg2pg_cat.error()
         << "Unknown ObjectType " << object_type << "\n";
       _error = true;
+      egg2pg_cat.debug() << "returning true\n";
       return true;
     }
   }
