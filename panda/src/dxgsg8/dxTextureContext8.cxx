@@ -34,7 +34,7 @@ static const DWORD g_LowByteMask = 0x000000FF;
 // these macros GET from PixelBuffer, (wont work from DDSurface)
 #define GET_RED_BYTE(PIXEL_DWORD)  ((BYTE)((PIXEL_DWORD >> 16) & g_LowByteMask))
 #define GET_BLUE_BYTE(PIXEL_DWORD) ((BYTE)((PIXEL_DWORD)       & g_LowByteMask))
-#else 
+#else
 // otherwise Panda uses int ABGR (big-endian RGBA order), (byte-order RGBA or RGB)
 #define GET_RED_BYTE(PIXEL_DWORD)  ((BYTE)(PIXEL_DWORD         & g_LowByteMask))
 #define GET_BLUE_BYTE(PIXEL_DWORD) ((BYTE)((PIXEL_DWORD >> 16) & g_LowByteMask))
@@ -385,7 +385,7 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
             #else
                 BYTE *pSrcWord = (BYTE *) pbuf;
                 BYTE *pDstWord;
-            
+
                 for(DWORD y=0; y<dwOrigHeight; y++,pDDSurfBytes += ddsd.lPitch) {
                     pDstWord = (BYTE*)pDDSurfBytes;
 
@@ -423,7 +423,7 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                         r = *(pSrcWord+2)   >> 3;
                     #else
                         r = *pSrcWord       >> 3;
-                        b = *(pSrcWord+2)   >> 3;                   
+                        b = *(pSrcWord+2)   >> 3;
                     #endif
                         g = *(pSrcWord+1)   >> 3;
 
@@ -455,7 +455,7 @@ HRESULT ConvertPixBuftoDDSurf(ConversionType ConvNeeded,BYTE *pbuf,LPDIRECTDRAWS
                         b = *(pSrcWord+2)   >> 3;
                     #endif
                      // code truncates 8 bit values to 5 bit
-                     *pDstWord = (r << 11)| (g << 5) | b;                   
+                     *pDstWord = (r << 11)| (g << 5) | b;
                     }
                 }
                 break;
@@ -769,7 +769,7 @@ HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface8 *pD3DSurf8,PixelB
     // writes out last line in DDSurf first in PixelBuf, so Y line order precedes inversely
 
     if(dxgsg_cat.is_debug()) {
-        dxgsg_cat.debug() << "ConvertD3DSurftoPixBuf converting " << D3DFormatStr(SurfDesc.Format) << "bpp DDSurf to " 
+        dxgsg_cat.debug() << "ConvertD3DSurftoPixBuf converting " << D3DFormatStr(SurfDesc.Format) << "bpp DDSurf to "
                           <<  dwNumComponents << "-channel panda PixelBuffer\n";
     }
 
@@ -781,25 +781,25 @@ HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface8 *pD3DSurf8,PixelB
         case D3DFMT_X8R8G8B8: {
             if(dwNumComponents==4) {
                     DWORD *pSrcWord;
-                   #ifdef PANDA_BGRA_ORDER 
+                   #ifdef PANDA_BGRA_ORDER
                     BYTE *pDstLine = (BYTE*)pDstWord;
                    #endif
-                   
+
                         pSurfBytes+=BytePitch*(dwYWindowOffset+dwCopyHeight-1);
                         for(DWORD y=0; y<dwCopyHeight; y++,pSurfBytes-=BytePitch) {
                             pSrcWord = ((DWORD*)pSurfBytes)+dwXWindowOffset;
-                            #ifdef PANDA_BGRA_ORDER 
+                            #ifdef PANDA_BGRA_ORDER
                                 memcpy(pDstLine,pSrcWord,BytePitch);
                                 pDstLine+=BytePitch;
                             #else
                                 for(DWORD x=0; x<dwCopyWidth; x++,pSrcWord++,pDstWord++) {
                                       DWORD dwPixel = *pSrcWord;
                                       BYTE r,b;
-                                    
+
                                       // DDsurf is in ARGB
                                       r=  (BYTE) ((dwPixel >> 16) & g_LowByteMask);
                                       b = (BYTE)  (dwPixel & g_LowByteMask);
-    
+
                                       // want to write out ABGR
                                       *pDstWord = (dwPixel & 0xFF00FF00) | (b<<16) | r;
                                 }
@@ -823,7 +823,7 @@ HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface8 *pD3DSurf8,PixelB
                         #ifdef PANDA_BGRA_ORDER
                             *pDstByte++ = b;
                             *pDstByte++ = g;
-                            *pDstByte++ = r;                            
+                            *pDstByte++ = r;
                         #else
                             *pDstByte++ = r;
                             *pDstByte++ = g;
@@ -849,10 +849,10 @@ HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface8 *pD3DSurf8,PixelB
                             g = *pSrcByte++;
                             r = *pSrcByte++;
 
-                            #ifdef PANDA_BGRA_ORDER                             
+                            #ifdef PANDA_BGRA_ORDER
                                *pDstWord = 0xFF000000 | (r << 16) | (g << 8) | b;
                             #else
-                               *pDstWord = 0xFF000000 | (b << 16) | (g << 8) | r;                           
+                               *pDstWord = 0xFF000000 | (b << 16) | (g << 8) | r;
                             #endif
                         }
                     }
@@ -860,7 +860,7 @@ HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface8 *pD3DSurf8,PixelB
                     // 24bpp pixbuf case (numComponents==3)
                     for(DWORD y=0; y<dwCopyHeight; y++,pSurfBytes-=BytePitch) {
                         pSrcByte = pSurfBytes+dwXWindowOffset*3*sizeof(BYTE);
-                     #ifdef PANDA_BGRA_ORDER 
+                     #ifdef PANDA_BGRA_ORDER
                         memcpy(pDstByte,pSrcByte,BytePitch);
                         pDstByte+=BytePitch;
                      #else
@@ -938,7 +938,7 @@ HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface8 *pD3DSurf8,PixelB
                             #ifdef PANDA_BGRA_ORDER
                               *pDstWord = 0xFF000000 | (r << 16) | (g << 8) | b;
                             #else
-                              *pDstWord = 0xFF000000 | (b << 16) | (g << 8) | r;   
+                              *pDstWord = 0xFF000000 | (b << 16) | (g << 8) | r;
                             #endif
                         }
                     }
@@ -961,7 +961,7 @@ HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface8 *pD3DSurf8,PixelB
                             #else
                                 *pDstByte++ = r;
                                 *pDstByte++ = g;
-                                *pDstByte++ = b;                            
+                                *pDstByte++ = b;
                             #endif
                         }
                     }
@@ -979,7 +979,7 @@ HRESULT ConvertD3DSurftoPixBuf(RECT &SrcRect,IDirect3DSurface8 *pD3DSurf8,PixelB
 
 //-----------------------------------------------------------------------------
 // Name: CreateTexture()
-// Desc: Use panda texture's pixelbuffer to create a texture for the specified device. 
+// Desc: Use panda texture's pixelbuffer to create a texture for the specified device.
 //       This code gets the attributes of the texture from the bitmap, creates the
 //       texture, and then copies the bitmap into the texture.
 //-----------------------------------------------------------------------------
@@ -1007,7 +1007,7 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
 
     DWORD dwOrigWidth  = (DWORD)pbuf->get_xsize();
     DWORD dwOrigHeight = (DWORD)pbuf->get_ysize();
-    
+
     if((pbuf->get_format() == PixelBuffer::F_luminance_alpha)||
        (pbuf->get_format() == PixelBuffer::F_luminance_alphamask) ||
        (pbuf->get_format() == PixelBuffer::F_luminance)) {
@@ -1027,7 +1027,7 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
     // figure out what 'D3DFMT' the PixelBuffer is in, so D3DXLoadSurfFromMem knows how to perform copy
 
     switch(cNumColorChannels) {
-        case 1:  
+        case 1:
             if(cNumAlphaBits>0)
                 _PixBufD3DFmt=D3DFMT_A8;
             else if(bNeedLuminance)
@@ -1133,13 +1133,13 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
 
     // handle each target bitdepth separately.  might be less confusing to reorg by cNumColorChannels (input type, rather
     // than desired 1st target)
-    switch(target_bpp) {  
+    switch(target_bpp) {
 
     // IMPORTANT NOTE:
     // target_bpp is REQUESTED bpp, not what exists in the pixbuf array (the pixbuf array contains cNumColorChannels*8bits)
 
         case 32:
-            if(!((cNumColorChannels==3) || (cNumColorChannels==4))) 
+            if(!((cNumColorChannels==3) || (cNumColorChannels==4)))
                 break; //bail
 
             if(!dx_force_16bpptextures) {
@@ -1214,7 +1214,7 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
                 assert(cNumColorChannels==2);
 
                 CHECK_FOR_FMT(A8L8,ConvLum16to16);
-                    
+
                 if(!dx_force_16bpptextures) {
                     CHECK_FOR_FMT(A8R8G8B8,ConvLum16to32);
                 }
@@ -1248,12 +1248,12 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
                     case 1:
                       // app specifically requests 1-5-5-5 F_rgba5 case, where you explicitly want 1-5-5-5 fmt, as opposed
                       // to F_rgbm, which could use 32bpp ARGB.  fail if this particular fmt not avail.
-                      assert(cNumColorChannels==4);  
+                      assert(cNumColorChannels==4);
                       CHECK_FOR_FMT(X1R5G5B5,Conv32to16_X555);
                       break;
                     case 4:
                       // app specifically requests 4-4-4-4 F_rgba4 case, as opposed to F_rgba, which could use 32bpp ARGB
-                      assert(cNumColorChannels==4);  
+                      assert(cNumColorChannels==4);
                       CHECK_FOR_FMT(A4R4G4B4,Conv32to16_4444);
                       break;
                     default: assert(0);  // problem in get_bits_per_pixel()?
@@ -1313,7 +1313,7 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
     ft =_tex->get_magfilter();
     if((ft!=Texture::FT_linear) && ft!=Texture::FT_nearest) {
     // mipmap settings make no sense for magfilter
-        if(ft==Texture::FT_nearest_mipmap_nearest)    
+        if(ft==Texture::FT_nearest_mipmap_nearest)
             ft=Texture::FT_nearest;
         else ft=Texture::FT_linear;
     }
@@ -1338,7 +1338,7 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
         if(dx_mipmap_everything) {  // debug toggle, ok to leave in since its just a creation cost
            _bHasMipMaps=TRUE;
            if(dxgsg_cat.is_spam()) {
-               if(ft != Texture::FT_linear_mipmap_linear) 
+               if(ft != Texture::FT_linear_mipmap_linear)
                    dxgsg_cat.spam() << "Forcing trilinear mipmapping on DX texture [" << _tex->get_name() << "]\n";
            }
            ft = Texture::FT_linear_mipmap_linear;
@@ -1356,11 +1356,11 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
 
 #define TRILINEAR_MIPMAP_TEXFILTERCAPS (D3DPTFILTERCAPS_MIPFLINEAR | D3DPTFILTERCAPS_MINFLINEAR)
 
-    // do any other filter type degradations necessary 
+    // do any other filter type degradations necessary
     switch(ft) {
         case Texture::FT_linear_mipmap_linear:
             if((scrn.d3dcaps.TextureFilterCaps & TRILINEAR_MIPMAP_TEXFILTERCAPS)!=TRILINEAR_MIPMAP_TEXFILTERCAPS) {
-               if(scrn.d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFLINEAR) 
+               if(scrn.d3dcaps.TextureFilterCaps & D3DPTFILTERCAPS_MINFLINEAR)
                    ft=Texture::FT_linear_mipmap_nearest;
                 else ft=Texture::FT_nearest_mipmap_nearest;  // if you cant do linear in a level, you probably cant do linear b/w levels, so just do nearest-all
             }
@@ -1406,7 +1406,7 @@ IDirect3DTexture8 *DXTextureContext::CreateTexture(DXScreenData &scrn) {
         if(dxgsg_cat.is_debug())
             dxgsg_cat.debug() << "CreateTexture: generating mipmaps for "<< _tex->get_name() << endl;
     } else cMipLevelCount=1;
-    
+
     if(FAILED( hr = scrn.pD3DDevice->CreateTexture(TargetWidth,TargetHeight,cMipLevelCount,0x0,
                                                    TargetPixFmt,D3DPOOL_MANAGED,&_pD3DTexture8) )) {
         dxgsg_cat.error() << "pD3DDevice->CreateTexture() failed!" << D3DERRORSTRING(hr);
@@ -1478,9 +1478,9 @@ FillDDSurfTexturePixels(void) {
     bool bUsingTempPixBuf=false;
 
     // need filtering if size changes, (also if bitdepth reduced (need dithering)??)
-    Lev0Filter = D3DX_FILTER_LINEAR | D3DX_FILTER_DITHER;
+    Lev0Filter = D3DX_FILTER_LINEAR ; //| D3DX_FILTER_DITHER;  //dithering looks ugly on i810 for 4444 textures
 
-    // D3DXLoadSurfaceFromMemory will load black luminance and we want full white, 
+    // D3DXLoadSurfaceFromMemory will load black luminance and we want full white,
     // so convert to explicit luminance-alpha format
     if(_PixBufD3DFmt==D3DFMT_A8) {
         // alloc buffer for explicit D3DFMT_A8L8
@@ -1493,8 +1493,8 @@ FillDDSurfTexturePixels(void) {
 
         USHORT *pOutPix=pTempPixBuf;
         BYTE *pSrcPix=pPixels;
-        for(UINT y=0;y<OrigHeight;y++) 
-          for(UINT x=0;x<OrigWidth;x++,pSrcPix++,pOutPix++) 
+        for(UINT y=0;y<OrigHeight;y++)
+          for(UINT x=0;x<OrigWidth;x++,pSrcPix++,pOutPix++)
               *pOutPix = ((*pSrcPix) << 8 ) | 0xFF;  // add full white, which is our interpretation of alpha-only (similar to default adding full opaque alpha 0xFF to RGB-only textures)
 
         SrcFormat=D3DFMT_A8L8;
@@ -1511,7 +1511,7 @@ FillDDSurfTexturePixels(void) {
     }
 
     if(_bHasMipMaps) {
-        if(!dx_use_triangle_mipgen_filter) 
+        if(!dx_use_triangle_mipgen_filter)
           MipFilterFlags = D3DX_FILTER_BOX;
          else MipFilterFlags = D3DX_FILTER_TRIANGLE;
 
@@ -1560,7 +1560,7 @@ DeleteTexture( ) {
 
     RELEASE(_pD3DSurf8,dxgsg,"texture",false);
  #endif
-*/ 
+*/
 }
 
 
