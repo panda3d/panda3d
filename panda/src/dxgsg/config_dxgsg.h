@@ -38,7 +38,6 @@ extern const bool link_tristrips;
 // debug flags
 extern bool dx_ignore_mipmaps;
 extern bool dx_mipmap_everything;
-extern bool dx_force_16bpp_screenbuffers;
 extern bool dx_show_transforms;
 
 #ifndef NDEBUG
