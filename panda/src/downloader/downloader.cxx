@@ -29,11 +29,17 @@
 ////////////////////////////////////////////////////////////////////
 // Defines
 ////////////////////////////////////////////////////////////////////
+enum send_status {
+  SS_error,
+  SS_timeout,
+  SS_success
+};
+
 enum receive_status {
   RS_error,
   RS_timeout,
   RS_success,
-  RS_eof,
+  RS_eof
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -356,12 +362,12 @@ process_request() {
 //       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
-bool Downloader::
+int Downloader::
 safe_send(int socket, const char *data, int length, long timeout) {
   if (length == 0) {
     downloader_cat.error()
       << "Downloader::safe_send() - requested 0 length send!" << endl;
-    return false;
+    return SS_error;
   }
   int bytes = 0;
   struct timeval tv;
@@ -376,11 +382,11 @@ safe_send(int socket, const char *data, int length, long timeout) {
       downloader_cat.error()
 	<< "Downloader::safe_send() - select timed out after: "
 	<< timeout << " seconds" << endl;
-      return false;
+      return SS_timeout;
     } else if (sret == -1) {
       downloader_cat.error()
 	<< "Downloader::safe_send() - error: " << strerror(errno) << endl;
-      return false;
+      return SS_error;
     }
     int ret = send(socket, data, length, 0);
     if (ret > 0)
@@ -388,10 +394,10 @@ safe_send(int socket, const char *data, int length, long timeout) {
     else {
       downloader_cat.error()
 	<< "Downloader::safe_send() - error: " << strerror(errno) << endl;
-      return false;
+      return SS_error;
     }
   }
-  return true;
+  return SS_success;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -497,8 +503,31 @@ download(const string &file_name, Filename file_dest,
   if (downloader_cat.is_debug())
     downloader_cat.debug()
       << "Downloader::download() - Sending request:\n" << request << endl;
-  if (safe_send(_socket, request.c_str(), outlen, 
-			(long)downloader_timeout) == false)
+  int send_ret = safe_send(_socket, request.c_str(), outlen, 
+			(long)downloader_timeout);
+
+  if (send_ret == SS_timeout) {
+    for (int sr = 0; sr < downloader_timeout_retries; sr++) {
+      send_ret = safe_send(_socket, request.c_str(), outlen,
+				(long)downloader_timeout);
+      if (send_ret != SS_timeout)
+        break;
+    }
+    if (send_ret == SS_timeout) {
+      // We've really timed out - throw an event
+      downloader_cat.error()
+        << "Downloader::download() - send timed out after: " 
+        << downloader_timeout_retries << " retries" << endl;
+      PT_Event timeout_event = new Event(event_name);
+      timeout_event->add_parameter(EventParameter((int)id));
+      timeout_event->add_parameter(EventParameter(0));
+      timeout_event->add_parameter(EventParameter(-1));
+      throw_event(timeout_event);
+      return false;
+    }
+  }
+
+  if (send_ret == SS_error)
     return false;
 
   // Loop at the requested frequency until the download completes

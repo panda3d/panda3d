@@ -88,7 +88,7 @@ private:
   bool parse_header(DownloadStatus &status);
   bool write_to_disk(DownloadStatus &status);
   bool connect_to_server(void);
-  bool safe_send(int socket, const char *data, int length, long timeout);
+  int safe_send(int socket, const char *data, int length, long timeout);
   int safe_receive(int socket, char *data, int length, long timeout, 
 								int &bytes);
   bool parse_http_response(const string &resp);
