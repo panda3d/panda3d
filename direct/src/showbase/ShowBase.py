@@ -265,6 +265,7 @@ class ShowBase(DirectObject.DirectObject):
         __builtins__["cpMgr"] = ConfigPageManager.getGlobalPtr()
         __builtins__["cvMgr"] = ConfigVariableManager.getGlobalPtr()
         __builtins__["__dev__"] = base.config.GetBool('want-dev', 0)
+        __builtins__["wantOtpServer"] = base.config.GetBool('want-otp-server', 0)
         if __debug__:
             __builtins__["deltaProfiler"] = DeltaProfiler.DeltaProfiler("ShowBase")
         __builtins__["onScreenDebug"] = OnScreenDebug.OnScreenDebug()

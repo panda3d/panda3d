@@ -1,5 +1,7 @@
 """MsgTypes module: contains distributed object message types"""
 
+OTP_SERVER_ROOT_DO_ID =         4007
+
 # 2 new params: passwd, char bool 0/1 1 = new account
 # 2 new return values: 129 = not found, 12 = bad passwd, 
 CLIENT_LOGIN =                                1
