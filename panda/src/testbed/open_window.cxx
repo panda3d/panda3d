@@ -101,7 +101,6 @@ main(int argc, char *argv[]) {
   camera->set_lens(lens);
   dr->set_camera(camera);
 
-
   // Window setup is complete.  Now we just need to make a scene graph
   // for the camera to render.
   PT_Node render_top = new NamedNode("render_top");

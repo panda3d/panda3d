@@ -1,5 +1,6 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m pystub
+
 #define LOCAL_LIBS \
     framework putil collide loader sgmanip chan text chancfg cull \
     pnmimage pnmimagetypes event effects graph gobj display \
@@ -17,7 +18,6 @@
 
 #define UNIX_SYS_LIBS m
 
-
 #begin bin_target
   #define TARGET demo
 
@@ -33,6 +33,15 @@
     open_window.cxx
 
   #define LOCAL_LIBS $[LOCAL_LIBS] pandagl pandadx
+#end test_bin_target
+
+#begin test_bin_target
+  #define TARGET demo_multimon
+
+  #define SOURCES \
+    demo.cxx
+
+  #define LOCAL_LIBS $[LOCAL_LIBS] pandadx framework_multimon
 #end test_bin_target
 
 #begin test_bin_target
