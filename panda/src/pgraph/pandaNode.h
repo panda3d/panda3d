@@ -76,7 +76,7 @@ PUBLISHED:
   virtual void write(ostream &out, int indent_level) const;
 
 private:
-  class DownConnection {
+  class EXPCL_PANDA DownConnection {
   public:
     INLINE DownConnection(PandaNode *child, int sort);
     INLINE bool operator < (const DownConnection &other) const;
@@ -99,7 +99,7 @@ private:
   typedef ov_set<PandaNode *> Up;
 
   // This is the data that must be cycled between pipeline stages.
-  class CData : public CycleData {
+  class EXPCL_PANDA CData : public CycleData {
   public:
     INLINE CData();
     CData(const CData &copy);
@@ -120,7 +120,7 @@ public:
   // children.  This saves a tiny bit of overhead between each step,
   // by keeping the PipelineCycler open for reading the whole time.
   // However, it does not protect you from self-modifying loops.
-  class Children {
+  class EXPCL_PANDA Children {
   public:
     INLINE Children(const PipelineCycler<CData> &cycler);
     INLINE Children(const Children &copy);
