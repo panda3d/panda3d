@@ -16,10 +16,17 @@ GuiListBox::ListFunctor::~ListFunctor(void) {
 }
 
 void GuiListBox::ListFunctor::doit(GuiBehavior* b) {
-  if (b == this->_lb->_up_arrow)
+  gui_cat->debug() << "in GuiListBox::ListFunctor::doit" << endl;
+  gui_cat->debug() << "b = 0x" << (void*)b << " (" << b->get_name() << ")"
+		   << endl;
+  if (b == this->_lb->_up_arrow) {
+    gui_cat->debug() << "scrolling up" << endl;
     this->_lb->scroll_up();
-  if (b == this->_lb->_down_arrow)
+  }
+  if (b == this->_lb->_down_arrow) {
+    gui_cat->debug() << "scrolling down" << endl;
     this->_lb->scroll_down();
+  }
 }
 
 void GuiListBox::recompute_frame(void) {
@@ -80,8 +87,9 @@ void GuiListBox::visible_patching(void) {
       _visible[0]->unmanage();
       _top_stack.push_back(_visible[0]);
       _visible[0] = _up_arrow;
-      if (_mgr != (GuiManager*)0L)
+      if (_mgr != (GuiManager*)0L) {
 	_up_arrow->manage(_mgr, *_eh);
+      }
     }
   }
 
@@ -106,10 +114,15 @@ void GuiListBox::visible_patching(void) {
       _visible[last]->unmanage();
       _bottom_stack.push_back(_visible[last]);
       _visible[last] = _down_arrow;
-      if (_mgr != (GuiManager*)0L)
+      if (_mgr != (GuiManager*)0L) {
 	_down_arrow->manage(_mgr, *_eh);
+      }
     }
   }
+
+  // and restart any behavior
+  if (_behavior_running)
+    this->reset_behavior();
 }
 
 GuiListBox::GuiListBox(const string& name, int N, GuiItem* up, GuiItem* down)
@@ -128,7 +141,7 @@ GuiListBox::~GuiListBox(void) {
   this->unmanage();
 }
 
-void GuiListBox::scroll_up(void) {
+void GuiListBox::scroll_down(void) {
   if (_bottom_stack.size() == 0)
     return;   // nothing to scroll
   // compute what the first and list item in the visible list are
@@ -156,7 +169,7 @@ void GuiListBox::scroll_up(void) {
   this->recompute_frame();
 }
 
-void GuiListBox::scroll_down(void) {
+void GuiListBox::scroll_up(void) {
   if (_top_stack.size() == 0)
     return;  // nothing to scroll
   // compute what the first and last item in the visible list are
@@ -311,6 +324,16 @@ void GuiListBox::set_pos(const LVector3f& p) {
 
 #include "guiButton.h"
 
+static void handle_scroll_up(CPT_Event, void* lb) {
+  GuiListBox* b = (GuiListBox*)lb;
+  b->scroll_up();
+}
+
+static void handle_scroll_down(CPT_Event, void* lb) {
+  GuiListBox* b = (GuiListBox*)lb;
+  b->scroll_down();
+}
+
 void GuiListBox::start_behavior(void) {
   GuiBehavior::start_behavior();
   if (_mgr == (GuiManager*)0L)
@@ -319,6 +342,7 @@ void GuiListBox::start_behavior(void) {
       _down_arrow->is_of_type(GuiButton::get_class_type())) {
     GuiButton* up = DCAST(GuiButton, _up_arrow);
     GuiButton* dn = DCAST(GuiButton, _down_arrow);
+    /*
     if (_up_functor != (GuiListBox::ListFunctor*)0L) {
       up->set_behavior_functor(_up_functor->get_prev());
       delete _up_functor;
@@ -326,7 +350,13 @@ void GuiListBox::start_behavior(void) {
     _up_functor = new GuiListBox::ListFunctor(this,
 					      up->get_behavior_functor());
     up->set_behavior_functor(_up_functor);
+    */
+    string ev = this->get_name();
+    ev += "-scroll-up";
+    up->set_behavior_event(ev);
     up->start_behavior();
+    _eh->add_hook(ev, handle_scroll_up, (void*)this);
+    /*
     if (_down_functor != (GuiListBox::ListFunctor*)0L) {
       dn->set_behavior_functor(_down_functor->get_prev());
       delete _down_functor;
@@ -334,7 +364,12 @@ void GuiListBox::start_behavior(void) {
     _down_functor = new GuiListBox::ListFunctor(this,
 						dn->get_behavior_functor());
     dn->set_behavior_functor(_down_functor);
+    */
+    ev = this->get_name();
+    ev += "-scroll-down";
+    dn->set_behavior_event(ev);
     dn->start_behavior();
+    _eh->add_hook(ev, handle_scroll_down, (void*)this);
   } else
     gui_cat->error() << "tried to run behavior on listbox '"
 		     << this->get_name()
@@ -345,6 +380,10 @@ void GuiListBox::stop_behavior(void) {
   GuiBehavior::stop_behavior();
   if (_mgr == (GuiManager*)0L)
     return;
+  string ev = this->get_name();
+  _eh->remove_hook(ev + "-scroll-up", handle_scroll_up, (void*)this);
+  _eh->remove_hook(ev + "-scroll-down", handle_scroll_down, (void*)this);
+  /*
   if (_up_functor != (GuiListBox::ListFunctor*)0L) {
     GuiButton* up = DCAST(GuiButton, _up_arrow);
     up->set_behavior_functor(_up_functor->get_prev());
@@ -359,12 +398,14 @@ void GuiListBox::stop_behavior(void) {
     _down_functor = (GuiListBox::ListFunctor*)0L;
     dn->stop_behavior();
   }
+  */
 }
 
 void GuiListBox::reset_behavior(void) {
   GuiBehavior::reset_behavior();
   if (_mgr == (GuiManager*)0L)
     return;
+  /*
   if (_up_functor != (GuiListBox::ListFunctor*)0L) {
     GuiButton* up = DCAST(GuiButton, _up_arrow);
     up->reset_behavior();
@@ -372,6 +413,20 @@ void GuiListBox::reset_behavior(void) {
   if (_down_functor != (GuiListBox::ListFunctor*)0L) {
     GuiButton* dn = DCAST(GuiButton, _down_arrow);
     dn->reset_behavior();
+  }
+  */
+  string ev = this->get_name();
+  _eh->add_hook(ev + "-scroll-up", handle_scroll_up, (void*)this);
+  _eh->add_hook(ev + "-scroll-down", handle_scroll_down, (void*)this);
+  if (_up_arrow->is_of_type(GuiButton::get_class_type())) {
+    GuiButton* up = DCAST(GuiButton, _up_arrow);
+    up->start_behavior();
+    up->set_behavior_event(ev + "-scroll-up");
+  }
+  if (_down_arrow->is_of_type(GuiButton::get_class_type())) {
+    GuiButton* down = DCAST(GuiButton, _down_arrow);
+    down->start_behavior();
+    down->set_behavior_event(ev + "-scroll-down");
   }
 }
 

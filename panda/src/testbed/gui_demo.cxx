@@ -48,6 +48,7 @@
 #include <guiFrame.h>
 #include <guiSign.h>
 #include <guiListBox.h>
+#include <guiChooser.h>
 
 //From framework
 extern PT(GeomNode) geomnode;
@@ -679,7 +680,9 @@ static void test13(GuiManager* mgr, Node* font) {
   GuiLabel* dl2 = GuiLabel::make_simple_text_label("dndn", font);
   GuiLabel* dl3 = GuiLabel::make_simple_text_label("dndn", font);
   GuiButton* db = new GuiButton("down_arrow", dl1, dl2, dl3);
-  dl->set_scale(0.1);
+  db->set_scale(0.1);
+  ub->set_behavior_event("demo-event-thing");
+  db->set_behavior_event("demo-event-thing");
   lb1 = new GuiListBox("list_box", 4, ub, db);
   GuiLabel* l1 = GuiLabel::make_simple_text_label("hyena", font);
   GuiSign* s1 = new GuiSign("hyena", l1);
@@ -736,6 +739,78 @@ static void test13(GuiManager* mgr, Node* font) {
   lb1->start_behavior();
 }
 
+PT(GuiChooser) ch1;
+
+static void test14(GuiManager* mgr, Node* font) {
+  GuiLabel* nl1 = GuiLabel::make_simple_text_label("next", font);
+  GuiLabel* nl2 = GuiLabel::make_simple_text_label("next", font);
+  GuiLabel* nl3 = GuiLabel::make_simple_text_label("next", font);
+  GuiButton* nb = new GuiButton("next_button", nl1, nl2, nl3);
+  nb->set_scale(0.1);
+  nb->set_pos(LVector3f::rfu(0.25, 0., -0.25));
+  GuiLabel* pl1 = GuiLabel::make_simple_text_label("prev", font);
+  GuiLabel* pl2 = GuiLabel::make_simple_text_label("prev", font);
+  GuiLabel* pl3 = GuiLabel::make_simple_text_label("prev", font);
+  GuiButton* pb = new GuiButton("prev_button", pl1, pl2, pl3);
+  pb->set_scale(0.1);
+  pb->set_pos(LVector3f::rfu(-0.25, 0., -0.25));
+  nb->set_behavior_event("demo-event-thing");
+  pb->set_behavior_event("demo-event-thing");
+  ch1 = new GuiChooser("chooser", pb, nb);
+  GuiLabel* l1 = GuiLabel::make_simple_text_label("hyena", font);
+  GuiSign* s1 = new GuiSign("hyena", l1);
+  s1->set_scale(0.1);
+  GuiLabel* l2 = GuiLabel::make_simple_text_label("dingo", font);
+  GuiSign* s2 = new GuiSign("dingo", l2);
+  s2->set_scale(0.1);
+  GuiLabel* l3 = GuiLabel::make_simple_text_label("jackal", font);
+  GuiSign* s3 = new GuiSign("jackal", l3);
+  s3->set_scale(0.1);
+  GuiLabel* l4 = GuiLabel::make_simple_text_label("wolf", font);
+  GuiSign* s4 = new GuiSign("wolf", l4);
+  s4->set_scale(0.1);
+  GuiLabel* l5 = GuiLabel::make_simple_text_label("fox", font);
+  GuiSign* s5 = new GuiSign("fox", l5);
+  s5->set_scale(0.1);
+  float w, w1, w2;
+  w1 = l1->get_width();
+  w2 = l2->get_width();
+  w = (w1>w2)?w1:w2;
+  w2 = l3->get_width();
+  w = (w>w2)?w:w2;
+  w2 = l4->get_width();
+  w = (w>w2)?w:w2;
+  w2 = l5->get_width();
+  w = (w>w2)?w:w2;
+  l1->set_width(w);
+  l2->set_width(w);
+  l3->set_width(w);
+  l4->set_width(w);
+  l5->set_width(w);
+  nl1->set_background_color(0., 0., 0., 1.);
+  nl2->set_background_color(0., 0., 0., 1.);
+  nl3->set_background_color(0., 0., 0., 1.);
+  nl2->set_foreground_color(1., 0., 0., 1.);
+  nl3->set_foreground_color(1., 1., 1., 0.5);
+  pl1->set_background_color(0., 0., 0., 1.);
+  pl2->set_background_color(0., 0., 0., 1.);
+  pl3->set_background_color(0., 0., 0., 1.);
+  pl2->set_foreground_color(1., 0., 0., 1.);
+  pl3->set_foreground_color(1., 1., 1., 0.5);
+  l1->set_background_color(0., 0., 0., 1.);
+  l2->set_background_color(0., 0., 0., 1.);
+  l3->set_background_color(0., 0., 0., 1.);
+  l4->set_background_color(0., 0., 0., 1.);
+  l5->set_background_color(0., 0., 0., 1.);
+  ch1->add_item(s1);
+  ch1->add_item(s2);
+  ch1->add_item(s3);
+  ch1->add_item(s4);
+  ch1->add_item(s5);
+  ch1->thaw();
+  ch1->manage(mgr, event_handler);
+}
+
 static void setup_gui(void) {
   GuiManager* mgr = GuiManager::get_ptr(main_win, mak, (Node*)0L);
   PT_Node font = ModelPool::load_model("ttf-comic");
@@ -767,7 +842,9 @@ static void setup_gui(void) {
   // test 12
   //  test12(mgr, font);
   // test 13
-  test13(mgr, font);
+  //  test13(mgr, font);
+  // test 14
+  test14(mgr, font);
 }
 
 static void event_2(CPT_Event) {
@@ -847,16 +924,30 @@ static void event_3(CPT_Event) {
 }
 */
 
+/*
 // for test 11, 13
 static void event_3(CPT_Event) {
   lb1->scroll_up();
   cout << *lb1;
 }
+*/
 
+// for test 14
+static void event_3(CPT_Event) {
+  ch1->move_prev();
+}
+
+/*
 // for test11, 13
 static void event_4(CPT_Event) {
   lb1->scroll_down();
   cout << *lb1;
+}
+*/
+
+// for test 14
+static void event_4(CPT_Event) {
+  ch1->move_next();
 }
 
 static void event_demo(CPT_Event) {
@@ -868,9 +959,9 @@ void gui_keys(EventHandler&) {
   have_dlight = true;
 
   event_handler.add_hook("2", event_2);
-  // for tests 7-11, 13
+  // for tests 7-11, 13-14
   event_handler.add_hook("3", event_3);
-  // for test 11, 13
+  // for test 11, 13-14
   event_handler.add_hook("4", event_4);
   event_handler.add_hook("demo-event-thing", event_demo);
 }

@@ -39,9 +39,11 @@ void GuiChooser::move_prev(void) {
   if (_curr == -1)
     return;
   int tmp = _curr - 1;
-  if (_loop) {
-    if (tmp < 0)
+  if (tmp < 0) {
+    if (_loop)
       tmp += _items.size();
+    else
+      return;
   }
   if (_mgr != (GuiManager*)0L) {
     _items[_curr]->unmanage();
@@ -63,10 +65,12 @@ void GuiChooser::move_next(void) {
   if (_curr == -1)
     return;
   int tmp = _curr + 1;
-  if (_loop) {
-    int foo = _items.size();
-    if (tmp == foo)
+  int foo = _items.size();
+  if (tmp == foo) {
+    if (_loop)
       tmp = 0;
+    else
+      return;
   }
   if (_mgr != (GuiManager*)0L) {
     _items[_curr]->unmanage();
@@ -92,16 +96,24 @@ void GuiChooser::add_item(GuiItem* item) {
 int GuiChooser::freeze(void) {
   int result = 0;
 
-  if (_curr != -1)
-    result = _items[_curr]->freeze();
+  _prev_button->freeze();
+  _next_button->freeze();
+  for (ItemVector::iterator i=_items.begin(); i!=_items.end(); ++i) {
+    int count = (*i)->freeze();
+    result = max(result, count);
+  }
   return result;
 }
 
 int GuiChooser::thaw(void) {
   int result = 0;
 
-  if (_curr != -1)
-    result = _items[_curr]->thaw();
+  _prev_button->thaw();
+  _next_button->thaw();
+  for (ItemVector::iterator i=_items.begin(); i!=_items.end(); ++i) {
+    int count = (*i)->thaw();
+    result = max(result, count);
+  }
   return result;
 }
 
@@ -109,8 +121,17 @@ void GuiChooser::manage(GuiManager* mgr, EventHandler& eh) {
   if (_mgr == (GuiManager*)0L) {
     _prev_button->manage(mgr, eh);
     _next_button->manage(mgr, eh);
-    if (_curr != -1)
+    if (_curr != -1) {
       _items[_curr]->manage(mgr, eh);
+      if (_curr == 0)
+	_prev_button->inactive();
+      int foo = _items.size() - 1;
+      if (_curr == foo)
+	_next_button->inactive();
+    } else {
+      _prev_button->inactive();
+      _next_button->inactive();
+    }
     GuiBehavior::manage(mgr, eh);
   } else
     gui_cat->warning() << "tried to manage chooser (0x" << (void*)this
