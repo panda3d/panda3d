@@ -539,7 +539,7 @@ config_initialized() {
         set_ostream_ptr(&cerr, false);
 
       } else {
-        Filename filename = notify_output;
+        Filename filename = notify_output.get_value();
         filename.set_text();
         ofstream *out = new ofstream;
         if (!filename.open_write(*out)) {
