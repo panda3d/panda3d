@@ -1,5 +1,5 @@
-// Filename: config_event.cxx
-// Created by:  drose (14Dec99)
+// Filename: linmath_events.cxx
+// Created by:  drose (12Mar02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,21 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_event.h"
-#include "event.h"
-#include "eventHandler.h"
-#include "eventParameter.h"
+#include "linmath_events.h"
 
-#include <dconfig.h>
-
-Configure(config_event);
-NotifyCategoryDef(event, "");
-
-ConfigureFn(config_event) {
-  Event::init_type();
-  EventHandler::init_type();
-  EventStoreInt::init_type("EventStoreInt");
-  EventStoreDouble::init_type("EventStoreDouble");
-  EventStoreString::init_type("EventStoreString");
-}
-
+// Tell GCC that we'll take care of the instantiation explicitly here.
+#ifdef __GNUC__
+#pragma implementation
+#endif

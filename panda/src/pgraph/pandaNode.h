@@ -144,6 +144,8 @@ protected:
   // Local to PandaNode
   virtual BoundingVolume *recompute_internal_bound();
   INLINE void changed_internal_bound();
+  virtual void parents_changed();
+  virtual void children_changed();
 
   // This is the bounding volume around the contents of the node
   // itself (without including all of the node's children).

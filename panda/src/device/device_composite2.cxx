@@ -4,6 +4,7 @@
 #include "buttonNode.cxx"
 #include "dialNode.cxx"
 #include "mouse.cxx"
+#include "mouseAndKeyboard.cxx"
 #include "trackerData.cxx"
 #include "trackerNode.cxx"
 #include "virtualMouse.cxx"

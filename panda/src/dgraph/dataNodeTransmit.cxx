@@ -1,5 +1,5 @@
-// Filename: config_event.cxx
-// Created by:  drose (14Dec99)
+// Filename: dataNodeTransmit.cxx
+// Created by:  drose (11Mar02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,21 +16,18 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_event.h"
-#include "event.h"
-#include "eventHandler.h"
-#include "eventParameter.h"
+#include "dataNodeTransmit.h"
 
-#include <dconfig.h>
-
-Configure(config_event);
-NotifyCategoryDef(event, "");
-
-ConfigureFn(config_event) {
-  Event::init_type();
-  EventHandler::init_type();
-  EventStoreInt::init_type("EventStoreInt");
-  EventStoreDouble::init_type("EventStoreDouble");
-  EventStoreString::init_type("EventStoreString");
+////////////////////////////////////////////////////////////////////
+//     Function: DataNodeTransmit::slot_data
+//       Access: Private
+//  Description: Ensures that the given index number exists in the
+//               data array.
+////////////////////////////////////////////////////////////////////
+void DataNodeTransmit::
+slot_data(int index) {
+  nassertv(index < 1000);
+  while (index >= (int)_data.size()) {
+    _data.push_back(EventParameter());
+  }
 }
-

@@ -510,6 +510,10 @@ add_child(PandaNode *child_node, int sort) {
 
   // Mark the bounding volumes stale.
   force_bound_stale();
+
+  // Call callback hooks.
+  children_changed();
+  child_node->parents_changed();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -519,11 +523,12 @@ add_child(PandaNode *child_node, int sort) {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 remove_child(int n) {
+  PT(PandaNode) child_node;
   {
     CDWriter cdata(_cycler);
     nassertv(n >= 0 && n < (int)cdata->_down.size());
     
-    PT(PandaNode) child_node = cdata->_down[n].get_child();
+    child_node = cdata->_down[n].get_child();
     CDWriter cdata_child(child_node->_cycler);
     
     cdata->_down.erase(cdata->_down.begin() + n);
@@ -562,6 +567,10 @@ remove_child(int n) {
 
   // Mark the bounding volumes stale.
   force_bound_stale();
+
+  // Call callback hooks.
+  children_changed();
+  child_node->parents_changed();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -574,9 +583,9 @@ remove_child(int n) {
 bool PandaNode::
 remove_child(PandaNode *child_node) {
   // Ensure the child_node is not deleted while we do this.
-  {
-    PT(PandaNode) keep_child = child_node;
+  PT(PandaNode) keep_child = child_node;
     
+  {
     CDWriter cdata(_cycler);
     CDWriter cdata_child(child_node->_cycler);
     
@@ -626,6 +635,10 @@ remove_child(PandaNode *child_node) {
 
   // Mark the bounding volumes stale.
   force_bound_stale();
+
+  // Call callback hooks.
+  children_changed();
+  child_node->parents_changed();
   return true;
 }
 
@@ -641,36 +654,40 @@ remove_all_children() {
     Down::iterator ci;
     for (ci = cdata->_down.begin(); ci != cdata->_down.end(); ++ci) {
       PT(PandaNode) child_node = (*ci).get_child();
-      CDWriter cdata_child(child_node->_cycler);
-      cdata_child->_up.erase(UpConnection(this));
+      {
+        CDWriter cdata_child(child_node->_cycler);
+        cdata_child->_up.erase(UpConnection(this));
       
-      // Now sever any qpNodePathComponents on the child that reference
-      // this node.  If we have multiple of these, we have to collapse
-      // them together (see above).
-      qpNodePathComponent *collapsed = (qpNodePathComponent *)NULL;
-      Chains::iterator ci;
-      ci = cdata_child->_chains.begin();
-      while (ci != cdata_child->_chains.end()) {
-        Chains::iterator cnext = ci;
-        ++cnext;
-        if (!(*ci)->is_top_node() && (*ci)->get_next()->get_node() == this) {
-          if (collapsed == (qpNodePathComponent *)NULL) {
-            (*ci)->set_top_node();
-            collapsed = (*ci);
-          } else {
-            (*ci)->collapse_with(collapsed);
-            cdata_child->_chains.erase(ci);
+        // Now sever any qpNodePathComponents on the child that
+        // reference this node.  If we have multiple of these, we have
+        // to collapse them together (see above).
+        qpNodePathComponent *collapsed = (qpNodePathComponent *)NULL;
+        Chains::iterator ci;
+        ci = cdata_child->_chains.begin();
+        while (ci != cdata_child->_chains.end()) {
+          Chains::iterator cnext = ci;
+          ++cnext;
+          if (!(*ci)->is_top_node() && (*ci)->get_next()->get_node() == this) {
+            if (collapsed == (qpNodePathComponent *)NULL) {
+              (*ci)->set_top_node();
+              collapsed = (*ci);
+            } else {
+              (*ci)->collapse_with(collapsed);
+              cdata_child->_chains.erase(ci);
+            }
           }
+          ci = cnext;
         }
-        ci = cnext;
+        
+        child_node->fix_chain_lengths(cdata_child);
       }
-      
-      child_node->fix_chain_lengths(cdata_child);
+      child_node->parents_changed();
     }
   }
 
   // Mark the bounding volumes stale.
   force_bound_stale();
+  children_changed();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -814,6 +831,32 @@ recompute_internal_bound() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::parents_changed
+//       Access: Protected, Virtual
+//  Description: Called after a scene graph update that either adds or
+//               remove parents from this node, this just provides a
+//               hook for derived PandaNode objects that need to
+//               update themselves based on the set of parents the
+//               node has.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+parents_changed() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::children_changed
+//       Access: Protected, Virtual
+//  Description: Called after a scene graph update that either adds or
+//               remove children from this node, this just provides a
+//               hook for derived PandaNode objects that need to
+//               update themselves based on the set of children the
+//               node has.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+children_changed() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::attach
 //       Access: Private, Static
 //  Description: Creates a new parent-child relationship, and returns
@@ -900,6 +943,10 @@ detach(qpNodePathComponent *child) {
 
   // Mark the bounding volumes stale.
   parent_node->force_bound_stale();
+
+  // Call callback hooks.
+  parent_node->children_changed();
+  child_node->parents_changed();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -936,6 +983,10 @@ reparent(qpNodePathComponent *new_parent, qpNodePathComponent *child, int sort) 
 
   // Mark the bounding volumes stale.
   parent_node->force_bound_stale();
+
+  // Call callback hooks.
+  parent_node->children_changed();
+  child_node->parents_changed();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -21,12 +21,15 @@
 #include "dataValve.h"
 #include "driveInterface.h"
 #include "buttonThrower.h"
+#include "qpbuttonThrower.h"
 #include "mouseWatcher.h"
 #include "mouseWatcherGroup.h"
 #include "mouseWatcherRegion.h"
 #include "planarSlider.h"
 #include "trackball.h"
+#include "qptrackball.h"
 #include "transform2sg.h"
+#include "qptransform2sg.h"
 
 #include <dconfig.h>
 
@@ -49,10 +52,13 @@ ConfigureFn(config_tform) {
   DataValve::init_type();
   DriveInterface::init_type();
   ButtonThrower::init_type();
+  qpButtonThrower::init_type();
   MouseWatcher::init_type();
   MouseWatcherGroup::init_type();
   MouseWatcherRegion::init_type();
   PlanarSlider::init_type();
   Trackball::init_type();
+  qpTrackball::init_type();
   Transform2SG::init_type();
+  qpTransform2SG::init_type();
 }

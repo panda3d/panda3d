@@ -1,5 +1,5 @@
-// Filename: config_event.cxx
-// Created by:  drose (14Dec99)
+// Filename: qpdataGraphTraverser.I
+// Created by:  drose (11Mar02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,21 +16,14 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_event.h"
-#include "event.h"
-#include "eventHandler.h"
-#include "eventParameter.h"
 
-#include <dconfig.h>
-
-Configure(config_event);
-NotifyCategoryDef(event, "");
-
-ConfigureFn(config_event) {
-  Event::init_type();
-  EventHandler::init_type();
-  EventStoreInt::init_type("EventStoreInt");
-  EventStoreDouble::init_type("EventStoreDouble");
-  EventStoreString::init_type("EventStoreString");
+////////////////////////////////////////////////////////////////////
+//     Function: qpDataGraphTraverser::CollectedData::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE qpDataGraphTraverser::CollectedData::
+CollectedData() :
+  _num_parents(0)
+{
 }
-

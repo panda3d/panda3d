@@ -28,6 +28,7 @@
 #include "clientTrackerDevice.h"
 #include "dialNode.h"
 #include "mouse.h"
+#include "mouseAndKeyboard.h"
 #include "trackerNode.h"
 #include "virtualMouse.h"
 
@@ -68,6 +69,7 @@ init_libdevice() {
   ClientTrackerDevice::init_type();
   DialNode::init_type();
   MouseAndKeyboard::init_type();
+  qpMouseAndKeyboard::init_type();
   TrackerNode::init_type();
   VirtualMouse::init_type();
 }

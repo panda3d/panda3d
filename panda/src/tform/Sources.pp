@@ -10,26 +10,41 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx 
 
   #define SOURCES  \
-    buttonThrower.h config_tform.h dataValve.I dataValve.h  \
+    buttonThrower.h \
+    qpbuttonThrower.h \
+    config_tform.h dataValve.I dataValve.h  \
     driveInterface.I driveInterface.h mouseWatcher.I  \
     mouseWatcher.h mouseWatcherGroup.h \
     mouseWatcherParameter.I mouseWatcherParameter.h  \
     mouseWatcherRegion.I mouseWatcherRegion.h  \
-    planarSlider.h trackball.h transform2sg.h  
+    planarSlider.h trackball.h \
+    qptrackball.h \
+    transform2sg.h \
+    qptransform2sg.h  
      
   #define INCLUDED_SOURCES  \
-    buttonThrower.cxx config_tform.cxx dataValve.cxx  \
+    buttonThrower.cxx \
+    qpbuttonThrower.cxx \
+    config_tform.cxx dataValve.cxx  \
     driveInterface.cxx mouseWatcher.cxx mouseWatcherGroup.cxx \
     mouseWatcherParameter.cxx mouseWatcherRegion.cxx  \
-    planarSlider.cxx trackball.cxx transform2sg.cxx 
+    planarSlider.cxx trackball.cxx \
+    qptrackball.cxx \
+    transform2sg.cxx \
+    qptransform2sg.cxx 
 
   #define INSTALL_HEADERS \
-    buttonThrower.h dataValve.I dataValve.h \
+    buttonThrower.h \
+    qpbuttonThrower.h \
+    dataValve.I dataValve.h \
     driveInterface.I driveInterface.h mouseWatcher.I mouseWatcher.h \
     mouseWatcherGroup.h \
     mouseWatcherParameter.I mouseWatcherParameter.h \
     mouseWatcherRegion.I mouseWatcherRegion.h \
-    planarSlider.h trackball.h transform2sg.h
+    planarSlider.h trackball.h \
+    qptrackball.h \
+    transform2sg.h \
+    qptransform2sg.h
 
   #define IGATESCAN all
 

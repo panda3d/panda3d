@@ -3,6 +3,7 @@
 #include "bamWriter.cxx"
 #include "bitMask.cxx"
 #include "buttonEvent.cxx"
+#include "buttonEventList.cxx"
 #include "buttonHandle.cxx"
 #include "buttonRegistry.cxx"
 #include "config_util.cxx"

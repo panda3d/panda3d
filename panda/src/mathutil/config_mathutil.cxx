@@ -24,7 +24,8 @@
 #include "boundingSphere.h"
 #include "boundingHexahedron.h"
 #include "boundingLine.h"
-#include <dconfig.h>
+#include "linmath_events.h"
+#include "dconfig.h"
 
 Configure(config_mathutil);
 NotifyCategoryDef(mathutil, "");
@@ -41,5 +42,8 @@ ConfigureFn(config_mathutil) {
   GeometricBoundingVolume::init_type();
   OmniBoundingVolume::init_type();
   BoundingLine::init_type();
+  EventStoreVec2::init_type("EventStoreVec2");
+  EventStoreVec3::init_type("EventStoreVec3");
+  EventStoreMat4::init_type("EventStoreMat4");
 }
 

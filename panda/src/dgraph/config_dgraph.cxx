@@ -18,6 +18,7 @@
 
 #include "config_dgraph.h"
 #include "dataNode.h"
+#include "qpdataNode.h"
 #include "dataRelation.h"
 #include "intDataTransition.h"
 #include "doubleDataTransition.h"
@@ -32,6 +33,7 @@ NotifyCategoryDef(dgraph, "");
 
 ConfigureFn(config_dgraph) {
   DataNode::init_type();
+  qpDataNode::init_type();
   DataRelation::init_type();
   IntDataTransition::init_type();
   DoubleDataTransition::init_type();

@@ -10,7 +10,9 @@
   #define SOURCES \
     bam.h bamReader.I bamReader.N bamReader.h bamReaderParam.I \
     bamReaderParam.h bamWriter.I bamWriter.h bitMask.I \
-    bitMask.h buttonEvent.I buttonEvent.h buttonHandle.I \
+    bitMask.h buttonEvent.I buttonEvent.h \
+    buttonEventList.I buttonEventList.h \
+    buttonHandle.I \
     buttonHandle.h buttonRegistry.I buttonRegistry.h \
     collideMask.h \
     compareTo.I compareTo.h \
@@ -50,7 +52,9 @@
     
  #define INCLUDED_SOURCES \
     bamReader.cxx bamReaderParam.cxx bamWriter.cxx bitMask.cxx \
-    buttonEvent.cxx buttonHandle.cxx buttonRegistry.cxx \
+    buttonEvent.cxx \
+    buttonEventList.cxx \
+    buttonHandle.cxx buttonRegistry.cxx \
     config_util.cxx configurable.cxx \
     cycleData.cxx \
     cycleDataReader.cxx \
@@ -78,7 +82,9 @@
   #define INSTALL_HEADERS \
     bam.h bamReader.I bamReader.h bamReaderParam.I bamReaderParam.h \
     bamWriter.I bamWriter.h bitMask.I bitMask.h buttonEvent.I \
-    buttonEvent.h buttonHandle.I buttonHandle.h buttonRegistry.I \
+    buttonEvent.h \
+    buttonEventList.I buttonEventList.h \
+    buttonHandle.I buttonHandle.h buttonRegistry.I \
     buttonRegistry.h collideMask.h \
     compareTo.I compareTo.h \
     config_util.h configurable.h factory.I factory.h \

@@ -22,6 +22,16 @@ template<class Type>
 TypeHandle EventStoreValue<Type>::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EventParameter::Default constructor
+//       Access: Public
+//  Description: Defines an EventParameter that stores nothing: the
+//               "empty" parameter.
+////////////////////////////////////////////////////////////////////
+INLINE EventParameter::
+EventParameter() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::Pointer constructor
 //       Access: Public
 //  Description: Defines an EventParameter that stores a pointer to
@@ -62,18 +72,6 @@ EventParameter(const string &value) : _ptr(new EventStoreString(value)) { }
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EventParameter::LVecBase3f constructor
-//       Access: Public
-//  Description: Defines an EventParameter that stores a
-//               three-component numeric value.
-////////////////////////////////////////////////////////////////////
-#if 0
-INLINE EventParameter::
-EventParameter(const LVecBase3f &value) : _ptr(new EventStoreVec3(value)) { }
-#endif
-
-
-////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::Copy constructor
 //       Access: Public
 //  Description:
@@ -94,6 +92,17 @@ operator = (const EventParameter &other) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EventParameter::is_empty
+//       Access: Public
+//  Description: Returns true if the EventParameter is the empty
+//               parameter, storing nothing, or false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool EventParameter::
+is_empty() const {
+  return (_ptr == (TypedReferenceCount *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::is_int
 //       Access: Public
 //  Description: Returns true if the EventParameter stores an integer
@@ -101,7 +110,9 @@ operator = (const EventParameter &other) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool EventParameter::
 is_int() const {
-  nassertr(_ptr != (TypedReferenceCount *)NULL, false);
+  if (is_empty()) {
+    return false;
+  }
   return _ptr->is_of_type(EventStoreInt::get_class_type());
 }
 
@@ -129,7 +140,9 @@ get_int_value() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool EventParameter::
 is_double() const {
-  nassertr(_ptr != (TypedReferenceCount *)NULL, false);
+  if (is_empty()) {
+    return false;
+  }
   return _ptr->is_of_type(EventStoreDouble::get_class_type());
 }
 
@@ -154,7 +167,9 @@ get_double_value() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool EventParameter::
 is_string() const {
-  nassertr(_ptr != (TypedReferenceCount *)NULL, false);
+  if (is_empty()) {
+    return false;
+  }
   return _ptr->is_of_type(EventStoreString::get_class_type());
 }
 
@@ -170,34 +185,6 @@ get_string_value() const {
   nassertr(is_string(), "");
   return ((const EventStoreString *)_ptr.p())->get_value();
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: EventParameter::is_vec3
-//       Access: Public
-//  Description: Returns true if the EventParameter stores a
-//               three-component vector value, false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool EventParameter::
-is_vec3() const {
-  nassertr(_ptr != (TypedReferenceCount *)NULL, false);
-  return false;
-//  return _ptr->is_of_type(EventStoreVec3::get_class_type());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: EventParameter::get_vec3_value
-//       Access: Public
-//  Description: Retrieves the value stored in the EventParameter.  It
-//               is only valid to call this if is_vec3() has already
-//               returned true.
-////////////////////////////////////////////////////////////////////
-#if 0
-INLINE LVecBase3f EventParameter::
-get_vec3_value() const {
-  nassertr(is_vec3(), LVecBase3f(0.0, 0.0, 0.0));
-  return ((const EventStoreVec3 *)_ptr.p())->get_value();
-}
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EventParameter::get_ptr
@@ -234,7 +221,7 @@ set_value(const Type &value) {
 //  Description: Retrieves the value stored in the parameter.
 ////////////////////////////////////////////////////////////////////
 template<class Type>
-INLINE Type EventStoreValue<Type>::
+INLINE const Type &EventStoreValue<Type>::
 get_value() const {
   return _value;
 }

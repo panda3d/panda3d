@@ -19,14 +19,12 @@
 #ifndef EVENTPARAMETER_H
 #define EVENTPARAMETER_H
 
-#include <pandabase.h>
+#include "pandabase.h"
 
-#include <typedef.h>
-#include <typedObject.h>
-#include <typedReferenceCount.h>
-#include <pointerTo.h>
-//#include <luse.h>
-#include <string>
+#include "typedef.h"
+#include "typedObject.h"
+#include "typedReferenceCount.h"
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EventParameter
@@ -40,11 +38,11 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS EventParameter {
 PUBLISHED:
+  INLINE EventParameter();
   INLINE EventParameter(const TypedReferenceCount *ptr);
   INLINE EventParameter(int value);
   INLINE EventParameter(double value);
   INLINE EventParameter(const string &value);
-//  INLINE EventParameter(const LVecBase3f &value);
 
   INLINE EventParameter(const EventParameter &copy);
   INLINE EventParameter &operator = (const EventParameter &copy);
@@ -54,14 +52,13 @@ PUBLISHED:
   // retrieve the corresponding value.  Of course, it is possible that
   // the EventParameter is some user-defined type, and is none of
   // these.
+  INLINE bool is_empty() const;
   INLINE bool is_int() const;
   INLINE int get_int_value() const;
   INLINE bool is_double() const;
   INLINE double get_double_value() const;
   INLINE bool is_string() const;
   INLINE string get_string_value() const;
-  INLINE bool is_vec3() const;
-//  INLINE LVecBase3f get_vec3_value() const;
 
   INLINE const TypedReferenceCount *get_ptr() const;
 
@@ -85,7 +82,7 @@ public:
   EventStoreValue(const Type &value) : _value(value) { }
 
   INLINE void set_value(const Type &value);
-  INLINE Type get_value() const;
+  INLINE const Type &get_value() const;
 
   Type _value;
 
@@ -93,7 +90,7 @@ public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(const string &type_name) {
+  static void init_type(const string &type_name = "EventStoreValue") {
     TypedReferenceCount::init_type();
     register_type(_type_handle, type_name,
                   TypedReferenceCount::get_class_type());
@@ -114,12 +111,10 @@ private:
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, EventStoreValue<int>);
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, EventStoreValue<double>);
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, EventStoreValue<std::string>);
-//EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS, EventStoreValue<LVecBase3f>);
 
 typedef EventStoreValue<int> EventStoreInt;
 typedef EventStoreValue<double> EventStoreDouble;
 typedef EventStoreValue<string> EventStoreString;
-//typedef EventStoreValue<LVecBase3f> EventStoreVec3;
 
 #include "eventParameter.I"
 

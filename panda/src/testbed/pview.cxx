@@ -39,21 +39,16 @@
 #include "notify.h"
 #include "qpnodePath.h"
 #include "cullBinManager.h"
-
-// These are in support of legacy data graph operations.
-#include "namedNode.h"
-#include "mouse.h"
-#include "mouseWatcher.h"
-#include "trackball.h"
-#include "transform2sg.h"
-#include "dataRelation.h"
-#include "dataGraphTraversal.h"
-#include "buttonThrower.h"
+#include "mouseAndKeyboard.h"
+#include "qpbuttonThrower.h"
+#include "qptrackball.h"
+#include "qptransform2sg.h"
 #include "modifierButtons.h"
 #include "keyboardButton.h"
 #include "event.h"
 #include "eventQueue.h"
 #include "eventHandler.h"
+#include "qpdataGraphTraverser.h"
 
 // Use dconfig to read a few Configrc variables.
 Configure(config_pview);
@@ -233,32 +228,32 @@ get_models(PandaNode *parent, int argc, char *argv[]) {
   }
 }
 
-NamedNode * 
-setup_mouse(NamedNode *data_root, GraphicsWindow *window) {
-  MouseAndKeyboard *mouse = new MouseAndKeyboard(window, 0);
-  new DataRelation(data_root, mouse);
+PandaNode * 
+setup_mouse(PandaNode *data_root, GraphicsWindow *window) {
+  qpMouseAndKeyboard *mouse = new qpMouseAndKeyboard(window, 0, "mouse");
+  data_root->add_child(mouse);
 
   // Create a ButtonThrower to throw events from the keyboard.
-  PT(ButtonThrower) bt = new ButtonThrower("kb-events");
+  PT(qpButtonThrower) bt = new qpButtonThrower("kb-events");
   ModifierButtons mods;
   mods.add_button(KeyboardButton::shift());
   mods.add_button(KeyboardButton::control());
   mods.add_button(KeyboardButton::alt());
   bt->set_modifier_buttons(mods);
-  new DataRelation(mouse, bt);
+  mouse->add_child(bt);
 
   return mouse;
 }
 
 void 
-setup_trackball(NamedNode *mouse, qpCamera *camera) {
-  PT(Trackball) trackball = new Trackball("trackball");
+setup_trackball(PandaNode *mouse, qpCamera *camera) {
+  PT(qpTrackball) trackball = new qpTrackball("trackball");
   trackball->set_pos(LVector3f::forward() * 50.0);
-  new DataRelation(mouse, trackball);
+  mouse->add_child(trackball);
 
-  PT(Transform2SG) tball2cam = new Transform2SG("tball2cam");
+  PT(qpTransform2SG) tball2cam = new qpTransform2SG("tball2cam");
   tball2cam->set_node(camera);
-  new DataRelation(trackball, tball2cam);
+  trackball->add_child(tball2cam);
 }
 
 void
@@ -365,11 +360,11 @@ main(int argc, char *argv[]) {
   // sorting, above, in event_s().
   CullBinManager::get_global_ptr()->add_bin("unsorted", CullBinManager::BT_unsorted, 0);
 
-  // Set up a data graph for tracking user input.  For now, this uses
-  // the old-style graph interface.
-  PT(NamedNode) data_root = new NamedNode("data_root");
-  NamedNode *mouse = setup_mouse(data_root, window);
+  // Set up a data graph for tracking user input.
+  PT(PandaNode) data_root = new PandaNode("data_root");
+  PandaNode *mouse = setup_mouse(data_root, window);
   setup_trackball(mouse, camera);
+  qpDataGraphTraverser dg_trav;
 
   // Use an event handler to manage keyboard events.
   EventHandler event_handler(EventQueue::get_global_event_queue());
@@ -401,7 +396,7 @@ main(int argc, char *argv[]) {
   // This is our main update loop.  Loop here until someone
   // (e.g. event_esc) sets run_flag to false.
   while (run_flag) {
-    traverse_data_graph(data_root);
+    dg_trav.traverse(data_root);
     event_handler.process_events();
     engine->render_frame();
   } 

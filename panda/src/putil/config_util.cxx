@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_util.h"
+#include "buttonEventList.h"
 #include "clockObject.h"
 #include "typedObject.h"
 #include "configurable.h"
@@ -43,6 +44,7 @@ NotifyCategoryDef(bam, util_cat);
 
 ConfigureFn(config_util) {
 //  ClockObject::init_ptr();
+  ButtonEventList::init_type();
   TypedObject::init_type();
   Configurable::init_type();
   Namable::init_type();
