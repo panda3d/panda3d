@@ -213,3 +213,17 @@ has_vertices() const {
 
   return false;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointNodePointer::make_new_joint
+//       Access: Public, Virtual
+//  Description: Creates a new child of the current joint in the
+//               egg data, and returns a pointer to it.
+////////////////////////////////////////////////////////////////////
+EggJointPointer *EggJointNodePointer::
+make_new_joint(const string &name) {
+  EggGroup *new_joint = new EggGroup(name);
+  new_joint->set_group_type(EggGroup::GT_joint);
+  _joint->add_child(new_joint);
+  return new EggJointNodePointer(new_joint);
+}

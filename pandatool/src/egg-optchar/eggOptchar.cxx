@@ -123,6 +123,12 @@ EggOptchar() {
      "is recomputed appropriately under its new parent so that the animation "
      "is not affected (the effect is similar to NodePath::wrt_reparent_to).",
      &EggOptchar::dispatch_vector_string_pair, NULL, &_reparent_joints);
+  
+  add_option
+    ("new", "joint,source", 0,
+     "Creates a new joint under the named parent joint.  The new "
+     "joint will inherit the same net transform as its parent.",
+     &EggOptchar::dispatch_vector_string_pair, NULL, &_new_joints);
 
   if (FFTCompressor::is_compression_available()) {
     add_option
@@ -652,7 +658,37 @@ apply_user_reparents() {
 
   int num_characters = _collection->get_num_characters();
 
+  // First, get the new joints.
   StringPairs::const_iterator spi;
+  for (spi = _new_joints.begin(); spi != _new_joints.end(); ++spi) {
+    const StringPair &p = (*spi);
+
+    for (int ci = 0; ci < num_characters; ci++) {
+      EggCharacterData *char_data = _collection->get_character(ci);
+      EggJointData *node_a = char_data->find_joint(p._a);
+      EggJointData *node_b = char_data->get_root_joint();
+      if (!p._b.empty()) {
+        node_b = char_data->find_joint(p._b);
+      }
+
+      if (node_b == (EggJointData *)NULL) {
+        nout << "No joint named " << p._b << " in " << char_data->get_name()
+             << ".\n";
+
+      } else if (node_a != (EggJointData *)NULL) {
+        nout << "Joint " << p._a << " already exists in " 
+             << char_data->get_name() << ".\n";
+        
+      } else {
+        nout << "Creating new joint " << p._a << " in "
+             << char_data->get_name() << ".\n";
+        node_a = char_data->make_new_joint(p._a, node_b);
+        did_anything = true;
+      }
+    }
+  }
+
+  // Now get the user reparents.
   for (spi = _reparent_joints.begin(); spi != _reparent_joints.end(); ++spi) {
     const StringPair &p = (*spi);
 
@@ -664,11 +700,11 @@ apply_user_reparents() {
         node_b = char_data->find_joint(p._b);
       }
 
-      if (node_a == (EggJointData *)NULL) {
-        nout << "No joint named " << p._a << " in " << char_data->get_name()
-             << ".\n";
-      } else if (node_b == (EggJointData *)NULL) {
+      if (node_b == (EggJointData *)NULL) {
         nout << "No joint named " << p._b << " in " << char_data->get_name()
+             << ".\n";
+      } else if (node_a == (EggJointData *)NULL) {
+        nout << "No joint named " << p._a << " in " << char_data->get_name()
              << ".\n";
       } else {
         node_a->reparent_to(node_b);
@@ -973,10 +1009,18 @@ describe_component(EggComponentData *comp_data, int indent_level,
 ////////////////////////////////////////////////////////////////////
 void EggOptchar::
 do_reparent() {
+  bool all_ok = true;
+
   int num_characters = _collection->get_num_characters();
   for (int ci = 0; ci < num_characters; ci++) {
     EggCharacterData *char_data = _collection->get_character(ci);
-    char_data->do_reparent();
+    if (!char_data->do_reparent()) {
+      all_ok = false;
+    }
+  }
+
+  if (!all_ok) {
+    exit(1);
   }
 }
 

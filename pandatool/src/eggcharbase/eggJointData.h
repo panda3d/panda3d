@@ -24,6 +24,7 @@
 #include "eggComponentData.h"
 #include "eggGroup.h"
 #include "luse.h"
+#include "pset.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggJointData
@@ -66,11 +67,13 @@ public:
 
 protected:
   void do_begin_reparent();
+  bool calc_new_parent_depth(pset<EggJointData *> &chain);
   void do_begin_compute_reparent();
   bool do_compute_reparent(int model_index, int n);
   bool do_finish_reparent();
 
 private:
+  EggJointData *make_new_joint(const string &name);
   EggJointData *find_joint_exact(const string &name);
   EggJointData *find_joint_matches(const string &name);
 
@@ -95,6 +98,8 @@ protected:
   Children _children;
   EggJointData *_parent;
   EggJointData *_new_parent;
+  int _new_parent_depth;
+  bool _got_new_parent_depth;
 
 
 public:
@@ -116,6 +121,7 @@ private:
 
   friend class EggCharacterCollection;
   friend class EggCharacterData;
+  friend class OrderJointsByNewDepth;
 };
 
 #include "eggJointData.I"

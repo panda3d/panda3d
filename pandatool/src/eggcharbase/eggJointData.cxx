@@ -191,7 +191,7 @@ move_vertices_to(EggJointData *new_owner) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: EggJointData::score_reparent
+//     Function: EggJointData::score_reparent_to
 //       Access: Public
 //  Description: Computes a score >= 0 reflecting the similarity of
 //               the current joint's animation (in world space) to
@@ -470,6 +470,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void EggJointData::
 do_begin_reparent() {
+  _got_new_parent_depth = false;
   _children.clear();
 
   int num_models = get_num_models();
@@ -480,6 +481,42 @@ do_begin_reparent() {
       joint->begin_rebuild();
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::calc_new_parent_depth
+//       Access: Protected
+//  Description: Calculates the number of joints above this joint in its
+//               intended position, as specified by a recent call to
+//               reparent_to(), and also checks for a cycle in the new
+//               parent chain.  Returns true if a cycle is detected,
+//               and false otherwise.  If a cycle is not detected,
+//               _new_parent_depth can be consulted for the depth in
+//               the new hierarchy.
+//
+//               This is used by EggCharacterData::do_reparent() to
+//               determine the order in which to apply the reparent
+//               operations.  It should be called after
+//               do_begin_reparent().
+////////////////////////////////////////////////////////////////////
+bool EggJointData::
+calc_new_parent_depth(pset<EggJointData *> &chain) {
+  if (_got_new_parent_depth) {
+    return false;
+  }
+  if (_new_parent == (EggJointData *)NULL) {
+    // Here's the top of the new hierarchy.
+    _got_new_parent_depth = true;
+    _new_parent_depth = 0;
+    return false;
+  }
+  if (!chain.insert(this).second) {
+    // We've already visited this joint; that means there's a cycle.
+    return true;
+  }
+  bool cycle = _new_parent->calc_new_parent_depth(chain);
+  _new_parent_depth = _new_parent->_new_parent_depth + 1;
+  return cycle;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -590,6 +627,35 @@ do_finish_reparent() {
   }
 
   return all_ok;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::make_new_joint
+//       Access: Private
+//  Description: Creates a new joint as a child of this joint and
+//               returns it.  This is intended to be called only from
+//               EggCharacterData::make_new_joint().
+////////////////////////////////////////////////////////////////////
+EggJointData *EggJointData::
+make_new_joint(const string &name) {
+  EggJointData *child = new EggJointData(_collection, _char_data);
+  child->set_name(name);
+  child->_parent = this;
+  child->_new_parent = this;
+  _children.push_back(child);
+
+  // Also create new back pointers in each of the models.
+  int num_models = get_num_models();
+  for (int i = 0; i < num_models; i++) {
+    if (has_model(i)) {
+      EggJointPointer *joint;
+      DCAST_INTO_R(joint, get_model(i), NULL);
+      EggJointPointer *new_joint = joint->make_new_joint(name);
+      child->set_model(i, new_joint);
+    }
+  }
+
+  return child;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -249,3 +249,24 @@ zero_channels(const string &components) {
     }
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMatrixTablePointer::make_new_joint
+//       Access: Public, Virtual
+//  Description: Creates a new child of the current joint in the
+//               egg data, and returns a pointer to it.
+////////////////////////////////////////////////////////////////////
+EggJointPointer *EggMatrixTablePointer::
+make_new_joint(const string &name) {
+  EggTable *new_table = new EggTable(name);
+  _table->add_child(new_table);
+  CoordinateSystem cs = CS_default;
+  if (_xform != (EggXfmSAnim *)NULL) {
+    cs = _xform->get_coordinate_system();
+  }
+  EggXfmSAnim *new_xform = new EggXfmSAnim("xform", cs);
+  new_table->add_child(new_xform);
+  new_xform->add_data(LMatrix4d::ident_mat());
+
+  return new EggMatrixTablePointer(new_table);
+}

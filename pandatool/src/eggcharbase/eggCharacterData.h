@@ -76,6 +76,7 @@ public:
 
   INLINE EggJointData *get_root_joint() const;
   INLINE EggJointData *find_joint(const string &name) const;
+  INLINE EggJointData *make_new_joint(const string &name, EggJointData *parent);
   INLINE int get_num_joints() const;
   INLINE EggJointData *get_joint(int n) const;
   bool do_reparent();
@@ -91,7 +92,7 @@ public:
 
   virtual void write(ostream &out, int indent_level = 0) const;
 
-protected:
+private:
   class Model {
   public:
     int _model_index;

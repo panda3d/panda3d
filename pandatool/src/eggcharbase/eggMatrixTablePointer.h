@@ -51,6 +51,8 @@ public:
   virtual void optimize();
   virtual void zero_channels(const string &components);
 
+  virtual EggJointPointer *make_new_joint(const string &name);
+
 private:
   PT(EggTable) _table;
   PT(EggXfmSAnim) _xform;

@@ -91,6 +91,7 @@ private:
     string _b;
   };
   typedef pvector<StringPair> StringPairs;
+  StringPairs _new_joints;
   StringPairs _reparent_joints;
   StringPairs _zero_channels;
 

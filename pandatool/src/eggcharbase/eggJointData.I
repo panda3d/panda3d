@@ -63,6 +63,7 @@ find_joint(const string &name) {
   return joint;
 }
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggJointData::has_rest_frame
 //       Access: Public

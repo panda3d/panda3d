@@ -20,8 +20,19 @@
 #include "eggCharacterCollection.h"
 #include "eggJointData.h"
 #include "eggSliderData.h"
-
 #include "indent.h"
+
+#include <algorithm>
+
+// An STL function object to sort the joint list in order from highest
+// to lowest in the new hierarchy.  Used in do_reparent().
+class OrderJointsByNewDepth {
+public:
+  bool operator()(const EggJointData *a, const EggJointData *b) const {
+    return a->_new_parent_depth < b->_new_parent_depth;
+  }
+};
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggCharacterData::Constructor
@@ -165,7 +176,7 @@ do_reparent() {
   typedef pset<EggJointData *> InvalidSet;
   InvalidSet invalid_set;
 
-  // First, make sure the list of new_children is accurate.
+  // To begin, make sure the list of new_children is accurate.
   Joints::const_iterator ji;
   for (ji = _joints.begin(); ji != _joints.end(); ++ji) {
     EggJointData *joint_data = (*ji);
@@ -176,6 +187,20 @@ do_reparent() {
   // finish_reparent) applied to it.
   _root_joint->do_begin_reparent();
 
+
+  // Now, check for cycles in the new parenting hierarchy, and also
+  // sort the joints in order from top to bottom in the new hierarchy.
+  for (ji = _joints.begin(); ji != _joints.end(); ++ji) {
+    EggJointData *joint_data = (*ji);
+    pset<EggJointData *> chain;
+    if (joint_data->calc_new_parent_depth(chain)) {
+      nout << "Cycle detected in parent chain for " << joint_data->get_name()
+           << "!\n";
+      return false;
+    }
+  }
+  sort(_joints.begin(), _joints.end(), OrderJointsByNewDepth());
+  
   // Now compute the new transforms for the joints' new positions.
   // This is done recursively through the new parent hierarchy, so we
   // can take advantage of caching the net value for a particular

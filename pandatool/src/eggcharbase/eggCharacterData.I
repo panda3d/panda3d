@@ -108,6 +108,22 @@ find_joint(const string &name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterData::make_new_joint
+//       Access: Public
+//  Description: Creates a new joint as a child of the indicated joint
+//               and returns it.  The new joint will be initialized to
+//               the identity transform, so that in inherits the
+//               net transform of the indicated parent joint.
+////////////////////////////////////////////////////////////////////
+INLINE EggJointData *EggCharacterData::
+make_new_joint(const string &name, EggJointData *parent) {
+  EggJointData *joint = parent->make_new_joint(name);
+  _joints.push_back(joint);
+  _components.push_back(joint);
+  return joint;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggCharacterData::get_num_joints
 //       Access: Public
 //  Description: Returns the total number of joints in the character
