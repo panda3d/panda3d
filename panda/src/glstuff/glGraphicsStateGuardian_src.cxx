@@ -487,25 +487,33 @@ reset() {
       _supports_multisample = false;
     }
   }
+
+  GLint max_texture_size;
+  GLint max_3d_texture_size;
+  GLint max_cube_map_size;
   
-  GLP(GetIntegerv)(GL_MAX_TEXTURE_SIZE, &_max_texture_size);
+  GLP(GetIntegerv)(GL_MAX_TEXTURE_SIZE, &max_texture_size);
+  _max_texture_dimension = max_texture_size;
+
   if (_supports_3d_texture) {
-    GLP(GetIntegerv)(GL_MAX_3D_TEXTURE_SIZE, &_max_3d_texture_size);
+    GLP(GetIntegerv)(GL_MAX_3D_TEXTURE_SIZE, &max_3d_texture_size);
+    _max_3d_texture_dimension = max_3d_texture_size;
   } else {
-    _max_3d_texture_size = 0;
+    _max_3d_texture_dimension = 0;
   }
 
   if (_supports_cube_map) {
-    GLP(GetIntegerv)(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &_max_cube_map_size);
+    GLP(GetIntegerv)(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &max_cube_map_size);
+    _max_cube_map_dimension = max_cube_map_size;
   } else {
-    _max_cube_map_size = 0;
+    _max_cube_map_dimension = 0;
   }
 
   if (GLCAT.is_debug()) {
     GLCAT.debug()
-      << "max texture size = " << _max_texture_size
-      << ", max 3d texture = " << _max_3d_texture_size
-      << ", max cube map = " << _max_cube_map_size << "\n";
+      << "max texture dimension = " << _max_texture_dimension
+      << ", max 3d texture = " << _max_3d_texture_dimension
+      << ", max cube map = " << _max_cube_map_dimension << "\n";
   }
 
   report_my_gl_errors();
@@ -723,7 +731,7 @@ do_clear(const RenderBuffer &buffer) {
 //     Function: CLP(GraphicsStateGuardian)::prepare_display_region
 //       Access: Public, Virtual
 //  Description: Prepare a display region for rendering (set up
-//       scissor region and viewport)
+//               scissor region and viewport)
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 prepare_display_region() {
@@ -2162,13 +2170,15 @@ static int binary_log_cap(const int x) {
 //     Function: CLP(GraphicsStateGuardian)::framebuffer_copy_to_texture
 //       Access: Public, Virtual
 //  Description: Copy the pixels within the indicated display
-//               region from the framebuffer into texture memory
+//               region from the framebuffer into texture memory.
+//
+//               If z > -1, it is the cube map index into which to
+//               copy.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-framebuffer_copy_to_texture(Texture *tex, const DisplayRegion *dr,
+framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
                             const RenderBuffer &rb) {
-  nassertv(tex != NULL && dr != NULL && 
-           tex->get_texture_type() == Texture::TT_2d_texture);
+  nassertv(tex != NULL && dr != NULL);
   set_read_buffer(rb);
 
   int xo, yo, w, h;
@@ -2181,9 +2191,27 @@ framebuffer_copy_to_texture(Texture *tex, const DisplayRegion *dr,
   nassertv(tc != (TextureContext *)NULL);
   bind_texture(tc);
 
-  GLP(CopyTexImage2D)(GL_TEXTURE_2D, 0,
-                      get_internal_image_format(tex->get_format()),
-                      xo, yo, w, h, 0);
+  if (z >= 0) {
+    // Copy to a cube map face.
+    nassertv(z < 6);
+    nassertv(tex->get_texture_type() == Texture::TT_cube_map);
+
+    if (_supports_cube_map) {
+      // We cleverly defined the cube map faces to fall in the same
+      // order as the GL constants are defined, so we can just make this
+      // simple addition to get to the right GL constant.
+      GLP(CopyTexImage2D)(GL_TEXTURE_CUBE_MAP_POSITIVE_X + z, 0,
+                          get_internal_image_format(tex->get_format()),
+                          xo, yo, w, h, 0);
+    }
+
+  } else {
+    // Copy to a regular texture.
+    nassertv(tex->get_texture_type() == Texture::TT_2d_texture);
+    GLP(CopyTexImage2D)(GL_TEXTURE_2D, 0,
+                        get_internal_image_format(tex->get_format()),
+                        xo, yo, w, h, 0);
+  }
 
   // Clear the internal texture state, since we've just monkeyed with it.
   modify_state(get_untextured_state());
@@ -2195,9 +2223,12 @@ framebuffer_copy_to_texture(Texture *tex, const DisplayRegion *dr,
 //  Description: Copy the pixels within the indicated display region
 //               from the framebuffer into system memory, not texture
 //               memory.  Returns true on success, false on failure.
+//
+//               This completely redefines the ram image of the
+//               indicated texture.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
-framebuffer_copy_to_ram(Texture *tex, const DisplayRegion *dr,
+framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
                         const RenderBuffer &rb) {
   nassertr(tex != NULL && dr != NULL, false);
   set_read_buffer(rb);
@@ -2228,7 +2259,21 @@ framebuffer_copy_to_ram(Texture *tex, const DisplayRegion *dr,
     format = Texture::F_rgb;
   }
 
-  tex->setup_2d_texture(w, h, component_type, format);
+  Texture::TextureType texture_type;
+  if (z >= 0) {
+    texture_type = Texture::TT_cube_map;
+  } else {
+    texture_type = Texture::TT_2d_texture;
+  }
+
+  if (tex->get_x_size() != w || tex->get_y_size() != h ||
+      tex->get_component_type() != component_type ||
+      tex->get_format() != format ||
+      tex->get_texture_type() != texture_type) {
+    // Re-setup the texture; its properties have changed.
+    tex->setup_texture(texture_type, w, h, 1, component_type, format);
+  }
+
   GLenum external_format = get_external_image_format(format);
 
 #ifdef GSG_VERBOSE
@@ -2272,13 +2317,21 @@ framebuffer_copy_to_ram(Texture *tex, const DisplayRegion *dr,
     << ")" << endl;
 #endif
 
+  unsigned char *image = tex->modify_ram_image();
+  if (z >= 0) {
+    nassertr(z < tex->get_z_size(), false);
+    image += z * tex->get_expected_ram_page_size();
+  }
+
   GLP(ReadPixels)(xo, yo, w, h,
                   external_format, get_component_type(component_type),
-                  tex->make_ram_image());
+                  image);
 
   // We may have to reverse the byte ordering of the image if GL
-  // didn't do it for us.
-  if (!_supports_bgr) {
+  // didn't do it for us.  This assumes we render out the six faces of
+  // a cube map in ascending order, since we can't do this until we
+  // have rendered the last face.
+  if (!_supports_bgr && (z == -1 || z == 5)) {
     tex->set_ram_image(fix_component_ordering(tex->get_ram_image(), 
                                               external_format, tex));
   }
@@ -3399,15 +3452,15 @@ apply_texture_immediate(CLP(TextureContext) *gtc, Texture *tex) {
   int max_dimension;
   switch (tex->get_texture_type()) {
   case Texture::TT_3d_texture:
-    max_dimension = _max_3d_texture_size;
+    max_dimension = _max_3d_texture_dimension;
     break;
 
   case Texture::TT_cube_map:
-    max_dimension = _max_cube_map_size;
+    max_dimension = _max_cube_map_dimension;
     break;
 
   default:
-    max_dimension = _max_texture_size;
+    max_dimension = _max_texture_dimension;
   }
 
   if (max_dimension == 0) {
@@ -3421,48 +3474,51 @@ apply_texture_immediate(CLP(TextureContext) *gtc, Texture *tex) {
   // If it doesn't fit, we have to reduce it on-the-fly.  This is kind
   // of expensive and it doesn't look great; it would have been better
   // if the user had specified max-texture-dimension to reduce the
-  // texture at load time instead.
-  if (width > max_dimension) {
-    int byte_chunk = texel_size;
-    int stride = 1;
-    int new_width = width;
-    while (new_width > max_dimension) {
-      stride <<= 1;
-      new_width >>= 1;
+  // texture at load time instead.  Of course, the user doesn't always
+  // know ahead of time what the hardware limits are.
+  if (max_dimension > 0) {
+    if (width > max_dimension) {
+      int byte_chunk = texel_size;
+      int stride = 1;
+      int new_width = width;
+      while (new_width > max_dimension) {
+        stride <<= 1;
+        new_width >>= 1;
+      }
+      GLCAT.info()
+        << "Reducing width of " << tex->get_name()
+        << " from " << width << " to " << new_width << "\n";
+      image = reduce_image(image, byte_chunk, stride);
+      width = new_width;
     }
-    GLCAT.info()
-      << "Reducing width of " << tex->get_name()
-      << " from " << width << " to " << new_width << "\n";
-    image = reduce_image(image, byte_chunk, stride);
-    width = new_width;
-  }
-  if (height > max_dimension) {
-    int byte_chunk = width * texel_size;
-    int stride = 1;
-    int new_height = height;
-    while (new_height > max_dimension) {
-      stride <<= 1;
-      new_height >>= 1;
+    if (height > max_dimension) {
+      int byte_chunk = width * texel_size;
+      int stride = 1;
+      int new_height = height;
+      while (new_height > max_dimension) {
+        stride <<= 1;
+        new_height >>= 1;
+      }
+      GLCAT.info()
+        << "Reducing height of " << tex->get_name()
+        << " from " << height << " to " << new_height << "\n";
+      image = reduce_image(image, byte_chunk, stride);
+      height = new_height;
     }
-    GLCAT.info()
-      << "Reducing height of " << tex->get_name()
-      << " from " << height << " to " << new_height << "\n";
-    image = reduce_image(image, byte_chunk, stride);
-    height = new_height;
-  }
-  if (depth > max_dimension) {
-    int byte_chunk = height * width * texel_size;
-    int stride = 1;
-    int new_depth = depth;
-    while (new_depth > max_dimension) {
-      stride <<= 1;
-      new_depth >>= 1;
+    if (depth > max_dimension) {
+      int byte_chunk = height * width * texel_size;
+      int stride = 1;
+      int new_depth = depth;
+      while (new_depth > max_dimension) {
+        stride <<= 1;
+        new_depth >>= 1;
+      }
+      GLCAT.info()
+        << "Reducing depth of " << tex->get_name()
+        << " from " << depth << " to " << new_depth << "\n";
+      image = reduce_image(image, byte_chunk, stride);
+      depth = new_depth;
     }
-    GLCAT.info()
-      << "Reducing depth of " << tex->get_name()
-      << " from " << depth << " to " << new_depth << "\n";
-    image = reduce_image(image, byte_chunk, stride);
-    depth = new_depth;
   }
 
   if (!_supports_bgr) {
@@ -4542,7 +4598,7 @@ finish_modify_state() {
   }
 
   // Apply the texture matrix, if needed.
-  if (_needs_tex_mat) {
+  if (_needs_tex_mat || _needs_tex_gen) {
     _needs_tex_mat = false;
 
     int num_stages = _current_texture->get_num_on_stages();
@@ -4590,8 +4646,9 @@ finish_modify_state() {
     for (int i = 0; i < num_stages; i++) {
       TextureStage *stage = _current_texture->get_on_stage(i);
       _glActiveTexture(GL_TEXTURE0 + i);
-      
-      switch (_current_tex_gen->get_mode(stage)) {
+
+      TexGenAttrib::Mode mode = _current_tex_gen->get_mode(stage);
+      switch (mode) {
       case TexGenAttrib::M_off:
         GLP(Disable)(GL_TEXTURE_GEN_S);
         GLP(Disable)(GL_TEXTURE_GEN_T);
@@ -4599,7 +4656,7 @@ finish_modify_state() {
         GLP(Disable)(GL_TEXTURE_GEN_Q);
         break;
         
-      case TexGenAttrib::M_sphere_map:
+      case TexGenAttrib::M_eye_sphere_map:
         GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
         GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
         GLP(Enable)(GL_TEXTURE_GEN_S);
@@ -4609,11 +4666,69 @@ finish_modify_state() {
         force_normal = true;
         break;
         
-      case TexGenAttrib::M_cube_map:
+      case TexGenAttrib::M_eye_cube_map:
+      case TexGenAttrib::M_world_cube_map:
         if (_supports_cube_map) {
+          if (mode != TexGenAttrib::M_eye_cube_map) {
+            // We dynamically transform normals from eye space to
+            // world space by applying the appropriate rotation
+            // transform to the current texture matrix.  Although it's
+            // tempting to try, we can't safely convert to object
+            // space, since this method doesn't get called with each
+            // different object.
+            CPT(TransformState) transform = _scene_setup->get_render_transform();
+            transform = transform->invert_compose(TransformState::make_identity());
+            LMatrix4f mat = transform->get_mat();
+            mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
+            GLP(MatrixMode)(GL_TEXTURE);
+            GLP(MultMatrixf)(mat.get_data());
+
+            // Now we need to reset the texture matrix next time
+            // around to undo this.
+            _needs_tex_mat = true;
+          }
+
           GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
           GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
           GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP);
+          GLP(Enable)(GL_TEXTURE_GEN_S);
+          GLP(Enable)(GL_TEXTURE_GEN_T);
+          GLP(Enable)(GL_TEXTURE_GEN_R);
+          GLP(Disable)(GL_TEXTURE_GEN_Q);
+          force_normal = true;
+        } else {
+          GLP(Disable)(GL_TEXTURE_GEN_S);
+          GLP(Disable)(GL_TEXTURE_GEN_T);
+          GLP(Disable)(GL_TEXTURE_GEN_R);
+          GLP(Disable)(GL_TEXTURE_GEN_Q);
+        }
+        break;
+        
+      case TexGenAttrib::M_eye_normal:
+      case TexGenAttrib::M_world_normal:
+        if (_supports_cube_map) {
+          if (mode != TexGenAttrib::M_eye_normal) {
+            // We dynamically transform normals from eye space to
+            // world space by applying the appropriate rotation
+            // transform to the current texture matrix.  Although it's
+            // tempting to try, we can't safely convert to object
+            // space, since this method doesn't get called with each
+            // different object.
+            CPT(TransformState) transform = _scene_setup->get_render_transform();
+            transform = transform->invert_compose(TransformState::make_identity());
+            LMatrix4f mat = transform->get_mat();
+            mat.set_row(3, LVecBase3f(0.0f, 0.0f, 0.0f));
+            GLP(MatrixMode)(GL_TEXTURE);
+            GLP(MultMatrixf)(mat.get_data());
+
+            // Now we need to reset the texture matrix next time
+            // around to undo this.
+            _needs_tex_mat = true;
+          }
+
+          GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
+          GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
+          GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
           GLP(Enable)(GL_TEXTURE_GEN_S);
           GLP(Enable)(GL_TEXTURE_GEN_T);
           GLP(Enable)(GL_TEXTURE_GEN_R);
@@ -4696,24 +4811,6 @@ finish_modify_state() {
           
           GLP(MatrixMode)(GL_MODELVIEW);
           GLP(PopMatrix)();
-        }
-        break;
-        
-      case TexGenAttrib::M_object_normal:
-        if (_supports_cube_map) {
-          GLP(TexGeni)(GL_S, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
-          GLP(TexGeni)(GL_T, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
-          GLP(TexGeni)(GL_R, GL_TEXTURE_GEN_MODE, GL_NORMAL_MAP);
-          GLP(Enable)(GL_TEXTURE_GEN_S);
-          GLP(Enable)(GL_TEXTURE_GEN_T);
-          GLP(Enable)(GL_TEXTURE_GEN_R);
-          GLP(Disable)(GL_TEXTURE_GEN_Q);
-          force_normal = true;
-        } else {
-          GLP(Disable)(GL_TEXTURE_GEN_S);
-          GLP(Disable)(GL_TEXTURE_GEN_T);
-          GLP(Disable)(GL_TEXTURE_GEN_R);
-          GLP(Disable)(GL_TEXTURE_GEN_Q);
         }
         break;
       }
@@ -4829,16 +4926,20 @@ do_issue_texture() {
       _glActiveTexture(GL_TEXTURE0 + i);
 
       GLenum target = get_texture_target(texture->get_texture_type());
+
+      // First, turn off the previous texture mode.
+      GLP(Disable)(GL_TEXTURE_1D);
+      GLP(Disable)(GL_TEXTURE_2D);
+      if (_supports_3d_texture) {
+        GLP(Disable)(GL_TEXTURE_3D);
+      }
+      if (_supports_cube_map) {
+        GLP(Disable)(GL_TEXTURE_CUBE_MAP);
+      }
+
+      // Then, turn on the current texture mode.
       if (target == GL_NONE) {
         // Unsupported texture mode.
-        GLP(Disable)(GL_TEXTURE_1D);
-        GLP(Disable)(GL_TEXTURE_2D);
-        if (_supports_3d_texture) {
-          GLP(Disable)(GL_TEXTURE_3D);
-        }
-        if (_supports_cube_map) {
-          GLP(Disable)(GL_TEXTURE_CUBE_MAP);
-        }
         break;
       }
       GLP(Enable)(target);

@@ -3115,11 +3115,20 @@ get_tex_gen(const EggTexture *egg_tex) {
   case EggTexture::TG_unspecified:
     return TexGenAttrib::M_off;
 
-  case EggTexture::TG_sphere_map:
-    return TexGenAttrib::M_sphere_map;
+  case EggTexture::TG_eye_sphere_map:
+    return TexGenAttrib::M_eye_sphere_map;
 
-  case EggTexture::TG_cube_map:
-    return TexGenAttrib::M_cube_map;
+  case EggTexture::TG_world_cube_map:
+    return TexGenAttrib::M_world_cube_map;
+
+  case EggTexture::TG_eye_cube_map:
+    return TexGenAttrib::M_eye_cube_map;
+
+  case EggTexture::TG_world_normal:
+    return TexGenAttrib::M_world_normal;
+
+  case EggTexture::TG_eye_normal:
+    return TexGenAttrib::M_eye_normal;
 
   case EggTexture::TG_world_position:
     return TexGenAttrib::M_world_position;
@@ -3129,9 +3138,6 @@ get_tex_gen(const EggTexture *egg_tex) {
 
   case EggTexture::TG_eye_position:
     return TexGenAttrib::M_eye_position;
-
-  case EggTexture::TG_object_normal:
-    return TexGenAttrib::M_object_normal;
   };
 
   return TexGenAttrib::M_off;

@@ -50,6 +50,34 @@ get_sort() const {
   return _sort;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::set_cube_map_index
+//       Access: Published
+//  Description: This is a special parameter that is only used when
+//               rendering the faces of a cube map.  Normally you
+//               should not need to set it directly.  This sets up the
+//               DisplayRegion to render to the nth cube map face; the
+//               value must be between 0 and 5, inclusive.  A normal
+//               DisplayRegion that is not associated with any
+//               particular cube map should be set to -1.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+set_cube_map_index(int cube_map_index) {
+  _cube_map_index = cube_map_index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_cube_map_index
+//       Access: Published
+//  Description: Returns the cube map face index associated with this
+//               particular DisplayRegion, or -1 if it is not
+//               associated with a cube map.  See
+//               set_cube_map_index().
+////////////////////////////////////////////////////////////////////
+INLINE int DisplayRegion::
+get_cube_map_index() const {
+  return _cube_map_index;
+}
 
 INLINE ostream &operator << (ostream &out, const DisplayRegion &dr) {
   dr.output(out);

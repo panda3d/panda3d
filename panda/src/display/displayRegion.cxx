@@ -37,7 +37,8 @@ DisplayRegion(GraphicsOutput *window) :
   _window(window),
   _camera_node((Camera *)NULL),
   _active(true),
-  _sort(0)
+  _sort(0),
+  _cube_map_index(-1)
 {
   _draw_buffer_type = window->get_draw_buffer_type();
   compute_pixels();
@@ -55,7 +56,8 @@ DisplayRegion(GraphicsOutput *window, const float l,
   _window(window),
   _camera_node((Camera *)NULL),
   _active(true),
-  _sort(0)
+  _sort(0),
+  _cube_map_index(-1)
 {
   _draw_buffer_type = window->get_draw_buffer_type();
   compute_pixels();
@@ -535,7 +537,7 @@ get_screenshot(PNMImage &image) {
   PT(Texture) tex = new Texture;
 
   RenderBuffer buffer = gsg->get_render_buffer(get_screenshot_buffer_type());
-  if (!gsg->framebuffer_copy_to_ram(tex, this, buffer)) {
+  if (!gsg->framebuffer_copy_to_ram(tex, -1, this, buffer)) {
     return false;
   }
 

@@ -91,10 +91,10 @@ public:
   virtual void apply_texture(TextureContext *tc);
   virtual void release_texture(TextureContext *tc);
 
-  virtual void framebuffer_copy_to_texture(Texture *tex, const DisplayRegion *dr,
+  virtual void framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
                                            const RenderBuffer &rb);
 
-  virtual bool framebuffer_copy_to_ram(Texture *pb, const DisplayRegion *dr,
+  virtual bool framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
                                        const RenderBuffer &rb);
 
   virtual void apply_material(const Material *material);

@@ -157,12 +157,25 @@ output(ostream &out) const {
     case M_off:
       out << "off";
       break;
-    case M_sphere_map:
-      out << "sphere_map";
+
+    case M_eye_sphere_map:
+      out << "eye_sphere_map";
       break;
-    case M_cube_map:
-      out << "cube_map";
+
+    case M_world_cube_map:
+      out << "world_cube_map";
       break;
+    case M_eye_cube_map:
+      out << "eye_cube_map";
+      break;
+
+    case M_world_normal:
+      out << "world_normal";
+      break;
+    case M_eye_normal:
+      out << "eye_normal";
+      break;
+
     case M_world_position:
       out << "world_position";
       break;
@@ -171,9 +184,6 @@ output(ostream &out) const {
       break;
     case M_eye_position:
       out << "eye_position";
-      break;
-    case M_object_normal:
-      out << "object_normal";
       break;
     }
     out << ")";

@@ -97,9 +97,9 @@ public:
   virtual void release_geom(GeomContext *gc);
 
   virtual void framebuffer_copy_to_texture
-    (Texture *tex, const DisplayRegion *dr, const RenderBuffer &rb);
+    (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb);
   virtual bool framebuffer_copy_to_ram
-    (Texture *tex, const DisplayRegion *dr, const RenderBuffer &rb);
+    (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb);
 
   virtual void apply_material(const Material *material);
   void apply_fog(Fog *fog);
@@ -300,10 +300,6 @@ public:
   PFNGLTEXSUBIMAGE3DPROC _glTexSubImage3D;
 
   bool _supports_cube_map;
-
-  GLint _max_texture_size;
-  GLint _max_3d_texture_size;
-  GLint _max_cube_map_size;
 
   bool _supports_bgr;
   bool _supports_rescale_normal;

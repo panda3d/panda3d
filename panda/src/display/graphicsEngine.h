@@ -80,8 +80,7 @@ PUBLISHED:
   GraphicsWindow *make_window(GraphicsStateGuardian *gsg, const string &name,
                               int sort);
   GraphicsOutput *make_buffer(GraphicsStateGuardian *gsg, const string &name,
-                              int sort,
-                              int x_size, int y_size, bool want_texture);
+                              int sort, int x_size, int y_size);
   GraphicsOutput *make_parasite(GraphicsOutput *host, const string &name,
                                 int sort, int x_size, int y_size);
 
@@ -98,7 +97,7 @@ PUBLISHED:
   void sync_frame();
   void flip_frame();
   
-  void render_subframe(GraphicsStateGuardian *gsg, DisplayRegion *dr,
+  void render_subframe(GraphicsOutput *win, DisplayRegion *dr,
                        bool cull_sorting);
 
 public:
@@ -143,10 +142,10 @@ private:
   void set_window_sort(GraphicsOutput *window, int sort);
 
   void cull_and_draw_together(const Windows &wlist);
-  void cull_and_draw_together(GraphicsStateGuardian *gsg, DisplayRegion *dr);
+  void cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr);
 
   void cull_bin_draw(const Windows &wlist);
-  void cull_bin_draw(GraphicsStateGuardian *gsg, DisplayRegion *dr);
+  void cull_bin_draw(GraphicsOutput *win, DisplayRegion *dr);
   void make_contexts(const Windows &wlist);
 
   void process_events(const Windows &wlist);
@@ -159,7 +158,7 @@ private:
   void do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
                GraphicsStateGuardian *gsg);
   void do_draw(CullResult *cull_result, SceneSetup *scene_setup,
-               GraphicsStateGuardian *gsg, DisplayRegion *dr);
+               GraphicsOutput *win, DisplayRegion *dr);
 
   bool setup_gsg(GraphicsStateGuardian *gsg, SceneSetup *scene_setup);
 

@@ -279,12 +279,14 @@ appear before they are referenced.
     for instance to apply a reflection map or some other effect.  The
     valid values for mode are:
 
-      SPHERE_MAP
-      CUBE_MAP
+      EYE_SPHERE_MAP (or SPHERE_MAP)
+      WORLD_CUBE_MAP
+      EYE_CUBE_MAP (or CUBE_MAP)
+      WORLD_NORMAL
+      EYE_NORMAL
       WORLD_POSITION
       OBJECT_POSITION
       EYE_POSITION
-      OBJECT_NORMAL
 
   <Scalar> stage-name { name }
 

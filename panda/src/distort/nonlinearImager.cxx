@@ -680,7 +680,8 @@ recompute_screen(NonlinearImager::Screen &screen, size_t vi) {
 
   if (screen._buffer == (GraphicsOutput *)NULL) {
     GraphicsOutput *win = viewer._dr->get_window();
-    GraphicsOutput *buffer = win->make_texture_buffer(screen._name, screen._tex_width, screen._tex_height);
+    GraphicsOutput *buffer = win->make_texture_buffer
+      (screen._name, screen._tex_width, screen._tex_height, NULL, false);
 
     if (buffer != (GraphicsOutput *)NULL) {
       screen._buffer = buffer;

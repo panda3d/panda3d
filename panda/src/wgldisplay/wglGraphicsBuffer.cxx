@@ -43,7 +43,6 @@ wglGraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   // Since the pbuffer never gets flipped, we get screenshots from the
   // same buffer we draw into.
   _screenshot_buffer_type = _draw_buffer_type;
-  _render_texture = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -204,12 +203,25 @@ open_buffer() {
   if (wgldisplay_cat.is_debug()) {
     wgldisplay_cat.debug()
       << "Created PBuffer " << _pbuffer << ", DC " << _pbuffer_dc << "\n";
-    if (_render_texture) {
+    switch (_rtm_mode) {
+    case RTM_bind_texture:
       wgldisplay_cat.debug()
         << "pbuffer renders directly to texture.\n";
-    } else if (_copy_texture) {
+      break;
+
+    case RTM_copy_texture:
+    case RTM_bind_if_possible:
       wgldisplay_cat.debug()
         << "pbuffer copies indirectly into texture.\n";
+      break;
+
+    case RTM_copy_ram:
+      wgldisplay_cat.debug()
+        << "pbuffer copies indirectly into system RAM.\n";
+      break;
+
+    default:
+      break;
     }
   }
   
@@ -245,14 +257,15 @@ make_pbuffer(HDC twindow_dc) {
   if (wglgsg->_supports_pixel_format) {
     bool got_pbuffer_format = false;
 
-    if (_copy_texture && wglgsg->_supports_render_texture) {
+    if (_rtm_mode == RTM_bind_if_possible && 
+        wglgsg->_supports_render_texture) {
       // First, try to get a pbuffer format that supports
       // render-to-texture.
       int new_pbformat = choose_pbuffer_format(twindow_dc, true);
       if (new_pbformat != 0) {
         pbformat = new_pbformat;
         got_pbuffer_format = true;
-        _render_texture = true;
+        _rtm_mode = RTM_bind_texture;
       }
     }
 
@@ -279,7 +292,7 @@ make_pbuffer(HDC twindow_dc) {
   int iattrib_list[max_attrib_list];
   int ni = 0;
 
-  if (_render_texture) {
+  if (_rtm_mode == RTM_bind_texture) {
     if (_gsg->get_properties().get_frame_buffer_mode() & FrameBufferProperties::FM_alpha) {
       iattrib_list[ni++] = WGL_TEXTURE_FORMAT_ARB;
       iattrib_list[ni++] = WGL_TEXTURE_RGBA_ARB;

@@ -82,6 +82,9 @@ PUBLISHED:
   void set_sort(int sort);
   INLINE int get_sort() const;
 
+  INLINE void set_cube_map_index(int cube_map_index);
+  INLINE int get_cube_map_index() const;
+
   void compute_pixels();
   void compute_pixels(int x_size, int y_size);
   void get_pixels(int &pl, int &pr, int &pb, int &pt) const;
@@ -123,6 +126,7 @@ private:
 
   bool _active;
   int _sort;
+  int _cube_map_index;
 
   // This is used to cache the culling result from last frame's
   // drawing into this display region.  It should only be accessed or

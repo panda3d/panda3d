@@ -83,6 +83,10 @@ PUBLISHED:
   INLINE const GraphicsThreadingModel &get_threading_model() const;
 
   INLINE int get_max_texture_stages() const;
+  INLINE int get_max_texture_dimension() const;
+  INLINE int get_max_3d_texture_dimension() const;
+  INLINE int get_max_cube_map_dimension() const;
+
   INLINE bool get_copy_texture_inverted() const;
   virtual bool get_supports_multisample() const;
   INLINE bool get_supports_generate_mipmap() const;
@@ -278,6 +282,10 @@ protected:
 
   PT(PreparedGraphicsObjects) _prepared_objects;
   int _max_texture_stages;
+  int _max_texture_dimension;
+  int _max_3d_texture_dimension;
+  int _max_cube_map_dimension;
+
   bool _copy_texture_inverted;
   bool _supports_multisample;
   bool _supports_generate_mipmap;

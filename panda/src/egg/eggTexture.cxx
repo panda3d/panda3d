@@ -801,11 +801,22 @@ string_tex_gen(const string &string) {
   if (cmp_nocase_uh(string, "unspecified") == 0) {
     return TG_unspecified;
 
-  } else if (cmp_nocase_uh(string, "sphere_map") == 0) {
-    return TG_sphere_map;
+  } else if (cmp_nocase_uh(string, "sphere_map") == 0 ||
+             cmp_nocase_uh(string, "eye_sphere_map") == 0) {
+    return TG_eye_sphere_map;
 
-  } else if (cmp_nocase_uh(string, "cube_map") == 0) {
-    return TG_cube_map;
+  } else if (cmp_nocase_uh(string, "world_cube_map") == 0) {
+    return TG_world_cube_map;
+
+  } else if (cmp_nocase_uh(string, "cube_map") == 0 ||
+             cmp_nocase_uh(string, "eye_cube_map") == 0) {
+    return TG_eye_cube_map;
+
+  } else if (cmp_nocase_uh(string, "world_normal") == 0) {
+    return TG_world_normal;
+
+  } else if (cmp_nocase_uh(string, "eye_normal") == 0) {
+    return TG_eye_normal;
 
   } else if (cmp_nocase_uh(string, "world_position") == 0) {
     return TG_world_position;
@@ -815,9 +826,6 @@ string_tex_gen(const string &string) {
 
   } else if (cmp_nocase_uh(string, "eye_position") == 0) {
     return TG_eye_position;
-
-  } else if (cmp_nocase_uh(string, "object_normal") == 0) {
-    return TG_object_normal;
 
   } else {
     return TG_unspecified;
@@ -1114,11 +1122,20 @@ operator << (ostream &out, EggTexture::TexGen tex_gen) {
   case EggTexture::TG_unspecified:
     return out << "unspecified";
 
-  case EggTexture::TG_sphere_map:
-    return out << "sphere_map";
+  case EggTexture::TG_eye_sphere_map:
+    return out << "eye_sphere_map";
 
-  case EggTexture::TG_cube_map:
-    return out << "cube_map";
+  case EggTexture::TG_world_cube_map:
+    return out << "world_cube_map";
+
+  case EggTexture::TG_eye_cube_map:
+    return out << "eye_cube_map";
+
+  case EggTexture::TG_world_normal:
+    return out << "world_normal";
+
+  case EggTexture::TG_eye_normal:
+    return out << "eye_normal";
 
   case EggTexture::TG_world_position:
     return out << "world_position";
@@ -1128,9 +1145,6 @@ operator << (ostream &out, EggTexture::TexGen tex_gen) {
 
   case EggTexture::TG_eye_position:
     return out << "eye_position";
-
-  case EggTexture::TG_object_normal:
-    return out << "object_normal";
   }
 
   return out << "**invalid TexGen(" << (int)tex_gen << ")**";

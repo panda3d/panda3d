@@ -32,6 +32,7 @@
 #include "notify.h"
 #include "pmutex.h"
 #include "filename.h"
+#include "drawMask.h"
 #include "pvector.h"
 
 class PNMImage;
@@ -75,7 +76,7 @@ PUBLISHED:
   INLINE bool has_texture() const;  
   INLINE Texture *get_texture() const;  
   void detach_texture();
-  virtual void setup_render_texture();
+  void setup_render_texture(Texture *tex, bool allow_bind, bool to_ram);
 
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;
@@ -108,7 +109,10 @@ PUBLISHED:
   int get_num_active_display_regions() const;
   PT(DisplayRegion) get_active_display_region(int n) const;
 
-  GraphicsOutput *make_texture_buffer(const string &name, int x_size, int y_size);
+  GraphicsOutput *make_texture_buffer(const string &name, int x_size, int y_size,
+                                      Texture *tex = NULL, bool to_ram = false);
+  GraphicsOutput *make_cube_map(const string &name, int size, bool to_ram,
+                                NodePath &camera_rig, DrawMask camera_mask);
 
   INLINE Filename save_screenshot_default(const string &prefix = "screenshot");
   INLINE bool save_screenshot(const Filename &filename);
@@ -136,6 +140,9 @@ public:
   void clear();
   virtual void end_frame();
 
+  void change_scenes(DisplayRegion *new_dr);
+  virtual void select_cube_map(int cube_map_index);
+
   // This method is called in the draw thread prior to issuing any
   // drawing commands for the window.
   virtual bool make_context();
@@ -152,14 +159,22 @@ public:
   virtual void process_events();
   
 protected:
+  enum RenderTextureMode {
+    RTM_none,
+    RTM_bind_texture,
+    RTM_bind_if_possible,
+    RTM_copy_texture,
+    RTM_copy_ram,
+  };
+
   PT(GraphicsStateGuardian) _gsg;
   PT(GraphicsPipe) _pipe;
   string _name;
   PT(Texture) _texture;
-  bool _copy_texture;
-  bool _render_texture;
+  RenderTextureMode _rtm_mode;
   bool _flip_ready;
   bool _needs_context;
+  int _cube_map_index;
 
 private:
   DisplayRegion *add_display_region(DisplayRegion *display_region);

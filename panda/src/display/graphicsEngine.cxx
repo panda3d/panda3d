@@ -240,7 +240,7 @@ make_window(GraphicsStateGuardian *gsg, const string &name, int sort) {
 ////////////////////////////////////////////////////////////////////
 GraphicsOutput *GraphicsEngine::
 make_buffer(GraphicsStateGuardian *gsg, const string &name, 
-            int sort, int x_size, int y_size, bool want_texture) {
+            int sort, int x_size, int y_size) {
   if (show_buffers) {
     GraphicsWindow *window = make_window(gsg, name, sort);
     if (window != (GraphicsWindow *)NULL) {
@@ -249,11 +249,6 @@ make_buffer(GraphicsStateGuardian *gsg, const string &name,
       props.set_fixed_size(true);
       props.set_title(name);
       window->request_properties(props);
-
-      if (want_texture) {
-        window->setup_render_texture();
-      }
-
       return window;
     }
   }
@@ -269,9 +264,6 @@ make_buffer(GraphicsStateGuardian *gsg, const string &name,
     gsg->get_pipe()->make_buffer(gsg, name, x_size, y_size);
   if (buffer != (GraphicsBuffer *)NULL) {
     buffer->_sort = sort;
-    if (want_texture) {
-      buffer->setup_render_texture();
-    }
     do_add_window(buffer, gsg, threading_model);
   }
   return buffer;
@@ -303,7 +295,6 @@ make_parasite(GraphicsOutput *host, const string &name,
       props.set_fixed_size(true);
       props.set_title(name);
       window->request_properties(props);
-      window->setup_render_texture();
 
       return window;
     }
@@ -317,7 +308,6 @@ make_parasite(GraphicsOutput *host, const string &name,
 
   ParasiteBuffer *buffer = new ParasiteBuffer(host, name, x_size, y_size);
   buffer->_sort = sort;
-  buffer->setup_render_texture();
   do_add_window(buffer, gsg, threading_model);
 
   return buffer;
@@ -643,12 +633,12 @@ flip_frame() {
 //               whichever thread that may be.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-render_subframe(GraphicsStateGuardian *gsg, DisplayRegion *dr,
+render_subframe(GraphicsOutput *win, DisplayRegion *dr,
                 bool cull_sorting) {
   if (cull_sorting) {
-    cull_bin_draw(gsg, dr);
+    cull_bin_draw(win, dr);
   } else {
-    cull_and_draw_together(gsg, dr);
+    cull_and_draw_together(win, dr);
   }
 }
 
@@ -736,7 +726,7 @@ cull_and_draw_together(const GraphicsEngine::Windows &wlist) {
         for (int i = 0; i < num_display_regions; i++) {
           DisplayRegion *dr = win->get_active_display_region(i);
           if (dr != (DisplayRegion *)NULL) {
-            cull_and_draw_together(win->get_gsg(), dr);
+            cull_and_draw_together(win, dr);
           }
         }
         win->end_frame();
@@ -765,11 +755,13 @@ cull_and_draw_together(const GraphicsEngine::Windows &wlist) {
 //               only by render_subframe().
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-cull_and_draw_together(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
+cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr) {
+  GraphicsStateGuardian *gsg = win->get_gsg();
   nassertv(gsg != (GraphicsStateGuardian *)NULL);
 
   PT(SceneSetup) scene_setup = setup_scene(gsg, dr);
   if (setup_gsg(gsg, scene_setup)) {
+    win->change_scenes(dr);
     DisplayRegionStack old_dr = gsg->push_display_region(dr);
     gsg->prepare_display_region();
     if (dr->is_any_clear_active()) {
@@ -808,7 +800,7 @@ cull_bin_draw(const GraphicsEngine::Windows &wlist) {
         for (int i = 0; i < num_display_regions; i++) {
           DisplayRegion *dr = win->get_active_display_region(i);
           if (dr != (DisplayRegion *)NULL) {
-            cull_bin_draw(win->get_gsg(), dr);
+            cull_bin_draw(win, dr);
           }
         }
         win->end_frame();
@@ -838,7 +830,8 @@ cull_bin_draw(const GraphicsEngine::Windows &wlist) {
 //               implementation of cull_bin_draw(), above.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-cull_bin_draw(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
+cull_bin_draw(GraphicsOutput *win, DisplayRegion *dr) {
+  GraphicsStateGuardian *gsg = win->get_gsg();
   nassertv(gsg != (GraphicsStateGuardian *)NULL);
 
   PT(CullResult) cull_result = dr->_cull_result;
@@ -860,7 +853,7 @@ cull_bin_draw(GraphicsStateGuardian *gsg, DisplayRegion *dr) {
     
     // Now draw.
     // This should get deferred into the next pipeline stage.
-    do_draw(cull_result, scene_setup, gsg, dr);
+    do_draw(cull_result, scene_setup, win, dr);
   }
 }
 
@@ -1121,11 +1114,13 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 do_draw(CullResult *cull_result, SceneSetup *scene_setup,
-        GraphicsStateGuardian *gsg, DisplayRegion *dr) {
+        GraphicsOutput *win, DisplayRegion *dr) {
   // Statistics
   PStatTimer timer(_draw_pcollector);
 
+  GraphicsStateGuardian *gsg = win->get_gsg();
   if (setup_gsg(gsg, scene_setup)) {
+    win->change_scenes(dr);
     DisplayRegionStack old_dr = gsg->push_display_region(dr);
     gsg->prepare_display_region();
     if (dr->is_any_clear_active()) {

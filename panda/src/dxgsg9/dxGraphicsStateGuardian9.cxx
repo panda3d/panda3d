@@ -2766,7 +2766,7 @@ release_texture(TextureContext *tc) {
 // copies current display region in framebuffer to the texture
 // usually its more efficient to do SetRenderTgt
 void DXGraphicsStateGuardian9::
-framebuffer_copy_to_texture(Texture *tex, const DisplayRegion *dr, const RenderBuffer &rb) {
+framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb) {
   set_read_buffer(rb);
 
   HRESULT hr;
@@ -2825,7 +2825,7 @@ framebuffer_copy_to_texture(Texture *tex, const DisplayRegion *dr, const RenderB
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian9::
-framebuffer_copy_to_ram(Texture *tex, const DisplayRegion *dr, const RenderBuffer &rb) {
+framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb) {
   set_read_buffer(rb);
 
   RECT SrcCopyRect;
@@ -3132,7 +3132,7 @@ issue_tex_gen(const TexGenAttrib *attrib) {
     _pD3DDevice->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, 0);
     _pD3DDevice->SetTextureStageState( 0, D3DTSS_TEXCOORDINDEX, 0);
 
-  } else if (attrib->get_mode(TextureStage::get_default()) == TexGenAttrib::M_sphere_map) {
+  } else if (attrib->get_mode(TextureStage::get_default()) == TexGenAttrib::M_eye_sphere_map) {
 
 #if 0
     // best reflection on a sphere is achieved by camera space normals in directx

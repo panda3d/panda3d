@@ -152,6 +152,56 @@ get_max_texture_stages() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_max_texture_dimension
+//       Access: Published
+//  Description: Returns the largest possible texture size in any one
+//               dimension supported by the GSG, or -1 if there is no
+//               particular limit.
+//
+//               The value returned may not be meaningful until after
+//               the graphics context has been fully created (e.g. the
+//               window has been opened).
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsStateGuardian::
+get_max_texture_dimension() const {
+  return _max_texture_dimension;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_max_3d_texture_dimension
+//       Access: Published
+//  Description: Returns the largest possible texture size in any one
+//               dimension for a 3-d texture, or -1 if there is no
+//               particular limit.  Returns 0 if 3-d textures are not
+//               supported.
+//
+//               The value returned may not be meaningful until after
+//               the graphics context has been fully created (e.g. the
+//               window has been opened).
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsStateGuardian::
+get_max_3d_texture_dimension() const {
+  return _max_3d_texture_dimension;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_max_cube_map_dimension
+//       Access: Published
+//  Description: Returns the largest possible texture size in any one
+//               dimension for a cube map texture, or -1 if there is
+//               no particular limit.  Returns 0 if cube map textures
+//               are not supported.
+//
+//               The value returned may not be meaningful until after
+//               the graphics context has been fully created (e.g. the
+//               window has been opened).
+////////////////////////////////////////////////////////////////////
+INLINE int GraphicsStateGuardian::
+get_max_cube_map_dimension() const {
+  return _max_cube_map_dimension;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_copy_texture_inverted
 //       Access: Published
 //  Description: Returns true if this particular GSG has the property

@@ -157,6 +157,9 @@ PUBLISHED:
             int primary_file_num_channels = 0, int alpha_file_channel = 0);
   bool write(const Filename &fullpath, int z = 0) const;
 
+  bool read_pages(const Filename &fullpath_template, int z_size = 0);
+  bool write_pages(const Filename &fullpath_template);
+
   bool load(const PNMImage &pnmimage, int z = 0);
   bool store(PNMImage &pnmimage, int z = 0) const;
 

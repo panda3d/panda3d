@@ -90,6 +90,12 @@ GraphicsStateGuardian(const FrameBufferProperties &properties,
   // supports multitexturing.
   _max_texture_stages = 1;
 
+  // Also initially, we assume there are no limits on texture sizes,
+  // and that 3-d and cube-map textures are not supported.
+  _max_texture_dimension = -1;
+  _max_3d_texture_dimension = 0;
+  _max_cube_map_dimension = 0;
+
   // Initially, we set this to false; a GSG that knows it has this
   // property should set it to true.
   _copy_texture_inverted = false;

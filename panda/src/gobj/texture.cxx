@@ -28,6 +28,7 @@
 #include "string_utils.h"
 #include "preparedGraphicsObjects.h"
 #include "pnmImage.h"
+#include "virtualFileSystem.h"
 
 #include <stddef.h>
 
@@ -260,6 +261,118 @@ write(const Filename &name, int z) const {
       << "Texture::write() - couldn't write: " << name << endl;
     return false;
   }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::read_pages
+//       Access: Published
+//  Description: Automatically reads in a sequence of pages, for the
+//               purpose of reading in a 3-d texture or a cube map
+//               texture.  The filename should contain a sequence of
+//               one or more hash marks ("#") which will be filled in
+//               with the z value of each page, zero-based.  If z_size
+//               is specified, the reading will stop there; otherwise,
+//               all found textures will be loaded, until a gap in the
+//               sequence is encountered.
+//
+//               If more than one hash mark is used, the numbers will
+//               be padded with zeroes if necessary to the
+//               corresponding number of digits.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+read_pages(const Filename &fullpath_template, int z_size) {
+  string fp = fullpath_template.get_fullpath();
+  size_t hash = fp.rfind('#');
+  if (hash == string::npos) {
+    gobj_cat.error()
+      << "Template " << fullpath_template << " contains no hash marks.\n";
+    return false;
+  }
+
+  // Count the number of hash marks.
+  size_t num_hash = 1;
+  while (hash >= num_hash && fp[hash - num_hash] == '#') {
+    num_hash++;
+  }
+
+  string prefix = fp.substr(0, hash - num_hash + 1);
+  string suffix = fp.substr(hash + 1);
+
+  clear_ram_image();
+
+  if (z_size != 0) {
+    set_z_size(z_size);
+    for (int z = 0; z < z_size; z++) {
+      ostringstream strm;
+      strm << prefix << setw(num_hash) << setfill('0') << z << suffix;
+      if (!read(strm.str(), z)) {
+        return false;
+      }
+    }
+  } else {
+    set_z_size(0);
+    int z = 0;
+    ostringstream strm;
+    strm << prefix << setw(num_hash) << setfill('0') << z << suffix;
+    Filename file(strm.str());
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+    while (vfs->exists(file)) {
+      if (!read(file, z)) {
+        return false;
+      }
+      ++z;
+
+      ostringstream strm;
+      strm << prefix << setw(num_hash) << setfill('0') << z << suffix;
+      file = Filename(strm.str());
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::write_pages
+//       Access: Published
+//  Description: Automatically writes out a sequence of pages, for the
+//               purpose of writing out a 3-d texture or a cube map
+//               texture.  The filename should contain a sequence of
+//               one or more hash marks ("#") which will be filled in
+//               with the z value of each page, zero-based.
+//
+//               If more than one hash mark is used, the numbers will
+//               be padded with zeroes if necessary to the
+//               corresponding number of digits.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+write_pages(const Filename &fullpath_template) {
+  string fp = fullpath_template.get_fullpath();
+  size_t hash = fp.rfind('#');
+  if (hash == string::npos) {
+    gobj_cat.error()
+      << "Template " << fullpath_template << " contains no hash marks.\n";
+    return false;
+  }
+
+  // Count the number of hash marks.
+  size_t num_hash = 1;
+  while (hash >= num_hash && fp[hash - num_hash] == '#') {
+    num_hash++;
+  }
+
+  string prefix = fp.substr(0, hash - num_hash + 1);
+  string suffix = fp.substr(hash + 1);
+
+  for (int z = 0; z < _z_size; z++) {
+    ostringstream strm;
+    strm << prefix << setw(num_hash) << setfill('0') << z << suffix;
+    if (!write(strm.str(), z)) {
+      return false;
+    }
+  }
+
   return true;
 }
 
@@ -500,7 +613,7 @@ store(PNMImage &pnmimage, int z) const {
       }
     }
 
-    nassertr(idx == (int)get_expected_ram_image_size(), false);
+    nassertr((size_t)idx == get_expected_ram_page_size() * (z + 1), false);
 
     return true;
 
@@ -526,7 +639,7 @@ store(PNMImage &pnmimage, int z) const {
       }
     }
 
-    nassertr(idx == (int)get_expected_ram_image_size(), false);
+    nassertr((size_t)idx == get_expected_ram_page_size() * (z + 1), false);
 
     return true;
   }

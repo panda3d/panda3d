@@ -129,12 +129,18 @@ PUBLISHED:
   };
   enum TexGen {
     TG_unspecified,
-    TG_sphere_map,
-    TG_cube_map,
+
+    TG_eye_sphere_map,
+
+    TG_world_cube_map,
+    TG_eye_cube_map,
+
+    TG_world_normal,
+    TG_eye_normal,
+
     TG_world_position,
     TG_object_position,
     TG_eye_position,
-    TG_object_normal,
   };
 
   INLINE void set_format(Format format);

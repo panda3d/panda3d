@@ -166,9 +166,9 @@ public:
   virtual void draw_sphere(GeomSphere *geom, GeomContext *gc)=0;
 
   virtual void framebuffer_copy_to_texture
-  (Texture *tex, const DisplayRegion *dr, const RenderBuffer &rb)=0;
+  (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb)=0;
   virtual bool framebuffer_copy_to_ram
-  (Texture *tex, const DisplayRegion *dr, const RenderBuffer &rb)=0;
+  (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb)=0;
 
   virtual bool framebuffer_bind_to_texture(GraphicsOutput *win, Texture *tex)=0;
   virtual void framebuffer_release_texture(GraphicsOutput *win, Texture *tex)=0;

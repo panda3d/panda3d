@@ -3488,7 +3488,7 @@ release_texture(TextureContext *tc) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian7::
-framebuffer_copy_to_texture(Texture *tex, const DisplayRegion *dr, const RenderBuffer &rb) {
+framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb) {
     dxgsg7_cat.error() << "DX copy_texture unimplemented!!!";
 }
 
@@ -3498,7 +3498,7 @@ framebuffer_copy_to_texture(Texture *tex, const DisplayRegion *dr, const RenderB
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian7::
-framebuffer_copy_to_ram(Texture *tex, const DisplayRegion *dr,
+framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
                         const RenderBuffer &rb) {
   set_read_buffer(rb);
   
