@@ -312,10 +312,6 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         self.forceToTruePosition()
         self.sendCurrentPosition()
 
-    def sendCurrentPosition(self):
-        self.cnode.initialize(self, self.dclass, self.doId)
-        self.cnode.sendEverything()
-
     ### Monitor clock sync ###
 
     def d_suggestResync(self, avId, timestampA, timestampB,

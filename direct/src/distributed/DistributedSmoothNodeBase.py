@@ -84,3 +84,7 @@ class DistributedSmoothNodeBase:
         taskName = self.taskName("sendPosHpr")
         task.delayTime = self.__broadcastPeriod
         return Task.again
+
+    def sendCurrentPosition(self):
+        self.cnode.initialize(self, self.dclass, self.doId)
+        self.cnode.sendEverything()
