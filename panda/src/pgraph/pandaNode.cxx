@@ -1066,6 +1066,13 @@ stash_child(int child_index) {
 void PandaNode::
 unstash_child(int stashed_index) {
   nassertv(stashed_index >= 0 && stashed_index < get_num_stashed());
+
+  // Save a reference count for ourselves.  I don't think this should
+  // be necessary, but there are occasional crashes in stash() during
+  // furniture moving mode.  Perhaps this will eliminate those
+  // crashes.
+  PT(PandaNode) self = this;
+
   PT(PandaNode) child_node = get_stashed(stashed_index);
   int sort = get_stashed_sort(stashed_index);
   

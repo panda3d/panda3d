@@ -44,6 +44,11 @@ GraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
   _pipe = pipe;
   _gsg = gsg;
 
+  if (display_cat.is_debug()) {
+    display_cat.debug()
+      << "Creating new window using GSG " << (void *)gsg << "\n";
+  }
+
   // Some default properties for windows unless specified otherwise.
   // Other properties (size, title, etc.) must be explicitly
   // specified.

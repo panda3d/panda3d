@@ -49,7 +49,8 @@ public:
 
 protected:
   GraphicsWindow *open_window(const WindowProperties &props,
-                              GraphicsEngine *engine, GraphicsPipe *pipe);
+                              GraphicsEngine *engine, GraphicsPipe *pipe,
+                              GraphicsStateGuardian *gsg = NULL);
   void close_window();
 
 public:

@@ -54,9 +54,11 @@ public:
   INLINE void set_window_title(const string &title);
   virtual void get_default_window_props(WindowProperties &props);
 
-  WindowFramework *open_window(GraphicsPipe *pipe = NULL);
+  WindowFramework *open_window(GraphicsPipe *pipe = NULL,
+                               GraphicsStateGuardian *gsg = NULL);
   WindowFramework *open_window(const WindowProperties &props,
-			       GraphicsPipe *pipe = NULL);
+			       GraphicsPipe *pipe = NULL,
+                               GraphicsStateGuardian *gsg = NULL);
 
   INLINE int get_num_windows() const;
   INLINE WindowFramework *get_window(int n) const;

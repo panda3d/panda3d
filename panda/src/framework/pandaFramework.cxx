@@ -166,13 +166,13 @@ get_default_window_props(WindowProperties &props) {
 //               NULL if not.
 ////////////////////////////////////////////////////////////////////
 WindowFramework *PandaFramework::
-open_window(GraphicsPipe *pipe) {
+open_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
   nassertr(_is_open, NULL);
 
   WindowProperties props;
   get_default_window_props(props);
 
-  return open_window(props, pipe);
+  return open_window(props, pipe, gsg);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -186,7 +186,8 @@ open_window(GraphicsPipe *pipe) {
 //               NULL if not.
 ////////////////////////////////////////////////////////////////////
 WindowFramework *PandaFramework::
-open_window(const WindowProperties &props, GraphicsPipe *pipe) {
+open_window(const WindowProperties &props, GraphicsPipe *pipe,
+            GraphicsStateGuardian *gsg) {
   if (pipe == (GraphicsPipe *)NULL) {
     pipe = get_default_pipe();
     if (pipe == (GraphicsPipe *)NULL) {
@@ -203,7 +204,7 @@ open_window(const WindowProperties &props, GraphicsPipe *pipe) {
   wf->set_lighting(get_lighting());
   wf->set_background_type(get_background_type());
 
-  GraphicsWindow *win = wf->open_window(props, &_engine, pipe);
+  GraphicsWindow *win = wf->open_window(props, &_engine, pipe, gsg);
   if (win == (GraphicsWindow *)NULL) {
     // Oops, couldn't make an actual window.
     delete wf;

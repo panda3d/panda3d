@@ -23,7 +23,19 @@ PandaFramework framework;
 void
 event_W(CPT_Event, void *) {
   // shift-W: open a new window on the same scene.
-  WindowFramework *window = framework.open_window();
+
+  // If we already have a window, use the same GSG.
+  GraphicsPipe *pipe = (GraphicsPipe *)NULL;
+  GraphicsStateGuardian *gsg = (GraphicsStateGuardian *)NULL;
+
+  if (framework.get_num_windows() > 0) {
+    WindowFramework *old_window = framework.get_window(0);
+    GraphicsWindow *win = old_window->get_graphics_window();
+    pipe = win->get_pipe();
+    gsg = win->get_gsg();
+  }
+
+  WindowFramework *window = framework.open_window(pipe, gsg);
   if (window != (WindowFramework *)NULL) {
     window->enable_keyboard();
     window->setup_trackball();
