@@ -404,7 +404,6 @@ copy_to(const NodePath &other, int sort) const {
   nassertr(verify_complete(), fail());
   nassertr(other.verify_complete(), fail());
   nassertr_always(!is_empty(), fail());
-  nassertr(!other.is_empty(), fail());
   nassertr(other._error_type == ET_ok, fail());
 
   PandaNode *source_node = node();
@@ -435,7 +434,7 @@ copy_to(const NodePath &other, int sort) const {
 NodePath NodePath::
 attach_new_node(PandaNode *node, int sort) const {
   nassertr(verify_complete(), NodePath::fail());
-  nassertr_always(!is_empty(), NodePath::fail());
+  nassertr(_error_type == ET_ok, NodePath::fail());
   nassertr(node != (PandaNode *)NULL, NodePath::fail());
 
   NodePath new_path(*this);
