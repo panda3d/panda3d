@@ -8,6 +8,7 @@
   #define SOURCES \
     config_interval.cxx config_interval.h \
     cInterval.cxx cInterval.I cInterval.h \
+    cIntervalManager.cxx cIntervalManager.I cIntervalManager.h \
     cLerpInterval.cxx cLerpInterval.I cLerpInterval.h \
     cLerpNodePathInterval.cxx cLerpNodePathInterval.I cLerpNodePathInterval.h \
     cLerpAnimEffectInterval.cxx cLerpAnimEffectInterval.I cLerpAnimEffectInterval.h \

@@ -1,6 +1,7 @@
 """ParticleInterval module: contains the ParticleInterval class"""
 
 from PandaModules import *
+from DirectNotifyGlobal import *
 import Interval
 
 import ParticleEffect

@@ -5,68 +5,23 @@
     """
 
     def setT(self, t):
-        t = min(max(t, 0.0), self.getDuration())
-        state = self.getState()
-        if state == CInterval.SInitial:
-            self.privInitialize(t)
-        elif state == CInterval.SFinal:
-            self.privReverseInitialize(t)
-        else:
-            self.privStep(t)
+        # Overridden from the C++ function to call privPostEvent
+        # afterward.  We do this by renaming the C++ function in
+        # FFIRename.
+        self.__cSetT(t)
         self.privPostEvent()
 
-    def start(self, t0 = 0.0, duration = None, scale = 1.0):
-        if self.isPlaying():
-            self.finish()
+    def play(self, t0 = 0.0, duration = None, scale = 1.0):
         if duration:  # None or 0 implies full length
-            self.setupPlay(t0, t0 + duration, scale)
+            self.start(t0, t0 + duration, scale)
         else:
-            self.setupPlay(t0, -1, scale)
-        self.privPostEvent()
-        self.__loop = 0
-        self.__spawnTask()
-
-    def loop(self, t0 = 0.0, duration = None, scale = 1.0):
-        self.start(t0, duration, scale)
-        self.__loop = 1
-        return
-
-    def pause(self):
-        if self.getState() == CInterval.SStarted:
-            self.privInterrupt()
-        self.privPostEvent()
-        self.__removeTask()
-        return self.getT()
-
-    def resume(self, t0 = None):
-        if not hasattr(self, "_CInterval__loop"):
-            self.__loop = 0
-        if t0 != None:
-            self.setT(t0)
-        self.setupResume()
-        if not self.isPlaying():
-            self.__spawnTask()
-        
-    def finish(self):
-        state = self.getState()
-        if state == CInterval.SInitial:
-            self.privInstant()
-        elif state != CInterval.SFinal:
-            self.privFinalize()
-        self.privPostEvent()
-        self.__removeTask()
-
-    def play(self, *args, **kw):
-        self.start(*args, **kw)
+            self.start(t0, -1, scale)
 
     def stop(self):
         self.finish()
 
     def setFinalT(self):
         self.finish()
-
-    def isPlaying(self):
-        return taskMgr.hasTaskNamed(self.getName() + '-play')
 
     def privPostEvent(self):
         # Call after calling any of the priv* methods to do any required
@@ -75,32 +30,6 @@
         if hasattr(self, "setTHooks"):
             for func in self.setTHooks:
                 func(t)
-
-    def __spawnTask(self):
-        # Spawn task
-        import Task
-        taskName = self.getName() + '-play'
-        task = Task.Task(self.__playTask)
-        task.interval = self
-        taskMgr.add(task, taskName)
-
-    def __removeTask(self):
-        # Kill old task(s), including those from a similarly-named but
-        # different interval.
-        taskName = self.getName() + '-play'
-        oldTasks = taskMgr.getTasksNamed(taskName)
-        for task in oldTasks:
-            if hasattr(task, "interval"):
-                taskMgr.remove(task)
-
-    def __playTask(self, task):
-        import Task
-        loopCount = self.stepPlay()
-        self.privPostEvent()
-        if loopCount == 0 or self.__loop:
-            return Task.cont
-        else:
-            return Task.done
 
     def popupControls(self, tl = None):
         """ popupControls()

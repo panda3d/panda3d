@@ -12,6 +12,7 @@ from EventManagerGlobal import *
 from PythonUtil import *
 from ParticleManagerGlobal import *
 from PhysicsManagerGlobal import *
+from IntervalManager import ivalMgr
 
 import Task
 import EventManager
@@ -543,6 +544,11 @@ class ShowBase:
         self.dgTrav.traverse(self.dataRootNode)
         return Task.cont
 
+    def ivalloop(self, state):
+        # Execute all intervals in the global ivalMgr.
+        ivalMgr.step()
+        return Task.cont
+
     def igloop(self, state):
         # run the collision traversal if we have a
         # CollisionTraverser set.
@@ -567,11 +573,15 @@ class ShowBase:
         # give the dataloop task a reasonably "early" priority,
         # so that it will get run before most tasks
         self.taskMgr.add(self.dataloop, 'dataloop', priority = -50)
+        # spawn the ivalloop with a later priority, so that it will
+        # run after most tasks, but before igloop.
+        self.taskMgr.add(self.ivalloop, 'ivalloop', priority = 10)
         self.eventMgr.restart()
 
     def shutdown(self):
         self.taskMgr.remove('igloop')
         self.taskMgr.remove('dataloop')
+        self.taskMgr.remove('ivalloop')
         self.eventMgr.shutdown()
 
     def getBackgroundColor(self):

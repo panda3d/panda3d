@@ -1,6 +1,7 @@
 """SoundInterval module: contains the SoundInterval class"""
 
 from PandaModules import *
+from DirectNotifyGlobal import *
 import Interval
 
 class SoundInterval(Interval.Interval):
@@ -61,6 +62,9 @@ class SoundInterval(Interval.Interval):
     def privStep(self, t):
         if self.state == CInterval.SPaused:
             # Restarting from a pause.
+            self.sound.setVolume(self.volume)
+            self.sound.setTime(t)
+            self.sound.setLoop(self.loop)
             self.sound.play()
         self.state = CInterval.SStarted
         self.currT = t

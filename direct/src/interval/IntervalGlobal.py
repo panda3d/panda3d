@@ -10,3 +10,4 @@ from ParticleInterval import *
 from SoundInterval import *
 from WaitInterval import *
 from MetaInterval import *
+from IntervalManager import *

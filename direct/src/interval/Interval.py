@@ -27,13 +27,14 @@ class Interval(DirectObject):
         self.__startTAtStart = 1
         self.__endT = duration
         self.__endTAtEnd = 1
+        self.__playRate = 1.0
+        self.__doLoop = 0
+        self.__loopCount = 0
 
         # Set true if the interval should be invoked if it was
         # completely skipped over during initialize or finalize, false
         # if it should be ignored in this case.
         self.openEnded = openEnded
-        
-        self.__loop = 0
 
     def getName(self):
         return self.name
@@ -53,9 +54,54 @@ class Interval(DirectObject):
         # finish().
         return (self.getState() == CInterval.SInitial or \
                 self.getState() == CInterval.SFinal)
+
+    def setT(self, t):
+        t = min(max(t, 0.0), self.getDuration())
+        state = self.getState()
+        if state == CInterval.SInitial:
+            self.privInitialize(t)
+        elif state == CInterval.SFinal:
+            self.privReverseInitialize(t)
+        else:
+            self.privStep(t)
+        self.privPostEvent()
         
     def getT(self):
         return self.currT
+
+    def start(self, startT = 0.0, endT = -1.0, playRate = 1.0):
+        self.setupPlay(startT, endT, playRate, 0)
+        self.__spawnTask()
+
+    def loop(self, startT = 0.0, endT = -1.0, playRate = 1.0):
+        self.setupPlay(startT, endT, playRate, 1)
+        self.__spawnTask()
+
+    def pause(self):
+        if self.getState() == CInterval.SStarted:
+            self.privInterrupt()
+        self.privPostEvent()
+        self.__removeTask()
+        return self.getT()
+
+    def resume(self, t0 = None):
+        if t0 != None:
+            self.setT(t0)
+        self.setupResume()
+        if not self.isPlaying():
+            self.__spawnTask()
+        
+    def finish(self):
+        state = self.getState()
+        if state == CInterval.SInitial:
+            self.privInstant()
+        elif state != CInterval.SFinal:
+            self.privFinalize()
+        self.privPostEvent()
+        self.__removeTask()
+
+    def isPlaying(self):
+        return taskMgr.hasTaskNamed(self.getName() + '-play')
 
     def setDoneEvent(self, event):
         self.doneEvent = event
@@ -133,7 +179,7 @@ class Interval(DirectObject):
         if self.doneEvent:
             messenger.throw(self.doneEvent)
 
-    def setupPlay(self, startT, endT, playRate):
+    def setupPlay(self, startT, endT, playRate, doLoop):
         duration = self.getDuration()
         
         if startT <= 0:
@@ -155,6 +201,7 @@ class Interval(DirectObject):
 
         self.__clockStart = globalClock.getFrameTime()
         self.__playRate = playRate
+        self.__doLoop = doLoop
         self.__loopCount = 0
 
     def setupResume(self):
@@ -178,7 +225,7 @@ class Interval(DirectObject):
                 if self.isStopped():
                     self.privInitialize(t)
                 else:
-                    self.prevStep(t)
+                    self.privStep(t)
 
             else:
                 # Past the ending point; time to finalize.
@@ -214,6 +261,8 @@ class Interval(DirectObject):
             # Not supported at the moment.
             pass
 
+        return (self.__loopCount == 0 or self.__doLoop)
+
     def __repr__(self, indent=0):
         """ __repr__(indent)
         """
@@ -226,58 +275,6 @@ class Interval(DirectObject):
     # The rest of these methods are duplicates of functions defined
     # for the CInterval class via the file CInterval-extensions.py.
 
-    def setT(self, t):
-        t = min(max(t, 0.0), self.getDuration())
-        state = self.getState()
-        if state == CInterval.SInitial:
-            self.privInitialize(t)
-        elif state == CInterval.SFinal:
-            self.privReverseInitialize(t)
-        else:
-            self.privStep(t)
-        self.privPostEvent()
-
-    def start(self, t0 = 0.0, duration = None, scale = 1.0):
-        if self.isPlaying():
-            self.finish()
-        if duration:  # None or 0 implies full length
-            self.setupPlay(t0, t0 + duration, scale)
-        else:
-            self.setupPlay(t0, -1, scale)
-        self.privPostEvent()
-        self.__loop = 0
-        self.__spawnTask()
-
-    def loop(self, t0 = 0.0, duration = None, scale = 1.0):
-        self.start(t0, duration, scale)
-        self.__loop = 1
-        return
-
-    def pause(self):
-        if self.getState() == CInterval.SStarted:
-            self.privInterrupt()
-        self.privPostEvent()
-        self.__removeTask()
-        return self.getT()
-
-    def resume(self, t0 = None):
-        if not hasattr(self, "_CInterval__loop"):
-            self.__loop = 0
-        if t0 != None:
-            self.setT(t0)
-        self.setupResume()
-        if not self.isPlaying():
-            self.__spawnTask()
-        
-    def finish(self):
-        state = self.getState()
-        if state == CInterval.SInitial:
-            self.privInstant()
-        elif state != CInterval.SFinal:
-            self.privFinalize()
-        self.privPostEvent()
-        self.__removeTask()
-
     def play(self, *args, **kw):
         self.start(*args, **kw)
 
@@ -286,9 +283,6 @@ class Interval(DirectObject):
 
     def setFinalT(self):
         self.finish()
-
-    def isPlaying(self):
-        return taskMgr.hasTaskNamed(self.getName() + '-play')
 
     def privPostEvent(self):
         # Call after calling any of the priv* methods to do any required
@@ -301,6 +295,7 @@ class Interval(DirectObject):
     def __spawnTask(self):
         # Spawn task
         import Task
+        self.__removeTask()
         taskName = self.getName() + '-play'
         task = Task.Task(self.__playTask)
         task.interval = self
@@ -318,9 +313,9 @@ class Interval(DirectObject):
 
     def __playTask(self, task):
         import Task
-        loopCount = self.stepPlay()
+        again = self.stepPlay()
         self.privPostEvent()
-        if loopCount == 0 or self.__loop:
+        if again:
             return Task.cont
         else:
             return Task.done

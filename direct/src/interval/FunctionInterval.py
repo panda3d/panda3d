@@ -2,6 +2,7 @@
 
 from PandaModules import *
 from MessengerGlobal import *
+from DirectNotifyGlobal import *
 import Interval
 import types
 

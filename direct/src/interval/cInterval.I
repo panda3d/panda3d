@@ -79,18 +79,6 @@ is_stopped() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CInterval::get_t
-//       Access: Published
-//  Description: Returns the current time of the interval: the last
-//               value of t passed to priv_initialize(), priv_step(), or
-//               priv_finalize().
-////////////////////////////////////////////////////////////////////
-INLINE double CInterval::
-get_t() const {
-  return _curr_t;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CInterval::set_done_event
 //       Access: Published
 //  Description: Sets the event that is generated whenever the
@@ -114,6 +102,74 @@ set_done_event(const string &event) {
 INLINE const string &CInterval::
 get_done_event() const {
   return _done_event;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CInterval::get_t
+//       Access: Published
+//  Description: Returns the current time of the interval: the last
+//               value of t passed to priv_initialize(), priv_step(), or
+//               priv_finalize().
+////////////////////////////////////////////////////////////////////
+INLINE double CInterval::
+get_t() const {
+  return _curr_t;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CInterval::set_interruptible
+//       Access: Published
+//  Description: Changes the state of the 'interruptible' flag.  If
+//               this is true, the interval may be arbitrarily
+//               interrupted when the system needs to reset due to
+//               some external event by calling
+//               CIntervalManager::pause_all_interruptible().  If this
+//               is false (the default), the interval must always be
+//               explicitly finished or paused.
+////////////////////////////////////////////////////////////////////
+INLINE void CInterval::
+set_interruptible(bool interruptible) {
+  _interruptible = interruptible;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CInterval::get_interruptible
+//       Access: Published
+//  Description: Returns the state of the 'interruptible' flag.  See
+//               set_interruptible().
+////////////////////////////////////////////////////////////////////
+INLINE bool CInterval::
+get_interruptible() const {
+  return _interruptible;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CInterval::set_manager
+//       Access: Published
+//  Description: Indicates the CIntervalManager object which will be
+//               responsible for playing this interval.  This defaults
+//               to the global CIntervalManager; you should need to
+//               change this only if you have special requirements for
+//               playing this interval.
+////////////////////////////////////////////////////////////////////
+INLINE void CInterval::
+set_manager(CIntervalManager *manager) {
+  _manager = manager;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CInterval::get_manager
+//       Access: Published
+//  Description: Returns the CIntervalManager object which will be
+//               responsible for playing this interval.  Note that
+//               this can only return a C++ object; if the particular
+//               CIntervalManager object has been extended in the
+//               scripting language, this will return the encapsulated
+//               C++ object, not the full extended object.
+////////////////////////////////////////////////////////////////////
+INLINE CIntervalManager *CInterval::
+get_manager() const {
+  return _manager;
 }
 
 ////////////////////////////////////////////////////////////////////

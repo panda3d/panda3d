@@ -1,6 +1,7 @@
 """ActorInterval module: contains the ActorInterval class"""
 
 from PandaModules import *
+from DirectNotifyGlobal import *
 import Interval
 import math
 import LerpBlendHelpers

@@ -44,6 +44,7 @@ methodRenameDictionary = {
     'operator<<=' : '__ilshift__',
     'operator>>=' : '__irshift__',
     'print'       : 'Cprint',
+    'CInterval.setT' : '__cSetT',
     }
     
 classRenameDictionary = {

@@ -24,6 +24,8 @@
 #include "pvector.h"
 #include "config_interval.h"
 
+class CIntervalManager;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : CInterval
 // Description : The base class for timeline components.  A CInterval
@@ -66,14 +68,26 @@ PUBLISHED:
 
   INLINE State get_state() const;
   INLINE bool is_stopped() const;
-  INLINE double get_t() const;
 
   INLINE void set_done_event(const string &event);
   INLINE const string &get_done_event() const;
 
-  void setup_play(double start_time, double end_time, double play_rate);
-  void setup_resume();
-  int step_play();
+  void set_t(double t);
+  INLINE double get_t() const;
+
+  INLINE void set_interruptible(bool interruptible);
+  INLINE bool get_interruptible() const;
+
+  INLINE void set_manager(CIntervalManager *manager);
+  INLINE CIntervalManager *get_manager() const;
+
+  void start(double start_t = 0.0, double end_t = -1.0, double play_rate = 1.0);
+  void loop(double start_t = 0.0, double end_t = -1.0, double play_rate = 1.0);
+  double pause();
+  void resume();
+  void resume(double start_t);
+  void finish();
+  bool is_playing() const;
 
   // These functions control the actual playback of the interval.
   // Don't call them directly; they're intended to be called from a
@@ -96,6 +110,11 @@ PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
 
+  void setup_play(double start_time, double end_time, double play_rate,
+                  bool do_loop);
+  void setup_resume();
+  bool step_play();
+
 public:
   void mark_dirty();
 
@@ -113,6 +132,9 @@ protected:
   string _done_event;
   double _duration;
 
+  bool _interruptible;
+  CIntervalManager *_manager;
+
   // For setup_play() and step_play().
   double _clock_start;
   double _start_t;
@@ -120,8 +142,9 @@ protected:
   bool _end_t_at_end;
   bool _start_t_at_start;
   double _play_rate;
+  bool _do_loop;
   int _loop_count;
-
+  
 private:
   bool _open_ended;
   bool _dirty;

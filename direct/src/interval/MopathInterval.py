@@ -2,6 +2,7 @@
 
 import Interval
 from PandaModules import *
+from DirectNotifyGlobal import *
 
 # import Mopath
 

@@ -1,5 +1,6 @@
 from PandaModules import *
 from DirectNotifyGlobal import *
+from IntervalManager import ivalMgr
 import Interval
 import Task
 import types
@@ -31,6 +32,11 @@ class MetaInterval(CMetaInterval):
                 name = kw['name']
                 del kw['name']
 
+        interruptible = 0
+        if kw.has_key('interruptible'):
+            interruptible = kw['interruptible']
+            del kw['interruptible']
+
         if kw:
             self.notify.error("Unexpected keyword parameters: %s" % (kw.keys()))
 
@@ -50,6 +56,8 @@ class MetaInterval(CMetaInterval):
             MetaInterval.SequenceNum += 1
 
         CMetaInterval.__init__(self, name)
+        self.__manager = ivalMgr
+        self.setInterruptible(interruptible)
 
         self.pythonIvals = []
 
@@ -113,6 +121,7 @@ class MetaInterval(CMetaInterval):
         self.__ivalsDirty = 1
         return self
 
+    # Functions to define sequence, parallel, and track behaviors:
     
     def addSequence(self, list, relTime, relTo):
         # Adds the given list of intervals to the MetaInterval to be
@@ -208,7 +217,53 @@ class MetaInterval(CMetaInterval):
 
         else:
             self.notify.error("Not an Interval: %s" % (ival,))
-            
+
+    # Functions to support automatic playback of MetaIntervals along
+    # with all of their associated Python callbacks:
+
+    def setManager(self, manager):
+        self.__manager = manager
+        CMetaInterval.setManager(self, manager)
+
+    def getManager(self):
+        return self.__manager
+
+    def start(self, startT = 0.0, endT = -1.0, playRate = 1.0):
+        self.__updateIvals()
+        self.setupPlay(startT, endT, playRate, 0)
+        self.__manager.addInterval(self)
+
+    def loop(self, startT = 0.0, endT = -1.0, playRate = 1.0):
+        self.__updateIvals()
+        self.setupPlay(startT, endT, playRate, 1)
+        self.__manager.addInterval(self)
+
+    def pause(self):
+        if self.getState() == CInterval.SStarted:
+            self.privInterrupt()
+        self.__manager.removeInterval(self)
+        self.privPostEvent()
+        return self.getT()
+
+    def resume(self, t0 = None):
+        self.__updateIvals()
+        if t0 != None:
+            self.setT(t0)
+        self.setupResume()
+        self.__manager.addInterval(self)
+        
+    def finish(self):
+        state = self.getState()
+        if state == CInterval.SInitial:
+            self.privInstant()
+        elif state != CInterval.SFinal:
+            self.privFinalize()
+        self.__manager.removeInterval(self)
+        self.privPostEvent()
+
+
+
+    # Internal functions:
 
     def __updateIvals(self):
         # The MetaInterval object does not create the C++ list of
@@ -311,20 +366,6 @@ class MetaInterval(CMetaInterval):
 
         self.__updateIvals()
         return CMetaInterval.getDuration(self)
-
-    def start(self, *args, **kw):
-        # This function overrides from the parent level to force it to
-        # update the interval list first, if necessary.
-
-        self.__updateIvals()
-        return CMetaInterval.start(self, *args, **kw)
-
-    def loop(self, *args, **kw):
-        # This function overrides from the parent level to force it to
-        # update the interval list first, if necessary.
-
-        self.__updateIvals()
-        return CMetaInterval.loop(self, *args, **kw)
 
     def __repr__(self, *args, **kw): 
         # This function overrides from the parent level to force it to

@@ -444,6 +444,14 @@ priv_step(double t) {
   check_started("priv_step");
   int now = double_to_int_time(t);
 
+  // One special case: if we step to t == 0.0, it really means to the
+  // very beginning of the interval, *before* any events that occurred
+  // at time 0.  (Most of the time, stepping to a particular time
+  // means *after* any events that occurred at that time.)
+  if (t == 0.0) {
+    now = -1;
+  }
+
   // Now look for events between the last time we ran and the current
   // time.
 
