@@ -791,11 +791,11 @@ process_model_node(MayaNodeDesc *node_desc) {
       if (mayaegg_cat.is_debug()) {
         mayaegg_cat.debug()
           << "Node is not really a camera: " << path << "\n";
-
-        // Just a generic node.
-        EggGroup *egg_group = _tree.get_egg_group(node_desc);
-        get_transform(node_desc, dag_path, egg_group);
       }
+
+      // Just a generic node.
+      EggGroup *egg_group = _tree.get_egg_group(node_desc);
+      get_transform(node_desc, dag_path, egg_group);
 
     } else {
       if (mayaegg_cat.is_debug()) {
