@@ -14,6 +14,9 @@ class Mopath(PandaObject):
 	self.name = name
 	self.reset()
 
+    def getMaxT(self):
+	return self.maxT
+
     def loadFile(self, filename):
 	nodePath = loader.loadModel(filename)
         if nodePath:
