@@ -18,27 +18,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WinGraphicsWindow::handle_mouse_motion
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void WinGraphicsWindow::
-handle_mouse_motion(int x, int y) {
-  _input_devices[0].set_pointer_in_window(x, y);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WinGraphicsWindow::handle_mouse_exit
-//       Access: Private
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void WinGraphicsWindow::
-handle_mouse_exit() {
-  // note: 'mouse_motion' is considered the 'entry' event
-  _input_devices[0].set_pointer_out_of_window();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: WinGraphicsWindow::handle_keypress
 //       Access: Private
 //  Description:

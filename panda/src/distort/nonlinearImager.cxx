@@ -259,8 +259,9 @@ int NonlinearImager::
 add_viewer(DisplayRegion *dr) {
   GraphicsWindow *win = dr->get_window();
   GraphicsStateGuardian *gsg = win->get_gsg();
-  nassertr(_viewers.empty() || gsg == _gsg, -1);
+  nassertr(_viewers.empty() || (gsg == _gsg && win == _win), -1);
   _gsg = gsg;
+  _win = win;
 
   int previous_vi = find_viewer(dr);
   if (previous_vi >= 0) {
@@ -601,7 +602,7 @@ render_screen(GraphicsEngine *engine, NonlinearImager::Screen &screen) {
   // Make a display region of the proper size and clear it to prepare for
   // rendering the scene.
   PT(DisplayRegion) scratch_region =
-    _gsg->get_window()->make_scratch_display_region(screen._tex_width, screen._tex_height);
+    _win->make_scratch_display_region(screen._tex_width, screen._tex_height);
   scratch_region->set_camera(screen._source_camera);
   engine->render_subframe(_gsg, scratch_region, true);
 

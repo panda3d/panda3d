@@ -63,8 +63,8 @@ INLINE ostream &operator << (ostream &out, GLenum v) {
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAGL GLGraphicsStateGuardian : public GraphicsStateGuardian {
 public:
-  GLGraphicsStateGuardian(GraphicsWindow *win);
-  ~GLGraphicsStateGuardian();
+  GLGraphicsStateGuardian(const FrameBufferProperties &properties);
+  virtual ~GLGraphicsStateGuardian();
 
   virtual void reset();
 

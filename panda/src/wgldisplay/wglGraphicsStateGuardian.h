@@ -30,12 +30,18 @@
 ////////////////////////////////////////////////////////////////////
 class wglGraphicsStateGuardian : public GLGraphicsStateGuardian {
 public:
-  wglGraphicsStateGuardian(const FrameBufferProperties &properties);
+  wglGraphicsStateGuardian(const FrameBufferProperties &properties, int pfnum);
   virtual ~wglGraphicsStateGuardian();
 
-  HGLRC _context;
+  INLINE int get_pfnum() const;
+  INLINE HGLRC get_context(HDC hdc);
+
+private:
+  void make_context(HDC hdc);
+
+  bool _made_context;
   int _pfnum;
-  PIXELFORMATDESCRIPTOR _pixelformat;
+  HGLRC _context;
 
 public:
   static TypeHandle get_class_type() {

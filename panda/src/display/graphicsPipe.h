@@ -28,6 +28,8 @@
 
 class HardwareChannel;
 class GraphicsWindow;
+class GraphicsStateGuardian;
+class FrameBufferProperties;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsPipe
@@ -69,11 +71,12 @@ public:
   virtual HardwareChannel *get_hw_channel(GraphicsWindow *window, int index);
 
 protected:
-  // The make_window() interface on GraphicsPipe is protected; don't
-  // try to call it directly.  Instead, use
-  // GraphicsEngine::make_window() to make a new window on a
-  // particular pipe.
-  virtual PT(GraphicsWindow) make_window()=0;
+  // The make_window() and make_gsg() interfaces on GraphicsPipe are
+  // protected; don't try to call them directly.  Instead, use
+  // the interface on GraphicsEngine to make a new window or gsg.
+  virtual PT(GraphicsStateGuardian) make_gsg(const FrameBufferProperties &properties);
+  virtual void close_gsg(GraphicsStateGuardian *gsg);
+  virtual PT(GraphicsWindow) make_window(GraphicsStateGuardian *gsg)=0;
 
   Mutex _lock;
 

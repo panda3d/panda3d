@@ -40,7 +40,7 @@
 #error DX7 headers not available, you need to install MS Platform SDK or DirectX 8+ SDK!
 #endif
 
-#include <pandabase.h>
+#include "pandabase.h"
 
 // disable nameless struct 'warning'
 #pragma warning (disable : 4201)
@@ -63,12 +63,14 @@ typedef pvector<DDPIXELFORMAT> DDPixelFormatVec;
 
 #define SAFE_DELETE(p)       { if(p) { delete (p);     (p)=NULL; } }
 #define SAFE_DELETE_ARRAY(p) { if(p) { delete[] (p);   (p)=NULL; } }
+#define SAFE_FREELIB(hDLL)   { if(hDLL!=NULL) { FreeLibrary(hDLL); hDLL = NULL; } }
+#define IS_VALID_PTR(PTR)  (!IsBadWritePtr(PTR,sizeof(void*)))
 
 // this is bDoDownToZero argument to RELEASE()
 #define RELEASE_DOWN_TO_ZERO true
 #define RELEASE_ONCE false
 
-// #define DEBUG_RELEASES
+#define DEBUG_RELEASES
 
 #ifdef DEBUG_RELEASES
 #define RELEASE(OBJECT,MODULE,DBGSTR,bDoDownToZero)             \
@@ -124,6 +126,7 @@ typedef struct {
       bool              bIsLowVidMemCard;
       bool              bIsTNLDevice;
       bool              bIsSWRast;
+      bool              bIsFullScreen;
       WORD              depth_buffer_bitdepth;  //GetSurfaceDesc is not reliable so must store this explicitly
       WORD              CardIDNum;  // its posn in DisplayArray, for dbgprint purposes
       DDDEVICEIDENTIFIER2 DXDeviceID;

@@ -50,8 +50,17 @@ GraphicsEngine(Pipeline *pipeline) :
   if (_pipeline == (Pipeline *)NULL) {
     _pipeline = Pipeline::get_render_pipeline();
   }
-  set_threading_model(threading_model);
-  if (!_threading_model.empty()) {
+
+  // Default frame buffer properties.
+  _frame_buffer_properties.set_depth_bits(1);
+  _frame_buffer_properties.set_color_bits(1);
+  _frame_buffer_properties.set_frame_buffer_mode
+    (FrameBufferProperties::FM_rgba | 
+     FrameBufferProperties::FM_double_buffer | 
+     FrameBufferProperties::FM_depth);
+
+  set_threading_model(GraphicsThreadingModel(threading_model));
+  if (!_threading_model.is_default()) {
     display_cat.info()
       << "Using threading model " << _threading_model << "\n";
   }
@@ -71,48 +80,45 @@ GraphicsEngine::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::set_frame_buffer_properties
+//       Access: Published
+//  Description: Specifies the default frame buffer properties for
+//               future gsg's created using the one-parameter
+//               make_gsg() method.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+set_frame_buffer_properties(const FrameBufferProperties &properties) {
+  MutexHolder holder(_lock);
+  _frame_buffer_properties = properties;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::get_frame_buffer_properties
+//       Access: Published
+//  Description: Returns the current default threading model.  See
+//               set_frame_buffer_properties().
+////////////////////////////////////////////////////////////////////
+FrameBufferProperties GraphicsEngine::
+get_frame_buffer_properties() const {
+  FrameBufferProperties result;
+  {
+    MutexHolder holder(_lock);
+    result = _frame_buffer_properties;
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::set_threading_model
 //       Access: Published
 //  Description: Specifies how windows created using future calls to
-//               the one-parameter version of make_window() will be
-//               threaded.  (The two-parameter flavor of make_window()
-//               allows this to be specified on a per-window basis.)
-//
-//               The threading model is a string representing the
-//               names of the two threads that will process cull and
-//               draw for the given window, separated by a slash.  The
-//               names are completely arbitrary and are used only to
-//               differentiate threads.  The two names may be the
-//               same, meaning the same thread, or each may be the
-//               empty string, which represents the previous thread.
-//
-//               Thus, for example, "cull/draw" indicates that the
-//               window will be culled in a thread called "cull", and
-//               drawn in a separate thread called "draw".
-//               "draw/draw" or simply "draw/" indicates the window
-//               will be culled and drawn in the same thread, "draw".
-//               On the other hand, "/draw" indicates the thread will
-//               be culled in the main, or app thread, and drawn in a
-//               separate thread named "draw".  The empty string, ""
-//               or "/", indicates the thread will be culled and drawn
-//               in the main thread; that is to say, a single-process
-//               model.
-//
-//               Finally, if the threading model begins with a "-"
-//               character, then cull and draw are run simultaneously,
-//               in the same thread, with no binning or state sorting.
-//               It simplifies the cull process but it forces the
-//               scene to render in scene graph order; state sorting
-//               and alpha sorting is lost.
-//
-//               You can create as many different threads as you like;
-//               each thread is uniquified based on its name, so
-//               multiple windows may easily be handled by the same or
-//               different threads.
+//               the one-parameter version of make_gsg() will be
+//               threaded.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
-set_threading_model(const string &threading_model) {
-  if (!threading_model.empty() && !Thread::is_threading_supported()) {
+set_threading_model(const GraphicsThreadingModel &threading_model) {
+  if (!threading_model.is_single_threaded() && 
+      !Thread::is_threading_supported()) {
     display_cat.warning()
       << "Threading model " << threading_model
       << " requested but threading not supported.\n";
@@ -128,9 +134,9 @@ set_threading_model(const string &threading_model) {
 //  Description: Returns the current default threading model.  See
 //               set_threading_model().
 ////////////////////////////////////////////////////////////////////
-string GraphicsEngine::
+GraphicsThreadingModel GraphicsEngine::
 get_threading_model() const {
-  string result;
+  GraphicsThreadingModel result;
   {
     MutexHolder holder(_lock);
     result = _threading_model;
@@ -139,50 +145,63 @@ get_threading_model() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::make_gsg
+//       Access: Published
+//  Description: Creates a new gsg using the indicated GraphicsPipe
+//               and returns it.  The GraphicsEngine does not
+//               officially own the pointer to the gsg; but if any
+//               windows are created using this GSG, the
+//               GraphicsEngine will own the pointers to these
+//               windows, which in turn will own the pointer to the
+//               GSG.
+//
+//               There is no explicit way to release a GSG, but it
+//               will be destructed when all windows that reference it
+//               are destructed, and the draw thread that owns the GSG
+//               runs one more time.
+////////////////////////////////////////////////////////////////////
+PT(GraphicsStateGuardian) GraphicsEngine::
+make_gsg(GraphicsPipe *pipe, const FrameBufferProperties &properties,
+         const GraphicsThreadingModel &threading_model) {
+  // TODO: ask the draw thread to make the GSG.
+  PT(GraphicsStateGuardian) gsg = pipe->make_gsg(properties);
+  if (gsg != (GraphicsStateGuardian *)NULL) {
+    gsg->_threading_model = threading_model;
+    gsg->_pipe = pipe;
+  }
+
+  return gsg;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::make_window
 //       Access: Published
-//  Description: Creates a new window using the indicated GraphicsPipe
-//               and returns it.  The GraphicsEngine becomes the owner
-//               of the window; it will persist at least until
-//               remove_window() is called later.
+//  Description: Creates a new window using the indicated
+//               GraphicsStateGuardian and returns it.  The
+//               GraphicsEngine becomes the owner of the window; it
+//               will persist at least until remove_window() is called
+//               later.
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow *GraphicsEngine::
-make_window(GraphicsPipe *pipe, const string &threading_model) {
-  PT(GraphicsWindow) window = pipe->make_window();
+make_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
+            const GraphicsThreadingModel &threading_model) {
+  if (gsg != (GraphicsStateGuardian *)NULL) {
+    nassertr(pipe == gsg->get_pipe(), NULL);
+    nassertr(threading_model.get_draw_name() ==
+             gsg->get_threading_model().get_draw_name(), NULL);
+  }
+
+  // TODO: ask the window thread to make the window.
+  PT(GraphicsWindow) window = pipe->make_window(gsg);
   if (window != (GraphicsWindow *)NULL) {
     MutexHolder holder(_lock);
     _windows.insert(window);
 
-    // Now figure out the threading model.
-    string cull_name;
-    string draw_name;
-    bool cull_sorting = true;
-    size_t start = 0;
-    if (!threading_model.empty() && threading_model[0] == '-') {
-      start = 1;
-      cull_sorting = false;
-    }
+    WindowRenderer *cull = get_window_renderer(threading_model.get_cull_name());
+    WindowRenderer *draw = get_window_renderer(threading_model.get_draw_name());
+    draw->add_gsg(gsg);
 
-    size_t slash = threading_model.find('/', start);
-    if (slash == string::npos) {
-      cull_name = threading_model;
-    } else {
-      cull_name = threading_model.substr(start, slash - start);
-      draw_name = threading_model.substr(slash + 1);
-    }
-    if (!cull_sorting || draw_name.empty()) {
-      draw_name = cull_name;
-    }
-
-    /*
-    cerr << "cull_name = " << cull_name << " draw_name = " << draw_name
-         << " cull_sorting = " << cull_sorting << "\n";
-    */
-
-    WindowRenderer *cull = get_window_renderer(cull_name);
-    WindowRenderer *draw = get_window_renderer(draw_name);
-
-    if (cull_sorting) {
+    if (threading_model.get_cull_sorting()) {
       cull->add_window(cull->_cull, window);
       draw->add_window(draw->_draw, window);
     } else {
@@ -870,6 +889,18 @@ get_window_renderer(const string &name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::WindowRenderer::add_gsg
+//       Access: Public
+//  Description: Adds a new GSG to the _gsg list, if it is not already
+//               there.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::WindowRenderer::
+add_gsg(GraphicsStateGuardian *gsg) {
+  MutexHolder holder(_wl_lock);
+  _gsgs.insert(gsg);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::WindowRenderer::add_window
 //       Access: Public
 //  Description: Adds a new window to the indicated list, which should
@@ -958,6 +989,26 @@ do_frame(GraphicsEngine *engine) {
   engine->cull_bin_draw(_cull);
   engine->cull_and_draw_together(_cdraw);
   engine->process_events(_window);
+
+  // If any GSG's on the list have no more outstanding pointers, clean
+  // them up.  (We are in the draw thread for all of these GSG's.)
+  if (any_done_gsgs()) {
+    GSGs new_gsgs;
+    GSGs::iterator gi;
+    for (gi = _gsgs.begin(); gi != _gsgs.end(); ++gi) {
+      GraphicsStateGuardian *gsg = (*gi);
+      if (gsg->get_ref_count() == 1) {
+        // This one has no outstanding pointers; clean it up.
+        GraphicsPipe *pipe = gsg->get_pipe();
+        engine->close_gsg(pipe, gsg);
+      } else { 
+        // This one is ok; preserve it.
+        new_gsgs.insert(gsg);
+      }
+    }
+
+    _gsgs.swap(new_gsgs);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -995,7 +1046,7 @@ do_release(GraphicsEngine *) {
 //  Description: Closes all the windows on the _window list.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::WindowRenderer::
-do_close(GraphicsEngine *) {
+do_close(GraphicsEngine *engine) {
   WindowProperties close_properties;
   close_properties.set_open(false);
 
@@ -1005,6 +1056,23 @@ do_close(GraphicsEngine *) {
     GraphicsWindow *win = (*wi);
     win->set_properties_now(close_properties);
   }
+
+  // Also close all of the GSG's.
+  GSGs new_gsgs;
+  GSGs::iterator gi;
+  for (gi = _gsgs.begin(); gi != _gsgs.end(); ++gi) {
+    GraphicsStateGuardian *gsg = (*gi);
+    if (gsg->get_ref_count() == 1) {
+      // This one has no outstanding pointers; clean it up.
+      GraphicsPipe *pipe = gsg->get_pipe();
+      engine->close_gsg(pipe, gsg);
+    } else { 
+      // This one is ok; preserve it.
+      new_gsgs.insert(gsg);
+    }
+  }
+  
+  _gsgs.swap(new_gsgs);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1047,6 +1115,26 @@ do_pending(GraphicsEngine *engine) {
     }
     _pending_close.swap(new_pending_close);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::WindowRenderer::any_done_gsgs
+//       Access: Public
+//  Description: Returns true if any of the GSG's on this thread's
+//               draw list are done (they have no outstanding pointers
+//               other than this one), or false if all of them are
+//               still good.
+////////////////////////////////////////////////////////////////////
+bool GraphicsEngine::WindowRenderer::
+any_done_gsgs() const {
+  GSGs::const_iterator gi;
+  for (gi = _gsgs.begin(); gi != _gsgs.end(); ++gi) {
+    if ((*gi)->get_ref_count() == 1) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -66,6 +66,9 @@ private:
   friend class WinGraphicsWindow;
 };
 
+extern EXPCL_PANDAWIN bool MyLoadLib(HINSTANCE &hDLL, const char *DLLname);
+extern EXPCL_PANDAWIN bool MyGetProcAddr(HINSTANCE hDLL, FARPROC *pFn, const char *szExportedFnName);
+
 #include "winGraphicsPipe.I"
 
 #endif

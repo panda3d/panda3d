@@ -20,8 +20,8 @@
 #include <time.h>
 #include <math.h>
 #include <tchar.h>
-#include "wdxGraphicsWindow8.h"
 #include "wdxGraphicsPipe8.h"
+#include "wdxGraphicsWindow8.h"
 #include "config_dxgsg8.h"
 
 #include "keyboardButton.h"
@@ -37,12 +37,9 @@
 
 TypeHandle wdxGraphicsWindow8::_type_handle;
 
-#define LAST_ERROR 0
-#define ERRORBOX_TITLE "Panda3D Error"
 #define WDX_WINDOWCLASSNAME "wdxDisplay"
 #define WDX_WINDOWCLASSNAME_NOCURSOR WDX_WINDOWCLASSNAME "_NoCursor"
 #define DEFAULT_CURSOR IDC_ARROW
-
 
 // define this to enable debug testing of dinput joystick
 //#define DINPUT_DEBUG_POLL
@@ -60,50 +57,15 @@ wdxGraphicsWindow8* global_wdxwinptr = NULL;  // need this for temporary windpro
 
 LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam,LPARAM lparam);
 
-// imperfect method to ID NVid? could also scan desc str, but that isnt fullproof either
-#define IS_NVIDIA(DDDEVICEID) ((DDDEVICEID.VendorId==0x10DE) || (DDDEVICEID.VendorId==0x12D2))
-#define IS_ATI(DDDEVICEID) (DDDEVICEID.VendorId==0x1002)
-#define IS_MATROX(DDDEVICEID) (DDDEVICEID.VendorId==0x102B)
-
+/*
 // because we dont have access to ModifierButtons, as a hack just synchronize state of these
 // keys on get/lose keybd focus
 #define NUM_MODIFIER_KEYS 16
 unsigned int hardcoded_modifier_buttons[NUM_MODIFIER_KEYS]={VK_SHIFT,VK_MENU,VK_CONTROL,VK_SPACE,VK_TAB,
                                                             VK_UP,VK_DOWN,VK_LEFT,VK_RIGHT,VK_PRIOR,VK_NEXT,VK_HOME,VK_END,
                                                             VK_INSERT,VK_DELETE,VK_ESCAPE};
-
-#define UNKNOWN_VIDMEM_SIZE 0xFFFFFFFF
-
-// pops up MsgBox w/system error msg
-#define LAST_ERROR 0
-void PrintErrorMessage(DWORD msgID) {
-  LPTSTR pMessageBuffer;
-
-  if (msgID==LAST_ERROR)
-    msgID=GetLastError();
-
-  FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
-                NULL,msgID,
-                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), //The user default language
-                (LPTSTR) &pMessageBuffer,  // the weird ptrptr->ptr cast is intentional, see FORMAT_MESSAGE_ALLOCATE_BUFFER
-                1024, NULL);
-  MessageBox(GetDesktopWindow(),pMessageBuffer,_T(ERRORBOX_TITLE),MB_OK);
-  wdxdisplay8_cat.fatal() << "System error msg: " << pMessageBuffer << endl;
-  LocalFree( pMessageBuffer );
-}
-
-void ClearToBlack(HWND hWnd, const WindowProperties &props) {
-  // clear to black
-  HDC hDC=GetDC(hWnd);  // GetDC is not particularly fast.  if this needs to be super-quick, we should cache GetDC's hDC
-  RECT clrRect = {
-    props.get_x_origin(), props.get_y_origin(),
-    props.get_x_origin() + props.get_x_size(),
-    props.get_y_origin() + props.get_y_size()
-  };
-  FillRect(hDC,&clrRect,(HBRUSH)GetStockObject(BLACK_BRUSH));
-  ReleaseDC(hWnd,hDC);
-  GdiFlush();
-}
+*/
+//#define UNKNOWN_VIDMEM_SIZE 0xFFFFFFFF
 
 ////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsWindow8::Constructor
@@ -111,12 +73,16 @@ void ClearToBlack(HWND hWnd, const WindowProperties &props) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 wdxGraphicsWindow8::
-wdxGraphicsWindow8(GraphicsPipe *pipe) :
-  WinGraphicsWindow(pipe) 
+wdxGraphicsWindow8(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) :
+  WinGraphicsWindow(pipe, gsg) 
 {
-  _dxgsg = (DXGraphicsStateGuardian8 *)NULL;
+  // dont actually create the window in the constructor.  reason: multi-threading requires
+  // panda C++ window object to exist in separate thread from actual API window
+
+  _dxgsg = DCAST(DXGraphicsStateGuardian8, gsg);
   _depth_buffer_bpp = 0;
   _awaiting_restore = false;
+  ZeroMemory(&_wcontext,sizeof(_wcontext));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -128,78 +94,50 @@ wdxGraphicsWindow8::
 ~wdxGraphicsWindow8() {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow8::make_gsg
-//       Access: Public, Virtual
-//  Description: Creates a new GSG for the window and stores it in the
-//               _gsg pointer.  This should only be called from within
-//               the draw thread.
-////////////////////////////////////////////////////////////////////
 void wdxGraphicsWindow8::
-make_gsg() {
-  wdxGraphicsPipe8 *dxpipe;
-  DCAST_INTO_V(dxpipe, _pipe);
+make_current(void) {
+  DXGraphicsStateGuardian8 *dxgsg;
+  DCAST_INTO_V(dxgsg, _gsg);
+  //wglMakeCurrent(_hdc, wdxgsg->_context);
+  dxgsg->set_context(&_wcontext);
 
-  nassertv(_gsg == (GraphicsStateGuardian *)NULL);
-  _dxgsg = new DXGraphicsStateGuardian8(this);
-  _gsg = _dxgsg;
-
-  // Tell the associated dxGSG about the window handle.
-  _dxgsg->scrn.hWnd = _mwindow;
-
-  // Create a Direct3D object.
-  LPDIRECT3D8 pD3D8;
-
-  // these were taken from the 8.0 and 8.1 d3d8.h SDK headers
-#define D3D_SDK_VERSION_8_0  120
-#define D3D_SDK_VERSION_8_1  220
-
-  // are we using 8.0 or 8.1?
-  WIN32_FIND_DATA TempFindData;
-  HANDLE hFind;
-  char tmppath[MAX_PATH + 128];
-  GetSystemDirectory(tmppath, MAX_PATH);
-  strcat(tmppath, "\\dpnhpast.dll");
-  hFind = FindFirstFile (tmppath, &TempFindData);
-  if (hFind != INVALID_HANDLE_VALUE) {
-    FindClose(hFind);
-    _dxgsg->scrn.bIsDX81 = true;
-    pD3D8 = (*dxpipe->_Direct3DCreate8)(D3D_SDK_VERSION_8_1);
-  } else {
-    _dxgsg->scrn.bIsDX81 = false;
-    pD3D8 = (*dxpipe->_Direct3DCreate8)(D3D_SDK_VERSION_8_0);
-  }
-
-  if (pD3D8 == NULL) {
-    wdxdisplay8_cat.error()
-      << "Direct3DCreate8 failed!\n";
-    release_gsg();
-    return;
-  }
-
-  if (!choose_adapter(pD3D8)) {
-    wdxdisplay8_cat.error()
-      << "Unable to find suitable rendering device.\n";
-    release_gsg();
-    return;
-  }
-
-  create_screen_buffers_and_device(_dxgsg->scrn, dx_force_16bpp_zbuffer);
+  // Now that we have made the context current to a window, we can
+  // reset the GSG state if this is the first time it has been used.
+  // (We can't just call reset() when we construct the GSG, because
+  // reset() requires having a current context.)
+  dxgsg->reset_if_new();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow8::release_gsg
-//       Access: Public, Virtual
-//  Description: Releases the current GSG pointer, if it is currently
-//               held, and resets the GSG to NULL.  This should only
-//               be called from within the draw thread.
-////////////////////////////////////////////////////////////////////
+/* BUGBUG:  need to reinstate these methods ASAP.  they were incorrectly moved from the GraphicsWindow to the GSG
+            apps need to know the framebuffer format so they can create texture/rendertgt with same fmt
+int wdxGraphicsWindow8::
+get_depth_bitwidth(void) {
+    assert(_dxgsg!=NULL);
+    if(_dxgsg->scrn.PresParams.EnableAutoDepthStencil)
+       return _dxgsg->scrn.depth_buffer_bitdepth;
+     else return 0;
+
+// GetSurfaceDesc is not reliable, on GF2, GetSurfDesc returns 32bpp when you created a 24bpp zbuf
+// instead store the depth used at creation time
+
+//    DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd);
+//    _dxgsg->_zbuf->GetSurfaceDesc(&ddsd);
+//  return ddsd.ddpfPixelFormat.dwRGBBitCount;
+}
+
 void wdxGraphicsWindow8::
-release_gsg() {
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
-    GraphicsWindow::release_gsg();
-  }
-} 
+get_framebuffer_format(PixelBuffer::Type &fb_type, PixelBuffer::Format &fb_format) {
+    assert(_dxgsg!=NULL);
+
+    fb_type = PixelBuffer::T_unsigned_byte;
+    // this is sortof incorrect, since for F_rgb5 it's really 5 bits per channel
+    //would have to change a lot of texture stuff to make this correct though
+
+    if(IS_16BPP_DISPLAY_FORMAT(_dxgsg->scrn.PresParams.BackBufferFormat))
+        fb_format = PixelBuffer::F_rgb5;
+     else fb_format = PixelBuffer::F_rgb;
+}
+*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsWindow8::verify_window_sizes
@@ -222,6 +160,9 @@ verify_window_sizes(int numsizes, int *dimen) {
 
   int num_valid_modes = 0;
 
+  wdxGraphicsPipe8 *dxpipe;
+  DCAST_INTO_R(dxpipe, _pipe, 0);
+
   // not requesting same refresh rate since changing res might not
   // support same refresh rate at new size
 
@@ -235,18 +176,18 @@ verify_window_sizes(int numsizes, int *dimen) {
     bool CouldntFindAnyValidZBuf;
     D3DFORMAT newPixFmt = D3DFMT_UNKNOWN;
 
-    if (special_check_fullscreen_resolution(x_size, y_size)) {
+    if (dxpipe->special_check_fullscreen_resolution(_wcontext, x_size, y_size)) {
       // bypass the test below for certain cards we know have valid modes
       bIsGoodMode=true;
 
     } else {
-      if (_dxgsg->scrn.bIsLowVidMemCard) {
+      if (_wcontext.bIsLowVidMemCard) {
         bIsGoodMode = ((x_size == 640) && (y_size == 480));
       } else  {
-        search_for_valid_displaymode(x_size, y_size, _dxgsg->scrn.PresParams.EnableAutoDepthStencil != false,
-                                     IS_STENCIL_FORMAT(_dxgsg->scrn.PresParams.AutoDepthStencilFormat),
-                                     &_dxgsg->scrn.SupportedScreenDepthsMask,
-                                     &CouldntFindAnyValidZBuf, &newPixFmt);
+        dxpipe->search_for_valid_displaymode(_wcontext, x_size, y_size, _wcontext.PresParams.EnableAutoDepthStencil != false,
+                                     IS_STENCIL_FORMAT(_wcontext.PresParams.AutoDepthStencilFormat),
+                                     &_wcontext.SupportedScreenDepthsMask,
+                                     &CouldntFindAnyValidZBuf, &newPixFmt, dx_force_16bpp_zbuffer);
         bIsGoodMode = (newPixFmt != D3DFMT_UNKNOWN);
       }
     }
@@ -380,58 +321,61 @@ bool wdxGraphicsWindow8::
 do_fullscreen_resize(int x_size, int y_size) {
   bool bCouldntFindValidZBuf;
   D3DFORMAT pixFmt;
-  bool bNeedZBuffer = (_dxgsg->scrn.PresParams.EnableAutoDepthStencil!=false);
-  bool bNeedStencilBuffer = IS_STENCIL_FORMAT(_dxgsg->scrn.PresParams.AutoDepthStencilFormat);
+  bool bNeedZBuffer = (_wcontext.PresParams.EnableAutoDepthStencil!=false);
+  bool bNeedStencilBuffer = IS_STENCIL_FORMAT(_wcontext.PresParams.AutoDepthStencilFormat);
+
+  wdxGraphicsPipe8 *dxpipe;
+  DCAST_INTO_R(dxpipe, _pipe, false);
 
   bool bIsGoodMode=false;
 
-  if (!special_check_fullscreen_resolution(x_size,y_size)) {
+  if (!dxpipe->special_check_fullscreen_resolution(_wcontext, x_size,y_size)) {
     // bypass the lowvidmem test below for certain "lowmem" cards we know have valid modes
 
-    // wdxdisplay8_cat.info() << "1111111 lowvidmemcard="<< _dxgsg->scrn.bIsLowVidMemCard << endl;
-    if (_dxgsg->scrn.bIsLowVidMemCard && (!((x_size==640) && (y_size==480)))) {
-      wdxdisplay8_cat.error() << "resize() failed: will not try to resize low vidmem device #" << _dxgsg->scrn.CardIDNum << " to non-640x480!\n";
+    // wdxdisplay8_cat.info() << "1111111 lowvidmemcard="<< _wcontext.bIsLowVidMemCard << endl;
+    if (_wcontext.bIsLowVidMemCard && (!((x_size==640) && (y_size==480)))) {
+      wdxdisplay8_cat.error() << "resize() failed: will not try to resize low vidmem device #" << _wcontext.CardIDNum << " to non-640x480!\n";
       goto Error_Return;
     }
   }
 
   // must ALWAYS use search_for_valid_displaymode even if we know
   // a-priori that res is valid so we can get a valid pixfmt
-  search_for_valid_displaymode(x_size, y_size, 
+  dxpipe->search_for_valid_displaymode(_wcontext, x_size, y_size, 
                                bNeedZBuffer, bNeedStencilBuffer,
-                               &_dxgsg->scrn.SupportedScreenDepthsMask,
+                               &_wcontext.SupportedScreenDepthsMask,
                                &bCouldntFindValidZBuf,
-                               &pixFmt);
+                               &pixFmt, dx_force_16bpp_zbuffer);
   bIsGoodMode=(pixFmt!=D3DFMT_UNKNOWN);
 
   if (!bIsGoodMode) {
     wdxdisplay8_cat.error() << "resize() failed: "
                            << (bCouldntFindValidZBuf ? "Couldnt find valid zbuffer format to go with FullScreen mode" : "No supported FullScreen modes")
-                           << " at " << x_size << "x" << y_size << " for device #" << _dxgsg->scrn.CardIDNum <<endl;
+                           << " at " << x_size << "x" << y_size << " for device #" << _wcontext.CardIDNum <<endl;
     goto Error_Return;
   }
 
   // reset_device_resize_window handles both windowed & fullscrn,
   // so need to set new displaymode manually here
-  _dxgsg->scrn.DisplayMode.Width=x_size;
-  _dxgsg->scrn.DisplayMode.Height=y_size;
-  _dxgsg->scrn.DisplayMode.Format = pixFmt;
-  _dxgsg->scrn.DisplayMode.RefreshRate = D3DPRESENT_RATE_DEFAULT;
+  _wcontext.DisplayMode.Width=x_size;
+  _wcontext.DisplayMode.Height=y_size;
+  _wcontext.DisplayMode.Format = pixFmt;
+  _wcontext.DisplayMode.RefreshRate = D3DPRESENT_RATE_DEFAULT;
 
-  _dxgsg->scrn.PresParams.BackBufferFormat = pixFmt;   // make reset_device_resize use presparams or displaymode??
+  _wcontext.PresParams.BackBufferFormat = pixFmt;   // make reset_device_resize use presparams or displaymode??
 
   bool bResizeSucceeded = reset_device_resize_window(x_size, y_size);
 
   if (!bResizeSucceeded) {
     wdxdisplay8_cat.error() << "resize() failed with OUT-OF-MEMORY error!\n";
 
-    if ((!IS_16BPP_DISPLAY_FORMAT(_dxgsg->scrn.PresParams.BackBufferFormat)) &&
-       (_dxgsg->scrn.SupportedScreenDepthsMask & (R5G6B5_FLAG|X1R5G5B5_FLAG))) {
+    if ((!IS_16BPP_DISPLAY_FORMAT(_wcontext.PresParams.BackBufferFormat)) &&
+       (_wcontext.SupportedScreenDepthsMask & (R5G6B5_FLAG|X1R5G5B5_FLAG))) {
       // fallback strategy, if we trying >16bpp, fallback to 16bpp buffers
-      _dxgsg->scrn.DisplayMode.Format = ((_dxgsg->scrn.SupportedScreenDepthsMask & R5G6B5_FLAG) ? D3DFMT_R5G6B5 : D3DFMT_X1R5G5B5);
+      _wcontext.DisplayMode.Format = ((_wcontext.SupportedScreenDepthsMask & R5G6B5_FLAG) ? D3DFMT_R5G6B5 : D3DFMT_X1R5G5B5);
       dx_force_16bpp_zbuffer=true;
       if (wdxdisplay8_cat.info())
-        wdxdisplay8_cat.info() << "CreateDevice failed with out-of-vidmem, retrying w/16bpp buffers on device #"<< _dxgsg->scrn.CardIDNum << endl;
+        wdxdisplay8_cat.info() << "CreateDevice failed with out-of-vidmem, retrying w/16bpp buffers on device #"<< _wcontext.CardIDNum << endl;
 
       bResizeSucceeded= reset_device_resize_window(x_size, y_size);  // create the new resized rendertargets
     }
@@ -445,6 +389,238 @@ do_fullscreen_resize(int x_size, int y_size) {
   return bResizeSucceeded;
 }
 
+#if 1
+//////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::window_proc
+//       Access: Private
+//  Description: This is the nonstatic window_proc function.  It is
+//               called to handle window events for this particular
+//               window.
+////////////////////////////////////////////////////////////////////
+LONG wdxGraphicsWindow8::
+window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+  return WinGraphicsWindow::window_proc(hwnd,msg,wparam,lparam);
+}
+
+#else
+
+////////////////////////////////////////////////////////////////////
+//     Function: window_proc
+//       Access:
+//  Description:
+////////////////////////////////////////////////////////////////////
+LONG wdxGraphicsWindow8::
+window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+    int button = -1;
+    int x, y, width, height;
+
+    switch(msg) {
+        case WM_SETCURSOR: {
+            // Turn off any GDI window cursor
+            //  dx8 cursor not working yet
+
+            if(dx_use_dx_cursor && is_fullscreen()) {
+                //            SetCursor( NULL );
+            //                _dxgsg->scrn.pD3DDevice->ShowCursor(true);
+
+                set_cursor_visibility(true);
+                return TRUE; // prevent Windows from setting cursor to window class cursor (see docs on WM_SETCURSOR)
+            }
+            break;
+        }
+
+        case WM_PAINT: {
+           // primarily seen when app window is 'uncovered'
+           if((_WindowAdjustingType != NotAdjusting) || (!DX_IS_READY)) {
+             // let DefWndProc do WM_ERASEBKGND & just draw black,
+             // rather than forcing Present to stretchblt the old window contents
+             // into the new size
+             break;
+           }
+
+           PAINTSTRUCT ps;
+           BeginPaint(hwnd, &ps);
+           if(DX_IS_READY) {
+              _dxgsg->show_frame(true);  // 'true' since just want to show the last rendered backbuf, if any
+           }
+           EndPaint(hwnd, &ps);
+           return 0;
+        }
+
+        case WM_IME_STARTCOMPOSITION:
+          // In case we're running fullscreen mode, we have to turn on
+          // explicit DX support for overlay windows now, so we'll be able
+          // to see the IME window.
+          _dxgsg->support_overlay_window(true);
+          break;
+
+        case WM_IME_ENDCOMPOSITION:
+          // Turn off the support for overlay windows, since we're done
+          // with the IME window for now and it just slows things down.
+          _dxgsg->support_overlay_window(false);
+          break;
+
+        case WM_ENTERSIZEMOVE:
+             if(_dxgsg!=NULL) 
+                _dxgsg->SetDXReady(false);   // dont see pic during resize
+             _WindowAdjustingType = MovingOrResizing;
+          break;
+
+        case WM_EXITSIZEMOVE: {
+            #ifdef _DEBUG
+              wdxdisplay_cat.spam()  << "WM_EXITSIZEMOVE received"  << endl;
+            #endif
+
+            if(_WindowAdjustingType==Resizing) {
+                bool bSucceeded=handle_windowed_resize(hwnd,true);
+
+                if(!bSucceeded) {
+                    #if 0
+                                bugbug need to fix this stuff
+                                SetWindowPos(hwnd,NULL,0,0,lastxsize,lastysize,SWP_NOMOVE |
+                    #endif
+                }
+            }
+
+            _WindowAdjustingType = NotAdjusting;
+            _dxgsg->SetDXReady(true);
+            return 0;
+        }
+
+        case WM_SIZE: {
+
+            #ifdef _DEBUG
+                {
+                    width = LOWORD(lparam);  height = HIWORD(lparam);
+                    wdxdisplay_cat.spam() << "WM_SIZE received with width:" << width << "  height: " << height << " flags: " <<
+                    ((wparam == SIZE_MAXHIDE)? "SIZE_MAXHIDE " : "") << ((wparam == SIZE_MAXSHOW)? "SIZE_MAXSHOW " : "") <<
+                    ((wparam == SIZE_MINIMIZED)? "SIZE_MINIMIZED " : "") << ((wparam == SIZE_RESTORED)? "SIZE_RESTORED " : "") <<
+                    ((wparam == SIZE_MAXIMIZED)? "SIZE_MAXIMIZED " : "") << endl;
+                }
+            #endif
+                // old comment -- added SIZE_RESTORED to handle 3dfx case
+                if(_props._fullscreen || ((_dxgsg==NULL) || (_dxgsg->scrn.hWnd==NULL)) || ((wparam != SIZE_RESTORED) && (wparam != SIZE_MAXIMIZED)))
+                    break;
+
+                width = LOWORD(lparam);  height = HIWORD(lparam);
+
+                if((_props._xsize != width) || (_props._ysize != height)) {
+                    _WindowAdjustingType = Resizing;
+
+                 // for maximized,unmaximize, need to call resize code artificially
+                 // since no WM_EXITSIZEMOVE is generated.
+                 if(wparam==SIZE_MAXIMIZED) {
+                       _bSizeIsMaximized=TRUE;
+                       window_proc(hwnd, WM_EXITSIZEMOVE, 0x0,0x0);
+                 } else if((wparam==SIZE_RESTORED) && _bSizeIsMaximized) {
+                       _bSizeIsMaximized=FALSE;  // only want to reinit dx if restoring from maximized state
+                       window_proc(hwnd, WM_EXITSIZEMOVE, 0x0,0x0);
+                 }
+                }
+
+                break;
+            }
+    
+        case WM_ERASEBKGND: {
+            // WM_ERASEBKGND will be ignored during resizing, because
+            // we dont want WM_PAINT's generated as user is manually resizing window.
+            
+            // for the intermediate resizing images that WM_PAINT would show to be useful, 
+            // the panda window parameters need to be reset on every
+            // WM_SIZE event and that isnt happening yet
+
+            if(_WindowAdjustingType)
+                break;
+            return 0;  // dont let GDI waste time redrawing the deflt background
+        }
+
+        case WM_TIMER:
+            // 2 cases of app deactivation:
+            //
+            // 1) user has switched out of fullscreen mode
+            //    this is first signalled when ACTIVATEAPP returns false
+            //    for this case, we dont wake up until WM_SIZE returns restore or maximize
+            //    and WM_TIMER just periodically reawakens app for idle processing
+
+            //    unfortunately this doesnt seem to work because RestoreAllSurfaces doesn't
+            //    seem to think we're back in the original displaymode even after I've received
+            //    the WM_DISPLAYCHANGE msg, and returns WRONGMODE error.  So the only way I can
+            //    think of to make this work is to have the timer periodically check for restored
+            //    coop level, as it does in case 2)
+
+            //
+            // 2) windowed app has lost access to dx because another app has taken dx exclusive mode
+            //    here we rely on WM_TIMER to periodically check if it is ok to reawaken app.
+            //    windowed apps currently run regardless of if its window is in the foreground
+            //    so we cannot rely on window messages to reawaken app
+
+            if((wparam==_PandaPausedTimer) && ((!_window_active)||_active_minimized_fullscreen)) {
+                assert(_dxgsg!=NULL);
+                _dxgsg->CheckCooperativeLevel(DO_REACTIVATE_WINDOW);
+
+                // wdxdisplay_cat.spam() << "periodic return of control to app\n";
+                _return_control_to_app = true;
+                // throw_event("PandaPaused");
+                // do we still need to do this since I return control to app periodically using timer msgs?
+                // does app need to know to avoid major computation?
+            }
+
+         #ifdef DINPUT_DEBUG_POLL
+            // probably want to get rid of this in favor of event-based input
+            if(dx_use_joystick && (wparam==_pParentWindowGroup->_pDInputInfo->_JoystickPollTimer)) {
+                DIJOYSTATE2 js;
+                ZeroMemory(&js,sizeof(js));
+                if(_pParentWindowGroup->_pDInputInfo->ReadJoystick(0,js)) {
+                    // for now just print stuff out to make sure it works
+                    wdxdisplay_cat.debug() << "joyPos (X: " << js.lX << ",Y: " << js.lY << ",Z: " << js.lZ << ")\n";
+                    for(int i=0;i<128;i++) {
+                        if(js.rgbButtons[i]!=0)
+                            wdxdisplay_cat.debug() << "joyButton "<< i << " pressed\n";
+                    }
+                } else {
+                    wdxdisplay_cat.error() << "read of Joystick failed!\n";
+                    exit(1);
+                }
+            }
+          #endif
+            return 0;
+
+        case WM_CLOSE:
+            #ifdef _DEBUG
+              wdxdisplay_cat.spam()  << "WM_CLOSE received\n";
+            #endif
+         // close_window();
+          delete _pParentWindowGroup;
+
+          // BUGBUG:  right now there is no way to tell the panda app the graphics window is invalid or
+          //          has been closed by the user, to prevent further methods from being called on the window.
+          //          this needs to be added to panda for multiple windows to work.  in the meantime, just
+          //          trigger an exit here if # windows==0, since that is the expected behavior when all
+          //          windows are closed (should be done by the app though, and it assumes you only make this
+          //          type of panda gfx window)
+
+          if(hwnd_pandawin_map.size()==0) {
+              exit(0);
+          }
+          return 0;
+
+        case WM_ACTIVATEAPP: {
+            #ifdef _DEBUG
+              wdxdisplay_cat.spam()  << "WM_ACTIVATEAPP(" << (bool)(wparam!=0) <<") received\n";
+            #endif
+
+           if((!wparam) && _props._fullscreen) {
+               deactivate_window();
+               return 0;
+           }         // dont want to reactivate until window is actually un-minimized (see WM_SIZE)
+           break;
+        }
+    }
+
+  return WinGraphicsWindow::window_proc(hwnd,msg,wparam,lparam);
+}
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsWindow8::create_screen_buffers_and_device
 //       Access: Private
@@ -455,7 +631,11 @@ do_fullscreen_resize(int x_size, int y_size) {
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsWindow8::
 create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer) {
-  // only want this to apply to initial startup
+  wdxGraphicsPipe8 *dxpipe;
+  DCAST_INTO_V(dxpipe, _pipe);
+
+  // only want dx_pick_best_screenres to apply to initial startup, and 
+  // since the initial res has already been picked, dont use auto-res-select in any future init sequence.
   dx_pick_best_screenres = false;
 
   DWORD dwRenderWidth=Display.DisplayMode.Width;
@@ -465,8 +645,12 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
   D3DPRESENT_PARAMETERS* pPresParams = &Display.PresParams;
   RECT view_rect;
   HRESULT hr;
-  int framebuffer_mode = get_properties().get_framebuffer_mode();
-  bool bWantStencil = ((framebuffer_mode & WindowProperties::FM_stencil) != 0);
+
+  // BUGBUG: need to change panda to put frame buffer properties with GraphicsWindow, not GSG!!
+  int frame_buffer_mode = _gsg->get_properties().get_frame_buffer_mode();
+  bool bWantStencil = ((frame_buffer_mode & FrameBufferProperties::FM_stencil) != 0);
+
+  PRINT_REFCNT(wdxdisplay8,pD3D8);
 
   assert(pD3D8!=NULL);
   assert(pD3DCaps->DevCaps & D3DDEVCAPS_HWRASTERIZATION);
@@ -492,7 +676,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
   }
 
   if (Display.PresParams.EnableAutoDepthStencil) {
-    if (!find_best_depth_format(Display, Display.DisplayMode,
+    if (!dxpipe->find_best_depth_format(Display, Display.DisplayMode,
                                &Display.PresParams.AutoDepthStencilFormat,
                                bWantStencil, false)) {
       wdxdisplay8_cat.error()
@@ -538,7 +722,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
   pPresParams->BackBufferHeight = Display.DisplayMode.Height;
   DWORD dwBehaviorFlags=0x0;
 
-  if (_dxgsg->scrn.bIsTNLDevice) {
+  if (_wcontext.bIsTNLDevice) {
     dwBehaviorFlags|=D3DCREATE_HARDWARE_VERTEXPROCESSING;
     // note: we could create a pure device in this case if I eliminated the GetRenderState calls in dxgsg
 
@@ -571,7 +755,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
 
     ClearToBlack(Display.hWnd, get_properties());
 
-    hr = pD3D8->CreateDevice(Display.CardIDNum, D3DDEVTYPE_HAL, _mwindow,
+    hr = pD3D8->CreateDevice(Display.CardIDNum, D3DDEVTYPE_HAL, _hWnd,
                              dwBehaviorFlags, pPresParams, &Display.pD3DDevice);
 
     if (FAILED(hr)) {
@@ -618,7 +802,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
 
     assert((dwRenderWidth==pPresParams->BackBufferWidth)&&(dwRenderHeight==pPresParams->BackBufferHeight));
 
-    hr = pD3D8->CreateDevice(Display.CardIDNum, D3DDEVTYPE_HAL, _mwindow,
+    hr = pD3D8->CreateDevice(Display.CardIDNum, D3DDEVTYPE_HAL, _hWnd,
                              dwBehaviorFlags, pPresParams, &Display.pD3DDevice);
 
     if (FAILED(hr)) {
@@ -629,7 +813,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
 
   //  ========================================================
 
-  PRINT_REFCNT(wdxdisplay,_dxgsg->scrn.pD3DDevice);
+  PRINT_REFCNT(wdxdisplay8,_wcontext.pD3DDevice);
 
   if (pPresParams->EnableAutoDepthStencil) {
     _dxgsg->_buffer_mask |= RenderBuffer::T_depth;
@@ -674,7 +858,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow8::choose_adapter
+//     Function: wdxGraphicsWindow8::choose_device
 //       Access: Private
 //  Description: Looks at the list of available graphics adapters and
 //               chooses a suitable one for the window.
@@ -682,16 +866,19 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
 //               Returns true if successful, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsWindow8::
-choose_adapter(LPDIRECT3D8 pD3D8) {
+choose_device(void) {
   HRESULT hr;
 
-  int num_adapters = pD3D8->GetAdapterCount();
+  wdxGraphicsPipe8 *dxpipe;
+  DCAST_INTO_R(dxpipe, _pipe, false);
+
+  int num_adapters = dxpipe->_pD3D8->GetAdapterCount();
   DXDeviceInfoVec device_infos;
 
   for (int i = 0; i < num_adapters; i++) {
     D3DADAPTER_IDENTIFIER8 adapter_info;
     ZeroMemory(&adapter_info, sizeof(D3DADAPTER_IDENTIFIER8));
-    hr = pD3D8->GetAdapterIdentifier(i, D3DENUM_NO_WHQL_LEVEL, &adapter_info);
+    hr = dxpipe->_pD3D8->GetAdapterIdentifier(i, D3DENUM_NO_WHQL_LEVEL, &adapter_info);
     if (FAILED(hr)) {
       wdxdisplay8_cat.fatal()
         << "D3D GetAdapterID(" << i << ") failed: "
@@ -702,7 +889,7 @@ choose_adapter(LPDIRECT3D8 pD3D8) {
     LARGE_INTEGER *DrvVer = &adapter_info.DriverVersion;
 
     wdxdisplay8_cat.info()
-      << "D3D8 Adapter[" << i << "]: " << adapter_info.Description 
+      << "D3D8." << (dxpipe->_bIsDX81 ?"1":"0") << " Adapter[" << i << "]: " << adapter_info.Description 
       << ", Driver: " << adapter_info.Driver << ", DriverVersion: ("
       << HIWORD(DrvVer->HighPart) << "." << LOWORD(DrvVer->HighPart) << "."
       << HIWORD(DrvVer->LowPart) << "." << LOWORD(DrvVer->LowPart)
@@ -711,7 +898,7 @@ choose_adapter(LPDIRECT3D8 pD3D8) {
       << " SubsysID: 0x" << (void*) adapter_info.SubSysId
       << " Revision: 0x" << (void*) adapter_info.Revision << endl;
     
-    HMONITOR hMon = pD3D8->GetAdapterMonitor(i);
+    HMONITOR hMon = dxpipe->_pD3D8->GetAdapterMonitor(i);
     if (hMon == NULL) {
       wdxdisplay8_cat.info()
         << "D3D8 Adapter[" << i << "]: seems to be disabled, skipping it\n";
@@ -760,8 +947,236 @@ choose_adapter(LPDIRECT3D8 pD3D8) {
     }
   }
 
-  return search_for_device(pD3D8, &device_infos[adapter_num]);
+  UINT good_device_count=0;
+  for(UINT devnum=0;devnum<device_infos.size() /*&& (good_device_count < num_windows)*/;devnum++) {
+      if(search_for_device(dxpipe,&device_infos[devnum]))
+          good_device_count++;
+  }
+
+  if(good_device_count==0) {
+     wdxdisplay8_cat.fatal() << "no usable display devices, exiting...\n";
+     return false;
+  }
+
+  return true;
 }
+
+/*
+primary init sequence of old method, still need to integrate multi-window functionality
+void wdxGraphicsWindow8Group::initWindowGroup(void) {
+    HRESULT hr;
+
+    assert(_windows.size()>0);
+    _hOldForegroundWindow=GetForegroundWindow();
+    _bClosingAllWindows= false;
+
+    UINT num_windows=_windows.size();
+
+    #define D3D8_NAME "d3d8.dll"
+    #define D3DCREATE8 "Direct3DCreate8"
+
+    _hD3D8_DLL = LoadLibrary(D3D8_NAME);
+    if(_hD3D8_DLL == 0) {
+        wdxdisplay_cat.fatal() << "PandaDX8 requires DX8, can't locate " << D3D8_NAME <<"!\n";
+        exit(1);
+    }
+
+    _hMouseCursor = NULL;
+    _bLoadedCustomCursor = false;
+
+    _pDInputInfo = NULL;
+
+    // can only get multimon HW acceleration in fullscrn on DX7
+
+    UINT numMonitors = GetSystemMetrics(SM_CMONITORS);
+
+    if(numMonitors < num_windows) {
+        if(numMonitors==0) {
+             numMonitors=1;   //win95 system will fail this call
+          } else {
+              wdxdisplay_cat.fatal() << "system has only " << numMonitors << " monitors attached, couldn't find enough devices to meet multi window reqmt of " << num_windows << endl;
+              exit(1);
+          }
+    }
+
+   // Do all DX7 stuff first
+   //  find_all_card_memavails();
+
+    LPDIRECT3D8 pD3D8;
+
+    typedef LPDIRECT3D8 (WINAPI *Direct3DCreate8_ProcPtr)(UINT SDKVersion);
+
+    // dont want to statically link to possibly non-existent d3d8 dll, so must call D3DCr8 indirectly
+    Direct3DCreate8_ProcPtr D3DCreate8_Ptr =
+        (Direct3DCreate8_ProcPtr) GetProcAddress(_hD3D8_DLL, D3DCREATE8);
+
+    if(D3DCreate8_Ptr == NULL) {
+        wdxdisplay_cat.fatal() << "GetProcAddress for "<< D3DCREATE8 << "failed!" << endl;
+        exit(1);
+    }
+
+// these were taken from the 8.0 and 8.1 d3d8.h SDK headers
+#define D3D_SDK_VERSION_8_0  120
+#define D3D_SDK_VERSION_8_1  220
+
+    // are we using 8.0 or 8.1?
+    WIN32_FIND_DATA TempFindData;
+    HANDLE hFind;
+    char tmppath[MAX_PATH];
+    GetSystemDirectory(tmppath,MAX_PATH);
+    strcat(tmppath,"\\dpnhpast.dll");
+    hFind = FindFirstFile ( tmppath,&TempFindData );
+    if(hFind != INVALID_HANDLE_VALUE) {
+         FindClose(hFind);
+         _bIsDX81=true;
+         pD3D8 = (*D3DCreate8_Ptr)(D3D_SDK_VERSION_8_1);
+    } else {
+        _bIsDX81=false;
+        pD3D8 = (*D3DCreate8_Ptr)(D3D_SDK_VERSION_8_0);
+    }
+
+    if(pD3D8==NULL) {
+        wdxdisplay_cat.fatal() << D3DCREATE8 << " failed!\n";
+        exit(1);
+    }
+
+    _numAdapters = pD3D8->GetAdapterCount();
+    if(_numAdapters < num_windows) {
+        wdxdisplay_cat.fatal() << "couldn't find enough devices attached to meet multi window reqmt of " << num_windows << endl;
+        exit(1);
+    }
+
+    for(UINT i=0;i<_numAdapters;i++) {
+        D3DADAPTER_IDENTIFIER8 adapter_info;
+        ZeroMemory(&adapter_info,sizeof(D3DADAPTER_IDENTIFIER8));
+        hr = pD3D8->GetAdapterIdentifier(i,D3DENUM_NO_WHQL_LEVEL,&adapter_info);
+        if(FAILED(hr)) {
+            wdxdisplay_cat.fatal() << "D3D GetAdapterID failed" << D3DERRORSTRING(hr);
+        }
+
+        LARGE_INTEGER *DrvVer=&adapter_info.DriverVersion;
+
+        wdxdisplay_cat.info() << "D3D8 Adapter[" << i << "]: " << adapter_info.Description <<
+                               ", Driver: " << adapter_info.Driver << ", DriverVersion: ("
+            << HIWORD(DrvVer->HighPart) << "." << LOWORD(DrvVer->HighPart) << "."
+            << HIWORD(DrvVer->LowPart) << "." << LOWORD(DrvVer->LowPart) << ")\nVendorID: 0x"
+            << (void*) adapter_info.VendorId << " DeviceID: 0x" <<  (void*) adapter_info.DeviceId
+            << " SubsysID: 0x" << (void*) adapter_info.SubSysId << " Revision: 0x"
+            << (void*) adapter_info.Revision << endl;
+
+        HMONITOR hMon=pD3D8->GetAdapterMonitor(i);
+        if(hMon==NULL) {
+            wdxdisplay_cat.info() << "D3D8 Adapter[" << i << "]: seems to be disabled, skipping it\n";
+            continue;
+        }
+
+        DXDeviceInfo devinfo;
+        ZeroMemory(&devinfo,sizeof(devinfo));
+        memcpy(&devinfo.guidDeviceIdentifier,&adapter_info.DeviceIdentifier,sizeof(GUID));
+        strncpy(devinfo.szDescription,adapter_info.Description,MAX_DEVICE_IDENTIFIER_STRING);
+        strncpy(devinfo.szDriver,adapter_info.Driver,MAX_DEVICE_IDENTIFIER_STRING);
+        devinfo.VendorID=adapter_info.VendorId;
+        devinfo.DeviceID=adapter_info.DeviceId;
+        devinfo.hMon=hMon;
+        devinfo.cardID=i;
+
+        _DeviceInfoVec.push_back(devinfo);
+    }
+
+    for(UINT i=0;i<num_windows;i++) {
+        _windows[i]->config_window(this);
+    }
+
+    UINT good_device_count=0;
+
+    if(num_windows==1) {
+        UINT D3DAdapterNum = D3DADAPTER_DEFAULT;
+
+        if(dx_preferred_deviceID!=-1) {
+            if(dx_preferred_deviceID>=(int)_numAdapters) {
+                wdxdisplay_cat.fatal() << "invalid 'dx-preferred-device-id', valid values are 0-" << _numAdapters-1 << ", using default adapter 0 instead\n";
+            } else D3DAdapterNum=dx_preferred_deviceID;
+        }
+        if(_windows[0]->search_for_device(pD3D8,&(_DeviceInfoVec[D3DAdapterNum])))
+            good_device_count=1;
+    } else {
+        for(UINT devnum=0;devnum<_DeviceInfoVec.size() && (good_device_count < num_windows);devnum++) {
+            if(_windows[devnum]->search_for_device(pD3D8,&(_DeviceInfoVec[devnum])))
+                good_device_count++;
+        }
+    }
+
+    if(good_device_count < num_windows) {
+      if(good_device_count==0)
+         wdxdisplay_cat.fatal() << "no usable display devices, exiting...\n";
+       else wdxdisplay_cat.fatal() << "multi-device request for " << num_windows << "devices, found only "<< good_device_count << " usable ones, exiting!";
+      exit(1);
+    }
+
+    _DeviceInfoVec.clear();  // dont need this anymore
+
+    if(wdxdisplay_cat.is_debug() && (g_pCardIDVec!=NULL)) {
+      // print out the MaxAvailVidMems
+      for(UINT i=0;i<_windows.size();i++) {
+        D3DADAPTER_IDENTIFIER8 adapter_info;
+        pD3D8->GetAdapterIdentifier(_windows[i]->_wcontext.CardIDNum,D3DENUM_NO_WHQL_LEVEL,&adapter_info);
+        wdxdisplay_cat.info() << "D3D8 Adapter[" << i << "]: " << adapter_info.Description
+                              << ", MaxAvailVideoMem: " << _windows[i]->_wcontext.MaxAvailVidMem
+                              << ", IsLowVidMemCard: " << (_windows[i]->_wcontext.bIsLowVidMemCard ? "true" : "false") << endl;
+      }
+    }
+
+    CreateWindows();  // creates win32 windows  (need to do this before Setting coopLvls and display modes,
+                      // but after we have all the monitor handles needed by CreateWindow()
+
+//    SetCoopLevelsAndDisplayModes();
+
+    if(dx_show_fps_meter)
+       _windows[0]->_dxgsg->_bShowFPSMeter = true;  // just show fps on 1st mon
+
+    for(UINT i=0;i<num_windows;i++) {
+        _windows[i]->CreateScreenBuffersAndDevice(_windows[i]->_wcontext);
+    }
+
+    for(UINT i=0;i<num_windows;i++) {
+        _windows[i]->finish_window_setup();
+    }
+
+    SAFE_DELETE(g_pCardIDVec);  // dont need this anymore
+
+    for(UINT i=0;i<num_windows;i++) {
+        _windows[i]->_dxgsg->SetDXReady(true);
+    }
+
+    dx_pick_best_screenres = false;   // only want to do this on startup, not resize
+
+  #ifdef DINPUT_DEBUG_POLL
+    if(dx_use_joystick) {
+        _pDInputInfo = new DInput8Info;
+        assert(_pDInputInfo !=NULL);
+       if(!_pDInputInfo->InitDirectInput()) {
+           wdxdisplay_cat.error() << "InitDirectInput failed!\n";
+           exit(1);
+       }
+
+       if(!_pDInputInfo->CreateJoystickOrPad(_hParentWindow)) {  // associate w/parent window of group for now
+           wdxdisplay_cat.error() << "CreateJoystickOrPad failed!\n";
+           exit(1);
+       }
+
+        // for now, just set up a WM_TIMER to poll the joystick.
+        // could configure it to do event-based input, and that is default w/action mapping
+        // which would be better, less processor intensive
+
+        #define POLL_FREQUENCY_HZ  3
+        _pDInputInfo->_JoystickPollTimer = SetTimer(_hParentWindow, JOYSTICK_POLL_TIMER_ID, 1000/POLL_FREQUENCY_HZ, NULL);
+        if(_pDInputInfo->_JoystickPollTimer!=JOYSTICK_POLL_TIMER_ID) {
+           wdxdisplay_cat.error() << "Error in joystick SetTimer!\n";
+       }
+    }
+  #endif
+}
+*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsWindow8::search_for_device
@@ -770,24 +1185,25 @@ choose_adapter(LPDIRECT3D8 pD3D8) {
 //               rendering.
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsWindow8::
-search_for_device(LPDIRECT3D8 pD3D8, DXDeviceInfo *device_info) {
-  wdxGraphicsPipe8 *dxpipe;
-  DCAST_INTO_R(dxpipe, _pipe, false);
+search_for_device(wdxGraphicsPipe8 *dxpipe, DXDeviceInfo *device_info) {
 
+  assert(dxpipe != NULL);  
   WindowProperties properties = get_properties();
   DWORD dwRenderWidth = properties.get_x_size();
   DWORD dwRenderHeight = properties.get_y_size();
   HRESULT hr;
+  LPDIRECT3D8 pD3D8 = dxpipe->_pD3D8;
 
-  assert(_dxgsg != NULL);
-  _dxgsg->scrn.pD3D8 = pD3D8;
-  _dxgsg->scrn.CardIDNum = device_info->cardID;  // could this change by end?
+  assert(_dxgsg != NULL);  
+  _wcontext.pD3D8 = pD3D8;
+  _wcontext.bIsDX81 = dxpipe->_bIsDX81;
+  _wcontext.CardIDNum = device_info->cardID;  // could this change by end?
 
-  int framebuffer_mode = get_properties().get_framebuffer_mode();
-  bool bWantStencil = ((framebuffer_mode & WindowProperties::FM_stencil) != 0);
+  int frame_buffer_mode = _gsg->get_properties().get_frame_buffer_mode();
+  bool bWantStencil = ((frame_buffer_mode & FrameBufferProperties::FM_stencil) != 0);
   
   hr = pD3D8->GetAdapterIdentifier(device_info->cardID, D3DENUM_NO_WHQL_LEVEL,
-                                   &_dxgsg->scrn.DXDeviceID);
+                                   &_wcontext.DXDeviceID);
   if (FAILED(hr)) {
     wdxdisplay8_cat.error()
       << "D3D GetAdapterID failed" << D3DERRORSTRING(hr);
@@ -810,11 +1226,11 @@ search_for_device(LPDIRECT3D8 pD3D8, DXDeviceInfo *device_info) {
   }
   
   //search_for_valid_displaymode needs these to be set
-  memcpy(&_dxgsg->scrn.d3dcaps, &d3dcaps,sizeof(D3DCAPS8));
-  _dxgsg->scrn.CardIDNum = device_info->cardID;
+  memcpy(&_wcontext.d3dcaps, &d3dcaps,sizeof(D3DCAPS8));
+  _wcontext.CardIDNum = device_info->cardID;
   
-  _dxgsg->scrn.MaxAvailVidMem = UNKNOWN_VIDMEM_SIZE;
-  _dxgsg->scrn.bIsLowVidMemCard = false;
+  _wcontext.MaxAvailVidMem = UNKNOWN_VIDMEM_SIZE;
+  _wcontext.bIsLowVidMemCard = false;
   
   // bugbug: wouldnt we like to do GetAVailVidMem so we can do
   // upper-limit memory computation for dx8 cards too?  otherwise
@@ -835,7 +1251,7 @@ search_for_device(LPDIRECT3D8 pD3D8, DXDeviceInfo *device_info) {
     for (IDnum=0; IDnum < dxpipe->_card_ids.size(); IDnum++) {
       //      wdxdisplay8_cat.info()
       //        << "comparing '" << dxpipe->_card_ids[IDnum].Driver
-      //        << "' to '" << _dxgsg->scrn.DXDeviceID.Driver << "'\n";
+      //        << "' to '" << _wcontext.DXDeviceID.Driver << "'\n";
       if (//(stricmp(dxpipe->_card_ids[IDnum].szDriver,device_info->szDriver)==0) &&
          (device_info->VendorID==dxpipe->_card_ids[IDnum].VendorID) &&
          (device_info->DeviceID==dxpipe->_card_ids[IDnum].DeviceID) &&
@@ -844,8 +1260,8 @@ search_for_device(LPDIRECT3D8 pD3D8, DXDeviceInfo *device_info) {
     }
     
     if (IDnum < dxpipe->_card_ids.size()) {
-      _dxgsg->scrn.MaxAvailVidMem = dxpipe->_card_ids[IDnum].MaxAvailVidMem;
-      _dxgsg->scrn.bIsLowVidMemCard = dxpipe->_card_ids[IDnum].bIsLowVidMemCard;
+      _wcontext.MaxAvailVidMem = dxpipe->_card_ids[IDnum].MaxAvailVidMem;
+      _wcontext.bIsLowVidMemCard = dxpipe->_card_ids[IDnum].bIsLowVidMemCard;
     } else {
       wdxdisplay8_cat.error()
         << "Error: couldnt find a CardID match in DX7 info, assuming card is not a lowmem card\n";
@@ -855,7 +1271,7 @@ search_for_device(LPDIRECT3D8 pD3D8, DXDeviceInfo *device_info) {
   if ((bWantStencil) && (d3dcaps.StencilCaps==0x0)) {
     wdxdisplay8_cat.fatal()
       << "Stencil ability requested, but device #" << device_info->cardID
-      << " (" << _dxgsg->scrn.DXDeviceID.Description
+      << " (" << _wcontext.DXDeviceID.Description
       << "), has no stencil capability!\n";
     return false;
   }
@@ -864,27 +1280,27 @@ search_for_device(LPDIRECT3D8 pD3D8, DXDeviceInfo *device_info) {
   // supported in HW (see GF2) for this case, you probably want MIXED
   // processing to use HW for fixed-fn vertex processing and SW for
   // vtx shaders
-  _dxgsg->scrn.bIsTNLDevice = 
+  _wcontext.bIsTNLDevice = 
     ((d3dcaps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT) != 0);
-  _dxgsg->scrn.bCanUseHWVertexShaders = 
+  _wcontext.bCanUseHWVertexShaders = 
     (d3dcaps.VertexShaderVersion >= D3DVS_VERSION(1, 0));
-  _dxgsg->scrn.bCanUsePixelShaders = 
+  _wcontext.bCanUsePixelShaders = 
     (d3dcaps.PixelShaderVersion >= D3DPS_VERSION(1, 0));
 
   bool bNeedZBuffer = 
     ((!(d3dcaps.RasterCaps & D3DPRASTERCAPS_ZBUFFERLESSHSR )) &&
-     ((framebuffer_mode & WindowProperties::FM_depth) != 0));
+     ((frame_buffer_mode & FrameBufferProperties::FM_depth) != 0));
 
-  _dxgsg->scrn.PresParams.EnableAutoDepthStencil = bNeedZBuffer;
+  _wcontext.PresParams.EnableAutoDepthStencil = bNeedZBuffer;
 
   D3DFORMAT pixFmt = D3DFMT_UNKNOWN;
 
   if (is_fullscreen()) {
     bool bCouldntFindValidZBuf;
-    if (!_dxgsg->scrn.bIsLowVidMemCard) {
+    if (!_wcontext.bIsLowVidMemCard) {
       bool bUseDefaultSize = dx_pick_best_screenres &&
-        ((_dxgsg->scrn.MaxAvailVidMem == UNKNOWN_VIDMEM_SIZE) ||
-         is_badvidmem_card(&_dxgsg->scrn.DXDeviceID));
+        ((_wcontext.MaxAvailVidMem == UNKNOWN_VIDMEM_SIZE) ||
+         is_badvidmem_card(&_wcontext.DXDeviceID));
 
       if (dx_pick_best_screenres && !bUseDefaultSize) {
         typedef struct {
@@ -914,20 +1330,20 @@ search_for_device(LPDIRECT3D8 pD3D8, DXDeviceInfo *device_info) {
 
         for(int i = NumResLims - 1; i >= 0; i--) {
           // find biggest slot card can handle
-          if (_dxgsg->scrn.MaxAvailVidMem > MemRes[i].memlimit) {
+          if (_wcontext.MaxAvailVidMem > MemRes[i].memlimit) {
             dwRenderWidth = MemRes[i].scrnX;
             dwRenderHeight = MemRes[i].scrnY;
 
             wdxdisplay8_cat.info()
               << "pick_best_screenres: trying " << dwRenderWidth 
               << "x" << dwRenderHeight << " based on "
-              << _dxgsg->scrn.MaxAvailVidMem << " bytes avail\n";
+              << _wcontext.MaxAvailVidMem << " bytes avail\n";
 
-            search_for_valid_displaymode(dwRenderWidth, dwRenderHeight, 
+             dxpipe->search_for_valid_displaymode(_wcontext,dwRenderWidth, dwRenderHeight, 
                                          bNeedZBuffer, bWantStencil,
-                                         &_dxgsg->scrn.SupportedScreenDepthsMask,
+                                         &_wcontext.SupportedScreenDepthsMask,
                                          &bCouldntFindValidZBuf,
-                                         &pixFmt);
+                                         &pixFmt, dx_force_16bpp_zbuffer);
 
             // note I'm not saving refresh rate, will just use adapter
             // default at given res for now
@@ -940,7 +1356,7 @@ search_for_device(LPDIRECT3D8 pD3D8, DXDeviceInfo *device_info) {
               << "skipping scrnres; "
               << (bCouldntFindValidZBuf ? "Couldnt find valid zbuffer format to go with FullScreen mode" : "No supported FullScreen modes")
               << " at " << dwRenderWidth << "x" << dwRenderHeight
-              << " for device #" << _dxgsg->scrn.CardIDNum << endl;
+              << " for device #" << _wcontext.CardIDNum << endl;
           }
         }
         // otherwise just go with whatever was specified (we probably shouldve marked this card as lowmem if it gets to end of loop w/o breaking
@@ -954,11 +1370,11 @@ search_for_device(LPDIRECT3D8 pD3D8, DXDeviceInfo *device_info) {
           dwRenderHeight=600;
         }
 
-        search_for_valid_displaymode(dwRenderWidth, dwRenderHeight,
+        dxpipe->search_for_valid_displaymode(_wcontext, dwRenderWidth, dwRenderHeight,
                                      bNeedZBuffer, bWantStencil,
-                                     &_dxgsg->scrn.SupportedScreenDepthsMask,
+                                     &_wcontext.SupportedScreenDepthsMask,
                                      &bCouldntFindValidZBuf,
-                                     &pixFmt);
+                                     &pixFmt, dx_force_16bpp_zbuffer);
 
         // note I'm not saving refresh rate, will just use adapter
         // default at given res for now
@@ -966,14 +1382,14 @@ search_for_device(LPDIRECT3D8 pD3D8, DXDeviceInfo *device_info) {
         if (pixFmt == D3DFMT_UNKNOWN) {
           wdxdisplay8_cat.error()
             << (bCouldntFindValidZBuf ? "Couldnt find valid zbuffer format to go with FullScreen mode" : "No supported FullScreen modes")
-            << " at " << dwRenderWidth << "x" << dwRenderHeight << " for device #" << _dxgsg->scrn.CardIDNum <<endl;
+            << " at " << dwRenderWidth << "x" << dwRenderHeight << " for device #" << _wcontext.CardIDNum <<endl;
 
           // run it again in verbose mode to get more dbg info to log
-          search_for_valid_displaymode(dwRenderWidth, dwRenderHeight,
+          dxpipe->search_for_valid_displaymode(_wcontext,dwRenderWidth, dwRenderHeight,
                                        bNeedZBuffer, bWantStencil,
-                                       &_dxgsg->scrn.SupportedScreenDepthsMask,
+                                       &_wcontext.SupportedScreenDepthsMask,
                                        &bCouldntFindValidZBuf,
-                                       &pixFmt, true);
+                                       &pixFmt, dx_force_16bpp_zbuffer, true);
           return false;
         }
       }
@@ -983,40 +1399,42 @@ search_for_device(LPDIRECT3D8 pD3D8, DXDeviceInfo *device_info) {
       dwRenderHeight=480;
       dx_force_16bpptextures = true;
 
-      // force 16bpp zbuf? or let user get extra bits if they have the mem?
+      // need to autoforce 16bpp zbuf?  or let user use that extra mem for textures/framebuf res/etc?
+      // most lowmem cards only do 16bpp Z anyway, but we wont force it for now
 
-      search_for_valid_displaymode(dwRenderWidth, dwRenderHeight,
+      dxpipe->search_for_valid_displaymode(_wcontext,dwRenderWidth, dwRenderHeight,
                                    bNeedZBuffer, bWantStencil,
-                                   &_dxgsg->scrn.SupportedScreenDepthsMask,
+                                   &_wcontext.SupportedScreenDepthsMask,
                                    &bCouldntFindValidZBuf,
-                                   &pixFmt);
+                                   &pixFmt, dx_force_16bpp_zbuffer);
 
       // hack: figuring out exactly what res to use is tricky, instead I will
       // just use 640x480 if we have < 3 meg avail
 
-      if (_dxgsg->scrn.SupportedScreenDepthsMask & R5G6B5_FLAG) {
+      if (_wcontext.SupportedScreenDepthsMask & R5G6B5_FLAG) {
         pixFmt = D3DFMT_R5G6B5;
-      } else if (_dxgsg->scrn.SupportedScreenDepthsMask & X1R5G5B5_FLAG) {
+      } else if (_wcontext.SupportedScreenDepthsMask & X1R5G5B5_FLAG) {
         pixFmt = D3DFMT_X1R5G5B5;
       } else {
         wdxdisplay8_cat.fatal()
           << "Low Memory VidCard has no supported FullScreen 16bpp resolutions at "
           << dwRenderWidth << "x" << dwRenderHeight << " for device #"
           << device_info->cardID << " (" 
-          << _dxgsg->scrn.DXDeviceID.Description << "), skipping device...\n";
+          << _wcontext.DXDeviceID.Description << "), skipping device...\n";
 
         // run it again in verbose mode to get more dbg info to log
-        search_for_valid_displaymode(dwRenderWidth, dwRenderHeight,
+        dxpipe->search_for_valid_displaymode(_wcontext, dwRenderWidth, dwRenderHeight,
                                      bNeedZBuffer, bWantStencil,
-                                     &_dxgsg->scrn.SupportedScreenDepthsMask,
+                                     &_wcontext.SupportedScreenDepthsMask,
                                      &bCouldntFindValidZBuf,
-                                     &pixFmt, true);
+                                     &pixFmt, dx_force_16bpp_zbuffer, 
+                                     true /* verbose mode on*/);
         return false;
       }
 
       if (wdxdisplay8_cat.is_info()) {
         wdxdisplay8_cat.info()
-          << "Available VidMem (" << _dxgsg->scrn.MaxAvailVidMem
+          << "Available VidMem (" << _wcontext.MaxAvailVidMem
           << ") is under threshold, using 640x480 16bpp rendertargets to save tex vidmem.\n";
       }
     }
@@ -1034,11 +1452,11 @@ search_for_device(LPDIRECT3D8 pD3D8, DXDeviceInfo *device_info) {
     pixFmt = dispmode.Format;
   }
 
-  _dxgsg->scrn.DisplayMode.Width = dwRenderWidth;
-  _dxgsg->scrn.DisplayMode.Height = dwRenderHeight;
-  _dxgsg->scrn.DisplayMode.Format = pixFmt;
-  _dxgsg->scrn.DisplayMode.RefreshRate = D3DPRESENT_RATE_DEFAULT;
-  _dxgsg->scrn.hMon = device_info->hMon;
+  _wcontext.DisplayMode.Width = dwRenderWidth;
+  _wcontext.DisplayMode.Height = dwRenderHeight;
+  _wcontext.DisplayMode.Format = pixFmt;
+  _wcontext.DisplayMode.RefreshRate = D3DPRESENT_RATE_DEFAULT;
+  _wcontext.hMon = device_info->hMon;
 
   if (dwRenderWidth != properties.get_x_size() ||
       dwRenderHeight != properties.get_y_size()) {
@@ -1063,286 +1481,6 @@ search_for_device(LPDIRECT3D8 pD3D8, DXDeviceInfo *device_info) {
   return true;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow8::special_check_fullscreen_resolution
-//       Access: Private
-//  Description: overrides of the general estimator for known working
-//               cases
-////////////////////////////////////////////////////////////////////
-bool wdxGraphicsWindow8::
-special_check_fullscreen_resolution(UINT x_size,UINT y_size) {
-  assert(IS_VALID_PTR(_dxgsg));
-
-  DWORD VendorId = _dxgsg->scrn.DXDeviceID.VendorId;
-  DWORD DeviceId = _dxgsg->scrn.DXDeviceID.DeviceId;
-  switch (VendorId) {
-  case 0x8086:  // Intel
-    /*for now, just validate all the intel cards at these resolutions.
-      I dont have a complete list of intel deviceIDs (missing 82830, 845, etc)
-      // Intel i810,i815,82810
-      if ((DeviceId==0x7121)||(DeviceId==0x7123)||(DeviceId==0x7125)||
-      (DeviceId==0x1132))
-    */
-    if ((x_size == 640) && (y_size == 480)) {
-      return true;
-    }
-    if ((x_size == 800) && (y_size == 600)) {
-      return true;
-    }
-    if ((x_size == 1024) && (y_size == 768)) {
-      return true;
-    }
-    break;
-  }
-
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow8::search_for_valid_displaymode
-//       Access: Private
-//  Description: All ptr args are output parameters.  If no valid mode
-//               found, returns *pSuggestedPixFmt = D3DFMT_UNKNOWN;
-////////////////////////////////////////////////////////////////////
-void wdxGraphicsWindow8::
-search_for_valid_displaymode(UINT RequestedX_Size, UINT RequestedY_Size,
-                             bool bWantZBuffer, bool bWantStencil,
-                             UINT *pSupportedScreenDepthsMask,
-                             bool *pCouldntFindAnyValidZBuf,
-                             D3DFORMAT *pSuggestedPixFmt,
-                             bool bVerboseMode) {
-  assert(IS_VALID_PTR(_dxgsg));
-  assert(IS_VALID_PTR(_dxgsg->scrn.pD3D8));
-  HRESULT hr;
-
-#ifndef NDEBUG
-  //   no longer true, due to special_check_fullscreen_res, where lowvidmem cards are allowed higher resolutions
-  //    if (_dxgsg->scrn.bIsLowVidMemCard)
-  //        nassertv((RequestedX_Size==640)&&(RequestedY_Size==480));
-#endif
-
-  *pSuggestedPixFmt = D3DFMT_UNKNOWN;
-  *pSupportedScreenDepthsMask = 0x0;
-  *pCouldntFindAnyValidZBuf = false;
-
-  int cNumModes = _dxgsg->scrn.pD3D8->GetAdapterModeCount(_dxgsg->scrn.CardIDNum);
-  D3DDISPLAYMODE BestDispMode;
-  ZeroMemory(&BestDispMode,sizeof(BestDispMode));
-
-  if (bVerboseMode) {
-    wdxdisplay8_cat.info()
-      << "searching for valid display modes at res: ("
-      << RequestedX_Size << "," << RequestedY_Size
-      << "), TotalModes: " << cNumModes << endl;
-  }
-
-  // ignore memory based checks for min res 640x480.  some cards just
-  // dont give accurate memavails.  (should I do the check anyway for
-  // 640x480 32bpp?)
-  bool bDoMemBasedChecks = 
-    ((!((RequestedX_Size==640)&&(RequestedY_Size==480))) &&
-     (_dxgsg->scrn.MaxAvailVidMem!=UNKNOWN_VIDMEM_SIZE) &&
-     (!special_check_fullscreen_resolution(RequestedX_Size,RequestedY_Size)));
-
-  if (bVerboseMode || wdxdisplay8_cat.is_spam()) {
-    wdxdisplay8_cat.info()
-      << "DoMemBasedChecks = " << bDoMemBasedChecks << endl;
-  }
-
-  for (int i=0; i < cNumModes; i++) {
-    D3DDISPLAYMODE dispmode;
-    hr = _dxgsg->scrn.pD3D8->EnumAdapterModes(_dxgsg->scrn.CardIDNum,i,&dispmode);
-    if (FAILED(hr)) {
-      wdxdisplay8_cat.error()
-        << "EnumAdapterDisplayMode failed for device #"
-        << _dxgsg->scrn.CardIDNum << D3DERRORSTRING(hr);
-      exit(1);
-    }
-
-    if ((dispmode.Width!=RequestedX_Size) ||
-        (dispmode.Height!=RequestedY_Size)) {
-      continue;
-    }
-
-    if ((dispmode.RefreshRate<60) && (dispmode.RefreshRate>1)) {
-      // dont want refresh rates under 60Hz, but 0 or 1 might indicate
-      // a default refresh rate, which is usually >=60
-      if (bVerboseMode) {
-        wdxdisplay8_cat.info()
-          << "skipping mode[" << i << "], bad refresh rate: " 
-          << dispmode.RefreshRate << endl;
-      }
-      continue;
-    }
-
-    // Note no attempt is made to verify if format will work at
-    // requested size, so even if this call succeeds, could still get
-    // an out-of-video-mem error
-
-    hr = _dxgsg->scrn.pD3D8->CheckDeviceFormat(_dxgsg->scrn.CardIDNum, 
-                                               D3DDEVTYPE_HAL, dispmode.Format,
-                                               D3DUSAGE_RENDERTARGET, 
-                                               D3DRTYPE_SURFACE,
-                                               dispmode.Format);
-    if (FAILED(hr)) {
-      if (hr==D3DERR_NOTAVAILABLE) {
-        if (bVerboseMode) {
-          wdxdisplay8_cat.info()
-            << "skipping mode[" << i 
-            << "], CheckDevFmt returns NotAvail for fmt: "
-            << D3DFormatStr(dispmode.Format) << endl;
-        }
-        continue;
-      } else {
-        wdxdisplay8_cat.error()
-          << "CheckDeviceFormat failed for device #" 
-          << _dxgsg->scrn.CardIDNum << D3DERRORSTRING(hr);
-        exit(1);
-      }
-    }
-
-    bool bIs16bppRenderTgt = IS_16BPP_DISPLAY_FORMAT(dispmode.Format);
-    float RendTgtMinMemReqmt;
-
-    // if we have a valid memavail value, try to determine if we have
-    // enough space
-    if (bDoMemBasedChecks) {
-      // assume user is testing fullscreen, not windowed, so use the
-      // dwTotal value see if 3 scrnbufs (front/back/z)at 16bpp at
-      // x_size*y_size will fit with a few extra megs for texmem
-
-      // 8MB Rage Pro says it has 6.8 megs Total free and will run at
-      // 1024x768, so formula makes it so that is OK
-
-#define REQD_TEXMEM 1800000
-
-      float bytes_per_pixel = (bIs16bppRenderTgt ? 2 : 4);
-      assert((get_properties().get_framebuffer_mode() & WindowProperties::FM_double_buffer) != 0);
-
-      // *2 for double buffer
-
-      RendTgtMinMemReqmt = 
-        ((float)RequestedX_Size) * ((float)RequestedY_Size) * 
-        bytes_per_pixel * 2 + REQD_TEXMEM;
-
-      if (bVerboseMode || wdxdisplay8_cat.is_spam())
-        wdxdisplay8_cat.info()
-          << "Testing Mode (" <<RequestedX_Size<<"x" << RequestedY_Size 
-          << "," << D3DFormatStr(dispmode.Format) << ")\nReqdVidMem: "
-          << (int)RendTgtMinMemReqmt << " AvailVidMem: " 
-          << _dxgsg->scrn.MaxAvailVidMem << endl;
-
-      if (RendTgtMinMemReqmt > _dxgsg->scrn.MaxAvailVidMem) {
-        if (bVerboseMode || wdxdisplay8_cat.is_debug())
-          wdxdisplay8_cat.info()
-            << "not enough VidMem for render tgt, skipping display fmt "
-            << D3DFormatStr(dispmode.Format) << " (" 
-            << (int)RendTgtMinMemReqmt << " > " 
-            << _dxgsg->scrn.MaxAvailVidMem << ")\n";
-        continue;
-      }
-    }
-
-    if (bWantZBuffer) {
-      D3DFORMAT zformat;
-      if (!find_best_depth_format(_dxgsg->scrn,dispmode, &zformat,
-                                  bWantStencil, false)) {
-        *pCouldntFindAnyValidZBuf=true;
-        continue;
-      }
-
-      float MinMemReqmt = 0.0f;
-
-      if (bDoMemBasedChecks) {
-        // test memory again, this time including zbuf size
-        float zbytes_per_pixel = (IS_16BPP_ZBUFFER(zformat) ? 2 : 4);
-        float MinMemReqmt = RendTgtMinMemReqmt + ((float)RequestedX_Size)*((float)RequestedY_Size)*zbytes_per_pixel;
-
-        if (bVerboseMode || wdxdisplay8_cat.is_spam())
-          wdxdisplay8_cat.info()
-            << "Testing Mode w/Z (" << RequestedX_Size << "x"
-            << RequestedY_Size << "," << D3DFormatStr(dispmode.Format)
-            << ")\nReqdVidMem: "<< (int)MinMemReqmt << " AvailVidMem: " 
-            << _dxgsg->scrn.MaxAvailVidMem << endl;
-
-        if (MinMemReqmt > _dxgsg->scrn.MaxAvailVidMem) {
-          if (bVerboseMode || wdxdisplay8_cat.is_debug())
-            wdxdisplay8_cat.info()
-              << "not enough VidMem for RendTgt+zbuf, skipping display fmt "
-              << D3DFormatStr(dispmode.Format) << " (" << (int)MinMemReqmt
-              << " > " << _dxgsg->scrn.MaxAvailVidMem << ")\n";
-          continue;
-        }
-      }
-
-      if ((!bDoMemBasedChecks) || (MinMemReqmt<_dxgsg->scrn.MaxAvailVidMem)) {
-        if (!IS_16BPP_ZBUFFER(zformat)) {
-          // see if things fit with a 16bpp zbuffer
-
-          if (!find_best_depth_format(_dxgsg->scrn, dispmode, &zformat, 
-                                      bWantStencil, true, bVerboseMode)) {
-            if (bVerboseMode)
-              wdxdisplay8_cat.info()
-                << "FindBestDepthFmt rejected Mode[" << i << "] (" 
-                << RequestedX_Size << "x" << RequestedY_Size 
-                << "," << D3DFormatStr(dispmode.Format) << endl;
-            *pCouldntFindAnyValidZBuf=true;
-            continue;
-          }
-          
-          // right now I'm not going to use these flags, just let the
-          // create fail out-of-mem and retry at 16bpp
-          *pSupportedScreenDepthsMask |= 
-            (IS_16BPP_DISPLAY_FORMAT(dispmode.Format) ? DISPLAY_16BPP_REQUIRES_16BPP_ZBUFFER_FLAG : DISPLAY_32BPP_REQUIRES_16BPP_ZBUFFER_FLAG);
-        }
-      }
-    }
-
-    if (bVerboseMode || wdxdisplay8_cat.is_spam())
-      wdxdisplay8_cat.info()
-        << "Validated Mode (" << RequestedX_Size << "x" 
-        << RequestedY_Size << "," << D3DFormatStr(dispmode.Format) << endl;
-
-    switch (dispmode.Format) {
-    case D3DFMT_X1R5G5B5:
-      *pSupportedScreenDepthsMask |= X1R5G5B5_FLAG;
-      break;
-    case D3DFMT_X8R8G8B8:
-      *pSupportedScreenDepthsMask |= X8R8G8B8_FLAG;
-      break;
-    case D3DFMT_R8G8B8:
-      *pSupportedScreenDepthsMask |= R8G8B8_FLAG;
-      break;
-    case D3DFMT_R5G6B5:
-      *pSupportedScreenDepthsMask |= R5G6B5_FLAG;
-      break;
-    default:
-      // Render target formats should be only D3DFMT_X1R5G5B5,
-      // D3DFMT_R5G6B5, D3DFMT_X8R8G8B8 (or R8G8B8?)
-      wdxdisplay8_cat.error()
-        << "unrecognized supported fmt "<< D3DFormatStr(dispmode.Format)
-        << " returned by EnumAdapterDisplayModes!\n";
-    }
-  }
-
-  // note: this chooses 32bpp, which may not be preferred over 16 for
-  // memory & speed reasons on some older cards in particular
-  if (*pSupportedScreenDepthsMask & X8R8G8B8_FLAG) {
-    *pSuggestedPixFmt = D3DFMT_X8R8G8B8;
-  } else if (*pSupportedScreenDepthsMask & R8G8B8_FLAG) {
-    *pSuggestedPixFmt = D3DFMT_R8G8B8;
-  } else if (*pSupportedScreenDepthsMask & R5G6B5_FLAG) {
-    *pSuggestedPixFmt = D3DFMT_R5G6B5;
-  } else if (*pSupportedScreenDepthsMask & X1R5G5B5_FLAG) {
-    *pSuggestedPixFmt = D3DFMT_X1R5G5B5;
-  }
-
-  if (bVerboseMode || wdxdisplay8_cat.is_spam()) {
-    wdxdisplay8_cat.info() 
-      << "search_for_valid_device returns fmt: "
-      << D3DFormatStr(*pSuggestedPixFmt) << endl;
-  }
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsWindow8::reset_device_resize_window
@@ -1353,12 +1491,11 @@ search_for_valid_displaymode(UINT RequestedX_Size, UINT RequestedY_Size,
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsWindow8::
 reset_device_resize_window(UINT new_xsize, UINT new_ysize) {
-  DXScreenData *pScrn = &_dxgsg->scrn;
   assert((new_xsize > 0) && (new_ysize > 0));
   bool bRetval = true;
 
   D3DPRESENT_PARAMETERS d3dpp;
-  memcpy(&d3dpp, &pScrn->PresParams, sizeof(D3DPRESENT_PARAMETERS));
+  memcpy(&d3dpp, &_wcontext.PresParams, sizeof(D3DPRESENT_PARAMETERS));
   d3dpp.BackBufferWidth = new_xsize;
   d3dpp.BackBufferHeight = new_ysize;
   HRESULT hr = _dxgsg->reset_d3d_device(&d3dpp);
@@ -1368,7 +1505,7 @@ reset_device_resize_window(UINT new_xsize, UINT new_ysize) {
     wdxdisplay8_cat.error()
       << "reset_device_resize_window Reset() failed" << D3DERRORSTRING(hr);
     if (hr == D3DERR_OUTOFVIDEOMEMORY) {
-      hr = _dxgsg->reset_d3d_device(&pScrn->PresParams);
+      hr = _dxgsg->reset_d3d_device(&_wcontext.PresParams);
       if (FAILED(hr)) {
         wdxdisplay8_cat.error()
           << "reset_device_resize_window Reset() failed OutOfVidmem, then failed again doing Reset w/original params:" << D3DERRORSTRING(hr);
@@ -1376,8 +1513,8 @@ reset_device_resize_window(UINT new_xsize, UINT new_ysize) {
       } else {
         if (wdxdisplay8_cat.is_info())
           wdxdisplay8_cat.info()
-            << "reset of original size (" << pScrn->PresParams.BackBufferWidth
-            << "," << pScrn->PresParams.BackBufferHeight << ") succeeded\n";
+            << "reset of original size (" << _wcontext.PresParams.BackBufferWidth
+            << "," << _wcontext.PresParams.BackBufferHeight << ") succeeded\n";
       }
     } else {
       wdxdisplay8_cat.fatal() 
@@ -1398,30 +1535,32 @@ reset_device_resize_window(UINT new_xsize, UINT new_ysize) {
 //
 //               Assumes CreateDevice or Device->Reset() has just been
 //               called, and the new size is specified in
-//               _dxgsg->scrn.PresParams.
+//               _wcontext.PresParams.
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsWindow8::
 init_resized_window() {
-  DXScreenData *pDisplay=&_dxgsg->scrn;
   HRESULT hr;
 
-  DWORD newWidth = pDisplay->PresParams.BackBufferWidth;
-  DWORD newHeight = pDisplay->PresParams.BackBufferHeight;
+  DWORD newWidth = _wcontext.PresParams.BackBufferWidth;
+  DWORD newHeight = _wcontext.PresParams.BackBufferHeight;
 
-  if (pDisplay->PresParams.Windowed) {
+  assert((newWidth!=0) && (newHeight!=0));
+  assert(_wcontext.hWnd!=NULL);
+
+  if (_wcontext.PresParams.Windowed) {
     POINT ul,lr;
     RECT client_rect;
 
     // need to figure out x,y origin offset of window client area on screen
     // (we already know the client area size)
 
-    GetClientRect(pDisplay->hWnd, &client_rect);
+    GetClientRect(_wcontext.hWnd, &client_rect);
     ul.x = client_rect.left;
     ul.y = client_rect.top;
     lr.x = client_rect.right;
     lr.y=client_rect.bottom;
-    ClientToScreen(pDisplay->hWnd, &ul);
-    ClientToScreen(pDisplay->hWnd, &lr);
+    ClientToScreen(_wcontext.hWnd, &ul);
+    ClientToScreen(_wcontext.hWnd, &lr);
     client_rect.left = ul.x;
     client_rect.top = ul.y;
     client_rect.right = lr.x;
@@ -1452,111 +1591,26 @@ init_resized_window() {
   //  resized(newWidth, newHeight);  // update panda channel/display rgn info, _props.x_size, _props.y_size
 
   // clear window to black ASAP
-  ClearToBlack(pDisplay->hWnd, get_properties());
+  assert(_wcontext.hWnd!=NULL);
+  ClearToBlack(_wcontext.hWnd, get_properties());
 
   // clear textures and VB's out of video&AGP mem, so cache is reset
-  hr = pDisplay->pD3DDevice->ResourceManagerDiscardBytes(0);
+  hr = _wcontext.pD3DDevice->ResourceManagerDiscardBytes(0);
   if (FAILED(hr)) {
     wdxdisplay8_cat.error()
       << "ResourceManagerDiscardBytes failed for device #" 
-      << pDisplay->CardIDNum << D3DERRORSTRING(hr);
+      << _wcontext.CardIDNum << D3DERRORSTRING(hr);
   }
 
-  _dxgsg->dx_init(_mouse_cursor);
-}
+  _dxgsg->set_context(&_wcontext); 
+  // Note: dx_init will fill in additional fields in _wcontext, like supportedtexfmts
+  _dxgsg->dx_init();
 
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow8::find_best_depth_format
-//       Access: Private
-//  Description: 
-////////////////////////////////////////////////////////////////////
-bool wdxGraphicsWindow8::
-find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &TestDisplayMode,
-                       D3DFORMAT *pBestFmt, bool bWantStencil,
-                       bool bForce16bpp, bool bVerboseMode) const {
-  // list fmts in order of preference
-#define NUM_TEST_ZFMTS 3
-  static D3DFORMAT NoStencilPrefList[NUM_TEST_ZFMTS]={D3DFMT_D32,D3DFMT_D24X8,D3DFMT_D16};
-  static D3DFORMAT StencilPrefList[NUM_TEST_ZFMTS]={D3DFMT_D24S8,D3DFMT_D24X4S4,D3DFMT_D15S1};
-
-  // do not use Display.DisplayMode since that is probably not set yet, use TestDisplayMode instead
-
-  // int want_color_bits = _props._want_color_bits;
-  // int want_depth_bits = _props._want_depth_bits;  should we pay attn to these so panda user can select bitdepth?
-
-  *pBestFmt = D3DFMT_UNKNOWN;
-  HRESULT hr;
-
-    // nvidia likes zbuf depth to match rendertarget depth
-  bool bOnlySelect16bpp = (dx_force_16bpp_zbuffer || bForce16bpp ||
-                           (IS_NVIDIA(Display.DXDeviceID) && IS_16BPP_DISPLAY_FORMAT(TestDisplayMode.Format)));
-
-  if (bVerboseMode) {
-    wdxdisplay8_cat.info()
-      << "FindBestDepthFmt: bSelectOnly16bpp: " << bOnlySelect16bpp << endl;
+  if(dx_use_dx_cursor && is_fullscreen()) {
+      hr = CreateDX8Cursor(_wcontext.pD3DDevice,_mouse_cursor,dx_show_cursor_watermark);
+      if(FAILED(hr))
+          wdxdisplay8_cat.error() << "CreateDX8Cursor failed!" <<  D3DERRORSTRING(hr);
   }
-
-  for (int i=0; i < NUM_TEST_ZFMTS; i++) {
-    D3DFORMAT TestDepthFmt = 
-      (bWantStencil ? StencilPrefList[i] : NoStencilPrefList[i]);
-
-    if (bOnlySelect16bpp && !IS_16BPP_ZBUFFER(TestDepthFmt)) {
-      continue;
-    }
-
-    hr = Display.pD3D8->CheckDeviceFormat(Display.CardIDNum,
-                                          D3DDEVTYPE_HAL,
-                                          TestDisplayMode.Format,
-                                          D3DUSAGE_DEPTHSTENCIL,
-                                          D3DRTYPE_SURFACE,TestDepthFmt);
-
-    if (FAILED(hr)) {
-      if (hr == D3DERR_NOTAVAILABLE) {
-        if (bVerboseMode)
-          wdxdisplay8_cat.info() 
-            << "FindBestDepthFmt: ChkDevFmt returns NotAvail for " 
-            << D3DFormatStr(TestDepthFmt) << endl;
-        continue;
-      }
-
-      wdxdisplay8_cat.error()
-        << "unexpected CheckDeviceFormat failure" << D3DERRORSTRING(hr) 
-        << endl;
-      exit(1);
-    }
-
-    hr = Display.pD3D8->CheckDepthStencilMatch(Display.CardIDNum,
-                                               D3DDEVTYPE_HAL,
-                                               TestDisplayMode.Format,   // adapter format
-                                               TestDisplayMode.Format,   // backbuffer fmt  (should be the same in my apps)
-                                               TestDepthFmt);
-    if (SUCCEEDED(hr)) {
-      *pBestFmt = TestDepthFmt;
-      break;
-    } else {
-      if (hr==D3DERR_NOTAVAILABLE) {
-        if (bVerboseMode) {
-          wdxdisplay8_cat.info()
-            << "FindBestDepthFmt: ChkDepMatch returns NotAvail for "
-            << D3DFormatStr(TestDisplayMode.Format) << ", " 
-            << D3DFormatStr(TestDepthFmt) << endl;
-        }
-      } else {
-        wdxdisplay8_cat.error()
-          << "unexpected CheckDepthStencilMatch failure for "
-          << D3DFormatStr(TestDisplayMode.Format) << ", " 
-          << D3DFormatStr(TestDepthFmt) << endl;
-        exit(1);
-      }
-    }
-  }
-
-  if (bVerboseMode) {
-    wdxdisplay8_cat.info()
-      << "FindBestDepthFmt returns fmt " << D3DFormatStr(*pBestFmt) << endl;
-  }
-
-  return (*pBestFmt != D3DFMT_UNKNOWN);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1605,3 +1659,57 @@ is_badvidmem_card(D3DADAPTER_IDENTIFIER8 *pDevID) {
 
   return false;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsWindow8::open_window
+//       Access: Protected, Virtual
+//  Description: Opens the window right now.  Called from the window
+//               thread.  Returns true if the window is successfully
+//               opened, or false if there was a problem.
+////////////////////////////////////////////////////////////////////
+bool wdxGraphicsWindow8::
+open_window(void) {
+  if(!choose_device()) {
+      return false;
+  }
+
+  if (!WinGraphicsWindow::open_window()) {
+    return false;
+  }
+
+  _wcontext.hWnd = _hWnd;
+  create_screen_buffers_and_device(_wcontext, dx_force_16bpp_zbuffer);
+
+  return true;
+}
+
+bool wdxGraphicsWindow8::
+handle_mouse_motion(int x, int y) {
+  (void) WinGraphicsWindow::handle_mouse_motion(x,y);
+  if(dx_use_dx_cursor && is_fullscreen() && (_wcontext.pD3DDevice!=NULL)) {
+      _wcontext.pD3DDevice->SetCursorPosition(x,y,D3DCURSOR_IMMEDIATE_UPDATE);
+      // return true to indicate wind_proc should return 0 instead of going to DefaultWindowProc
+      return true;
+  }
+  return false;
+}
+
+#if 0
+// does NOT override _props._bCursorIsVisible
+INLINE void wdxGraphicsWindow::
+set_cursor_visibility(bool bVisible) {
+  if(_props._bCursorIsVisible) {
+      if(dx_use_dx_cursor) {
+          ShowCursor(false);
+          if(IS_VALID_PTR(_wcontext.pD3DDevice))
+              _dxgsg->scrn.pD3DDevice->ShowCursor(bVisible);
+      } else {
+         ShowCursor(bVisible);
+      }
+  } else {
+      ShowCursor(false);
+      if(dx_use_dx_cursor && IS_VALID_PTR(_wcontext.pD3DDevice))
+          _dxgsg->scrn.pD3DDevice->ShowCursor(false);
+  }
+}
+#endif

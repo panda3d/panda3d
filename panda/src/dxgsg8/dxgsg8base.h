@@ -19,9 +19,6 @@
 #ifndef DXGSG8BASE_H
 #define DXGSG8BASE_H
 
-#include <pandabase.h>
-#include <graphicsWindow.h>
-
 // include win32 defns for everything up to WinServer2003, and assume I'm smart enough to
 // use GetProcAddress for backward compat on newer fns
 // Note DX8 cannot be installed on w95, so OK to assume base of win98
@@ -40,6 +37,9 @@
 #include <d3dx8.h>
 #include <dxerr8.h>
 #undef WIN32_LEAN_AND_MEAN
+
+#include "pandabase.h"
+#include "graphicsWindow.h"
 
 #if D3D_SDK_VERSION != 220
 #error you have DX 8.0 headers, not DX 8.1, you need to install DX 8.1 SDK!
@@ -60,6 +60,11 @@
 #define D3DERRORSTRING(HRESULT) " at (" << __FILE__ << ":" << __LINE__ << "), hr=" <<  DXGetErrorString8(HRESULT) << ": " << DXGetErrorDescription8(HRESULT) << endl
 #endif
 #endif
+
+// imperfect method to ID NVid? could also scan desc str, but that isnt fullproof either
+#define IS_NVIDIA(DDDEVICEID) ((DDDEVICEID.VendorId==0x10DE) || (DDDEVICEID.VendorId==0x12D2))
+#define IS_ATI(DDDEVICEID) (DDDEVICEID.VendorId==0x1002)
+#define IS_MATROX(DDDEVICEID) (DDDEVICEID.VendorId==0x102B)
 
 #define D3D_MAXTEXTURESTAGES 8
 
@@ -82,12 +87,15 @@ typedef DWORD DXShaderHandle;
 
 // for stuff outside a panda class
 #define SAFE_RELEASE(p)      { if(p) { assert(IS_VALID_PTR(p)); (p)->Release(); (p)=NULL; } }
+#define SAFE_FREELIB(hDLL)   { if(hDLL!=NULL) {  FreeLibrary(hDLL);hDLL = NULL; } }
 
 // this is bDoDownToZero argument to RELEASE()
 #define RELEASE_DOWN_TO_ZERO true
 #define RELEASE_ONCE false
 
-//#define DEBUG_RELEASES
+
+// uncomment to add refcnt debug output 
+#define DEBUG_RELEASES
 
 #ifdef DEBUG_RELEASES
 #define RELEASE(OBJECT,MODULE,DBGSTR,bDoDownToZero)             {  \
@@ -183,7 +191,7 @@ typedef enum {
 
 typedef struct {
       LPDIRECT3DDEVICE8 pD3DDevice;
-      LPDIRECT3D8       pD3D8;
+      LPDIRECT3D8       pD3D8;  // copied from DXGraphicsPipe8 for convenience
       HWND              hWnd;
       HMONITOR          hMon;
       DWORD             MaxAvailVidMem;
@@ -202,6 +210,12 @@ typedef struct {
       D3DPRESENT_PARAMETERS PresParams;  // not redundant with DisplayMode since width/height must be 0 for windowed mode
       D3DADAPTER_IDENTIFIER8 DXDeviceID;
 } DXScreenData;
+
+
+//utility stuff
+extern map<D3DFORMAT_FLAG,D3DFORMAT> g_D3DFORMATmap;
+extern void Init_D3DFORMAT_map(void);
+extern const char *D3DFormatStr(D3DFORMAT fmt);
 
 #endif
 

@@ -23,10 +23,13 @@
 
 #include "savedFrameBuffer.h"
 #include "frameBufferStack.h"
+#include "frameBufferProperties.h"
 #include "displayRegionStack.h"
 #include "lensStack.h"
 
 #include "graphicsStateGuardianBase.h"
+#include "graphicsThreadingModel.h"
+#include "graphicsPipe.h"
 #include "sceneSetup.h"
 #include "luse.h"
 #include "coordinateSystem.h"
@@ -61,7 +64,7 @@ class EXPCL_PANDA GraphicsStateGuardian : public GraphicsStateGuardianBase {
   // Interfaces all GSGs should have
   //
 public:
-  GraphicsStateGuardian(GraphicsWindow *win);
+  GraphicsStateGuardian(const FrameBufferProperties &properties);
   virtual ~GraphicsStateGuardian();
 
 PUBLISHED:
@@ -69,7 +72,9 @@ PUBLISHED:
   void release_all_geoms();
 
 public:
-  INLINE bool is_closed() const;
+  INLINE const FrameBufferProperties &get_properties() const;
+  INLINE GraphicsPipe *get_pipe() const;
+  INLINE const GraphicsThreadingModel &get_threading_model() const;
 
   INLINE void set_scene(SceneSetup *scene_setup);
   INLINE SceneSetup *get_scene() const;
@@ -119,6 +124,7 @@ public:
   virtual CPT(RenderState) begin_decal_base_second();
   virtual void finish_decal();
 
+  INLINE void reset_if_new();
   virtual void reset();
 
   INLINE void modify_state(const RenderState *state);
@@ -232,8 +238,6 @@ protected:
   int _frame_buffer_stack_level;
   int _lens_stack_level;
 
-  GraphicsWindow *_win;
-
   CPT(DisplayRegion) _current_display_region;
   CPT(Lens) _current_lens;
 
@@ -260,6 +264,9 @@ protected:
   ColorWriteAttrib::Mode _color_write_mode;
   ColorBlendAttrib::Mode _color_blend_mode;
   TransparencyAttrib::Mode _transparency_mode;
+
+  bool _needs_reset;
+  bool _closing_gsg;
 
 public:
   // Statistics
@@ -324,11 +331,12 @@ private:
   typedef pset<GeomNodeContext *> GeomNodes;
   GeomNodes _prepared_geom_nodes;  
 
-public:
-  void traverse_prepared_textures(bool (*pertex_callbackfn)(TextureContext *,void *),void *callback_arg);
+  FrameBufferProperties _properties;
+  PT(GraphicsPipe) _pipe;
+  GraphicsThreadingModel _threading_model;
 
 public:
-  INLINE GraphicsWindow* get_window(void) const { return _win; }
+  void traverse_prepared_textures(bool (*pertex_callbackfn)(TextureContext *,void *),void *callback_arg);
 
 public:
   static TypeHandle get_class_type() {
@@ -351,6 +359,7 @@ private:
 
   friend class GraphicsPipe;
   friend class GraphicsWindow;
+  friend class GraphicsEngine;
 };
 
 #include "graphicsStateGuardian.I"

@@ -30,12 +30,12 @@ enable_line_smooth(bool val) {
     _line_smooth_enabled = val;
   #ifdef NDEBUG
     {
-        if(val && (scrn.d3dcaps.RasterCaps & D3DPRASTERCAPS_ANTIALIASEDGES))
+        if(val && (_pScrn->d3dcaps.RasterCaps & D3DPRASTERCAPS_ANTIALIASEDGES))
            dxgsg8_cat.error() << "no HW support for line smoothing!!\n";
     }
   #endif
 
-    scrn.pD3DDevice->SetRenderState(D3DRS_EDGEANTIALIAS, (DWORD)val);
+    _pD3DDevice->SetRenderState(D3DRS_EDGEANTIALIAS, (DWORD)val);
   }
 }
 
@@ -50,14 +50,14 @@ enable_dither(bool val) {
 
   #ifdef _DEBUG
     {
-        if(val && !(scrn.d3dcaps.RasterCaps & D3DPRASTERCAPS_DITHER))
+        if(val && !(_pScrn->d3dcaps.RasterCaps & D3DPRASTERCAPS_DITHER))
            dxgsg8_cat.error() << "no HW support for color dithering!!\n";
         return;
     }
   #endif
 
     _dither_enabled = val;
-    scrn.pD3DDevice->SetRenderState(D3DRS_DITHERENABLE, (DWORD)val);
+    _pD3DDevice->SetRenderState(D3DRS_DITHERENABLE, (DWORD)val);
   }
 }
 
@@ -70,7 +70,7 @@ INLINE void DXGraphicsStateGuardian8::
 enable_stencil_test(bool val) {
   if (_stencil_test_enabled != val) {
     _stencil_test_enabled = val;
-    scrn.pD3DDevice->SetRenderState(D3DRS_STENCILENABLE, (DWORD)val);
+    _pD3DDevice->SetRenderState(D3DRS_STENCILENABLE, (DWORD)val);
   }
 }
 
@@ -96,7 +96,7 @@ INLINE void DXGraphicsStateGuardian8::
 enable_blend(bool val) {
   if (_blend_enabled != val) {
     _blend_enabled = val;
-    scrn.pD3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, (DWORD)val);
+    _pD3DDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, (DWORD)val);
   }
 }
 
@@ -109,9 +109,9 @@ INLINE void DXGraphicsStateGuardian8::
 set_color_writemask(UINT color_writemask) {
   if (_color_writemask != color_writemask) {
     _color_writemask = color_writemask;
-    if(scrn.bCanDirectDisableColorWrites) {
+    if(_pScrn->bCanDirectDisableColorWrites) {
         // only newer HW supports this rstate
-        scrn.pD3DDevice->SetRenderState(D3DRS_COLORWRITEENABLE, (DWORD)color_writemask);
+        _pD3DDevice->SetRenderState(D3DRS_COLORWRITEENABLE, (DWORD)color_writemask);
     } else {
         // blending can only handle on/off
         assert((color_writemask==0x0)||(color_writemask==0xFFFFFFFF));
@@ -129,7 +129,7 @@ INLINE void DXGraphicsStateGuardian8::
 enable_gouraud_shading(bool val) {
   if (_bGouraudShadingOn != val) {
     _bGouraudShadingOn = val;
-    scrn.pD3DDevice->SetRenderState(D3DRS_SHADEMODE, (val ? D3DSHADE_GOURAUD : D3DSHADE_FLAT));
+    _pD3DDevice->SetRenderState(D3DRS_SHADEMODE, (val ? D3DSHADE_GOURAUD : D3DSHADE_FLAT));
   }
 }
 
@@ -137,7 +137,7 @@ INLINE void DXGraphicsStateGuardian8::
 enable_primitive_clipping(bool val) {
   if (_clipping_enabled != val) {
     _clipping_enabled = val;
-    scrn.pD3DDevice->SetRenderState(D3DRS_CLIPPING, (DWORD)val);
+    _pD3DDevice->SetRenderState(D3DRS_CLIPPING, (DWORD)val);
   }
 }
 
@@ -150,7 +150,7 @@ INLINE void DXGraphicsStateGuardian8::
 enable_fog(bool val) {
   if ((_fog_enabled != val) && (_doFogType!=None)) {
     _fog_enabled = val;
-    scrn.pD3DDevice->SetRenderState(D3DRS_FOGENABLE, (DWORD)val);
+    _pD3DDevice->SetRenderState(D3DRS_FOGENABLE, (DWORD)val);
   }
 }
 
@@ -164,7 +164,7 @@ set_vertex_format(DWORD NewFvfType) {
 #ifdef USE_VERTEX_SHADERS
   if(_CurVertexShader!=NULL) {
     // this needs optimization
-    HRESULT hr = scrn.pD3DDevice->SetVertexShader(_CurVertexShader);
+    HRESULT hr = _pD3DDevice->SetVertexShader(_CurVertexShader);
     #ifndef NDEBUG
     if(FAILED(hr)) {
            dxgsg8_cat.error() << "SetVertexShader for custom vtx shader failed" << D3DERRORSTRING(hr);
@@ -179,7 +179,7 @@ set_vertex_format(DWORD NewFvfType) {
   if (_CurFVFType != NewFvfType) {
     _CurFVFType = NewFvfType;
 
-    HRESULT hr = scrn.pD3DDevice->SetVertexShader(NewFvfType);
+    HRESULT hr = _pD3DDevice->SetVertexShader(NewFvfType);
  #ifndef NDEBUG
     if(FAILED(hr)) {
            dxgsg8_cat.error() << "SetVertexShader(0x" << (void*)NewFvfType<<") failed" << D3DERRORSTRING(hr);
@@ -199,7 +199,7 @@ enable_alpha_test(bool val )
 {
   if (_alpha_test_enabled != val) {
     _alpha_test_enabled = val;
-    scrn.pD3DDevice->SetRenderState(D3DRS_ALPHATESTENABLE, (DWORD)val);
+    _pD3DDevice->SetRenderState(D3DRS_ALPHATESTENABLE, (DWORD)val);
   }
 }
 
@@ -216,7 +216,7 @@ call_dxLightModelAmbient( const Colorf& color)
 #ifdef GSG_VERBOSE
     dxgsg8_cat.debug() << "dxLightModel(LIGHT_MODEL_AMBIENT, " << color << ")" << endl;
 #endif
-    scrn.pD3DDevice->SetRenderState( D3DRS_AMBIENT,
+    _pD3DDevice->SetRenderState( D3DRS_AMBIENT,
                 D3DCOLOR_COLORVALUE(color[0], color[1], color[2], color[3]));
   }
 }
@@ -265,12 +265,12 @@ call_dxAlphaFunc(D3DCMPFUNC func, float reference_alpha) {
     }
     dxgsg8_cat.debug() << " , " << reference_alpha << ")" << endl;
 #endif
-    scrn.pD3DDevice->SetRenderState(D3DRS_ALPHAFUNC, func);
+    _pD3DDevice->SetRenderState(D3DRS_ALPHAFUNC, func);
   }
 
   if(_alpha_func_refval != reference_alpha) {
       _alpha_func_refval = reference_alpha;
-      scrn.pD3DDevice->SetRenderState(D3DRS_ALPHAREF, (UINT) (reference_alpha*255.0f));  //d3d uses 0x0-0xFF, not a float
+      _pD3DDevice->SetRenderState(D3DRS_ALPHAREF, (UINT) (reference_alpha*255.0f));  //d3d uses 0x0-0xFF, not a float
   }
 }
 
@@ -281,7 +281,7 @@ call_dxBlendFunc(D3DBLEND sfunc, D3DBLEND dfunc )
   if (_blend_source_func != sfunc)
     {
     _blend_source_func = sfunc;
-    scrn.pD3DDevice->SetRenderState(D3DRS_SRCBLEND, sfunc);
+    _pD3DDevice->SetRenderState(D3DRS_SRCBLEND, sfunc);
 #ifdef GSG_VERBOSE
     dxgsg8_cat.debug() << "dxSrcBlendFunc(";
     switch (sfunc)
@@ -323,7 +323,7 @@ call_dxBlendFunc(D3DBLEND sfunc, D3DBLEND dfunc )
   if ( _blend_dest_func != dfunc)
     {
     _blend_dest_func = dfunc;
-    scrn.pD3DDevice->SetRenderState(D3DRS_DESTBLEND, dfunc);
+    _pD3DDevice->SetRenderState(D3DRS_DESTBLEND, dfunc);
 #ifdef GSG_VERBOSE
     dxgsg8_cat.debug() << "dxDstBlendFunc(";
     switch (dfunc)
@@ -365,7 +365,7 @@ INLINE void DXGraphicsStateGuardian8::
 enable_zwritemask(bool val) {
     if (_depth_write_enabled != val) {
         _depth_write_enabled = val;
-        scrn.pD3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, val);
+        _pD3DDevice->SetRenderState(D3DRS_ZWRITEENABLE, val);
     }
 }
 

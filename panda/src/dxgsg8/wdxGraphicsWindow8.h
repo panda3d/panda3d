@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef WDXGRAPHICSWINDOW8_H
-#define WDXGRAPHICSWINDOW8_H
+#ifndef wdxGraphicsWindow8_H
+#define wdxGraphicsWindow8_H
 
 #include "pandabase.h"
 #include "winGraphicsWindow.h"
@@ -39,16 +39,16 @@ static const int WDXWIN_EVENT = 8;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX wdxGraphicsWindow8 : public WinGraphicsWindow {
 public:
-  wdxGraphicsWindow8(GraphicsPipe *pipe);
+  wdxGraphicsWindow8(GraphicsPipe *pipe, GraphicsStateGuardian *gsg);
   virtual ~wdxGraphicsWindow8();
-
-  virtual void make_gsg();
-  virtual void release_gsg();
+  virtual bool open_window(void);
 
   virtual int verify_window_sizes(int numsizes, int *dimen);
 
   virtual bool begin_frame();
   virtual void end_flip();
+  virtual LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+  virtual bool handle_mouse_motion(int x, int y);
 
 protected:
   virtual void fullscreen_restored(WindowProperties &properties);
@@ -60,30 +60,26 @@ private:
   void create_screen_buffers_and_device(DXScreenData &Display,
                                         bool force_16bpp_zbuffer);
 
-  bool choose_adapter(LPDIRECT3D8 pD3D8);
-  bool search_for_device(LPDIRECT3D8 pD3D8, DXDeviceInfo *device_info);
+  bool choose_device(void);
+  bool search_for_device(wdxGraphicsPipe8 *dxpipe, DXDeviceInfo *device_info);
 
   //  void set_coop_levels_and_display_modes();
-  bool special_check_fullscreen_resolution(UINT x_size,UINT y_size);
-
+/*
   void search_for_valid_displaymode(UINT RequestedX_Size, UINT RequestedY_Size,
                                     bool bWantZBuffer, bool bWantStencil,
                                     UINT *pSupportedScreenDepthsMask,
                                     bool *pCouldntFindAnyValidZBuf,
                                     D3DFORMAT *pSuggestedPixFmt,
                                     bool bVerboseMode = false);
-
+*/
   bool reset_device_resize_window(UINT new_xsize, UINT new_ysize);
   void init_resized_window();
-  bool find_best_depth_format(DXScreenData &Display, 
-                              D3DDISPLAYMODE &TestDisplayMode,
-                              D3DFORMAT *pBestFmt, bool bWantStencil,
-                              bool bForce16bpp, bool bVerboseMode = false) const;
-
   static int D3DFMT_to_DepthBits(D3DFORMAT fmt);
   static bool is_badvidmem_card(D3DADAPTER_IDENTIFIER8 *pDevID);
 
   DXGraphicsStateGuardian8 *_dxgsg;
+  DXScreenData _wcontext;
+
   int _depth_buffer_bpp;
   bool _awaiting_restore;
 
@@ -100,6 +96,7 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  virtual void make_current(void);
 
 private:
   static TypeHandle _type_handle;

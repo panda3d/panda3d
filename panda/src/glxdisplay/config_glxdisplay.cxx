@@ -19,6 +19,7 @@
 #include "config_glxdisplay.h"
 #include "glxGraphicsPipe.h"
 #include "glxGraphicsWindow.h"
+#include "glxGraphicsStateGuardian.h"
 #include "graphicsPipeSelection.h"
 #include "dconfig.h"
 
@@ -47,12 +48,11 @@ init_libglxdisplay() {
 
   glxGraphicsPipe::init_type();
   glxGraphicsWindow::init_type();
+  glxGraphicsStateGuardian::init_type();
 
   GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
   selection->add_pipe_type(glxGraphicsPipe::get_class_type(),
                            glxGraphicsPipe::pipe_constructor);
 }
 
-bool gl_show_fps_meter = config_glxdisplay.GetBool("show-fps-meter", false);
-float gl_fps_meter_update_interval = max((float)0.5,config_glxdisplay.GetFloat("fps-meter-update-interval", 1.7));
 const string display_cfg = config_glxdisplay.GetString("display", "");

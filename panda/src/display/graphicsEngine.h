@@ -21,6 +21,8 @@
 
 #include "pandabase.h"
 #include "graphicsWindow.h"
+#include "frameBufferProperties.h"
+#include "graphicsThreadingModel.h"
 #include "sceneSetup.h"
 #include "pointerTo.h"
 #include "thread.h"
@@ -32,6 +34,7 @@
 class Pipeline;
 class DisplayRegion;
 class GraphicsPipe;
+class FrameBufferProperties;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsEngine
@@ -53,15 +56,25 @@ PUBLISHED:
   GraphicsEngine(Pipeline *pipeline = NULL);
   ~GraphicsEngine();
 
-  void set_threading_model(const string &threading_model);
-  string get_threading_model() const;
+  void set_frame_buffer_properties(const FrameBufferProperties &properties);
+  FrameBufferProperties get_frame_buffer_properties() const; 
+
+  void set_threading_model(const GraphicsThreadingModel &threading_model);
+  GraphicsThreadingModel get_threading_model() const;
 
   INLINE void set_auto_flip(bool auto_flip);
   INLINE bool get_auto_flip() const;
 
-  INLINE GraphicsWindow *make_window(GraphicsPipe *pipe);
+  INLINE PT(GraphicsStateGuardian) make_gsg(GraphicsPipe *pipe);
+  PT(GraphicsStateGuardian) make_gsg(GraphicsPipe *pipe,
+                                     const FrameBufferProperties &properties,
+                                     const GraphicsThreadingModel &threading_model);
+
+  INLINE GraphicsWindow *make_window(GraphicsPipe *pipe,
+                                     GraphicsStateGuardian *gsg);
   GraphicsWindow *make_window(GraphicsPipe *pipe,
-                              const string &threading_model);
+                              GraphicsStateGuardian *gsg,
+                              const GraphicsThreadingModel &threading_model);
   bool remove_window(GraphicsWindow *window);
   void remove_all_windows();
   bool is_empty() const;
@@ -75,6 +88,7 @@ PUBLISHED:
 
 private:
   typedef pset< PT(GraphicsWindow) > Windows;
+  typedef pset< PT(GraphicsStateGuardian) > GSGs;
 
   void cull_and_draw_together(const Windows &wlist);
   void cull_and_draw_together(GraphicsStateGuardian *gsg, DisplayRegion *dr);
@@ -86,6 +100,7 @@ private:
   void flip_windows(const GraphicsEngine::Windows &wlist);
   void do_sync_frame();
   void do_flip_frame();
+  INLINE void close_gsg(GraphicsPipe *pipe, GraphicsStateGuardian *gsg);
 
   PT(SceneSetup) setup_scene(const NodePath &camera, 
                              GraphicsStateGuardian *gsg);
@@ -104,6 +119,7 @@ private:
   // process, and the list of windows for each stage.
   class WindowRenderer {
   public:
+    void add_gsg(GraphicsStateGuardian *gsg);
     void add_window(Windows &wlist, GraphicsWindow *window);
     void remove_window(GraphicsWindow *window);
     void do_frame(GraphicsEngine *engine);
@@ -111,6 +127,7 @@ private:
     void do_release(GraphicsEngine *engine);
     void do_close(GraphicsEngine *engine);
     void do_pending(GraphicsEngine *engine);
+    bool any_done_gsgs() const;
 
     Windows _cull;    // cull stage
     Windows _cdraw;   // cull-and-draw-together stage
@@ -118,6 +135,7 @@ private:
     Windows _window;  // window stage, i.e. process windowing events 
     Windows _pending_release; // moved from _draw, pending release_gsg.
     Windows _pending_close;   // moved from _window, pending close.
+    GSGs _gsgs;       // draw stage
     Mutex _wl_lock;
   };
 
@@ -148,7 +166,8 @@ private:
   WindowRenderer _app;
   typedef pmap<string, PT(RenderThread) > Threads;
   Threads _threads;
-  string _threading_model;
+  FrameBufferProperties _frame_buffer_properties;
+  GraphicsThreadingModel _threading_model;
   bool _auto_flip;
 
   enum FlipState {

@@ -15,6 +15,7 @@
     displayRegion.I displayRegion.h  \
     displayRegionStack.I \
     displayRegionStack.h \
+    frameBufferProperties.I frameBufferProperties.h \
     frameBufferStack.I frameBufferStack.h \
     geomContext.I geomContext.h geomNodeContext.I geomNodeContext.h \
     graphicsChannel.I graphicsChannel.h \
@@ -24,6 +25,7 @@
     graphicsPipeSelection.I graphicsPipeSelection.h \
     graphicsStateGuardian.I \
     graphicsStateGuardian.h graphicsWindow.I \
+    graphicsThreadingModel.I graphicsThreadingModel.h \
     graphicsWindow.h graphicsWindowInputDevice.I  \
     graphicsWindowInputDevice.h \
     windowProperties.I windowProperties.h \
@@ -36,11 +38,13 @@
     config_display.cxx \
     clearableRegion.cxx \
     displayRegion.cxx \
+    frameBufferProperties.cxx \
     geomContext.cxx geomNodeContext.cxx graphicsChannel.cxx  \
     graphicsEngine.cxx \
     graphicsLayer.cxx graphicsPipe.cxx \
     graphicsPipeSelection.cxx \
     graphicsStateGuardian.cxx  \
+    graphicsThreadingModel.cxx \
     graphicsWindow.cxx graphicsWindowInputDevice.cxx  \
     windowProperties.cxx \
     hardwareChannel.cxx \
@@ -51,6 +55,7 @@
     clearableRegion.I clearableRegion.h \
     displayRegion.I displayRegion.h displayRegionStack.I \
     displayRegionStack.h \
+    frameBufferProperties.I frameBufferProperties.h \
     frameBufferStack.I frameBufferStack.h \
     geomContext.I geomContext.h geomNodeContext.I geomNodeContext.h \
     graphicsChannel.I graphicsChannel.h \
@@ -60,6 +65,7 @@
     graphicsPipeSelection.I graphicsPipeSelection.h \
     graphicsStateGuardian.I \
     graphicsStateGuardian.h graphicsWindow.I graphicsWindow.h \
+    graphicsThreadingModel.I graphicsThreadingModel.h \
     graphicsWindowInputDevice.I graphicsWindowInputDevice.h \
     windowProperties.I windowProperties.h \
     hardwareChannel.I hardwareChannel.h \

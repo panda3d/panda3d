@@ -36,12 +36,11 @@ class glxGraphicsPipe;
 ////////////////////////////////////////////////////////////////////
 class glxGraphicsWindow : public GraphicsWindow {
 public:
-  glxGraphicsWindow(GraphicsPipe *pipe);
+  glxGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg);
   virtual ~glxGraphicsWindow();
 
-  virtual void make_gsg();
-  virtual void release_gsg();
   virtual void make_current();
+  virtual void release_gsg();
 
   virtual bool begin_frame();
   virtual void begin_flip();
@@ -56,10 +55,7 @@ protected:
 private:
   void set_wm_properties(const WindowProperties &properties);
 
-  XVisualInfo *try_for_visual(int framebuffer_mode,
-                              int want_depth_bits, int want_color_bits) const;
-  bool choose_visual();
-  void setup_colormap();
+  void setup_colormap(XVisualInfo *visual);
   ButtonHandle get_button(XKeyEvent *key_event);
 
   static Bool check_event(Display *display, XEvent *event, char *arg);
@@ -68,8 +64,6 @@ private:
   Display *_display;
   int _screen;
   Window _xwindow;
-  GLXContext _context;
-  XVisualInfo *_visual;
   Colormap _colormap;
   long _event_mask;
   bool _awaiting_configure;

@@ -81,12 +81,13 @@ TypeHandle GraphicsStateGuardian::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 GraphicsStateGuardian::
-GraphicsStateGuardian(GraphicsWindow *win) {
-  _win = win;
+GraphicsStateGuardian(const FrameBufferProperties &properties) {
+  _properties = properties;
   _coordinate_system = default_coordinate_system;
   _current_display_region = (DisplayRegion*)0L;
   _current_lens = (Lens *)NULL;
-  reset();
+  _needs_reset = true;
+  _closing_gsg = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -106,6 +107,8 @@ GraphicsStateGuardian::
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 reset() {
+  _needs_reset = false;
+
   _display_region_stack_level = 0;
   _frame_buffer_stack_level = 0;
   _lens_stack_level = 0;
@@ -1374,11 +1377,10 @@ free_pointers() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 close_gsg() {
+  _closing_gsg = true;
   free_pointers();
   release_all_textures();
   release_all_geoms();
-
-  _win = (GraphicsWindow *)NULL;
 }
 
 #ifdef DO_PSTATS

@@ -15,3 +15,31 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsStateGuardian::get_pfnum
+//       Access: Public
+//  Description: Returns the pixel format number chosen for windows
+//               that use this context.
+////////////////////////////////////////////////////////////////////
+INLINE int wglGraphicsStateGuardian::
+get_pfnum() const {
+  return _pfnum;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsStateGuardian::get_context
+//       Access: Public
+//  Description: Returns the GL context associated with the GSG.  If
+//               the context has not yet been created, this creates a
+//               suitable context for rendering to the indicated
+//               window.  This means that this method may only be
+//               called from within the draw thread.
+////////////////////////////////////////////////////////////////////
+INLINE HGLRC wglGraphicsStateGuardian::
+get_context(HDC hdc) {
+  if (!_made_context) {
+    make_context(hdc);
+  }
+  return _context;
+}

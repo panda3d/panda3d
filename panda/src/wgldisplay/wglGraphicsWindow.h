@@ -29,12 +29,11 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAGL wglGraphicsWindow : public WinGraphicsWindow {
 public:
-  wglGraphicsWindow(GraphicsPipe *pipe);
+  wglGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg);
   virtual ~wglGraphicsWindow();
 
-  virtual void make_gsg();
-  virtual void release_gsg();
   virtual void make_current();
+  virtual void release_gsg();
 
   virtual void begin_flip();
 
@@ -45,17 +44,13 @@ protected:
                                           DWORD &bitdepth);
 
 private:
-  int choose_pfnum() const;
-  int find_pixfmtnum(bool bLookforHW) const;
-  void setup_colormap();
+  void setup_colormap(const PIXELFORMATDESCRIPTOR &pixelformat);
 
 #ifdef _DEBUG
   static void print_pfd(PIXELFORMATDESCRIPTOR *pfd, char *msg);
 #endif
 
-  HGLRC _context;
   HDC _hdc;
-  PIXELFORMATDESCRIPTOR _pixelformat;
   HPALETTE _colormap;
 
 public:

@@ -51,3 +51,21 @@ WinGraphicsPipe::
     _hUser32 = NULL;
   }
 }
+
+bool MyGetProcAddr(HINSTANCE hDLL, FARPROC *pFn, const char *szExportedFnName) {
+  *pFn = (FARPROC) GetProcAddress(hDLL, szExportedFnName);
+  if (*pFn == NULL) {
+    windisplay_cat.error() << "GetProcAddr failed for " << szExportedFnName << ", error=" << GetLastError() <<endl;
+    return false;
+  }
+  return true;
+}
+
+bool MyLoadLib(HINSTANCE &hDLL, const char *DLLname) {
+  hDLL = LoadLibrary(DLLname);
+  if(hDLL == NULL) {
+    windisplay_cat.error() << "LoadLibrary failed for " << DLLname << ", error=" << GetLastError() <<endl;
+    return false;
+  }
+  return true;
+}

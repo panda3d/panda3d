@@ -34,9 +34,10 @@ public:
 
   virtual string get_interface_name() const;
   static PT(GraphicsPipe) pipe_constructor();
+  virtual PT(GraphicsStateGuardian) make_gsg(const FrameBufferProperties &properties);
 
 protected:
-  virtual PT(GraphicsWindow) make_window();
+  virtual PT(GraphicsWindow) make_window(GraphicsStateGuardian *gsg);
 
 private:
   bool init();
@@ -60,6 +61,7 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
 
 private:
   static TypeHandle _type_handle;

@@ -38,22 +38,6 @@ PUBLISHED:
   bool operator == (const WindowProperties &other) const;
   INLINE bool operator != (const WindowProperties &other) const;
 
-  enum FramebufferMode {
-    FM_rgba =          0x0000,
-    FM_rgb =           0x0000,
-    FM_index =         0x0001,
-    FM_single_buffer = 0x0000,
-    FM_double_buffer = 0x0002,
-    FM_triple_buffer = 0x0004,
-    FM_accum =         0x0008,
-    FM_alpha =         0x0010,
-    FM_depth =         0x0020,
-    FM_stencil =       0x0040,
-    FM_multisample =   0x0080,
-    FM_stereo =        0x0100,
-    FM_luminance =     0x0200,
-  };
-
   void clear();
   INLINE bool is_any_specified() const;
   
@@ -104,21 +88,6 @@ PUBLISHED:
   INLINE bool has_cursor_hidden() const;
   INLINE void clear_cursor_hidden();
 
-  INLINE void set_framebuffer_mode(int framebuffer_mode);
-  INLINE int get_framebuffer_mode() const;
-  INLINE bool has_framebuffer_mode() const;
-  INLINE void clear_framebuffer_mode();
-
-  INLINE void set_depth_bits(int depth_bits);
-  INLINE int get_depth_bits() const;
-  INLINE bool has_depth_bits() const;
-  INLINE void clear_depth_bits();
-
-  INLINE void set_color_bits(int color_bits);
-  INLINE int get_color_bits() const;
-  INLINE bool has_color_bits() const;
-  INLINE void clear_color_bits();
-
   void add_properties(const WindowProperties &other);
 
   void output(ostream &out) const;
@@ -137,9 +106,6 @@ private:
     S_minimized        = 0x0040,
     S_open             = 0x0080,
     S_cursor_hidden    = 0x0100,
-    S_framebuffer_mode = 0x0200,
-    S_depth_bits       = 0x0400,
-    S_color_bits       = 0x0800,
   };
 
   // This bitmask represents the true/false settings for various
@@ -161,9 +127,6 @@ private:
   int _y_size;
   string _title;
   int _flags;
-  int _framebuffer_mode;
-  int _depth_bits;
-  int _color_bits;
 };
 
 INLINE ostream &operator << (ostream &out, const WindowProperties &properties);

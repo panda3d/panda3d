@@ -116,10 +116,11 @@ TypeHandle wdxGraphicsWindow7::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 wdxGraphicsWindow7::
-wdxGraphicsWindow7(GraphicsPipe *pipe) :
-  WinGraphicsWindow(pipe) 
+wdxGraphicsWindow7(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) :
+  WinGraphicsWindow(pipe, gsg) 
 {
-  _dxgsg = (DXGraphicsStateGuardian7 *)NULL;
+  _dxgsg = DCAST(DXGraphicsStateGuardian7, gsg);
+  ZeroMemory(&_wcontext,sizeof(_wcontext));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -131,6 +132,47 @@ wdxGraphicsWindow7::
 ~wdxGraphicsWindow7() {
 }
 
+void wdxGraphicsWindow7::
+make_current(void) {
+  DXGraphicsStateGuardian7 *dxgsg;
+  DCAST_INTO_V(dxgsg, _gsg);
+  //wglMakeCurrent(_hdc, wdxgsg->_context);
+  dxgsg->set_context(&_wcontext);
+
+  // Now that we have made the context current to a window, we can
+  // reset the GSG state if this is the first time it has been used.
+  // (We can't just call reset() when we construct the GSG, because
+  // reset() requires having a current context.)
+  dxgsg->reset_if_new();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsWindow7::open_window
+//       Access: Protected, Virtual
+//  Description: Opens the window right now.  Called from the window
+//               thread.  Returns true if the window is successfully
+//               opened, or false if there was a problem.
+////////////////////////////////////////////////////////////////////
+bool wdxGraphicsWindow7::
+open_window(void) {
+  
+  if (!choose_device(0, NULL)) {
+    wdxdisplay7_cat.error() << "Unable to find suitable rendering device.\n";
+    return false;
+  }
+
+  if (!WinGraphicsWindow::open_window()) {
+    return false;
+  }
+
+  _wcontext.hWnd = _hWnd;
+  set_coop_levels_and_display_modes();
+  create_screen_buffers_and_device(_wcontext, dx_force_16bpp_zbuffer);
+
+  return true;
+}
+
+/*
 ////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsWindow7::make_gsg
 //       Access: Public, Virtual
@@ -144,9 +186,9 @@ make_gsg() {
   _dxgsg = new DXGraphicsStateGuardian7(this);
   _gsg = _dxgsg;
   // Tell the associated dxGSG about the window handle.
-  _dxgsg->scrn.hWnd = _mwindow;
+  _wcontext.hWnd = _hWnd;
 
-  if (!search_for_device(0, NULL)) {
+  if (!choose_device(0, NULL)) {
     wdxdisplay7_cat.error()
       << "Unable to find suitable rendering device.\n";
     release_gsg();
@@ -156,30 +198,7 @@ make_gsg() {
   set_coop_levels_and_display_modes();
   create_screen_buffers_and_device(_dxgsg->scrn, dx_force_16bpp_zbuffer);
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow7::release_gsg
-//       Access: Public, Virtual
-//  Description: Releases the current GSG pointer, if it is currently
-//               held, and resets the GSG to NULL.  This should only
-//               be called from within the draw thread.
-////////////////////////////////////////////////////////////////////
-void wdxGraphicsWindow7::
-release_gsg() {
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
-    if (is_fullscreen()) {
-      // Release the cooperative level we grabbed when we created the
-      // GSG.
-      DXScreenData *pScrn = &_dxgsg->scrn;
-      nassertv(pScrn != (DXScreenData *)NULL);
-      if (pScrn->pDD != (LPDIRECTDRAW7)NULL) {
-        pScrn->pDD->SetCooperativeLevel(_mwindow, DDSCL_NORMAL);
-      }
-    }
-
-    GraphicsWindow::release_gsg();
-  }
-}
+*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsWindow7::end_flip
@@ -234,15 +253,15 @@ handle_reshape() {
   if (_dxgsg!=NULL) {
     HRESULT hr;
 
-    if (_dxgsg->scrn.pddsBack == NULL) {
+    if (_wcontext.pddsBack == NULL) {
       // assume this is initial creation reshape and ignore this call
       return;
     }
 
-    // Clear the back/primary surface to black
+    // Clear the back/primary surface to black using ddraw
     DX_DECLARE_CLEAN(DDBLTFX, bltfx);
     bltfx.dwDDFX |= DDBLTFX_NOTEARING;
-    hr = _dxgsg->scrn.pddsPrimary->Blt
+    hr = _wcontext.pddsPrimary->Blt
       (NULL, NULL, NULL, DDBLT_COLORFILL | DDBLT_WAIT, &bltfx);
     if (FAILED(hr)) {
       wdxdisplay7_cat.fatal()
@@ -251,7 +270,7 @@ handle_reshape() {
       exit(1);
     }
 
-    hr = _dxgsg->scrn.pDD->TestCooperativeLevel();
+    hr = _wcontext.pDD->TestCooperativeLevel();
     if (FAILED(hr)) {
       wdxdisplay7_cat.error()
         << "TestCooperativeLevel failed : result = "
@@ -264,10 +283,13 @@ handle_reshape() {
     set_to_temp_rendertarget();
 
     // create the new resized rendertargets
+    //RECT view_rect;
+    //get_client_rect_screen(hWnd, &view_rect);
+    //_dxgsg->dx_setup_after_resize(view_rect, &_wcontext);
+
     RECT view_rect;
-    HWND hWnd = _dxgsg->scrn.hWnd;
-    get_client_rect_screen(hWnd, &view_rect);
-    _dxgsg->dx_setup_after_resize(view_rect, hWnd);
+    get_client_rect_screen(_wcontext.hWnd, &view_rect);
+    _dxgsg->dx_setup_after_resize(&view_rect);
   }
 }
 
@@ -285,7 +307,7 @@ do_fullscreen_resize(int x_size, int y_size) {
 
   DX_DECLARE_CLEAN(DDSURFACEDESC2,ddsd_curmode);
 
-  hr = _dxgsg->scrn.pDD->GetDisplayMode(&ddsd_curmode);
+  hr = _wcontext.pDD->GetDisplayMode(&ddsd_curmode);
   if (FAILED(hr)) {
     wdxdisplay7_cat.fatal() 
       << "resize() - GetDisplayMode failed, result = "
@@ -310,7 +332,7 @@ do_fullscreen_resize(int x_size, int y_size) {
   DMI.maxHeight = y_size;
   DMI.pDDSD_Arr = DDSD_Arr;
 
-  hr = _dxgsg->scrn.pDD->EnumDisplayModes(DDEDM_REFRESHRATES, &ddsd_search,
+  hr = _wcontext.pDD->EnumDisplayModes(DDEDM_REFRESHRATES, &ddsd_search,
                                           &DMI, EnumDisplayModesCallBack);
   if (FAILED(hr)) {
     wdxdisplay7_cat.fatal()
@@ -319,7 +341,7 @@ do_fullscreen_resize(int x_size, int y_size) {
     return false;
   }
 
-  DMI.supportedBitDepths &= _dxgsg->scrn.D3DDevDesc.dwDeviceRenderBitDepth;
+  DMI.supportedBitDepths &= _wcontext.D3DDevDesc.dwDeviceRenderBitDepth;
 
   DWORD dwFullScreenBitDepth;
   DWORD requested_bpp = ddsd_curmode.ddpfPixelFormat.dwRGBBitCount;
@@ -341,7 +363,7 @@ do_fullscreen_resize(int x_size, int y_size) {
     return false;
   }
 
-  hr = _dxgsg->scrn.pDD->TestCooperativeLevel();
+  hr = _wcontext.pDD->TestCooperativeLevel();
   if (FAILED(hr)) {
     wdxdisplay7_cat.error()
       << "TestCooperativeLevel failed : result = " 
@@ -354,7 +376,7 @@ do_fullscreen_resize(int x_size, int y_size) {
   _dxgsg->free_dxgsg_objects();
 
    // let driver choose default refresh rate (hopefully its >=60Hz)   
-  hr = _dxgsg->scrn.pDD->SetDisplayMode(x_size, y_size, dwFullScreenBitDepth,
+  hr = _wcontext.pDD->SetDisplayMode(x_size, y_size, dwFullScreenBitDepth,
                                         0L, 0L);
   if (FAILED(hr)) {
     wdxdisplay7_cat.error()
@@ -366,17 +388,17 @@ do_fullscreen_resize(int x_size, int y_size) {
 
   if (wdxdisplay7_cat.is_debug()) {
     DX_DECLARE_CLEAN(DDSURFACEDESC2,ddsd34); 
-    _dxgsg->scrn.pDD->GetDisplayMode(&ddsd34);
+    _wcontext.pDD->GetDisplayMode(&ddsd34);
     wdxdisplay7_cat.debug()
       << "set displaymode to " << ddsd34.dwWidth << "x" << ddsd34.dwHeight
       << " at "<< ddsd34.ddpfPixelFormat.dwRGBBitCount << "bpp, "
       << ddsd34.dwRefreshRate << "Hz\n";
   }
 
-  _dxgsg->scrn.dwRenderWidth = x_size;
-  _dxgsg->scrn.dwRenderHeight = y_size;
+  _wcontext.dwRenderWidth = x_size;
+  _wcontext.dwRenderHeight = y_size;
 
-  create_screen_buffers_and_device(_dxgsg->scrn, dx_force_16bpp_zbuffer);
+  create_screen_buffers_and_device(_wcontext, dx_force_16bpp_zbuffer);
   _dxgsg->RecreateAllVideoSurfaces();
   _dxgsg->SetDXReady(true);
   return true;
@@ -400,8 +422,8 @@ set_to_temp_rendertarget() {
     
   DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsd);
 
-  _dxgsg->scrn.pddsBack->GetSurfaceDesc(&ddsd);
-  LPDIRECTDRAW7 pDD = _dxgsg->scrn.pDD;
+  _wcontext.pddsBack->GetSurfaceDesc(&ddsd);
+  LPDIRECTDRAW7 pDD = _wcontext.pDD;
     
   ddsd.dwFlags &= ~DDSD_PITCH;
   ddsd.dwWidth = 1; 
@@ -418,9 +440,9 @@ set_to_temp_rendertarget() {
     return false;
   }
   
-  if (_dxgsg->scrn.pddsZBuf != NULL) {
+  if (_wcontext.pddsZBuf != NULL) {
     DX_DECLARE_CLEAN(DDSURFACEDESC2, ddsdZ);
-    _dxgsg->scrn.pddsZBuf->GetSurfaceDesc(&ddsdZ);
+    _wcontext.pddsZBuf->GetSurfaceDesc(&ddsdZ);
     ddsdZ.dwFlags &= ~DDSD_PITCH;
     ddsdZ.dwWidth = 1;
     ddsdZ.dwHeight = 1;
@@ -444,7 +466,7 @@ set_to_temp_rendertarget() {
     }
   }
 
-  hr = _dxgsg->scrn.pD3DDevice->SetRenderTarget(pddsDummy, 0x0);
+  hr = _wcontext.pD3DDevice->SetRenderTarget(pddsDummy, 0x0);
   if (FAILED(hr)) {
     wdxdisplay7_cat.error()
       << "Resize failed to set render target to temporary surface, result = " 
@@ -499,6 +521,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
       DDSCAPS_PRIMARYSURFACE | DDSCAPS_3DDEVICE |
       DDSCAPS_FLIP | DDSCAPS_COMPLEX;
     ddsd.dwBackBufferCount = 1;
+    Display.bIsFullScreen=true;
 
     if (dx_full_screen_antialiasing) {
       // cant check that d3ddevice has this capability yet, so got to
@@ -704,10 +727,10 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
 
   //  resized(dwRenderWidth, dwRenderHeight);  // update panda channel/display rgn info
 
-  int framebuffer_mode = get_properties().get_framebuffer_mode();
+  int frame_buffer_mode = _gsg->get_properties().get_frame_buffer_mode();
 
 #ifndef NDEBUG
-  if ((framebuffer_mode & WindowProperties::FM_depth) == 0) {
+  if ((frame_buffer_mode & FrameBufferProperties::FM_depth) == 0) {
     wdxdisplay7_cat.info()
       << "no zbuffer requested, skipping zbuffer creation\n";
   }
@@ -716,7 +739,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
   // Check if the device supports z-bufferless hidden surface
   // removal. If so, we don't really need a z-buffer
   if ((!(pD3DDevDesc->dpcTriCaps.dwRasterCaps & D3DPRASTERCAPS_ZBUFFERLESSHSR )) &&
-      ((framebuffer_mode & WindowProperties::FM_depth) != 0)) {
+      ((frame_buffer_mode & FrameBufferProperties::FM_depth) != 0)) {
 
     // Get z-buffer dimensions from the render target
     DX_DECLARE_CLEAN(DDSURFACEDESC2,ddsd);
@@ -724,7 +747,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
 
     // Setup the surface desc for the z-buffer.
     ddsd.dwFlags = DDSD_WIDTH | DDSD_HEIGHT | DDSD_CAPS | DDSD_PIXELFORMAT;
-    ddsd.ddsCaps.dwCaps = DDSCAPS_ZBUFFER | ((_dxgsg->scrn.bIsSWRast) ?  DDSCAPS_SYSTEMMEMORY : DDSCAPS_VIDEOMEMORY);
+    ddsd.ddsCaps.dwCaps = DDSCAPS_ZBUFFER | ((_wcontext.bIsSWRast) ?  DDSCAPS_SYSTEMMEMORY : DDSCAPS_VIDEOMEMORY);
 
     DDPIXELFORMAT ZBufPixFmts[MAX_DX_ZBUF_FMTS];
     cNumZBufFmts=0;
@@ -756,7 +779,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
     // should we pay attn to these at some point?  
     //int want_depth_bits = _props._want_depth_bits; 
     //int want_color_bits = _props._want_color_bits;
-    bool bWantStencil = ((framebuffer_mode & WindowProperties::FM_stencil) != 0);
+    bool bWantStencil = ((frame_buffer_mode & FrameBufferProperties::FM_stencil) != 0);
 
     LPDDPIXELFORMAT pCurPixFmt, pz16 = NULL, pz24 = NULL, pz32 = NULL;
     for (i = 0, pCurPixFmt = ZBufPixFmts; 
@@ -790,7 +813,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
 
 #define SET_ZBUF_DEPTH(DEPTH) { assert(pz##DEPTH != NULL); Display.depth_buffer_bitdepth=DEPTH; ddsd.ddpfPixelFormat = *pz##DEPTH;}
         
-    if (_dxgsg->scrn.bIsSWRast) {
+    if (_wcontext.bIsSWRast) {
       SET_ZBUF_DEPTH(16);    // need this for fast path rasterizers
     } else {
       if (IS_NVIDIA(Display.DXDeviceID)) {
@@ -945,6 +968,7 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
   Display.pddsZBuf = pZDDSurf;
   Display.view_rect = view_rect;
 
+  _dxgsg->set_context(&Display);
   //pDD, pPrimaryDDSurf, pBackDDSurf, pZDDSurf, pD3DI, pD3DDevice, view_rect);
   _dxgsg->dx_init();
 
@@ -956,13 +980,13 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow7::search_for_device
+//     Function: wdxGraphicsWindow7::choose_device
 //       Access: Private
 //  Description: Searches for a suitable hardware device for
 //               rendering.
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsWindow7::
-search_for_device(int devnum, DXDeviceInfo *pDevinfo) {
+choose_device(int devnum, DXDeviceInfo *pDevinfo) {
   wdxGraphicsPipe7 *dxpipe;
   DCAST_INTO_R(dxpipe, _pipe, false);
 
@@ -992,16 +1016,16 @@ search_for_device(int devnum, DXDeviceInfo *pDevinfo) {
     return false;
   }
 
-  _dxgsg->scrn.pDD = pDD;
+  _wcontext.pDD = pDD;
 
   // GetDeviceID bug writes an extra 4 bytes, so need xtra space
   BYTE id_arr[sizeof(DDDEVICEIDENTIFIER2) + 4];
   pDD->GetDeviceIdentifier((DDDEVICEIDENTIFIER2 *)&id_arr, 0x0);
 
-  memcpy(&_dxgsg->scrn.DXDeviceID, id_arr, sizeof(DDDEVICEIDENTIFIER2));
+  memcpy(&_wcontext.DXDeviceID, id_arr, sizeof(DDDEVICEIDENTIFIER2));
 
   if (wdxdisplay7_cat.is_info()) {
-    DDDEVICEIDENTIFIER2 *pDevID = &_dxgsg->scrn.DXDeviceID;
+    DDDEVICEIDENTIFIER2 *pDevID = &_wcontext.DXDeviceID;
     wdxdisplay7_cat.info() 
       << "GfxCard: " << pDevID->szDescription <<  "; DriverFile: '" 
       << pDevID->szDriver  
@@ -1015,7 +1039,7 @@ search_for_device(int devnum, DXDeviceInfo *pDevinfo) {
   }
 
   // Query DirectDraw for access to Direct3D
-  hr = pDD->QueryInterface(IID_IDirect3D7, (VOID**)&_dxgsg->scrn.pD3D);
+  hr = pDD->QueryInterface(IID_IDirect3D7, (VOID**)&_wcontext.pD3D);
   if(hr != DD_OK) {
     wdxdisplay7_cat.fatal()
       << "QI for D3D failed : result = " << ConvD3DErrorToString(hr) << endl;
@@ -1029,7 +1053,7 @@ search_for_device(int devnum, DXDeviceInfo *pDevinfo) {
 
   ZeroMemory(d3ddevs,3*sizeof(D3DDEVICEDESC7));
 
-  hr = _dxgsg->scrn.pD3D->EnumDevices(EnumDevicesCallback, d3ddevs);
+  hr = _wcontext.pD3D->EnumDevices(EnumDevicesCallback, d3ddevs);
   if(hr != DD_OK) {
     wdxdisplay7_cat.fatal()
       << "EnumDevices failed : result = " << ConvD3DErrorToString(hr) << endl;
@@ -1048,7 +1072,7 @@ search_for_device(int devnum, DXDeviceInfo *pDevinfo) {
   } else {
     wdxdisplay7_cat.error()
       << "No 3D HW present on device #" << devnum << ", skipping it... ("
-      << _dxgsg->scrn.DXDeviceID.szDescription<<")\n";
+      << _wcontext.DXDeviceID.szDescription<<")\n";
     goto error_exit;
   }
 
@@ -1056,10 +1080,10 @@ search_for_device(int devnum, DXDeviceInfo *pDevinfo) {
     DeviceIdx = SWRASTIDX; 
   }
     
-  memcpy(&_dxgsg->scrn.D3DDevDesc, &d3ddevs[DeviceIdx], 
+  memcpy(&_wcontext.D3DDevDesc, &d3ddevs[DeviceIdx], 
          sizeof(D3DDEVICEDESC7));
 
-  _dxgsg->scrn.bIsTNLDevice = (DeviceIdx == TNLHALIDX);
+  _wcontext.bIsTNLDevice = (DeviceIdx == TNLHALIDX);
 
   // Get Current VidMem avail.  Note this is only an estimate, when we
   // switch to fullscreen mode from desktop, more vidmem will be
@@ -1084,25 +1108,25 @@ search_for_device(int devnum, DXDeviceInfo *pDevinfo) {
   // 1.2 meg (contradicting above comment and what I think would be
   // correct behavior (shouldnt FS mode release the desktop vidmem?),
   // so this is the true value
-  _dxgsg->scrn.MaxAvailVidMem = dwVidMemTotal;
+  _wcontext.MaxAvailVidMem = dwVidMemTotal;
     
 #define LOWVIDMEMTHRESHOLD 5500000
 #define CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD 1000000     // every vidcard we deal with should have at least 1MB
     
   // assume buggy drivers (this means you, FireGL2) may return zero for dwVidMemTotal, so ignore value if its < CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD
-  _dxgsg->scrn.bIsLowVidMemCard = 
+  _wcontext.bIsLowVidMemCard = 
     ((dwVidMemTotal>CRAPPY_DRIVER_IS_LYING_VIDMEMTHRESHOLD) && 
      (dwVidMemTotal< LOWVIDMEMTHRESHOLD));   
 
   if (!dx_do_vidmemsize_check) {
-    _dxgsg->scrn.MaxAvailVidMem = 0xFFFFFFFF;
-    _dxgsg->scrn.bIsLowVidMemCard = false; 
+    _wcontext.MaxAvailVidMem = 0xFFFFFFFF;
+    _wcontext.bIsLowVidMemCard = false; 
   }
 
   if (DeviceIdx == SWRASTIDX) {
     // this will force 640x480x16, is this what we want for all sw rast?
-    _dxgsg->scrn.bIsLowVidMemCard = true; 
-    _dxgsg->scrn.bIsSWRast = true; 
+    _wcontext.bIsLowVidMemCard = true; 
+    _wcontext.bIsSWRast = true; 
     dx_force_16bpp_zbuffer = true;
   }
 
@@ -1125,7 +1149,7 @@ search_for_device(int devnum, DXDeviceInfo *pDevinfo) {
     if (FAILED(hr)) {
       wdxdisplay7_cat.fatal()
         << "EnumDisplayModes failed for device #" << devnum 
-        << " (" << _dxgsg->scrn.DXDeviceID.szDescription
+        << " (" << _wcontext.DXDeviceID.szDescription
         << "), result = " << ConvD3DErrorToString(hr) << endl;
       // goto skip_device;
       exit(1);  // probably want to exit, since it may be my fault
@@ -1142,7 +1166,7 @@ search_for_device(int devnum, DXDeviceInfo *pDevinfo) {
     // resolution and best rendertarget bpp and still have at least 2
     // meg of texture vidmem
         
-    DMI.supportedBitDepths &= _dxgsg->scrn.D3DDevDesc.dwDeviceRenderBitDepth;
+    DMI.supportedBitDepths &= _wcontext.D3DDevDesc.dwDeviceRenderBitDepth;
 
     DWORD dwFullScreenBitDepth;
 
@@ -1158,12 +1182,12 @@ search_for_device(int devnum, DXDeviceInfo *pDevinfo) {
       wdxdisplay7_cat.fatal() 
         << "No Supported FullScreen resolutions at " << dwRenderWidth
         << "x" << dwRenderHeight << " for device #" << devnum 
-        << " (" << _dxgsg->scrn.DXDeviceID.szDescription
+        << " (" << _wcontext.DXDeviceID.szDescription
         << "), skipping device...\n";
       goto error_exit;
     }
         
-    if (_dxgsg->scrn.bIsLowVidMemCard) {
+    if (_wcontext.bIsLowVidMemCard) {
       {
         // hack: figuring out exactly what res to use is tricky,
         // instead I will just use 640x480 if we have < 3 meg avail
@@ -1181,28 +1205,28 @@ search_for_device(int devnum, DXDeviceInfo *pDevinfo) {
       }
     }
 
-    _dxgsg->scrn.dwFullScreenBitDepth = dwFullScreenBitDepth;
+    _wcontext.dwFullScreenBitDepth = dwFullScreenBitDepth;
   }
     
-  _dxgsg->scrn.dwRenderWidth = dwRenderWidth;
-  _dxgsg->scrn.dwRenderHeight = dwRenderHeight;
+  _wcontext.dwRenderWidth = dwRenderWidth;
+  _wcontext.dwRenderHeight = dwRenderHeight;
   if (pDevinfo) {
-    _dxgsg->scrn.hMon = pDevinfo->hMon;
+    _wcontext.hMon = pDevinfo->hMon;
   }
-  _dxgsg->scrn.CardIDNum = devnum;  // add ID tag for dbgprint purposes
+  _wcontext.CardIDNum = devnum;  // add ID tag for dbgprint purposes
 
   return true;
     
   // handle errors within this for device loop
     
  error_exit:
-  if (_dxgsg->scrn.pD3D != NULL)
-    _dxgsg->scrn.pD3D->Release();
-  if (_dxgsg->scrn.pDD != NULL)
-    _dxgsg->scrn.pDD->Release();
+  if (_wcontext.pD3D != NULL)
+    _wcontext.pD3D->Release();
+  if (_wcontext.pDD != NULL)
+    _wcontext.pDD->Release();
 
-  _dxgsg->scrn.pDD = NULL;
-  _dxgsg->scrn.pD3D = NULL;
+  _wcontext.pDD = NULL;
+  _wcontext.pD3D = NULL;
   return false;
 }
 
@@ -1220,16 +1244,15 @@ set_coop_levels_and_display_modes() {
     // tell d3d to preserve the fpu state across calls.  this hurts
     // perf, but is good for dbgging
     SCL_FPUFlag = DDSCL_FPUPRESERVE;
-
   } else {
     SCL_FPUFlag = DDSCL_FPUSETUP;
   }
 
-  DXScreenData *pScrn = &_dxgsg->scrn;
+  //  DXScreenData *pScrn = &_dxgsg->scrn;
 
   if (!is_fullscreen()) {
-    hr = pScrn->pDD->SetCooperativeLevel(_mwindow, 
-                                         SCL_FPUFlag | DDSCL_NORMAL);
+    hr = _wcontext.pDD->SetCooperativeLevel(_hWnd, 
+                                            SCL_FPUFlag | DDSCL_NORMAL);
     if (FAILED(hr)) {
       wdxdisplay7_cat.fatal()
         << "SetCooperativeLevel failed : result = "
@@ -1246,7 +1269,7 @@ set_coop_levels_and_display_modes() {
   // restore that functionality.
   DWORD devnum = 0;
   {
-    DXScreenData *pScrn = &_dxgsg->scrn;
+    // DXScreenData *pScrn = &_dxgsg->scrn;
 
     // need to set focus/device windows for multimon
     // focus window is primary monitor that will receive keybd input
@@ -1264,7 +1287,7 @@ set_coop_levels_and_display_modes() {
     // SetCoopLevel twice.  so we do it, it really shouldnt be necessary
     // if drivers werent buggy
     for (int jj=0; jj<2; jj++) {
-      hr = pScrn->pDD->SetCooperativeLevel(pScrn->hWnd, SCL_FLAGS);
+      hr = _wcontext.pDD->SetCooperativeLevel(_wcontext.hWnd, SCL_FLAGS);
       if (FAILED(hr)) {
         wdxdisplay7_cat.fatal() 
           << "SetCooperativeLevel failed for device #" << devnum 
@@ -1273,7 +1296,7 @@ set_coop_levels_and_display_modes() {
       }
     }
     
-    hr = pScrn->pDD->TestCooperativeLevel();
+    hr = _wcontext.pDD->TestCooperativeLevel();
     if (FAILED(hr)) {
       wdxdisplay7_cat.fatal()
         << "TestCooperativeLevel failed: result = " << ConvD3DErrorToString(hr)
@@ -1282,31 +1305,59 @@ set_coop_levels_and_display_modes() {
         << "Full screen app failed to get exclusive mode on init, exiting..\n";
       exit(1);
     }
-    
+
     // note: its important we call SetDisplayMode on all cards before
     // creating surfaces on any of them to let driver choose default
     // refresh rate (hopefully its >=60Hz)
-    hr = pScrn->pDD->SetDisplayMode(pScrn->dwRenderWidth, 
-                                    pScrn->dwRenderHeight,
-                                    pScrn->dwFullScreenBitDepth, 0, 0);
+    hr = _wcontext.pDD->SetDisplayMode(_wcontext.dwRenderWidth, 
+                                    _wcontext.dwRenderHeight,
+                                    _wcontext.dwFullScreenBitDepth, 0, 0);
     if (FAILED(hr)) {
       wdxdisplay7_cat.fatal()
-        << "SetDisplayMode failed to set (" << pScrn->dwRenderWidth
-        << "x" <<pScrn->dwRenderHeight << "x" << pScrn->dwFullScreenBitDepth
-        << ") on device #" << pScrn->CardIDNum << ": result = " 
+        << "SetDisplayMode failed to set (" << _wcontext.dwRenderWidth
+        << "x" <<_wcontext.dwRenderHeight << "x" << _wcontext.dwFullScreenBitDepth
+        << ") on device #" << _wcontext.CardIDNum << ": result = " 
         << ConvD3DErrorToString(hr) << endl;
       exit(1);
     }
     
     if(wdxdisplay7_cat.is_debug()) {
-      DX_DECLARE_CLEAN(DDSURFACEDESC2,ddsd34); 
-      pScrn->pDD->GetDisplayMode(&ddsd34);
+      DX_DECLARE_CLEAN(DDSURFACEDESC2,ddsd_temp); 
+      _wcontext.pDD->GetDisplayMode(&ddsd_temp);
       wdxdisplay7_cat.debug()
-        << "set displaymode to " << ddsd34.dwWidth << "x" << ddsd34.dwHeight
-        << " at " << ddsd34.ddpfPixelFormat.dwRGBBitCount << "bpp, " 
-        << ddsd34.dwRefreshRate<< "Hz\n";
+        << "set displaymode to " << ddsd_temp.dwWidth << "x" << ddsd_temp.dwHeight
+        << " at " << ddsd_temp.ddpfPixelFormat.dwRGBBitCount << "bpp, " 
+        << ddsd_temp.dwRefreshRate<< "Hz\n";
     }
   }
 }
 
+#if 0
 
+// probably need this here similar to dx8
+////////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsWindow8::begin_frame
+//       Access: Public, Virtual
+//  Description: This function will be called within the draw thread
+//               before beginning rendering for a given frame.  It
+//               should do whatever setup is required, and return true
+//               if the frame should be rendered, or false if it
+//               should be skipped.
+////////////////////////////////////////////////////////////////////
+bool wdxGraphicsWindow7::
+begin_frame() {
+  if (_awaiting_restore) {
+    // The fullscreen window was recently restored; we can't continue
+    // until the GSG says we can.
+    if (!_dxgsg->CheckCooperativeLevel()) {
+      // Keep waiting.
+      return false;
+    }
+    _awaiting_restore = false;
+
+    init_resized_window();
+  }
+
+  return WinGraphicsWindow::begin_frame();
+}
+#endif

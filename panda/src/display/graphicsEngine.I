@@ -56,17 +56,53 @@ get_auto_flip() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::make_window
+//     Function: GraphicsEngine::make_gsg
 //       Access: Published
-//  Description: Creates a new window using the indicated GraphicsPipe
-//               and returns it.  The GraphicsEngine becomes the owner
-//               of the window; it will persist at least until
-//               remove_window() is called later.
+//  Description: Creates a new gsg using the indicated GraphicsPipe
+//               and returns it.  The GraphicsEngine does not
+//               officially own the pointer to the gsg; but if any
+//               windows are created using this GSG, the
+//               GraphicsEngine will own the pointers to these
+//               windows, which in turn will own the pointer to the
+//               GSG.
 //
-//               This flavor of make_window() uses the default
+//               There is no explicit way to release a GSG, but it
+//               will be destructed when all windows that reference it
+//               are destructed, and the draw thread that owns the GSG
+//               runs one more time.
+//
+//               This flavor of make_gsg() uses the default
 //               threading model, specified via set_threading_model().
 ////////////////////////////////////////////////////////////////////
+INLINE PT(GraphicsStateGuardian) GraphicsEngine::
+make_gsg(GraphicsPipe *pipe) {
+  return make_gsg(pipe, get_frame_buffer_properties(), get_threading_model());
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::make_window
+//       Access: Published
+//  Description: Creates a new window using the indicated
+//               GraphicsStateGuardian and returns it.  The
+//               GraphicsEngine becomes the owner of the window; it
+//               will persist at least until remove_window() is called
+//               later.
+////////////////////////////////////////////////////////////////////
 INLINE GraphicsWindow *GraphicsEngine::
-make_window(GraphicsPipe *pipe) {
-  return make_window(pipe, get_threading_model());
+make_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
+  return make_window(pipe, gsg, get_threading_model());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::close_gsg
+//       Access: Published
+//  Description: Calls GraphicsPipe::close_gsg() on the indicated pipe
+//               and GSG.  This function mainly exists to allow
+//               GraphicsEngine::WindowRenderer to call the protected
+//               method GraphicsPipe::close_gsg().
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsEngine::
+close_gsg(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
+  pipe->close_gsg(gsg);
 }

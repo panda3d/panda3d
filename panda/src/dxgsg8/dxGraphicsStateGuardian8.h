@@ -70,7 +70,7 @@ class EXPCL_PANDADX DXGraphicsStateGuardian8 : public GraphicsStateGuardian {
   friend class DXTextureContext8;
 
 public:
-  DXGraphicsStateGuardian8(GraphicsWindow *win);
+  DXGraphicsStateGuardian8(const FrameBufferProperties &properties);
   ~DXGraphicsStateGuardian8();
 
   virtual void reset();
@@ -150,7 +150,8 @@ public:
 
 public:
   // recreate_tex_callback needs these to be public
-  DXScreenData scrn;
+  DXScreenData *_pScrn;
+  LPDIRECT3DDEVICE8 _pD3DDevice;  // same as pScrn->_pD3DDevice, cached for spd
 
 protected:
   virtual void enable_lighting(bool enable);
@@ -303,7 +304,9 @@ protected:
   DWORD _clip_plane_bits;
 
   RenderModeAttrib::Mode _current_fill_mode;  //poinr/wireframe/solid
-  GraphicsChannel *_panda_gfx_channel;  // cache the 1 channel dx supports
+
+  // unused right now
+  //GraphicsChannel *_panda_gfx_channel;  // cache the 1 channel dx supports
 
   // Cur Texture State
   TextureApplyAttrib::Mode _CurTexBlendMode;
@@ -320,9 +323,20 @@ protected:
 
   bool _overlay_windows_supported;
 
+#if 0
+  // This is here just as a temporary hack so this file will still
+  // compile.  However, it is never initialized and will certainly
+  // cause the code to crash when it is referenced.  (This used to be
+  // inherited from the base class, but the new design requires that a
+  // GSG may be used for multiple windows, so it doesn't make sense to
+  // store a single window pointer any more.)
+  GraphicsWindow *_win;
+#endif
+
 public:
   static GraphicsStateGuardian*
   make_DXGraphicsStateGuardian8(const FactoryParams &params);
+  void set_context(DXScreenData *pNewContextData);
 
   static TypeHandle get_class_type(void);
   static void init_type(void);
@@ -347,7 +361,7 @@ public:
   bool CheckCooperativeLevel(bool bDoReactivateWindow = false);
 
   void show_frame(bool bNoNewFrameDrawn = false);
-  void dx_init(HCURSOR hMouseCursor);
+  void dx_init(void);
 
   void support_overlay_window(bool flag);
 
@@ -355,7 +369,8 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "DXGraphicsStateGuardian8.I"
+HRESULT CreateDX8Cursor(LPDIRECT3DDEVICE8 pd3dDevice, HCURSOR hCursor,BOOL bAddWatermark);
 
+#include "DXGraphicsStateGuardian8.I"
 #endif
 

@@ -42,13 +42,12 @@ typedef HRESULT (WINAPI * LPDIRECTDRAWCREATEEX)(GUID FAR * lpGuid, LPVOID  *lplp
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX wdxGraphicsWindow7 : public WinGraphicsWindow {
 public:
-  wdxGraphicsWindow7(GraphicsPipe *pipe);
+  wdxGraphicsWindow7(GraphicsPipe *pipe, GraphicsStateGuardian *gsg);
   virtual ~wdxGraphicsWindow7();
-
-  virtual void make_gsg();
-  virtual void release_gsg();
-
   virtual void end_flip();
+  //virtual bool begin_frame();
+  virtual void make_current(void);
+  virtual bool open_window(void);
 
 protected:
   virtual void fullscreen_restored(WindowProperties &properties);
@@ -59,10 +58,11 @@ private:
   bool set_to_temp_rendertarget();
   void create_screen_buffers_and_device(DXScreenData &Display,
                                         bool force_16bpp_zbuffer);
-  bool search_for_device(int devnum, DXDeviceInfo *pDevinfo);
+  bool choose_device(int devnum, DXDeviceInfo *pDevinfo);
   void set_coop_levels_and_display_modes();
 
   DXGraphicsStateGuardian7 *_dxgsg;
+  DXScreenData _wcontext;
 
 public:
   static TypeHandle get_class_type() {

@@ -56,13 +56,13 @@ static const char * const errorbox_title = "Panda3D Error";
 //  Description:
 ////////////////////////////////////////////////////////////////////
 WinGraphicsWindow::
-WinGraphicsWindow(GraphicsPipe *pipe) :
-  GraphicsWindow(pipe) 
+WinGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) :
+  GraphicsWindow(pipe, gsg) 
 {
   GraphicsWindowInputDevice device =
-    GraphicsWindowInputDevice::pointer_and_keyboard("keyboard/mouse");
+  GraphicsWindowInputDevice::pointer_and_keyboard("keyboard/mouse");
   _input_devices.push_back(device);
-  _mwindow = (HWND)0;
+  _hWnd = (HWND)0;
   _ime_open = false;
   _ime_active = false;
   _ime_composition_w = false;
@@ -174,11 +174,11 @@ set_properties_now(WindowProperties &properties) {
 void WinGraphicsWindow::
 close_window() {
   set_cursor_out_of_window();
-  DestroyWindow(_mwindow);
+  DestroyWindow(_hWnd);
 
   // Remove the window handle from our global map.
-  _window_handles.erase(_mwindow);
-  _mwindow = (HWND)0;
+  _window_handles.erase(_hWnd);
+  _hWnd = (HWND)0;
 
   if (is_fullscreen()) {
     // revert to default display mode.
@@ -214,17 +214,17 @@ open_window() {
 
   // Now that we have a window handle, store it in our global map, so
   // future messages for this window can be routed properly.
-  _window_handles.insert(WindowHandles::value_type(_mwindow, this));
+  _window_handles.insert(WindowHandles::value_type(_hWnd, this));
   
   // move window to top of zorder.
-  SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, 
+  SetWindowPos(_hWnd, HWND_TOP, 0,0,0,0, 
                SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE);
   
   // need to do twice to override any minimized flags in StartProcessInfo
-  ShowWindow(_mwindow, SW_SHOWNORMAL);
-  ShowWindow(_mwindow, SW_SHOWNORMAL);
+  ShowWindow(_hWnd, SW_SHOWNORMAL);
+  ShowWindow(_hWnd, SW_SHOWNORMAL);
   
-  if (!SetForegroundWindow(_mwindow)) {
+  if (!SetForegroundWindow(_hWnd)) {
     windisplay_cat.warning()
       << "SetForegroundWindow() failed!\n";
   }
@@ -232,10 +232,10 @@ open_window() {
   // Determine the initial open status of the IME.
   _ime_open = false;
   _ime_active = false;
-  HIMC hIMC = ImmGetContext(_mwindow);
+  HIMC hIMC = ImmGetContext(_hWnd);
   if (hIMC != 0) {
     _ime_open = (ImmGetOpenStatus(hIMC) != 0);
-    ImmReleaseContext(_mwindow, hIMC);
+    ImmReleaseContext(_hWnd, hIMC);
   }
 
   // Check the version of the OS we are running.  If we are running
@@ -323,10 +323,10 @@ do_reshape_request(int x_origin, int y_origin, int x_size, int y_size) {
     SetRect(&view_rect, x_origin, y_origin,
             x_origin + x_size, y_origin + y_size);
     WINDOWINFO wi;
-    GetWindowInfo(_mwindow, &wi);
+    GetWindowInfo(_hWnd, &wi);
     AdjustWindowRectEx(&view_rect, wi.dwStyle, false, wi.dwExStyle);
 
-    SetWindowPos(_mwindow, NULL, view_rect.left, view_rect.top,
+    SetWindowPos(_hWnd, NULL, view_rect.left, view_rect.top,
                  view_rect.right - view_rect.left,
                  view_rect.bottom - view_rect.top,
                  SWP_NOZORDER | SWP_NOMOVE | SWP_NOSENDCHANGING);
@@ -353,9 +353,9 @@ do_reshape_request(int x_origin, int y_origin, int x_size, int y_size) {
 void WinGraphicsWindow::
 handle_reshape() {
   RECT view_rect;
-  GetClientRect(_mwindow, &view_rect);
-  ClientToScreen(_mwindow, (POINT*)&view_rect.left);   // translates top,left pnt
-  ClientToScreen(_mwindow, (POINT*)&view_rect.right);  // translates right,bottom pnt
+  GetClientRect(_hWnd, &view_rect);
+  ClientToScreen(_hWnd, (POINT*)&view_rect.left);   // translates top,left pnt
+  ClientToScreen(_hWnd, (POINT*)&view_rect.right);  // translates right,bottom pnt
   
   WindowProperties properties;
   properties.set_size((view_rect.right - view_rect.left), 
@@ -403,7 +403,7 @@ do_fullscreen_resize(int x_size, int y_size) {
   }
 
   // this causes WM_SIZE msg to be produced
-  SetWindowPos(_mwindow, NULL, 0,0, x_size, y_size, 
+  SetWindowPos(_hWnd, NULL, 0,0, x_size, y_size, 
                SWP_NOZORDER | SWP_NOMOVE | SWP_NOSENDCHANGING);
   int chg_result = ChangeDisplaySettings(&dm, CDS_FULLSCREEN);
 
@@ -435,32 +435,6 @@ do_fullscreen_resize(int x_size, int y_size) {
 ////////////////////////////////////////////////////////////////////
 void WinGraphicsWindow::
 reconsider_fullscreen_size(DWORD &, DWORD &, DWORD &) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: WinGraphicsWindow::get_client_rect_screen
-//       Access: Protected
-//  Description: Fills view_rect with the coordinates of the client
-//               area of the indicated window, converted to screen
-//               coordinates.
-////////////////////////////////////////////////////////////////////
-void WinGraphicsWindow::
-get_client_rect_screen(HWND hwnd, RECT *view_rect) {
-  GetClientRect(hwnd, view_rect);
-
-  POINT ul, lr;
-  ul.x = view_rect->left;
-  ul.y = view_rect->top;
-  lr.x = view_rect->right;
-  lr.y = view_rect->bottom;
-
-  ClientToScreen(hwnd, &ul);
-  ClientToScreen(hwnd, &lr);
-
-  view_rect->left = ul.x;
-  view_rect->top = ul.y;
-  view_rect->right = lr.x;
-  view_rect->bottom = lr.y;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -516,10 +490,10 @@ open_fullscreen_window() {
   // up the desktop during the mode change
   register_window_class();
   HINSTANCE hinstance = GetModuleHandle(NULL);
-  _mwindow = CreateWindow(_window_class_name, title.c_str(), window_style,
+  _hWnd = CreateWindow(_window_class_name, title.c_str(), window_style,
                           0, 0, dwWidth, dwHeight, 
                           hDesktopWindow, NULL, hinstance, 0);
-  if (!_mwindow) {
+  if (!_hWnd) {
     windisplay_cat.error()
       << "CreateWindow() failed!" << endl;
     show_error_message();
@@ -601,13 +575,13 @@ open_regular_window() {
 
   register_window_class();
   HINSTANCE hinstance = GetModuleHandle(NULL);
-  _mwindow = CreateWindow(_window_class_name, title.c_str(), window_style, 
+  _hWnd = CreateWindow(_window_class_name, title.c_str(), window_style, 
                           win_rect.left, win_rect.top,
                           win_rect.right - win_rect.left,
                           win_rect.bottom - win_rect.top,
                           NULL, NULL, hinstance, 0);
 
-  if (!_mwindow) {
+  if (!_hWnd) {
     windisplay_cat.error()
       << "CreateWindow() failed!" << endl;
     show_error_message();
@@ -672,342 +646,373 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   int button = -1;
 
   switch (msg) {
-  case WM_MOUSEMOVE: 
-    if (!_tracking_mouse_leaving) {
-      // need to re-call TrackMouseEvent every time mouse re-enters window
-      track_mouse_leaving(hwnd);
-    }
-    set_cursor_in_window();
-    handle_mouse_motion(translate_mouse(LOWORD(lparam)), 
-                        translate_mouse(HIWORD(lparam)));
-    break;
-
-  case WM_MOUSELEAVE:
-    _tracking_mouse_leaving = false;
-    handle_mouse_exit();
-    set_cursor_out_of_window();
-    break;
-
-  case WM_CREATE:
-    track_mouse_leaving(hwnd);
-
-    // Assume the mouse cursor is within the window initially.  It
-    // remains to be seen whether this is assumption does any harm.
-    set_cursor_in_window();
-    break;
-
-  case WM_CLOSE:
-    properties.set_open(false);
-    system_changed_properties(properties);
-
-    // TODO: make sure we release the GSG properly.
-    break;
-
-  case WM_ACTIVATE:
-    properties.set_minimized((wparam & 0xffff0000) != 0);
-    if ((wparam & 0xffff) != WA_INACTIVE) {
-      properties.set_foreground(true);
-      if (is_fullscreen()) {
-        // When a fullscreen window goes active, it automatically gets
-        // un-minimized.
-        ChangeDisplaySettings(&_fullscreen_display_mode, CDS_FULLSCREEN);
-        GdiFlush();
-        SetWindowPos(_mwindow, HWND_TOP, 0,0,0,0, 
-                     SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOOWNERZORDER);
-        fullscreen_restored(properties);
-      }
-    } else {
-      properties.set_foreground(false);
-      if (is_fullscreen()) {
-        // When a fullscreen window goes inactive, it automatically
-        // gets minimized.
-        properties.set_minimized(true);
-
-        // It seems order is important here.  We must minimize the
-        // window before restoring the display settings, or risk
-        // losing the graphics context.
-        ShowWindow(_mwindow, SW_MINIMIZE);
-        GdiFlush();
-        ChangeDisplaySettings(NULL, 0x0);
-        fullscreen_minimized(properties);
-      }
-    }
-    system_changed_properties(properties);
-    break;
-
-  case WM_SIZE:
-    // for maximized, unmaximize, need to call resize code
-    // artificially since no WM_EXITSIZEMOVE is generated.
-    if (wparam == SIZE_MAXIMIZED) {
-      _maximized = true;
-      handle_reshape();
-
-    } else if (wparam == SIZE_RESTORED && _maximized) {
-      // SIZE_RESTORED might mean we restored to its original size
-      // before the maximize, but it might also be called while the
-      // user is resizing the window by hand.  Checking the _maximized
-      // flag that we set above allows us to differentiate the two
-      // cases.
-      _maximized = false;
-      handle_reshape();
-    }
-    break;
-
-  case WM_EXITSIZEMOVE:
-    handle_reshape();
-    break;
-
-  case WM_LBUTTONDOWN:
-    button = 0;
-    // fall through
-  case WM_MBUTTONDOWN:
-    if (button < 0) {
-      button = 1;
-    }
-    // fall through
-  case WM_RBUTTONDOWN:
-    if (button < 0) {
-      button = 2;
-    }
-    SetCapture(hwnd);
-    handle_keypress(MouseButton::button(button), 
-                    translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
-    break;
-
-  case WM_LBUTTONUP:
-    button = 0;
-    // fall through
-  case WM_MBUTTONUP:
-    if (button < 0) {
-      button = 1;
-    }
-    // fall through
-  case WM_RBUTTONUP:
-    if (button < 0) {
-      button = 2;
-    }
-    ReleaseCapture();
-    handle_keyrelease(MouseButton::button(button));
-    break;
-
-  case WM_IME_NOTIFY:
-    if (wparam == IMN_SETOPENSTATUS) {
-      HIMC hIMC = ImmGetContext(hwnd);
-      nassertr(hIMC != 0, 0);
-      _ime_open = (ImmGetOpenStatus(hIMC) != 0);
-      if (!_ime_open) {
-        _ime_active = false;  // Sanity enforcement.
-      }
-      ImmReleaseContext(hwnd, hIMC);
-    }
-    break;
-    
-  case WM_IME_STARTCOMPOSITION:
-    _ime_active = true;
-    break;
-    
-  case WM_IME_ENDCOMPOSITION:
-    _ime_active = false;
-    break;
-    
-  case WM_IME_COMPOSITION:
-    if (lparam & GCS_RESULTSTR) {
-      HIMC hIMC = ImmGetContext(hwnd);
-      nassertr(hIMC != 0, 0);
-      
-      static const int max_ime_result = 128;
-      static char ime_result[max_ime_result];
-      
-      if (_ime_composition_w) {
-        // Since ImmGetCompositionStringA() doesn't seem to work
-        // for Win2000 (it always returns question mark
-        // characters), we have to use ImmGetCompositionStringW()
-        // on this OS.  This is actually the easier of the two
-        // functions to use.
-        
-        DWORD result_size =
-          ImmGetCompositionStringW(hIMC, GCS_RESULTSTR,
-                                   ime_result, max_ime_result);
-        
-        // Add this string into the text buffer of the application.
-        
-        // ImmGetCompositionStringW() returns a string, but it's
-        // filled in with wstring data: every two characters defines a
-        // 16-bit unicode char.  The docs aren't clear on the
-        // endianness of this.  I guess it's safe to assume all Win32
-        // machines are little-endian.
-        for (DWORD i = 0; i < result_size; i += 2) {
-          int result =
-            ((int)(unsigned char)ime_result[i + 1] << 8) |
-            (unsigned char)ime_result[i];
-          _input_devices[0].keystroke(result);
+      case WM_MOUSEMOVE: 
+        if (!_tracking_mouse_leaving) {
+          // need to re-call TrackMouseEvent every time mouse re-enters window
+          track_mouse_leaving(hwnd);
         }
-      } else {
-        // On the other hand, ImmGetCompositionStringW() doesn't
-        // work on Win95 or Win98; for these OS's we must use
-        // ImmGetCompositionStringA().
-        DWORD result_size =
-          ImmGetCompositionStringA(hIMC, GCS_RESULTSTR,
-                                   ime_result, max_ime_result);
-        
-        // ImmGetCompositionStringA() returns an encoded ANSI
-        // string, which we now have to map to wide-character
-        // Unicode.
-        static const int max_wide_result = 128;
-        static wchar_t wide_result[max_wide_result];
-        
-        int wide_size =
-          MultiByteToWideChar(CP_ACP, 0,
-                              ime_result, result_size,
-                              wide_result, max_wide_result);
-        if (wide_size == 0) {
-          show_error_message();
-        }
-        for (int i = 0; i < wide_size; i++) {
-          _input_devices[0].keystroke(wide_result[i]);
-        }
-      }
-      
-      ImmReleaseContext(hwnd, hIMC);
-      return 0;
-    }
-    break;
+        set_cursor_in_window();
+        if(handle_mouse_motion(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam))))
+            return 0;
+        break;
     
-  case WM_CHAR:
-    // Ignore WM_CHAR messages if we have the IME open, since
-    // everything will come in through WM_IME_COMPOSITION.  (It's
-    // supposed to come in through WM_CHAR, too, but there seems to
-    // be a bug in Win2000 in that it only sends question mark
-    // characters through here.)
-    if (!_ime_open) {
-      _input_devices[0].keystroke(wparam);
-    }
-    break;
-
-  case WM_SYSKEYDOWN: 
-    {
-      // Alt and F10 are sent as WM_SYSKEYDOWN instead of WM_KEYDOWN
-      // want to use defwindproc on Alt syskey so std windows cmd
-      // Alt-F4 works, etc
-      POINT point;
-      GetCursorPos(&point);
-      ScreenToClient(hwnd, &point);
-      handle_keypress(lookup_key(wparam), point.x, point.y);
-      if (wparam == VK_F10) {
-        // bypass default windproc F10 behavior (it activates the main
-        // menu, but we have none)
-        return 0;
-      }
-    }
-    break;
-
-  case WM_SYSCOMMAND:
-    if (wparam == SC_KEYMENU) {
-      // if Alt is released (alone w/o other keys), defwindproc will
-      // send this command, which will 'activate' the title bar menu
-      // (we have none) and give focus to it.  we dont want this to
-      // happen, so kill this msg
-      return 0;
-    }
-    break;
+      case WM_MOUSELEAVE:
+        _tracking_mouse_leaving = false;
+        handle_mouse_exit();
+        set_cursor_out_of_window();
+        break;
     
-  case WM_KEYDOWN: 
-    {
-      POINT point;
-      
-      GetCursorPos(&point);
-      ScreenToClient(hwnd, &point);
-      handle_keypress(lookup_key(wparam), point.x, point.y);
-
-      // Handle Cntrl-V paste from clipboard.  Is there a better way
-      // to detect this hotkey?
-      if ((wparam=='V') && (GetKeyState(VK_CONTROL) < 0) &&
-          !_input_devices.empty()) {
-        HGLOBAL hglb;
-        char *lptstr;
-
-        if (IsClipboardFormatAvailable(CF_TEXT) && OpenClipboard(NULL)) {
-          // Maybe we should support CF_UNICODETEXT if it is available
-          // too?
-          hglb = GetClipboardData(CF_TEXT);
-          if (hglb!=NULL) {
-            lptstr = (char *) GlobalLock(hglb);
-            if (lptstr != NULL)  {
-              char *pChar;
-              for (pChar=lptstr; *pChar!=NULL; pChar++) {
-                _input_devices[0].keystroke((uchar)*pChar);
-              }
-              GlobalUnlock(hglb);
+      // if cursor is invisible, make it visible when moving in the window bars & menus, so user can use click in them
+      case WM_NCMOUSEMOVE: {
+            if(!_properties.get_cursor_hidden()) {
+                if(!_bCursor_in_WindowClientArea) {
+                    // SetCursor(_pParentWindowGroup->_hMouseCursor);
+                    ShowCursor(true);
+                    _bCursor_in_WindowClientArea=true;
+                }
             }
-          }
-          CloseClipboard();
-        }
+            break;
       }
-    }
-    break;
-
-  case WM_SYSKEYUP:
-  case WM_KEYUP:
-    handle_keyrelease(lookup_key(wparam));
-    break;
-
-  case WM_KILLFOCUS: 
-    // Record the current state of the keyboard when the focus is
-    // lost, so we can check it for changes when we regain focus.
-    GetKeyboardState(_keyboard_state);
-    break;
-
-  case WM_SETFOCUS: 
-    {
-      // When we lose focus, the app may miss key-up events for keys
-      // that were formerly held down (and vice-versa).  Therefore,
-      // when focus is regained, compare the state of the keyboard to
-      // the last known state (stored above, when focus was lost) to
-      // regenerate the lost keyboard events.
-
-      if (GetForegroundWindow() != _mwindow) {
-        // Sometimes, particularly on window create, it appears we get
-        // a WM_SETFOCUS event even though the window hasn't really
-        // received focus yet.  That's bad and confuses the
-        // GetKeyboardState logic, below.  The above check filters out
-        // this case (while testing GetFocus() instead of
-        // GetForegroundWindow() doesn't).
-        windisplay_cat.debug()
-          << "Got incorrect WM_SETFOCUS\n";
+    
+      case WM_NCMOUSELEAVE: {
+            if(!_properties.get_cursor_hidden()) {
+                ShowCursor(false);
+                // SetCursor(NULL);
+                _bCursor_in_WindowClientArea=false;
+            }
+            break;
+      }
+    
+      case WM_CREATE: {
+        track_mouse_leaving(hwnd);
+        _bCursor_in_WindowClientArea=false;
+        ClearToBlack(hwnd,_properties);
+    
+        POINT cpos;
+        GetCursorPos(&cpos);
+        ScreenToClient(hwnd,&cpos);
+        RECT clientRect;
+        GetClientRect(hwnd, &clientRect);
+        if(PtInRect(&clientRect,cpos))
+           set_cursor_in_window();  // should window focus be true as well?
+        else set_cursor_out_of_window();
+    
         break;
       }
-
-      BYTE new_keyboard_state[num_virtual_keys];
-      GetKeyboardState(new_keyboard_state);
-      for (int i = 0; i < num_virtual_keys; i++) {
-        // Filter out these particular three.  We don't want to test
-        // these, because these are virtual duplicates for
-        // VK_LSHIFT/VK_RSHIFT, etc.; and the left/right equivalent is
-        // also in the table.  If we respect both VK_LSHIFT as well as
-        // VK_SHIFT, we'll generate two keyboard messages when
-        // VK_LSHIFT changes state.
-        if (i != VK_SHIFT && i != VK_CONTROL && i != VK_MENU) {
-          if (((new_keyboard_state[i] ^ _keyboard_state[i]) & 0x80) != 0) {
-            // This key has changed state.
-            if ((new_keyboard_state[i] & 0x80) != 0) {
-              // The key is now held down.
-              handle_keyresume(lookup_key(i));
-            } else {
-              // The key is now released.
-              handle_keyrelease(lookup_key(i));
+    
+      case WM_CLOSE:
+        properties.set_open(false);
+        system_changed_properties(properties);
+    
+        // TODO: make sure we release the GSG properly.
+        break;
+    
+      case WM_ACTIVATE:
+        properties.set_minimized((wparam & 0xffff0000) != 0);
+        if ((wparam & 0xffff) != WA_INACTIVE) {
+          properties.set_foreground(true);
+          if (is_fullscreen()) {
+            // When a fullscreen window goes active, it automatically gets
+            // un-minimized.
+            ChangeDisplaySettings(&_fullscreen_display_mode, CDS_FULLSCREEN);
+            GdiFlush();
+            SetWindowPos(_hWnd, HWND_TOP, 0,0,0,0, 
+                         SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOOWNERZORDER);
+            fullscreen_restored(properties);
+          }
+        } else {
+          properties.set_foreground(false);
+          if (is_fullscreen()) {
+            // When a fullscreen window goes inactive, it automatically
+            // gets minimized.
+            properties.set_minimized(true);
+    
+            // It seems order is important here.  We must minimize the
+            // window before restoring the display settings, or risk
+            // losing the graphics context.
+            ShowWindow(_hWnd, SW_MINIMIZE);
+            GdiFlush();
+            ChangeDisplaySettings(NULL, 0x0);
+            fullscreen_minimized(properties);
+          }
+        }
+        system_changed_properties(properties);
+        break;
+    
+      case WM_SIZE:
+        // for maximized, unmaximize, need to call resize code
+        // artificially since no WM_EXITSIZEMOVE is generated.
+        if (wparam == SIZE_MAXIMIZED) {
+          _maximized = true;
+          handle_reshape();
+    
+        } else if (wparam == SIZE_RESTORED && _maximized) {
+          // SIZE_RESTORED might mean we restored to its original size
+          // before the maximize, but it might also be called while the
+          // user is resizing the window by hand.  Checking the _maximized
+          // flag that we set above allows us to differentiate the two
+          // cases.
+          _maximized = false;
+          handle_reshape();
+        }
+        break;
+    
+      case WM_EXITSIZEMOVE:
+        handle_reshape();
+        break;
+    
+      case WM_LBUTTONDOWN:
+        button = 0;
+        // fall through
+      case WM_MBUTTONDOWN:
+        if (button < 0) {
+          button = 1;
+        }
+        // fall through
+      case WM_RBUTTONDOWN:
+        if (button < 0) {
+          button = 2;
+        }
+        SetCapture(hwnd);
+        handle_keypress(MouseButton::button(button), 
+                        translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+        break;
+    
+      case WM_LBUTTONUP:
+        button = 0;
+        // fall through
+      case WM_MBUTTONUP:
+        if (button < 0) {
+          button = 1;
+        }
+        // fall through
+      case WM_RBUTTONUP:
+        if (button < 0) {
+          button = 2;
+        }
+        ReleaseCapture();
+        handle_keyrelease(MouseButton::button(button));
+        break;
+    
+      case WM_IME_NOTIFY:
+        if (wparam == IMN_SETOPENSTATUS) {
+          HIMC hIMC = ImmGetContext(hwnd);
+          nassertr(hIMC != 0, 0);
+          _ime_open = (ImmGetOpenStatus(hIMC) != 0);
+          if (!_ime_open) {
+            _ime_active = false;  // Sanity enforcement.
+          }
+          ImmReleaseContext(hwnd, hIMC);
+        }
+        break;
+        
+      case WM_IME_STARTCOMPOSITION:
+        _ime_active = true;
+        break;
+        
+      case WM_IME_ENDCOMPOSITION:
+        _ime_active = false;
+        break;
+        
+      case WM_IME_COMPOSITION:
+        if (lparam & GCS_RESULTSTR) {
+          HIMC hIMC = ImmGetContext(hwnd);
+          nassertr(hIMC != 0, 0);
+          
+          static const int max_ime_result = 128;
+          static char ime_result[max_ime_result];
+          
+          if (_ime_composition_w) {
+            // Since ImmGetCompositionStringA() doesn't seem to work
+            // for Win2000 (it always returns question mark
+            // characters), we have to use ImmGetCompositionStringW()
+            // on this OS.  This is actually the easier of the two
+            // functions to use.
+            
+            DWORD result_size =
+              ImmGetCompositionStringW(hIMC, GCS_RESULTSTR,
+                                       ime_result, max_ime_result);
+            
+            // Add this string into the text buffer of the application.
+            
+            // ImmGetCompositionStringW() returns a string, but it's
+            // filled in with wstring data: every two characters defines a
+            // 16-bit unicode char.  The docs aren't clear on the
+            // endianness of this.  I guess it's safe to assume all Win32
+            // machines are little-endian.
+            for (DWORD i = 0; i < result_size; i += 2) {
+              int result =
+                ((int)(unsigned char)ime_result[i + 1] << 8) |
+                (unsigned char)ime_result[i];
+              _input_devices[0].keystroke(result);
+            }
+          } else {
+            // On the other hand, ImmGetCompositionStringW() doesn't
+            // work on Win95 or Win98; for these OS's we must use
+            // ImmGetCompositionStringA().
+            DWORD result_size =
+              ImmGetCompositionStringA(hIMC, GCS_RESULTSTR,
+                                       ime_result, max_ime_result);
+            
+            // ImmGetCompositionStringA() returns an encoded ANSI
+            // string, which we now have to map to wide-character
+            // Unicode.
+            static const int max_wide_result = 128;
+            static wchar_t wide_result[max_wide_result];
+            
+            int wide_size =
+              MultiByteToWideChar(CP_ACP, 0,
+                                  ime_result, result_size,
+                                  wide_result, max_wide_result);
+            if (wide_size == 0) {
+              show_error_message();
+            }
+            for (int i = 0; i < wide_size; i++) {
+              _input_devices[0].keystroke(wide_result[i]);
+            }
+          }
+          
+          ImmReleaseContext(hwnd, hIMC);
+          return 0;
+        }
+        break;
+        
+      case WM_CHAR:
+        // Ignore WM_CHAR messages if we have the IME open, since
+        // everything will come in through WM_IME_COMPOSITION.  (It's
+        // supposed to come in through WM_CHAR, too, but there seems to
+        // be a bug in Win2000 in that it only sends question mark
+        // characters through here.)
+        if (!_ime_open) {
+          _input_devices[0].keystroke(wparam);
+        }
+        break;
+    
+      case WM_SYSKEYDOWN: 
+        {
+          // Alt and F10 are sent as WM_SYSKEYDOWN instead of WM_KEYDOWN
+          // want to use defwindproc on Alt syskey so std windows cmd
+          // Alt-F4 works, etc
+          POINT point;
+          GetCursorPos(&point);
+          ScreenToClient(hwnd, &point);
+          handle_keypress(lookup_key(wparam), point.x, point.y);
+          if (wparam == VK_F10) {
+            // bypass default windproc F10 behavior (it activates the main
+            // menu, but we have none)
+            return 0;
+          }
+        }
+        break;
+    
+      case WM_SYSCOMMAND:
+        if (wparam == SC_KEYMENU) {
+          // if Alt is released (alone w/o other keys), defwindproc will
+          // send this command, which will 'activate' the title bar menu
+          // (we have none) and give focus to it.  we dont want this to
+          // happen, so kill this msg
+          return 0;
+        }
+        break;
+        
+      case WM_KEYDOWN: 
+        {
+          POINT point;
+          
+          GetCursorPos(&point);
+          ScreenToClient(hwnd, &point);
+          handle_keypress(lookup_key(wparam), point.x, point.y);
+    
+          // Handle Cntrl-V paste from clipboard.  Is there a better way
+          // to detect this hotkey?
+          if ((wparam=='V') && (GetKeyState(VK_CONTROL) < 0) &&
+              !_input_devices.empty()) {
+            HGLOBAL hglb;
+            char *lptstr;
+    
+            if (IsClipboardFormatAvailable(CF_TEXT) && OpenClipboard(NULL)) {
+              // Maybe we should support CF_UNICODETEXT if it is available
+              // too?
+              hglb = GetClipboardData(CF_TEXT);
+              if (hglb!=NULL) {
+                lptstr = (char *) GlobalLock(hglb);
+                if (lptstr != NULL)  {
+                  char *pChar;
+                  for (pChar=lptstr; *pChar!=NULL; pChar++) {
+                    _input_devices[0].keystroke((uchar)*pChar);
+                  }
+                  GlobalUnlock(hglb);
+                }
+              }
+              CloseClipboard();
             }
           }
         }
-      }
-
-      // Save the new keyboard state, just for good measure.  This
-      // really shouldn't be necessary, but it protects against
-      // inadvertently getting WM_SETFOCUS twice in a row, for
-      // instance.
-      memcpy(_keyboard_state, new_keyboard_state,
-             sizeof(BYTE) * num_virtual_keys);
-    }
-    break;
+        break;
+    
+      case WM_SYSKEYUP:
+      case WM_KEYUP:
+        handle_keyrelease(lookup_key(wparam));
+        break;
+    
+      case WM_KILLFOCUS: 
+        // Record the current state of the keyboard when the focus is
+        // lost, so we can check it for changes when we regain focus.
+        GetKeyboardState(_keyboard_state);
+        break;
+    
+      case WM_SETFOCUS: 
+        {
+          // When we lose focus, the app may miss key-up events for keys
+          // that were formerly held down (and vice-versa).  Therefore,
+          // when focus is regained, compare the state of the keyboard to
+          // the last known state (stored above, when focus was lost) to
+          // regenerate the lost keyboard events.
+    
+          if (GetForegroundWindow() != _hWnd) {
+            // Sometimes, particularly on window create, it appears we get
+            // a WM_SETFOCUS event even though the window hasn't really
+            // received focus yet.  That's bad and confuses the
+            // GetKeyboardState logic, below.  The above check filters out
+            // this case (while testing GetFocus() instead of
+            // GetForegroundWindow() doesn't).
+            if(windisplay_cat.is_debug())
+                windisplay_cat.debug() << "Ignoring non-foreground WM_SETFOCUS\n";
+            break;
+          }
+    
+          BYTE new_keyboard_state[num_virtual_keys];
+          GetKeyboardState(new_keyboard_state);
+          for (int i = 0; i < num_virtual_keys; i++) {
+            // Filter out these particular three.  We don't want to test
+            // these, because these are virtual duplicates for
+            // VK_LSHIFT/VK_RSHIFT, etc.; and the left/right equivalent is
+            // also in the table.  If we respect both VK_LSHIFT as well as
+            // VK_SHIFT, we'll generate two keyboard messages when
+            // VK_LSHIFT changes state.
+            if (i != VK_SHIFT && i != VK_CONTROL && i != VK_MENU) {
+              if (((new_keyboard_state[i] ^ _keyboard_state[i]) & 0x80) != 0) {
+                // This key has changed state.
+                if ((new_keyboard_state[i] & 0x80) != 0) {
+                  // The key is now held down.
+                  // cerr << "key is down: " << lookup_key(i) << "\n";
+                  handle_keyresume(lookup_key(i));
+                } else {
+                  // The key is now released.
+                  handle_keyrelease(lookup_key(i));
+                }
+              }
+            }
+          }
+          
+          // Save the new keyboard state, just for good measure.  This
+          // really shouldn't be necessary, but it protects against
+          // inadvertently getting WM_SETFOCUS twice in a row, for
+          // instance.
+          memcpy(_keyboard_state, new_keyboard_state,
+                 sizeof(BYTE) * num_virtual_keys);
+        }
+        break;
   }
 
   return DefWindowProc(hwnd, msg, wparam, lparam);
@@ -1369,4 +1374,91 @@ lookup_key(WPARAM wparam) const {
     break;
   }
   return ButtonHandle::none();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::handle_mouse_motion
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+bool WinGraphicsWindow::
+handle_mouse_motion(int x, int y) {
+  _input_devices[0].set_pointer_in_window(x, y);
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WinGraphicsWindow::handle_mouse_exit
+//       Access: Private
+//  Description:
+////////////////////////////////////////////////////////////////////
+void WinGraphicsWindow::
+handle_mouse_exit() {
+  // note: 'mouse_motion' is considered the 'entry' event
+  _input_devices[0].set_pointer_out_of_window();
+}
+
+// pops up MsgBox w/system error msg
+void PrintErrorMessage(DWORD msgID) {
+  LPTSTR pMessageBuffer;
+
+  if (msgID==PRINT_LAST_ERROR)
+    msgID=GetLastError();
+
+  FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+                NULL,msgID,
+                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), //The user default language
+                (LPTSTR) &pMessageBuffer,  // the weird ptrptr->ptr cast is intentional, see FORMAT_MESSAGE_ALLOCATE_BUFFER
+                1024, NULL);
+  MessageBox(GetDesktopWindow(),pMessageBuffer,_T(errorbox_title),MB_OK);
+  windisplay_cat.fatal() << "System error msg: " << pMessageBuffer << endl;
+  LocalFree( pMessageBuffer );
+}
+
+void
+ClearToBlack(HWND hWnd, const WindowProperties &props) {
+  if (!props.has_origin()) {
+    windisplay_cat.info()
+      << "Skipping ClearToBlack, no origin specified yet.\n";
+    return;
+  }
+
+  if (windisplay_cat.is_debug()) {
+    windisplay_cat.debug()
+      << "ClearToBlack(" << hWnd << ", " << props << ")\n";
+  }
+  // clear to black
+  HDC hDC=GetDC(hWnd);  // GetDC is not particularly fast.  if this needs to be super-quick, we should cache GetDC's hDC
+  RECT clrRect = {
+    props.get_x_origin(), props.get_y_origin(),
+    props.get_x_origin() + props.get_x_size(),
+    props.get_y_origin() + props.get_y_size()
+  };
+  FillRect(hDC,&clrRect,(HBRUSH)GetStockObject(BLACK_BRUSH));
+  ReleaseDC(hWnd,hDC);
+  GdiFlush();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_client_rect_screen
+//  Description: Fills view_rect with the coordinates of the client
+//               area of the indicated window, converted to screen
+//               coordinates.
+////////////////////////////////////////////////////////////////////
+void get_client_rect_screen(HWND hwnd, RECT *view_rect) {
+  GetClientRect(hwnd, view_rect);
+
+  POINT ul, lr;
+  ul.x = view_rect->left;
+  ul.y = view_rect->top;
+  lr.x = view_rect->right;
+  lr.y = view_rect->bottom;
+
+  ClientToScreen(hwnd, &ul);
+  ClientToScreen(hwnd, &lr);
+
+  view_rect->left = ul.x;
+  view_rect->top = ul.y;
+  view_rect->right = lr.x;
+  view_rect->bottom = lr.y;
 }

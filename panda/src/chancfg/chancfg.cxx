@@ -424,26 +424,29 @@ ChanConfig::ChanConfig(GraphicsEngine *engine, GraphicsPipe* pipe,
   float win_background_b = chanconfig.GetFloat("win-background-b", 0.41);
 
   // visual?  nope, that's handled with the mode.
-  int framebuffer_mode = 
-    WindowProperties::FM_rgba | 
-    WindowProperties::FM_double_buffer | 
-    WindowProperties::FM_depth;
-  framebuffer_mode = overrides.defined(ChanCfgOverrides::Mask) ?
-    overrides.getUInt(ChanCfgOverrides::Mask) : framebuffer_mode;
+  int frame_buffer_mode = 
+    FrameBufferProperties::FM_rgba | 
+    FrameBufferProperties::FM_double_buffer | 
+    FrameBufferProperties::FM_depth;
+  frame_buffer_mode = overrides.defined(ChanCfgOverrides::Mask) ?
+    overrides.getUInt(ChanCfgOverrides::Mask) : frame_buffer_mode;
+
   std::string title = cfg;
   title = overrides.defined(ChanCfgOverrides::Title) ?
             overrides.getString(ChanCfgOverrides::Title) : title;
+
+  FrameBufferProperties fbprops;
+  fbprops.set_frame_buffer_mode(frame_buffer_mode);
+  fbprops.set_depth_bits(want_depth_bits);
+  fbprops.set_color_bits(want_color_bits);
 
   WindowProperties props;
   props.set_open(true);
   props.set_origin(origX, origY);
   props.set_size(sizeX, sizeY);
   props.set_title(title);
-  props.set_framebuffer_mode(framebuffer_mode);
   props.set_undecorated(undecorated);
   props.set_fullscreen(fullscreen);
-  props.set_depth_bits(want_depth_bits);
-  props.set_color_bits(want_color_bits);
   props.set_cursor_hidden(!use_cursor);
 
 
@@ -454,7 +457,9 @@ ChanConfig::ChanConfig(GraphicsEngine *engine, GraphicsPipe* pipe,
                         overrides.getBool(ChanCfgOverrides::Cameras) : true;
 
   // open that sucker
-  PT(GraphicsWindow) win = engine->make_window(pipe);
+  PT(GraphicsStateGuardian) gsg = 
+    engine->make_gsg(pipe, fbprops, engine->get_threading_model());
+  PT(GraphicsWindow) win = engine->make_window(pipe, gsg);
   if(win == (GraphicsWindow *)NULL) {
     chancfg_cat.error() << "Could not create window" << endl;
     _graphics_window = (GraphicsWindow *)NULL;

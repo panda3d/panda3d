@@ -1000,6 +1000,8 @@ IDirect3DTexture8 *DXTextureContext8::CreateTexture(DXScreenData &scrn) {
     assert(pbuf->get_component_width()==sizeof(BYTE));   // cant handle anything else now
     assert(pixbuf_type==PixelBuffer::T_unsigned_byte);   // cant handle anything else now
 
+    //PRINT_REFCNT(dxgsg8,scrn.pD3D8);
+
     if((pixbuf_type!=PixelBuffer::T_unsigned_byte) || (pbuf->get_component_width()!=1)) {
         dxgsg8_cat.error() << "CreateTexture failed, havent handled non 8-bit channel pixelbuffer types yet! \n";
         return NULL;
@@ -1411,7 +1413,7 @@ IDirect3DTexture8 *DXTextureContext8::CreateTexture(DXScreenData &scrn) {
 
     if(FAILED( hr = scrn.pD3DDevice->CreateTexture(TargetWidth,TargetHeight,cMipLevelCount,0x0,
                                                    TargetPixFmt,D3DPOOL_MANAGED,&_pD3DTexture8) )) {
-        dxgsg8_cat.error() << "pD3DDevice->CreateTexture() failed!" << D3DERRORSTRING(hr);
+        dxgsg8_cat.error() << "D3D CreateTexture failed!" << D3DERRORSTRING(hr);
         goto error_exit;
     }
 
@@ -1427,10 +1429,20 @@ IDirect3DTexture8 *DXTextureContext8::CreateTexture(DXScreenData &scrn) {
 #endif
 #endif
 
-    hr = FillDDSurfTexturePixels();
-    if(FAILED(hr)) {
-      goto error_exit;
+    // Note: user may want to create an empty "texture" that will be written to by rendering and copy operations.
+    //       this will never have a backing store of main memory in panda fmt, and on disk in a file.
+    //       so for this case, you dont want to call FillDDSurf.
+    //       need a better way for user to indicate this usage than lack of ram_image, because it conflicts
+    //       with the multi-open case mentioned below
+
+    if(_texture->has_ram_image()) {
+        hr = FillDDSurfTexturePixels();
+        if(FAILED(hr)) {
+            goto error_exit;
+        }
     }
+
+    // PRINT_REFCNT(dxgsg8,scrn.pD3D8);
 
     // Return the newly created texture
     return _pD3DTexture8;
@@ -1547,11 +1559,9 @@ FillDDSurfTexturePixels(void) {
     if(bUsingTempPixBuf) {
       SAFE_DELETE_ARRAY(pPixels);
     }
-    RELEASE(pMipLevel0,dxgsg8,"texture",RELEASE_ONCE);
+    RELEASE(pMipLevel0,dxgsg8,"FillDDSurf MipLev0 texture ptr",RELEASE_ONCE);
     return hr;
 }
-
-
 
 //-----------------------------------------------------------------------------
 // Name: DeleteTexture()
@@ -1559,6 +1569,11 @@ FillDDSurfTexturePixels(void) {
 //-----------------------------------------------------------------------------
 void DXTextureContext8::
 DeleteTexture( ) {
+    if(_pD3DTexture8==NULL) {
+        // dont bother printing the msg below, since we already released it.
+        return;
+    }
+
     if(dxgsg8_cat.is_spam()) {
         dxgsg8_cat.spam() << "Deleting DX texture for " << _tex->get_name() << "\n";
     }
@@ -1603,6 +1618,9 @@ TextureContext(tex) {
 
 DXTextureContext8::
 ~DXTextureContext8() {
+    if(dxgsg8_cat.is_spam()) {
+        dxgsg8_cat.spam() << "Deleting DX8 TexContext for " << _tex->get_name() << "\n";
+    }
     DeleteTexture();
     TextureContext::~TextureContext();
     _tex = NULL;

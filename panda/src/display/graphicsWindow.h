@@ -58,7 +58,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA GraphicsWindow : public TypedReferenceCount, public ClearableRegion {
 protected:
-  GraphicsWindow(GraphicsPipe *pipe);
+  GraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg);
 
 private:
   GraphicsWindow(const GraphicsWindow &copy);
@@ -119,12 +119,10 @@ public:
   void clear();
   virtual void end_frame();
 
-  virtual void make_gsg();
-  virtual void release_gsg();
-
   // This method is called in the draw thread prior to issuing any
   // drawing commands for the window.
   virtual void make_current();
+  virtual void release_gsg();
 
   // These methods will be called within the app (main) thread.
   virtual void begin_flip();

@@ -40,10 +40,7 @@ wdxGraphicsPipe7() {
 ////////////////////////////////////////////////////////////////////
 wdxGraphicsPipe7::
 ~wdxGraphicsPipe7() {
-  if (_hDDrawDLL != NULL) {
-    FreeLibrary(_hDDrawDLL);
-    _hDDrawDLL = NULL;
-  }
+  SAFE_FREELIB(_hDDrawDLL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -79,8 +76,21 @@ pipe_constructor() {
 //  Description: Creates a new window on the pipe, if possible.
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsWindow) wdxGraphicsPipe7::
-make_window() {
-  return new wdxGraphicsWindow7(this);
+make_window(GraphicsStateGuardian *gsg) {
+  // thanks to the dumb threading requirements this constructor actually does nothing but create an empty c++ object
+  // no windows are really opened until wdxGraphicsWindow8->open_window() is called
+
+  return new wdxGraphicsWindow7(this, gsg);
+}
+
+
+PT(GraphicsStateGuardian) wdxGraphicsPipe7::
+make_gsg(const FrameBufferProperties &properties) {
+
+  // FrameBufferProperties really belongs as part of the window/renderbuffer specification
+  // put here because of GLX multithreading requirement
+  PT(DXGraphicsStateGuardian7) gsg = new DXGraphicsStateGuardian7(properties);
+  return gsg.p();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -94,21 +104,17 @@ make_window() {
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsPipe7::
 init() {
-  static const char * const ddraw_name = "ddraw.dll";
-  _hDDrawDLL = LoadLibrary(ddraw_name);
-  if(_hDDrawDLL == 0) {
-    wdxdisplay7_cat.error()
-      << "can't locate " << ddraw_name << "!\n";
-    return false;
+
+  if(!MyLoadLib(_hDDrawDLL,"ddraw.dll")) {
+      goto error;
   }
 
-  _DirectDrawCreateEx = 
-    (LPDIRECTDRAWCREATEEX)GetProcAddress(_hDDrawDLL, "DirectDrawCreateEx");
-  if (_DirectDrawCreateEx == NULL) {
-    wdxdisplay7_cat.error()
-      << "GetProcAddr failed for DDCreateEx" << endl;
-    return false;
+  if(!MyGetProcAddr(_hDDrawDLL, (FARPROC*)&_DirectDrawCreateEx, "DirectDrawCreateEx")) {
+      goto error;
   }
 
   return true;
+
+error:
+  return false;  
 }

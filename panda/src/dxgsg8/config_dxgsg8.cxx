@@ -27,7 +27,8 @@
 #include <dconfig.h>
 
 Configure(config_dxgsg8);
-NotifyCategoryDef(dxgsg8, ":display:gsg");
+//NotifyCategoryDef(dxgsg8, ":display:gsg");  dont want to merge this with the regular parent class dbg output
+NotifyCategoryDef(dxgsg8, "dxgsg");
 NotifyCategoryDef(wdxdisplay8, "windisplay");
 
 // Configure this variable true to cause the DXGSG to show each
@@ -196,58 +197,5 @@ init_libdxgsg8() {
   GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
   selection->add_pipe_type(wdxGraphicsPipe8::get_class_type(),
                            wdxGraphicsPipe8::pipe_constructor);
+
 }
-
-const char *D3DFormatStr(D3DFORMAT fmt) {
-
-#define CASESTR(XX) case XX: return #XX;
-
-  switch(fmt) {
-    CASESTR(D3DFMT_UNKNOWN);
-    CASESTR(D3DFMT_R8G8B8);
-    CASESTR(D3DFMT_A8R8G8B8);
-    CASESTR(D3DFMT_X8R8G8B8);
-    CASESTR(D3DFMT_R5G6B5);
-    CASESTR(D3DFMT_X1R5G5B5);
-    CASESTR(D3DFMT_A1R5G5B5);
-    CASESTR(D3DFMT_A4R4G4B4);
-    CASESTR(D3DFMT_R3G3B2);
-    CASESTR(D3DFMT_A8);
-    CASESTR(D3DFMT_A8R3G3B2);
-    CASESTR(D3DFMT_X4R4G4B4);
-    CASESTR(D3DFMT_A2B10G10R10);
-    CASESTR(D3DFMT_G16R16);
-    CASESTR(D3DFMT_A8P8);
-    CASESTR(D3DFMT_P8);
-    CASESTR(D3DFMT_L8);
-    CASESTR(D3DFMT_A8L8);
-    CASESTR(D3DFMT_A4L4);
-    CASESTR(D3DFMT_V8U8);
-    CASESTR(D3DFMT_L6V5U5);
-    CASESTR(D3DFMT_X8L8V8U8);
-    CASESTR(D3DFMT_Q8W8V8U8);
-    CASESTR(D3DFMT_V16U16);
-    CASESTR(D3DFMT_W11V11U10);
-    CASESTR(D3DFMT_A2W10V10U10);
-    CASESTR(D3DFMT_UYVY);
-    CASESTR(D3DFMT_YUY2);
-    CASESTR(D3DFMT_DXT1);
-    CASESTR(D3DFMT_DXT2);
-    CASESTR(D3DFMT_DXT3);
-    CASESTR(D3DFMT_DXT4);
-    CASESTR(D3DFMT_DXT5);
-    CASESTR(D3DFMT_D16_LOCKABLE);
-    CASESTR(D3DFMT_D32);
-    CASESTR(D3DFMT_D15S1);
-    CASESTR(D3DFMT_D24S8);
-    CASESTR(D3DFMT_D16);
-    CASESTR(D3DFMT_D24X8);
-    CASESTR(D3DFMT_D24X4S4);
-    CASESTR(D3DFMT_VERTEXDATA);
-    CASESTR(D3DFMT_INDEX16);
-    CASESTR(D3DFMT_INDEX32);
-  }
-
-  return "Invalid D3DFORMAT";
-}
-

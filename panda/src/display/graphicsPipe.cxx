@@ -100,3 +100,35 @@ HardwareChannel *GraphicsPipe::
 get_hw_channel(GraphicsWindow *, int) {
   return (HardwareChannel*)0L;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsPipe::make_gsg
+//       Access: Protected, Virtual
+//  Description: Creates a new GSG to use the pipe (but no windows
+//               have been created yet for the GSG).  This method will
+//               be called in the draw thread for the GSG.
+////////////////////////////////////////////////////////////////////
+PT(GraphicsStateGuardian) GraphicsPipe::
+make_gsg(const FrameBufferProperties &properties) {
+  // shouldnt this method really be pure virtual?  it's an error for a pipe to not implement it
+  display_cat.error() << "Error: make_gsg() unimplemented by graphicsPipe!\n";
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsPipe::close_gsg
+//       Access: Protected, Virtual
+//  Description: This will be called in the draw thread (the same
+//               thread in which the GSG was created via make_gsg,
+//               above) to close the indicated GSG and free its
+//               associated graphics objects just before it is
+//               destructed.  This method exists to provide a hook for
+//               the graphics pipe to do any necessary cleanup, if
+//               any.
+////////////////////////////////////////////////////////////////////
+void GraphicsPipe::
+close_gsg(GraphicsStateGuardian *gsg) {
+  if (gsg != (GraphicsStateGuardian *)NULL) {
+    gsg->close_gsg();
+  }
+}

@@ -18,6 +18,7 @@
 
 #include "config_wgldisplay.h"
 #include "wglGraphicsPipe.h"
+#include "wglGraphicsStateGuardian.h"
 #include "wglGraphicsWindow.h"
 #include "graphicsPipeSelection.h"
 #include "dconfig.h"
@@ -46,6 +47,7 @@ init_libwgldisplay() {
   initialized = true;
 
   wglGraphicsPipe::init_type();
+  wglGraphicsStateGuardian::init_type();
   wglGraphicsWindow::init_type();
 
   GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();

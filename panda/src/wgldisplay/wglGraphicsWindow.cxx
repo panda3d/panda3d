@@ -25,9 +25,6 @@
 #include <wingdi.h>
 #include <ddraw.h>
 
-typedef enum {Software, MCD, ICD} OGLDriverType;
-static const char * const OGLDrvStrings[] = { "Software", "MCD", "ICD" };
-
 TypeHandle wglGraphicsWindow::_type_handle;
 
 static char *ConvDDErrorToString(const HRESULT &error);
@@ -132,10 +129,9 @@ GetAvailVidMem() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 wglGraphicsWindow::
-wglGraphicsWindow(GraphicsPipe *pipe) :
-  WinGraphicsWindow(pipe) 
+wglGraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) :
+  WinGraphicsWindow(pipe, gsg) 
 {
-  _context = (HGLRC)0;
   _hdc = (HDC)0;
 }
 
@@ -149,49 +145,6 @@ wglGraphicsWindow::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsWindow::make_gsg
-//       Access: Public, Virtual
-//  Description: Creates a new GSG for the window and stores it in the
-//               _gsg pointer.  This should only be called from within
-//               the draw thread.
-////////////////////////////////////////////////////////////////////
-void wglGraphicsWindow::
-make_gsg() {
-  nassertv(_gsg == (GraphicsStateGuardian *)NULL);
-
-  _context = wglCreateContext(_hdc);
-  if (!_context) {
-    wgldisplay_cat.error()
-      << "Could not create GL context.\n";
-    return;
-  }
-
-  // And make sure the new context is current.
-  wglMakeCurrent(_hdc, _context);
-
-  // Now we can make a GSG.
-  _gsg = new GLGraphicsStateGuardian(this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsWindow::release_gsg
-//       Access: Public, Virtual
-//  Description: Releases the current GSG pointer, if it is currently
-//               held, and resets the GSG to NULL.  This should only
-//               be called from within the draw thread.
-////////////////////////////////////////////////////////////////////
-void wglGraphicsWindow::
-release_gsg() {
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
-    wglMakeCurrent(_hdc, _context);
-    GraphicsWindow::release_gsg();
-    wglDeleteContext(_context);
-    wglMakeCurrent(_hdc, NULL);
-    _context = (HGLRC)0;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsWindow::make_current
 //       Access: Public, Virtual
 //  Description: This function will be called within the draw thread
@@ -200,8 +153,30 @@ release_gsg() {
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::
 make_current() {
-  nassertv(_gsg != (GraphicsStateGuardian *)NULL);
-  wglMakeCurrent(_hdc, _context);
+  wglGraphicsStateGuardian *wglgsg;
+  DCAST_INTO_V(wglgsg, _gsg);
+  wglMakeCurrent(_hdc, wglgsg->get_context(_hdc));
+
+  // Now that we have made the context current to a window, we can
+  // reset the GSG state if this is the first time it has been used.
+  // (We can't just call reset() when we construct the GSG, because
+  // reset() requires having a current context.)
+  wglgsg->reset_if_new();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsWindow::release_gsg
+//       Access: Public, Virtual
+//  Description: Releases the current GSG pointer, if it is currently
+//               held, and resets the GSG to NULL.  The window will be
+//               permanently unable to render; this is normally called
+//               only just before destroying the window.  This should
+//               only be called from within the draw thread.
+////////////////////////////////////////////////////////////////////
+void wglGraphicsWindow::
+release_gsg() {
+  wglMakeCurrent(_hdc, NULL);
+  GraphicsWindow::release_gsg();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -221,7 +196,7 @@ make_current() {
 void wglGraphicsWindow::
 begin_flip() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
-    wglMakeCurrent(_hdc, _context);
+    make_current();
     glFinish();
     SwapBuffers(_hdc);
   }
@@ -235,7 +210,7 @@ begin_flip() {
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::
 close_window() {
-  ReleaseDC(_mwindow, _hdc);
+  ReleaseDC(_hWnd, _hdc);
   _hdc = (HDC)0;
   WinGraphicsWindow::close_window();
 }
@@ -253,41 +228,30 @@ open_window() {
     return false;
   }
 
+  wglGraphicsStateGuardian *wglgsg;
+  DCAST_INTO_R(wglgsg, _gsg, false);
+
+  _hdc = GetDC(_hWnd);
+
   // Set up the pixel format of the window appropriately for GL.
-  _hdc = GetDC(_mwindow);
+  int pfnum = wglgsg->get_pfnum();
 
-  int pfnum = choose_pfnum();
-
-  if (gl_force_pixfmt != 0) {
-    wgldisplay_cat.info()
-      << "overriding pixfmt choice algorithm (" << pfnum 
-      << ") with gl-force-pixfmt(" << gl_force_pixfmt << ")\n";
-    pfnum = gl_force_pixfmt;
-  }
-
-  if (wgldisplay_cat.is_debug()) {
-    wgldisplay_cat.debug()
-      << "config() - picking pixfmt #" << pfnum <<endl;
-  }
-  
+  PIXELFORMATDESCRIPTOR pixelformat;
   DescribePixelFormat(_hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), 
-                      &_pixelformat);
+                      &pixelformat);
 
 #ifdef _DEBUG
   char msg[200];
   sprintf(msg, "Selected GL PixelFormat is #%d", pfnum);
-  print_pfd(&_pixelformat, msg);
+  print_pfd(&pixelformat, msg);
 #endif
 
-  if (!SetPixelFormat(_hdc, pfnum, &_pixelformat)) {
+  if (!SetPixelFormat(_hdc, pfnum, &pixelformat)) {
     wgldisplay_cat.error()
       << "SetPixelFormat(" << pfnum << ") failed after window create\n";
     close_window();
     return false;
   }
-
-  // Initializes _colormap
-  setup_colormap();
 
 #ifndef NDEBUG
   if (gl_force_invalid) {
@@ -297,6 +261,9 @@ open_window() {
     return false;
   }
 #endif  // NDEBUG
+
+  // Initializes _colormap
+  setup_colormap(pixelformat);
 
   return true;
 }
@@ -335,187 +302,6 @@ reconsider_fullscreen_size(DWORD &x_size, DWORD &y_size, DWORD &bitdepth) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsWindow::choose_pfnum
-//       Access: Private
-//  Description: Selects a suitable pixel format number for the
-//               window, based on the requested properties.
-////////////////////////////////////////////////////////////////////
-int wglGraphicsWindow::
-choose_pfnum() const {
-  int pfnum;
-  bool bUsingSoftware = false;
-
-  if (force_software_renderer) {
-    pfnum = find_pixfmtnum(false);
-    
-    if (pfnum == 0) {
-      wgldisplay_cat.error()
-        << "Couldn't find compatible software-renderer OpenGL pixfmt, check your window properties!\n";
-      return 0;
-    }
-    bUsingSoftware = true;
-
-  } else {
-    pfnum = find_pixfmtnum(true);
-    if (pfnum == 0) {
-      if (allow_software_renderer) {
-        pfnum = find_pixfmtnum(false);
-        if(pfnum == 0) {
-          wgldisplay_cat.error()
-            << "Couldn't find HW or Software OpenGL pixfmt appropriate for this desktop!!\n";
-        }
-      } else {
-        wgldisplay_cat.error()
-          << "Couldn't find HW-accelerated OpenGL pixfmt appropriate for this desktop!!\n";
-      }
-      
-      if (pfnum == 0) {
-        wgldisplay_cat.error()
-          << "make sure OpenGL driver is installed, and try reducing the screen size, reducing the\n"
-          << "desktop screen pixeldepth to 16bpp,and check your panda window properties\n";
-        return 0;
-      }
-      bUsingSoftware=true;
-    }
-  }
-  
-  if (bUsingSoftware) {
-    wgldisplay_cat.info()
-      << "Couldn't find compatible OGL HW pixelformat, using software rendering.\n";
-  }
-  
-  return pfnum;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsWindow::find_pixfmtnum
-//       Access: Private
-//  Description: This helper routine looks for either HW-only or
-//               SW-only format, but not both.  Returns the
-//               pixelformat number, or 0 if a suitable format could
-//               not be found.
-////////////////////////////////////////////////////////////////////
-int wglGraphicsWindow::
-find_pixfmtnum(bool bLookforHW) const {
-  int framebuffer_mode = _properties.get_framebuffer_mode();
-  bool want_depth_bits = _properties.has_depth_bits();
-  bool want_color_bits = _properties.has_color_bits();
-  OGLDriverType drvtype;
-
-  PIXELFORMATDESCRIPTOR pfd;
-  ZeroMemory(&pfd,sizeof(PIXELFORMATDESCRIPTOR));
-  pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-  pfd.nVersion = 1;
-
-  // just use the pixfmt of the current desktop
-
-  int MaxPixFmtNum = 
-    DescribePixelFormat(_hdc, 1, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
-  int cur_bpp = GetDeviceCaps(_hdc,BITSPIXEL);
-  int pfnum;
-
-  for(pfnum = 1; pfnum <= MaxPixFmtNum; pfnum++) {
-    DescribePixelFormat(_hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
-
-    // official, nvidia sanctioned way.
-    if ((pfd.dwFlags & PFD_GENERIC_FORMAT) != 0) {
-      drvtype = Software;
-    } else if (pfd.dwFlags & PFD_GENERIC_ACCELERATED) {
-      drvtype = MCD;
-    } else {
-      drvtype = ICD;
-    }
-
-    // skip driver types we are not looking for
-    if (bLookforHW) {
-      if (drvtype == Software) {
-        continue;
-      }
-    } else {
-      if (drvtype != Software) {
-        continue;
-      }
-    }
-
-    if ((pfd.iPixelType == PFD_TYPE_COLORINDEX) && 
-        (framebuffer_mode & WindowProperties::FM_index) == 0) {
-      continue;
-    }
-
-    DWORD dwReqFlags = (PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW);
-
-    if (wgldisplay_cat.is_debug()) {
-      wgldisplay_cat->debug()
-        << "----------------" << endl;
-
-      if ((framebuffer_mode & WindowProperties::FM_alpha) != 0) {
-        wgldisplay_cat->debug()
-          << "want alpha, pfd says '"
-          << (int)(pfd.cAlphaBits) << "'" << endl;
-      }
-      if ((framebuffer_mode & WindowProperties::FM_depth) != 0) {
-        wgldisplay_cat->debug()
-          << "want depth, pfd says '"
-          << (int)(pfd.cDepthBits) << "'" << endl;
-      }
-      if ((framebuffer_mode & WindowProperties::FM_stencil) != 0) {
-        wgldisplay_cat->debug()
-          << "want stencil, pfd says '"
-          << (int)(pfd.cStencilBits) << "'" << endl;
-      }
-      wgldisplay_cat->debug()
-        << "final flag check " << (int)(pfd.dwFlags & dwReqFlags) << " =? "
-        << (int)dwReqFlags << endl;
-      wgldisplay_cat->debug() 
-        << "pfd bits = " << (int)(pfd.cColorBits) << endl;
-      wgldisplay_cat->debug() 
-        << "cur_bpp = " << cur_bpp << endl;
-    }
-
-    if ((framebuffer_mode & WindowProperties::FM_double_buffer) != 0) {
-      dwReqFlags|= PFD_DOUBLEBUFFER;
-    }
-    if ((framebuffer_mode & WindowProperties::FM_alpha) != 0 && 
-        (pfd.cAlphaBits==0)) {
-      continue;
-    }
-    if ((framebuffer_mode & WindowProperties::FM_depth) != 0 && 
-        (pfd.cDepthBits==0)) {
-      continue;
-    }
-    if ((framebuffer_mode & WindowProperties::FM_stencil) != 0 && 
-        (pfd.cStencilBits==0)) {
-      continue;
-    }
-
-    if ((pfd.dwFlags & dwReqFlags) != dwReqFlags) {
-      continue;
-    }
-
-    // now we ignore the specified want_color_bits for windowed mode
-    // instead we use the current screen depth
-
-    if ((pfd.cColorBits!=cur_bpp) && 
-        (!((cur_bpp==16) && (pfd.cColorBits==15))) && 
-        (!((cur_bpp==32) && (pfd.cColorBits==24)))) {
-      continue;
-    }
-
-    // We've passed all the tests, go ahead and pick this fmt.
-    // Note: could go continue looping looking for more alpha bits or
-    // more depth bits so this would pick 16bpp depth buffer, probably
-    // not 24bpp
-    break;
-  }
-
-  if (pfnum > MaxPixFmtNum) {
-    pfnum = 0;
-  }
-
-  return pfnum;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsWindow::setup_colormap
 //       Access: Private
 //  Description: Sets up a colormap for the window matching the
@@ -523,21 +309,15 @@ find_pixfmtnum(bool bLookforHW) const {
 //               creating a GL context.
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::
-setup_colormap() {
-  PIXELFORMATDESCRIPTOR pfd;
+setup_colormap(const PIXELFORMATDESCRIPTOR &pixelformat) {
   LOGPALETTE *logical;
   int n;
 
-  /* grab the pixel format */
-  memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
-  DescribePixelFormat(_hdc, GetPixelFormat(_hdc),
-                      sizeof(PIXELFORMATDESCRIPTOR), &pfd);
-
-  if (!(pfd.dwFlags & PFD_NEED_PALETTE ||
-      pfd.iPixelType == PFD_TYPE_COLORINDEX))
+  if (!(pixelformat.dwFlags & PFD_NEED_PALETTE ||
+      pixelformat.iPixelType == PFD_TYPE_COLORINDEX))
     return;
 
-  n = 1 << pfd.cColorBits;
+  n = 1 << pixelformat.cColorBits;
 
   /* allocate a bunch of memory for the logical palette (assume 256
      colors in a Win32 palette */
@@ -552,20 +332,20 @@ setup_colormap() {
   /* start with a copy of the current system palette */
   GetSystemPaletteEntries(_hdc, 0, 256, &logical->palPalEntry[0]);
 
-  if (pfd.iPixelType == PFD_TYPE_RGBA) {
-    int redMask = (1 << pfd.cRedBits) - 1;
-    int greenMask = (1 << pfd.cGreenBits) - 1;
-    int blueMask = (1 << pfd.cBlueBits) - 1;
+  if (pixelformat.iPixelType == PFD_TYPE_RGBA) {
+    int redMask = (1 << pixelformat.cRedBits) - 1;
+    int greenMask = (1 << pixelformat.cGreenBits) - 1;
+    int blueMask = (1 << pixelformat.cBlueBits) - 1;
     int i;
 
     /* fill in an RGBA color palette */
     for (i = 0; i < n; ++i) {
       logical->palPalEntry[i].peRed =
-        (((i >> pfd.cRedShift)   & redMask)   * 255) / redMask;
+        (((i >> pixelformat.cRedShift)   & redMask)   * 255) / redMask;
       logical->palPalEntry[i].peGreen =
-        (((i >> pfd.cGreenShift) & greenMask) * 255) / greenMask;
+        (((i >> pixelformat.cGreenShift) & greenMask) * 255) / greenMask;
         logical->palPalEntry[i].peBlue =
-        (((i >> pfd.cBlueShift)  & blueMask)  * 255) / blueMask;
+        (((i >> pixelformat.cBlueShift)  & blueMask)  * 255) / blueMask;
       logical->palPalEntry[i].peFlags = 0;
     }
   }

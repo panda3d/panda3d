@@ -22,7 +22,7 @@
 #include "pandabase.h"
 #include "winGraphicsPipe.h"
 #include "pvector.h"
-
+#include "dxgsg8base.h"
 #include <ddraw.h>
 
 typedef struct {
@@ -48,8 +48,25 @@ public:
   virtual string get_interface_name() const;
   static PT(GraphicsPipe) pipe_constructor();
 
+  virtual PT(GraphicsStateGuardian) make_gsg(const FrameBufferProperties &properties);
+
+  bool find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &TestDisplayMode,
+                       D3DFORMAT *pBestFmt, bool bWantStencil,
+                       bool bForce16bpp, bool bVerboseMode = false) const;
+
+  void search_for_valid_displaymode(DXScreenData &scrn,
+                             UINT RequestedX_Size, UINT RequestedY_Size,
+                             bool bWantZBuffer, bool bWantStencil,
+                             UINT *pSupportedScreenDepthsMask,
+                             bool *pCouldntFindAnyValidZBuf,
+                             D3DFORMAT *pSuggestedPixFmt,
+                             bool bForce16bppZBuffer,
+                             bool bVerboseMode = false);
+
+   bool special_check_fullscreen_resolution(DXScreenData &scrn, UINT x_size,UINT y_size);
+
 protected:
-  virtual PT(GraphicsWindow) make_window();
+  virtual PT(GraphicsWindow) make_window(GraphicsStateGuardian *gsg);
 
 private:
   bool init();
@@ -62,6 +79,8 @@ private:
 private:
   HINSTANCE _hDDrawDLL;
   HINSTANCE _hD3D8_DLL;
+  LPDIRECT3D8 _pD3D8;
+
 
   typedef LPDIRECT3D8 (WINAPI *Direct3DCreate8_ProcPtr)(UINT SDKVersion);
   typedef HRESULT (WINAPI * LPDIRECTDRAWCREATEEX)(GUID FAR * lpGuid, LPVOID *lplpDD, REFIID iid, IUnknown FAR *pUnkOuter);
@@ -83,7 +102,7 @@ private:
   
   typedef pvector<CardID> CardIDs;
   CardIDs _card_ids;
-
+  bool _bIsDX81;
 
 public:
   static TypeHandle get_class_type() {

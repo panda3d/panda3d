@@ -15,11 +15,15 @@
   #define INSTALL_HEADERS \
      config_wgldisplay.h \
      wglGraphicsPipe.I wglGraphicsPipe.h \
+     wglGraphicsStateGuardian.I wglGraphicsStateGuardian.h \
      wglGraphicsWindow.I wglGraphicsWindow.h
 //     Win32Defs.h  
     
   #define INCLUDED_SOURCES \
-    config_wgldisplay.cxx wglGraphicsPipe.cxx wglGraphicsWindow.cxx
+    config_wgldisplay.cxx \
+    wglGraphicsPipe.cxx \
+    wglGraphicsStateGuardian.cxx \
+    wglGraphicsWindow.cxx
 
   #define SOURCES \
     $[INSTALL_HEADERS]

@@ -198,10 +198,15 @@ open_window(const WindowProperties &props, GraphicsPipe *pipe) {
   wf->set_two_sided(get_two_sided());
   wf->set_lighting(get_lighting());
   wf->set_background_type(get_background_type());
+
+  GraphicsWindow *win = wf->open_window(props, &_engine, pipe);
+  if (win == (GraphicsWindow *)NULL) {
+    // Oops, couldn't make an actual window.
+    delete wf;
+    return NULL;
+  }
+
   _windows.push_back(wf);
-
-  wf->open_window(props, &_engine, pipe);
-
   return wf;
 }
 

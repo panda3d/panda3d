@@ -37,11 +37,12 @@ TypeHandle GraphicsWindow::_type_handle;
 //               GraphicsEngine::make_window() function.
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow::
-GraphicsWindow(GraphicsPipe *pipe) {
+GraphicsWindow(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
 #endif
   _pipe = pipe;
+  _gsg = gsg;
 
   // Some default properties for windows unless specified otherwise.
   // Other properties (size, title, etc.) must be explicitly
@@ -51,11 +52,7 @@ GraphicsWindow(GraphicsPipe *pipe) {
   _properties.set_fullscreen(false);
   _properties.set_minimized(false);
   _properties.set_cursor_hidden(false);
-  _properties.set_depth_bits(1);
-  _properties.set_color_bits(1);
-  _properties.set_framebuffer_mode(WindowProperties::FM_rgba | 
-                                   WindowProperties::FM_double_buffer | 
-                                   WindowProperties::FM_depth);
+
   _display_regions_stale = false;
   _window_event = "window-event";
 
@@ -581,32 +578,11 @@ make_scratch_display_region(int x_size, int y_size) const {
 bool GraphicsWindow::
 begin_frame() {
   if (_gsg == (GraphicsStateGuardian *)NULL) {
-    MutexHolder holder(_lock);
-    // Oops, we don't have a GSG yet.
-    if (!_properties.get_open()) {
-      return false;
-    }
-    make_gsg();
-    if (_gsg == (GraphicsStateGuardian *)NULL) {
-      // Still couldn't make the GSG for some reason.  We should pass
-      // an appropriate diagnostic up to the application; for now,
-      // we'll just shut down the window.
-
-      // WARNING: this is a non-thread-safe hack.  This really should
-      // happen in the window thread, not here in the draw thread.
-      display_cat.info()
-        << "Could not open GSG, closing " << get_type() << ".\n";
-      close_window();
-      WindowProperties properties;
-      properties.set_open(false);
-      system_changed_properties(properties);
-      return false;
-    }
-  } else {
-    // Okay, we already have a GSG, so activate it.
-    make_current();
+    return false;
   }
 
+  // Okay, we already have a GSG, so activate it.
+  make_current();
   return _gsg->begin_frame();
 }
 
@@ -653,32 +629,6 @@ end_frame() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::make_gsg
-//       Access: Public, Virtual
-//  Description: Creates a new GSG for the window and stores it in the
-//               _gsg pointer.  This should only be called from within
-//               the draw thread.
-////////////////////////////////////////////////////////////////////
-void GraphicsWindow::
-make_gsg() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsWindow::release_gsg
-//       Access: Public, Virtual
-//  Description: Releases the current GSG pointer, if it is currently
-//               held, and resets the GSG to NULL.  This should only
-//               be called from within the draw thread.
-////////////////////////////////////////////////////////////////////
-void GraphicsWindow::
-release_gsg() {
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
-    _gsg->close_gsg();
-    _gsg.clear();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsWindow::make_current
 //       Access: Public, Virtual
 //  Description: This function will be called within the draw thread
@@ -687,6 +637,20 @@ release_gsg() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 make_current() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindow::release_gsg
+//       Access: Public
+//  Description: Releases the current GSG pointer, if it is currently
+//               held, and resets the GSG to NULL.  The window will be
+//               permanently unable to render; this is normally called
+//               only just before destroying the window.  This should
+//               only be called from within the draw thread.
+////////////////////////////////////////////////////////////////////
+void GraphicsWindow::
+release_gsg() {
+  _gsg.clear();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -95,7 +95,14 @@ open_window(const WindowProperties &props, GraphicsEngine *engine,
             GraphicsPipe *pipe) {
   nassertr(_window == (GraphicsWindow *)NULL, _window);
 
-  _window = engine->make_window(pipe);
+  PT(GraphicsStateGuardian) gsg = engine->make_gsg(pipe);
+  if (gsg == (GraphicsStateGuardian *)NULL) {
+    // No GSG, no window.
+    framework_cat.fatal() << "open_window: failed to create gsg object!\n";
+    return NULL;
+  }
+
+  _window = engine->make_window(pipe, gsg);
   if (_window != (GraphicsWindow *)NULL) {
     _window->request_properties(props);
     set_background_type(_background_type);

@@ -41,15 +41,37 @@ ClipPlaneInfo() {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::is_closed
+//     Function: GraphicsStateGuardian::get_properties
 //       Access: Public
-//  Description: Returns true if the window associated with this GSG
-//               has been closed, and hence the resources associated
-//               with this GSG have been freed.
+//  Description: Returns the frame buffer properties requested for
+//               this GSG.  All windows created for this GSG must be
+//               created with the same properties.
 ////////////////////////////////////////////////////////////////////
-INLINE bool GraphicsStateGuardian::
-is_closed() const {
-  return (_win == (GraphicsWindow *)NULL);
+INLINE const FrameBufferProperties &GraphicsStateGuardian::
+get_properties() const {
+  return _properties;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_pipe
+//       Access: Public
+//  Description: Returns the graphics pipe on which this GSG was
+//               created.
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsPipe *GraphicsStateGuardian::
+get_pipe() const {
+  return _pipe;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_threading_model
+//       Access: Public
+//  Description: Returns the threading model that was used to create
+//               this GSG.
+////////////////////////////////////////////////////////////////////
+INLINE const GraphicsThreadingModel &GraphicsStateGuardian::
+get_threading_model() const {
+  return _threading_model;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -90,6 +112,19 @@ clear(DisplayRegion *dr) {
   prepare_display_region();
   clear((ClearableRegion *)dr);
   pop_display_region(old_dr);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::reset_if_new
+//       Access: Public
+//  Description: Calls reset() to initialize the GSG, but only if it
+//               hasn't been called yet.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsStateGuardian::
+reset_if_new() {
+  if (_needs_reset) {
+    reset();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -65,7 +65,7 @@ class EXPCL_PANDADX DXGraphicsStateGuardian7 : public GraphicsStateGuardian {
   friend class DXTextureContext7;
 
 public:
-  DXGraphicsStateGuardian7(GraphicsWindow *win);
+  DXGraphicsStateGuardian7(const FrameBufferProperties &properties);
   ~DXGraphicsStateGuardian7();
 
   virtual void reset();
@@ -128,7 +128,7 @@ public:
   virtual void bind_light(DirectionalLight *light, int light_id);
   virtual void bind_light(Spotlight *light, int light_id);
 
-  virtual bool begin_frame();
+  //virtual bool begin_frame();
   virtual bool begin_scene();
   virtual void end_scene();
   virtual void end_frame();
@@ -144,7 +144,8 @@ public:
 
 public:
   // recreate_tex_callback needs pDD,pD3DDevice to be public
-  DXScreenData scrn;
+  DXScreenData *_pScrn;
+  LPDIRECT3DDEVICE7 _pD3DDevice;  // cache copy of _pScrn->pD3DDevice, just for speedier access
 
 #ifndef USE_TEXFMTVEC
   LPDDPIXELFORMAT   _pTexPixFmts;
@@ -225,6 +226,7 @@ protected:
   INLINE void enable_stencil_test(bool val);
   void report_texmgr_stats();
   void draw_multitri(Geom *geom, D3DPRIMITIVETYPE tri_id);
+  void set_context(DXScreenData *pNewContextData);
 
   void draw_prim_inner_loop(int nVerts, const Geom *geom, ushort perFlags);
   void draw_prim_inner_loop_coordtexonly(int nVerts, const Geom *geom);
@@ -301,7 +303,7 @@ protected:
   DWORD _clip_plane_bits;
 
   RenderModeAttrib::Mode _current_fill_mode;  //poinr/wireframe/solid
-  GraphicsChannel *_panda_gfx_channel;  // cache the 1 channel dx supports
+  // GraphicsChannel *_panda_gfx_channel;  // cache the 1 channel dx supports
 
   // Cur Texture State
   TextureApplyAttrib::Mode _CurTexBlendMode;
@@ -321,6 +323,16 @@ protected:
 
   bool _overlay_windows_supported;
 
+#if 0
+  // This is here just as a temporary hack so this file will still
+  // compile.  However, it is never initialized and will certainly
+  // cause the code to crash when it is referenced.  (This used to be
+  // inherited from the base class, but the new design requires that a
+  // GSG may be used for multiple windows, so it doesn't make sense to
+  // store a window pointer any more.)
+  GraphicsWindow *_win;
+#endif
+
 public:
   static GraphicsStateGuardian*
   make_DXGraphicsStateGuardian(const FactoryParams &params);
@@ -329,12 +341,6 @@ public:
   static void init_type(void);
   virtual TypeHandle get_type(void) const;
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
-/*
-  LPDIRECT3DDEVICE7 GetD3DDevice()  {  return scrn.pD3DDevice; }
-  LPDIRECTDRAW7 GetDDInterface()  {  return scrn.pDD; }
-  LPDIRECTDRAWSURFACE7 GetBackBuffer()  {  return scrn.pddsBackBuffer; }
-  LPDIRECTDRAWSURFACE7 GetZBuffer()  {  return _zbuf; }
-*/  
 //  INLINE void Set_HDC(HDC hdc)  {  _front_hdc = hdc;  }
   void adjust_view_rect(int x, int y);
   INLINE void SetDXReady(bool stat)  {  _dx_ready = stat; }
@@ -346,7 +352,7 @@ public:
   #define DO_REACTIVATE_WINDOW true
   bool  CheckCooperativeLevel(bool bDoReactivateWindow = false);
 
-  void  dx_setup_after_resize(RECT viewrect,HWND mwindow) ;
+  void  dx_setup_after_resize(RECT *pViewRect);
   void  show_frame();
   void  show_full_screen_frame();
   void  show_windowed_frame();
