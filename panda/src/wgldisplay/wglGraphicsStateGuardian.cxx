@@ -21,6 +21,9 @@
 
 TypeHandle wglGraphicsStateGuardian::_type_handle;
 
+const char * const wglGraphicsStateGuardian::_twindow_class_name = "wglGraphicsStateGuardian";
+bool wglGraphicsStateGuardian::_twindow_class_registered = false;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsStateGuardian::Constructor
 //       Access: Public
@@ -37,8 +40,12 @@ wglGraphicsStateGuardian(const FrameBufferProperties &properties,
   _made_context = false;
   _context = (HGLRC)NULL;
 
+  _twindow = (HWND)0;
+  _twindow_dc = (HDC)0;
+
   _supports_pbuffer = false;
   _supports_pixel_format = false;
+  _supports_wgl_multisample = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -48,6 +55,7 @@ wglGraphicsStateGuardian(const FrameBufferProperties &properties,
 ////////////////////////////////////////////////////////////////////
 wglGraphicsStateGuardian::
 ~wglGraphicsStateGuardian() {
+  release_twindow();
   if (_context != (HGLRC)NULL) {
     wglDeleteContext(_context);
     _context = (HGLRC)NULL;
@@ -66,6 +74,7 @@ reset() {
 
   _supports_pbuffer = has_extension("WGL_ARB_pbuffer");
   _supports_pixel_format = has_extension("WGL_ARB_pixel_format");
+  _supports_wgl_multisample = has_extension("WGL_ARB_multisample");
 
   _wglCreatePbufferARB = 
     (PFNWGLCREATEPBUFFERARBPROC)wglGetProcAddress("wglCreatePbufferARB");
@@ -249,4 +258,97 @@ redirect_share_pool(wglGraphicsStateGuardian *share_with) {
   } else {
     _share_with = share_with;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsStateGuardian::make_twindow
+//       Access: Private
+//  Description: Creates an invisible window to associate with the GL
+//               context, even if we are not going to use it.  This is
+//               necessary because in the Windows OpenGL API, we have
+//               to create window before we can create a GL
+//               context--even before we can ask about what GL
+//               extensions are available!
+////////////////////////////////////////////////////////////////////
+bool wglGraphicsStateGuardian::
+make_twindow() {
+  release_twindow();
+
+  DWORD window_style = 0;
+
+  register_twindow_class();
+  HINSTANCE hinstance = GetModuleHandle(NULL);
+  _twindow = CreateWindow(_twindow_class_name, "twindow", window_style, 
+                          0, 0, 1, 1, NULL, NULL, hinstance, 0);
+  
+  if (!_twindow) {
+    wgldisplay_cat.error()
+      << "CreateWindow() failed!" << endl;
+    return false;
+  }
+
+  ShowWindow(_twindow, SW_HIDE);
+
+  _twindow_dc = GetDC(_twindow);
+
+  PIXELFORMATDESCRIPTOR pixelformat;
+  if (!SetPixelFormat(_twindow_dc, _pfnum, &pixelformat)) {
+    wgldisplay_cat.error()
+      << "SetPixelFormat(" << _pfnum << ") failed after window create\n";
+    release_twindow();
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsStateGuardian::release_twindow
+//       Access: Private
+//  Description: Closes and frees the resources associated with the
+//               temporary window created by a previous call to
+//               make_twindow().
+////////////////////////////////////////////////////////////////////
+void wglGraphicsStateGuardian::
+release_twindow() {
+  if (_twindow_dc) {
+    ReleaseDC(_twindow, _twindow_dc);
+    _twindow_dc = 0;
+  }
+  if (_twindow) {
+    DestroyWindow(_twindow);
+    _twindow = 0;
+  }
+}
+  
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsStateGuardian::register_twindow_class
+//       Access: Private, Static
+//  Description: Registers a Window class for the twindow created by
+//               all wglGraphicsPipes.  This only needs to be done
+//               once per session.
+////////////////////////////////////////////////////////////////////
+void wglGraphicsStateGuardian::
+register_twindow_class() {
+  if (_twindow_class_registered) {
+    return;
+  }
+
+  WNDCLASS wc;
+
+  HINSTANCE instance = GetModuleHandle(NULL);
+
+  // Clear before filling in window structure!
+  ZeroMemory(&wc, sizeof(WNDCLASS));
+  wc.style = CS_OWNDC;
+  wc.lpfnWndProc = DefWindowProc;
+  wc.hInstance = instance;
+  wc.lpszClassName = _twindow_class_name;
+  
+  if (!RegisterClass(&wc)) {
+    wgldisplay_cat.error()
+      << "could not register window class!" << endl;
+    return;
+  }
+  _twindow_class_registered = true;
 }

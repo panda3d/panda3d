@@ -61,3 +61,19 @@ get_context(HDC hdc) {
   }
   return _context;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsStateGuardian::get_twindow_dc
+//       Access: Public
+//  Description: Returns the DC associated with the temporary,
+//               invisible window that was created with the gsg to
+//               query WGL extensions.
+////////////////////////////////////////////////////////////////////
+INLINE HDC wglGraphicsStateGuardian::
+get_twindow_dc() {
+  if (_twindow_dc == 0) {
+    make_twindow();
+  }
+  return _twindow_dc;
+}
+

@@ -59,21 +59,12 @@ protected:
   virtual bool open_buffer();
 
 private:
-  bool make_window();
-  bool make_pbuffer();
+  bool make_pbuffer(HDC window_dc);
 
   static void process_1_event();
 
-  static void register_window_class();
-  static LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-
-  HWND _window;
-  HDC _window_dc;
   HPBUFFERARB _pbuffer;
   HDC _pbuffer_dc;
-
-  static const char * const _window_class_name;
-  static bool _window_class_registered;
 
 public:
   static TypeHandle get_class_type() {

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "wglGraphicsBuffer.h"
+#include "wglGraphicsPipe.h"
 #include "config_wgldisplay.h"
 #include "glgsg.h"
 #include "pStatTimer.h"
@@ -24,8 +25,6 @@
 #include <wingdi.h>
 
 TypeHandle wglGraphicsBuffer::_type_handle;
-const char * const wglGraphicsBuffer::_window_class_name = "wglGraphicsBuffer";
-bool wglGraphicsBuffer::_window_class_registered = false;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsBuffer::Constructor
@@ -38,8 +37,6 @@ wglGraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
                   int x_size, int y_size, bool want_texture) :
   GraphicsBuffer(pipe, gsg, name, x_size, y_size, want_texture) 
 {
-  _window = (HWND)0;
-  _window_dc = (HDC)0;
   _pbuffer = (HPBUFFERARB)0;
   _pbuffer_dc = (HDC)0;
 
@@ -196,15 +193,6 @@ process_events() {
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsBuffer::
 close_buffer() {
-  if (_window_dc) {
-    ReleaseDC(_window, _window_dc);
-    _window_dc = 0;
-  }
-  if (_window) {
-    DestroyWindow(_window);
-    _window = 0;
-  }
-
   if (_gsg != (GraphicsStateGuardian *)NULL) {
     wglGraphicsStateGuardian *wglgsg;
     DCAST_INTO_V(wglgsg, _gsg);
@@ -231,15 +219,16 @@ close_buffer() {
 ////////////////////////////////////////////////////////////////////
 bool wglGraphicsBuffer::
 open_buffer() {
-  if (!make_window()) {
+  wglGraphicsStateGuardian *wglgsg;
+  DCAST_INTO_R(wglgsg, _gsg, false);
+
+  HDC twindow_dc = wglgsg->get_twindow_dc();
+  if (twindow_dc == 0) {
     // If we couldn't make a window, we can't get a GL context.
     return false;
   }
 
-  wglGraphicsStateGuardian *wglgsg;
-  DCAST_INTO_R(wglgsg, _gsg, false);
-
-  wglMakeCurrent(_window_dc, wglgsg->get_context(_window_dc));
+  wglMakeCurrent(twindow_dc, wglgsg->get_context(twindow_dc));
   wglgsg->reset_if_new();
   _needs_context = false;
 
@@ -247,84 +236,21 @@ open_buffer() {
   // create a rendering context, we can attempt to create a pbuffer.
   // This might fail if the pbuffer extensions are not supported.
 
-  if (!make_pbuffer()) {
+  if (!make_pbuffer(twindow_dc)) {
+    wglMakeCurrent(0, 0);
     return false;
   }
 
   _pbuffer_dc = wglgsg->_wglGetPbufferDCARB(_pbuffer);
-  wgldisplay_cat.info()
-    << "Created PBuffer " << _pbuffer << ", DC " << _pbuffer_dc << "\n";
+  if (wgldisplay_cat.is_debug()) {
+    wgldisplay_cat.debug()
+      << "Created PBuffer " << _pbuffer << ", DC " << _pbuffer_dc << "\n";
+  }
   
   wglMakeCurrent(_pbuffer_dc, wglgsg->get_context(_pbuffer_dc));
   wglgsg->report_my_gl_errors();
   
-  // Now that the pbuffer is created, we don't need the window any
-  // more.
-  if (_window_dc) {
-    ReleaseDC(_window, _window_dc);
-    _window_dc = 0;
-  }
-  if (_window) {
-    DestroyWindow(_window);
-    _window = 0;
-  }
-  
   _is_valid = true;
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsBuffer::make_window
-//       Access: Private
-//  Description: Creates an invisible window to associate with the GL
-//               context, even if we are not going to use it.  This is
-//               necessary because in the Windows OpenGL API, we have
-//               to create window before we can create a GL
-//               context--even before we can ask about what GL
-//               extensions are available!
-////////////////////////////////////////////////////////////////////
-bool wglGraphicsBuffer::
-make_window() {
-  DWORD window_style = WS_POPUP | WS_SYSMENU | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPEDWINDOW;
-
-  RECT win_rect;
-  SetRect(&win_rect, 0, 0, _x_size, _y_size);
-  
-  // compute window size based on desired client area size
-  if (!AdjustWindowRect(&win_rect, window_style, FALSE)) {
-    wgldisplay_cat.error()
-      << "AdjustWindowRect failed!" << endl;
-    return false;
-  }
-
-  register_window_class();
-  HINSTANCE hinstance = GetModuleHandle(NULL);
-  _window = CreateWindow(_window_class_name, "buffer", window_style, 
-                         win_rect.left, win_rect.top,
-                         win_rect.right - win_rect.left,
-                         win_rect.bottom - win_rect.top,
-                         NULL, NULL, hinstance, 0);
-  
-  if (!_window) {
-    wgldisplay_cat.error()
-      << "CreateWindow() failed!" << endl;
-    return false;
-  }
-
-  ShowWindow(_window, SW_HIDE);
-
-  _window_dc = GetDC(_window);
-
-  wglGraphicsStateGuardian *wglgsg;
-  DCAST_INTO_R(wglgsg, _gsg, false);
-  int pfnum = wglgsg->get_pfnum();
-  PIXELFORMATDESCRIPTOR pixelformat;
-  if (!SetPixelFormat(_window_dc, pfnum, &pixelformat)) {
-    wgldisplay_cat.error()
-      << "SetPixelFormat(" << pfnum << ") failed after window create\n";
-    return false;
-  }
 
   return true;
 }
@@ -338,7 +264,7 @@ make_window() {
 //               failure.
 ////////////////////////////////////////////////////////////////////
 bool wglGraphicsBuffer::
-make_pbuffer() {
+make_pbuffer(HDC twindow_dc) {
   wglGraphicsStateGuardian *wglgsg;
   DCAST_INTO_R(wglgsg, _gsg, false);
 
@@ -353,18 +279,47 @@ make_pbuffer() {
   if (wglgsg->_supports_pixel_format) {
     // Select a suitable pixel format that matches the GSG's existing
     // format, and also is appropriate for a pixel buffer.
-    PIXELFORMATDESCRIPTOR pfd;
-    ZeroMemory(&pfd,sizeof(PIXELFORMATDESCRIPTOR));
-    pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-    pfd.nVersion = 1;
-
-    DescribePixelFormat(_window_dc, wglgsg->get_pfnum(), 
-                        sizeof(PIXELFORMATDESCRIPTOR), &pfd);
 
     static const int max_attrib_list = 32;
     int iattrib_list[max_attrib_list];
-    float fattrib_list[max_attrib_list];
+    int ivalue_list[max_attrib_list];
     int ni = 0;
+
+    int acceleration_i, pixel_type_i, double_buffer_i, stereo_i,
+      red_bits_i, green_bits_i, blue_bits_i, alpha_bits_i, 
+      accum_red_bits_i, accum_green_bits_i, accum_blue_bits_i,
+      accum_alpha_bits_i, depth_bits_i, 
+      stencil_bits_i, multisample_bits_i;
+
+    iattrib_list[acceleration_i = ni++] = WGL_ACCELERATION_ARB;
+    iattrib_list[pixel_type_i = ni++] = WGL_PIXEL_TYPE_ARB;
+    iattrib_list[double_buffer_i = ni++] = WGL_DOUBLE_BUFFER_ARB;
+    iattrib_list[stereo_i = ni++] = WGL_STEREO_ARB;
+    iattrib_list[red_bits_i = ni++] = WGL_RED_BITS_ARB;
+    iattrib_list[green_bits_i = ni++] = WGL_GREEN_BITS_ARB;
+    iattrib_list[blue_bits_i = ni++] = WGL_BLUE_BITS_ARB;
+    iattrib_list[alpha_bits_i = ni++] = WGL_ALPHA_BITS_ARB;
+    iattrib_list[accum_red_bits_i = ni++] = WGL_ACCUM_RED_BITS_ARB;
+    iattrib_list[accum_green_bits_i = ni++] = WGL_ACCUM_GREEN_BITS_ARB;
+    iattrib_list[accum_blue_bits_i = ni++] = WGL_ACCUM_BLUE_BITS_ARB;
+    iattrib_list[accum_alpha_bits_i = ni++] = WGL_ACCUM_ALPHA_BITS_ARB;
+    iattrib_list[depth_bits_i = ni++] = WGL_DEPTH_BITS_ARB;
+    iattrib_list[stencil_bits_i = ni++] = WGL_STENCIL_BITS_ARB;
+
+    if (wglgsg->_supports_wgl_multisample) {
+      iattrib_list[multisample_bits_i = ni++] = WGL_SAMPLES_ARB;
+    }
+
+    // Terminate the list.
+    nassertr(ni <= max_attrib_list, false);
+
+    if (!wglgsg->_wglGetPixelFormatAttribivARB(twindow_dc, pbformat, 0,
+                                               ni, iattrib_list, ivalue_list)) {
+      return false;
+    }
+
+    ni = 0;
+    float fattrib_list[max_attrib_list];
     int nf = 0;
 
     // Since we are trying to create a pbuffer, the pixel format we
@@ -376,25 +331,39 @@ make_pbuffer() {
 
     // Match up the framebuffer bits.
     iattrib_list[ni++] = WGL_RED_BITS_ARB;
-    iattrib_list[ni++] = pfd.cRedBits;
+    iattrib_list[ni++] = ivalue_list[red_bits_i];
     iattrib_list[ni++] = WGL_GREEN_BITS_ARB;
-    iattrib_list[ni++] = pfd.cGreenBits;
+    iattrib_list[ni++] = ivalue_list[green_bits_i];
     iattrib_list[ni++] = WGL_BLUE_BITS_ARB;
-    iattrib_list[ni++] = pfd.cBlueBits;
+    iattrib_list[ni++] = ivalue_list[blue_bits_i];
     iattrib_list[ni++] = WGL_ALPHA_BITS_ARB;
-    iattrib_list[ni++] = pfd.cAlphaBits;
+    iattrib_list[ni++] = ivalue_list[alpha_bits_i];
+
+    iattrib_list[ni++] = WGL_ACCUM_RED_BITS_ARB;
+    iattrib_list[ni++] = ivalue_list[accum_red_bits_i];
+    iattrib_list[ni++] = WGL_ACCUM_GREEN_BITS_ARB;
+    iattrib_list[ni++] = ivalue_list[accum_green_bits_i];
+    iattrib_list[ni++] = WGL_ACCUM_BLUE_BITS_ARB;
+    iattrib_list[ni++] = ivalue_list[accum_blue_bits_i];
+    iattrib_list[ni++] = WGL_ACCUM_ALPHA_BITS_ARB;
+    iattrib_list[ni++] = ivalue_list[accum_alpha_bits_i];
 
     iattrib_list[ni++] = WGL_DEPTH_BITS_ARB;
-    iattrib_list[ni++] = pfd.cDepthBits;
+    iattrib_list[ni++] = ivalue_list[depth_bits_i];
 
     iattrib_list[ni++] = WGL_STENCIL_BITS_ARB;
-    iattrib_list[ni++] = pfd.cStencilBits;
+    iattrib_list[ni++] = ivalue_list[stencil_bits_i];
+
+    if (wglgsg->_supports_wgl_multisample) {
+      iattrib_list[ni++] = WGL_SAMPLES_ARB;
+      iattrib_list[ni++] = ivalue_list[multisample_bits_i];
+    }
 
     // Match up properties.
     iattrib_list[ni++] = WGL_DOUBLE_BUFFER_ARB;
-    iattrib_list[ni++] = ((pfd.dwFlags & PFD_DOUBLEBUFFER) != 0);
+    iattrib_list[ni++] = ivalue_list[double_buffer_i];
     iattrib_list[ni++] = WGL_STEREO_ARB;
-    iattrib_list[ni++] = ((pfd.dwFlags & PFD_STEREO) != 0);
+    iattrib_list[ni++] = ivalue_list[stereo_i];
 
     // Terminate the lists.
     nassertr(ni < max_attrib_list && nf < max_attrib_list, NULL);
@@ -403,16 +372,18 @@ make_pbuffer() {
 
     // Now obtain a list of pixel formats that meet these minimum
     // requirements.
-    static const int max_pformats = 32;
+    static const unsigned int max_pformats = 32;
     int pformat[max_pformats];
     memset(pformat, 0, sizeof(pformat));
     unsigned int nformats = 0;
-    if (!wglgsg->_wglChoosePixelFormatARB(_window_dc, iattrib_list, fattrib_list,
+    if (!wglgsg->_wglChoosePixelFormatARB(twindow_dc, iattrib_list, fattrib_list,
                                           max_pformats, pformat, &nformats)) {
       wgldisplay_cat.info()
         << "Couldn't find a suitable pixel format for creating a pbuffer.\n";
       return false;
     }
+
+    nformats = min(nformats, max_pformats);
 
     if (wgldisplay_cat.is_debug()) {
       wgldisplay_cat.debug()
@@ -425,16 +396,32 @@ make_pbuffer() {
         << " ]\n";
     }
 
-    pbformat = pformat[0];
+    // If one of the options is the original pixfmt, keep it.
+    bool found_pbformat = false;
+    for (unsigned int i = 0; i < nformats && !found_pbformat; i++) {
+      if (pformat[i] == pbformat) {
+        found_pbformat = true;
+      }
+    }
+
+    if (!found_pbformat) {
+      // Otherwise, pick any of them.
+      pbformat = pformat[0];
+    }
+  }
+
+  if (wgldisplay_cat.is_debug()) {
+    wgldisplay_cat.debug()
+      << "Chose pixfmt #" << pbformat << " for pbuffer\n";
   }
   
   int attrib_list[] = {
     0,
   };
   
-  _pbuffer = wglgsg->_wglCreatePbufferARB(_window_dc, pbformat, 
+  _pbuffer = wglgsg->_wglCreatePbufferARB(twindow_dc, pbformat, 
                                           _x_size, _y_size, attrib_list);
-  
+
   if (_pbuffer == 0) {
     wgldisplay_cat.info()
       << "Attempt to create pbuffer failed.\n";
@@ -463,49 +450,6 @@ process_1_event() {
   TranslateMessage(&msg);
   // Call window_proc
   DispatchMessage(&msg);
-}
-  
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsBuffer::register_window_class
-//       Access: Private, Static
-//  Description: Registers a Window class for all wglGraphicsBuffers.
-//               This only needs to be done once per session.
-////////////////////////////////////////////////////////////////////
-void wglGraphicsBuffer::
-register_window_class() {
-  if (_window_class_registered) {
-    return;
-  }
-
-  WNDCLASS wc;
-
-  HINSTANCE instance = GetModuleHandle(NULL);
-
-  // Clear before filling in window structure!
-  ZeroMemory(&wc, sizeof(WNDCLASS));
-  wc.style = CS_OWNDC;
-  wc.lpfnWndProc = static_window_proc;
-  wc.hInstance = instance;
-  wc.lpszClassName = _window_class_name;
-  
-  if (!RegisterClass(&wc)) {
-    wgldisplay_cat.error()
-      << "could not register window class!" << endl;
-    return;
-  }
-  _window_class_registered = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsBuffer::static_window_proc
-//       Access: Private, Static
-//  Description: This is attached to the window class for all
-//               wglGraphicsBuffer windows; it is called to handle
-//               window events.
-////////////////////////////////////////////////////////////////////
-LONG WINAPI wglGraphicsBuffer::
-static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-  return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
 

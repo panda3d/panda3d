@@ -45,6 +45,8 @@ public:
 
   virtual void reset();
 
+  INLINE HDC get_twindow_dc();
+
 protected:
   virtual void get_extra_extensions();
   virtual void *get_extension_func(const char *prefix, const char *name);
@@ -53,6 +55,11 @@ private:
   void make_context(HDC hdc);
   HGLRC get_share_context() const;
   void redirect_share_pool(wglGraphicsStateGuardian *share_with);
+
+  bool make_twindow();
+  void release_twindow();
+
+  static void register_twindow_class();
 
   // We have to save a pointer to the GSG we intend to share texture
   // context with, since we don't create our own context in the
@@ -66,6 +73,12 @@ private:
 
   bool _made_context;
   HGLRC _context;
+
+  HWND _twindow;
+  HDC _twindow_dc;
+
+  static const char * const _twindow_class_name;
+  static bool _twindow_class_registered;
 
 public:
   bool _supports_pbuffer;
@@ -81,6 +94,8 @@ public:
   PFNWGLGETPIXELFORMATATTRIBIVARBPROC _wglGetPixelFormatAttribivARB;
   PFNWGLGETPIXELFORMATATTRIBFVARBPROC _wglGetPixelFormatAttribfvARB;
   PFNWGLCHOOSEPIXELFORMATARBPROC _wglChoosePixelFormatARB;
+
+  bool _supports_wgl_multisample;
 
 public:
   static TypeHandle get_class_type() {

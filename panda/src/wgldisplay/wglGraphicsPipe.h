@@ -22,6 +22,8 @@
 #include "pandabase.h"
 #include "winGraphicsPipe.h"
 
+class wglGraphicsStateGuardian;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : wglGraphicsPipe
 // Description : This graphics pipe represents the interface for
@@ -46,10 +48,16 @@ protected:
                                          int x_size, int y_size, bool want_texture);
 private:
   static int choose_pfnum(const FrameBufferProperties &properties, HDC hdc);
+  static int choose_pfnum_advanced(const FrameBufferProperties &properties, 
+                                   const wglGraphicsStateGuardian *wglgsg,
+                                   HDC window_dc, int orig_pfnum);
   static int find_pixfmtnum(const FrameBufferProperties &properties, HDC hdc,
                             bool bLookforHW);
   static void get_properties(FrameBufferProperties &properties, HDC hdc,
                              int pfnum);
+  static bool get_properties_advanced(FrameBufferProperties &properties, 
+                                      wglGraphicsStateGuardian *wglgsg, 
+                                      HDC window_dc, int pfnum);
   static string format_pfd_flags(DWORD pfd_flags);
 
 public:

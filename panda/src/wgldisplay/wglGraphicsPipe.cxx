@@ -23,7 +23,6 @@
 #include "wglGraphicsBuffer.h"
 
 typedef enum {Software, MCD, ICD} OGLDriverType;
-static const char * const OGLDrvStrings[] = { "Software", "MCD", "ICD" };
 
 TypeHandle wglGraphicsPipe::_type_handle;
   
@@ -100,21 +99,69 @@ make_gsg(const FrameBufferProperties &properties,
     DCAST_INTO_R(share_gsg, share_with, NULL);
   }
 
+  int frame_buffer_mode = 0;
+  if (properties.has_frame_buffer_mode()) {
+    frame_buffer_mode = properties.get_frame_buffer_mode();
+  }
+
   // We need a DC to examine the available pixel formats.  We'll use
   // the screen DC.
   HDC hdc = GetDC(NULL);
-  int pfnum = choose_pfnum(properties, hdc);
+  int temp_pfnum;
 
-  if (gl_force_pixfmt != 0) {
+  if (!gl_force_pixfmt.has_value()) {
+    temp_pfnum = choose_pfnum(properties, hdc);
+
+  } else {
     wgldisplay_cat.info()
-      << "overriding pixfmt choice algorithm (" << pfnum 
-      << ") with gl-force-pixfmt(" << gl_force_pixfmt << ")\n";
-    pfnum = gl_force_pixfmt;
+      << "overriding pixfmt choice with gl-force-pixfmt(" 
+      << gl_force_pixfmt << ")\n";
+    temp_pfnum = gl_force_pixfmt;
   }
 
-  FrameBufferProperties new_properties;
-  get_properties(new_properties, hdc, pfnum);
+  FrameBufferProperties temp_properties;
+  get_properties(temp_properties, hdc, temp_pfnum);
+
+  // We're done with hdc now.
   ReleaseDC(NULL, hdc);
+
+  if (wgldisplay_cat.is_debug()) {
+    wgldisplay_cat.debug()
+      << "Preliminary pixfmt #" << temp_pfnum << " = " 
+      << temp_properties << "\n";
+  }
+
+  // Now we need to create a temporary GSG to query the WGL
+  // extensions, so we can look for more advanced properties like
+  // multisampling.
+  PT(wglGraphicsStateGuardian) temp_gsg = 
+    new wglGraphicsStateGuardian(temp_properties, share_gsg, temp_pfnum);
+
+  int pfnum = temp_pfnum;
+  FrameBufferProperties new_properties = temp_properties;
+
+  // Actually, don't bother with the advanced stuff unless the
+  // requested frame buffer requires multisample, since at the moment
+  // that's the only reason we'd need to use the advanced query.
+  if (frame_buffer_mode & FrameBufferProperties::FM_multisample) {
+    HDC twindow_dc = temp_gsg->get_twindow_dc();
+    if (twindow_dc != 0) {
+      wglMakeCurrent(twindow_dc, temp_gsg->get_context(twindow_dc));
+      temp_gsg->reset_if_new();
+      
+      if (temp_gsg->_supports_pixel_format) {
+        pfnum = choose_pfnum_advanced(properties, temp_gsg, twindow_dc, 
+                                      temp_pfnum);
+        if (!get_properties_advanced(new_properties, temp_gsg, twindow_dc, 
+                                     pfnum)) {
+          wgldisplay_cat.debug()
+            << "Unable to query properties using extension interface.\n";
+          
+          get_properties(new_properties, twindow_dc, pfnum);
+        }
+      }
+    }
+  }
 
   if (wgldisplay_cat.is_debug()) {
     wgldisplay_cat.debug()
@@ -122,8 +169,13 @@ make_gsg(const FrameBufferProperties &properties,
       << new_properties << "\n";
   }
 
-  PT(wglGraphicsStateGuardian) gsg = 
-    new wglGraphicsStateGuardian(new_properties, share_gsg, pfnum);
+  // Now create the actual GSG.  If we happen to have ended up with
+  // the same pfnum that we had the first time around, we can just
+  // keep our initial, temporary GSG.
+  PT(wglGraphicsStateGuardian) gsg = temp_gsg;
+  if (pfnum != temp_pfnum) {
+    gsg = new wglGraphicsStateGuardian(new_properties, share_gsg, pfnum);
+  }
 
   // Ideally, we should be able to detect whether the share_gsg will
   // be successful, and return NULL if it won't work.  But we can't do
@@ -218,6 +270,134 @@ choose_pfnum(const FrameBufferProperties &properties, HDC hdc) {
   }
   
   return pfnum;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsPipe::choose_pfnum_advanced
+//       Access: Private, Static
+//  Description: Uses the WGL extensions, if available, to find a
+//               suitable pfnum.  This requires having created a
+//               temporary context first.
+////////////////////////////////////////////////////////////////////
+int wglGraphicsPipe::
+choose_pfnum_advanced(const FrameBufferProperties &properties, 
+                      const wglGraphicsStateGuardian *wglgsg,
+                      HDC window_dc, int orig_pfnum) {
+  int frame_buffer_mode = 0;
+
+  if (properties.has_frame_buffer_mode()) {
+    frame_buffer_mode = properties.get_frame_buffer_mode();
+  }
+
+  int want_depth_bits = properties.get_depth_bits();
+  int want_color_bits = properties.get_color_bits();
+  int want_alpha_bits = properties.get_alpha_bits();
+  int want_stencil_bits = properties.get_stencil_bits();
+  int want_multisample_bits = properties.get_multisample_bits();
+
+  static const int max_attrib_list = 32;
+  int iattrib_list[max_attrib_list];
+  float fattrib_list[max_attrib_list];
+  int ni = 0;
+  int nf = 0;
+
+  iattrib_list[ni++] = WGL_SUPPORT_OPENGL_ARB;
+  iattrib_list[ni++] = true;
+  iattrib_list[ni++] = WGL_PIXEL_TYPE_ARB;
+  iattrib_list[ni++] = WGL_TYPE_RGBA_ARB;
+  iattrib_list[ni++] = WGL_COLOR_BITS_ARB;
+  iattrib_list[ni++] = want_color_bits;
+
+  if (frame_buffer_mode & FrameBufferProperties::FM_alpha) {
+    iattrib_list[ni++] = WGL_ALPHA_BITS_ARB;
+    iattrib_list[ni++] = want_alpha_bits;
+  }
+
+  switch (frame_buffer_mode & FrameBufferProperties::FM_buffer) {
+  case FrameBufferProperties::FM_single_buffer:
+    iattrib_list[ni++] = WGL_DOUBLE_BUFFER_ARB;
+    iattrib_list[ni++] = false;
+    break;
+
+  case FrameBufferProperties::FM_double_buffer:
+  case FrameBufferProperties::FM_triple_buffer:
+    iattrib_list[ni++] = WGL_DOUBLE_BUFFER_ARB;
+    iattrib_list[ni++] = true;
+    break;
+  }
+
+  if (frame_buffer_mode & FrameBufferProperties::FM_stereo) {
+    iattrib_list[ni++] = WGL_STEREO_ARB;
+    iattrib_list[ni++] = true;
+  } else {
+    iattrib_list[ni++] = WGL_STEREO_ARB;
+    iattrib_list[ni++] = false;
+  }
+
+  if (frame_buffer_mode & FrameBufferProperties::FM_depth) {
+    iattrib_list[ni++] = WGL_DEPTH_BITS_ARB;
+    iattrib_list[ni++] = want_depth_bits;
+  }
+
+  if (frame_buffer_mode & FrameBufferProperties::FM_stencil) {
+    iattrib_list[ni++] = WGL_STENCIL_BITS_ARB;
+    iattrib_list[ni++] = want_stencil_bits;
+  }
+
+  if (frame_buffer_mode & FrameBufferProperties::FM_accum) {
+    iattrib_list[ni++] = WGL_ACCUM_BITS_ARB;
+    iattrib_list[ni++] = want_color_bits;
+    if (frame_buffer_mode & FrameBufferProperties::FM_alpha) {
+      iattrib_list[ni++] = WGL_ACCUM_ALPHA_BITS_ARB;
+      iattrib_list[ni++] = want_alpha_bits;
+    }
+  }
+
+  if (frame_buffer_mode & FrameBufferProperties::FM_multisample) {
+    iattrib_list[ni++] = WGL_SAMPLES_ARB;
+    iattrib_list[ni++] = want_multisample_bits;
+  }
+
+  // Terminate the lists.
+  nassertr(ni < max_attrib_list && nf < max_attrib_list, NULL);
+  iattrib_list[ni] = 0;
+  fattrib_list[nf] = 0;
+
+  // Now obtain a list of pixel formats that meet these minimum
+  // requirements.
+  static const unsigned int max_pformats = 32;
+  int pformat[max_pformats];
+  memset(pformat, 0, sizeof(pformat));
+  unsigned int nformats = 0;
+  if (!wglgsg->_wglChoosePixelFormatARB(window_dc, iattrib_list, fattrib_list,
+                                        max_pformats, pformat, &nformats)) {
+    wgldisplay_cat.info()
+      << "Couldn't find a suitable advanced pixel format.\n";
+    return orig_pfnum;
+  }
+  
+  nformats = min(nformats, max_pformats);
+
+  if (wgldisplay_cat.is_debug()) {
+    wgldisplay_cat.debug()
+      << "Found " << nformats << " advanced formats: [";
+    for (unsigned int i = 0; i < nformats; i++) {
+      wgldisplay_cat.debug(false)
+        << " " << pformat[i];
+    }
+    wgldisplay_cat.debug(false)
+      << " ]\n";
+  }
+  
+  // If our original pfnum is on the list, take it.
+  for (unsigned int i = 0; i < nformats; i++) {
+    if (pformat[i] == orig_pfnum) {
+      return orig_pfnum;
+    }
+  }
+
+  // Otherwise, return the first available.
+  return pformat[0];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -446,6 +626,93 @@ get_properties(FrameBufferProperties &properties, HDC hdc,
   }
 
   properties.set_frame_buffer_mode(mode);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsPipe::get_properties_advanced
+//       Access: Private, Static
+//  Description: Gets the FrameBufferProperties to match the
+//               indicated pixel format descriptor, using the WGL
+//               extensions.
+////////////////////////////////////////////////////////////////////
+bool wglGraphicsPipe::
+get_properties_advanced(FrameBufferProperties &properties, 
+                        wglGraphicsStateGuardian *wglgsg, 
+                        HDC window_dc, int pfnum) {
+
+  static const int max_attrib_list = 32;
+  int iattrib_list[max_attrib_list];
+  int ivalue_list[max_attrib_list];
+  int ni = 0;
+
+  int acceleration_i, pixel_type_i, double_buffer_i, stereo_i,
+    color_bits_i, alpha_bits_i, accum_bits_i, depth_bits_i, 
+    stencil_bits_i, multisample_bits_i;
+
+  iattrib_list[acceleration_i = ni++] = WGL_ACCELERATION_ARB;
+  iattrib_list[pixel_type_i = ni++] = WGL_PIXEL_TYPE_ARB;
+  iattrib_list[double_buffer_i = ni++] = WGL_DOUBLE_BUFFER_ARB;
+  iattrib_list[stereo_i = ni++] = WGL_STEREO_ARB;
+  iattrib_list[color_bits_i = ni++] = WGL_COLOR_BITS_ARB;
+  iattrib_list[alpha_bits_i = ni++] = WGL_ALPHA_BITS_ARB;
+  iattrib_list[accum_bits_i = ni++] = WGL_ACCUM_BITS_ARB;
+  iattrib_list[depth_bits_i = ni++] = WGL_DEPTH_BITS_ARB;
+  iattrib_list[stencil_bits_i = ni++] = WGL_STENCIL_BITS_ARB;
+
+  if (wglgsg->_supports_wgl_multisample) {
+    iattrib_list[multisample_bits_i = ni++] = WGL_SAMPLES_ARB;
+  }
+
+  // Terminate the list.
+  nassertr(ni <= max_attrib_list, false);
+
+  if (!wglgsg->_wglGetPixelFormatAttribivARB(window_dc, pfnum, 0,
+                                             ni, iattrib_list, ivalue_list)) {
+    return false;
+  }
+
+  int frame_buffer_mode = 0;
+  if (ivalue_list[acceleration_i] == WGL_NO_ACCELERATION_ARB) {
+    frame_buffer_mode |= FrameBufferProperties::FM_software;
+  } else {
+    frame_buffer_mode |= FrameBufferProperties::FM_hardware;
+  }
+
+  if (ivalue_list[pixel_type_i] == WGL_TYPE_COLORINDEX_ARB) {
+    frame_buffer_mode |= FrameBufferProperties::FM_index;
+  }
+  if (ivalue_list[double_buffer_i]) {
+    frame_buffer_mode |= FrameBufferProperties::FM_double_buffer;
+  }
+  if (ivalue_list[stereo_i]) {
+    frame_buffer_mode |= FrameBufferProperties::FM_stereo;
+  }
+  if (ivalue_list[alpha_bits_i] != 0) {
+    frame_buffer_mode |= FrameBufferProperties::FM_alpha;
+    properties.set_alpha_bits(ivalue_list[alpha_bits_i]);
+  }
+  if (ivalue_list[accum_bits_i] != 0) {
+    frame_buffer_mode |= FrameBufferProperties::FM_accum;
+  }
+  if (ivalue_list[depth_bits_i] != 0) {
+    frame_buffer_mode |= FrameBufferProperties::FM_depth;
+    properties.set_depth_bits(ivalue_list[depth_bits_i]);
+  }
+  if (ivalue_list[stencil_bits_i] != 0) {
+    frame_buffer_mode |= FrameBufferProperties::FM_stencil;
+    properties.set_stencil_bits(ivalue_list[stencil_bits_i]);
+  }
+  if (wglgsg->_supports_wgl_multisample) {
+    if (ivalue_list[multisample_bits_i] != 0) {
+      frame_buffer_mode |= FrameBufferProperties::FM_multisample;
+      properties.set_multisample_bits(ivalue_list[multisample_bits_i]);
+    }
+  }
+
+  properties.set_frame_buffer_mode(frame_buffer_mode);
+  properties.set_color_bits(ivalue_list[color_bits_i]);
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
