@@ -27,7 +27,8 @@
   #define OTHER_LIBS \
     device:c tform:c graph:c dgraph:c sgraph:c gobj:c sgattrib:c \
     event:c chancfg:c display:c sgraphutil:c light:c putil:c express:c \
-    panda:m dtool
+    panda:m \
+    dtoolutil:c dconfig:c dtool:m
 
   #define SOURCES \
     stitchViewerProgram.cxx stitchViewerProgram.h
