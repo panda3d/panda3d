@@ -2,6 +2,7 @@
 
 from ClockDelta import *
 from direct.task import Task
+from direct.showbase.PythonUtil import randFloat
 
 class DistributedSmoothNodeBase:
     """common base class for DistributedSmoothNode and DistributedSmoothNodeAI
@@ -61,7 +62,10 @@ class DistributedSmoothNodeBase:
     def stopPosHprBroadcast(self):
         taskMgr.remove(self.getPosHprBroadcastTaskName())
 
-    def startPosHprBroadcast(self, period=.2):
+    def startPosHprBroadcast(self, period=.2, stagger=0):
+        # Set stagger to non-zero to randomly delay the initial task execution
+        # over 'period' seconds, to spread out task processing over time
+        # when a large number of SmoothNodes are created simultaneously.
         taskName = self.getPosHprBroadcastTaskName()
         # Set up telemetry optimization variables
         xyz = self.getPos()
@@ -83,10 +87,16 @@ class DistributedSmoothNodeBase:
         # remove any old tasks
         taskMgr.remove(taskName)
         # spawn the new task
-        taskMgr.doMethodLater(self.__broadcastPeriod,
+        delay = 0.
+        if stagger:
+            delay = randFloat(period)
+        taskMgr.doMethodLater(self.__broadcastPeriod + delay,
                               self.posHprBroadcast, taskName)
 
     def posHprBroadcast(self, task):
+        # TODO: we explicitly stagger the initial task timing in
+        # startPosHprBroadcast; we should at least make an effort to keep
+        # this task accurately aligned with its period and starting time.
         self.d_broadcastPosHpr()
         taskName = self.taskName("sendPosHpr")
         taskMgr.doMethodLater(self.__broadcastPeriod,
