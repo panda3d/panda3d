@@ -249,12 +249,13 @@ import zlib
 embed = 0
 explode = 0
 
-def squeeze(app, start, filelist):
+def squeeze(app, start, filelist, outputDir):
 	localMagic = MAGIC
 	data = None
 
-	bootstrap = app + ".py"
-	archive   = app + ".pyz"
+	bootstrap = os.path.join(outputDir, app + ".py")
+        archiveBase = app + ".pyz"
+	archive   = os.path.join(outputDir, archiveBase)
 
 	archiveid = app
 
@@ -348,8 +349,8 @@ def searchPath(filename):
 
   return None
 
-# Look for %(archive)s along pandac.__path__.
-archiveName = "%(archive)s"
+# Look for %(archiveBase)s along pandac.__path__.
+archiveName = "%(archiveBase)s"
 archivePath = searchPath(archiveName)
 if archivePath == None:
   raise ImportError, "Could not locate pandac.%%s." %% (archiveName)

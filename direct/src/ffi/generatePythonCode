@@ -4,6 +4,7 @@
 import getopt
 import sys
 import os
+import glob
 from direct.ffi import FFIConstants
 
 # Define a help string for the user
@@ -33,10 +34,7 @@ Options:
   -e dir      directory to pull extension code from       
   -i lib      interrogate library
   -O          no C++ comments or assertion statements
-  linux
-  windows-debug
-  windows-release
-  windows-publish
+  -n          Don't use squeezeTool to squeeze the result into one .pyz file
 """
 
 # Initialize variables
@@ -44,11 +42,12 @@ outputDir = ''
 extensionsDir = ''
 interrogateLib = ''
 codeLibs = []
+doSqueeze = True
     
 
 # Extract the args the user passed in
 try:
-    opts, pargs = getopt.getopt(sys.argv[1:], 'hvOd:e:i:')
+    opts, pargs = getopt.getopt(sys.argv[1:], 'hvOd:e:i:n')
 except Exception, e:
     # User passed in a bad option, print the error and the help, then exit
     print e
@@ -77,6 +76,8 @@ for opt in opts:
     elif (flag == '-O'):
         FFIConstants.wantComments = 0
         FFIConstants.wantTypeChecking = 0
+    elif (flag == '-n'):
+        doSqueeze = False
     else:
         FFIConstants.notify.error('illegal option: ' + flag)
 
@@ -121,3 +122,36 @@ from direct.ffi import FFIInterrogateDatabase
 db = FFIInterrogateDatabase.FFIInterrogateDatabase()
 db.generateCode(outputDir, extensionsDir)
 
+
+# Remove any leftover junk files in outputDir from a previous run.
+print "outputDir = %s, doSqueeze = %s" % (outputDir, doSqueeze)
+for file in glob.glob(os.path.join(outputDir, 'PandaModules.py*')):
+    print "removing junk %s" % (file)
+    os.remove(file)
+
+if doSqueeze:
+    # Invoke the squeezer.
+    files = glob.glob(os.path.join(outputDir, '*.py'))
+    init = os.path.join(outputDir, '__init__.py')
+    try:
+        files.remove(init)
+    except:
+        pass
+
+    print "Squeezing %s files." % (len(files))
+    
+    from direct.showbase import pandaSqueezeTool
+    pandaSqueezeTool.squeeze("PandaModules", "PandaModulesUnsqueezed",
+                             files, outputDir)
+
+    # Remove the squeezed source files.
+    for file in files:
+        os.remove(file)
+
+else:
+    print "Not squeezing."
+    os.rename(os.path.join(outputDir, 'PandaModulesUnsqueezed.py'),
+              os.path.join(outputDir, 'PandaModules.py'))
+    
+
+    
