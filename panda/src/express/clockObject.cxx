@@ -52,13 +52,13 @@ ClockObject() {
 ////////////////////////////////////////////////////////////////////
 void ClockObject::
 set_real_time(double time) {
-#ifndef NDEBUG
+#ifdef NOTIFY_DEBUG
   if (this == _global_clock) {
     express_cat.warning()
       << "Adjusting global clock's real time by " << time - get_real_time()
       << " seconds.\n";
   }
-#endif  // NDEBUG
+#endif  // NOTIFY_DEBUG
   _start_time = _true_clock->get_real_time() - time;
 }
 
@@ -72,11 +72,13 @@ set_real_time(double time) {
 ////////////////////////////////////////////////////////////////////
 void ClockObject::
 set_frame_time(double time) {
+#ifdef NOTIFY_DEBUG
   if (this == _global_clock) {
     express_cat.warning()
       << "Adjusting global clock's frame time by " << time - get_frame_time()
       << " seconds.\n";
   }
+#endif  // NOTIFY_DEBUG
   _actual_frame_time = time;
   _reported_frame_time = time;
 }
@@ -90,11 +92,13 @@ set_frame_time(double time) {
 ////////////////////////////////////////////////////////////////////
 void ClockObject::
 set_frame_count(int frame_count) {
+#ifdef NOTIFY_DEBUG
   if (this == _global_clock) {
     express_cat.warning()
       << "Adjusting global clock's frame count by " 
       << frame_count - get_frame_count() << " frames.\n";
   }
+#endif  // NOTIFY_DEBUG
   _frame_count = frame_count;
 }
 
