@@ -293,6 +293,7 @@
 #defer get_sources \
   $[SOURCES] \
   $[PRECOMPILED_HEADER] \  
+  $[if $[ne $[NO_COMBINED_SOURCES],] $[INCLUDED_SOURCES], $[COMBINED_SOURCES]] \  
   $[if $[HAVE_CRYPTO],$[IF_CRYPTO_SOURCES]] \
   $[if $[HAVE_JPEG],$[IF_JPEG_SOURCES]] \
   $[if $[HAVE_TIFF],$[IF_TIFF_SOURCES]] \
@@ -306,6 +307,7 @@
 #defer all_sources \
   $[SOURCES] \
   $[PRECOMPILED_HEADER] \
+  $[if $[ne $[NO_COMBINED_SOURCES],] $[INCLUDED_SOURCES], $[COMBINED_SOURCES]] \
   $[IF_CRYPTO_SOURCES] \
   $[IF_JPEG_SOURCES] \
   $[IF_TIFF_SOURCES] \
