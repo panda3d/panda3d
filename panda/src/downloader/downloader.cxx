@@ -812,7 +812,7 @@ handle_socket_error(void) const {
 int Downloader::
 get_network_error(void) const {
 #ifndef WIN32
-  return DL_error;
+  return DL_error_abort;
 #else
   switch (WSAGetLastError()) {
     case 10050:

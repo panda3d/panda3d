@@ -40,8 +40,7 @@ PUBLISHED:
     DL_success = 1,
 
     // General download errors
-    DL_error = -1,
-    DL_error_abort = -2,
+    DL_error_abort = -1,
 
     // General network errors
     DL_error_network_dead = -30,
