@@ -211,6 +211,12 @@ scan(const string &extension) {
       return false;
     }
 
+    // We want to sort the filenames in our own way, so that
+    // underscore is deemed to fall before anything else.  This allows
+    // the underscore, the only non-alphnumeric character we can have
+    // in a filename for an iso9660 image, to stand for "before 0".
+    sort(contents.begin(), contents.end(), compare_filenames);
+
     if (reverse_order) {
       reverse(contents.begin(), contents.end());
     }
@@ -775,4 +781,32 @@ generate_nav_buttons(ostream &html, const Filename &prev_roll_filename,
     }
   }
   html << "</p>\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RollDirectory::compare_filenames
+//       Access: Private, Static
+//  Description: Returns true if filename a sorts before filename b,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool RollDirectory::
+compare_filenames(const string &a, const string &b) {
+  size_t i = 0;
+  size_t min_length = min(a.length(), b.length());
+  while (i < min_length) {
+    char achar = a[i];
+    char bchar = b[i];
+    if (achar != bchar) {
+      if (achar == '_') {
+        return true;
+      } else if (bchar == '_') {
+        return false;
+      } else {
+        return achar < bchar;
+      }
+    }
+    ++i;
+  }
+
+  return a.length() < b.length();
 }

@@ -75,6 +75,7 @@ private:
 			    const Filename &prev_roll_filename,
 			    const Filename &next_roll_filename, 
 			    const string &up_href);
+  static bool compare_filenames(const string &a, const string &b);
 
 public:
   RollDirectory *_prev;
