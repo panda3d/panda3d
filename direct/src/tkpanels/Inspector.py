@@ -96,6 +96,9 @@ class Inspector:
 
     def getLastPartNumber(self):
         return self.lastPartNumber
+
+    def selectedPart(self):
+        return self.partNumber(self.getLastPartNumber())
         
     def namedParts(self):
         return dir(self.object)
@@ -224,6 +227,9 @@ class InspectorWindow:
     def topInspector(self):
         return self.inspectors[len(self.inspectors) - 1]
 
+    def selectedPart(self):
+        return self.topInspector().selectedPart()
+
     def inspectedObject(self):
         return self.topInspector().object
 
@@ -239,7 +245,7 @@ class InspectorWindow:
         # Paned widget for dividing two halves
         self.framePane = Pmw.PanedWidget(self.top, orient = HORIZONTAL)
         self.createListWidget()
-        self.createTextWidget()
+        self.createTextWidgets()
         self.framePane.pack(expand = 1, fill = BOTH)
 
     def setTitle(self):
@@ -264,13 +270,22 @@ class InspectorWindow:
         listbox.bind('<KeyRelease-Right>', lambda e, s = self: s.dive())
         listbox.bind('<Return>',  self.popOrDive)
 
-    def createTextWidget(self):
-        textFrame = self.framePane.add('text')
+    def createTextWidgets(self):
+        textWidgetsFrame = self.framePane.add('textWidgets')
+        self.textPane = Pmw.PanedWidget(textWidgetsFrame, orient = VERTICAL)
+        textFrame = self.textPane.add('text', size = 200)
         self.textWidget = Pmw.ScrolledText(
-            textFrame, vscrollmode = 'static')
+            textFrame, vscrollmode = 'static', text_state = 'disabled')
         self.textWidget.pack(fill=BOTH, expand=1)
-        # self.textWidget.grid(row=0, column=1, columnspan=2, sticky=N+W+S+E)
-
+        commandFrame = self.textPane.add('command')
+        self.commandWidget = Pmw.ScrolledText(
+            commandFrame, vscrollmode = 'static')
+        self.commandWidget.insert(1.0, '>>> ')
+        self.commandWidget.pack(fill = BOTH, expand = 1)
+        self.commandWidget.component('text').bind(
+            '<KeyRelease-Return>', self.evalCommand)
+        self.textPane.pack(expand = 1, fill = BOTH)
+        
     def createMenus(self):
         self.menuBar = Menu(self.top)
         self.top.config(menu=self.menuBar)
@@ -295,16 +310,35 @@ class InspectorWindow:
         if partNumber == None:
             partNumber = 0
         string = self.topInspector().stringForPartNumber(partNumber)
+        self.textWidget.component('text').configure(state = 'normal')
         self.textWidget.delete('1.0', END)
         self.textWidget.insert(END, string)
+        self.textWidget.component('text').configure(state = 'disabled')
 
     def popOrDive(self, event):
-        '''The list has been double-clicked. If the selection is 'self' then pop,
-        otherwise dive into the selected part'''
+        """The list has been double-clicked. If the selection is 'self' then pop,
+        otherwise dive into the selected part"""
         if self.selectedIndex() == 0:
             self.pop()
         else:
             self.dive()
+
+    def evalCommand(self, event):
+        """Eval text in commandWidget"""
+        insertPt = self.commandWidget.index(INSERT)
+        commandLineStart = self.commandWidget.search(
+            '>>> ', INSERT, backwards = 1)
+        if commandLineStart:
+            commandStart = self.commandWidget.index(
+                commandLineStart + ' + 4 chars')
+            command = self.commandWidget.get(commandStart,
+                                             commandStart + ' lineend')
+            if command:
+                partDict = { 'this' : self.selectedPart(),
+                             'object' : self.topInspector().object }
+                result = eval(command, partDict)
+                self.commandWidget.insert(INSERT, `result` + '\n>>> ')
+                self.commandWidget.see(INSERT)
 
     # Menu Events
     def inspect(self):
@@ -346,7 +380,10 @@ class InspectorWindow:
         help.title("Inspector Help")
         frame = Frame(help)
         frame.pack()
-        text = Label(frame, text="Double click an instance variable to dive down\nDouble click self to pop back up")
+        text = Label(
+            frame, justify = LEFT,
+            text = "ListBox shows selected object's attributes\nDouble click or use right arrow on an instance variable to dive down.\nDouble click self or use left arrow to pop back up.\nUse up and down arrow keys to move from item to item in the current level.\n\nnResult box (upper right) shows current value of selected item\n\nCommand box (lower right) is used to evaluate python commands\nLocal variables 'object' and 'this' are defined as the current object being inspected\nand the current attribute selected."
+            )
         text.pack()
 
     #Private
