@@ -410,7 +410,7 @@ do_measure() {
   }
 
   LVector2f ul, lr;
-  int num_rows;
+  int num_rows = 0;
   measure_text(text.c_str(), ul, lr, num_rows);
 
   _num_rows = num_rows;
