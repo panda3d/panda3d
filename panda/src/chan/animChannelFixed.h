@@ -34,7 +34,7 @@
 //               anims to bind against.
 ////////////////////////////////////////////////////////////////////
 template<class SwitchType>
-class EXPCL_PANDA AnimChannelFixed : public AnimChannel<SwitchType> {
+class AnimChannelFixed : public AnimChannel<SwitchType> {
 public:
   INLINE AnimChannelFixed(AnimGroup *parent, const string &name, const ValueType &value);
   INLINE AnimChannelFixed(const string &name, const ValueType &value);

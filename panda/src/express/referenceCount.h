@@ -90,7 +90,7 @@ INLINE void unref_delete(RefCountType *ptr);
 //               typedObject.h.
 ////////////////////////////////////////////////////////////////////
 template<class Base>
-class EXPCL_PANDAEXPRESS RefCountProxy : public ReferenceCount {
+class RefCountProxy : public ReferenceCount {
 public:
   INLINE RefCountProxy();
   INLINE RefCountProxy(const Base &copy);
@@ -118,7 +118,7 @@ private:
 //               only works when the base type is, in fact, a class.
 ////////////////////////////////////////////////////////////////////
 template<class Base>
-class EXPCL_PANDAEXPRESS RefCountObj : public ReferenceCount, public Base {
+class RefCountObj : public ReferenceCount, public Base {
 public:
   INLINE RefCountObj();
   INLINE RefCountObj(const Base &copy);

@@ -25,7 +25,7 @@ class Node;
 class NodeRelation;
 
 template<class TW, class LevelState>
-class EXPCL_PANDA TraverserVisitor {
+class TraverserVisitor {
 public:
   typedef TW TransitionWrapper;
 

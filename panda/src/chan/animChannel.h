@@ -31,7 +31,7 @@
 //               of AnimChannels that return different values.
 ////////////////////////////////////////////////////////////////////
 template<class SwitchType>
-class EXPCL_PANDA AnimChannel : public AnimChannelBase {
+class AnimChannel : public AnimChannelBase {
 protected:
   // The default constructor is protected: don't try to create an
   // AnimChannel without a parent.  To create an AnimChannel hierarchy,
@@ -133,6 +133,4 @@ typedef AnimChannel<ACScalarSwitchType> AnimChannelScalar;
 #endif
 
 #endif
-
-
 

@@ -31,7 +31,7 @@
 //               channel.
 ////////////////////////////////////////////////////////////////////
 template<class SwitchType>
-class EXPCL_PANDA MovingPart : public MovingPartBase {
+class MovingPart : public MovingPartBase {
 public:
   typedef TYPENAME SwitchType::ValueType ValueType;
   typedef AnimChannel<SwitchType> ChannelType;

@@ -101,7 +101,7 @@ public:
 //               of vertex values.
 ////////////////////////////////////////////////////////////////////
 template<class ValueType, class MorphValueType>
-class EXPCL_PANDA ComputedVerticesMorph {
+class ComputedVerticesMorph {
 public:
   INLINE ComputedVerticesMorph();
   INLINE ComputedVerticesMorph(const ComputedVerticesMorph &copy);
@@ -133,8 +133,4 @@ typedef ComputedVerticesMorph<Colorf, ComputedVerticesMorphValue4> ComputedVerti
 #include "computedVerticesMorph.I"
 
 #endif
-
-
-
-
 

@@ -38,7 +38,7 @@
 //               values with identical values.
 ////////////////////////////////////////////////////////////////////
 template<class ValueType, class MorphType>
-class EXPCL_PANDAEGG ComputedVerticesMakerEntity {
+class ComputedVerticesMakerEntity {
 public:
   INLINE ComputedVerticesMakerEntity(const ValueType &value,
                                      const MorphType &morphs);
@@ -57,7 +57,7 @@ public:
 //               vertices into a common index number.
 ////////////////////////////////////////////////////////////////////
 template<class ValueType, class MorphType>
-class EXPCL_PANDAEGG ComputedVerticesMakerEntityMap {
+class ComputedVerticesMakerEntityMap {
 public:
   int add_value(const ValueType &value, const MorphType &morphs,
                 PTA(ValueType) &table);

@@ -28,7 +28,7 @@
 //               that pair.
 ////////////////////////////////////////////////////////////////////
 template<class pair_iterator>
-class EXPCL_PANDA first_of_pair_iterator : public pair_iterator {
+class first_of_pair_iterator : public pair_iterator {
 public:
   typedef TYPENAME pair_iterator::value_type::first_type value_type;
 
@@ -49,7 +49,7 @@ public:
 //               that pair.
 ////////////////////////////////////////////////////////////////////
 template<class pair_iterator>
-class EXPCL_PANDA second_of_pair_iterator : public pair_iterator {
+class second_of_pair_iterator : public pair_iterator {
 public:
   typedef TYPENAME pair_iterator::value_type::second_type value_type;
 
@@ -69,7 +69,7 @@ public:
 //               indicated type.
 ////////////////////////////////////////////////////////////////////
 template<class base_iterator, class new_type>
-class EXPCL_PANDA typecast_iterator : public base_iterator {
+class typecast_iterator : public base_iterator {
 public:
   typedef new_type value_type;
 
