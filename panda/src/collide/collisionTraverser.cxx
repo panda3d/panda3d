@@ -381,14 +381,29 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "CollisionTraverser, " << _colliders.size()
     << " colliders and " << _handlers.size() << " handlers:\n";
-  Colliders::const_iterator ci;
-  for (ci = _colliders.begin(); ci != _colliders.end(); ++ci) {
-    NodePath cnode_path = (*ci).first;
+
+  OrderedColliders::const_iterator oci;
+  for (oci = _ordered_colliders.begin(); 
+       oci != _ordered_colliders.end(); 
+       ++oci) {
+    NodePath cnode_path = (*oci)._node_path;
+    bool in_graph = (*oci)._in_graph;
+    
+    Colliders::const_iterator ci;
+    ci = _colliders.find(cnode_path);
+    nassertv(ci != _colliders.end());
+
     CollisionHandler *handler = (*ci).second;
     nassertv(handler != (CollisionHandler *)NULL);
-
+    
     indent(out, indent_level + 2)
-      << cnode_path << " handled by " << handler->get_type() << "\n";
+      << cnode_path;
+    if (in_graph) {
+      out << " handled by " << handler->get_type() << "\n";
+    } else {
+      out << " ignored\n";
+    }
+
     if (!cnode_path.is_empty() && cnode_path.node()->is_of_type(CollisionNode::get_class_type())) {
       CollisionNode *cnode = DCAST(CollisionNode, cnode_path.node());
       
