@@ -1,0 +1,66 @@
+This document tries to describe how the various Sources.pp files
+should be set up within the Panda tree (or a related tree like Direct
+or Pandatool), to add new directories, for instance, or modify the
+build rules for an existing directory.  For a general treatise on the
+full syntax and semantics of the ppremake scripting language, see the
+ppremake-*.txt files in this directory.
+
+
+
+
+
+TARGET specifies the name of the output file that will be generated,
+not a directory name.  The target may be a dll, lib, or executable
+depending on the type of target (lib_target, static_lib_target, or
+bin_target).  For instance, in vrpn/Sources.pp, the target name is
+pvrpn; this means that "make" within the directory will in principle
+generate a file called libpvrpn.dll.
+
+The TARGET name is particularly confusing for people who only see the
+Windows build, however, because on Windows we don't actually generate
+a libpvrpn.dll file, or for that matter any other dll file that's
+named in the COMPONENT_LIBS of some metalib, like
+panda/metalibs/panda/Sources.pp.  This is because of our limitation
+with STL and DLL's (and also because the per-DLL overhead is fairly
+high in Windows).
+
+The build design is that each subdirectory under panda/src should
+generate its own shared library, a .dll file (or .so file on Unix).
+Then the user would reference just the particular dll's that his
+client application requires, e.g. libpgraph.dll to use the scene
+graph, libdisplay.dll to actually do rendering, and libpvrpn.dll to
+interface to VRPN.  On Windows, however, we can't actually do that for
+various reasons, so instead we provide one big metalib called
+libpanda.dll which contains all of those pieces, and clients must link
+with all of libpanda.dll even if they just want to use a subset of it.
+
+The fact that we don't actually generate a physical dll file for each
+subdirectory on Windows is unimportant to the rest of the build
+scripts, which act as if we do.  For instance, the COMPONENT_LIBS line
+in the panda/Sources.pp file names "pvrpn", as if there were a
+libpvrpn.dll; this means that all of the files that are part of the
+"pvrpn" target are added to libpanda.dll.  (On Unix platforms, it
+means we add libpvrpn.so to the list of libraries that are referenced
+by libpanda.so.)
+
+The original intention of SOURCES is to list all of the source files
+within this directory that go into the dll.  This generally includes
+.h files, .I files, and .cxx files.  However, at some point one of our
+programmers introduced COMBINED_SOURCES and INCLUDED_SOURCES, and he
+removed those source files from the SOURCES list, which I think
+confuses the whole thing; and I intend to clean this up at some point.
+In the vrpn/Sources.pp directory, however, we only have the SOURCES
+list, nice and clean.  I don't know what you mean about hierarchy;
+these files are all in the same directory, so there's just a linear
+list of filenames.  By convention, these should be kept in
+alphabetical order, although it doesn't really matter that much.
+
+INSTALL_HEADERS names the header files that should be copied into the
+public include directory for third-party packages (or other Panda
+trees, like Direct) to reference.  This makes a C++ public interface.
+
+IGATESCAN names the source files that are to be scanned by
+interrogate.  This makes a Python public interface.  Most of the time,
+we just say "IGATESCAN all" which means to scan all of the source
+files in the directory.
+
