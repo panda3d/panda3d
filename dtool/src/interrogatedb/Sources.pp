@@ -4,19 +4,19 @@
   #define TARGET interrogatedb
   
   #define SOURCES \
-    config_interrogatedb.cxx config_interrogatedb.h indexRemapper.cxx	\
-    indexRemapper.h interrogateComponent.I interrogateComponent.cxx	\
-    interrogateComponent.h interrogateDatabase.I			\
-    interrogateDatabase.cxx interrogateDatabase.h interrogateElement.I	\
-    interrogateElement.cxx interrogateElement.h interrogateFunction.I	\
-    interrogateFunction.cxx interrogateFunction.h			\
-    interrogateFunctionWrapper.I interrogateFunctionWrapper.cxx		\
-    interrogateFunctionWrapper.h interrogateManifest.I			\
-    interrogateManifest.cxx interrogateManifest.h interrogateType.I	\
-    interrogateType.cxx interrogateType.h interrogate_datafile.I		\
-    interrogate_datafile.cxx interrogate_datafile.h			\
-    interrogate_interface.cxx interrogate_interface.h			\
-    interrogate_request.cxx interrogate_request.h vector_int.cxx		\
+    config_interrogatedb.cxx config_interrogatedb.h indexRemapper.cxx   \
+    indexRemapper.h interrogateComponent.I interrogateComponent.cxx     \
+    interrogateComponent.h interrogateDatabase.I                        \
+    interrogateDatabase.cxx interrogateDatabase.h interrogateElement.I  \
+    interrogateElement.cxx interrogateElement.h interrogateFunction.I   \
+    interrogateFunction.cxx interrogateFunction.h                       \
+    interrogateFunctionWrapper.I interrogateFunctionWrapper.cxx         \
+    interrogateFunctionWrapper.h interrogateManifest.I                  \
+    interrogateManifest.cxx interrogateManifest.h interrogateType.I     \
+    interrogateType.cxx interrogateType.h interrogate_datafile.I                \
+    interrogate_datafile.cxx interrogate_datafile.h                     \
+    interrogate_interface.cxx interrogate_interface.h                   \
+    interrogate_request.cxx interrogate_request.h vector_int.cxx                \
     vector_int.h
 
   #define INSTALL_HEADERS \

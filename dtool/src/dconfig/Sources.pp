@@ -12,12 +12,12 @@
     notifySeverity.cxx notifySeverity.h serialization.I serialization.h  \
     symbolEnt.I symbolEnt.cxx symbolEnt.h
 
-  #define INSTALL_HEADERS						\
-    configTable.I configTable.h config_dconfig.h config_setup.h		\
-    dconfig.I dconfig.h							\
-    expand.I expand.h notify.I notify.h notifyCategory.I		\
-    notifyCategory.h notifyCategoryProxy.I notifyCategoryProxy.h	\
-    notifySeverity.h serialization.I serialization.h symbolEnt.I	\
+  #define INSTALL_HEADERS                                               \
+    configTable.I configTable.h config_dconfig.h config_setup.h         \
+    dconfig.I dconfig.h                                                 \
+    expand.I expand.h notify.I notify.h notifyCategory.I                \
+    notifyCategory.h notifyCategoryProxy.I notifyCategoryProxy.h        \
+    notifySeverity.h serialization.I serialization.h symbolEnt.I        \
     symbolEnt.h
 
 #end lib_target

@@ -133,7 +133,7 @@ endif
 
 IGATESCAN = $[IGATESCAN]
 $[IGATEFILE] : $(IGATESCAN)
-	@dtool@/bin/interrogate $[IGATEFLAGS] @system_igate@ -DCPPPARSER -D__cplusplus -I@dtool@/include/parser-inc @trees_inc@ $[local_incs:%=-I%] $[alt_cflags] $[CDEFINES] -module "$[IGATEMODULE]" -library "$[IGATELIBRARY]" -oc $[IGATEFILE] -od $[IGATEDBFILE] -fnames -string -refcount -assert -promiscuous -python $(IGATESCAN)
+        @dtool@/bin/interrogate $[IGATEFLAGS] @system_igate@ -DCPPPARSER -D__cplusplus -I@dtool@/include/parser-inc @trees_inc@ $[local_incs:%=-I%] $[alt_cflags] $[CDEFINES] -module "$[IGATEMODULE]" -library "$[IGATELIBRARY]" -oc $[IGATEFILE] -od $[IGATEDBFILE] -fnames -string -refcount -assert -promiscuous -python $(IGATESCAN)
 #set built_sources $[built_sources] $[IGATEFILE]
 #set install_data $[install_data] $[IGATEDBFILE]
 #endif
@@ -304,23 +304,23 @@ EXTRA_DIST = Sources.pp Config.pp $[EXTRA_DIST]
 # installed shared libraries.
 
 all-recursive:
-	@set fnord $(MAKEFLAGS); amf=$$2; \
-	dot_seen=no; \
-	target=`echo $@ | sed s/-recursive//`; \
-	list='$(FIRSTBUILD_SUBDIRS)'; for subdir in $$list; do \
-	  echo "Making $$target in $$subdir"; \
-	  if test "$$subdir" = "."; then \
-	    dot_seen=yes; \
-	    local_target="$$target-am"; \
-	  else \
-	    local_target="$$target"; \
-	  fi; \
-	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
-	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
-	done; \
-	if test "$$dot_seen" = "no"; then \
-	  $(MAKE) $(AM_MAKEFLAGS) "$$target-am" || exit 1; \
-	fi; test -z "$$fail"
+        @set fnord $(MAKEFLAGS); amf=$$2; \
+        dot_seen=no; \
+        target=`echo $@ | sed s/-recursive//`; \
+        list='$(FIRSTBUILD_SUBDIRS)'; for subdir in $$list; do \
+          echo "Making $$target in $$subdir"; \
+          if test "$$subdir" = "."; then \
+            dot_seen=yes; \
+            local_target="$$target-am"; \
+          else \
+            local_target="$$target"; \
+          fi; \
+          (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+           || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+        done; \
+        if test "$$dot_seen" = "no"; then \
+          $(MAKE) $(AM_MAKEFLAGS) "$$target-am" || exit 1; \
+        fi; test -z "$$fail"
 
 #end Makefile.am
 
@@ -543,11 +543,11 @@ if test "$with_python" != "no"; then
   if test "$with_python" = "yes" -o "$with_python" = ""; then
     AC_SEARCH_HPACKAGE(/usr/local /usr,
                        python1.6 python,
-	               Python.h, python)
+                       Python.h, python)
   else
     AC_SEARCH_HPACKAGE($with_python,
                        python1.6 python,
-	               Python.h, python)
+                       Python.h, python)
   fi
 
   if test "$with_python" != ""; then
@@ -586,10 +586,10 @@ include_nspr=
 if test "$with_nspr" != "no"; then
   if test "$with_nspr" = "yes" -o "$with_nspr" = ""; then
     AC_SEARCH_PACKAGE(/usr/local/mozilla /usr/local/mozilla/dist/*,,
-	              nspr.h, nspr3, PR_Init, nspr)
+                      nspr.h, nspr3, PR_Init, nspr)
   else
     AC_SEARCH_PACKAGE($with_nspr $with_nspr/dist/*,,
-	              nspr.h, nspr3, PR_Init, nspr)
+                      nspr.h, nspr3, PR_Init, nspr)
   fi
 
   if test "$with_nspr" != ""; then
@@ -632,10 +632,10 @@ include_zlib=
 if test "$with_zlib" != "no"; then
   if test "$with_zlib" = "yes" -o "$with_zlib" = ""; then
     AC_SEARCH_PACKAGE(/usr /usr/local,,
-	              zlib.h, z, gzopen, zlib)
+                      zlib.h, z, gzopen, zlib)
   else
     AC_SEARCH_PACKAGE($with_zlib,,
-	              zlib.h, z, gzopen, zlib)
+                      zlib.h, z, gzopen, zlib)
   fi
 
   if test "$with_zlib" != ""; then
@@ -682,10 +682,10 @@ include_gl=
 if test "$with_gl" != "no"; then
   if test "$with_gl" = "yes" -o "$with_gl" = ""; then
     AC_SEARCH_PACKAGE(/usr /usr/local,,
-	              GL/gl.h, GL, glVertex3f, gl)
+                      GL/gl.h, GL, glVertex3f, gl)
   else
     AC_SEARCH_PACKAGE($with_gl,,
-	              GL/gl.h, GL, glVertex3f, gl)
+                      GL/gl.h, GL, glVertex3f, gl)
   fi
 
   if test "$with_gl" != ""; then
@@ -732,10 +732,10 @@ include_glu=
 if test "$with_glu" != "no"; then
   if test "$with_glu" = "yes" -o "$with_glu" = ""; then
     AC_SEARCH_PACKAGE($gl_INCLUDE /usr /usr/local,,
-	              GL/glu.h, GLU, gluSphere, glu)
+                      GL/glu.h, GLU, gluSphere, glu)
   else
     AC_SEARCH_PACKAGE($with_glu,,
-	              GL/glu.h, GLU, gluSphere, glu)
+                      GL/glu.h, GLU, gluSphere, glu)
   fi
 
   if test "$with_glu" != ""; then
@@ -782,10 +782,10 @@ include_glx=
 if test "$with_glx" != "no"; then
   if test "$with_glx" = "yes" -o "$with_glx" = ""; then
     AC_SEARCH_HPACKAGE($gl_INCLUDE /usr /usr/local $x_libraries,,
-	               GL/glx.h, glx)
+                       GL/glx.h, glx)
   else
     AC_SEARCH_HPACKAGE($with_glx,,
-	               GL/glx.h, glx)
+                       GL/glx.h, glx)
   fi
 
   if test "$with_glx" != ""; then
@@ -826,10 +826,10 @@ include_glut=
 if test "$with_glut" != "no"; then
   if test "$with_glut" = "yes" -o "$with_glut" = ""; then
     AC_SEARCH_PACKAGE($gl_INCLUDE /usr /usr/local $x_libraries,,
-	              GL/glut.h, glut, glutInit, glut, -lGL -lGLU)
+                      GL/glut.h, glut, glutInit, glut, -lGL -lGLU)
   else
     AC_SEARCH_PACKAGE($with_glut,,
-	              GLUT/glut.h, glut, glutInit, glut, -lGL -lGLU)
+                      GLUT/glut.h, glut, glutInit, glut, -lGL -lGLU)
   fi
 
   if test "$with_glut" != ""; then

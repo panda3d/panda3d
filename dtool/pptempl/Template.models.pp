@@ -101,23 +101,23 @@ uninstall : uninstall-other uninstall-bam uninstall-egg
 
 clean-bam :
 #if $[bam_targets]
-	rm -rf $[bam_dir]
+        rm -rf $[bam_dir]
 #endif
 
 clean-pal : clean-bam
 #if $[pal_egg_targets]
-	rm -rf $[pal_egg_dir]
+        rm -rf $[pal_egg_dir]
 #endif
 
 clean : clean-pal
 #if $[build_eggs]
-	rm -f $[build_eggs] $[install_eggs:%.egg=%.pt]
+        rm -f $[build_eggs] $[install_eggs:%.egg=%.pt]
 #endif
 #if $[POLY_MODEL(soft_char_egg)] $[NURBS_MODEL(soft_char_egg)]
-	rm -rf $[soft_maps_dir]
+        rm -rf $[soft_maps_dir]
 #endif
 #if $[filter_dirs]
-	rm -rf $[filter_dirs]
+        rm -rf $[filter_dirs]
 #endif
 
 // We need a rule for each directory we might need to make.  This
@@ -133,16 +133,16 @@ clean : clean-pal
     $[install_other_dirs] \
     ]
 $[directory] :
-	@test -d $[directory] || echo mkdir -p $[directory]
-	@test -d $[directory] || mkdir -p $[directory]
+        @test -d $[directory] || echo mkdir -p $[directory]
+        @test -d $[directory] || mkdir -p $[directory]
 
 // Sometimes we need a target to depend on the directory existing, without 
 // being fooled by the directory's modification times.  We use this
 // phony timestamp file to achieve that.
 $[directory]/stamp :
-	@test -d $[directory] || echo mkdir -p $[directory]
-	@test -d $[directory] || mkdir -p $[directory]
-	@touch $[directory]/stamp
+        @test -d $[directory] || echo mkdir -p $[directory]
+        @test -d $[directory] || mkdir -p $[directory]
+        @touch $[directory]/stamp
 #end directory
 
 
@@ -152,7 +152,7 @@ $[directory]/stamp :
     #define target $[flt:%.flt=%.egg]
     #define source $[flt]
 $[target] : $[source]
-	flt2egg $[FLT2EGG_OPTS] -o $[target] $[source]
+        flt2egg $[FLT2EGG_OPTS] -o $[target] $[source]
 
   #end flt
 #end flt_egg
@@ -163,7 +163,7 @@ $[target] : $[source]
     #define target $[lwo:%.lwo=%.egg]
     #define source $[lwo]
 $[target] : $[source]
-	lwo2egg $[LWO2EGG_OPTS] -o $[target] $[source]
+        lwo2egg $[LWO2EGG_OPTS] -o $[target] $[source]
 
   #end lwo
 #end lwo_egg
@@ -175,14 +175,14 @@ $[target] : $[source]
     #define scene $[SCENE_PREFIX]$[MODEL].1-0.dsc
     #define source $[DATABASE]/SCENES/$[scene]
 $[target] : $[source]
-	soft2egg $[SOFT2EGG_OPTS] -p -M $[target] -N $[CHAR_NAME] -d $[DATABASE] -s $[scene] -t $[soft_maps_dir]
+        soft2egg $[SOFT2EGG_OPTS] -p -M $[target] -N $[CHAR_NAME] -d $[DATABASE] -s $[scene] -t $[soft_maps_dir]
   #endif
   #if $[NURBS_MODEL]
     #define target $[EGG_PREFIX]$[NURBS_MODEL].egg
     #define scene $[SCENE_PREFIX]$[MODEL].1-0.dsc
     #define source $[DATABASE]/SCENES/$[scene]
 $[target] : $[source]
-	soft2egg $[SOFT2EGG_OPTS] -n -M $[target] -N $[CHAR_NAME] -d $[DATABASE] -s $[scene] -t $[soft_maps_dir]
+        soft2egg $[SOFT2EGG_OPTS] -n -M $[target] -N $[CHAR_NAME] -d $[DATABASE] -s $[scene] -t $[soft_maps_dir]
   #endif
 
 #end soft_char_egg
@@ -200,7 +200,7 @@ $[target] : $[source]
       #set end $[word 2,$[$[anim]_frames]]
     #endif
 $[target] : $[source]
-	soft2egg $[SOFT2EGG_OPTS] -a -A $[target] -N $[CHAR_NAME] -d $[DATABASE] -s $[scene] $[begin:%=-b%] $[end:%=-e%]
+        soft2egg $[SOFT2EGG_OPTS] -a -A $[target] -N $[CHAR_NAME] -d $[DATABASE] -s $[scene] $[begin:%=-b%] $[end:%=-e%]
   #end anim
 #end soft_char_egg
 
@@ -211,7 +211,7 @@ $[target] : $[source]
     #define source $[source_prefix]$[egg]
     #define target $[TARGET_DIR]/$[notdir $[egg]]
 $[target] : $[source] $[pt] $[TARGET_DIR]/stamp
-	$[COMMAND]
+        $[COMMAND]
   #end egg
 #end filter_egg
 
@@ -224,12 +224,12 @@ $[target] : $[source] $[pt] $[TARGET_DIR]/stamp
    // first one.
   #foreach egg $[notdir $[wordlist 2,9999,$[SOURCES]]]
 $[TARGET_DIR]/$[egg] : $[target] $[TARGET_DIR]/stamp
-	touch $[TARGET_DIR]/$[egg]
+        touch $[TARGET_DIR]/$[egg]
   #end egg
 
    // And this is the actual optchar pass.
 $[target] : $[sources] $[TARGET_DIR]/stamp
-	egg-optchar $[OPTCHAR_OPTS] -d $[TARGET_DIR] $[sources]
+        egg-optchar $[OPTCHAR_OPTS] -d $[TARGET_DIR] $[sources]
 #end optchar_egg
 
 
@@ -241,13 +241,13 @@ $[target] : $[sources] $[TARGET_DIR]/stamp
     #define target $[pal_egg_dir]/$[egg]
 $[target] : $[source] $[pt] $[pal_egg_dir]/stamp
     #if $[PHASE]
-	egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -dr $[install_dir] -dm $[install_dir]/%g/maps -ds $[install_dir]/shadow_pal -g phase_$[PHASE] -gdir phase_$[PHASE] -o $[target] $[source]
+        egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -dr $[install_dir] -dm $[install_dir]/%g/maps -ds $[install_dir]/shadow_pal -g phase_$[PHASE] -gdir phase_$[PHASE] -o $[target] $[source]
     #else
-	egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -dr $[install_dir] -dm $[install_dir]/%g/maps -ds $[install_dir]/shadow_pal -o $[target] $[source]
+        egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -dr $[install_dir] -dm $[install_dir]/%g/maps -ds $[install_dir]/shadow_pal -o $[target] $[source]
     #endif
 
 $[pt] :
-	touch $[pt]
+        touch $[pt]
 
   #end egg
 #end install_egg
@@ -259,14 +259,14 @@ $[pt] :
     #define source $[pal_egg_dir]/$[egg]
     #define target $[bam_dir]/$[egg:%.egg=%.bam]
 $[target] : $[source] $[bam_dir]/stamp
-	egg2bam -kp -tp $[install_dir] $[EGG2BAM_OPTS] -o $[target] $[source]
+        egg2bam -kp -tp $[install_dir] $[EGG2BAM_OPTS] -o $[target] $[source]
 
   #end egg
   #foreach egg $[UNPAL_SOURCES]
     #define source $[source_prefix]$[egg]
     #define target $[bam_dir]/$[egg:%.egg=%.bam]
 $[target] : $[source] $[bam_dir]/stamp
-	egg2bam -kp -tp $[install_dir] $[EGG2BAM_OPTS] -o $[target] $[source]
+        egg2bam -kp -tp $[install_dir] $[EGG2BAM_OPTS] -o $[target] $[source]
 
   #end egg
 #end install_egg
@@ -279,18 +279,18 @@ $[target] : $[source] $[bam_dir]/stamp
     #define sourcedir $[pal_egg_dir]
     #define dest $[install_model_dir]
 $[dest]/$[local] : $[sourcedir]/$[local]
-//	cd ./$[sourcedir] && $[INSTALL]
-	rm -f $[dest]/$[local]
-	cp $[sourcedir]/$[local] $[dest]
+//      cd ./$[sourcedir] && $[INSTALL]
+        rm -f $[dest]/$[local]
+        cp $[sourcedir]/$[local] $[dest]
 
   #end egg
   #foreach egg $[UNPAL_SOURCES]
     #define local $[egg]
     #define dest $[install_model_dir]
 $[dest]/$[local] : $[source_prefix]$[local]
-//	$[INSTALL]
-	rm -f $[dest]/$[local]
-	cp $[source_prefix]$[local] $[dest]
+//      $[INSTALL]
+        rm -f $[dest]/$[local]
+        cp $[source_prefix]$[local] $[dest]
 
   #end egg
 #end install_egg
@@ -300,7 +300,7 @@ uninstall-egg :
 #forscopes install_egg
   #define files $[patsubst %,$[install_model_dir]/%,$[SOURCES] $[UNPAL_SOURCES]]
   #if $[files]
-	rm -f $[files]
+        rm -f $[files]
   #endif
 #end install_egg
 
@@ -312,9 +312,9 @@ uninstall-egg :
     #define sourcedir $[bam_dir]
     #define dest $[install_model_dir]
 $[dest]/$[local] : $[sourcedir]/$[local]
-//	cd ./$[sourcedir] && $[INSTALL]
-	rm -f $[dest]/$[local]
-	cp $[sourcedir]/$[local] $[dest]
+//      cd ./$[sourcedir] && $[INSTALL]
+        rm -f $[dest]/$[local]
+        cp $[sourcedir]/$[local] $[dest]
 
   #end egg
 #end install_egg
@@ -324,7 +324,7 @@ uninstall-bam :
 #forscopes install_egg
   #define files $[patsubst %.egg,$[install_model_dir]/%.bam,$[SOURCES] $[UNPAL_SOURCES]]
   #if $[files]
-	rm -f $[files]
+        rm -f $[files]
   #endif
 #end install_egg
 
@@ -336,9 +336,9 @@ uninstall-bam :
     #define local $[file]
     #define dest $[install_model_dir]
 $[dest]/$[local] : $[local]
-//	$[INSTALL]
-	rm -f $[dest]/$[local]
-	cp $[local] $[dest]
+//      $[INSTALL]
+        rm -f $[dest]/$[local]
+        cp $[local] $[dest]
 
   #end file
 #end install_audio install_dna install_icons install_misc
@@ -348,7 +348,7 @@ uninstall-other:
 #forscopes install_audio install_dna install_icons install_misc
   #define files $[patsubst %,$[install_model_dir]/%,$[SOURCES]]
   #if $[files]
-	rm -f $[files]
+        rm -f $[files]
   #endif
 #end install_audio install_dna install_icons install_misc
 
@@ -416,7 +416,7 @@ opt-pal : pal do-opt-pal install
 optimize-palettes : opt-pal
 
 do-opt-pal :
-	egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -opt -egg
+        egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -opt -egg
 
 #
 # repal : reexamine the textures.txa file and do whatever needs to be
@@ -424,7 +424,7 @@ do-opt-pal :
 # files are up-to-date.
 #
 repal :
-	egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -all -egg
+        egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -all -egg
 
 re-pal : repal
 
@@ -433,27 +433,27 @@ re-pal : repal
 # palette images to fix it.
 #
 fix-pal :
-	egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -redo -all -egg
+        egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -redo -all -egg
 
 #
 # redo-pal : blow away all the palettization information and start fresh.
 #
 redo-pal : clean-pal
-	rm -f $[texattrib_file:%.txa=%.boo]
+        rm -f $[texattrib_file:%.txa=%.boo]
 
 #
 # pi : report the palettization information to standard output for the
 # user's perusal.
 #
 pi :
-	egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -pi
+        egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -pi
 
 #
 # pal-stats : report palettization statistics to standard output for the
 # user's perusal.
 #
 pal-stats :
-	egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -s
+        egg-palettize $[PALETTIZE_OPTS] -a $[texattrib_file] -s
 stats-pal : pal-stats
 
 // Somehow, something in the cttools confuses some shells, so that
@@ -463,82 +463,82 @@ stats-pal : pal-stats
 
 #formap dirname subdirs
 $[dirname] : $[dirnames $[if $[build_directory],$[DIRNAME]],$[DEPEND_DIRS]]
-	cd ./$[PATH] && $(MAKE) all
+        cd ./$[PATH] && $(MAKE) all
 #end dirname
 
 #formap dirname subdirs
 egg-$[dirname] :
-	cd ./$[PATH] && $(MAKE) egg
+        cd ./$[PATH] && $(MAKE) egg
 #end dirname
 
 #formap dirname subdirs
 bam-$[dirname] :
-	cd ./$[PATH] && $(MAKE) bam
+        cd ./$[PATH] && $(MAKE) bam
 #end dirname
 
 #formap dirname subdirs
 pal-$[dirname] :
-	cd ./$[PATH] && $(MAKE) pal
+        cd ./$[PATH] && $(MAKE) pal
 #end dirname
 
 #formap dirname subdirs
 clean-bam-$[dirname] :
-	cd ./$[PATH] && $(MAKE) clean-bam
+        cd ./$[PATH] && $(MAKE) clean-bam
 #end dirname
 
 #formap dirname subdirs
 clean-pal-$[dirname] :
-	cd ./$[PATH] && $(MAKE) clean-pal
+        cd ./$[PATH] && $(MAKE) clean-pal
 #end dirname
 
 #formap dirname subdirs
 clean-$[dirname] :
-	cd ./$[PATH] && $(MAKE) clean
+        cd ./$[PATH] && $(MAKE) clean
 #end dirname
 
 #formap dirname subdirs
 cleanall-$[dirname] :
-	cd ./$[PATH] && $(MAKE) cleanall
+        cd ./$[PATH] && $(MAKE) cleanall
 #end dirname
 
 #formap dirname subdirs
 install-egg-$[dirname] :
-	cd ./$[PATH] && $(MAKE) install-egg
+        cd ./$[PATH] && $(MAKE) install-egg
 #end dirname
 
 #formap dirname subdirs
 install-bam-$[dirname] :
-	cd ./$[PATH] && $(MAKE) install-bam
+        cd ./$[PATH] && $(MAKE) install-bam
 #end dirname
 
 #formap dirname subdirs
 install-other-$[dirname] :
-	cd ./$[PATH] && $(MAKE) install-other
+        cd ./$[PATH] && $(MAKE) install-other
 #end dirname
 
 #formap dirname subdirs
 install-$[dirname] : 
-	cd ./$[PATH] && $(MAKE) install
+        cd ./$[PATH] && $(MAKE) install
 #end dirname
 
 #formap dirname subdirs
 uninstall-egg-$[dirname] :
-	cd ./$[PATH] && $(MAKE) uninstall-egg
+        cd ./$[PATH] && $(MAKE) uninstall-egg
 #end dirname
 
 #formap dirname subdirs
 uninstall-bam-$[dirname] :
-	cd ./$[PATH] && $(MAKE) uninstall-bam
+        cd ./$[PATH] && $(MAKE) uninstall-bam
 #end dirname
 
 #formap dirname subdirs
 uninstall-other-$[dirname] :
-	cd ./$[PATH] && $(MAKE) uninstall-other
+        cd ./$[PATH] && $(MAKE) uninstall-other
 #end dirname
 
 #formap dirname subdirs
 uninstall-$[dirname] :
-	cd ./$[PATH] && $(MAKE) uninstall
+        cd ./$[PATH] && $(MAKE) uninstall
 #end dirname
 
 #end Makefile

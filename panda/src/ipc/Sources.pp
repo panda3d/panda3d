@@ -8,14 +8,14 @@
 #begin lib_target
   #define TARGET ipc
   
-  #define SOURCES							\
+  #define SOURCES                                                       \
     ipc.cxx ipc_atomics.h ipc_condition.h ipc_file.I ipc_file.h \
     ipc_library.h ipc_mach_traits.h ipc_mutex.h ipc_nspr_traits.h \
     ipc_nt_traits.h ipc_posix_traits.h \
     ipc_ps2_traits.h ipc_semaphore.h ipc_solaris_traits.h ipc_thread.h \
     ipc_traits.cxx ipc_traits.h
 
-  #define INSTALL_HEADERS					\
+  #define INSTALL_HEADERS                                       \
     ipc_mutex.h ipc_condition.h ipc_semaphore.h ipc_thread.h \
     ipc_traits.h ipc_mach_traits.h ipc_nt_traits.h ipc_posix_traits.h \
     ipc_solaris_traits.h ipc_nspr_traits.h ipc_ps2_traits.h \
@@ -33,7 +33,7 @@
 #begin test_bin_target
   #define TARGET loom
   
-  #define SOURCES							\
+  #define SOURCES                                                       \
     loom.cxx loom.h loom_internal.h
 
   #define LOCAL_LIBS ipc $[LOCAL_LIBS]

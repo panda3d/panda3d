@@ -129,22 +129,22 @@ include $(DTOOL)/include/Makefile.install.rules
 
 #### Install actions for OTHER files (source must be in $(PKGROOT)):
 # [ installed file ] : $(PKGROOT)/[ source file ]  # Files must have same name
-#	$(INSTALL)                      # Copies from source to dest
+#       $(INSTALL)                      # Copies from source to dest
 #
 # [ installed file ] : $(PKGROOT)/[ source file ]
-#	$(MKINSTALL)			# Also makes directory if needed
+#       $(MKINSTALL)                    # Also makes directory if needed
 
 #if $[ne $[INSTALL_PARSER_INC],]
 $(INST_PARSER_INC) : include/parser-inc/% : $(PKGROOT)/%
-	$(MKINSTALL)
+        $(MKINSTALL)
 #endif
 
 #### Other install/uninstall actions:
 # install-$(PKGROOT): #Add dependencies here
-#	Add actions here
+#       Add actions here
 #
 # uninstall-$(PKGROOT): #Add dependencies here
-#	Add actions here
+#       Add actions here
 
 #### Sub-package Makefile.install inclusions:
 # include foo/Makefile.install
@@ -431,13 +431,13 @@ include $(DTOOL)/include/Makefile.bin.rules
 #### This is a special makefile just to generate the $[TARGET] script.
 
 $[TARGET] : $[SOURCE]
-	sed $[COMMAND] $^ >$@
-	chmod +x $@
+        sed $[COMMAND] $^ >$@
+        chmod +x $@
 
 clean :
 
 cleanall :
-	rm -f $[TARGET]
+        rm -f $[TARGET]
 #end Makefile.$[TARGET]
 #end sed_bin_target
 
@@ -531,17 +531,17 @@ include $(DTOOL)/include/Makefile.install.rules
 
 #### Install actions for OTHER files (source must be in $(PKGROOT)):
 # [ installed file ] : $(PKGROOT)/[ source file ]  # Files must have same name
-#	$(INSTALL)                      # Copies from source to dest
+#       $(INSTALL)                      # Copies from source to dest
 #
 # [ installed file ] : $(PKGROOT)/[ source file ]
-#	$(MKINSTALL)			# Also makes directory if needed
+#       $(MKINSTALL)                    # Also makes directory if needed
 
 #### Other install/uninstall actions:
 # install-$(PKGROOT): #Add dependencies here
-#	Add actions here
+#       Add actions here
 #
 # uninstall-$(PKGROOT): #Add dependencies here
-#	Add actions here
+#       Add actions here
 
 #### Sub-package Makefile.install inclusions:
 # include foo/Makefile.install
