@@ -19,6 +19,7 @@
 #if defined(WIN32_VC)
   #include <winsock2.h>
 #else
+  #include <netinet/in.h>  // Irix seems to require this one for resolv.h.
   #include <sys/types.h>
   #include <sys/socket.h>
   #include <resolv.h>
