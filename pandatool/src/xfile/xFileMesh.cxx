@@ -623,7 +623,7 @@ read_color_data(const Datagram &raw_data) {
   int num_colors = di.get_int32();
   int i;
   for (i = 0; i < num_colors; i++) {
-    int vertex_index = di.get_int32();
+    unsigned int vertex_index = di.get_int32();
     if (vertex_index < 0 || vertex_index >= _vertices.size()) {
       cerr << "Vertex index out of range in MeshVertexColors.\n";
       return false;
@@ -687,7 +687,7 @@ read_material_list_data(const Datagram &raw_data) {
   DatagramIterator di(raw_data);
 
   di.get_int32();  /* num_materials */
-  int num_faces = di.get_int32();
+  unsigned int num_faces = di.get_int32();
 
   if (num_faces > _faces.size()) {
     cerr << "Too many faces in MaterialList.\n";
@@ -695,7 +695,7 @@ read_material_list_data(const Datagram &raw_data) {
   }
 
   int material_index = -1;
-  int i = 0;
+  unsigned int i = 0;
   while (i < num_faces) {
     XFileFace *face = _faces[i];
     material_index = di.get_int32();

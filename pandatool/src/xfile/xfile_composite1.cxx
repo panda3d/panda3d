@@ -1,0 +1,12 @@
+
+#include "config_xfile.cxx"
+#include "xFileFace.cxx"
+#include "xFileMaker.cxx"
+#include "xFileMaterial.cxx"
+#include "xFileMesh.cxx"
+#include "xFileNormal.cxx"
+#include "xFileTemplates.cxx"
+#include "xFileToEggConverter.cxx"
+#include "xFileVertex.cxx"
+
+

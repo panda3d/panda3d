@@ -12,16 +12,17 @@
 
   #define WIN_SYS_LIBS \
     d3dxof.lib dxguid.lib
-
+    
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx     
+    
   #define SOURCES \
-    config_xfile.cxx config_xfile.h \
-    xFileFace.cxx xFileFace.h \
-    xFileMaker.cxx xFileMaker.h \
-    xFileMaterial.cxx xFileMaterial.h \
-    xFileMesh.cxx xFileMesh.h \
-    xFileNormal.cxx xFileNormal.h \
-    xFileTemplates.cxx xFileTemplates.h \
-    xFileToEggConverter.cxx xFileToEggConverter.h \
-    xFileVertex.cxx xFileVertex.h
+     config_xfile.h xFileFace.h xFileMaker.h xFileMaterial.h \
+     xFileMesh.h xFileNormal.h xFileTemplates.h \
+     xFileToEggConverter.h xFileVertex.h 
+
+  #define INCLUDED_SOURCES \
+     config_xfile.cxx xFileFace.cxx xFileMaker.cxx xFileMaterial.cxx \
+     xFileMesh.cxx xFileNormal.cxx xFileTemplates.cxx \
+     xFileToEggConverter.cxx xFileVertex.cxx 
 
 #end ss_lib_target
