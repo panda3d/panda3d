@@ -5,7 +5,9 @@ import Task
 class Transitions:
     def __init__(self, loader):
         self.iris = loader.loadModel("phase_3/models/misc/iris")
+        self.iris.setBin("fixed", 1000)
         self.fade = loader.loadModel("phase_3/models/misc/fade")
+        self.fade.setBin("fixed", 1000)
 
         self.iris.setPos(0,0,0)
         self.fade.setScale(2.0, 2.0, 2.6666)
@@ -18,12 +20,13 @@ class Transitions:
         self.fade.reparentTo(hidden)
         return Task.done
             
-    def fadeIn(self, t=0.4):
+    def fadeIn(self, t=0.4, block=0):
         """
         Play a fade in transition over t seconds.
         Places a polygon on the render2d plane then lerps the color
         from black to transparent. When the color lerp is finished, it
-        parents the fade polygon to hidden.
+        parents the fade polygon to hidden. If block is set, return the
+        sequence instead of spawning it.
         """
         self.noTransitions()
 
@@ -41,15 +44,26 @@ class Transitions:
                                     t),
                 Task.Task(self.fadeInLerpDone))
             # Spawn the sequence
-            taskMgr.spawnTaskNamed(task, self.fadeTaskName)
-        
-    def fadeOut(self, t=0.4):
+            if not block:
+                taskMgr.spawnTaskNamed(task, self.fadeTaskName)
+            else:
+                return task
+            
+    def fadeInTask(self, task, time=0.4):
+        """
+        As a sequence: Fade in, execute the given task
+        """
+        seq = Task.sequence(self.fadeIn(time, block=1), task)
+        taskMgr.spawnTaskNamed(seq, 'fadeInTaskSeq')
+
+    def fadeOut(self, t=0.4, block=0):
         """
         Play a fade out transition over t seconds.
         Places a polygon on the render2d plane then lerps the color
         from transparent to full black. When the color lerp is finished,
         it leaves the fade polygon covering the render2d plane until you
-        fadeIn or call noFade.
+        fadeIn or call noFade. If block is set to 1, performs blocking
+        lerp
         """
         self.noTransitions()
 
@@ -60,10 +74,33 @@ class Transitions:
             self.fade.setColor(0,0,0,1)
         else:
             # Spawn a lerp of the color from no alpha to full alpha
-            self.fade.lerpColor(0,0,0,0,
+            if not block:
+                self.fade.lerpColor(0,0,0,0,
                                 0,0,0,1,
                                 t, task=self.fadeTaskName)
-        
+            else:
+                return self.fade.lerpColor(0,0,0,0,
+                                0,0,0,1,
+                                t)
+
+    def fadeOutTask(self, task, time=0.4, noFade=1):
+        """
+        As a sequence: Fade out, execute the given task, then do a noFade
+        if requested
+        """
+        if noFade:
+            def noFadeTask(task):
+                task.noFade()
+                return Task.done
+            nft = Task.Task(noFadeTask)
+            nft.noFade = self.noFade
+            seq = Task.sequence(self.fadeOut(time, block=1), task, nft)
+        else:
+            seq = Task.sequence(self.fadeOut(time, block=1), task)
+            
+        # do it
+        taskMgr.spawnTaskNamed(seq, 'fadeOutTaskSeq')
+
     def noFade(self):
         """
         Removes any current fade tasks and parents the fade polygon away
@@ -71,18 +108,18 @@ class Transitions:
 	taskMgr.removeTasksNamed(self.fadeTaskName)
 	self.fade.reparentTo(hidden)
         
-
     def irisInLerpDone(self, task):
         # This is a helper function to the fadeIn sequence
         self.iris.reparentTo(hidden)
         return Task.done
 
-    def irisIn(self, t=0.4):
+    def irisIn(self, t=0.4, block=0):
         """
         Play an iris in transition over t seconds.
         Places a polygon on the render2d plane then lerps the scale
         of the iris polygon up so it looks like we iris in. When the
         scale lerp is finished, it parents the iris polygon to hidden.
+        If block is true, does not execute lerp, but returns the sequence.
         """
 	self.noTransitions()
 
@@ -98,7 +135,17 @@ class Transitions:
                                     t, blendType="easeIn"),
                 Task.Task(self.irisInLerpDone))
             # Spawn the sequence
-            taskMgr.spawnTaskNamed(task, self.irisTaskName)
+            if not block:
+                taskMgr.spawnTaskNamed(task, self.irisTaskName)
+            else:
+                return task
+            
+    def irisInTask(self, task, time=0.4):
+        """
+        As a sequence: iris in, execute the given task
+        """
+        seq = Task.sequence(self.irisIn(time, block=1), task)
+        taskMgr.spawnTaskNamed(seq, 'irisInTaskSeq')
 
     def irisOutLerpDone(self, task):
         # This is a helper function to the fadeIn sequence
@@ -107,7 +154,7 @@ class Transitions:
         self.fadeOut(0)
         return Task.done
 
-    def irisOut(self, t=0.4):
+    def irisOut(self, t=0.4, block=0):
         """
         Play an iris out transition over t seconds.
         Places a polygon on the render2d plane then lerps the scale
@@ -129,8 +176,28 @@ class Transitions:
                                     t, blendType="easeIn"),
                 Task.Task(self.irisOutLerpDone))
             # Spawn the sequence
-            taskMgr.spawnTaskNamed(task, self.irisTaskName)
+            if not block:
+                taskMgr.spawnTaskNamed(task, self.irisTaskName)
+            else:
+                return task
 
+    def irisOutTask(self, task, time=0.4, noIris=1):
+        """
+        As a sequence: iris out, execute the given task, then do a noIris
+        if requested
+        """
+        if noIris:
+            def noIrisTask(task):
+                task.noIris()
+                return Task.done
+            nit = Task.Task(noIrisTask)
+            nit.noIris = self.noIris
+            seq = Task.sequence(self.irisOut(time, block=1), task, nit)
+        else:
+            seq = Task.sequence(self.irisOut(time, block=1), task)
+            
+        # do it
+        taskMgr.spawnTaskNamed(seq, 'irisOutTaskSeq')
 
     def noIris(self):
         """
