@@ -39,7 +39,7 @@ class PNMImage;
 //               assumption is that you have plenty of RAM for dealing
 //               with images.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA FadeImagePool {
+class FadeImagePool {
 public:
   INLINE static const PNMImage *get_image(const Filename &filename, 
                                           int x_size, int y_size);
