@@ -273,7 +273,8 @@ add_vertex(EggVertex *vertex) {
 ////////////////////////////////////////////////////////////////////
 EggVertex *EggPrimitive::
 remove_vertex(EggVertex *vertex) {
-  iterator i = find(begin(), end(), vertex);
+  PT_EggVertex vpt = vertex;
+  iterator i = find(begin(), end(), vpt);
   if (i == end()) {
     return PT_EggVertex();
   } else {

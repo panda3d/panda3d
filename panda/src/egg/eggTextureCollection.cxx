@@ -379,7 +379,8 @@ remove_texture(EggTexture *texture) {
   _textures.erase(ti);
 
   OrderedTextures::iterator oti;
-  oti = find(_ordered_textures.begin(), _ordered_textures.end(), texture);
+  PT(EggTexture) ptex = texture;
+  oti = find(_ordered_textures.begin(), _ordered_textures.end(), ptex);
   nassertr(oti != _ordered_textures.end(), false);
 
   _ordered_textures.erase(oti);
