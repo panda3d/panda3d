@@ -91,9 +91,12 @@ run() {
     mayaegg_cat->set_severity(NS_info);
   }
 
-  // Let's open the output file before we initialize Maya, since Maya
-  // now has a nasty habit of changing the current directory.
-  get_output();
+  // Let's convert the output file to a full path before we initialize
+  // Maya, since Maya now has a nasty habit of changing the current
+  // directory.
+  if (_got_output_filename) {
+    _output_filename.make_absolute();
+  }
 
   nout << "Initializing Maya.\n";
   MayaToEggConverter converter(_program_name);
