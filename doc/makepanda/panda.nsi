@@ -120,12 +120,12 @@ SectionEnd
 Section "Sample Worlds" SecSamples
         SectionIn 1 2 3
 
-        DetailPrint "Extracting samples ..."
+        DetailPrint "Extracting models ..."
         SetDetailsPrint textonly
         SetOutPath $INSTDIR\models
-        File /r /x CVS ${PSOURCE}\models\*
+        File /r /x CVS ${PANDA}\models\*
 
-        DetailPrint "Extracting models ..."
+        DetailPrint "Extracting samples ..."
         SetDetailsPrint textonly
         SetOutPath $INSTDIR\samples
         File /r /x CVS ${PSOURCE}\samples\*
