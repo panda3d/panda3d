@@ -54,8 +54,8 @@
 
 // particle system params
 #define PARTICLE_SYSTEM_POOL_SIZE 1024
-//#define PARTICLE_SYSTEM_BIRTH_RATE  0.02f
-#define PARTICLE_SYSTEM_BIRTH_RATE  0.5f
+#define PARTICLE_SYSTEM_BIRTH_RATE  0.02f
+//#define PARTICLE_SYSTEM_BIRTH_RATE  0.5f
 #define PARTICLE_SYSTEM_LITTER_SIZE 10
 #define PARTICLE_SYSTEM_LITTER_SPREAD 0
 
@@ -66,26 +66,26 @@
 /////////////////////////////////////////////////
 
 // particle factory selection
-//#define POINT_PARTICLES
-#define ZSPIN_PARTICLES
+#define POINT_PARTICLES
+//#define ZSPIN_PARTICLES
 //#define ORIENTED_PARTICLES
 
 // particle renderer selection
 //#define POINT_PARTICLE_RENDERER
-//#define LINE_PARTICLE_RENDERER
+#define LINE_PARTICLE_RENDERER
 //#define SPARKLE_PARTICLE_RENDERER
-#define SPRITE_PARTICLE_RENDERER
+//#define SPRITE_PARTICLE_RENDERER
 //#define GEOM_PARTICLE_RENDERER
 
 // particle emitter selection
-#define BOX_EMITTER
+//#define BOX_EMITTER
 //#define DISC_EMITTER
 //#define LINE_EMITTER
 //#define POINT_EMITTER
 //#define RECTANGLE_EMITTER
 //#define RING_EMITTER
 //#define SPHERE_SURFACE_EMITTER
-//#define SPHERE_VOLUME_EMITTER
+#define SPHERE_VOLUME_EMITTER
 //#define TANGENT_RING_EMITTER
 
 /////////////////////////////////////////////////
@@ -149,9 +149,9 @@
 
 // particle emitter params
 
-//#define EMISSION_TYPE_EXPLICIT
+#define EMISSION_TYPE_EXPLICIT
 //#define EMISSION_TYPE_RADIATE
-#define EMISSION_TYPE_CUSTOM
+//#define EMISSION_TYPE_CUSTOM
 
 //#define EMITTER_AMPLITUDE 10.0
 #define EMITTER_AMPLITUDE 1.0
