@@ -2,6 +2,9 @@
 
 from DirectObject import *
 
+import ClockObject
+import Task
+
 class Interval(DirectObject):
     """Interval class: Base class for timeline functionality"""
 
@@ -16,6 +19,7 @@ class Interval(DirectObject):
         """
 	self.name = name
 	self.duration = duration
+	self.clock = ClockObject.ClockObject.getGlobalClock()
 
     def getName(self):
 	""" getName()
@@ -37,6 +41,32 @@ class Interval(DirectObject):
 	""" setFinalT()
 	"""
 	self.setT(self.getDuration(), entry=1)
+
+    def play(self, t0=0.0, duration=0.0):
+        """ play(t0, duration)
+        """
+        self.startT = self.clock.getFrameTime() - t0
+        if (duration == 0.0):
+            self.playDuration = self.duration
+        else:
+            self.playDuration = duration
+        taskMgr.spawnMethodNamed(self.__playTask, self.name + '-play')
+
+    def stop(self):
+        """ stop()
+        """
+        taskMgr.removeTasksNamed(self.name + '-play')
+
+    def __playTask(self, task):
+        """ __playTask(task)
+        """
+        t = self.clock.getFrameTime()
+        te = t - self.startT
+        if (te <= self.playDuration):
+            self.setT(te)
+            return Task.cont
+        else:
+            return Task.done
 
     def printParams(self, indent=0):
 	""" printParams(indent)

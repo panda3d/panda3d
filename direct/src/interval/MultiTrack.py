@@ -3,9 +3,6 @@
 from Interval import *
 from Track import *
 
-import ClockObject
-import Task
-
 class MultiTrack(Interval):
 
     multiTrackNum = 1
@@ -22,7 +19,6 @@ class MultiTrack(Interval):
 	    n = name
 	self.tlist = trackList
 	duration = self.__computeDuration()
-	self.clock = ClockObject.ClockObject.getGlobalClock()
 	Interval.__init__(self, n, duration)
 
     def __computeDuration(self):
@@ -45,32 +41,6 @@ class MultiTrack(Interval):
 		'MultiTrack.setT(): t = %f > duration' % t)
 	for track in self.tlist:
 	    track.setT(t, entry)
-
-    def play(self, t0=0.0, duration=0.0):
-	""" play(t0, duration)
-	"""
-	self.startT = self.clock.getFrameTime() - t0
-	if (duration == 0.0):
-	    self.playDuration = self.duration
-	else:
-	    self.playDuration = duration
-	taskMgr.spawnMethodNamed(self.__playTask, self.name + '-play')
-
-    def stop(self):
-	""" stop()
-	"""
-	taskMgr.removeTasksNamed(self.name + '-play')
-
-    def __playTask(self, task):
-	""" __playTask(task)
-	"""
-	t = self.clock.getFrameTime()
-	te = t - self.startT
-	if (te <= self.playDuration):
-	    self.setT(te)
-	    return Task.cont
-	else:
-	    return Task.done
 
     def printParams(self, indent=0):
 	""" printParams(indent)
