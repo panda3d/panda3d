@@ -151,6 +151,17 @@ def WriteFile(wfile,data):
         dsthandle.close()
     except: sys.exit("Cannot write "+wfile)
 
+def prettyTime(t):
+    t = int(t)
+    hours = t/3600
+    t -= hours*3600
+    minutes = t/60
+    t -= minutes*60
+    seconds = t
+    if (hours): return str(hours)+" hours "+str(minutes)+" min"
+    if (minutes): return str(minutes)+" min "+str(seconds)+" sec"
+    return str(seconds)+" sec"
+
 ########################################################################
 ##
 ## MakeDirectory
@@ -188,8 +199,8 @@ PACKAGES=["ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","NVIDIACG","HELIX","NSPR",
           "SSL","FREETYPE","FFTW","MILES","MAYA5","MAYA6","MAX5","MAX6","MAX7"]
 OMIT=PACKAGES[:]
 WARNINGS=[]
-
 DIRECTXSDK=None
+STARTTIME=time.time()
 
 ##########################################################################################
 #
@@ -6131,5 +6142,6 @@ if (INSTALLER):
 #
 ##########################################################################################
 
+WARNINGS.append("Elapsed Time: "+prettyTime(time.time() - STARTTIME))
 printStatus("Makepanda Final Status Report", WARNINGS)
 
