@@ -1962,36 +1962,41 @@ cleanup_soft_skin()
     int numVerts = (int)vpool->size();
     softegg_cat.spam() << "found vpool " << vpool_name << " w/ " << numVerts << " verts\n";
 
-    // find the closest _parentJoint
-    SoftNodeDesc *parentJ = node_desc;
-    while( parentJ && !parentJ->_parentJoint) {
-      if ( parentJ->_parent) {
-        SAA_Boolean isSkeleton;
-        //softegg_cat.spam() << " checking parent " << parentJ->_parent->get_name() << endl;
-        if (parentJ->_parent->has_model())
-          SAA_modelIsSkeleton( &scene, parentJ->_parent->get_model(), &isSkeleton );
-        
-        if (isSkeleton) {
-          joint = parentJ->_parent->get_egg_group();
-          softegg_cat.spam() << "parent to " << parentJ->_parent->get_name() << endl;
-          break;
+    // if this node is a joint, then these vertices belong
+    // to this joint
+    if (node_desc->is_joint())
+      joint = node_desc->get_egg_group();
+    else {
+      // find the closest _parentJoint
+      SoftNodeDesc *parentJ = node_desc;
+      while( parentJ && !parentJ->_parentJoint) {
+        if ( parentJ->_parent) {
+          SAA_Boolean isSkeleton;
+          //softegg_cat.spam() << " checking parent " << parentJ->_parent->get_name() << endl;
+          if (parentJ->_parent->has_model())
+            SAA_modelIsSkeleton( &scene, parentJ->_parent->get_model(), &isSkeleton );
+          
+          if (isSkeleton) {
+            joint = parentJ->_parent->get_egg_group();
+            softegg_cat.spam() << "parent to " << parentJ->_parent->get_name() << endl;
+            break;
+          }
+          
+          parentJ = parentJ->_parent;
         }
-        
-        parentJ = parentJ->_parent;
+        else
+          break;
       }
-      else
-        break;
+      if (!joint && (!parentJ || !parentJ->_parentJoint)) {
+        softegg_cat.spam() << node_desc->get_name() << " has no _parentJoint?!" << endl;
+        continue;
+      }
+      
+      if (!joint) {
+        softegg_cat.spam() << "parent joint to " << parentJ->_parentJoint->get_name() << endl;
+        joint = parentJ->_parentJoint->get_egg_group();
+      }
     }
-    if (!joint && (!parentJ || !parentJ->_parentJoint)) {
-      softegg_cat.spam() << node_desc->get_name() << " has no _parentJoint?!" << endl;
-      continue;
-    }
-    
-    if (!joint) {
-      softegg_cat.spam() << "parent joint to " << parentJ->_parentJoint->get_name() << endl;
-      joint = parentJ->_parentJoint->get_egg_group();
-    }
-    
     EggVertexPool::iterator vi;
     double membership = 1.0f;
     for ( vi = vpool->begin(); vi != vpool->end(); ++vi) {
