@@ -1350,33 +1350,42 @@ unpack_int64(const char *data, size_t length, size_t &p, PN_int64 &value,
               bool &pack_error, bool &range_error) const {
   switch (_type) {
   case ST_int8:
-    if (p + 1 > length) {
-      pack_error = true;
-      return;
+    {
+      if (p + 1 > length) {
+        pack_error = true;
+        return;
+      }
+      int int_value = do_unpack_int8(data + p);
+      _int_range.validate(int_value, range_error);
+      value = (PN_int64)int_value;
+      p++;
     }
-    value = do_unpack_int8(data + p);
-    _int_range.validate(value, range_error);
-    p++;
     break;
 
   case ST_int16:
-    if (p + 2 > length) {
-      pack_error = true;
-      return;
+    {
+      if (p + 2 > length) {
+        pack_error = true;
+        return;
+      }
+      int int_value = do_unpack_int16(data + p);
+      _int_range.validate(int_value, range_error);
+      value = (PN_int64)int_value;
+      p += 2;
     }
-    value = do_unpack_int16(data + p);
-    _int_range.validate(value, range_error);
-    p += 2;
     break;
 
   case ST_int32:
-    if (p + 4 > length) {
-      pack_error = true;
-      return;
+    {
+      if (p + 4 > length) {
+        pack_error = true;
+        return;
+      }
+      int int_value = do_unpack_int32(data + p);
+      _int_range.validate(int_value, range_error);
+      value = (PN_int64)int_value;
+      p += 4;
     }
-    value = do_unpack_int32(data + p);
-    _int_range.validate(value, range_error);
-    p += 4;
     break;
 
   case ST_int64:
@@ -1546,33 +1555,42 @@ unpack_uint64(const char *data, size_t length, size_t &p, PN_uint64 &value,
 
   case ST_char:
   case ST_uint8:
-    if (p + 1 > length) {
-      pack_error = true;
-      return;
+    {
+      if (p + 1 > length) {
+        pack_error = true;
+        return;
+      }
+      unsigned int uint_value = do_unpack_uint8(data + p);
+      _uint_range.validate(uint_value, range_error);
+      value = (PN_uint64)uint_value;
+      p++;
     }
-    value = do_unpack_uint8(data + p);
-    _uint_range.validate(value, range_error);
-    p++;
     break;
 
   case ST_uint16:
-    if (p + 2 > length) {
-      pack_error = true;
-      return;
+    {
+      if (p + 2 > length) {
+        pack_error = true;
+        return;
+      }
+      unsigned int uint_value = do_unpack_uint16(data + p);
+      _uint_range.validate(uint_value, range_error);
+      value = (PN_uint64)uint_value;
+      p += 2;
     }
-    value = do_unpack_uint16(data + p);
-    _uint_range.validate(value, range_error);
-    p += 2;
     break;
 
   case ST_uint32:
-    if (p + 4 > length) {
-      pack_error = true;
-      return;
+    {
+      if (p + 4 > length) {
+        pack_error = true;
+        return;
+      }
+      unsigned int uint_value = do_unpack_uint32(data + p);
+      _uint_range.validate(uint_value, range_error);
+      value = (PN_uint64)uint_value;
+      p += 4;
     }
-    value = do_unpack_uint32(data + p);
-    _uint_range.validate(value, range_error);
-    p += 4;
     break;
 
   case ST_uint64:
