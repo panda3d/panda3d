@@ -701,7 +701,7 @@ class PhysicsWalker(DirectObject.DirectObject):
             self.accept("control-f3", self.spawnTest) #*#
             self.accept("f3", self.reset) # for debugging only.
 
-        taskName = "AvatarControls%s"%(id(self),)
+        taskName = "AvatarControls-%s"%(id(self),)
         # remove any old
         taskMgr.remove(taskName)
         # spawn the new task
@@ -714,7 +714,7 @@ class PhysicsWalker(DirectObject.DirectObject):
         Ignore the arrow keys, etc.
         """
         assert(self.debugPrint("disableAvatarControls()"))
-        taskName = "AvatarControls%s"%(id(self),)
+        taskName = "AvatarControls-%s"%(id(self),)
         taskMgr.remove(taskName)
 
         taskName = "AvatarControlsIndicator%s"%(id(self),)
