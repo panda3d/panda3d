@@ -17,6 +17,7 @@ import os
 import getopt
 import sys
 import whrandom
+import Task
 
 visualizeZones = base.config.GetBool("visualize-zones", 0)
 dnaDirectory = Filename.expandFrom(base.config.GetString("dna-directory", "$TTMODELS/src/dna"))

@@ -1,5 +1,6 @@
 from PandaObject import *
 from DirectGeometry import *
+import Task
 
 class PieMenu(NodePath, PandaObject):
     def __init__(self, visibleMenu, menuItems,

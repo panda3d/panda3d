@@ -851,6 +851,13 @@ class DisplayRegionContext(PandaObject):
             
     def camUpdate(self, lens = None):
         # Window Data
+        prop = base.win.getProperties()
+        try:
+            self.width = prop.getXSize()
+            self.height = prop.getYSize()
+        except AssertionError:
+            self.width = 640
+            self.height = 480
         self.near = self.camLens.getNear()
         self.far = self.camLens.getFar()
         self.fovH = self.camLens.getHfov()
