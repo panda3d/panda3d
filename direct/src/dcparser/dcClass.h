@@ -66,10 +66,9 @@ PUBLISHED:
 
   INLINE void start_generate();
   INLINE void stop_generate();
-  
-  virtual void output(ostream &out) const;
-  virtual void write(ostream &out, unsigned int indent=0) const;
 
+  virtual void output(ostream &out) const;
+  
 #ifdef HAVE_PYTHON
   bool has_class_def() const;
   void set_class_def(PyObject *class_def);
@@ -101,6 +100,7 @@ PUBLISHED:
 #endif 
 
 public:
+  virtual void output(ostream &out, bool brief) const;
   virtual void write(ostream &out, bool brief, int indent_level) const;
   void output_instance(ostream &out, bool brief, const string &prename, 
                        const string &name, const string &postname) const;

@@ -189,8 +189,9 @@ DCField *DCClass::
 get_field(int n) const {
   #ifndef NDEBUG //[
   if (n < 0 || n >= (int)_fields.size()) {
-    write(cerr, 0);
-    cerr<<"n:"<<n<<" _fields.size():"<<(int)_fields.size()<<endl;
+    cerr << *this << " "
+         << "n:" << n << " _fields.size():"
+         << (int)_fields.size() << endl;
     // __asm { int 3 }
   }
   #endif //]
@@ -268,41 +269,21 @@ get_inherited_field(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function : output
-//       Access : Published
+//     Function : DCClass::output
+//       Access : Published, Virtual
 //  Description : Write a string representation of this instance to
 //                <out>.
 ////////////////////////////////////////////////////////////////////
 void DCClass::
 output(ostream &out) const {
-  #ifndef NDEBUG //[
-  out<<""<<"DCClass";
-  #endif //] NDEBUG
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function : write
-//       Access : Published
-//  Description : Write a string representation of this instance to
-//                <out>.
-////////////////////////////////////////////////////////////////////
-void DCClass::
-write(ostream &out, unsigned int indent) const {
-  #ifndef NDEBUG //[
-  out.width(indent); out<<""<<"DCClass:\n";
-  
-  out.width(indent+2); out<<""<<"_name "<<_name<<"\n";
-  out.width(indent+2); out<<""<<"_is_struct "<<_is_struct<<"\n";
-  out.width(indent+2); out<<""<<"_bogus_class "<<_bogus_class<<"\n";
-  out.width(indent+2); out<<""<<"_number "<<_number<<"\n";
-
-  //typedef pvector<DCClass *> Parents;
-  //Parents _parents;
-  //typedef pvector<DCField *> Fields;
-  //Fields _fields;
-  //typedef pmap<string, DCField *> FieldsByName;
-  //FieldsByName _fields_by_name;
-  #endif //] NDEBUG
+  if (_is_struct) {
+    out << "struct";
+  } else {
+    out << "dclass";
+  }
+  if (!_name.empty()) {
+    out << " " << _name;
+  }
 }
 
 #ifdef HAVE_PYTHON
@@ -819,6 +800,17 @@ ai_format_generate(PyObject *distobj, int do_id,
   return Datagram(packer.get_data(), packer.get_length());
 }
 #endif  // HAVE_PYTHON
+
+////////////////////////////////////////////////////////////////////
+//     Function : DCClass::output
+//       Access : Public, Virtual
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void DCClass::
+output(ostream &out, bool brief) const {
+  output_instance(out, brief, "", "", "");
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCClass::write

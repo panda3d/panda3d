@@ -78,6 +78,9 @@ PUBLISHED:
 
   bool compare_flags(const DCField &other) const;
 
+  void output(ostream &out) const;
+  void write(ostream &out, int indent_level) const;
+
 #ifdef HAVE_PYTHON
   bool pack_args(DCPacker &packer, PyObject *sequence) const;
   PyObject *unpack_args(DCPacker &packer) const;
@@ -138,5 +141,10 @@ private:
   PStatCollector _field_update_pcollector;
 #endif
 };
+
+INLINE ostream &operator << (ostream &out, const DCField &field) {
+  field.output(out);
+  return out;
+}
 
 #endif

@@ -391,6 +391,28 @@ compare_flags(const DCField &other) const {
   return _flags == other._flags;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function : DCField::output
+//       Access : Published
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void DCField::
+output(ostream &out) const {
+  output(out, true);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : DCField::
+//       Access : Published
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void DCField::
+write(ostream &out, int indent_level) const {
+  write(out, false, indent_level);
+}
+
 #ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
 //     Function: DCField::pack_args

@@ -48,6 +48,7 @@ public:
   DCParameter *make_new_parameter() const;
 
   void set_number(int number);
+  virtual void output(ostream &out, bool brief) const;
   virtual void write(ostream &out, bool brief, int indent_level) const;
 
 private:

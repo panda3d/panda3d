@@ -254,6 +254,17 @@ apply_switch(const char *value_data, size_t length) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function : DCSwitch::output
+//       Access : Public, Virtual
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void DCSwitch::
+output(ostream &out, bool brief) const {
+  output_instance(out, brief, "", "", "");
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCSwitch::write
 //       Access: Public, Virtual
 //  Description: Generates a parseable description of the object to
@@ -265,7 +276,7 @@ write(ostream &out, bool brief, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCClass::output_instance
+//     Function: DCSwitch::output_instance
 //       Access: Public
 //  Description: Generates a parseable description of the object to
 //               the indicated output stream.

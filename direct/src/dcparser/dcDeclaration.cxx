@@ -67,3 +67,25 @@ const DCSwitch *DCDeclaration::
 as_switch() const {
   return (DCSwitch *)NULL;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : DCDeclaration::output
+//       Access : Published, Virtual
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void DCDeclaration::
+output(ostream &out) const {
+  output(out, true);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : DCDeclaration::
+//       Access : Published
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void DCDeclaration::
+write(ostream &out, int indent_level) const {
+  write(out, false, indent_level);
+}
