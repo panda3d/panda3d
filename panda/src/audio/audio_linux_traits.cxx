@@ -250,7 +250,7 @@ LinuxSample::~LinuxSample(void) {
 }
 
 float LinuxSample::length(void) {
-  return (_data->get_size()) / (audio_mix_freq * sample_size);
+  return (_data->get_size()) / (audio_mix_freq * sample_size * 2.);
 }
 
 AudioTraits::SampleClass::SampleStatus LinuxSample::status(void) {
