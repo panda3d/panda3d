@@ -27,7 +27,7 @@ TypeHandle XFileDataNodeReference::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 XFileDataNodeReference::
-XFileDataNodeReference(XFileDataObjectTemplate *object) :
+XFileDataNodeReference(XFileDataNodeTemplate *object) :
   XFileDataNode(object->get_x_file(), object->get_name()),
   _object(object)
 {

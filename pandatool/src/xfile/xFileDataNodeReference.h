@@ -20,7 +20,7 @@
 #define XFILEDATANODEREFERENCE_H
 
 #include "pandatoolbase.h"
-#include "xFileDataObjectTemplate.h"
+#include "xFileDataNodeTemplate.h"
 #include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -30,10 +30,10 @@
 ////////////////////////////////////////////////////////////////////
 class XFileDataNodeReference : public XFileDataNode {
 public:
-  XFileDataNodeReference(XFileDataObjectTemplate *object);
+  XFileDataNodeReference(XFileDataNodeTemplate *object);
 
   INLINE XFileTemplate *get_template() const;
-  INLINE XFileDataObjectTemplate *get_object() const;
+  INLINE XFileDataNodeTemplate *get_object() const;
 
   virtual bool is_complex_object() const;
 
@@ -45,7 +45,7 @@ protected:
   virtual const XFileDataObject *get_element(const string &name) const;
 
 private:
-  PT(XFileDataObjectTemplate) _object;
+  PT(XFileDataNodeTemplate) _object;
 
 public:
   static TypeHandle get_class_type() {

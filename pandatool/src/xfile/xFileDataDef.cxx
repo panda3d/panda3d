@@ -22,7 +22,7 @@
 #include "xFileParseData.h"
 #include "xFileDataObjectInteger.h"
 #include "xFileDataObjectDouble.h"
-#include "xFileDataObjectTemplate.h"
+#include "xFileDataNodeTemplate.h"
 #include "xFileDataObjectArray.h"
 
 TypeHandle XFileDataDef::_type_handle;
@@ -294,8 +294,8 @@ PT(XFileDataObject) XFileDataDef::
 unpack_template_value(const XFileParseDataList &parse_data_list,
                       const XFileDataDef::PrevData &prev_data,
                       size_t &index, size_t &sub_index) const {
-  PT(XFileDataObjectTemplate) data_value = 
-    new XFileDataObjectTemplate(get_x_file(), get_name(), _template);
+  PT(XFileDataNodeTemplate) data_value = 
+    new XFileDataNodeTemplate(get_x_file(), get_name(), _template);
 
   PrevData nested_prev_data(prev_data);
   if (!_template->repack_data(data_value, parse_data_list, 

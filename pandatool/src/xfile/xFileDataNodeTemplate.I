@@ -1,4 +1,4 @@
-// Filename: xFileDataObjectTemplate.I
+// Filename: xFileDataNodeTemplate.I
 // Created by:  drose (03Oct04)
 //
 ////////////////////////////////////////////////////////////////////
@@ -18,11 +18,11 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileDataObjectTemplate::get_template
+//     Function: XFileDataNodeTemplate::get_template
 //       Access: Public
 //  Description: Returns the template used to define this data object.
 ////////////////////////////////////////////////////////////////////
-INLINE XFileTemplate *XFileDataObjectTemplate::
+INLINE XFileTemplate *XFileDataNodeTemplate::
 get_template() const {
   return _template;
 }

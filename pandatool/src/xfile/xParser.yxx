@@ -16,7 +16,7 @@
 #include "xFileTemplate.h"
 #include "xFileDataDef.h"
 #include "xFileArrayDef.h"
-#include "xFileDataObjectTemplate.h"
+#include "xFileDataNodeTemplate.h"
 #include "xFileDataNodeReference.h"
 #include "pointerTo.h"
 #include "dcast.h"
@@ -339,16 +339,16 @@ object:
   if (xtemplate == (XFileTemplate *)NULL) {
     yyerror("Unknown template: " + $1);
   } else {
-    XFileDataObjectTemplate *templ = 
-      new XFileDataObjectTemplate(x_file, $2, xtemplate);
+    XFileDataNodeTemplate *templ = 
+      new XFileDataNodeTemplate(x_file, $2, xtemplate);
     current_node->add_child(templ);
     current_node = templ;
   }
 }
 	optional_class_id data_parts_list TOKEN_CBRACE
 {
-  XFileDataObjectTemplate *current_template = 
-    DCAST(XFileDataObjectTemplate, current_node);
+  XFileDataNodeTemplate *current_template = 
+    DCAST(XFileDataNodeTemplate, current_node);
   current_template->finalize_parse_data();
 
   $$ = current_node;
@@ -373,20 +373,20 @@ data_part:
 }
         | integer_list
 {
-  XFileDataObjectTemplate *current_template = 
-    DCAST(XFileDataObjectTemplate, current_node);
+  XFileDataNodeTemplate *current_template = 
+    DCAST(XFileDataNodeTemplate, current_node);
   current_template->add_parse_int($1);
 }
         | realnum_list
 {
-  XFileDataObjectTemplate *current_template = 
-    DCAST(XFileDataObjectTemplate, current_node);
+  XFileDataNodeTemplate *current_template = 
+    DCAST(XFileDataNodeTemplate, current_node);
   current_template->add_parse_double($1);
 }
 	| string list_separator
 {
-  XFileDataObjectTemplate *current_template = 
-    DCAST(XFileDataObjectTemplate, current_node);
+  XFileDataNodeTemplate *current_template = 
+    DCAST(XFileDataNodeTemplate, current_node);
   current_template->add_parse_string($1);
 }
         | list_separator
@@ -414,7 +414,7 @@ list_separator:
 data_reference:
         name
 {
-  XFileDataObjectTemplate *data_object = x_file->find_data_object($1);
+  XFileDataNodeTemplate *data_object = x_file->find_data_object($1);
   if (data_object == (XFileDataObject *)NULL) {
     yyerror("Unknown data_object: " + $1);
   }
@@ -423,7 +423,7 @@ data_reference:
 }
 	| name class_id
 {
-  XFileDataObjectTemplate *data_object = x_file->find_data_object($2);
+  XFileDataNodeTemplate *data_object = x_file->find_data_object($2);
   if (data_object == (XFileDataObject *)NULL) {
     yyerror("Unknown data_object: " + $1);
   } else {

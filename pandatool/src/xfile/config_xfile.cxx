@@ -23,9 +23,9 @@
 #include "xFileDataObjectArray.h"
 #include "xFileDataObjectDouble.h"
 #include "xFileDataObjectInteger.h"
-#include "xFileDataObjectTemplate.h"
 #include "xFileDataNode.h"
 #include "xFileDataNodeReference.h"
+#include "xFileDataNodeTemplate.h"
 #include "xFileNode.h"
 #include "xFileTemplate.h"
 
@@ -66,9 +66,9 @@ init_libxfile() {
   XFileDataObjectArray::init_type();
   XFileDataObjectDouble::init_type();
   XFileDataObjectInteger::init_type();
-  XFileDataObjectTemplate::init_type();
   XFileDataNode::init_type();
   XFileDataNodeReference::init_type();
+  XFileDataNodeTemplate::init_type();
   XFileNode::init_type();
   XFileTemplate::init_type();
 }

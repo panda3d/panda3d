@@ -50,7 +50,7 @@
 #include "xFileTemplate.h"
 #include "xFileDataDef.h"
 #include "xFileArrayDef.h"
-#include "xFileDataObjectTemplate.h"
+#include "xFileDataNodeTemplate.h"
 #include "xFileDataNodeReference.h"
 #include "pointerTo.h"
 #include "dcast.h"
@@ -1215,8 +1215,8 @@ case 49:
   if (xtemplate == (XFileTemplate *)NULL) {
     yyerror("Unknown template: " + yyvsp[-2].str);
   } else {
-    XFileDataObjectTemplate *templ = 
-      new XFileDataObjectTemplate(x_file, yyvsp[-1].str, xtemplate);
+    XFileDataNodeTemplate *templ = 
+      new XFileDataNodeTemplate(x_file, yyvsp[-1].str, xtemplate);
     current_node->add_child(templ);
     current_node = templ;
   }
@@ -1225,8 +1225,8 @@ case 49:
 case 50:
 #line 349 "xParser.yxx"
 {
-  XFileDataObjectTemplate *current_template = 
-    DCAST(XFileDataObjectTemplate, current_node);
+  XFileDataNodeTemplate *current_template = 
+    DCAST(XFileDataNodeTemplate, current_node);
   current_template->finalize_parse_data();
 
   yyval.u.node = current_node;
@@ -1249,24 +1249,24 @@ case 54:
 case 55:
 #line 375 "xParser.yxx"
 {
-  XFileDataObjectTemplate *current_template = 
-    DCAST(XFileDataObjectTemplate, current_node);
+  XFileDataNodeTemplate *current_template = 
+    DCAST(XFileDataNodeTemplate, current_node);
   current_template->add_parse_int(yyvsp[0].int_list);
 }
     break;
 case 56:
 #line 381 "xParser.yxx"
 {
-  XFileDataObjectTemplate *current_template = 
-    DCAST(XFileDataObjectTemplate, current_node);
+  XFileDataNodeTemplate *current_template = 
+    DCAST(XFileDataNodeTemplate, current_node);
   current_template->add_parse_double(yyvsp[0].double_list);
 }
     break;
 case 57:
 #line 387 "xParser.yxx"
 {
-  XFileDataObjectTemplate *current_template = 
-    DCAST(XFileDataObjectTemplate, current_node);
+  XFileDataNodeTemplate *current_template = 
+    DCAST(XFileDataNodeTemplate, current_node);
   current_template->add_parse_string(yyvsp[-1].str);
 }
     break;
@@ -1278,7 +1278,7 @@ case 58:
 case 64:
 #line 416 "xParser.yxx"
 {
-  XFileDataObjectTemplate *data_object = x_file->find_data_object(yyvsp[0].str);
+  XFileDataNodeTemplate *data_object = x_file->find_data_object(yyvsp[0].str);
   if (data_object == (XFileDataObject *)NULL) {
     yyerror("Unknown data_object: " + yyvsp[0].str);
   }
@@ -1289,7 +1289,7 @@ case 64:
 case 65:
 #line 425 "xParser.yxx"
 {
-  XFileDataObjectTemplate *data_object = x_file->find_data_object(yyvsp[0].guid);
+  XFileDataNodeTemplate *data_object = x_file->find_data_object(yyvsp[0].guid);
   if (data_object == (XFileDataObject *)NULL) {
     yyerror("Unknown data_object: " + yyvsp[-1].str);
   } else {

@@ -1,4 +1,4 @@
-// Filename: xFileDataObjectTemplate.h
+// Filename: xFileDataNodeTemplate.h
 // Created by:  drose (03Oct04)
 //
 ////////////////////////////////////////////////////////////////////
@@ -16,8 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef XFILEDATAOBJECTTEMPLATE_H
-#define XFILEDATAOBJECTTEMPLATE_H
+#ifndef XFILEDATANODETEMPLATE_H
+#define XFILEDATANODETEMPLATE_H
 
 #include "pandatoolbase.h"
 #include "xFileDataNode.h"
@@ -28,16 +28,16 @@
 #include "pta_double.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : XFileDataObjectTemplate
+//       Class : XFileDataNodeTemplate
 // Description : A data element that represents a combination of
 //               multiple data elements as defined by a template.  The
 //               individual data elements of the template may be
 //               obtained by walking through the children of this
 //               object.
 ////////////////////////////////////////////////////////////////////
-class XFileDataObjectTemplate : public XFileDataNode {
+class XFileDataNodeTemplate : public XFileDataNode {
 public:
-  XFileDataObjectTemplate(XFile *x_file, const string &name,
+  XFileDataNodeTemplate(XFile *x_file, const string &name,
                           XFileTemplate *xtemplate);
 
   INLINE XFileTemplate *get_template() const;
@@ -74,7 +74,7 @@ public:
   }
   static void init_type() {
     XFileDataNode::init_type();
-    register_type(_type_handle, "XFileDataObjectTemplate",
+    register_type(_type_handle, "XFileDataNodeTemplate",
                   XFileDataNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
@@ -86,7 +86,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "xFileDataObjectTemplate.I"
+#include "xFileDataNodeTemplate.I"
 
 #endif
   

@@ -29,10 +29,10 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : XFileParseData
 // Description : This class is used to fill up the data into an
-//               XFileDataObjectTemplate object as the data values are
+//               XFileDataNodeTemplate object as the data values are
 //               parsed out of the X file.  It only has a temporary
 //               lifespan; it will be converted into actual data by
-//               XFileDataObjectTemplate::finalize_parse_data().
+//               XFileDataNodeTemplate::finalize_parse_data().
 ////////////////////////////////////////////////////////////////////
 class XFileParseData {
 public:

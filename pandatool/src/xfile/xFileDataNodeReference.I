@@ -32,7 +32,7 @@ get_template() const {
 //       Access: Public
 //  Description: Returns the actual data object being referenced.
 ////////////////////////////////////////////////////////////////////
-INLINE XFileDataObjectTemplate *XFileDataNodeReference::
+INLINE XFileDataNodeTemplate *XFileDataNodeReference::
 get_object() const {
   return _object;
 }
