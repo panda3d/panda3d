@@ -40,9 +40,15 @@ queue_event(CPT_Event event) {
       << "Ignoring event " << *event << "; event queue full.\n";
   } else {
     _queue.insert(event);
-    if (event_cat.is_debug()) {
-      event_cat.debug()
-	<< "Throwing event " << *event << "\n";
+    if (event_cat.is_spam() || event_cat.is_debug()) {
+      if (event->get_name() == "NewFrame") {
+	// Don't bother us with this particularly spammy event.
+	event_cat.spam()
+	  << "Throwing event " << *event << "\n";
+      } else {
+	event_cat.debug()
+	  << "Throwing event " << *event << "\n";
+      }
     }
   }
 }

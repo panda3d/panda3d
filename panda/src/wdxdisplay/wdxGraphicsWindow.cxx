@@ -86,40 +86,56 @@ HRESULT CALLBACK EnumZBufFmtsCallback( LPDDPIXELFORMAT pddpf, VOID* param )
 ButtonHandle  wdxGraphicsWindow::
 lookup_key(WPARAM wparam) const {
   switch (wparam) {
-    case VK_BACK: return KeyboardButton::backspace();
-    case VK_TAB: return KeyboardButton::tab();
-    case VK_ESCAPE: return KeyboardButton::escape();
-    case VK_SPACE: return KeyboardButton::space();
-    case VK_UP: return KeyboardButton::up();
-    case VK_DOWN: return KeyboardButton::down();
-    case VK_LEFT: return KeyboardButton::left();
-    case VK_RIGHT: return KeyboardButton::right();
-    case VK_PRIOR: return KeyboardButton::page_up();
-    case VK_NEXT: return KeyboardButton::page_down();
-    case VK_HOME: return KeyboardButton::home();
-    case VK_END: return KeyboardButton::end();
-    case VK_F1: return KeyboardButton::f1();
-    case VK_F2: return KeyboardButton::f2();
-    case VK_F3: return KeyboardButton::f3();
-    case VK_F4: return KeyboardButton::f4();
-    case VK_F5: return KeyboardButton::f5();
-    case VK_F6: return KeyboardButton::f6();
-    case VK_F7: return KeyboardButton::f7();
-    case VK_F8: return KeyboardButton::f8();
-    case VK_F9: return KeyboardButton::f9();
-    case VK_F10: return KeyboardButton::f10();
-    case VK_F11: return KeyboardButton::f11();
-    case VK_F12: return KeyboardButton::f12();
-    case VK_INSERT: return KeyboardButton::insert();
-    case VK_DELETE: return KeyboardButton::del();
-    default:
-      int key = MapVirtualKey(wparam, 2);
-      if (isascii(key) && key != 0) {
-	if (GetKeyState(VK_SHIFT) >= 0)
-	  key = tolower(key); 
-	return KeyboardButton::ascii_key((uchar)key);
-      }
-      break;
+  case VK_BACK: return KeyboardButton::backspace();
+  case VK_TAB: return KeyboardButton::tab();
+  case VK_ESCAPE: return KeyboardButton::escape();
+  case VK_SPACE: return KeyboardButton::space();
+  case VK_UP: return KeyboardButton::up();
+  case VK_DOWN: return KeyboardButton::down();
+  case VK_LEFT: return KeyboardButton::left();
+  case VK_RIGHT: return KeyboardButton::right();
+  case VK_PRIOR: return KeyboardButton::page_up();
+  case VK_NEXT: return KeyboardButton::page_down();
+  case VK_HOME: return KeyboardButton::home();
+  case VK_END: return KeyboardButton::end();
+  case VK_F1: return KeyboardButton::f1();
+  case VK_F2: return KeyboardButton::f2();
+  case VK_F3: return KeyboardButton::f3();
+  case VK_F4: return KeyboardButton::f4();
+  case VK_F5: return KeyboardButton::f5();
+  case VK_F6: return KeyboardButton::f6();
+  case VK_F7: return KeyboardButton::f7();
+  case VK_F8: return KeyboardButton::f8();
+  case VK_F9: return KeyboardButton::f9();
+  case VK_F10: return KeyboardButton::f10();
+  case VK_F11: return KeyboardButton::f11();
+  case VK_F12: return KeyboardButton::f12();
+  case VK_INSERT: return KeyboardButton::insert();
+  case VK_DELETE: return KeyboardButton::del();
+    
+  case VK_SHIFT:
+  case VK_LSHIFT:
+  case VK_RSHIFT:
+    return KeyboardButton::shift();
+
+  case VK_CONTROL:
+  case VK_LCONTROL:
+  case VK_RCONTROL:
+    return KeyboardButton::control();
+
+  case VK_MENU:
+  case VK_LMENU:
+  case VK_RMENU:
+    return KeyboardButton::alt();
+
+  default:
+    int key = MapVirtualKey(wparam, 2);
+    if (isascii(key) && key != 0) {
+      if (GetKeyState(VK_SHIFT) >= 0)
+	key = tolower(key); 
+      return KeyboardButton::ascii_key((uchar)key);
+    }
+    break;
   }
   return ButtonHandle::none();
 }

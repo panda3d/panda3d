@@ -118,7 +118,7 @@ get_current_position() {
 ////////////////////////////////////////////////////////////////////
 //     Function: LineSegs::create
 //       Access: Public
-//  Description: Appends to an existing GeomNode a new pfGeoSet that
+//  Description: Appends to an existing GeomNode a new Geom that
 //               will render the series of line segments and points
 //               described via calls to move_to() and draw_to().  The
 //               lines and points are created with the color and
