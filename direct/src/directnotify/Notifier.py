@@ -218,10 +218,12 @@ class Notifier:
 
     def debugCall(self, debugString=''):
         """
-        
+        If this notify is in debug mode, print the time of the 
+        call followed by the notifier category and
+        the function call (with parameters).
         """
         if (self.__debug):
-            string = ":%s %s %s.%s %s"%(
+            string = ":%s %s %s.%s"%(
                 self.getOnlyTime(),
                 debugString,
                 self.__name,
