@@ -61,7 +61,7 @@ def writeFsmTree(instance, indent = 0):
         if hasattr(instance.fsm, 'state'):
             name = instance.fsm.state.name
         print "%s: %s"%(instance.fsm.name, name)
-        
+
 
 
 
@@ -73,7 +73,7 @@ if __debug__:
                 that is printed as part of the trace back.
                 This is just to make it easier to tell what the
                 stack trace is referring to.
-            start is an integer number of stack frames back 
+            start is an integer number of stack frames back
                 from the most recent.  (This is automatically
                 bumped up by one to skip the __init__ call
                 to the StackTrace).
@@ -140,6 +140,33 @@ def printThisCall():
     print traceFunctionCall(sys._getframe(1))
     return 1 # to allow "assert printThisCall()"
 
+
+if __debug__:
+    def lineage(obj, verbose=0, indent=0):
+        """
+        return instance or class name in as a multiline string.
+
+        Usage: print lineage(foo)
+
+        (Based on getClassLineage())
+        """
+        r=""
+        if type(obj) == types.ListType:
+            r+=(" "*indent)+"python list\n"
+        elif type(obj) == types.DictionaryType:
+            r+=(" "*indent)+"python dictionary\n"
+        elif type(obj) == types.ModuleType:
+            r+=(" "*indent)+str(obj)+"\n"
+        elif type(obj) == types.InstanceType:
+            r+=lineage(obj.__class__, verbose, indent)
+        elif type(obj) == types.ClassType:
+            r+=(" "*indent)
+            if verbose:
+                r+=obj.__module__+"."
+            r+=obj.__name__+"\n"
+            for c in obj.__bases__:
+                r+=lineage(c, verbose, indent+2)
+        return r
 
 def tron():
     sys.settrace(trace)
@@ -399,7 +426,7 @@ class Signature:
 def aproposAll(obj):
     """
     Print out a list of all members and methods (including overloaded methods)
-    of an instance or class  
+    of an instance or class
     """
     apropos(obj, fOverloaded = 1, fTruncate = 0)
 
@@ -412,14 +439,14 @@ def adjust(command = None, dim = 1, parent = None, **kw):
     """
     adjust(command = None, parent = None, **kw)
     Popup and entry scale to adjust a parameter
-    
+
     Accepts any Slider keyword argument.  Typical arguments include:
     command: The one argument command to execute
     min: The min value of the slider
     max: The max value of the slider
     resolution: The resolution of the slider
     text: The label on the slider
-    
+
     These values can be accessed and/or changed after the fact
     >>> vg = adjust()
     >>> vg['min']
@@ -565,7 +592,7 @@ def reduceAngle(deg):
     Reduces an angle (in degrees) to a value in [-180..180)
     """
     return (((deg + 180.) % 360.) - 180.)
-    
+
 def fitSrcAngle2Dest(src, dest):
     """
     given a src and destination angle, returns an equivalent src angle
@@ -687,7 +714,7 @@ class Functor:
         self._kargs = kargs
         self.__name__ = 'Functor: %s' % self._function.__name__
         self.__doc__ = self._function.__doc__
-        
+
     def __call__(self, *args, **kargs):
         """call function"""
         _args = list(self._args)
@@ -758,7 +785,7 @@ def formatElapsedSeconds(seconds):
     if hours > 36:
         days = math.floor((hours + 12) / 24)
         return "%s%d days" % (sign, days)
-    
+
     seconds -= hours * (60 * 60)
     minutes = (int)(seconds / 60)
     seconds -= minutes * 60
@@ -874,7 +901,7 @@ def findPythonModule(module):
         pathname = os.path.join(dir, filename)
         if os.path.exists(pathname):
             return pathname
-        
+
     return None
 
 def describeException(backTrace = 4):
@@ -896,7 +923,7 @@ def describeException(backTrace = 4):
             line += lnotab[i+1]
 
         return line
-    
+
     infoArr = sys.exc_info()
     exception = infoArr[0]
     exceptionName = getattr(exception, '__name__', None)
@@ -923,7 +950,7 @@ def describeException(backTrace = 4):
     description = ""
     for i in range(len(stack) - 1, max(len(stack) - backTrace, 0) - 1, -1):
         description += stack[i]
-        
+
     description += "%s: %s" % (exceptionName, extraInfo)
     return description
 
@@ -1000,10 +1027,10 @@ def normalDistrib(a, b, gauss=random.gauss):
     ====================
     All normal density curves satisfy the following property which is often
       referred to as the Empirical Rule:
-    68% of the observations fall within 1 standard deviation of the mean. 
+    68% of the observations fall within 1 standard deviation of the mean.
     95% of the observations fall within 2 standard deviations of the mean.
     99.7% of the observations fall within 3 standard deviations of the mean.
-    
+
     Thus, for a normal distribution, almost all values lie within 3 standard
       deviations of the mean.
     ------------------------------------------------------------------------
@@ -1063,7 +1090,7 @@ class Enum:
     starting value.
 
     Example:
-    
+
     >>> colors = Enum('red, green, blue')
     >>> colors.red
     0
@@ -1134,7 +1161,7 @@ class Enum:
             return 1
 
 ############################################################
-# class: Singleton  
+# class: Singleton
 # Purpose: This provides a base metaclass for all classes
 #          that require one and only one instance.
 #
@@ -1158,7 +1185,7 @@ class Enum:
 #
 #           This causes problems because myNewClassX is a
 #           New-Style class that inherits from only a
-#           Classic-Style base class. There are two ways 
+#           Classic-Style base class. There are two ways
 #           simple ways to resolve this issue.
 #
 #           First, if possible, make myClassX a
@@ -1180,4 +1207,4 @@ class Singleton(type):
 
 class SingletonError(ValueError):
     """ Used to indicate an inappropriate value for a Singleton."""
-        
+
