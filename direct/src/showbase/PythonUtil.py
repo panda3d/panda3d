@@ -30,6 +30,8 @@ def indent(stream, numIndents, str):
     # To match emacs, instead of a tab character we will use 4 spaces
     stream.write('    ' * numIndents + str)
 
+
+
 def traceFunctionCall(frame):
     """
     return a string that shows the call frame with calling arguments.
@@ -60,6 +62,31 @@ def traceFunctionCall(frame):
         else: r+="*** undefined ***"
     return r+')'
 
+def printThisCall():
+    print traceFunctionCall(sys._getframe(1))
+    return 1 # to allow "assert printThisCall()"
+
+
+
+def tron():
+    sys.settrace(trace)
+def trace(frame, event, arg):
+    if event == 'line':
+        pass
+    elif event == 'call':
+        print traceFunctionCall(sys._getframe(1))
+    elif event == 'return':
+        print "returning"
+    elif event == 'exception':
+        print "exception"
+    return trace
+def troff():
+    sys.settrace(None)
+
+
+
+
+
 def apropos(obj, *args):
     """
     Obsolete, use pdir
@@ -67,21 +94,23 @@ def apropos(obj, *args):
     print 'Use pdir instead'
 
 def getClassLineage(obj):
-    """ getClassLineage(obj): print object inheritance list """
-    # Just a dictionary, return dictionary
+    """
+    print object inheritance list
+    """
     if type(obj) == types.DictionaryType:
+        # Just a dictionary, return dictionary
         return [obj]
-    # Instance, make a list with the instance and its class interitance
     elif type(obj) == types.InstanceType:
+        # Instance, make a list with the instance and its class interitance
         return [obj] + getClassLineage(obj.__class__)
-    # Class, see what it derives from
     elif type(obj) == types.ClassType:
+        # Class, see what it derives from
         lineage = [obj]
         for c in obj.__bases__:
             lineage = lineage + getClassLineage(c)
         return lineage
-    # Not what I'm looking for
     else:
+        # Not what I'm looking for
         return []
 
 def pdir(obj, str = None, fOverloaded = 0, width = None,
@@ -459,14 +488,14 @@ def closestDestAngle2(src, dest):
     # this one together. I can't really say I understand it. It's more
     # from impirical observation... GRW
     diff = src - dest
-    # if the difference is greater that 180 it's shorter to go the other way
     if diff > 180:
+        # if the difference is greater that 180 it's shorter to go the other way
         return dest - 360
-    # or perhaps the OTHER other way...
     elif diff < -180:
+        # or perhaps the OTHER other way...
         return dest + 360
-    # otherwise just go to the original destination
     else:
+        # otherwise just go to the original destination
         return dest
 
 def closestDestAngle(src, dest):
@@ -474,14 +503,14 @@ def closestDestAngle(src, dest):
     # this one together. I can't really say I understand it. It's more
     # from impirical observation... GRW
     diff = src - dest
-    # if the difference is greater that 180 it's shorter to go the other way
     if diff > 180:
+        # if the difference is greater that 180 it's shorter to go the other way
         return src - (diff - 360)
-    # or perhaps the OTHER other way...
     elif diff < -180:
+        # or perhaps the OTHER other way...
         return src - (360 + diff)
-    # otherwise just go to the original destination
     else:
+        # otherwise just go to the original destination
         return dest
 
 
@@ -575,6 +604,7 @@ def boolEqual(a, b):
     """
     returns true if a and b are both true or both false.
     returns false otherwise
+    (a.k.a. xnor -- eXclusive Not OR).
     """
     return (a and b) or not (a or b)
 
