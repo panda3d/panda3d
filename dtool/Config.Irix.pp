@@ -79,6 +79,10 @@
 // umask?
 #define HAVE_OPEN_MASK 1
 
+// Does <string> define the typedef wstring?  Most do, but for some
+// reason, versions of gcc before 3.0 didn't do this.
+#define HAVE_WSTRING 1
+
 // Do we have <new>?
 #define HAVE_NEW
 

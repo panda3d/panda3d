@@ -137,6 +137,9 @@ $[cdefine HAVE_NAMESPACE]
 /* Define if fstream::open() accepts a third parameter for umask. */
 $[cdefine HAVE_OPEN_MASK]
 
+/* Define if the <string> header file defines wstring. */
+$[cdefine HAVE_WSTRING]
+
 /* Define if the C++ compiler supports the typename keyword.  */
 $[cdefine HAVE_TYPENAME]
 

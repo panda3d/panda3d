@@ -80,10 +80,15 @@ using namespace std;
 #define TYPENAME
 #endif
 
+#ifndef HAVE_WSTRING
+// Some C++ libraries (gcc 2.95) don't define this.
+typedef basic_string<wchar_t> wstring;
+#endif
+
 #ifndef HAVE_STREAMSIZE
-// Some compilers (notably SGI) don't define this for us
+// Some C++ libraries (Irix) don't define this.
 typedef int streamsize;
-#endif /* HAVE_STREAMSIZE */
+#endif
 
 #ifndef HAVE_IOS_TYPEDEFS
 typedef int ios_openmode;
