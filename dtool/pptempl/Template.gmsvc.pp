@@ -630,7 +630,7 @@ $[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[st_dir]/%.ob
 $[target] : $[sources] $[st_dir]/stamp
 #if $[ld]
   // If there's a custom linker defined for the target, we have to use it.
-$[TAB] $[ld] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]   
+$[TAB] $[ld] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
 #else
   // Otherwise, we can use the normal linker.
   #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
@@ -767,7 +767,6 @@ $[TAB] $[COMPILE_C++]
 // Rules to compile C++ files that appear on a static library or in an
 // executable.
 
-//#foreach file $[sort $[filter-out %_headers.cxx, $[cxx_st_sources]]]
 #foreach file $[sort $[cxx_st_sources]]
 #define target $[patsubst %.cxx,$[st_dir]/%.obj,$[file]]
 #define source $[file]

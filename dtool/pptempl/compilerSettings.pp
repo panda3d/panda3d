@@ -6,7 +6,8 @@
   #define COMMONFLAGS /Gi-
   #define OPTFLAGS /O2 /Ob1 /G6
   #define OPT1FLAGS /GZ 
-  #defer DEBUGFLAGS /MDd /Zi $[BROWSEINFO_FLAG] /Fd"$[osfilename $[target:%.obj=%.pdb]]"
+  
+  #defer DEBUGFLAGS /MDd $[BROWSEINFO_FLAG] $[DEBUG_TYPE_FLAGS]
   #define RELEASEFLAGS /MD
   
 // in case we have mixed intel/msvc build

@@ -6,8 +6,8 @@
 // Template.msvc.pp.
 //
 
-#if $[< $[PPREMAKE_VERSION],0.55]
-  #error You need at least ppremake version 0.56 to use BUILD_TYPE msvc.
+#if $[< $[PPREMAKE_VERSION],1.00]
+  #error You need at least ppremake version 1.00 to use BUILD_TYPE msvc.
 #endif
 
 #defun get_metalibs target,complete_libs
@@ -74,7 +74,21 @@
   #define dlllib dll
 #endif
 
+#if $[eq $[NO_PCH],]
+#define DO_PCH 1
+#endif
+
 #define CFLAGS_SHARED
+
+#if $[NO_PCH]
+// different .pdb for every .obj  
+// we can probably just use the second case for everything built w/nmake
+// but I dont want to risk changing it right now, so only change pch case
+#defer DEBUG_TYPE_FLAGS /Zi /Fd"$[osfilename $[target:%.obj=%.pdb]]"
+#else
+// for pch, .pdb file name must be the same for obj and pch header obj
+#defer DEBUG_TYPE_FLAGS /Zi /Fd"$[osfilename $[target_dirname].pdb]"
+#endif
 
 #include $[THISDIRPREFIX]compilerSettings.pp
 
@@ -132,8 +146,18 @@
 
 #defer extra_cflags /EHsc /Zm250 /DWIN32_VC /DWIN32 $[WARNING_LEVEL_FLAG] $[END_CFLAGS]
 
-#defer COMPILE_C $[COMPILER] /nologo /c /Fo"$[osfilename $[target]]" $[decygwin %,/I"%",$[EXTRA_INCPATH] $[ipath]] $[flags] $[extra_cflags] $[source]
+
+#defer MAIN_C_COMPILE_ARGS /nologo /c $[decygwin %,/I"%",$[EXTRA_INCPATH] $[ipath]] $[flags] $[extra_cflags] $[source]
+
+#defer COMPILE_C $[COMPILER] /Fo"$[osfilename $[target]]" $[MAIN_C_COMPILE_ARGS]
 #defer COMPILE_C++ $[COMPILE_C]
+
+#if $[DO_PCH]
+#defer MAIN_C_COMPILE_ARGS_PCH /Fp"$[osfilename $[target_pch]]" $[MAIN_C_COMPILE_ARGS]
+#defer COMPILE_C_WITH_PCH $[COMPILER] /Yu /Fo"$[osfilename $[target]]" $[MAIN_C_COMPILE_ARGS_PCH]
+#defer COMPILE_CSTYLE_PCH $[COMPILER] /TC /Yc /Fo"$[osfilename $[target_obj]]" $[MAIN_C_COMPILE_ARGS_PCH]
+#defer COMPILE_CXXSTYLE_PCH $[COMPILER] /TP /Yc /Fo"$[osfilename $[target_obj]]" $[MAIN_C_COMPILE_ARGS_PCH]
+#endif
 
 #defer STATIC_LIB_C $[LIBBER] /nologo $[sources] /OUT:"$[osfilename $[target]]" 
 #defer STATIC_LIB_C++ $[STATIC_LIB_C]
