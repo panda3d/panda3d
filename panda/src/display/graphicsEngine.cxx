@@ -231,8 +231,8 @@ do_cull(CullHandler *cull_handler, const qpNodePath &camera,
   // the scene to the camera) and the world transform (the camera
   // transform inverse, or the net transform from the camera to the
   // scene).
-  CPT(TransformState) camera_transform = scene.get_rel_transform(camera);
-  CPT(TransformState) world_transform = camera.get_rel_transform(scene);
+  CPT(TransformState) camera_transform = scene.get_transform(camera);
+  CPT(TransformState) world_transform = camera.get_transform(scene);
 
   // The render transform is the same as the world transform, except
   // it is converted into the GSG's internal coordinate system.  This
@@ -247,7 +247,7 @@ do_cull(CullHandler *cull_handler, const qpNodePath &camera,
     render_transform = cs_transform->compose(render_transform);
   }
 
-  trav.set_camera_transform(scene.get_rel_transform(camera));
+  trav.set_camera_transform(scene.get_transform(camera));
   trav.set_render_transform(render_transform);
 
   if (qpview_frustum_cull) {
