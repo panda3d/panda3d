@@ -50,14 +50,23 @@
 class EXPCL_PANDA qpGeomUsageHint {
 PUBLISHED:
   enum UsageHint {
+    // The following are intentionally ordered from most dynamic to
+    // most static.  In general, if usage_a < usage_b, then usage_a is
+    // more dynamic than usage_b.
+
     // UH_client: don't attempt to upload the data; always keep it on
     // the client.
     UH_client,
 
     // UH_stream: the data will be created once, used to render a few
     // times, and then discarded.  This should be used for short-lived
-    // temporary arrays.
+    // temporary objects.
     UH_stream,
+
+    // UH_dynamic: the data will be repeatedly modified and
+    // re-rendered.  This is for data that will be modified at
+    // runtime, such as animated or soft-skinned vertices.
+    UH_dynamic,
 
     // UH_static: the data will be created once, and used to render
     // many times, without modification.  This is the most common
@@ -65,11 +74,6 @@ PUBLISHED:
     // (this is not related to scene graph animation, e.g. from
     // adjusting transforms on a node).
     UH_static,
-
-    // UH_dynamic: the data will be repeatedly modified and
-    // re-rendered.  This is for data that will be modified at
-    // runtime, such as animated or soft-skinned vertices.
-    UH_dynamic,
   };
 };
 

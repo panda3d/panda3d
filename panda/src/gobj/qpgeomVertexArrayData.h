@@ -66,8 +66,8 @@ PUBLISHED:
   INLINE qpGeomUsageHint::UsageHint get_usage_hint() const;
 
   INLINE CPTA_uchar get_data() const;
-  INLINE PTA_uchar modify_data();
-  INLINE void set_data(CPTA_uchar data);
+  PTA_uchar modify_data();
+  void set_data(CPTA_uchar data);
 
   INLINE int get_num_vertices() const;
   bool set_num_vertices(int n);

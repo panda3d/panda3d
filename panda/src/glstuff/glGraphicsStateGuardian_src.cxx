@@ -2030,13 +2030,52 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
 //               are ok, false to abort this group of primitives.
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
-begin_draw_primitives(const qpGeomVertexData *vertex_data) {
+begin_draw_primitives(const qpGeom *geom, const qpGeomVertexData *vertex_data) {
   DO_PSTATS_STUFF(_draw_primitive_pcollector.start());
 
-  if (!GraphicsStateGuardian::begin_draw_primitives(vertex_data)) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom, vertex_data)) {
     return false;
   }
   nassertr(_vertex_data != (qpGeomVertexData *)NULL, false);
+
+  _geom_display_list = NULL;
+
+  if (geom->get_usage_hint() == qpGeomUsageHint::UH_static && 
+      _vertex_data->get_usage_hint() == qpGeomUsageHint::UH_static &&
+      display_lists) {
+    // If the geom appears to be totally static, try to build it into
+    // a display list.
+    GeomContext *gc = ((qpGeom *)geom)->prepare_now(get_prepared_objects(), this);
+    nassertr(gc != (GeomContext *)NULL, false);
+    CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
+    if (ggc->_modified == geom->get_modified()) {
+      // If it hasn't been modified, just play the display list again.
+      GLP(CallList)(ggc->_index);
+#ifdef DO_PSTATS
+      _vertices_display_list_pcollector.add_level(ggc->_num_verts);
+#endif
+      
+      // And now we don't need to do anything else for this geom.
+      return false;
+    }
+
+    // If it has been modified, or this is the first time, then we
+    // need to build the display list up.
+    GLP(NewList)(ggc->_index, GL_COMPILE_AND_EXECUTE);
+    ggc->_modified = geom->get_modified();
+    _geom_display_list = ggc;
+
+#ifdef DO_PSTATS
+    // Count up the number of vertices we're about to render, by
+    // checking the PStats vertex counters now, and at the end.  This is
+    // kind of hacky, but this is debug code.
+    _num_display_list_verts_before =
+      _vertices_tristrip_pcollector.get_level() +
+      _vertices_trifan_pcollector.get_level() +
+      _vertices_tri_pcollector.get_level() +
+      _vertices_other_pcollector.get_level();
+#endif
+  }
 
   const qpGeomVertexArrayData *array_data;
   int num_components;
@@ -2051,9 +2090,6 @@ begin_draw_primitives(const qpGeomVertexData *vertex_data) {
     GLP(VertexPointer)(num_components, get_numeric_type(numeric_type), 
                        stride, client_pointer + start);
     GLP(EnableClientState)(GL_VERTEX_ARRAY);
-  } else {
-    // No vertex data?  No primitives!
-    return false;
   }
 
   if (wants_normals() && 
@@ -2073,14 +2109,8 @@ begin_draw_primitives(const qpGeomVertexData *vertex_data) {
                                      array_data, num_components, numeric_type, 
                                      start, stride)) {
       const unsigned char *client_pointer = setup_array_data(array_data);
-      if (numeric_type == qpGeomVertexDataType::NT_packed_argb) {
-        // Temporary hack--this will probably reverse r and b.
-        GLP(ColorPointer)(4, GL_UNSIGNED_BYTE, stride, client_pointer + start);
-        
-      } else {
-        GLP(ColorPointer)(num_components, get_numeric_type(numeric_type), 
-                          stride, client_pointer + start);
-      }
+      GLP(ColorPointer)(num_components, get_numeric_type(numeric_type), 
+                        stride, client_pointer + start);
       GLP(EnableClientState)(GL_COLOR_ARRAY);
 
     } else {
@@ -2104,8 +2134,6 @@ begin_draw_primitives(const qpGeomVertexData *vertex_data) {
   } else {
     GLP(DisableClientState)(GL_TEXTURE_COORD_ARRAY);
   }
-
-  issue_scene_graph_color();
 
   return true;
 }
@@ -2168,7 +2196,23 @@ draw_tristrips(const qpGeomTristrips *primitive) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 end_draw_primitives() {
-  GLP(DisableClientState)(GL_VERTEX_ARRAY);
+  if (_geom_display_list != NULL) {
+    // If we were building a display list, close it now.
+    GLP(EndList)();
+
+#ifdef DO_PSTATS
+    float num_verts_after =
+      _vertices_tristrip_pcollector.get_level() +
+      _vertices_trifan_pcollector.get_level() +
+      _vertices_tri_pcollector.get_level() +
+      _vertices_other_pcollector.get_level();
+    float num_verts = num_verts_after - _num_display_list_verts_before;
+    _geom_display_list->_num_verts = (int)(num_verts + 0.5);
+#endif
+  }
+  _geom_display_list = NULL;
+
+  GraphicsStateGuardian::end_draw_primitives();
 
   DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
@@ -2262,69 +2306,94 @@ release_texture(TextureContext *tc) {
 ////////////////////////////////////////////////////////////////////
 GeomContext *CLP(GraphicsStateGuardian)::
 prepare_geom(Geom *geom) {
-  if (!_vertex_colors_enabled) {
-    // We can't build a display list (or play back a display list) if
-    // its color is overridden with a scene graph color.  Maybe if we
-    // take advantage of the OpenGL color matrix we can do this, but
-    // for now we'll just ignore it.
-    return NULL;
-  }
+  // Temporary test until the experimental Geom rewrite becomes the
+  // actual Geom implementation.
+  if (geom->is_exact_type(qpGeom::get_class_type())) {
+    CLP(GeomContext) *ggc = new CLP(GeomContext)(geom);
+    ggc->_index = GLP(GenLists)(1);
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "preparing " << *geom << ", index " << ggc->_index << "\n";
+    }
+    if (ggc->_index == 0) {
+      GLCAT.error()
+        << "Ran out of display list indices.\n";
+      delete ggc;
+      return NULL;
+    }
 
-  if (geom->is_dynamic()) {
-    // If the Geom is dynamic in some way, we shouldn't try to
-    // display-list it.
-    return NULL;
-  }
+    report_my_gl_errors();
+    return ggc;
 
-  CLP(GeomContext) *ggc = new CLP(GeomContext)(geom);
-  ggc->_index = GLP(GenLists)(1);
-  if (GLCAT.is_debug()) {
-    GLCAT.debug()
-      << "preparing " << *geom << ", index " << ggc->_index << "\n";
-  }
-  if (ggc->_index == 0) {
-    GLCAT.error()
-      << "Ran out of display list indices.\n";
-    delete ggc;
-    return NULL;
-  }
+  } else {
+    // Original Geom display list implementation.  Slightly broken,
+    // since it doesn't work well with scene graph color
+    // manipulations.
 
-  // We need to temporarily force normals and UV's on, so the display
-  // list will have them built in.
-  //force_texcoords(); 
-  force_normals();
+    if (!_vertex_colors_enabled) {
+      // We can't build a display list (or play back a display list) if
+      // its color is overridden with a scene graph color.  Maybe if we
+      // take advantage of the OpenGL color matrix we can do this, but
+      // for now we'll just ignore it.
+      return NULL;
+    }
+
+    if (geom->is_dynamic()) {
+      // If the Geom is dynamic in some way, we shouldn't try to
+      // display-list it.
+      return NULL;
+    }
+
+    CLP(GeomContext) *ggc = new CLP(GeomContext)(geom);
+    ggc->_index = GLP(GenLists)(1);
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "preparing " << *geom << ", index " << ggc->_index << "\n";
+    }
+    if (ggc->_index == 0) {
+      GLCAT.error()
+        << "Ran out of display list indices.\n";
+      delete ggc;
+      return NULL;
+    }
+
+    // We need to temporarily force normals and UV's on, so the display
+    // list will have them built in.
+    //force_texcoords(); 
+    force_normals();
 
 #ifdef DO_PSTATS
-  // Count up the number of vertices we're about to render, by
-  // checking the PStats vertex counters now, and at the end.  This is
-  // kind of hacky, but this is debug code.
-  float num_verts_before =
-    _vertices_tristrip_pcollector.get_level() +
-    _vertices_trifan_pcollector.get_level() +
-    _vertices_tri_pcollector.get_level() +
-    _vertices_other_pcollector.get_level();
+    // Count up the number of vertices we're about to render, by
+    // checking the PStats vertex counters now, and at the end.  This is
+    // kind of hacky, but this is debug code.
+    float num_verts_before =
+      _vertices_tristrip_pcollector.get_level() +
+      _vertices_trifan_pcollector.get_level() +
+      _vertices_tri_pcollector.get_level() +
+      _vertices_other_pcollector.get_level();
 #endif
 
-  // Now define the display list.
-  GLP(NewList)(ggc->_index, GL_COMPILE);
-  geom->draw_immediate(this, NULL);
-  GLP(EndList)();
+    // Now define the display list.
+    GLP(NewList)(ggc->_index, GL_COMPILE);
+    geom->draw_immediate(this, NULL);
+    GLP(EndList)();
 
 #ifdef DO_PSTATS
-  float num_verts_after =
-    _vertices_tristrip_pcollector.get_level() +
-    _vertices_trifan_pcollector.get_level() +
-    _vertices_tri_pcollector.get_level() +
-    _vertices_other_pcollector.get_level();
-  float num_verts = num_verts_after - num_verts_before;
-  ggc->_num_verts = (int)(num_verts + 0.5);
+    float num_verts_after =
+      _vertices_tristrip_pcollector.get_level() +
+      _vertices_trifan_pcollector.get_level() +
+      _vertices_tri_pcollector.get_level() +
+      _vertices_other_pcollector.get_level();
+    float num_verts = num_verts_after - num_verts_before;
+    ggc->_num_verts = (int)(num_verts + 0.5);
 #endif
 
-  undo_force_normals();
-  //undo_force_texcoords();
+    undo_force_normals();
+    //undo_force_texcoords();
 
-  report_my_gl_errors();
-  return ggc;
+    report_my_gl_errors();
+    return ggc;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2464,7 +2533,7 @@ setup_array_data(const qpGeomVertexArrayData *data) {
     // No support for buffer objects; always render from client.
     return data->get_data();
   }
-  if (!vertex_buffers ||
+  if (!vertex_buffers || _geom_display_list != NULL ||
       data->get_usage_hint() == qpGeomUsageHint::UH_client) {
     // The array specifies client rendering only, or buffer objects
     // are configured off.
@@ -2534,12 +2603,12 @@ apply_index_buffer(IndexBufferContext *ibc) {
     }
     if (gibc->changed_size()) {
       _glBufferData(GL_ELEMENT_ARRAY_BUFFER, gibc->get_data()->get_data_size_bytes(),
-                    gibc->get_data()->get_vertices(), 
+                    gibc->get_data()->get_flat_last_vertices(), 
                     get_usage(gibc->get_data()->get_usage_hint()));
 
     } else {
       _glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, gibc->get_data_size_bytes(),
-                       gibc->get_data()->get_vertices());
+                       gibc->get_data()->get_flat_last_vertices());
     }
 
     gibc->mark_loaded();
@@ -2593,19 +2662,19 @@ const unsigned short *CLP(GraphicsStateGuardian)::
 setup_primitive(const qpGeomPrimitive *data) {
   if (!_supports_buffers) {
     // No support for buffer objects; always render from client.
-    return data->get_vertices();
+    return data->get_flat_last_vertices();
   }
-  if (!vertex_buffers ||
+  if (!vertex_buffers || _geom_display_list != NULL ||
       data->get_usage_hint() == qpGeomUsageHint::UH_client) {
     // The array specifies client rendering only, or buffer objects
     // are configured off.
     _glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    return data->get_vertices();
+    return data->get_flat_last_vertices();
   }
 
   // Prepare the buffer object and bind it.
   IndexBufferContext *ibc = ((qpGeomPrimitive *)data)->prepare_now(get_prepared_objects(), this);
-  nassertr(ibc != (IndexBufferContext *)NULL, data->get_vertices());
+  nassertr(ibc != (IndexBufferContext *)NULL, data->get_flat_last_vertices());
   apply_index_buffer(ibc);
 
   // NULL is the OpenGL convention for the first byte of the buffer.

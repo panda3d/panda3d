@@ -2606,10 +2606,10 @@ draw_sphere(GeomSphere *geom, GeomContext *gc) {
 //               are ok, false to abort this group of primitives.
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian8::
-begin_draw_primitives(const qpGeomVertexData *vertex_data) {
+begin_draw_primitives(const qpGeom *geom, const qpGeomVertexData *vertex_data) {
   DO_PSTATS_STUFF(_draw_primitive_pcollector.start());
 
-  if (!GraphicsStateGuardian::begin_draw_primitives(vertex_data)) {
+  if (!GraphicsStateGuardian::begin_draw_primitives(geom, vertex_data)) {
     return false;
   }
   nassertr(_vertex_data != (qpGeomVertexData *)NULL, false);
@@ -2694,6 +2694,7 @@ draw_tristrips(const qpGeomTristrips *primitive) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 end_draw_primitives() {
+  GraphicsStateGuardian::end_draw_primitives();
   DO_PSTATS_STUFF(_draw_primitive_pcollector.stop());
 }
 

@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "qpgeomPrimitive.h"
+#include "qpgeom.h"
 #include "qpgeomVertexData.h"
 #include "qpgeomVertexArrayFormat.h"
 #include "qpgeomVertexDataType.h"
@@ -536,7 +537,7 @@ clear_cache() {
 
   // This, on the other hand, should be applied to the current
   // pipeline stage.
-  ++(cdata->_modified);
+  cdata->_modified = qpGeom::get_next_modified();
 }
 
 

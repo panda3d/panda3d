@@ -90,7 +90,7 @@ public:
   virtual void draw_trifan(GeomTrifan *geom, GeomContext *gc);
   virtual void draw_sphere(GeomSphere *geom, GeomContext *gc);
 
-  virtual bool begin_draw_primitives(const qpGeomVertexData *vertex_data);
+  virtual bool begin_draw_primitives(const qpGeom *geom, const qpGeomVertexData *vertex_data);
   virtual void draw_triangles(const qpGeomTriangles *primitive);
   virtual void draw_tristrips(const qpGeomTristrips *primitive);
   virtual void end_draw_primitives();

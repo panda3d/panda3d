@@ -18,6 +18,23 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::get_usage_hint
+//       Access: Published
+//  Description: Returns the minimum (i.e. most dynamic) usage_hint
+//               among all of the individual GeomPrimitives that have
+//               been added to the geom.
+////////////////////////////////////////////////////////////////////
+INLINE qpGeomUsageHint::UsageHint qpGeom::
+get_usage_hint() const {
+  CDReader cdata(_cycler);
+  if (!cdata->_got_usage_hint) {
+    CDWriter cdataw(((qpGeom *)this)->_cycler, cdata);
+    ((qpGeom *)this)->reset_usage_hint(cdataw);
+  }
+  return cdata->_usage_hint;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeom::get_vertex_data
 //       Access: Published
 //  Description: Returns a const pointer to the GeomVertexData,
@@ -71,6 +88,7 @@ modify_primitive(int i) {
   clear_cache();
   CDWriter cdata(_cycler);
   nassertr(i >= 0 && i < (int)cdata->_primitives.size(), NULL);
+  cdata->_got_usage_hint = false;
   return cdata->_primitives[i];
 }
 
@@ -85,6 +103,19 @@ set_primitive(int i, const qpGeomPrimitive *primitive) {
   clear_cache();
   CDWriter cdata(_cycler);
   nassertv(i >= 0 && i < (int)cdata->_primitives.size());
+  if (cdata->_got_usage_hint &&
+      cdata->_primitives[i]->get_usage_hint() != primitive->get_usage_hint()) {
+    if (cdata->_primitives[i]->get_usage_hint() < primitive->get_usage_hint()) {
+      // If we're reducing the usage hint, we might also be reducing
+      // the minimum usage hit.
+      cdata->_usage_hint = min(cdata->_usage_hint, primitive->get_usage_hint());
+    } else { // (cdata->_primitives[i]->get_usage_hint() > primitive->get_usage_hint())
+      // If we're increasing it, we might have to rederive the minimum.
+      if (cdata->_usage_hint == cdata->_primitives[i]->get_usage_hint()) {
+        cdata->_got_usage_hint = false;
+      }
+    }
+  }
   cdata->_primitives[i] = (qpGeomPrimitive *)primitive;
 }
 
@@ -94,7 +125,10 @@ set_primitive(int i, const qpGeomPrimitive *primitive) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE qpGeom::CData::
-CData() {
+CData() :
+  _usage_hint(qpGeomUsageHint::UH_static),
+  _got_usage_hint(false)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -105,7 +139,9 @@ CData() {
 INLINE qpGeom::CData::
 CData(const qpGeom::CData &copy) :
   _data(copy._data),
-  _primitives(copy._primitives)
+  _primitives(copy._primitives),
+  _usage_hint(copy._usage_hint),
+  _got_usage_hint(copy._got_usage_hint)
 {
 }
 

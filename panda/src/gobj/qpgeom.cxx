@@ -22,6 +22,7 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 
+UpdateSeq qpGeom::_next_modified;
 TypeHandle qpGeom::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -152,6 +153,10 @@ add_primitive(const qpGeomPrimitive *primitive) {
   clear_cache();
   CDWriter cdata(_cycler);
   cdata->_primitives.push_back((qpGeomPrimitive *)primitive);
+
+  if (cdata->_got_usage_hint) {
+    cdata->_usage_hint = min(cdata->_usage_hint, primitive->get_usage_hint());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -164,6 +169,12 @@ remove_primitive(int i) {
   clear_cache();
   CDWriter cdata(_cycler);
   nassertv(i >= 0 && i < (int)cdata->_primitives.size());
+  if (cdata->_got_usage_hint &&
+      cdata->_usage_hint == cdata->_primitives[i]->get_usage_hint()) {
+    // Maybe we're raising the minimum usage_hint; we have to rederive
+    // the usage_hint later.
+    cdata->_got_usage_hint = false;
+  }
   cdata->_primitives.erase(cdata->_primitives.begin() + i);
 }
 
@@ -201,6 +212,34 @@ get_num_bytes() const {
   }
 
   return num_bytes;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::get_modified
+//       Access: Published
+//  Description: Returns the maximum UpdateSeq of all the Geom's
+//               individual primitives and vertex arrays.  This,
+//               therefore, will change only when any part of the Geom
+//               changes.
+////////////////////////////////////////////////////////////////////
+UpdateSeq qpGeom::
+get_modified() const {
+  CDReader cdata(_cycler);
+  UpdateSeq seq;
+
+  Primitives::const_iterator pi;
+  for (pi = cdata->_primitives.begin(); 
+       pi != cdata->_primitives.end();
+       ++pi) {
+    seq = max(seq, (*pi)->get_modified());
+  }
+
+  int num_arrays = cdata->_data->get_num_arrays();
+  for (int i = 0; i < num_arrays; ++i) {
+    seq = max(seq, cdata->_data->get_array(i)->get_modified());
+  }
+
+  return seq;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -342,9 +381,25 @@ clear_cache() {
 ////////////////////////////////////////////////////////////////////
 void qpGeom::
 draw(GraphicsStateGuardianBase *gsg, const qpGeomVertexData *vertex_data) const {
-  CDReader cdata(_cycler);
+#ifdef DO_PIPELINING
+  // Make sure the usage_hint is already updated before we start to
+  // draw, so we don't end up with a circular lock if the GSG asks us
+  // to update this while we're holding the read lock.
+  {
+    CDReader cdata(_cycler);
+    if (!cdata->_got_usage_hint) {
+      CDWriter cdataw(((qpGeom *)this)->_cycler, cdata);
+      ((qpGeom *)this)->reset_usage_hint(cdataw);
+    }
+  }
+  // TODO: fix up the race condition between this line and the next.
+  // Maybe CDWriter's elevate-to-write should return the read lock to
+  // its original locked state when it's done.
+#endif  // DO_PIPELINING
 
-  if (gsg->begin_draw_primitives(vertex_data)) {
+  CDReader cdata(_cycler);
+  
+  if (gsg->begin_draw_primitives(this, vertex_data)) {
     Primitives::const_iterator pi;
     for (pi = cdata->_primitives.begin(); 
          pi != cdata->_primitives.end();
@@ -353,6 +408,25 @@ draw(GraphicsStateGuardianBase *gsg, const qpGeomVertexData *vertex_data) const 
     }
     gsg->end_draw_primitives();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::get_next_modified
+//       Access: Public
+//  Description: Returns a monotonically increasing sequence.  Each
+//               time this is called, a new sequence number is
+//               returned, higher than the previous value.
+//
+//               This is used to ensure that
+//               GeomVertexArrayData::get_modified() and
+//               GeomPrimitive::get_modified() update from the same
+//               space, so that Geom::get_modified() returns a
+//               meaningful value.
+////////////////////////////////////////////////////////////////////
+UpdateSeq qpGeom::
+get_next_modified() {
+  ++_next_modified;
+  return _next_modified;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -443,6 +517,23 @@ remove_cache_entry(const qpGeomMunger *modifier) const {
     cdata->_munged_cache.erase(ci);
   }
   ((qpGeom *)this)->_cycler.release_write_stage(0, cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeom::reset_usage_hint
+//       Access: Private
+//  Description: Recomputes the minimum usage_hint.
+////////////////////////////////////////////////////////////////////
+void qpGeom::
+reset_usage_hint(qpGeom::CDWriter &cdata) {
+  cdata->_usage_hint = qpGeomUsageHint::UH_static;
+  Primitives::const_iterator pi;
+  for (pi = cdata->_primitives.begin(); 
+       pi != cdata->_primitives.end();
+       ++pi) {
+    cdata->_usage_hint = min(cdata->_usage_hint, (*pi)->get_usage_hint());
+  }
+  cdata->_got_usage_hint = true;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -30,6 +30,8 @@ public:
   // This is the GL display list index.
   GLuint _index;
 
+  UpdateSeq _modified;
+
   // The number of vertices encoded in the display list, for stats
   // reporting.
 #ifdef DO_PSTATS

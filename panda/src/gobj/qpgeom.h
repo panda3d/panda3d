@@ -29,6 +29,8 @@
 #include "qpgeomVertexData.h"
 #include "qpgeomPrimitive.h"
 #include "qpgeomMunger.h"
+#include "qpgeomUsageHint.h"
+#include "updateSeq.h"
 #include "pointerTo.h"
 #include "geom.h"
 
@@ -61,6 +63,8 @@ PUBLISHED:
   // Temporary.
   virtual Geom *make_copy() const;
 
+  INLINE qpGeomUsageHint::UsageHint get_usage_hint() const;
+
   INLINE CPT(qpGeomVertexData) get_vertex_data() const;
   PT(qpGeomVertexData) modify_vertex_data();
   void set_vertex_data(const qpGeomVertexData *data);
@@ -74,6 +78,7 @@ PUBLISHED:
   void clear_primitives();
 
   int get_num_bytes() const;
+  UpdateSeq get_modified() const;
 
   void munge_geom(const qpGeomMunger *munger,
                   CPT(qpGeom) &result, CPT(qpGeomVertexData) &data) const;
@@ -86,6 +91,8 @@ PUBLISHED:
 public:
   void draw(GraphicsStateGuardianBase *gsg, 
             const qpGeomVertexData *vertex_data) const;
+
+  static UpdateSeq get_next_modified();
 
 protected:
   virtual BoundingVolume *recompute_bound();
@@ -120,12 +127,18 @@ private:
 
     PT(qpGeomVertexData) _data;
     Primitives _primitives;
+    qpGeomUsageHint::UsageHint _usage_hint;
+    bool _got_usage_hint;
     MungedCache _munged_cache;
   };
 
   PipelineCycler<CData> _cycler;
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
+
+  void reset_usage_hint(CDWriter &cdata);
+
+  static UpdateSeq _next_modified;
 
 public:
   static void register_with_read_factory();

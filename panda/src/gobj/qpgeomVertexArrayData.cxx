@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "qpgeomVertexArrayData.h"
+#include "qpgeom.h"
 #include "preparedGraphicsObjects.h"
 #include "bamReader.h"
 #include "bamWriter.h"
@@ -83,6 +84,43 @@ qpGeomVertexArrayData::
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexArrayData::modify_data
+//       Access: Published
+//  Description: Returns a modifiable pointer to the actual vertex
+//               array, so that application code may directly
+//               manipulate the vertices.
+////////////////////////////////////////////////////////////////////
+PTA_uchar qpGeomVertexArrayData::
+modify_data() {
+  // Perform copy-on-write: if the reference count on the vertex data
+  // is greater than 1, assume some other GeomVertexData has the same
+  // pointer, so make a copy of it first.
+  CDWriter cdata(_cycler);
+
+  if (cdata->_data.get_ref_count() > 1) {
+    PTA_uchar orig_data = cdata->_data;
+    cdata->_data = PTA_uchar();
+    cdata->_data.v() = orig_data.v();
+  }
+  cdata->_modified = qpGeom::get_next_modified();
+
+  return cdata->_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpGeomVertexArrayData::set_data
+//       Access: Published
+//  Description: Replaces the vertex data array with a completely new
+//               array.
+////////////////////////////////////////////////////////////////////
+void qpGeomVertexArrayData::
+set_data(CPTA_uchar array) {
+  CDWriter cdata(_cycler);
+  cdata->_data = (PTA_uchar &)array;
+  cdata->_modified = qpGeom::get_next_modified();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpGeomVertexArrayData::set_num_vertices
 //       Access: Published
 //  Description: Sets the length of the array to n vertices.
@@ -125,7 +163,7 @@ set_num_vertices(int n) {
       }
     }
 
-    ++(cdata->_modified);
+    cdata->_modified = qpGeom::get_next_modified();
 
     return true;
   }

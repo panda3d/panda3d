@@ -84,7 +84,9 @@ ConfigVariableBool retained_mode
           "creates specific cache information (like display lists or vertex "
           "buffers) with the GSG for static geometry, when supported by the "
           "GSG.  Set it false to use only immediate mode, which sends the "
-          "vertices to the GSG every frame."));
+          "vertices to the GSG every frame.  This is used only in the "
+          "original Geom implementation; it is replaced by display-lists "
+          "in the experimental Geom rewrite."));
 
 ConfigVariableBool vertex_buffers
 ("vertex-buffers", false,
@@ -94,6 +96,16 @@ ConfigVariableBool vertex_buffers
           "higher-end graphics cards, at the cost of some additional "
           "graphics memory (which might otherwise be used for textures "
           "or offscreen buffers)."));
+
+ConfigVariableBool display_lists
+("display-lists", false,
+ PRC_DESC("Set this true to allow the use of OpenGL display lists for "
+          "rendering static geometry.  On some systems, this can result "
+          "in a performance improvement over vertex buffers alone; on "
+          "other systems (particularly low-end systems) it makes little to "
+          "no difference.  This has no effect on DirectX rendering.  If "
+          "vertex-buffers is also enabled, then OpenGL buffer objects "
+          "will also be created for dynamic geometry."));
 
 ConfigVariableBool use_qpgeom
 ("use-qpgeom", false,
