@@ -1,8 +1,5 @@
-                                                               9/16/97
-
 
                            MULTIGEN MODEL FLAGS
-
 
 This document describes the different kinds of model flags one can place in
 the comment field of MultiGen group beads.  The general format for a model
@@ -22,19 +19,20 @@ The most up-to-date version of this document can be found in:
 
 <egg> { <Model>      {1} }          Handle to show/hide, color, etc. a chunk
 <egg> { <DCS>        {1} }          Handle to move, rotate, scale a chunk
-<egg> { <TexList>    {1} }          Handle to manage texture for a chunk
 <egg> { <ObjectType> {barrier} }    Invisible collision surface
-<egg> { <ObjectType> {turnstile} }  Invisible 1-way collision surface
-<egg> { <ObjectType> {ghost} }      Visible object, no collisions
-<egg> { <ObjectType> {bubble} }     Collision sphere around geometry
-<egg> { <ObjectType> {missile} }    Collision sphere with "missile" event
 <egg> { <ObjectType> {trigger} }    Invisible trigger polygon
-<egg> { <ObjectType> {eye-trigger}} Trigger which collides with avatar center
+<egg> { <ObjectType> {floor} }      Collides with vertical ray
+                                    (used to specify avatar height and zone)
+<egg> { <ObjectType> {sphere} }              Invisible sphere collision surface
+<egg> { <ObjectType> {trigger-sphere} }      Invisible sphere collision surface
+<egg> { <ObjectType> {camera-collide} }              Invisible collision surface for camera
+<egg> { <ObjectType> {camera-collide-sphere} }       Invisible collision surface for camera
+<egg> { <ObjectType> {camera-barrier} }      Invisible collision surface for camera and colliders
+<egg> { <ObjectType> {camera-barrier-sphere} }     Invisible sphere collision surface for camera and colliders
 <egg> { <ObjectType> {backstage} }  Modeling reference object
-<egg> { <Normal>     { 0 1 0 } }    Override and set normal for all verticies 
+<egg> { <Decal>      {1} }          Decal the node below to me 
+                                    (like a window on a wall)
 <egg> { <Scalar> fps { # } }        Set rate of animation for a pfSequence
-<egg> { <Scalar> no-fog {1} }       Immune to the effects of fog
-
 
 
 ***************************************************************************
@@ -65,10 +63,6 @@ common flag/value pairs and describes what they are used for.
    (like the <Model> flag) to show/hide, change the color, and change the
    collision properties of a chunk.
 
-<egg> { <TexList> {1} }
-
-   Used to manage the textures of a chunk.
-
 
                       ********** BEHAVIORS **********
 
@@ -83,17 +77,7 @@ common flag/value pairs and describes what they are used for.
                                        -------     -------     -------
 <egg> { <ObjectType> {barrier} }                      X           X
 
-<egg> { <ObjectType> {turnstile} }                    X           X
-
-<egg> { <ObjectType> {ghost} }            X                       X
-
-<egg> { <ObjectType> {bubble} }           X           X           X
-
-<egg> { <ObjectType> {missile} }          X           X           X
-
 <egg> { <ObjectType> {trigger} }                                  X
-
-<egg> { <ObjectType> {eye-trigger} }                              X
 
 <egg> { <ObjectType> {backstage} }
 
@@ -102,25 +86,10 @@ common flag/value pairs and describes what they are used for.
       -  BARRIERS are invisible objects that block the avatars.  Use these
          to funnel avatars through doorways, keep them from falling off
          bridges, and so on.
-      -  TURNSTILES are also invisible objects that block the avatars.
-         Unlike barriers, however, avatars approaching from behind the
-         turnstile will smoothly pass through, instead of being forcefully
-         yanked to the front.  These are intended to implement a one-way
-         wall, through which the avatar can go forward but not back (to
-         create a one-way hallway or alley, for example)
-      -  GHOSTS are visible objects that the avatars can move through.  Any
-         objects that have been surrounded by barriers should use this flag
-         to avoid unnecessary collision calculations.
-      -  BUBBLES and MISSILES surround a specified chunk with a collision
-         sphere whose center is at the average of all the vertices.
-         Missiles throw an event called "missile"
       -  TRIGGERS can be used to signal when avatars have entered a certain
          area of the model.  One could place a trigger polygon in front of
          a door, for example, so the player can tell when the avatar has
          moved through the door.
-      -  EYE-TRIGGERS check for collisions with the *center* of the mover
-         (and not its bounding sphere).  This is useful for visibility
-         calculations. 
       -  BACKSTAGE objects are not translated over to the player.  Modelers
          should use this flag on reference objects that they include to help 
          in the modeling task (such as scale references)
@@ -141,19 +110,10 @@ common flag/value pairs and describes what they are used for.
 
 These are used to control properties of selected chunks. 
 
-<egg> { <Normal> { 0 1 0 } }
-
-   Sets the normal of all vertices in a chunk to the specified value.
-   { 0 1 0 } is the value used for ramps which the avatars need to walk
-   up.  NOTE: You must have a space between values (i.e. 010 is not valid)
-
 <egg> { <Scalar> fps { frame-rate } }
 
    This specifies the rate of animation for a pfSequence node
 
-<egg> { <Scalar> no-fog { 1 } }
-
-   This specifies that the geometry will be immune to the effects of fog
 
 ***************************************************************************
                                    NOTES
@@ -174,18 +134,6 @@ These are used to control properties of selected chunks.
    could also be written as:
 
    <egg>{<model>{1}<objecttype>{barrier}}
-
-   A notable exception to the space rules is with the values of the
-   <Normal> flag.  There must be a space between the three components of
-   the normal
-
-                       <egg> { <Normal> { 0 1 0 } }
-
-   is valid
-
-                        <egg> { <Normal> { 010 } }
-
-   is *not*
          
 3) Where to place the flags
 
