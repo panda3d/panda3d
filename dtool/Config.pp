@@ -403,8 +403,8 @@
 // options to interrogate, guaranteeing that the correct interfaces
 // are generated.  Do not include -D here; that will be supplied
 // automatically.
-#defer CDEFINES_OPT1
-#defer CDEFINES_OPT2
+#defer CDEFINES_OPT1 _DEBUG
+#defer CDEFINES_OPT2 _DEBUG
 #defer CDEFINES_OPT3
 #defer CDEFINES_OPT4 NDEBUG
 
