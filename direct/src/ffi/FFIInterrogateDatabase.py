@@ -72,13 +72,14 @@ def outputGlobalFileImports(file, methodList, CModuleName):
         for argType in argTypes:
             # Get the real return type (not derived)
             argType = argType.typeDescriptor.recursiveTypeDescriptor()
-            argTypeName = argType.foreignTypeName
-            # Do not put our own module in the import list
-            # Do not put modules already in the list (like a set)
-            if (not (argTypeName in moduleList)):
-                # If this is a class (not a primitive), put it on the list
-                if (argType.__class__ == FFITypes.ClassTypeDescriptor):
-                    moduleList.append(argTypeName)
+            if (not argType.isNested):
+                argTypeName = argType.foreignTypeName
+                # Do not put our own module in the import list
+                # Do not put modules already in the list (like a set)
+                if (not (argTypeName in moduleList)):
+                    # If this is a class (not a primitive), put it on the list
+                    if (argType.__class__ == FFITypes.ClassTypeDescriptor):
+                        moduleList.append(argTypeName)
 
     
     for moduleName in moduleList:
