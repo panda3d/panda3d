@@ -87,6 +87,16 @@ as_class_parameter() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCParameter::as_switch_parameter
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+DCSwitchParameter *DCParameter::
+as_switch_parameter() {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCParameter::as_array_parameter
 //       Access: Published, Virtual
 //  Description: 

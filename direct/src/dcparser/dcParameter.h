@@ -50,6 +50,7 @@ PUBLISHED:
   virtual DCParameter *as_parameter();
   virtual DCSimpleParameter *as_simple_parameter();
   virtual DCClassParameter *as_class_parameter();
+  virtual DCSwitchParameter *as_switch_parameter();
   virtual DCArrayParameter *as_array_parameter();
 
   virtual DCParameter *make_copy() const=0;
