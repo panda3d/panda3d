@@ -1,4 +1,5 @@
-"""The new Finite State Machine module.  This replaces the modules
+"""
+The new Finite State Machine module.  This replaces the modules
 previously called FSM.py (now called ClassicFSM.py).
 """
 
@@ -8,7 +9,8 @@ import types
 import string
 
 class FSM(DirectObject.DirectObject):
-    """A Finite State Machine.  This is intended to be the base class
+    """
+    A Finite State Machine.  This is intended to be the base class
     of any number of specific machines, which consist of a collection
     of states and transitions, and rules to switch between states
     according to arbitrary input data.
