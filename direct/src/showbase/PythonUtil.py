@@ -344,6 +344,19 @@ def sameElements(a, b):
             return 0
     return 1
 
+def contains(whole, sub):
+    """
+    Return 1 if whole contains sub, 0 otherwise
+    """
+    if (whole == sub):
+        return 1
+    for elem in sub:
+        # The first item you find not in whole, return 0
+        if elem not in whole:
+            return 0
+    # If you got here, whole must contain sub
+    return 1
+
 def reduceAngle(deg):
     """
     Reduces an angle (in degrees) to a value between -180. and 180.
