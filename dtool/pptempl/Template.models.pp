@@ -329,7 +329,12 @@ $[TAB]touch $[TARGET_DIR]/$[egg]
 
    // And this is the actual optchar pass.
 $[target] : $[sources] $[TARGET_DIR]/stamp
+// Temporary: while we're migrating egg-optchar, we might test this command.
+#if $[USE_EGG_OPTCHAR_NEW]
+$[TAB]egg-optchar-new $[OPTCHAR_NEW_OPTS] -d $[TARGET_DIR] $[sources]
+#else
 $[TAB]egg-optchar $[OPTCHAR_OPTS] -d $[TARGET_DIR] $[sources]
+#endif
 #end optchar_egg
 
 
