@@ -1728,7 +1728,9 @@ bool wdxGraphicsWindow::search_for_device(int devnum,DXDeviceInfo *pDevinfo) {
     if(wdxdisplay_cat.is_info()) {
        DDDEVICEIDENTIFIER2 *pDevID=&_dxgsg->scrn.DXDeviceID;
        wdxdisplay_cat.info() << "GfxCard: " << pDevID->szDescription <<  "; DriverFile: '" << pDevID->szDriver  
-                             << "'; VendorID: " <<  pDevID->dwVendorId << "; DriverVer: " 
+                             << "'; VendorID: 0x" <<  (void*)pDevID->dwVendorId 
+                             << "'; DeviceID: 0x" <<  (void*)pDevID->dwDeviceId 
+                             << "; DriverVer: " 
                              << HIWORD(pDevID->liDriverVersion.HighPart) << "." 
                              << LOWORD(pDevID->liDriverVersion.HighPart) << "."
                              << HIWORD(pDevID->liDriverVersion.LowPart) << "." 
