@@ -57,15 +57,8 @@
   // $[bin_targets] the list of binaries.  $[test_bin_targets] is the
   // list of binaries that are to be built only when specifically asked for.
 
-  // #set requires pre-existing vars
-  #define lib_targets
-  #define static_lib_targets
-
-  #forscopes lib_target noinst_lib_target test_lib_target
-    // get_dllname() needs to be evaluated in its lib's scope, but we need to build a global list, so use #set
-    #set lib_targets $[patsubst %,$[ODIR]/$[get_dllname %].$[dlllib],$[active_target(metalib_target noinst_lib_target test_lib_target)] $[real_lib_targets]]
-    #set static_lib_targets $[active_target(static_lib_target ss_lib_target):%=$[ODIR]/$[get_dllname %].lib]
-  #end lib_target noinst_lib_target test_lib_target
+  #define lib_targets $[forscopes metalib_target noinst_lib_target test_lib_target,$[if $[build_target],$[ODIR]/$[get_dllname $[TARGET]].$[dlllib]]] $[real_lib_targets]
+  #define static_lib_targets $[forscopes static_lib_target ss_lib_target,$[if $[build_target],$[ODIR]/$[get_dllname $[TARGET]].lib]]
 
   #define bin_targets \
       $[active_target(bin_target noinst_bin_target):%=$[ODIR]/%.exe] \
