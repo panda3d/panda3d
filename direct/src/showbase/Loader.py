@@ -145,7 +145,7 @@ class Loader:
         Loader.notify.debug("Loading sound: %s" % (soundPath) )
         if phaseChecker:
             phaseChecker(soundPath)
-        sound = base.effectsAudioManager.getSound(soundPath)
+        sound = base.sfxManager.getSound(soundPath)
         return sound
 
     def unloadSound(self, sound):

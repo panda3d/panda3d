@@ -36,9 +36,6 @@ class ShowBase:
         # Store dconfig variables
         self.wantTk = self.config.GetBool('want-tk', 0)
         self.wantAnySound = self.config.GetBool('want-sound', 1)
-        if not self.wantAnySound:
-            self.effectsAudioManager.setActive(0)
-            self.musicAudioManager.setActive(0)
         self.wantSfx = self.config.GetBool('audio-sfx-active', 1)
         self.wantMusic = self.config.GetBool('audio-music-active', 1)
         if not (self.wantSfx or self.wantMusic):
@@ -276,17 +273,17 @@ class ShowBase:
 
     def createAudioManager(self):
         if self.wantAnySound:
-            self.effectsAudioManager = AudioManager.createAudioManager()
-            self.musicAudioManager = AudioManager.createAudioManager()
+            self.sfxManager = AudioManager.createAudioManager()
+            self.musicManager = AudioManager.createAudioManager()
 
     def loadSfx(self, name):
         if (name and base.wantSfx):
-            sound=self.effectsAudioManager.getSound(name)
+            sound=self.sfxManager.getSound(name)
             return sound
 
     def loadMusic(self, name):
         if (name and base.wantMusic):
-            sound=self.musicAudioManager.getSound(name)
+            sound=self.musicManager.getSound(name)
             return sound
 
     def unloadSfx(self, sfx):
@@ -310,12 +307,12 @@ class ShowBase:
     def playMusic(self, music, looping = 0, interupt = 1, volume = None,
                   restart = None, time = 0.):
         if (music and base.wantMusic):
+            if volume != None:
+                music.setVolume(volume)
             if interupt or (music.status() != AudioSound.PLAYING):
                 music.setTime(time)
                 music.setLoop(looping)
                 music.play()
-            if volume != None:
-                music.setVolume(volume)
             if restart:
                 restart[0].accept("restart-music", restart[1])
 
