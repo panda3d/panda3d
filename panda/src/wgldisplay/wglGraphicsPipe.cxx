@@ -374,8 +374,10 @@ choose_pfnum_advanced(const FrameBufferProperties &properties,
   if (!wglgsg->_wglChoosePixelFormatARB(window_dc, iattrib_list, fattrib_list,
                                         max_pformats, pformat, &nformats) ||
       nformats == 0) {
-    wgldisplay_cat.info()
-      << "Couldn't find a suitable advanced pixel format.\n";
+    if (wgldisplay_cat.is_debug()) {
+      wgldisplay_cat.info()
+        << "Couldn't find a suitable advanced pixel format.\n";
+    }
     return orig_pfnum;
   }
   
