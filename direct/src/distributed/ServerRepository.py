@@ -144,7 +144,8 @@ class ServerRepository:
 
             # Also try it without the dcSuffix.
             if classDef == None:
-                classDef = dcImports.get(dcClass.getName())
+                className = dclass.getName()
+                classDef = dcImports.get(className)
             
             if classDef == None:
                 self.notify.info("No class definition for %s." % (className))
