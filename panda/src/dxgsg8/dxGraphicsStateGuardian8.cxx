@@ -467,7 +467,7 @@ DXGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
     _pFPSFont=NULL;
     _bShowFPSMeter = false;
 
-    _max_light_range = __D3DLIGHT_RANGE_MAX;
+    //    _max_light_range = __D3DLIGHT_RANGE_MAX;
 
     // non-dx obj values inited here should not change if resize is 
     // called and dx objects need to be recreated (otherwise they
@@ -1043,25 +1043,6 @@ clear(const RenderBuffer &buffer, const DisplayRegion *region) {
     prepare_display_region();
     clear(buffer);
     pop_display_region(old_dr);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::enable_light
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-bool DXGraphicsStateGuardian::
-enable_light(int light_id, bool val) {
-  HRESULT hr = scrn.pD3DDevice->LightEnable( light_id, val  );
-
-#ifdef GSG_VERBOSE
-  dxgsg_cat.debug() << "LightEnable(" << light_id << "=" << val << ")" << endl;
-#endif
-  
-  if (FAILED(hr)) {
-    dxgsg_cat.error() << "LightEnable(" << light_id << "=" << val << ") failed, " <<D3DERRORSTRING(hr);
-    return false;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4335,7 +4316,7 @@ void DXGraphicsStateGuardian::apply_light( Spotlight *light ) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::apply_light( AmbientLight* light ) {
-    _cur_ambient_light = _cur_ambient_light + light->get_color();
+  //    _cur_ambient_light = _cur_ambient_light + light->get_color();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5397,6 +5378,36 @@ get_fog_mode_type(Fog::Mode m) const {
     }
     dxgsg_cat.error() << "Invalid Fog::Mode value" << endl;
     return D3DFOG_EXP;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::enable_lighting
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by a derived class to
+//               enable or disable the use of lighting overall.  This
+//               is called by issue_light() according to whether any
+//               lights are in use or not.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+enable_lighting(bool enable) {
+  scrn.pD3DDevice->SetRenderState(D3DRS_LIGHTING, (DWORD)enable);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::enable_light
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by a derived class to
+//               enable the indicated light id.  A specific Light will
+//               already have been bound to this id via bind_light().
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+enable_light(int light_id, bool enable) {
+  HRESULT res = scrn.pD3DDevice->LightEnable(light_id, enable);
+
+#ifdef GSG_VERBOSE
+  dxgsg_cat.debug()
+    << "LightEnable(" << light << "=" << val << ")" << endl;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

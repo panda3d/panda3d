@@ -179,6 +179,9 @@ public:
   DXScreenData scrn;
 
 protected:
+  virtual void enable_lighting(bool enable);
+  virtual void enable_light(int light_id, bool enable);
+
   void free_pointers();            // free local internal buffers
   void free_dxgsg_objects(void);   // free the DirectX objects we create
   virtual PT(SavedFrameBuffer) save_frame_buffer(const RenderBuffer &buffer,
@@ -241,10 +244,8 @@ protected:
   INLINE void call_dxLightModelAmbient(const Colorf& color);
   INLINE void call_dxAlphaFunc(D3DCMPFUNC func, DWORD ref);
   INLINE void call_dxBlendFunc(D3DBLEND sfunc, D3DBLEND dfunc);
-  INLINE void enable_lighting(bool val);
   INLINE void enable_dither(bool val);
   INLINE void enable_stencil_test(bool val);
-  bool enable_light(int light, bool val);
   void report_texmgr_stats();
   void draw_multitri(Geom *geom, D3DPRIMITIVETYPE tri_id);
 

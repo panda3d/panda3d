@@ -759,6 +759,7 @@ dx_init( void) {
     _available_clip_plane_ids = PTA(PlaneNode*)::empty_array(_max_clip_planes);
     _clip_plane_enabled = new bool[_max_clip_planes];
     _cur_clip_plane_enabled = new bool[_max_clip_planes];
+    int i;
     for (i = 0; i < _max_clip_planes; i++) {
         _available_clip_plane_ids[i] = NULL;
         _clip_plane_enabled[i] = false;
