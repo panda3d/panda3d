@@ -170,6 +170,10 @@ class ShowBase:
         # Transition effects (fade, iris, etc)
         self.transitions = Transitions.Transitions(self.loader)
 
+        # Tk
+        if self.wantTk:
+            import TkGlobal
+
         self.restart()
 
     def addAngularIntegrator(self):
