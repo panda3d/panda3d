@@ -53,18 +53,45 @@
 #define lxx_so_sources $[filter %.lxx,$[so_sources]]
 #define lxx_st_sources $[filter %.lxx,$[st_sources]]
 
+// This map variable gets us all the various source files from all the
+// targets in this directory.  We need it to look up the context in
+// which to build a particular source file, since some targets may
+// have different requirements than other targets.
 #map all_sources get_sources(metalib_target lib_target noinst_lib_target static_lib_target bin_target noinst_bin_target test_bin_target)
 
-#defer complete_local_libs $[sort $[closure all_libs,$[active_libs]]]
+// We define $[complete_local_libs] as the full set of libraries (from
+// within this tree) that we must link a particular target with.  It
+// is the transitive closure of our dependent libs: the libraries we
+// depend on, plus the libraries *those* libraries depend on, and so
+// on.
+#defer complete_local_libs $[unique $[closure all_libs,$[active_libs]]]
+
+// And $[complete_ipath] is the list of directories (from within this
+// tree) we should add to our -I list.  It's basically just one for
+// each directory named in the $[complete_local_libs], above, plus
+// whatever else the user might have explicitly named in
+// $[LOCAL_INCS].
 #defer complete_ipath $[all_libs $[RELDIR],$[complete_local_libs]] $[RELDIR($[LOCAL_INCS:%=%/])]
-#defer file_ipath $[other_trees:%=%/include] $[TOPDIR] $[sort $[all_sources $[complete_ipath],$[file]]] $[all_sources $[get_ipath],$[file]]
+
+// $[target_ipath] is the proper ipath to put on the command line,
+// from the context of a particular target.
 #defer target_ipath $[other_trees:%=%/include] $[TOPDIR] $[sort $[complete_ipath]] $[get_ipath]
+
+// $[file_ipath] is the ipath from the context of a particular source
+// file, given in $[file].  It uses the all_sources map to look up
+// the target the source file belongs on, to get the proper context.
+#defer file_ipath $[all_sources $[target_ipath],$[file]]
 
 #defer cflags $[all_sources $[get_cflags] $[CFLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]]
 #defer c++flags $[all_sources $[get_cflags] $[C++FLAGS],$[file]] $[CFLAGS_OPT$[OPTIMIZE]]
 
-#defer target_lpath $[other_trees:%=%/lib] $[sort $[static_libs $[RELDIR:%=%/$[st_dir]],$[complete_local_libs]] $[dynamic_libs $[RELDIR:%=%/$[so_dir]],$[complete_local_libs]]]
-#defer lpath $[target_lpath] $[get_lpath]
+// $[complete_lpath] is rather like $[complete_ipath]: the list of
+// directories (from within this tree) we should add to our -L list.
+#defer complete_lpath $[static_libs $[RELDIR:%=%/$[st_dir]],$[complete_local_libs]] $[dynamic_libs $[RELDIR:%=%/$[so_dir]],$[complete_local_libs]]
+
+// $[lpath] is like $[target_ipath]: it's the list of directories we
+// should add to our -L list.
+#defer lpath $[other_trees:%=%/lib] $[sort $[complete_lpath]] $[get_lpath]
 #defer libs $[unique $[complete_local_libs] $[patsubst %:m,,%:c %,%,$[OTHER_LIBS]] $[get_libs]]
 
 #output Makefile
@@ -292,7 +319,7 @@ $[install_lib_dir]/lib$[TARGET].a : $[st_dir]/lib$[TARGET].a
 // be processed with sed to produce an executable script.  Pretty 
 // Unix-specific, so we'd better not have too many of these.
 $[st_dir]/$[TARGET] : $[SOURCE]
-	$[SED] $[COMMAND] $^ >$@
+	$[SED] $[COMMAND] $[SOURCE] >$@
 	chmod +x $@
 
 #define installed_files \

@@ -118,8 +118,8 @@
 #endif
 
 #if $[and $[HAVE_MAYA],$[MAYA_LOCATION]]
-  #define maya_ipath -I$[MAYA_LOCATION]/include
-  #define maya_lpath -L$[MAYA_LOCATION]/lib
+  #define maya_ipath $[MAYA_LOCATION]/include
+  #define maya_lpath $[MAYA_LOCATION]/lib
   #define maya_ld $[MAYA_LOCATION]/bin/mayald
 #endif
 
@@ -394,7 +394,7 @@
 // This function returns the appropriate value for ld for the target.
 #defun get_ld
   #if $[ne $[USE_MAYA] $[components $[USE_MAYA],$[COMPONENT_LD]],]
-    mayald
+    $[maya_ld]
   #endif
 #end get_ld
 

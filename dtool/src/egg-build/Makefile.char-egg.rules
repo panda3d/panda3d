@@ -3,7 +3,7 @@
 # and then into pfb's.
 #
 
-include $(DTOOL)/inc/Makefile.inst-egg.vars
+include $(DTOOL)/include/Makefile.inst-egg.vars
 
 ifeq ($(EGG_PALETTIZE),)
   EGG_PALETTIZE = egg-palettize

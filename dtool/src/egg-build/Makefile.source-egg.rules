@@ -3,7 +3,7 @@
 # into pfb's.
 #
 
-include $(DTOOL)/inc/Makefile.inst-egg.vars
+include $(DTOOL)/include/Makefile.inst-egg.vars
 
 ifeq ($(EGG_RESTRUCTURE),)
   EGG_RESTRUCTURE = egg-restructure

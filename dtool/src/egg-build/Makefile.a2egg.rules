@@ -51,5 +51,5 @@ A2C_RULE = $(UNOPT)$(CHAN_FILE_PREFIX)$(ANIM)$(CHAN_FILE_SUFFIX).egg : $(FIND_CH
 
 A2C = $(A2EGG_CHAN) -c $@ $(A2C_OPTS)
 
-include $(DTOOL)/inc/Makefile.char-egg.rules
+include $(DTOOL)/include/Makefile.char-egg.rules
 

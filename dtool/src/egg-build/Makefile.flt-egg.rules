@@ -4,7 +4,7 @@
 # automatically resolve and convert referenced files.
 #
 
-include $(DTOOL)/inc/Makefile.inst-egg.vars
+include $(DTOOL)/include/Makefile.inst-egg.vars
 
 ifeq ($(RFLT2EGG),)
   RFLT2EGG = rflt2egg

@@ -4,7 +4,7 @@
 # for things which are not characters but are modeled in Alias.
 #
 
-include $(DTOOL)/inc/Makefile.inst-egg.vars
+include $(DTOOL)/include/Makefile.inst-egg.vars
 
 ifeq ($(A2E),)
   A2E = a2egg

@@ -60,6 +60,6 @@ MAKE_NURBS_MODEL = $(S2E) -s $(SOFT_MODEL) $(NURBS_OPTS) $(S2E_OPTS)
 MAKE_TX_MODEL = a2egg -nsk -m $@ $(MAKE_TX_OPTS) $(TX_WIRE_FILE)
 
 
-include $(DTOOL)/inc/Makefile.char-egg.rules
+include $(DTOOL)/include/Makefile.char-egg.rules
 
 
