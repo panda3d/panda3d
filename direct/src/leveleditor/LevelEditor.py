@@ -182,6 +182,12 @@ class LevelEditor(NodePath, PandaObject):
     def getCorniceTextures(self):
 	return self.attributeDictionary['corniceTextures']
 
+    def getPropColor(self):
+	return self.attributeDictionary['propColor']
+
+    def getPropColors(self):
+	return self.attributeDictionary['propColors']
+
     def getDnaStore(self):
 	return self.dnaStore
 
@@ -556,6 +562,13 @@ class LevelEditor(NodePath, PandaObject):
 	self.pieMenuDictionary['corniceColorMenu'] = (
             self.pieMenuDictionary['toontownCentralCorniceColors'])
 
+	self.attributeDictionary['propColors'] = (
+            self.colorPaletteDictionary['toontownCentralPropColors'])
+	self.attributeDictionary['propColor'] = (
+            self.attributeDictionary['propColors'][1])
+	self.pieMenuDictionary['propColorMenu'] = (
+            self.pieMenuDictionary['toontownCentralPropColors'])
+
     def useDonaldsDockColors(self):
 	self.attributeDictionary['wallColors'] = (
             self.colorPaletteDictionary['donaldsDockWallColors'])
@@ -584,6 +597,13 @@ class LevelEditor(NodePath, PandaObject):
             self.attributeDictionary['corniceColors'][1])
 	self.pieMenuDictionary['corniceColorMenu'] = (
             self.pieMenuDictionary['donaldsDockCorniceColors'])
+
+	self.attributeDictionary['propColors'] = (
+            self.colorPaletteDictionary['donaldsDockPropColors'])
+	self.attributeDictionary['propColor'] = (
+            self.attributeDictionary['propColors'][1])
+	self.pieMenuDictionary['propColorMenu'] = (
+            self.pieMenuDictionary['donaldsDockPropColors'])
 
     def useTheBurrrghColors(self):
 	self.attributeDictionary['wallColors'] = (
@@ -614,6 +634,13 @@ class LevelEditor(NodePath, PandaObject):
 	self.pieMenuDictionary['corniceColorMenu'] = (
             self.pieMenuDictionary['theBurrrghCorniceColors'])
 
+	self.attributeDictionary['propColors'] = (
+            self.colorPaletteDictionary['theBurrrghPropColors'])
+	self.attributeDictionary['propColor'] = (
+            self.attributeDictionary['propColors'][1])
+	self.pieMenuDictionary['propColorMenu'] = (
+            self.pieMenuDictionary['theBurrrghPropColors'])
+
     def useMinniesMelodyLandColors(self):
 	self.attributeDictionary['wallColors'] = (
             self.colorPaletteDictionary['minniesMelodyLandWallColors'])
@@ -642,6 +669,13 @@ class LevelEditor(NodePath, PandaObject):
             self.attributeDictionary['corniceColors'][1])
 	self.pieMenuDictionary['corniceColorMenu'] = (
             self.pieMenuDictionary['minniesMelodyLandCorniceColors'])
+
+	self.attributeDictionary['propColors'] = (
+            self.colorPaletteDictionary['minniesMelodyLandPropColors'])
+	self.attributeDictionary['propColor'] = (
+            self.attributeDictionary['propColors'][1])
+	self.pieMenuDictionary['propColorMenu'] = (
+            self.pieMenuDictionary['minniesMelodyLandPropColors'])
 
     def addCollisionSphere(self):
 	sphere = self.vizRegion.attachNewNode(NamedNode('vizSphere'))
@@ -922,8 +956,8 @@ class LevelEditor(NodePath, PandaObject):
             self.activeColors = self.getCorniceColors()
             state = aDNAObject.getColor()
         elif menu == 'propColor':
-            self.activeMenu = self.pieMenuDictionary['wallColorMenu']
-            self.activeColors = self.getWallColors()
+            self.activeMenu = self.pieMenuDictionary['propColorMenu']
+            self.activeColors = self.getPropColors()
             state = aDNAObject.getColor()
         elif menu == 'propType':
             self.activeMenu = self.pieMenuDictionary['propTypesMenu']
@@ -1029,6 +1063,7 @@ class LevelEditor(NodePath, PandaObject):
         self.createColorMenu(prefix + 'WindowColors', dict['windowColors'])
         self.createColorMenu(prefix + 'DoorColors', dict['doorColors'])
         self.createColorMenu(prefix + 'CorniceColors', dict['corniceColors'])
+        self.createColorMenu(prefix + 'PropColors', dict['propColors'])
 
     def createColorDictionaryFromFile(self, filename):
         print 'Loading Color Palettes from: ' + filename
@@ -1042,6 +1077,7 @@ class LevelEditor(NodePath, PandaObject):
         windowColors = []
         doorColors = []
         corniceColors = []
+        propColors = []
         for line in rawData:
             l = string.strip(line)
             if l:
@@ -1053,10 +1089,13 @@ class LevelEditor(NodePath, PandaObject):
                     doorColors.append(eval(l[11:]))
                 elif l[:4] == 'corn':
                     corniceColors.append(eval(l[14:]))
+                elif l[:4] == 'prop':
+                    propColors.append(eval(l[11:]))
         dict['wallColors'] = wallColors
         dict['windowColors'] = windowColors
         dict['doorColors'] = doorColors
         dict['corniceColors'] = corniceColors
+        dict['propColors'] = propColors
         return dict
 
     def saveColor(self):
@@ -1066,8 +1105,7 @@ class LevelEditor(NodePath, PandaObject):
         obj = self.targetDNAObject
         if obj:
             classType = obj.__class__.getClassType()
-            if (classType.eq(DNAWall.getClassType()) |
-                classType.eq(DNAProp.getClassType())):
+            if classType.eq(DNAWall.getClassType()):
                 tag = 'wallColor:'
             elif classType.eq(DNAWindows.getClassType()):
                 tag = 'windowColor:'
@@ -1075,6 +1113,8 @@ class LevelEditor(NodePath, PandaObject):
                 tag = 'doorColor:'
             elif classType.eq(DNACornice.getClassType()):
                 tag = 'corniceColor:'
+            elif classType.eq(DNAProp.getClassType()):
+                tag = 'propColor:'
             else:
                 return
             # Valid type, add color to file
@@ -1101,6 +1141,9 @@ class LevelEditor(NodePath, PandaObject):
                    (color[0], color[1], color[2]))
         for color in dict['corniceColors']:
             print ('corniceColor: Vec4(%.2f, %.2f, %.2f, 1.0)' %
+                   (color[0], color[1], color[2]))
+        for color in dict['propColors']:
+            print ('propColor: Vec4(%.2f, %.2f, %.2f, 1.0)' %
                    (color[0], color[1], color[2]))
 
     def createColorMenus(self):
