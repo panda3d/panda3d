@@ -27,16 +27,16 @@ dclass DistributedObject {
   // The uint8[] syntax replaces the old uint8array type.  All of the
   // old hard-coded array types are now deprecated in favor of C-style
   // array definitions.
-  setPropertiesList(uint8[] properties);
+  setPropertiesList(uint8 properties[]);
 };
 
 
 // You can also define C-style structs.  This is really the same thing
 // as a dclass, except it can be embedded in a message rather than
 // created as an object in its own right.  The struct may or may not
-// have a Python representation in one of the imported modules.  If
-// the struct has a Python representation, an instance of that object
-// is created and passed in to functions that receive this kind of
+// correspond with a Python class of the same name.  If the struct
+// does have a Python representation, an instance of that class is
+// created and passed in to functions that receive this kind of
 // parameter; otherwise, a tuple with all of the fields is passed
 // instead.
 
@@ -51,8 +51,9 @@ struct AvatarObject {
   int8 code = 0;
 
   // You can also define "methods" on a struct, just as on a dclass.
-  // This implies the existence of the corresponding getObjectCode()
-  // method to query the information at generate time.
+  // This implies the existence of the corresponding get method
+  // (e.g. getObjectCode() in this case) method, to query the
+  // information at generate time.
   setObjectCode(int8(0-50) code, DoId player);
 };
 
@@ -63,11 +64,11 @@ dclass DistributedObjectHolder : DistributedObject {
 
   // You can also have an array of structs.  This specifies a
   // fixed-length array of five elements.
-  setObjectList(AvatarObject[5] objectArray);
+  setObjectList(AvatarObject objectArray[5]);
 
   // In addition to fixed-length arrays and unbounded arrays, you can
   // specify a range for the valid size of the array:
-  setRelatedObjects(AvatarObject[0, 3 - 5] relatedObjects = [])
+  setRelatedObjects(AvatarObject relatedObjects[0, 3 - 5] = [])
 };
 
 // You can specify a default initial value on the typedef, if you
@@ -76,8 +77,13 @@ dclass DistributedObjectHolder : DistributedObject {
 typedef uint8(0-25) DNAColor = 1;
   
 struct AvatarDNA {
+  // This defines a character element that can be any one of the three
+  // specified.  (It is similar to the uint8 range restrictions,
+  // below.)
   char('a','q','x') type;
 
+  // These specify one-byte numeric elements that can be any of the
+  // values in the specified ranges.
   uint8(0-10) torsoIndex;
   uint8(0-5) headIndex;
   uint8(0-4) legsIndex;
@@ -102,11 +108,14 @@ struct AvatarDNA {
     DNAColor shortsColor;
   };
 
+  // Nested structure references.
   DNAColor armColor;
   DNAColor headColor;
 };
 
 
 dclass DistributedAvatar {
+  // An example of defining the default value for a complex nested
+  // field, like the above.
   setDNA(AvatarDNA dna = {'a', 1, 2, 3, { 1, 0, 1, 0, 1 }, 1, 1 }) required broadcast db;
 };
