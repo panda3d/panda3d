@@ -23,6 +23,7 @@ class OnscreenText(PandaObject, NodePath):
                  fg = None,
                  bg = None,
                  shadow = None,
+                 shadowOffset = (0.04,0.04),
                  frame = None,
                  align = None,
                  wordwrap = None,
@@ -175,8 +176,8 @@ class OnscreenText(PandaObject, NodePath):
 
         if shadow[3] != 0:
             # If we have a shadow color, create a shadow.
-            textNode.setShadowColor(shadow[0], shadow[1], shadow[2], shadow[3])
-            textNode.setShadow(0.03, 0.03)
+            textNode.setShadowColor(*shadow)
+            textNode.setShadow(*shadowOffset)
 
         if frame[3] != 0:
             # If we have a frame color, create a frame.
@@ -323,8 +324,8 @@ class OnscreenText(PandaObject, NodePath):
         self.textNode.freeze()
         if shadow[3] != 0:
             # If we have a shadow color, create a shadow.
-            self.textNode.setShadowColor(shadow[0], shadow[1], shadow[2], shadow[3])
-            self.textNode.setShadow(0.03, 0.03)
+            self.textNode.setShadowColor(*shadow)
+            self.textNode.setShadow(*shadowOffset)
         else:
             # Otherwise, remove the shadow.
             self.textNode.clearShadow()
