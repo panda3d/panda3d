@@ -118,6 +118,12 @@ open_window(const WindowProperties &props, GraphicsEngine *engine,
 
   // Set up a 3-d camera for the window by default.
   make_camera();
+
+  if (show_frame_rate_meter) {
+    _frame_rate_meter = new FrameRateMeter("frame_rate_meter");
+    _frame_rate_meter->setup_layer(_window);
+  }
+
   return _window;
 }
 
@@ -146,6 +152,8 @@ close_window() {
   _two_sided_enabled = false;
   _one_sided_reverse_enabled = false;
   _lighting_enabled = false;
+
+  _frame_rate_meter == (FrameRateMeter *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

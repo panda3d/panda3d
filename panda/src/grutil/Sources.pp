@@ -4,22 +4,25 @@
 #begin lib_target
   #define TARGET grutil
   #define LOCAL_LIBS \
-    pgraph gobj linmath putil
+    display text pgraph gobj linmath putil
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
 
   #define SOURCES \
     cardMaker.I cardMaker.h \
     config_grutil.h \
+    frameRateMeter.I frameRateMeter.h \
     lineSegs.I lineSegs.h
     
   #define INCLUDED_SOURCES \
     cardMaker.cxx \
     config_grutil.cxx \
+    frameRateMeter.cxx \
     lineSegs.cxx
 
   #define INSTALL_HEADERS \
     cardMaker.I cardMaker.h \
+    frameRateMeter.I frameRateMeter.h \
     lineSegs.I lineSegs.h
 
   #define IGATESCAN all

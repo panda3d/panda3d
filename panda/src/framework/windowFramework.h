@@ -26,6 +26,7 @@
 #include "animControlCollection.h"
 #include "trackball.h"
 #include "filename.h"
+#include "frameRateMeter.h"
 #include "pointerTo.h"
 #include "pvector.h"
 #include "typedReferenceCount.h"
@@ -135,6 +136,8 @@ private:
   bool _two_sided_enabled;
   bool _one_sided_reverse_enabled;
   bool _lighting_enabled;
+
+  PT(FrameRateMeter) _frame_rate_meter;
 
   BackgroundType _background_type;
 

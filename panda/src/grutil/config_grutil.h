@@ -20,9 +20,17 @@
 #define CONFIG_GRUTIL_H
 
 #include "pandabase.h"
-#include <notifyCategoryProxy.h>
+#include "notifyCategoryProxy.h"
 
 NotifyCategoryDecl(grutil, EXPCL_PANDA, EXPTP_PANDA);
+
+extern const double frame_rate_meter_update_interval;
+extern const string frame_rate_meter_text_pattern;
+extern const int frame_rate_meter_layer_sort;
+extern const float frame_rate_meter_scale;
+extern const float frame_rate_meter_side_margins;
+
+extern EXPCL_PANDA void init_libgrutil();
 
 #endif
 

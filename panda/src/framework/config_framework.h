@@ -32,6 +32,8 @@ extern const bool undecorated;
 extern const bool cursor_hidden;
 extern const float aspect_ratio;
 
+extern const bool show_frame_rate_meter;
+
 extern const float win_background_r;
 extern const float win_background_g;
 extern const float win_background_b;

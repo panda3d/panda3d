@@ -35,6 +35,8 @@ const bool undecorated = config_framework.GetBool("undecorated", false);
 const bool cursor_hidden = config_framework.GetBool("cursor-hidden", false);
 const float aspect_ratio = config_framework.GetFloat("aspect-ratio", 0.0f);
 
+const bool show_frame_rate_meter = config_framework.GetBool("show-frame-rate-meter", false);
+
 // The default window background color.
 const float win_background_r = config_framework.GetFloat("win-background-r", 0.41);
 const float win_background_g = config_framework.GetFloat("win-background-g", 0.41);
