@@ -1863,7 +1863,7 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
 
   cpptype = TypeManager::resolve_type(cpptype)->as_struct_type();
   assert(cpptype != (CPPStructType *)NULL);
-  cpptype->check_virtual();
+  bool has_virt_methods = cpptype->check_virtual();
 
   switch (cpptype->_type) {
   case CPPExtensionType::T_class:
@@ -1957,6 +1957,13 @@ define_struct_type(InterrogateType &itype, CPPStructType *cpptype,
           // inheritance, if the flag is set indicating that this
           // requires a pointer change.  (For many compilers, this does
           // not require a pointer change.)
+          generate_casts = true;
+
+        } else if (has_virt_methods && (base_type->as_struct_type() == (CPPStructType *)NULL || !base_type->as_struct_type()->check_virtual())) {
+          // Finally, if this class has virtual methods, but its
+          // parent doesn't, then we have to upcast (because this
+          // class will require space for a virtual function table
+          // pointer, while the parent class won't).
           generate_casts = true;
         }
         

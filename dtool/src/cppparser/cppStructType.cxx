@@ -144,11 +144,16 @@ is_abstract() const {
 //               class).  It is sometimes useful to know whether a
 //               given virtual method represents the first time that
 //               particular method appears.
+//
+//               The return value is true if this class defines or
+//               inherits any virtual methods (and thus requires a
+//               virtual function pointer), or false otherwise.
 ////////////////////////////////////////////////////////////////////
-void CPPStructType::
+bool CPPStructType::
 check_virtual() {
   VFunctions funcs;
   get_virtual_funcs(funcs);
+  return !funcs.empty();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -48,7 +48,7 @@ public:
   CPPScope *get_scope() const;
 
   bool is_abstract() const;
-  void check_virtual();
+  bool check_virtual();
   virtual bool is_fully_specified() const;
   virtual bool is_incomplete() const;
 
