@@ -57,7 +57,7 @@ is_on(NotifySeverity severity) const {
   return (int)severity >= (int)_severity;
 }
 
-#ifdef NOTIFY_DEBUG
+#if defined(NOTIFY_DEBUG) || defined(CPPPARSER)
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategory::is_spam
 //       Access: Public

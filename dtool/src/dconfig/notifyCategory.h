@@ -35,7 +35,13 @@ PUBLISHED:
   
   INLINE bool is_on(NotifySeverity severity) const;
 
-#ifdef NOTIFY_DEBUG
+  // When NOTIFY_DEBUG is not defined, the categories will never be
+  // set to "spam" or "debug" severities, and these methods are
+  // redefined to be static to make it more obvious to the compiler.
+  // However, we still want to present a consistent interface to our
+  // scripting language, so during the interrogate pass (that is, when
+  // CPPPARSER is defined), we still pretend they're nonstatic.
+#if defined(NOTIFY_DEBUG) || defined(CPPPARSER)
   INLINE bool is_spam() const;
   INLINE bool is_debug() const;
 #else
