@@ -112,6 +112,10 @@
   #error Invalid value specified for USE_COMPILER.
 #endif
 
+#if $[PREPROCESSOR_OUTPUT]
+#defer $[COMMONFLAGS] /E
+#endif 
+
 #defer CDEFINES_OPT1 _DEBUG $[dlink_all_static]
 #defer CDEFINES_OPT2 _DEBUG $[dlink_all_static]
 #defer CDEFINES_OPT3 $[dlink_all_static]
