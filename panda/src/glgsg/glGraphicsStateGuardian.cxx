@@ -530,6 +530,8 @@ draw_line(GeomLine *geom, GeomContext *) {
 
   int nprims = geom->get_num_prims();
   Geom::VertexIterator vi = geom->make_vertex_iterator();
+  Geom::NormalIterator ni = geom->make_normal_iterator();
+  Geom::TexCoordIterator ti = geom->make_texcoord_iterator();
   Geom::ColorIterator ci = geom->make_color_iterator();
 
   GeomIssuer::IssueColor *issue_color;
@@ -546,7 +548,10 @@ draw_line(GeomLine *geom, GeomContext *) {
                     issue_texcoord_gl,
                     issue_color);
 
-  if (geom->get_binding(G_COLOR) == G_PER_VERTEX) {
+  // If we have per-vertex colors or normals, we need smooth shading.
+  // Otherwise we want flat shading for performance reasons.
+  if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) ||
+      (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
     call_glShadeModel(GL_SMOOTH);
   } else {
     call_glShadeModel(GL_FLAT);
@@ -554,16 +559,20 @@ draw_line(GeomLine *geom, GeomContext *) {
 
   // Draw overall
   issuer.issue_color(G_OVERALL, ci);
+  issuer.issue_normal(G_OVERALL, ni);
 
   glBegin(GL_LINES);
 
   for (int i = 0; i < nprims; i++) {
     // Draw per primitive
     issuer.issue_color(G_PER_PRIM, ci);
+    issuer.issue_normal(G_PER_PRIM, ni);
 
     for (int j = 0; j < 2; j++) {
       // Draw per vertex
       issuer.issue_color(G_PER_VERTEX, ci);
+      issuer.issue_normal(G_PER_VERTEX, ni);
+      issuer.issue_texcoord(G_PER_VERTEX, ti);
       issuer.issue_vertex(G_PER_VERTEX, vi);
     }
   }
@@ -598,6 +607,8 @@ draw_linestrip(GeomLinestrip *geom, GeomContext *) {
   int nprims = geom->get_num_prims();
   const int *plen = geom->get_lengths();
   Geom::VertexIterator vi = geom->make_vertex_iterator();
+  Geom::NormalIterator ni = geom->make_normal_iterator();
+  Geom::TexCoordIterator ti = geom->make_texcoord_iterator();
   Geom::ColorIterator ci = geom->make_color_iterator();
 
   GeomIssuer::IssueColor *issue_color;
@@ -614,7 +625,10 @@ draw_linestrip(GeomLinestrip *geom, GeomContext *) {
                     issue_texcoord_gl,
                     issue_color);
 
-  if (geom->get_binding(G_COLOR) == G_PER_VERTEX) {
+  // If we have per-vertex colors or normals, we need smooth shading.
+  // Otherwise we want flat shading for performance reasons.
+  if ((geom->get_binding(G_COLOR) == G_PER_VERTEX && wants_colors()) ||
+      (geom->get_binding(G_NORMAL) == G_PER_VERTEX && wants_normals())) {
     call_glShadeModel(GL_SMOOTH);
   } else {
     call_glShadeModel(GL_FLAT);
@@ -622,10 +636,12 @@ draw_linestrip(GeomLinestrip *geom, GeomContext *) {
 
   // Draw overall
   issuer.issue_color(G_OVERALL, ci);
+  issuer.issue_normal(G_OVERALL, ni);
 
   for (int i = 0; i < nprims; i++) {
     // Draw per primitive
     issuer.issue_color(G_PER_PRIM, ci);
+    issuer.issue_normal(G_PER_PRIM, ni);
 
     int num_verts = *(plen++);
     nassertv(num_verts >= 2);
@@ -634,11 +650,14 @@ draw_linestrip(GeomLinestrip *geom, GeomContext *) {
 
     // Per-component attributes for the first line segment?
     issuer.issue_color(G_PER_COMPONENT, ci);
+    issuer.issue_normal(G_PER_COMPONENT, ni);
 
     // Draw the first 2 vertices
     int v;
     for (v = 0; v < 2; v++) {
       issuer.issue_color(G_PER_VERTEX, ci);
+      issuer.issue_normal(G_PER_VERTEX, ni);
+      issuer.issue_texcoord(G_PER_VERTEX, ti);
       issuer.issue_vertex(G_PER_VERTEX, vi);
     }
 
@@ -647,9 +666,12 @@ draw_linestrip(GeomLinestrip *geom, GeomContext *) {
     for (v = 2; v < num_verts; v++) {
       // Per-component attributes?
       issuer.issue_color(G_PER_COMPONENT, ci);
+      issuer.issue_normal(G_PER_COMPONENT, ni);
 
       // Per-vertex attributes
       issuer.issue_color(G_PER_VERTEX, ci);
+      issuer.issue_normal(G_PER_VERTEX, ni);
+      issuer.issue_texcoord(G_PER_VERTEX, ti);
       issuer.issue_vertex(G_PER_VERTEX, vi);
     }
     glEnd();
