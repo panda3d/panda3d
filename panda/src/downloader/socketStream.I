@@ -136,7 +136,7 @@ consider_flush() {
 //               has meaning if set_collect_tcp() has been set to
 //               true.
 ////////////////////////////////////////////////////////////////////
-bool OSocketStream::
+INLINE bool OSocketStream::
 flush() {
   ostream::flush();
   _queued_data_start = ClockObject::get_global_clock()->get_real_time();
@@ -253,7 +253,7 @@ consider_flush() {
 //               has meaning if set_collect_tcp() has been set to
 //               true.
 ////////////////////////////////////////////////////////////////////
-bool SocketStream::
+INLINE bool SocketStream::
 flush() {
   iostream::flush();
   _queued_data_start = ClockObject::get_global_clock()->get_real_time();
