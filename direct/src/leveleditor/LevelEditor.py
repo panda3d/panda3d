@@ -2464,7 +2464,7 @@ class LevelEditor(NodePath, PandaObject):
                    fUpdateExplorer = 0)
         # Now load in new file
         self.cvsUpdate(filename)
-        node = loadDNAFile(DNASTORE, filename, CSDefault, 1)
+        node = loadDNAFile(DNASTORE, Filename.fromOsSpecific(filename).cStr(), CSDefault, 1)
         if node.getNumParents() == 1:
             # If the node already has a parent arc when it's loaded, we must
             # be using the level editor and we want to preserve that arc.

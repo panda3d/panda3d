@@ -7,8 +7,13 @@ echo $DIRECT/src/leveleditor/Configrc
 # Python files
 echo $WINTOOLS/bin/python.exe
 echo $WINTOOLS/sdk/python/Python-2.2/DLLs/python22.dll
+echo $WINTOOLS/sdk/python/Python-2.2/DLLs/PyWinTypes22.dll
 echo $WINTOOLS/sdk/python/Python-2.2/DLLs/_sre.pyd
 echo $WINTOOLS/sdk/python/Python-2.2/DLLs/_tkinter.pyd
+echo $WINTOOLS/sdk/python/Python-2.2/DLLs/zlib.pyd
+echo $WINTOOLS/sdk/python/Python-2.2/DLLs/win32api.pyd
+echo $WINTOOLS/sdk/python/Python-2.2/DLLs/_socket.pyd
+
 echo $WINTOOLS/sdk/python/Python-2.2/Lib/lib-tk
 echo $WINTOOLS/sdk/python/Python-2.2/Lib/Pmw
 echo $WINTOOLS/sdk/python/Python-2.2/Lib/linecache.py
@@ -86,17 +91,3 @@ echo $PANDA/etc/window_db
 
 # Generated code for libpanda
 echo $DIRECT/lib/py/PandaModules.py
-
-# Models, textures, audio
-echo $DMODELS/models
-echo $DMODELS/icons
-echo $DMODELS/maps
-echo $TTMODELS/phase_3
-echo $TTMODELS/phase_4
-echo $TTMODELS/phase_5
-echo $TTMODELS/phase_6
-echo $TTMODELS/phase_7
-echo $TTMODELS/phase_8
-
-
-

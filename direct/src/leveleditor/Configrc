@@ -2,6 +2,7 @@
 want-tk 1
 want-directtools 1
 level-editor-hoods TT
+# level-editor-hoods TT DD DG MM BR DL
 style-path-prefix /i
 
 load-display pandadx
@@ -14,14 +15,14 @@ sync-video #t
 
 # Configrc for running the level editor
 
-# model-path     $TTMODELS
-# sound-path     $TTMODELS
+model-path     $TTMODELS
+model-path     $DMODELS
+sound-path     $TTMODELS
 dna-preload    phase_4/dna/storage.dna
 
 load-file-type toontown
 
 window-title Toontown
-win32-window-icon $TTMODELS/phase_3/models/gui/toontown.ico
 
 compress-channels #t
 text-encoding utf8
@@ -57,6 +58,6 @@ egg-object-type-shadow          <Scalar> bin { shadow } <Scalar> alpha { blend-n
 cull-bin shadow 25 unsorted
 
 # The ID of the server that we are compatible with
-server-version sv1.0.13
+server-version sv1.0.14
 
 
