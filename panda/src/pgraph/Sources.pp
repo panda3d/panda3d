@@ -12,6 +12,7 @@
     accumulatedAttribs.I accumulatedAttribs.h \
     alphaTestAttrib.I alphaTestAttrib.h \  
     ambientLight.I ambientLight.h \
+    auxSceneData.I auxSceneData.h \
     bamFile.I bamFile.h \
     billboardEffect.I billboardEffect.h \
     binCullHandler.I binCullHandler.h \
@@ -103,6 +104,7 @@
     accumulatedAttribs.cxx \
     alphaTestAttrib.cxx \  
     ambientLight.cxx \
+    auxSceneData.cxx \
     bamFile.cxx \
     billboardEffect.cxx \
     binCullHandler.cxx \
@@ -192,6 +194,7 @@
     accumulatedAttribs.I accumulatedAttribs.h \
     alphaTestAttrib.I alphaTestAttrib.h \  
     ambientLight.I ambientLight.h \
+    auxSceneData.I auxSceneData.h \
     bamFile.I bamFile.h \
     billboardEffect.I billboardEffect.h \
     binCullHandler.I binCullHandler.h \

@@ -19,6 +19,7 @@
 #include "lodNode.h"
 #include "cullTraverserData.h"
 #include "cullTraverser.h"
+#include "config_pgraph.h"
 
 TypeHandle LODNode::_type_handle;
 

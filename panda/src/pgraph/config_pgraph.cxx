@@ -20,6 +20,7 @@
 
 #include "alphaTestAttrib.h"
 #include "ambientLight.h"
+#include "auxSceneData.h"
 #include "billboardEffect.h"
 #include "camera.h"
 #include "clipPlaneAttrib.h"
@@ -183,6 +184,7 @@ init_libpgraph() {
 
   AlphaTestAttrib::init_type();
   AmbientLight::init_type();
+  AuxSceneData::init_type();
   BillboardEffect::init_type();
   Camera::init_type();
   ClipPlaneAttrib::init_type();

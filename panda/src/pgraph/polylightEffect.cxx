@@ -24,6 +24,7 @@
 #include "pmap.h"
 #include "colorScaleAttrib.h"
 #include "cullTraverserData.h"
+#include "cullTraverser.h"
 
 #include <math.h>
 

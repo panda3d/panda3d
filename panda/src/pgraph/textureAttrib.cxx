@@ -781,7 +781,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     manager->read_pointer(scan);
   }
   else {
-    pgraph_cat.debug() << "came here too\n";
     // read the boolean if _off_all_stages
     _off_all_stages = scan.get_bool();
     // read the number of off_stages

@@ -29,6 +29,7 @@
 #include "pmap.h"
 
 class DisplayRegion;
+class AuxSceneData;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Camera
@@ -75,6 +76,10 @@ PUBLISHED:
   void clear_tag_state(const string &tag_state);
   bool has_tag_state(const string &tag_state) const;
   CPT(RenderState) get_tag_state(const string &tag_state) const;
+
+public:
+  //  void set_aux_scene_data(const NodePath &node_path, AuxSceneData *data);
+  //  AuxSceneData *get_aux_scene_data(const NodePath &node_path) const;
 
 private:
   void add_display_region(DisplayRegion *display_region);

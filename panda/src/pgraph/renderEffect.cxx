@@ -19,6 +19,7 @@
 #include "renderEffect.h"
 #include "bamReader.h"
 #include "indent.h"
+#include "config_pgraph.h"
 
 RenderEffect::Effects *RenderEffect::_effects = NULL;
 TypeHandle RenderEffect::_type_handle;

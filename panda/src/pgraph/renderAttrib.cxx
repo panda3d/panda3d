@@ -19,6 +19,7 @@
 #include "renderAttrib.h"
 #include "bamReader.h"
 #include "indent.h"
+#include "config_pgraph.h"
 
 RenderAttrib::Attribs *RenderAttrib::_attribs = NULL;
 TypeHandle RenderAttrib::_type_handle;

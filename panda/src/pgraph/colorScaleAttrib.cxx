@@ -23,6 +23,7 @@
 #include "bamWriter.h"
 #include "datagram.h"
 #include "datagramIterator.h"
+#include "config_pgraph.h"
 
 TypeHandle ColorScaleAttrib::_type_handle;
 
