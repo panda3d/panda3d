@@ -3382,10 +3382,18 @@ specify_texture(Texture *tex) {
 		  get_texture_wrap_mode(tex->get_wrapu()));
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
 		  get_texture_wrap_mode(tex->get_wrapv()));
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
-		  get_texture_filter_type(tex->get_minfilter()));
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-		  get_texture_filter_type(tex->get_magfilter()));
+
+  if (gl_force_mipmaps) {
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
+		    GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  } else {
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, 
+		    get_texture_filter_type(tex->get_minfilter()));
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+		    get_texture_filter_type(tex->get_magfilter()));
+  }
 }
 
 
@@ -3411,7 +3419,7 @@ apply_texture_immediate(Texture *tex) {
     << (int)type << ", " << tex->get_name() << ")\n";
 #endif
 
-  if (!gl_ignore_mipmaps) {
+  if (!gl_ignore_mipmaps || gl_force_mipmaps) {
     bool use_mipmaps;
     switch (tex->get_minfilter()) {
     case Texture::FT_nearest_mipmap_nearest:
@@ -3425,7 +3433,7 @@ apply_texture_immediate(Texture *tex) {
       use_mipmaps = false;
       break;
     }
-    if (use_mipmaps) {
+    if (use_mipmaps || gl_force_mipmaps) {
 #ifndef NDEBUG
       if (gl_show_mipmaps) {
 	build_phony_mipmaps(tex);
