@@ -372,7 +372,7 @@ Step 6: Grab the cvs trees
       1. setup an account with SourceForge at 
         http://sourceforge.net/account/register.php
         Try to use the same username used your cygwin setup.
-        Tell somebody like Daniel or Dave Schuyler to add your 
+        Tell somebody like David Rose, Dave Schuyler, or Mark Mine to add your 
           new sourceforge username to the list of Panda3D developers.
       2. setup ssh and access through the corporate firewall to cvs.panda3d.sourceforge.net
         - copy the setup from /p/win/install/wintools/etc/ssh_config to your ~/.ssh/config
