@@ -45,9 +45,7 @@ PGTop(const string &name) :
   // will be unsorted: rendered in scene graph order.  This is closer
   // to what the user wants anyway in a 2-d scene graph.
 
-  // This override of 1000 should really be a system constant
-  // somewhere.
-  set_attrib(CullBinAttrib::make("unsorted", 0), 1000);
+  set_attrib(CullBinAttrib::make("unsorted", 0));
 }
 
 ////////////////////////////////////////////////////////////////////
