@@ -50,7 +50,12 @@ PUBLISHED:
 
   INLINE int size() const;
   INLINE string operator [] (int n) const;
+
+  void output(ostream &out) const;
+  void write(ostream &out) const;
 };
+
+INLINE ostream &operator << (ostream &out, const ConfigVariableList &variable);
 
 #include "configVariableList.I"
 

@@ -36,3 +36,26 @@ ConfigVariableList(const string &name,
   }
   _core->set_used();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableList::output
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void ConfigVariableList::
+output(ostream &out) const {
+  out << get_num_values() << " values.";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableList::write
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void ConfigVariableList::
+write(ostream &out) const {
+  int num_values = get_num_values();
+  for (int i = 0; i < num_values; ++i) {
+    out << get_string_value(i) << "\n";
+  }
+}

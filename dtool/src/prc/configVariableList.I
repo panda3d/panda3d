@@ -96,3 +96,9 @@ INLINE string ConfigVariableList::
 operator [] (int n) const {
   return get_unique_value(n);
 }
+
+INLINE ostream &
+operator << (ostream &out, const ConfigVariableList &variable) {
+  variable.output(out);
+  return out;
+}
