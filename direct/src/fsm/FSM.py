@@ -198,6 +198,12 @@ class FSM(DirectObject):
         Return true is transition exists to given state,
         false otherwise.
         """
+
+        # If you trigger this assertion failure, you must have
+        # recursively requested a state transition from within the
+        # exitState() function for the previous state.  This is not
+        # supported because we're not fully transitioned into the new
+        # state yet.
         assert(not self.__internalStateInFlux)
 
         if not self.__currentState:
