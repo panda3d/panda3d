@@ -229,6 +229,7 @@ sub make_bsc_file() {
     &myexecstr("copy ".$outputfilepath." ".$inst_dirs[$DEBUGNUM], "copy of ".$outputfilepath." failed!!", "DO_LOG","NT cmd");
     unlink($cmdfilepath);
     &mychdir($CYGBLDROOT);
+    &logmsg("*** Finished generating panda.bsc at ".&gettimestr()." ***");
 }
 
 sub addpathsfromfile() {
@@ -258,6 +259,8 @@ sub AddPckgPath() {
 }
 
 sub gen_python_code() {
+
+    &logmsg("*** GenPythonCode Start for ".$inst_dirnames[$treenum]." at ".&gettimestr()." ***");
 
     &mychdir($CYGBLDROOT."/direct/bin");
 
@@ -294,8 +297,6 @@ sub gen_python_code() {
 
     $ENV{'TCSH_NO_CHANGEPATH'}='1';
 
-
-
 # old way that tried to do genPyCode directly
 #    $outputdir = $WINBLDROOT."\\direct\\lib\\py";
 #    &mymkdir($outputdir);
@@ -327,6 +328,7 @@ sub gen_python_code() {
     $ENV{'PATH'}=$origpath;
     delete $ENV{'TCSH_NO_CHANGEPATH'};
     &mychdir($CYGBLDROOT);
+    &logmsg("*** GenPythonCode Finished for ".$inst_dirnames[$treenum]." at ".&gettimestr()." ***");
 }
 
 my $newdayarchivedirname;
