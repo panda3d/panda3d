@@ -59,24 +59,24 @@ def getTypeName(classTypeDesc, typeDesc):
         if ((typeDesc.atomicType == AT_int) or
             (typeDesc.atomicType == AT_bool) or
             (typeDesc.atomicType == AT_char)):
-            return 'types.IntType'
+            return 'IntType'
         
         # Floats and doubles are both floats in Python
         elif ((typeDesc.atomicType == AT_float) or
             (typeDesc.atomicType == AT_double)):
-            return 'types.FloatType'
+            return 'FloatType'
 
         elif ((typeDesc.atomicType == AT_longlong)):
-            return 'types.LongType'
+            return 'LongType'
 
         # Strings are treated as Python strings
         elif ((typeDesc.atomicType == AT_string)):
-            return 'types.StringType'
+            return 'StringType'
         
         elif (typeDesc.atomicType == AT_void):
             # Convert the void type to None type... I guess...
             # So far we do not have any code that uses this
-            return 'types.NoneType'
+            return 'NoneType'
 
         else:
             FFIConstants.notify.error("Unknown atomicType: %s" % (typeDesc.atomicType))
@@ -87,7 +87,7 @@ def getTypeName(classTypeDesc, typeDesc):
     # surrounding class as part of their name
     # like BoundedObject.__enum__BoundingVolumeType
     elif (typeName.find('__enum__') >= 0):
-        return 'types.IntType'
+        return 'IntType'
 
     # If it was not atomic or enum, it must be a class which is a
     # bit trickier because we output different things depending on the
@@ -421,15 +421,15 @@ class FFIMethodArgumentTree:
                     # the object.
                     condition = '(isinstance(_args[' + `level` + '], ' + typeName + '))'
                     # Legal types for a float parameter include int and long.
-                    if (typeName == 'types.FloatType'):
-                        condition += (' or (isinstance(_args[' + `level` + '], types.IntType))')
-                        condition += (' or (isinstance(_args[' + `level` + '], types.LongType))')
+                    if (typeName == 'FloatType'):
+                        condition += (' or (isinstance(_args[' + `level` + '], IntType))')
+                        condition += (' or (isinstance(_args[' + `level` + '], LongType))')
                     # Legal types for a long parameter include int.
-                    elif (typeName == 'types.LongType'):
-                        condition += (' or (isinstance(_args[' + `level` + '], types.IntType))')
+                    elif (typeName == 'LongType'):
+                        condition += (' or (isinstance(_args[' + `level` + '], IntType))')
                     # Legal types for an int parameter include long.
-                    elif (typeName == 'types.IntType'):
-                        condition += (' or (isinstance(_args[' + `level` + '], types.LongType))')
+                    elif (typeName == 'IntType'):
+                        condition += (' or (isinstance(_args[' + `level` + '], LongType))')
                     
                 indent(file, nesting+2, 'if ' + condition + ':\n')
                     

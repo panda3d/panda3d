@@ -51,7 +51,7 @@ def outputGlobalFileImports(file, methodList, CModuleName):
     file.write('# CMODULE [' + CModuleName + ']\n')
 
     # Import Python's builtin types
-    file.write('import types\n')
+    file.write('from types import IntType, LongType, FloatType, NoneType, StringType\n')
 
     # Import the C modules
     CModuleList = []

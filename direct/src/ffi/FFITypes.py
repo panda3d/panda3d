@@ -631,7 +631,7 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
     def outputBaseImports(self, file):
         indent(file, 0, '# CMODULE [' + self.moduleName + ']\n')
         # Everybody imports types for type checking
-        indent(file, 0, 'import types\n')
+        indent(file, 0, 'from types import IntType, LongType, FloatType, NoneType, StringType\n')
         indent(file, 0, '\n')
 
         indent(file, 0, '# Import all the C modules this class uses\n')
@@ -757,10 +757,10 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
 
         # Store the downcast function modules so the FFIExternalObject
         # can index into them to find the downcast functions
-        indent(file, nesting+1, '__CModuleDowncasts__ = [')
+        indent(file, nesting+1, '__CModuleDowncasts__ = (')
         for moduleName in self.getCModules():
             file.write(moduleName + 'Downcasts,')
-        file.write(']\n')
+        file.write(')\n')
 
 
     def outputClassFooter(self, file):
