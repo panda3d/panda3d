@@ -26,16 +26,11 @@
 
 #include <keyboardButton.h>
 #include <mouseButton.h>
-
 #include <throw_event.h>
 
 #ifdef DO_PSTATS
 #include <pStatTimer.h>
 #endif
-
-#define D3D_OVERLOADS
-//#define  INITGUID  dont want this if linking w/dxguid.lib
-#include <d3d.h>
 
 #include <map>
 
@@ -58,8 +53,6 @@ wdxGraphicsWindow* global_wdxwinptr = NULL;  // need this for temporary windproc
 
 extern bool dx_full_screen_antialiasing;  // defined in dxgsg_config.cxx
 
-#define MOUSE_ENTERED 0
-#define MOUSE_EXITED 1
 #define PAUSED_TIMER_ID  7   // completely arbitrary choice
 #define DXREADY ((_dxgsg!=NULL)&&(_dxgsg->GetDXReady()))
 
@@ -300,6 +293,23 @@ LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam
    }
 }
 
+// Note: could use _TrackMouseEvent in comctrl32.dll (part of IE 3.0+) which emulates
+// TrackMouseEvent on w95, but that requires another 500K of memory to hold that DLL,
+// which is lame just to support w95, which probably has other issues anyway
+INLINE void wdxGraphicsWindow::
+track_mouse_leaving(HWND hwnd) {
+  if(_pParentWindowGroup->_pfnTrackMouseEvent==NULL)
+      return;
+
+  TRACKMOUSEEVENT tme = {sizeof(TRACKMOUSEEVENT),TME_LEAVE,hwnd,0};
+  BOOL bSucceeded = _pParentWindowGroup->_pfnTrackMouseEvent(&tme);  // tell win32 to post WM_MOUSELEAVE msgs
+
+  if((!bSucceeded) && wdxdisplay_cat.is_debug())
+     wdxdisplay_cat.debug() << "TrackMouseEvent failed!, LastError=" << GetLastError() << endl;
+
+  _tracking_mouse_leaving=true;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: window_proc
 //       Access:
@@ -314,7 +324,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     case WM_PAINT: {
         PAINTSTRUCT ps;
         BeginPaint(hwnd, &ps);
-    
         if(DXREADY)
             show_frame();
         EndPaint(hwnd, &ps);
@@ -332,19 +341,56 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                 if(iVal & 0x8000)             \
                   iVal -= 0x10000;            \
         }
+        
+        if(!_tracking_mouse_leaving) {
+            // need to re-call TrackMouseEvent every time mouse re-enters window
+            track_mouse_leaving(hwnd);
+        }
     
         SET_MOUSE_COORD(x,LOWORD(lparam));
         SET_MOUSE_COORD(y,HIWORD(lparam));
     
-        if(mouse_motion_enabled()
-           && wparam & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON)) {
+        if(wparam & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON)) {
             handle_mouse_motion(x, y);
-        } else if(mouse_passive_motion_enabled() &&
-                  ((wparam & (MK_LBUTTON | MK_MBUTTON | MK_RBUTTON)) == 0)) {
-            handle_mouse_motion(x, y);
-        }
+        } 
         return 0;
+    
+    // if cursor is invisible, make it visible when moving in the window bars,etc
+    case WM_NCMOUSEMOVE: {
+        if(!_props._bCursorIsVisible) {
+            if(!_cursor_in_windowclientarea) {
+                ShowCursor(true);
+                _cursor_in_windowclientarea=true;
+            }
+        }
+        break;
+    }
 
+    case WM_NCMOUSELEAVE: {
+        if(!_props._bCursorIsVisible) {
+            ShowCursor(false);
+            _cursor_in_windowclientarea=false;
+        }
+        break;
+    }
+    
+    case WM_MOUSELEAVE: {
+       // wdxdisplay_cat.fatal() << "XXXXX WM_MOUSELEAVE received\n";
+
+       _tracking_mouse_leaving=false;  
+       handle_mouse_entry(false,0,0);         
+       break;
+    }
+    
+    case WM_CREATE: {
+      track_mouse_leaving(hwnd);
+    
+      _cursor_in_windowclientarea=false;
+      if(!_props._bCursorIsVisible)
+          ShowCursor(false);
+      break;
+    }
+    
     case WM_IME_NOTIFY:
       if (wparam == IMN_SETOPENSTATUS) {
         HIMC hIMC = ImmGetContext(hwnd);
@@ -356,7 +402,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         ImmReleaseContext(hwnd, hIMC);
       }
       break;
-
+    
     case WM_IME_STARTCOMPOSITION:
       // In case we're running fullscreen mode, we have to turn on
       // explicit DX support for overlay windows now, so we'll be able
@@ -560,14 +606,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
                 _WindowAdjustingType = MovingOrResizing;
             }
             break;
-/*
-        case WM_SETCURSOR: {
-            if(!_props._bCursorIsVisible)
-               return true;  // avoid defaultwindproc showing the cursor
-            break;
-//          return false;
-        }
-*/
+
         case WM_DISPLAYCHANGE: {
 #ifdef _DEBUG
             width = LOWORD(lparam);  height = HIWORD(lparam);
@@ -626,7 +665,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             }
 
         case WM_SETFOCUS: {
-            // wdxdisplay_cat.info() << "got WM_SETFOCUS\n";
             if(!DXREADY) {
               break;
             }
@@ -634,9 +672,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             POINT point;
             GetCursorPos(&point);
             ScreenToClient(hwnd, &point);
-
-            if(_mouse_entry_enabled)
-                handle_mouse_entry(MOUSE_ENTERED,point.x,point.y);
 
             // this is a hack to make sure common modifier keys have proper state
             // since at focus loss, app may never receive key-up event corresponding to
@@ -652,13 +687,9 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         }
 
         case WM_KILLFOCUS: {
-            // wdxdisplay_cat.info() << "got WM_KILLFOCUS\n";
             if(!DXREADY) {
               break;
             }
-
-            if(_mouse_entry_enabled)
-                  handle_mouse_entry(MOUSE_EXITED,0,0);
 
             int i;
             for(i=0;i<NUM_MODIFIER_KEYS;i++) {
@@ -736,11 +767,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
           }
           return 0;
 
-        case WM_CREATE: {
-            if(!_props._bCursorIsVisible)
-                ShowCursor(false);
-            break;
-        }
 
         case WM_ACTIVATEAPP: {
             #ifdef _DEBUG
@@ -1017,6 +1043,19 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
     static bool wc_registered = false;
     _hParentWindow = NULL;        
 
+    // these fns arent defined on win95, so get dynamic ptrs to them to avoid
+    // ugly DLL loader failures on w95
+    HINSTANCE hUser32 = (HINSTANCE) LoadLibrary("user32.dll");
+    assert(hUser32);
+
+    _pfnGetMonitorInfo = (PFN_GETMONITORINFO) GetProcAddress(hUser32, "GetMonitorInfoA");
+
+    // Note: could use _TrackMouseEvent in comctrl32.dll (part of IE 3.0+) which emulates
+    // TrackMouseEvent on w95, but that requires another 500K of memory to hold that DLL,
+    // which is lame just to support w95, which probably has other issues anyway
+    _pfnTrackMouseEvent = (PFN_TRACKMOUSEEVENT) GetProcAddress(hUser32, "TrackMouseEvent");
+    FreeLibrary(hUser32);
+
     // Clear before filling in window structure!
     ZeroMemory(&wc, sizeof(WNDCLASS));
     wc.style      = CS_HREDRAW | CS_VREDRAW; //CS_OWNDC;
@@ -1132,22 +1171,15 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
 
     // rect now contains the coords for the entire window, not the client
     if(dx_full_screen) {
-        // get upper-left corner coords using GetMonitorInfo
-
-        // GetMonInfo doesnt exist on w95, so dont statically link to it
-        HINSTANCE hUser32 = (HINSTANCE) LoadLibrary("user32.dll");
-        assert(hUser32);
-        typedef BOOL (WINAPI* LPGETMONITORINFO)(HMONITOR, LPMONITORINFO);   
-        LPGETMONITORINFO pfnGetMonitorInfo = (LPGETMONITORINFO) GetProcAddress(hUser32, "GetMonitorInfoA");
 
         // extra windows must be parented to the first so app doesnt minimize when user selects them
-
         for(DWORD devnum=0;devnum<_windows.size();devnum++) {
             MONITORINFO minfo;
             ZeroMemory(&minfo, sizeof(MONITORINFO));
             minfo.cbSize = sizeof(MONITORINFO);
-            if(pfnGetMonitorInfo)
-                (*pfnGetMonitorInfo)(_windows[devnum]->_dxgsg->scrn.hMon, &minfo);
+            if(_pfnGetMonitorInfo!=NULL)
+                // get upper-left corner coords using GetMonitorInfo
+                (*_pfnGetMonitorInfo)(_windows[devnum]->_dxgsg->scrn.hMon, &minfo);
              else {
                  minfo.rcMonitor.left = minfo.rcMonitor.top = 0;
              }
@@ -1172,7 +1204,6 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
                 _hParentWindow=hWin;
             }
         }
-        FreeLibrary(hUser32);
     } else {
         assert(_windows.size()==1);
 
@@ -1277,18 +1308,6 @@ void wdxGraphicsWindow::config_window(wdxGraphicsWindowGroup *pParentGroup) {
 }
 
 void wdxGraphicsWindow::finish_window_setup(void) {
-    // init panda input handling
-    _mouse_input_enabled = false;
-    _mouse_motion_enabled = false;
-    _mouse_passive_motion_enabled = false;
-    _mouse_entry_enabled = false;
-
-    // Enable detection of mouse input
-    enable_mouse_input(true);
-    enable_mouse_motion(true);
-    enable_mouse_passive_motion(true);
-    //  enable_mouse_entry(true);   re-enable this??
-
     // Now indicate that we have our keyboard/mouse device ready.
     GraphicsWindowInputDevice device = GraphicsWindowInputDevice::pointer_and_keyboard("keyboard/mouse");
     _input_devices.push_back(device);
@@ -2447,8 +2466,6 @@ void wdxGraphicsWindow::show_frame(void) {
     _dxgsg->show_frame();
 }
 
-
-
 ////////////////////////////////////////////////////////////////////
 //     Function: end_frame
 //       Access:
@@ -2484,15 +2501,13 @@ void wdxGraphicsWindow::handle_mouse_motion(int x, int y) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 
-// BUGBUG: this needs to be called when mouse enters.  right now it's just called when keybd focus changes
-void wdxGraphicsWindow::handle_mouse_entry(int state, int x, int y) {
-//  ShowCursor(_props._bCursorIsVisible);
-
-    if(state == MOUSE_EXITED) {
-        _input_devices[0].set_pointer_out_of_window();
-    } else {
+void wdxGraphicsWindow::handle_mouse_entry(bool bEntering, int x, int y) {
+    // usually 'motion' event is equivalent to entering, so
+    // this will never be called w/bEntering true
+    if(bEntering) {
         _input_devices[0].set_pointer_in_window(x, y);
-//        SetCursor(hCursor);  believe this is not necessary, handled by windows
+    } else {
+        _input_devices[0].set_pointer_out_of_window();
     }
 }
 
@@ -2613,34 +2628,6 @@ void wdxGraphicsWindow::update(void) {
   _show_code_pcollector.start();
 #endif
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: enable_mouse_input
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void wdxGraphicsWindow::enable_mouse_input(bool val) {
-    _mouse_input_enabled = val;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: enable_mouse_motion
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void wdxGraphicsWindow::enable_mouse_motion(bool val) {
-    _mouse_motion_enabled = val;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: enable_mouse_passive_motion
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-void wdxGraphicsWindow::enable_mouse_passive_motion(bool val) {
-    _mouse_passive_motion_enabled = val;
-}
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: wdxGraphicsWindow::get_gsg_type

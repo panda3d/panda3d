@@ -22,14 +22,6 @@
 ////////////////////////////////////////////////////////////////////
 // Includes
 ////////////////////////////////////////////////////////////////////
-#include <pandabase.h>
-
-#include <graphicsWindow.h>
-#define WINDOWS_LEAN_AND_MEAN
-#include <windows.h>
-#undef WINDOWS_LEAN_AND_MEAN
-#include <d3d.h>
-
 #include "dxGraphicsStateGuardian.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -80,14 +72,11 @@ public:
   LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   void process_events(void);
 
-  INLINE bool mouse_entry_enabled(void) { return _mouse_entry_enabled; }
-  INLINE bool mouse_motion_enabled(void) { return _mouse_motion_enabled; }
-  INLINE bool mouse_passive_motion_enabled(void) { return _mouse_passive_motion_enabled; }
-  void handle_window_move( int x, int y );
-  void handle_mouse_motion( int x, int y );
-  void handle_mouse_entry( int state, int x, int y);
-  void handle_keypress( ButtonHandle key, int x, int y );
-  void handle_keyrelease( ButtonHandle key);
+  INLINE void handle_mouse_motion(int x, int y);
+  INLINE void handle_mouse_entry(bool bEntering, int x, int y);
+  INLINE void handle_keypress(ButtonHandle key, int x, int y );
+  INLINE void handle_keyrelease(ButtonHandle key);
+  void handle_window_move(int x, int y);
   void dx_setup();
   virtual void begin_frame( void );
   void show_frame();
@@ -105,27 +94,21 @@ protected:
   bool search_for_device(int devnum,DXDeviceInfo *pDevinfo);
   void setup_colormap(void);
 
-  void enable_mouse_input(bool val);
-  void enable_mouse_motion(bool val);
-  void enable_mouse_passive_motion(bool val);
-  void enable_mouse_entry(bool val);
-
 public:
   UINT_PTR _PandaPausedTimer;
   DXGraphicsStateGuardian *_dxgsg;
   void CreateScreenBuffersAndDevice(DXScreenData &Display);
   
 private:
+  INLINE void track_mouse_leaving(HWND hwnd);
   wdxGraphicsWindowGroup *_pParentWindowGroup;
   HDC               _hdc;
   HPALETTE          _colormap;
   typedef enum { NotAdjusting,MovingOrResizing,Resizing } WindowAdjustType;
   WindowAdjustType  _WindowAdjustingType;
   bool              _bSizeIsMaximized;
-  bool              _mouse_input_enabled;
-  bool              _mouse_motion_enabled;
-  bool              _mouse_passive_motion_enabled;
-  bool              _mouse_entry_enabled;
+  bool              _cursor_in_windowclientarea;
+  bool              _tracking_mouse_leaving;
   bool              _ime_open;
   bool              _ime_active;
   bool              _ime_composition_w;
@@ -183,10 +166,15 @@ public:
     int       _numMonitors;
     LPDIRECTDRAWCREATEEX    _pDDCreateEx;
     DXDeviceInfoVec _DeviceInfoVec;
+
+    // win32 fns that dont exist on w95
+    typedef BOOL (WINAPI* PFN_GETMONITORINFO)(HMONITOR, LPMONITORINFO);
+    PFN_GETMONITORINFO  _pfnGetMonitorInfo;
+    typedef BOOL (WINAPI* PFN_TRACKMOUSEEVENT)(LPTRACKMOUSEEVENT);
+    PFN_TRACKMOUSEEVENT _pfnTrackMouseEvent;
 };
 
 extern void set_global_parameters(void);
 extern void restore_global_parameters(void);
-
 
 #endif

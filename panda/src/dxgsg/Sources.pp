@@ -16,7 +16,7 @@
   // need to install these due to external projects that link directly with libpandadx (bartop)  
   #define INSTALL_HEADERS \
     config_dxgsg.h dxGraphicsStateGuardian.I dxGraphicsStateGuardian.h \
-    dxTextureContext.h dxGeomNodeContext.h dxGeomNodeContext.I
+    dxTextureContext.h dxGeomNodeContext.h dxGeomNodeContext.I dxgsgbase.h
 
   // build dxGraphicsStateGuardian separately since its so big
   

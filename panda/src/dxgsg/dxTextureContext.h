@@ -19,32 +19,10 @@
 #ifndef DXTEXTURECONTEXT_H
 #define DXTEXTURECONTEXT_H
 
-#include <pandabase.h>
-
-#define WIN32_LEAN_AND_MEAN
-#ifndef STRICT
-// enable strict type checking in windows.h, see msdn
-#define STRICT
-#endif
-
-#include <windows.h>
-
-#include <ddraw.h>
-
-#define D3D_OVERLOADS   //  get D3DVECTOR '+' operator, etc from d3dtypes.h
-#include <d3d.h>
-#undef WIN32_LEAN_AND_MEAN
+#include "dxgsgbase.h"
 
 #include <texture.h>
 #include <textureContext.h>
-
-//#define USE_TEXFMTVEC  // doesnt work now, crashes in destructor
-
-#ifdef USE_TEXFMTVEC
-typedef pvector<DDPIXELFORMAT> DDPixelFormatVec;
-#else
-#define MAX_DX_TEXPIXFMTS 20    // should be enough for any card
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //   Class : DXTextureContext

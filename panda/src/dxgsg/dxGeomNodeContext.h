@@ -19,25 +19,13 @@
 #ifndef DXGEOMNODECONTEXT_H
 #define DXGEOMNODECONTEXT_H
 
-#include <pandabase.h>
-
-#ifdef WIN32_VC
-// Must include windows.h before dx.h on NT
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#undef WIN32_LEAN_AND_MEAN
-#endif
+#include "dxgsgbase.h"
 
 #include <geomNodeContext.h>
 #include <geomNode.h>
 #include "pvector.h"
 
-#define D3D_OVERLOADS   //  get D3DVECTOR '+' operator, etc from d3dtypes.h
-#include <d3d.h>
 
-#if DIRECT3D_VERSION != 0x0700
-#error DX7 headers not available, you need to install MS Platform SDK!
-#endif
 
 typedef struct {
      DWORD nVerts;

@@ -19,9 +19,7 @@
 #ifndef DXGRAPHICSSTATEGUARDIAN_H
 #define DXGRAPHICSSTATEGUARDIAN_H
 
-//#define GSG_VERBOSE
-
-#include <pandabase.h>
+#include "dxgsgbase.h"
 #include <graphicsStateGuardian.h>
 #include <geomprimitives.h>
 #include <texture.h>
@@ -37,94 +35,12 @@
 #include <alphaTransformTransition.h>
 #include <pointerToArray.h>
 #include <planeNode.h>
-
 #include "dxGeomNodeContext.h"
 #include "dxTextureContext.h"
 #include <vector>
 
-extern char * ConvD3DErrorToString(const HRESULT &error);   // defined in wdxGraphicsPipe.cxx
-
-typedef struct {
-      LPDIRECT3DDEVICE7 pD3DDevice;
-      LPDIRECTDRAW7     pDD;
-      LPDIRECT3D7       pD3D;
-      LPDIRECTDRAWSURFACE7 pddsPrimary,pddsBack,pddsZBuf;
-      HWND              hWnd;
-      HMONITOR          hMon;
-      DWORD             dwRenderWidth,dwRenderHeight,dwFullScreenBitDepth;
-      RECT              view_rect,clip_rect;
-      DWORD             MaxAvailVidMem;
-      bool              bIsLowVidMemCard;
-      bool              bIsTNLDevice;
-      bool              bIsSWRast;
-      ushort            depth_buffer_bitdepth;  //GetSurfaceDesc is not reliable so must store this explicitly
-      ushort            CardIDNum;  // its posn in DisplayArray, for dbgprint purposes
-      DDDEVICEIDENTIFIER2 DXDeviceID;
-      D3DDEVICEDESC7    D3DDevDesc;
-#ifdef USE_TEXFMTVEC
-      DDPixelFormatVec  TexPixFmts;
-#endif
-} DXScreenData;
-// typedef vector<DXScreenData> ScreenDataVector;
-
 class PlaneNode;
 class Light;
-
-#ifdef GSG_VERBOSE
-ostream &output_gl_enum(ostream &out, GLenum v);
-INLINE ostream &operator << (ostream &out, GLenum v) {
-  return output_gl_enum(out, v);
-}
-#endif
-
-#ifdef DO_PSTATS
-#define DO_PSTATS_STUFF(XX) XX;
-#else
-#define DO_PSTATS_STUFF(XX)
-#endif
-
-#define DX_DECLARE_CLEAN(type, var) \
-    type var;                       \
-    ZeroMemory(&var, sizeof(type)); \
-    var.dwSize = sizeof(type);
-
-// #define DEBUG_RELEASES
-
-// this is bDoDownToZero argument to RELEASE()
-#define RELEASE_DOWN_TO_ZERO true
-
-#ifdef DEBUG_RELEASES
-#define RELEASE(OBJECT,MODULE,DBGSTR,bDoDownToZero)             \
-   if(((OBJECT)!=NULL)&&(!IsBadWritePtr((OBJECT),4))) {         \
-        refcnt = (OBJECT)->Release();                           \
-        MODULE##_cat.debug() << DBGSTR << " released, refcnt = " << refcnt << endl;  \
-        if((bDoDownToZero) && (refcnt>0)) {                     \
-              MODULE##_cat.warning() << DBGSTR << " released but still has a non-zero refcnt(" << refcnt << "), multi-releasing it down to zero!\n"; \
-              do {                                \
-                refcnt = (OBJECT)->Release();     \
-              } while(refcnt>0);                  \
-        }                                         \
-        (OBJECT) = NULL;                          \
-      } else {                                    \
-        MODULE##_cat.debug() << DBGSTR << " not released, ptr == NULL" << endl;  \
-      } 
-
-#define PRINTREFCNT(OBJECT,STR)  {  (OBJECT)->AddRef();  dxgsg_cat.debug() << STR << " refcnt = " << (OBJECT)->Release() << endl; }
-#else
-#define RELEASE(OBJECT,MODULE,DBGSTR,bDoDownToZero)     \
-   if(((OBJECT)!=NULL)&&(!IsBadWritePtr((OBJECT),4))) { \
-        refcnt=(OBJECT)->Release();                     \
-        if((bDoDownToZero) && (refcnt>0)) {             \
-              MODULE##_cat.warning() << DBGSTR << " released but still has a non-zero refcnt(" << refcnt << "), multi-releasing it down to zero!\n"; \
-              do {                                \
-                refcnt = (OBJECT)->Release();     \
-              } while(refcnt>0);                  \
-        }                                         \
-        (OBJECT) = NULL;                          \
-   }
-
-#define PRINTREFCNT(OBJECT,STR)  
-#endif    
 
 //#if defined(NOTIFY_DEBUG) || defined(DO_PSTATS)
 #ifdef _DEBUG
@@ -506,8 +422,6 @@ public:
 private:
   static TypeHandle _type_handle;
 };
-
-#define ISPOW2(X) (((X) & ((X)-1))==0)
 
 #include "dxGraphicsStateGuardian.I"
 

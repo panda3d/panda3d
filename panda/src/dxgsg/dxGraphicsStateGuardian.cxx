@@ -16,7 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include <pandabase.h>
+#include "dxGraphicsStateGuardian.h"
+#include "config_dxgsg.h"
+
 #include <directRenderTraverser.h>
 #include <cullTraverser.h>
 #include <displayRegion.h>
@@ -54,19 +56,12 @@
 #include <depthWriteTransition.h>
 #include <cullFaceTransition.h>
 #include <stencilTransition.h>
+#include <mmsystem.h>
 
 #ifdef DO_PSTATS
 #include <pStatTimer.h>
 #include <pStatCollector.h>
 #endif
-
-#include "config_dxgsg.h"
-#include "dxGraphicsStateGuardian.h"
-
-// disable nameless struct 'warning'
-#pragma warning (disable : 4201)
-
-#include <mmsystem.h>
 
 // print out simple drawprim stats every few secs
 //#define COUNT_DRAWPRIMS
