@@ -107,7 +107,7 @@ unwind_yup_rotation(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr) {
 
     // Unwind the roll from the axes, and continue.
     Matrix rot_z;
-    rot_z = Matrix::rotate_mat_normaxis(-roll, FLOATNAME(LVector3)(0.0f, 0.0f, 1.0f),
+    rot_z = Matrix::rotate_mat_normaxis(roll, FLOATNAME(LVector3)(0.0f, 0.0f, 1.0f),
                                         CS_yup_right);
 
     x = x * rot_z;
@@ -531,7 +531,7 @@ decompose_matrix(const FLOATNAME(LMatrix3) &mat,
 
   // Extract the rotation and scale, according to the coordinate
   // system of choice.
-  bool bMatHasNoShear,bIsLeftHandedMat;
+  bool is_left_handed;
 
   FLOATNAME(LMatrix3) new_mat(mat);
 
@@ -539,14 +539,14 @@ decompose_matrix(const FLOATNAME(LMatrix3) &mat,
   case CS_zup_right:
     {
       unwind_zup_rotation(new_mat, hpr);
-      bIsLeftHandedMat = false;
+      is_left_handed = false;
     }
     break;
 
   case CS_yup_right:
     {
       unwind_yup_rotation(new_mat, hpr);
-      bIsLeftHandedMat = false;
+      is_left_handed = false;
     }
     break;
 
@@ -562,7 +562,9 @@ decompose_matrix(const FLOATNAME(LMatrix3) &mat,
         -mat(2, 0), -mat(2, 1), mat(2, 2));
       */
       unwind_zup_rotation(new_mat, hpr);
-      bIsLeftHandedMat = true;
+      hpr[0] = -hpr[0];
+      hpr[2] = -hpr[2];
+      is_left_handed = true;
     }
     break;
 
@@ -578,7 +580,7 @@ decompose_matrix(const FLOATNAME(LMatrix3) &mat,
         -mat(2, 0), -mat(2, 1), mat(2, 2));
       */
       unwind_yup_rotation(new_mat, hpr);
-      bIsLeftHandedMat = true;
+      is_left_handed = true;
     }
     break;
 
@@ -593,21 +595,22 @@ decompose_matrix(const FLOATNAME(LMatrix3) &mat,
       << "after unwind, mat is " << new_mat << "\n";
   }
 
+  scale[0] = new_mat._m.m._00;
+  scale[1] = new_mat._m.m._11;
   scale[2] = new_mat._m.m._22;
-  if(bIsLeftHandedMat) {
+  /*
+  if (is_left_handed) {
     scale[0] = -new_mat._m.m._00;
     scale[1] = -new_mat._m.m._11;
-  } else {
-    scale[0] = new_mat._m.m._00;
-    scale[1] = new_mat._m.m._11;
   }
+  */
   
-  bMatHasNoShear =
+  bool has_no_shear =
     (fabs(new_mat(0, 1)) + fabs(new_mat(0, 2)) +
      fabs(new_mat(1, 0)) + fabs(new_mat(1, 2)) +
      fabs(new_mat(2, 0)) + fabs(new_mat(2, 1))) < 0.0001;
   
-  return bMatHasNoShear;
+  return has_no_shear;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -633,9 +636,15 @@ decompose_matrix(const FLOATNAME(LMatrix3) &mat,
     cs = default_coordinate_system;
   }
 
+  if (linmath_cat.is_debug()) {
+    linmath_cat.debug()
+      << "decomposing " << mat << " via cs " << cs
+      << " with roll = " << roll << "\n";
+  }
+
   // Extract the rotation and scale, according to the coordinate
   // system of choice.
-  bool bMatHasNoShear,bIsLeftHandedMat;
+  bool is_left_handed;
 
   FLOATNAME(LMatrix3) new_mat(mat);
 
@@ -643,14 +652,14 @@ decompose_matrix(const FLOATNAME(LMatrix3) &mat,
   case CS_zup_right:
     {
       unwind_zup_rotation(new_mat, hpr, roll);
-      bIsLeftHandedMat = false;
+      is_left_handed = false;
     }
     break;
 
   case CS_yup_right:
     {
       unwind_yup_rotation(new_mat, hpr, roll);
-      bIsLeftHandedMat = false;
+      is_left_handed = false;
     }
     break;
 
@@ -666,7 +675,7 @@ decompose_matrix(const FLOATNAME(LMatrix3) &mat,
         -mat(2, 0), -mat(2, 1), mat(2, 2));
       */
       unwind_zup_rotation(new_mat, hpr, roll);
-      bIsLeftHandedMat = true;
+      is_left_handed = true;
     }
     break;
 
@@ -682,7 +691,7 @@ decompose_matrix(const FLOATNAME(LMatrix3) &mat,
         -mat(2, 0), -mat(2, 1), mat(2, 2));
       */
       unwind_yup_rotation(new_mat, hpr, roll);
-      bIsLeftHandedMat = true;
+      is_left_handed = true;
     }
     break;
 
@@ -691,21 +700,27 @@ decompose_matrix(const FLOATNAME(LMatrix3) &mat,
       << "Unexpected coordinate system: " << (int)cs << "\n";
     return false;
   }
-
-  scale[2] = new_mat._m.m._22;
-  if(bIsLeftHandedMat) {
-    scale[0] = -new_mat._m.m._00;
-    scale[1] = -new_mat._m.m._11;
-  } else {
-    scale[0] = new_mat._m.m._00;
-    scale[1] = new_mat._m.m._11;
+  
+  if (linmath_cat.is_debug()) {
+    linmath_cat.debug()
+      << "after unwind, mat is " << new_mat << "\n";
   }
 
-  bMatHasNoShear =
+  scale[0] = new_mat._m.m._00;
+  scale[1] = new_mat._m.m._11;
+  scale[2] = new_mat._m.m._22;
+  /*
+  if (is_left_handed) {
+    scale[0] = -new_mat._m.m._00;
+    scale[1] = -new_mat._m.m._11;
+  }
+  */
+
+  bool has_no_shear =
     (fabs(new_mat(0, 1)) + fabs(new_mat(0, 2)) +
      fabs(new_mat(1, 0)) + fabs(new_mat(1, 2)) +
      fabs(new_mat(2, 0)) + fabs(new_mat(2, 1))) < 0.0001;
 
-  return bMatHasNoShear;
+  return has_no_shear;
 }
 
