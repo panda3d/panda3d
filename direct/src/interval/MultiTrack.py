@@ -40,7 +40,13 @@ class MultiTrack(Interval):
 	    Go to time t
 	"""
 	for track in self.tlist:
-	    track.setT(min(t, track.getDuration()), event)
+            tEnd = track.getDuration()
+            # Compare time with track's end times
+            if (t > tEnd):
+                if (self.prev_t < tEnd) or (event == IVAL_INIT):
+                    track.setT(t)
+            else:
+                track.setT(t)
 
     def __repr__(self, indent=0):
 	""" __repr__(indent)

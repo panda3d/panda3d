@@ -153,7 +153,8 @@ class Track(Interval):
             # First entry, re-init instance variables
             if (event == IVAL_INIT):
                 # Initialize prev_t to max t of track
-                self.prev_t = self.getDuration()
+                #self.prev_t = self.getDuration()
+                self.prev_t = 0.0
                 # Clear record of currentInterval
                 self.currentInterval = None
             # Compare t with start and end of each interval to determine

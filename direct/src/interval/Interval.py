@@ -77,15 +77,20 @@ class Interval(DirectObject):
     def play(self, t0=0.0, duration=0.0, scale=1.0):
         """ play(t0, duration)
         """
+        # Kill ongoing play task
+        self.stop()
+        # Start new one
 	self.offset = t0
         self.startT = self.clock.getFrameTime()
 	assert(scale > 0.0)
 	self.scale = scale
 	self.firstTime = 1
         if (duration == 0.0):
-            self.endTime = self.offset + self.duration
+            # If no play duration specified, use duration of Interval
+            self.endTime = self.duration
         else:
-            self.endTime = self.offset + duration
+            # Otherwise use min of interval duration and offset + play duration
+            self.endTime = min(self.duration, self.offset + duration)
 	assert(t0 <= self.endTime)
         taskMgr.spawnMethodNamed(self.__playTask, self.name + '-play')
 
@@ -100,7 +105,7 @@ class Interval(DirectObject):
         """
         t = self.clock.getFrameTime()
         te = self.offset + ((t - self.startT) * self.scale)
-        if (te <= self.endTime):
+        if (te < self.endTime):
 	    if (self.firstTime):
 		self.setT(te, event = IVAL_INIT)
 		self.firstTime = 0
@@ -128,7 +133,7 @@ class Interval(DirectObject):
         import EntryScale
         tl = Toplevel()
         tl.title(self.getName() + ' Interval Controls')
-        es = EntryScale.EntryScale(
+        self.es = es = EntryScale.EntryScale(
             tl, text = 'Time',
             min = 0, max = string.atof(fpformat.fix(self.duration, 2)),
             command = lambda t, s = self: s.setT(t))
