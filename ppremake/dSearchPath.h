@@ -22,8 +22,9 @@
 #include "ppremake.h"
 
 #include "filename.h"
-
 #include <vector>
+
+#define pvector std::vector
 
 ///////////////////////////////////////////////////////////////////
 //       Class : DSearchPath
@@ -45,12 +46,14 @@ public:
 
     void clear();
     int get_num_files() const;
-    Filename get_file(int n) const;
+    const Filename &get_file(int n) const;
+
+  public:
+    void add_file(const Filename &file);
 
   private:
-    typedef vector<Filename> Files;
+    typedef pvector<Filename> Files;
     Files _files;
-    friend class DSearchPath;
   };
 
 PUBLISHED:
@@ -70,7 +73,7 @@ PUBLISHED:
 
   bool is_empty() const;
   int get_num_directories() const;
-  Filename get_directory(int n) const;
+  const Filename &get_directory(int n) const;
 
   Filename find_file(const Filename &filename) const;
   int find_all_files(const Filename &filename, Results &results) const;
@@ -83,7 +86,7 @@ PUBLISHED:
   void write(ostream &out, int indent_level = 0) const;
 
 private:
-  typedef vector<Filename> Directories;
+  typedef pvector<Filename> Directories;
   Directories _directories;
 };
 

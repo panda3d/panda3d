@@ -33,6 +33,10 @@
 #include <fcntl.h>
 #endif
 
+#ifdef HAVE_GLOB_H
+#include <glob.h>
+#endif
+
 #ifdef HAVE_DIRENT_H
 #include <dirent.h>
 #endif
@@ -705,44 +709,14 @@ make_canonical() {
     return false;
   }
 
+  if (get_fullpath() == "/") {
+    // The root directory is a special case.
+    return true;
+  }
+
   // Temporarily save the current working directory.
   Filename cwd = ExecutionEnvironment::get_cwd();
-
-  if (is_directory()) {
-    // If the filename itself represents a directory and not a
-    // filename, cd to the named directory, not the one above it.
-    string dirname = to_os_specific();
-
-    if (chdir(dirname.c_str()) < 0) {
-      return false;
-    }
-    (*this) = ExecutionEnvironment::get_cwd();
-
-  } else {
-    // Otherwise, if the filename represents a regular file (or
-    // doesn't even exist), cd to the directory above.
-    Filename dir(get_dirname());
-
-    if (dir.empty()) {
-      // No dirname means the file is in this directory.
-      set_dirname(cwd);
-      return true;
-    }
-
-    string dirname = dir.to_os_specific();
-    if (chdir(dirname.c_str()) < 0) {
-      return false;
-    }
-    set_dirname(ExecutionEnvironment::get_cwd().get_fullpath());
-  }
-
-  // Now restore the current working directory.
-  string osdir = cwd.to_os_specific();
-  if (chdir(osdir.c_str()) < 0) {
-    cerr << "Error!  Cannot change back to " << cwd << "\n";
-  }
-
-  return true;
+  return r_make_canonical(cwd);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1182,7 +1156,32 @@ find_on_searchpath(const DSearchPath &searchpath) {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 scan_directory(vector_string &contents) const {
-#if defined(HAVE_DIRENT_H)
+#if defined(HAVE_GLOB_H)
+  // In some cases, particularly with NFS, it seems that opendir()
+  // .. readdir() fails to properly read the entire directory ("Value
+  // too large for defined data type"), but glob() succeeds.
+  string dirname;
+  if (empty()) {
+    dirname = "*";
+  } else if (_filename[_filename.length() - 1] == '/') {
+    dirname = _filename + "*";
+  } else {
+    dirname = _filename + "/*";
+  }
+
+  glob_t globbuf;
+
+  int r = glob(dirname.c_str(), GLOB_ERR, NULL, &globbuf);
+  size_t offset = dirname.size() - 1;
+
+  for (int i = 0; globbuf.gl_pathv[i] != NULL; i++) {
+    contents.push_back(globbuf.gl_pathv[i] + offset);
+  }
+  globfree(&globbuf);
+
+  return true;
+
+#elif defined(HAVE_DIRENT_H)
   size_t orig_size = contents.size();
 
   string dirname;
@@ -1193,6 +1192,7 @@ scan_directory(vector_string &contents) const {
   }
   DIR *root = opendir(dirname.c_str());
   if (root == (DIR *)NULL) {
+    perror(dirname.c_str());
     return false;
   }
 
@@ -1203,6 +1203,12 @@ scan_directory(vector_string &contents) const {
       contents.push_back(d->d_name);
     }
     d = readdir(root);
+  }
+  if (errno != 0 && errno != ENOENT && errno != ENOTDIR) {
+    cerr << "Error occurred while scanning directory " << dirname << "\n";
+    perror(dirname.c_str());
+    closedir(root);
+    return false;
   }
   closedir(root);
 
@@ -1379,14 +1385,20 @@ open_append(ofstream &stream) const {
 //               false otherwise.  This requires the setting of the
 //               set_text()/set_binary() flags to open the file
 //               appropriately as indicated; it is an error to call
-//               open_read() without first calling one of set_text()
-//               or set_binary().
+//               open_read_write() without first calling one of
+//               set_text() or set_binary().
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 open_read_write(fstream &stream) const {
   assert(is_text() || is_binary());
 
-  ios_openmode open_mode = ios::in | ios::out;
+  ios_openmode open_mode = ios::out | ios::in;
+
+  // Since ios::in also seems to imply ios::nocreate (!), we must
+  // guarantee the file already exists before we try to open it.
+  if (!exists()) {
+    touch();
+  }
 
 #ifdef HAVE_IOS_BINARY
   // For some reason, some systems (like Irix) don't define
@@ -1729,5 +1741,52 @@ count_slashes(const string &str) {
   }
 
   return count;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::r_make_canonical
+//       Access: Private
+//  Description: The recursive implementation of make_canonical().
+////////////////////////////////////////////////////////////////////
+bool Filename::
+r_make_canonical(const Filename &cwd) {
+  if (get_fullpath() == "/") {
+    // If we reached the root, the whole path doesn't exist.  Report
+    // failure.
+    return false;
+  }
+
+  // First, try to cd to the filename directly.
+  string os_specific = to_os_specific();
+
+  if (chdir(os_specific.c_str()) >= 0) {
+    // That worked, save the full path string.
+    (*this) = ExecutionEnvironment::get_cwd();
+
+    // And restore the current working directory.
+    string osdir = cwd.to_os_specific();
+    if (chdir(osdir.c_str()) < 0) {
+      cerr << "Error!  Cannot change back to " << cwd << "\n";
+    }
+    return true;
+  }
+
+  // That didn't work; maybe it's not a directory.  Recursively go to
+  // the directory above.
+
+  Filename dir(get_dirname());
+  
+  if (dir.empty()) {
+    // No dirname means the file is in this directory.
+    set_dirname(cwd);
+    return true;
+  }
+  
+  if (!dir.r_make_canonical(cwd)) {
+    return false;
+  }
+  set_dirname(dir);
+  return true;
 }
 
