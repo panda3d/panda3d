@@ -1963,22 +1963,22 @@ case 27:
   } else if (cmp_nocase_uh(name, "blendr") == 0) {
     Colorf color = texture->get_color();
     color[0] = value;
-    texture->set_color(value);
+    texture->set_color(color);
 
   } else if (cmp_nocase_uh(name, "blendg") == 0) {
     Colorf color = texture->get_color();
     color[1] = value;
-    texture->set_color(value);
+    texture->set_color(color);
 
   } else if (cmp_nocase_uh(name, "blendb") == 0) {
     Colorf color = texture->get_color();
     color[2] = value;
-    texture->set_color(value);
+    texture->set_color(color);
 
   } else if (cmp_nocase_uh(name, "blenda") == 0) {
     Colorf color = texture->get_color();
     color[3] = value;
-    texture->set_color(value);
+    texture->set_color(color);
 
   } else if (cmp_nocase_uh(name, "uv_name") == 0) {
     texture->set_uv_name(strval);
