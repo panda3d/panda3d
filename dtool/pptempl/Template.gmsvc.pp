@@ -405,7 +405,7 @@ $[varname] = $[sources]
 $[TAB]  mkdir -p $[tmpdirname_cyg]  // this dir-creation-stuff is leftover from trying to resolve parallel link difficulties
  #define VER_RESOURCE "$[tmpdirname_win]\$[mybasename].res"
 $[TAB]  cl /nologo /EP "$[dtool_ver_dir]\verdate.cpp"  > "$[tmpdirname_win]\verdate.h"
-$[TAB]  rc /n /i"$[tmpdirname_win]" /fo$[VER_RESOURCE] $[filter /D%, $[flags]]  "$[dtool_ver_dir]\version.rc"
+$[TAB]  rc /n /I"$[tmpdirname_win]" $[DECYGWINED_INC_PATHLIST_ARGS] /fo$[VER_RESOURCE] $[filter /D%, $[flags]]  "$[dtool_ver_dir]\version.rc"
   #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 $[TAB] $[SHARED_LIB_C++] $[VER_RESOURCE]
   #else  
