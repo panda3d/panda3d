@@ -420,6 +420,58 @@ unicode_tolower(int character) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextEncoder::upper
+//       Access: Published, Static
+//  Description: Converts the string to uppercase, assuming the string
+//               is encoded in the default encoding.
+////////////////////////////////////////////////////////////////////
+INLINE string TextEncoder::
+upper(const string &source) {
+  return upper(source, get_default_encoding());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextEncoder::upper
+//       Access: Published, Static
+//  Description: Converts the string to uppercase, assuming the string
+//               is encoded in the indicated encoding.
+////////////////////////////////////////////////////////////////////
+INLINE string TextEncoder::
+upper(const string &source, TextEncoder::Encoding encoding) {
+  TextEncoder encoder;
+  encoder.set_encoding(encoding);
+  encoder.set_text(source);
+  encoder.toupper_text();
+  return encoder.get_text();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextEncoder::lower
+//       Access: Published, Static
+//  Description: Converts the string to lowercase, assuming the string
+//               is encoded in the default encoding.
+////////////////////////////////////////////////////////////////////
+INLINE string TextEncoder::
+lower(const string &source) {
+  return lower(source, get_default_encoding());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextEncoder::lower
+//       Access: Published, Static
+//  Description: Converts the string to lowercase, assuming the string
+//               is encoded in the indicated encoding.
+////////////////////////////////////////////////////////////////////
+INLINE string TextEncoder::
+lower(const string &source, TextEncoder::Encoding encoding) {
+  TextEncoder encoder;
+  encoder.set_encoding(encoding);
+  encoder.set_text(source);
+  encoder.tolower_text();
+  return encoder.get_text();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextEncoder::set_wtext
 //       Access: Public
 //  Description: Changes the text that is stored in the encoder.

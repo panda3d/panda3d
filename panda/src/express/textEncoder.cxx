@@ -24,8 +24,42 @@ TypeHandle TextEncoder::_type_handle;
 TextEncoder::Encoding TextEncoder::_default_encoding;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextEncoder::get_wtext_as_ascii
+//     Function: TextEncoder::toupper_text
 //       Access: Published
+//  Description: Adjusts the text stored within the encoder to all
+//               uppercase letters (preserving accent marks
+//               correctly).
+////////////////////////////////////////////////////////////////////
+void TextEncoder::
+toupper_text() {
+  get_wtext();
+  wstring::iterator si;
+  for (si = _wtext.begin(); si != _wtext.end(); ++si) {
+    (*si) = unicode_toupper(*si);
+  }
+  _flags &= ~F_got_text;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextEncoder::tolower_text
+//       Access: Published
+//  Description: Adjusts the text stored within the encoder to all
+//               lowercase letters (preserving accent marks
+//               correctly).
+////////////////////////////////////////////////////////////////////
+void TextEncoder::
+tolower_text() {
+  get_wtext();
+  wstring::iterator si;
+  for (si = _wtext.begin(); si != _wtext.end(); ++si) {
+    (*si) = unicode_tolower(*si);
+  }
+  _flags &= ~F_got_text;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextEncoder::get_wtext_as_ascii
+//       Access: Public
 //  Description: Returns the text associated with the node, converted
 //               as nearly as possible to a fully-ASCII
 //               representation.  This means replacing accented

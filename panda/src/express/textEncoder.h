@@ -56,6 +56,10 @@ PUBLISHED:
   INLINE void set_text(const string &text, Encoding encoding);
   INLINE void clear_text();
   INLINE bool has_text() const;
+
+  void toupper_text();
+  void tolower_text();
+
   INLINE string get_text() const;
   INLINE string get_text(Encoding encoding) const;
   INLINE void append_text(const string &text);
@@ -76,6 +80,11 @@ PUBLISHED:
   INLINE static bool unicode_isupper(int character);
   INLINE static int unicode_toupper(int character);
   INLINE static int unicode_tolower(int character);
+
+  INLINE static string upper(const string &source);
+  INLINE static string upper(const string &source, Encoding encoding);
+  INLINE static string lower(const string &source);
+  INLINE static string lower(const string &source, Encoding encoding);
 
 public:
   // Direct support for wide-character strings.  Not publishable for
