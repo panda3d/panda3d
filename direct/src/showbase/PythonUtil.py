@@ -333,6 +333,17 @@ def union(a, b):
             c.append(i)
     return c
 
+def sameElements(a, b):
+    if len(a) != len(b):
+        return 0
+    for elem in a:
+        if elem not in b:
+            return 0
+    for elem in b:
+        if elem not in a:
+            return 0
+    return 1
+
 def reduceAngle(deg):
     """
     Reduces an angle (in degrees) to a value between -180. and 180.
