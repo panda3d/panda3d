@@ -46,6 +46,14 @@ class DirectNodePath(NodePath):
 class SelectedNodePaths(PandaObject):
     def __init__(self):
         self.reset()
+        self.tagList = []
+
+    def addTag(self, tag):
+        if tag not in self.tagList:
+            self.tagList.append(tag)
+
+    def removeTag(self, tag):
+        self.tagList.remove(tag)
 
     def reset(self):
         self.selectedDict = {}
@@ -62,6 +70,12 @@ class SelectedNodePaths(PandaObject):
         # Reset selected objects and highlight if multiSelect is false
         if not fMultiSelect:
             self.deselectAll()
+
+        # Select tagged object if present
+        for tag in self.tagList:
+            if nodePath.hasNetTag(tag):
+                nodePath = nodePath.findNetTag(tag)
+                break
         
         # Get this pointer
         id = nodePath.id()
