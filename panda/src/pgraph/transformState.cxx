@@ -199,11 +199,6 @@ TransformState::
 //  Description: Provides an arbitrary ordering among all unique
 //               TransformStates, so we can store the essentially
 //               different ones in a big set and throw away the rest.
-//
-//               This method is not needed outside of the TransformState
-//               class because all equivalent TransformState objects are
-//               guaranteed to share the same pointer; thus, a pointer
-//               comparison is always sufficient.
 ////////////////////////////////////////////////////////////////////
 bool TransformState::
 operator < (const TransformState &other) const {
