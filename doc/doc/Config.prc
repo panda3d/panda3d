@@ -44,9 +44,9 @@ framebuffer-mode rgba double-buffer depth multisample hardware software
 # a special variable that indicates the same directory as this
 # particular Config.prc file.
 model-path  .
-model-path  $THIS_PRC_DIR
+model-path  $THIS_PRC_DIR/..
 sound-path  .
-sound-path  $THIS_PRC_DIR
+sound-path  $THIS_PRC_DIR/..
 
 # This makes the egg loader available to load egg files.
 load-file-type pandaegg

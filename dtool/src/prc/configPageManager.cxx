@@ -452,7 +452,7 @@ scan_auto_prc_dir(Filename &prc_dir) const {
   if (prc_dir_string.substr(0, 6) == "<auto>") {
     Filename suffix = prc_dir_string.substr(6);
     
-    // Start at the executable directory.
+    // Start at the dtool directory.
     Filename dtool = ExecutionEnvironment::get_dtool_name();
     Filename dir = dtool.get_dirname();
 
@@ -491,28 +491,30 @@ bool ConfigPageManager::
 scan_up_from(Filename &result, const Filename &dir, 
              const Filename &suffix) const {
   Filename consider(dir, suffix);
-
+  
   vector_string files;
-  if (consider.scan_directory(files)) {
-    vector_string::const_iterator fi;
-    for (fi = files.begin(); fi != files.end(); ++fi) {
-      Globs::const_iterator gi;
-      for (gi = _prc_patterns.begin();
-           gi != _prc_patterns.end();
-           ++gi) {
-        if ((*gi).matches(*fi)) {
-          result = consider;
-          return true;
-        }
-      }
-      
-      for (gi = _prc_executable_patterns.begin();
-           gi != _prc_executable_patterns.end();
-           ++gi) {
-        if ((*gi).matches(*fi)) {
-          result = consider;
-          return true;
-        }
+  if (consider.is_directory()) {
+    if (consider.scan_directory(files)) {
+      vector_string::const_iterator fi;
+      for (fi = files.begin(); fi != files.end(); ++fi) {
+	Globs::const_iterator gi;
+	for (gi = _prc_patterns.begin();
+	     gi != _prc_patterns.end();
+	     ++gi) {
+	  if ((*gi).matches(*fi)) {
+	    result = consider;
+	    return true;
+	  }
+	}
+	
+	for (gi = _prc_executable_patterns.begin();
+	     gi != _prc_executable_patterns.end();
+	     ++gi) {
+	  if ((*gi).matches(*fi)) {
+	    result = consider;
+	    return true;
+	  }
+	}
       }
     }
   }

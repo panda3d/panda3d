@@ -247,7 +247,7 @@ DTOOLDEFAULTS=[
     ("LINK_IN_GL",                     'UNDEF',                  'UNDEF'),
     ("LINK_IN_PHYSICS",                'UNDEF',                  'UNDEF'),
     ("DEFAULT_PATHSEP",                '";"',                    '":"'),
-    ("DEFAULT_PRC_DIR",                '"<auto>/etc"',           '"<auto>/etc"'),
+    ("DEFAULT_PRC_DIR",                '"<auto>etc"',            '"<auto>etc"'),
     ("PRC_DIR_ENVVARS",                '"PANDA_PRC_DIR"',        '"PANDA_PRC_DIR"'),
     ("PRC_PATH_ENVVARS",               '"PANDA_PRC_PATH"',       '"PANDA_PRC_PATH"'),
     ("PRC_PATTERNS",                   '"*.prc"',                '"*.prc"'),

@@ -725,7 +725,8 @@ class FFIInterrogateDatabase:
         # before we begin.
         for file in os.listdir(codeDir):
             pathname = os.path.join(codeDir, file)
-            os.unlink(pathname)
+            if not os.path.isdir(pathname):
+                os.unlink(pathname)
         
         # Import all the C++ modules
         for CModuleName in FFIConstants.CodeModuleNameList:
