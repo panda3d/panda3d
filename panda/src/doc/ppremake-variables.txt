@@ -369,8 +369,8 @@ value is either the empty string (false) or a nonempty string (true).
   $[wordsubst <from>,<to>,<text>] - like $[subst], except it only
     replaces whole words.
 
-  $[findstring <a>,<b>] - returns <b> if and only if it is a substring
-    of <a>; otherwise, returns the empty string.
+  $[findstring <a>,<b>] - returns <a> if and only if it is a substring
+    of <b>; otherwise, returns the empty string.
 
   $[sort <words>] - returns the space-separated list of <words>,
     sorted into alphabetical order.  This also removes duplicate
