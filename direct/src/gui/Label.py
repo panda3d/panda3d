@@ -170,6 +170,8 @@ def modelLabel(model,
             
         if color != None:
             mi.setColor(color[0], color[1], color[2], color[3])
+            if color[3] != 1.0:
+                mi.setTransparency(1)
         
 
     if geomRect == None:
