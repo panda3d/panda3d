@@ -25,7 +25,7 @@ class DirectFrame(DirectGuiWidget):
             ('text',            None,       self.setText),
             # Change default value of text mayChange flag from 0
             # (OnscreenText.py) to 1
-            ('text_mayChange',  1,          None),
+            ('textMayChange',  1,          None),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs,
@@ -75,7 +75,7 @@ class DirectFrame(DirectGuiWidget):
                         component, (), 'text',
                         OnscreenText,
                         (), parent = self.stateNodePath[i],
-                        text = text, scale = 1,
+                        text = text, scale = 1, mayChange = self['textMayChange'],
                         sort = TEXT_SORT_INDEX,
                         )
 
