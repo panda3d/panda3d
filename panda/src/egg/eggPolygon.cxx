@@ -307,6 +307,10 @@ decomp_concave(EggGroupNode *container, int asum, int x, int y) const {
 //               otherwise, only concave polygons will be subdivided,
 //               and convex polygons will be copied unchanged into the
 //               container.
+//
+//               It is assumed that the EggPolygon is not already a
+//               child of any other group when this function is
+//               called.
 ////////////////////////////////////////////////////////////////////
 bool EggPolygon::
 triangulate_poly(EggGroupNode *container, bool convex_also) {

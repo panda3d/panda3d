@@ -65,6 +65,7 @@ protected:
 
 private:
   bool is_inside(const LPoint2f &p) const;
+  bool is_concave() const;
 
   void setup_points(const LPoint3f *begin, const LPoint3f *end);
   LPoint2f to_2d(const LPoint3f &point3d) const;

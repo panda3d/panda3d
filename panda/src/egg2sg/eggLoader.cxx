@@ -1818,6 +1818,7 @@ create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
 			  EggGroup::CollideFlags flags) {
 
   PT(EggGroup) group = new EggGroup;
+
   if (!egg_poly->triangulate_into(group, false)) {
     egg2sg_cat.warning()
       << "Degenerate collision polygon in " << parent_group->get_name()

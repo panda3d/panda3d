@@ -74,6 +74,6 @@ recompute_polygon_normal() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool EggPolygon::
 triangulate_into(EggGroupNode *container, bool convex_also) const {
-  EggPolygon *copy = new EggPolygon(*this);
+  PT(EggPolygon) copy = new EggPolygon(*this);
   return copy->triangulate_poly(container, convex_also);
 }

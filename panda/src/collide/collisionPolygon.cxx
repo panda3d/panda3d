@@ -67,6 +67,11 @@ make_copy() {
 //  Description: Verifies that the indicated set of points will define
 //               a valid CollisionPolygon: that is, at least three
 //               non-collinear points, with no points repeated.
+//
+//               This does not check that the polygon defined is
+//               convex; that check is made later, once we have
+//               projected the points to 2-d space where the decision
+//               is easier.
 ////////////////////////////////////////////////////////////////////
 bool CollisionPolygon::
 verify_points(const LPoint3f *begin, const LPoint3f *end) {
@@ -478,6 +483,47 @@ is_inside(const LPoint2f &p) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionPolygon::is_concave
+//       Access: Private
+//  Description: Returns true if the CollisionPolygon is concave
+//               (which is an error), or false otherwise.
+////////////////////////////////////////////////////////////////////
+bool CollisionPolygon::
+is_concave() const {
+  nassertr(_points.size() >= 3, true);
+
+  LPoint2f p0 = _points[0];
+  LPoint2f p1 = _points[1];
+  float dx1 = p1[0] - p0[0];
+  float dy1 = p1[1] - p0[1];
+  p0 = p1;
+  p1 = _points[2];
+
+  float dx2 = p1[0] - p0[0];
+  float dy2 = p1[1] - p0[1];
+  int asum = ((dx1 * dy2 - dx2 * dy1 >= 0.0) ? 1 : 0);
+
+  for (size_t i = 0; i < _points.size() - 1; i++) {
+    p0 = p1;
+    p1 = _points[(i+3) % _points.size()];
+
+    dx1 = dx2;
+    dy1 = dy2;
+    dx2 = p1[0] - p0[0];
+    dy2 = p1[1] - p0[1];
+    int csum = ((dx1 * dy2 - dx2 * dy1 >= 0.0) ? 1 : 0);
+
+    if (csum ^ asum) {
+      // Oops, the polygon is concave.
+      return true;
+    }
+  }
+
+  // The polygon is safely convex.
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionPolygon::setup_points
 //       Access: Private
 //  Description: 
@@ -587,6 +633,20 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
     _median += _points[n];
   }
   _median /= _points.size();
+
+#ifndef NDEBUG
+  // Now make sure the points define a convex polygon.
+  if (is_concave()) {
+    collide_cat.error() << "Invalid concave CollisionPolygon defined:\n";
+    const LPoint3f *pi;
+    for (pi = begin; pi != end; ++pi) {
+      collide_cat.error(false) << "  " << (*pi) << "\n";
+    }
+    collide_cat.error(false) 
+      << "  normal " << normal << " with length " << normal.length() << "\n";
+    _points.clear();
+  }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
