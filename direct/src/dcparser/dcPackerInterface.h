@@ -109,6 +109,7 @@ public:
                            bool &pack_error, bool &range_error) const;
   virtual void pack_string(DCPackData &pack_data, const string &value,
                            bool &pack_error, bool &range_error) const;
+  virtual bool pack_default_value(DCPackData &pack_data, bool &pack_error) const;
 
   virtual void unpack_double(const char *data, size_t length, size_t &p, 
                              double &value, bool &pack_error, bool &range_error) const;

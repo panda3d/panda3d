@@ -120,7 +120,7 @@ get_typedef() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCParameter::set_typedef
-//       Access: Published
+//       Access: Public
 //  Description: Records the DCTypedef object that generated this
 //               parameter.  This is normally called only from
 //               DCTypedef::make_new_parameter().

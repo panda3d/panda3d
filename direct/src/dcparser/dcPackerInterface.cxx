@@ -211,6 +211,20 @@ pack_string(DCPackData &, const string &, bool &pack_error, bool &) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::pack_default_value
+//       Access: Public, Virtual
+//  Description: Packs the field's specified default value (or a
+//               sensible default if no value is specified) into the
+//               stream.  Returns true if the default value is packed,
+//               false if the field doesn't know how to pack its
+//               default value.
+////////////////////////////////////////////////////////////////////
+bool DCPackerInterface::
+pack_default_value(DCPackData &, bool &) const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::unpack_double
 //       Access: Public, Virtual
 //  Description: Unpacks the current numeric or string value from the

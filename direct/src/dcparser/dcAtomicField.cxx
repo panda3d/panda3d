@@ -34,6 +34,20 @@ DCAtomicField(const string &name) : DCField(name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::Destructor
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+DCAtomicField::
+~DCAtomicField() {
+  Elements::iterator ei;  
+  for (ei = _elements.begin(); ei != _elements.end(); ++ei) {
+    delete (*ei);
+  }
+  _elements.clear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::as_atomic_field
 //       Access: Published, Virtual
 //  Description: Returns the same field pointer converted to an atomic
@@ -65,7 +79,7 @@ get_num_elements() const {
 DCParameter *DCAtomicField::
 get_element(int n) const {
   nassertr(n >= 0 && n < (int)_elements.size(), NULL);
-  return _elements[n]._param;
+  return _elements[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -80,13 +94,13 @@ get_element(int n) const {
 //               If the element is an array-type element, the returned
 //               value will include the two-byte length preceding the
 //               array data.
+//
+//               This is deprecated; use get_element() instead.
 ////////////////////////////////////////////////////////////////////
 string DCAtomicField::
 get_element_default(int n) const {
-  nassertr(has_element_default(n), string());
   nassertr(n >= 0 && n < (int)_elements.size(), string());
-
-  return _elements[n]._default_value;
+  return _elements[n]->get_default_value();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -94,11 +108,13 @@ get_element_default(int n) const {
 //       Access: Published
 //  Description: Returns true if the nth element of the field has a
 //               default value specified, false otherwise.
+//
+//               This is deprecated; use get_element() instead.
 ////////////////////////////////////////////////////////////////////
 bool DCAtomicField::
 has_element_default(int n) const {
   nassertr(n >= 0 && n < (int)_elements.size(), false);
-  return _elements[n]._has_default_value;
+  return _elements[n]->has_default_value();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -115,7 +131,7 @@ has_element_default(int n) const {
 string DCAtomicField::
 get_element_name(int n) const {
   nassertr(n >= 0 && n < (int)_elements.size(), string());
-  return _elements[n]._param->get_name();
+  return _elements[n]->get_name();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -128,7 +144,7 @@ get_element_name(int n) const {
 DCSubatomicType DCAtomicField::
 get_element_type(int n) const {
   nassertr(n >= 0 && n < (int)_elements.size(), ST_invalid);
-  DCSimpleParameter *simple_parameter = _elements[n]._param->as_simple_parameter();
+  DCSimpleParameter *simple_parameter = _elements[n]->as_simple_parameter();
   nassertr(simple_parameter != (DCSimpleParameter *)NULL, ST_invalid);
   return simple_parameter->get_type();
 }
@@ -148,7 +164,7 @@ get_element_type(int n) const {
 int DCAtomicField::
 get_element_divisor(int n) const {
   nassertr(n >= 0 && n < (int)_elements.size(), 1);
-  DCSimpleParameter *simple_parameter = _elements[n]._param->as_simple_parameter();
+  DCSimpleParameter *simple_parameter = _elements[n]->as_simple_parameter();
   nassertr(simple_parameter != (DCSimpleParameter *)NULL, 1);
   return simple_parameter->get_divisor();
 }
@@ -164,11 +180,11 @@ output(ostream &out, bool brief) const {
 
   if (!_elements.empty()) {
     Elements::const_iterator ei = _elements.begin();
-    (*ei).output(out, brief);
+    output_element(out, brief, *ei);
     ++ei;
     while (ei != _elements.end()) {
       out << ", ";
-      (*ei).output(out, brief);
+      output_element(out, brief, *ei);
       ++ei;
     }
   }
@@ -207,8 +223,7 @@ generate_hash(HashGenerator &hashgen) const {
   hashgen.add_int(_elements.size());
   Elements::const_iterator ei;
   for (ei = _elements.begin(); ei != _elements.end(); ++ei) {
-    const ElementType &element = (*ei);
-    element._param->generate_hash(hashgen);
+    (*ei)->generate_hash(hashgen);
   }
   hashgen.add_int(get_flags());
 }
@@ -224,107 +239,53 @@ generate_hash(HashGenerator &hashgen) const {
 DCPackerInterface *DCAtomicField::
 get_nested_field(int n) const {
   nassertr(n >= 0 && n < (int)_elements.size(), NULL);
-  return _elements[n]._param;
+  return _elements[n];
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::add_element
 //       Access: Public
 //  Description: Adds a new element (parameter) to the field.
-//               Normally this is called only during parsing.
+//               Normally this is called only during parsing.  The
+//               DCAtomicField object becomes the owner of the new
+//               pointer and will delete it upon destruction.
 ////////////////////////////////////////////////////////////////////
 void DCAtomicField::
-add_element(const DCAtomicField::ElementType &element) {
+add_element(DCParameter *element) {
   _elements.push_back(element);
   _num_nested_fields = (int)_elements.size();
 
   // See if we still have a fixed byte size.
   if (_has_fixed_byte_size) {
-    _has_fixed_byte_size = element._param->has_fixed_byte_size();
-    _fixed_byte_size += element._param->get_fixed_byte_size();
+    _has_fixed_byte_size = element->has_fixed_byte_size();
+    _fixed_byte_size += element->get_fixed_byte_size();
   }
   if (_has_fixed_structure) {
-    _has_fixed_structure = element._param->has_fixed_structure();
+    _has_fixed_structure = element->has_fixed_structure();
   }
   if (!_has_range_limits) {
-    _has_range_limits = element._param->has_range_limits();
+    _has_range_limits = element->has_range_limits();
   }
+  if (!_has_default_value) {
+    _has_default_value = element->has_default_value();
+  }
+  _default_value_stale = true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::ElementType::Constructor
-//       Access: Public
-//  Description: The type parameter should be a newly-allocated DCParameter
-//               object; it will eventually be freed with delete when
-//               this object destructs.
-////////////////////////////////////////////////////////////////////
-DCAtomicField::ElementType::
-ElementType(DCParameter *param) {
-  _param = param;
-  _has_default_value = false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::ElementType::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-DCAtomicField::ElementType::
-ElementType(const DCAtomicField::ElementType &copy) :
-  _param(copy._param->make_copy()),
-  _default_value(copy._default_value),
-  _has_default_value(copy._has_default_value)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::ElementType::Copy Assignment Operator
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void DCAtomicField::ElementType::
-operator = (const DCAtomicField::ElementType &copy) {
-  delete _param;
-  _param = copy._param->make_copy();
-  _default_value = copy._default_value;
-  _has_default_value = copy._has_default_value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::ElementType::Destructor
-//       Access: Public
+//     Function: DCAtomicField::output_element
+//       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-DCAtomicField::ElementType::
-~ElementType() {
-  delete _param;
-}
+void DCAtomicField::
+output_element(ostream &out, bool brief, DCParameter *element) const {
+  element->output(out, brief);
 
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::ElementType::set_default_value
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void DCAtomicField::ElementType::
-set_default_value(const string &default_value) {
-  _default_value = default_value;
-  _has_default_value = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::ElementType::output
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void DCAtomicField::ElementType::
-output(ostream &out, bool brief) const {
-  _param->output(out, brief);
-
-  if (!brief && _has_default_value) {
+  if (!brief && element->has_default_value()) {
     out << " = ";
     DCPacker packer;
-    packer.set_unpack_data(_default_value);
-    packer.begin_unpack(_param);
+    packer.set_unpack_data(element->get_default_value());
+    packer.begin_unpack(element);
     packer.unpack_and_format(out);
     packer.end_unpack();
   }

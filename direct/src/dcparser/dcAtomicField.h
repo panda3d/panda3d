@@ -38,48 +38,34 @@
 class EXPCL_DIRECT DCAtomicField : public DCField {
 public:
   DCAtomicField(const string &name);
+  virtual ~DCAtomicField();
 
 PUBLISHED:
   virtual DCAtomicField *as_atomic_field();
 
   int get_num_elements() const;
   DCParameter *get_element(int n) const;
+
+  // These five methods are deprecated and will be removed soon.
   string get_element_default(int n) const;
   bool has_element_default(int n) const;
-
-  // These three methods are deprecated and will be removed soon.
   string get_element_name(int n) const;
   DCSubatomicType get_element_type(int n) const;
   int get_element_divisor(int n) const;
   
 public:
+  void add_element(DCParameter *element);
+
   virtual void output(ostream &out, bool brief) const;
   virtual void write(ostream &out, bool brief, int indent_level) const;
   virtual void generate_hash(HashGenerator &hashgen) const;
 
   virtual DCPackerInterface *get_nested_field(int n) const;
 
-public:
-  class ElementType {
-  public:
-    ElementType(DCParameter *param);
-    ElementType(const ElementType &copy);
-    void operator = (const ElementType &copy);
-    ~ElementType();
-
-    void set_default_value(const string &default_value);
-
-    void output(ostream &out, bool brief) const;
-
-    DCParameter *_param;
-    string _default_value;
-    bool _has_default_value;
-  };
-
-  void add_element(const ElementType &element);
-
 private:
-  typedef pvector<ElementType> Elements;
+  void output_element(ostream &out, bool brief, DCParameter *element) const;
+
+  typedef pvector<DCParameter *> Elements;
   Elements _elements;
 };
 

@@ -82,6 +82,7 @@ PUBLISHED:
   INLINE void pack_uint64(PN_uint64 value);
   INLINE void pack_string(const string &value);
   INLINE void pack_literal_value(const string &value);
+  void pack_default_value();
 
   INLINE double unpack_double();
   INLINE int unpack_int();

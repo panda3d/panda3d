@@ -362,6 +362,44 @@ generate_hash(HashGenerator &hashgen) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCSwitch::pack_default_value
+//       Access: Public
+//  Description: Packs the switchParameter's specified default value (or a
+//               sensible default if no value is specified) into the
+//               stream.  Returns true if the default value is packed,
+//               false if the switchParameter doesn't know how to pack its
+//               default value.
+////////////////////////////////////////////////////////////////////
+bool DCSwitch::
+pack_default_value(DCPackData &pack_data, bool &pack_error) const {
+  if (_cases.empty()) {
+    pack_error = true;
+    return true;
+  }
+
+  // The default value for a switch is the first case.
+
+  DCPacker packer;
+  packer.begin_pack(_cases[0]);
+  packer.pack_literal_value(_cases[0]->_value);
+  if (!packer.end_pack()) {
+    pack_error = true;
+  }
+
+  // Then everything within the case gets its normal default.
+  for (size_t i = 1; i < _cases[0]->_fields.size(); i++) {
+    packer.begin_pack(_cases[0]->_fields[i]);
+    packer.pack_default_value();
+    if (!packer.end_pack()) {
+      pack_error = true;
+    }
+  }
+  pack_data.append_data(packer.get_data(), packer.get_length());
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCSwitch::SwitchCase::Constructor
 //       Access: Public
 //  Description: 
@@ -379,6 +417,7 @@ SwitchCase(const string &name, const string &value) :
   _fixed_byte_size = 0;
   _has_fixed_structure = true;
   _has_range_limits = false;
+  _has_default_value = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -448,6 +487,9 @@ add_field(DCField *field) {
   }
   if (!_has_range_limits) {
     _has_range_limits = field->has_range_limits();
+  }
+  if (!_has_default_value) {
+    _has_default_value = field->has_default_value();
   }
   return true;
 }

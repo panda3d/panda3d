@@ -30,6 +30,8 @@ DCField::
 DCField(const string &name) : DCPackerInterface(name) {
   _number = -1;
   _flags = 0;
+  _has_default_value = false;
+  _default_value_stale = true;
 
   _has_nested_fields = true;
   _num_nested_fields = 0;
@@ -178,6 +180,34 @@ validate_ranges(const string &packed_data) const {
   }
 
   return (packer.get_num_unpacked_bytes() == packed_data.length());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::has_default_value
+//       Access: Published
+//  Description: Returns true if a default value has been explicitly
+//               established for this field, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCField::
+has_default_value() const {
+  return _has_default_value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::get_default_value
+//       Access: Published
+//  Description: Returns the default value for this field.  If a
+//               default value has been explicitly set
+//               (e.g. has_default_value() returns true), returns that
+//               value; otherwise, returns an implicit default for the
+//               field.
+////////////////////////////////////////////////////////////////////
+const string &DCField::
+get_default_value() const {
+  if (_default_value_stale) {
+    ((DCField *)this)->refresh_default_value();
+  }
+  return _default_value;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -489,6 +519,28 @@ generate_hash(HashGenerator &hashgen) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCField::pack_default_value
+//       Access: Public, Virtual
+//  Description: Packs the field's specified default value (or a
+//               sensible default if no value is specified) into the
+//               stream.  Returns true if the default value is packed,
+//               false if the field doesn't know how to pack its
+//               default value.
+////////////////////////////////////////////////////////////////////
+bool DCField::
+pack_default_value(DCPackData &pack_data, bool &) const {
+  // The default behavior is to pack the default value if we got it;
+  // otherwise, to return false and let the packer visit our nested
+  // elements.
+  if (!_default_value_stale) {
+    pack_data.append_data(_default_value.data(), _default_value.length());
+    return true;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCField::set_number
 //       Access: Public
 //  Description: Assigns the unique number to this field.  This is
@@ -498,6 +550,18 @@ generate_hash(HashGenerator &hashgen) const {
 void DCField::
 set_number(int number) {
   _number = number;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::set_default_value
+//       Access: Public
+//  Description: Establishes a default value for this field.
+////////////////////////////////////////////////////////////////////
+void DCField::
+set_default_value(const string &default_value) {
+  _default_value = default_value;
+  _has_default_value = true;
+  _default_value_stale = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -528,6 +592,25 @@ set_flags(int flags) {
 int DCField::
 get_flags() const {
   return _flags;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCField::refresh_default_value
+//       Access: Protected
+//  Description: Recomputes the default value of the field by
+//               repacking it.
+////////////////////////////////////////////////////////////////////
+void DCField::
+refresh_default_value() {
+  DCPacker packer;
+  packer.begin_pack(this);
+  packer.pack_default_value();
+  if (!packer.end_pack()) {
+    cerr << "Error while packing default value for " << get_name() << "\n";
+  } else {
+    _default_value.assign(packer.get_data(), packer.get_length());
+  }
+  _default_value_stale = false;
 }
 
 ////////////////////////////////////////////////////////////////////

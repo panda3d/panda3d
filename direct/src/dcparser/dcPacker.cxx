@@ -561,6 +561,34 @@ pop() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::pack_default_value
+//       Access: Published
+//  Description: Adds the default value for the current element into
+//               the stream.  If no default has been set for the
+//               current element, creates a sensible default.
+////////////////////////////////////////////////////////////////////
+void DCPacker::
+pack_default_value() {
+  nassertv(_mode == M_pack || _mode == M_repack);
+  if (_current_field == NULL) {
+    _pack_error = true;
+  } else {
+    if (_current_field->pack_default_value(_pack_data, _pack_error)) {
+      advance();
+
+    } else {
+      // If the single field didn't know how to pack a default value,
+      // try packing nested fields.
+      push();
+      while (more_nested_fields()) {
+        pack_default_value();
+      }
+      pop();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPacker::unpack_validate
 //       Access: Published
 //  Description: Internally unpacks the current numeric or string
@@ -938,7 +966,7 @@ unpack_and_format(ostream &out) {
       }
 
       push();
-      while (more_nested_fields()) {
+      while (more_nested_fields() && !had_pack_error()) {
         unpack_and_format(out);
 
         if (more_nested_fields()) {

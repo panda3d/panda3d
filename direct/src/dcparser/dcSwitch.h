@@ -67,11 +67,9 @@ public:
                       const string &prename, const string &name,
                       const string &postname) const;
   virtual void generate_hash(HashGenerator &hashgen) const;
+  virtual bool pack_default_value(DCPackData &pack_data, bool &pack_error) const;
 
-private:
-  string _name;
-  DCParameter *_key_parameter;
-
+public:
   typedef pvector<DCField *> Fields;
   typedef pmap<string, DCField *> FieldsByName;
 
@@ -86,7 +84,12 @@ private:
     string _value;
     Fields _fields;
     FieldsByName _fields_by_name;
+    bool _has_default_value;
   };
+
+private:
+  string _name;
+  DCParameter *_key_parameter;
 
   typedef pvector<SwitchCase *> Cases;
   Cases _cases;

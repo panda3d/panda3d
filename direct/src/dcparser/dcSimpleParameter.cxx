@@ -666,7 +666,7 @@ pack_int(DCPackData &pack_data, int value,
 ////////////////////////////////////////////////////////////////////
 void DCSimpleParameter::
 pack_uint(DCPackData &pack_data, unsigned int value,
-            bool &pack_error, bool &range_error) const {
+          bool &pack_error, bool &range_error) const {
   unsigned int int_value = value * _divisor;
 
   switch (_type) {
@@ -911,6 +911,103 @@ pack_string(DCPackData &pack_data, const string &value,
     pack_error = true;
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSimpleParameter::pack_default_value
+//       Access: Public, Virtual
+//  Description: Packs the simpleParameter's specified default value (or a
+//               sensible default if no value is specified) into the
+//               stream.  Returns true if the default value is packed,
+//               false if the simpleParameter doesn't know how to pack its
+//               default value.
+////////////////////////////////////////////////////////////////////
+bool DCSimpleParameter::
+pack_default_value(DCPackData &pack_data, bool &pack_error) const {
+  if (has_default_value()) {
+    return DCField::pack_default_value(pack_data, pack_error);
+  }
+
+  if (_has_nested_fields) {
+    // If the simple type is an array (or string) type, pack the
+    // appropriate length array, with code similar to
+    // DCArrayParameter::pack_default_value().
+
+    unsigned int minimum_length = 0;
+    if (!_uint_range.is_empty()) {
+      minimum_length = _uint_range.get_min(0);
+    }
+    
+    DCPacker packer;
+    packer.begin_pack(this);
+    packer.push();
+    for (unsigned int i = 0; i < minimum_length; i++) {
+      packer.pack_default_value();
+    }
+    packer.pop();
+    if (!packer.end_pack()) {
+      pack_error = true;
+      
+    } else {
+      pack_data.append_data(packer.get_data(), packer.get_length());
+    }
+
+  } else {
+    // Otherwise, if it's just a simple numeric type, pack a zero or
+    // the minimum value.
+    switch (_type) {
+    case ST_int8:
+    case ST_int16:
+    case ST_int32:
+      if (_int_range.is_in_range(0)) {
+        pack_int(pack_data, 0, pack_error, pack_error);
+      } else {
+        pack_int(pack_data, _int_range.get_min(0), pack_error, pack_error);
+      }
+      break;
+
+    case ST_int64:
+      if (_int64_range.is_in_range(0)) {
+        pack_int64(pack_data, 0, pack_error, pack_error);
+      } else {
+        pack_int64(pack_data, _int64_range.get_min(0), pack_error, pack_error);
+      }
+      break;
+
+    case ST_char:
+    case ST_uint8:
+    case ST_uint16:
+    case ST_uint32:
+      if (_uint_range.is_in_range(0)) {
+        pack_uint(pack_data, 0, pack_error, pack_error);
+      } else {
+        pack_uint(pack_data, _uint_range.get_min(0), pack_error, pack_error);
+      }
+      break;
+
+    case ST_uint64:
+      if (_uint64_range.is_in_range(0)) {
+        pack_uint64(pack_data, 0, pack_error, pack_error);
+      } else {
+        pack_uint64(pack_data, _uint64_range.get_min(0), pack_error, pack_error);
+      }
+      break;
+      
+    case ST_float64:
+      if (_double_range.is_in_range(0.0)) {
+        pack_double(pack_data, 0.0, pack_error, pack_error);
+      } else {
+        pack_double(pack_data, _double_range.get_min(0), pack_error, pack_error);
+      }
+      break;
+      
+    default:
+      pack_error = true;
+    }
+  }
+  return true;
+}
+
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSimpleParameter::unpack_double

@@ -105,6 +105,10 @@ add_atomic(DCAtomicField *atomic) {
   if (!_has_range_limits) {
     _has_range_limits = atomic->has_range_limits();
   }
+  if (!_has_default_value) {
+    _has_default_value = atomic->has_default_value();
+  }
+  _default_value_stale = true;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -47,13 +47,14 @@ DCSwitchParameter(const DCSwitch *dswitch) :
   DCParameter *key_parameter = dswitch->get_key_parameter();
   _has_fixed_byte_size = _has_fixed_byte_size && key_parameter->has_fixed_byte_size();
   _has_range_limits = _has_range_limits || key_parameter->has_range_limits();
+  _has_default_value = _has_default_value || key_parameter->has_default_value();
 
   int num_cases = _dswitch->get_num_cases();
   if (num_cases > 0) {
     _fixed_byte_size = _dswitch->get_case(0)->get_fixed_byte_size();
     
     for (int i = 0; i < num_cases; i++) {
-      const DCPackerInterface *dcase = _dswitch->get_case(i);
+      const DCSwitch::SwitchCase *dcase = (const DCSwitch::SwitchCase *)_dswitch->get_case(i);
       if (!dcase->has_fixed_byte_size() || 
           dcase->get_fixed_byte_size() != _fixed_byte_size) {
         
@@ -62,6 +63,7 @@ DCSwitchParameter(const DCSwitch *dswitch) :
       }
 
       _has_range_limits = _has_range_limits || dcase->has_range_limits();
+      _has_default_value = _has_default_value || dcase->_has_default_value;
     }
   }
 
@@ -193,4 +195,22 @@ void DCSwitchParameter::
 generate_hash(HashGenerator &hashgen) const {
   DCParameter::generate_hash(hashgen);
   _dswitch->generate_hash(hashgen);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSwitchParameter::pack_default_value
+//       Access: Public, Virtual
+//  Description: Packs the switchParameter's specified default value (or a
+//               sensible default if no value is specified) into the
+//               stream.  Returns true if the default value is packed,
+//               false if the switchParameter doesn't know how to pack its
+//               default value.
+////////////////////////////////////////////////////////////////////
+bool DCSwitchParameter::
+pack_default_value(DCPackData &pack_data, bool &pack_error) const {
+  if (has_default_value()) {
+    return DCField::pack_default_value(pack_data, pack_error);
+  }
+
+  return _dswitch->pack_default_value(pack_data, pack_error);
 }

@@ -54,6 +54,10 @@ DCArrayParameter(DCParameter *element_type, const DCUnsignedIntRange &size) :
     _has_range_limits = true;
   }
 
+  if (_element_type->has_default_value()) {
+    _has_default_value = true;
+  }
+
   _has_nested_fields = true;
   _num_nested_fields = _array_size;
   _pack_type = PT_array;
@@ -222,4 +226,43 @@ generate_hash(HashGenerator &hashgen) const {
   DCParameter::generate_hash(hashgen);
   _element_type->generate_hash(hashgen);
   _array_size_range.generate_hash(hashgen);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCArrayParameter::pack_default_value
+//       Access: Public, Virtual
+//  Description: Packs the arrayParameter's specified default value (or a
+//               sensible default if no value is specified) into the
+//               stream.  Returns true if the default value is packed,
+//               false if the arrayParameter doesn't know how to pack its
+//               default value.
+////////////////////////////////////////////////////////////////////
+bool DCArrayParameter::
+pack_default_value(DCPackData &pack_data, bool &pack_error) const {
+  if (has_default_value()) {
+    return DCField::pack_default_value(pack_data, pack_error);
+  }
+
+  // If a default value is not specified for a variable-length array,
+  // the default is the minimum array.
+  unsigned int minimum_length = 0;
+  if (!_array_size_range.is_empty()) {
+    minimum_length = _array_size_range.get_min(0);
+  }
+
+  DCPacker packer;
+  packer.begin_pack(this);
+  packer.push();
+  for (unsigned int i = 0; i < minimum_length; i++) {
+    packer.pack_default_value();
+  }
+  packer.pop();
+  if (!packer.end_pack()) {
+    pack_error = true;
+
+  } else {
+    pack_data.append_data(packer.get_data(), packer.get_length());
+  }
+
+  return true;
 }

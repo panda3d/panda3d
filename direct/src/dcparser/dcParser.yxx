@@ -32,7 +32,6 @@ static DCClass *current_class = (DCClass *)NULL;
 static DCSwitch *current_switch = (DCSwitch *)NULL;
 static DCAtomicField *current_atomic = (DCAtomicField *)NULL;
 static DCMolecularField *current_molecular = (DCMolecularField *)NULL;
-static DCAtomicField::ElementType atomic_element(new DCSimpleParameter(ST_invalid));
 static DCParameter *current_parameter = (DCParameter *)NULL;
 static DCPacker default_packer;
 static DCPacker *current_packer;
@@ -424,8 +423,7 @@ nonempty_parameter_list:
 atomic_element:
         parameter
 {
-  atomic_element = DCAtomicField::ElementType($1);
-  current_atomic->add_element(atomic_element);
+  current_atomic->add_element($1);
 }
 	| parameter '=' 
 {
@@ -436,9 +434,8 @@ atomic_element:
 	parameter_value
 {
   bool is_valid = $1->is_valid();
-  atomic_element = DCAtomicField::ElementType($1);
   if (current_packer->end_pack()) {
-    atomic_element.set_default_value(current_packer->get_string());
+    $1->set_default_value(current_packer->get_string());
 
   } else {
     if (is_valid) {
@@ -448,7 +445,7 @@ atomic_element:
     // error (there's no way for us to validate the syntax).  So we'll
     // just ignore the default value in this case.
   }
-  current_atomic->add_element(atomic_element);
+  current_atomic->add_element($1);
 }
 	;
 

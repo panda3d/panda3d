@@ -42,11 +42,15 @@ DCClassParameter(const DCClass *dclass) :
 
   _nested_fields.reserve(_num_nested_fields);
   if (_dclass->has_constructor()) {
-    _nested_fields.push_back(_dclass->get_constructor());
+    DCField *field = _dclass->get_constructor();
+    _nested_fields.push_back(field);
+    _has_default_value = _has_default_value || field->has_default_value();
   }
   int i;
   for (i = 0 ; i < num_fields; i++) {
-    _nested_fields.push_back(_dclass->get_inherited_field(i));
+    DCField *field = _dclass->get_inherited_field(i);
+    _nested_fields.push_back(field);
+    _has_default_value = _has_default_value || field->has_default_value();
   }
 
   // If all of the nested fields have a fixed byte size, then so does

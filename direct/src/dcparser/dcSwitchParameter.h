@@ -53,6 +53,7 @@ public:
                               const string &prename, const string &name,
                               const string &postname) const;
   virtual void generate_hash(HashGenerator &hashgen) const;
+  virtual bool pack_default_value(DCPackData &pack_data, bool &pack_error) const;
 
 private:
   const DCSwitch *_dswitch;

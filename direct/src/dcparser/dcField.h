@@ -54,6 +54,9 @@ PUBLISHED:
 
   bool validate_ranges(const string &packed_data) const;
 
+  bool has_default_value() const;
+  const string &get_default_value() const;
+
   bool is_required() const;
   bool is_broadcast() const;
   bool is_p2p() const;
@@ -81,8 +84,10 @@ public:
   virtual void output(ostream &out, bool brief) const=0;
   virtual void write(ostream &out, bool brief, int indent_level) const=0;
   virtual void generate_hash(HashGenerator &hashgen) const;
+  virtual bool pack_default_value(DCPackData &pack_data, bool &pack_error) const;
 
   void set_number(int number);
+  void set_default_value(const string &default_value);
 
   enum Flags {
     F_required        = 0x0001,
@@ -100,13 +105,18 @@ public:
   int get_flags() const;
 
 protected:
+  void refresh_default_value();
   void output_flags(ostream &out) const;
 
 protected:
   int _number;
+  bool _default_value_stale;
+  bool _has_default_value;
 
 private:
   int _flags;  // A bitmask union of any of the above values.
+
+  string _default_value;
 };
 
 #endif
