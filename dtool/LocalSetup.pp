@@ -86,6 +86,11 @@
 #else
 #print - Did not find DirectX
 #endif
+#if $[HAVE_MAYA]
+#print + OpenMaya
+#else
+#print - Did not find OpenMaya
+#endif
 
 #print
 #if $[and $[HAVE_INTERROGATE],$[HAVE_PYTHON]]
