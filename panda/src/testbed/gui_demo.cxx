@@ -595,6 +595,7 @@ static void test10(GuiManager* mgr, Node* font) {
 
 PT(GuiListBox) lb1;
 
+/*
 static void test11(GuiManager* mgr, Node* font) {
   GuiLabel* ul = GuiLabel::make_simple_text_label("upup", font);
   GuiSign* us = new GuiSign("up_arrow", ul);
@@ -649,6 +650,7 @@ static void test11(GuiManager* mgr, Node* font) {
   lb1->manage(mgr, event_handler);
   cout << *lb1;
 }
+*/
 
 PT(GuiButton) gb1;
 
@@ -692,8 +694,10 @@ static void test13(GuiManager* mgr, Node* font) {
   GuiLabel* dl3 = GuiLabel::make_simple_text_label("dndn", font);
   GuiButton* db = new GuiButton("down_arrow", dl1, dl2, dl3);
   db->set_scale(0.1);
-  ub->set_behavior_event("demo-event-thing");
-  db->set_behavior_event("demo-event-thing");
+  // ub->set_behavior_event("demo-event-thing");
+  // db->set_behavior_event("demo-event-thing");
+  ub->set_pos(LVector3f::rfu(0.0, 0.0, 0.8));
+  db->set_pos(LVector3f::rfu(0.0, 0.0, -0.8));
   lb1 = new GuiListBox("list_box", 4, ub, db);
   GuiLabel* l1 = GuiLabel::make_simple_text_label("hyena", font);
   GuiSign* s1 = new GuiSign("hyena", l1);
@@ -1072,9 +1076,9 @@ static void setup_gui(void) {
   // test 11
   //  test11(mgr, font);
   // test 12
-  test12(mgr, font);
+  //  test12(mgr, font);
   // test 13
-  //  test13(mgr, font);
+  test13(mgr, font);
   // test 14
   //  test14(mgr, font);
   // test 15
@@ -1162,18 +1166,18 @@ static void event_3(CPT_Event) {
 }
 */
 
-/*
 // for test 11, 13
 static void event_3(CPT_Event) {
   lb1->scroll_up();
   cout << *lb1;
 }
-*/
 
+/*
 // for test 12
 static void event_3(CPT_Event) {
   gb1->inactive();
 }
+*/
 
 /*
 // for test 14-17
@@ -1182,18 +1186,18 @@ static void event_3(CPT_Event) {
 }
 */
 
-/*
 // for test11, 13
 static void event_4(CPT_Event) {
   lb1->scroll_down();
   cout << *lb1;
 }
-*/
 
+/*
 // for test 12
 static void event_4(CPT_Event) {
   gb1->up();
 }
+*/
 
 /*
 // for test 14-17

@@ -16,21 +16,13 @@ GuiListBox::ListFunctor::~ListFunctor(void) {
 }
 
 void GuiListBox::ListFunctor::doit(GuiBehavior* b) {
-  gui_cat->debug() << "in GuiListBox::ListFunctor::doit" << endl;
-  gui_cat->debug() << "b = 0x" << (void*)b << " (" << b->get_name() << ")"
-		   << endl;
-  if (b == this->_lb->_up_arrow) {
-    gui_cat->debug() << "scrolling up" << endl;
+  if ((b == this->_lb->_up_arrow) && this->_lb->_up_arrow->is_active())
     this->_lb->scroll_up();
-  }
-  if (b == this->_lb->_down_arrow) {
-    gui_cat->debug() << "scrolling down" << endl;
+  if ((b == this->_lb->_down_arrow) && this->_lb->_down_arrow->is_active())
     this->_lb->scroll_down();
-  }
 }
 
 void GuiListBox::recompute_frame(void) {
-  GuiBehavior::recompute_frame();
   this->freeze();
   LVector3f p = _pos;
   float lft = 100000.;
@@ -51,127 +43,61 @@ void GuiListBox::recompute_frame(void) {
     if (frm[3] > tp)
       tp = frm[3];
     (*i)->freeze();
+    int lvl = (*i)->thaw();
     gui_cat->debug() << "in recompute: freeze lvl (" << (*i)->get_name()
-		     << ") = " << (*i)->thaw() << endl;
+		     << ") = " << lvl << endl;
   }
   _left = lft;
   _right = rgt;
   _top = tp;
   _bottom = btm;
+  GuiBehavior::recompute_frame();
   this->adjust_region();
   this->thaw();
+  this->deal_with_buttons();
 }
 
-void GuiListBox::visible_patching(void) {
-  // check for 2 cases on both top and bottom of the visible list.  First,
-  // if there is an item off that edge, but no arrow active; then put an arrow
-  // up (needing to move a second item off the edge).  Second, if there is an
-  // arrow up, but there is only a single item off the edge; replace the arrow
-  // with the item.
-
-  // top first
-  if (_arrow_top) {
-    if (_top_stack.size() == 1) {
-      // replace the up arrow with the single item in the top stack
-      _arrow_top = false;
-      _visible[0]->unmanage();
-      _visible[0] = *(_top_stack.begin());
-      if (_mgr != (GuiManager*)0L) {
-	if (_alt_root.is_null())
-	  _visible[0]->manage(_mgr, *_eh);
-	else
-	  _visible[0]->manage(_mgr, *_eh, _alt_root);
-      }
-      _top_stack.pop_back();
-    }
+void GuiListBox::deal_with_buttons(void) {
+  // check the state of the up and down buttons
+  if (_bottom_stack.size() == 0) {
+    _down_arrow->exit();
+    _down_arrow->inactive();
   } else {
-    if (_top_stack.size() > 0) {
-      // move the top of the visible list to the top stack and put the up
-      // arrow in it's place
-      _arrow_top = true;
-      _visible[0]->unmanage();
-      _top_stack.push_back(_visible[0]);
-      _visible[0] = _up_arrow;
-      if (_mgr != (GuiManager*)0L) {
-	if (_alt_root.is_null())
-	  _up_arrow->manage(_mgr, *_eh);
-	else
-	  _up_arrow->manage(_mgr, *_eh, _alt_root);
-      }
+    _down_arrow->up();
+    if (_behavior_running) {
+      _down_arrow->start_behavior();
+      _down_arrow->set_behavior_functor(_down_functor);
     }
   }
-
-  // now bottom
-  if (_arrow_bottom) {
-    if (_bottom_stack.size() == 1) {
-      // replace the down arrow with the single item in the bottom stack
-      _arrow_bottom = false;
-      int last = _n_visible-1;
-      _visible[last]->unmanage();
-      _visible[last] = *(_bottom_stack.begin());
-      if (_mgr != (GuiManager*)0L) {
-	if (_alt_root.is_null())
-	  _visible[last]->manage(_mgr, *_eh);
-	else
-	  _visible[last]->manage(_mgr, *_eh, _alt_root);
-      }
-      _bottom_stack.pop_back();
-    }
+  if (_top_stack.size() == 0) {
+    _up_arrow->exit();
+    _up_arrow->inactive();
   } else {
-    if (_bottom_stack.size() > 0) {
-      // move the bottom of the visible list to the bottom stack and put the
-      // down arrow in it's place
-      _arrow_bottom = true;
-      int last = _n_visible-1;
-      _visible[last]->unmanage();
-      _bottom_stack.push_back(_visible[last]);
-      _visible[last] = _down_arrow;
-      if (_mgr != (GuiManager*)0L) {
-	if (_alt_root.is_null())
-	  _down_arrow->manage(_mgr, *_eh);
-	else
-	  _down_arrow->manage(_mgr, *_eh, _alt_root);
-      }
+    _up_arrow->up();
+    if (_behavior_running) {
+      _up_arrow->start_behavior();
+      _up_arrow->set_behavior_functor(_up_functor);
     }
   }
-
-  // and restart any behavior
-  if (_behavior_running)
-    this->reset_behavior();
 }
 
 void GuiListBox::set_priority(GuiLabel* l, const GuiItem::Priority p) {
   ItemVector::iterator i;
   ItemDeque::iterator j;
 
-  for (i=_top_stack.begin(); i!=_top_stack.end(); ++i) {
-    if (*i == _up_arrow)
-      continue;
-    if (*i == _down_arrow)
-      continue;
+  for (i=_top_stack.begin(); i!=_top_stack.end(); ++i)
     (*i)->set_priority(l, p);
-  }
-  for (i=_visible.begin(); i!=_visible.end(); ++i) {
-    if (*i == _up_arrow)
-      continue;
-    if (*i == _down_arrow)
-      continue;
+  for (i=_visible.begin(); i!=_visible.end(); ++i)
     (*i)->set_priority(l, p);
-  }
-  for (j=_bottom_stack.begin(); j!=_bottom_stack.end(); ++j) {
-    if (*j == _up_arrow)
-      continue;
-    if (*j == _down_arrow)
-      continue;
+  for (j=_bottom_stack.begin(); j!=_bottom_stack.end(); ++j)
     (*j)->set_priority(l, p);
-  }
   _up_arrow->set_priority(l, p);
   _down_arrow->set_priority(l, p);
 }
 
-GuiListBox::GuiListBox(const string& name, int N, GuiItem* up, GuiItem* down)
-  : GuiBehavior(name), _arrow_top(false), _arrow_bottom(false), _up_arrow(up),
-    _down_arrow(down), _n_visible(N),
+GuiListBox::GuiListBox(const string& name, int N, GuiButton* up,
+		       GuiButton* down)
+  : GuiBehavior(name), _up_arrow(up), _down_arrow(down), _n_visible(N),
     _up_functor((GuiListBox::ListFunctor*)0L),
     _down_functor((GuiListBox::ListFunctor*)0L) {
   if (N < 4) {
@@ -191,10 +117,6 @@ void GuiListBox::scroll_down(void) {
   // compute what the first and list item in the visible list are
   int first = 0;
   int last = _n_visible-1;
-  if (_arrow_top)
-    ++first;
-  if (_arrow_bottom)
-    --last;
   // first push one off the top onto the top stack
   _top_stack.push_back(_visible[first]);
   _visible[first]->unmanage();
@@ -211,8 +133,7 @@ void GuiListBox::scroll_down(void) {
   }
   // and pop it off the bottom stack
   _bottom_stack.pop_back();
-  // now patch-up any dangling items
-  visible_patching();
+  this->deal_with_buttons();
   // finally recompute all the possitions
   this->recompute_frame();
   if (_mgr != (GuiManager*)0L)
@@ -225,10 +146,6 @@ void GuiListBox::scroll_up(void) {
   // compute what the first and last item in the visible list are
   int first = 0;
   int last = _n_visible - 1;
-  if (_arrow_top)
-    ++first;
-  if (_arrow_bottom)
-    --last;
   // first push one off the bottom onto the bottom stack
   _bottom_stack.push_back(_visible[last]);
   _visible[last]->unmanage();
@@ -245,8 +162,7 @@ void GuiListBox::scroll_up(void) {
   }
   // and pop it off the top stack
   _top_stack.pop_back();
-  // now patch-up any dangling item
-  visible_patching();
+  this->deal_with_buttons();
   // finally recompute all the possitions
   this->recompute_frame();
   if (_mgr != (GuiManager*)0L)
@@ -268,7 +184,7 @@ void GuiListBox::add_item(GuiItem* item) {
     } else
       _bottom_stack.push_back(item);
   }
-  visible_patching();
+  this->deal_with_buttons();
 }
 
 int GuiListBox::freeze(void) {
@@ -278,26 +194,14 @@ int GuiListBox::freeze(void) {
 
   gui_cat->spam() << "GuiListBox::freeze()" << endl;
   for (i=_top_stack.begin(); i!=_top_stack.end(); ++i) {
-    if (*i == _up_arrow)
-      continue;
-    if (*i == _down_arrow)
-      continue;
     int count = (*i)->freeze();
     result = max(result, count);
   }
   for (i=_visible.begin(); i!=_visible.end(); ++i) {
-    if (*i == _up_arrow)
-      continue;
-    if (*i == _down_arrow)
-      continue;
     int count = (*i)->freeze();
     result = max(result, count);
   }
   for (j=_bottom_stack.begin(); j!=_bottom_stack.end(); ++j) {
-    if (*j == _up_arrow)
-      continue;
-    if (*j == _down_arrow)
-      continue;
     int count = (*j)->freeze();
     result = max(result, count);
   }
@@ -313,26 +217,14 @@ int GuiListBox::thaw(void) {
 
   gui_cat->spam() << "GuiListBox::thaw()" << endl;
   for (i=_top_stack.begin(); i!=_top_stack.end(); ++i) {
-    if (*i == _up_arrow)
-      continue;
-    if (*i == _down_arrow)
-      continue;
     int count = (*i)->thaw();
     result = max(result, count);
   }
   for (i=_visible.begin(); i!=_visible.end(); ++i) {
-    if (*i == _up_arrow)
-      continue;
-    if (*i == _down_arrow)
-      continue;
     int count = (*i)->thaw();
     result = max(result, count);
   }
   for (j=_bottom_stack.begin(); j!=_bottom_stack.end(); ++j) {
-    if (*j == _up_arrow)
-      continue;
-    if (*j == _down_arrow)
-      continue;
     int count = (*j)->thaw();
     result = max(result, count);
   }
@@ -346,6 +238,9 @@ void GuiListBox::manage(GuiManager* mgr, EventHandler& eh) {
     this->recompute_frame();
     for (ItemVector::iterator i=_visible.begin(); i!=_visible.end(); ++i)
       (*i)->manage(mgr, eh);
+    _up_arrow->manage(mgr, eh);
+    _down_arrow->manage(mgr, eh);
+    this->deal_with_buttons();
     GuiBehavior::manage(mgr, eh);
   } else
     gui_cat->warning() << "tried to manage listbox (0x" << (void*)this
@@ -357,6 +252,9 @@ void GuiListBox::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
     this->recompute_frame();
     for (ItemVector::iterator i=_visible.begin(); i!=_visible.end(); ++i)
       (*i)->manage(mgr, eh, n);
+    _up_arrow->manage(mgr, eh, n);
+    _down_arrow->manage(mgr, eh, n);
+    this->deal_with_buttons();
     GuiBehavior::manage(mgr, eh, n);
   } else
     gui_cat->warning() << "tried to manage listbox (0x" << (void*)this
@@ -366,6 +264,8 @@ void GuiListBox::manage(GuiManager* mgr, EventHandler& eh, Node* n) {
 void GuiListBox::unmanage(void) {
   for (ItemVector::iterator i=_visible.begin(); i!=_visible.end(); ++i)
     (*i)->unmanage();
+  _up_arrow->unmanage();
+  _down_arrow->unmanage();
   GuiBehavior::unmanage();
 }
 
@@ -378,6 +278,8 @@ void GuiListBox::set_scale(float f) {
   for (ItemDeque::iterator j=_bottom_stack.begin(); j!=_bottom_stack.end();
        ++j)
     (*j)->set_scale(f);
+  _up_arrow->set_scale(f);
+  _down_arrow->set_scale(f);
   GuiBehavior::set_scale(f);
 }
 
@@ -390,6 +292,8 @@ void GuiListBox::set_scale(float x, float y, float z) {
   for (ItemDeque::iterator j=_bottom_stack.begin(); j!=_bottom_stack.end();
        ++j)
     (*j)->set_scale(x, y, z);
+  _up_arrow->set_scale(x, y, z);
+  _down_arrow->set_scale(x, y, z);
   GuiBehavior::set_scale(x, y, z);
 }
 
@@ -402,142 +306,71 @@ void GuiListBox::set_pos(const LVector3f& p) {
   for (ItemDeque::iterator j=_bottom_stack.begin(); j!=_bottom_stack.end();
        ++j)
     (*j)->set_pos(p);
+  _up_arrow->set_pos(p);
+  _down_arrow->set_pos(p);
   GuiBehavior::set_pos(p);
-}
-
-#include "guiButton.h"
-
-static void handle_scroll_up(CPT_Event, void* lb) {
-  GuiListBox* b = (GuiListBox*)lb;
-  b->scroll_up();
-}
-
-static void handle_scroll_down(CPT_Event, void* lb) {
-  GuiListBox* b = (GuiListBox*)lb;
-  b->scroll_down();
 }
 
 void GuiListBox::start_behavior(void) {
   GuiBehavior::start_behavior();
   if (_mgr == (GuiManager*)0L)
     return;
-  if (_up_arrow->is_of_type(GuiButton::get_class_type()) &&
-      _down_arrow->is_of_type(GuiButton::get_class_type())) {
-    GuiButton* up = DCAST(GuiButton, _up_arrow);
-    GuiButton* dn = DCAST(GuiButton, _down_arrow);
-    /*
-    if (_up_functor != (GuiListBox::ListFunctor*)0L) {
-      up->set_behavior_functor(_up_functor->get_prev());
-      delete _up_functor;
-    }
-    _up_functor = new GuiListBox::ListFunctor(this,
-					      up->get_behavior_functor());
-    up->set_behavior_functor(_up_functor);
-    */
-    string ev = this->get_name();
-    ev += "-scroll-up";
-    up->set_behavior_event(ev);
-    up->start_behavior();
-    _eh->add_hook(ev, handle_scroll_up, (void*)this);
-    /*
-    if (_down_functor != (GuiListBox::ListFunctor*)0L) {
-      dn->set_behavior_functor(_down_functor->get_prev());
-      delete _down_functor;
-    }
-    _down_functor = new GuiListBox::ListFunctor(this,
-						dn->get_behavior_functor());
-    dn->set_behavior_functor(_down_functor);
-    */
-    ev = this->get_name();
-    ev += "-scroll-down";
-    dn->set_behavior_event(ev);
-    dn->start_behavior();
-    _eh->add_hook(ev, handle_scroll_down, (void*)this);
-  } else
-    gui_cat->error() << "tried to run behavior on listbox '"
-		     << this->get_name()
-		     << "', but up and down arrows are not buttons" << endl;
+  if (_up_functor != (GuiListBox::ListFunctor*)0L) {
+    _up_arrow->set_behavior_functor(_up_functor->get_prev());
+    delete _up_functor;
+  }
+  _up_functor =
+    new GuiListBox::ListFunctor(this, _up_arrow->get_behavior_functor());
+  _up_arrow->set_behavior_functor(_up_functor);
+  _up_arrow->start_behavior();
+  if (_down_functor != (GuiListBox::ListFunctor*)0L) {
+    _down_arrow->set_behavior_functor(_down_functor->get_prev());
+    delete _down_functor;
+  }
+  _down_functor =
+    new GuiListBox::ListFunctor(this, _down_arrow->get_behavior_functor());
+  _down_arrow->set_behavior_functor(_down_functor);
+  _down_arrow->start_behavior();
 }
 
 void GuiListBox::stop_behavior(void) {
   GuiBehavior::stop_behavior();
   if (_mgr == (GuiManager*)0L)
     return;
-  string ev = this->get_name();
-  _eh->remove_hook(ev + "-scroll-up", handle_scroll_up, (void*)this);
-  _eh->remove_hook(ev + "-scroll-down", handle_scroll_down, (void*)this);
-  /*
   if (_up_functor != (GuiListBox::ListFunctor*)0L) {
-    GuiButton* up = DCAST(GuiButton, _up_arrow);
-    up->set_behavior_functor(_up_functor->get_prev());
+    _up_arrow->set_behavior_functor(_up_functor->get_prev());
     delete _up_functor;
     _up_functor = (GuiListBox::ListFunctor*)0L;
-    up->stop_behavior();
+    _up_arrow->stop_behavior();
   }
   if (_down_functor != (GuiListBox::ListFunctor*)0L) {
-    GuiButton* dn = DCAST(GuiButton, _down_arrow);
-    dn->set_behavior_functor(_down_functor->get_prev());
+    _down_arrow->set_behavior_functor(_down_functor->get_prev());
     delete _down_functor;
     _down_functor = (GuiListBox::ListFunctor*)0L;
-    dn->stop_behavior();
+    _down_arrow->stop_behavior();
   }
-  */
 }
 
 void GuiListBox::reset_behavior(void) {
   GuiBehavior::reset_behavior();
   if (_mgr == (GuiManager*)0L)
     return;
-  /*
-  if (_up_functor != (GuiListBox::ListFunctor*)0L) {
-    GuiButton* up = DCAST(GuiButton, _up_arrow);
-    up->reset_behavior();
-  }
-  if (_down_functor != (GuiListBox::ListFunctor*)0L) {
-    GuiButton* dn = DCAST(GuiButton, _down_arrow);
-    dn->reset_behavior();
-  }
-  */
-  string ev = this->get_name();
-  _eh->add_hook(ev + "-scroll-up", handle_scroll_up, (void*)this);
-  _eh->add_hook(ev + "-scroll-down", handle_scroll_down, (void*)this);
-  if (_up_arrow->is_of_type(GuiButton::get_class_type())) {
-    GuiButton* up = DCAST(GuiButton, _up_arrow);
-    up->start_behavior();
-    up->set_behavior_event(ev + "-scroll-up");
-  }
-  if (_down_arrow->is_of_type(GuiButton::get_class_type())) {
-    GuiButton* down = DCAST(GuiButton, _down_arrow);
-    down->start_behavior();
-    down->set_behavior_event(ev + "-scroll-down");
-  }
+  if (_up_functor != (GuiListBox::ListFunctor*)0L)
+    _up_arrow->reset_behavior();
+  if (_down_functor != (GuiListBox::ListFunctor*)0L)
+    _down_arrow->reset_behavior();
 }
 
 void GuiListBox::set_priority(GuiItem* it, const GuiItem::Priority p) {
   ItemVector::iterator i;
   ItemDeque::iterator j;
 
-  for (i=_top_stack.begin(); i!=_top_stack.end(); ++i) {
-    if (*i == _up_arrow)
-      continue;
-    if (*i == _down_arrow)
-      continue;
+  for (i=_top_stack.begin(); i!=_top_stack.end(); ++i)
     (*i)->set_priority(it, p);
-  }
-  for (i=_visible.begin(); i!=_visible.end(); ++i) {
-    if (*i == _up_arrow)
-      continue;
-    if (*i == _down_arrow)
-      continue;
+  for (i=_visible.begin(); i!=_visible.end(); ++i)
     (*i)->set_priority(it, p);
-  }
-  for (j=_bottom_stack.begin(); j!=_bottom_stack.end(); ++j) {
-    if (*j == _up_arrow)
-      continue;
-    if (*j == _down_arrow)
-      continue;
+  for (j=_bottom_stack.begin(); j!=_bottom_stack.end(); ++j)
     (*j)->set_priority(it, p);
-  }
   _up_arrow->set_priority(it, p);
   _down_arrow->set_priority(it, p);
 }
@@ -549,41 +382,20 @@ int GuiListBox::set_draw_order(int v) {
   ItemVector::iterator i;
   ItemDeque::iterator j;
 
-  for (i=_top_stack.begin(); i!=_top_stack.end(); ++i) {
-    if (*i == _up_arrow)
-      continue;
-    if (*i == _down_arrow)
-      continue;
+  for (i=_top_stack.begin(); i!=_top_stack.end(); ++i)
     o = (*i)->set_draw_order(o);
-  }
-  for (i=_visible.begin(); i!=_visible.end(); ++i) {
-    if (*i == _up_arrow)
-      continue;
-    if (*i == _down_arrow)
-      continue;
+  for (i=_visible.begin(); i!=_visible.end(); ++i)
     o = (*i)->set_draw_order(o);
-  }
-  for (j=_bottom_stack.begin(); j!=_bottom_stack.end(); ++j) {
-    if (*j == _up_arrow)
-      continue;
-    if (*j == _down_arrow)
-      continue;
+  for (j=_bottom_stack.begin(); j!=_bottom_stack.end(); ++j)
     o = (*j)->set_draw_order(o);
-  }
   return GuiBehavior::set_draw_order(o);
 }
 
 void GuiListBox::output(ostream& os) const {
   GuiBehavior::output(os);
   os << "  Listbox data:" << endl;
-  os << "    There is ";
-  if (!_arrow_top)
-    os << "no ";
-  os << "top arrow (0x" << (void*)_up_arrow << ")" << endl;
-  os << "    There is ";
-  if (!_arrow_bottom)
-    os << "no ";
-  os << "bottom arrow (0x" << (void*)_down_arrow << ")" << endl;
+  os << "    up_arrow = (0x" << (void*)_up_arrow << ")" << endl;
+  os << "    down_arrow = (0x" << (void*)_down_arrow << ")" << endl;
   os << "    Top stack (" << _top_stack.size() << "):" << endl;
   ItemVector::const_iterator i;
   for (i=_top_stack.begin(); i!=_top_stack.end(); ++i)
@@ -595,6 +407,8 @@ void GuiListBox::output(ostream& os) const {
   ItemDeque::const_iterator j;
   for (j=_bottom_stack.begin(); j!=_bottom_stack.end(); ++j)
     os << "      0x" << (void*)(*j) << " (" << (*j)->get_name() << ")" << endl;
+  os << *_up_arrow;
+  os << *_down_arrow;
   for (i=_top_stack.begin(); i!=_top_stack.end(); ++i)
     os << *(*i);
   for (i=_visible.begin(); i!=_visible.end(); ++i)

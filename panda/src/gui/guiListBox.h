@@ -7,6 +7,7 @@
 #define __GUILISTBOX_H__
 
 #include "guiBehavior.h"
+#include "guiButton.h"
 
 #include <vector>
 #include <deque>
@@ -32,10 +33,8 @@ private:
   ItemVector _top_stack;
   ItemDeque _bottom_stack;
   ItemVector _visible;
-  bool _arrow_top;
-  bool _arrow_bottom;
-  PT(GuiItem) _up_arrow;
-  PT(GuiItem) _down_arrow;
+  PT(GuiButton) _up_arrow;
+  PT(GuiButton) _down_arrow;
   unsigned int _n_visible;
 
   ListFunctor* _up_functor;
@@ -43,9 +42,9 @@ private:
 
   INLINE GuiListBox(void);
   virtual void recompute_frame(void);
-  void visible_patching(void);
+  virtual void deal_with_buttons(void);
 PUBLISHED:
-  GuiListBox(const string&, int, GuiItem*, GuiItem*);
+  GuiListBox(const string&, int, GuiButton*, GuiButton*);
   ~GuiListBox(void);
 
   void scroll_up(void);
