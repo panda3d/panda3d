@@ -122,14 +122,6 @@ class LevelSpec:
         def setLevel(self, level):
             self.level = level
 
-        def setAttribEditEventName(self, event):
-            self.attribEditEventName = event
-        def setAttribEdit(self, entId, attrib, value):
-            # This is a proposed change; it has not been approved yet.
-            # broadcast the change to someone else that knows what to do
-            # with it
-            messenger.send(self.attribEditEventName, [entId, attrib, value])
-
         def setAttribChange(self, entId, attrib, value):
             specDict = self.entId2specDict[entId]
             specDict[entId][attrib] = value
