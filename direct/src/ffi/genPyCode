@@ -30,11 +30,11 @@ shift
 extra_genPyCode_libs="$extra_genPyCode_libs $*"
 
 if [ "$INSTALL_DIR" != "" ]; then
-    install_dir=$INSTALL_DIR
+    install_dir="$INSTALL_DIR"
 elif [ "$PANDA_INSTALL" != "" ]; then
-    install_dir="$PANDA_INSTALL
+    install_dir="$PANDA_INSTALL"
 elif [ "$DIRECT" != "" ]; then
-    install_dir=$DIRECT"
+    install_dir="$DIRECT"
 else
     install_dir=./install
 fi
@@ -80,7 +80,7 @@ elif [ "$buildType" = "release" ]; then
     pyDir=$install_dir/lib/py
     ppython=$install_dir/bin/ppython
     $ppython $install_dir/bin/generatePythonCode -v -d $pyDir -e direct/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
-    pSqueezer=$(cygpath -m $base_dir/direct/src/showbase/pandaSqueezer.py) || exit
+    pSqueezer="$(cygpath -w $base_dir/direct/src/showbase/pandaSqueezer.py)" || exit
 else
     echo "Invalid parameter: $buildType"
     exit 1
