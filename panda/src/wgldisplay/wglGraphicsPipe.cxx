@@ -38,7 +38,7 @@ wglGraphicsPipe::wglGraphicsPipe(const PipeSpecifier& spec)
   wc.lpszMenuName	= NULL;
   wc.lpszClassName	= "wglStandard";
 
-  string windows_icon_filename = get_icon_filename().to_os_specific();
+  string windows_icon_filename = get_icon_filename_().to_os_specific();
 
   if(!windows_icon_filename.empty()) {
     // Note: LoadImage seems to cause win2k internal heap corruption (outputdbgstr warnings) 
