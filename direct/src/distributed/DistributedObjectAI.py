@@ -127,19 +127,34 @@ class DistributedObjectAI(DirectObject.DirectObject):
         assert not self.__preallocDoId
         self.doId = self.air.allocateChannel()
         self.__preallocDoId = 1
+
+    def announceGenerate(self):
+        """
+        Called after the object has been generated and all
+        of its required fields filled in. Overwrite when needed.
+        """
+        pass
     
     def updateRequiredFields(self, dclass, di):
         dclass.receiveUpdateBroadcastRequired(self, di)
+        self.announceGenerate()
     
     def updateAllRequiredFields(self, dclass, di):
         dclass.receiveUpdateAllRequired(self, di)
+        self.announceGenerate()
 
     def updateRequiredOtherFields(self, dclass, di):
         dclass.receiveUpdateBroadcastRequired(self, di)
+        # Announce generate after updating all the required fields,
+        # but before we update the non-required fields.
+        self.announceGenerate()
         dclass.receiveUpdateOther(self, di)
 
     def updateAllRequiredOtherFields(self, dclass, di):
         dclass.receiveUpdateAllRequired(self, di)
+        # Announce generate after updating all the required fields,
+        # but before we update the non-required fields.
+        self.announceGenerate()
         dclass.receiveUpdateOther(self, di)
 
     def sendSetZone(self, zoneId):
