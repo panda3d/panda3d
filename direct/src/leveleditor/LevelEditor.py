@@ -20,12 +20,7 @@ import whrandom
 import __builtin__
 
 visualizeZones = base.config.GetBool("visualize-zones", 0)
-
-# Temporary try..except for old Pandas.
-try:
-    dnaDirectory = Filename.expandFrom(base.config.GetString("dna-directory", "$TTMODELS/src/dna"))
-except:
-    dnaDirectory = Filename.fromOsSpecific(base.config.GetString("dna-directory", "/"))
+dnaDirectory = Filename.expandFrom(base.config.GetString("dna-directory", "$TTMODELS/src/dna"))
 
 # Colors used by all color menus
 DEFAULT_COLORS = [
@@ -556,6 +551,7 @@ class LevelEditor(NodePath, PandaObject):
 
         # Update panel
         # Editing the first hood id on the list
+        self.outputFile = None
         self.setEditMode(NEIGHBORHOODS[0])
         # Start of with first item in lists
         self.panel.streetSelector.selectitem(0)
@@ -2364,6 +2360,63 @@ class LevelEditor(NodePath, PandaObject):
                 # Update grid to get ready for the next object
                 self.autoPositionGrid()
 
+    # CVS OPERATIONS
+    def cvsUpdate(self, filename):
+        dirname = os.path.dirname(filename)
+        if not os.path.isdir(dirname):
+            print 'Cannot CVS update %s: invalid directory' % (filename)
+            return
+
+        basename = os.path.basename(filename)
+        cwd = os.getcwd()
+        os.chdir(dirname)
+        cvsCommand = 'cvs update ' + basename
+        print cvsCommand
+        os.system(cvsCommand)
+        os.chdir(cwd)
+
+    def cvsAdd(self, filename):
+        dirname = os.path.dirname(filename)
+        if not os.path.isdir(dirname):
+            print 'Cannot CVS add %s: invalid directory' % (filename)
+            return
+
+        basename = os.path.basename(filename)
+        cwd = os.getcwd()
+        os.chdir(dirname)
+        cvsCommand = 'cvs add ' + basename
+        print cvsCommand
+        os.system(cvsCommand)
+        os.chdir(cwd)
+
+    def cvsUpdateAll(self):
+        # Update the entire dna source directory.
+        dirname = dnaDirectory.toOsSpecific()
+        if not os.path.isdir(dirname):
+            print 'Cannot CVS commit: invalid directory'
+            return
+
+        cwd = os.getcwd()
+        os.chdir(dirname)
+        cvsCommand = 'cvs update -dP'
+        print cvsCommand
+        os.system(cvsCommand)
+        os.chdir(cwd)
+
+    def cvsCommitAll(self):
+        # cvs commit always commits the entire dna source directory.
+        dirname = dnaDirectory.toOsSpecific()
+        if not os.path.isdir(dirname):
+            print 'Cannot CVS commit: invalid directory'
+            return
+
+        cwd = os.getcwd()
+        os.chdir(dirname)
+        cvsCommand = 'cvs commit -m "level editor"'
+        print cvsCommand
+        os.system(cvsCommand)
+        os.chdir(cwd)
+
     # STYLE/DNA FILE FUNCTIONS
     def loadSpecifiedDNAFile(self):
         path = dnaDirectory.toOsSpecific()
@@ -2379,6 +2432,7 @@ class LevelEditor(NodePath, PandaObject):
             parent = self.panel.component('hull'))
         if dnaFilename:
             self.loadDNAFromFile(dnaFilename)
+            self.outputFile = dnaFilename
 
     def saveToSpecifiedDNAFile(self):
         path = dnaDirectory.toOsSpecific()
@@ -2394,6 +2448,7 @@ class LevelEditor(NodePath, PandaObject):
             parent = self.panel.component('hull'))
         if dnaFilename:
             self.outputDNA(dnaFilename)
+            self.outputFile = dnaFilename
 
     def loadDNAFromFile(self, filename):
         print filename
@@ -2401,6 +2456,7 @@ class LevelEditor(NodePath, PandaObject):
         self.reset(fDeleteToplevel = 1, fCreateToplevel = 0,
                    fUpdateExplorer = 0)
         # Now load in new file
+        self.cvsUpdate(filename)
         node = loadDNAFile(DNASTORE, filename, CSDefault, 1)
         if node.getNumParents() == 1:
             # If the node already has a parent arc when it's loaded, we must
@@ -2435,10 +2491,13 @@ class LevelEditor(NodePath, PandaObject):
         self.panel.sceneGraphExplorer.update()
 
     def outputDNADefaultFile(self):
-        file = os.path.join(dnaDirectory.toOsSpecific(), self.outputFile)
+        outputFile = self.outputFile
+        if outputFile == None:
+            outputFile = self.neighborhood + '_working.dna'
+        file = os.path.join(dnaDirectory.toOsSpecific(), outputFile)
         self.outputDNA(file)
         
-    def outputDNA(self,filename):
+    def outputDNA(self, filename):
         print 'Saving DNA to: ', filename
         binaryFilename = Filename(filename)
         binaryFilename.setBinary()
@@ -2567,7 +2626,6 @@ class LevelEditor(NodePath, PandaObject):
     def setEditMode(self, neighborhood):
         self.neighborhood = neighborhood
         self.neighborhoodCode = NEIGHBORHOOD_CODES[self.neighborhood]
-        self.outputFile = neighborhood + '_working.dna'
         if neighborhood == 'toontown_central':
             self.outputDir = 'ToontownCentral'
         elif neighborhood == 'donalds_dock':
@@ -4442,6 +4500,14 @@ class LevelEditorPanel(Pmw.MegaToplevel):
                             'Save DNA File',
                             label = 'Save DNA',
                             command = self.levelEditor.outputDNADefaultFile)
+        menuBar.addmenuitem('Level Editor', 'command',
+                            'CVS update directory',
+                            label = 'CVS update',
+                            command = self.levelEditor.cvsUpdateAll)
+        menuBar.addmenuitem('Level Editor', 'command',
+                            'CVS commit directory',
+                            label = 'CVS commit',
+                            command = self.levelEditor.cvsCommitAll)
         menuBar.addmenuitem('Level Editor', 'command',
                             'Edit Visibility Groups',
                             label = 'Edit Vis Groups',
