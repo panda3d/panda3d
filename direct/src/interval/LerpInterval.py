@@ -383,7 +383,7 @@ class LerpFunctionInterval(Interval.Interval):
         self.function = function
         self.fromData = fromData
         self.toData = toData
-        self.blendType = self.getBlend(blendType)
+        self.blendType = LerpBlendHelpers.getBlend(blendType)
         self.extraArgs = extraArgs
         # Generate unique name if necessary
         if (name == None):
@@ -411,23 +411,6 @@ class LerpFunctionInterval(Interval.Interval):
         self.notify.debug('updateFunc() - %s: t = %f' % (self.name, t))
         self.state = CInterval.SStarted
         self.currT = t
-            
-    def getBlend(self, blendType):
-        """__getBlend(self, string)
-        Return the C++ blend class corresponding to blendType string
-        """
-        # Note, this is temporary until blend functions get exposed
-        if (blendType == "easeIn"):
-            return LerpBlendHelpers.easeIn
-        elif (blendType == "easeOut"):
-            return LerpBlendHelpers.easeOut
-        elif (blendType == "easeInOut"):
-            return LerpBlendHelpers.easeInOut
-        elif (blendType == "noBlend"):
-            return LerpBlendHelpers.noBlend
-        else:
-            raise Exception(
-                'Error: LerpInterval.__getBlend: Unknown blend type')
 
 # New interface
 class LerpFunc(LerpFunctionInterval):
