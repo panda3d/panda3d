@@ -80,8 +80,9 @@ class Entity(DirectObject):
     def setAttribInit(self, attrib, value):
         if __debug__:
             if hasattr(self, attrib):
-                Entity.notify.warning('%s already has member %s in %s' %
-                                      (self, attrib, lineInfo()[2]))
+                Entity.notify.warning(
+                    '%s already has member %s in setAttribInit' %
+                    (self, attrib))
         # TODO: we should probably put this crep in a dictionary
         # rather than dump it into the entity's namespace
         self.__dict__[attrib] = value
