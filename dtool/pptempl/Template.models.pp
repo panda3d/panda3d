@@ -362,7 +362,7 @@ uninstall : $[subdirs:%=uninstall-%]
 # opt-pal : reorder and resize the palettes to be as optimal as
 # possible.  This forces a rebuild of all the egg files.
 #
-opt-pal : do-opt-pal install
+opt-pal : pal do-opt-pal install
 optimize-palettes : opt-pal
 
 do-opt-pal :
