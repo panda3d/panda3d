@@ -44,25 +44,6 @@ throw_new_frame() {
   throw_event("NewFrame");
 }
 
-
-void
-take_snapshot(GraphicsWindow *win, const string &name) {
-  GraphicsStateGuardian* gsg = win->get_gsg();
-  RenderBuffer rb = gsg->get_render_buffer(RenderBuffer::T_front);
-
-  CPT(DisplayRegion) dr = win->get_display_region(0);
-  nassertv(dr != (DisplayRegion *)NULL);
-
-  int width = dr->get_pixel_width();
-  int height = dr->get_pixel_height();
-
-  PixelBuffer p(width, height, 3, 1, PixelBuffer::T_unsigned_byte,
-                PixelBuffer::F_rgb);
-
-  p.copy(gsg, dr, rb);
-  p.write(name);
-}
-
 // Returns the configure object for accessing config variables from a
 // scripting language.
 ConfigShowbase &

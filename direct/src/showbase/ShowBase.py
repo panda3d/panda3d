@@ -1380,19 +1380,14 @@ class ShowBase(DirectObject.DirectObject):
                 self.oobeCullFrustumVis = None
 
     def screenshot(self, namePrefix='screenshot'):
-        # Get the current date and time to uniquify the image (down to the second)
-        date = time.ctime(time.time())
-        # Get the current frame count to uniquify it even more
-        frameCount = globalClock.getFrameCount()
-        # Replace spaces with dashes because unix does not like spaces in the filename
-        date = date.replace(' ', '-')
-        date = date.replace(':', '-')
-        imageName = ('%s-%s-%d.%s' % (namePrefix, date, frameCount, self.screenshotExtension))
-        self.notify.info("Taking screenshot: " + imageName)
-
-        takeSnapshot(self.win, imageName)
+        filename = self.win.saveScreenshotDefault(namePrefix)
+        if filename.empty():
+            # The screenshot attempt failed for some reason.
+            return 0
+        
         # Announce to anybody that a screenshot has been taken
-        messenger.send('screenshot')
+        messenger.send('screenshot', [filename])
+        return 1
 
     def movie(self, namePrefix = 'movie', duration = 1.0, fps = 30,
               format = 'rgb', sd = 4):
