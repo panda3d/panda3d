@@ -15,11 +15,9 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
-#include "wdxGraphicsPipe.h"
-#include "config_wdxdisplay.h"
-#include <mouseButton.h>
-#include <keyboardButton.h>
-#include <dxfile.h>
+
+#include "wdxdisplay_headers.h"
+#pragma hdrstop
 
 ////////////////////////////////////////////////////////////////////
 // Static variables

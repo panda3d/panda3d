@@ -16,11 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_wdxdisplay.h"
-#include "wdxGraphicsPipe.h"
-#include "wdxGraphicsWindow.h"
-
-#include <dconfig.h>
+#include "wdxdisplay_headers.h"
+#pragma hdrstop
 
 Configure(config_wdxdisplay);
 NotifyCategoryDef(wdxdisplay, "display");

@@ -15,26 +15,9 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
-#ifndef STRICT
-#define STRICT
-#endif
-#define D3D_OVERLOADS
-//#define  INITGUID  dont need this if linking w/dxguid.lib
-#include <d3d.h>
-#include "wdxGraphicsWindow.h"
-#include "wdxGraphicsPipe.h"
-#include "config_wdxdisplay.h"
 
-#include <keyboardButton.h>
-#include <mouseButton.h>
-#ifdef DO_PSTATS
-#include <pStatTimer.h>
-#endif
-#include "dxGraphicsStateGuardian.h"
-
-#include <errno.h>
-#include <time.h>
-#include <math.h>
+#include "wdxdisplay_headers.h"
+#pragma hdrstop
 
 ////////////////////////////////////////////////////////////////////
 // Static variables

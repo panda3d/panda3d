@@ -8,13 +8,15 @@
   #define TARGET wdxdisplay
   #define LOCAL_LIBS \
     dxgsg
-
+    
   #define SOURCES \
     config_wdxdisplay.cxx config_wdxdisplay.h wdxGraphicsPipe.cxx \
     wdxGraphicsPipe.h wdxGraphicsWindow.cxx wdxGraphicsWindow.h
 
   #define INSTALL_HEADERS \
     config_wdxdisplay.h wdxGraphicsPipe.h wdxGraphicsWindow.h
+    
+  #define PRECOMPILED_HEADER wdxdisplay_headers.h 
 
 #end lib_target
 
