@@ -161,22 +161,22 @@ test : $[test_bin_targets]
 // It does assume that the odirs are not '.', however.
 clean :
 #if $[so_sources]
-	rm -rf $[so_dir]
+$[TAB]rm -rf $[so_dir]
 #endif
 #if $[st_sources]
-	rm -rf $[st_dir]
+$[TAB]rm -rf $[st_dir]
 #endif
-	rm -f *.pyc *.pyo  // Also scrub out old generated Python code.
+$[TAB]rm -f *.pyc *.pyo  // Also scrub out old generated Python code.
 
 // 'cleanall' is not much more thorough than 'clean': At the moment,
 // it also cleans up the bison and flex output, as well as the
 // dependency cache file.
 cleanall : clean
 #if $[yxx_so_sources] $[yxx_st_sources] $[lxx_so_sources] $[lxx_st_sources]
-	rm -f $[patsubst %.yxx %.lxx,%.cxx,$[yxx_so_sources] $[yxx_st_sources] $[lxx_so_sources] $[lxx_st_sources]]
+$[TAB]rm -f $[patsubst %.yxx %.lxx,%.cxx,$[yxx_so_sources] $[yxx_st_sources] $[lxx_so_sources] $[lxx_st_sources]]
 #endif
 #if $[ne $[DEPENDENCY_CACHE_FILENAME],]
-	rm -f $[DEPENDENCY_CACHE_FILENAME]
+$[TAB]rm -f $[DEPENDENCY_CACHE_FILENAME]
 #endif
 
 clean-igate :
@@ -186,13 +186,13 @@ clean-igate :
   #define igatemscan $[components $[get_igatedb:%=$[RELDIR]/$[so_dir]/%],$[active_component_libs]]
   #define igatemout $[if $[igatemscan],lib$[TARGET]_module.cxx]
   #if $[igatedb]
-	rm -f $[so_dir]/$[igatedb]
+$[TAB]rm -f $[so_dir]/$[igatedb]
   #endif
   #if $[igateoutput]
-	rm -f $[so_dir]/$[igateoutput] $[igateoutput:%.cxx=$[so_dir]/%.o]
+$[TAB]rm -f $[so_dir]/$[igateoutput] $[igateoutput:%.cxx=$[so_dir]/%.o]
   #endif
   #if $[igatemout]
-	rm -f $[so_dir]/$[igatemout] $[igatemout:%.cxx=$[so_dir]/%.o]
+$[TAB]rm -f $[so_dir]/$[igatemout] $[igatemout:%.cxx=$[so_dir]/%.o]
   #endif
 #end metalib_target lib_target ss_lib_target
 
@@ -228,12 +228,12 @@ install-igate : $[sort $[installed_igate_files]]
 
 uninstall : $[TARGET(metalib_target lib_target ss_lib_target static_lib_target):%=uninstall-lib%] $[TARGET(bin_target):%=uninstall-%]
 #if $[installed_files]
-	rm -f $[sort $[installed_files]]
+$[TAB]rm -f $[sort $[installed_files]]
 #endif
 
 uninstall-igate :
 #if $[installed_igate_files]
-	rm -f $[sort $[installed_igate_files]]
+$[TAB]rm -f $[sort $[installed_igate_files]]
 #endif
 
 
@@ -252,8 +252,8 @@ uninstall-igate :
     $[if $[install_igatedb],$[install_igatedb_dir]] \
     ]
 $[directory] :
-	@test -d $[directory] || echo mkdir -p $[directory]
-	@test -d $[directory] || mkdir -p $[directory]
+$[TAB]@test -d $[directory] || echo mkdir -p $[directory]
+$[TAB]@test -d $[directory] || mkdir -p $[directory]
 #end directory
 
 
@@ -300,9 +300,9 @@ $[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[so_dir]/%.o,
 #define sources $($[varname])
 $[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
-	$[SHARED_LIB_C++]
+$[TAB]$[SHARED_LIB_C++]
 #else
-	$[SHARED_LIB_C]
+$[TAB]$[SHARED_LIB_C]
 #endif
 
 // Here are the rules to install and uninstall the library and
@@ -319,13 +319,13 @@ install-lib$[TARGET] : $[installed_files]
 
 uninstall-lib$[TARGET] :
 #if $[installed_files]
-	rm -f $[sort $[installed_files]]
+$[TAB]rm -f $[sort $[installed_files]]
 #endif
 
 $[install_lib_dir]/lib$[TARGET].so : $[so_dir]/lib$[TARGET].so
 #define local lib$[TARGET].so
 #define dest $[install_lib_dir]
-	cd ./$[so_dir] && $[INSTALL_PROG]
+$[TAB]cd ./$[so_dir] && $[INSTALL_PROG]
 
 #if $[igatescan]
 // Now, some additional rules to generate and compile the interrogate
@@ -343,7 +343,7 @@ $[install_lib_dir]/lib$[TARGET].so : $[so_dir]/lib$[TARGET].so
 $[install_igatedb_dir]/$[igatedb] : $[so_dir]/$[igatedb]
 #define local $[igatedb]
 #define dest $[install_igatedb_dir]
-	cd ./$[so_dir] && $[INSTALL]
+$[TAB]cd ./$[so_dir] && $[INSTALL]
 
 // We have to split this out as a separate rule to properly support
 // parallel make.
@@ -351,14 +351,14 @@ $[so_dir]/$[igatedb] : $[so_dir]/$[igateoutput]
 
 lib$[TARGET]_igatescan = $[igatescan]
 $[so_dir]/$[igateoutput] : $[sort $[patsubst %.h,%.h,%.I,%.I,%.T,%.T,%,,$[dependencies $[igatescan]] $[igatescan:%=./%]]]
-	interrogate -od $[so_dir]/$[igatedb] -oc $[so_dir]/$[igateoutput] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
+$[TAB]interrogate -od $[so_dir]/$[igatedb] -oc $[so_dir]/$[igateoutput] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
 
 #define target $[igateoutput:%.cxx=$[so_dir]/%.o]
 #define source $[so_dir]/$[igateoutput]
 #define ipath . $[target_ipath]
 #define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[if $[>= $[OPTIMIZE],2],$[OPTFLAGS]] $[CFLAGS_SHARED]
 $[target] : $[source]
-	$[COMPILE_C++]
+$[TAB]$[COMPILE_C++]
 #endif  // $[igatescan]
 
 #if $[igatemout]
@@ -373,14 +373,14 @@ lib$[TARGET]_igatemscan = $[igatemscan]
 #define target $[so_dir]/$[igatemout]
 #define sources $(lib$[TARGET]_igatemscan)
 $[target] : $[sources]
-	interrogate_module -oc $[target] -module "$[igatemod]" -library "$[igatelib]" -python $[sources]
+$[TAB]interrogate_module -oc $[target] -module "$[igatemod]" -library "$[igatelib]" -python $[sources]
 
 #define target $[igatemout:%.cxx=$[so_dir]/%.o]
 #define source $[so_dir]/$[igatemout]
 #define ipath . $[target_ipath]
 #define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[if $[>= $[OPTIMIZE],2],$[OPTFLAGS]] $[CFLAGS_SHARED]
 $[target] : $[source]
-	$[COMPILE_C++]
+$[TAB]$[COMPILE_C++]
 #endif  // $[igatescan]
 
 #end metalib_target lib_target ss_lib_target
@@ -403,9 +403,9 @@ $[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[so_dir]/%.o,
 #define sources $($[varname])
 $[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
-	$[SHARED_LIB_C++]
+$[TAB]$[SHARED_LIB_C++]
 #else
-	$[SHARED_LIB_C]
+$[TAB]$[SHARED_LIB_C]
 #endif
 
 #end noinst_lib_target
@@ -425,12 +425,12 @@ $[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[st_dir]/%.o,
 #define sources $($[varname])
 $[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
-	$[STATIC_LIB_C++]
+$[TAB]$[STATIC_LIB_C++]
 #else
-	$[STATIC_LIB_C]
+$[TAB]$[STATIC_LIB_C]
 #endif
 #if $[RANLIB]
-	$[RANLIB]
+$[TAB]$[RANLIB]
 #endif
 
 #define installed_files \
@@ -444,13 +444,13 @@ install-lib$[TARGET] : $[installed_files]
 
 uninstall-lib$[TARGET] :
 #if $[installed_files]
-	rm -f $[sort $[installed_files]]
+$[TAB]rm -f $[sort $[installed_files]]
 #endif
 
 $[install_lib_dir]/lib$[TARGET].a : $[st_dir]/lib$[TARGET].a
 #define local lib$[TARGET].a
 #define dest $[install_lib_dir]
-	cd ./$[st_dir] && $[INSTALL]
+$[TAB]cd ./$[st_dir] && $[INSTALL]
 
 #end static_lib_target
 
@@ -469,8 +469,8 @@ $[TARGET] : $[st_dir]/$[TARGET]
 #define source $[SOURCE]
 #define script $[COMMAND]
 $[target] : $[source]
-	$[SED]
-	chmod +x $[target]
+$[TAB]$[SED]
+$[TAB]chmod +x $[target]
 
 #define installed_files \
     $[install_bin_dir]/$[TARGET]
@@ -479,13 +479,13 @@ install-$[TARGET] : $[installed_files]
 
 uninstall-$[TARGET] :
 #if $[installed_files]
-	rm -f $[sort $[installed_files]]
+$[TAB]rm -f $[sort $[installed_files]]
 #endif
 
 $[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
 #define local $[TARGET]
 #define dest $[install_bin_dir]
-	cd ./$[st_dir] && $[INSTALL_PROG]
+$[TAB]cd ./$[st_dir] && $[INSTALL_PROG]
 
 #end sed_bin_target
 
@@ -506,13 +506,13 @@ $[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[st_dir]/%.o,
 $[target] : $[sources]
 #if $[ld]
   // If there's a custom linker defined for the target, we have to use it.
-	$[ld] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]	
+$[TAB]$[ld] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]$[TAB]
 #else
   // Otherwise, we can use the normal linker.
   #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
-	$[LINK_BIN_C++]
+$[TAB]$[LINK_BIN_C++]
   #else
-	$[LINK_BIN_C]
+$[TAB]$[LINK_BIN_C]
   #endif
 #endif
 
@@ -527,13 +527,13 @@ install-$[TARGET] : $[installed_files]
 
 uninstall-$[TARGET] :
 #if $[installed_files]
-	rm -f $[sort $[installed_files]]
+$[TAB]rm -f $[sort $[installed_files]]
 #endif
 
 $[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
 #define local $[TARGET]
 #define dest $[install_bin_dir]
-	cd ./$[st_dir] && $[INSTALL_PROG]
+$[TAB]cd ./$[st_dir] && $[INSTALL_PROG]
 
 #end bin_target
 
@@ -553,9 +553,9 @@ $[varname] = $[unique $[patsubst %_src.cxx,,%.cxx %.c %.yxx %.lxx,$[st_dir]/%.o,
 #define sources $($[varname])
 $[target] : $[sources]
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
-	$[LINK_BIN_C++]
+$[TAB]$[LINK_BIN_C++]
 #else
-	$[LINK_BIN_C]
+$[TAB]$[LINK_BIN_C]
 #endif
 
 #end noinst_bin_target test_bin_target
@@ -573,9 +573,9 @@ $[target] : $[sources]
 #define target $[patsubst %.yxx,%.cxx,$[file]]
 #define source $[file]
 $[target] : $[source]
-	$[BISON] -y $[YFLAGS] $[if $[YACC_PREFIX],-d --name-prefix=$[YACC_PREFIX]] $[source]
-	mv y.tab.c $[target]
-	mv y.tab.h $[patsubst %.yxx,%.h,$[source]]
+$[TAB]$[BISON] -y $[YFLAGS] $[if $[YACC_PREFIX],-d --name-prefix=$[YACC_PREFIX]] $[source]
+$[TAB]mv y.tab.c $[target]
+$[TAB]mv y.tab.h $[patsubst %.yxx,%.h,$[source]]
 
 #end file
 
@@ -584,11 +584,11 @@ $[target] : $[source]
 #define target $[patsubst %.lxx,%.cxx,$[file]]
 #define source $[file]
 $[target] : $[source]
-	$[FLEX] $[LFLAGS] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $[source]
+$[TAB]$[FLEX] $[LFLAGS] $[if $[YACC_PREFIX],-P$[YACC_PREFIX]] -olex.yy.c $[source]
 #define source lex.yy.c
 #define script /#include <unistd.h>/d
-	$[SED]
-	rm $[source]
+$[TAB]$[SED]
+$[TAB]rm $[source]
 
 #end file
 
@@ -599,7 +599,7 @@ $[target] : $[source]
 #define ipath $[file_ipath]
 #define flags $[cflags] $[CFLAGS_SHARED]
 $[target] : $[source] $[dependencies $[source]]
-	$[COMPILE_C]
+$[TAB]$[COMPILE_C]
 
 #end file
 
@@ -611,7 +611,7 @@ $[target] : $[source] $[dependencies $[source]]
 #define ipath $[file_ipath]
 #define flags $[cflags]
 $[target] : $[source] $[dependencies $[source]]
-	$[COMPILE_C]
+$[TAB]$[COMPILE_C]
 
 #end file
 
@@ -624,7 +624,7 @@ $[target] : $[source] $[dependencies $[source]]
 // Yacc must run before some files can be compiled, so all files
 // depend on yacc having run.
 $[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.cxx]
-	$[COMPILE_C++]
+$[TAB]$[COMPILE_C++]
 
 #end file
 
@@ -636,7 +636,7 @@ $[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.cxx]
 #define ipath $[file_ipath]
 #define flags $[c++flags]
 $[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.cxx]
-	$[COMPILE_C++]
+$[TAB]$[COMPILE_C++]
 
 #end file
 
@@ -649,7 +649,7 @@ $[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.cxx]
 // Yacc must run before some files can be compiled, so all files
 // depend on yacc having run.
 $[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.cxx]
-	$[COMPILE_C++]
+$[TAB]$[COMPILE_C++]
 
 #end file
 
@@ -661,7 +661,7 @@ $[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.cxx]
 #define ipath $[file_ipath]
 #define flags $[noopt_c++flags]
 $[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.cxx]
-	$[COMPILE_C++]
+$[TAB]$[COMPILE_C++]
 
 #end file
 
@@ -671,53 +671,53 @@ $[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.cxx]
 $[install_bin_dir]/$[file] : $[file]
 #define local $[file]
 #define dest $[install_bin_dir]
-	$[INSTALL_PROG]
+$[TAB]$[INSTALL_PROG]
 #end file
 
 #foreach file $[install_headers]
 $[install_headers_dir]/$[file] : $[file]
 #define local $[file]
 #define dest $[install_headers_dir]
-	$[INSTALL]
+$[TAB]$[INSTALL]
 #end file
 
 #foreach file $[install_parser_inc]
 $[install_parser_inc_dir]/$[file] : $[file]
 #define local $[file]
 #define dest $[install_parser_inc_dir]
-	$[INSTALL]
+$[TAB]$[INSTALL]
 #end file
 
 #foreach file $[install_data]
 $[install_data_dir]/$[file] : $[file]
 #define local $[file]
 #define dest $[install_data_dir]
-	$[INSTALL]
+$[TAB]$[INSTALL]
 #end file
 
 #foreach file $[install_config]
 $[install_config_dir]/$[file] : $[file]
 #define local $[file]
 #define dest $[install_config_dir]
-	$[INSTALL]
+$[TAB]$[INSTALL]
 #end file
 
 // Finally, all the special targets.  These are commands that just need
 // to be invoked; we don't pretend to know what they are.
 #forscopes special_target
 $[TARGET] :
-	$[COMMAND]
+$[TAB]$[COMMAND]
 
 #end special_target
 
 
 // Finally, the rules to freshen the Makefile itself.
 Makefile : $[SOURCE_FILENAME]
-	ppremake
+$[TAB]ppremake
 
 #if $[and $[DEPENDENCY_CACHE_FILENAME],$[dep_sources]]
 $[DEPENDENCY_CACHE_FILENAME] : $[dep_sources]
-	@ppremake -D $[DEPENDENCY_CACHE_FILENAME]
+$[TAB]@ppremake -D $[DEPENDENCY_CACHE_FILENAME]
 #endif
 
 
@@ -770,7 +770,7 @@ install : $[if $[CONFIG_HEADER],$[install_headers_dir] $[install_headers_dir]/$[
 install-igate : $[subdirs:%=install-igate-%]
 uninstall : $[subdirs:%=uninstall-%]
 #if $[CONFIG_HEADER]
-	rm -f $[install_headers_dir]/$[CONFIG_HEADER]
+$[TAB]rm -f $[install_headers_dir]/$[CONFIG_HEADER]
 #endif
 uninstall-igate : $[subdirs:%=uninstall-igate-%]
 
@@ -782,58 +782,58 @@ uninstall-igate : $[subdirs:%=uninstall-igate-%]
 #formap dirname subdirs
 #define depends 
 $[dirname] : $[dirnames $[if $[build_directory],$[DIRNAME]],$[DEPEND_DIRS]]
-	cd ./$[PATH] && $(MAKE) all
+$[TAB]cd ./$[PATH] && $(MAKE) all
 #end dirname
 
 #formap dirname subdirs
 test-$[dirname] :
-	cd ./$[PATH] && $(MAKE) test
+$[TAB]cd ./$[PATH] && $(MAKE) test
 #end dirname
 
 #formap dirname subdirs
 clean-$[dirname] :
-	cd ./$[PATH] && $(MAKE) clean
+$[TAB]cd ./$[PATH] && $(MAKE) clean
 #end dirname
 
 #formap dirname subdirs
 clean-igate-$[dirname] :
-	cd ./$[PATH] && $(MAKE) clean-igate
+$[TAB]cd ./$[PATH] && $(MAKE) clean-igate
 #end dirname
 
 #formap dirname subdirs
 cleanall-$[dirname] : $[patsubst %,cleanall-%,$[dirnames $[if $[build_directory],$[DIRNAME]],$[DEPEND_DIRS]]]
-	cd ./$[PATH] && $(MAKE) cleanall
+$[TAB]cd ./$[PATH] && $(MAKE) cleanall
 #end dirname
 
 #formap dirname subdirs
 install-$[dirname] : $[patsubst %,install-%,$[dirnames $[if $[build_directory],$[DIRNAME]],$[DEPEND_DIRS]]]
-	cd ./$[PATH] && $(MAKE) install
+$[TAB]cd ./$[PATH] && $(MAKE) install
 #end dirname
 
 #formap dirname subdirs
 install-igate-$[dirname] :
-	cd ./$[PATH] && $(MAKE) install-igate
+$[TAB]cd ./$[PATH] && $(MAKE) install-igate
 #end dirname
 
 #formap dirname subdirs
 uninstall-$[dirname] :
-	cd ./$[PATH] && $(MAKE) uninstall
+$[TAB]cd ./$[PATH] && $(MAKE) uninstall
 #end dirname
 
 #formap dirname subdirs
 uninstall-igate-$[dirname] :
-	cd ./$[PATH] && $(MAKE) uninstall-igate
+$[TAB]cd ./$[PATH] && $(MAKE) uninstall-igate
 #end dirname
 
 #if $[ne $[CONFIG_HEADER],]
 $[install_headers_dir] :
-	@test -d $[install_headers_dir] || echo mkdir -p $[install_headers_dir]
-	@test -d $[install_headers_dir] || mkdir -p $[install_headers_dir]
+$[TAB]@test -d $[install_headers_dir] || echo mkdir -p $[install_headers_dir]
+$[TAB]@test -d $[install_headers_dir] || mkdir -p $[install_headers_dir]
 
 $[install_headers_dir]/$[CONFIG_HEADER] : $[CONFIG_HEADER]
 #define local $[CONFIG_HEADER]
 #define dest $[install_headers_dir]
-	$[INSTALL]
+$[TAB]$[INSTALL]
 #endif
 
 #end Makefile
