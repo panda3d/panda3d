@@ -64,10 +64,10 @@ get_record_length() const {
     return 40;
 
   case FO_vertex_cn:
-    return 52;
+    return 56;
 
   case FO_vertex_cnu:
-    return 60;
+    return 64;
 
   case FO_vertex_cu:
     return 48;
@@ -173,6 +173,12 @@ extract_record(FltRecordReader &reader) {
   }
   _color_index = iterator.get_be_uint32();
 
+  if (_has_normal) {
+    // If we extracted a normal, our double-word alignment is off; now
+    // we have a few extra bytes to ignore.
+    iterator.skip_bytes(4);
+  }
+
   nassertr(iterator.get_remaining_size() == 0, true);
   return true;
 }
@@ -215,6 +221,12 @@ build_record(FltRecordWriter &writer) const {
   }
 
   datagram.add_be_uint32(_color_index);
+
+  if (_has_normal) {
+    // If we added a normal, our double-word alignment is off; now we
+    // have a few extra bytes to add.
+    datagram.pad_bytes(4);
+  }
 
   nassertr((int)datagram.get_length() == get_record_length() - 4, true);
   return true;
