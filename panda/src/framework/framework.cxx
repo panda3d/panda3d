@@ -856,7 +856,7 @@ void event_D(CPT_Event) {
 #define NUMWINDOWSIZES 4
 static int cur_winsize_idx=0;
 static unsigned int window_sizearr[NUMWINDOWSIZES*2] = 
-      {640,480, 1024,768, 800,600, 454,656};
+      {640,480, 1024,768, 800,600, 454,656, 1280,1024};
 
 void event_3(CPT_Event) {
   do {
@@ -1156,9 +1156,10 @@ int framework_main(int argc, char *argv[]) {
   }
 
   framework_cat.info()
-    << "Opened a '" << main_pipe->get_type().get_name()
-    << "' interactive graphics pipe." << endl;
+    << "Opened a '" << main_pipe->get_type().get_name() << "' interactive graphics pipe." << endl;
 
+  rib_pipe = NULL;
+#if 0
   rib_pipe = GraphicsPipe::get_factory().
     make_instance(NoninteractiveGraphicsPipe::get_class_type());
 
@@ -1170,6 +1171,7 @@ int framework_main(int argc, char *argv[]) {
     framework_cat.info()
       << "Opened a '" << rib_pipe->get_type().get_name()
       << "' non-interactive graphics pipe." << endl;
+#endif
 
   ChanCfgOverrides override;
 
