@@ -380,10 +380,10 @@ class ShowBase(DirectObject.DirectObject):
         # Temporary try .. except for old Pandas.
         try:
             if type == 'onscreen':
-                win = self.graphicsEngine.makeWindow(pipe, gsg, name)
+                win = self.graphicsEngine.makeWindow(gsg, name)
             elif type == 'offscreen':
                 win = self.graphicsEngine.makeBuffer(
-                    pipe, gsg, name, props.getXSize(), props.getYSize(), 0)
+                    gsg, name, props.getXSize(), props.getYSize(), 0)
         except:
             if type == 'onscreen':
                 win = self.graphicsEngine.makeWindow(pipe, gsg)

@@ -69,13 +69,10 @@ PUBLISHED:
 
   INLINE PT(GraphicsStateGuardian) make_gsg(GraphicsPipe *pipe);
   PT(GraphicsStateGuardian) make_gsg(GraphicsPipe *pipe,
-                                     const FrameBufferProperties &properties,
-                                     const GraphicsThreadingModel &threading_model);
+                                     const FrameBufferProperties &properties);
 
-  GraphicsWindow *make_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-                              const string &name);
-  GraphicsOutput *make_buffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-                              const string &name,
+  GraphicsWindow *make_window(GraphicsStateGuardian *gsg, const string &name);
+  GraphicsOutput *make_buffer(GraphicsStateGuardian *gsg, const string &name,
                               int x_size, int y_size, bool want_texture);
 
   bool remove_window(GraphicsOutput *window);

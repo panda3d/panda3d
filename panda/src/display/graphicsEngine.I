@@ -72,11 +72,12 @@ get_auto_flip() const {
 //               runs one more time.
 //
 //               This flavor of make_gsg() uses the default
-//               threading model, specified via set_threading_model().
+//               frame buffer properties, specified via
+//               set_frame_buffer_properties().
 ////////////////////////////////////////////////////////////////////
 INLINE PT(GraphicsStateGuardian) GraphicsEngine::
 make_gsg(GraphicsPipe *pipe) {
-  return make_gsg(pipe, get_frame_buffer_properties(), get_threading_model());
+  return make_gsg(pipe, get_frame_buffer_properties());
 }
 
 

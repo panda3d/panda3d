@@ -115,8 +115,8 @@ set_frame_buffer_properties(const FrameBufferProperties &properties) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::get_frame_buffer_properties
 //       Access: Published
-//  Description: Returns the current default threading model.  See
-//               set_frame_buffer_properties().
+//  Description: Returns the frame buffer properties for future gsg's.
+//               See set_frame_buffer_properties().
 ////////////////////////////////////////////////////////////////////
 FrameBufferProperties GraphicsEngine::
 get_frame_buffer_properties() const {
@@ -131,9 +131,9 @@ get_frame_buffer_properties() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::set_threading_model
 //       Access: Published
-//  Description: Specifies how windows created using future calls to
-//               the one-parameter version of make_gsg() will be
-//               threaded.
+//  Description: Specifies how future objects created via make_gsg(),
+//               make_buffer(), and make_window() will be threaded.
+//               This does not affect any already-created objects.
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 set_threading_model(const GraphicsThreadingModel &threading_model) {
@@ -151,8 +151,8 @@ set_threading_model(const GraphicsThreadingModel &threading_model) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::get_threading_model
 //       Access: Published
-//  Description: Returns the current default threading model.  See
-//               set_threading_model().
+//  Description: Returns the threading model that will be applied to
+//               future objects.  See set_threading_model().
 ////////////////////////////////////////////////////////////////////
 GraphicsThreadingModel GraphicsEngine::
 get_threading_model() const {
@@ -181,12 +181,11 @@ get_threading_model() const {
 //               runs one more time.
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsStateGuardian) GraphicsEngine::
-make_gsg(GraphicsPipe *pipe, const FrameBufferProperties &properties,
-         const GraphicsThreadingModel &threading_model) {
+make_gsg(GraphicsPipe *pipe, const FrameBufferProperties &properties) {
   // TODO: ask the draw thread to make the GSG.
   PT(GraphicsStateGuardian) gsg = pipe->make_gsg(properties);
   if (gsg != (GraphicsStateGuardian *)NULL) {
-    gsg->_threading_model = threading_model;
+    gsg->_threading_model = get_threading_model();
     gsg->_pipe = pipe;
     gsg->_engine = this;
   }
@@ -204,18 +203,16 @@ make_gsg(GraphicsPipe *pipe, const FrameBufferProperties &properties,
 //               later.
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow *GraphicsEngine::
-make_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-            const string &name) {
+make_window(GraphicsStateGuardian *gsg, const string &name) {
   GraphicsThreadingModel threading_model = get_threading_model();
 
   nassertr(gsg != (GraphicsStateGuardian *)NULL, NULL);
-  nassertr(pipe == gsg->get_pipe(), NULL);
   nassertr(this == gsg->get_engine(), NULL);
   nassertr(threading_model.get_draw_name() ==
            gsg->get_threading_model().get_draw_name(), NULL);
 
   // TODO: ask the window thread to make the window.
-  PT(GraphicsWindow) window = pipe->make_window(gsg, name);
+  PT(GraphicsWindow) window = gsg->get_pipe()->make_window(gsg, name);
   do_add_window(window, gsg, threading_model);
   return window;
 }
@@ -228,16 +225,16 @@ make_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
 //               GraphicsEngine becomes the owner of the buffer; it
 //               will persist at least until remove_window() is called
 //               later.
-
+//
 //               This usually returns a GraphicsBuffer object, but it
 //               may actually return a GraphicsWindow if show-buffers
 //               is configured true.
 ////////////////////////////////////////////////////////////////////
 GraphicsOutput *GraphicsEngine::
-make_buffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
-            const string &name, int x_size, int y_size, bool want_texture) {
+make_buffer(GraphicsStateGuardian *gsg, const string &name, 
+            int x_size, int y_size, bool want_texture) {
   if (show_buffers) {
-    GraphicsWindow *window = make_window(pipe, gsg, name);
+    GraphicsWindow *window = make_window(gsg, name);
     if (window != (GraphicsWindow *)NULL) {
       WindowProperties props;
       props.set_size(x_size, y_size);
@@ -257,14 +254,13 @@ make_buffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
 
   GraphicsThreadingModel threading_model = get_threading_model();
   nassertr(gsg != (GraphicsStateGuardian *)NULL, NULL);
-  nassertr(pipe == gsg->get_pipe(), NULL);
   nassertr(this == gsg->get_engine(), NULL);
   nassertr(threading_model.get_draw_name() ==
            gsg->get_threading_model().get_draw_name(), NULL);
 
   // TODO: ask the window thread to make the buffer.
   PT(GraphicsBuffer) buffer = 
-    pipe->make_buffer(gsg, name, x_size, y_size, want_texture);
+    gsg->get_pipe()->make_buffer(gsg, name, x_size, y_size, want_texture);
   do_add_window(buffer, gsg, threading_model);
   return buffer;
 }
