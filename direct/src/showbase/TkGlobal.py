@@ -7,7 +7,7 @@ sys.modules['_Pmw'].__name__ = '_Pmw'
 
 __builtins__["tkroot"] = Pmw.initialise()
 
-def tkloop(self):
+def tkLoop(self):
     # Do all the tkinter events waiting on this frame
     # dooneevent will return 0 if there are no more events
     # waiting or 1 if there are still more.
@@ -22,6 +22,6 @@ from direct.task.TaskManagerGlobal import *
 
 def spawnTkLoop():
     # Spawn this task
-    taskMgr.add(tkloop, "tkloop")
+    taskMgr.add(tkLoop, "tkLoop")
 
 
