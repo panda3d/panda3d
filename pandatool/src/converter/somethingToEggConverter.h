@@ -49,6 +49,9 @@ public:
 
   virtual SomethingToEggConverter *make_copy()=0;
 
+  INLINE void clear_error();
+  INLINE bool had_error() const;
+
   INLINE void set_path_replace(PathReplace *path_replace);
   INLINE PathReplace *get_path_replace();
   INLINE const PathReplace *get_path_replace() const;

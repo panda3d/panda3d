@@ -102,6 +102,7 @@ public:
 Palettizer::
 Palettizer() {
   _is_valid = true;
+  _noabs = false;
 
   _generated_image_pattern = "%g_palette_%p_%i";
   _map_dirname = "%g";
@@ -123,6 +124,36 @@ Palettizer() {
   _round_fuzz = 0.01;
   _remap_uv = RU_poly;
   _remap_char_uv = RU_poly;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Palettizer::get_noabs
+//       Access: Public
+//  Description: Returns the current setting of the noabs flag.  See
+//               set_noabs().
+////////////////////////////////////////////////////////////////////
+bool Palettizer::
+get_noabs() const {
+  return _noabs;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Palettizer::set_noabs
+//       Access: Public
+//  Description: Changes the current setting of the noabs flag.
+//
+//               If this flag is true, then it is an error to process
+//               an egg file that contains absolute pathname
+//               references.  This flag is intended to help detect egg
+//               files that are incorrectly built within a model tree
+//               (which should use entirely relative pathnames).
+//
+//               This flag must be set before any egg files are
+//               processed.
+////////////////////////////////////////////////////////////////////
+void Palettizer::
+set_noabs(bool noabs) {
+  _noabs = noabs;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -660,7 +691,7 @@ read_stale_eggs(bool redo_all) {
     EggFile *egg_file = (*ei).second;
     if (!egg_file->has_data() &&
         (egg_file->is_stale() || redo_all)) {
-      if (!egg_file->read_egg()) {
+      if (!egg_file->read_egg(_noabs)) {
         invalid_eggs.push_back(ei);
 
       } else {
@@ -676,9 +707,28 @@ read_stale_eggs(bool redo_all) {
   for (ii = invalid_eggs.begin(); ii != invalid_eggs.end(); ++ii) {
     EggFiles::iterator ei = (*ii);
     EggFile *egg_file = (*ei).second;
-    nout << "Removing " << (*ei).first << "\n";
-    egg_file->remove_egg();
-    _egg_files.erase(ei);
+    if (egg_file->get_source_filename().exists()) {
+      // If there is an invalid egg file, remove it; hopefully it will
+      // get rebuilt properly next time.
+      nout << "Removing invalid egg file: " 
+           << FilenameUnifier::make_user_filename(egg_file->get_source_filename())
+           << "\n";
+
+      egg_file->get_source_filename().unlink();
+      okflag = false;
+
+    } else {
+      // If the egg file is simply missing, quietly remove any record
+      // of it from the database.
+      egg_file->remove_egg();
+      _egg_files.erase(ei);
+    }
+  }
+
+  if (!okflag) {
+    nout << "\n"
+         << "Some errors in egg files encountered.\n"
+         << "Re-run make install or make opt-pal to try to regenerate these.\n\n";
   }
 
   return okflag;
@@ -701,7 +751,7 @@ write_eggs() {
     if (egg_file->had_data()) {
       if (!egg_file->has_data()) {
         // Re-read the egg file.
-        bool read_ok = egg_file->read_egg();
+        bool read_ok = egg_file->read_egg(_noabs);
         if (!read_ok) {
           nout << "Error!  Unable to re-read egg file.\n";
           okflag = false;

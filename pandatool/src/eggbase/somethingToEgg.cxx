@@ -53,6 +53,14 @@ SomethingToEgg(const string &format_name,
      " file.  Normally, this can inferred from the file itself.");
 
   add_option
+    ("noabs", "", 0,
+     "Don't allow the input " + _format_name + " file to have absolute pathnames.  "
+     "If it does, abort with an error.  This option is designed to help "
+     "detect errors when populating or building a standalone model tree, "
+     "which should be self-contained and include only relative pathnames.",
+     &SomethingToEgg::dispatch_none, &_noabs);
+
+  add_option
     ("ignore", "", 0,
      "Ignore non-fatal errors and generate an egg file anyway.",
      &SomethingToEgg::dispatch_none, &_allow_errors);
@@ -200,6 +208,8 @@ apply_units_scale(EggData &data) {
 ////////////////////////////////////////////////////////////////////
 void SomethingToEgg::
 apply_parameters(SomethingToEggConverter &converter) {
+  _path_replace->_noabs = _noabs;
+  _path_replace->_exists = true;
   converter.set_path_replace(_path_replace);
 
   converter.set_animation_convert(_animation_convert);

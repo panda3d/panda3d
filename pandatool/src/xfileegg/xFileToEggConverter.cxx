@@ -116,6 +116,7 @@ get_extension() const {
 bool XFileToEggConverter::
 convert_file(const Filename &filename) {
   close();
+  clear_error();
 
   if (!_x_file->read(filename)) {
     nout << "Unable to open X file: " << filename << "\n";
@@ -148,7 +149,7 @@ convert_file(const Filename &filename) {
     return false;
   }
 
-  return true;
+  return !had_error();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -18,12 +18,36 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PathReplace::clear_error
+//       Access: Public
+//  Description: Resets the error flag to the no-error state.
+//               had_error() will return false until a new error is
+//               generated.
+////////////////////////////////////////////////////////////////////
+INLINE void PathReplace::
+clear_error() {
+  _error_flag = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PathReplace::had_error
+//       Access: Public
+//  Description: Returns true if an error was detected since the last
+//               call to clear_error(), false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool PathReplace::
+had_error() const {
+  return _error_flag;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PathReplace::clear
 //       Access: Public
 //  Description: Removes all the patterns from the specification.
 ////////////////////////////////////////////////////////////////////
 INLINE void PathReplace::
 clear() {
+  clear_error();
   _entries.clear();
 }
 

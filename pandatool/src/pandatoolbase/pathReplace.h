@@ -45,6 +45,9 @@ public:
   PathReplace();
   ~PathReplace();
 
+  INLINE void clear_error();
+  INLINE bool had_error() const;
+
   INLINE void clear();
   INLINE void add_pattern(const string &orig_prefix, const string &replacement_prefix);
 
@@ -70,6 +73,16 @@ public:
   // These are used to support store_path().
   PathStore _path_store;
   Filename _path_directory;
+
+  // If this is this true, then the error flag is set (see had_error()
+  // and clear_error()) if any Filename passed to match_path() or
+  // convert_path(), and unmatched by one of the prefixes, happens to
+  // be an absolute pathname.
+  bool _noabs;
+
+  // If this is true, then the error flag is set if any Filename
+  // passed to match_path() or convert_path() cannot be found.
+  bool _exists;
 
 private:
   class Component {
@@ -100,6 +113,8 @@ private:
 
   typedef pvector<Entry> Entries;
   Entries _entries;
+
+  bool _error_flag;
 };
 
 #include "pathReplace.I"

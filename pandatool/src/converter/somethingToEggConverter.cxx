@@ -144,9 +144,7 @@ handle_external_reference(EggGroupNode *egg_parent,
     if (!ext->convert_file(ref_filename)) {
       delete ext;
       nout << "Unable to read external reference: " << ref_filename << "\n";
-      if (!_allow_errors) {
-        _error = true;
-      }
+      _error = true;
       return false;
     }
 

@@ -99,6 +99,12 @@ MayaToEgg() :
      "Increase verbosity.  More v's means more verbose.",
      &MayaToEgg::dispatch_count, NULL, &_verbose);
 
+  // Unfortunately, the Maya API doesn't allow us to differentiate
+  // between relative and absolute pathnames--everything comes out as
+  // an absolute pathname, even if it is stored in the Maya file as a
+  // relative path.  So we can't support -noabs.
+  remove_option("noabs");
+
   _verbose = 0;
   _polygon_tolerance = 0.01;
   _transform_type = MayaToEggConverter::TT_model;
@@ -159,7 +165,6 @@ run() {
   _data.set_coordinate_system(_coordinate_system);
 
   converter.set_egg_data(&_data, false);
-  apply_parameters(converter);
 
   if (!converter.convert_file(_input_filename)) {
     nout << "Errors in conversion.\n";

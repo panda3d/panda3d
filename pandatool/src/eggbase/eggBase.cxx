@@ -39,13 +39,16 @@ EggBase() {
      &EggBase::dispatch_coordinate_system,
      &_got_coordinate_system, &_coordinate_system);
 
-  _coordinate_system = CS_yup_right;
-
   _normals_mode = NM_preserve;
   _normals_threshold = 0.0;
 
   _got_transform = false;
   _transform = LMatrix4d::ident_mat();
+
+  _got_coordinate_system = false;
+  _coordinate_system = CS_yup_right;
+
+  _noabs = false;
 }
 
 ////////////////////////////////////////////////////////////////////

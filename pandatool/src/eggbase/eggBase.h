@@ -72,6 +72,8 @@ protected:
 
   bool _got_coordinate_system;
   CoordinateSystem _coordinate_system;
+
+  bool _noabs;
 };
 
 #endif

@@ -6,6 +6,7 @@
   
   #define SOURCES \
     animationConvert.cxx animationConvert.h \
+    config_pandatoolbase.cxx config_pandatoolbase.h \
     distanceUnit.cxx distanceUnit.h \
     pandatoolbase.cxx pandatoolbase.h pandatoolsymbols.h \
     pathReplace.cxx pathReplace.I pathReplace.h \
@@ -13,6 +14,7 @@
 
   #define INSTALL_HEADERS \
     animationConvert.h \
+    config_pandatoolbase.h \
     distanceUnit.h \
     pandatoolbase.h pandatoolsymbols.h \
     pathReplace.I pathReplace.h \

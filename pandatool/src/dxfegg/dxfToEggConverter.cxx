@@ -91,14 +91,14 @@ get_extension() const {
 ////////////////////////////////////////////////////////////////////
 bool DXFToEggConverter::
 convert_file(const Filename &filename) {
-  _error = false;
+  clear_error();
 
   if (_egg_data->get_coordinate_system() == CS_default) {
     _egg_data->set_coordinate_system(CS_zup_right);
   }
 
   process(filename);
-  return !_error;
+  return !had_error();
 }
 
 ////////////////////////////////////////////////////////////////////

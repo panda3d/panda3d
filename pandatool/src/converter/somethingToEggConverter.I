@@ -18,6 +18,30 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::clear_error
+//       Access: Public
+//  Description: Resets the error flag to the no-error state.
+//               had_error() will return false until a new error is
+//               generated.
+////////////////////////////////////////////////////////////////////
+INLINE void SomethingToEggConverter::
+clear_error() {
+  _error = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::had_error
+//       Access: Public
+//  Description: Returns true if an error was detected during the
+//               conversion process (unless _allow_errors is true),
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool SomethingToEggConverter::
+had_error() const {
+  return !_allow_errors && (_error || _path_replace->had_error());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SomethingToEggConverter::set_path_replace
 //       Access: Public
 //  Description: Replaces the PathReplace object (which specifies how

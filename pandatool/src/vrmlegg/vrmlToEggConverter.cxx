@@ -98,6 +98,8 @@ get_extension() const {
 ////////////////////////////////////////////////////////////////////
 bool VRMLToEggConverter::
 convert_file(const Filename &filename) {
+  clear_error();
+
   VrmlScene *scene = parse_vrml(filename);
   if (scene == (VrmlScene *)NULL) {
     return false;
@@ -122,7 +124,7 @@ convert_file(const Filename &filename) {
     vrml_node((*csi)._node, &get_egg_data(), LMatrix4d::ident_mat());
   }
 
-  return true;
+  return !had_error();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -44,10 +44,12 @@ class EggFile : public TypedWritable, public Namable {
 public:
   EggFile();
 
-  void from_command_line(EggData *data,
+  bool from_command_line(EggData *data,
                          const Filename &source_filename,
                          const Filename &dest_filename,
                          const string &egg_comment);
+
+  const Filename &get_source_filename() const;
 
   void scan_textures();
   void get_textures(pset<TextureImage *> &result) const;
@@ -74,7 +76,7 @@ public:
 
   void update_egg();
   void remove_egg();
-  bool read_egg();
+  bool read_egg(bool noabs);
   void release_egg_data();
   bool write_egg();
 
@@ -95,6 +97,7 @@ private:
   typedef pvector<TextureReference *> Textures;
   Textures _textures;
 
+  bool _noabs;
   bool _first_txa_match;
   PaletteGroups _explicitly_assigned_groups;
   PaletteGroup *_default_group;

@@ -68,6 +68,17 @@ FltToEgg() :
 ////////////////////////////////////////////////////////////////////
 void FltToEgg::
 run() {
+  _data.set_coordinate_system(_coordinate_system);
+
+  FltToEggConverter converter;
+  converter.set_merge_externals(_merge_externals);
+  converter.set_egg_data(&_data, false);
+  converter._compose_transforms = _compose_transforms;
+  converter._allow_errors = _allow_errors;
+
+  apply_parameters(converter);
+
+
   PT(FltHeader) header = new FltHeader(_path_replace);
 
   nout << "Reading " << _input_filename << "\n";
@@ -79,15 +90,6 @@ run() {
 
   header->check_version();
 
-  _data.set_coordinate_system(_coordinate_system);
-
-  FltToEggConverter converter;
-  converter.set_merge_externals(_merge_externals);
-  converter.set_egg_data(&_data, false);
-  converter._compose_transforms = _compose_transforms;
-  converter._allow_errors = _allow_errors;
-
-  apply_parameters(converter);
 
   if (!converter.convert_flt(header)) {
     nout << "Errors in conversion.\n";

@@ -48,6 +48,9 @@ class Palettizer : public TypedWritable {
 public:
   Palettizer();
 
+  bool get_noabs() const;
+  void set_noabs(bool noabs);
+
   bool is_valid() const;
   void report_pi() const;
   void report_statistics() const;
@@ -91,15 +94,16 @@ public:
 
   bool _is_valid;
 
-  // These values are not stored in the bam file, but are specific to
-  // each session.
+  // These values are not stored in the textures.boo file, but are
+  // specific to each session.
   TxaFile _txa_file;
   string _default_groupname;
   string _default_groupdir;
+  bool _noabs;
 
   // The following parameter values specifically relate to textures
-  // and palettes.  These values are stored in the bam file for future
-  // reference.
+  // and palettes.  These values are stored in the textures.boo file
+  // for future reference.
   string _generated_image_pattern;
   string _map_dirname;
   Filename _shadow_dirname;

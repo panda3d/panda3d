@@ -738,12 +738,12 @@ get_image() {
 
   if (!_new_image) {
     if (pal->_shadow_color_type != (PNMFileType *)NULL) {
-      if (_shadow_image.read(_image)) {
+      if (_shadow_image.get_filename().exists() && _shadow_image.read(_image)) {
         _got_image = true;
         return;
       }
     } else {
-      if (read(_image)) {
+      if (get_filename().exists() && read(_image)) {
         _got_image = true;
         return;
       }

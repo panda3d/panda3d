@@ -272,6 +272,7 @@ get_input_units() {
 bool MayaToEggConverter::
 convert_maya() {
   clear();
+  clear_error();
 
   if (!open_api()) {
     mayaegg_cat.error()
@@ -389,6 +390,10 @@ convert_maya() {
     };
 
     reparent_decals(&get_egg_data());
+  }
+
+  if (had_error()) {
+    all_ok = false;
   }
 
   if (all_ok) {

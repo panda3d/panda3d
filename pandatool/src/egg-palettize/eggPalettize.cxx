@@ -657,6 +657,8 @@ run() {
     }
   }
 
+  pal->set_noabs(_noabs);
+
   if (_report_pi) {
     pal->report_pi();
     exit(0);
@@ -724,6 +726,8 @@ run() {
   }
 
   // And process the egg files named for addition.
+  bool all_eggs_valid = true;
+
   string egg_comment = get_exec_command();
   Eggs::const_iterator ei;
   for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
@@ -733,10 +737,18 @@ run() {
     string name = source_filename.get_basename();
 
     EggFile *egg_file = pal->get_egg_file(name);
-    egg_file->from_command_line(egg_data, source_filename, dest_filename,
-                                egg_comment);
+    if (!egg_file->from_command_line(egg_data, source_filename, dest_filename,
+                                     egg_comment)) {
+      all_eggs_valid = false;
 
-    pal->add_command_line_egg(egg_file);
+    } else {
+      pal->add_command_line_egg(egg_file);
+    }
+  }
+
+  if (!all_eggs_valid) {
+    nout << "Errors reading egg file(s).\n";
+    exit(1);
   }
 
   if (_optimal) {
@@ -767,10 +779,12 @@ run() {
     }
   }
 
-  pal->generate_images(_redo_all);
-
-  if (!pal->write_eggs()) {
-    okflag = false;
+  if (okflag) {
+    pal->generate_images(_redo_all);
+    
+    if (!pal->write_eggs()) {
+      okflag = false;
+    }
   }
 
   if (!_nodb) {

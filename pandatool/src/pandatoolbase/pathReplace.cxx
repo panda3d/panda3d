@@ -18,6 +18,7 @@
 
 #include "pathReplace.h"
 #include "config_util.h"
+#include "config_pandatoolbase.h"
 #include "indent.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -28,6 +29,9 @@
 PathReplace::
 PathReplace() {
   _path_store = PS_keep;
+  _noabs = false;
+  _exists = false;
+  _error_flag = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -96,7 +100,29 @@ match_path(const Filename &orig_filename,
   // The file couldn't be found anywhere.  Did we at least get any
   // prefix match?
   if (got_match) {
+    if (_exists) {
+      _error_flag = true;
+      pandatoolbase_cat.error()
+        << "File does not exist: " << match << "\n";
+    } else if (pandatoolbase_cat.is_debug()) {
+      pandatoolbase_cat.debug()
+        << "File does not exist: " << match << "\n";
+    }
+
     return match;
+  }
+
+  if (!orig_filename.is_local()) {
+    // Ok, we didn't match any specified prefixes.  If the file is an
+    // absolute pathname and we have _noabs set, that's an error.
+    if (_noabs) {
+      _error_flag = true;
+      pandatoolbase_cat.error()
+        << "Absolute pathname: " << orig_filename << "\n";
+    } else if (pandatoolbase_cat.is_debug()) {
+      pandatoolbase_cat.debug()
+        << "Absolute pathname: " << orig_filename << "\n";
+    }
   }
 
   // Well, we still haven't found it; look it up on the search path as
@@ -111,7 +137,16 @@ match_path(const Filename &orig_filename,
     }
   }
 
-  // Nope, couldn't find anything.  Just return the original filename.
+  // Nope, couldn't find anything.  This is an error, but just return
+  // the original filename.
+  if (_exists) {
+    _error_flag = true;
+    pandatoolbase_cat.error()
+      << "File does not exist: " << orig_filename << "\n";
+  } else if (pandatoolbase_cat.is_debug()) {
+    pandatoolbase_cat.debug()
+      << "File does not exist: " << orig_filename << "\n";
+  }
   return orig_filename;
 }
 
@@ -125,6 +160,10 @@ match_path(const Filename &orig_filename,
 ////////////////////////////////////////////////////////////////////
 Filename PathReplace::
 store_path(const Filename &orig_filename) {
+  if (orig_filename.empty()) {
+    return orig_filename;
+  }
+
   if (_path_directory.is_local()) {
     _path_directory.make_absolute();
   }
@@ -189,6 +228,11 @@ write(ostream &out, int indent_level) const {
 
   default:
     break;
+  }
+
+  if (_noabs) {
+    indent(out, indent_level)
+      << "-noabs\n";
   }
 }
 

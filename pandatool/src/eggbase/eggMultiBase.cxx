@@ -35,6 +35,14 @@ EggMultiBase() {
      "Force complete loading: load up the egg file along with all of its "
      "external references.",
      &EggMultiBase::dispatch_none, &_force_complete);
+
+  add_option
+    ("noabs", "", 0,
+     "Don't allow any of the named egg files to have absolute pathnames.  "
+     "If any do, abort with an error.  This option is designed to help "
+     "detect errors when populating or building a standalone model tree, "
+     "which should be self-contained and include only relative pathnames.",
+     &EggReader::dispatch_none, &_noabs);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -121,6 +129,12 @@ read_egg(const Filename &filename) {
 
   if (!data->read(filename)) {
     // Failure reading.
+    return (EggData *)NULL;
+  }
+
+  if (_noabs && data->original_had_absolute_pathnames()) {
+    nout << filename.get_basename()
+         << " includes absolute pathnames!\n";
     return (EggData *)NULL;
   }
 

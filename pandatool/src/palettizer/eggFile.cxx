@@ -60,9 +60,10 @@ EggFile() {
 //     Function: EggFile::from_command_line
 //       Access: Public
 //  Description: Accepts the information about the egg file as
-//               supplied from the command line.
+//               supplied from the command line.  Returns true if the
+//               egg file is valid, false otherwise.
 ////////////////////////////////////////////////////////////////////
-void EggFile::
+bool EggFile::
 from_command_line(EggData *data,
                   const Filename &source_filename,
                   const Filename &dest_filename,
@@ -90,7 +91,20 @@ from_command_line(EggData *data,
   // file inherits the default group that was in effect when it was
   // specified on the command line.
   _default_group = pal->get_default_group();
+
+  return true;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggFile::get_source_filename
+//       Access: Public
+//  Description: Returns the filename this egg file was read from.
+////////////////////////////////////////////////////////////////////
+const Filename &EggFile::
+get_source_filename() const {
+  return _source_filename;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggFile::scan_textures
@@ -536,7 +550,7 @@ remove_egg() {
 //               file.
 ////////////////////////////////////////////////////////////////////
 bool EggFile::
-read_egg() {
+read_egg(bool noabs) {
   nassertr(_data == (EggData *)NULL, false);
   nassertr(!_source_filename.empty(), false);
 
@@ -554,10 +568,15 @@ read_egg() {
     return false;
   }
 
+  if (noabs && data->original_had_absolute_pathnames()) {
+    nout << _source_filename.get_basename()
+         << " references textures using absolute pathnames!\n";
+    return false;
+  }
 
   // Extract the set of textures referenced by this egg file.
   EggTextureCollection tc;
-  tc.find_used_textures(_data);
+  tc.find_used_textures(data);
   
   // Make sure each tref name is unique within a given file.
   tc.uniquify_trefs();
@@ -850,7 +869,7 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 TypedWritable* EggFile::
 make_EggFile(const FactoryParams &params) {
-  EggFile *me = new EggFile;
+  EggFile *me = new EggFile();
   DatagramIterator scan;
   BamReader *manager;
 

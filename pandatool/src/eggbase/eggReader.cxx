@@ -49,6 +49,14 @@ EggReader() {
      "external references.",
      &EggReader::dispatch_none, &_force_complete);
 
+  add_option
+    ("noabs", "", 0,
+     "Don't allow the input egg file to have absolute pathnames.  "
+     "If it does, abort with an error.  This option is designed to help "
+     "detect errors when populating or building a standalone model tree, "
+     "which should be self-contained and include only relative pathnames.",
+     &EggReader::dispatch_none, &_noabs);
+
   _tex_type = (PNMFileType *)NULL;
   _delod = -1.0;
 }
@@ -171,6 +179,12 @@ handle_args(ProgramBase::Args &args) {
       // Rather than returning false, we simply exit here, so the
       // ProgramBase won't try to tell the user how to run the program
       // just because we got a bad egg file.
+      exit(1);
+    }
+
+    if (_noabs && file_data.original_had_absolute_pathnames()) {
+      nout << filename.get_basename()
+           << " includes absolute pathnames!\n";
       exit(1);
     }
 

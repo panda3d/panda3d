@@ -163,7 +163,7 @@ convert_flt(const FltHeader *flt_header) {
     _egg_data->set_coordinate_system(CS_zup_right);
   }
 
-  _error = false;
+  clear_error();
   _flt_header = flt_header;
 
   // Generate a default vertex pool.
@@ -188,7 +188,7 @@ convert_flt(const FltHeader *flt_header) {
 
   cleanup();
 
-  return !_error;
+  return !had_error();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -681,9 +681,7 @@ parse_comment(const string &comment, const string &name,
   if (p >= comment.length() || comment[p] != '{') {
     nout << "No opening brace in comment for "
          << name << "\n\n";
-    if (!_allow_errors) {
-      _error = true;
-    }
+    _error = true;
     return false;
   }
 
@@ -697,9 +695,7 @@ parse_comment(const string &comment, const string &name,
   if (q == p) {
     nout << "No closing brace in comment for "
          << name << "\n\n";
-    if (!_allow_errors) {
-      _error = true;
-    }
+    _error = true;
     return false;
   }
 
@@ -708,9 +704,7 @@ parse_comment(const string &comment, const string &name,
   if (!egg_node->parse_egg(egg_syntax)) {
     nout << "Syntax error in comment for "
          << name << "\n\n";
-    if (!_allow_errors) {
-      _error = true;
-    }
+    _error = true;
     return false;
   }
 
