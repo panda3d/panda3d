@@ -2,7 +2,7 @@
 
 import DirectNotifyGlobal
 import string
-from PythonUtil import lineInfo
+from PythonUtil import lineInfo, uniqueElements
 
 """
 Any data that can be edited by a level editor must be represented as
@@ -84,7 +84,7 @@ class Level:
             del self.levelSpec
 
     def createEntityCreator(self):
-        self.notify.error(
+        Level.notify.error(
             'concrete Level class must override %s' % lineInfo()[2])
 
     def createAllEntities(self, priorityTypes=[]):
@@ -112,20 +112,19 @@ class Level:
         self.onLevelPostCreate()
 
     def destroyAllEntities(self):
+        assert uniqueElements(self.createdEntIds)
         # destroy the entities in reverse order
         while len(self.createdEntIds) > 0:
-            entId = self.createdEntIds[-1]
+            entId = self.createdEntIds.pop()
             entity = self.getEntity(entId)
             if entity is not None:
-                self.notify.debug('destroying %s %s' % (
+                Level.notify.debug('destroying %s %s' % (
                     self.getEntityType(entId), entId))
-                # this removes the entId from self.createdEntIds
-                # in order to support editor-based entity removal
                 entity.destroy()
+                assert not entId in self.entities
             else:
-                self.notify.warning('trying to destroy entity %s, but '
-                                    'it is already gone' % entId)
-                self.createdEntIds.pop()
+                Level.notify.warning('trying to destroy entity %s, but '
+                                     'it is already gone' % entId)
 
     def createAllEntitiesOfType(self, entType):
         """creates all entities of a given type"""
@@ -141,12 +140,14 @@ class Level:
     def createEntity(self, entId):
         assert not entId in self.createdEntIds
         spec = self.levelSpec.getEntitySpec(entId)
-        self.notify.debug('creating %s %s' % (spec['type'], entId))
+        Level.notify.debug('creating %s %s' % (spec['type'], entId))
         entity = self.entityCreator.createEntity(entId)
         # NOTE: the entity is not considered to really be created until
         # it has all of its initial spec data; see 'initializeEntity'
         # below.
         if entity is not None:
+            assert uniqueElements(self.createdEntIds)
+            assert entId not in self.createdEntIds
             self.createdEntIds.append(entId)
 
         # call the create handler
@@ -261,14 +262,10 @@ class Level:
         del self.entities[entId]
         # if we created this entity, remove its entId from the
         # createdEntIds list
-        if len(self.createdEntIds) > 0:
-            # most often, we are destroying the entities in reverse order
-            if entId == self.createdEntIds[-1]:
-                self.createdEntIds.pop()
-            elif entId in self.createdEntIds:
-                # this should only happen if someone deleted an entity
-                # with an editor
-                self.createdEntIds.remove(entId)
+        if entId in self.createdEntIds:
+            # this should only happen if someone deleted an entity
+            # with an editor
+            self.createdEntIds.remove(entId)
 
     if __debug__:
         # the level generates these events when the spec changes
