@@ -22,9 +22,7 @@ class DirectObject:
         #   an unused dictionary taking up space
         # - the speed hit of calling this function on calls to accept,
         #   ignore, etc. is negligible, since they are not called often
-        try:
-            self.events
-        except:
+        if not hasattr(self, "events"):
             # list of events that this object is accepting
             # we use a dictionary to avoid linear searches
             self.events = {}
