@@ -5,9 +5,8 @@ by John E. Grayson which is a streamlined adaptation of GuiAppD.py, originally
 created by Doug Hellmann (doughellmann@mindspring.com).
 """
 from PandaObject import *
-from Tkinter import *
+from TkGlobal import *
 from tkFileDialog import *
-import Pmw
 import Dial
 import Floater
 import Slider
