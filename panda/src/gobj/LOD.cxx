@@ -85,6 +85,9 @@ xform(const LMatrix4f &mat) {
   }
 }
 
+//const int minimum_LOD_number = config_gobj.GetInt("minimum-LOD-number", 0);
+//extern EXPCL_PANDA const int minimum_LOD_number;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LOD::compute_child
 //       Access: Public
@@ -94,6 +97,7 @@ xform(const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 int LOD::
 compute_child(const LPoint3f &cam_pos, const LPoint3f &center) const {
+
   LVector3f v = cam_pos - center;
   float dist = dot(v, v);
   LODSwitchVector::const_iterator i;
@@ -103,6 +107,15 @@ compute_child(const LPoint3f &cam_pos, const LPoint3f &center) const {
     if ((*i).in_range(dist))
       break;
   }
+
+  // since lowest level LOD is lev 0, must invert the meaning of
+  // so minimum_LOD_number 0 will screen out no LODs, and increasing it
+  // will screen out successively higher levels
+  int max_allowed_LOD_number = (_switch_vector.size()-1) - minimum_LOD_number;
+  if(child > max_allowed_LOD_number) {
+      child = max_allowed_LOD_number;
+  }
+
   return child;
 }
 

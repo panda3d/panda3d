@@ -93,6 +93,11 @@ BamTextureMode bam_texture_mode;
 // texture file, which will presumably only be loaded once.
 const string fake_texture_image = config_gobj.GetString("fake-texture-image", "");
 
+// this controls the LOD child number returned by compute_child
+// use it to force the LOD alg to not select the highest level(s) of LOD
+// minimum_LOD_number=0 will screen out no LODs, and increasing it
+// will screen out successively higher levels
+const int minimum_LOD_number = config_gobj.GetInt("minimum-LOD-number", 0);
 
 static BamTextureMode
 parse_texture_mode(const string &mode) {

@@ -40,6 +40,8 @@ enum BamTextureMode {
 extern EXPCL_PANDA BamTextureMode bam_texture_mode;
 extern EXPCL_PANDA const string fake_texture_image;
 
+extern EXPCL_PANDA const int minimum_LOD_number;
+
 #endif
 
 

@@ -1,5 +1,4 @@
 
-#include "LOD.cxx"
 #include "geom.cxx"
 #include "geomLine.cxx"
 #include "geomLinestrip.cxx"
@@ -11,4 +10,5 @@
 #include "geomTri.cxx"
 #include "geomTrifan.cxx"
 #include "geomTristrip.cxx"
+#include "fog.cxx"
 

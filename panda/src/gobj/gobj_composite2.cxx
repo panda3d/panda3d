@@ -1,7 +1,7 @@
 
 #include "config_gobj.cxx"
+#include "LOD.cxx"
 #include "drawable.cxx"
-#include "fog.cxx"
 #include "imageBuffer.cxx"
 #include "material.cxx"
 #include "materialPool.cxx"
