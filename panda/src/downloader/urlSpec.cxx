@@ -151,19 +151,38 @@ set_scheme(const string &scheme) {
     if (!has_scheme()) {
       return;
     }
+    // Increment over the trailing colon so we can remove that too.
     _scheme_end++;
     length_adjust = -(int)_scheme_end;
     _url = _url.substr(_scheme_end);
     _flags &= ~F_has_scheme;
 
   } else if (!has_scheme()) {
-    // Insert a new scheme specification.
-    length_adjust = lc_scheme.length() + 1;
+    // Insert a new scheme specification.  The user may or may not
+    // have specified a colon.
+    if (lc_scheme[lc_scheme.length() - 1] == ':') {
+      length_adjust = lc_scheme.length();
+      _url = lc_scheme + _url;
 
-    _url = lc_scheme + ":" + _url;
+    } else {
+      length_adjust = lc_scheme.length() + 1;
+      _url = lc_scheme + ":" + _url;
+    }
+
+    // Since the length_adjust flag, above, now accounts for the
+    // colon, subtract one from _scheme_end (which should not include
+    // the colon).
+    _scheme_end--;
     _flags |= F_has_scheme;
 
   } else {
+    // Replace the existing scheme specification.  Since the existing
+    // scheme will already be trailed by a colon, remove the colon
+    // from the string if the user appended one.
+    if (lc_scheme[lc_scheme.length() - 1] == ':') {
+      lc_scheme = lc_scheme.substr(0, lc_scheme.length() - 1);
+    }
+
     int old_length = (int)_scheme_end;
     length_adjust = scheme.length() - old_length;
     _url = lc_scheme + _url.substr(_scheme_end);
@@ -190,6 +209,7 @@ set_scheme(const string &scheme) {
 void URLSpec::
 set_authority(const string &authority) {
   int length_adjust;
+  int extra_slash_adjust = 0;
 
   if (authority.empty()) {
     // Remove the authority specification.
@@ -210,7 +230,13 @@ set_authority(const string &authority) {
     // Insert a new authority specification.
     length_adjust = authority.length() + 2;
 
-    _url = _url.substr(0, _username_start) + "//" + authority + _url.substr(_port_end);
+    string extra_slash;
+    if (has_path() && _url[_path_start] != '/') {
+      // If we have a path but it doesn't begin with a slash, it should.
+      extra_slash = '/';
+      extra_slash_adjust = 1;
+    }
+    _url = _url.substr(0, _username_start) + "//" + authority + extra_slash + _url.substr(_port_end);
     _flags |= F_has_authority;
     _username_start += 2;
 
@@ -223,8 +249,8 @@ set_authority(const string &authority) {
 
   _port_end += length_adjust;
   _path_start += length_adjust;
-  _path_end += length_adjust;
-  _query_start += length_adjust;
+  _path_end += length_adjust + extra_slash_adjust;
+  _query_start += length_adjust + extra_slash_adjust;
 
   parse_authority();
 }
