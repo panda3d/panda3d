@@ -16,13 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "device_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "config_device.h"
 #include "analogNode.h"
 #include "buttonNode.h"
@@ -35,7 +29,6 @@
 #include "dialNode.h"
 #include "mouse.h"
 #include "trackerNode.h"
-#endif
 
 #include <dconfig.h>
 

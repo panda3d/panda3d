@@ -16,16 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "express_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 
 #include "config_express.h"
-#endif
 
 #include <executionEnvironment.h>
 #include "get_config_path.h"

@@ -17,8 +17,6 @@
   #define INSTALL_HEADERS \
     chatHelpers.h chatInput.I chatInput.h
 
-//  #define PRECOMPILED_HEADER chat_headers.h 
-
   #define IGATESCAN all
 
 #end lib_target

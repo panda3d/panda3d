@@ -16,17 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "express_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "memoryUsagePointers.h"
 #include "trueClock.h"
 #include "typedReferenceCount.h"
-#endif
 
 #include "memoryUsage.h"
 #include "interrogate_request.h"
@@ -38,10 +31,9 @@
 #ifndef NDEBUG
 // Nothing in this module gets compiled in NDEBUG mode.
 
-#if !defined(WIN32_VC) || defined(NO_PCH)
+
 #include "config_express.h"
 #include <algorithm>
-#endif
 
 // This flag is set true in is_counting() mode to indicate that the
 // malloc operation is coming from C++ operator new or delete.

@@ -16,13 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "cull_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "cullTraverser.h"
 #include "geomBinTransition.h"
 #include "geomBinAttribute.h"
@@ -38,7 +32,6 @@
 #include <indent.h>
 #include <string_utils.h>
 #include <pStatTimer.h>
-#endif
 
 #include <wrt.h>
 #include <displayRegion.h>

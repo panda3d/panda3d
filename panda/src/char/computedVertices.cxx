@@ -16,13 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "char_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "computedVertices.h"
 #include "characterJoint.h"
 #include "character.h"
@@ -33,8 +27,6 @@
 #include <bamReader.h>
 #include <bamWriter.h>
 #include <ioPtaDatagramLinMath.h>
-#endif
-
 #include <algorithm>
 
 TypeHandle ComputedVertices::_type_handle;

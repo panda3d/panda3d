@@ -65,8 +65,6 @@
     vec4DataTransition.h vectorDataAttribute.I vectorDataAttribute.h \
     vectorDataTransition.I vectorDataTransition.h
 
-//  #define PRECOMPILED_HEADER dgraph_headers.h
-  
   #define IGATESCAN \
     dataNode.cxx dataNode.h dataRelation.cxx dataRelation.h \
     dataGraphTraversal.cxx dataGraphTraversal.h

@@ -16,13 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "chan_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "animChannelScalarTable.h"
 #include "animBundle.h"
 #include "config_chan.h"
@@ -33,7 +27,6 @@
 #include <bamReader.h>
 #include <bamWriter.h>
 #include <fftCompressor.h>
-#endif
 
 TypeHandle AnimChannelScalarTable::_type_handle;
 

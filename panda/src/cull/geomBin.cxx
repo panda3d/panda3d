@@ -16,13 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "cull_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "geomBin.h"
 #include "cullTraverser.h"
 #include "config_cull.h"
@@ -35,7 +29,6 @@
 #include <nodeAttributes.h>
 #include <graphicsStateGuardian.h>
 #include <string_utils.h>
-#endif
 
 TypeHandle GeomBin::_type_handle;
 

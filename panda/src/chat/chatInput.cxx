@@ -15,14 +15,8 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "chat_headers.h"
-#endif
-
-#pragma hdrstop
 
 #include "chatInput.h"
-
 #include <buttonEventDataTransition.h>
 #include <buttonEventDataAttribute.h>
 #include <buttonEvent.h>

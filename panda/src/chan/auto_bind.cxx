@@ -16,17 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "chan_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "animBundleNode.h"
 #include "partBundleNode.h"
 #include "config_chan.h"
-#endif
 
 #include <renderRelation.h>
 #include <traverserVisitor.h>

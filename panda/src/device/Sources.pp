@@ -39,8 +39,6 @@
     trackerData.I trackerData.h \
     trackerNode.I trackerNode.h
 
-//  #define PRECOMPILED_HEADER device_headers.h
-
   #define IGATESCAN all
 
 #end lib_target

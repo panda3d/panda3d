@@ -147,8 +147,7 @@
 
   #define IGATESCAN all
   
-//  #define PRECOMPILED_HEADER sgattrib_headers.h
-// 
+
 //  #define IGATESCAN \
 //    renderRelation.cxx textureTransition.cxx materialTransition.cxx \
 //    clipPlaneTransition.cxx linesmoothTransition.cxx transformTransition.cxx \

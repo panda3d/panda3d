@@ -78,8 +78,6 @@
     namable.I namable.h tokenBoard.I patchfile.h patchfile.I        \
     error_utils.h
 
-//  #define PRECOMPILED_HEADER express_headers.h 
-
   #define IGATESCAN all
 
 #end lib_target

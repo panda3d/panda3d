@@ -15,20 +15,13 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "express_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include <pandabase.h>
 #include "config_express.h"
 #include "error_utils.h"
 
 #include <algorithm>
 #include <errno.h>
-#endif
 
 #include "multifile.h"
 

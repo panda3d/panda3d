@@ -16,20 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "express_headers.h"
-#endif
-
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "typeHandle.h"
 #include "typedObject.h"
 #include "indent.h"
 #include "config_express.h"
 
 #include <algorithm>
-#endif
 
 // In general, we use the express_cat->info() syntax in this file
 // (instead of express_cat.info()), because much of this work is done at

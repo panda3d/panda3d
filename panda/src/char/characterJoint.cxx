@@ -16,13 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "char_headers.h"
-#endif
-
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "characterJoint.h"
 #include "config_char.h"
 
@@ -32,7 +25,6 @@
 #include <datagramIterator.h>
 #include <bamReader.h>
 #include <bamWriter.h>
-#endif
 
 TypeHandle CharacterJoint::_type_handle;
 

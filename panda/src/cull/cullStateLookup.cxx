@@ -16,18 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "cull_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "cullState.h"
 #include "cullStateSubtree.h"
 
 #include <indent.h>
-#endif
 
 #include "cullStateLookup.h"
 

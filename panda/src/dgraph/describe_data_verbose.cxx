@@ -16,18 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "dgraph_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "dataGraphTraversal.h"
 #include "describe_data_verbose.h"
 
 #include <indent.h>
-#endif
 
 #include <nodeAttributes.h>
 

@@ -16,16 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "dgraph_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "doubleDataAttribute.h"
 #include "doubleDataTransition.h"
-#endif
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

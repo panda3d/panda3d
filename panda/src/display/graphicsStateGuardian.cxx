@@ -16,18 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "display_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "graphicsStateGuardian.h"
 #include "config_display.h"
 #include "textureContext.h"
 #include <algorithm>
-#endif
 
 #include <clockObject.h>
 #include <geomNode.h>

@@ -16,19 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "chan_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "movingPartBase.h"
 #include "animControl.h"
 #include "animChannelBase.h"
 
 #include <indent.h>
-#endif
 
 TypeHandle MovingPartBase::_type_handle;
 

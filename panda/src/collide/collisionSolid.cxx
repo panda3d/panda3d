@@ -16,13 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "collide_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "collisionSolid.h"
 #include "config_collide.h"
 #include "collisionEntry.h"
@@ -36,7 +30,6 @@
 #include <datagramIterator.h>
 #include <bamReader.h>
 #include <bamWriter.h>
-#endif
 
 #include <indent.h>
 #include <cullFaceTransition.h>

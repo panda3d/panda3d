@@ -16,19 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "chan_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "movingPartScalar.h"
 #include <datagram.h>
 #include <datagramIterator.h>
 #include <bamReader.h>
 #include <bamWriter.h>
-#endif
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

@@ -16,17 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "express_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "trueClock.h"
 #include "config_express.h"
 #include "numeric_types.h"
-#endif
 
 TrueClock *TrueClock::_global_ptr = NULL;
 
@@ -111,16 +104,9 @@ TrueClock() {
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "express_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include <eeregs.h>
 #include <eekernel.h>
-#endif
 
 static unsigned int _msec;
 static unsigned int _sec;

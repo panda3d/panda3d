@@ -16,16 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "chat_headers.h"
-#endif
-
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "chatInput.h"
-#endif
-
 #include "config_chat.h"
 #include <dconfig.h>
 

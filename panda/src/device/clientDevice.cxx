@@ -16,18 +16,11 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "device_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "clientDevice.h"
 #include "clientBase.h"
 
 #include <indent.h>
-#endif
 
 TypeHandle ClientDevice::_type_handle;
 

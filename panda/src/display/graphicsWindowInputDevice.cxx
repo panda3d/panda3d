@@ -16,17 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "display_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "graphicsWindowInputDevice.h"
 #include <mouseButton.h>
 #include <keyboardButton.h>
-#endif
 
 #define EXPCL EXPCL_PANDA
 #define EXPTP EXPTP_PANDA

@@ -16,15 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "chan_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "animControlCollection.h"
-#endif
 
 
 ////////////////////////////////////////////////////////////////////

@@ -16,19 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "chan_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "animChannelBase.h"
 #include <datagram.h>
 #include <datagramIterator.h>
 #include <bamReader.h>
 #include <bamWriter.h>
-#endif
 
 TypeHandle AnimChannelBase::_type_handle;
 

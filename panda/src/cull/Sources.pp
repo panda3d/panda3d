@@ -40,8 +40,6 @@
 
   #define IGATESCAN all
   
-//  #define PRECOMPILED_HEADER cull_headers.h
-
 #end lib_target
 
 #begin test_bin_target

@@ -16,13 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "chan_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "movingPartMatrix.h"
 
 #include <compose_matrix.h>
@@ -30,7 +24,6 @@
 #include <datagramIterator.h>
 #include <bamReader.h>
 #include <bamWriter.h>
-#endif
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

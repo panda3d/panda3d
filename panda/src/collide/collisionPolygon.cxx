@@ -16,13 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "collide_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "collisionPolygon.h"
 #include "collisionHandler.h"
 #include "collisionEntry.h"
@@ -39,7 +33,6 @@
 #include <datagramIterator.h>
 #include <bamReader.h>
 #include <bamWriter.h>
-#endif
 
 #include <algorithm>
 #include <geomPolygon.h>

@@ -16,19 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "cull_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "geomBinAttribute.h"
 #include "geomBinTransition.h"
 
 #include <indent.h>
 #include <string.h>
-#endif
 
 #include <graphicsStateGuardianBase.h>
 

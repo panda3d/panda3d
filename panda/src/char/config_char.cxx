@@ -16,13 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "char_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "config_char.h"
 #include "character.h"
 #include "characterJoint.h"
@@ -30,8 +24,6 @@
 #include "characterSlider.h"
 #include "computedVertices.h"
 #include "dynamicVertices.h"
-#endif
-
 #include <dconfig.h>
 #include <lmatrix4.h>
 

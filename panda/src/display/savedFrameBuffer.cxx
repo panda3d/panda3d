@@ -16,14 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "display_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "savedFrameBuffer.h"
-#endif
 
 TypeHandle SavedFrameBuffer::_type_handle;

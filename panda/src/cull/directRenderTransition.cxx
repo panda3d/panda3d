@@ -16,17 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "cull_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "directRenderTransition.h"
 
 #include <indent.h>
-#endif
 
 TypeHandle DirectRenderTransition::_type_handle;
 

@@ -16,20 +16,13 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "express_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "datagram.h"
 
 #include <notify.h>
 
 // for sprintf().
 #include <stdio.h>  
-#endif
 
 TypeHandle Datagram::_type_handle;
 

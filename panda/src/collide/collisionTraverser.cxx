@@ -16,13 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "collide_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "collisionNode.h"
 #include "collisionEntry.h"
 #include "collisionPolygon.h"
@@ -31,7 +25,6 @@
 #include <transformTransition.h>
 #include <geomNode.h>
 #include <geom.h>
-#endif
 
 #include "collisionTraverser.h"
 #include <nodePath.h>

@@ -16,13 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "chan_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "config_chan.h"
 #include "animBundle.h"
 #include "animBundleNode.h"
@@ -37,7 +31,6 @@
 #include "partBundle.h"
 #include "partBundleNode.h"
 #include "partGroup.h"
-#endif
 
 #include <luse.h>
 #include <dconfig.h>

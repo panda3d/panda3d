@@ -16,25 +16,16 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "collide_headers.h"
-#endif
-
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "collisionRay.h"
 #include "collisionHandler.h"
 #include "collisionEntry.h"
 #include "config_collide.h"
-
 #include <geom.h>
 #include <geomNode.h>
 #include <geomLinestrip.h>
 #include <boundingLine.h>
 #include <projectionNode.h>
 #include <projection.h>
-#endif
 
 TypeHandle CollisionRay::_type_handle;
 

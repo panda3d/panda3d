@@ -45,8 +45,6 @@
     savedFrameBuffer.I savedFrameBuffer.h textureContext.I \
     textureContext.h
 
-//  #define PRECOMPILED_HEADER display_headers.h    
-
   #define IGATESCAN all
 
 #end lib_target

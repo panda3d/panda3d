@@ -16,13 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "dgraph_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "dgraph_headers.h"
 #include "dataNode.h"
 #include "dataRelation.h"
@@ -36,7 +30,6 @@
 #include "matrixDataAttribute.h"
 #include "buttonEventDataTransition.h"
 #include "buttonEventDataAttribute.h"
-#endif
 
 #include <dconfig.h>
 

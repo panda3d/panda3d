@@ -40,8 +40,6 @@
     builderTypes.h builderVertex.I builderVertex.h builderVertexTempl.I \
     builderVertexTempl.h config_builder.h
 
-//  #define PRECOMPILED_HEADER builder_headers.h 
-
 #end lib_target
 
 #begin test_bin_target

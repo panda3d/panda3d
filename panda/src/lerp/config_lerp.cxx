@@ -16,16 +16,9 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "lerp_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "lerp.h"
 #include "lerpfunctor.h"
-#endif
 
 #include "config_lerp.h"
 

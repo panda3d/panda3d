@@ -27,8 +27,6 @@
     computedVertices.h computedVerticesMorph.I computedVerticesMorph.h \
     config_char.h dynamicVertices.h
     
-//  #define PRECOMPILED_HEADER char_headers.h
-
   #define IGATESCAN all
 
 #end lib_target

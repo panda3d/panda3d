@@ -16,13 +16,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "collide_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "collisionSegment.h"
 #include "collisionHandler.h"
 #include "collisionEntry.h"
@@ -32,7 +26,6 @@
 #include <geomNode.h>
 #include <projectionNode.h>
 #include <projection.h>
-#endif
 
 #include <geomLine.h>
 #include <geometricBoundingVolume.h>

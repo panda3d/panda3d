@@ -16,20 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "char_headers.h"
-#endif
-
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "characterJointBundle.h"
 #include "character.h"
 #include <datagram.h>
 #include <datagramIterator.h>
 #include <bamReader.h>
 #include <bamWriter.h>
-#endif
 
 TypeHandle CharacterJointBundle::_type_handle;
 

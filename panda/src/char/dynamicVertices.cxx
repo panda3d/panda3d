@@ -16,13 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "char_headers.h"
-#endif
-
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "dynamicVertices.h"
 #include "config_char.h"
 #include <bamReader.h>
@@ -30,10 +23,8 @@
 #include <datagram.h>
 #include <datagramIterator.h>
 #include <ioPtaDatagramLinMath.h>
-#endif
 
 TypeHandle DynamicVertices::_type_handle;
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DynamicVertices::Constructor

@@ -16,20 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "cull_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "geomBinGroup.h"
 #include "cullTraverser.h"
-
 #include <indent.h>
 #include <nodeAttributes.h>
 #include <graphicsStateGuardian.h>
-#endif
 
 TypeHandle GeomBinGroup::_type_handle;
 

@@ -16,19 +16,12 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "collide_headers.h"
-#endif
 
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "collisionHandlerFloor.h"
 #include "config_collide.h"
 
 #include <renderRelation.h>
 #include <transformTransition.h>
-#endif
 
 #include <clockObject.h>
 

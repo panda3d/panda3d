@@ -16,13 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#if defined(WIN32_VC) && !defined(NO_PCH)
-#include "char_headers.h"
-#endif
-
-#pragma hdrstop
-
-#if !defined(WIN32_VC) || defined(NO_PCH)
 #include "character.h"
 #include "characterJoint.h"
 #include "computedVertices.h"
@@ -34,14 +27,10 @@
 #include <bamReader.h>
 #include <bamWriter.h>
 #include <pStatTimer.h>
-#endif
-
 #include <geomNode.h>
 #include <animControl.h>
 #include <clockObject.h>
 #include <pStatTimer.h>
-
-
 
 TypeHandle Character::_type_handle;
 
