@@ -82,12 +82,12 @@ class TaskManagerWidget(PandaObject):
         self.removeButton = Button(controlsFrame, text = 'Remove Task',
                                    command = self.removeCurrentTask)
         #self.removeButton.pack(expand = 1, fill = X, side = LEFT)
-        self.removeButton.grid(row = 0, col = 0, sticky = EW)
+        self.removeButton.grid(row = 0, column = 0, sticky = EW)
         self.removeMatchingButton = Button(controlsFrame,
                                            text = 'Remove Matching Tasks',
                                            command = self.removeMatchingTasks)
         #self.removeMatchingButton.pack(expand = 1, fill = X, side = LEFT)
-        self.removeMatchingButton.grid(row = 0, col = 1, sticky = EW)
+        self.removeMatchingButton.grid(row = 0, column = 1, sticky = EW)
 
         self.taskMgrVerbose = IntVar()
         self.taskMgrVerbose.set(1)
@@ -96,14 +96,14 @@ class TaskManagerWidget(PandaObject):
             text = 'Update',
             command = self.updateTaskListBox)
         #self.update.pack(expand = 1, fill = X, side = LEFT)
-        self.update.grid(row = 1, col = 0, sticky = EW)
+        self.update.grid(row = 1, column = 0, sticky = EW)
         self.dynamicUpdate = Checkbutton(
             controlsFrame,
             text = 'Dynamic Update',
             variable = self.taskMgrVerbose,
             command = self.toggleTaskMgrVerbose)
         #self.dynamicUpdate.pack(expand = 1, fill = X, side = LEFT)
-        self.dynamicUpdate.grid(row = 1, col = 1, sticky = EW)
+        self.dynamicUpdate.grid(row = 1, column = 1, sticky = EW)
         # Pack frames
         controlsFrame.pack(fill = X)
         controlsFrame.grid_columnconfigure(0, weight = 1)

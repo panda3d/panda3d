@@ -53,14 +53,14 @@ class Dial(Valuator):
             self._valuator.grid(rowspan = 2, columnspan = 2,
                                 padx = 2, pady = 2)
             if self._label:
-                self._label.grid(row = 0, col = 2, sticky = EW)
-            self._entry.grid(row = 1, col = 2, sticky = EW)
+                self._label.grid(row = 0, column = 2, sticky = EW)
+            self._entry.grid(row = 1, column = 2, sticky = EW)
             self.interior().columnconfigure(2, weight = 1)
         else:
             if self._label:
-                self._label.grid(row=0,col=0, sticky = EW)
-            self._entry.grid(row=0,col=1, sticky = EW)
-            self._valuator.grid(row=0,col=2, padx = 2, pady = 2)
+                self._label.grid(row=0,column=0, sticky = EW)
+            self._entry.grid(row=0,column=1, sticky = EW)
+            self._valuator.grid(row=0,column=2, padx = 2, pady = 2)
             self.interior().columnconfigure(0, weight = 1)
 
     def addValuatorPropertiesToDialog(self):

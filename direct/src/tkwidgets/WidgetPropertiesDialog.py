@@ -88,11 +88,11 @@ class WidgetPropertiesDialog(Toplevel):
             helpString = propertySet.get('help', None)
             # Create label
             label = Label(master, text=property, justify=LEFT)
-            label.grid(row=count, col = 0, padx=5, sticky=W)
+            label.grid(row=count, column = 0, padx=5, sticky=W)
 
             # Create entry
             entry = Pmw.EntryField(master, entry_justify = 'right')
-            entry.grid(row=count, col = 1, padx=5, sticky=W+E)
+            entry.grid(row=count, column = 1, padx=5, sticky=W+E)
             if initialvalue is None:
                 entry.insert(0, 'None')
             else:

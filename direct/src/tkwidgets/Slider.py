@@ -57,16 +57,16 @@ class Slider(Valuator):
     def packValuator(self):
         if self['style'] == VALUATOR_FULL:
             if self._label:
-                self._label.grid(row = 0, col = 0, sticky = EW)
-            self._entry.grid(row = 0, col = 1, sticky = EW)
+                self._label.grid(row = 0, column = 0, sticky = EW)
+            self._entry.grid(row = 0, column = 1, sticky = EW)
             self._valuator.grid(row = 1, columnspan = 2,
                                 padx = 2, pady = 2, sticky = 'ew')
             self.interior().columnconfigure(0, weight = 1)
         else:
             if self._label:
-                self._label.grid(row=0,col=0, sticky = EW)
-            self._entry.grid(row=0,col=1, sticky = EW)
-            self._valuator.grid(row=0,col=2, padx = 2, pady = 2)
+                self._label.grid(row=0,column=0, sticky = EW)
+            self._entry.grid(row=0,column=1, sticky = EW)
+            self._valuator.grid(row=0,column=2, padx = 2, pady = 2)
             self.interior().columnconfigure(0, weight = 1)
 
     def setMin(self):
