@@ -30,7 +30,9 @@ TypeHandle TextFont::_type_handle;
 ////////////////////////////////////////////////////////////////////
 static INLINE bool
 isbreakpoint(unsigned int ch) {
-  return (ch == ' ' || ch == '\t' || ch == (unsigned int)text_soft_hyphen_key);
+  return (ch == ' ' || ch == '\t' || 
+          ch == (unsigned int)text_soft_hyphen_key ||
+          ch == (unsigned int)text_soft_break_key);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -219,7 +221,7 @@ wordwrap_to(const wstring &text, float wordwrap_width,
     float hyphen_width = calc_width(*text_soft_hyphen_output);
     float width = initial_width;
     while (q < text.length() && text[q] != '\n') {
-      if (isspacew(text[q])) {
+      if (isspacew(text[q]) || text[q] == text_soft_break_key) {
         if (!last_was_space) {
           any_spaces = true;
           // We only care about logging whether there is a soft-hyphen
@@ -235,7 +237,7 @@ wordwrap_to(const wstring &text, float wordwrap_width,
       }
 
       // A soft hyphen character is not printed, but marks a point
-      // that we might hyphenate a word if we need to.
+      // at which we might hyphenate a word if we need to.
       if (text[q] == text_soft_hyphen_key) {
         // We only consider this as a possible hyphenation point if
         // (a) it is not the very first character, and (b) there is
@@ -246,7 +248,7 @@ wordwrap_to(const wstring &text, float wordwrap_width,
           last_hyphen = q;
         }
 
-      } else {
+      } else if (text[q] != text_soft_break_key) {
         // Some normal, printable character.
         width += calc_width(text[q]);
       }
@@ -279,6 +281,19 @@ wordwrap_to(const wstring &text, float wordwrap_width,
       } else if (any_spaces) {
         // Otherwise, break at a space if we can.
         q = last_space;
+
+      } else {
+        // Otherwise, this is a forced break.  Accept the longest line
+        // we can that does not leave the next line beginning with one
+        // of our forbidden characters.
+        size_t i = 0;
+        while (i < text_max_never_break && q - i > p && 
+               text_never_break_before->find(text[q - i]) != wstring::npos) {
+          i++;
+        }
+        if (i < text_max_never_break) {
+          q -= i;
+        }
       }
     }
 
@@ -314,7 +329,8 @@ wordwrap_to(const wstring &text, float wordwrap_width,
     }
 
     for (size_t pi = p; pi < q; pi++) {
-      if (text[pi] != text_soft_hyphen_key) {
+      if (text[pi] != text_soft_hyphen_key && 
+          text[pi] != text_soft_break_key) {
         output_text += text[pi];
       }
     }

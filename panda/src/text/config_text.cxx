@@ -52,13 +52,28 @@ const float text_tab_width = config_text.GetFloat("text-tab-width", 5.0f);
 // identified as the soft-hyphen character.
 const int text_soft_hyphen_key = config_text.GetInt("text-soft-hyphen-key", 3);
 
+// This is similar to the soft-hyphen key, above, except that when it
+// is used as a break point, no character is introduced in its place.
+const int text_soft_break_key = config_text.GetInt("text-soft-break-key", 4);
+
 // This is the string that is output, encoded in the default encoding,
-// to represent the soft-hyphen character.
+// to represent the hyphen character that is introduced when the line
+// is broken at a soft-hyphen key.
 wstring *text_soft_hyphen_output;
 
 // If the rightmost whitespace character falls before this fraction of
 // the line, hyphenate a word to the right of that if possible.
 const float text_hyphen_ratio = config_text.GetFloat("text-hyphen-ratio", 0.7);
+
+// This string represents a list of individual characters that should
+// never appear at the beginning of a line following a forced break.
+// Typically these will be punctuation characters.
+wstring *text_never_break_before;
+
+// Unless we have more than this number of text_never_break_before
+// characters in a row, in which case forget it and break wherever we
+// can.
+const int text_max_never_break = config_text.GetInt("text-max-never-break", 3);
 
 Texture::FilterType text_minfilter = Texture::FT_invalid;
 Texture::FilterType text_magfilter = Texture::FT_invalid;
@@ -119,7 +134,10 @@ init_libtext() {
   // Make sure libexpress is initialized before we ask something of
   // TextEncoder.
   init_libexpress();
-  string encoded = config_text.GetString("text-soft-hyphen-output", "-");
   TextEncoder encoder;
-  text_soft_hyphen_output = new wstring(encoder.decode_text(encoded));
+  string st1 = config_text.GetString("text-soft-hyphen-output", "-");
+  text_soft_hyphen_output = new wstring(encoder.decode_text(st1));
+
+  string st2 = config_text.GetString("text-never-break-before", ",.-:?!;");
+  text_never_break_before = new wstring(encoder.decode_text(st2));
 }

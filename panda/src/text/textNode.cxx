@@ -142,10 +142,18 @@ TextNode::
 string TextNode::
 wordwrap_to(const string &text, float wordwrap_width,
             bool preserve_trailing_whitespace) const {
-  nassertr(_font != (TextFont *)NULL, text);
+  TextFont *font = get_font();
+  if (font == (TextFont *)NULL) {
+    font = get_default_font();
+  }
+
+  if (font == (TextFont *)NULL) {
+    return text;
+  }
+
   wstring decoded = decode_text(text);
   wstring wrapped = 
-    _font->wordwrap_to(decoded, wordwrap_width, preserve_trailing_whitespace);
+    font->wordwrap_to(decoded, wordwrap_width, preserve_trailing_whitespace);
   return encode_wtext(wrapped);
 }
 
