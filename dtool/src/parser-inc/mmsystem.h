@@ -24,31 +24,5 @@
 #ifndef MMSYSTEM_H
 #define MMSYSTEM_H
 
-typedef void* HWAVEIN;
-typedef unsigned int MMRESULT;
-
-/* wave data block header */
-struct WAVEHDR {
-    char*       lpData;                 /* pointer to locked data buffer */
-    long        dwBufferLength;         /* length of data buffer */
-    long        dwBytesRecorded;        /* used for input only */
-    long*       dwUser;                 /* for client's use */
-    long        dwFlags;                /* assorted flags (see defines) */
-    long        dwLoops;                /* loop control counter */
-    struct WAVEHDR *lpNext;     /* reserved for driver */
-    long*       reserved;               /* reserved for driver */
-};
-
-struct WAVEFORMATEX
-{
-    short        wFormatTag;         /* format type */
-    short        nChannels;          /* number of channels (i.e. mono, stereo...) */
-    long       nSamplesPerSec;     /* sample rate */
-    long       nAvgBytesPerSec;    /* for buffer estimation */
-    short        nBlockAlign;        /* block size of data */
-    short        wBitsPerSample;     /* number of bits per sample of mono data */
-    short        cbSize;             /* the count in bytes of the size of */
-                                    /* extra information (after cbSize) */
-};
 
 #endif
