@@ -13,6 +13,7 @@
 #include "qpnodePath.cxx"
 #include "qpnodePathCollection.cxx"
 #include "qpnodePathComponent.cxx"
+#include "qpnodePathLerps.cxx"
 #include "pandaNode.cxx"
 #include "renderAttrib.cxx"
 #include "renderEffect.cxx"

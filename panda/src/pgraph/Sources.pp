@@ -1,6 +1,6 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-#define LOCAL_LIBS event gsgbase gobj putil graph linmath express pandabase
+#define LOCAL_LIBS lerp event gsgbase gobj putil graph linmath express pandabase
 
 #begin lib_target
   #define TARGET pgraph
@@ -44,6 +44,7 @@
     qpnodePath.I qpnodePath.h \
     qpnodePathCollection.I qpnodePathCollection.h \
     qpnodePathComponent.I qpnodePathComponent.h \
+    qpnodePathLerps.h \
     pandaNode.I pandaNode.h \
     renderAttrib.I renderAttrib.h \
     renderEffect.I renderEffect.h \
@@ -101,6 +102,7 @@
     qpnodePath.cxx \
     qpnodePathCollection.cxx \
     qpnodePathComponent.cxx \
+    qpnodePathLerps.cxx \
     pandaNode.cxx \
     renderAttrib.cxx \
     renderEffect.cxx \
@@ -160,6 +162,7 @@
     qpnodePath.I qpnodePath.h \
     qpnodePathCollection.I qpnodePathCollection.h \
     qpnodePathComponent.I qpnodePathComponent.h \
+    qpnodePathLerps.h \
     pandaNode.I pandaNode.h \
     renderAttrib.I renderAttrib.h \
     renderEffect.I renderEffect.h \

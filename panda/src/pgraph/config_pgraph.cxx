@@ -57,6 +57,7 @@
 #include "textureAttrib.h"
 #include "transformState.h"
 #include "transparencyAttrib.h"
+#include "qpnodePathLerps.h"
 
 #include "dconfig.h"
 
@@ -132,6 +133,14 @@ init_libpgraph() {
   TextureAttrib::init_type();
   TransformState::init_type();
   TransparencyAttrib::init_type();
+  qpPosLerpFunctor::init_type();
+  qpHprLerpFunctor::init_type();
+  qpScaleLerpFunctor::init_type();
+  qpPosHprLerpFunctor::init_type();
+  qpHprScaleLerpFunctor::init_type();
+  qpPosHprScaleLerpFunctor::init_type();
+  qpColorLerpFunctor::init_type();
+  qpColorScaleLerpFunctor::init_type();
 
   BillboardEffect::register_with_read_factory();
   qpCamera::register_with_read_factory();
