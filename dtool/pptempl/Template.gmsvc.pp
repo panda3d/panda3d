@@ -107,7 +107,7 @@
 // $[target_ipath] is the proper ipath to put on the command line,
 // from the context of a particular target.
 
-#defer target_ipath $[TOPDIR] $[sort $[complete_ipath]] $[other_trees:%=%\include] $[get_ipath]
+#defer target_ipath $[TOPDIR] $[sort $[complete_ipath]] $[other_trees:%=%/include] $[get_ipath]
 
 // These are the complete set of extra flags the compiler requires.
 #defer cflags $[get_cflags] $[CFLAGS] $[CFLAGS_OPT$[OPTIMIZE]] 

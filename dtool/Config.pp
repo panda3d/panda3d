@@ -451,6 +451,12 @@
 //#defer ODIR Opt$[OPTIMIZE]-$[PLATFORM]$[USE_COMPILER]
 #defer ODIR Opt$[OPTIMIZE]-$[PLATFORM]
 
+// What is the normal extension of a compiled object file?
+#if $[WINDOWS_PLATFORM]
+  #define OBJ .obj
+#else
+  #define OBJ .o
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////
