@@ -799,19 +799,19 @@ class Actor(PandaObject, NodePath):
                                   (nodeNum, geomNum))
             thisGeomNode.node().markBoundStale()
 
-    def showBounds(self):
-        """showBounds(self)
+    def showAllBounds(self):
+        """showAllBounds(self)
         Show the bounds of all actor geoms"""
-        geomNodes = self.findAllMatches("**/+GeomNode")
+        geomNodes = self.__geomNode.findAllMatches("**/+GeomNode")
         numGeomNodes = geomNodes.getNumPaths()
 
         for nodeNum in range(0, numGeomNodes):
             geomNodes.getPath(nodeNum).showBounds()
 
-    def hideBounds(self):
-        """hideBounds(self)
+    def hideAllBounds(self):
+        """hideAllBounds(self)
         Hide the bounds of all actor geoms"""
-        geomNodes = self.findAllMatches("**/+GeomNode")
+        geomNodes = self.__geomNode.findAllMatches("**/+GeomNode")
         numGeomNodes = geomNodes.getNumPaths()
 
         for nodeNum in range(0, numGeomNodes):
