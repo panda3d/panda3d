@@ -219,10 +219,10 @@ get_sound(const string& file_name) {
       si=ib.first;
     }
   }
-  most_recently_used((*si).first);
   // Create an AudioSound from the sound:
   PT(AudioSound) audioSound = 0;
   if (audio) {
+    most_recently_used((*si).first);
     PT(MilesAudioSound) milesAudioSound
         =new MilesAudioSound(this, audio, (*si).first);
     nassertr(milesAudioSound, 0);
