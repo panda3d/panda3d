@@ -42,10 +42,11 @@ class FSM(DirectObject.DirectObject):
     def exitGreen(self):
         ... cleanup stuff ...
 
-    Both functions are supplied the previous state name and the new
-    state name we are transitioning to.  (Of course, the newState
-    passed to enterRed, and the oldState passed to exitRed, will
-    always be "Red".)
+    Both functions can access the previous state name as
+    self.oldState, and the new state name we are transitioning to as
+    self.newState.  (Of course, in enterRed(), self.newState will
+    always be "Red", and the in exitRed(), self.oldState will always
+    be "Red".)
 
     Both functions are optional.  If either function is omitted, the
     state is still defined, but nothing is done when transitioning
