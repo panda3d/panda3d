@@ -349,8 +349,14 @@ update_time_data(const PStatFrameData &frame_data) {
       if (_client_data->get_child_distance(_constraint, collector_index) >= 0) {
         // Here's a data point we care about: anything at constraint
         // level or below.
-        samples[collector_index].data_point(frame_data.get_time(i), is_start, started);
-        got_samples.insert(collector_index);
+        if (is_start == samples[collector_index]._is_started) {
+          nout << "Unexpected data point for " 
+               << _client_data->get_collector_fullname(collector_index)
+               << "\n";
+        } else {
+          samples[collector_index].data_point(frame_data.get_time(i), is_start, started);
+          got_samples.insert(collector_index);
+        }
       }
     }
   }

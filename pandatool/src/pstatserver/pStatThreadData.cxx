@@ -126,8 +126,6 @@ get_frame(int frame_number) const {
     }
   }
 
-  PStatFrameData * const *array = &_frames[0];
-
   if (rel_frame >= 0 && rel_frame < num_frames) {
     nassertr(_frames[rel_frame] != (PStatFrameData *)NULL, _null_frame);
     nassertr(_frames[rel_frame]->get_start() >= 0.0, _null_frame);
@@ -256,17 +254,19 @@ get_frame_rate(float time) const {
 
   int then_i = now_i;
   int last_good_i = now_i;
-  PStatFrameData * const *array = &_frames[0];
 
-  nassertr(then_i < 0 || _frames[then_i] != (PStatFrameData *)NULL, 0.0);
-  while (then_i > 0 && _frames[then_i]->get_start() > then) {
-    last_good_i = then_i;
-    then_i--;
-    while (then_i > 0 && _frames[then_i] == (PStatFrameData *)NULL) {
-      then_i--;
+  while (then_i >= 0) {
+    const PStatFrameData *frame = _frames[then_i];
+    if (frame != (PStatFrameData *)NULL) {
+      if (frame->get_start() > then) {
+        last_good_i = then_i;
+      } else {
+        break;
+      }
     }
-    nassertr(then_i < 0 || _frames[then_i] != (PStatFrameData *)NULL, 0.0);
+    then_i--;
   }
+
   nassertr(last_good_i >= 0, 0.0);
   nassertr(_frames[last_good_i] != (PStatFrameData *)NULL, 0.0);
 
