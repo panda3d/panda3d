@@ -176,7 +176,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             parentId = di.getUint32()
             zoneId = di.getUint32()
             obj = self.doId2do.get(doId)
-            if (obj != None):
+            if obj is not None:
                 self.notify.info("handleObjectLocation: doId: %s parentId: %s zoneId: %s" %
                                  (doId, parentId, zoneId))
                 # Let the object finish the job
