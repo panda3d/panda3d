@@ -274,6 +274,10 @@ create_xfm_channel(EggNode *egg_node, const string &name,
 AnimChannelMatrixXfmTable *AnimBundleMaker::
 create_xfm_channel(EggXfmSAnim *egg_anim, const string &name,
 		   AnimGroup *parent) {
+  // Ensure that the anim table is optimal and that it is standard
+  // order.
+  egg_anim->optimize_to_standard_order();
+
   AnimChannelMatrixXfmTable *table 
     = new AnimChannelMatrixXfmTable(parent, name);
 

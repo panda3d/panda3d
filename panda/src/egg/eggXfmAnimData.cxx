@@ -131,7 +131,8 @@ get_value(int row, LMatrix4d &mat) const {
   }
 
   // So now we've got the nine components; build a matrix.
-  compose_matrix(mat, scale, hpr, translate, _coordsys);
+  EggXfmSAnim::compose_with_order(mat, scale, hpr, translate, get_order(),
+				  _coordsys);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -193,9 +194,9 @@ r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
   if (has_fps()) {
     new_table.set_fps(get_fps());
   }
-  if (has_order()) {
-    new_table.set_order(get_order());
-  }
+
+  // We insist on the standard order now.
+  new_table.set_order(get_standard_order());
 
   // Now build up the data into the new table.
   LMatrix4d orig_mat;

@@ -11,6 +11,7 @@ Configure(config_linmath_2);
 ConfigureFn(config_linmath_2) {
 }
 
+
 static const bool temp_hpr_fix = config_linmath_2.GetBool("temp-hpr-fix", false);
 
 #include "fltnames.h"

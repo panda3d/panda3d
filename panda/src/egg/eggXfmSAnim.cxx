@@ -7,6 +7,7 @@
 #include "eggSAnimData.h"
 #include "eggXfmAnimData.h"
 #include "eggParameters.h"
+#include "config_egg.h"
 
 #include <indent.h>
 #include <compose_matrix.h>
@@ -14,6 +15,14 @@
 #include <math.h>
 
 TypeHandle EggXfmSAnim::_type_handle;
+
+//string EggXfmSAnim::_standard_order = "srpht";
+
+// For now, the standard order is sphrt.  This matches the old,
+// incorrect behavior of decompose_matrix().  When we have a new
+// egg-optchar, we can safely remove the old decompose_matrix() and
+// restore the correct standard order (above).
+string EggXfmSAnim::_standard_order = "sphrt";
 
 
 ////////////////////////////////////////////////////////////////////
@@ -87,6 +96,23 @@ optimize() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggXfmSAnim::optimize_to_standard_order
+//       Access: Public
+//  Description: Optimizes the table by collapsing redundant
+//               sub-tables, and simultaneously ensures that the order
+//               string is the standard order (which is the same as
+//               that supported by compose_matrix() and
+//               decompose_matrix()).
+////////////////////////////////////////////////////////////////////
+void EggXfmSAnim::
+optimize_to_standard_order() {
+  if (get_order() != get_standard_order()) {
+    normalize_by_rebuilding();
+  }
+  optimize();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggXfmSAnim::normalize
 //       Access: Public
 //  Description: The inverse operation of optimize(), this ensures
@@ -97,71 +123,17 @@ optimize() {
 ////////////////////////////////////////////////////////////////////
 void EggXfmSAnim::
 normalize() {
-  iterator ci;
+  if (get_order() != get_standard_order()) {
+    // If our order string is wrong, we must fix it now.  This will
+    // incidentally also normalize the table, because we are totally
+    // rebuilding it.
+    normalize_by_rebuilding();
 
-  // First, determine which tables we already have, and how long they
-  // are.
-  int num_tables = 0;
-  int table_length = 1;
-  string remaining_tables = "ijkhprxyz";
-
-  for (ci = begin(); ci != end(); ++ci) {
-    if ((*ci)->is_of_type(EggSAnimData::get_class_type())) {
-      EggSAnimData *sanim = DCAST(EggSAnimData, *ci);
-
-      nassertv(sanim->get_name().length() == 1);
-      char name = sanim->get_name()[0];
-      size_t p = remaining_tables.find(name);
-      nassertv(p != string::npos);
-      remaining_tables[p] = ' ';
-
-      num_tables++;
-      if (sanim->get_num_rows() > 1) {
-	if (table_length == 1) {
-	  table_length = sanim->get_num_rows();
-	} else {
-	  nassertv(sanim->get_num_rows() == table_length);
-	}
-      }
-    }
-  }
-
-  if (num_tables < 9) {
-    // Create new, default, children for each table we lack.
-    for (size_t p = 0; p < remaining_tables.length(); p++) {
-      if (remaining_tables[p] != ' ') {
-	double default_value;
-	switch (remaining_tables[p]) {
-	case 'i':
-	case 'j':
-	case 'k':
-	  default_value = 1.0;
-	  break;
-
-	default:
-	  default_value = 0.0;
-	}
-
-	string name(1, remaining_tables[p]);
-	EggSAnimData *sanim = new EggSAnimData(name);
-	add_child(sanim);
-	sanim->add_data(default_value);
-      }
-    }
-  }
-
-  // Now expand any one-row tables as needed.
-  for (ci = begin(); ci != end(); ++ci) {
-    if ((*ci)->is_of_type(EggSAnimData::get_class_type())) {
-      EggSAnimData *sanim = DCAST(EggSAnimData, *ci);
-      if (sanim->get_num_rows() == 1) {
-	double value = sanim->get_value(0);
-	for (int i = 1; i < table_length; i++) {
-	  sanim->add_data(value);
-	}
-      }
-      nassertv(sanim->get_num_rows() == table_length);
-    }
+  } else {
+    // Otherwise, if the order string is already the standard order
+    // string, we can do this the easy way (from a computational
+    // standpoint), which is just to lengthen the tables directly.
+    normalize_by_expanding();
   }
 }
 
@@ -190,6 +162,67 @@ write(ostream &out, int indent_level) const {
   indent(out, indent_level) << "}\n";
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggXfmSAnim::compose_with_order
+//       Access: Public, Static
+//  Description: Composes a matrix out of the nine individual
+//               components, respecting the order string.  The
+//               components will be applied in the order indicated by
+//               the string.
+////////////////////////////////////////////////////////////////////
+void EggXfmSAnim::
+compose_with_order(LMatrix4d &mat, 
+		   const LVecBase3d &scale,
+		   const LVecBase3d &hpr,
+		   const LVecBase3d &trans,
+		   const string &order,
+		   CoordinateSystem cs) {
+
+  mat = LMatrix4d::ident_mat();
+
+  bool reverse_roll = false;
+
+  if (order == "sphrt" && egg_support_old_anims) {
+    // As a special case, if the order string is exactly "sphrt"
+    // (which is what all our legacy anim files used), we interpret
+    // roll in the opposite direction (as our legacy anim files did).
+    reverse_roll = true;
+  }
+
+  string::const_iterator pi;
+  for (pi = order.begin(); pi != order.end(); ++pi) {
+    switch (*pi) {
+    case 's':
+      mat = mat * LMatrix4d::scale_mat(scale);
+      break;
+      
+    case 'h':
+      mat = mat * LMatrix4d::rotate_mat(hpr[0], LVector3d::up(cs), cs);
+      break;
+      
+    case 'p':
+      mat = mat * LMatrix4d::rotate_mat(hpr[1], LVector3d::right(cs), cs);
+      break;
+      
+    case 'r':
+      if (reverse_roll) {
+	mat = mat * LMatrix4d::rotate_mat(-hpr[2], LVector3d::forward(cs), cs);
+      } else {
+	mat = mat * LMatrix4d::rotate_mat(hpr[2], LVector3d::forward(cs), cs);
+      }
+      break;
+      
+    case 't':
+      mat = mat * LMatrix4d::translate_mat(trans);
+      break;
+      
+    default:
+      egg_cat.warning()
+	<< "Invalid letter in order string: " << *pi << "\n";
+    }
+  }
+}
   
 ////////////////////////////////////////////////////////////////////
 //     Function: EggXfmSAnim::get_num_rows
@@ -232,7 +265,7 @@ get_num_rows() const {
 //               table of matrices.  It is an error to call this if
 //               any SAnimData children of this node have an improper
 //               name (e.g. not a single letter, or not one of
-//               "ijkphrxyz").
+//               "ijkhprxyz").
 ////////////////////////////////////////////////////////////////////
 void EggXfmSAnim::
 get_value(int row, LMatrix4d &mat) const {
@@ -307,7 +340,7 @@ get_value(int row, LMatrix4d &mat) const {
   }
 
   // So now we've got the nine components; build a matrix.
-  compose_matrix(mat, scale, hpr, translate, _coordsys);
+  compose_with_order(mat, scale, hpr, translate, get_order(), _coordsys);
 }
   
 ////////////////////////////////////////////////////////////////////
@@ -326,6 +359,8 @@ get_value(int row, LMatrix4d &mat) const {
 ////////////////////////////////////////////////////////////////////
 bool EggXfmSAnim::
 set_value(int row, const LMatrix4d &mat) {
+  nassertr(get_order() == get_standard_order(), false);
+  
   LVector3d scale, hpr, translate;
   bool result = decompose_matrix(mat, scale, hpr, translate, _coordsys);
   if (!result) {
@@ -416,11 +451,16 @@ set_value(int row, const LMatrix4d &mat) {
 //               table of matrices.  It is an error to call this if
 //               any SAnimData children of this node have an improper
 //               name (e.g. not a single letter, or not one of
-//               "ijkphrxyz").
+//               "ijkhprxyz").
 //
 //               This function has the further requirement that all
 //               nine of the subtables must exist and be of the same
-//               length.  Thus, you probably cannot take an existing
+//               length.  Furthermore, the order string must be the
+//               standard order string, "ijkrphxyz", which matches the
+//               system compose_matrix() and decompose_matrix()
+//               functions.
+//
+//               Thus, you probably cannot take an existing
 //               EggXfmSAnim object and start adding matrices to the
 //               end; you must clear out the original data first.  (As
 //               a special exception, if no tables exist, they will be
@@ -442,12 +482,17 @@ add_data(const LMatrix4d &mat) {
 
   if (empty()) {
     // If we have no children, create all nine tables now.
-    const char *table_ids = "ijkphrxyz";
+    const char *table_ids = "ijkhprxyz";
     for (const char *p = table_ids; *p; p++) {
       EggSAnimData *sanim = new EggSAnimData(string(1, *p));
       add_child(sanim);
     }
+
+    // Also insist on the correct ordering right off the bat.
+    set_order(get_standard_order());
   }
+
+  nassertr(get_order() == get_standard_order(), false);
 
 #ifndef NDEBUG
   int table_length = -1;
@@ -526,7 +571,8 @@ add_data(const LMatrix4d &mat) {
 //       Access: Protected, Virtual
 //  Description: Applies the indicated transform to all the rows of
 //               the table.  This actually forces the generation of a
-//               totally new set of rows.
+//               totally new set of rows, and will quietly change the
+//               order to the standard order (if it is different).
 ////////////////////////////////////////////////////////////////////
 void EggXfmSAnim::
 r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
@@ -574,4 +620,115 @@ r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
 void EggXfmSAnim::
 r_mark_coordsys(CoordinateSystem cs) {
   _coordsys = cs;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggXfmSAnim::normalize_by_rebuilding
+//       Access: Private
+//  Description: One implementation of normalize() that rebuilds the
+//               entire table by composing and decomposing the rows.
+//               This has the advantage that it will also reset the
+//               order string to the standard order string, but it is
+//               more computationally intensive and is subject to
+//               roundoff error.
+////////////////////////////////////////////////////////////////////
+void EggXfmSAnim::
+normalize_by_rebuilding() {
+  // Save a temporary copy of the original data.
+  EggXfmSAnim original;
+  original.steal_children(*this);
+  original = (*this);
+  
+  // Now we have no children, so our data is clear.  Rebuild it.
+  int num_rows = original.get_num_rows();
+  LMatrix4d orig_mat;
+  for (int r = 0; r < num_rows; r++) {
+    original.get_value(r, orig_mat);
+    bool result = add_data(orig_mat);
+    
+    // If this assertion fails, we somehow got a matrix out of the
+    // original table that we could not represent in the new table.
+    // That shouldn't be possible; there's probably something wrong
+    // in decompose_matrix().
+    nassertv(result);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggXfmSAnim::normalize_by_expanding
+//       Access: Private
+//  Description: Another implementation of normalize() that simply
+//               expands any one-row tables and creates default-valued
+//               tables where none were before.  This will not change
+//               the order string, but is much faster and does not
+//               introduce roundoff error.
+////////////////////////////////////////////////////////////////////
+void EggXfmSAnim::
+normalize_by_expanding() {
+  iterator ci;
+
+  // First, determine which tables we already have, and how long they
+  // are.
+  int num_tables = 0;
+  int table_length = 1;
+  string remaining_tables = "ijkhprxyz";
+  
+  for (ci = begin(); ci != end(); ++ci) {
+    if ((*ci)->is_of_type(EggSAnimData::get_class_type())) {
+      EggSAnimData *sanim = DCAST(EggSAnimData, *ci);
+      
+      nassertv(sanim->get_name().length() == 1);
+      char name = sanim->get_name()[0];
+      size_t p = remaining_tables.find(name);
+      nassertv(p != string::npos);
+      remaining_tables[p] = ' ';
+      
+      num_tables++;
+      if (sanim->get_num_rows() > 1) {
+	if (table_length == 1) {
+	  table_length = sanim->get_num_rows();
+	} else {
+	  nassertv(sanim->get_num_rows() == table_length);
+	}
+      }
+    }
+  }
+
+  if (num_tables < 9) {
+    // Create new, default, children for each table we lack.
+    for (size_t p = 0; p < remaining_tables.length(); p++) {
+      if (remaining_tables[p] != ' ') {
+	double default_value;
+	switch (remaining_tables[p]) {
+	case 'i':
+	case 'j':
+	case 'k':
+	  default_value = 1.0;
+	  break;
+	  
+	default:
+	  default_value = 0.0;
+	}
+	
+	string name(1, remaining_tables[p]);
+	EggSAnimData *sanim = new EggSAnimData(name);
+	add_child(sanim);
+	sanim->add_data(default_value);
+      }
+    }
+  }
+  
+  // Now expand any one-row tables as needed.
+  for (ci = begin(); ci != end(); ++ci) {
+    if ((*ci)->is_of_type(EggSAnimData::get_class_type())) {
+      EggSAnimData *sanim = DCAST(EggSAnimData, *ci);
+      if (sanim->get_num_rows() == 1) {
+	double value = sanim->get_value(0);
+	for (int i = 1; i < table_length; i++) {
+	  sanim->add_data(value);
+	}
+      }
+      nassertv(sanim->get_num_rows() == table_length);
+    }
+  }
 }

@@ -14,6 +14,7 @@ class DSearchPath;
 NotifyCategoryDecl(egg, EXPCL_PANDAEGG, EXPTP_PANDAEGG);
 
 const DSearchPath &get_egg_path();
+extern bool egg_support_old_anims;
 
 extern EXPCL_PANDAEGG void init_libegg();
 

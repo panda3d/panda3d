@@ -39,10 +39,12 @@ public:
   INLINE void clear_order();
   INLINE bool has_order() const;
   INLINE const string &get_order() const;
+  INLINE static const string &get_standard_order();
 
   INLINE CoordinateSystem get_coordinate_system() const;
 
   void optimize();
+  void optimize_to_standard_order();
   void normalize();
 
   int get_num_rows() const;
@@ -54,16 +56,30 @@ public:
 
   virtual void write(ostream &out, int indent_level) const;
 
+  static void compose_with_order(LMatrix4d &mat, 
+				 const LVecBase3d &scale,
+				 const LVecBase3d &hpr,
+				 const LVecBase3d &trans,
+				 const string &order,
+				 CoordinateSystem cs);
+
 protected:
   virtual void r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
 			   CoordinateSystem to_cs);
   virtual void r_mark_coordsys(CoordinateSystem cs);
 
 private:
+  void normalize_by_rebuilding();
+  void normalize_by_expanding();
+
+
+private:
   double _fps;
   bool _has_fps;
   string _order;
   CoordinateSystem _coordsys;
+  
+  static string _standard_order;
 
 public:
 

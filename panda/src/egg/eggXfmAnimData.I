@@ -82,7 +82,24 @@ has_order() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const string &EggXfmAnimData::
 get_order() const {
-  return _order;
+  if (has_order()) {
+    return _order;
+  } else {
+    return get_standard_order();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggXfmAnimData::get_standard_order
+//       Access: Public, Static
+//  Description: Returns the standard order of matrix component
+//               composition.  This is what the order string must be
+//               set to in order to use set_value() or add_data()
+//               successfully.
+////////////////////////////////////////////////////////////////////
+INLINE const string &EggXfmAnimData::
+get_standard_order() {
+  return EggXfmSAnim::get_standard_order();
 }
 
 

@@ -16,7 +16,7 @@ compose_matrix(FLOATNAME(LMatrix3) &mat,
   if (temp_hpr_fix) {
     mat =
       FLOATNAME(LMatrix3)::scale_mat(scale) *
-      FLOATNAME(LMatrix3)::rotate_mat(hpr[2], FLOATNAME(LVector3)::back(cs), cs) *
+      FLOATNAME(LMatrix3)::rotate_mat(hpr[2], FLOATNAME(LVector3)::forward(cs), cs) *
       FLOATNAME(LMatrix3)::rotate_mat(hpr[1], FLOATNAME(LVector3)::right(cs), cs) *
       FLOATNAME(LMatrix3)::rotate_mat(hpr[0], FLOATNAME(LVector3)::up(cs), cs);
   } else {
@@ -39,72 +39,141 @@ compose_matrix(FLOATNAME(LMatrix3) &mat,
 ////////////////////////////////////////////////////////////////////
 static void
 unwind_yup_rotation(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr) {
-  typedef FLOATNAME(LMatrix3) Matrix;
+  if (temp_hpr_fix) {
+    typedef FLOATNAME(LMatrix3) Matrix;
 
-  // Extract the axes from the matrix.
-  FLOATNAME(LVector3) x, y, z;
-  x = mat.get_row(0);
-  y = mat.get_row(1);
-  z = mat.get_row(2);
+    // Extract the axes from the matrix.
+    FLOATNAME(LVector3) x, y, z;
+    x = mat.get_row(0);
+    y = mat.get_row(1);
+    z = mat.get_row(2);
+    
+    // Project Z into the XZ plane.
+    FLOATNAME(LVector2) xz(z[0], z[2]);
+    xz = normalize(xz);
+    
+    // Compute the rotation about the +Y (up) axis.  This is yaw, or
+    // "heading".
+    FLOATTYPE heading = rad_2_deg(atan2(xz[0], xz[1]));
+    
+    // Unwind the heading, and continue.
+    Matrix rot_y;
+    rot_y = Matrix::rotate_mat(-heading, FLOATNAME(LVector3)(0.0, 1.0, 0.0),
+			       CS_yup_right);
+    
+    x = x * rot_y;
+    y = y * rot_y;
+    z = z * rot_y;
+    
+    // Project the rotated Z into the YZ plane.
+    FLOATNAME(LVector2) yz(z[1], z[2]);
+    yz = normalize(yz);
+    
+    // Compute the rotation about the +X (right) axis.  This is pitch.
+    FLOATTYPE pitch = rad_2_deg(-atan2(yz[0], yz[1]));
+    
+    // Unwind the pitch.
+    Matrix rot_x;
+    rot_x = Matrix::rotate_mat(-pitch, FLOATNAME(LVector3)(1.0, 0.0, 0.0), 
+			       CS_yup_right);
+    
+    x = x * rot_x;
+    y = y * rot_x;
+    z = z * rot_x;
+    
+    // Project the rotated X onto the XY plane.
+    FLOATNAME(LVector2) xy(x[0], x[1]);
+    xy = normalize(xy);
+    
+    // Compute the rotation about the +Z (back) axis.  This is roll.
+    FLOATTYPE roll = -rad_2_deg(atan2(xy[1], xy[0]));
 
-  // Project X onto the XY plane.
-  FLOATNAME(LVector2) xy(x[0], x[1]);
-  xy = normalize(xy);
-
-  // Compute the rotation about the +Z (back) axis.  This is roll.
-  FLOATTYPE roll = rad_2_deg(atan2(xy[1], xy[0]));
-
-  // Unwind the roll from the axes, and continue.
-  Matrix rot_z;
-  rot_z = Matrix::rotate_mat(-roll, FLOATNAME(LVector3)(0.0, 0.0, 1.0),
-			     CS_yup_right);
-
-  x = x * rot_z;
-  y = y * rot_z;
-  z = z * rot_z;
-
-  // Project the rotated X into the XZ plane.
-  FLOATNAME(LVector2) xz(x[0], x[2]);
-  xz = normalize(xz);
-
-  // Compute the rotation about the +Y (up) axis.  This is yaw, or
-  // "heading".
-  FLOATTYPE heading = rad_2_deg(-atan2(xz[1], xz[0]));
-
-  // Unwind the heading, and continue.
-  Matrix rot_y;
-  rot_y = Matrix::rotate_mat(-heading, FLOATNAME(LVector3)(0.0, 1.0, 0.0),
-			     CS_yup_right);
-
-  x = x * rot_y;
-  y = y * rot_y;
-  z = z * rot_y;
-
-  // Project the rotated Z into the YZ plane.
-  FLOATNAME(LVector2) yz(z[1], z[2]);
-  yz = normalize(yz);
-
-  // Compute the rotation about the +X (right) axis.  This is pitch.
-  FLOATTYPE pitch = rad_2_deg(-atan2(yz[0], yz[1]));
- 
-  // Unwind the pitch.
-  Matrix rot_x;
-  rot_x = Matrix::rotate_mat(-pitch, FLOATNAME(LVector3)(1.0, 0.0, 0.0), 
-			     CS_yup_right);
-
-  x = x * rot_x;
-  y = y * rot_x;
-  z = z * rot_x;
-
-  // Reset the matrix to reflect the unwinding.
-  mat.set_row(0, x);
-  mat.set_row(1, y);
-  mat.set_row(2, z);
-
-  // Return the three rotation components.
-  hpr[0] = heading;
-  hpr[1] = pitch;
-  hpr[2] = roll;
+    // Unwind the roll from the axes, and continue.
+    Matrix rot_z;
+    rot_z = Matrix::rotate_mat(-roll, FLOATNAME(LVector3)(0.0, 0.0, 1.0),
+			       CS_yup_right);
+    
+    x = x * rot_z;
+    y = y * rot_z;
+    z = z * rot_z;
+    
+    // Reset the matrix to reflect the unwinding.
+    mat.set_row(0, x);
+    mat.set_row(1, y);
+    mat.set_row(2, z);
+    
+    // Return the three rotation components.
+    hpr[0] = heading;
+    hpr[1] = pitch;
+    hpr[2] = roll;
+  } else {
+    typedef FLOATNAME(LMatrix3) Matrix;
+    
+    // Extract the axes from the matrix.
+    FLOATNAME(LVector3) x, y, z;
+    x = mat.get_row(0);
+    y = mat.get_row(1);
+    z = mat.get_row(2);
+    
+    // Project X onto the XY plane.
+    FLOATNAME(LVector2) xy(x[0], x[1]);
+    xy = normalize(xy);
+    
+    // Compute the rotation about the +Z (back) axis.  This is roll.
+    FLOATTYPE roll = rad_2_deg(atan2(xy[1], xy[0]));
+    
+    // Unwind the roll from the axes, and continue.
+    Matrix rot_z;
+    rot_z = Matrix::rotate_mat(-roll, FLOATNAME(LVector3)(0.0, 0.0, 1.0),
+			       CS_yup_right);
+    
+    x = x * rot_z;
+    y = y * rot_z;
+    z = z * rot_z;
+    
+    // Project the rotated X into the XZ plane.
+    FLOATNAME(LVector2) xz(x[0], x[2]);
+    xz = normalize(xz);
+    
+    // Compute the rotation about the +Y (up) axis.  This is yaw, or
+    // "heading".
+    FLOATTYPE heading = rad_2_deg(-atan2(xz[1], xz[0]));
+    
+    // Unwind the heading, and continue.
+    Matrix rot_y;
+    rot_y = Matrix::rotate_mat(-heading, FLOATNAME(LVector3)(0.0, 1.0, 0.0),
+			       CS_yup_right);
+    
+    x = x * rot_y;
+    y = y * rot_y;
+    z = z * rot_y;
+    
+    // Project the rotated Z into the YZ plane.
+    FLOATNAME(LVector2) yz(z[1], z[2]);
+    yz = normalize(yz);
+    
+    // Compute the rotation about the +X (right) axis.  This is pitch.
+    FLOATTYPE pitch = rad_2_deg(-atan2(yz[0], yz[1]));
+    
+    // Unwind the pitch.
+    Matrix rot_x;
+    rot_x = Matrix::rotate_mat(-pitch, FLOATNAME(LVector3)(1.0, 0.0, 0.0), 
+			       CS_yup_right);
+    
+    x = x * rot_x;
+    y = y * rot_x;
+    z = z * rot_x;
+    
+    // Reset the matrix to reflect the unwinding.
+    mat.set_row(0, x);
+    mat.set_row(1, y);
+    mat.set_row(2, z);
+    
+    // Return the three rotation components.
+    hpr[0] = heading;
+    hpr[1] = pitch;
+    hpr[2] = roll;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -120,6 +189,11 @@ unwind_yup_rotation(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr) {
 static void
 unwind_yup_rotation(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr,
 		    FLOATTYPE roll) {
+  if (temp_hpr_fix) {
+    unwind_yup_rotation(mat, hpr);
+    return;
+  }
+
   typedef FLOATNAME(LMatrix3) Matrix;
 
   // Extract the axes from the matrix.
@@ -239,11 +313,11 @@ unwind_zup_rotation(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr) {
     xz = normalize(xz);
   
     // Compute the rotation about the -Y (back) axis.  This is roll.
-    FLOATTYPE roll = rad_2_deg(atan2(xz[1], xz[0]));
+    FLOATTYPE roll = -rad_2_deg(atan2(xz[1], xz[0]));
   
     // Unwind the roll from the axes, and continue.
     Matrix rot_y;
-    rot_y = Matrix::rotate_mat(roll, FLOATNAME(LVector3)(0.0, 1.0, 0.0),
+    rot_y = Matrix::rotate_mat(-roll, FLOATNAME(LVector3)(0.0, 1.0, 0.0),
 			       CS_zup_right);
   
     x = x * rot_y;

@@ -9,8 +9,8 @@
 #include <pandabase.h>
 
 #include "eggAnimData.h"
+#include "eggXfmSAnim.h"
 
-class EggXfmSAnim;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : EggXfmAnimData
@@ -33,6 +33,7 @@ public:
   INLINE void clear_order();
   INLINE bool has_order() const;
   INLINE const string &get_order() const;
+  INLINE static const string &get_standard_order();
 
   INLINE void set_contents(const string &contents);
   INLINE void clear_contents();

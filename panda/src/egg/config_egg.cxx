@@ -53,6 +53,10 @@ get_egg_path() {
   return get_config_path("egg-path", egg_path);
 }
 
+// Set this true to support loading of old character animation files, which
+// had the convention that the order "phr" implied a reversed roll.
+bool egg_support_old_anims = config_egg.GetBool("egg-support-old-anims", true);
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libegg
 //  Description: Initializes the library.  This must be called at
