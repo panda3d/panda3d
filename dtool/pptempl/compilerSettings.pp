@@ -4,7 +4,9 @@
   #define LINKER link
   #define LIBBER lib
   #define COMMONFLAGS /Gi-
-  #define OPTFLAGS /O2 /Ob1 /G6 /QIfist
+  
+  // use "unsafe" QIfist flt->int rounding only if FAST_FLT_TO_INT is defined
+  #define OPTFLAGS /O2 /Ob1 /G6 $[if $[ne $[FAST_FLT_TO_INT],], /QIfist,]  
   #define OPT1FLAGS /GZ 
 
   // Note: Zi cannot be used on multiproc builds with precomp hdrs, Z7 must be used instead
@@ -72,8 +74,10 @@
   #define LDFLAGS_OPT4 /NODEFAULTLIB:MSVCRTD.LIB /OPT:REF $[LDFLAGS_OPT4]
 
   #define COMMONFLAGS /DHAVE_DINKUM /Zc:forScope
+
+  // use "unsafe" QIfist flt->int rounding only if FAST_FLT_TO_INT is defined
+  #define OPTFLAGS /O2 /Ob2 /G6 $[if $[ne $[FAST_FLT_TO_INT],], /QIfist,]
   
-  #define OPTFLAGS /O2 /Ob2 /G6 /QIfist
 //  #define OPT1FLAGS /RTCsu /GS     removing /GS cause we really dont need it, /RTCu because it crashes in dxgsg with internal compiler bug
   #define OPT1FLAGS /RTCs
   
