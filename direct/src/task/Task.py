@@ -708,7 +708,6 @@ class TaskManager:
         return 0
 
     def __repr__(self):
-        import fpformat
         taskNameWidth = 32
         dtWidth = 10
         priorityWidth = 10
@@ -733,6 +732,7 @@ class TaskManager:
                 else:
                     taskName = task.name
                 if (self.taskTimerVerbose):
+                    import fpformat
                     str = str + (taskName.ljust(taskNameWidth)
                                  + fpformat.fix(task.dt*1000, 2).rjust(dtWidth)
                                  + fpformat.fix(task.avgDt*1000, 2).rjust(dtWidth)
@@ -756,9 +756,15 @@ class TaskManager:
                     taskName = '(PR)' + task.name
                 else:
                     taskName = '(P)' + task.name
-                str = str + ('  ' + taskName.ljust(taskNameWidth-2)
-                             +  fpformat.fix(pri, 2).rjust(dtWidth)
-                             + '\n')
+                if (self.taskTimerVerbose):
+                    import fpformat
+                    str = str + ('  ' + taskName.ljust(taskNameWidth-2)
+                                 +  fpformat.fix(pri, 2).rjust(dtWidth)
+                                 + '\n')
+                else:
+                    str = str + ('  ' + taskName.ljust(taskNameWidth-2)
+                                 +  '----'.rjust(dtWidth)
+                                 + '\n')
         str = str + '---------------------------------------------------------------\n'
         str = str + ' doLaterList\n'
         str = str + '---------------------------------------------------------------\n'
@@ -768,11 +774,18 @@ class TaskManager:
                 taskName = '(R)' + task.name
             else:
                 taskName = task.name
-            str = str + ('  ' + taskName.ljust(taskNameWidth-2)
-                         +  fpformat.fix(remainingTime, 2).rjust(dtWidth)
-                         + '\n')
+            if (self.taskTimerVerbose):
+                import fpformat
+                str = str + ('  ' + taskName.ljust(taskNameWidth-2)
+                             +  fpformat.fix(remainingTime, 2).rjust(dtWidth)
+                             + '\n')
+            else:
+                str = str + ('  ' + taskName.ljust(taskNameWidth-2)
+                             +  '----'.rjust(dtWidth)
+                             + '\n')
         str = str + '---------------------------------------------------------------\n'
         if (self.taskTimerVerbose):
+            import fpformat
             str = str + ('total'.ljust(taskNameWidth)
                          + fpformat.fix(totalDt*1000, 2).rjust(dtWidth)
                          + fpformat.fix(totalAvgDt*1000, 2).rjust(dtWidth)
