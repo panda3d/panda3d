@@ -220,7 +220,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # the entrancePoint entities register themselves with us
         if self.entranceId not in self.entranceId2entity:
             self.notify.warning('unknown entranceId %s' % self.entranceId)
-            base.localAvatar.setPos(0,0,0)
+            base.localAvatar.setPosHpr(0,0,0,0,0,0)
             self.notify.warning('showing all zones')
             self.setColorZones(1)
             # put the toon in a random zone to start
