@@ -209,9 +209,9 @@ get_class_by_name(const string &name) {
 ////////////////////////////////////////////////////////////////////
 unsigned long DCFile::
 get_hash() const {
-  HashGenerator hash;
-  generate_hash(hash);
-  return hash.get_hash();
+  HashGenerator hashgen;
+  generate_hash(hashgen);
+  return hashgen.get_hash();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -221,11 +221,11 @@ get_hash() const {
 //               hash.
 ////////////////////////////////////////////////////////////////////
 void DCFile::
-generate_hash(HashGenerator &hash) const {
-  hash.add_int(_classes.size());
+generate_hash(HashGenerator &hashgen) const {
+  hashgen.add_int(_classes.size());
   Classes::const_iterator ci;
   for (ci = _classes.begin(); ci != _classes.end(); ++ci) {
-    (*ci)->generate_hash(hash);
+    (*ci)->generate_hash(hashgen);
   }
 }
 

@@ -219,19 +219,19 @@ write(ostream &out, int indent_level) const {
 //               hash.
 ////////////////////////////////////////////////////////////////////
 void DCClass::
-generate_hash(HashGenerator &hash) const {
-  hash.add_string(_name);
+generate_hash(HashGenerator &hashgen) const {
+  hashgen.add_string(_name);
 
-  hash.add_int(_parents.size());
+  hashgen.add_int(_parents.size());
   Parents::const_iterator pi;
   for (pi = _parents.begin(); pi != _parents.end(); ++pi) {
-    hash.add_int((*pi)->get_number());
+    hashgen.add_int((*pi)->get_number());
   }
 
-  hash.add_int(_fields.size());
+  hashgen.add_int(_fields.size());
   Fields::const_iterator fi;
   for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
-    (*fi)->generate_hash(hash);
+    (*fi)->generate_hash(hashgen);
   }
 }
 

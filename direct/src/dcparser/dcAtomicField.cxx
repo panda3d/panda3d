@@ -632,15 +632,15 @@ write(ostream &out, int indent_level) const {
 //               hash.
 ////////////////////////////////////////////////////////////////////
 void DCAtomicField::
-generate_hash(HashGenerator &hash) const {
-  DCField::generate_hash(hash);
+generate_hash(HashGenerator &hashgen) const {
+  DCField::generate_hash(hashgen);
 
-  hash.add_int(_elements.size());
+  hashgen.add_int(_elements.size());
   Elements::const_iterator ei;
   for (ei = _elements.begin(); ei != _elements.end(); ++ei) {
     const ElementType &element = (*ei);
-    hash.add_int(element._type);
-    hash.add_int(element._divisor);
+    hashgen.add_int(element._type);
+    hashgen.add_int(element._divisor);
   }
-  hash.add_int(_flags);
+  hashgen.add_int(_flags);
 }

@@ -81,10 +81,10 @@ DCField::
 //               hash.
 ////////////////////////////////////////////////////////////////////
 void DCField::
-generate_hash(HashGenerator &hash) const {
+generate_hash(HashGenerator &hashgen) const {
   // It shouldn't be necessary to explicitly add _number to the
   // hash--this is computed based on the relative position of this
   // field with the other fields, so adding it explicitly will be
   // redundant.  However, the field name is significant.
-  hash.add_string(_name);
+  hashgen.add_string(_name);
 }

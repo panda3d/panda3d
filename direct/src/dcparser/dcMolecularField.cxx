@@ -101,12 +101,12 @@ write(ostream &out, int indent_level) const {
 //               hash.
 ////////////////////////////////////////////////////////////////////
 void DCMolecularField::
-generate_hash(HashGenerator &hash) const {
-  DCField::generate_hash(hash);
+generate_hash(HashGenerator &hashgen) const {
+  DCField::generate_hash(hashgen);
 
-  hash.add_int(_fields.size());
+  hashgen.add_int(_fields.size());
   Fields::const_iterator fi;
   for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
-    (*fi)->generate_hash(hash);
+    (*fi)->generate_hash(hashgen);
   }
 }
