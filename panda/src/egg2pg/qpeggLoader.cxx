@@ -1455,18 +1455,15 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     */
 
   } else if (egg_group->get_model_flag() || egg_group->get_dcs_flag()) {
-    /*
     // A model or DCS flag; create a model node.
-    node = new ModelNode;
-    node->set_name(egg_group->get_name());
+    node = new PandaNode(egg_group->get_name());
 
-    DCAST(ModelNode, node)->set_preserve_transform(egg_group->get_dcs_flag());
+    //    DCAST(ModelNode, node)->set_preserve_transform(egg_group->get_dcs_flag());
 
     EggGroup::const_iterator ci;
     for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
       make_node(*ci, node);
     }
-    */
 
   } else {
     // A normal group; just create a normal node, and traverse.

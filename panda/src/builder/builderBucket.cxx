@@ -192,6 +192,9 @@ operator < (const BuilderBucket &other) const {
   if (compare != 0) {
     return (compare < 0);
   }
+  if (_state != other._state) {
+    return _state < other._state;
+  }
 
   return BuilderProperties::operator < (other);
 }
