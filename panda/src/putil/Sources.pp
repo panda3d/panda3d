@@ -14,6 +14,7 @@
     buttonHandle.I \
     buttonHandle.h buttonRegistry.I buttonRegistry.h \
     collideMask.h \
+    portalMask.h \
     compareTo.I compareTo.h \
     config_util.N config_util.h configurable.h \
     cycleData.h cycleData.I \
@@ -82,7 +83,7 @@
     bam.h bamReader.I bamReader.h bamReaderParam.I bamReaderParam.h \
     bamWriter.I bamWriter.h bitMask.I bitMask.h \
     buttonHandle.I buttonHandle.h buttonRegistry.I \
-    buttonRegistry.h collideMask.h \
+    buttonRegistry.h collideMask.h portalMask.h \
     compareTo.I compareTo.h \
     config_util.h configurable.h factory.I factory.h \
     cycleData.h cycleData.I \
