@@ -4020,16 +4020,7 @@ CompileC(ipath=IPATH, opts=OPTS, src='librecorder_igate.cxx', obj='librecorder_i
 
 IPATH=['panda/src/vrpn']
 OPTS=['BUILDING_PANDA', 'NSPR', 'VRPN']
-CompileC(ipath=IPATH, opts=OPTS, src='config_vrpn.cxx', obj='pvrpn_config_vrpn.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='vrpnClient.cxx', obj='pvrpn_vrpnClient.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='vrpnAnalog.cxx', obj='pvrpn_vrpnAnalog.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='vrpnAnalogDevice.cxx', obj='pvrpn_vrpnAnalogDevice.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='vrpnButton.cxx', obj='pvrpn_vrpnButton.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='vrpnButtonDevice.cxx', obj='pvrpn_vrpnButtonDevice.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='vrpnDial.cxx', obj='pvrpn_vrpnDial.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='vrpnDialDevice.cxx', obj='pvrpn_vrpnDialDevice.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='vrpnTracker.cxx', obj='pvrpn_vrpnTracker.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='vrpnTrackerDevice.cxx', obj='pvrpn_vrpnTrackerDevice.obj')
+CompileC(ipath=IPATH, opts=OPTS, src='vrpn_composite1.cxx', obj='pvrpn_composite1.obj')
 Interrogate(ipath=IPATH, opts=OPTS, outd='libpvrpn.in', outc='libpvrpn_igate.cxx',
             src='panda/src/vrpn',  module='panda', library='libpvrpn', files=[
             'config_vrpn.cxx', 'config_vrpn.h', 'vrpnClient.cxx', 'vrpnAnalog.cxx', 'vrpnAnalog.h',
@@ -4053,10 +4044,7 @@ INFILES=['librecorder.in', 'libpgraph.in', 'libpvrpn.in', 'libgrutil.in', 'libch
 OBJFILES=['panda_panda.obj', 'libpanda_module.obj', 'recorder_composite1.obj',
           'recorder_composite2.obj', 'librecorder_igate.obj',
           'pgraph_nodePath.obj', 'pgraph_composite1.obj', 'pgraph_composite2.obj', 'libpgraph_igate.obj',
-          'pvrpn_config_vrpn.obj', 'pvrpn_vrpnClient.obj', 'pvrpn_vrpnAnalog.obj',
-          'pvrpn_vrpnAnalogDevice.obj', 'pvrpn_vrpnButton.obj', 'pvrpn_vrpnButtonDevice.obj',
-          'pvrpn_vrpnDial.obj', 'pvrpn_vrpnDialDevice.obj', 'pvrpn_vrpnTracker.obj',
-          'pvrpn_vrpnTrackerDevice.obj', 'libpvrpn_igate.obj',
+          'pvrpn_composite1.obj', 'libpvrpn_igate.obj',
           'grutil_multitexReducer.obj', 'grutil_composite1.obj', 'libgrutil_igate.obj',
           'chan_composite1.obj', 'chan_composite2.obj', 'libchan_igate.obj', 'pstatclient_composite1.obj',
           'pstatclient_composite2.obj', 'libpstatclient_igate.obj', 'char_composite1.obj',
@@ -4340,11 +4328,7 @@ if (sys.platform == "win32"):
 if (sys.platform != "win32"):
     IPATH=['panda/src/glxdisplay', 'panda/src/gobj']
     OPTS=['BUILDING_PANDAGLUT', 'NSPR', 'GLUT', 'NVIDIACG', 'CGGL']
-    CompileC(ipath=IPATH, opts=OPTS, src='config_glxdisplay.cxx',        obj='glxdisplay_config_glxdisplay.obj')
-    CompileC(ipath=IPATH, opts=OPTS, src='glxGraphicsBuffer.cxx',        obj='glxdisplay_glxGraphicsBuffer.obj')
-    CompileC(ipath=IPATH, opts=OPTS, src='glxGraphicsPipe.cxx',          obj='glxdisplay_glxGraphicsPipe.obj')
-    CompileC(ipath=IPATH, opts=OPTS, src='glxGraphicsStateGuardian.cxx', obj='glxdisplay_glxGraphicsStateGuardian.obj')
-    CompileC(ipath=IPATH, opts=OPTS, src='glxGraphicsWindow.cxx',        obj='glxdisplay_glxGraphicsWindow.obj')
+    CompileC(ipath=IPATH, opts=OPTS, src='glxdisplay_composite1.cxx',     obj='glxdisplay_composite1.obj')
     Interrogate(ipath=IPATH, opts=OPTS, outd='libglxdisplay.in', outc='libglxdisplay_igate.cxx',
                 src='panda/src/glxdisplay',  module='pandagl', library='libglxdisplay', files=['glxGraphicsPipe.h'])
     CompileC(ipath=IPATH, opts=OPTS, src='libglxdisplay_igate.cxx',      obj='libglxdisplay_igate.obj')
@@ -4356,11 +4340,7 @@ if (sys.platform != "win32"):
       'pandagl_pandagl.obj',
       'glgsg_config_glgsg.obj',
       'glgsg_glgsg.obj',
-      'glxdisplay_config_glxdisplay.obj',
-      'glxdisplay_glxGraphicsBuffer.obj',
-      'glxdisplay_glxGraphicsPipe.obj',
-      'glxdisplay_glxGraphicsStateGuardian.obj',
-      'glxdisplay_glxGraphicsWindow.obj',
+      'glxdisplay_composite1.obj',
       'libglxdisplay_igate.obj',
       'libpanda.dll',
       'libpandaexpress.dll',
@@ -4692,16 +4672,17 @@ CompileC(ipath=IPATH, opts=OPTS, src='libdistributed_igate.cxx', obj='libdistrib
 
 IPATH=['direct/src/interval']
 OPTS=['BUILDING_DIRECT', 'NSPR']
-CompileC(ipath=IPATH, opts=OPTS, src='config_interval.cxx', obj='interval_config_interval.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='cInterval.cxx', obj='interval_cInterval.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='cIntervalManager.cxx', obj='interval_cIntervalManager.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='cLerpInterval.cxx', obj='interval_cLerpInterval.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='cLerpNodePathInterval.cxx', obj='interval_cLerpNodePathInterval.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='cLerpAnimEffectInterval.cxx', obj='interval_cLerpAnimEffectInterval.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='cMetaInterval.cxx', obj='interval_cMetaInterval.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='hideInterval.cxx', obj='interval_hideInterval.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='showInterval.cxx', obj='interval_showInterval.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='waitInterval.cxx', obj='interval_waitInterval.obj')
+#CompileC(ipath=IPATH, opts=OPTS, src='config_interval.cxx', obj='interval_config_interval.obj')
+#CompileC(ipath=IPATH, opts=OPTS, src='cInterval.cxx', obj='interval_cInterval.obj')
+#CompileC(ipath=IPATH, opts=OPTS, src='cIntervalManager.cxx', obj='interval_cIntervalManager.obj')
+#CompileC(ipath=IPATH, opts=OPTS, src='cLerpInterval.cxx', obj='interval_cLerpInterval.obj')
+#CompileC(ipath=IPATH, opts=OPTS, src='cLerpNodePathInterval.cxx', obj='interval_cLerpNodePathInterval.obj')
+#CompileC(ipath=IPATH, opts=OPTS, src='cLerpAnimEffectInterval.cxx', obj='interval_cLerpAnimEffectInterval.obj')
+#CompileC(ipath=IPATH, opts=OPTS, src='cMetaInterval.cxx', obj='interval_cMetaInterval.obj')
+#CompileC(ipath=IPATH, opts=OPTS, src='hideInterval.cxx', obj='interval_hideInterval.obj')
+#CompileC(ipath=IPATH, opts=OPTS, src='showInterval.cxx', obj='interval_showInterval.obj')
+#CompileC(ipath=IPATH, opts=OPTS, src='waitInterval.cxx', obj='interval_waitInterval.obj')
+CompileC(ipath=IPATH, opts=OPTS, src='interval_composite1.cxx', obj='interval_composite1.obj')
 Interrogate(ipath=IPATH, opts=OPTS, outd='libinterval.in', outc='libinterval_igate.cxx',
             src='direct/src/interval',  module='direct', library='libinterval',
             files=['config_interval.cxx', 'config_interval.h', 'cInterval.cxx', 'cInterval.h',
@@ -4749,16 +4730,7 @@ CompileLink(dll='libdirect.dll', opts=['ADVAPI', 'NSPR', 'SSL'], obj=[
              'libshowbase_igate.obj',
              'deadrec_composite1.obj',
              'libdeadrec_igate.obj',
-             'interval_config_interval.obj',
-             'interval_cInterval.obj',
-             'interval_cIntervalManager.obj',
-             'interval_cLerpInterval.obj',
-             'interval_cLerpNodePathInterval.obj',
-             'interval_cLerpAnimEffectInterval.obj',
-             'interval_cMetaInterval.obj',
-             'interval_hideInterval.obj',
-             'interval_showInterval.obj',
-             'interval_waitInterval.obj',
+             'interval_composite1.obj',
              'libinterval_igate.obj',
              'distributed_config_distributed.obj',
              'distributed_cConnectionRepository.obj',
@@ -4806,20 +4778,8 @@ CompileLink(dll='libheapq.dll', opts=['ADVAPI', 'NSPR'], obj=[
 
 IPATH=['pandatool/src/pandatoolbase']
 OPTS=['NSPR']
-CompileC(ipath=IPATH, opts=OPTS, src='animationConvert.cxx', obj='pandatoolbase_animationConvert.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='config_pandatoolbase.cxx', obj='pandatoolbase_config_pandatoolbase.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='distanceUnit.cxx', obj='pandatoolbase_distanceUnit.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='pandatoolbase.cxx', obj='pandatoolbase_pandatoolbase.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='pathReplace.cxx', obj='pandatoolbase_pathReplace.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='pathStore.cxx', obj='pandatoolbase_pathStore.obj')
-CompileLIB(lib='libpandatoolbase.lib', obj=[
-             'pandatoolbase_animationConvert.obj',
-             'pandatoolbase_config_pandatoolbase.obj',
-             'pandatoolbase_distanceUnit.obj',
-             'pandatoolbase_pandatoolbase.obj',
-             'pandatoolbase_pathReplace.obj',
-             'pandatoolbase_pathStore.obj',
-])
+CompileC(ipath=IPATH, opts=OPTS, src='pandatoolbase_composite1.cxx', obj='pandatoolbase_composite1.obj')
+CompileLIB(lib='libpandatoolbase.lib', obj=['pandatoolbase_composite1.obj'])
 
 #
 # DIRECTORY: pandatool/src/converter/
@@ -4910,16 +4870,8 @@ CompileLIB(lib='libcvscopy.lib', obj=['cvscopy_composite1.obj'])
 
 IPATH=['pandatool/src/dxf']
 OPTS=['NSPR']
-CompileC(ipath=IPATH, opts=OPTS, src='dxfFile.cxx', obj='dxf_dxfFile.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='dxfLayer.cxx', obj='dxf_dxfLayer.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='dxfLayerMap.cxx', obj='dxf_dxfLayerMap.obj')
-CompileC(ipath=IPATH, opts=OPTS, src='dxfVertex.cxx', obj='dxf_dxfVertex.obj')
-CompileLIB(lib='libdxf.lib', obj=[
-             'dxf_dxfFile.obj',
-             'dxf_dxfLayer.obj',
-             'dxf_dxfLayerMap.obj',
-             'dxf_dxfVertex.obj',
-])
+CompileC(ipath=IPATH, opts=OPTS, src='dxf_composite1.cxx', obj='dxf_composite1.obj')
+CompileLIB(lib='libdxf.lib', obj=['dxf_composite1.obj'])
 
 #
 # DIRECTORY: pandatool/src/dxfegg/
