@@ -6,7 +6,6 @@ from DirectGrid import *
 from DirectGeometry import *
 from DirectLights import *
 from DirectSessionPanel import *
-from DirectDeviceManager import *
 import Placer
 import OnscreenText
 import types
@@ -53,6 +52,7 @@ class DirectSession(PandaObject):
 
         # Create a vrpn client vrpn-server or default
         if base.config.GetBool('want-vrpn', 0):
+            from DirectDeviceManager import *
             self.deviceManager = DirectDeviceManager()
             # Automatically create any devices specified in config file
             joybox = base.config.GetString('vrpn-joybox-device', '')
