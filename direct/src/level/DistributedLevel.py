@@ -434,7 +434,10 @@ class DistributedLevel(DistributedObject.DistributedObject,
 
     def shutdownVisibility(self):
         taskMgr.remove(self.uniqueName(DistributedLevel.VisChangeTaskName))
-        toonbase.tcr.handler = self.oldTcrHandler
+
+        if toonbase.tcr.handler == self.handleDatagram:
+            toonbase.tcr.handler = self.oldTcrHandler
+        del self.oldTcrHandler
 
     def getSetZoneCompleteEvent(self, num):
         return self.uniqueName('setZoneComplete-%s' % num)
