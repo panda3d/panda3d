@@ -94,13 +94,9 @@ insert_textures(EggGroupNode *node) {
 ////////////////////////////////////////////////////////////////////
 int EggTextureCollection::
 insert_textures(EggGroupNode *node, EggGroupNode::iterator position) {
-  // We add the textures in reverse order because we stick each one at
-  // the head of the group's children.  When we're done, they'll all
-  // be in the correct order.
-
-  OrderedTextures::reverse_iterator oti;
-  for (oti = _ordered_textures.rbegin(); 
-       oti != _ordered_textures.rend(); 
+  OrderedTextures::iterator oti;
+  for (oti = _ordered_textures.begin(); 
+       oti != _ordered_textures.end(); 
        ++oti) {
     node->insert(position, (*oti).p());
   }

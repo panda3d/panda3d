@@ -7,6 +7,7 @@
 #include "eggCoordinateSystem.h"
 #include "eggTextureCollection.h"
 #include "eggComment.h"
+#include "eggPoolUniquifier.h"
 #include "config_egg.h"
 
 #include <config_util.h>
@@ -181,6 +182,20 @@ set_coordinate_system(CoordinateSystem new_coordsys) {
   _coordsys = new_coordsys;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggData::write
+//       Access: Protected, Virtual
+//  Description: Writes the egg data out to the indicated output
+//               stream.
+////////////////////////////////////////////////////////////////////
+void EggData::
+write(ostream &out, int indent_level) const {
+  EggCoordinateSystem ecs(_coordsys);
+  ecs.write(out, indent_level);
+  EggGroupNode::write(out, indent_level);
+  out << flush;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggData::post_read
@@ -251,19 +266,10 @@ pre_write() {
   }
 
   textures.insert_textures(this, ci);
-}
 
-////////////////////////////////////////////////////////////////////
-//     Function: EggData::write
-//       Access: Public, Virtual
-//  Description: Writes the egg data out to the indicated output
-//               stream.
-////////////////////////////////////////////////////////////////////
-void EggData::
-write(ostream &out, int indent_level) const {
-  EggCoordinateSystem ecs(_coordsys);
-  ecs.write(out, indent_level);
-  EggGroupNode::write(out, indent_level);
-  out << flush;
+  // Also make sure that the vertex pools and materials are uniquely
+  // named.  This also checks textures, which is kind of redundant
+  // since we just did that, but we don't mind.
+  EggPoolUniquifier pu;
+  pu.uniquify(this);
 }
-

@@ -97,6 +97,7 @@ get_output() {
       // Attempt to open the named file.
       unlink(_output_filename.c_str());
       _output_filename.make_dir();
+      _output_filename.set_text();
       if (!_output_filename.open_write(_output_stream)) {
 	nout << "Unable to write to " << _output_filename << "\n";
 	exit(1);

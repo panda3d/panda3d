@@ -7,6 +7,8 @@
 
 #include <indent.h>
 
+TypeHandle EggMaterial::_type_handle;
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMaterial::Constructor

@@ -16,6 +16,8 @@
 #include "eggFilenameNode.h"
 #include "eggGroup.h"
 #include "eggGroupNode.h"
+#include "eggMaterial.h"
+#include "eggNameUniquifier.h"
 #include "eggNamedObject.h"
 #include "eggNode.h"
 #include "eggNurbsCurve.h"
@@ -23,6 +25,7 @@
 #include "eggObject.h"
 #include "eggPoint.h"
 #include "eggPolygon.h"
+#include "eggPoolUniquifier.h"
 #include "eggPrimitive.h"
 #include "eggSAnimData.h"
 #include "eggSurface.h"
@@ -54,6 +57,8 @@ ConfigureFn(config_egg) {
   EggFilenameNode::init_type();
   EggGroup::init_type();
   EggGroupNode::init_type();
+  EggMaterial::init_type();
+  EggNameUniquifier::init_type();
   EggNamedObject::init_type();
   EggNode::init_type();
   EggNurbsCurve::init_type();
@@ -61,6 +66,7 @@ ConfigureFn(config_egg) {
   EggObject::init_type();
   EggPoint::init_type();
   EggPolygon::init_type();
+  EggPoolUniquifier::init_type();
   EggPrimitive::init_type();
   EggSAnimData::init_type();
   EggSurface::init_type();

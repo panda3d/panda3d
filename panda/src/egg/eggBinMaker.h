@@ -48,7 +48,7 @@
 //          }
 //        }
 //
-
+//
 //    This function may also return the bin number that a given node
 //    should be dropped into.  The bin number is completely arbitrary,
 //    and it just serves to differentiate different bins.
@@ -207,7 +207,7 @@ class EggGroupNode;
 class EggBin;
 class EggBinMaker;
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 // 	 Class : EggBinMakerCompareNodes
 // Description : This is just an STL function object, used to sort
 //               nodes within EggBinMaker.  It's part of the private
@@ -227,7 +227,7 @@ public:
 };
 
 
-///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 // 	 Class : EggBinMaker
 // Description : This is a handy class for collecting related nodes
 //               together.  It is an abstract class; to use it you

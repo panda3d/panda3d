@@ -52,9 +52,11 @@ run() {
   // constructor, above.
   nassertv(has_output_filename());
 
-  nout << "Writing " << get_output_filename() << "\n";
+  Filename filename = get_output_filename();
+  filename.make_dir();
+  nout << "Writing " << filename << "\n";
   BamFile bam_file;
-  if (!bam_file.open_write(get_output_filename())) {
+  if (!bam_file.open_write(filename)) {
     nout << "Error in writing.\n";
     exit(1);
   }

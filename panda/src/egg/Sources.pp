@@ -20,11 +20,13 @@
     eggGroup.h eggGroupNode.I eggGroupNode.cxx eggGroupNode.h \
     eggMaterial.I eggMaterial.cxx eggMaterial.h eggMiscFuncs.I \
     eggMiscFuncs.cxx eggMiscFuncs.h eggNamedObject.I eggNamedObject.cxx \
-    eggNamedObject.h eggNode.I eggNode.cxx eggNode.h eggNurbsCurve.I \
+    eggNamedObject.h eggNameUniquifier.cxx eggNameUniquifier.h \
+    eggNode.I eggNode.cxx eggNode.h eggNurbsCurve.I \
     eggNurbsCurve.cxx eggNurbsCurve.h eggNurbsSurface.I \
     eggNurbsSurface.cxx eggNurbsSurface.h eggObject.I eggObject.cxx \
     eggObject.h eggParameters.cxx eggParameters.h eggPoint.I \
     eggPoint.cxx eggPoint.h eggPolygon.I eggPolygon.cxx eggPolygon.h \
+    eggPoolUniquifier.cxx eggPoolUniquifier.h \
     eggPrimitive.I eggPrimitive.cxx eggPrimitive.h eggSAnimData.I \
     eggSAnimData.cxx eggSAnimData.h eggSurface.I eggSurface.cxx \
     eggSurface.h eggSwitchCondition.cxx eggSwitchCondition.h eggTable.I \
@@ -44,10 +46,11 @@
     eggExternalReference.h eggFilenameNode.I eggFilenameNode.h \
     eggGroup.I eggGroup.h eggGroupNode.I eggGroupNode.h eggMaterial.I \
     eggMaterial.h eggMorph.I eggMorph.h eggMorphList.I eggMorphList.h \
-    eggNamedObject.I eggNamedObject.h eggNode.I eggNode.h \
+    eggNamedObject.I eggNamedObject.h eggNameUniquifier.h eggNode.I eggNode.h \
     eggNurbsCurve.I eggNurbsCurve.h eggNurbsSurface.I eggNurbsSurface.h \
     eggObject.I eggObject.h eggParameters.h eggPoint.I eggPoint.h \
-    eggPolygon.I eggPolygon.h eggPrimitive.I eggPrimitive.h \
+    eggPolygon.I eggPolygon.h eggPoolUniquifier.h \
+    eggPrimitive.I eggPrimitive.h \
     eggSAnimData.I eggSAnimData.h eggSurface.I eggSurface.h \
     eggSwitchCondition.h eggTable.I eggTable.h eggTexture.I \
     eggTexture.h eggTextureCollection.I eggTextureCollection.h \

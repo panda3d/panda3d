@@ -140,7 +140,7 @@ open_write(const Filename &filename, bool) {
 
   loader_cat.info() << "Writing " << filename << "\n";
 
-  filename.make_dir();
+  filename.unlink();
   if (!_dout.open(filename)) {
     loader_cat.error() << "Unable to open " << filename << "\n";
     return false;
