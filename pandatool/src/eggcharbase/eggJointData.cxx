@@ -41,7 +41,7 @@ EggJointData(EggCharacterCollection *collection,
   _parent = (EggJointData *)NULL;
   _new_parent = (EggJointData *)NULL;
   _has_rest_frame = false;
-  _forced_rest_frames_equal = false;
+  _rest_frames_differ = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -101,6 +101,33 @@ get_net_frame(int model_index, int n) const {
     mat = mat * _parent->get_net_frame(model_index, n);
   }
   return mat;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::force_initial_rest_frame
+//       Access: Public
+//  Description: Forces all of the joints to have the same rest frame
+//               value as the first joint read in.  This is a drastic
+//               way to repair models whose rest frame values are
+//               completely bogus, but should not be performed on
+//               models that are otherwise correct.
+////////////////////////////////////////////////////////////////////
+void EggJointData::
+force_initial_rest_frame() {
+  if (!has_rest_frame()) {
+    return;
+  }
+  int num_models = get_num_models();
+  for (int model_index = 0; model_index < num_models; model_index++) {
+    if (has_model(model_index)) {
+      EggJointPointer *joint;
+      DCAST_INTO_V(joint, get_model(model_index));
+      if (joint->is_of_type(EggJointNodePointer::get_class_type())) {
+        joint->set_frame(0, get_rest_frame());
+      }
+    }
+  }
+  _rest_frames_differ = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -185,8 +212,8 @@ optimize() {
 ////////////////////////////////////////////////////////////////////
 //     Function: EggJointData::expose
 //       Access: Public
-//  Description: Calls expose() on all models, and recursively on
-//               all joints at this node and below.
+//  Description: Calls expose() on all models for this joint, but does
+//               not recurse downwards.
 ////////////////////////////////////////////////////////////////////
 void EggJointData::
 expose(EggGroup::DCSType dcs_type) {
@@ -199,19 +226,13 @@ expose(EggGroup::DCSType dcs_type) {
       joint->expose(dcs_type);
     }
   }
-
-  Children::iterator ci;
-  for (ci = _children.begin(); ci != _children.end(); ++ci) {
-    EggJointData *child = (*ci);
-    child->expose(dcs_type);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggJointData::zero_channels
 //       Access: Public
-//  Description: Calls zero_channels() on all models, and recursively on
-//               all joints at this node and below.
+//  Description: Calls zero_channels() on all models for this joint,
+//               but does not recurse downwards.
 ////////////////////////////////////////////////////////////////////
 void EggJointData::
 zero_channels(const string &components) {
@@ -223,12 +244,6 @@ zero_channels(const string &components) {
       DCAST_INTO_V(joint, back);
       joint->zero_channels(components);
     }
-  }
-
-  Children::iterator ci;
-  for (ci = _children.begin(); ci != _children.end(); ++ci) {
-    EggJointData *child = (*ci);
-    child->zero_channels(components);
   }
 }
 
@@ -253,21 +268,9 @@ add_back_pointer(int model_index, EggObject *egg_object) {
       // If this new node doesn't come within an acceptable tolerance
       // of our first reading of this joint's rest frame, set a
       // warning flag.
-      if (!_rest_frame.almost_equal(joint->get_frame(0), 0.001)) {
-        _forced_rest_frames_equal = true;
+      if (!_rest_frame.almost_equal(joint->get_frame(0), 0.0001)) {
+        _rest_frames_differ = true;
       }
-
-      // In any case, ensure the rest frames are exactly equal.
-
-      // Actually, this may not be a good idea; it is, in fact, valid
-      // (although unusual) for different models to have different
-      // rest frames, provided their vertices appriopriately reflect
-      // the different rest frames.  But we do have at least one
-      // character, Mickey, for which some of the lower-level LOD's
-      // have different rest frames that are in fact completely wrong,
-      // so forcing them all to the same value is correct in that
-      // case.  Maybe this should be a command-line option.
-      joint->set_frame(0, _rest_frame);
     }
 
   } else if (egg_object->is_of_type(EggTable::get_class_type())) {

@@ -47,7 +47,9 @@ public:
   LMatrix4d get_net_frame(int model_index, int n) const;
 
   INLINE bool has_rest_frame() const;
+  INLINE bool rest_frames_differ() const;
   INLINE const LMatrix4d &get_rest_frame() const;
+  void force_initial_rest_frame();
 
   INLINE void reparent_to(EggJointData *new_parent);
   void move_vertices_to(EggJointData *new_owner);
@@ -72,7 +74,7 @@ private:
   LMatrix4d get_new_frame(int model_index, int n);
 
   bool _has_rest_frame;
-  bool _forced_rest_frames_equal;
+  bool _rest_frames_differ;
   LMatrix4d _rest_frame;
 
   // These are used to cache the above results for optimizing

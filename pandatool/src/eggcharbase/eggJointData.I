@@ -62,6 +62,19 @@ has_rest_frame() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::rest_frames_differ
+//       Access: Public
+//  Description: Returns true if the rest frames for different models
+//               differ in their initial value.  This is not
+//               technically an error, but it is unusual enough to be
+//               suspicious.
+////////////////////////////////////////////////////////////////////
+INLINE bool EggJointData::
+rest_frames_differ() const {
+  return _rest_frames_differ;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggJointData::get_rest_frame
 //       Access: Public
 //  Description: Returns the rest frame of the joint.  This is the

@@ -42,6 +42,8 @@ public:
   EggCharacterFilter();
   virtual ~EggCharacterFilter();
 
+  void add_fixrest_option();
+
 protected:
   virtual bool post_command_line();
   virtual void write_eggs();
@@ -49,6 +51,7 @@ protected:
   virtual EggCharacterCollection *make_collection();
 
   EggCharacterCollection *_collection;
+  bool _force_initial_rest_frame;
 };
 
 #endif

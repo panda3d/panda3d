@@ -45,6 +45,7 @@ EggOptchar() {
   add_path_store_options();
   add_normals_options();
   add_transform_options();
+  add_fixrest_option();
 
   set_program_description
     ("egg-optchar performs basic optimizations of a character model "

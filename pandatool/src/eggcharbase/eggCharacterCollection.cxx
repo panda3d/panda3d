@@ -673,21 +673,28 @@ write(ostream &out, int indent_level) const {
 //               detected, such as inconsistent animation tables.
 //
 //               In addition to reporting this errors, calling this
-//               function will also ensure that they are all repaired
-//               (although certain kinds of errors will be repaired
-//               regardless).
+//               function will also ensure that they are all repaired.
+//               Pass force_initial_rest_frame as true to also force
+//               rest frames from different models to be the same if
+//               they are initially different.
 ////////////////////////////////////////////////////////////////////
 void EggCharacterCollection::
-check_errors(ostream &out) {
+check_errors(ostream &out, bool force_initial_rest_frame) {
   Characters::const_iterator ci;
   for (ci = _characters.begin(); ci != _characters.end(); ++ci) {
     EggCharacterData *char_data = (*ci);
     int num_joints = char_data->get_num_joints();
     for (int j = 0; j < num_joints; j++) {
       EggJointData *joint_data = char_data->get_joint(j);
-      if (joint_data->_forced_rest_frames_equal) {
-        out << "Warning: rest frames for " << joint_data->get_name() 
-            << " were different.\n";
+      if (joint_data->rest_frames_differ()) {
+        if (force_initial_rest_frame) {
+          joint_data->force_initial_rest_frame();
+          out << "Forced rest frames the same for " << joint_data->get_name() 
+              << ".\n";
+        } else {
+          out << "Warning: rest frames for " << joint_data->get_name() 
+              << " differ.\n";
+        }
       }
     }
 

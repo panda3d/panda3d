@@ -29,6 +29,8 @@
 EggCharacterFilter::
 EggCharacterFilter() : EggMultiFilter(false) {
   _collection = (EggCharacterCollection *)NULL;
+
+  _force_initial_rest_frame = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -41,6 +43,23 @@ EggCharacterFilter::
   if (_collection != (EggCharacterCollection *)NULL) {
     delete _collection;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterFilter::add_fixrest_option
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void EggCharacterFilter::
+add_fixrest_option() {
+  add_option
+    ("fixrest", "", 50,
+     "Specify this to force all the initial rest frames of the various "
+     "model files to the same value as the first model specified.  This "
+     "is a fairly drastic way to repair models whose initial rest frame "
+     "values are completely bogus, but should not be performed when the "
+     "input models are correct.",
+     &EggCharacterFilter::dispatch_none, &_force_initial_rest_frame);
 }
 
 
@@ -70,7 +89,7 @@ post_command_line() {
     }
   }
 
-  _collection->check_errors(nout);
+  _collection->check_errors(nout, _force_initial_rest_frame);
 
   return true;
 }
