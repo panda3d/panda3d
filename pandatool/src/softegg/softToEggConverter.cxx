@@ -605,6 +605,12 @@ convert_soft(bool from_selection) {
     _character_name = root_name;
   
   if (make_poly || make_nurbs) {
+    // Specify that the texture names should be relative to the output
+    // file.
+    Filename output_filename(eggFileName);
+    _path_replace->_path_store = PS_relative;
+    _path_replace->_path_directory = output_filename.get_dirname();
+
     if (!convert_char_model()) {
       all_ok = false;
     }
@@ -620,11 +626,11 @@ convert_soft(bool from_selection) {
     }
 
     //  reparent_decals(&get_egg_data());
-    softegg_cat.info() << softegg_cat.info() << "Converted Softimage file\n";
+    softegg_cat.info() << "Converted Softimage file\n";
 
     // write out the egg model file
-    _egg_data->write_egg(Filename(eggFileName));
-    softegg_cat.info() << softegg_cat.info() << "Wrote Egg file " << eggFileName << endl;
+    _egg_data->write_egg(output_filename);
+    softegg_cat.info() << "Wrote Egg file " << output_filename << endl;
   }
   if (make_anim) {
     if (!convert_char_chan()) {
@@ -632,11 +638,11 @@ convert_soft(bool from_selection) {
     }
 
     //  reparent_decals(&get_egg_data());
-    softegg_cat.info() << softegg_cat.info() << "Converted Softimage file\n";
+    softegg_cat.info() << "Converted Softimage file\n";
     
     // write out the egg model file
     _egg_data->write_egg(Filename(animFileName));
-    softegg_cat.info() << softegg_cat.info() << "Wrote Anim file " << animFileName << endl;
+    softegg_cat.info() << "Wrote Anim file " << animFileName << endl;
   }
   return all_ok;
 }
