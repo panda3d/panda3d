@@ -132,7 +132,7 @@ before it.  The packages are, in order:
   panda - this is the bulk of the C++ Panda code.  It contains the 3-D
     engine itself, as well as supporting C++ interfaces like
     networking, audio, and device interfaces.  Expect this package to
-    take from one to two hours to build from scratch.  You must build
+    take from 30 to 60 minutes to build from scratch.  You must build
     and install dtool before you can build panda.
 
   direct - this is the high-level Python interface to Panda.  Although
@@ -213,7 +213,7 @@ root of the dtool package.  Many of these variables will already have
 definitions that are sensible for you; some will not.  You must
 customize these variables before you run ppremake.
 
-Normally, rather than modifying dtool/Config.pp directly, you would
+Normally, rather than modifying dtool/Config.pp directly, you should
 create your own, empty Config.pp file in a safe place (for instance,
 in your personal home directory) and define just the variables you
 need there.  The definitions you give in your personal Config.pp file
@@ -221,8 +221,9 @@ will override those in the source directory.  You will need to set an
 environment variable PPREMAKE_CONFIG to the full filename path of your
 personal Config.pp (more on this in the platform-specific installation
 notes, below).  It is also possible simply to modify dtool/Config.pp,
-but this is not recommended as it makes it difficult to install
-updated versions of Panda.
+but this is not recommended as it makes it difficult to remember which
+customizations you have made, and makes installing updated versions of
+Panda problematic.
 
 The syntax of the Config.pp file is something like a cross between the
 C preprocessor and Makefile syntax.  The full syntax of ppremake
@@ -269,7 +270,9 @@ find useful are:
     Python header files, if Python is installed on your system.  As of
     Python version 2.0, compiling Python interfaces doesn't require
     linking with any special libraries, so normally PYTHON_LPATH and
-    PYTHON_LIBS are left empty.
+    PYTHON_LIBS are left empty.  You definitely need to set
+    PYTHON_IPATH, however, if you wish to compile Panda so that it can
+    be used from Python.
 
   NSPR_IPATH / NSPR_LPATH / NSPR_LIBS - the full pathname to NSPR
     header and library files, and the name of the NSPR library, if
@@ -308,6 +311,9 @@ itself.  Generally, you do something like the following:
   make
   make install
 
+If the configure script does not already exist, read the document
+BUILD_FROM_CVS.txt in the ppremake source directory.
+
 By default, ppremake will install itself in /usr/local/panda/bin, the
 same directory that the other Panda binaries will install themselves
 to.  If you prefer, you can install it in another directory by doing
@@ -315,7 +321,7 @@ something like this:
 
   ./configure --prefix=/my/install/directory
 
-If you do this, you will also want to redefine INSTALL_DIR in your
+If you do this, you will probably also want to redefine INSTALL_DIR in your
 Config.pp to be the same directory (see above).  Wherever you install
 it, you should make sure the bin directory is included on your search
 path, and the corresponding lib directory (e.g. /usr/local/panda/lib)
@@ -355,8 +361,12 @@ When you run ppremake within the dtool directory, it will generate a
 file, dtool_config.h (as well as all of the Makefiles).  This file
 will be included by all of the Panda3D sources, and reveals the
 settings of many of the options you have configured.  You should
-examine this file to ensure that your settings have been made the way
-you expect.
+examine this file now to ensure that your settings have been made the
+way you expect.
+
+Note that ppremake will also try to create several subdirectories in
+the install directory, so you must have write access to the install
+directory in order for ppremake to run successfully.
 
 Now you can build the Panda3D sources.  Begin with dtool (the current
 directory):
@@ -379,12 +389,17 @@ now installed and configured correctly.  However, you must set up a
 Configrc file to set your runtime configuration options before you can
 run Panda and open up a graphics window.  See HOW TO RUN PANDA, below.
 
-If you wish, you may also build direct or pandatool:
+If you wish, you may also build direct.  You only need to build this
+if you intend to use the Python interfaces.
 
   cd ~/panda3d/direct
   ppremake
   make
   make install
+
+And you may build pandatool.  You only need to build this if you want
+to take advantage of model conversion utilities for Panda like
+maya2egg and egg2bam.
 
   cd ~/panda3d/pandatool
   ppremake
@@ -468,6 +483,7 @@ In tcsh:
 or in bash:
 
   PANDA_ROOT='C:\Cygwin'
+  export PANDA_ROOT
 
 Follow the instructions under HOW TO BUILD PANDA FOR A UNIX
 ENVIRONMENT, above.
@@ -542,23 +558,23 @@ Now you should be able to build dtool.
 
 And then build panda.
 
-  c:
   cd \panda3d\panda
   ppremake
   make
   make install
 
-And (optionally) build direct.
+And (optionally) build direct.  You only need to build this if you
+intend to use the Python interfaces.
 
-  c:
   cd \panda3d\direct
   ppremake
   make
   make install
 
-And (optionally) build pandatool.
+And (optionally) build pandatool.  You only need to build this if you
+want to take advantage of model conversion utilities for Panda like
+maya2egg and egg2bam.
 
-  c:
   cd \panda3d\pandatool
   ppremake
   make
@@ -614,26 +630,99 @@ add instead the line:
 Later you may add additional lines here to control the default
 behavior of Panda in other ways.
 
-If you do not specify otherwise, Panda will look for the Configrc file
-in the current directory, so for now try to run pview from within the
-same directory as your Configrc file.  If all goes well, it should
-open up a window with a blue triangle.  You can use the mouse to move
-the triangle around.  You can also pass the name of an egg file, if
-you have one (look in the models directory for some sample egg files),
-on the command line, and pview will load up and display the egg file.
+If you do not specify otherwise (and you did not redefine
+DEFAULT_CONFIGRC_DIR in your Config.pp file), Panda will look for the
+Configrc file in the current directory, so for now try to run pview
+from within the same directory as your Configrc file.  If all goes
+well, it should open up a window with a blue triangle.  You can use
+the mouse to move the triangle around.  You can also pass the name of
+an egg file, if you have one (look in the models directory for some
+sample egg files), on the command line, and pview will load up and
+display the egg file.
 
-If you want to load the Configrc from other than the current
-directory, set the following two environment variables:
+If you want to load the Configrc from other than the compiled-in
+default directory, set the environment variable:
 
-  CONFIG_CONFIG=:configpath=CFG_PATH
-  CFG_PATH=/my/home/directory
+  CONFIGRC_DIR=/my/home/directory
 
 Where /my/home/directory is the name of your home directory (or
-wherever you put the Configrc file).  Note that forward slashes should
-be used, according to the Panda convention.  Also note that on
-Windows, the path you specify is relative to the directory named by
-PANDA_ROOT, unless it begins with a single-letter directory name (see
-the explanation of how Panda maps its internal filenames to Windows
-filenames, above.)
+wherever you put the Configrc file).
 
 
+
+
+
+HOW TO BUILD THE PYTHON INTERFACES
+
+You may stop now if you only intend to use Panda as a C++ library.
+However, if you wish to use Panda within Python, you must now generate
+the Python interfaces.
+
+There are two parts to the Python interface for Panda.  The first part
+is a series of wrapper functions that are compiled into the Panda
+libraries themselves, along with associated *.in files that describe
+the class hierarchy.  If you defined PYTHON_IPATH correctly in your
+Config.pp file, then Python should have been detected by ppremake, and
+it would have generated makefiles to build these wrappers
+automatically.  (You would have seen the program "interrogate" running
+within each directory as panda was building, and you will have a
+number of *.in files installed into $INSTALL_DIR/etc.)
+
+If, for some reason, the interrogate program did not run, perhaps
+because you defined an invalid directory in PYTHON_IPATH, you can go
+back and fix this now, and simply re-run ppremake and make install
+again in each of dtool, panda, and direct.
+
+The second part to the Python interface is a series of Python wrapper
+classes that are generated, for each C++ class detected by
+interrogate.  These classes must be generated after all of the C++
+code has been compiled and installed.  Execute the following command:
+
+  genPyCode
+
+This is a script that was installed into $INSTALL_DIR/bin as part of
+the build of direct.  It invokes Python to read the *.in files
+generated by interrogate, and generates the appropriate wrapper
+functions, which are written into $INSTALL_DIR/lib/pandac.  (There
+will be several hundred generated Python modules; these are normally
+"squeezed" into a single file called PandaModules.pyz using
+PythonWare's SqueezeTool.  This squeeze step gives a significant
+runtime performance advantage, especially on Windows; but if it causes
+problems, you can use the option -n, e.g. 'genPyCode -n', to avoid
+it.)
+
+You will need to re-run this script only if the Panda interface
+changes, e.g. if a class is added or a method's parameters change.
+You should certainly re-run it any time you update and install a new
+version of Panda.
+
+To make Panda accessible to Python, you will need to add
+$INSTALL_DIR/lib to your PYTHONPATH variable, e.g.:
+
+  setenv PYTHONPATH ${PYTHONPATH}:/usr/local/panda/lib
+
+Or, on Windows:
+
+  set PYTHONPATH=%PYTHONPATH%;c:\panda3d\lib
+
+We recommend this approach for most users, since it collects all of
+the Panda libraries in one directory and doesn't clutter up the Python
+distribution.  However, if you only intend to use Panda from Python,
+and especially if you want to make it accessible to multiple users, it
+may be more attractive to install the Panda libraries as a standard
+Python module, so that it is not necessary to modify your PYTHONPATH
+variable.  To do this, you should add the following line to your
+Config.pp:
+
+  #define INSTALL_LIB_DIR /usr/lib/python2.2/site-packages
+
+Where you give the actual path to the site-packages directory for your
+installation of Python.  On Windows, this will probably be something
+like this:
+
+  #define INSTALL_LIB_DIR C:\Python22\Lib\site-packages
+
+Then go back and re-run ppremake and make install in each of dtool,
+panda, and direct, and then re-run genPyCode, to install the Panda
+libraries and Python files directly into the Python site-packages
+directory.
