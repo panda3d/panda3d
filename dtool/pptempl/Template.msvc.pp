@@ -307,6 +307,9 @@ $[target] : $[sources]
   #else
 	$[SHARED_LIB_C]
   #endif
+
+$[so_dir]\lib$[TARGET]$[dllext].lib : $[so_dir]\lib$[TARGET]$[dllext].dll
+
 #endif
 
 // Here are the rules to install and uninstall the library and
@@ -416,6 +419,8 @@ $[target] : $[sources]
 #else
 	$[SHARED_LIB_C]
 #endif
+
+$[so_dir]\lib$[TARGET]$[dllext].lib : $[so_dir]\lib$[TARGET]$[dllext].dll
 
 #end noinst_lib_target
 

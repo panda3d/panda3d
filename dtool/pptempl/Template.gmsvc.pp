@@ -156,14 +156,20 @@
 #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE].
 ################################# DO NOT EDIT ###########################
 
+// If we are using GNU make, this will automatically enable the
+// multiprocessor build mode according to the value in
+// NUMBER_OF_PROCESSORS, which should be set by NT.  Maybe this isn't
+// a good idea to do all the time, but you can always disable it by
+// explicitly unsetting NUMBER_OF_PROCESSORS, or by setting it to 1.
+#if $[NUMBER_OF_PROCESSORS]
+MAKEFLAGS := -j$[NUMBER_OF_PROCESSORS]
+#endif
 
 // The 'all' rule makes all the stuff in the directory except for the
 // test_bin_targets.  It doesn't do any installation, however.
 #define all_targets \
     Makefile \
     $[if $[dep_sources],$[DEPENDENCY_CACHE_FILENAME]] \
-    $[if $[so_sources],$[so_dir]] \
-    $[if $[st_sources],$[st_dir]] \
     $[sort $[lib_targets] $[static_lib_targets] $[bin_targets]] \
     $[deferred_objs]
 all : $[all_targets]
@@ -229,8 +235,6 @@ uninstall : $[active_target(metalib_target lib_target static_lib_target ss_lib_t
 // loops through the full set of directories and creates a rule to
 // make each one, as needed.
 #foreach directory $[sort \
-    $[if $[so_sources],$[so_dir]] \
-    $[if $[st_sources],$[st_dir]] \
     $[if $[install_lib],$[install_lib_dir]] \
     $[if $[install_bin] $[install_scripts],$[install_bin_dir]] \
     $[if $[install_headers],$[install_headers_dir]] \
@@ -242,6 +246,21 @@ uninstall : $[active_target(metalib_target lib_target static_lib_target ss_lib_t
 $[directory] :
 	@test -d $[directory] || echo mkdir -p $[directory]
 	@test -d $[directory] || mkdir -p $[directory]
+#end directory
+
+// We need to make the .obj files depend on the $[so_dir] and
+// $[st_dir] directories, to guarantee that the directories are built
+// before the .obj files are generated, but we cannot depend on the
+// directories directly or we get screwed up by the modification
+// times.  So we put this phony timestamp file in each directory.
+#foreach directory $[sort \
+    $[if $[so_sources],$[so_dir]] \
+    $[if $[st_sources],$[st_dir]] \
+    ]
+$[directory]/stamp :
+	@test -d $[directory] || echo mkdir -p $[directory]
+	@test -d $[directory] || mkdir -p $[directory]
+	@touch $[directory]/stamp
 #end directory
 
 
@@ -301,12 +320,15 @@ $[directory] :
 $[varname] = $[sources]
   #define target $[so_dir]/lib$[TARGET]$[dllext].dll
   #define sources $($[varname])
-$[target] : $[sources]
+$[target] : $[sources] $[so_dir]/stamp
   #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 	$[SHARED_LIB_C++]
   #else
 	$[SHARED_LIB_C]
   #endif
+
+$[so_dir]/lib$[TARGET]$[dllext].lib : $[so_dir]/lib$[TARGET]$[dllext].dll
+
 #endif
 
 // Here are the rules to install and uninstall the library and
@@ -329,12 +351,12 @@ uninstall-lib$[TARGET] :
 	rm -f $[sort $[installed_files]]
 #endif
 
-$[install_lib_dir]/lib$[TARGET]$[dllext].dll : $[so_dir]/lib$[TARGET]$[dllext].dll
+$[install_lib_dir]/lib$[TARGET]$[dllext].dll : $[so_dir]/lib$[TARGET]$[dllext].dll $[so_dir]/stamp
 #define local lib$[TARGET]$[dllext].dll
 #define dest $[install_lib_dir]
 	cp $[so_dir]/$[local] $[dest]
 
-$[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[so_dir]/lib$[TARGET]$[dllext].lib
+$[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[so_dir]/lib$[TARGET]$[dllext].lib $[so_dir]/stamp
 #define local lib$[TARGET]$[dllext].lib
 #define dest $[install_lib_dir]
 	cp $[so_dir]/$[local] $[dest]
@@ -352,13 +374,13 @@ $[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[so_dir]/lib$[TARGET]$[dllext].l
   #define igatemod $[TARGET]
 #endif
 
-$[install_igatedb_dir]/$[igatedb] : $[so_dir]/$[igatedb]
+$[install_igatedb_dir]/$[igatedb] : $[so_dir]/$[igatedb] $[so_dir]/stamp
 #define local $[igatedb]
 #define dest $[install_igatedb_dir]
 	cp $[so_dir]/$[local] $[dest]
 
 lib$[TARGET]_igatescan = $[igatescan]
-$[so_dir]/$[igatedb] $[so_dir]/$[igateoutput] : $[filter-out %.c %.cxx,$[igatescan]]
+$[so_dir]/$[igatedb] $[so_dir]/$[igateoutput] : $[filter-out %.c %.cxx,$[igatescan]] $[so_dir]/stamp
 // We use forward slash for interrogate because it prefers those.
 	interrogate -od $[so_dir]/$[igatedb] -oc $[so_dir]/$[igateoutput] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
 
@@ -366,7 +388,7 @@ $[so_dir]/$[igatedb] $[so_dir]/$[igateoutput] : $[filter-out %.c %.cxx,$[igatesc
 #define source $[so_dir]/$[igateoutput]
 #define ipath . $[target_ipath]
 #define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
-$[target] : $[source]
+$[target] : $[source] $[so_dir]/stamp
 	$[COMPILE_C++]
 #endif  // $[igatescan]
 
@@ -381,14 +403,14 @@ $[target] : $[source]
 lib$[TARGET]_igatemscan = $[igatemscan]
 #define target $[so_dir]/$[igatemout]
 #define sources $(lib$[TARGET]_igatemscan)
-$[target] : $[sources]
+$[target] : $[sources] $[so_dir]/stamp
 	interrogate_module -oc $[target] -module "$[igatemod]" -library "$[igatelib]" -python $[sources]
 
 #define target $[igatemout:%.cxx=$[so_dir]/%.obj]
 #define source $[so_dir]/$[igatemout]
 #define ipath . $[target_ipath]
 #define flags $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
-$[target] : $[source]
+$[target] : $[source] $[so_dir]/stamp
 	$[COMPILE_C++]
 #endif  // $[igatescan]
 
@@ -410,12 +432,14 @@ $[target] : $[source]
 $[varname] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[so_dir]/%.obj,%,,$[get_sources]]]
 #define target $[so_dir]/lib$[TARGET]$[dllext].dll
 #define sources $($[varname])
-$[target] : $[sources]
+$[target] : $[sources] $[so_dir]/stamp
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 	$[SHARED_LIB_C++]
 #else
 	$[SHARED_LIB_C]
 #endif
+
+$[so_dir]/lib$[TARGET]$[dllext].lib : $[so_dir]/lib$[TARGET]$[dllext].dll
 
 #end noinst_lib_target
 
@@ -432,7 +456,7 @@ $[target] : $[sources]
 $[varname] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[get_sources]]]
 #define target $[st_dir]/lib$[TARGET]$[dllext].lib
 #define sources $($[varname])
-$[target] : $[sources]
+$[target] : $[sources] $[st_dir]/stamp
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 	$[STATIC_LIB_C++]
 #else
@@ -453,7 +477,7 @@ uninstall-lib$[TARGET] :
 	rm -f $[sort $[installed_files]]
 #endif
 
-$[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[st_dir]/lib$[TARGET]$[dllext].lib
+$[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[st_dir]/lib$[TARGET]$[dllext].lib $[st_dir]/stamp
 #define local lib$[TARGET]$[dllext].lib
 #define dest $[install_lib_dir]
 	cp $[st_dir]/$[local] $[dest]
@@ -469,12 +493,12 @@ $[install_lib_dir]/lib$[TARGET]$[dllext].lib : $[st_dir]/lib$[TARGET]$[dllext].l
 /////////////////////////////////////////////////////////////////////
 
 #forscopes sed_bin_target
-$[TARGET] : $[st_dir]/$[TARGET]
+$[TARGET] : $[st_dir]/$[TARGET] $[st_dir]/stamp
 
 #define target $[st_dir]/$[TARGET]
 #define source $[SOURCE]
 #define script $[COMMAND]
-$[target] : $[source]
+$[target] : $[source] $[st_dir]/stamp
 	$[SED]
 	chmod +x $[target]
 
@@ -490,7 +514,7 @@ uninstall-$[TARGET] :
 
 #define local $[TARGET]
 #define dest $[install_bin_dir]
-$[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
+$[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET] $[st_dir]/stamp
 	cp $[st_dir]/$[local] $[dest]
 
 #end sed_bin_target
@@ -502,14 +526,14 @@ $[install_bin_dir]/$[TARGET] : $[st_dir]/$[TARGET]
 /////////////////////////////////////////////////////////////////////
 
 #forscopes bin_target
-$[TARGET] : $[st_dir]/$[TARGET].exe
+$[TARGET] : $[st_dir]/$[TARGET].exe $[st_dir]/stamp
 
 #define varname $[subst -,_,bin_$[TARGET]]
 $[varname] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[get_sources]]]
 #define target $[st_dir]/$[TARGET].exe
 #define sources $($[varname])
 #define ld $[get_ld]
-$[target] : $[sources]
+$[target] : $[sources] $[st_dir]/stamp
 #if $[ld]
   // If there's a custom linker defined for the target, we have to use it.
 	$[ld] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]	
@@ -536,7 +560,7 @@ uninstall-$[TARGET] :
 	rm -f $[sort $[installed_files]]
 #endif
 
-$[install_bin_dir]/$[TARGET].exe : $[st_dir]/$[TARGET].exe
+$[install_bin_dir]/$[TARGET].exe : $[st_dir]/$[TARGET].exe $[st_dir]/stamp
 #define local $[TARGET].exe
 #define dest $[install_bin_dir]
 	cp $[st_dir]/$[local] $[dest]
@@ -551,13 +575,13 @@ $[install_bin_dir]/$[TARGET].exe : $[st_dir]/$[TARGET].exe
 /////////////////////////////////////////////////////////////////////
 
 #forscopes noinst_bin_target test_bin_target
-$[TARGET] : $[st_dir]/$[TARGET].exe
+$[TARGET] : $[st_dir]/$[TARGET].exe $[st_dir]/stamp
 
 #define varname $[subst -,_,bin_$[TARGET]]
 $[varname] = $[unique $[patsubst %.cxx %.c %.yxx %.lxx,$[st_dir]/%.obj,%,,$[get_sources]]]
 #define target $[st_dir]/$[TARGET].exe
 #define sources $($[varname])
-$[target] : $[sources]
+$[target] : $[sources] $[st_dir]/stamp
 #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
 	$[LINK_BIN_C++]
 #else
@@ -604,7 +628,7 @@ $[target] : $[source]
 #define source $[file]
 #define ipath $[file_ipath]
 #define flags $[cflags] $[CFLAGS_SHARED] $[all_sources $[building_var:%=/D%],$[file]]
-$[target] : $[source] $[dependencies $[source]]
+$[target] : $[source] $[dependencies $[source]] $[so_dir]/stamp
 	$[COMPILE_C]
 
 #end file
@@ -616,7 +640,7 @@ $[target] : $[source] $[dependencies $[source]]
 #define source $[file]
 #define ipath $[file_ipath]
 #define flags $[cflags] $[all_sources $[building_var:%=/D%],$[file]]
-$[target] : $[source] $[dependencies $[source]]
+$[target] : $[source] $[dependencies $[source]] $[st_dir]/stamp
 	$[COMPILE_C]
 
 #end file
@@ -629,7 +653,7 @@ $[target] : $[source] $[dependencies $[source]]
 #define flags $[c++flags] $[CFLAGS_SHARED] $[all_sources $[building_var:%=/D%],$[file]]
 // Yacc must run before some files can be compiled, so all files
 // depend on yacc having run.
-$[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.cxx]
+$[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.cxx] $[so_dir]/stamp
 	$[COMPILE_C++]
 
 #end file
@@ -641,7 +665,7 @@ $[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.cxx]
 #define source $[file]
 #define ipath $[file_ipath]
 #define flags $[c++flags] $[all_sources $[building_var:%=/D%],$[file]]
-$[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.cxx]
+$[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.cxx] $[st_dir]/stamp
 	$[COMPILE_C++]
 
 #end file
@@ -654,7 +678,7 @@ $[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.cxx]
 #define flags $[noopt_c++flags] $[CFLAGS_SHARED] $[all_sources $[building_var:%=/D%],$[file]]
 // Yacc must run before some files can be compiled, so all files
 // depend on yacc having run.
-$[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.cxx]
+$[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.cxx] $[so_dir]/stamp
 	$[COMPILE_C++]
 
 #end file
@@ -666,7 +690,7 @@ $[target] : $[source] $[dependencies $[file]] $[yxx_so_sources:%.yxx=%.cxx]
 #define source $[patsubst %.lxx %.yxx,%.cxx,$[file]]
 #define ipath $[file_ipath]
 #define flags $[noopt_c++flags] $[all_sources $[building_var:%=/D%],$[file]]
-$[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.cxx]
+$[target] : $[source] $[dependencies $[file]] $[yxx_st_sources:%.yxx=%.cxx] $[st_dir]/stamp
 	$[COMPILE_C++]
 
 #end file
