@@ -16,6 +16,6 @@
 
   #define SOURCES pandaexpress.cxx
   #define WIN_SYS_LIBS \
-     advapi32.lib $[WIN_SYS_LIBS]
+     advapi32.lib ws2_32.lib $[WIN_SYS_LIBS]
 
 #end metalib_target
