@@ -1090,9 +1090,9 @@ output_version_map(ostream &out) const {
       out << " [" << hash.get_value(0)
 	  << " " << hash.get_value(1)
 	  << " " << hash.get_value(2)
-	  << " " << hash.get_value(3);
+	  << " " << hash.get_value(3)
+	  << "]" << endl;
     }
-    out << "]" << endl;
   }
   out << endl;
 }
