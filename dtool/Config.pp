@@ -254,10 +254,13 @@
 // Should we try to build the SGI-specific glxdisplay?
 #define HAVE_SGIGL $[eq $[PLATFORM],Irix]
 
+#define WIN32_PLATFORMSDK_INCPATH /mspsdk/Include
+#define WIN32_PLATFORMSDK_LIBPATH /mspsdk/Lib
+
 // Should we try to build the DirectX interface?  What additional
 // libraries do we need?
-#define DX_IPATH /mspsdk/Include
-#define DX_LPATH /mspsdk/Lib
+#define DX_IPATH $[WIN32_PLATFORMSDK_INCPATH]
+#define DX_LPATH $[WIN32_PLATFORMSDK_LIBPATH]
 #define DX_LIBS \
   dxguid.lib winmm.lib kernel32.lib gdi32.lib comdlg32.lib winspool.lib \
   user32.lib advapi32.lib ddraw.lib d3dim.lib

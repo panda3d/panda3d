@@ -437,6 +437,10 @@
 #defun get_ipath
   #define alt_ipath $[stl_ipath] $[nspr_ipath] $[python_ipath]
   
+  #if $[eq $[PLATFORM],Win32]  
+    // all win32 files need path to latest windows.h and libs, which are in plat-sdk dirs, not the deflt vc ones
+    #set alt_ipath $[WIN32_PLATFORMSDK_INCPATH] $[alt_ipath]
+  #endif  
   #if $[ne $[USE_CRYPTO] $[components $[USE_CRYPTO],$[active_component_libs]],]
     #set alt_ipath $[alt_ipath] $[crypto_ipath]
   #endif
@@ -502,6 +506,9 @@
 #defun get_lpath
   #define alt_lpath $[stl_lpath] $[nspr_lpath] $[python_lpath]
   
+  #if $[eq $[PLATFORM],Win32]  
+    #set alt_lpath $[WIN32_PLATFORMSDK_LIBPATH] $[alt_lpath] 
+  #endif  
   #if $[ne $[USE_CRYPTO] $[components $[USE_CRYPTO],$[active_component_libs] $[transitive_link]],]
     #set alt_lpath $[alt_lpath] $[crypto_lpath]
   #endif
