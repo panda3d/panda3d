@@ -7,13 +7,19 @@
 #define __AUDIO_SOUND_H__
 
 #include "audio_trait.h"
+/*
 #include "typedReferenceCount.h"
+*/
+#include "typeHandle.h"
 #include "namable.h"
 
 class AudioPool;
 class AudioManager;
 
+/*
 class EXPCL_PANDA AudioSound : public TypedReferenceCount, public Namable {
+*/
+class EXPCL_PANDA AudioSound : public TypedObject, public Namable {
 private:
   AudioTraits::SoundClass *_sound;
   AudioTraits::PlayingClass *_state;
@@ -47,9 +53,14 @@ public:
     return _type_handle;
   }
   static void init_type(void) {
+    /*
     TypedReferenceCount::init_type();
     register_type(_type_handle, "AudioSound",
 		  TypedReferenceCount::get_class_type());
+    */
+    TypedObject::init_type();
+    register_type(_type_handle, "AudioSound",
+		  TypedObject::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

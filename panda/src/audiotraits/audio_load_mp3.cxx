@@ -507,7 +507,6 @@ AudioTraits::SoundClass* AudioLoadMp3(Filename) {
 EXPCL_MISC AudioTraits::SoundClass* AudioLoadMp3(Filename filename) {
   unsigned char* buf;
   unsigned long len;
-  filename.resolve_filename(get_sound_path());
   read_file(filename, &buf, len);
   if (buf != (unsigned char*)0L) {
     return WinSample::load_raw(buf, len);
@@ -522,7 +521,6 @@ EXPCL_MISC AudioTraits::SoundClass* AudioLoadMp3(Filename filename) {
 AudioTraits::SoundClass* AudioLoadMp3(Filename filename) {
   unsigned char* buf;
   unsigned long len;
-  filename.resolve_filename(get_sound_path());
   read_file(filename, &buf, len);
   if (buf != (unsigned char*)0L) {
     return LinuxSample::load_raw(buf, len);

@@ -17,6 +17,7 @@ main(int argc, char* argv[]) {
       exit(-1);
     }
 
+  /*
   if (! AudioPool::verify_sound("test.mp3")) {
     audio_cat->fatal() << "could not locate 'test.mp3'" << endl;
     exit(-1);
@@ -43,5 +44,6 @@ main(int argc, char* argv[]) {
     AudioManager::update();
     ipc_traits::sleep(0, 1000000);
   }
+  */
   return 0;
 }
