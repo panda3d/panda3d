@@ -27,6 +27,7 @@ CData() {
   _curve = new NurbsCurveEvaluator;
   _render_mode = RopeNode::RM_thread;
   _uv_mode = RopeNode::UV_none;
+  _u_dominant = true;
   _uv_scale.set(1.0f, 1.0f);
   _use_vertex_color = false;
   _num_subdiv = 10;
@@ -43,6 +44,7 @@ CData(const RopeNode::CData &copy) :
   _curve(copy._curve),
   _render_mode(copy._render_mode),
   _uv_mode(copy._uv_mode),
+  _u_dominant(copy._u_dominant),
   _uv_scale(copy._uv_scale),
   _use_vertex_color(copy._use_vertex_color),
   _num_subdiv(copy._num_subdiv),
@@ -120,6 +122,31 @@ INLINE RopeNode::UVMode RopeNode::
 get_uv_mode() const {
   CDReader cdata(_cycler);
   return cdata->_uv_mode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: set_uv_direction
+//       Access: Public
+//  Description: Specify true to vary the U coordinate down the length
+//               of the rope, or false to vary the V coordinate.
+////////////////////////////////////////////////////////////////////
+INLINE void RopeNode::
+set_uv_direction(bool u_dominant) {
+  CDWriter cdata(_cycler);
+  cdata->_u_dominant = u_dominant;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_uv_direction
+//       Access: Public
+//  Description: Returns true if the rope runs down the U coordinate
+//               of the texture, or false if it runs down the V
+//               coordinate.
+////////////////////////////////////////////////////////////////////
+INLINE bool RopeNode::
+get_uv_direction() const {
+  CDReader cdata(_cycler);
+  return cdata->_u_dominant;
 }
 
 ////////////////////////////////////////////////////////////////////

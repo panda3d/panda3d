@@ -197,7 +197,7 @@ output(ostream &out) const {
 void RopeNode::
 write(ostream &out, int indent_level) const {
   PandaNode::write(out, indent_level);
-  indent(out, indent_level) << get_curve() << "\n";
+  indent(out, indent_level) << *get_curve() << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -245,7 +245,7 @@ do_recompute_bound(const NodePath &rel_to) {
     
     GeometricBoundingVolume *gbv;
     DCAST_INTO_R(gbv, bound, bound);
-    gbv->around(&verts[0], &verts[verts.size() - 1]);
+    gbv->around(&verts[0], &verts[0] + verts.size());
   }
   return bound;
 }
@@ -268,6 +268,7 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
               NurbsCurveResult *result) {
   UVMode uv_mode = get_uv_mode();
   LVecBase2f uv_scale = get_uv_scale();
+  bool u_dominant = get_uv_direction();
   bool use_vertex_color = get_use_vertex_color();
 
   PTA_Vertexf verts;
@@ -298,7 +299,11 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
         break;
         
       case UV_parametric:
-        uvs.push_back(TexCoordf(t * uv_scale[0], 0.0f));
+        if (u_dominant) {
+          uvs.push_back(TexCoordf(t * uv_scale[0], 0.0f));
+        } else {
+          uvs.push_back(TexCoordf(0.0f, t * uv_scale[1]));
+        }
         break;
 
       case UV_distance:
@@ -306,7 +311,11 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
           LVector3f vec = point - last_point;
           dist += vec.length();
         }
-        uvs.push_back(TexCoordf(dist * uv_scale[0], 0.0f));
+        if (u_dominant) {
+          uvs.push_back(TexCoordf(dist * uv_scale[0], 0.0f));
+        } else {
+          uvs.push_back(TexCoordf(0.0f, dist * uv_scale[1]));
+        }
         break;
 
       case UV_distance2:
@@ -314,7 +323,11 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
           LVector3f vec = point - last_point;
           dist += vec.length_squared();
         }
-        uvs.push_back(TexCoordf(dist * uv_scale[0], 0.0f));
+        if (u_dominant) {
+          uvs.push_back(TexCoordf(dist * uv_scale[0], 0.0f));
+        } else {
+          uvs.push_back(TexCoordf(0.0f, dist * uv_scale[1]));
+        }
         break;
       }
 
@@ -367,6 +380,7 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
   float thickness = get_thickness();
   float radius = thickness * 0.5f;
   UVMode uv_mode = get_uv_mode();
+  bool u_dominant = get_uv_direction();
   LVecBase2f uv_scale = get_uv_scale();
 
   // We can't just build one tristrip per segment.  Instead, we should
@@ -447,8 +461,13 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
         break;
 
       case UV_parametric:
-        uvs.push_back(TexCoordf(t * uv_scale[0], uv_scale[1]));
-        uvs.push_back(TexCoordf(t * uv_scale[0], 0.0f));
+        if (u_dominant) {
+          uvs.push_back(TexCoordf(t * uv_scale[0], uv_scale[1]));
+          uvs.push_back(TexCoordf(t * uv_scale[0], 0.0f));
+        } else {
+          uvs.push_back(TexCoordf(uv_scale[0], t * uv_scale[1]));
+          uvs.push_back(TexCoordf(0.0f, t * uv_scale[1]));
+        }
         break;
 
       case UV_distance:
@@ -456,8 +475,13 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
           LVector3f vec = point - center_verts[vi + j - 1];
           dist += vec.length();
         }
-        uvs.push_back(TexCoordf(dist * uv_scale[0], thickness * uv_scale[1]));
-        uvs.push_back(TexCoordf(dist * uv_scale[0], 0.0f));
+        if (u_dominant) {
+          uvs.push_back(TexCoordf(dist * uv_scale[0], thickness * uv_scale[1]));
+          uvs.push_back(TexCoordf(dist * uv_scale[0], 0.0f));
+        } else {
+          uvs.push_back(TexCoordf(thickness * uv_scale[0], dist * uv_scale[1]));
+          uvs.push_back(TexCoordf(0.0f, dist * uv_scale[1]));
+        }
         break;
 
       case UV_distance2:
@@ -465,8 +489,13 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
           LVector3f vec = point - center_verts[vi + j - 1];
           dist += vec.length_squared();
         }
-        uvs.push_back(TexCoordf(dist * uv_scale[0], thickness * uv_scale[1]));
-        uvs.push_back(TexCoordf(dist * uv_scale[0], 0.0f));
+        if (u_dominant) {
+          uvs.push_back(TexCoordf(dist * uv_scale[0], thickness * uv_scale[1]));
+          uvs.push_back(TexCoordf(dist * uv_scale[0], 0.0f));
+        } else {
+          uvs.push_back(TexCoordf(thickness * uv_scale[0], dist * uv_scale[1]));
+          uvs.push_back(TexCoordf(0.0f, dist * uv_scale[1]));
+        }
         break;
       }
     }

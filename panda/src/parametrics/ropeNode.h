@@ -92,6 +92,9 @@ PUBLISHED:
   INLINE void set_uv_mode(UVMode uv_mode);
   INLINE UVMode get_uv_mode() const;
 
+  INLINE void set_uv_direction(bool u_dominant);
+  INLINE bool get_uv_direction() const;
+
   INLINE void set_uv_scale(const LVecBase2f &uv_scale);
   INLINE const LVecBase2f &get_uv_scale() const;
 
@@ -129,6 +132,7 @@ private:
     PT(NurbsCurveEvaluator) _curve;
     RenderMode _render_mode;
     UVMode _uv_mode;
+    bool _u_dominant;
     LVecBase2f _uv_scale;
     bool _use_vertex_color;
     int _num_subdiv;

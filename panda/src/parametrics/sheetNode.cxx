@@ -236,7 +236,7 @@ do_recompute_bound(const NodePath &rel_to) {
     
     GeometricBoundingVolume *gbv;
     DCAST_INTO_R(gbv, bound, bound);
-    gbv->around(&verts[0], &verts[verts.size() - 1]);
+    gbv->around(&verts[0], &verts[0] + verts.size());
   }
   return bound;
 }
