@@ -1633,8 +1633,13 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
     // only need to change _WORLD xform, _VIEW xform is Identity
 
     // precomputation stuff
-    float half_width = 0.5f * (float) tex->_pbuffer->get_xsize();
-    float half_height = 0.5f * (float) tex->_pbuffer->get_ysize();
+    float tex_left = geom->get_ll_uv()[0];
+    float tex_right = geom->get_ur_uv()[0];
+    float tex_bottom = geom->get_ll_uv()[1];
+    float tex_top = geom->get_ur_uv()[1];
+    
+    float half_width = 0.5f * (float) tex->_pbuffer->get_xsize() * fabs(tex_right - tex_left);
+    float half_height = 0.5f * (float) tex->_pbuffer->get_ysize() * fabs(tex_top - tex_bottom);
     float scaled_width, scaled_height;
 
     // set up the texture-rendering state
@@ -1654,7 +1659,7 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
     // the user can override alpha sorting if they want
     bool alpha = false;
 
-    if (geom->get_alpha_disable() == false) {
+    if (!geom->get_alpha_disable()) {
         // figure out if alpha's enabled (if not, no reason to sort)
         const TransparencyAttribute *ctratt;
         if (get_attribute_into(ctratt, _state, TransparencyTransition::get_class_type()))
@@ -1678,7 +1683,7 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
     bool theta_on = !(geom->get_theta_bind_type() == G_OFF);
 
     // x direction
-    if (x_overall == true)
+    if (x_overall)
         scaled_width = geom->_x_texel_ratio[0] * half_width;
     else {
         nassertv(((int)geom->_x_texel_ratio.size() >= geom->get_num_prims()));
@@ -1686,7 +1691,7 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
     }
 
     // y direction
-    if (y_overall == true)
+    if (y_overall)
         scaled_height = geom->_y_texel_ratio[0] * half_height * aspect_ratio;
     else {
         nassertv(((int)geom->_y_texel_ratio.size() >= geom->get_num_prims()));
@@ -1695,7 +1700,7 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
 
     // theta
     if (theta_on) {
-        if (theta_overall == true)
+        if (theta_overall)
             theta = geom->_theta[0];
         else {
             nassertv(((int)geom->_theta.size() >= geom->get_num_prims()));
@@ -1736,15 +1741,15 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
 
         pSpr->_v.set(cameraspace_vert[0],cameraspace_vert[1],cameraspace_vert[2]);
 
-        if (color_overall == false) {
+        if (!color_overall) {
             GET_NEXT_COLOR();
             pSpr->_c = p_colr;
         }
-        if (x_overall == false)
+        if (!x_overall)
             pSpr->_x_ratio = *x_walk++;
-        if (y_overall == false)
+        if (!y_overall)
             pSpr->_y_ratio = *y_walk++;    // go along array of ratio values stored in geom
-        if (theta_on && (theta_overall == false))
+        if (theta_on && !theta_overall)
             pSpr->_theta = *theta_walk++;
     }
 
@@ -1782,7 +1787,7 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
 
     D3DCOLOR CurColor;
     bool bDoColor=TRUE;
-    if (color_overall == true) {
+    if (color_overall) {
         GET_NEXT_COLOR();
         CurColor = p_colr;
         bDoColor = (p_colr != ~0);
@@ -1800,7 +1805,12 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
     #endif
 
     _pCurFvfBufPtr = _pFvfBufBasePtr;          // _pCurFvfBufPtr changes,  _pFvfBufBasePtr doesn't
-    const float TexCrdSets[4][2] = {{0.0f,0.0f},{1.0f,0.0f},{0.0f,1.0f},{1.0f,1.0f}};
+    const float TexCrdSets[4][2] = {
+      { tex_left, tex_bottom },
+      { tex_right, tex_bottom },
+      { tex_left, tex_top },
+      { tex_right, tex_top }
+    };
 
 #define QUADVERTLISTLEN 6
 
@@ -1815,10 +1825,10 @@ draw_sprite(GeomSprite *geom, GeomContext *gc) {
         }
 
         // if not G_OVERALL, calculate the scale factors    //huh??
-        if (x_overall == false)
+        if (!x_overall)
             scaled_width = pSpr->_x_ratio * half_width;
 
-        if (y_overall == false)
+        if (!y_overall)
             scaled_height = pSpr->_y_ratio * half_height * aspect_ratio;
 
         // if not G_OVERALL, do some trig for this z rotate   //what is the theta angle??
@@ -4247,7 +4257,7 @@ void DXGraphicsStateGuardian::issue_light(const LightAttribute *attrib ) {
 
     // Disable all unused lights
     for (i = 0; i < _max_lights; i++) {
-        if (_cur_light_enabled[i] == false)
+        if (!_cur_light_enabled[i])
             enable_light(i, false);
     }
 
@@ -4629,7 +4639,7 @@ issue_clip_plane(const ClipPlaneAttribute *attrib) {
 
     // Disable all unused clip planes
     for (i = 0; i < _max_clip_planes; i++) {
-        if (_cur_clip_plane_enabled[i] == false)
+        if (!_cur_clip_plane_enabled[i])
             enable_clip_plane(i, false);
     }
 }
