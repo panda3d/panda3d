@@ -2483,11 +2483,12 @@ r_get_net_state(qpNodePathComponent *comp) const {
 //       Access: Private
 //  Description: Recursively determines the net state changes to the
 //               indicated component node from the nth node above it.
+//               If n exceeds the length of the path, this returns the
+//               net transform from the root of the graph.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) qpNodePath::
 r_get_partial_state(qpNodePathComponent *comp, int n) const {
-  nassertr(comp != (qpNodePathComponent *)NULL, RenderState::make_empty());
-  if (n == 0) {
+  if (n == 0 || comp == (qpNodePathComponent *)NULL) {
     return RenderState::make_empty();
   } else {
     CPT(RenderState) state = comp->get_node()->get_state();
@@ -2516,11 +2517,12 @@ r_get_net_transform(qpNodePathComponent *comp) const {
 //       Access: Private
 //  Description: Recursively determines the net transform to the
 //               indicated component node from the nth node above it.
+//               If n exceeds the length of the path, this returns the
+//               net transform from the root of the graph.
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) qpNodePath::
 r_get_partial_transform(qpNodePathComponent *comp, int n) const {
-  nassertr(comp != (qpNodePathComponent *)NULL, TransformState::make_identity());
-  if (n == 0) {
+  if (n == 0 || comp == (qpNodePathComponent *)NULL) {
     return TransformState::make_identity();
   } else {
     CPT(TransformState) transform = comp->get_node()->get_transform();
