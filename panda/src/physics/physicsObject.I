@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////
 //    Function : set_mass
 //      Access : Public
-// Description : Specify the mass of the object
+// Description : Set the mass in slugs (or kilograms).
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
 set_mass(float m) {
@@ -51,7 +51,7 @@ set_position(float x, float y, float z) {
 //      Access : Public
 // Description : use this to place an object in a completely new
 //               position, that has nothing to do with its last
-//               position
+//               position.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
 reset_position(const LPoint3f &pos) {
@@ -105,7 +105,10 @@ set_velocity(float x, float y, float z) {
 ////////////////////////////////////////////////////////////////////
 //    Function : add_impulse
 //      Access : Public
-// Description : Adds an impulse force.
+// Description : Adds an impulse force (i.e. an instantanious change
+//               in velocity).  This is a quicker way to get the 
+//               velocity, add a vector to it and set that value to
+//               be the new velocity.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
 add_impulse(const LVector3f &impulse) {
@@ -135,7 +138,7 @@ set_terminal_velocity(float tv) {
 ////////////////////////////////////////////////////////////////////
 //    Function : get_mass
 //      Access : Public
-// Description : Mass Query
+// Description : Get the mass in slugs (or kilograms).
 ////////////////////////////////////////////////////////////////////
 INLINE float PhysicsObject::
 get_mass() const {
@@ -155,7 +158,8 @@ get_position() const {
 ////////////////////////////////////////////////////////////////////
 //    Function : get_last_position
 //      Access : Public
-// Description : Last position Query
+// Description : Get the position of the physics object at the start
+//               of the most recent do_physics.
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3f PhysicsObject::
 get_last_position() const {
@@ -165,7 +169,7 @@ get_last_position() const {
 ////////////////////////////////////////////////////////////////////
 //    Function : get_velocity
 //      Access : Public
-// Description : Velocity Query
+// Description : Velocity Query per second
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3f PhysicsObject::
 get_velocity() const {
@@ -175,7 +179,7 @@ get_velocity() const {
 ////////////////////////////////////////////////////////////////////
 //    Function : get_implicit_velocity
 //      Access : Public
-// Description : Velocity Query
+// Description : Velocity Query over the last dt
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3f PhysicsObject::
 get_implicit_velocity() const {
@@ -215,7 +219,7 @@ set_orientation(const LOrientationf &orientation) {
 ////////////////////////////////////////////////////////////////////
 //    Function : set_rotation
 //      Access : Public
-// Description :
+// Description : set rotation on each axis per second.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
 set_rotation(const LVector3f &rotation) {
@@ -225,7 +229,7 @@ set_rotation(const LVector3f &rotation) {
 ////////////////////////////////////////////////////////////////////
 //    Function : get_orientation
 //      Access : Public
-// Description :
+// Description : get current orientation.
 ////////////////////////////////////////////////////////////////////
 INLINE LOrientationf PhysicsObject::
 get_orientation() const {
@@ -235,7 +239,7 @@ get_orientation() const {
 ////////////////////////////////////////////////////////////////////
 //    Function : get_rotation
 //      Access : Public
-// Description :
+// Description : get rotation per second.
 ////////////////////////////////////////////////////////////////////
 INLINE LVector3f PhysicsObject::
 get_rotation() const {
@@ -245,7 +249,8 @@ get_rotation() const {
 ////////////////////////////////////////////////////////////////////
 //    Function : set_oriented
 //      Access : Public
-// Description :
+// Description : Set flag to determine whether this object should do
+//               any rotation or orientation calculations.  Optimization.
 ////////////////////////////////////////////////////////////////////
 INLINE void PhysicsObject::
 set_oriented(bool flag) {
@@ -255,7 +260,7 @@ set_oriented(bool flag) {
 ////////////////////////////////////////////////////////////////////
 //    Function : get_oriented
 //      Access : Public
-// Description :
+// Description : See set_oriented().
 ////////////////////////////////////////////////////////////////////
 INLINE bool PhysicsObject::
 get_oriented() const {
