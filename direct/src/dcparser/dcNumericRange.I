@@ -119,7 +119,7 @@ has_one_value() const {
 //               legal value accepted by the numeric range.
 ////////////////////////////////////////////////////////////////////
 template <class NUM>
-INLINE DCNumericRange<NUM>::Number DCNumericRange<NUM>::
+INLINE TYPENAME DCNumericRange<NUM>::Number DCNumericRange<NUM>::
 get_one_value() const {
   nassertr(has_one_value(), 0);
   return _ranges[0]._min;
