@@ -55,3 +55,6 @@ init_libwgldisplay() {
 
 int gl_force_pixfmt = config_wgldisplay.GetInt("gl-force-pixfmt", 0);
 
+// Set this true to force all GL windows to fail to open correctly.
+bool gl_force_invalid = config_wgldisplay.GetBool("gl-force-invalid", false);
+
