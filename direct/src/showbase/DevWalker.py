@@ -62,6 +62,9 @@ class DevWalker(DirectObject.DirectObject):
 
     def setCollisionsActive(self, active = 1):
         pass
+    
+    def placeOnFloor(self):
+        pass
 
     def oneTimeCollide(self):
         pass
