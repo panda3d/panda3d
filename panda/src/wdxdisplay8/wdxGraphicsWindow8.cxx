@@ -2217,8 +2217,11 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
                                              {       0,  640, 480},
                                              { 8000000,  800, 600},
                                              {16000000, 1024, 768},
-                                             {32000000, 1280,1024},  // 32MB cards will choose this
-                                             {64000000, 1600,1200}   // 64MB cards will choose this
+                                             {32000000, 1280,1024},  // 32MB+ cards will choose this
+
+                                            // some monitors have trouble w/1600x1200, so dont pick this by deflt,
+                                            // even though 64MB cards should handle it
+                                             {64000000, 1280,1024}   // 64MB+ cards will choose this
                                            };
                 const NumResLims = (sizeof(MemRes)/sizeof(Memlimres));
 
@@ -2238,12 +2241,12 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
 
                         // note I'm not saving refresh rate, will just use adapter default at given res for now
 
-                        if(pixFmt==D3DFMT_UNKNOWN) {
-                            wdxdisplay_cat.debug() << "skipping scrnres; "
+                        if(pixFmt!=D3DFMT_UNKNOWN)
+                           break;
+
+                        wdxdisplay_cat.debug() << "skipping scrnres; "
                                 << (bCouldntFindValidZBuf ? "Couldnt find valid zbuffer format to go with FullScreen mode" : "No supported FullScreen modes")
                                 << " at " << dwRenderWidth << "x" << dwRenderHeight << " for device #" << _dxgsg->scrn.CardIDNum << endl;
-                        } else
-                            break;
                     }
                 }
                 // otherwise just go with whatever was specified (we probably shouldve marked this card as lowmem if it gets to end of loop w/o breaking
@@ -2960,6 +2963,20 @@ get_depth_bitwidth(void) {
 //  return ddsd.ddpfPixelFormat.dwRGBBitCount;
 }
 
+/*
+void wdxGraphicsWindow::
+get_framebuffer_format(PixelBuffer::Type &fb_type, PixelBuffer::Format &fb_format) {
+    assert(_dxgsg!=NULL);
+
+    fb_type = PixelBuffer::T_unsigned_byte; 
+    // this is sortof incorrect, since for F_rgb5 it's really 5 bits per channel
+    //would have to change a lot of texture stuff to make this correct though
+
+    if(IS_16BPP_DISPLAY_FORMAT(_dxgsg->scrn.PresParams.BackBufferFormat)) 
+        fb_format = PixelBuffer::F_rgb5; 
+     else fb_format = PixelBuffer::F_rgb; 
+}
+*/
 // Global system parameters we want to modify during our run
 static int iMouseTrails;
 static bool bCursorShadowOn,bMouseVanish;
