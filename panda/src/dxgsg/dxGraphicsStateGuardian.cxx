@@ -793,16 +793,22 @@ render_frame(const AllAttributesWrapper &initial_state) {
 
 #ifdef DO_PSTATS
   if (_texmgrmem_total_pcollector.is_active()) {
-    report_texmgr_stats();
+      #define TICKS_PER_GETTEXINFO (2*1000)   // 2 second interval
+      static DWORD LastTickCount=0;
+      DWORD CurTickCount=GetTickCount();
+
+      if (CurTickCount-LastTickCount > TICKSPERINFO) {
+          LastTickCount=CurTickCount;
+          report_texmgr_stats();
+      }
   }
 #endif
 
 #ifdef PRINT_TEXSTATS
     {
-
-#define TICKSPERINFO (3*1000)
+        #undef TICKS_PER_GETTEXINFO
+        #define TICKS_PER_GETTEXINFO (3*1000)
         static DWORD LastTickCount=0;
-
         DWORD CurTickCount=GetTickCount();
 
         if (CurTickCount-LastTickCount > TICKSPERINFO) {
