@@ -11,6 +11,8 @@
 
 NotifyCategoryDecl(wdxdisplay, EXPCL_PANDADX, EXPTP_PANDADX);
 
+extern string IconFileName;
+
 extern EXPCL_PANDADX void init_libwdxdisplay();
 
 #endif /* __CONFIG_WDXDISPLAY_H__ */

@@ -16,6 +16,8 @@ ConfigureFn(config_wdxdisplay) {
   init_libwdxdisplay();
 }
 
+string IconFileName = config_wdxdisplay.GetString("win32-window-icon","");
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libwdxdisplay
 //  Description: Initializes the library.  This must be called at

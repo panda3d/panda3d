@@ -16,6 +16,8 @@ ConfigureFn(config_wgldisplay) {
   init_libwgldisplay();
 }
 
+string IconFileName = config_wgldisplay.GetString("win32-window-icon","");
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libwgldisplay
 //  Description: Initializes the library.  This must be called at

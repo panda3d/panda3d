@@ -1093,17 +1093,23 @@ void wdxGraphicsWindow::config(void) {
 
   // Create a GSG to manage the graphics
   make_gsg();
+  HINSTANCE hinstance = GetModuleHandle(NULL);
 
   WNDCLASS wc;
-  HINSTANCE hinstance = GetModuleHandle(NULL);
 
   // Clear before filling in window structure!
   ZeroMemory(&wc, sizeof(WNDCLASS));
   wc.style		= CS_HREDRAW | CS_VREDRAW;   //CS_OWNDC;
   wc.lpfnWndProc	= (WNDPROC) static_window_proc;
   wc.hInstance		= hinstance;
-  wc.hIcon		= LoadIcon(hinstance, IDI_WINLOGO);
-  wc.hCursor		= LoadCursor(NULL/*hinstance*/, IDC_CROSS);
+
+  if(!IconFileName.empty()) {
+	  wc.hIcon = (HICON) LoadImage(NULL, IconFileName.c_str(), IMAGE_ICON, 0, 0, LR_LOADFROMFILE);
+  } else {
+	  wc.hIcon = NULL; // use default app icon
+  }
+
+  wc.hCursor		= LoadCursor(NULL, IDC_CROSS);
   wc.hbrBackground	= (HBRUSH)GetStockObject(BLACK_BRUSH);
   wc.lpszMenuName	= NULL;
   wc.lpszClassName	= "wdxDisplay";

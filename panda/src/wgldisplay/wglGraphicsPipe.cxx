@@ -33,11 +33,16 @@ wglGraphicsPipe::wglGraphicsPipe(const PipeSpecifier& spec)
   stdwc.style		= CS_OWNDC;
   stdwc.lpfnWndProc	= (WNDPROC)static_window_proc;
   stdwc.hInstance	= hinstance;
-  stdwc.hIcon		= LoadIcon(hinstance, IDI_WINLOGO);
-  stdwc.hCursor		= LoadCursor(hinstance, IDC_CROSS);
+  stdwc.hCursor		= LoadCursor(NULL, IDC_CROSS);
   stdwc.hbrBackground	= NULL;
   stdwc.lpszMenuName	= NULL;
   stdwc.lpszClassName	= "wglStandard";
+
+  if(!IconFileName.empty()) {
+	  stdwc.hIcon = (HICON) LoadImage(NULL, IconFileName.c_str(), IMAGE_ICON, 0, 0, LR_LOADFROMFILE);
+  } else {
+	  stdwc.hIcon = NULL; // use default app icon
+  }
 
   if (!RegisterClass(&stdwc)) {
     wgldisplay_cat.fatal()

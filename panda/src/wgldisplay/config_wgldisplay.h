@@ -11,6 +11,8 @@
 
 NotifyCategoryDecl(wgldisplay, EXPCL_PANDAGL, EXPTP_PANDAGL);
 
+extern string IconFileName;
+
 extern EXPCL_PANDAGL void init_libwgldisplay();
 
 #endif /* __CONFIG_WGLDISPLAY_H__ */
