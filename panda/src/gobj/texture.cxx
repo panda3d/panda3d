@@ -726,6 +726,7 @@ make_Texture(const FactoryParams &params) {
   //same memory
   DatagramIterator scan;
   BamReader *manager;
+  bool has_rawdata = false;
 
   parse_params(params, scan, manager);
 
@@ -747,21 +748,30 @@ make_Texture(const FactoryParams &params) {
     alpha_file_channel = scan.get_uint8();
   }
 
-  PT(Texture) me;
+  // from minor version 5, read the rawdata mode, else carry on
+  if (manager->get_file_minor_ver() >= 5)
+    has_rawdata = scan.get_bool();
 
-  if (filename.empty()) {
-    // This texture has no filename; since we don't have an image to
-    // load, we can't actually create the texture.
-    gobj_cat.info()
-      << "Cannot create texture '" << name << "' with no filename.\n";
+  Texture *me = NULL;
+  if (has_rawdata) {
+    // then create a Texture and don't load from the file
+    me = new Texture;
 
   } else {
-    // This texture does have a filename, so try to load it from disk.
-    if (alpha_filename.empty()) {
-      me = TexturePool::load_texture(filename, primary_file_num_channels);
+    if (filename.empty()) {
+      // This texture has no filename; since we don't have an image to
+      // load, we can't actually create the texture.
+      gobj_cat.info()
+        << "Cannot create texture '" << name << "' with no filename.\n";
+
     } else {
-      me = TexturePool::load_texture(filename, alpha_filename, 
-                                     primary_file_num_channels, alpha_file_channel);
+      // This texture does have a filename, so try to load it from disk.
+      if (alpha_filename.empty()) {
+        me = TexturePool::load_texture(filename, primary_file_num_channels);
+      } else {
+        me = TexturePool::load_texture(filename, alpha_filename, 
+                                       primary_file_num_channels, alpha_file_channel);
+      }
     }
   }
 
@@ -770,11 +780,19 @@ make_Texture(const FactoryParams &params) {
     // But we do need a dummy texture to read in and ignore all of the
     // attributes.
     PT(Texture) dummy = new Texture;
-    dummy->fillin(scan, manager);
+    dummy->fillin(scan, manager, has_rawdata);
 
   } else {
     me->set_name(name);
-    me->fillin(scan, manager);
+    me->fillin(scan, manager, has_rawdata);
+
+    /*
+    cerr << "_xsize = " << me->_pbuffer->get_xsize() << "\n";
+    cerr << "_ysize = " << me->_pbuffer->get_ysize() << "\n";
+    cerr << "_xorg = " << me->_pbuffer->get_xorg() << "\n";
+    cerr << "_yorg = " << me->_pbuffer->get_xorg() << "\n";
+    cerr << "_components = " << me->_pbuffer->get_num_components() << "\n";
+    */
   }
   return me;
 }
@@ -788,7 +806,7 @@ make_Texture(const FactoryParams &params) {
 //               place
 ////////////////////////////////////////////////////////////////////
 void Texture::
-fillin(DatagramIterator &scan, BamReader *manager) {
+fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
   //We don't want to call ImageBuffer::fillin, like we
   //would normally, since due to needing to know the name
   //of the Texture before creating it, we have already read
@@ -815,6 +833,22 @@ fillin(DatagramIterator &scan, BamReader *manager) {
         // changed.
         _pbuffer->set_format(format);
       }
+
+      if (has_rawdata) {
+        _pbuffer->set_xsize(scan.get_int32());
+        _pbuffer->set_ysize(scan.get_int32());
+        _pbuffer->set_xorg(scan.get_int32());
+        _pbuffer->set_yorg(scan.get_int32());
+        _pbuffer->set_loaded();
+        PN_uint32 u_size = scan.get_uint32();
+
+        // fill the _image buffer with image data
+        string temp_buff = scan.extract_bytes(u_size);
+        _pbuffer->_image = PTA_uchar::empty_array((int) u_size);
+        for (PN_uint32 u_idx=0; u_idx < u_size; ++u_idx) {
+          _pbuffer->_image[(int)u_idx] = (uchar) temp_buff[u_idx];
+        }
+      }
     }
   }
 }
@@ -830,9 +864,13 @@ write_datagram(BamWriter *manager, Datagram &me) {
   // We also need to write out the pixel buffer's format, even though
   // that's not stored as part of the texture structure.
   bool has_pbuffer = (_pbuffer != (PixelBuffer *)NULL);
+  bool has_rawdata = (bam_texture_mode == BTM_rawdata);
 
   // These properties are read in again by make_Texture(), above.
   ImageBuffer::write_datagram(manager, me);
+
+  // from minor version 5, you add this byte to support rawdata mode
+  me.add_bool(has_rawdata);
 
   // These properties are read in again by fillin(), above.
   me.add_uint8(_wrapu);
@@ -845,6 +883,16 @@ write_datagram(BamWriter *manager, Datagram &me) {
   if (has_pbuffer) {
     me.add_uint8(_pbuffer->get_format());
     me.add_uint8(_pbuffer->get_num_components());
+  }
+
+  // if it has rawdata, then stuff them here along with the header information
+  if (has_rawdata) {
+    me.add_int32(_pbuffer->get_xsize());
+    me.add_int32(_pbuffer->get_ysize());
+    me.add_int32(_pbuffer->get_xorg());
+    me.add_int32(_pbuffer->get_yorg());
+    me.add_uint32(_pbuffer->_image.size());
+    me.append_data(_pbuffer->_image, _pbuffer->_image.size());
   }
 }
 

@@ -62,6 +62,7 @@ write_datagram(BamWriter *, Datagram &me)
 
   switch (bam_texture_mode) {
   case BTM_unchanged:
+  case BTM_rawdata:
     break;
 
   case BTM_fullpath:

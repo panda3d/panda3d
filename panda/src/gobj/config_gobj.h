@@ -38,7 +38,8 @@ enum BamTextureMode {
   BTM_unchanged,
   BTM_fullpath,
   BTM_relative,
-  BTM_basename
+  BTM_basename,
+  BTM_rawdata
 };
 extern EXPCL_PANDA BamTextureMode bam_texture_mode;
 extern EXPCL_PANDA const string fake_texture_image;

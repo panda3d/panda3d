@@ -180,7 +180,7 @@ public:
   static TypedWritable *make_Texture(const FactoryParams &params);
 
 protected:
-  void fillin(DatagramIterator& scan, BamReader* manager);
+  void fillin(DatagramIterator& scan, BamReader* manager, bool has_rawdata = false);
 
 public:
   static TypeHandle get_class_type() {

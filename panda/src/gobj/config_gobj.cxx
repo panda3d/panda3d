@@ -133,6 +133,8 @@ parse_texture_mode(const string &mode) {
     return BTM_relative;
   } else if (cmp_nocase(mode, "basename") == 0) {
     return BTM_basename;
+  } else if (cmp_nocase(mode, "rawdata") == 0) {
+    return BTM_rawdata;
   }
 
   gobj_cat->error() << "Invalid bam-texture-mode: " << mode << "\n";
