@@ -596,6 +596,13 @@ Once dtool is fully built and installed, you can build panda.
   make
   make install
 
+After installing panda, you are almost ready to run the program
+"pview," which is a basic model viewer program that demonstrates some
+Panda functionality.  Successfully running pview proves that Panda is
+now installed and configured correctly.  However, you must set up a
+Configrc file to set your runtime configuration options before you can
+run Panda and open up a graphics window.  See HOW TO RUN PANDA, below.
+
 If you wish, you may also build direct.  You only need to build this
 if you intend to use the Python interfaces.
 
