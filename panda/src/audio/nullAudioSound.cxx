@@ -85,7 +85,8 @@ bool NullAudioSound::get_active() const {
 }
 
 const string& NullAudioSound::get_name() const {
-  return ""; 
+  static const string blank="";
+  return blank;
 }
 
 float NullAudioSound::length() const {

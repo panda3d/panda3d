@@ -27,51 +27,36 @@
 // It's used as a placeholder when you don't want a sound
 // system.
 class EXPCL_PANDA NullAudioSound : public AudioSound {
+  // All of these methods are stubbed out to some degree.
+  // If you're looking for a starting place for a new AudioManager,
+  // please consider looking at the milesAudioManager.
+
 public:
   ~NullAudioSound();
   
-  // For best compatability, set the loop_count, start_time,
-  // volume, and balance, prior to calling play().  You may
-  // set them while they're playing, but it's implementation
-  // specific whether you get the results.
   void play();
   void stop();
   
-  // loop: 0 = play once; 1 = play forever.
-  // inits to false.
   void set_loop(bool);
   bool get_loop() const;
   
-  // loop_count: 0 = forever; 1 = play once; n = play n times.
-  // inits to 1.
   void set_loop_count(unsigned long);
   unsigned long get_loop_count() const;
   
-  // start_time: 0 = begining; length() = end.
-  // inits to 0.0.
   void set_time(float);
   float get_time() const;
   
-  // 0 = minimum; 1.0 = maximum.
-  // inits to 1.0.
   void set_volume(float);
   float get_volume() const;
   
-  // -1.0 is hard left
-  // 0.0 is centered
-  // 1.0 is hard right
-  // inits to 0.0.
   void set_balance(float);
   float get_balance() const;
 
-  // inits to manager's state.
   void set_active(bool);
   bool get_active() const;
   
-  // There is no set_name(), this is intentional.
   const string& get_name() const;
   
-  // return: playing time in seconds.
   float length() const;
 
   AudioSound::SoundStatus status() const;

@@ -23,33 +23,21 @@
 #include "audioManager.h"
 #include "nullAudioSound.h"
 
-#define NAME_MACRO_FOR_AUDIO_MANAGER() NullAudioManager
-
 class EXPCL_PANDA NullAudioManager : public AudioManager {
+  // All of these methods are stubbed out to some degree.
+  // If you're looking for a starting place for a new AudioManager,
+  // please consider looking at the milesAudioManager.
+  
 public:
   NullAudioManager();
   virtual ~NullAudioManager();
   
-  // Get a sound:
-  // You own this sound.  Be sure to delete it when you're done.
-  virtual AudioSound* get_sound(const string&);
-  // Tell the AudioManager there is no need to keep this one cached.
+  virtual PT(AudioSound) get_sound(const string&);
   virtual void drop_sound(const string&);
 
-  // Control volume:
-  // FYI:
-  //   If you start a sound with the volume off and turn the volume 
-  //   up later, you'll hear the sound playing at that late point.
   virtual void set_volume(float);
   virtual float get_volume();
   
-  // Turn the manager on an off.
-  // If you play a sound while the manager is inactive, it won't start.
-  // If you deactivate the manager while sounds are playing, they'll
-  // stop.
-  // If you activate the manager while looping sounds are playing
-  // (those that have a loop_count of zero),
-  // they will start playing from the begining of their loop.
   virtual void set_active(bool);
   virtual bool get_active();
 };

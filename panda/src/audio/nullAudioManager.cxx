@@ -19,34 +19,83 @@
 
 #include "nullAudioManager.h"
 
-NullAudioManager::NullAudioManager() {
+
+////////////////////////////////////////////////////////////////////
+//     Function: NullAudioManager::NullAudioManager
+//       Access: 
+//  Description: 
+////////////////////////////////////////////////////////////////////
+NullAudioManager::
+NullAudioManager() {
   audio_info("NullAudioManager");
 }
 
-NullAudioManager::~NullAudioManager() {
+////////////////////////////////////////////////////////////////////
+//     Function: NullAudioManager::~NullAudioManager
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+NullAudioManager::
+~NullAudioManager() {
   // intentionally blank.
 }
-  
-AudioSound* NullAudioManager::get_sound(const string&) {
+
+////////////////////////////////////////////////////////////////////
+//     Function: NullAudioManager::get_sound
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PT(AudioSound) NullAudioManager::
+get_sound(const string&) {
   return new NullAudioSound();
 }
 
-void NullAudioManager::drop_sound(const string&) {
+////////////////////////////////////////////////////////////////////
+//     Function: NullAudioManager::drop_sound
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NullAudioManager::
+drop_sound(const string&) {
   // intentionally blank.
 }
 
-void NullAudioManager::set_volume(float) {
+////////////////////////////////////////////////////////////////////
+//     Function: NullAudioManager::set_volume
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NullAudioManager::
+set_volume(float) {
   // intentionally blank.
 }
 
-float NullAudioManager::get_volume() {
+////////////////////////////////////////////////////////////////////
+//     Function: NullAudioManager::get_volume
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+float NullAudioManager::
+get_volume() {
   return 0;
 }
-  
-void NullAudioManager::set_active(bool) {
+
+////////////////////////////////////////////////////////////////////
+//     Function: NullAudioManager::set_active
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void NullAudioManager::
+set_active(bool) {
   // intentionally blank.
 }
 
-bool NullAudioManager::get_active() {
+////////////////////////////////////////////////////////////////////
+//     Function: NullAudioManager::get_active
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool NullAudioManager::
+get_active() {
   return 0;
 }
