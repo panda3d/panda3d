@@ -105,4 +105,4 @@ get_sound_path() {
 // models, etc.  Since the VirtualFileSystem maps to the same as the
 // actual file system by default, there is probably no reason to set
 // this false, except for testing or if you mistrust the new code.
-const bool use_vfs = config_util.GetBool("use-vfs", false);
+const bool use_vfs = config_util.GetBool("use-vfs", true);
