@@ -46,10 +46,21 @@
   #define EXPTP_DTOOL extern
 #endif
 
+#ifdef BUILDING_MISC
+  #define EXPCL_MISC __declspec(dllexport)
+  #define EXPTP_MISC
+#else /* BUILDING_MISC */
+  #define EXPCL_MISC __declspec(dllimport)
+  #define EXPTP_MISC extern
+#endif /* BUILDING_MISC */
+
 #else   /* !PENV_WIN32 */
 
 #define EXPCL_DTOOL
 #define EXPTP_DTOOL
+
+#define EXPCL_MISC
+#define EXPTP_MISC
 
 #endif  /* PENV_WIN32 */
 
