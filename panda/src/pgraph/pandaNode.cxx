@@ -302,10 +302,9 @@ complete_down_list(PandaNode::Down &down_list,
     (*di) = DownConnection(child_node, sort);
   }
 
-  // Now we should sort the list, since the sorting is based on
-  // pointer order, which might be different from one session to the
-  // next.
-  down_list.sort();
+  // Unlike the up list, we should *not* sort the down list.  The down
+  // list is stored in a specific order, not related to pointer order;
+  // and this order should be preserved from one session to the next.
 
   return pi;
 }
