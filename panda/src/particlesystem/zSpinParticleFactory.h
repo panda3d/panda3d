@@ -31,10 +31,11 @@ private:
   virtual void populate_child_particle(BaseParticle *bp) const;
   virtual BaseParticle *alloc_particle(void) const;
 
-  float _initial_angle;
-  float _final_angle;
-  float _initial_angle_spread;
-  float _final_angle_spread;
+  float _initial_angle,_initial_angle_spread;
+  float _final_angle,_final_angle_spread;
+  float _angular_velocity,_angular_velocity_spread;
+  bool  _bUseAngularVelocity;
+
 
 PUBLISHED:
   ZSpinParticleFactory(void);
@@ -50,6 +51,15 @@ PUBLISHED:
   INLINE float get_final_angle(void) const;
   INLINE float get_initial_angle_spread(void) const;
   INLINE float get_final_angle_spread(void) const;
+
+  INLINE void  set_angular_velocity(float v);
+  INLINE float get_angular_velocity(void) const;
+
+  INLINE void  set_angular_velocity_spread(float spread);
+  INLINE float get_angular_velocity_spread(void) const;
+
+  INLINE void enable_angular_velocity(bool bEnabled);
+  INLINE bool get_angular_velocity_enabled(void) const;
 };
 
 #include "zSpinParticleFactory.I"

@@ -88,3 +88,39 @@ INLINE float ZSpinParticleFactory::
 get_final_angle_spread(void) const {
   return _final_angle_spread;
 }
+
+////////////////////////////////////////////////////////////////////
+// Function : get_angular_velocity
+//   Access : public
+////////////////////////////////////////////////////////////////////
+INLINE float ZSpinParticleFactory::
+get_angular_velocity(void) const {
+  return _angular_velocity;
+}
+
+INLINE void ZSpinParticleFactory::
+set_angular_velocity(float v) {
+  _angular_velocity = v;
+}
+
+INLINE float ZSpinParticleFactory::
+get_angular_velocity_spread(void) const {
+  return _angular_velocity_spread;
+}
+
+INLINE void ZSpinParticleFactory::
+set_angular_velocity_spread(float spread) {
+  _angular_velocity_spread = spread;
+}
+
+
+INLINE void ZSpinParticleFactory::
+enable_angular_velocity(bool bEnabled) {
+  _bUseAngularVelocity = bEnabled;
+}
+
+INLINE bool ZSpinParticleFactory::
+get_angular_velocity_enabled(void) const {
+  return _bUseAngularVelocity;
+}
+

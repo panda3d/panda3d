@@ -29,6 +29,8 @@ ZSpinParticle(void) :
   _initial_angle = 0.0f;
   _final_angle = 0.0f;
   _cur_angle = 0.0f;
+  _angular_velocity = 0.0f;
+  _bUseAngularVelocity = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -42,6 +44,8 @@ ZSpinParticle(const ZSpinParticle &copy) :
   _initial_angle = copy._initial_angle;
   _final_angle = copy._final_angle;
   _cur_angle = copy._cur_angle;
+  _angular_velocity = copy._angular_velocity;
+  _bUseAngularVelocity = copy._bUseAngularVelocity;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -79,17 +83,23 @@ init(void) {
 ////////////////////////////////////////////////////////////////////
 void ZSpinParticle::
 update(void) {
-  float t = get_parameterized_age();
+  // if using final_angle, want age to range from [0,1] over lifespan, so use parameterized_age
+  // for angular velocity, should be allowed to range freely upward, use regular age
 
-  // interpolate the current orientation
-  _cur_angle = _initial_angle + (t * (_final_angle - _initial_angle));
+  if(_bUseAngularVelocity) {
+   // interpolate the current orientation
+      _cur_angle = _initial_angle + (get_age() * _angular_velocity);
+  } else {
+      _cur_angle = _initial_angle + (get_parameterized_age() * (_final_angle - _initial_angle));
+  }
 
   // normalize the result to [0..360)
   _cur_angle = fmod(_cur_angle, 360.0f);
 
   // if _cur_angle was negative, it is still negative after fmod,
-  // but greater than -360.
   // wrap it around by adding 360
+
+  // is this really necessary?  should be in range of sin/cos
   if(_cur_angle < 0.0f)
     _cur_angle += 360.0f;
 }

@@ -34,6 +34,8 @@ private:
   float _initial_angle;
   float _final_angle;
   float _cur_angle;
+  float _angular_velocity;
+  bool  _bUseAngularVelocity;
 
 public:
   ZSpinParticle(void);
@@ -53,6 +55,14 @@ public:
 
   INLINE void set_final_angle(float t);
   INLINE float get_final_angle(void) const;
+
+  // 'set_final_angle' and 'angular_velocity' are mutually exclusive apis
+  // if angular-velocity is specified, final_angle is ignored
+  INLINE void  set_angular_velocity(float v);
+  INLINE float get_angular_velocity(void) const;
+
+  INLINE void enable_angular_velocity(bool bEnabled);
+  INLINE bool get_angular_velocity_enabled(void) const;
 };
 
 #include "zSpinParticle.I"

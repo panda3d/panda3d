@@ -51,3 +51,25 @@ INLINE float ZSpinParticle::
 get_final_angle(void) const {
   return _final_angle;
 }
+
+INLINE float ZSpinParticle::
+get_angular_velocity(void) const {
+  return _angular_velocity;
+}
+
+INLINE void ZSpinParticle::
+set_angular_velocity(float v) {
+  _angular_velocity = v;
+}
+
+INLINE void ZSpinParticle::
+enable_angular_velocity(bool bEnabled) {
+  _bUseAngularVelocity = bEnabled;
+}
+
+INLINE bool ZSpinParticle::
+get_angular_velocity_enabled(void) const {
+  return _bUseAngularVelocity;
+}
+
+

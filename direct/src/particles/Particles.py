@@ -52,13 +52,13 @@ class Particles(ParticleSystem.ParticleSystem):
         self.setRenderParent(self.node)
         self.node.addPhysical(self)
 
-        self.factory = None 
+        self.factory = None
         self.factoryType = "undefined"
         self.setFactory("PointParticleFactory")
-        self.renderer = None 
+        self.renderer = None
         self.rendererType = "undefined"
         self.setRenderer("PointParticleRenderer")
-        self.emitter = None 
+        self.emitter = None
         self.emitterType = "undefined"
         self.setEmitter("SphereVolumeEmitter")
 
@@ -106,7 +106,7 @@ class Particles(ParticleSystem.ParticleSystem):
             self.factory = None
         self.factoryType = type
         if (type == "PointParticleFactory"):
-            self.factory = PointParticleFactory.PointParticleFactory() 
+            self.factory = PointParticleFactory.PointParticleFactory()
         elif (type == "ZSpinParticleFactory"):
             self.factory = ZSpinParticleFactory.ZSpinParticleFactory()
         elif (type == "OrientedParticleFactory"):
@@ -263,31 +263,40 @@ class Particles(ParticleSystem.ParticleSystem):
             file.write('# Z Spin factory parameters\n')
             file.write(targ + '.factory.setInitialAngle(%.4f)\n' % \
                                         self.factory.getInitialAngle())
-            file.write(targ + '.factory.setFinalAngle(%.4f)\n' % \
-                                        self.factory.getFinalAngle())
             file.write(targ + '.factory.setInitialAngleSpread(%.4f)\n' % \
                                         self.factory.getInitialAngleSpread())
-            file.write(targ + '.factory.setFinalAngleSpread(%.4f)\n' % \
+            file.write(targ + '.factory.enableAngularVelocity(%d)\n' % \
+                                        self.factory.getAngularVelocityEnabled())
+            if(self.factory.getAngularVelocityEnabled()):
+                file.write(targ + '.factory.setAngularVelocity(%.4f)\n' % \
+                                            self.factory.getAngularVelocity())
+                file.write(targ + '.factory.setAngularVelocitySpread(%.4f)\n' % \
+                                            self.factory.getAngularVelocitySpread())
+            else:
+                file.write(targ + '.factory.setFinalAngle(%.4f)\n' % \
+                                            self.factory.getFinalAngle())
+                file.write(targ + '.factory.setFinalAngleSpread(%.4f)\n' % \
                                         self.factory.getFinalAngleSpread())
+
         elif (self.factoryType == "OrientedParticleFactory"):
             file.write('# Oriented factory parameters\n')
             file.write(targ + '.factory.setInitialOrientation(%.4f)\n' % \
-                                        self.factory.getInitialOrientation()) 
+                                        self.factory.getInitialOrientation())
             file.write(targ + '.factory.setFinalOrientation(%.4f)\n' % \
                                         self.factory.getFinalOrientation())
 
         file.write('# Renderer parameters\n')
         alphaMode = self.renderer.getAlphaMode()
-        aMode = "PRALPHANONE" 
+        aMode = "PRALPHANONE"
         if (alphaMode == BaseParticleRenderer.BaseParticleRenderer.PRALPHANONE):
             aMode = "PRALPHANONE"
-        elif (alphaMode == 
+        elif (alphaMode ==
                 BaseParticleRenderer.BaseParticleRenderer.PRALPHAOUT):
             aMode = "PRALPHAOUT"
-        elif (alphaMode == 
+        elif (alphaMode ==
                 BaseParticleRenderer.BaseParticleRenderer.PRALPHAIN):
             aMode = "PRALPHAIN"
-        elif (alphaMode == 
+        elif (alphaMode ==
                 BaseParticleRenderer.BaseParticleRenderer.PRALPHAUSER):
             aMode = "PRALPHAUSER"
         file.write(targ + '.renderer.setAlphaMode(BaseParticleRenderer.' + aMode + ')\n')
@@ -298,9 +307,9 @@ class Particles(ParticleSystem.ParticleSystem):
             file.write(targ + '.renderer.setPointSize(%.2f)\n' % \
                                         self.renderer.getPointSize())
             sColor = self.renderer.getStartColor()
-            file.write((targ + '.renderer.setStartColor(Vec4(%.2f, %.2f, %.2f, %.2f))\n' % (sColor[0], sColor[1], sColor[2], sColor[3]))) 
+            file.write((targ + '.renderer.setStartColor(Vec4(%.2f, %.2f, %.2f, %.2f))\n' % (sColor[0], sColor[1], sColor[2], sColor[3])))
             sColor = self.renderer.getEndColor()
-            file.write((targ + '.renderer.setEndColor(Vec4(%.2f, %.2f, %.2f, %.2f))\n' % (sColor[0], sColor[1], sColor[2], sColor[3]))) 
+            file.write((targ + '.renderer.setEndColor(Vec4(%.2f, %.2f, %.2f, %.2f))\n' % (sColor[0], sColor[1], sColor[2], sColor[3])))
             blendType = self.renderer.getBlendType()
             bType = "PPONECOLOR"
             if (blendType == PointParticleRenderer.PointParticleRenderer.PPONECOLOR):

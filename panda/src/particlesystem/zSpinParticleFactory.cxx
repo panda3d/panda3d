@@ -31,6 +31,9 @@ ZSpinParticleFactory(void) :
   _final_angle = 0.0f;
   _initial_angle_spread = 0.0f;
   _final_angle_spread = 0.0f;
+  _angular_velocity = 0.0f;
+  _angular_velocity_spread = 0.0f;
+  _bUseAngularVelocity = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -45,6 +48,9 @@ ZSpinParticleFactory(const ZSpinParticleFactory &copy) :
   _final_angle = copy._final_angle;
   _initial_angle_spread = copy._initial_angle_spread;
   _final_angle_spread = copy._final_angle_spread;
+  _angular_velocity = copy._angular_velocity;
+  _angular_velocity_spread = copy._angular_velocity_spread;
+  _bUseAngularVelocity = copy._bUseAngularVelocity;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -77,4 +83,6 @@ populate_child_particle(BaseParticle *bp) const {
 
   zsp->set_initial_angle(_initial_angle + SPREAD(_initial_angle_spread));
   zsp->set_final_angle(_final_angle + SPREAD(_final_angle_spread));
+  zsp->set_angular_velocity(_angular_velocity + SPREAD(_angular_velocity_spread));
+  zsp->enable_angular_velocity(_bUseAngularVelocity);
 }

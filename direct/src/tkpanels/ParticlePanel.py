@@ -214,7 +214,7 @@ class ParticlePanel(AppShell):
              0.0, None)
             )
         self.createFloaters(systemPage, systemFloaterDefs)
-        
+
         # Checkboxes
         self.createCheckbutton(
             systemPage, 'System', 'Render Space Velocities',
@@ -225,7 +225,7 @@ class ParticlePanel(AppShell):
             systemPage, 'System', 'System Grows Older',
             'On: system has a lifespan',
             self.toggleSystemGrowsOlder, 0)
-        
+
         # Vector widgets
         pos = self.createVector3Entry(systemPage, 'System', 'Pos',
                                       'Particle system position',
@@ -269,7 +269,8 @@ class ParticlePanel(AppShell):
             ('Factory', 'Terminal Vel. Spread',
              'Variation in terminal velocity',
              self.setFactoryTerminalVelocitySpread,
-             0.0, None))
+             0.0, None),
+        )
         self.createFloaters(factoryPage, factoryWidgets)
 
         self.factoryNotebook = Pmw.NoteBook(factoryPage, tabpos = None)
@@ -277,6 +278,23 @@ class ParticlePanel(AppShell):
         factoryPointPage = self.factoryNotebook.add('PointParticleFactory')
         # Z spin page #
         zSpinPage = self.factoryNotebook.add('ZSpinParticleFactory')
+
+        self.createCheckbutton(
+            zSpinPage, 'Z Spin Factory', 'Enable Angular Velocity',
+            ("On: angular velocity is used; " +
+             "Off: final angle is used"),
+            self.toggleAngularVelocity, 0, side = TOP),
+
+        self.createFloater(
+            zSpinPage, 'Z Spin Factory', 'Angular Velocity',
+             'How fast sprites rotate',
+             command = self.setFactoryZSpinAngularVelocity)
+
+        self.createFloater(
+            zSpinPage, 'Z Spin Factory', 'Angular Velocity Spread',
+             'Variation in how fast sprites rotate',
+             command = self.setFactoryZSpinAngularVelocitySpread)
+
         self.createAngleDial(zSpinPage, 'Z Spin Factory', 'Initial Angle',
                              'Starting angle in degrees',
                              fRollover = 1,
@@ -338,33 +356,33 @@ class ParticlePanel(AppShell):
             self.emissionType, BaseParticleEmitter.ETCUSTOM,
             self.setEmissionType)
         emissionFrame.pack(fill = 'x', expand = 0)
-        
+
         self.createFloater(
             emitterPage, 'Emitter', 'Velocity Multiplier',
             'launch velocity multiplier (all emission modes)',
             command = self.setEmitterAmplitude,
             min = None)
-        
+
         self.createFloater(
             emitterPage, 'Emitter', 'Velocity Multiplier Spread',
             'spread for launch velocity multiplier (all emission modes)',
             command = self.setEmitterAmplitudeSpread)
-        
+
         self.createVector3Entry(
             emitterPage, 'Emitter', 'Offset Velocity',
             'Velocity vector applied to all particles',
             command = self.setEmitterOffsetForce)
-        
+
         self.createVector3Entry(
             emitterPage, 'Emitter', 'Explicit Velocity',
             'all particles launch with this velocity in Explicit mode',
             command = self.setEmitterExplicitLaunchVector)
-        
+
         self.createVector3Entry(
             emitterPage, 'Emitter', 'Radiate Origin',
             'particles launch away from this point in Radiate mode',
             command = self.setEmitterRadiateOrigin)
-        
+
         self.emitterNotebook = Pmw.NoteBook(emitterPage, tabpos = None)
         # Box page #
         boxPage = self.emitterNotebook.add('BoxEmitter')
@@ -399,7 +417,7 @@ class ParticlePanel(AppShell):
             'On: magnitude/angle interpolation from center',
             self.toggleEmitterDiscCubicLerping, 0)
         customPage.pack(fill = BOTH, expand = 1)
-        
+
         # Line page #
         linePage = self.emitterNotebook.add('LineEmitter')
         self.createVector3Entry(linePage, 'Line Emitter', 'Min',
@@ -435,7 +453,7 @@ class ParticlePanel(AppShell):
                              'Particle launch angle',
                              command = self.setEmitterRingLaunchAngle)
         self.ringCustomFrame.pack(fill = BOTH, expand = 1)
-        
+
         # Sphere volume #
         sphereVolumePage = self.emitterNotebook.add('SphereVolumeEmitter')
         self.createFloater(sphereVolumePage, 'Sphere Volume Emitter', 'Radius',
@@ -449,7 +467,7 @@ class ParticlePanel(AppShell):
                            'Radius of sphere',
                            command = self.setEmitterSphereSurfaceRadius,
                            min = 0.01)
-        # Tangent ring # 
+        # Tangent ring #
         tangentRingPage = self.emitterNotebook.add('TangentRingEmitter')
         self.createFloater(tangentRingPage, 'Tangent Ring Emitter', 'Radius',
                            'Radius of ring',
@@ -471,12 +489,12 @@ class ParticlePanel(AppShell):
                               "alpha setting over particles' lifetime",
                               ('NO_ALPHA','ALPHA_OUT','ALPHA_IN','ALPHA_USER'),
                               self.setRendererAlphaMode)
-        
+
         self.createSlider(
             rendererPage, 'Renderer', 'User Alpha',
             'alpha value for ALPHA_USER alpha mode',
             command = self.setRendererUserAlpha)
-        
+
         self.rendererNotebook = Pmw.NoteBook(rendererPage, tabpos = None)
         # Line page #
         linePage = self.rendererNotebook.add('LineParticleRenderer')
@@ -666,7 +684,7 @@ class ParticlePanel(AppShell):
         # This also has: setCoef, setLength, setRadius,
         forceMenu.add_command(label = 'Add Linear Cylinder Vortex Force',
                             command = self.addLinearCylinderVortexForce)
-        
+
         # DERIVED FROM LINEAR DISTANCE FORCE
         # Parameters: setFalloffType, setForceCenter, setRadius
         forceMenu.add_command(label = 'Add Linear Sink Force',
@@ -688,14 +706,14 @@ class ParticlePanel(AppShell):
         # Notebook to hold force widgets as the are added
         self.forceGroupNotebook = Pmw.NoteBook(self.forceFrame, tabpos = None)
         self.forceGroupNotebook.pack(fill = X)
-        
+
         self.factoryNotebook.setnaturalsize()
         self.emitterNotebook.setnaturalsize()
         self.rendererNotebook.setnaturalsize()
         self.forceGroupNotebook.setnaturalsize()
         self.mainNotebook.setnaturalsize()
-        
-        # Make sure input variables processed 
+
+        # Make sure input variables processed
         self.initialiseoptions(ParticlePanel)
 
     ### WIDGET UTILITY FUNCTIONS ###
@@ -712,7 +730,7 @@ class ParticlePanel(AppShell):
         self.widgetDict[category + '-' + text] = widget
         self.variableDict[category + '-' + text] = bool
         return widget
-        
+
     def createRadiobutton(self, parent, side, category, text,
                           balloonHelp, variable, value,
                           command):
@@ -724,7 +742,7 @@ class ParticlePanel(AppShell):
         self.bind(widget, balloonHelp)
         self.widgetDict[category + '-' + text] = widget
         return widget
-        
+
     def createFloaters(self, parent, widgetDefinitions):
         widgets = []
         for category, label, balloonHelp, command, min, resolution in widgetDefinitions:
@@ -864,7 +882,7 @@ class ParticlePanel(AppShell):
             self.forceGroupLabel['text'] = self.forceGroup.getName()
         else:
             self.forceGroupLabel['text'] = 'Force Group'
-    
+
     def updateMenus(self):
         self.updateEffectsMenus()
         self.updateParticlesMenus()
@@ -878,7 +896,7 @@ class ParticlePanel(AppShell):
         # Add in a checkbutton for each effect (to toggle on/off)
         keys = self.effectsDict.keys()
         keys.sort()
-        for name in keys: 
+        for name in keys:
             effect = self.effectsDict[name]
             self.effectsLabelMenu.add_command(
                 label = effect.getName(),
@@ -966,7 +984,7 @@ class ParticlePanel(AppShell):
             effect.enable()
         else:
             effect.disable()
-        
+
     def selectParticlesNamed(self, name):
         particles = self.particleEffect.getParticlesNamed(name)
         if particles != None:
@@ -997,13 +1015,13 @@ class ParticlePanel(AppShell):
             force.setActive(1)
         else:
             force.setActive(0)
-                    
+
     def getWidget(self, category, text):
         return self.widgetDict[category + '-' + text]
 
     def getVariable(self, category, text):
         return self.variableDict[category + '-' + text]
-    
+
     def loadParticleEffectFromFile(self):
         # Find path to particle directory
         pPath = getParticlePath()
@@ -1083,7 +1101,7 @@ class ParticlePanel(AppShell):
             self.particleEffect.enable()
         else:
             self.particleEffect.disable()
-            
+
     ## SYSTEM PAGE ##
     def updateSystemWidgets(self):
         poolSize = self.particles.getPoolSize()
@@ -1133,7 +1151,7 @@ class ParticlePanel(AppShell):
 
     def selectFactoryPage(self):
         pass
-        
+
     def updateFactoryWidgets(self):
         factory = self.particles.factory
         lifespan = factory.getLifespanBase()
@@ -1149,7 +1167,7 @@ class ParticlePanel(AppShell):
         terminalVelocitySpread = factory.getTerminalVelocitySpread()
         self.getWidget('Factory', 'Terminal Vel. Spread').set(
             terminalVelocitySpread, 0)
-        
+
     def setFactoryLifeSpan(self, value):
         self.particles.factory.setLifespanBase(value)
     def setFactoryLifeSpanSpread(self, value):
@@ -1172,6 +1190,10 @@ class ParticlePanel(AppShell):
         self.particles.factory.setFinalAngle(angle)
     def setFactoryZSpinFinalAngleSpread(self, spread):
         self.particles.factory.setFinalAngleSpread(spread)
+    def setFactoryZSpinAngularVelocity(self, vel):
+        self.particles.factory.setAngularVelocity(vel)
+    def setFactoryZSpinAngularVelocitySpread(self, spread):
+        self.particles.factory.setAngularVelocitySpread(spread)
 
     ## EMITTER PAGE ##
     def selectEmitterType(self, type):
@@ -1183,7 +1205,7 @@ class ParticlePanel(AppShell):
         type = self.particles.emitter.__class__.__name__
         self.emitterNotebook.selectpage(type)
         self.getVariable('Emitter', 'Emitter Type').set(type)
-        
+
     def updateEmitterWidgets(self):
         emitter = self.particles.emitter
         self.setEmissionType(self.particles.emitter.getEmissionType())
@@ -1371,7 +1393,7 @@ class ParticlePanel(AppShell):
         self.rendererNotebook.selectpage(type)
         self.particles.setRenderer(type)
         self.updateRendererWidgets()
-        
+
     def updateRendererWidgets(self):
         renderer = self.particles.renderer
         alphaMode = renderer.getAlphaMode()
@@ -1571,8 +1593,8 @@ class ParticlePanel(AppShell):
             self.rendererSpriteFileEntry['state'] = 'disabled'
             self.rendererSpriteNodeEntry['state'] = 'disabled'
             self.rendererSpriteTextureEntry['background'] = 'SystemWindow'
-            self.rendererSpriteFileEntry['background'] = '#C0C0C0'            
-            self.rendererSpriteNodeEntry['background'] = '#C0C0C0'            
+            self.rendererSpriteFileEntry['background'] = '#C0C0C0'
+            self.rendererSpriteNodeEntry['background'] = '#C0C0C0'
         else:
             self.rendererSpriteTextureEntry['state'] = 'disabled'
             self.rendererSpriteFileEntry['state'] = 'normal'
@@ -1599,6 +1621,11 @@ class ParticlePanel(AppShell):
     def toggleRendererSpriteAnimAngle(self):
         self.particles.renderer.setAnimAngleFlag(
             self.getVariable('Sprite Renderer', 'Anim Angle').get())
+
+    def toggleAngularVelocity(self):
+        self.particles.factory.enableAngularVelocity(
+            self.getVariable('Z Spin Factory', 'Enable Angular Velocity').get())
+
     def setRendererSpriteInitialXScale(self, xScale):
         self.particles.renderer.setInitialXScale(xScale)
     def setRendererSpriteFinalXScale(self, xScale):
@@ -1623,7 +1650,7 @@ class ParticlePanel(AppShell):
     def toggleRendererSpriteAlphaDisable(self):
         self.particles.renderer.setAlphaDisable(
             self.getVariable('Sprite Renderer', 'Alpha Disable').get())
-        
+
     ## FORCEGROUP COMMANDS ##
     def updateForceWidgets(self):
         # Select appropriate notebook page
