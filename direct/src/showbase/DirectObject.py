@@ -7,6 +7,9 @@ class DirectObject:
     """
     This is the class that all Direct/SAL classes should inherit from
     """
+    def __init__(self):
+        pass
+
     #def __del__(self):
     #    print "Destructing: ", self.__class__.__name__
 
