@@ -71,3 +71,15 @@ integrate(Physical *physical, pvector< PT(LinearForce) > &forces,
   }
   child_integrate(physical, forces, dt);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void LinearIntegrator::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent); out<<""; out<<"LinearIntegrator:\n";
+  BaseIntegrator::output(out, indent+2);
+}

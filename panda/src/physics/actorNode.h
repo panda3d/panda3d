@@ -32,6 +32,16 @@
 //               object's position (shoves).
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS ActorNode : public PhysicalNode {
+public:
+  ActorNode(const string &name = "");
+  ActorNode(const ActorNode &copy);
+  virtual ~ActorNode();
+
+  // update the parent arc with PhysicsObject information
+  void update_transform();
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
+
 private:
   // node hook if the client changes the node's transform.
   virtual void transform_changed();
@@ -41,23 +51,15 @@ private:
   bool _ok_to_callback;
 
 public:
-  ActorNode(const string &name = "");
-  ActorNode(const ActorNode &copy);
-  virtual ~ActorNode(void);
-
-  // update the parent arc with PhysicsObject information
-  void update_transform(void);
-
-public:
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     PhysicalNode::init_type();
     register_type(_type_handle, "ActorNode",
                   PhysicalNode::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}

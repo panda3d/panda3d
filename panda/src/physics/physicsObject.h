@@ -30,22 +30,6 @@
 //               NOT derive from this.  Derive from Physical instead.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS PhysicsObject : public TypedReferenceCount {
-private:
-  // physical
-  LPoint3f _position;
-  LPoint3f _last_position;
-  LVector3f _velocity;
-
-  // angular
-  LOrientationf _orientation;
-  LVector3f _rotation;
-
-  float _terminal_velocity;
-  float _mass;
-
-  bool _process_me;
-  bool _oriented;
-
 PUBLISHED:
   PhysicsObject();
   PhysicsObject(const PhysicsObject &copy);
@@ -88,6 +72,24 @@ PUBLISHED:
   virtual LMatrix4f get_inertial_tensor(void) const;
   virtual LMatrix4f get_lcs() const;
   virtual PhysicsObject *make_copy() const;
+  
+  void output(ostream &out, unsigned int indent=0) const;
+
+private:
+  // physical
+  LPoint3f _position;
+  LPoint3f _last_position;
+  LVector3f _velocity;
+
+  // angular
+  LOrientationf _orientation;
+  LVector3f _rotation;
+
+  float _terminal_velocity;
+  float _mass;
+
+  bool _process_me;
+  bool _oriented;
 
 public:
   static TypeHandle get_class_type() {

@@ -26,12 +26,6 @@
 // Description : Friction-based drag force
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS LinearFrictionForce : public LinearForce {
-private:
-  float _coef;
-
-  virtual LinearForce *make_copy(void);
-  virtual LVector3f get_child_vector(const PhysicsObject *);
-
 PUBLISHED:
   LinearFrictionForce(float coef = 1.0f, float a = 1.0f, bool m = false);
   LinearFrictionForce(const LinearFrictionForce &copy);
@@ -39,6 +33,14 @@ PUBLISHED:
 
   INLINE void set_coef(float coef);
   INLINE float get_coef(void) const;
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
+
+private:
+  float _coef;
+
+  virtual LinearForce *make_copy(void);
+  virtual LVector3f get_child_vector(const PhysicsObject *);
 
 public:
   static TypeHandle get_class_type(void) {

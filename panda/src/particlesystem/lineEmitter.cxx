@@ -88,3 +88,15 @@ void LineEmitter::
 assign_initial_velocity(LVector3f& vel) {
   vel.set(0,0,0);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void LineEmitter::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent); out<<""; out<<"LineEmitter:\n";
+  BaseParticleEmitter::output(out, indent+2);
+}

@@ -44,6 +44,8 @@ PUBLISHED:
   INLINE LPoint3f get_force_center(void) const;
 
   INLINE float get_scalar_term(void) const;
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
 
 private:
   LPoint3f _force_center;

@@ -241,3 +241,15 @@ render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
   _line_primitive->set_bound(BoundingSphere(aabb_center, radius));
   get_render_node()->mark_bound_stale();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void LineParticleRenderer::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent); out<<""; out<<"LineParticleRenderer:\n";
+  BaseParticleRenderer::output(out, indent+2);
+}

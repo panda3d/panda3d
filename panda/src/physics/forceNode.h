@@ -32,40 +32,40 @@
 //                in a rotating space station.  or something.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS ForceNode : public PandaNode {
-private:
-  pvector< PT(BaseForce) > _forces;
-
 PUBLISHED:
   ForceNode(const string &name);
-
-protected:
-  ForceNode(const ForceNode &copy);
-
-public:
-  virtual ~ForceNode(void);
-  virtual bool safe_to_flatten(void) const { return false; }
-  virtual PandaNode *make_copy(void) const;
-
-PUBLISHED:
-  INLINE void clear(void);
+  INLINE void clear();
   INLINE BaseForce *get_force(int index) const;
-  INLINE int get_num_forces(void) const;
+  INLINE int get_num_forces() const;
   INLINE void add_force(BaseForce *force);
 
   void add_forces_from(const ForceNode &other);
   void remove_force(BaseForce *f);
   void remove_force(int index);
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
 
 public:
-  static TypeHandle get_class_type(void) {
+  virtual ~ForceNode();
+  virtual bool safe_to_flatten() const { return false; }
+  virtual PandaNode *make_copy() const;
+
+protected:
+  ForceNode(const ForceNode &copy);
+
+private:
+  pvector< PT(BaseForce) > _forces;
+
+public:
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     PandaNode::init_type();
     register_type(_type_handle, "ForceNode",
                   PandaNode::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}

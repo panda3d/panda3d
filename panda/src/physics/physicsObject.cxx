@@ -55,7 +55,7 @@ PhysicsObject(const PhysicsObject& copy) {
 //  Description : Destructor
 ////////////////////////////////////////////////////////////////////
 PhysicsObject::
-~PhysicsObject(void) {
+~PhysicsObject() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -84,7 +84,7 @@ operator =(const PhysicsObject &other) {
 //  Description : dynamic copy.
 ////////////////////////////////////////////////////////////////////
 PhysicsObject *PhysicsObject::
-make_copy(void) const {
+make_copy() const {
   return new PhysicsObject(*this);
 }
 
@@ -95,7 +95,7 @@ make_copy(void) const {
 //                local coordinate system.
 ////////////////////////////////////////////////////////////////////
 LMatrix4f PhysicsObject::
-get_lcs(void) const {
+get_lcs() const {
   LMatrix4f m = LMatrix4f::translate_mat(_position);
 
   if (_oriented == true)
@@ -111,6 +111,27 @@ get_lcs(void) const {
 //                object's willingness to be forced.
 ////////////////////////////////////////////////////////////////////
 LMatrix4f PhysicsObject::
-get_inertial_tensor(void) const {
+get_inertial_tensor() const {
   return LMatrix4f::ident_mat();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void PhysicsObject::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent);
+  out<<""<<"PhysicsObject:\n";
+  out.width(indent+2); out<<""; out<<"_position "<<_position<<"\n";
+  out.width(indent+2); out<<""; out<<"_last_position "<<_last_position<<"\n";
+  out.width(indent+2); out<<""; out<<"_velocity "<<_velocity<<"\n";
+  out.width(indent+2); out<<""; out<<"_orientation "<<_orientation<<"\n";
+  out.width(indent+2); out<<""; out<<"_rotation "<<_rotation<<"\n";
+  out.width(indent+2); out<<""; out<<"_terminal_velocity "<<_terminal_velocity<<"\n";
+  out.width(indent+2); out<<""; out<<"_mass "<<_mass<<"\n";
+  out.width(indent+2); out<<""; out<<"_process_me "<<_process_me<<"\n";
+  out.width(indent+2); out<<""; out<<"_oriented "<<_oriented<<"\n";
 }

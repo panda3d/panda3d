@@ -51,3 +51,15 @@ integrate(Physical *physical, pvector< PT(AngularForce) >& forces,
   // this actually does the integration.
   child_integrate(physical, forces, dt);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void AngularIntegrator::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent); out<<""; out<<"AngularIntegrator:\n";
+  BaseIntegrator::output(out, indent+2);
+}

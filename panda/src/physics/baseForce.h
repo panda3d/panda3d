@@ -33,37 +33,39 @@ class ForceNode;
 //                POSSIBLY exist.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS BaseForce : public TypedReferenceCount {
+PUBLISHED:
+  virtual ~BaseForce();
+
+  INLINE bool get_active() const;
+  INLINE void set_active(bool active);
+  virtual bool is_linear() const = 0;
+
+  INLINE ForceNode *get_force_node() const;
+
+  virtual LVector3f get_vector(const PhysicsObject *po) = 0;
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
+
+protected:
+  BaseForce(bool active = true);
+  BaseForce(const BaseForce &copy);
+
 private:
   ForceNode *_force_node;
   bool _active;
 
   virtual LVector3f get_child_vector(const PhysicsObject *po) = 0;
 
-protected:
-  BaseForce(bool active = true);
-  BaseForce(const BaseForce &copy);
-
-PUBLISHED:
-  virtual ~BaseForce(void);
-
-  INLINE bool get_active(void) const;
-  INLINE void set_active(bool active);
-  virtual bool is_linear(void) const = 0;
-
-  INLINE ForceNode *get_force_node(void) const;
-
-  virtual LVector3f get_vector(const PhysicsObject *po) = 0;
-
 public:
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "BaseForce",
                   TypedReferenceCount::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}

@@ -27,15 +27,6 @@
 //               particles are generated.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS LineEmitter : public BaseParticleEmitter {
-private:
-  LPoint3f _endpoint1, _endpoint2;
-
-  // CUSTOM EMISSION PARAMETERS
-  // none
-
-  virtual void assign_initial_position(LPoint3f& pos);
-  virtual void assign_initial_velocity(LVector3f& vel);
-
 PUBLISHED:
   LineEmitter(void);
   LineEmitter(const LineEmitter &copy);
@@ -48,6 +39,17 @@ PUBLISHED:
 
   INLINE LPoint3f get_endpoint1(void) const;
   INLINE LPoint3f get_endpoint2(void) const;
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
+
+private:
+  LPoint3f _endpoint1, _endpoint2;
+
+  // CUSTOM EMISSION PARAMETERS
+  // none
+
+  virtual void assign_initial_position(LPoint3f& pos);
+  virtual void assign_initial_velocity(LVector3f& vel);
 };
 
 #include "lineEmitter.I"

@@ -38,27 +38,31 @@ class Physical;
 //               any possible child implementation.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS BaseIntegrator : public ReferenceCount {
-private:
-  // since the wrt for each physicsobject between its physicalnode
-  // and however many forces will be the same among one physical,
-  // the transformation matrices can be pulled out of the inner loop
-  // and precomputed.
-  pvector< LMatrix4f > _precomputed_linear_matrices;
-  pvector< LMatrix4f > _precomputed_angular_matrices;
+public:
+  typedef pvector< LMatrix4f > VectorOfMatrices;
+
+  virtual ~BaseIntegrator();
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
 
 protected:
-  BaseIntegrator(void);
+  BaseIntegrator();
 
-  INLINE const pvector< LMatrix4f > &get_precomputed_linear_matrices(void) const;
-  INLINE const pvector< LMatrix4f > &get_precomputed_angular_matrices(void) const;
+  INLINE const VectorOfMatrices &get_precomputed_linear_matrices() const;
+  INLINE const VectorOfMatrices &get_precomputed_angular_matrices() const;
 
   void precompute_linear_matrices(Physical *physical,
                                   const pvector< PT(LinearForce) > &forces);
   void precompute_angular_matrices(Physical *physical,
                                    const pvector< PT(AngularForce) > &forces);
 
-public:
-  virtual ~BaseIntegrator(void);
+private:
+  // since the wrt for each physicsobject between its physicalnode
+  // and however many forces will be the same among one physical,
+  // the transformation matrices can be pulled out of the inner loop
+  // and precomputed.
+  VectorOfMatrices _precomputed_linear_matrices;
+  VectorOfMatrices _precomputed_angular_matrices;
 };
 
 #include "baseIntegrator.I"

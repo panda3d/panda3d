@@ -30,16 +30,18 @@ class EXPCL_PANDAPHYSICS OrientedParticle : public BaseParticle {
 public:
   OrientedParticle(int lifespan = 0, bool alive = false);
   OrientedParticle(const OrientedParticle &copy);
-  virtual ~OrientedParticle(void);
+  virtual ~OrientedParticle();
 
-  virtual PhysicsObject *make_copy(void) const;
+  virtual PhysicsObject *make_copy() const;
 
-  INLINE void set_velocity(void);
-  INLINE void set_orientation(void);
+  INLINE void set_velocity();
+  INLINE void set_orientation();
 
-  virtual void init(void);
-  virtual void update(void);
-  virtual void die(void);
+  virtual void init();
+  virtual void update();
+  virtual void die();
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
 };
 
 #include "orientedParticle.I"

@@ -68,3 +68,15 @@ LVector3f LinearJitterForce::
 get_child_vector(const PhysicsObject *) {
   return random_unit_vector();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void LinearJitterForce::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent); out<<""; out<<"LinearJitterForce:\n";
+  LinearRandomForce::output(out, indent+2);
+}

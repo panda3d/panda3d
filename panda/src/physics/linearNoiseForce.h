@@ -27,6 +27,17 @@
 // Description : Repeating noise force vector.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS LinearNoiseForce : public LinearRandomForce {
+PUBLISHED:
+  LinearNoiseForce(float a = 1.0f, bool m = false);
+  LinearNoiseForce(const LinearNoiseForce &copy);
+  virtual ~LinearNoiseForce();
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
+
+public:
+  static int _random_seed;
+  static void init_noise_tables();
+
 private:
   static unsigned char _prn_table[256];
   static LVector3f _gradient_table[256];
@@ -44,27 +55,18 @@ private:
   INLINE unsigned char prn_lookup(int index) const;
 
   virtual LVector3f get_child_vector(const PhysicsObject *po);
-  virtual LinearForce *make_copy(void);
+  virtual LinearForce *make_copy();
 
 public:
-  static int _random_seed;
-  static void init_noise_tables(void);
-
-PUBLISHED:
-  LinearNoiseForce(float a = 1.0f, bool m = false);
-  LinearNoiseForce(const LinearNoiseForce &copy);
-  virtual ~LinearNoiseForce(void);
-
-public:
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     LinearRandomForce::init_type();
     register_type(_type_handle, "LinearNoiseForce",
                   LinearRandomForce::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}

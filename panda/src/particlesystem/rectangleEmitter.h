@@ -27,15 +27,6 @@
 //               particles are generated.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS RectangleEmitter : public BaseParticleEmitter {
-private:
-  LPoint2f _vmin, _vmax;
-
-  // CUSTOM EMISSION PARAMETERS
-  // none
-
-  virtual void assign_initial_position(LPoint3f& pos);
-  virtual void assign_initial_velocity(LVector3f& vel);
-
 PUBLISHED:
   RectangleEmitter(void);
   RectangleEmitter(const RectangleEmitter &copy);
@@ -48,6 +39,17 @@ PUBLISHED:
 
   INLINE LPoint2f get_min_bound(void) const;
   INLINE LPoint2f get_max_bound(void) const;
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
+
+private:
+  LPoint2f _vmin, _vmax;
+
+  // CUSTOM EMISSION PARAMETERS
+  // none
+
+  virtual void assign_initial_position(LPoint3f& pos);
+  virtual void assign_initial_velocity(LVector3f& vel);
 };
 
 #include "rectangleEmitter.I"

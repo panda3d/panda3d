@@ -27,12 +27,6 @@
 //               equivalent of simple vector force.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS AngularVectorForce : public AngularForce {
-private:
-  LVector3f _fvec;
-
-  virtual AngularForce *make_copy(void) const;
-  virtual LVector3f get_child_vector(const PhysicsObject *po);
-
 PUBLISHED:
   AngularVectorForce(const LVector3f& vec);
   AngularVectorForce(float x = 0.0f, float y = 0.0f, float z = 0.0f);
@@ -42,6 +36,14 @@ PUBLISHED:
   INLINE void set_vector(const LVector3f& v);
   INLINE void set_vector(float x, float y, float z);
   INLINE LVector3f get_local_vector(void) const;
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
+
+private:
+  LVector3f _fvec;
+
+  virtual AngularForce *make_copy(void) const;
+  virtual LVector3f get_child_vector(const PhysicsObject *po);
 
 public:
   static TypeHandle get_class_type(void) {

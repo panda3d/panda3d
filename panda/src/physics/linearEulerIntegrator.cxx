@@ -27,7 +27,7 @@
 //  Description : constructor
 ////////////////////////////////////////////////////////////////////
 LinearEulerIntegrator::
-LinearEulerIntegrator(void) {
+LinearEulerIntegrator() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -36,7 +36,7 @@ LinearEulerIntegrator(void) {
 //  Description : destructor
 ////////////////////////////////////////////////////////////////////
 LinearEulerIntegrator::
-~LinearEulerIntegrator(void) {
+~LinearEulerIntegrator() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -45,20 +45,27 @@ LinearEulerIntegrator::
 //  Description : Integrate a step of motion (based on dt) by
 //                applying every force in force_vec to every object
 //                in obj_vec.
+//                
+//                physical,
+//                    The objects being acted upon and the
+//                    set of local forces that are applied 
+//                    after the global forces.
+//                forces,
+//                    Global forces to be applied first.
+//                dt,
+//                    The delta time of this integration step.
 ////////////////////////////////////////////////////////////////////
 void LinearEulerIntegrator::
 child_integrate(Physical *physical,
                 pvector< PT(LinearForce) >& forces,
                 float dt) {
-  pvector< PT(PhysicsObject) >::const_iterator current_object_iter;
-
   // perform the precomputation.  Note that the vector returned by
   // get_precomputed_matrices() has the matrices loaded in order of force
   // type: first global, then local.  If you're using this as a guide to write
   // another integrator, be sure to process your forces global, then local.
   // otherwise your transforms will be VERY bad.
   precompute_linear_matrices(physical, forces);
-  const pvector< LMatrix4f > &matrices = get_precomputed_linear_matrices();
+  const VectorOfMatrices &matrices = get_precomputed_linear_matrices();
 
   // Loop through each object in the set.  This processing occurs in O(pf) time,
   // where p is the number of physical objects and f is the number of
@@ -67,14 +74,10 @@ child_integrate(Physical *physical,
   // velocity of each physicsobject in the set.  Accordingly, we have
   // to grunt our way through each one.  wrt caching of the xform matrix
   // should help.
-
+  pvector< PT(PhysicsObject) >::const_iterator current_object_iter;
   current_object_iter = physical->get_object_vector().begin();
   for (; current_object_iter != physical->get_object_vector().end();
        current_object_iter++) {
-    LVector3f md_accum_vec, non_md_accum_vec, accel_vec, vel_vec;
-    LPoint3f pos;
-    float mass;
-
     PhysicsObject *current_object = *current_object_iter;
 
     // bail out if this object doesn't exist or doesn't want to be
@@ -86,6 +89,7 @@ child_integrate(Physical *physical,
       continue;
 
     // reset the accumulation vectors for this object
+    LVector3f md_accum_vec, non_md_accum_vec, accel_vec, vel_vec;
     md_accum_vec.set(0.0f, 0.0f, 0.0f);
     non_md_accum_vec.set(0.0f, 0.0f, 0.0f);
 
@@ -140,9 +144,9 @@ child_integrate(Physical *physical,
     }
 
     // get this object's physical info
-    pos = current_object->get_position();
+    LPoint3f pos = current_object->get_position();
     vel_vec = current_object->get_velocity();
-    mass = current_object->get_mass();
+    float mass = current_object->get_mass();
 
     // we want 'a' in F = ma
     // get it by computing F / m
@@ -168,6 +172,19 @@ child_integrate(Physical *physical,
     current_object->set_position(pos);
     current_object->set_velocity(vel_vec);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void LinearEulerIntegrator::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent);
+  out<<""<<"LinearEulerIntegrator:\n";
+  LinearIntegrator::output(out, indent+2);
 }
 
 

@@ -29,13 +29,6 @@
 //               forces.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS OrientedParticleFactory : public BaseParticleFactory {
-private:
-  virtual void populate_child_particle(BaseParticle *bp) const;
-  virtual BaseParticle *alloc_particle(void) const;
-
-  LOrientationf _initial_orientation;
-  LOrientationf _final_orientation;
-
 PUBLISHED:
   OrientedParticleFactory(void);
   OrientedParticleFactory(const OrientedParticleFactory &copy);
@@ -45,6 +38,15 @@ PUBLISHED:
   INLINE void set_final_orientation(const LOrientationf &o);
   INLINE LOrientationf get_initial_orientation(void) const;
   INLINE LOrientationf get_final_orientation(void) const;
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
+
+private:
+  virtual void populate_child_particle(BaseParticle *bp) const;
+  virtual BaseParticle *alloc_particle(void) const;
+
+  LOrientationf _initial_orientation;
+  LOrientationf _final_orientation;
 };
 
 #include "orientedParticleFactory.I"

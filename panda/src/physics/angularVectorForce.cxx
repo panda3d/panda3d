@@ -80,3 +80,15 @@ LVector3f AngularVectorForce::
 get_child_vector(const PhysicsObject *) {
   return _fvec;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void AngularVectorForce::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent); out<<""; out<<"AngularVectorForce:\n";
+  AngularForce::output(out, indent+2);
+}

@@ -58,7 +58,7 @@ LinearForce(const LinearForce& copy) :
 //  Description : Destructor
 ////////////////////////////////////////////////////////////////////
 LinearForce::
-~LinearForce(void) {
+~LinearForce() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -86,6 +86,24 @@ get_vector(const PhysicsObject *po) {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 bool LinearForce::
-is_linear(void) const {
+is_linear() const {
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void LinearForce::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent); out<<"";
+  out<<"LinearForce:";
+  out<<" amplitude "<<_amplitude;
+  out<<", mass_dependent "<<_mass_dependent;
+  out<<", x_mask "<<_x_mask;
+  out<<", y_mask "<<_y_mask;
+  out<<", z_mask "<<_z_mask;
+  BaseForce::output(out, indent+2);
 }

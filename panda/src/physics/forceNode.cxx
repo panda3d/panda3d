@@ -107,3 +107,15 @@ remove_force(int index) {
 
   _forces.erase(remove);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void ForceNode::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent); out<<""; out<<"ForceNode\n";
+  //PandaNode::output(out, indent+2);
+}

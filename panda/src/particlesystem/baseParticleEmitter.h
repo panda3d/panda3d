@@ -40,8 +40,8 @@ PUBLISHED:
     ET_CUSTOM    // particle launch vectors are dependent on particular derived emitter
   };
 
-  virtual ~BaseParticleEmitter(void);
-  virtual BaseParticleEmitter *make_copy(void) = 0;
+  virtual ~BaseParticleEmitter();
+  virtual BaseParticleEmitter *make_copy() = 0;
 
   void generate(LPoint3f& pos, LVector3f& vel);
 
@@ -52,15 +52,17 @@ PUBLISHED:
   INLINE void set_explicit_launch_vector(const LVector3f& elv);
   INLINE void set_radiate_origin(const LPoint3f& ro);
 
-  INLINE emissionType get_emission_type(void) const;
-  INLINE float get_amplitude(void) const;
-  INLINE float get_amplitude_spread(void) const;
-  INLINE LVector3f get_offset_force(void) const;
-  INLINE LVector3f get_explicit_launch_vector(void) const;
-  INLINE LPoint3f get_radiate_origin(void) const;
+  INLINE emissionType get_emission_type() const;
+  INLINE float get_amplitude() const;
+  INLINE float get_amplitude_spread() const;
+  INLINE LVector3f get_offset_force() const;
+  INLINE LVector3f get_explicit_launch_vector() const;
+  INLINE LPoint3f get_radiate_origin() const;
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
 
 protected:
-  BaseParticleEmitter(void);
+  BaseParticleEmitter();
   BaseParticleEmitter(const BaseParticleEmitter &copy);
 
   emissionType _emission_type;

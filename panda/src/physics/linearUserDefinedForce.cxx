@@ -72,3 +72,15 @@ LVector3f LinearUserDefinedForce::
 get_child_vector(const PhysicsObject *po) {
   return _proc(po);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void LinearUserDefinedForce::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent); out<<""; out<<"LinearUserDefinedForce:\n";
+  LinearForce::output(out, indent+2);
+}

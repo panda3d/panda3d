@@ -35,26 +35,6 @@
 // Description : Pure virtual particle renderer base class
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS BaseParticleRenderer : public ReferenceCount {
-private:
-  PT(GeomNode) _render_node;
-
-  float _user_alpha;
-
-  // birth and kill particle are for renderers that might do maintenance
-  // faster if it was notified on a per-event basis.  An example:
-  // geomParticleRenderer maintains an arc for every particle.  Instead
-  // of visiting EVERY entry in the arc array, individual arcs are
-  // changed on birth and death.  Brings it down a little from O(N) every
-  // update.
-
-  virtual void birth_particle(int index) = 0;
-  virtual void kill_particle(int index) = 0;
-
-
-  virtual void init_geoms(void) = 0;
-  virtual void render(pvector< PT(PhysicsObject) >& po_vector,
-                      int ttl_particles) = 0;
-
 PUBLISHED:
   enum ParticleRendererAlphaMode {
     PR_ALPHA_NONE,
@@ -79,6 +59,8 @@ PUBLISHED:
 
   INLINE void set_user_alpha(float ua);
   INLINE float get_user_alpha(void) const;
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
 
 protected:
   ParticleRendererAlphaMode _alpha_mode;
@@ -96,6 +78,26 @@ protected:
   virtual void resize_pool(int new_size) = 0;
 
   CPT(RenderState) _render_state;
+
+private:
+  PT(GeomNode) _render_node;
+
+  float _user_alpha;
+
+  // birth and kill particle are for renderers that might do maintenance
+  // faster if it was notified on a per-event basis.  An example:
+  // geomParticleRenderer maintains an arc for every particle.  Instead
+  // of visiting EVERY entry in the arc array, individual arcs are
+  // changed on birth and death.  Brings it down a little from O(N) every
+  // update.
+
+  virtual void birth_particle(int index) = 0;
+  virtual void kill_particle(int index) = 0;
+
+
+  virtual void init_geoms(void) = 0;
+  virtual void render(pvector< PT(PhysicsObject) >& po_vector,
+                      int ttl_particles) = 0;
 
 public:
   virtual BaseParticleRenderer *make_copy(void) = 0;

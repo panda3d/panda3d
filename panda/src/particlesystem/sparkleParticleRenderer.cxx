@@ -26,7 +26,6 @@
 //      Access : Public
 // Description : Default Constructor
 ////////////////////////////////////////////////////////////////////
-
 SparkleParticleRenderer::
 SparkleParticleRenderer(void) :
   BaseParticleRenderer(PR_ALPHA_NONE),
@@ -43,7 +42,6 @@ SparkleParticleRenderer(void) :
 //      Access : Public
 // Description : Constructor
 ////////////////////////////////////////////////////////////////////
-
 SparkleParticleRenderer::
 SparkleParticleRenderer(const Colorf& center, const Colorf& edge,
                         float birth_radius, float death_radius,
@@ -62,7 +60,6 @@ SparkleParticleRenderer(const Colorf& center, const Colorf& edge,
 //      Access : Public
 // Description : Copy Constructor
 ////////////////////////////////////////////////////////////////////
-
 SparkleParticleRenderer::
 SparkleParticleRenderer(const SparkleParticleRenderer& copy) :
   BaseParticleRenderer(copy) {
@@ -81,7 +78,6 @@ SparkleParticleRenderer(const SparkleParticleRenderer& copy) :
 //      Access : Public
 // Description : Destructor
 ////////////////////////////////////////////////////////////////////
-
 SparkleParticleRenderer::
 ~SparkleParticleRenderer(void) {
 }
@@ -91,7 +87,6 @@ SparkleParticleRenderer::
 //      Access : Public
 // Description : child virtual for spawning systems
 ////////////////////////////////////////////////////////////////////
-
 BaseParticleRenderer *SparkleParticleRenderer::
 make_copy(void) {
   return new SparkleParticleRenderer(*this);
@@ -102,7 +97,6 @@ make_copy(void) {
 //      Access : Private, virtual
 // Description : child birth
 ////////////////////////////////////////////////////////////////////
-
 void SparkleParticleRenderer::
 birth_particle(int) {
 }
@@ -112,7 +106,6 @@ birth_particle(int) {
 //      Access : Private, virtual
 // Description : child kill
 ////////////////////////////////////////////////////////////////////
-
 void SparkleParticleRenderer::
 kill_particle(int) {
 }
@@ -123,7 +116,6 @@ kill_particle(int) {
 // Description : resizes the render pool.  Reference counting
 //               makes this easy.
 ////////////////////////////////////////////////////////////////////
-
 void SparkleParticleRenderer::
 resize_pool(int new_size) {
   _vertex_array = PTA_Vertexf::empty_array(new_size * 12);
@@ -142,7 +134,6 @@ resize_pool(int new_size) {
 //      Access : private
 // Description : initializes the geomnodes
 ////////////////////////////////////////////////////////////////////
-
 void SparkleParticleRenderer::
 init_geoms(void) {
   _line_primitive->set_num_prims(0);
@@ -157,7 +148,6 @@ init_geoms(void) {
 //      Access : private
 // Description : populates the GeomLine
 ////////////////////////////////////////////////////////////////////
-
 void SparkleParticleRenderer::
 render(pvector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 

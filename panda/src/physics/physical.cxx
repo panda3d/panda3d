@@ -111,13 +111,83 @@ Physical(const Physical& copy) {
 //  Description : destructor
 ////////////////////////////////////////////////////////////////////
 Physical::
-~Physical(void) {
+~Physical() {
   // note that this removes a physical from a physics manager.
   // this is safe because the physics manager doesn't keep PT's to
   // physicals, simply *'s, and also means that we don't have to tell
   // the physics manager ourselves when one of our physicals is dead.
   if (_physics_manager != (PhysicsManager *) NULL) {
     _physics_manager->remove_physical(this);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : output_physics_objects
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void Physical::
+output_physics_objects(ostream &out, unsigned int indent) const {
+  out.width(indent);
+  out<<""<<"_physics_objects\n";
+  for (PhysicsObjectVector::const_iterator i=_physics_objects.begin();
+       i != _physics_objects.end();
+       ++i) {
+    (*i)->output(out, indent+2);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : output_linear_forces
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void Physical::
+output_linear_forces(ostream &out, unsigned int indent) const {
+  out.width(indent);
+  out<<""<<"_linear_forces\n";
+  for (LinearForceVector::const_iterator i=_linear_forces.begin();
+       i != _linear_forces.end();
+       ++i) {
+    (*i)->output(out, indent+2);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : output_angular_forces
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void Physical::
+output_angular_forces(ostream &out, unsigned int indent) const {
+  out.width(indent);
+  out<<""<<"_angular_forces\n";
+  for (AngularForceVector::const_iterator i=_angular_forces.begin();
+       i != _angular_forces.end();
+       ++i) {
+    (*i)->output(out, indent+2);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void Physical::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent); out<<""<<"Physical:\n";
+  output_physics_objects(out, indent+2);
+  output_linear_forces(out, indent+2);
+  output_angular_forces(out, indent+2);
+  if (_phys_body) {
+    _phys_body->output(out, indent+2);
+  } else {
+    out.width(indent+2); out<<""<<"_phys_body is null\n";
   }
 }
 

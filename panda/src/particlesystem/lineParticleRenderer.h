@@ -34,8 +34,26 @@
 ////////////////////////////////////////////////////////////////////
 
 class EXPCL_PANDAPHYSICS LineParticleRenderer : public BaseParticleRenderer {
-private:
+PUBLISHED:
+  LineParticleRenderer(void);
+  LineParticleRenderer(const LineParticleRenderer& copy);
+  LineParticleRenderer(const Colorf& head,
+                       const Colorf& tail,
+                       ParticleRendererAlphaMode alpha_mode);
 
+  virtual ~LineParticleRenderer(void);
+
+  virtual BaseParticleRenderer *make_copy(void);
+
+  INLINE void set_head_color(const Colorf& c);
+  INLINE void set_tail_color(const Colorf& c);
+
+  INLINE const Colorf& get_head_color(void) const;
+  INLINE const Colorf& get_tail_color(void) const;
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
+
+private:
   Colorf _head_color;
   Colorf _tail_color;
 
@@ -54,23 +72,6 @@ private:
   virtual void render(pvector< PT(PhysicsObject) >& po_vector,
                       int ttl_particles);
   virtual void resize_pool(int new_size);
-
-PUBLISHED:
-  LineParticleRenderer(void);
-  LineParticleRenderer(const LineParticleRenderer& copy);
-  LineParticleRenderer(const Colorf& head,
-                       const Colorf& tail,
-                       ParticleRendererAlphaMode alpha_mode);
-
-  virtual ~LineParticleRenderer(void);
-
-  virtual BaseParticleRenderer *make_copy(void);
-
-  INLINE void set_head_color(const Colorf& c);
-  INLINE void set_tail_color(const Colorf& c);
-
-  INLINE const Colorf& get_head_color(void) const;
-  INLINE const Colorf& get_tail_color(void) const;
 };
 
 #include "lineParticleRenderer.I"

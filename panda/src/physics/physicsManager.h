@@ -39,6 +39,33 @@
 //               as you want, pick an integrator and go.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS PhysicsManager {
+PUBLISHED:
+  PhysicsManager();
+  virtual ~PhysicsManager();
+
+  INLINE void attach_linear_integrator(LinearIntegrator *i);
+  INLINE void attach_angular_integrator(AngularIntegrator *i);
+  INLINE void attach_physical(Physical *p);
+  INLINE void attach_physicalnode(PhysicalNode *p);
+  INLINE void add_linear_force(LinearForce *f);
+  INLINE void add_angular_force(AngularForce *f);
+  INLINE void clear_linear_forces();
+  INLINE void clear_angular_forces();
+  INLINE void clear_physicals();
+
+  void remove_physical(Physical *p);
+  void remove_linear_force(LinearForce *f);
+  void remove_angular_force(AngularForce *f);
+  void do_physics(float dt);
+  
+  virtual void output_physicals(ostream &out, unsigned int indent=0) const;
+  virtual void output_linear_forces(ostream &out, unsigned int indent=0) const;
+  virtual void output_angular_forces(ostream &out, unsigned int indent=0) const;
+  virtual void output(ostream &out, unsigned int indent=0) const;
+
+public:
+  friend class Physical;
+
 private:
   // NOTE that the physicals container is NOT reference counted.
   // this does indeed mean that you are NOT supposed to use this
@@ -53,28 +80,6 @@ private:
 
   PT(LinearIntegrator) _linear_integrator;
   PT(AngularIntegrator) _angular_integrator;
-
-PUBLISHED:
-  PhysicsManager(void);
-  virtual ~PhysicsManager(void);
-
-  INLINE void attach_linear_integrator(LinearIntegrator *i);
-  INLINE void attach_angular_integrator(AngularIntegrator *i);
-  INLINE void attach_physical(Physical *p);
-  INLINE void attach_physicalnode(PhysicalNode *p);
-  INLINE void add_linear_force(LinearForce *f);
-  INLINE void add_angular_force(AngularForce *f);
-  INLINE void clear_linear_forces(void);
-  INLINE void clear_angular_forces(void);
-  INLINE void clear_physicals(void);
-
-  void remove_physical(Physical *p);
-  void remove_linear_force(LinearForce *f);
-  void remove_angular_force(AngularForce *f);
-  void do_physics(float dt);
-
-public:
-  friend class Physical;
 };
 
 #include "physicsManager.I"

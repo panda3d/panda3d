@@ -48,5 +48,17 @@ BaseForce(const BaseForce &copy) :
 // Description : destructor
 ////////////////////////////////////////////////////////////////////
 BaseForce::
-~BaseForce(void) {
+~BaseForce() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void BaseForce::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent); out<<""; out<<"BaseForce:\n";
+  //TypedReferenceCount::output(out);
 }

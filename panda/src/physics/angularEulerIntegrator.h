@@ -31,6 +31,8 @@ private:
   virtual void child_integrate(Physical *physical,
                                pvector< PT(AngularForce) >& forces,
                                float dt);
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
 
 PUBLISHED:
   AngularEulerIntegrator(void);

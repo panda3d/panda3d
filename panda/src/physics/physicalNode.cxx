@@ -48,7 +48,7 @@ PhysicalNode(const PhysicalNode &copy) :
 //  Description : destructor
 ////////////////////////////////////////////////////////////////////
 PhysicalNode::
-~PhysicalNode(void) {
+~PhysicalNode() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -57,7 +57,7 @@ PhysicalNode::
 //  Description : dynamic child copy
 ////////////////////////////////////////////////////////////////////
 PandaNode *PhysicalNode::
-make_copy(void) const {
+make_copy() const {
   return new PhysicalNode(*this);
 }
 
@@ -106,4 +106,16 @@ remove_physical(int index) {
   (*remove)->_physical_node = (PhysicalNode *) NULL;
 
   _physicals.erase(remove);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void PhysicalNode::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent); out<<""; out<<"PhysicalNode:\n";
+  //PandaNode::output(out, indent+2);
 }

@@ -30,6 +30,17 @@
 //               forces to them.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS LinearIntegrator : public BaseIntegrator {
+public:
+  virtual ~LinearIntegrator();
+
+  void integrate(Physical *physical, pvector< PT(LinearForce) > &forces,
+                 float dt);
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
+
+protected:
+  LinearIntegrator();
+
 private:
   static const float _max_linear_dt;
 
@@ -38,15 +49,6 @@ private:
   virtual void child_integrate(Physical *physical, 
                                pvector< PT(LinearForce) > &forces,
                                float dt) = 0;
-
-protected:
-  LinearIntegrator(void);
-
-public:
-  virtual ~LinearIntegrator(void);
-
-  void integrate(Physical *physical, pvector< PT(LinearForce) > &forces,
-                 float dt);
 };
 
 #endif // LINEARINTEGRATOR_H

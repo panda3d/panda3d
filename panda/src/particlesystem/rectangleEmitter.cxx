@@ -88,3 +88,15 @@ void RectangleEmitter::
 assign_initial_velocity(LVector3f& vel) {
   vel.set(0.0f,0.0f,0.0f);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void RectangleEmitter::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent); out<<""; out<<"RectangleEmitter:\n";
+  BaseParticleEmitter::output(out, indent+2);
+}

@@ -27,12 +27,6 @@
 //               gravity, non-turbulent wind, etc...
 ////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS LinearVectorForce : public LinearForce {
-private:
-  LVector3f _fvec;
-
-  virtual LinearForce *make_copy(void);
-  virtual LVector3f get_child_vector(const PhysicsObject *po);
-
 PUBLISHED:
   LinearVectorForce(const LVector3f& vec, float a = 1.0f, bool mass = false);
   LinearVectorForce(const LinearVectorForce &copy);
@@ -44,6 +38,14 @@ PUBLISHED:
   INLINE void set_vector(float x, float y, float z);
 
   INLINE LVector3f get_local_vector(void) const;
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
+
+private:
+  LVector3f _fvec;
+
+  virtual LinearForce *make_copy(void);
+  virtual LVector3f get_child_vector(const PhysicsObject *po);
 
 public:
   static TypeHandle get_class_type(void) {

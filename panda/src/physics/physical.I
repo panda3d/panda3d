@@ -24,7 +24,7 @@
 // Description : Erases the linear force list
 ////////////////////////////////////////////////////////////////////
 INLINE void Physical::
-clear_linear_forces(void) {
+clear_linear_forces() {
   _linear_forces.erase(_linear_forces.begin(),
                         _linear_forces.end());
 }
@@ -35,7 +35,7 @@ clear_linear_forces(void) {
 // Description : Erases the angular force list
 ////////////////////////////////////////////////////////////////////
 INLINE void Physical::
-clear_angular_forces(void) {
+clear_angular_forces() {
   _angular_forces.erase(_angular_forces.begin(),
                         _angular_forces.end());
 }
@@ -46,7 +46,7 @@ clear_angular_forces(void) {
 // Description : Erases the object list
 ////////////////////////////////////////////////////////////////////
 INLINE void Physical::
-clear_physics_objects(void) {
+clear_physics_objects() {
   _physics_objects.erase(_physics_objects.begin(),
                          _physics_objects.end());
 }
@@ -124,7 +124,7 @@ add_physics_object(PhysicsObject *po) {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE PhysicsManager *Physical::
-get_physics_manager(void) const {
+get_physics_manager() const {
   return _physics_manager;
 }
 
@@ -133,7 +133,7 @@ get_physics_manager(void) const {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE PhysicsObject *Physical::
-get_phys_body(void) const {
+get_phys_body() const {
   return _phys_body;
 }
 
@@ -142,7 +142,7 @@ get_phys_body(void) const {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE PhysicalNode *Physical::
-get_physical_node(void) const {
+get_physical_node() const {
   return _physical_node;
 }
 
@@ -151,7 +151,7 @@ get_physical_node(void) const {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE const pvector< PT(PhysicsObject) > &Physical::
-get_object_vector(void) const {
+get_object_vector() const {
   return _physics_objects;
 }
 
@@ -160,7 +160,7 @@ get_object_vector(void) const {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE const pvector< PT(LinearForce) > &Physical::
-get_linear_forces(void) const {
+get_linear_forces() const {
   return _linear_forces;
 }
 
@@ -169,7 +169,7 @@ get_linear_forces(void) const {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE const pvector< PT(AngularForce) > &Physical::
-get_angular_forces(void) const {
+get_angular_forces() const {
   return _angular_forces;
 }
 
@@ -178,7 +178,7 @@ get_angular_forces(void) const {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE int Physical::
-get_num_linear_forces(void) const {
+get_num_linear_forces() const {
   return _linear_forces.size();
 }
 
@@ -197,7 +197,7 @@ get_linear_force(int index) const {
 //      Access : Public
 ////////////////////////////////////////////////////////////////////
 INLINE int Physical::
-get_num_angular_forces(void) const {
+get_num_angular_forces() const {
   return _angular_forces.size();
 }
 

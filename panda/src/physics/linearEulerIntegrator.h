@@ -27,14 +27,16 @@
 //               physically modelable objects given a quantum dt.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS LinearEulerIntegrator : public LinearIntegrator {
+PUBLISHED:
+  LinearEulerIntegrator();
+  virtual ~LinearEulerIntegrator();
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
+
 private:
   virtual void child_integrate(Physical *physical,
                                pvector< PT(LinearForce) >& forces,
                                float dt);
-
-PUBLISHED:
-  LinearEulerIntegrator();
-  virtual ~LinearEulerIntegrator();
 };
 
 #endif // EULERINTEGRATOR_H

@@ -29,6 +29,17 @@
 //               forces to them.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS AngularIntegrator : public BaseIntegrator {
+public:
+  virtual ~AngularIntegrator(void);
+
+  void integrate(Physical *physical, pvector< PT(AngularForce) > &forces,
+                 float dt);
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
+
+protected:
+  AngularIntegrator(void);
+
 private:
   static const float _max_angular_dt;
 
@@ -36,15 +47,6 @@ private:
   // actual integration function receives.
   virtual void child_integrate(Physical *physical, pvector< PT(AngularForce) > &forces,
                                float dt) = 0;
-
-protected:
-  AngularIntegrator(void);
-
-public:
-  virtual ~AngularIntegrator(void);
-
-  void integrate(Physical *physical, pvector< PT(AngularForce) > &forces,
-                 float dt);
 };
 
 #endif // ANGULARINTEGRATOR_H

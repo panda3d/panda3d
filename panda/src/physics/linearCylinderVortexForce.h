@@ -32,14 +32,6 @@
 //               let go.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS LinearCylinderVortexForce : public LinearForce {
-private:
-  float _radius;
-  float _length;
-  float _coef;
-
-  virtual LinearForce *make_copy(void);
-  virtual LVector3f get_child_vector(const PhysicsObject *po);
-
 PUBLISHED:
   LinearCylinderVortexForce(float radius = 1.0f,
                       float length = 0.0f,
@@ -57,6 +49,16 @@ PUBLISHED:
 
   INLINE void set_length(float length);
   INLINE float get_length(void) const;
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
+
+private:
+  float _radius;
+  float _length;
+  float _coef;
+
+  virtual LinearForce *make_copy(void);
+  virtual LVector3f get_child_vector(const PhysicsObject *po);
 
 public:
   static TypeHandle get_class_type(void) {

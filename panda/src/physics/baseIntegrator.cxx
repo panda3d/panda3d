@@ -142,3 +142,14 @@ precompute_angular_matrices(Physical *physical,
     _precomputed_angular_matrices.push_back(physical_np.get_mat(force_node));
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void BaseIntegrator::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent); out<<""; out<<"BaseIntegrator:\n";
+}

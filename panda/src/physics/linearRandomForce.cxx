@@ -58,3 +58,15 @@ float LinearRandomForce::
 bounded_rand(void) {
   return ((float)rand() / (float)RAND_MAX);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void LinearRandomForce::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent); out<<""; out<<"LinearRandomForce:\n";
+  LinearForce::output(out, indent+2);
+}

@@ -98,3 +98,15 @@ update_alpha_mode(ParticleRendererAlphaMode am) {
 
   _alpha_mode = am;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void BaseParticleRenderer::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent); out<<""; out<<"BaseParticleRenderer:\n";
+  //ReferenceCount::output(out, indent+2);
+}

@@ -154,3 +154,15 @@ child_integrate(Physical *physical,
     current_object->set_rotation(rot_vec);
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void AngularEulerIntegrator::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent); out<<""; out<<"AngularEulerIntegrator:\n";
+  AngularIntegrator::output(out, indent+2);
+}

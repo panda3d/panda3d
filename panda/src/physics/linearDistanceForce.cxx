@@ -53,3 +53,15 @@ LinearDistanceForce(const LinearDistanceForce &copy) :
 LinearDistanceForce::
 ~LinearDistanceForce(void) {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void LinearDistanceForce::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent); out<<""; out<<"LinearDistanceForce:\n";
+  LinearForce::output(out, indent+2);
+}

@@ -29,6 +29,11 @@
 // Description : Pure virtual, parent to noiseForce and jitterForce
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS LinearRandomForce : public LinearForce {
+PUBLISHED:
+  virtual ~LinearRandomForce(void);
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
+
 protected:
   static float bounded_rand(void);
   static LVector3f random_unit_vector(void);
@@ -38,9 +43,6 @@ protected:
 
   virtual LVector3f get_child_vector(const PhysicsObject *po) = 0;
   virtual LinearForce *make_copy(void) = 0;
-
-PUBLISHED:
-  virtual ~LinearRandomForce(void);
 
 public:
   static TypeHandle get_class_type(void) {

@@ -80,3 +80,15 @@ LVector3f LinearSourceForce::
 get_child_vector(const PhysicsObject *po) {
   return (po->get_position() - get_force_center()) * get_scalar_term();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void LinearSourceForce::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent); out<<""; out<<"LinearSourceForce:\n";
+  LinearDistanceForce::output(out, indent+2);
+}

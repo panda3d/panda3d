@@ -32,12 +32,6 @@
 //               becomes needed...
 ////////////////////////////////////////////////////////////////////
 class LinearUserDefinedForce : public LinearForce {
-private:
-  LVector3f (*_proc)(const PhysicsObject *po);
-
-  virtual LVector3f get_child_vector(const PhysicsObject *po);
-  virtual LinearForce *make_copy(void);
-
 PUBLISHED:
   LinearUserDefinedForce(LVector3f (*proc)(const PhysicsObject *) = NULL,
                    float a = 1.0f,
@@ -46,6 +40,14 @@ PUBLISHED:
   virtual ~LinearUserDefinedForce(void);
 
   INLINE void set_proc(LVector3f (*proc)(const PhysicsObject *));
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
+
+private:
+  LVector3f (*_proc)(const PhysicsObject *po);
+
+  virtual LVector3f get_child_vector(const PhysicsObject *po);
+  virtual LinearForce *make_copy(void);
 
 public:
   static TypeHandle get_class_type(void) {

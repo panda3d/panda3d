@@ -106,3 +106,15 @@ transform_changed() {
   // apply
   _mass_center->set_position(pos);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void ActorNode::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent); out<<""; out<<"ActorNode:\n";
+  PhysicalNode::output(out, indent+2);
+}

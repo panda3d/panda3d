@@ -69,3 +69,15 @@ bool AngularForce::
 is_linear(void) const {
   return false;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void AngularForce::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent); out<<""; out<<"AngularForce:\n";
+  BaseForce::output(out, indent+2);
+}

@@ -29,7 +29,7 @@
 //                the standard default.
 ////////////////////////////////////////////////////////////////////
 PhysicsManager::
-PhysicsManager(void) {
+PhysicsManager() {
   _linear_integrator.clear();
   _angular_integrator.clear();
 }
@@ -40,7 +40,7 @@ PhysicsManager(void) {
 //  Description : Simple Destructor
 ////////////////////////////////////////////////////////////////////
 PhysicsManager::
-~PhysicsManager(void) {
+~PhysicsManager() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -89,9 +89,9 @@ remove_physical(Physical *p) {
   pvector< Physical * >::iterator found;
 
   found = find(_physicals.begin(), _physicals.end(), p);
-  if (found == _physicals.end())
+  if (found == _physicals.end()) {
     return;
-
+  }
   p->_physics_manager = (PhysicsManager *) NULL;
   _physicals.erase(found);
 }
@@ -125,5 +125,96 @@ do_physics(float dt) {
       ActorNode *an = (ActorNode *) pn;
       an->update_transform();
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : output_physicals
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void PhysicsManager::
+output_physicals(ostream &out, unsigned int indent) const {
+  if (indent>10) {
+    return;
+  }
+  out.width(indent);
+  out<<""<<"_physicals ("<<_physicals.size()<<" physicals)\n";
+  //out<<ios::width(indent)<<" "<<"[physicals \n";
+  for (pvector< Physical * >::const_iterator i=_physicals.begin();
+       i != _physicals.end();
+       ++i) {
+    (*i)->output(out, indent+2);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : _linear_forces
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void PhysicsManager::
+output_linear_forces(ostream &out, unsigned int indent) const {
+  if (indent>10) {
+    return;
+  }
+  out.width(indent);
+  out<<""<<"_linear_forces ("<<_linear_forces.size()<<" forces)\n";
+  for (pvector< PT(LinearForce) >::const_iterator i=_linear_forces.begin();
+       i != _linear_forces.end();
+       ++i) {
+    (*i)->output(out, indent+2);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : output_angular_forces
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void PhysicsManager::
+output_angular_forces(ostream &out, unsigned int indent) const {
+  if (indent>10) {
+    return;
+  }
+  out.width(indent);
+  out<<""<<"_angular_forces ("<<_angular_forces.size()<<" forces)\n";
+  for (pvector< PT(AngularForce) >::const_iterator i=_angular_forces.begin();
+       i != _angular_forces.end();
+       ++i) {
+    (*i)->output(out, indent+2);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void PhysicsManager::
+output(ostream &out, unsigned int indent) const {
+  if (indent>10) {
+    return;
+  }
+  out.width(indent);
+  out<<""<<"PhysicsManager:\n";
+  output_physicals(out, indent+2);
+  output_linear_forces(out, indent+2);
+  output_angular_forces(out, indent+2);
+  if (_linear_integrator) {
+    _linear_integrator->output(out, indent+2);
+  } else {
+    out.width(indent+2);
+    out<<""<<"_linear_integrator is null\n";
+  }
+  if (_angular_integrator) {
+    _angular_integrator->output(out, indent+2);
+  } else {
+    out.width(indent+2);
+    out<<""<<"_angular_integrator is null\n";
   }
 }

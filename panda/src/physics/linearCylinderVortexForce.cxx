@@ -129,3 +129,15 @@ get_child_vector(const PhysicsObject *po) {
 
   return centripetal;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void LinearCylinderVortexForce::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent); out<<""; out<<"LinearCylinderVortexForce:\n";
+  LinearForce::output(out, indent+2);
+}

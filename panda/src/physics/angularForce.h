@@ -26,30 +26,32 @@
 // Description : pure virtual parent of all quat-based forces.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS AngularForce : public BaseForce {
+PUBLISHED:
+  virtual ~AngularForce();
+
+  virtual AngularForce *make_copy() const = 0;
+  LVector3f get_vector(const PhysicsObject *po);
+  virtual bool is_linear() const;
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
+
+protected:
+  AngularForce();
+  AngularForce(const AngularForce &copy);
+
 private:
   virtual LVector3f get_child_vector(const PhysicsObject *po) = 0;
 
-protected:
-  AngularForce(void);
-  AngularForce(const AngularForce &copy);
-
-PUBLISHED:
-  virtual ~AngularForce(void);
-
-  virtual AngularForce *make_copy(void) const = 0;
-  LVector3f get_vector(const PhysicsObject *po);
-  virtual bool is_linear(void) const;
-
 public:
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     BaseForce::init_type();
     register_type(_type_handle, "AngularForce",
                   BaseForce::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}

@@ -40,15 +40,53 @@ class PhysicsManager;
 //               it from this.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS Physical : public TypedReferenceCount {
-private:
-  PhysicsManager *_physics_manager;
-  PhysicalNode *_physical_node;
+PUBLISHED:
+  Physical(int ttl_objects = 1, bool pre_alloc = false);
+  Physical(const Physical& copy);
+
+  virtual ~Physical();
+
+  // helpers
+  INLINE PhysicsManager *get_physics_manager() const;
+  INLINE PhysicalNode *get_physical_node() const;
+  INLINE PhysicsObject *get_phys_body() const;
+
+  INLINE void clear_linear_forces();
+  INLINE void clear_angular_forces();
+  INLINE void clear_physics_objects();
+  INLINE void add_linear_force(LinearForce *f);
+  INLINE void add_angular_force(AngularForce *f);
+  INLINE void add_physics_object(PhysicsObject *po);
+  INLINE void remove_linear_force(LinearForce *f);
+  INLINE void remove_angular_force(AngularForce *f);
+
+  INLINE int get_num_linear_forces() const;
+  INLINE PT(LinearForce) get_linear_force(int index) const;
+  INLINE int get_num_angular_forces() const;
+  INLINE PT(AngularForce) get_angular_force(int index) const;
+  
+  void output_physics_objects(ostream &out, unsigned int indent=0) const;
+  void output_linear_forces(ostream &out, unsigned int indent=0) const;
+  void output_angular_forces(ostream &out, unsigned int indent=0) const;
+  void output(ostream &out, unsigned int indent=0) const;
+
+public:
+  typedef pvector< PT(PhysicsObject) > PhysicsObjectVector;
+  typedef pvector< PT(LinearForce) > LinearForceVector;
+  typedef pvector< PT(AngularForce) > AngularForceVector;
+
+  INLINE const PhysicsObjectVector &get_object_vector() const;
+  INLINE const LinearForceVector &get_linear_forces() const;
+  INLINE const AngularForceVector &get_angular_forces() const;
+
+  friend class PhysicsManager;
+  friend class PhysicalNode;
 
 protected:
   // containers
-  pvector< PT(PhysicsObject) > _physics_objects;
-  pvector< PT(LinearForce) > _linear_forces;
-  pvector< PT(AngularForce) > _angular_forces;
+  PhysicsObjectVector _physics_objects;
+  LinearForceVector _linear_forces;
+  AngularForceVector _angular_forces;
 
   // this pointer exists to make life easy.  If a physical exists
   // with only one element (i.e. NOT a particle system or set-physical),
@@ -57,49 +95,20 @@ protected:
   // this is kind of a quicker way there.
   PhysicsObject *_phys_body;
 
-PUBLISHED:
-  Physical(int ttl_objects = 1, bool pre_alloc = false);
-  Physical(const Physical& copy);
-
-  virtual ~Physical(void);
-
-  // helpers
-  INLINE PhysicsManager *get_physics_manager(void) const;
-  INLINE PhysicalNode *get_physical_node(void) const;
-  INLINE PhysicsObject *get_phys_body(void) const;
-
-  INLINE void clear_linear_forces(void);
-  INLINE void clear_angular_forces(void);
-  INLINE void clear_physics_objects(void);
-  INLINE void add_linear_force(LinearForce *f);
-  INLINE void add_angular_force(AngularForce *f);
-  INLINE void add_physics_object(PhysicsObject *po);
-  INLINE void remove_linear_force(LinearForce *f);
-  INLINE void remove_angular_force(AngularForce *f);
-
-  INLINE int get_num_linear_forces(void) const;
-  INLINE PT(LinearForce) get_linear_force(int index) const;
-  INLINE int get_num_angular_forces(void) const;
-  INLINE PT(AngularForce) get_angular_force(int index) const;
+private:
+  PhysicsManager *_physics_manager;
+  PhysicalNode *_physical_node;
 
 public:
-  INLINE const pvector< PT(PhysicsObject) > &get_object_vector(void) const;
-  INLINE const pvector< PT(LinearForce) > &get_linear_forces(void) const;
-  INLINE const pvector< PT(AngularForce) > &get_angular_forces(void) const;
-
-  friend class PhysicsManager;
-  friend class PhysicalNode;
-
-public:
-  static TypeHandle get_class_type(void) {
+  static TypeHandle get_class_type() {
     return _type_handle;
   }
-  static void init_type(void) {
+  static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "Physical",
                   TypedReferenceCount::get_class_type());
   }
-  virtual TypeHandle get_type(void) const {
+  virtual TypeHandle get_type() const {
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}

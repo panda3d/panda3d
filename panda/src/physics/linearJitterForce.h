@@ -27,14 +27,16 @@
 //               repeatable, reliable, or predictable.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS LinearJitterForce : public LinearRandomForce {
-private:
-  virtual LVector3f get_child_vector(const PhysicsObject *po);
-  virtual LinearForce *make_copy(void);
-
 PUBLISHED:
   LinearJitterForce(float a = 1.0f, bool m = false);
   LinearJitterForce(const LinearJitterForce &copy);
   virtual ~LinearJitterForce(void);
+  
+  virtual void output(ostream &out, unsigned int indent=0) const;
+
+private:
+  virtual LVector3f get_child_vector(const PhysicsObject *po);
+  virtual LinearForce *make_copy(void);
 
 public:
   static TypeHandle get_class_type(void) {

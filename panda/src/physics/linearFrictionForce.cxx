@@ -84,3 +84,15 @@ get_child_vector(const PhysicsObject* po) {
   // that this will always be greater than or equal to zero.
   return friction;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void LinearFrictionForce::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent); out<<""; out<<"LinearFrictionForce:\n";
+  LinearForce::output(out, indent+2);
+}

@@ -37,14 +37,12 @@ TypeHandle LinearNoiseForce::_type_handle;
 ////////////////////////////////////////////////////////////////////
 void LinearNoiseForce::
 init_noise_tables(void) {
-  int i;
-  LVector3f *gtable = _gradient_table;
-
   // since this is a repeatable noise function, we always want
   // to init with the same seed.
   srand(_random_seed);
 
-  for (i = 0; i < 256; i++) {
+  LVector3f *gtable = _gradient_table;
+  for (int i = 0; i < 256; ++i) {
     // fill the 1d array
     _prn_table[i] = rand() & 255;
 
@@ -83,7 +81,7 @@ LinearNoiseForce(const LinearNoiseForce &copy) :
 //  Description : destructor
 ////////////////////////////////////////////////////////////////////
 LinearNoiseForce::
-~LinearNoiseForce(void) {
+~LinearNoiseForce() {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -148,4 +146,21 @@ get_child_vector(const PhysicsObject *po) {
 
   // z direction
   return vlerp(cubic_y, temp0, temp1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void LinearNoiseForce::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent);
+  out<<""<<"LinearNoiseForce:";
+  out<<", _random_seed"<<_random_seed;
+  out<<", _initialized"<<_initialized;
+  out<<", _gradient_table"<<_gradient_table<<"\n";
+  out.width(indent+2); out<<""; out<<"_prn_table"<<_prn_table;
+  out<<endl;
 }

@@ -87,3 +87,15 @@ generate(LPoint3f& pos, LVector3f& vel) {
   vel *= _amplitude + SPREAD(_amplitude_spread);
   vel += _offset_force;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function : output
+//       Access : Public
+//  Description : Write a string representation of this instance to
+//                <out>.
+////////////////////////////////////////////////////////////////////
+void BaseParticleEmitter::
+output(ostream &out, unsigned int indent) const {
+  out.width(indent); out<<""; out<<"BaseParticleEmitter:\n";
+  //ReferenceCount::output(out, indent+2);
+}
