@@ -52,7 +52,11 @@ def privUpdateSpec(spec, modelPath, entTypeModule):
                          'modelFilename', modelPath)
 
     # load the model
+    # disable texture loading for speed
+    TexturePool.setFakeTextureImage(
+        '/i/alpha/player/install/ttmodels/src/fonts/ImpressBT.rgb')
     model = loader.loadModel(modelPath)
+    TexturePool.clearFakeTextureImage()
     # get the model's zone info
     modelZoneNum2node = LevelUtil.getZoneNum2Node(model)
     modelZoneNums = modelZoneNum2node.keys()
