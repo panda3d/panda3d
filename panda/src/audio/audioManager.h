@@ -23,6 +23,9 @@
 #include "config_audio.h"
 #include "audioSound.h"
 
+typedef AudioManager* Create_AudioManager_proc();
+
+
 class EXPCL_PANDA AudioManager {
 PUBLISHED:
   // Create an AudioManager for each category of sounds you have.
@@ -62,7 +65,12 @@ PUBLISHED:
   virtual void set_active(bool flag) = 0;
   virtual bool get_active() = 0;
 
+public:
+  static void register_AudioManager_creator(Create_AudioManager_proc* proc);
+
 protected:
+  static Create_AudioManager_proc* _create_AudioManager;
+
   AudioManager() {
     // intentionally blank.
   }
