@@ -1241,7 +1241,7 @@ class ShowBase(DirectObject.DirectObject):
 
         return VBase4(win.getClearColor())
 
-    def setBackgroundColor(self, r = None, g = None, b = None, a = 1.0, win = None):
+    def setBackgroundColor(self, r = None, g = None, b = None, a = 0.0, win = None):
         """
         Sets the window background color to the indicated value.
         This assumes the window is set up to clear the color each
