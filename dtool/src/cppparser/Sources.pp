@@ -6,9 +6,7 @@
 #begin static_lib_target
   #define TARGET cppParser
 
-  // The composite files are named cppparser_composite?.cxx instead of
-  // cppParser_composite?.cxx.
-  #define COMBINED_SOURCES cppparser_composite1.cxx  cppparser_composite2.cxx  
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx  $[TARGET]_composite2.cxx  
   
   #define SOURCES \
      cppArrayType.h cppBison.yxx cppBisonDefs.h  \
