@@ -1355,6 +1355,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         GetCursorPos(&point);
         ScreenToClient(hwnd, &point);
         handle_keypress(lookup_key(wparam), point.x, point.y);
+        return 0;
       }
 
     case WM_SYSKEYUP:
