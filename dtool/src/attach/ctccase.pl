@@ -403,13 +403,9 @@ sub CTCcaseMv {
     local( $parent2 ) = join( "/", @alist ) ;
     &CTUDebug( "parent directory of '" . $elem2 . "' is '" . $parent2 .
 	       "'\n" ) ;
-    $ret = system( "cleartool co -nc $parent\n" ) ;
-    if ( $ret == 0 ) {
-	$ret = system( "cleartool co -nc $parent2\n" ) ;
-	$ret = &CTURetCode( system( "cleartool mv $elem $elem2\n" )) ;
-    } else {
-	$ret = 0 ;
-    }
+    system( "cleartool co -nc $parent\n" ) ;
+    system( "cleartool co -nc $parent2\n" ) ;
+    $ret = &CTURetCode( system( "cleartool mv $elem $elem2\n" )) ;
     &CTUDebug( "out of CTCcaseMv\n" ) ;
     $ret ;
 }
