@@ -3,6 +3,8 @@ import string
 import re
 import math
 import operator
+import inspect
+import os
 
 
 # NOTE: ifAbsentPut has been replaced with Python's dictionary's builtin setdefault
@@ -588,3 +590,75 @@ def solveQuadratic(a, b, c):
         root1 = ((-b) - sqrtD) / twoA
         root2 = ((-b) + sqrtD) / twoA
         return [root1, root2]
+
+def stackEntryInfo(depth=0, baseFileName=1):
+    """
+    returns the sourcefilename, line number, and function name of
+    an entry in the stack.
+    'depth' is how far back to go in the stack; 0 is the caller of this
+    function, 1 is the function that called the caller of this function, etc.
+    by default, strips off the path of the filename; override with baseFileName
+    returns (fileName, lineNum, funcName) --> (string, int, string)
+    returns (None, None, None) on error
+    """
+    try:
+        stack = None
+        frame = None
+        try:
+            stack = inspect.stack()
+            # add one to skip the frame associated with this function
+            frame = stack[depth+1]
+            filename = frame[1]
+            if baseFileName:
+                filename = os.path.basename(filename)
+            lineNum = frame[2]
+            funcName = frame[3]
+            result = (filename, lineNum, funcName)
+        finally:
+            del stack
+            del frame
+    except:
+        result = (None, None, None)
+
+    return result
+
+def lineInfo(baseFileName=1):
+    """
+    returns the sourcefilename, line number, and function name of the
+    code that called this function
+    (answers the question: 'hey lineInfo, where am I in the codebase?')
+    see stackEntryInfo, above, for info on 'baseFileName' and return types
+    """
+    return stackEntryInfo(1)
+
+def callerInfo(baseFileName=1):
+    """
+    returns the sourcefilename, line number, and function name of the
+    caller of the function that called this function
+    (answers the question: 'hey callerInfo, who called me?')
+    see stackEntryInfo, above, for info on 'baseFileName' and return types
+    """
+    return stackEntryInfo(2)
+
+def lineTag(baseFileName=1, verbose=0, separator=':'):
+    """
+    returns a string containing the sourcefilename and line number
+    of the code that called this function
+    (equivalent to lineInfo, above, with different return type)
+    see stackEntryInfo, above, for info on 'baseFileName'
+
+    if 'verbose' is false, returns a compact string of the form
+    'fileName:lineNum:funcName'
+    if 'verbose' is true, returns a longer string that matches the
+    format of Python stack trace dumps
+
+    returns empty string on error
+    """
+    fileName, lineNum, funcName = callerInfo()
+    if fileName is None:
+        return ''
+    if verbose:
+        return 'File "%s", line %s, in %s' % (fileName, lineNum, funcName)
+    else:
+        return '%s%s%s%s%s' % (fileName, separator, lineNum, separator,
+                               funcName)
