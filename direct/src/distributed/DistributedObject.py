@@ -301,18 +301,12 @@ class DistributedObject(PandaObject):
         # handling whatever it should handle in its current state, it
         # should call doneBarrier(), which will send the context
         # number back to the AI.
-        dg = PyDatagram(data)
-        dgi = PyDatagramIterator(dg)
-        while dgi.getRemainingSize() > 0:
-            context = dgi.getUint16()
-            numToons = dgi.getUint16()
-            for i in range(numToons):
-                avId = dgi.getUint32()
-                if avId == base.localAvatar.doId:
-                    # We found localToon's Id; stop here.
-                    self.__barrierContext = context
-                    assert(self.notify.debug('setBarrierData(%s)' % (context)))
-                    return
+        for context, avIds in data:
+            if base.localAvatar.doId in avIds:
+                # We found localToon's id; stop here.
+                self.__barrierContext = context
+                assert(self.notify.debug('setBarrierData(%s)' % (context)))
+                return
                 
         assert(self.notify.debug('setBarrierData(%s)' % (None)))
         self.__barrierContext = None

@@ -374,18 +374,15 @@ class DistributedObjectAI(DirectObject.DirectObject):
         return context
 
     def __getBarrierData(self):
-        # Returns the barrier data formatted as a blob for sending to
-        # the clients.  This lists all of the current outstanding
-        # barriers and the avIds waiting for them.
-        dg = PyDatagram()
+        # Returns the barrier data formatted for sending to the
+        # clients.  This lists all of the current outstanding barriers
+        # and the avIds waiting for them.
+        data = []
         for context, barrier in self.__barriers.items():
             toons = barrier.pendingToons
             if toons:
-                dg.addUint16(context)
-                dg.addUint16(len(toons))
-                for avId in toons:
-                    dg.addUint32(avId)
-        return dg.getMessage()
+                data.append((context, toons))
+        return data
 
     def ignoreBarrier(self, context):
         # Aborts a previously-set barrier.  The context is the return
