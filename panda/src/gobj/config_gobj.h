@@ -21,18 +21,12 @@
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
+#include "configVariableBool.h"
+#include "configVariableInt.h"
+#include "configVariableEnum.h"
+#include "configVariableDouble.h"
 
 NotifyCategoryDecl(gobj, EXPCL_PANDA, EXPTP_PANDA);
-
-// Configure variables for gobj package.
-extern EXPCL_PANDA const int max_texture_dimension;
-extern EXPCL_PANDA bool textures_up_power_2;
-extern EXPCL_PANDA bool textures_down_power_2;
-extern EXPCL_PANDA bool textures_up_square;
-extern EXPCL_PANDA bool textures_down_square;
-extern EXPCL_PANDA bool keep_texture_ram;
-extern EXPCL_PANDA bool keep_geom_ram;
-extern EXPCL_PANDA bool retained_mode;
 
 enum BamTextureMode {
   BTM_unchanged,
@@ -41,12 +35,32 @@ enum BamTextureMode {
   BTM_basename,
   BTM_rawdata
 };
-extern EXPCL_PANDA BamTextureMode bam_texture_mode;
-extern EXPCL_PANDA const string fake_texture_image;
+ostream &operator << (ostream &out, BamTextureMode btm);
+istream &operator >> (istream &in, BamTextureMode &btm);
 
-extern const float default_near;
-extern const float default_far;
-extern const float default_fov;
+enum AutoTextureScale {
+  ATS_none,
+  ATS_down,
+  ATS_up
+};
+ostream &operator << (ostream &out, AutoTextureScale ats);
+istream &operator >> (istream &in, AutoTextureScale &ats);
+
+// Configure variables for gobj package.
+extern EXPCL_PANDA ConfigVariableInt max_texture_dimension;
+extern EXPCL_PANDA ConfigVariableBool keep_texture_ram;
+extern EXPCL_PANDA ConfigVariableBool keep_geom_ram;
+extern EXPCL_PANDA ConfigVariableBool retained_mode;
+
+extern EXPCL_PANDA ConfigVariableEnum<BamTextureMode> bam_texture_mode;
+extern EXPCL_PANDA ConfigVariableEnum<AutoTextureScale> textures_power_2;
+extern EXPCL_PANDA ConfigVariableEnum<AutoTextureScale> textures_square;
+extern EXPCL_PANDA ConfigVariableString fake_texture_image;
+
+extern ConfigVariableDouble default_near;
+extern ConfigVariableDouble default_far;
+extern ConfigVariableDouble default_fov;
+extern ConfigVariableDouble default_keystone;
 
 #endif
 

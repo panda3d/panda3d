@@ -39,131 +39,90 @@
 Configure(config_gobj);
 NotifyCategoryDef(gobj, "");
 
-// Set this to the maximum size a texture is allowed to be in either
-// dimension.  This is generally intended as a simple way to restrict
-// texture sizes for limited graphics cards.  When this is greater
-// than zero, each texture image loaded from a file (but only those
-// loaded from a file) will be automatically scaled down, if
-// necessary, so that neither dimension is larger than this value.
-const int max_texture_dimension = config_gobj.GetInt("max-texture-dimension", -1);
+ConfigVariableInt max_texture_dimension
+("max-texture-dimension", -1,
+ PRC_DESC("Set this to the maximum size a texture is allowed to be in either "
+          "dimension.  This is generally intended as a simple way to restrict "
+          "texture sizes for limited graphics cards.  When this is greater "
+          "than zero, each texture image loaded from a file (but only those "
+          "loaded from a file) will be automatically scaled down, if "
+          "necessary, so that neither dimension is larger than this value."));
 
-// Set textures-power-2 to force texture dimensions to a power of two.
-// If this is "up" or "down", the textures will be scaled up or down
-// to the next power of two, as indicated; otherwise, if this is #t,
-// the textures will be scaled down.  If this is #f or unspecified,
-// the textures will be left at whatever size they are.
+ConfigVariableBool keep_texture_ram
+("keep-texture-ram", false,
+ PRC_DESC("Set this to true to retain the ram image for each texture after it "
+          "has been prepared with the GSG.  This will allow the texture to be "
+          "prepared with multiple GSG, or to be re-prepared later after it is "
+          "explicitly released from the GSG, without having to reread the "
+          "texture image from disk; but it will consume memory somewhat "
+          "wastefully."));
 
-// These are filled in by the ConfigureFn block, below.
-bool textures_up_power_2 = false;
-bool textures_down_power_2 = false;
+ConfigVariableBool keep_geom_ram
+("keep-geom-ram", true,
+ PRC_DESC("Set this to true to retain the vertices in ram for each geom "
+          "after it has been prepared with the GSG.  This is similar to "
+          "keep-texture-ram, but it is a little more dangerous, because if "
+          "anyone calls release_all_geoms() on the GSG (or if there are "
+          "multiple GSG's rendering a given geom), Panda won't be able to "
+          "restore the vertices."));
 
-// Set textures-square to force texture dimensions to a square aspect
-// ratio.  This works similarly to textures-power-2, above.  If this
-// is "up" or "down", the textures will be scaled up or down to the
-// containing square or the inscribed square, respectively; otherwise,
-// if this is #t, the textures will be scaled down.  If this is #f or
-// unspecified, the textures will be left at whatever size they are.
-
-// These are filled in by the ConfigureFn block, below.
-bool textures_up_square = false;
-bool textures_down_square = false;
-
-
-// Set this to true to retain the ram image for each texture after it
-// has been prepared with the GSG.  This will allow the texture to be
-// prepared with multiple GSG, or to be re-prepared later after it is
-// explicitly released from the GSG, without having to reread the
-// texture image from disk; but it will consume memory somewhat
-// wastefully.
-bool keep_texture_ram = config_gobj.GetBool("keep-texture-ram", false);
-
-// Ditto for Geom's.  This is a little more dangerous, because if
-// anyone calls release_all_geoms() on the GSG, we won't be able to
-// restore them automatically.
-bool keep_geom_ram = config_gobj.GetBool("keep-geom-ram", true);
-
-// Set this true to allow the use of retained mode rendering, which
-// creates specific cache information (like display lists or vertex
-// buffers) with the GSG for static geometry, when supported by the
-// GSG.  Set it false to use only immediate mode, which sends the
-// vertices to the GSG every frame.
-bool retained_mode = config_gobj.GetBool("retained-mode", false);
+ConfigVariableBool retained_mode
+("retained-mode", false,
+ PRC_DESC("Set this true to allow the use of retained mode rendering, which "
+          "creates specific cache information (like display lists or vertex "
+          "buffers) with the GSG for static geometry, when supported by the "
+          "GSG.  Set it false to use only immediate mode, which sends the "
+          "vertices to the GSG every frame."));
 
 
-// Set this to specify how textures should be written into Bam files.
-// Currently, the options are:
+ConfigVariableEnum<BamTextureMode> bam_texture_mode
+("bam-texture-mode", BTM_relative,
+ PRC_DESC("Set this to specify how textures should be written into Bam files."
+          "See the panda source or documentation for available options."));
 
-//    fullpath - write the full pathname loaded.
-//    relative - search for the texture as a filename relative to the
-//               model-path or texture-path and write the relative pathname.
-//    basename - write only the basename of the file, no directory portion
-//               at all.
+ConfigVariableEnum<AutoTextureScale> textures_power_2
+("textures-power-2", ATS_down,
+ PRC_DESC("Specify whether textures should automatically be constrained to "
+          "dimensions which are a power of 2 when they are loaded from "
+          "disk.  Set this to 'none' to disable this feature, or to "
+          "'down' or 'up' to scale down or up to the nearest power of 2, "
+          "respectively.  This only has effect on textures which are not "
+          "already a power of 2."));
 
-BamTextureMode bam_texture_mode;
+ConfigVariableEnum<AutoTextureScale> textures_square
+("textures-square", ATS_none,
+ PRC_DESC("Specify whether textures should automatically be constrained to "
+          "a square aspect ratio when they are loaded from disk.  Set this "
+          "to 'none', 'down', or 'up'.  See textures-power-2."));
 
-// Set this to enable a speedy-load mode where you don't care what the
-// world looks like, you just want it to load in minimal time.  This
-// causes all texture loads via the TexturePool to load the same
-// texture file, which will presumably only be loaded once.
-const string fake_texture_image = config_gobj.GetString("fake-texture-image", "");
+ConfigVariableString fake_texture_image
+("fake-texture-image", "",
+ PRC_DESC("Set this to enable a speedy-load mode in which you don't care "
+          "what the world looks like, you just want it to load in minimal "
+          "time.  This causes all texture loads via the TexturePool to use "
+          "the same texture file, which will presumably only be loaded "
+          "once."));
 
-// The default near and far plane distances.
-const float default_near = config_gobj.GetFloat("default-near", 1.0f);
-const float default_far = config_gobj.GetFloat("default-far", 1000.0f);
+ConfigVariableDouble default_near
+("default-near", 1.0,
+ PRC_DESC("The default near clipping distance for all cameras."));
 
-// The default camera FOV.
-const float default_fov = config_gobj.GetFloat("default-fov", 40.0f);
+ConfigVariableDouble default_far
+("default-far", 1000.0,
+ PRC_DESC("The default far clipping distance for all cameras."));
 
-static BamTextureMode
-parse_texture_mode(const string &mode) {
-  if (cmp_nocase(mode, "unchanged") == 0) {
-    return BTM_unchanged;
-  } else if (cmp_nocase(mode, "fullpath") == 0) {
-    return BTM_fullpath;
-  } else if (cmp_nocase(mode, "relative") == 0) {
-    return BTM_relative;
-  } else if (cmp_nocase(mode, "basename") == 0) {
-    return BTM_basename;
-  } else if (cmp_nocase(mode, "rawdata") == 0) {
-    return BTM_rawdata;
-  }
+ConfigVariableDouble default_fov
+("default-fov", 40.0,
+ PRC_DESC("The default field of view in degrees for all cameras."));
 
-  gobj_cat->error() << "Invalid bam-texture-mode: " << mode << "\n";
-  return BTM_relative;
-}
+
+ConfigVariableDouble default_keystone
+("default-keystone", 0.0f,
+ PRC_DESC("The default keystone correction, as an x y pair, for all cameras."));
+
+
 
 ConfigureFn(config_gobj) {
-  string texture_mode = config_util.GetString("bam-texture-mode", "relative");
-  bam_texture_mode = parse_texture_mode(texture_mode);
-
-  string textures_power_2 = config_gobj.GetString("textures-power-2", "");
-  if (cmp_nocase(textures_power_2, "up") == 0) {
-    textures_up_power_2 = true;
-    textures_down_power_2 = false;
-
-  } else if (cmp_nocase(textures_power_2, "down") == 0) {
-    textures_up_power_2 = false;
-    textures_down_power_2 = true;
-
-  } else {
-    textures_up_power_2 = false;
-    textures_down_power_2 = config_gobj.GetBool("textures-power-2", false);
-  }
-
-  string textures_square = config_gobj.GetString("textures-square", "");
-  if (cmp_nocase(textures_square, "up") == 0) {
-    textures_up_square = true;
-    textures_down_square = false;
-
-  } else if (cmp_nocase(textures_square, "down") == 0) {
-    textures_up_square = false;
-    textures_down_square = true;
-
-  } else {
-    textures_up_square = false;
-    textures_down_square = config_gobj.GetBool("textures-square", false);
-  }
-
   BoundedObject::init_type();
   Geom::init_type();
   GeomLine::init_type();
@@ -207,4 +166,94 @@ ConfigureFn(config_gobj) {
   Texture::register_with_read_factory();
   TextureStage::register_with_read_factory();
   TexCoordName::register_with_read_factory();
+}
+
+ostream &
+operator << (ostream &out, BamTextureMode btm) {
+  switch (btm) {
+  case BTM_unchanged:
+    return out << "unchanged";
+   
+  case BTM_fullpath:
+    return out << "fullpath";
+    
+  case BTM_relative:
+    return out << "relative";
+    
+  case BTM_basename:
+    return out << "basename";
+
+  case BTM_rawdata:
+    return out << "rawdata";
+  }
+
+  return out << "**invalid BamTextureMode (" << (int)btm << ")**";
+}
+
+istream &
+operator >> (istream &in, BamTextureMode &btm) {
+  string word;
+  in >> word;
+
+  if (cmp_nocase(word, "unchanged") == 0) {
+    btm = BTM_unchanged;
+  } else if (cmp_nocase(word, "fullpath") == 0) {
+    btm = BTM_fullpath;
+  } else if (cmp_nocase(word, "relative") == 0) {
+    btm = BTM_relative;
+  } else if (cmp_nocase(word, "basename") == 0) {
+    btm = BTM_basename;
+  } else if (cmp_nocase(word, "rawdata") == 0) {
+    btm = BTM_rawdata;
+
+  } else {
+    gobj_cat->error() << "Invalid BamTextureMode value: " << word << "\n";
+    btm = BTM_relative;
+  }
+
+  return in;
+}
+
+ostream &
+operator << (ostream &out, AutoTextureScale ats) {
+  switch (ats) {
+  case ATS_none:
+    return out << "none";
+   
+  case ATS_down:
+    return out << "down";
+    
+  case ATS_up:
+    return out << "up";
+  }
+
+  return out << "**invalid AutoTextureScale (" << (int)ats << ")**";
+}
+
+istream &
+operator >> (istream &in, AutoTextureScale &ats) {
+  string word;
+  in >> word;
+
+  if (cmp_nocase(word, "none") == 0 ||
+      cmp_nocase(word, "0") == 0 ||
+      cmp_nocase(word, "#f") == 0 ||
+      tolower(word[0] == 'f')) {
+    ats = ATS_none;
+
+  } else if (cmp_nocase(word, "down") == 0 ||
+          cmp_nocase(word, "1") == 0 ||
+          cmp_nocase(word, "#t") == 0 ||
+          tolower(word[0] == 't')) {
+    ats = ATS_down;
+
+  } else if (cmp_nocase(word, "up") == 0) {
+    ats = ATS_up;
+
+  } else {
+    gobj_cat->error() << "Invalid AutoTextureScale value: " << word << "\n";
+    ats = ATS_none;
+  }
+
+  return in;
 }

@@ -83,6 +83,9 @@ output(ostream &out) const {
   case M_dual:
     out << "dual";
     break;
+
+  case M_notused:
+    break;
   }
 }
 

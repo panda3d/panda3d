@@ -620,8 +620,8 @@ choose_texture_size(int &x_size, int &y_size,
 
   // Constrain the x_size and y_size to the max_texture_dimension.
   if (max_texture_dimension > 0) {
-    x_size = min(x_size, max_texture_dimension);
-    y_size = min(y_size, max_texture_dimension);
+    x_size = min(x_size, (int)max_texture_dimension);
+    y_size = min(y_size, (int)max_texture_dimension);
   }
 
   // Finally, make sure the new sizes fit within the window, so we can

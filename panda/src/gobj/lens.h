@@ -112,8 +112,8 @@ PUBLISHED:
   const LMatrix4f &get_view_mat() const;
   void clear_view_mat();
 
-  void set_keystone(const LVecBase3f &keystone);
-  const LVecBase3f &get_keystone() const;
+  void set_keystone(const LVecBase2f &keystone);
+  INLINE const LVecBase2f &get_keystone() const;
   void clear_keystone();
   
   // These flags are passed in as the last parameter to control the
@@ -125,6 +125,7 @@ PUBLISHED:
     FC_off_axis     = 0x0004,
     FC_aspect_ratio = 0x0008,
     FC_shear        = 0x0010,
+    FC_keystone     = 0x0020,
   };
   void set_frustum_from_corners(const LVecBase3f &ul, const LVecBase3f &ur,
                                 const LVecBase3f &ll, const LVecBase3f &lr,
@@ -202,7 +203,7 @@ protected:
   LVecBase3f _view_hpr;
   LVector3f _view_vector, _up_vector;
   float _iod_offset;
-  LVecBase3f _keystone;
+  LVecBase2f _keystone;
 
   LMatrix4f _film_mat, _film_mat_inv;
   LMatrix4f _lens_mat, _lens_mat_inv;

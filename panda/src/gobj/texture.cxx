@@ -71,23 +71,37 @@ consider_rescale(PNMImage &pnmimage, const string &name) {
   int new_x_size = pnmimage.get_x_size();
   int new_y_size = pnmimage.get_y_size();
 
-  if (textures_down_power_2) {
+  switch (textures_power_2) {
+  case ATS_down:
     new_x_size = down_to_power_2(new_x_size);
     new_y_size = down_to_power_2(new_y_size);
-  } else if (textures_up_power_2) {
+    break;
+
+  case ATS_up:
     new_x_size = up_to_power_2(new_x_size);
     new_y_size = up_to_power_2(new_y_size);
+    break;
+
+  case ATS_none:
+    break;
   }
 
-  if (textures_down_square) {
+  switch (textures_square) {
+  case ATS_down:
     new_x_size = new_y_size = min(new_x_size, new_y_size);
-  } else if (textures_up_square) {
+    break;
+
+  case ATS_up:
     new_x_size = new_y_size = max(new_x_size, new_y_size);
+    break;
+
+  case ATS_none:
+    break;
   }
 
   if (max_texture_dimension > 0) {
-    new_x_size = min(new_x_size, max_texture_dimension);
-    new_y_size = min(new_y_size, max_texture_dimension);
+    new_x_size = min(new_x_size, (int)max_texture_dimension);
+    new_y_size = min(new_y_size, (int)max_texture_dimension);
   }
 
   if (pnmimage.get_x_size() != new_x_size ||

@@ -105,9 +105,15 @@ clear() {
   _view_vector.set(0.0f, 1.0f, 0.0f);
   _up_vector.set(0.0f, 0.0f, 1.0f);
   _iod_offset = 0.0f;
-  _keystone.set(0.0f, 0.0f, 0.0f);
+  _keystone.set(0.0f, 0.0f);
+
   _user_flags = 0;
   _comp_flags = CF_fov;
+
+  if (default_keystone.has_value()) {
+    _keystone.set(default_keystone[0], default_keystone[1]);
+    _user_flags |= UF_keystone;
+  }
 
   // Assign an initial arbitrary sequence to these three.
   _film_size_seq = 0;
@@ -598,14 +604,16 @@ clear_view_mat() {
 //               matrix that will compensate for keystoning of a
 //               projected image; this can be used to compensate for a
 //               projector that for physical reasons cannot be aimed
-//               directly at it screen.  The default value of 0, 0, 0
-//               indicates no keystone correction; specify a small
-//               value (usually in the range -1 .. 1) in one of the
-//               three axes to generate a keystone correction in that
-//               axis.
+//               directly at it screen.  
+//
+//               The default value is taken from the default-keystone
+//               Config variable.  0, 0 indicates no keystone
+//               correction; specify a small value (usually in the
+//               range -1 .. 1) in either the x or y position to
+//               generate a keystone correction in that axis.
 ////////////////////////////////////////////////////////////////////
 void Lens::
-set_keystone(const LVecBase3f &keystone) {
+set_keystone(const LVecBase2f &keystone) {
   _keystone = keystone;
   adjust_user_flags(0, UF_keystone);
   adjust_comp_flags(CF_projection_mat | CF_projection_mat_inv | CF_film_mat | CF_film_mat_inv, 0);
@@ -613,23 +621,13 @@ set_keystone(const LVecBase3f &keystone) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Lens::get_keystone
-//       Access: Published
-//  Description: Returns the direction in which the lens is facing.
-////////////////////////////////////////////////////////////////////
-const LVecBase3f &Lens::
-get_keystone() const {
-  return _keystone;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Lens::clear_keystone
 //       Access: Published
-//  Description: Resets the lens transform to identity.
+//  Description: Disables the lens keystone correction.
 ////////////////////////////////////////////////////////////////////
 void Lens::
 clear_keystone() {
-  _keystone = LVecBase3f(0.0f, 0.0f, 0.0f);
+  _keystone.set(0.0f, 0.0f);
   adjust_user_flags(UF_keystone, 0);
   adjust_comp_flags(CF_projection_mat | CF_projection_mat_inv | CF_film_mat | CF_film_mat_inv, 0);
   throw_change_event();
@@ -1449,9 +1447,9 @@ compute_film_mat() {
         -film_offset[0] * scale_x, -film_offset[1] * scale_y, 0.0f,  1.0f);
 
   if ((_user_flags & UF_keystone) != 0) {
-    _film_mat = LMatrix4f(csqrt(1.0f - _keystone[0] * _keystone[0]), 0.0f, 0.0f, _keystone[0],
-                          0.0f, csqrt(1.0f - _keystone[1] * _keystone[1]), 0.0f, _keystone[1],
-                          0.0f, 0.0f, csqrt(1.0f - _keystone[2] * _keystone[2]), _keystone[2],
+    _film_mat = LMatrix4f(1.0f, 0.0f, _keystone[0], _keystone[0],
+                          0.0f, 1.0f, _keystone[1], _keystone[1],
+                          0.0f, 0.0f, 1.0f, 0.0f,
                           0.0f, 0.0f, 0.0f, 1.0f) * _film_mat;
   }
 

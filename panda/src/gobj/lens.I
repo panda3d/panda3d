@@ -392,6 +392,17 @@ set_view_vector(float x, float y, float z, float i, float j, float k) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Lens::get_keystone
+//       Access: Published
+//  Description: Returns the keystone correction specified for the
+//               lens.
+////////////////////////////////////////////////////////////////////
+INLINE const LVecBase2f &Lens::
+get_keystone() const {
+  return _keystone;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Lens::get_last_change
 //       Access: Public
 //  Description: Returns the UpdateSeq that is incremented whenever
