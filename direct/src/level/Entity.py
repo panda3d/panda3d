@@ -10,14 +10,11 @@ class Entity(DirectObject):
     and can be edited with the LevelEditor."""
     notify = DirectNotifyGlobal.directNotify.newCategory('Entity')
 
-    """
-    # these are values that can be changed in the level editor
-    Attribs = (
-        # Name, PythonType, CallSetterOnInitialization
-        ('name', str, 0),
-        ('comment', str, 0),
+    __attribs__ = (
+        'type',
+        'name',
+        'comment',
         )
-        """
 
     def __init__(self, level=None, entId=None):
         self.initializeEntity(level, entId)
@@ -74,6 +71,99 @@ class Entity(DirectObject):
         self.__dict__[attrib] = value
 
     if __debug__:
+        def getAttribDescriptors(self):
+            # lazy compilation
+            if not self.__class__.__dict__.has_key('_attribDescs'):
+                self.compileAttribDescs()
+            return self.__class__.__dict__['_attribDescs']
+
+        def compileAttribDescs(self):
+            Entity.notify.debug('compiling attrib descriptors for %s' %
+                                self.__class__.__name__)
+            # create a complete list of attribute descriptors, pulling in
+            # the attribs from the entire class heirarchy
+            def getClassList(obj, self=self):
+                """returns list, ordered from most-derived to base classes,
+                depth-first. Multiple inheritance base classes that do not
+                derive from Entity are listed before those that do.
+                """
+                assert (type(obj) == types.ClassType)
+                classList = [obj]
+
+                # no need to go below Entity
+                if obj == Entity:
+                    return classList
+
+                # explore the base classes
+                entityBases = []
+                nonEntityBases = []
+                for base in obj.__bases__:
+                    l = getClassList(base)
+                    if Entity in l:
+                        entityBases.extend(l)
+                    else:
+                        nonEntityBases.extend(l)
+                # put bases that derive from Entity last
+                classList = classList + nonEntityBases + entityBases
+                return classList
+
+            def getUniqueClassList(obj, self=self):
+                classList = getClassList(obj)
+                # remove duplicates, leaving the last instance
+                uniqueList = []
+                for i in range(len(classList)):
+                    if classList[i] not in classList[(i+1):]:
+                        uniqueList.append(classList[i])
+                return uniqueList
+
+            classList = getUniqueClassList(self.__class__)
+
+            # work backwards, through the class list, from Entity to the
+            # most-derived class, aggregating attribute descriptors.
+            allAttribs = []
+
+            def isDistObjAI(obj):
+                # util func: is this class a DistributedObjectAI?
+                lineage = getClassLineage(obj)
+                for item in lineage:
+                    if type(item) == types.ClassType:
+                        if item.__name__ == 'DistributedObjectAI':
+                            return 1
+                return 0
+
+            while len(classList):
+                cl = classList.pop()
+                Entity.notify.debug('looking for attribs for %s' % cl.__name__)
+                if cl.__dict__.has_key('__attribs__'):
+                    cAttribs = cl.__attribs__
+                elif isDistObjAI(cl):
+                    # It's a distributed AI class. Check the client-side class
+                    globals = {}
+                    locals = {}
+                    ccn = cl.__name__[:-2] # clientClassName
+                    Entity.notify.debug('importing client class %s' % ccn)
+                    try:
+                        exec 'import %s' % ccn in globals, locals
+                    except:
+                        print 'could not import %s' % ccn
+                        continue
+                    exec 'cAttribs = %s.%s.__dict__.get("__attribs__")' % (
+                        ccn, ccn) in globals, locals
+                    cAttribs = locals['cAttribs']
+                    if cAttribs is None:
+                        continue
+                else:
+                    continue
+
+                for attrib in cAttribs:
+                    if attrib not in allAttribs:
+                        allAttribs.append(attrib)
+
+            # we now have an ordered list of all of the attribute descriptors
+            # for this class. Cache it on the class object
+            Entity.notify.debug('all attribs: %s' % allAttribs)
+            self.__class__.__dict__['_attribDescs'] = allAttribs
+
         # support for level editing
         def handleAttribChange(self, attrib, value):
             # call callback function if it exists
@@ -102,7 +192,6 @@ class Entity(DirectObject):
             return self.attribs
         """
 
-    if __debug__:
         def debugPrint(self, message):
             """for debugging"""
             return self.notify.debug(

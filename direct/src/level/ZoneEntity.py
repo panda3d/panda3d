@@ -4,6 +4,10 @@ import ZoneEntityBase
 import BasicEntities
 
 class ZoneEntity(ZoneEntityBase.ZoneEntityBase, BasicEntities.NodePathAttribs):
+    __attribs = (
+        'modelZoneNum',
+        )
+    
     def __init__(self, level, entId):
         ZoneEntityBase.ZoneEntityBase.__init__(self, level, entId)
 

@@ -9,6 +9,9 @@ class NodePathAttribs:
     """Derive from this class to give an entity the behavior of a
     NodePath, without necessarily deriving from NodePath. Derived class
     must implement getNodePath()."""
+    __attribs__ = (
+        'parent', 'pos', 'hpr',
+        )
     def initNodePathAttribs(self, doReparent=1):
         """Call this after the entity has been initialized"""
         self.callSetters('pos','x','y','z',
@@ -57,6 +60,9 @@ class NodePathEntity(Entity.Entity, privNodePathImpl):
     """This is an entity that represents a NodePath on the client.
     It may be instantiated directly or used as a base class for other
     entity types."""
+    __attribs__ = (
+        'parent', 'pos', 'hpr',
+        )
     def __init__(self, level, entId):
         privNodePathImpl.__init__(self, '')
         Entity.Entity.__init__(self, level, entId)
@@ -75,6 +81,9 @@ class DistributedNodePathEntity(DistributedEntity.DistributedEntity,
     """This is a distributed version of NodePathEntity. It should not
     be instantiated directly; derive your client-side distEntity from
     this class instead of DistributedEntity."""
+    __attribs__ = (
+        'parent', 'pos', 'hpr',
+        )
     def __init__(self, cr):
         DistributedEntity.DistributedEntity.__init__(self, cr)
         privNodePathImpl.__init__(self, 'DistributedNodePathEntity')

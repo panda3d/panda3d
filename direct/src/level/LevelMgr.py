@@ -5,6 +5,13 @@ import LevelMgrBase
 
 class LevelMgr(LevelMgrBase.LevelMgrBase):
     """This class manages editable client-side level attributes"""
+
+    __attribs__ = (
+        'cogLevel',
+        'cogTrack',
+        'modelFilename',
+        )
+    
     def __init__(self, level, entId):
         LevelMgrBase.LevelMgrBase.__init__(self, level, entId)
         
