@@ -313,9 +313,9 @@ class Particles(ParticleSystem.ParticleSystem):
 	    if (eType == "ET_CUSTOM"):
 	    	print 'emitter.setOuterAngle(%f)' % self.emitter.getOuterAngle()
 	    	print 'emitter.setInnerAngle(%f)' % self.emitter.getInnerAngle()
-	    print 'emitter.setOuterMagnitude(%f)' % self.emitter.getOuterMagnitude()
-	    print 'emitter.setInnerMagnitude(%f)' % self.emitter.getInnerMagnitude()
-	    print 'emitter.setCubicLerping(%d)' % self.emitter.getCubicLerping()
+	    	print 'emitter.setOuterMagnitude(%f)' % self.emitter.getOuterMagnitude()
+	    	print 'emitter.setInnerMagnitude(%f)' % self.emitter.getInnerMagnitude()
+	    	print 'emitter.setCubicLerping(%d)' % self.emitter.getCubicLerping()
 
 	elif (self.emitterType == "LineEmitter"):
 	    print "# Line parameters"
