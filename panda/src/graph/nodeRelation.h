@@ -211,7 +211,7 @@ private:
   static TypeHandle _stashed_type_handle;
 
   // Should not include storage class specifiers in friend declaration.
-  friend void remove_arc(NodeRelation *arc);
+  friend EXPCL_PANDA void remove_arc(NodeRelation *arc);
 
   friend class Node;
   friend class NodeTransitionWrapper;
