@@ -75,7 +75,7 @@ MilesAudioManager() {
   // We increment _active_managers regardless of possible errors above.
   // The miles shutdown call will do the right thing when it's called,
   // either way.
-  audio_error("  _active_managers="<<_active_managers);
+  audio_debug("  _active_managers="<<_active_managers);
   ++_active_managers;
 }
 
