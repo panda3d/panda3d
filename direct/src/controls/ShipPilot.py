@@ -80,6 +80,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             self.takedownPhysics()
         else:
             #self.setupShip()
+            print "setAvatar, wallbitmask = %s" % self.wallBitmask
             self.setupPhysics(ship)
             
             #*# Debug:
@@ -190,19 +191,20 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
 
         if 1:
             # Front sphere:
-            self.cBowSphere = CollisionSphere(0.0, 35.0, -8.0, avatarRadius)
+            self.cBowSphere = CollisionSphere(0.0, 35.0, -5.0, avatarRadius)
             cBowSphereNode = CollisionNode('SP.cBowSphereNode')
             cBowSphereNode.addSolid(self.cBowSphere)
             self.cBowSphereNodePath = self.avatarNodePath.attachNewNode(cBowSphereNode)
-            self.cBowSphereBitMask = bitmask
 
             cBowSphereNode.setFromCollideMask(self.cSphereBitMask)
             cBowSphereNode.setIntoCollideMask(BitMask32.allOff())
 
+            self.cBowSphereNode = cBowSphereNode
+
             self.pusher.addCollider(self.cBowSphereNodePath, self.avatarNodePath)
             
             # Back sphere:
-            self.cSternSphere = CollisionSphere(0.0, -20.0, -8.0, avatarRadius)
+            self.cSternSphere = CollisionSphere(0.0, -20.0, -5.0, avatarRadius)
             cSternSphereNode = CollisionNode('SP.cSternSphereNode')
             cSternSphereNode.addSolid(self.cSternSphere)
             self.cSternSphereNodePath = self.avatarNodePath.attachNewNode(cSternSphereNode)
@@ -339,6 +341,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
 
     def setWallBitMask(self, bitMask):
         self.wallBitmask = bitMask
+        print "setWallBitMask, wallbitmask = %s" % self.wallBitmask
 
     def setFloorBitMask(self, bitMask):
         self.floorBitmask = bitMask
