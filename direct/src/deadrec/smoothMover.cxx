@@ -22,8 +22,9 @@
 
 SmoothMover::SmoothMode SmoothMover::_smooth_mode = SmoothMover::SM_off;
 SmoothMover::PredictionMode SmoothMover::_prediction_mode = SmoothMover::PM_off;
-double SmoothMover::_delay = 0.0;
-double SmoothMover::_max_position_age = 0.2;
+double SmoothMover::_delay = 0.2;
+double SmoothMover::_max_position_age = 0.25;
+double SmoothMover::_reset_velocity_age = 0.5;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SmoothMover::Constructor
@@ -41,7 +42,15 @@ SmoothMover() {
   _smooth_pos.set(0.0, 0.0, 0.0);
   _smooth_hpr.set(0.0, 0.0, 0.0);
   _smooth_mat = LMatrix4f::ident_mat();
+  _smooth_timestamp = 0.0;
+  _smooth_position_known = false;
   _computed_smooth_mat = true;
+
+  _smooth_forward_velocity = 0.0;
+  _smooth_rotational_velocity = 0.0;
+
+  _last_point_before = -1;
+  _last_point_after = -1;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -70,9 +79,23 @@ mark_position() {
   if (_smooth_mode == SM_off) {
     // With smoothing disabled, mark_position() simply stores its
     // current position in the smooth_position members.
-    _smooth_pos = _sample._pos;
-    _smooth_hpr = _sample._hpr;
-    _computed_smooth_mat = false;
+
+    // We also need to compute the velocity here.
+    if (_smooth_position_known) {
+      LVector3f pos_delta = _sample._pos - _smooth_pos;
+      LVecBase3f hpr_delta = _sample._hpr - _smooth_hpr;
+      double age = _sample._timestamp - _smooth_timestamp;
+      age = min(age, _max_position_age);
+
+      set_smooth_pos(_sample._pos, _sample._hpr, _sample._timestamp);
+      if (age != 0.0) {
+        compute_velocity(pos_delta, hpr_delta, age);
+      }
+
+    } else {
+      // No velocity is possible, just position and orientation.
+      set_smooth_pos(_sample._pos, _sample._hpr, _sample._timestamp);
+    }
 
   } else {
     // Otherwise, smoothing is in effect and we store a true position
@@ -82,10 +105,38 @@ mark_position() {
       // If we have too many position reports, throw away the oldest
       // one.
       _points.pop_front();
+
+      // That invalidates the index numbers.
+      _last_point_before = -1;
+      _last_point_after = -1;
     }
     
     _points.push_back(_sample);
     _sample._flags = 0;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::clear_positions
+//       Access: Published
+//  Description: Erases all the old position reports.  This should be
+//               done, for instance, prior to teleporting the avatar
+//               to a new position; otherwise, the smoother might try
+//               to lerp the avatar there.  If reset_velocity is true,
+//               the velocity is also reset to 0.
+////////////////////////////////////////////////////////////////////
+void SmoothMover::
+clear_positions(bool reset_velocity) {
+  while (!_points.empty()) {
+    _points.pop_front();
+  }
+  _last_point_before = -1;
+  _last_point_after = -1;
+  _smooth_position_known = false;
+
+  if (reset_velocity) {
+    _smooth_forward_velocity = 0.0;
+    _smooth_rotational_velocity = 0.0;
   }
 }
 
@@ -100,13 +151,25 @@ mark_position() {
 ////////////////////////////////////////////////////////////////////
 void SmoothMover::
 compute_smooth_position(double timestamp) {
-  if (_smooth_mode == SM_off || _points.empty()) {
-    // With smoothing disabled, or with no position reports available,
-    // this function does nothing, except to ensure that any old bogus
-    // position reports are cleared.
-    while (!_points.empty()) {
-      _points.pop_front();
+  if (_points.empty()) {
+    // With no position reports available, this function does nothing,
+    // except to make sure that our velocity gets reset to zero after
+    // a period of time.
+
+    if (_smooth_position_known) {
+      double age = timestamp - _smooth_timestamp;
+      if (age > _reset_velocity_age) {
+        _smooth_forward_velocity = 0.0;
+        _smooth_rotational_velocity = 0.0;
+      }
     }
+    return;
+  }
+  if (_smooth_mode == SM_off) {
+    // With smoothing disabled, this function also does nothing,
+    // except to ensure that any old bogus position reports are
+    // cleared.
+    clear_positions(false);
     return;
   }
 
@@ -144,53 +207,27 @@ compute_smooth_position(double timestamp) {
     nassertv(point_after != -1);
     // If we only have an after point, we have to start there.
     const SamplePoint &point = _points[point_after];
-    _smooth_pos = point._pos;
-    _smooth_hpr = point._hpr;
-    _computed_smooth_mat = false;
+    set_smooth_pos(point._pos, point._hpr, timestamp);
+    _smooth_forward_velocity = 0.0;
+    _smooth_rotational_velocity = 0.0;
     return;
   }
 
-  if (point_after == -1) {
+  if (point_after == -1 || timestamp_before == timestamp_after) {
     // If we only have a before point, we have to stop there, unless
     // we have prediction in effect.
     const SamplePoint &point = _points[point_before];
-    _smooth_pos = point._pos;
-    _smooth_hpr = point._hpr;
-    _computed_smooth_mat = false;
+    set_smooth_pos(point._pos, point._hpr, timestamp);
+    if (timestamp - point._timestamp > _reset_velocity_age) {
+      // Furthermore, if the before point is old enough, zero out the
+      // velocity.
+      _smooth_forward_velocity = 0.0;
+      _smooth_rotational_velocity = 0.0;
+    }
 
   } else {
     // If we have two points, we can linearly interpolate between them.
-    SamplePoint &point_b = _points[point_before];
-    const SamplePoint &point_a = _points[point_after];
-
-    double age = (timestamp_after - timestamp_before);
-    if (age > _max_position_age) {
-      // If the first point is too old, assume there were a lot of
-      // implicit standing still messages that weren't sent.  Reset
-      // the first point to be timestamp_after - max_position_age.
-      timestamp_before = min(timestamp, timestamp_after - _max_position_age);
-      point_b._timestamp = timestamp_before;
-      age = (timestamp_after - timestamp_before);
-    }
-
-    double t = (timestamp - timestamp_before) / age;
-    _smooth_pos = point_b._pos + t * (point_a._pos - point_b._pos);
-
-    // To interpolate the hpr's, we must first make sure that both
-    // angles are on the same side of the discontinuity.
-    LVecBase3f a_hpr = point_a._hpr;
-    LVecBase3f b_hpr = point_b._hpr;
-
-    for (int j = 0; j < 3; j++) {
-      if ((a_hpr[j] - b_hpr[j]) > 180.0) {
-        a_hpr[j] -= 360.0;
-      } else if ((a_hpr[j] - b_hpr[j]) < -180.0) {
-        a_hpr[j] += 360.0;
-      }
-    }
-
-    _smooth_hpr = b_hpr + t * (a_hpr - b_hpr);
-    _computed_smooth_mat = false;
+    linear_interpolate(point_before, point_after, timestamp);
   }
 
   // Assume we'll never get another compute_smooth_position() request
@@ -198,6 +235,10 @@ compute_smooth_position(double timestamp) {
   // head of the queue before point_before.
   while (!_points.empty() && _points.front()._timestamp < timestamp_before) {
     _points.pop_front();
+
+    // This invalidates the index numbers.
+    _last_point_before = -1;
+    _last_point_after = -1;
   }
 }
 
@@ -227,6 +268,21 @@ write(ostream &out) const {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::set_smooth_pos
+//       Access: Private
+//  Description: Sets the computed smooth position and orientation for
+//               the indicated timestamp.
+////////////////////////////////////////////////////////////////////
+void SmoothMover::
+set_smooth_pos(const LPoint3f &pos, const LVecBase3f &hpr,
+               double timestamp) {
+  _smooth_pos = pos;
+  _smooth_hpr = hpr;
+  _smooth_timestamp = timestamp;
+  _smooth_position_known = true;
+  _computed_smooth_mat = false;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SmoothMover::compose_smooth_mat
@@ -238,4 +294,82 @@ void SmoothMover::
 compose_smooth_mat() {
   compose_matrix(_smooth_mat, _scale, _smooth_hpr, _smooth_pos);
   _computed_smooth_mat = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::linear_interpolate
+//       Access: Private
+//  Description: Interpolates the smooth position linearly between the
+//               two bracketing position reports.
+////////////////////////////////////////////////////////////////////
+void SmoothMover::
+linear_interpolate(int point_before, int point_after, double timestamp) {
+  SamplePoint &point_b = _points[point_before];
+  const SamplePoint &point_a = _points[point_after];
+
+  double age = (point_a._timestamp - point_b._timestamp);
+
+  if (point_before == _last_point_before && 
+      point_after == _last_point_after) {
+    // If these are the same two points we found last time (which is
+    // likely), we can save a bit of work.
+    double t = (timestamp - point_b._timestamp) / age;
+    set_smooth_pos(point_b._pos + t * (point_a._pos - point_b._pos),
+                   point_b._hpr + t * (point_a._hpr - point_b._hpr),
+                   timestamp);
+
+    // The velocity remains the same as last time.
+
+  } else {
+    _last_point_before = point_before;
+    _last_point_after = point_after;
+    
+    if (age > _max_position_age) {
+      // If the first point is too old, assume there were a lot of
+      // implicit standing still messages that weren't sent.  Reset
+      // the first point's timestamp to reflect this.
+      point_b._timestamp = min(timestamp, point_a._timestamp - _max_position_age);
+      age = (point_a._timestamp - point_b._timestamp);
+    }
+    
+    // To interpolate the hpr's, we must first make sure that both
+    // angles are on the same side of the discontinuity.
+    for (int j = 0; j < 3; j++) {
+      if ((point_b._hpr[j] - point_a._hpr[j]) > 180.0) {
+        point_b._hpr[j] -= 360.0;
+      } else if ((point_b._hpr[j] - point_a._hpr[j]) < -180.0) {
+        point_b._hpr[j] += 360.0;
+      }
+    }
+    
+    double t = (timestamp - point_b._timestamp) / age;
+    LVector3f pos_delta = point_a._pos - point_b._pos;
+    LVecBase3f hpr_delta = point_a._hpr - point_b._hpr;
+
+    set_smooth_pos(point_b._pos + t * pos_delta, 
+                   point_b._hpr + t * hpr_delta, 
+                   timestamp);
+    compute_velocity(pos_delta, hpr_delta, age);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::compute_velocity
+//       Access: Private
+//  Description: Computes the forward and rotational velocities of the
+//               moving object.
+////////////////////////////////////////////////////////////////////
+void SmoothMover::
+compute_velocity(const LVector3f &pos_delta, const LVecBase3f &hpr_delta,
+                 double age) {
+  // Also compute the velocity.  To get just the forward component
+  // of velocity, we need to project the velocity vector onto the y
+  // axis, as rotated by the current hpr.
+  LMatrix3f rot_mat;
+  compose_matrix(rot_mat, LVecBase3f(1.0, 1.0, 1.0), _smooth_hpr);
+  LVector3f y_axis = LVector3f(0.0, 1.0, 0.0) * rot_mat;
+  float forward_distance = pos_delta.dot(y_axis);
+  
+  _smooth_forward_velocity = forward_distance / age;
+  _smooth_rotational_velocity = hpr_delta[0] / age;
 }

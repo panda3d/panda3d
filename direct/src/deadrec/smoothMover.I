@@ -265,6 +265,33 @@ get_smooth_mat() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::get_smooth_forward_velocity
+//       Access: Published
+//  Description: Returns the speed at which the avatar is moving, in
+//               feet per second, along its own forward axis (after
+//               applying the avatar's hpr).  This will be a positive
+//               number if the avatar is moving forward, and a
+//               negative number if it is moving backward.
+////////////////////////////////////////////////////////////////////
+INLINE float SmoothMover::
+get_smooth_forward_velocity() const {
+  return _smooth_forward_velocity;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::get_smooth_rotational_velocity
+//       Access: Published
+//  Description: Returns the speed at which the avatar is rotating in
+//               the horizontal plane (i.e. heading), in degrees per
+//               second.  This may be positive or negative, according
+//               to the direction of rotation.
+////////////////////////////////////////////////////////////////////
+INLINE float SmoothMover::
+get_smooth_rotational_velocity() const {
+  return _smooth_rotational_velocity;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SmoothMover::set_smooth_mode
 //       Access: Published, Static
 //  Description: Sets the smoothing mode of all SmoothMovers in the
@@ -360,4 +387,31 @@ set_max_position_age(double age) {
 INLINE double SmoothMover::
 get_max_position_age() {
   return _max_position_age;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::set_reset_velocity_age
+//       Access: Published, Static
+//  Description: Sets the amount of time that should elapse after the
+//               last position report before the velocity is reset to
+//               0.  This is similar to max_position_age, but it is
+//               only used to determine the resetting of the reported
+//               velocity.  It should always be greater than or equal
+//               to max_position_age.
+////////////////////////////////////////////////////////////////////
+INLINE void SmoothMover::
+set_reset_velocity_age(double age) {
+  _reset_velocity_age = age;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::get_reset_velocity_age
+//       Access: Published, Static
+//  Description: Returns the amount of time that should elapse after
+//               the last position report before the velocity is reset
+//               to 0.  See set_reset_velocity_age().
+////////////////////////////////////////////////////////////////////
+INLINE double SmoothMover::
+get_reset_velocity_age() {
+  return _reset_velocity_age;
 }

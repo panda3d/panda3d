@@ -76,6 +76,7 @@ PUBLISHED:
   INLINE void set_timestamp(double timestamp);
 
   void mark_position();
+  void clear_positions(bool reset_velocity);
 
   INLINE void compute_smooth_position();
   void compute_smooth_position(double timestamp);
@@ -83,6 +84,10 @@ PUBLISHED:
   INLINE const LPoint3f &get_smooth_pos() const;
   INLINE const LVecBase3f &get_smooth_hpr() const;
   INLINE const LMatrix4f &get_smooth_mat();
+
+  INLINE float get_smooth_forward_velocity() const;
+  INLINE float get_smooth_rotational_velocity() const;
+
 
   // These static methods control the global properties of all
   // SmoothMovers.
@@ -107,11 +112,20 @@ PUBLISHED:
   INLINE static void set_max_position_age(double age); 
   INLINE static double get_max_position_age(); 
 
+  INLINE static void set_reset_velocity_age(double age); 
+  INLINE static double get_reset_velocity_age(); 
+
   void output(ostream &out) const;
   void write(ostream &out) const;
 
 private:
+  void set_smooth_pos(const LPoint3f &pos, const LVecBase3f &hpr,
+                      double timestamp);
   void compose_smooth_mat();
+  void linear_interpolate(int point_before, int point_after, double timestamp);
+  void compute_velocity(const LVector3f &pos_delta, 
+                        const LVecBase3f &hpr_delta,
+                        double age);
 
   enum Flags {
     F_got_timestamp  = 0x0001,
@@ -131,16 +145,23 @@ private:
   LPoint3f _smooth_pos;
   LVecBase3f _smooth_hpr;
   LMatrix4f _smooth_mat;
+  double _smooth_timestamp;
+  bool _smooth_position_known;
   bool _computed_smooth_mat;
-  
+
+  double _smooth_forward_velocity;
+  double _smooth_rotational_velocity;
 
   typedef CircBuffer<SamplePoint, max_position_reports> Points;
   Points _points;
+  int _last_point_before;
+  int _last_point_after;
 
   static SmoothMode _smooth_mode;
   static PredictionMode _prediction_mode;
   static double _delay;
   static double _max_position_age;
+  static double _reset_velocity_age;
 };
 
 #include "smoothMover.I"
