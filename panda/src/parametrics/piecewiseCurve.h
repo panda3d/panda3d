@@ -22,6 +22,7 @@
 #include <pandabase.h>
 
 #include "parametricCurve.h"
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PiecewiseCurve
@@ -86,7 +87,7 @@ protected:
     Curveseg() {}
     Curveseg(ParametricCurve *c, float t) : _curve(c), _tend(t) {}
 
-    ParametricCurve *_curve;
+    PT(ParametricCurve) _curve;
     float _tend;
   };
 

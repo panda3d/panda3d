@@ -632,7 +632,7 @@ complete_pointers(vector_typedWritable &p_list, BamReader *manager) {
 
   size_t i;
   for (i = 0; i < _segs.size(); i++) {
-    DCAST_INTO_R(_segs[i]._curve, p_list[used + i], used);
+    _segs[i]._curve = DCAST(ParametricCurve, p_list[used + i]);
   }
 
   return used + _segs.size();
