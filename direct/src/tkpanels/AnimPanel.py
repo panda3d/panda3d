@@ -113,12 +113,28 @@ class AnimPanel(AppShell):
         index = 0
         self.actorControlList = []
         for actor in self['actorList']:
+            anims = actor.getAnimNames()
+            topAnims = []
+            if 'neutral' in anims:
+                i = anims.index('neutral')
+                del(anims[i])
+                topAnims.append('neutral')
+            if 'walk' in anims:
+                i = anims.index('walk')
+                del(anims[i])
+                topAnims.append('walk')
+            if 'run' in anims:
+                i = anims.index('run')
+                del(anims[i])
+                topAnims.append('run')
+            anims.sort()
+            anims = topAnims + anims
             ac = self.createcomponent(
                 'actorControl%d' % index, (), 'Actor',
                 ActorControl, (actorFrame,),
                 animPanel = self,
                 text = actor.getName(),
-                animList = actor.getAnimNames(),
+                animList = anims,
                 actor = actor)
             ac.pack(expand = 1, fill = X)
             self.actorControlList.append(ac)
