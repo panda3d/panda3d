@@ -461,52 +461,56 @@ parse_comment(const FltRecord *flt_record, const string &name,
   string comment = flt_record->get_comment();
 
   // Scan for <egg>.
-  size_t p;
-  p = 0;
-
   static const string egg_str = "<egg>";
 
-  while (p < comment.length()) {
-    if (cmp_nocase(comment.substr(p, 5), egg_str) == 0) {
-      p += 5;
-      // Now scan past whitespace for the open curly brace.
-      while (p < comment.length() && isspace(comment[p])) {
-	++p;
-      }
-      if (p < comment.length() && comment[p] == '{') {
-	// Here's the beginning.  Now lop off the closing brace at the
-	// end.
-	++p;
-	size_t q = comment.length() - 1;
-	while (q > p && comment[q] != '}') {
-	  --q;
-	}
-	if (q == p) {
-	  nout << "No closing brace in comment for " 
-	       << name << "\n\n";
-	  _error = true;
-	  return false;
-	}
-	string egg_syntax = comment.substr(p, q - p);
-
-	if (!egg_node->parse_egg(egg_syntax)) {
-	  nout << "Syntax error in comment for "
-	       << name << "\n\n";
-	  _error = true;
-	  return false;
-	}
-	// Correctly parsed!
-	return true;
-      }
-      nout << "No opening brace in comment for " 
-	   << name << "\n\n";
-      _error = true;
-      return false;
-    }
+  size_t p;
+  p = 0;
+  while (p < comment.length() && 
+	 cmp_nocase(comment.substr(p, 5), egg_str) != 0) {
     p++;
   }
+   
+  if (p >= comment.length()) {
+    // No "<egg>" in the comment.
+    return true;
+  }
 
-  // No <egg> appears in this comment.
+  p += 5;
+  // Now scan past whitespace for the open curly brace.
+  while (p < comment.length() && isspace(comment[p])) {
+    ++p;
+  }
+  if (p >= comment.length() || comment[p] != '{') {
+    nout << "No opening brace in comment for " 
+	 << name << "\n\n";
+    _error = true;
+    return false;
+  }
+
+  // Here's the beginning of the string after "<egg> {".  Now lop off
+  // the closing brace at the end.
+  ++p;
+  size_t q = comment.length() - 1;
+  while (q > p && comment[q] != '}') {
+    --q;
+  }
+  if (q == p) {
+    nout << "No closing brace in comment for " 
+	 << name << "\n\n";
+    _error = true;
+    return false;
+  }
+
+  string egg_syntax = comment.substr(p, q - p);
+  
+  if (!egg_node->parse_egg(egg_syntax)) {
+    nout << "Syntax error in comment for "
+	 << name << "\n\n";
+    _error = true;
+    return false;
+  }
+
+  // Correctly parsed!
   return true;
 }
 
