@@ -234,7 +234,6 @@ protected:
                     DWORD wNumRings, DWORD wNumSections, float sx, float sy, float sz,
                     DWORD *pNumVertices,DWORD *pNumTris,DWORD fvfFlags,DWORD dwVertSize);
   HRESULT ReleaseAllDeviceObjects(void);
-  HRESULT RestoreAllDeviceObjects(void);
   HRESULT RecreateAllDeviceObjects(void);
   HRESULT DeleteAllDeviceObjects(void);
 

@@ -117,6 +117,7 @@ private:
   bool              _active_minimized_fullscreen;
   bool              _return_control_to_app;
   bool              _cursor_in_windowclientarea;
+  bool              _use_dx8_cursor;
   bool              _tracking_mouse_leaving;
   int               _depth_buffer_bpp;
 
@@ -130,6 +131,7 @@ public:
   virtual void do_close_window();
   void deactivate_window(void);
   void reactivate_window(void);
+  INLINE void set_cursor_visibility(bool bVisible);
   bool handle_windowed_resize(HWND hWnd,bool bDoDXReset);
 
 private:

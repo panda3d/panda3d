@@ -724,7 +724,7 @@ dx_init(HCURSOR hMouseCursor) {
     // must check (scrn.d3dcaps.PrimitiveMiscCaps & D3DPMISCCAPS_BLENDOP) (yes on GF2/Radeon85, no on TNT)
     scrn.pD3DDevice->SetRenderState(D3DRS_BLENDOP,D3DBLENDOP_ADD);
 
-    if(dx_full_screen) {
+    if((scrn.pProps->_fullscreen) && dx_use_dx_cursor) {
         hr = CreateDX8Cursor(scrn.pD3DDevice,hMouseCursor,dx_show_cursor_watermark);
         if(FAILED(hr))
             dxgsg_cat.error() << "CreateDX8Cursor failed!\n";
@@ -748,10 +748,10 @@ dx_init(HCURSOR hMouseCursor) {
             UINT xsize = scrn.pProps->_xsize;
             UINT ysize = scrn.pProps->_ysize;
 
-            #define FPS_MSG_FORMAT_STR " %dx%d\n%6.02f fps"
+            #define FPS_MSG_FORMAT_STR " %dx%dx%d\n%6.02f fps"
 
             char fps_msg[50];
-            sprintf(fps_msg,FPS_MSG_FORMAT_STR,xsize,ysize,800.00f); // 6 == NUM_FPSMETER_LETTERS
+            sprintf(fps_msg,FPS_MSG_FORMAT_STR,xsize,ysize,32,800.00f); // 6 == NUM_FPSMETER_LETTERS
 
             hr = _pStatMeterFont->GetTextExtent(fps_msg,&TextRectSize);
             if(SUCCEEDED(hr)) {
@@ -997,8 +997,11 @@ void INLINE TestDrawPrimFailure(DP_Type dptype,HRESULT hr,IDirect3DDevice8 *pD3D
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 render_frame() {
-  if (!_bDXisReady) 
+  if (!_bDXisReady) {
+    //if(dxgsg_cat.is_spam())
+    //  dxgsg_cat.spam() << "dx is not ready, skipping render_frame()\n";
     return;
+  }
 
   _win->begin_frame();
 
@@ -3567,7 +3570,6 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
     state.set_transition(new ColorBlendTransition);
     state.set_transition(new StencilTransition);
 
-
     switch (pb->get_format()) {
         case PixelBuffer::F_depth_component:
             {
@@ -4814,7 +4816,8 @@ end_frame() {
     D3DCOLOR fontColor = D3DCOLOR_ARGB(255,255,255,0);  // yellow
 
     char fps_msg[50];
-    sprintf(fps_msg,FPS_MSG_FORMAT_STR,scrn.pProps->_xsize,scrn.pProps->_ysize,_current_fps);
+    sprintf(fps_msg,FPS_MSG_FORMAT_STR,scrn.pProps->_xsize,scrn.pProps->_ysize,
+            (IS_16BPP_DISPLAY_FORMAT(scrn.PresParams.BackBufferFormat) ? 16 : 32),_current_fps);
 
     // usually only want to call BeginText() & EndText() once/frame
     // to bracket all the text for a given cd3dfont obj
@@ -5758,35 +5761,6 @@ HRESULT DXGraphicsStateGuardian::ReleaseAllDeviceObjects(void) {
     return S_OK;
 }
 
-HRESULT DXGraphicsStateGuardian::RestoreAllDeviceObjects(void) {
-  // BUGBUG: this should also restore vertex buffer contents when they are implemented
-  // You will need to destroy and recreate
-  // optimized vertex buffers however, restoring is not enough.
-
-/*
-  HRESULT hr;
-  // note: could go through and just restore surfs that return IsLost() true
-  // apparently that isnt as reliable w/some drivers tho
-  if (FAILED(hr = scrn.pD3DDevice->RestoreAllSurfaces() )) {
-        dxgsg_cat.fatal() << "RestoreAllSurfs failed : result = " << D3DERRORSTRING(hr);
-    exit(1);
-  }
-*/
-
-  // DX8 should handle restoring contents of managed textures automatically
-
-  // cant access template in libpanda.dll directly due to vc++ limitations, use traverser to get around it
-//  traverse_prepared_textures(refill_tex_callback,this);
-
-  if(IS_VALID_PTR(_pStatMeterFont))
-    _pStatMeterFont->RestoreDeviceObjects();
-
-  if(dxgsg_cat.is_debug())
-      dxgsg_cat.debug() << "restore and refill of video surfaces complete...\n";
-  return S_OK;
-}
-
-
 ////////////////////////////////////////////////////////////////////
 //     Function: show_frame
 //       Access:
@@ -5899,7 +5873,19 @@ void DXGraphicsStateGuardian::show_windowed_frame(void) {
 HRESULT DXGraphicsStateGuardian::reset_d3d_device(D3DPRESENT_PARAMETERS *pPresParams) {
   HRESULT hr;
 
+  assert(IS_VALID_PTR(pPresParams));
+  assert(IS_VALID_PTR(scrn.pD3D8));
+  assert(IS_VALID_PTR(scrn.pD3DDevice));
+
   ReleaseAllDeviceObjects();
+
+  if(!dx_full_screen) {
+      // for windowed make sure out format matches the desktop fmt, in case the 
+      // desktop mode has been changed
+
+       scrn.pD3D8->GetAdapterDisplayMode(scrn.CardIDNum, &scrn.DisplayMode);
+       pPresParams->BackBufferFormat = scrn.DisplayMode.Format;
+  }
 
   hr=scrn.pD3DDevice->Reset(pPresParams);
   if(SUCCEEDED(hr)) {
@@ -5929,13 +5915,14 @@ bool DXGraphicsStateGuardian::CheckCooperativeLevel(bool bDoReactivateWindow) {
 
              if(bDoReactivateWindow)
                  _win->reactivate_window();  //must reactivate window before you can restore surfaces (otherwise you are in WRONGVIDEOMODE, and DDraw RestoreAllSurfaces fails)
-             RestoreAllDeviceObjects();  
              hr = scrn.pD3DDevice->TestCooperativeLevel();
              if(FAILED(hr)) {
                 // internal chk, shouldnt fail 
                 dxgsg_cat.error() << "TestCooperativeLevel following Reset() failed, hr = " << D3DERRORSTRING(hr);
                 exit(1);
              }
+
+             _bDXisReady = TRUE;
 
             break;
 

@@ -399,7 +399,13 @@ HRESULT CD3DFont::RestoreDeviceObjects() {
 // Desc: Destroys all device-dependent objects
 //-----------------------------------------------------------------------------
 HRESULT CD3DFont::InvalidateDeviceObjects() {
-
+    /*
+    #ifdef _DEBUG
+    if(m_pVB) {
+        cout << "XXXX Releasing Font VertexBuffer\n";
+    }
+    #endif
+    */
 
     SAFE_RELEASE( m_pVB );
 

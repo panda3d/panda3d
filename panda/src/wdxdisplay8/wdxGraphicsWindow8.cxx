@@ -43,6 +43,7 @@ TypeHandle wdxGraphicsWindow::_type_handle;
 #define LAST_ERROR 0
 #define ERRORBOX_TITLE "Panda3D Error"
 #define WDX_WINDOWCLASSNAME "wdxDisplay"
+#define WDX_WINDOWCLASSNAME_NOCURSOR "wdxDisplay_NoCursor"
 #define DEFAULT_CURSOR IDC_ARROW
 
 typedef map<HWND,wdxGraphicsWindow *> HWND_PANDAWIN_MAP;
@@ -67,7 +68,7 @@ wdxGraphicsWindow* global_wdxwinptr = NULL;  // need this for temporary windproc
 #define MAX_DISPLAYS 20
 
 #define PAUSED_TIMER_ID  7   // completely arbitrary choice
-#define DXREADY ((_dxgsg!=NULL)&&(_dxgsg->GetDXReady()))
+#define DX_IS_READY ((_dxgsg!=NULL)&&(_dxgsg->GetDXReady()))
 
 LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam,LPARAM lparam);
 
@@ -167,6 +168,15 @@ extern void dbgPrintVidMem(LPDIRECTDRAW7 pDD, LPDDSCAPS2 lpddsCaps,const char *p
        wdxdisplay_cat.debug() << "AvailableVidMem before creating "<< pMsg << ",(megs) total: " << tmpstr << "  free:" << tmpstr2 <<endl;
 }
 #endif
+
+void ClearToBlack(HWND hWnd,GraphicsWindow::Properties &props) {
+    // clear to black
+    HDC hDC=GetDC(hWnd);  // GetDC is not particularly fast.  if this needs to be super-quick, we should cache GetDC's hDC
+    RECT clrRect={props._xorg,props._yorg,props._xorg+props._xsize,props._yorg+props._ysize};
+    FillRect(hDC,&clrRect,(HBRUSH)GetStockObject(BLACK_BRUSH));
+//          PatBlt(hDC,_props._xorg,_props._yorg,_props._xsize,_props._ysize,BLACKNESS);
+    ReleaseDC(hWnd,hDC);
+}
 
 // fn exists so AtExitFn can call it without refcntr blowing up since its !=0
 void wdxGraphicsWindow::DestroyMe(bool bAtExitFnCalled) {
@@ -275,19 +285,23 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     int x, y, width, height;
 
     switch(msg) {
-
          case WM_PAINT: {
+            if((_WindowAdjustingType != NotAdjusting) || (!DX_IS_READY)) {
+              // let DefWndProc do WM_ERASEBKGND & just draw black,
+              // rather than forcing Present to stretchblt the old window contents
+              // into the new size
+              break;
+            }
+
             PAINTSTRUCT ps;
             BeginPaint(hwnd, &ps);
-
-            if(DXREADY)
-                show_frame();
+            show_frame();
             EndPaint(hwnd, &ps);
             return 0;
         }
 
         case WM_MOUSEMOVE: {
-            if(!DXREADY)
+            if(!DX_IS_READY)
                 break;
 
             // Win32 doesn't return the same numbers as X does when the mouse
@@ -310,7 +324,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             SET_MOUSE_COORD(y,newY);
 
             handle_mouse_motion(x, y);
-            if(dx_full_screen && (_dxgsg!=NULL) && (_dxgsg->scrn.pD3DDevice!=NULL))
+            if(_props._fullscreen && (_dxgsg!=NULL) && (_dxgsg->scrn.pD3DDevice!=NULL))
                 _dxgsg->scrn.pD3DDevice->SetCursorPosition(newX,newY,D3DCURSOR_IMMEDIATE_UPDATE);
             return 0;
         }
@@ -339,22 +353,16 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         case WM_MOUSELEAVE: {
            // wdxdisplay_cat.fatal() << "XXXXX WM_MOUSELEAVE received\n";
 
-           _tracking_mouse_leaving=false;  
+           _tracking_mouse_leaving=false;
            handle_mouse_exit();
            break;
         }
 
         case WM_CREATE: {
           track_mouse_leaving(hwnd);
-
           _cursor_in_windowclientarea=false;
-          if(!_props._bCursorIsVisible)
-              ShowCursor(false);
-
-          HDC hDC=GetDC(hwnd);
-          PatBlt(hDC,_props._xorg,_props._yorg,_props._xsize,_props._ysize,BLACKNESS);
-          ReleaseDC(hwnd,hDC);
-
+          ClearToBlack(hwnd,_props);
+          set_cursor_visibility(true);
           break;
         }
 
@@ -422,7 +430,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             if(button < 0)
                 button = 1;
         case WM_RBUTTONDOWN:
-            if(!DXREADY) 
+            if(!DX_IS_READY) 
               break;
 
             if(button < 0)
@@ -439,7 +447,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             if(button < 0)
                 button = 1;
         case WM_RBUTTONUP:
-            if(!DXREADY) 
+            if(!DX_IS_READY) 
               break;
 
             if(button < 0)
@@ -455,15 +463,18 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         case WM_SETCURSOR:
             // Turn off any GDI window cursor 
             //  dx8 cursor not working yet
-            if(dx_full_screen) {
-                SetCursor( NULL );
-                _dxgsg->scrn.pD3DDevice->ShowCursor(true);
+
+            if(_use_dx8_cursor && _props._fullscreen) {
+                //            SetCursor( NULL );
+            //                _dxgsg->scrn.pD3DDevice->ShowCursor(true);
+
+                set_cursor_visibility(true);
                 return TRUE; // prevent Windows from setting cursor to window class cursor (see docs on WM_SETCURSOR)
             }
             break;
 
         case WM_MOVE:
-            if(!DXREADY)
+            if(!DX_IS_READY)
                 break;
             handle_window_move(LOWORD(lparam), HIWORD(lparam) );
             return 0;
@@ -516,15 +527,24 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             #endif
             
             if(_WindowAdjustingType==Resizing) {
-                handle_windowed_resize(hwnd,true);
+                bool bSucceeded=handle_windowed_resize(hwnd,true);
+
+                if(!bSucceeded) {
+#if 0
+ bugbug need to fix this stuff
+                     SetWindowPos(hwnd,NULL,0,0,lastxsize,lastysize,
+                                  SWP_NOMOVE |
+#endif
+                }
             }
 
             _WindowAdjustingType = NotAdjusting;
+            _dxgsg->SetDXReady(true);
             return 0;
 
         case WM_ENTERSIZEMOVE: {
                 if(_dxgsg!=NULL)
-                    _dxgsg->SetDXReady(true);   // dont disable here because I want to see pic as I resize
+                    _dxgsg->SetDXReady(false);   // dont see pic during resize
                 _WindowAdjustingType = MovingOrResizing;
             }
             break;
@@ -588,7 +608,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
         case WM_SETFOCUS: {
             // wdxdisplay_cat.info() << "got WM_SETFOCUS\n";
-            if(!DXREADY) {
+            if(!DX_IS_READY) {
               break;
             }
 
@@ -610,7 +630,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
         case WM_KILLFOCUS: {
             // wdxdisplay_cat.info() << "got WM_KILLFOCUS\n";
-            if(!DXREADY) {
+            if(!DX_IS_READY) {
               break;
             }
 
@@ -709,8 +729,8 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 // should be used by both fullscrn and windowed resize
 bool wdxGraphicsWindow::reset_device_resize_window(UINT new_xsize, UINT new_ysize) {
     DXScreenData *pScrn=&_dxgsg->scrn;
-
     assert((new_xsize>0)&&(new_ysize>0));
+    bool bRetval=true;
 
     D3DPRESENT_PARAMETERS d3dpp;
     memcpy(&d3dpp,&pScrn->PresParams,sizeof(D3DPRESENT_PARAMETERS));
@@ -719,14 +739,25 @@ bool wdxGraphicsWindow::reset_device_resize_window(UINT new_xsize, UINT new_ysiz
     HRESULT hr=_dxgsg->reset_d3d_device(&d3dpp);
 
     if(FAILED(hr)) {
-        if(hr==D3DERR_OUTOFVIDEOMEMORY)
-            return false;
+        bRetval=false;
         wdxdisplay_cat.error() << "reset_device_resize_window Reset() failed" << D3DERRORSTRING(hr);
-        exit(1);
+        if(hr==D3DERR_OUTOFVIDEOMEMORY) {
+            hr=_dxgsg->reset_d3d_device(&pScrn->PresParams);
+            if(FAILED(hr)) {
+                wdxdisplay_cat.error() << "reset_device_resize_window Reset() failed OutOfVidmem, then failed again doing Reset w/original params:" << D3DERRORSTRING(hr);
+                exit(1);
+            } else {
+                if(wdxdisplay_cat.is_info())
+                    wdxdisplay_cat.info() << "reset of original size (" <<pScrn->PresParams.BackBufferWidth << "," 
+                    << pScrn->PresParams.BackBufferHeight << ") succeeded\n";
+            }
+        } else {
+            exit(1);
+        }
     }
 
     init_resized_window();
-    return true;
+    return bRetval;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -796,7 +827,7 @@ bool wdxGraphicsWindow::handle_windowed_resize(HWND hWnd,bool bDoDxReset) {
       bResizeSucceeded=reset_device_resize_window(xsize,ysize);  // create the new resized rendertargets
       if(!bResizeSucceeded) {
           if(wdxdisplay_cat.is_debug()) 
-              wdxdisplay_cat.debug() << "windowed_resize to size: (" << xsize << "," << ysize << ") failed due to out-of-memory, retrying w/reduced size\n";
+              wdxdisplay_cat.debug() << "windowed_resize to size: (" << xsize << "," << ysize << ") failed due to out-of-memory\n";
       } else {
           if(wdxdisplay_cat.is_debug()) 
               wdxdisplay_cat.debug() << "windowed_resize to origin: (" << _props._xorg << "," << _props._yorg << "), size: (" << _props._xsize << "," << _props._ysize << ")\n";
@@ -860,44 +891,37 @@ void wdxGraphicsWindow::deactivate_window(void) {
 //   }
 }
 
+// currently this should only be called from CheckCoopLvl to return from Alt-tab
 void wdxGraphicsWindow::reactivate_window(void) {
-    if(_window_inactive) {
+    if((_window_inactive)||(_active_minimized_fullscreen)) { 
     
         // first see if dx cooperative level is OK for reactivation
     //    if(!_dxgsg->CheckCooperativeLevel())
     //        return;
     
-        if(wdxdisplay_cat.is_spam())
-            wdxdisplay_cat.spam() << "WDX window re-activated...\n";
-    
-        _window_inactive = false;
-    
-        if(_PandaPausedTimer!=NULL) {
-            KillTimer(_dxgsg->scrn.hWnd,_PandaPausedTimer);
-            _PandaPausedTimer = NULL;
-        }
-    
-        // move window to top of zorder
-    //  if(_props._fullscreen)
-    //      SetWindowPos(_DisplayDataArray[0].hWnd, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOOWNERZORDER);
-        GdiFlush();
-
-    } else if(_active_minimized_fullscreen) {
-        if(wdxdisplay_cat.is_spam())
-            wdxdisplay_cat.spam() << "WDX window unminimized from active-minimized state...\n";
-    
         if(_PandaPausedTimer!=NULL) {
             KillTimer(_dxgsg->scrn.hWnd,_PandaPausedTimer);
             _PandaPausedTimer = NULL;
         }
 
-        _active_minimized_fullscreen = false;
+        if(_window_inactive) {
+            _window_inactive = false;
+            if(wdxdisplay_cat.is_spam())
+                wdxdisplay_cat.spam() << "WDX window re-activated...\n";
+        } else {
+            _active_minimized_fullscreen = false;
+            if(wdxdisplay_cat.is_spam())
+                wdxdisplay_cat.spam() << "WDX window unminimized from active-minimized state...\n";
+        }
+
+        // need to call dx_init and ResourceManagerDiscardBytes since D3D Reset() was called
+        init_resized_window();
     
         // move window to top of zorder
     //  if(_props._fullscreen)
     //      SetWindowPos(_DisplayDataArray[0].hWnd, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOOWNERZORDER);
         GdiFlush();
-    }
+    } 
 
     if(_props._fullscreen) {
         throw_event("PandaRestarted");  // right now this is used to signal python event handler to re-enable audio
@@ -944,6 +968,18 @@ bool supports_color_cursors(D3DADAPTER_IDENTIFIER8 &DevID) {
     return false;
 }
 
+HCURSOR CreateNullCursor(HINSTANCE hInst) {
+  #define CURSORBYTESIZE (32*4)
+
+  // 1-bit 32x32
+  BYTE ANDPlane[CURSORBYTESIZE],XORPlane[CURSORBYTESIZE];
+
+  ZeroMemory(XORPlane,CURSORBYTESIZE);
+  memset(ANDPlane,0xFF,CURSORBYTESIZE);
+
+  return CreateCursor(hInst,0,0,32,32,ANDPlane,XORPlane);
+}
+
 void wdxGraphicsWindowGroup::CreateWindows(void) {
     HINSTANCE hProgramInstance = GetModuleHandle(NULL);
     WNDCLASS wc;
@@ -975,6 +1011,7 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
         wc.hIcon = NULL; // use default app icon
     }
 
+#if 0
     // Note: dx_init() uses the cursor handle to create the dx cursor surface
     string windows_color_cursor_filename = get_color_cursor_filename().to_os_specific();
 
@@ -1020,6 +1057,7 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
     }
 
     try_mono_cursor:
+#endif
 
     if(!_bLoadedCustomCursor) {
         string windows_mono_cursor_filename = get_mono_cursor_filename().to_os_specific();
@@ -1047,18 +1085,33 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
     if(!_bLoadedCustomCursor) 
       _hMouseCursor = LoadCursor(NULL, DEFAULT_CURSOR);
 
-    // bugbug:  probably need to make 2 classes, one w/cursor and one w/NULL cursor for fullscrn to support mixed types
+    // need both a mouse and no-mouse class in case we have mixed fullscrn/windowed
+    // windowed must use GDI mouse, fullscrn usually wont
     if (!wc_registered) {
       // We only need to register the window class once per session.
-      wc.hCursor = (dx_full_screen ? NULL : _hMouseCursor);  // for windowed mode use the GDI cursor.  
+
+      wc.hCursor = _hMouseCursor;  // for windowed mode use the GDI cursor.  
       // bugbug:  for fullscreen do we need to do a SetWindowLongNULL
       wc.hbrBackground  = (HBRUSH)GetStockObject(BLACK_BRUSH);
       wc.lpszMenuName   = NULL;
       wc.lpszClassName  = WDX_WINDOWCLASSNAME;
       
       if(!RegisterClass(&wc)) {
-        wdxdisplay_cat.error() << "could not register window class!" << endl;
+        wdxdisplay_cat.error() << "could not register window class " << WDX_WINDOWCLASSNAME << endl;
       }
+
+      if(dx_use_dx_cursor) {
+          wc.hCursor = CreateNullCursor(hProgramInstance);
+          if(wc.hCursor==NULL)
+            wdxdisplay_cat.error() << "failed to create NULL cursor, error=" << GetLastError() << endl;
+    
+          wc.lpszClassName  = WDX_WINDOWCLASSNAME_NOCURSOR;
+    
+          if(!RegisterClass(&wc)) {
+            wdxdisplay_cat.error() << "could not register window class " << WDX_WINDOWCLASSNAME_NOCURSOR << endl;
+          }
+      }
+
       wc_registered = true;
     }
 
@@ -1074,6 +1127,7 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
         DWORD final_window_style;
 
         final_window_style=base_window_style;
+        char *pWindowClassName;
 
         if(_windows[devnum]->_props._fullscreen) {
             MONITORINFO minfo;
@@ -1086,6 +1140,8 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
             ytop=minfo.rcMonitor.top;
             xsize=props->_xsize;
             ysize=props->_ysize;
+
+            pWindowClassName= (dx_use_dx_cursor ? WDX_WINDOWCLASSNAME_NOCURSOR : WDX_WINDOWCLASSNAME);
         } else {
             RECT win_rect;
             SetRect(&win_rect, props->_xorg,  props->_yorg, props->_xorg + props->_xsize,
@@ -1108,11 +1164,13 @@ void wdxGraphicsWindowGroup::CreateWindows(void) {
             ytop= win_rect.top;
             xsize=RECT_XSIZE(win_rect);
             ysize=RECT_YSIZE(win_rect);
+
+            pWindowClassName=WDX_WINDOWCLASSNAME;
         }
 
         // BUGBUG: this sets window posns based on desktop arrangement of monitors (that is what GetMonInfo is for). 
         // need to move to chancfg stuff instead (i.e. use the properties x/yorg's) when that is ready
-        HWND hWin = CreateWindow(WDX_WINDOWCLASSNAME, props->_title.c_str(),
+        HWND hWin = CreateWindow(pWindowClassName, props->_title.c_str(),
                                   final_window_style, xleft,ytop,xsize,ysize,
                                   _hParentWindow, NULL, hProgramInstance, 0);
 
@@ -1202,9 +1260,13 @@ void wdxGraphicsWindow::config_window(wdxGraphicsWindowGroup *pParentGroup) {
     _return_control_to_app = false;
     _active_minimized_fullscreen = false;
 
-    if(_props._fullscreen || _props._fullscreen) {
-        _props._fullscreen = _props._fullscreen = true;
+    if(_props._fullscreen || dx_full_screen) {
+        _props._fullscreen = dx_full_screen= true;
     }
+
+    _use_dx8_cursor = dx_use_dx_cursor;
+    if(!_props._fullscreen)
+       _use_dx8_cursor = false;
 
     _WindowAdjustingType = NotAdjusting;
     _bSizeIsMaximized=FALSE;
@@ -1448,7 +1510,7 @@ find_all_card_memavails(void) {
 
     HINSTANCE hDDrawDLL = LoadLibrary(DDRAW_NAME);
     if(hDDrawDLL == 0) {
-        wdxdisplay_cat.fatal() << "can't locate " << DDRAW_NAME <<"!\n";
+        wdxdisplay_cat.fatal() << "LoadLibrary(" << DDRAW_NAME <<") failed!, error=" << GetLastError() << endl;
         exit(1);
     }
 
@@ -2308,8 +2370,8 @@ void wdxGraphicsWindow::init_resized_window(void) {
         GetClientRect( pDisplay->hWnd, &view_rect );
         ul.x=view_rect.left;  ul.y=view_rect.top;
         lr.x=view_rect.right;  lr.y=view_rect.bottom;
-        ClientToScreen(pDisplay->hWnd, &ul );
-        ClientToScreen(pDisplay->hWnd, &lr );
+        ClientToScreen(pDisplay->hWnd, &ul);
+        ClientToScreen(pDisplay->hWnd, &lr);
         view_rect.left=ul.x; view_rect.top=ul.y;
         view_rect.right=lr.x; view_rect.bottom=lr.y;
         _props._xorg = view_rect.left;  // _props should reflect view rectangle
@@ -2321,11 +2383,10 @@ void wdxGraphicsWindow::init_resized_window(void) {
 
     resized(newWidth,newHeight);  // update panda channel/display rgn info, _props.xsize, _props.ysize
 
-   // clear window to black ASAP
-    HDC hDC=GetDC(pDisplay->hWnd);
-    PatBlt(hDC,_props._xorg,_props._yorg,_props._xsize,_props._ysize,BLACKNESS);
-    ReleaseDC(pDisplay->hWnd,hDC);
+    // clear window to black ASAP
+    ClearToBlack(pDisplay->hWnd,_props);
 
+    // clear textures and VB's out of video&AGP mem, so cache is reset
     hr = pDisplay->pD3DDevice->ResourceManagerDiscardBytes(0);
     if(FAILED(hr)) {
         wdxdisplay_cat.error() << "ResourceManagerDiscardBytes failed for device #" << pDisplay->CardIDNum << D3DERRORSTRING(hr);
@@ -2341,6 +2402,30 @@ void wdxGraphicsWindow::init_resized_window(void) {
 
     _dxgsg->dx_init(_pParentWindowGroup->_hMouseCursor);
     // do not SetDXReady() yet since caller may want to do more work before letting rendering proceed
+
+    set_cursor_visibility(true);
+}
+
+// does NOT override _props._bCursorIsVisible
+INLINE void wdxGraphicsWindow::set_cursor_visibility(bool bVisible) {
+  bool bValidDXPtrs;
+   
+  if(_use_dx8_cursor)
+    bValidDXPtrs = (IS_VALID_PTR(_dxgsg) && IS_VALID_PTR(_dxgsg->scrn.pD3DDevice));
+
+  if(_props._bCursorIsVisible) {
+      if(_use_dx8_cursor) {
+          ShowCursor(false);
+          if(bValidDXPtrs)
+              _dxgsg->scrn.pD3DDevice->ShowCursor(bVisible);
+      } else {
+         ShowCursor(bVisible);
+      }
+  } else {
+      ShowCursor(false);
+      if(_use_dx8_cursor && bValidDXPtrs)
+          _dxgsg->scrn.pD3DDevice->ShowCursor(false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2404,7 +2489,6 @@ void wdxGraphicsWindow::setup_colormap(void) {
     RealizePalette(_hdc);
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: begin_frame
 //       Access:
@@ -2416,8 +2500,6 @@ void wdxGraphicsWindow::begin_frame(void) {
 void wdxGraphicsWindow::show_frame(void) {
     _dxgsg->show_frame();
 }
-
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: end_frame

@@ -94,6 +94,10 @@ bool dx_debug_view_mipmaps = config_dxgsg.GetBool("dx-debug-view-mipmaps", false
 //int dx_print_texstats = config_dxgsg.GetBool("dx-print-texstats", 0);
 #endif
 
+// use dx8 or GDI mouse cursor in fullscreen mode?
+// Nvidia dx8 cursor is invisible as of 28.32 drivers, so using GDI in fullscrn by default for now
+bool dx_use_dx_cursor = config_dxgsg.GetBool("dx-use-dx-cursor", false);
+
 bool dx_force_anisotropic_filtering = config_dxgsg.GetBool("dx-force-anisotropic-filtering", false);
 
 // set 'retained-mode #t' and this to have prepare_geom concatenate all tristrips within a geom 
