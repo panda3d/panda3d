@@ -164,8 +164,6 @@ class LerpAnimInterval(Interval.Interval):
         # Then compute the current weight based on the time elapsed so far.
         w = self.startWeight + t * self.deltaWeight
 
-        print "t = %f, w = %f" % (t, w)
-
         # Apply that weight to the two anims.
         self.actor.setControlEffect(self.endAnim, w)
         self.actor.setControlEffect(self.startAnim, 1.0 - w)
