@@ -91,7 +91,6 @@
         oldTasks = taskMgr.getTasksNamed(taskName)
         for task in oldTasks:
             if hasattr(task, "interval"):
-                task.interval.privInterrupt()
                 taskMgr.remove(task)
 
     def __playTask(self, task):
