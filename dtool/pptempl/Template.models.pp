@@ -135,6 +135,14 @@ clean : clean-pal
 $[directory] :
 	@test -d $[directory] || echo mkdir -p $[directory]
 	@test -d $[directory] || mkdir -p $[directory]
+
+// Sometimes we need a target to depend on the directory existing, without 
+// being fooled by the directory's modification times.  We use this
+// phony timestamp file to achieve that.
+$[directory]/stamp :
+	@test -d $[directory] || echo mkdir -p $[directory]
+	@test -d $[directory] || mkdir -p $[directory]
+	@touch $[directory]/stamp
 #end directory
 
 
@@ -191,7 +199,7 @@ $[target] : $[source]
   #foreach egg $[SOURCES]
     #define source $[source_prefix]$[egg]
     #define target $[TARGET_DIR]/$[egg]
-$[target] : $[source] $[pt]
+$[target] : $[source] $[pt] $[TARGET_DIR]/stamp
 	$[COMMAND]
   #end egg
 #end filter_egg
@@ -204,12 +212,12 @@ $[target] : $[source] $[pt]
    // A bunch of rules to make each generated egg file depend on the
    // first one.
   #foreach egg $[notdir $[wordlist 2,9999,$[SOURCES]]]
-$[TARGET_DIR]/$[egg] : $[target]
+$[TARGET_DIR]/$[egg] : $[target] $[TARGET_DIR]/stamp
 	touch $[TARGET_DIR]/$[egg]
   #end egg
 
    // And this is the actual optchar pass.
-$[target] : $[sources]
+$[target] : $[sources] $[TARGET_DIR]/stamp
 	egg-optchar $[OPTCHAR_OPTS] -d $[TARGET_DIR] $[sources]
 #end optchar_egg
 
@@ -220,7 +228,7 @@ $[target] : $[sources]
     #define pt $[egg:%.egg=$[source_prefix]%.pt]
     #define source $[source_prefix]$[egg]
     #define target $[pal_egg_dir]/$[egg]
-$[target] : $[source] $[pt]
+$[target] : $[source] $[pt] $[pal_egg_dir]/stamp
     #if $[PHASE]
 	egg-palettize-new $[PALETTIZE_OPTS] -type jpg,rgb -C -dr $[install_dir] -dm $[install_dir]/%s/maps -g phase_$[PHASE] -gdir phase_$[PHASE] -P256,256 -2 -o $[target] $[texattrib_file] $[source]
     #else
@@ -239,14 +247,14 @@ $[pt] :
   #foreach egg $[SOURCES]
     #define source $[pal_egg_dir]/$[egg]
     #define target $[bam_dir]/$[egg:%.egg=%.bam]
-$[target] : $[source]
+$[target] : $[source] $[bam_dir]/stamp
 	egg2bam -kp -tp $[install_dir] -o $[target] $[source]
 
   #end egg
   #foreach egg $[UNPAL_SOURCES]
     #define source $[source_prefix]$[egg]
     #define target $[bam_dir]/$[egg:%.egg=%.bam]
-$[target] : $[source]
+$[target] : $[source] $[bam_dir]/stamp
 	egg2bam -kp -tp $[install_dir] -o $[target] $[source]
 
   #end egg
