@@ -344,7 +344,7 @@ reset() {
 void GLGraphicsStateGuardian::
 clear(const RenderBuffer &buffer) {
   PStatTimer timer(_win->_clear_pcollector);
-  activate();
+  //  activate();
 
   nassertv(buffer._gsg == this);
   int buffer_type = buffer._buffer_type;
@@ -467,6 +467,7 @@ render_frame() {
     << " --------------------------------------------" << endl;
 #endif
 
+  activate();
   _win->begin_frame();
   report_errors();
   _decal_level = 0;
@@ -606,7 +607,7 @@ render_subgraph(RenderTraverser *traverser,
                 const AllTransitionsWrapper &net_trans) {
   // Calling activate() frequently seems to be intolerably expensive
   // on some platforms.  We'll limit ourselves for now to calling it
-  // only during the clear().
+  // only in render_frame().
 
   //  activate();
 
