@@ -149,7 +149,8 @@ class DistributedObjectAI(DirectObject.DirectObject):
 
     def handleLogicalZoneChange(self, newZoneId, oldZoneId):
         """this function gets called as if we never go through the
-        quiet zone"""
+        quiet zone. Note that it is called once you reach the newZone,
+        and not at the time that you leave the oldZone."""
         messenger.send(self.getLogicalZoneChangeEvent(),
                        [newZoneId, oldZoneId])
 
