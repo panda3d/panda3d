@@ -3091,7 +3091,14 @@ apply_texture(TextureContext *tc) {
 #endif
   
   D3DTEXTUREFILTERTYPE newMipFilter = PandaToD3DMipType[(DWORD)ft];
-  
+
+  if (!tex->might_have_ram_image()) {
+    // If the texture is completely dynamic, don't try to issue
+    // mipmaps--pandadx doesn't support auto-generated mipmaps at this
+    // point.
+    newMipFilter = D3DTEXF_NONE;
+  }
+
 #ifndef NDEBUG
   // sanity check
   extern char *PandaFilterNameStrs[];

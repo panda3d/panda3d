@@ -2973,160 +2973,167 @@ prepare_texture(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 apply_texture(TextureContext *tc) {
-    if (tc==NULL) {
-      // The texture wasn't bound properly or something, so ensure
-      // texturing is disabled and just return.
-      enable_texturing(false);
+  if (tc==NULL) {
+    // The texture wasn't bound properly or something, so ensure
+    // texturing is disabled and just return.
+    enable_texturing(false);
+    return;
+  }
+  
+#ifdef DO_PSTATS
+  add_to_texture_record(tc);
+#endif
+  
+  // Note: if this code changes, make sure to change initialization
+  // SetTSS code in dx_init as well so DX TSS renderstate matches
+  // dxgsg state
+  
+  DXTextureContext9 *dtc = DCAST(DXTextureContext9, tc);
+  
+  int dirty = dtc->get_dirty_flags();
+  
+  if (dirty) {
+    // If the texture image has changed, or if its use of mipmaps has
+    // changed, we need to re-create the image.  Ignore other types of
+    // changes, which arent significant for dx
+    
+    if((dirty & (Texture::DF_image | Texture::DF_mipmap)) != 0) {
+      // If this is *only* because of a mipmap change, issue a
+      // warning--it is likely that this change is the result of an
+      // error or oversight.
+      if ((dirty & Texture::DF_image) == 0) {
+        dxgsg9_cat.warning()
+          << "Texture " << *dtc->_texture << " has changed mipmap state.\n";
+      }
+      
+      dtc->DeleteTexture();
+      if (dtc->CreateTexture(*_pScrn) == NULL) {
+        
+        // Oops, we can't re-create the texture for some reason.
+        dxgsg9_cat.error() << "Unable to re-create texture " << *dtc->_texture << endl;
+        
+        enable_texturing(false);
+        return;
+      }
+    }
+    dtc->clear_dirty_flags();
+  } else {
+    if(_pCurTexContext == dtc) {
+      enable_texturing(true);
       return;
     }
-
-    #ifdef DO_PSTATS
-       add_to_texture_record(tc);
-    #endif
-
-    // Note: if this code changes, make sure to change initialization
-    // SetTSS code in dx_init as well so DX TSS renderstate matches
-    // dxgsg state
-
-    DXTextureContext9 *dtc = DCAST(DXTextureContext9, tc);
-
-    int dirty = dtc->get_dirty_flags();
-
-    if (dirty) {
-      // If the texture image has changed, or if its use of mipmaps has
-      // changed, we need to re-create the image.  Ignore other types of
-      // changes, which arent significant for dx
-
-      if((dirty & (Texture::DF_image | Texture::DF_mipmap)) != 0) {
-          // If this is *only* because of a mipmap change, issue a
-          // warning--it is likely that this change is the result of an
-          // error or oversight.
-          if ((dirty & Texture::DF_image) == 0) {
-            dxgsg9_cat.warning()
-              << "Texture " << *dtc->_texture << " has changed mipmap state.\n";
-          }
-
-          dtc->DeleteTexture();
-          if (dtc->CreateTexture(*_pScrn) == NULL) {
-
-            // Oops, we can't re-create the texture for some reason.
-            dxgsg9_cat.error() << "Unable to re-create texture " << *dtc->_texture << endl;
-
-            enable_texturing(false);
-            return;
-          }
-      }
-      dtc->clear_dirty_flags();
-    } else {
-       if(_pCurTexContext == dtc) {
-          enable_texturing(true);
-          return;
-       }
-    }
-
-    Texture *tex = tc->_texture;
-    Texture::WrapMode wrapU,wrapV;
-    wrapU=tex->get_wrapu();
-    wrapV=tex->get_wrapv();
-
-    if (wrapU!=_CurTexWrapModeU) {
-        _pD3DDevice->SetSamplerState(0,D3DSAMP_ADDRESSU,get_texture_wrap_mode(wrapU));
-        _CurTexWrapModeU = wrapU;
-    }
-    if (wrapV!=_CurTexWrapModeV) {
-        _pD3DDevice->SetSamplerState(0,D3DSAMP_ADDRESSV,get_texture_wrap_mode(wrapV));
-        _CurTexWrapModeV = wrapV;
-    }
-
-    uint aniso_degree=tex->get_anisotropic_degree();
-    Texture::FilterType ft=tex->get_magfilter();
-
-    if(_CurTexAnisoDegree != aniso_degree) {
-        _pD3DDevice->SetSamplerState(0,D3DSAMP_MAXANISOTROPY,aniso_degree);
-        _CurTexAnisoDegree = aniso_degree;
-    }
-
-    D3DTEXTUREFILTERTYPE newMagFilter;
-    if (aniso_degree<=1) {
-        newMagFilter=((ft!=Texture::FT_nearest) ? D3DTEXF_LINEAR : D3DTEXF_POINT);
-
-        #ifdef _DEBUG
-        if((ft!=Texture::FT_linear)&&(ft!=Texture::FT_nearest)) {
-             dxgsg9_cat.error() << "MipMap filter type setting for texture magfilter makes no sense,  texture: " << tex->get_name() << "\n";
-        }
-        #endif
-    } else {
-        newMagFilter=D3DTEXF_ANISOTROPIC;
-    }
-
-    if(_CurTexMagFilter!=newMagFilter) {
-        _CurTexMagFilter=newMagFilter;
-        _pD3DDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, newMagFilter);
-    }
-
+  }
+  
+  Texture *tex = tc->_texture;
+  Texture::WrapMode wrapU,wrapV;
+  wrapU=tex->get_wrapu();
+  wrapV=tex->get_wrapv();
+  
+  if (wrapU!=_CurTexWrapModeU) {
+    _pD3DDevice->SetSamplerState(0,D3DSAMP_ADDRESSU,get_texture_wrap_mode(wrapU));
+    _CurTexWrapModeU = wrapU;
+  }
+  if (wrapV!=_CurTexWrapModeV) {
+    _pD3DDevice->SetSamplerState(0,D3DSAMP_ADDRESSV,get_texture_wrap_mode(wrapV));
+    _CurTexWrapModeV = wrapV;
+  }
+  
+  uint aniso_degree=tex->get_anisotropic_degree();
+  Texture::FilterType ft=tex->get_magfilter();
+  
+  if(_CurTexAnisoDegree != aniso_degree) {
+    _pD3DDevice->SetSamplerState(0,D3DSAMP_MAXANISOTROPY,aniso_degree);
+    _CurTexAnisoDegree = aniso_degree;
+  }
+  
+  D3DTEXTUREFILTERTYPE newMagFilter;
+  if (aniso_degree<=1) {
+    newMagFilter=((ft!=Texture::FT_nearest) ? D3DTEXF_LINEAR : D3DTEXF_POINT);
+    
 #ifdef _DEBUG
-    assert(Texture::FT_linear_mipmap_linear < 8);
+    if((ft!=Texture::FT_linear)&&(ft!=Texture::FT_nearest)) {
+      dxgsg9_cat.error() << "MipMap filter type setting for texture magfilter makes no sense,  texture: " << tex->get_name() << "\n";
+    }
 #endif
-/*
- enum FilterType {
+  } else {
+    newMagFilter=D3DTEXF_ANISOTROPIC;
+  }
+  
+  if(_CurTexMagFilter!=newMagFilter) {
+    _CurTexMagFilter=newMagFilter;
+    _pD3DDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, newMagFilter);
+  }
+  
+#ifdef _DEBUG
+  assert(Texture::FT_linear_mipmap_linear < 8);
+#endif
+  /*
+    enum FilterType {
     FT_nearest,FT_linear,FT_nearest_mipmap_nearest,FT_linear_mipmap_nearest,
     FT_nearest_mipmap_linear, FT_linear_mipmap_linear, };
-*/
- // map Panda composite min+mip filter types to d3d's separate min & mip filter types
- static D3DTEXTUREFILTERTYPE PandaToD3DMinType[8] =
+  */
+  // map Panda composite min+mip filter types to d3d's separate min & mip filter types
+  static D3DTEXTUREFILTERTYPE PandaToD3DMinType[8] =
     {D3DTEXF_POINT,D3DTEXF_LINEAR,D3DTEXF_POINT,D3DTEXF_LINEAR,D3DTEXF_POINT,D3DTEXF_LINEAR};
- static D3DTEXTUREFILTERTYPE PandaToD3DMipType[8] =
+  static D3DTEXTUREFILTERTYPE PandaToD3DMipType[8] =
     {D3DTEXF_NONE,D3DTEXF_NONE,D3DTEXF_POINT,D3DTEXF_POINT,D3DTEXF_LINEAR,D3DTEXF_LINEAR};
-
-    ft=tex->get_minfilter();
-
+  
+  ft=tex->get_minfilter();
+  
 #ifdef _DEBUG
-    if(ft > Texture::FT_linear_mipmap_linear) {
-                dxgsg9_cat.error() << "Unknown tex filter type for tex: " << tex->get_name() << "  filter: "<<(DWORD)ft<<"\n";
-                return;
-    }
+  if(ft > Texture::FT_linear_mipmap_linear) {
+    dxgsg9_cat.error() << "Unknown tex filter type for tex: " << tex->get_name() << "  filter: "<<(DWORD)ft<<"\n";
+    return;
+  }
 #endif
-
-    D3DTEXTUREFILTERTYPE newMipFilter = PandaToD3DMipType[(DWORD)ft];
-
-    #ifndef NDEBUG
-      // sanity check
-    extern char *PandaFilterNameStrs[];
-    if((!(dtc->_bHasMipMaps))&&(newMipFilter!=D3DTEXF_NONE)) {
-        dxgsg9_cat.error() << "Trying to set mipmap filtering for texture with no generated mipmaps!! texname[" << tex->get_name() << "], filter("<<PandaFilterNameStrs[ft]<<")\n";
+  
+  D3DTEXTUREFILTERTYPE newMipFilter = PandaToD3DMipType[(DWORD)ft];
+  
+  if (!tex->might_have_ram_image()) {
+    // If the texture is completely dynamic, don't try to issue
+    // mipmaps--pandadx doesn't support auto-generated mipmaps at this
+    // point.
+    newMipFilter = D3DTEXF_NONE;
+  }
+  
+#ifndef NDEBUG
+  // sanity check
+  extern char *PandaFilterNameStrs[];
+  if((!(dtc->_bHasMipMaps))&&(newMipFilter!=D3DTEXF_NONE)) {
+    dxgsg9_cat.error() << "Trying to set mipmap filtering for texture with no generated mipmaps!! texname[" << tex->get_name() << "], filter("<<PandaFilterNameStrs[ft]<<")\n";
         newMipFilter=D3DTEXF_NONE;
     }
-    #endif
-
-
-    D3DTEXTUREFILTERTYPE newMinFilter = PandaToD3DMinType[(DWORD)ft];
-
-    if(aniso_degree>=2) {
-        newMinFilter=D3DTEXF_ANISOTROPIC;
-    }
-
-    if(newMinFilter!=_CurTexMinFilter) {
-        _CurTexMinFilter = newMinFilter;
-        _pD3DDevice->SetSamplerState(0, D3DSAMP_MINFILTER, newMinFilter);
-    }
-
-    if(newMipFilter!=_CurTexMipFilter) {
-        _CurTexMipFilter = newMipFilter;
-        _pD3DDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, newMipFilter);
-    }
-
-    // bugbug:  does this handle the case of untextured geometry?
-    //          we dont see this bug cause we never mix textured/untextured
-    _pD3DDevice->SetTexture(0,dtc->_pD3DTexture9);
-
-#if 0
-    if (dtc!=NULL) {
-        dxgsg9_cat.spam() << "Setting active DX texture: " << dtc->_tex->get_name() << "\n";
-    }
 #endif
 
-    _pCurTexContext = dtc;   // enable_texturing needs this
-    enable_texturing(true);
+  
+  D3DTEXTUREFILTERTYPE newMinFilter = PandaToD3DMinType[(DWORD)ft];
+  
+  if(aniso_degree>=2) {
+    newMinFilter=D3DTEXF_ANISOTROPIC;
+  }
+  
+  if(newMinFilter!=_CurTexMinFilter) {
+    _CurTexMinFilter = newMinFilter;
+    _pD3DDevice->SetSamplerState(0, D3DSAMP_MINFILTER, newMinFilter);
+  }
+  
+  if(newMipFilter!=_CurTexMipFilter) {
+    _CurTexMipFilter = newMipFilter;
+    _pD3DDevice->SetSamplerState(0, D3DSAMP_MIPFILTER, newMipFilter);
+  }
+  
+  // bugbug:  does this handle the case of untextured geometry?
+  //          we dont see this bug cause we never mix textured/untextured
+  _pD3DDevice->SetTexture(0,dtc->_pD3DTexture9);
+  
+#if 0
+  if (dtc!=NULL) {
+    dxgsg9_cat.spam() << "Setting active DX texture: " << dtc->_tex->get_name() << "\n";
+  }
+#endif
+  
+  _pCurTexContext = dtc;   // enable_texturing needs this
+  enable_texturing(true);
 }
 
 ////////////////////////////////////////////////////////////////////
