@@ -55,6 +55,7 @@ Downloader(void) {
   _buffer = new Buffer(_disk_buffer_size);
 
   _connected = false;
+  _use_proxy = false;
   // We need to flush after every write in case we're interrupted
   _dest_stream.setf(ios::unitbuf, 0);
   _current_status = NULL;
@@ -92,65 +93,18 @@ Downloader::
 ////////////////////////////////////////////////////////////////////
 int Downloader::
 connect_to_server_by_proxy(const string &proxy_name, uint proxy_port,
-			   const string &server_name, uint server_port) {
+			   const string &server_name) {
   if (connect_to_server(proxy_name, proxy_port) != EU_success)
     downloader_cat.error()
       << "Downloader::connect_to_server_by_proxy() - could not connect to: "
       << proxy_name << endl;	
     return EU_error_abort;
 
-  // Send an HTTP request asking the proxy to connect to the server
-  string request = "CONNECT ";
-  request += server_name;
-  request += ":";
-  stringstream port_stream;
-  port_stream << server_port;
-  request += port_stream.str();
-  request += " HTTP/1.1\012\012";
-  int outlen = request.size();
-  if (downloader_cat.is_debug())
-    downloader_cat.debug()
-      << "Downloader::proxy() - Sending request:\n" << request << endl;
-  int send_ret = safe_send(_socket, request.c_str(), outlen,
-                        (long)downloader_timeout);
-  if (send_ret < 0)
-    return send_ret;
+  _proxy_string = "http://";
+  _proxy_string += server_name;
+  _use_proxy = true;
 
-  uint fret;
-
-  _current_status = new DownloadStatus(_buffer->_buffer, 0, 0, 0, false);
-  for (int i = 0; i <= 100; i++) {
-    fret = fast_receive(_socket, _current_status, MAX_RECEIVE_BYTES);
-    if (fret == EU_eof || fret < 0) {
-      break;
-    } else if (fret == EU_success) {
-      _got_any_data = true;
-    }
-  }
-
-  if (fret == EU_eof) {
-    if (_got_any_data == true) {
-      if (downloader_cat.is_debug())
-        downloader_cat.debug()
-          << "Downloader::proxy() - Got eof" << endl;
-      // parse proxy message here
-      uint ret = parse_proxy_response(_current_status);
-      cleanup();
-      return ret;
-    } else {
-      if (downloader_cat.is_debug())
-        downloader_cat.debug()
-          << "Downloader::proxy() - Got 0 bytes" << endl;
-      return EU_error_abort;
-    }
-  } else if (fret == EU_network_no_data) {
-    if (downloader_cat.is_debug())
-      downloader_cat.debug()
-        << "Downloader::proxy() - No data" << endl;
-      return EU_error_abort;
-  } else if (fret < 0) {
-    return fret;
-  }
+  return EU_success;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -398,6 +352,8 @@ initiate(const string &file_name, Filename file_dest,
 
   // Send an HTTP request for the file to the server
   string request = "GET ";
+  if (_use_proxy == true)
+    request += _proxy_string;
   request += file_name;
   request += " HTTP/1.1\012Host: ";
   request += _server_name;
@@ -457,6 +413,8 @@ initiate(const string &file_name) {
 
   // Send an HTTP request for the file to the server
   string request = "GET ";
+  if (_use_proxy == true)
+    request += _proxy_string;
   request += file_name;
   request += " HTTP/1.1\012Host: ";
   request += _server_name;
@@ -828,81 +786,6 @@ parse_http_response(const string &resp) {
   downloader_cat.error()
     << "Downloader::parse_http_response() - Invalid response: "
     << resp << endl;
-  return EU_error_abort;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Downloader::parse_proxy_response
-//       Access: Private
-//  Description: Looks for a valid proxy response. 
-//               Function returns false
-//               on an error condition, otherwise true.
-////////////////////////////////////////////////////////////////////
-int Downloader::
-parse_proxy_response(DownloadStatus *status) {
-  nassertr(status != NULL, EU_error_abort);
-
-  if (status->_bytes_in_buffer == 0) {
-    downloader_cat.error()
-      << "Downloader::parse_proxy_response() - Empty buffer!" << endl;
-    return EU_error_abort;
-  }
-
-  string bufstr((char *)status->_start, status->_bytes_in_buffer);
-  size_t p  = 0;
-  while (p < bufstr.length()) {
-    // Server sends out CR LF (\r\n) as newline delimiter
-    size_t nl = bufstr.find("\015\012", p);
-    if (nl == string::npos) {
-      downloader_cat.error()
-        << "Downloader::parse_proxy_response() - No newlines in buffer of "
-        << "length: " << status->_bytes_in_buffer << endl;
-      return EU_error_abort;
-    } else if (p == 0 && nl == p) {
-      downloader_cat.error()
-        << "Downloader::parse_proxy_response() - Buffer begins with newline!"
-        << endl;
-        return EU_error_abort;
-    }
-
-    string component = bufstr.substr(p, nl - p);
-
-    // The first line of the response should say whether
-    // got an error or not
-    if (status->_first_line_complete == false) {
-      status->_first_line_complete = true;
-      int parse_ret = parse_http_response(component);
-      if (parse_ret == EU_success) {
-        if (downloader_cat.is_debug())
-          downloader_cat.debug()
-            << "Downloader::parse_proxy_response() - valid proxy: "
-            << component << endl;
-      } else {
-        return parse_ret;
-      }
-    }
-
-    // Look for proxy agent
-    size_t cpos = component.find(":");
-    string tline = component.substr(0, cpos);
-    if (tline == "Proxy-agent") {
-      if (downloader_cat.debug())
-	downloader_cat.debug()
-	  << "Downloader::parse_proxy_response() - proxy agent: %s"
-	  << component << endl;
-    }
-
-    // Two consecutive (CR LF)s indicates end of HTTP response
-    if (nl == p) {
-      if (downloader_cat.is_debug())
-        downloader_cat.debug()
-          << "Downloader::parse_proxy_response() - complete" << endl;
-      return EU_success;
-    }
-
-    p = nl + 2;
-  }
-
   return EU_error_abort;
 }
 
