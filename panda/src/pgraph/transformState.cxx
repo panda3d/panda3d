@@ -40,6 +40,7 @@ TransformState() {
   _saved_entry = _states.end();
   _self_compose = (TransformState *)NULL;
   _flags = F_is_identity | F_singular_known;
+  _inv_mat = (LMatrix4f *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -70,6 +71,11 @@ operator = (const TransformState &) {
 ////////////////////////////////////////////////////////////////////
 TransformState::
 ~TransformState() {
+  // Free the inverse matrix computation, if it has been stored.
+  if (_inv_mat != (LMatrix4f *)NULL) {
+    delete _inv_mat;
+  }
+
   // Remove the deleted TransformState object from the global pool.
   if (_saved_entry != _states.end()) {
     _states.erase(_saved_entry);
@@ -584,19 +590,22 @@ do_invert_compose(const TransformState *other) const {
   nassertr((_flags & F_is_invalid) == 0, this);
   nassertr((other->_flags & F_is_invalid) == 0, other);
 
+  if (is_singular()) {
+    return make_invalid();
+  }
+
   // We should do this operation componentwise if both transforms were
   // given componentwise.
 
-  // Perhaps we should cache the result of the inverse matrix
-  // operation separately, as a further optimization.
+  // Now that is_singular() has returned true, we can assume that
+  // _inv_mat has been allocated and filled in.
+  nassertr(_inv_mat != (LMatrix4f *)NULL, make_invalid());
 
-  LMatrix4f new_mat;
-  bool invertible = new_mat.invert_from(get_mat());
-  if (!invertible) {
-    return make_invalid();
+  if (other->is_identity()) {
+    return make_mat(*_inv_mat);
+  } else {
+    return make_mat(other->get_mat() * (*_inv_mat));
   }
-  new_mat = other->get_mat() * new_mat;
-  return make_mat(new_mat);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -608,19 +617,21 @@ do_invert_compose(const TransformState *other) const {
 void TransformState::
 calc_singular() {
   nassertv((_flags & F_is_invalid) == 0);
-  bool singular = false;
 
-  if (has_components()) {
-    // The matrix is singular if any component of its scale is 0.
-    singular = (_scale[0] == 0.0f || _scale[1] == 0.0f || _scale[2] == 0.0f);
-  } else {
-    // The matrix is singular if its determinant is zero.
-    const LMatrix4f &mat = get_mat();
-    singular = (mat.get_upper_3().determinant() == 0.0f);
-  }
+  // We determine if a matrix is singular by attempting to invert it
+  // (and we save the result of this invert operation for a subsequent
+  // do_invert_compose() call, which is almost certain to be made if
+  // someone is asking whether we're singular).
 
-  if (singular) {
+  // This should be NULL if no one has called calc_singular() yet.
+  nassertv(_inv_mat == (LMatrix4f *)NULL);
+  _inv_mat = new LMatrix4f;
+  bool inverted = _inv_mat->invert_from(get_mat());
+
+  if (!inverted) {
     _flags |= F_is_singular;
+    delete _inv_mat;
+    _inv_mat = (LMatrix4f *)NULL;
   }
   _flags |= F_singular_known;
 }

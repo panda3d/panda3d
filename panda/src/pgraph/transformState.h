@@ -157,6 +157,7 @@ private:
   };
   LVecBase3f _pos, _hpr, _scale;
   LMatrix4f _mat;
+  LMatrix4f *_inv_mat;
   
   short _flags;
 

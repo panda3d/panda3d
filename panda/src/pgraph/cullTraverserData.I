@@ -90,8 +90,11 @@ INLINE CullTraverserData::
 INLINE bool CullTraverserData::
 is_in_view(PandaNode *node) {
   if (_view_frustum == (GeometricBoundingVolume *)NULL) {
-    // If we don't have a frustum, we're always in.
+    // If the transform is valid, but we don't have a frustum, it's
+    // always in.
     return true;
   }
+
+  // Otherwise, compare the bounding volume to the frustum.
   return is_in_view_impl(node);
 }

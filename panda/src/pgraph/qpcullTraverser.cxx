@@ -149,6 +149,11 @@ r_traverse(PandaNode *node, const CullTraverserData &data) {
   // optimization, we should tag nodes with these properties as
   // being "fancy", and skip this processing for non-fancy nodes.
 
+  if (node->get_transform()->is_invalid()) {
+    // If the transform is invalid, forget it.
+    return;
+  }
+
   if (next_data.is_in_view(node)) {
     next_data.apply_transform_and_state(node);
 
@@ -264,6 +269,11 @@ CullableObject *qpCullTraverser::
 r_get_decals(PandaNode *node, const CullTraverserData &data,
              CullableObject *decals) {
   CullTraverserData next_data(data);
+
+  if (node->get_transform()->is_invalid()) {
+    // If the transform is invalid, forget it.
+    return decals;
+  }
 
   if (next_data.is_in_view(node)) {
     next_data.apply_transform_and_state(node);
