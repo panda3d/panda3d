@@ -208,8 +208,10 @@ TypeHandle PNMFileTypeTIFF::_type_handle;
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeTIFF::
 PNMFileTypeTIFF() {
-  if (pnmimage_tiff_cat.is_debug()) {
-    pnmimage_tiff_cat.debug()
+  // This constructor may run at static init type, so we use the ->
+  // dereferencing convention on the notify category.
+  if (pnmimage_tiff_cat->is_debug()) {
+    pnmimage_tiff_cat->debug()
       << TIFFGetVersion() << "\n";
   }
 }
