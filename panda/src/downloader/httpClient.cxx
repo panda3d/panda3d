@@ -89,7 +89,7 @@ get_http(const URLSpec &url, const string &body) {
 
   if (BIO_do_connect(bio) <= 0) {
     downloader_cat.info()
-      << "Could not contact server " << server << "\n";
+      << "Could not contact server " << server_str << "\n";
 #ifndef NDEBUG
     ERR_print_errors_fp(stderr);
 #endif
@@ -122,7 +122,7 @@ get_https(const URLSpec &url, const string &body) {
 
   if (BIO_do_connect(sbio) <= 0) {
     downloader_cat.info()
-      << "Could not contact server " << server << "\n";
+      << "Could not contact server " << server_str << "\n";
 #ifndef NDEBUG
     ERR_print_errors_fp(stderr);
 #endif
@@ -131,7 +131,7 @@ get_https(const URLSpec &url, const string &body) {
 
   if (BIO_do_handshake(sbio) <= 0) {
     downloader_cat.info()
-      << "Could not establish SSL handshake with " << server << "\n";
+      << "Could not establish SSL handshake with " << server_str << "\n";
 #ifndef NDEBUG
     ERR_print_errors_fp(stderr);
 #endif
@@ -158,7 +158,7 @@ get_http_proxy(const URLSpec &url, const string &body) {
 
   if (BIO_do_connect(bio) <= 0) {
     downloader_cat.info()
-      << "Could not contact proxy " << proxy_server << "\n";
+      << "Could not contact proxy " << proxy_server_str << "\n";
 #ifndef NDEBUG
     ERR_print_errors_fp(stderr);
 #endif
@@ -186,7 +186,7 @@ get_https_proxy(const URLSpec &url, const string &body) {
 
   if (BIO_do_connect(bio) <= 0) {
     downloader_cat.info()
-      << "Could not contact proxy " << proxy_server << "\n";
+      << "Could not contact proxy " << proxy_server_str << "\n";
 #ifndef NDEBUG
     ERR_print_errors_fp(stderr);
 #endif
