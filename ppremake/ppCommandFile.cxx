@@ -1229,8 +1229,15 @@ handle_end_command() {
       // Now compare the file we generated to the file that's already
       // there, if there is one.
 
-      //      nest->_output << ends;
+#ifdef HAVE_SSTREAM
       string generated_file = nest->_output.str();
+#else
+      nest->_output << ends;
+      char *c_str = nest->_output.str();
+      string generated_file = c_str;
+      delete[] c_str;
+#endif  // HAVE_SSTREAM
+
       if (!compare_output(generated_file, nest->_params,
                           (nest->_flags & OF_notouch) != 0)) {
         return false;

@@ -1,6 +1,9 @@
 AC_DEFUN(AC_HEADER_IOSTREAM,
 [AC_CHECK_HEADERS(iostream,[have_iostream=yes],[have_iostream=no])])
 
+AC_DEFUN(AC_HEADER_SSTREAM,
+[AC_CHECK_HEADERS(sstream,[have_sstream=yes],[have_sstream=no])])
+
 AC_DEFUN(AC_IOS_BINARY,
 [AC_CACHE_CHECK([for ios::binary],
   ac_cv_ios_binary,

@@ -42,7 +42,7 @@ AC_SUBST(libm)
 
 dnl Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS(malloc.h alloca.h unistd.h utime.h io.h minmax.h dirent.h sys/types.h sys/time.h sys/utime.h sys/wait.h string.h strstream.h regex.h)
+AC_CHECK_HEADERS(malloc.h alloca.h unistd.h utime.h io.h minmax.h dirent.h sys/types.h sys/time.h sys/utime.h sys/wait.h string.h regex.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 
@@ -53,6 +53,7 @@ AC_CHECK_FUNCS(getopt)
 dnl Now we can test some C++-specific features.
 AC_LANG_CPLUSPLUS
 AC_HEADER_IOSTREAM
+AC_HEADER_SSTREAM
 AC_NAMESPACE
 AC_IOS_BINARY
 AC_OPEN_MASK

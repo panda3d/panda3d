@@ -167,7 +167,11 @@ private:
     WriteState *_write_state;
     PPScope *_scope;
     string _params;
+#ifdef HAVE_SSTREAM
     ostringstream _output;
+#else
+    ostrstream _output;
+#endif
     vector<string> _words;
     int _flags;
     BlockNesting *_next;

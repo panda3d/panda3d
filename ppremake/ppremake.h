@@ -20,12 +20,16 @@
 #ifdef HAVE_IOSTREAM
 #include <iostream>
 #include <fstream>
+#ifdef HAVE_SSTREAM
 #include <sstream>
-#else
+#else  // HAVE_SSTREAM
+#include <strstream>
+#endif  // HAVE_SSTREAM
+#else  // HAVE_IOSTREAM
 #include <iostream.h>
 #include <fstream.h>
 #include <strstream.h>
-#endif
+#endif  // HAVE_IOSTREAM
 
 #if defined(HAVE_CYGWIN) || defined(WIN32_VC)
 // Either Cygwin or Visual C++ is a Win32 environment.

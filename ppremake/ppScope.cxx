@@ -3128,10 +3128,11 @@ expand_function(const string &funcname,
   PPScope nested_scope(_named_scopes);
   nested_scope.define_formals(funcname, sub->_formals, params);
 
-  // This won't compile older C++ libraries that do not have
-  // ostrstring.  (The earlier interface was ostrstream, which is
-  // functionally equivalent but slightly different.)
+#ifdef HAVE_SSTREAM
   ostringstream ostr;
+#else
+  ostrstream ostr;
+#endif
 
   PPCommandFile command(&nested_scope);
   command.set_output(&ostr);
@@ -3151,15 +3152,19 @@ expand_function(const string &funcname,
 
   // Now get the output.  We split it into words and then reconnect
   // it, to replace all whitespace with spaces.
-  //  ostr << ends;
+#ifdef HAVE_SSTREAM
   string str = ostr.str();
+#else
+  ostr << ends;
+  char *c_str = ostr.str();
+  string str = c_str;
+  delete[] c_str;
+#endif
 
   vector<string> results;
   tokenize_whitespace(str, results);
 
   string result = repaste(results, " ");
-  //  delete[] str;
-  
   return result;
 }
 
