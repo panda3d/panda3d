@@ -20,9 +20,9 @@
 #define EGGXFMSANIM_H
 
 
-#include <pandabase.h>
-
+#include "pandabase.h"
 #include "eggGroupNode.h"
+#include "config_linmath.h"  // for temp_hpr_fix
 
 class EggXfmAnimData;
 
@@ -92,7 +92,8 @@ private:
   string _order;
   CoordinateSystem _coordsys;
 
-  static const string _standard_order;
+  static const string _standard_order_legacy;
+  static const string _standard_order_hpr_fix;
   static const string _table_ids;
   static const int _num_table_ids;
   

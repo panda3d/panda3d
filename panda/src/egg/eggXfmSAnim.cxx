@@ -22,20 +22,20 @@
 #include "eggParameters.h"
 #include "config_egg.h"
 
-#include <indent.h>
-#include <compose_matrix.h>
+#include "indent.h"
+#include "compose_matrix.h"
 
 #include <math.h>
 
 TypeHandle EggXfmSAnim::_type_handle;
 
-//string EggXfmSAnim::_standard_order = "srpht";
 
 // For now, the standard order is sphrt.  This matches the old,
 // incorrect behavior of decompose_matrix().  When we have a new
 // egg-optchar, we can safely remove the old decompose_matrix() and
-// restore the correct standard order (above).
-const string EggXfmSAnim::_standard_order = "sphrt";
+// restore the correct standard order.
+const string EggXfmSAnim::_standard_order_legacy = "sphrt";
+const string EggXfmSAnim::_standard_order_hpr_fix = "srpht";
 
 // These are the table ID's of all tables we support, in the order we
 // expect to write them to the egg file.
