@@ -96,14 +96,6 @@ INLINE bool AudioManager::get_loop(AudioSound* sound) {
 //               in the universe and it constructs itself.
 ////////////////////////////////////////////////////////////////////
 INLINE AudioManager::AudioManager(void) {
-  audio_cat->debug() << "**** audio_sfx_active = "
-		     << (audio_sfx_active?"true":"false") << endl;
-  audio_cat->debug() << "**** audio_music_active = "
-		     << (audio_music_active?"true":"false") << endl;
-  audio_cat->debug() << "**** audio_master_sfx_volume = "
-		     << audio_master_sfx_volume << endl;
-  audio_cat->debug() << "**** audio_master_music_volume = "
-		     << audio_master_music_volume << endl;
   _sfx_active = _hard_sfx_active = audio_sfx_active;
   _music_active = _hard_music_active = audio_music_active;
   _master_sfx_volume = audio_master_sfx_volume;
