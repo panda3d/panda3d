@@ -184,8 +184,6 @@ class State(DirectObject):
         """__enterChildren(self, argList)
         Enter all child FSMs"""
         for fsm in self.__FSMList:
-            print "ENTERING CHILD FSM:" + str(fsm)
-            print str(self)
             # Check to see if the child fsm is already in a state
             # if it is, politely request the initial state
             if fsm.getCurrentState():
