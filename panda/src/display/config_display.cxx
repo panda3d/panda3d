@@ -87,8 +87,12 @@ ConfigVariableBool show_buffers
           "GraphicsWindows, if possible, so that their contents may be viewed "
           "interactively.  Handy during development of multipass algorithms."));
 
+// Temporarily false by default until this code proves to be more
+// robust on different graphics drivers.  In particular, it seems to
+// cause problems on Jason's ATI FireGL and on Joe's Compaq laptop so
+// far.
 ConfigVariableBool prefer_texture_buffer
-("prefer-texture-buffer", true,
+("prefer-texture-buffer", false,
  PRC_DESC("Set this true to make GraphicsOutput::make_texture_buffer() always "
           "try to create an offscreen buffer supporting render-to-texture, "
           "if the graphics card claims to be able to support this feature.  "
