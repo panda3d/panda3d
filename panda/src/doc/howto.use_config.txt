@@ -89,6 +89,7 @@ ConfigVariableString
 ConfigVariableBool
 ConfigVariableInt
 ConfigVariableDouble
+ConfigVariableFilename
 ConfigVariableEnum (C++ only)
 ConfigVariableList
 ConfigVariableSearchPath
@@ -96,8 +97,18 @@ ConfigVariableSearchPath
 These each define a config variable of the corresponding type.  For
 instance, a ConfigVariableInt defines a variable whose value must
 always be an integer value.  The most common variable types are the
-top four, which are self-explanatory; the remaining three are special
+top four, which are self-explanatory; the remaining four are special
 types:
+
+ConfigVariableFilename -
+
+  This is a convenience class which behaves very much like a
+  ConfigVariableString, except that it automatically converts from
+  OS-specific filenames that may be given in the prc file to
+  Panda-specific filenames, and it also automatically expands
+  environment variable references, so that the user may name a file
+  based on the value of an environment variable
+  (e.g. $PANDAMODELS/file.egg).
 
 ConfigVariableEnum -
 

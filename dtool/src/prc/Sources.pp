@@ -16,6 +16,7 @@
     configVariableCore.cxx configVariableCore.I configVariableCore.h \
     configVariableDouble.cxx configVariableDouble.I configVariableDouble.h \
     configVariableEnum.cxx configVariableEnum.I configVariableEnum.h \
+    configVariableFilename.cxx configVariableFilename.I configVariableFilename.h \
     configVariableInt.cxx configVariableInt.I configVariableInt.h \
     configVariableList.cxx configVariableList.I configVariableList.h \
     configVariableManager.cxx configVariableManager.I configVariableManager.h \
@@ -40,6 +41,7 @@
     configVariableCore.I configVariableCore.h \
     configVariableDouble.I configVariableDouble.h \
     configVariableEnum.I configVariableEnum.h \
+    configVariableFilename.I configVariableFilename.h \
     configVariableInt.I configVariableInt.h \
     configVariableList.I configVariableList.h \
     configVariableManager.I configVariableManager.h \

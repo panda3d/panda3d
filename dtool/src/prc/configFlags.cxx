@@ -34,6 +34,9 @@ operator << (ostream &out, ConfigFlags::ValueType type) {
   case ConfigFlags::VT_string:
     return out << "string";
 
+  case ConfigFlags::VT_filename:
+    return out << "filename";
+
   case ConfigFlags::VT_bool:
     return out << "bool";
 

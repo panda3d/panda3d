@@ -21,7 +21,6 @@
 
 #include "dtoolbase.h"
 #include "configVariable.h"
-#include "filename.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ConfigVariableString
@@ -31,12 +30,11 @@
 class EXPCL_DTOOLCONFIG ConfigVariableString : public ConfigVariable {
 PUBLISHED:
   INLINE ConfigVariableString(const string &name);
-  INLINE ConfigVariableString(const string &name, string default_value,
+  INLINE ConfigVariableString(const string &name, const string &default_value,
                               const string &description = string(), int flags = 0);
 
   INLINE void operator = (const string &value);
   INLINE operator string () const;
-  INLINE operator Filename () const;
   INLINE bool empty() const;
 
   // Comparison operators are handy.

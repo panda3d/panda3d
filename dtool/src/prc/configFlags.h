@@ -34,6 +34,7 @@ PUBLISHED:
     VT_undefined,
     VT_list,
     VT_string,
+    VT_filename,
     VT_bool,
     VT_int,
     VT_double,

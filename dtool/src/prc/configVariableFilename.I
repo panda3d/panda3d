@@ -1,5 +1,5 @@
-// Filename: configVariableString.I
-// Created by:  drose (20Oct04)
+// Filename: configVariableFilename.I
+// Created by:  drose (22Nov04)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -18,117 +18,117 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableString::Constructor
+//     Function: ConfigVariableFilename::Constructor
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE ConfigVariableString::
-ConfigVariableString(const string &name) :
-  ConfigVariable(name, VT_string)
+INLINE ConfigVariableFilename::
+ConfigVariableFilename(const string &name) :
+  ConfigVariable(name, VT_filename)
 {
   _core->set_used();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableString::Constructor
+//     Function: ConfigVariableFilename::Constructor
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE ConfigVariableString::
-ConfigVariableString(const string &name, const string &default_value, 
-                     const string &description, int flags) :
-  ConfigVariable(name, VT_string, description, flags)
+INLINE ConfigVariableFilename::
+ConfigVariableFilename(const string &name, const Filename &default_value, 
+                       const string &description, int flags) :
+  ConfigVariable(name, VT_filename, description, flags)
 {
   _core->set_default_value(default_value);
   _core->set_used();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableString::operator =
+//     Function: ConfigVariableFilename::operator =
 //       Access: Published
 //  Description: Reassigns the variable's local value.
 ////////////////////////////////////////////////////////////////////
-INLINE void ConfigVariableString::
-operator = (const string &value) {
+INLINE void ConfigVariableFilename::
+operator = (const Filename &value) {
   set_value(value);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableString::string typecast operator
+//     Function: ConfigVariableFilename::Filename typecast operator
 //       Access: Published
-//  Description: Returns the variable's value.
+//  Description: Returns the variable's value as a Filename.
 ////////////////////////////////////////////////////////////////////
-INLINE ConfigVariableString::
-operator string () const {
+INLINE ConfigVariableFilename::
+operator Filename () const {
   return get_value();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableString::empty
+//     Function: ConfigVariableFilename::empty
 //       Access: Published
-//  Description: Returns true if the string is empty, false otherwise.
+//  Description: Returns true if the filename is empty, false otherwise.
 ////////////////////////////////////////////////////////////////////
-INLINE bool ConfigVariableString::
+INLINE bool ConfigVariableFilename::
 empty() const {
   return get_value().empty();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableString::Equality operator
+//     Function: ConfigVariableFilename::Equality operator
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool ConfigVariableString::
-operator == (const string &other) const {
+INLINE bool ConfigVariableFilename::
+operator == (const Filename &other) const {
   return get_value() == other;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableString::Inequality operator
+//     Function: ConfigVariableFilename::Inequality operator
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool ConfigVariableString::
-operator != (const string &other) const {
+INLINE bool ConfigVariableFilename::
+operator != (const Filename &other) const {
   return get_value() != other;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableString::Ordering operator
+//     Function: ConfigVariableFilename::Ordering operator
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE bool ConfigVariableString::
-operator < (const string &other) const {
+INLINE bool ConfigVariableFilename::
+operator < (const Filename &other) const {
   return get_value() < other;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableString::set_value
+//     Function: ConfigVariableFilename::set_value
 //       Access: Published
 //  Description: Reassigns the variable's local value.
 ////////////////////////////////////////////////////////////////////
-INLINE void ConfigVariableString::
-set_value(const string &value) {
+INLINE void ConfigVariableFilename::
+set_value(const Filename &value) {
   set_string_value(value);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableString::get_value
+//     Function: ConfigVariableFilename::get_value
 //       Access: Published
 //  Description: Returns the variable's value.
 ////////////////////////////////////////////////////////////////////
-INLINE string ConfigVariableString::
+INLINE Filename ConfigVariableFilename::
 get_value() const {
-  return get_string_value();
+  return Filename::expand_from(get_string_value());
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableString::get_default_value
+//     Function: ConfigVariableFilename::get_default_value
 //       Access: Published
 //  Description: Returns the variable's default value.
 ////////////////////////////////////////////////////////////////////
-INLINE string ConfigVariableString::
+INLINE Filename ConfigVariableFilename::
 get_default_value() const {
   const ConfigDeclaration *decl = ConfigVariable::get_default_value();
   if (decl != (ConfigDeclaration *)NULL) {
@@ -138,22 +138,22 @@ get_default_value() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableString::get_word
+//     Function: ConfigVariableFilename::get_word
 //       Access: Published
 //  Description: Returns the variable's nth value.
 ////////////////////////////////////////////////////////////////////
-INLINE string ConfigVariableString::
+INLINE Filename ConfigVariableFilename::
 get_word(int n) const {
-  return get_string_word(n);
+  return Filename::expand_from(get_string_word(n));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConfigVariableString::set_word
+//     Function: ConfigVariableFilename::set_word
 //       Access: Published
 //  Description: Reassigns the variable's nth value.  This makes a
 //               local copy of the variable's overall value.
 ////////////////////////////////////////////////////////////////////
-INLINE void ConfigVariableString::
-set_word(int n, const string &value) {
+INLINE void ConfigVariableFilename::
+set_word(int n, const Filename &value) {
   set_string_word(n, value);
 }

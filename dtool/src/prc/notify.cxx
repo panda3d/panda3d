@@ -19,7 +19,7 @@
 #include "notify.h"
 #include "notifyCategory.h"
 #include "configPageManager.h"
-#include "configVariableString.h"
+#include "configVariableFilename.h"
 #include "configVariableBool.h"
 #include "filename.h"
 
@@ -527,7 +527,7 @@ config_initialized() {
   already_initialized = true;
 
   if (_ostream_ptr == &cerr) {
-    ConfigVariableString notify_output
+    ConfigVariableFilename notify_output
       ("notify-output", "",
        "The filename to which to write all the output of notify");
 
