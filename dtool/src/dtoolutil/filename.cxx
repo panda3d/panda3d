@@ -37,6 +37,12 @@
 #include <dirent.h>
 #endif
 
+// It's true that dtoolbase.h includes this already, but we include
+// this again in case we are building this file within ppremake.
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 
 #if defined(WIN32)
 /* begin Win32-specific code */
