@@ -18,6 +18,7 @@
 
 #include "pandabase.h"
 #include "qpsequenceNode.h"
+#include "qpcullTraverser.h"
 
 TypeHandle qpSequenceNode::_type_handle;
 
@@ -121,7 +122,7 @@ has_cull_callback() const {
 //               visible, or false if it should be culled.
 ////////////////////////////////////////////////////////////////////
 bool qpSequenceNode::
-cull_callback(CullTraverserData &) {
+cull_callback(qpCullTraverser *, CullTraverserData &) {
   select_child(get_visible_child());
   return true;
 }

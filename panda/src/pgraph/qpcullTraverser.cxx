@@ -26,6 +26,9 @@
 #include "qpgeomNode.h"
 #include "config_pgraph.h"
 
+
+TypeHandle qpCullTraverser::_type_handle;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: qpCullTraverser::Constructor
 //       Access: Public
@@ -41,6 +44,23 @@ qpCullTraverser() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: qpCullTraverser::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+qpCullTraverser::
+qpCullTraverser(const qpCullTraverser &copy) :
+  _initial_state(copy._initial_state),
+  _camera_mask(copy._camera_mask),
+  _camera_transform(copy._camera_transform),
+  _render_transform(copy._render_transform),
+  _view_frustum(copy._view_frustum),
+  _guard_band(copy._guard_band),
+  _cull_handler(copy._cull_handler)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: qpCullTraverser::traverse
 //       Access: Public
 //  Description: Begins the traversal from the indicated node.
@@ -50,20 +70,19 @@ traverse(PandaNode *root) {
   nassertv(_cull_handler != (CullHandler *)NULL);
 
   CullTraverserData data(_render_transform, TransformState::make_identity(),
-                         _initial_state, _view_frustum, _guard_band,
-                         _camera_transform);
-  r_traverse(root, data);
+                         _initial_state, _view_frustum, _guard_band);
+  traverse(root, data);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpCullTraverser::r_traverse
-//       Access: Private
-//  Description: The recursive traversal implementation.
+//     Function: qpCullTraverser::traverse
+//       Access: Public
+//  Description: Traverses from the indicated node with the given
+//               data, which has not yet been converted into the
+//               node's space.
 ////////////////////////////////////////////////////////////////////
 void qpCullTraverser::
-r_traverse(PandaNode *node, const CullTraverserData &data) {
-  CullTraverserData next_data(data);
-
+traverse(PandaNode *node, const CullTraverserData &data) {
   // Most nodes will have no transform or state, and will not
   // contain decals or require a special cull callback.  As an
   // optimization, we should tag nodes with these properties as
@@ -74,45 +93,58 @@ r_traverse(PandaNode *node, const CullTraverserData &data) {
     return;
   }
 
+  CullTraverserData next_data(data);
   if (next_data.is_in_view(node, _camera_mask)) {
-    next_data.apply_transform_and_state(node);
+    next_data.apply_transform_and_state(this, node);
 
     if (node->has_cull_callback()) {
-      if (!node->cull_callback(next_data)) {
+      if (!node->cull_callback(this, next_data)) {
         return;
       }
     }
 
-    const RenderState *node_state = node->get_state();
-    if (node_state->has_decal()) {
-      start_decal(node, next_data);
+    traverse_below(node, next_data);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpCullTraverser::traverse_below
+//       Access: Public
+//  Description: Traverses all the children of the indicated node,
+//               with the given data, which been converted into the
+//               node's space.
+////////////////////////////////////////////////////////////////////
+void qpCullTraverser::
+traverse_below(PandaNode *node, const CullTraverserData &data) {
+  const RenderState *node_state = node->get_state();
+  if (node_state->has_decal()) {
+    start_decal(node, data);
+    
+  } else {
+    if (node->is_geom_node()) {
+      qpGeomNode *geom_node = DCAST(qpGeomNode, node);
+      
+      // Get all the Geoms, with no decalling.
+      int num_geoms = geom_node->get_num_geoms();
+      for (int i = 0; i < num_geoms; i++) {
+        CullableObject *object = new CullableObject(data, geom_node, i);
+        _cull_handler->record_object(object);
+      }
+    }
+    
+    // Now visit all the node's children.
+    PandaNode::Children cr = node->get_children();
+    int num_children = cr.get_num_children();
+    if (node->has_selective_visibility()) {
+      int i = node->get_first_visible_child();
+      while (i < num_children) {
+        traverse(cr.get_child(i), data);
+        i = node->get_next_visible_child(i);
+      }
       
     } else {
-      if (node->is_geom_node()) {
-        qpGeomNode *geom_node = DCAST(qpGeomNode, node);
-        
-        // Get all the Geoms, with no decalling.
-        int num_geoms = geom_node->get_num_geoms();
-        for (int i = 0; i < num_geoms; i++) {
-          CullableObject *object = new CullableObject(next_data, geom_node, i);
-          _cull_handler->record_object(object);
-        }
-      }
-
-      // Now visit all the node's children.
-      PandaNode::Children cr = node->get_children();
-      int num_children = cr.get_num_children();
-      if (node->has_selective_visibility()) {
-        int i = node->get_first_visible_child();
-        while (i < num_children) {
-          r_traverse(cr.get_child(i), next_data);
-          i = node->get_next_visible_child(i);
-        }
-
-      } else {
-        for (int i = 0; i < num_children; i++) {
-          r_traverse(cr.get_child(i), next_data);
-        }
+      for (int i = 0; i < num_children; i++) {
+        traverse(cr.get_child(i), data);
       }
     }
   }
@@ -188,15 +220,14 @@ start_decal(PandaNode *node, const CullTraverserData &data) {
 CullableObject *qpCullTraverser::
 r_get_decals(PandaNode *node, const CullTraverserData &data,
              CullableObject *decals) {
-  CullTraverserData next_data(data);
-
   if (node->get_transform()->is_invalid()) {
     // If the transform is invalid, forget it.
     return decals;
   }
 
+  CullTraverserData next_data(data);
   if (next_data.is_in_view(node, _camera_mask)) {
-    next_data.apply_transform_and_state(node);
+    next_data.apply_transform_and_state(this, node);
 
     // First, visit all of the node's children.
     PandaNode::Children cr = node->get_children();

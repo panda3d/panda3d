@@ -27,14 +27,12 @@ CullTraverserData(const TransformState *render_transform,
                   const TransformState *net_transform,
                   const RenderState *state,
                   GeometricBoundingVolume *view_frustum,
-                  GeometricBoundingVolume *guard_band,
-                  const TransformState *camera_transform) :
+                  GeometricBoundingVolume *guard_band) :
   _render_transform(render_transform),
   _net_transform(net_transform),
   _state(state),
   _view_frustum(view_frustum),
-  _guard_band(guard_band),
-  _camera_transform(camera_transform)
+  _guard_band(guard_band)
 {
 }
 
@@ -49,8 +47,7 @@ CullTraverserData(const CullTraverserData &copy) :
   _net_transform(copy._net_transform),
   _state(copy._state),
   _view_frustum(copy._view_frustum),
-  _guard_band(copy._guard_band),
-  _camera_transform(copy._camera_transform)
+  _guard_band(copy._guard_band)
 {
 }
 
@@ -66,7 +63,6 @@ operator = (const CullTraverserData &copy) {
   _state = copy._state;
   _view_frustum = copy._view_frustum;
   _guard_band = copy._guard_band;
-  _camera_transform = copy._camera_transform;
 }
 
 ////////////////////////////////////////////////////////////////////

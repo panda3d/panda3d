@@ -19,11 +19,15 @@
 #include "pgFrameStyle.h"
 #include "geomTristrip.h"
 #include "geomTrifan.h"
+#include "qpgeomNode.h"
+#include "pandaNode.h"
+#include "transparencyAttrib.h"
+#include "pointerTo.h"
+
 #include "geomNode.h"
 #include "transparencyProperty.h"
 #include "transparencyTransition.h"
 #include "renderRelation.h"
-#include "pointerTo.h"
 
 ostream &
 operator << (ostream &out, PGFrameStyle::Type type) {
@@ -155,6 +159,58 @@ generate_into(Node *node, const LVecBase4f &frame) {
   }
 
   return arc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::generate_into
+//       Access: Public
+//  Description: Generates geometry representing a frame of the
+//               indicated size, and parents it to the indicated node,
+//               with a scene graph sort order of -1.
+//
+//               The return value is the generated node, if any, or
+//               NULL if nothing is generated.
+////////////////////////////////////////////////////////////////////
+PandaNode *PGFrameStyle::
+generate_into(PandaNode *node, const LVecBase4f &frame) {
+  PT(PandaNode) new_node;
+
+  switch (_type) {
+  case T_none:
+    return (PandaNode *)NULL;
+
+  case T_flat:
+    new_node = qpgenerate_flat_geom(frame);
+    break;
+
+  case T_bevel_out:
+    new_node = qpgenerate_bevel_geom(frame, false);
+    break;
+
+  case T_bevel_in:
+    new_node = qpgenerate_bevel_geom(frame, true);
+    break;
+
+  case T_groove:
+    new_node = qpgenerate_groove_geom(frame, true);
+    break;
+
+  case T_ridge:
+    new_node = qpgenerate_groove_geom(frame, false);
+    break;
+
+  default:
+    break;
+  }
+
+  if (new_node != (PandaNode *)NULL && _color[3] != 1.0f) {
+    // We've got some alpha on the color; we need transparency.
+    new_node->set_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
+  }
+
+  // Adding the node to the parent keeps the reference count.
+  node->add_child(new_node);
+  return new_node;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -462,6 +518,433 @@ generate_groove_geom(const LVecBase4f &frame, bool in) {
   //                                                      0
 
   PT(GeomNode) gnode = new GeomNode("groove");
+
+  float left = frame[0];
+  float right = frame[1];
+  float bottom = frame[2];
+  float top = frame[3];
+
+  float mid_left = left + 0.5f * _width[0];
+  float mid_right = right - 0.5f * _width[0];
+  float mid_bottom = bottom + 0.5f * _width[1];
+  float mid_top = top - 0.5f * _width[1];
+
+  float inner_left = left + _width[0];
+  float inner_right = right - _width[0];
+  float inner_bottom = bottom + _width[1];
+  float inner_top = top - _width[1];
+
+  float left_color_scale = 1.2f;
+  float right_color_scale = 0.8f;
+  float bottom_color_scale = 0.7f;
+  float top_color_scale = 1.3f;
+
+  if (in) {
+    right_color_scale = 1.2f;
+    left_color_scale = 0.8f;
+    top_color_scale = 0.7f;
+    bottom_color_scale = 1.3f;
+  }
+
+  // Clamp all colors at white, and don't scale the alpha.
+  Colorf cleft(min(_color[0] * left_color_scale, 1.0f),
+               min(_color[1] * left_color_scale, 1.0f),
+               min(_color[2] * left_color_scale, 1.0f),
+               _color[3]);
+
+  Colorf cright(min(_color[0] * right_color_scale, 1.0f),
+                min(_color[1] * right_color_scale, 1.0f),
+                min(_color[2] * right_color_scale, 1.0f),
+                _color[3]);
+
+  Colorf cbottom(min(_color[0] * bottom_color_scale, 1.0f),
+                 min(_color[1] * bottom_color_scale, 1.0f),
+                 min(_color[2] * bottom_color_scale, 1.0f),
+                 _color[3]);
+
+  Colorf ctop(min(_color[0] * top_color_scale, 1.0f),
+              min(_color[1] * top_color_scale, 1.0f),
+              min(_color[2] * top_color_scale, 1.0f),
+              _color[3]);
+
+  // Now make the tristrips.
+  Geom *geom = new GeomTristrip;
+  gnode->add_geom(geom);
+    
+  PTA_int lengths;
+  PTA_Vertexf verts;
+  PTA_Colorf colors;
+
+  // Tristrip 1.
+  lengths.push_back(8);
+    
+  verts.push_back(Vertexf(right, 0.0f, bottom));
+  verts.push_back(Vertexf(mid_right, 0.0f, mid_bottom));
+  verts.push_back(Vertexf(left, 0.0f, bottom));
+  verts.push_back(Vertexf(mid_left, 0.0f, mid_bottom));
+  verts.push_back(Vertexf(left, 0.0f, top));
+  verts.push_back(Vertexf(mid_left, 0.0f, mid_top));
+  verts.push_back(Vertexf(right, 0.0f, top));
+  verts.push_back(Vertexf(mid_right, 0.0f, mid_top));
+  
+  colors.push_back(cbottom);
+  colors.push_back(cbottom);
+  colors.push_back(cleft);
+  colors.push_back(cleft);
+  colors.push_back(ctop);
+  colors.push_back(ctop);
+
+  // Tristrip 2.
+  lengths.push_back(8);
+    
+  verts.push_back(Vertexf(mid_right, 0.0f, mid_bottom));
+  verts.push_back(Vertexf(inner_right, 0.0f, inner_bottom));
+  verts.push_back(Vertexf(mid_left, 0.0f, mid_bottom));
+  verts.push_back(Vertexf(inner_left, 0.0f, inner_bottom));
+  verts.push_back(Vertexf(mid_left, 0.0f, mid_top));
+  verts.push_back(Vertexf(inner_left, 0.0f, inner_top));
+  verts.push_back(Vertexf(mid_right, 0.0f, mid_top));
+  verts.push_back(Vertexf(inner_right, 0.0f, inner_top));
+  
+  colors.push_back(ctop);
+  colors.push_back(ctop);
+  colors.push_back(cright);
+  colors.push_back(cright);
+  colors.push_back(cbottom);
+  colors.push_back(cbottom);
+
+  // Tristrip 3.
+  lengths.push_back(8);
+
+  verts.push_back(Vertexf(right, 0.0f, bottom));
+  verts.push_back(Vertexf(right, 0.0f, top));
+  verts.push_back(Vertexf(mid_right, 0.0f, mid_bottom));
+  verts.push_back(Vertexf(mid_right, 0.0f, mid_top));
+  verts.push_back(Vertexf(inner_right, 0.0f, inner_bottom));
+  verts.push_back(Vertexf(inner_right, 0.0f, inner_top));
+  verts.push_back(Vertexf(inner_left, 0.0f, inner_bottom));
+  verts.push_back(Vertexf(inner_left, 0.0f, inner_top));
+
+  colors.push_back(cright);
+  colors.push_back(cright);
+  colors.push_back(cleft);
+  colors.push_back(cleft);
+  colors.push_back(_color);
+  colors.push_back(_color);
+
+  geom->set_num_prims(3);
+  geom->set_lengths(lengths);
+  geom->set_coords(verts);
+  geom->set_colors(colors, G_PER_COMPONENT);
+  
+  return gnode.p();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::qpgenerate_flat_geom
+//       Access: Private
+//  Description: Generates the qpGeomNode appropriate to a T_flat
+//               frame.
+////////////////////////////////////////////////////////////////////
+PT(PandaNode) PGFrameStyle::
+qpgenerate_flat_geom(const LVecBase4f &frame) {
+  PT(qpGeomNode) gnode = new qpGeomNode("flat");
+  Geom *geom = new GeomTristrip;
+  gnode->add_geom(geom);
+
+  float left = frame[0];
+  float right = frame[1];
+  float bottom = frame[2];
+  float top = frame[3];
+
+  PTA_int lengths=PTA_int::empty_array(0);
+  lengths.push_back(4);
+
+  PTA_Vertexf verts;
+  verts.push_back(Vertexf(left, 0.0f, top));
+  verts.push_back(Vertexf(left, 0.0f, bottom));
+  verts.push_back(Vertexf(right, 0.0f, top));
+  verts.push_back(Vertexf(right, 0.0f, bottom));
+
+  geom->set_num_prims(1);
+  geom->set_lengths(lengths);
+
+  geom->set_coords(verts);
+
+  PTA_Colorf colors;
+  colors.push_back(_color);
+  geom->set_colors(colors, G_OVERALL);
+  
+  return gnode.p();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::qpgenerate_bevel_geom
+//       Access: Private
+//  Description: Generates the qpGeomNode appropriate to a T_bevel_in or
+//               T_bevel_out frame.
+////////////////////////////////////////////////////////////////////
+PT(PandaNode) PGFrameStyle::
+qpgenerate_bevel_geom(const LVecBase4f &frame, bool in) {
+  //
+  // Colors:
+  //
+  // 
+  //  * * * * * * * * * * * * * * * * * * * * * * *
+  //  * *                                       * *
+  //  *   *               ctop                *   *
+  //  *     *                               *     *
+  //  *       * * * * * * * * * * * * * * *       *
+  //  *       *                           *       *
+  //  *       *                           *       *
+  //  * cleft *          _color           * cright*
+  //  *       *                           *       *
+  //  *       *                           *       *
+  //  *       * * * * * * * * * * * * * * *       *
+  //  *     *                               *     *
+  //  *   *              cbottom              *   *
+  //  * *                                       * *
+  //  * * * * * * * * * * * * * * * * * * * * * * *
+  //
+  //
+  // Vertices:
+  //
+  //  tristrip 1:
+  //  4 * * * * * * * * * * * * * * * * * * * * * 6
+  //  * *                                       *
+  //  *   *                                   *
+  //  *     *                               *
+  //  *       5 * * * * * * * * * * * * * 7
+  //  *       *
+  //  *       *
+  //  *       *
+  //  *       *
+  //  *       *
+  //  *       3 * * * * * * * * * * * * * 1
+  //  *     *                               *
+  //  *   *                                   *
+  //  * *                                       *
+  //  2 * * * * * * * * * * * * * * * * * * * * * 0
+  // 
+  //  tristrip 2:
+  //                                              1
+  //                                            * *
+  //                                          *   *
+  //                                        *     *
+  //          5 * * * * * * * * * * * * * 3       *
+  //          *                           *       *
+  //          *                           *       *
+  //          *                           *       *
+  //          *                           *       *
+  //          *                           *       *
+  //          4 * * * * * * * * * * * * * 2       *
+  //                                        *     *
+  //                                          *   *
+  //                                            * *
+  //                                              0
+
+  PT(qpGeomNode) gnode = new qpGeomNode("bevel");
+
+  float left = frame[0];
+  float right = frame[1];
+  float bottom = frame[2];
+  float top = frame[3];
+
+  float inner_left = left + _width[0];
+  float inner_right = right - _width[0];
+  float inner_bottom = bottom + _width[1];
+  float inner_top = top - _width[1];
+
+  float left_color_scale = 1.2;
+  float right_color_scale = 0.8;
+  float bottom_color_scale = 0.7;
+  float top_color_scale = 1.3;
+
+  if (in) {
+    right_color_scale = 1.2;
+    left_color_scale = 0.8;
+    top_color_scale = 0.7;
+    bottom_color_scale = 1.3;
+  }
+
+  // Clamp all colors at white, and don't scale the alpha.
+  Colorf cleft(min(_color[0] * left_color_scale, 1.0f),
+               min(_color[1] * left_color_scale, 1.0f),
+               min(_color[2] * left_color_scale, 1.0f),
+               _color[3]);
+
+  Colorf cright(min(_color[0] * right_color_scale, 1.0f),
+                min(_color[1] * right_color_scale, 1.0f),
+                min(_color[2] * right_color_scale, 1.0f),
+                _color[3]);
+
+  Colorf cbottom(min(_color[0] * bottom_color_scale, 1.0f),
+                 min(_color[1] * bottom_color_scale, 1.0f),
+                 min(_color[2] * bottom_color_scale, 1.0f),
+                 _color[3]);
+
+  Colorf ctop(min(_color[0] * top_color_scale, 1.0f),
+              min(_color[1] * top_color_scale, 1.0f),
+              min(_color[2] * top_color_scale, 1.0f),
+              _color[3]);
+
+  // Now make the tristrips.
+  Geom *geom = new GeomTristrip;
+  gnode->add_geom(geom);
+    
+  PTA_int lengths;
+  PTA_Vertexf verts;
+  PTA_Colorf colors;
+
+  // Tristrip 1.
+  lengths.push_back(8);
+    
+  verts.push_back(Vertexf(right, 0.0f, bottom));
+  verts.push_back(Vertexf(inner_right, 0.0f, inner_bottom));
+  verts.push_back(Vertexf(left, 0.0f, bottom));
+  verts.push_back(Vertexf(inner_left, 0.0f, inner_bottom));
+  verts.push_back(Vertexf(left, 0.0f, top));
+  verts.push_back(Vertexf(inner_left, 0.0f, inner_top));
+  verts.push_back(Vertexf(right, 0.0f, top));
+  verts.push_back(Vertexf(inner_right, 0.0f, inner_top));
+  
+  colors.push_back(cbottom);
+  colors.push_back(cbottom);
+  colors.push_back(cleft);
+  colors.push_back(cleft);
+  colors.push_back(ctop);
+  colors.push_back(ctop);
+
+  // Tristrip 2.
+  lengths.push_back(6);
+
+  verts.push_back(Vertexf(right, 0.0f, bottom));
+  verts.push_back(Vertexf(right, 0.0f, top));
+  verts.push_back(Vertexf(inner_right, 0.0f, inner_bottom));
+  verts.push_back(Vertexf(inner_right, 0.0f, inner_top));
+  verts.push_back(Vertexf(inner_left, 0.0f, inner_bottom));
+  verts.push_back(Vertexf(inner_left, 0.0f, inner_top));
+
+  colors.push_back(cright);
+  colors.push_back(cright);
+  colors.push_back(_color);
+  colors.push_back(_color);
+
+  geom->set_num_prims(2);
+  geom->set_lengths(lengths);
+  geom->set_coords(verts);
+  geom->set_colors(colors, G_PER_COMPONENT);
+  
+  return gnode.p();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGFrameStyle::qpgenerate_groove_geom
+//       Access: Private
+//  Description: Generates the qpGeomNode appropriate to a T_groove or
+//               T_ridge frame.
+////////////////////////////////////////////////////////////////////
+PT(PandaNode) PGFrameStyle::
+qpgenerate_groove_geom(const LVecBase4f &frame, bool in) {
+  //
+  // Colors:
+  //
+  // 
+  //  * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  //  * *                                               * *
+  //  *   *                   ctop                    *   *
+  //  *     *                                       *     *
+  //  *       * * * * * * * * * * * * * * * * * * *       *
+  //  *       * *                               * *       *
+  //  *       *   *          cbottom          *   *       *
+  //  *       *     *                       *     *       *
+  //  *       *       * * * * * * * * * * *       *       *
+  //  *       *       *                   *       *       *
+  //  *       *       *                   *       *       *
+  //  * cleft * cright*      _color       * cleft * cright*
+  //  *       *       *                   *       *       *
+  //  *       *       *                   *       *       *
+  //  *       *       * * * * * * * * * * *       *       *
+  //  *       *     *                       *     *       *
+  //  *       *   *           ctop            *   *       *
+  //  *       * *                               * *       *
+  //  *       * * * * * * * * * * * * * * * * * * *       *
+  //  *     *                                       *     *
+  //  *   *                  cbottom                  *   *
+  //  * *                                               * *
+  //  * * * * * * * * * * * * * * * * * * * * * * * * * * *
+  //
+  //
+  // Vertices:
+  //
+  //  tristrip 1:
+  //  4 * * * * * * * * * * * * * * * * * * * * * * * * * 6
+  //  * *                                               *
+  //  *   *                                           *
+  //  *     *                                       *
+  //  *       5 * * * * * * * * * * * * * * * * * 7
+  //  *       *
+  //  *       *
+  //  *       *
+  //  *       *
+  //  *       *
+  //  *       *
+  //  *       *
+  //  *       *
+  //  *       *
+  //  *       *
+  //  *       *
+  //  *       *
+  //  *       *
+  //  *       3 * * * * * * * * * * * * * * * * * 1
+  //  *     *                                       *
+  //  *   *                                           *
+  //  * *                                               *
+  //  2 * * * * * * * * * * * * * * * * * * * * * * * * * 0
+  //
+  //  tristrip 2:
+  //          4 * * * * * * * * * * * * * * * * * 6
+  //          * *                               *
+  //          *   *                           *
+  //          *     *                       *
+  //          *       5 * * * * * * * * * 7
+  //          *       *
+  //          *       *
+  //          *       *
+  //          *       *
+  //          *       *
+  //          *       3 * * * * * * * * * 1
+  //          *     *                       *
+  //          *   *                           *
+  //          * *                               *
+  //          2 * * * * * * * * * * * * * * * * * 0
+  // 
+  //  tristrip 3:
+  //                                                      1
+  //                                                    * *
+  //                                                  *   *
+  //                                                *     *
+  //                                              3       *
+  //                                            * *       *
+  //                                          *   *       *
+  //                                        *     *       *
+  //                  7 * * * * * * * * * 5       *       *
+  //                  *                   *       *       *
+  //                  *                   *       *       *
+  //                  *                   *       *       *
+  //                  *                   *       *       *
+  //                  *                   *       *       *
+  //                  6 * * * * * * * * * 4       *       *
+  //                                        *     *       *
+  //                                          *   *       *
+  //                                            * *       *
+  //                                              2       *
+  //                                                *     *
+  //                                                  *   *
+  //                                                    * *
+  //                                                      0
+
+  PT(qpGeomNode) gnode = new qpGeomNode("groove");
 
   float left = frame[0];
   float right = frame[1];

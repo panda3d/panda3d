@@ -470,7 +470,7 @@ has_cull_callback() const {
 //               visible, or false if it should be culled.
 ////////////////////////////////////////////////////////////////////
 bool PandaNode::
-cull_callback(CullTraverserData &) {
+cull_callback(qpCullTraverser *, CullTraverserData &) {
   return true;
 }
 

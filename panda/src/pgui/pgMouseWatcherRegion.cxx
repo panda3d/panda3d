@@ -18,6 +18,7 @@
 
 #include "pgMouseWatcherRegion.h"
 #include "pgItem.h"
+#include "qppgItem.h"
 
 #include "string_utils.h"
 
@@ -36,6 +37,22 @@ PGMouseWatcherRegion(PGItem *item) :
 #endif
   _item(item)
 {
+  _qpitem = (qpPGItem *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGMouseWatcherRegion::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PGMouseWatcherRegion::
+PGMouseWatcherRegion(qpPGItem *item) :
+#ifndef CPPPARSER
+  MouseWatcherRegion("pg" + format_string(_next_index++), 0, 0, 0, 0),
+#endif
+  _qpitem(item)
+{
+  _item = (PGItem *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -62,6 +79,9 @@ enter(const MouseWatcherParameter &param) {
   if (_item != (PGItem *)NULL) {
     _item->enter(param);
   }
+  if (_qpitem != (qpPGItem *)NULL) {
+    _qpitem->enter(param);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -77,6 +97,9 @@ void PGMouseWatcherRegion::
 exit(const MouseWatcherParameter &param) {
   if (_item != (PGItem *)NULL) {
     _item->exit(param);
+  }
+  if (_qpitem != (qpPGItem *)NULL) {
+    _qpitem->exit(param);
   }
 }
 
@@ -95,6 +118,9 @@ within(const MouseWatcherParameter &param) {
   if (_item != (PGItem *)NULL) {
     _item->within(param);
   }
+  if (_qpitem != (qpPGItem *)NULL) {
+    _qpitem->within(param);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -108,6 +134,9 @@ void PGMouseWatcherRegion::
 without(const MouseWatcherParameter &param) {
   if (_item != (PGItem *)NULL) {
     _item->without(param);
+  }
+  if (_qpitem != (qpPGItem *)NULL) {
+    _qpitem->without(param);
   }
 }
 
@@ -123,6 +152,9 @@ press(const MouseWatcherParameter &param) {
   if (_item != (PGItem *)NULL) {
     _item->press(param, false);
   }
+  if (_qpitem != (qpPGItem *)NULL) {
+    _qpitem->press(param, false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,6 +169,9 @@ release(const MouseWatcherParameter &param) {
   if (_item != (PGItem *)NULL) {
     _item->release(param, false);
   }
+  if (_qpitem != (qpPGItem *)NULL) {
+    _qpitem->release(param, false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -149,5 +184,8 @@ void PGMouseWatcherRegion::
 keystroke(const MouseWatcherParameter &param) {
   if (_item != (PGItem *)NULL) {
     _item->keystroke(param, false);
+  }
+  if (_qpitem != (qpPGItem *)NULL) {
+    _qpitem->keystroke(param, false);
   }
 }

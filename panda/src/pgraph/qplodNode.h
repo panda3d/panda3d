@@ -42,7 +42,7 @@ public:
   virtual PandaNode *make_copy() const;
   virtual void xform(const LMatrix4f &mat);
   virtual bool has_cull_callback() const;
-  virtual bool cull_callback(CullTraverserData &data);
+  virtual bool cull_callback(qpCullTraverser *trav, CullTraverserData &data);
 
   virtual void output(ostream &out) const;
 

@@ -18,6 +18,7 @@
 
 #include "qplodNode.h"
 #include "cullTraverserData.h"
+#include "qpcullTraverser.h"
 
 TypeHandle qpLODNode::_type_handle;
 
@@ -114,7 +115,7 @@ has_cull_callback() const {
 //               visible, or false if it should be culled.
 ////////////////////////////////////////////////////////////////////
 bool qpLODNode::
-cull_callback(CullTraverserData &data) {
+cull_callback(qpCullTraverser *trav, CullTraverserData &data) {
   if (data._net_transform->is_singular()) {
     // If we're under a singular transform, we can't compute the LOD;
     // select none of them instead.
@@ -126,7 +127,7 @@ cull_callback(CullTraverserData &data) {
 
     // Get the LOD center in camera space
     CPT(TransformState) rel_transform =
-      data._net_transform->invert_compose(data._camera_transform);
+      data._net_transform->invert_compose(trav->get_camera_transform());
     LPoint3f center = cdata->_lod._center * rel_transform->get_mat();
     
     // Determine which child to traverse

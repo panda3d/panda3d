@@ -38,6 +38,7 @@
 #include "notify.h"
 
 class qpNodePathComponent;
+class qpCullTraverser;
 class CullTraverserData;
 
 ////////////////////////////////////////////////////////////////////
@@ -69,7 +70,7 @@ public:
   virtual PandaNode *combine_with(PandaNode *other); 
 
   virtual bool has_cull_callback() const;
-  virtual bool cull_callback(CullTraverserData &data);
+  virtual bool cull_callback(qpCullTraverser *trav, CullTraverserData &data);
   virtual bool has_selective_visibility() const;
   virtual int get_first_visible_child() const;
   virtual int get_next_visible_child(int n) const;

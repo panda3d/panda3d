@@ -845,7 +845,7 @@ exit_region(MouseWatcherRegion *region, const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void qpMouseWatcher::
 do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
-  if (!input.has_data(_pixel_xy_input)) {
+  if (!input.has_data(_xy_input)) {
     // No mouse in the window.
 
     if (_has_mouse) {
@@ -863,9 +863,9 @@ do_transmit_data(const DataNodeTransmit &input, DataNodeTransmit &output) {
   }
 
   // The mouse is within the window.  Get the current mouse position.
-  const EventStoreVec2 *pixel_xy;
-  DCAST_INTO_V(pixel_xy, input.get_data(_pixel_xy_input).get_ptr());
-  const LVecBase2f &p = pixel_xy->get_value();
+  const EventStoreVec2 *xy;
+  DCAST_INTO_V(xy, input.get_data(_xy_input).get_ptr());
+  const LVecBase2f &p = xy->get_value();
   _mouse.set(p[0], p[1]);
 
   if (!_geometry.is_null()) {

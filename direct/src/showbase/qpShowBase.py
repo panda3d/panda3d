@@ -255,8 +255,7 @@ class ShowBase:
         # matching that of a traditional PC screen (w / h) = (4 / 3)
         self.aspectRatio = self.config.GetFloat('aspect-ratio', (4.0 / 3.0))
 
-        #self.aspect2d = self.render2d.attachNewNode(PGTop("aspect2d"))
-        self.aspect2d = self.render2d.attachNewNode("aspect2d")
+        self.aspect2d = self.render2d.attachNewNode(PGTop("aspect2d"))
         self.aspect2d.setScale(1.0 / self.aspectRatio, 1.0, 1.0)
 
         # It's important to know the bounds of the aspect2d screen.
@@ -359,8 +358,8 @@ class ShowBase:
         self.buttonThrower.node().setModifierButtons(mods)
 
         # Tell the gui system about our new mouse watcher.
-        #self.aspect2d.node().setMouseWatcher(self.mouseWatcherNode)
-        #self.mouseWatcherNode.addRegion(PGMouseWatcherBackground())
+        self.aspect2d.node().setMouseWatcher(self.mouseWatcherNode)
+        self.mouseWatcherNode.addRegion(PGMouseWatcherBackground())
 
     def enableSoftwareMousePointer(self):
         """enableSoftwareMousePointer(self)

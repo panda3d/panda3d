@@ -28,6 +28,7 @@
 #include "drawMask.h"
 
 class PandaNode;
+class qpCullTraverser;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : CullTraverserData
@@ -49,26 +50,19 @@ public:
                            const TransformState *net_transform,
                            const RenderState *state,
                            GeometricBoundingVolume *view_frustum,
-                           GeometricBoundingVolume *guard_band,
-                           const TransformState *camera_transform);
+                           GeometricBoundingVolume *guard_band);
   INLINE CullTraverserData(const CullTraverserData &copy);
   INLINE void operator = (const CullTraverserData &copy);
   INLINE ~CullTraverserData();
 
   INLINE bool is_in_view(PandaNode *node, const DrawMask &camera_mask);
-  void apply_transform_and_state(PandaNode *node);
+  void apply_transform_and_state(qpCullTraverser *trav, PandaNode *node);
 
   CPT(TransformState) _render_transform;
   CPT(TransformState) _net_transform;
   CPT(RenderState) _state;
   PT(GeometricBoundingVolume) _view_frustum;
   PT(GeometricBoundingVolume) _guard_band;
-
-  // This one is not modified during traversal, so it doesn't need to
-  // be reference counted (we trust the original owner of this pointer
-  // to reference count it and hold it during the lifetime of the
-  // traversal).
-  const TransformState *_camera_transform;
 
 private:
   bool is_in_view_impl(PandaNode *node);

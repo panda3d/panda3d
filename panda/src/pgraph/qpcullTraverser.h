@@ -26,6 +26,7 @@
 #include "geometricBoundingVolume.h"
 #include "pointerTo.h"
 #include "drawMask.h"
+#include "typedObject.h"
 
 class PandaNode;
 class CullHandler;
@@ -40,22 +41,37 @@ class CullableObject;
 //               Each renderable Geom encountered is passed along with
 //               its associated RenderState to the CullHandler object.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA qpCullTraverser {
+class EXPCL_PANDA qpCullTraverser : public TypedObject {
 public:
   qpCullTraverser();
+  qpCullTraverser(const qpCullTraverser &copy);
 
   INLINE void set_initial_state(const RenderState *initial_state);
+  INLINE const RenderState *get_initial_state() const;
+
   INLINE void set_camera_mask(const DrawMask &draw_mask);
+  INLINE const DrawMask &get_camera_mask() const;
+
   INLINE void set_camera_transform(const TransformState *camera_transform);
+  INLINE const TransformState *get_camera_transform() const;
+
   INLINE void set_render_transform(const TransformState *render_transform);
+  INLINE const TransformState *get_render_transform() const;
+
   INLINE void set_view_frustum(GeometricBoundingVolume *view_frustum);
+  INLINE GeometricBoundingVolume *get_view_frustum() const;
+
   INLINE void set_guard_band(GeometricBoundingVolume *guard_band);
+  INLINE GeometricBoundingVolume *get_guard_band() const;
+
   INLINE void set_cull_handler(CullHandler *cull_handler);
+  INLINE CullHandler *get_cull_handler() const;
 
   void traverse(PandaNode *root);
+  void traverse(PandaNode *node, const CullTraverserData &data);
+  void traverse_below(PandaNode *node, const CullTraverserData &data);
 
 private:
-  void r_traverse(PandaNode *node, const CullTraverserData &data);
   void start_decal(PandaNode *node, const CullTraverserData &data);
   CullableObject *r_get_decals(PandaNode *node,
                                const CullTraverserData &data,
@@ -68,6 +84,23 @@ private:
   PT(GeometricBoundingVolume) _view_frustum;
   PT(GeometricBoundingVolume) _guard_band;
   CullHandler *_cull_handler;
+  
+public:
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+  static void init_type() {
+    TypedObject::init_type();
+    register_type(_type_handle, "qpCullTraverser",
+                  TypedObject::get_class_type());
+  }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+private:
+  static TypeHandle _type_handle;
 };
 
 #include "qpcullTraverser.I"

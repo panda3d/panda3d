@@ -27,6 +27,7 @@
 #include "cullBinAttrib.h"
 #include "cullBinBackToFront.h"
 #include "cullBinUnsorted.h"
+#include "qpcullTraverser.h"
 #include "cullableObject.h"
 #include "decalAttrib.h"
 #include "depthTestAttrib.h"
@@ -87,6 +88,7 @@ init_libpgraph() {
   CullBinAttrib::init_type();
   CullBinBackToFront::init_type();
   CullBinUnsorted::init_type();
+  qpCullTraverser::init_type();
   CullableObject::init_type();
   DecalAttrib::init_type();
   DepthTestAttrib::init_type();

@@ -49,7 +49,7 @@ public:
 
   virtual bool safe_to_transform() const;
   virtual bool has_cull_callback() const;
-  virtual bool cull_callback(CullTraverserData &data);
+  virtual bool cull_callback(qpCullTraverser *trav, CullTraverserData &data);
 
 PUBLISHED:
   INLINE CharacterJointBundle *get_bundle() const;

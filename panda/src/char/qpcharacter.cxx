@@ -142,7 +142,7 @@ has_cull_callback() const {
 //               visible, or false if it should be culled.
 ////////////////////////////////////////////////////////////////////
 bool qpCharacter::
-cull_callback(CullTraverserData &) {
+cull_callback(qpCullTraverser *, CullTraverserData &) {
   // For now, we update the character during the cull traversal; this
   // prevents us from needlessly updating characters that aren't in
   // the view frustum.  We may need a better way to do this

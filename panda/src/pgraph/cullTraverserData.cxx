@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "cullTraverserData.h"
+#include "qpcullTraverser.h"
 #include "config_pgraph.h"
 #include "pandaNode.h"
 #include "colorAttrib.h"
@@ -30,7 +31,7 @@
 //               billboards, etc.
 ////////////////////////////////////////////////////////////////////
 void CullTraverserData::
-apply_transform_and_state(PandaNode *node) {
+apply_transform_and_state(qpCullTraverser *trav, PandaNode *node) {
   const TransformState *node_transform = node->get_transform();
   if (!node_transform->is_identity()) {
     _render_transform = _render_transform->compose(node_transform);
@@ -73,7 +74,7 @@ apply_transform_and_state(PandaNode *node) {
   if (billboard != (const BillboardAttrib *)NULL) {
     // Got to apply a billboard transform here.
     CPT(TransformState) billboard_transform = 
-      billboard->do_billboard(_net_transform, _camera_transform);
+      billboard->do_billboard(_net_transform, trav->get_camera_transform());
     _render_transform = _render_transform->compose(billboard_transform);
     _net_transform = _net_transform->compose(billboard_transform);
 
