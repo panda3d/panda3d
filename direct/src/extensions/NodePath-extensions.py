@@ -126,19 +126,27 @@
             raise Exception("Error: NodePath.__getBlend: Unknown blend type")
 
             
-    def __lerp(self, functor, time, blendType, taskName=None):
-        """__lerp(self, functor, float, string, string)
+    def __lerp(self, functorFunc, duration, blendType, taskName=None):
+        """
+        __lerp(self, functorFunc, float, string, string)
         Basic lerp functionality used by other lerps.
-        Fire off a lerp. Make it a task if taskName given."""
-        import Lerp
-        # make the lerp
-        lerp = Lerp.Lerp(functor, time, (self.__getBlend(blendType)))
-
+        Fire off a lerp. Make it a task if taskName given.
+        """
+        # functorFunc is a function which can be called to create a functor.
+        # functor creation is defered so initial state (sampled in functorFunc)
+        # will be appropriate for the time the lerp is spawned
         from TaskManagerGlobal import *
+        
         # make the task function
         def lerpTaskFunc(task):
+            import Lerp
             import Task
             import ClockObject
+            if task.init == 1:
+                # make the lerp
+                functor = task.functorFunc()
+                task.lerp = Lerp.Lerp(functor, task.duration, task.blendType)
+                task.init = 0
             dt = ClockObject.ClockObject.getGlobalClock().getDt()
             task.lerp.setStepSize(dt)
             task.lerp.step()
@@ -146,10 +154,13 @@
                 return(Task.done)
             else:
                 return(Task.cont)
-
+        
         # make the lerp task
         lerpTask = Task.Task(lerpTaskFunc)
-        lerpTask.lerp = lerp
+        lerpTask.init = 1
+        lerpTask.functorFunc = functorFunc
+        lerpTask.duration = duration
+        lerpTask.blendType = self.__getBlend(blendType)
         
         if (taskName == None):
             # don't spawn a task, return one instead
@@ -159,7 +170,7 @@
             taskMgr.spawnTaskNamed(lerpTask, taskName)
             return lerpTask
 
-    def __autoLerp(self, functor, time, blendType, taskName):
+    def __autoLerp(self, functorFunc, time, blendType, taskName):
         """_autoLerp(self, functor, float, string, string)
         This lerp uses C++ to handle the stepping. Bonus is
         its more efficient, trade-off is there is less control"""
@@ -167,6 +178,7 @@
         from ShowBaseGlobal import *
 
         # make a lerp that lives in C++ land
+        functor = functorFunc()
         lerp = AutonomousLerp.AutonomousLerp(functor, time,
                               self.__getBlend(blendType),
                               base.eventHandler)
@@ -192,75 +204,88 @@
             raise Exception("Error: NodePath.lerpColor: bad number of args")
 
             
-    def lerpColorRGBA(self, r, g, b, a, time, blendType="noBlend",
-                      auto=None, task=None):
+    def lerpColorRGBA(self, r, g, b, a, time,
+                      blendType="noBlend", auto=None, task=None):
         """lerpColorRGBA(self, float, float, float, float, float,
         string="noBlend", string=none, string=none)
         """
-        import ColorLerpFunctor
-        # just end rgba values, use current color rgba values for start
-        startColor = self.getColor()
-        functor = ColorLerpFunctor.ColorLerpFunctor(self,
-                                   startColor[0], startColor[1],
-                                   startColor[2], startColor[3],
-                                   r, g, b, a)
+        def functorFunc(self = self, r = r, g = g, b = b, a = a):
+            import ColorLerpFunctor
+            # just end rgba values, use current color rgba values for start
+            startColor = self.getColor()
+            functor = ColorLerpFunctor.ColorLerpFunctor(
+                self,
+                startColor[0], startColor[1],
+                startColor[2], startColor[3],
+                r, g, b, a)
+            return functor
         #determine whether to use auto, spawned, or blocking lerp
         if (auto != None):
-            return self.__autoLerp(functor, time, blendType, auto)
+            return self.__autoLerp(functorFunc, time, blendType, auto)
         elif (task != None):
-            return self.__lerp(functor, time, blendType, task)
+            return self.__lerp(functorFunc, time, blendType, task)
         else:
-            return self.__lerp(functor, time, blendType)
+            return self.__lerp(functorFunc, time, blendType)
 
     def lerpColorRGBARGBA(self, sr, sg, sb, sa, er, eg, eb, ea, time,
                           blendType="noBlend", auto=None, task=None):
         """lerpColorRGBARGBA(self, float, float, float, float, float,
         float, float, float, float, string="noBlend", string=none, string=none)
         """
-        import ColorLerpFunctor
-        # start and end rgba values
-        functor = ColorLerpFunctor.ColorLerpFunctor(self, sr, sg, sb, sa,
-                                                    er, eg, eb, ea)
+        def functorFunc(self = self, sr = sr, sg = sg, sb = sb, sa = sa,
+                        er = er, eg = eg, eb = eb, ea = ea):
+            import ColorLerpFunctor
+            # start and end rgba values
+            functor = ColorLerpFunctor.ColorLerpFunctor(self, sr, sg, sb, sa,
+                                                        er, eg, eb, ea)
+            return functor
         #determine whether to use auto, spawned, or blocking lerp
         if (auto != None):
-            return self.__autoLerp(functor, time, blendType, auto)
+            return self.__autoLerp(functorFunc, time, blendType, auto)
         elif (task != None):
-            return self.__lerp(functor, time, blendType, task)
+            return self.__lerp(functorFunc, time, blendType, task)
         else:
-            return self.__lerp(functor, time, blendType)
+            return self.__lerp(functorFunc, time, blendType)
 
-    def lerpColorVBase4(self, endColor, time, blendType="noBlend",
-                      auto=None, task=None):
+    def lerpColorVBase4(self, endColor, time,
+                        blendType="noBlend", auto=None, task=None):
         """lerpColorVBase4(self, VBase4, float, string="noBlend", string=none,
         string=none)
         """
-        import ColorLerpFunctor
-        # just end vec4, use current color for start
-        startColor = self.getColor()
-        functor = ColorLerpFunctor.ColorLerpFunctor(self, startColor, endColor)
+        def functorFunc(self = self, endColor = endColor):
+            import ColorLerpFunctor
+            # just end vec4, use current color for start
+            startColor = self.getColor()
+            functor = ColorLerpFunctor.ColorLerpFunctor(
+                self, startColor, endColor)
+            return functor
         #determine whether to use auto, spawned, or blocking lerp
         if (auto != None):
-            return self.__autoLerp(functor, time, blendType, auto)
+            return self.__autoLerp(functorFunc, time, blendType, auto)
         elif (task != None):
-            return self.__lerp(functor, time, blendType, task)
+            return self.__lerp(functorFunc, time, blendType, task)
         else:
-            return self.__lerp(functor, time, blendType)
+            return self.__lerp(functorFunc, time, blendType)
 
     def lerpColorVBase4VBase4(self, startColor, endColor, time,
                           blendType="noBlend", auto=None, task=None):
         """lerpColorVBase4VBase4(self, VBase4, VBase4, float, string="noBlend",
         string=none, string=none)
         """
-        import ColorLerpFunctor
-        # start color and end vec
-        functor = ColorLerpFunctor.ColorLerpFunctor(self, startColor, endColor)
+        def functorFunc(self = self, startColor = startColor,
+                        endColor = endColor):
+            import ColorLerpFunctor
+            # start color and end vec
+            functor = ColorLerpFunctor.ColorLerpFunctor(
+                self, startColor, endColor)
+            return functor
         #determine whether to use auto, spawned, or blocking lerp
         if (auto != None):
-            return self.__autoLerp(functor, time, blendType, auto)
+            return self.__autoLerp(functorFunc, time, blendType, auto)
         elif (task != None):
-            return self.__lerp(functor, time, blendType, task)
+            return self.__lerp(functorFunc, time, blendType, task)
         else:
-            return self.__lerp(functor, time, blendType)
+            return self.__lerp(functorFunc, time, blendType)
             
 
     def lerpHpr(self, *posArgs, **keyArgs):
@@ -278,56 +303,61 @@
             # bad args
             raise Exception("Error: NodePath.lerpHpr: bad number of args")
     
-    def lerpHprHPR(self, h, p, r, time, blendType="noBlend", auto=None,
-                   task=None, other=None):
+    def lerpHprHPR(self, h, p, r, time, other=None,
+                   blendType="noBlend", auto=None, task=None):
         """lerpHprHPR(self, float, float, float, float, string="noBlend",
         string=none, string=none, NodePath=none)
         Perform a hpr lerp with three floats as the end point
         """
-        import HprLerpFunctor
-        # it's individual hpr components
-        if (other != None):
-            # lerp wrt other
-            startHpr = self.getHpr(other)
-            functor = HprLerpFunctor.HprLerpFunctor(self,
-                                     startHpr[0], startHpr[1], startHpr[2],
-                                     h, p, r, other)
-        else:
-            startHpr = self.getHpr()
-            functor = HprLerpFunctor.HprLerpFunctor(self,
-                                     startHpr[0], startHpr[1], startHpr[2],
-                                     h, p, r)
+        def functorFunc(self = self, h = h, p = p, r = r, other = other):
+            import HprLerpFunctor
+            # it's individual hpr components
+            if (other != None):
+                # lerp wrt other
+                startHpr = self.getHpr(other)
+                functor = HprLerpFunctor.HprLerpFunctor(
+                    self,
+                    startHpr[0], startHpr[1], startHpr[2],
+                    h, p, r, other)
+            else:
+                startHpr = self.getHpr()
+                functor = HprLerpFunctor.HprLerpFunctor(
+                    self,
+                    startHpr[0], startHpr[1], startHpr[2],
+                    h, p, r)
+            return functor
         #determine whether to use auto, spawned, or blocking lerp
         if (auto != None):
-            return self.__autoLerp(functor, time, blendType, auto)
+            return self.__autoLerp(functorFunc, time, blendType, auto)
         elif (task != None):
-            return self.__lerp(functor, time, blendType, task)
+            return self.__lerp(functorFunc, time, blendType, task)
         else:
-            return self.__lerp(functor, time, blendType)
-        
+            return self.__lerp(functorFunc, time, blendType)
     
-    def lerpHprVBase3(self, hpr, time, blendType="noBlend", auto=None,
-                    task=None, other=None):
+    def lerpHprVBase3(self, hpr, time, other=None,
+                      blendType="noBlend", auto=None, task=None):
         """lerpHprVBase3(self, VBase3, float, string="noBlend", string=none,
         string=none, NodePath=None)
         Perform a hpr lerp with a VBase3 as the end point
         """
-        import HprLerpFunctor
-        # it's a vbase3 hpr
-        if (other != None):
-            # lerp wrt other
-            functor = HprLerpFunctor.HprLerpFunctor(self, (self.getHpr(other)),
-                                                    hpr, other)
-        else:
-            functor = HprLerpFunctor.HprLerpFunctor(self, (self.getHpr()),
-                                                    hpr)
+        def functorFunc(self = self, hpr = hpr, other = other):
+            import HprLerpFunctor
+            # it's a vbase3 hpr
+            if (other != None):
+                # lerp wrt other
+                functor = HprLerpFunctor.HprLerpFunctor(
+                    self, (self.getHpr(other)), hpr, other)
+            else:
+                functor = HprLerpFunctor.HprLerpFunctor(
+                    self, (self.getHpr()), hpr)
+            return functor
         #determine whether to use auto, spawned, or blocking lerp
         if (auto != None):
-            return self.__autoLerp(functor, time, blendType, auto)
+            return self.__autoLerp(functorFunc, time, blendType, auto)
         elif (task != None):
-            return self.__lerp(functor, time, blendType, task)
+            return self.__lerp(functorFunc, time, blendType, task)
         else:
-            return self.__lerp(functor, time, blendType)
+            return self.__lerp(functorFunc, time, blendType)
         
 
     def lerpPos(self, *posArgs, **keyArgs):
@@ -345,51 +375,56 @@
             # bad number off args
             raise Exception("Error: NodePath.lerpPos: bad number of args")
         
-    def lerpPosXYZ(self, x, y, z, time, blendType="noBlend", auto=None,
-                   task=None, other=None):
+    def lerpPosXYZ(self, x, y, z, time, other=None,
+                   blendType="noBlend", auto=None, task=None):
         """lerpPosXYZ(self, float, float, float, float, string="noBlend",
         string=None, NodePath=None)
         Perform a pos lerp with three floats as the end point
         """
-        import PosLerpFunctor
-        if (other != None):
-            # lerp wrt other
-            startPos = self.getPos(other)
-            functor = PosLerpFunctor.PosLerpFunctor(self,
-                                     startPos[0], startPos[1], startPos[2],
-                                     x, y, z, other)
-        else:
-            startPos = self.getPos()
-            functor = PosLerpFunctor.PosLerpFunctor(self, startPos[0],
-                                     startPos[1], startPos[2], x, y, z)
+        def functorFunc(self = self, x = x, y = y, z = z, other = other):
+            import PosLerpFunctor
+            if (other != None):
+                # lerp wrt other
+                startPos = self.getPos(other)
+                functor = PosLerpFunctor.PosLerpFunctor(self,
+                                         startPos[0], startPos[1], startPos[2],
+                                         x, y, z, other)
+            else:
+                startPos = self.getPos()
+                functor = PosLerpFunctor.PosLerpFunctor(self, startPos[0],
+                                         startPos[1], startPos[2], x, y, z)
+            return functor
         #determine whether to use auto, spawned, or blocking lerp
         if (auto != None):
-            return  self.__autoLerp(functor, time, blendType, auto)
+            return  self.__autoLerp(functorFunc, time, blendType, auto)
         elif (task != None):
-            return self.__lerp(functor, time, blendType, task)
+            return self.__lerp(functorFunc, time, blendType, task)
         else:
-            return self.__lerp(functor, time, blendType)
+            return self.__lerp(functorFunc, time, blendType)
 
-    def lerpPosPoint3(self, pos, time, blendType="noBlend", auto=None,
-                    task=None, other=None):
+    def lerpPosPoint3(self, pos, time, other=None,
+                      blendType="noBlend", auto=None, task=None):
         """lerpPosPoint3(self, Point3, float, string="noBlend", string=None,
         string=None, NodePath=None)
         Perform a pos lerp with a Point3 as the end point
         """
-        import PosLerpFunctor
-        if (other != None):
-            #lerp wrt other
-            functor = PosLerpFunctor.PosLerpFunctor(self, (self.getPos(other)),
-                                                    pos, other)
-        else:
-            functor = PosLerpFunctor.PosLerpFunctor(self, (self.getPos()), pos)
+        def functorFunc(self = self, pos = pos, other = other):
+            import PosLerpFunctor
+            if (other != None):
+                #lerp wrt other
+                functor = PosLerpFunctor.PosLerpFunctor(
+                    self, (self.getPos(other)), pos, other)
+            else:
+                functor = PosLerpFunctor.PosLerpFunctor(
+                    self, (self.getPos()), pos)
+            return functor
         #determine whether to use auto, spawned, or blocking lerp
         if (auto != None):
-            return self.__autoLerp(functor, time, blendType, auto)
+            return self.__autoLerp(functorFunc, time, blendType, auto)
         elif (task != None):
-            return self.__lerp(functor, time, blendType, task)
+            return self.__lerp(functorFunc, time, blendType, task)
         else:
-            return self.__lerp(functor, time, blendType)
+            return self.__lerp(functorFunc, time, blendType)
 
 
     def lerpPosHpr(self, *posArgs, **keyArgs):
@@ -407,99 +442,107 @@
             # bad number off args
             raise Exception("Error: NodePath.lerpPosHpr: bad number of args")
 
-    def lerpPosHprPoint3VBase3(self, pos, hpr, time, blendType="noBlend",
-                             auto=None, task=None, other=None):
+    def lerpPosHprPoint3VBase3(self, pos, hpr, time, other=None,
+                               blendType="noBlend", auto=None, task=None):
         """lerpPosHprPoint3VBase3(self, Point3, VBase3, string="noBlend",
         string=none, string=none, NodePath=None)
         """
-        import PosHprLerpFunctor
-        if (other != None):
-            # lerp wrt other
-            startPos = self.getPos(other)
-            startHpr = self.getHpr(other)
-            functor = PosHprLerpFunctor.PosHprLerpFunctor(self,
-                                                          startPos, pos,
-                                                          startHpr, hpr, other)
-        else:
-            startPos = self.getPos()
-            startHpr = self.getHpr()
-            functor = PosHprLerpFunctor.PosHprLerpFunctor(self,
-                                                          startPos, pos,
-                                                          startHpr, hpr)
+        def functorFunc(self = self, pos = pos, hpr = hpr, other = other):
+            import PosHprLerpFunctor
+            if (other != None):
+                # lerp wrt other
+                startPos = self.getPos(other)
+                startHpr = self.getHpr(other)
+                functor = PosHprLerpFunctor.PosHprLerpFunctor(
+                    self, startPos, pos,
+                    startHpr, hpr, other)
+            else:
+                startPos = self.getPos()
+                startHpr = self.getHpr()
+                functor = PosHprLerpFunctor.PosHprLerpFunctor(
+                    self, startPos, pos,
+                    startHpr, hpr)
+            return functor
         #determine whether to use auto, spawned, or blocking lerp
         if (auto != None):
-            return self.__autoLerp(functor, time, blendType, auto)
+            return self.__autoLerp(functorFunc, time, blendType, auto)
         elif (task != None):
-            return self.__lerp(functor, time, blendType, task)
+            return self.__lerp(functorFunc, time, blendType, task)
         else:
-            return self.__lerp(functor, time, blendType)
+            return self.__lerp(functorFunc, time, blendType)
 
-    def lerpPosHprXYZHPR(self, x, y, z, h, p, r, time, blendType="noBlend",
-                         auto=None, task=None, other=None):
+    def lerpPosHprXYZHPR(self, x, y, z, h, p, r, time, other=None,
+                         blendType="noBlend", auto=None, task=None):
         """lerpPosHpr(self, float, string="noBlend", string=none,
         string=none, NodePath=None)
         """
-        import PosHprLerpFunctor
-        if (other != None):
-            # lerp wrt other
-            startPos = self.getPos(other)
-            startHpr = self.getHpr(other)
-            functor = PosHprLerpFunctor.PosHprLerpFunctor(self,
-                                        startPos[0], startPos[1],
-                                        startPos[2], x, y, z,
-                                        startHpr[0], startHpr[1],
-                                        startHpr[2], h, p, r,
-                                        other)
-        else:
-            startPos = self.getPos()
-            startHpr = self.getHpr()
-            functor = PosHprLerpFunctor.PosHprLerpFunctor(self,
-                                        startPos[0], startPos[1],
-                                        startPos[2], x, y, z,
-                                        startHpr[0], startHpr[1],
-                                        startHpr[2], h, p, r)
+        def functorFunc(self = self, x = x, y = y, z = z,
+                        h = h, p = p, r = r, other = other):
+            import PosHprLerpFunctor
+            if (other != None):
+                # lerp wrt other
+                startPos = self.getPos(other)
+                startHpr = self.getHpr(other)
+                functor = PosHprLerpFunctor.PosHprLerpFunctor(self,
+                                            startPos[0], startPos[1],
+                                            startPos[2], x, y, z,
+                                            startHpr[0], startHpr[1],
+                                            startHpr[2], h, p, r,
+                                            other)
+            else:
+                startPos = self.getPos()
+                startHpr = self.getHpr()
+                functor = PosHprLerpFunctor.PosHprLerpFunctor(self,
+                                            startPos[0], startPos[1],
+                                            startPos[2], x, y, z,
+                                            startHpr[0], startHpr[1],
+                                            startHpr[2], h, p, r)
+            return functor
         #determine whether to use auto, spawned, or blocking lerp
         if (auto != None):
-            return self.__autoLerp(functor, time, blendType, auto)
+            return self.__autoLerp(functorFunc, time, blendType, auto)
         elif (task != None):
-            return self.__lerp(functor, time, blendType, task)
+            return self.__lerp(functorFunc, time, blendType, task)
         else:
-            return self.__lerp(functor, time, blendType)
+            return self.__lerp(functorFunc, time, blendType)
 
 
-    def lerpPosHprScale(self, pos, hpr, scale, time, blendType="noBlend",
-                        auto=None, task=None, other=None):
+    def lerpPosHprScale(self, pos, hpr, scale, time, other=None,
+                        blendType="noBlend", auto=None, task=None):
         """lerpPosHpr(self, Point3, VBase3, float, float, string="noBlend",
         string=none, string=none, NodePath=None)
         Only one case, no need for extra args. Call the appropriate lerp
         (auto, spawned, or blocking) based on how(if) a task name is given
         """
-        import PosHprScaleLerpFunctor
-        if (other != None):
-            # lerp wrt other
-            startPos = self.getPos(other)
-            startHpr = self.getHpr(other)
-            startScale = self.getScale(other)
-            functor = PosHprScaleLerpFunctor.PosHprScaleLerpFunctor(self,
-                                             startPos, pos,
-                                             startHpr, hpr,
-                                             startScale, scale, other)
-        else:
-            startPos = self.getPos()
-            startHpr = self.getHpr()
-            startScale = self.getScale()
-            functor = PosHprScaleLerpFunctor.PosHprScaleLerpFunctor(self,
-                                             startPos, pos,
-                                             startHpr, hpr,
-                                             startScale, scale)
-            
+        def functorFunc(self = self, pos = pos, hpr = hpr,
+                        scale = scale, other = other):
+            import PosHprScaleLerpFunctor
+            if (other != None):
+                # lerp wrt other
+                startPos = self.getPos(other)
+                startHpr = self.getHpr(other)
+                startScale = self.getScale(other)
+                functor = PosHprScaleLerpFunctor.PosHprScaleLerpFunctor(self,
+                                                 startPos, pos,
+                                                 startHpr, hpr,
+                                                 startScale, scale, other)
+            else:
+                startPos = self.getPos()
+                startHpr = self.getHpr()
+                startScale = self.getScale()
+                functor = PosHprScaleLerpFunctor.PosHprScaleLerpFunctor(self,
+                                                 startPos, pos,
+                                                 startHpr, hpr,
+                                                 startScale, scale)
+
+            return functor
         #determine whether to use auto, spawned, or blocking lerp
         if (auto != None):
-            return self.__autoLerp(functor, time, blendType, auto)
+            return self.__autoLerp(functorFunc, time, blendType, auto)
         elif (task != None):
-            return self.__lerp(functor, time, blendType, task)
+            return self.__lerp(functorFunc, time, blendType, task)
         else:
-            return self.__lerp(functor, time, blendType)
+            return self.__lerp(functorFunc, time, blendType)
 
 
     def lerpScale(self, *posArgs, **keyArgs):
@@ -517,53 +560,57 @@
             # bad number off args
             raise Exception("Error: NodePath.lerpScale: bad number of args")
 
-    def lerpScaleVBase3(self, scale, time, blendType="noBlend", auto=None,
-                      task=None, other=None):
+    def lerpScaleVBase3(self, scale, time, other=None,
+                        blendType="noBlend", auto=None, task=None):
         """lerpPos(self, VBase3, float, string="noBlend", string=none,
         string=none, NodePath=None)
         """
-        import ScaleLerpFunctor
-        if (other != None):
-            # lerp wrt other
-            functor = ScaleLerpFunctor.ScaleLerpFunctor(self,
-                                       (self.getScale(other)),
-                                       scale, other)
-        else:
-            functor = ScaleLerpFunctor.ScaleLerpFunctor(self,
-                                       (self.getScale()), scale)
+        def functorFunc(self = self, scale = scale, other = other):
+            import ScaleLerpFunctor
+            if (other != None):
+                # lerp wrt other
+                functor = ScaleLerpFunctor.ScaleLerpFunctor(self,
+                                           (self.getScale(other)),
+                                           scale, other)
+            else:
+                functor = ScaleLerpFunctor.ScaleLerpFunctor(self,
+                                           (self.getScale()), scale)
 
+            return functor
         #determine whether to use auto, spawned, or blocking lerp
         if (auto != None):
-            return self.__autoLerp(functor, time, blendType, auto)
+            return self.__autoLerp(functorFunc, time, blendType, auto)
         elif (task != None):
-            return self.__lerp(functor, time, blendType, task)
+            return self.__lerp(functorFunc, time, blendType, task)
         else:
-            return self.__lerp(functor, time, blendType)
+            return self.__lerp(functorFunc, time, blendType)
 
-    def lerpScaleXYZ(self, sx, sy, sz, time, blendType="noBlend",
-                     auto=None, task=None, other=None):
+    def lerpScaleXYZ(self, sx, sy, sz, time, other=None,
+                     blendType="noBlend", auto=None, task=None):
         """lerpPos(self, float, float, float, float, string="noBlend",
         string=none, string=none, NodePath=None)
         """
-        import ScaleLerpFunctor
-        if (other != None):
-            # lerp wrt other
-            startScale = self.getScale(other)
-            functor = ScaleLerpFunctor.ScaleLerpFunctor(self,
-                                       startScale[0], startScale[1],
-                                       startScale[2], sx, sy, sz, other)
-        else:
-            startScale = self.getScale()
-            functor = ScaleLerpFunctor.ScaleLerpFunctor(self,
-                                       startScale[0], startScale[1],
-                                       startScale[2], sx, sy, sz)
+        def functorFunc(self = self, sx = sx, sy = sy, sz = sz, other = other):
+            import ScaleLerpFunctor
+            if (other != None):
+                # lerp wrt other
+                startScale = self.getScale(other)
+                functor = ScaleLerpFunctor.ScaleLerpFunctor(self,
+                                           startScale[0], startScale[1],
+                                           startScale[2], sx, sy, sz, other)
+            else:
+                startScale = self.getScale()
+                functor = ScaleLerpFunctor.ScaleLerpFunctor(self,
+                                           startScale[0], startScale[1],
+                                           startScale[2], sx, sy, sz)
+            return functor
         #determine whether to use auto, spawned, or blocking lerp
         if (auto != None):
-            return self.__autoLerp(functor, time, blendType, auto)
+            return self.__autoLerp(functorFunc, time, blendType, auto)
         elif (task != None):
-            return self.__lerp(functor, time, blendType, task)
+            return self.__lerp(functorFunc, time, blendType, task)
         else:
-            return self.__lerp(functor, time, blendType)
+            return self.__lerp(functorFunc, time, blendType)
             
 
 
