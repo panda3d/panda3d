@@ -875,7 +875,6 @@ dx_setup() {
         dwRenderWidth  = _props._xsize;
         dwRenderHeight = _props._ysize;
         _props._xorg = _props._yorg = 0;
-        SetRect(&view_rect, _props._xorg, _props._yorg, _props._xsize, _props._ysize);
 
         // CREATE FULL SCREEN BUFFERS
         // Store the rectangle which contains the renderer
@@ -1062,6 +1061,9 @@ dx_setup() {
             << "Blt to Black of Back Surf failed! : result = " << ConvD3DErrorToString(hr) << endl;
             exit(1);
         }
+
+        SetRect(&view_rect, 0, 0, dwRenderWidth, dwRenderHeight);
+
     }   // end create full screen buffers
 
     else {          // CREATE WINDOWED BUFFERS
