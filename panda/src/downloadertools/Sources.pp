@@ -42,6 +42,16 @@
 #end bin_target
 
 #begin bin_target
+  #define TARGET check_md5
+  #define TARGET_IF_CRYPTO yes
+  #define USE_CRYPTO yes
+
+  #define SOURCES \
+    check_md5.cxx
+
+#end bin_target
+
+#begin bin_target
   #define TARGET multify
 
   #define SOURCES \
