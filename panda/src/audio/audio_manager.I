@@ -165,10 +165,14 @@ INLINE bool AudioManager::get_all_sound_active(void) {
 ////////////////////////////////////////////////////////////////////
 INLINE void AudioManager::set_sfx_active(bool f) {
   if (f) {
-    if (AudioManager::_hard_sfx_active)
+    if (AudioManager::_hard_sfx_active) {
       AudioManager::_sfx_active = f;
-  } else
+      AudioManager::_master_volume_change = true;
+    }
+  } else {
     AudioManager::_sfx_active = f;
+    AudioManager::_master_volume_change = true;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -178,10 +182,14 @@ INLINE void AudioManager::set_sfx_active(bool f) {
 ////////////////////////////////////////////////////////////////////
 INLINE void AudioManager::set_music_active(bool f) {
   if (f) {
-    if (AudioManager::_hard_music_active)
+    if (AudioManager::_hard_music_active) {
       AudioManager::_music_active = f;
-  } else
+      AudioManager::_master_volume_change = true;
+    }
+  } else {
     AudioManager::_music_active = f;
+    AudioManager::_master_volume_change = true;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
