@@ -32,7 +32,12 @@
 //               TypedReferenceCount so we can attach this thing to an
 //               event.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PGMouseWatcherParameter : public MouseWatcherParameter, public TypedReferenceCount {
+class EXPCL_PANDA PGMouseWatcherParameter : public TypedReferenceCount, public MouseWatcherParameter {
+  // For now, this must inherit from TypedReferenceCount on the left,
+  // because MSVC++ wants to make that base class be the one at the
+  // front of the structure, not MouseWatcherParameter for some
+  // reason, and interrogate assumes that whichever base class is on
+  // the left will be at the front of the structure.
 public:
   INLINE PGMouseWatcherParameter();
   INLINE PGMouseWatcherParameter(const MouseWatcherParameter &copy);
