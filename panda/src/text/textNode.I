@@ -154,6 +154,7 @@ get_default_encoding() {
   return _default_encoding;
 }
 
+/*
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_expand_amp
 //       Access: Published
@@ -185,6 +186,7 @@ INLINE bool TextNode::
 get_expand_amp() const {
   return (_flags & F_expand_amp) != 0;
 }
+*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_line_height
@@ -1130,6 +1132,21 @@ set_text(const string &text) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_text
+//       Access: Published
+//  Description: The two-parameter version of set_text() accepts an
+//               explicit encoding; the text is immediately decoded
+//               and stored as a wide-character string.  Subsequent
+//               calls to get_text() will return the same text
+//               re-encoded using whichever encoding is specified by
+//               set_encoding().
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_text(const string &text, TextNode::Encoding encoding) {
+  set_wtext(decode_text(text, encoding));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextNode::clear_text
 //       Access: Published
 //  Description: Removes the text from the TextNode.
@@ -1159,7 +1176,8 @@ has_text() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::get_text
 //       Access: Published
-//  Description:
+//  Description: Returns the current text, as encoded via the current
+//               encoding system.
 ////////////////////////////////////////////////////////////////////
 INLINE string TextNode::
 get_text() const {
@@ -1168,6 +1186,17 @@ get_text() const {
     ((TextNode *)this)->_flags |= F_got_text;
   }
   return _text;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::get_text
+//       Access: Published
+//  Description: Returns the current text, as encoded via the indicated
+//               encoding system.
+////////////////////////////////////////////////////////////////////
+INLINE string TextNode::
+get_text(TextNode::Encoding encoding) const {
+  return encode_wtext(get_wtext(), encoding);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1184,14 +1213,14 @@ append_text(const string &text) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::append_char
+//     Function: TextNode::append_unicode_char
 //       Access: Published
 //  Description: Appends a single character to the end of the stored
 //               text.  This may be a wide character, up to 16 bits in
 //               Unicode.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-append_char(int character) {
+append_unicode_char(int character) {
   _wtext = get_wtext() + wstring(1, (wchar_t)character);
   _flags = (_flags | F_got_wtext) & ~F_got_text;
   invalidate_with_measure();
@@ -1210,7 +1239,7 @@ get_num_chars() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextNode::get_char
+//     Function: TextNode::get_unicode_char
 //       Access: Published
 //  Description: Returns the Unicode value of the nth character in the
 //               stored text.  This may be a wide character (greater
@@ -1218,10 +1247,33 @@ get_num_chars() const {
 //               according to set_encoding().
 ////////////////////////////////////////////////////////////////////
 INLINE int TextNode::
-get_char(int index) const {
+get_unicode_char(int index) const {
   get_wtext();
   nassertr(index >= 0 && index < (int)_wtext.length(), 0);
   return _wtext[index];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::get_encoded_char
+//       Access: Published
+//  Description: Returns the nth char of the stored text, as a one-,
+//               two-, or three-byte encoded string.
+////////////////////////////////////////////////////////////////////
+INLINE string TextNode::
+get_encoded_char(int index) const {
+  return get_encoded_char(index, get_encoding());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::get_encoded_char
+//       Access: Published
+//  Description: Returns the nth char of the stored text, as a one-,
+//               two-, or three-byte encoded string.
+////////////////////////////////////////////////////////////////////
+INLINE string TextNode::
+get_encoded_char(int index, TextNode::Encoding encoding) const {
+  wstring wch(1, (wchar_t)get_unicode_char(index));
+  return encode_wtext(wch, encoding);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1246,6 +1298,21 @@ get_char(int index) const {
 INLINE string TextNode::
 get_text_as_ascii() const {
   return encode_wtext(get_wtext_as_ascii());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::reencode_text
+//       Access: Published, Static
+//  Description: Given the indicated text string, which is assumed to
+//               be encoded via the encoding "from", decodes it and
+//               then reencodes it into the encoding "to", and returns
+//               the newly encoded string.  This does not change or
+//               affect any properties on the TextNode itself.
+////////////////////////////////////////////////////////////////////
+INLINE string TextNode::
+reencode_text(const string &text, TextNode::Encoding from, 
+              TextNode::Encoding to) {
+  return encode_wtext(decode_text(text, from), to);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1489,6 +1556,28 @@ wordwrap_to(const wstring &wtext, float wordwrap_width,
             bool preserve_trailing_whitespace) const {
   nassertr(_font != (TextFont *)NULL, wtext);
   return _font->wordwrap_to(wtext, wordwrap_width, preserve_trailing_whitespace);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::encode_wtext
+//       Access: Public
+//  Description: Encodes a wide-text string into a single-char string,
+//               according to the current encoding.
+////////////////////////////////////////////////////////////////////
+INLINE string TextNode::
+encode_wtext(const wstring &wtext) const {
+  return encode_wtext(wtext, _encoding);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::decode_text
+//       Access: Public
+//  Description: Returns the given wstring decoded to a single-byte
+//               string, via the current encoding system.
+////////////////////////////////////////////////////////////////////
+INLINE wstring TextNode::
+decode_text(const string &text) const {
+  return decode_text(text, _encoding);
 }
 
 ////////////////////////////////////////////////////////////////////

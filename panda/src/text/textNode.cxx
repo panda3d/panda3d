@@ -44,6 +44,8 @@
 #include "cullTraverserData.h"
 #include "geometricBoundingVolume.h"
 #include "accumulatedAttribs.h"
+#include "renderState.h"
+#include "cullFaceAttrib.h"
 #include "dcast.h"
 
 #include <stdio.h>
@@ -466,18 +468,34 @@ get_wtext_as_ascii() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::encode_wchar
-//       Access: Public
+//       Access: Public, Static
 //  Description: Encodes a single wide char into a one-, two-, or
-//               three-byte string, according to the current encoding
-//               system in effect.
+//               three-byte string, according to the given encoding
+//               system.
 ////////////////////////////////////////////////////////////////////
 string TextNode::
-encode_wchar(wchar_t ch) const {
-  switch (_encoding) {
+encode_wchar(wchar_t ch, TextNode::Encoding encoding) {
+  switch (encoding) {
   case E_iso8859:
-    if (isascii((unsigned int)ch)) {
+    if (ch < 0x100) {
       return string(1, (char)ch);
     } else {
+      // The character won't fit in the 8-bit ISO 8859.  See if we can
+      // make it fit by reducing it to its ascii equivalent
+      // (essentially stripping off an unusual accent mark).
+      const UnicodeLatinMap::Entry *map_entry = 
+        UnicodeLatinMap::look_up(ch);
+      if (map_entry != NULL && map_entry->_ascii_equiv != 0) {
+        // Yes, it has an ascii equivalent.
+        if (map_entry->_ascii_additional != 0) {
+          // In fact, it has two of them.
+          return
+            string(1, map_entry->_ascii_equiv) +
+            string(1, map_entry->_ascii_additional);
+        }
+        return string(1, map_entry->_ascii_equiv);
+      }
+      // Nope; return "." for lack of anything better.
       return ".";
     }
 
@@ -506,16 +524,16 @@ encode_wchar(wchar_t ch) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::encode_wtext
-//       Access: Public
+//       Access: Public, Static
 //  Description: Encodes a wide-text string into a single-char string,
-//               accoding to the current encoding.
+//               according to the given encoding.
 ////////////////////////////////////////////////////////////////////
 string TextNode::
-encode_wtext(const wstring &wtext) const {
+encode_wtext(const wstring &wtext, TextNode::Encoding encoding) {
   string result;
 
   for (wstring::const_iterator pi = wtext.begin(); pi != wtext.end(); ++pi) {
-    result += encode_wchar(*pi);
+    result += encode_wchar(*pi, encoding);
   }
 
   return result;
@@ -523,13 +541,13 @@ encode_wtext(const wstring &wtext) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::decode_text
-//       Access: Public
+//       Access: Public, Static
 //  Description: Returns the given wstring decoded to a single-byte
-//               string, via the current encoding system.
+//               string, via the given encoding system.
 ////////////////////////////////////////////////////////////////////
 wstring TextNode::
-decode_text(const string &text) const {
-  switch (_encoding) {
+decode_text(const string &text, TextNode::Encoding encoding) {
+  switch (encoding) {
   case E_utf8:
     {
       StringUtf8Decoder decoder(text);
@@ -762,22 +780,24 @@ recompute_internal_bound() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::decode_text_impl
-//       Access: Private
+//       Access: Private, Static
 //  Description: Decodes the eight-bit stream from the indicated
 //               decoder, returning the decoded wide-char string.
 ////////////////////////////////////////////////////////////////////
 wstring TextNode::
-decode_text_impl(StringDecoder &decoder) const {
+decode_text_impl(StringDecoder &decoder) {
   wstring result;
-  bool expand_amp = get_expand_amp();
+  //  bool expand_amp = get_expand_amp();
 
   wchar_t character = decoder.get_next_character();
   while (!decoder.is_eof()) {
+    /*
     if (character == '&' && expand_amp) {
       // An ampersand in expand_amp mode is treated as an escape
       // character.
       character = expand_amp_sequence(decoder);
     }
+    */
     result += character;
     character = decoder.get_next_character();
   }
@@ -785,6 +805,7 @@ decode_text_impl(StringDecoder &decoder) const {
   return result;
 }
 
+/*
 ////////////////////////////////////////////////////////////////////
 //     Function: TextNode::expand_amp_sequence
 //       Access: Private
@@ -832,7 +853,7 @@ expand_amp_sequence(StringDecoder &decoder) const {
     int code;
   } tokens[] = {
     { "amp", '&' }, { "lt", '<' }, { "gt", '>' }, { "quot", '"' },
-    { "nbsp", ' ' /* 160 */ },
+    { "nbsp", ' ' },
 
     { "iexcl", 161 }, { "cent", 162 }, { "pound", 163 }, { "curren", 164 },
     { "yen", 165 }, { "brvbar", 166 }, { "brkbar", 166 }, { "sect", 167 },
@@ -873,6 +894,7 @@ expand_amp_sequence(StringDecoder &decoder) const {
   // Some unrecognized sequence.
   return 0;
 }
+*/
 
 
 ////////////////////////////////////////////////////////////////////
@@ -1494,6 +1516,10 @@ tack_on_accent(char accent_mark, TextNode::CheesyPlacement placement,
         float t, u;
         LMatrix4f accent_mat;
 
+        // This gets set to true if the glyph gets mirrored and needs
+        // to have backface culling disabled.
+        bool mirrored = false;
+
         switch (transform) {
         case CT_none:
           accent_mat = LMatrix4f::ident_mat();
@@ -1504,6 +1530,7 @@ tack_on_accent(char accent_mark, TextNode::CheesyPlacement placement,
           t = min_accent[0];
           min_accent[0] = -max_accent[0];
           max_accent[0] = -t;
+          mirrored = true;
           break;
 
         case CT_mirror_y:
@@ -1511,6 +1538,7 @@ tack_on_accent(char accent_mark, TextNode::CheesyPlacement placement,
           t = min_accent[2];
           min_accent[2] = -max_accent[2];
           max_accent[2] = -t;
+          mirrored = true;
           break;
 
         case CT_rotate_90:
@@ -1563,6 +1591,7 @@ tack_on_accent(char accent_mark, TextNode::CheesyPlacement placement,
           t = min_accent[2];
           min_accent[2] = -max_accent[2] * squash_accent_scale_y;
           max_accent[2] = -t * squash_accent_scale_y;
+          mirrored = true;
           break;
 
         case CT_squash_mirror_diag:
@@ -1577,6 +1606,7 @@ tack_on_accent(char accent_mark, TextNode::CheesyPlacement placement,
           max_accent[0] = max_accent[2] * -squash_accent_scale_x;
           min_accent[2] = -u * squash_accent_scale_y;
           max_accent[2] = -t * squash_accent_scale_y;
+          mirrored = true;
           break;
 
         case CT_small_squash:
@@ -1594,6 +1624,7 @@ tack_on_accent(char accent_mark, TextNode::CheesyPlacement placement,
           t = min_accent[2];
           min_accent[2] = -max_accent[2] * small_squash_accent_scale_y;
           max_accent[2] = -t * small_squash_accent_scale_y;
+          mirrored = true;
           break;
 
         case CT_small:
@@ -1630,6 +1661,7 @@ tack_on_accent(char accent_mark, TextNode::CheesyPlacement placement,
           max_accent[0] = -t * tiny_accent_scale;
           min_accent[2] *= tiny_accent_scale;
           max_accent[2] *= tiny_accent_scale;
+          mirrored = true;
           break;
 
         case CT_tiny_rotate_270:
@@ -1685,7 +1717,21 @@ tack_on_accent(char accent_mark, TextNode::CheesyPlacement placement,
         accent_mat.set_row(3, trans);
         accent_geom->transform_vertices(accent_mat);
 
-        dest->add_geom(accent_geom, accent_glyph->get_state());
+        if (mirrored) {
+          // Once someone asks for this pointer, we hold its reference
+          // count and never free it.
+          static CPT(RenderState) disable_backface;
+          if (disable_backface == (const RenderState *)NULL) {
+            disable_backface = RenderState::make
+              (CullFaceAttrib::make(CullFaceAttrib::M_cull_none));
+          }
+            
+          CPT(RenderState) state = 
+            accent_glyph->get_state()->compose(disable_backface);
+          dest->add_geom(accent_geom, state);
+        } else {
+          dest->add_geom(accent_geom, accent_glyph->get_state());
+        }
         geom_array[num_geoms++] = accent_geom;
 
         return true;

@@ -84,8 +84,10 @@ PUBLISHED:
   INLINE static void set_default_encoding(Encoding encoding);
   INLINE static Encoding get_default_encoding();
 
+  /*
   INLINE void set_expand_amp(bool expand_amp);
   INLINE bool get_expand_amp() const;
+  */
 
   INLINE float get_line_height() const;
 
@@ -180,14 +182,20 @@ PUBLISHED:
   INLINE CoordinateSystem get_coordinate_system() const;
 
   INLINE void set_text(const string &text);
+  INLINE void set_text(const string &text, Encoding encoding);
   INLINE void clear_text();
   INLINE bool has_text() const;
   INLINE string get_text() const;
+  INLINE string get_text(Encoding encoding) const;
   INLINE void append_text(const string &text);
-  INLINE void append_char(int character);
+  INLINE void append_unicode_char(int character);
   INLINE int get_num_chars() const;
-  INLINE int get_char(int index) const;
+  INLINE int get_unicode_char(int index) const;
+  INLINE string get_encoded_char(int index) const;
+  INLINE string get_encoded_char(int index, Encoding encoding) const;
   INLINE string get_text_as_ascii() const;
+
+  INLINE static string reencode_text(const string &text, Encoding from, Encoding to);
 
   INLINE float calc_width(int character) const;
   INLINE float calc_width(const string &line) const;
@@ -225,9 +233,11 @@ public:
   INLINE wstring wordwrap_to(const wstring &wtext, float wordwrap_width,
                              bool preserve_trailing_whitespace) const;
 
-  string encode_wchar(wchar_t ch) const;
-  string encode_wtext(const wstring &wtext) const;
-  wstring decode_text(const string &text) const;
+  static string encode_wchar(wchar_t ch, Encoding encoding);
+  INLINE string encode_wtext(const wstring &wtext) const;
+  static string encode_wtext(const wstring &wtext, Encoding encoding);
+  INLINE wstring decode_text(const string &text) const;
+  static wstring decode_text(const string &text, Encoding encoding);
 
   // From parent class PandaNode
   virtual int get_unsafe_to_apply_attribs() const;
@@ -245,8 +255,8 @@ public:
   virtual BoundingVolume *recompute_internal_bound();
 
 private:
-  wstring decode_text_impl(StringDecoder &decoder) const;
-  int expand_amp_sequence(StringDecoder &decoder) const;
+  static wstring decode_text_impl(StringDecoder &decoder);
+  //  int expand_amp_sequence(StringDecoder &decoder) const;
 
   INLINE void invalidate_no_measure();
   INLINE void invalidate_with_measure();
@@ -344,7 +354,7 @@ private:
     F_frame_corners    =  0x00000100,
     F_card_transp      =  0x00000200,
     F_has_card_border  =  0x00000400,
-    F_expand_amp       =  0x00000800,
+    //    F_expand_amp       =  0x00000800,
     F_got_text         =  0x00001000,
     F_got_wtext        =  0x00002000,
     F_needs_rebuild    =  0x00004000,
