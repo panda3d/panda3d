@@ -5,7 +5,9 @@
   #define OTHER_LIBS \
     progbase converter \
     pnmimage:c mathutil:c linmath:c putil:c panda:m \
-    express:c pandaexpress:m pystub dtoolconfig dtool
+    express:c pandabase:c pandaexpress:m \
+    dtoolutil:c dconfig:c dtoolbase:c dtoolconfig:m dtool:m \
+    pystub
 
   #define SOURCES \
     stitchCommandProgram.cxx stitchCommandProgram.h
@@ -21,7 +23,9 @@
   #define OTHER_LIBS \
     progbase converter \
     pnmimagetypes:c pnmimage:c linmath:c putil:c panda:m \
-    express:c pandaexpress:m pystub dtoolconfig dtool
+    express:c pandabase:c pandaexpress:m \
+    dtoolutil:c dconfig:c dtoolbase:c dtoolconfig:m dtool:m \
+    pystub
 
   #define SOURCES \
     stitchImageProgram.cxx stitchImageProgram.h
@@ -36,9 +40,10 @@
     progbase converter \
     device:c tform:c graph:c dgraph:c sgraph:c gobj:c sgattrib:c \
     event:c chancfg:c display:c sgraphutil:c light:c \
-    pnmimagetypes:c pnmimage:c putil:c express:c \
+    pnmimagetypes:c pnmimage:c putil:c express:c pandabase:c \
     panda:m pandaexpress:m \
-    dtoolutil:c dconfig:c dtoolconfig:m dtool:m pystub
+    dtoolutil:c dconfig:c dtoolbase:c dtoolconfig:m dtool:m \
+    pystub
 
   #define SOURCES \
     stitchViewerProgram.cxx stitchViewerProgram.h
