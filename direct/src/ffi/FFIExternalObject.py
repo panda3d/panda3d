@@ -21,7 +21,7 @@ def getDowncastFunctions(thisClass, baseClass, chain):
             if getDowncastFunctions(base, baseClass, chain):
                 downcastFuncName = 'downcastTo' + thisClass.__name__
                 if base.__dict__.has_key(downcastFuncName):
-                    FFIConstants.notify.info('Found downcast function %s in %s'                        % (downcastFuncName, base.__name__))
+                    FFIConstants.notify.debug('Found downcast function %s in %s'                        % (downcastFuncName, base.__name__))
                     chain.append(base.__dict__[downcastFuncName])
                 return chain
 
@@ -78,10 +78,10 @@ class FFIExternalObject:
             WrapperClassMap[typeIndex] = self.__class__
 
     def downcast(self, specificClass):
-        FFIConstants.notify.info('downcasting from %s to %s' % \
+        FFIConstants.notify.debug('downcasting from %s to %s' % \
             (self.__class__.__name__, specificClass.__name__))
         downcastChain = getDowncastFunctions(specificClass, self.__class__, [])
-        FFIConstants.notify.info(downcastChain)
+        FFIConstants.notify.debug('downcast chain: ' + `downcastChain`)
         newObject = self
         if (downcastChain == None):
             return newObject
@@ -91,7 +91,7 @@ class FFIExternalObject:
             return newObject
         else:
             for downcastFunc in downcastChain:
-                FFIConstants.notify.info('Downcasting %s using %s' % \
+                FFIConstants.notify.debug('downcasting %s using %s' % \
                     (newObject.__class__.__name__, downcastFunc))
                 newObject = downcastFunc(newObject)
             return newObject
