@@ -2066,10 +2066,13 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
 
     // ignore memory based checks for min res 640x480.  some cards just dont give accurate memavails.
     // (should I do the check anyway for 640x480 32bpp?)
-    bool bDoMemBasedChecks=((!((RequestedXsize==640)&&(RequestedXsize==480))) &&
+    bool bDoMemBasedChecks=((!((RequestedXsize==640)&&(RequestedYsize==480))) &&
                             (_dxgsg->scrn.MaxAvailVidMem!=UNKNOWN_VIDMEM_SIZE) &&
                             (!special_check_fullscreen_resolution(RequestedXsize,RequestedYsize)));
 
+    if(bVerboseMode || wdxdisplay_cat.is_spam()) {
+        wdxdisplay_cat.info() << "DoMemBasedChecks = " << bDoMemBasedChecks << endl;
+    }
 
     for(int i=0;i<cNumModes;i++) {
         D3DDISPLAYMODE dispmode;
