@@ -25,7 +25,7 @@
                 self.addString(arg)
             elif subatomicType == DCSubatomicType.STBlob:
                 self.addString(arg)
-            elif subatomicType == DCSubatomicType.STBlob32:
+            elif hasattr(DCSubatomicType, "STBlob32") and subatomicType == DCSubatomicType.STBlob32:
                 self.addString32(arg)
             elif subatomicType == DCSubatomicType.STInt8array:
                 self.addUint16(len(arg))
