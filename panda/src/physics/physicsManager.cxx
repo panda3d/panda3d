@@ -52,7 +52,7 @@ PhysicsManager::
 void PhysicsManager::
 remove_linear_force(LinearForce *f) {
   nassertv(f);
-  pvector< PT(LinearForce) >::iterator found;
+  LinearForceVector::iterator found;
 
   PT(LinearForce) ptbf = f;
   found = find(_linear_forces.begin(), _linear_forces.end(), ptbf);
@@ -71,7 +71,7 @@ remove_linear_force(LinearForce *f) {
 void PhysicsManager::
 remove_angular_force(AngularForce *f) {
   nassertv(f);
-  pvector< PT(AngularForce) >::iterator found;
+  AngularForceVector::iterator found;
 
   PT(BaseForce) ptbf = f;
   found = find(_angular_forces.begin(), _angular_forces.end(), ptbf);
@@ -180,7 +180,7 @@ write_linear_forces(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
   out.width(indent);
   out<<""<<"_linear_forces ("<<_linear_forces.size()<<" forces)\n";
-  for (pvector< PT(LinearForce) >::const_iterator i=_linear_forces.begin();
+  for (LinearForceVector::const_iterator i=_linear_forces.begin();
        i != _linear_forces.end();
        ++i) {
     (*i)->write(out, indent+2);
@@ -199,7 +199,7 @@ write_angular_forces(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
   out.width(indent);
   out<<""<<"_angular_forces ("<<_angular_forces.size()<<" forces)\n";
-  for (pvector< PT(AngularForce) >::const_iterator i=_angular_forces.begin();
+  for (AngularForceVector::const_iterator i=_angular_forces.begin();
        i != _angular_forces.end();
        ++i) {
     (*i)->write(out, indent+2);

@@ -48,8 +48,8 @@ public:
   // the task and also allowing for dynamically created and destroyed
   // physicals.
   typedef pvector<Physical *> PhysicalsVector;
-  typedef pvector<PT(LinearForce)> LinearForcesVector;
-  typedef pvector<PT(AngularForce)> AngularForcesVector;
+  typedef pvector<PT(LinearForce)> LinearForceVector;
+  typedef pvector<PT(AngularForce)> AngularForceVector;
 
 PUBLISHED:
   PhysicsManager();
@@ -74,6 +74,7 @@ PUBLISHED:
   void do_physics(float dt);
   
   virtual void output(ostream &out) const;
+  INLINE void ls() const;
   virtual void write_physicals(ostream &out, unsigned int indent=0) const;
   virtual void write_linear_forces(ostream &out, unsigned int indent=0) const;
   virtual void write_angular_forces(ostream &out, unsigned int indent=0) const;
@@ -85,8 +86,8 @@ public:
 private:
   float _viscosity;
   PhysicalsVector _physicals;
-  LinearForcesVector _linear_forces;
-  AngularForcesVector _angular_forces;
+  LinearForceVector _linear_forces;
+  AngularForceVector _angular_forces;
 
   PT(LinearIntegrator) _linear_integrator;
   PT(AngularIntegrator) _angular_integrator;

@@ -27,8 +27,9 @@ attach_physical(Physical *p) {
   p->_physics_manager = this;
   pvector< Physical * >::iterator found;
   found = find(_physicals.begin(), _physicals.end(), p);
-  if (found == _physicals.end())
+  if (found == _physicals.end()) {
     _physicals.push_back(p);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -39,11 +40,12 @@ attach_physical(Physical *p) {
 INLINE void PhysicsManager::
 add_linear_force(LinearForce *f) {
   nassertv(f);
-  pvector< PT(LinearForce) >::iterator found;
+  LinearForceVector::iterator found;
   PT(LinearForce) ptlf = f;
   found = find(_linear_forces.begin(), _linear_forces.end(), ptlf);
-  if (found == _linear_forces.end())
+  if (found == _linear_forces.end()) {
     _linear_forces.push_back(f);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -54,8 +56,9 @@ add_linear_force(LinearForce *f) {
 INLINE void PhysicsManager::
 attach_physicalnode(PhysicalNode *p) {
   nassertv(p);
-  for (int i = 0; i < p->get_num_physicals(); i++)
+  for (int i = 0; i < p->get_num_physicals(); i++) {
     attach_physical(p->get_physical(i));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -76,7 +79,7 @@ clear_linear_forces() {
 INLINE void PhysicsManager::
 add_angular_force(AngularForce *f) {
   nassertv(f);
-  pvector< PT(AngularForce) >::iterator found;
+  AngularForceVector::iterator found;
   PT(AngularForce) ptaf = f;
   found = find(_angular_forces.begin(), _angular_forces.end(), ptaf);
   if (found == _angular_forces.end())
@@ -143,4 +146,15 @@ INLINE void PhysicsManager::
 attach_angular_integrator(AngularIntegrator *i) {
   nassertv(i);
   _angular_integrator = i;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysicsManager::ls
+//       Access: Published
+//  Description: Shortcut for write().  This is handy for interactive
+//               debugging.
+////////////////////////////////////////////////////////////////////
+INLINE void PhysicsManager::
+ls() const {
+  write(nout, 0);
 }
