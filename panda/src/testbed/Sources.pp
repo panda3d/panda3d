@@ -31,5 +31,6 @@
 
   #define SOURCES \
     pgrid.cxx
+  #define UNIX_SYS_LIBS m
 //#end test_bin_target
 #end bin_target
