@@ -2,7 +2,6 @@ from PandaObject import *
 from DirectGlobals import *
 from DirectUtil import *
 from DirectGeometry import *
-from DirectSelection import *
 
 COA_ORIGIN = 0
 COA_CENTER = 1
@@ -379,7 +378,7 @@ class DirectBoundingBox:
 
 
 class SelectionQueue(CollisionHandlerQueue):
-    def __init__(self, fromNP = render):
+    def __init__(self, parentNP = render):
         # Initialize the superclass
         CollisionHandlerQueue.__init__(self)
         # Current index and entry in collision queue
@@ -388,7 +387,7 @@ class SelectionQueue(CollisionHandlerQueue):
         self.skipFlags = SKIP_NONE
         # Create a collision node path attached to the given NP
         self.collisionNodePath = NodePath(CollisionNode("collisionNP"))
-        self.setFromNP(fromNP)
+        self.setParentNP(parentNP)
         # Don't pay the penalty of drawing this collision ray
         self.collisionNodePath.hide()
         self.collisionNode = self.collisionNodePath.node()
@@ -402,9 +401,9 @@ class SelectionQueue(CollisionHandlerQueue):
         self.unpickable = UNPICKABLE
         # Derived class must add Collider to complete initialization
 
-    def setFromNP(self, fromNP):
-        # Update fromNP
-        self.collisionNodePath.reparentTo(fromNP)
+    def setParentNP(self, parentNP):
+        # Update collisionNodePath's parent
+        self.collisionNodePath.reparentTo(parentNP)
 
     def addCollider(self, collider):
         # Inherited class must call this function to specify collider object
@@ -414,15 +413,29 @@ class SelectionQueue(CollisionHandlerQueue):
         self.collisionNode.addSolid( self.collider )
 
     def collideWithGeom(self):
+        # The into collide mask is the bit pattern colliders look at
+        # when deciding whether or not to test for a collision "into"
+        # this collision solid.  Set to all Off so this collision solid
+        # will not be considered in any collision tests
         self.collisionNode.setIntoCollideMask(BitMask32().allOff())
+        # The from collide mask is the bit pattern *this* collision solid
+        # compares against the into collide mask of candidate collision solids
+        # Turn this mask all off since we're not testing for collisions against
+        # collision solids
         self.collisionNode.setFromCollideMask(BitMask32().allOff())
+        # What we want to test against is actual geometry
         self.collisionNode.setCollideGeom(1)
 
     def collideWithWidget(self):
+        # This collision node should not be tested against by any other
+        # collision solids
         self.collisionNode.setIntoCollideMask(BitMask32().allOff())
+        # This collision node will test for collisions with any collision
+        # solids with a bit mask set to 0x80000000
         mask = BitMask32()
         mask.setWord(0x80000000)
         self.collisionNode.setFromCollideMask(mask)
+        # But in this case, don't test against actual geometry
         self.collisionNode.setCollideGeom(0)
 
     def addUnpickable(self, item):
@@ -483,9 +496,9 @@ class SelectionQueue(CollisionHandlerQueue):
         return self.getCurrentEntry()
 
 class SelectionRay(SelectionQueue):
-    def __init__(self, fromNP = render):
+    def __init__(self, parentNP = render):
         # Initialize the superclass
-        SelectionQueue.__init__(self, fromNP)
+        SelectionQueue.__init__(self, parentNP)
         self.addCollider(CollisionRay())
     
     def pick(self, targetNodePath):
@@ -531,9 +544,9 @@ class SelectionRay(SelectionQueue):
 class SelectionSegment(SelectionQueue):
     # Like a selection ray but with two endpoints instead of an endpoint
     # and a direction
-    def __init__(self, fromNP = render, numSegments = 1):
+    def __init__(self, parentNP = render, numSegments = 1):
         # Initialize the superclass
-        SelectionQueue.__init__(self, fromNP)
+        SelectionQueue.__init__(self, parentNP)
         self.colliders = []
         self.numColliders = 0
         for i in range(numSegments):
