@@ -5,25 +5,31 @@
   #define TARGET chan
   #define LOCAL_LIBS \
     putil linmath mathutil event graph sgattrib
+    
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
 
   #define SOURCES \
-    animBundle.I animBundle.cxx animBundle.h animBundleNode.I \
-    animBundleNode.cxx animBundleNode.h animChannel.I animChannel.cxx \
-    animChannel.h animChannelBase.I animChannelBase.cxx \
-    animChannelBase.h animChannelMatrixXfmTable.I \
-    animChannelMatrixXfmTable.cxx animChannelMatrixXfmTable.h \
-    animChannelScalarTable.I animChannelScalarTable.cxx \
-    animChannelScalarTable.h animControl.I animControl.N \
-    animControl.cxx animControl.h animControlCollection.I \
-    animControlCollection.cxx animControlCollection.h animGroup.I \
-    animGroup.cxx animGroup.h auto_bind.cxx auto_bind.h config_chan.cxx \
-    config_chan.h movingPartBase.I movingPartBase.cxx movingPartBase.h \
-    movingPartMatrix.I movingPartMatrix.cxx movingPartMatrix.h \
-    movingPartScalar.I movingPartScalar.cxx movingPartScalar.h \
-    partBundle.I partBundle.N partBundle.cxx partBundle.h \
-    partBundleNode.I partBundleNode.cxx partBundleNode.h partGroup.I \
-    partGroup.cxx partGroup.h vector_PartGroupStar.cxx \
-    vector_PartGroupStar.h
+     animBundle.I animBundle.h animBundleNode.I animBundleNode.h  \
+     animChannel.I animChannel.h animChannelBase.I  \
+     animChannelBase.h animChannelMatrixXfmTable.I  \
+     animChannelMatrixXfmTable.h animChannelScalarTable.I  \
+     animChannelScalarTable.h animControl.I animControl.N  \
+     animControl.h animControlCollection.I  \
+     animControlCollection.h animGroup.I animGroup.h auto_bind.h  \
+     config_chan.h movingPartBase.I movingPartBase.h  \
+     movingPartMatrix.I movingPartMatrix.h movingPartScalar.I  \
+     movingPartScalar.h partBundle.I partBundle.N partBundle.h  \
+     partBundleNode.I partBundleNode.h partGroup.I partGroup.h  \
+     vector_PartGroupStar.h 
+
+  #define INCLUDED_SOURCES  \
+     animBundle.cxx animBundleNode.cxx animChannel.cxx  \
+     animChannelBase.cxx animChannelMatrixXfmTable.cxx  \
+     animChannelScalarTable.cxx animControl.cxx  \
+     animControlCollection.cxx animGroup.cxx auto_bind.cxx  \
+     config_chan.cxx movingPartBase.cxx movingPartMatrix.cxx  \
+     movingPartScalar.cxx partBundle.cxx partBundleNode.cxx  \
+     partGroup.cxx vector_PartGroupStar.cxx 
 
   #define INSTALL_HEADERS \
     animBundle.I animBundle.h animBundleNode.I animBundleNode.h \
@@ -39,7 +45,7 @@
     partBundleNode.I partBundleNode.h partGroup.I partGroup.h \
     vector_PartGroupStar.h
     
-  #define PRECOMPILED_HEADER chan_headers.h 
+//  #define PRECOMPILED_HEADER chan_headers.h 
 
   #define IGATESCAN all
 
