@@ -849,7 +849,7 @@ class DisplayRegionContext(PandaObject):
         else:
             self.camLens.setFov(hfov, vfov)
             
-    def camUpdate(self):
+    def camUpdate(self, lens = None):
         # Window Data
         self.near = self.camLens.getNear()
         self.far = self.camLens.getFar()
