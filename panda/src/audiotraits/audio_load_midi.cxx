@@ -30,9 +30,7 @@ void AudioLoadMidi(AudioTraits::MusicClass** music,
   *destroy = AudioDestroyMidi;
 }
 
-#else /* AUDIO_USE_MIKMOD */
-
-#ifdef AUDIO_USE_WIN32
+#elif defined(AUDIO_USE_WIN32)
 
 #include "audio_win_traits.h"
 
@@ -52,9 +50,7 @@ void AudioLoadMidi(AudioTraits::MusicClass** music,
   *destroy = AudioDestroyMidi;
 }
 
-#else /* AUDIO_USE_WIN32 */
-
-#ifdef AUDIO_USE_LINUX
+#elif defined(AUDIO_USE_LINUX)
 
 #include "audio_linux_traits.h"
 
@@ -74,9 +70,7 @@ void AudioLoadMidi(AudioTraits::MusicClass** music,
   *destroy = AudioDestroyMidi;
 }
 
-#else /* AUDIO_USE_LINUX */
-
-#ifdef AUDIO_USE_NULL
+#elif defined(AUDIO_USE_NULL)
 
 // Null driver
 #include "audio_null_traits.h"
@@ -100,9 +94,6 @@ void AudioLoadMidi(AudioTraits::MusicClass** music,
 #error "unknown driver type"
 
 #endif /* AUDIO_USE_NULL */
-#endif /* AUDIO_USE_LINUX */
-#endif /* AUDIO_USE_WIN32 */
-#endif /* AUDIO_USE_MIKMOD */
 
 ConfigureFn(audio_load_midi) {
   AudioPool::register_music_loader("midi", AudioLoadMidi);
