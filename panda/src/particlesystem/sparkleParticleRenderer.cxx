@@ -119,6 +119,8 @@ resize_pool(int new_size) {
   _line_primitive->set_colors(_color_array, G_PER_VERTEX);
 
   _max_pool_size = new_size;
+
+  init_geoms();
 }
 
 ////////////////////////////////////////////////////////////////////

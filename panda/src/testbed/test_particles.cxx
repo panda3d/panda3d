@@ -91,7 +91,7 @@
 /////////////////////////////////////////////////
 
 // particle factory params
-#define PARTICLE_FACTORY_LIFESPAN_BASE   10.0f
+#define PARTICLE_FACTORY_LIFESPAN_BASE   5.0f
 //#define PARTICLE_FACTORY_LIFESPAN_BASE   3.0f
 //#define PARTICLE_FACTORY_LIFESPAN_SPREAD 1.0f
 //#define PARTICLE_FACTORY_MASS_BASE       1.0f
@@ -542,10 +542,6 @@ static void
 event_more_particles(CPT_Event) {
   static int index = 0;
   static int sizes[] = {
-    999,
-    1000,
-    0,
-    0,
     10,
     999,
     998,

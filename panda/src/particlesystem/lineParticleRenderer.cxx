@@ -145,7 +145,6 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
 
   int remaining_particles = ttl_particles;
   int i;
-  int num_lines_drawn = 0;
 
   Vertexf *cur_vert = &_vertex_array[0];
   Colorf *cur_color = &_color_array[0];
@@ -207,14 +206,12 @@ render(vector< PT(PhysicsObject) >& po_vector, int ttl_particles) {
     *cur_color++ = head_color;
     *cur_color++ = tail_color;
 
-    num_lines_drawn++;
-
     remaining_particles--;
     if (remaining_particles == 0)
       break;
   }
 
-  _line_primitive->set_num_prims(num_lines_drawn);
+  _line_primitive->set_num_prims(ttl_particles);
 
   // done filling geomline node, now do the bb stuff
 

@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////////////
 ParticleSystem::
 ParticleSystem(int pool_size) :
-  Physical(pool_size, false), _particle_pool_size(pool_size)
+  Physical(pool_size, false)
 {
   _birth_rate = 0.5f;
   _tics_since_birth = _birth_rate;
@@ -42,6 +42,7 @@ ParticleSystem(int pool_size) :
   _system_grows_older_flag = false;
   _system_lifespan = 0.0f;
   _i_was_spawned_flag = false;
+  _particle_pool_size = 0;
 
   // just in case someone tries to do something that requires the
   // use of an emitter, renderer, or factory before they've actually
@@ -55,6 +56,8 @@ ParticleSystem(int pool_size) :
   set_emitter(new SphereSurfaceEmitter);
   set_renderer(new PointParticleRenderer);
   set_factory(new PointParticleFactory);
+
+  set_pool_size(pool_size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -68,8 +71,6 @@ ParticleSystem(const ParticleSystem& copy) :
   _system_age(0.0f),
   _template_system_flag(false)
 {
-
-  _particle_pool_size = copy._particle_pool_size;
   _birth_rate = copy._birth_rate;
   _litter_size = copy._litter_size;
   _litter_spread = copy._litter_spread;
@@ -90,7 +91,7 @@ ParticleSystem(const ParticleSystem& copy) :
   _system_lifespan = copy._system_lifespan;
   _living_particles = 0;
 
-  resize_pool();
+  set_pool_size(copy._particle_pool_size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -300,19 +301,20 @@ kill_particle(int pool_index) {
 ////////////////////////////////////////////////////////////////////
 //    Function : resize_pool
 //      Access : Private
-// Description : Resizes the particle pool according to _particle_pool_size
+// Description : Resizes the particle pool
 ////////////////////////////////////////////////////////////////////
 #ifdef PSDEBUG
 #define PARTICLE_SYSTEM_RESIZE_POOL_SENTRIES
 #endif
 void ParticleSystem::
-resize_pool(void) {
+resize_pool(int size) {
   int i;
-  int delta = _particle_pool_size - _physics_objects.size();
+  int delta = size - _particle_pool_size;
+  int po_delta = _particle_pool_size - _physics_objects.size();
 
 #ifdef PARTICLE_SYSTEM_RESIZE_POOL_SENTRIES
-  cout << "resizing particle pool from " << _physics_objects.size()
-       << " to " << _particle_pool_size << endl;
+  cout << "resizing particle pool from " << _particle_pool_size
+       << " to " << size << endl;
 #endif
 
   if (_factory.is_null()) {
@@ -325,6 +327,51 @@ resize_pool(void) {
     particlesystem_cat.error() << "ParticleSystem::resize_pool"
 			       << " called with null _renderer." << endl;
     return;
+  }
+
+  _particle_pool_size = size;
+
+  // make sure the physics_objects array is OK
+  if (po_delta) {
+    if (po_delta > 0) {
+      for (i = 0; i < po_delta; i++)
+      {
+        int free_index = _physics_objects.size();
+
+        BaseParticle *new_particle = _factory->alloc_particle();
+        if (new_particle) {
+          _factory->populate_particle(new_particle);
+
+          _physics_objects.push_back(new_particle);
+        } else {
+#ifdef PSDEBUG
+          cout << "Error allocating new particle" << endl;
+          _particle_pool_size--;
+#endif
+        }
+      }
+    } else {
+#ifdef PSDEBUG
+      cout << "physics_object array is too large??" << endl;
+      _particle_pool_size--;
+#endif
+      po_delta = -po_delta;
+      for (i = 0; i < po_delta; i++) {
+        int delete_index = _physics_objects.size()-1;
+        BaseParticle *bp = (BaseParticle *) _physics_objects[delete_index].p();
+        if (bp->get_alive()) {
+          kill_particle(delete_index);
+          _free_particle_fifo.pop_back();
+        } else {
+          deque<int>::iterator i;
+          i = find(_free_particle_fifo.begin(), _free_particle_fifo.end(), delete_index);
+          if (i != _free_particle_fifo.end()) {
+            _free_particle_fifo.erase(i);
+          }
+        }
+        _physics_objects.pop_back();
+      }
+    }
   }
 
   // disregard no change
@@ -414,6 +461,11 @@ update(float dt) {
   BaseParticle *bp;
   float age;
 
+#ifdef PSSANITYCHECK
+  // check up on things
+  if (sanity_check()) return;
+#endif
+
 #ifdef PARTICLE_SYSTEM_UPDATE_SENTRIES
   cout << "UPDATE: pool size: " << _particle_pool_size
        << ", live particles: " << _living_particles << endl;
@@ -472,3 +524,150 @@ update(float dt) {
   cout << "particle update complete" << endl;
 #endif
 }
+
+#ifdef PSSANITYCHECK
+//////////////////////////////////////////////////////////////////////
+//    Function : sanity_check
+//      Access : Private
+// Description : Checks consistency of live particle count, free
+//               particle list, etc. returns 0 if everything is normal
+//////////////////////////////////////////////////////////////////////
+#ifndef NDEBUG
+#define PSSCVERBOSE
+#endif
+
+class SC_valuenamepair : public ReferenceCount {
+public:
+  int value;
+  char *name;
+  SC_valuenamepair(int v, char *s) : value(v), name(s) {}
+};
+
+// returns 0 if OK, # of errors if not OK
+static int check_free_live_total_particles(vector<PT(SC_valuenamepair)> live_counts,
+  vector<PT(SC_valuenamepair)> dead_counts, vector<PT(SC_valuenamepair)> total_counts,
+  int print_all = 0) {
+
+  int val = 0;
+  int l, d, t;
+
+  for(l = 0; l < live_counts.size(); l++) {
+    for(d = 0; d < dead_counts.size(); d++) {
+      for(t = 0; t < total_counts.size(); t++) {
+        int live = live_counts[l]->value;
+        int dead = dead_counts[d]->value;
+        int total = total_counts[t]->value;
+        if ((live + dead) != total) {
+#ifdef PSSCVERBOSE
+          cout << "free/live/total count: "
+               << live_counts[l]->name << " (" << live << ") + "
+               << dead_counts[d]->name << " (" << dead << ") = "
+               << live + dead << ", != "
+               << total_counts[t]->name << " (" << total << ")"
+               << endl;
+#endif
+          val++;
+        }
+      }
+    }
+  }
+
+  return val;
+}
+
+int ParticleSystem::
+sanity_check() {
+  int result = 0;
+  int i;
+  BaseParticle *bp;
+  int pool_size;
+
+  ///////////////////////////////////////////////////////////////////
+  // check pool size
+  if (_particle_pool_size != _physics_objects.size()) {
+#ifdef PSSCVERBOSE
+    cout << "_particle_pool_size (" << _particle_pool_size
+         << ") != particle array size (" << _physics_objects.size() << ")" << endl;
+#endif
+    result++;
+  }
+  pool_size = min(_particle_pool_size, _physics_objects.size());
+  ///////////////////////////////////////////////////////////////////
+
+  ///////////////////////////////////////////////////////////////////
+  // find out how many particles are REALLY alive and dead
+  int real_live_particle_count = 0;
+  int real_dead_particle_count = 0;
+
+  for (i = 0; i < _physics_objects.size(); i++) {
+    bp = (BaseParticle *) _physics_objects[i].p();
+    if (true == bp->get_alive()) {
+      real_live_particle_count++;
+    } else {
+      real_dead_particle_count++;
+    }
+  }
+
+  if (real_live_particle_count != _living_particles) {
+#ifdef PSSCVERBOSE
+    cout << "manually counted live particle count (" << real_live_particle_count
+         << ") != _living_particles (" << _living_particles << ")" << endl;
+#endif
+    result++;
+  }
+
+  if (real_dead_particle_count != _free_particle_fifo.size()) {
+#ifdef PSSCVERBOSE
+    cout << "manually counted dead particle count (" << real_dead_particle_count
+         << ") != free particle fifo size (" << _free_particle_fifo.size() << ")" << endl;
+#endif
+    result++;
+  }
+  ///////////////////////////////////////////////////////////////////
+
+  ///////////////////////////////////////////////////////////////////
+  // check the free particle pool
+  for (i = 0; i < _free_particle_fifo.size(); i++) {
+    int index = _free_particle_fifo[i];
+
+    // check that we're in bounds
+    if (index >= pool_size) {
+#ifdef PSSCVERBOSE
+      cout << "index from free particle fifo (" << index
+           << ") is too large; pool size is " << pool_size << endl;
+#endif
+      result++;
+      continue;
+    }
+
+    // check that the particle is indeed dead
+    bp = (BaseParticle *) _physics_objects[index].p();
+    if (true == bp->get_alive()) {
+#ifdef PSSCVERBOSE
+      cout << "particle " << index << " in free fifo is not dead" << endl;
+#endif
+      result++;
+    }
+  }
+  ///////////////////////////////////////////////////////////////////
+
+  ///////////////////////////////////////////////////////////////////
+  // check the numbers of free particles, live particles, and total particles
+  vector<PT(SC_valuenamepair)> live_counts;
+  vector<PT(SC_valuenamepair)> dead_counts;
+  vector<PT(SC_valuenamepair)> total_counts;
+
+  live_counts.push_back(new SC_valuenamepair(real_live_particle_count, "real_live_particle_count"));
+
+  dead_counts.push_back(new SC_valuenamepair(real_dead_particle_count, "real_dead_particle_count"));
+  dead_counts.push_back(new SC_valuenamepair(_free_particle_fifo.size(), "free particle fifo size"));
+
+  total_counts.push_back(new SC_valuenamepair(_particle_pool_size, "_particle_pool_size"));
+  total_counts.push_back(new SC_valuenamepair(_physics_objects.size(), "actual particle pool size"));
+
+  result += check_free_live_total_particles(live_counts, dead_counts, total_counts);
+  ///////////////////////////////////////////////////////////////////
+
+  return result;
+}
+#endif

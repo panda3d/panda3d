@@ -18,7 +18,7 @@ PointParticleRenderer(ParticleRendererAlphaMode am,
 		      PointParticleBlendType bt,
 		      ParticleRendererBlendMethod bm,
 		      const Colorf& sc, const Colorf& ec) :
-  BaseParticleRenderer(am), 
+  BaseParticleRenderer(am),
   _start_color(sc), _end_color(ec),
   _point_size(point_size),
   _blend_type(bt), _blend_method(bm)
@@ -86,6 +86,8 @@ resize_pool(int new_size) {
 
   _point_primitive->set_coords(_vertex_array, G_PER_VERTEX);
   _point_primitive->set_colors(_color_array, G_PER_VERTEX);
+
+  init_geoms();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -7,6 +7,10 @@
 //#define PSDEBUG
 #endif
 
+#define PSSANITYCHECK
+
+#define DYNAMIC_POOL_RESIZING
+
 #ifndef PARTICLESYSTEM_H
 #define PARTICLESYSTEM_H
 
@@ -32,10 +36,19 @@ class ParticleSystemManager;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAPHYSICS ParticleSystem : public Physical {
 private:
+
+#ifdef PSSANITYCHECK
+  int sanity_check();
+#endif
+
+#ifndef DYNAMIC_POOL_RESIZING
+  INLINE void set_pool_size(int size);
+#endif
+
   bool birth_particle(void);
   void kill_particle(int pool_index);
   void birth_litter(void);
-  void resize_pool(void);
+  void resize_pool(int size);
 
   deque< int > _free_particle_fifo;
 
@@ -86,7 +99,9 @@ PUBLISHED:
   ~ParticleSystem(void);
 
   // access/queries
+#ifdef DYNAMIC_POOL_RESIZING
   INLINE void set_pool_size(int size);
+#endif
   INLINE void set_birth_rate(float new_br);
   INLINE void set_litter_size(int new_ls);
   INLINE void set_litter_spread(int new_ls);

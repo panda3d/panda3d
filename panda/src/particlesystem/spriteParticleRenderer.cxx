@@ -125,6 +125,8 @@ resize_pool(int new_size) {
   _sprite_primitive->set_x_texel_ratio(_x_texel_array, _x_bind);
   _sprite_primitive->set_y_texel_ratio(_y_texel_array, _y_bind);
   _sprite_primitive->set_thetas(_theta_array, _theta_bind);
+
+  init_geoms();
 }
 
 ////////////////////////////////////////////////////////////////////

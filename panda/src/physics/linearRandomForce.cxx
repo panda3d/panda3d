@@ -1,6 +1,6 @@
 // Filename: LinearRandomForce.cxx
 // Created by:  charles (19Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "linearRandomForce.h"
@@ -43,8 +43,5 @@ LinearRandomForce::
 ////////////////////////////////////////////////////////////////////
 float LinearRandomForce::
 bounded_rand(void) {
-  int val = rand() & 0x7fffffff;
-  float f_val = (float) val / (float) 0x7fffffff;
-
-  return f_val;
+  return ((float)rand() / (float)RAND_MAX);
 }

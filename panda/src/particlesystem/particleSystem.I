@@ -27,8 +27,7 @@ render(void) {
 
 INLINE void ParticleSystem::
 set_pool_size(int size) {
-  _particle_pool_size = size;
-  resize_pool();
+  resize_pool(size);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -95,9 +94,11 @@ set_emitter(BaseParticleEmitter *e) {
 
 INLINE void ParticleSystem::
 set_factory(BaseParticleFactory *f) {
+  int pool_size = _particle_pool_size;
+  set_pool_size(0);
   _factory = f;
   clear_physics_objects();
-  resize_pool();
+  set_pool_size(pool_size);
 }
 
 ////////////////////////////////////////////////////////////////////
