@@ -163,10 +163,22 @@ set_projector(const NodePath &projector) {
 //               and vertical dimension of the projector,
 //               respectively; distance represents the approximate
 //               distance of the screen from the lens center.
+//
+//               The fill_ratio parameter specifies the fraction of
+//               the image to cover.  If it is 1.0, the entire image
+//               is shown full-size; if it is 0.9, 10% of the image
+//               around the edges is not part of the grid (and the
+//               grid is drawn smaller by the same 10%).  This is
+//               intended to work around graphics drivers that tend to
+//               show dark edges or other unsatisfactory artifacts
+//               around the edges of textures: render the texture
+//               larger than necessary by a certain fraction, and make
+//               the screen smaller by the inverse fraction.
 ////////////////////////////////////////////////////////////////////
 PT(GeomNode) ProjectionScreen::
 generate_screen(const NodePath &projector, const string &screen_name,
-                int num_x_verts, int num_y_verts, float distance) {
+                int num_x_verts, int num_y_verts, float distance,
+                float fill_ratio) {
   nassertr(!projector.is_empty() && 
            projector.node()->is_of_type(LensNode::get_class_type()),
            NULL);
@@ -188,10 +200,15 @@ generate_screen(const NodePath &projector, const string &screen_name,
   coords.reserve(num_verts);
   float x_scale = 2.0f / (num_x_verts - 1);
   float y_scale = 2.0f / (num_y_verts - 1);
+  
   for (int yi = 0; yi < num_y_verts; yi++) {
     for (int xi = 0; xi < num_x_verts; xi++) {
       LPoint2f film = LPoint2f((float)xi * x_scale - 1.0f,
                                (float)yi * y_scale - 1.0f);
+
+      // Reduce the image by the fill ratio.
+      film *= fill_ratio;
+
       LPoint3f near_point, far_point;
       lens->extrude(film, near_point, far_point);
       
@@ -264,14 +281,15 @@ generate_screen(const NodePath &projector, const string &screen_name,
 ////////////////////////////////////////////////////////////////////
 void ProjectionScreen::
 regenerate_screen(const NodePath &projector, const string &screen_name,
-                  int num_x_verts, int num_y_verts, float distance) {
+                  int num_x_verts, int num_y_verts, float distance,
+                  float fill_ratio) {
   // First, remove all existing children.
   remove_all_children();
 
   // And attach a new child.
   PT(GeomNode) geom_node = 
     generate_screen(projector, screen_name, num_x_verts, num_y_verts, 
-                    distance);
+                    distance, fill_ratio);
   add_child(geom_node);
 }
 

@@ -67,9 +67,10 @@ PUBLISHED:
   PT(GeomNode) generate_screen(const NodePath &projector,
                                const string &screen_name,
                                int num_x_verts, int num_y_verts,
-                               float distance);
+                               float distance, float fill_ratio);
   void regenerate_screen(const NodePath &projector, const string &screen_name,
-                         int num_x_verts, int num_y_verts, float distance);
+                         int num_x_verts, int num_y_verts, float distance,
+                         float fill_ratio);
   PT(PandaNode) make_flat_mesh(const NodePath &camera);
 
   INLINE void set_invert_uvs(bool invert_uvs);
