@@ -27,6 +27,15 @@
 #end bin_target
 
 #begin test_bin_target
+  #define TARGET open_window
+
+  #define SOURCES \
+    open_window.cxx
+
+  #define LOCAL_LIBS $[LOCAL_LIBS] pandagl pandadx
+#end test_bin_target
+
+#begin test_bin_target
   #define TARGET downloader
 
   #define SOURCES \
