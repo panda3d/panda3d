@@ -11,7 +11,7 @@
 #include "nurbsCurve.h"
 #include "nurbsCurveDrawer.h"
 
-#include <get_config_path.h>
+#include "get_config_path.h"
 
 Configure(config_parametrics);
 NotifyCategoryDef(parametrics, "");

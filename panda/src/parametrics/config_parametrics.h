@@ -6,8 +6,8 @@
 #ifndef CONFIG_PARAMETRICS_H
 #define CONFIG_PARAMETRICS_H
 
-#include <pandabase.h>
-#include <notifyCategoryProxy.h>
+#include "pandabase.h"
+#include "notifyCategoryProxy.h"
 
 NotifyCategoryDecl(parametrics, EXPCL_PANDA, EXPTP_PANDA);
 
