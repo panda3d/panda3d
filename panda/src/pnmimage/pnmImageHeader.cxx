@@ -87,7 +87,8 @@ make_reader(const Filename &filename, PNMFileType *type) const {
       return NULL;
     }
     owns_file = true;
-    file = pm_openr((char *)actual_name.to_os_specific().c_str());
+    string os_specific = actual_name.to_os_specific();
+    file = pm_openr((char *)os_specific.c_str());
   }
 
   if (file == (FILE *)NULL) {
@@ -251,7 +252,8 @@ make_writer(const Filename &filename, PNMFileType *type) const {
 
   } else {
     owns_file = true;
-    file = pm_openw((char *)actual_name.to_os_specific().c_str());
+    string os_specific = actual_name.to_os_specific();
+    file = pm_openw((char *)os_specific.c_str());
   }
 
   if (file == (FILE *)NULL) {
