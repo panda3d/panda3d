@@ -1,6 +1,6 @@
 // Filename: LinearIntegrator.C
 // Created by:  charles (02Aug00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include <get_rel_pos.h>
@@ -45,7 +45,7 @@ integrate(Physical *physical, vector< PT(LinearForce) > &forces,
 
   vector< PT(PhysicsObject) >::const_iterator current_object_iter;
   current_object_iter = physical->get_object_vector().begin();
-  for (; current_object_iter != physical->get_object_vector().end(); 
+  for (; current_object_iter != physical->get_object_vector().end();
        current_object_iter++) {
     PhysicsObject *current_object = *current_object_iter;
 
@@ -53,7 +53,7 @@ integrate(Physical *physical, vector< PT(LinearForce) > &forces,
     // processed.
     if (current_object == (PhysicsObject *) NULL)
       continue;
-    
+
     // set the object's last position to its current position before we move it
     current_object->set_last_position(current_object->get_position());
 

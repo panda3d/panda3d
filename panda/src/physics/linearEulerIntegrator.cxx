@@ -1,6 +1,6 @@
 // Filename: LinearEulerIntegrator.cxx
 // Created by:  charles (13Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #include "linearEulerIntegrator.h"
@@ -31,13 +31,13 @@ LinearEulerIntegrator::
 ////////////////////////////////////////////////////////////////////
 //     Function : Integrate
 //       Access : Public
-//  Description : Integrate a step of motion (based on dt) by 
-//                applying every force in force_vec to every object 
+//  Description : Integrate a step of motion (based on dt) by
+//                applying every force in force_vec to every object
 //                in obj_vec.
 ////////////////////////////////////////////////////////////////////
 void LinearEulerIntegrator::
-child_integrate(Physical *physical, 
-		vector< PT(LinearForce) >& forces, 
+child_integrate(Physical *physical,
+		vector< PT(LinearForce) >& forces,
 		float dt) {
   vector< PT(PhysicsObject) >::const_iterator current_object_iter;
 
@@ -58,7 +58,7 @@ child_integrate(Physical *physical,
   // should help.
 
   current_object_iter = physical->get_object_vector().begin();
-  for (; current_object_iter != physical->get_object_vector().end(); 
+  for (; current_object_iter != physical->get_object_vector().end();
        current_object_iter++) {
     LVector3f md_accum_vec, non_md_accum_vec, accel_vec, vel_vec;
     LPoint3f pos;
@@ -121,10 +121,10 @@ child_integrate(Physical *physical,
       // go from force space to object space
       f = matrices[index++] * cur_force->get_vector(current_object);
 
-      // tally it into the accum vectors				  
+      // tally it into the accum vectors
       if (cur_force->get_mass_dependent() == true)
 	md_accum_vec += f;
-      else 
+      else
 	non_md_accum_vec += f;
     }
 

@@ -66,24 +66,24 @@
 /////////////////////////////////////////////////
 
 // particle factory selection
-//#define POINT_PARTICLES
-#define ZSPIN_PARTICLES
+#define POINT_PARTICLES
+//#define ZSPIN_PARTICLES
 //#define ORIENTED_PARTICLES
 
 // particle renderer selection
-#define POINT_PARTICLE_RENDERER
+//#define POINT_PARTICLE_RENDERER
 //#define LINE_PARTICLE_RENDERER
 //#define SPARKLE_PARTICLE_RENDERER
-//#define SPRITE_PARTICLE_RENDERER
+#define SPRITE_PARTICLE_RENDERER
 //#define GEOM_PARTICLE_RENDERER
 
 // particle emitter selection
 //#define BOX_EMITTER
-//#define DISC_EMITTER
+#define DISC_EMITTER
 //#define LINE_EMITTER
 //#define POINT_EMITTER
 //#define RECTANGLE_EMITTER
-#define RING_EMITTER
+//#define RING_EMITTER
 //#define SPHERE_SURFACE_EMITTER
 //#define SPHERE_VOLUME_EMITTER
 //#define TANGENT_RING_EMITTER
@@ -434,10 +434,10 @@ event_add_particles(CPT_Event) {
     #endif
     #ifdef EMISSION_TYPE_CUSTOM
       #ifdef DISC_EMITTER_OUTER_ANGLE
-        pe->set_outer_aoe(DISC_EMITTER_OUTER_ANGLE);
+        pe->set_outer_angle(DISC_EMITTER_OUTER_ANGLE);
       #endif
       #ifdef DISC_EMITTER_INNER_ANGLE
-        pe->set_inner_aoe(DISC_EMITTER_INNER_ANGLE);
+        pe->set_inner_angle(DISC_EMITTER_INNER_ANGLE);
       #endif
       #ifdef DISC_EMITTER_OUTER_MAGNITUDE
         pe->set_outer_magnitude(DISC_EMITTER_OUTER_MAGNITUDE);
