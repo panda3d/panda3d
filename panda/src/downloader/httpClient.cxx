@@ -32,9 +32,54 @@
 
 bool HTTPClient::_ssl_initialized = false;
 
-// Never freed.
+// This is created once and never freed.
 X509_STORE *HTTPClient::_x509_store = NULL;
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+HTTPClient::
+HTTPClient() {
+  _verify_ssl = verify_ssl;
+  make_ctx();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::Copy Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+HTTPClient::
+HTTPClient(const HTTPClient &copy) {
+  _verify_ssl = verify_ssl;
+  make_ctx();
+
+  (*this) = copy;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::Copy Assignment Operator
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+operator = (const HTTPClient &copy) {
+  _proxy = copy._proxy;
+  set_verify_ssl(copy._verify_ssl);
+  clear_expected_servers();
+
+  ExpectedServers::const_iterator ei;
+  for (ei = copy._expected_servers.begin();
+       ei != copy._expected_servers.end();
+       ++ei) {
+    X509_NAME *orig_name = (*ei);
+    X509_NAME *new_name = X509_NAME_dup(orig_name);
+    _expected_servers.push_back(new_name);
+  }
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HTTPClient::Destructor
@@ -49,6 +94,9 @@ HTTPClient::
   nassertv(_ssl_ctx->cert_store == _x509_store);
   _ssl_ctx->cert_store = NULL;
   SSL_CTX_free(_ssl_ctx);
+
+  // Free all of the expected server definitions.
+  clear_expected_servers();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -87,6 +135,52 @@ load_certificates(const Filename &filename) {
     << filename << "\n";
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::add_expected_server
+//       Access: Published
+//  Description: Adds the indicated string as a definition of a valid
+//               server to contact via https.  If no servers have been
+//               been added, an https connection will be allowed to
+//               any server.  If at least one server has been added,
+//               an https connection will be allowed to any of the
+//               named servers, but none others.
+//
+//               The string passed in defines a subset of the server
+//               properties that are to be insisted on, using the X509
+//               naming convention, e.g. O=WDI/OU=VRStudio/CN=ttown.
+//
+//               It makes sense to use this in conjunction with
+//               set_verify_ssl(), which insists that the https
+//               connection uses a verifiable certificate.
+////////////////////////////////////////////////////////////////////
+bool HTTPClient::
+add_expected_server(const string &server_attributes) {
+  X509_NAME *name = parse_x509_name(server_attributes);
+  if (name == (X509_NAME *)NULL) {
+    return false;
+  }
+
+  _expected_servers.push_back(name);
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::clear_expected_servers
+//       Access: Published
+//  Description: Clears the set of expected servers; the HTTPClient
+//               will allow an https connection to any server.
+////////////////////////////////////////////////////////////////////
+void HTTPClient::
+clear_expected_servers() {
+  for (ExpectedServers::iterator ei = _expected_servers.begin();
+       ei != _expected_servers.end();
+       ++ei) {
+    X509_NAME *name = (*ei);
+    X509_NAME_free(name);
+  }
+  _expected_servers.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -143,11 +237,38 @@ make_ctx() {
 #endif
 
   // Insist on verifying servers if we are configured to.
-  set_verify_ssl(verify_ssl);
+  if (_verify_ssl) {
+    SSL_CTX_set_verify(_ssl_ctx, SSL_VERIFY_PEER, NULL);
+  } else {
+    SSL_CTX_set_verify(_ssl_ctx, SSL_VERIFY_NONE, NULL);
+  }
+
+  // Get the configured set of expected servers.
+  {
+    // Load in any default certificates listed in the Configrc file.
+    Config::ConfigTable::Symbol expected_servers;
+    config_express.GetAll("expected-ssl-server", expected_servers);
+    
+    // When we use GetAll(), we might inadvertently read duplicate
+    // lines.  Filter them out with a set.
+    pset<string> already_read;
+    
+    Config::ConfigTable::Symbol::iterator si;
+    for (si = expected_servers.begin(); si != expected_servers.end(); ++si) {
+      string expected_server = (*si).Val();
+      if (already_read.insert(expected_server).second) {
+        add_expected_server(expected_server);
+      }
+    }
+  }
 
   if (_x509_store != (X509_STORE *)NULL) {
-    // If we've already created an x509 store object, use it for this
-    // context.
+    // If we've already created an x509 store object, share it with
+    // this context.  It would be better to make a copy of the store
+    // object for each context, so we could locally add certificates,
+    // but (a) there doesn't seem to be an interface for this, and (b)
+    // something funny about loading certificates that seems to save
+    // some persistent global state anyway.
     SSL_CTX_set_cert_store(_ssl_ctx, _x509_store);
 
   } else {
@@ -470,6 +591,7 @@ make_https_connection(BIO *bio, const URLSpec &url) const {
 #ifndef NDEBUG
     ERR_print_errors_fp(stderr);
 #endif
+    BIO_free_all(bio);
     return NULL;
   }
 
@@ -485,6 +607,13 @@ make_https_connection(BIO *bio, const URLSpec &url) const {
     downloader_cat.info()
       << "No certificate was presented by server.\n";
 
+    if (!_expected_servers.empty()) {
+      downloader_cat.info()
+        << "Not allowing connection since no certificates could be matched.\n";
+      BIO_free_all(sbio);
+      return NULL;
+    }
+
   } else {
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
@@ -492,12 +621,30 @@ make_https_connection(BIO *bio, const URLSpec &url) const {
       X509_print_fp(stderr, cert);
       fflush(stderr);
     }
+
+    X509_NAME *subject = X509_get_subject_name(cert);
+
+    string org_name = get_x509_name_component(subject, NID_organizationName);
+    string org_unit_name = get_x509_name_component(subject, NID_organizationalUnitName);
+    string common_name = get_x509_name_component(subject, NID_commonName);
+
+    downloader_cat.info()
+      << "Server is " << common_name << " from " << org_unit_name
+      << " of " << org_name << "\n";
+
+    if (!verify_server(subject)) {
+      downloader_cat.info()
+        << "Server does not match any expected server.\n";
+      BIO_free_all(sbio);
+      return NULL;
+    }
       
     X509_free(cert);
   }
 
   return sbio;
 }
+
 
 
 /*
@@ -712,6 +859,205 @@ send_get_request(BIO *bio,
   }
 #endif
   BIO_puts(bio, request_str.c_str());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::verify_server
+//       Access: Private
+//  Description: Returns true if the indicated server matches one of
+//               our expected servers (or the list of expected servers
+//               is empty), or false if it does not match any of our
+//               expected servers.
+////////////////////////////////////////////////////////////////////
+bool HTTPClient::
+verify_server(X509_NAME *subject) const {
+  if (_expected_servers.empty()) {
+    if (downloader_cat.is_debug()) {
+      downloader_cat.debug()
+        << "No expected servers on list; allowing any https connection.\n";
+    }
+    return true;
+  }
+
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug() << "checking server: " << flush;
+    X509_NAME_print_ex_fp(stderr, subject, 0, 0);
+    fflush(stderr);
+    downloader_cat.debug(false) << "\n";
+  }
+
+  ExpectedServers::const_iterator ei;
+  for (ei = _expected_servers.begin();
+       ei != _expected_servers.end();
+       ++ei) {
+    X509_NAME *expected_name = (*ei);
+    if (x509_name_subset(expected_name, subject)) {
+      if (downloader_cat.is_debug()) {
+        downloader_cat.debug()
+          << "Match found!\n";
+      }
+      return true;
+    }
+  }
+
+  // None of the lines matched.
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug()
+      << "No match found against any of the following expected servers:\n";
+
+    for (ei = _expected_servers.begin();
+         ei != _expected_servers.end();
+         ++ei) {
+      X509_NAME *expected_name = (*ei);
+      X509_NAME_print_ex_fp(stderr, expected_name, 0, 0);
+      fprintf(stderr, "\n");
+    }
+    fflush(stderr);      
+  }
+  
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::parse_x509_name
+//       Access: Private, Static
+//  Description: Parses a string of the form
+//               /type0=value0/type1=value1/type2=... into a newly
+//               allocated X509_NAME object.  Returns NULL if the
+//               string is invalid.
+////////////////////////////////////////////////////////////////////
+X509_NAME *HTTPClient::
+parse_x509_name(const string &source) {
+  X509_NAME *result = NULL;
+
+  result = X509_NAME_new();
+  bool added_any = false;
+
+  string::const_iterator si;
+  si = source.begin();
+  while (si != source.end()) {
+    if ((*si) == '/') {
+      // Skip a slash delimiter.
+      ++si;
+    } else {
+      string type;
+      while (si != source.end() && (*si) != '=' && (*si) != '/') {
+        if ((*si) == '\\') {
+          ++si;
+          if (si != source.end()) {
+            type += (*si);
+            ++si;
+          }
+        } else {
+          type += (*si);
+          ++si;
+        }
+      }
+
+      int nid = OBJ_txt2nid(type.c_str());
+      if (nid == NID_undef) {
+        downloader_cat.info()
+          << "Unknown type " << type << " in X509 name: " << source
+          << "\n";
+        X509_NAME_free(result);
+        return NULL;
+      }
+
+      string value;
+      
+      if (si != source.end() && (*si) == '=') {
+        ++si;
+        while (si != source.end() && (*si) != '/') {
+          if ((*si) == '\\') {
+            ++si;
+            if (si != source.end()) {
+              value += (*si);
+              ++si;
+            }
+          } else {
+            value += (*si);
+            ++si;
+          }
+        }
+      }
+
+      if (!value.empty()) {
+        int add_result =
+          X509_NAME_add_entry_by_NID(result, nid, V_ASN1_APP_CHOOSE, 
+                                     (unsigned char *)value.c_str(), -1, -1, 0);
+        if (!add_result) {
+          downloader_cat.info()
+            << "Unable to add " << type << "=" << value << " in X509 name: "
+            << source << "\n";
+          X509_NAME_free(result);
+          return NULL;
+        }
+        added_any = true;
+      }
+    }
+  }
+
+  if (!added_any) {
+    downloader_cat.info()
+      << "Invalid empty X509 name: " << source << "\n";
+    X509_NAME_free(result);
+    return NULL;
+  }
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::get_x509_name_component
+//       Access: Private, Static
+//  Description: Returns the indicated component of the X509 name as a
+//               string, if defined, or empty string if it is not.
+////////////////////////////////////////////////////////////////////
+string HTTPClient::
+get_x509_name_component(X509_NAME *name, int nid) {
+  ASN1_OBJECT *obj = OBJ_nid2obj(nid);
+
+  if (obj == NULL) {
+    // Unknown nid.  See openssl/objects.h.
+    return string();
+  }
+
+  int i = X509_NAME_get_index_by_OBJ(name, obj, -1);
+  if (i < 0) {
+    return string();
+  }
+
+  ASN1_STRING *data = X509_NAME_ENTRY_get_data(X509_NAME_get_entry(name, i));
+  return string((char *)data->data, data->length);  
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::x509_name_subset
+//       Access: Private, Static
+//  Description: Returns true if name_a is a subset of name_b: each
+//               property of name_a is defined in name_b, and the
+//               defined value is equivalent to that of name_a.
+////////////////////////////////////////////////////////////////////
+bool HTTPClient::
+x509_name_subset(X509_NAME *name_a, X509_NAME *name_b) {
+  int count_a = X509_NAME_entry_count(name_a);
+  for (int ai = 0; ai < count_a; ai++) {
+    X509_NAME_ENTRY *na = X509_NAME_get_entry(name_a, ai);
+
+    int bi = X509_NAME_get_index_by_OBJ(name_b, na->object, -1);
+    if (bi < 0) {
+      // This entry in name_a is not defined in name_b.
+      return false;
+    }
+
+    X509_NAME_ENTRY *nb = X509_NAME_get_entry(name_b, bi);
+    if (na->value->length != nb->value->length ||
+        memcmp(na->value->data, nb->value->data, na->value->length) != 0) {
+      // This entry in name_a doesn't match that of name_b.
+      return false;
+    }
+  }
+  return true;
 }
 
 #ifndef NDEBUG

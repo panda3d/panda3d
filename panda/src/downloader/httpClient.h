@@ -47,9 +47,9 @@ class Filename;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS HTTPClient {
 PUBLISHED:
-  INLINE HTTPClient();
-  INLINE HTTPClient(const HTTPClient &copy);
-  INLINE void operator = (const HTTPClient &copy);
+  HTTPClient();
+  HTTPClient(const HTTPClient &copy);
+  void operator = (const HTTPClient &copy);
   ~HTTPClient();
 
   INLINE void set_proxy(const URLSpec &proxy);
@@ -59,6 +59,9 @@ PUBLISHED:
 
   INLINE void set_verify_ssl(bool verify_ssl);
   INLINE bool get_verify_ssl() const;
+
+  bool add_expected_server(const string &server_attributes);
+  void clear_expected_servers();
 
   PT(HTTPDocument) get_document(const URLSpec &url, const string &body = string());
 
@@ -76,6 +79,11 @@ private:
   void send_get_request(BIO *bio, 
                         const string &path, const string &server, 
                         const string &body) const;
+  bool verify_server(X509_NAME *subject) const;
+
+  static X509_NAME *parse_x509_name(const string &source);
+  static string get_x509_name_component(X509_NAME *name, int nid);
+  static bool x509_name_subset(X509_NAME *name_a, X509_NAME *name_b);
 
 #ifndef NDEBUG
   static void show_send(const string &message);
@@ -89,6 +97,12 @@ private:
 
   URLSpec _proxy;
   bool _verify_ssl;
+
+  // List of allowable SSL servers to connect to.  If the list is
+  // empty, any server is acceptable.
+  typedef pvector<X509_NAME *> ExpectedServers;
+  ExpectedServers _expected_servers;
+
   SSL_CTX *_ssl_ctx;
 
   static bool _ssl_initialized;
