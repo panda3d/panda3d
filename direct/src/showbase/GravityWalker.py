@@ -39,6 +39,11 @@ class GravityWalker(DirectObject.DirectObject):
         
         self.mayJump = 1
         self.jumpDelayTask = None
+
+        self.controlsTask = None
+        self.fixCliffTask = None
+        self.indicatorTask = None
+
         self.falling = 0
         self.needToDeltaPos = 0
         self.physVelocityIndicator=None
@@ -149,7 +154,7 @@ class GravityWalker(DirectObject.DirectObject):
         """
         # This is a sphere on the ground to detect barrier collisions
         self.avatarRadius = avatarRadius
-        self.cSphere = CollisionSphere(0.0, 0.0, avatarRadius, avatarRadius)
+        self.cSphere = CollisionSphere(0.0, 0.0, avatarRadius+0.5, avatarRadius)
         cSphereNode = CollisionNode('GW.cWallSphereNode')
         cSphereNode.addSolid(self.cSphere)
         cSphereNodePath = self.avatarNodePath.attachNewNode(cSphereNode)
@@ -159,8 +164,8 @@ class GravityWalker(DirectObject.DirectObject):
 
         # set up collision mechanism
         handler = CollisionHandlerPusher()
-        handler.setInPattern("enter%in")
-        handler.setOutPattern("exit%in")
+        handler.setInPattern("pusher_enter%in")
+        handler.setOutPattern("pusher_exit%in")
 
         handler.addCollider(cSphereNodePath, self.avatarNodePath)
         self.pusher = handler
@@ -172,7 +177,7 @@ class GravityWalker(DirectObject.DirectObject):
         """
         # This is a sphere on the ground to detect barrier collisions
         self.avatarRadius = avatarRadius
-        self.cSphere = CollisionSphere(0.0, 0.0, avatarRadius-0.1, avatarRadius)
+        self.cSphere = CollisionSphere(0.0, 0.0, avatarRadius-0.1, avatarRadius*1.04)
         cSphereNode = CollisionNode('GW.cFloorSphereNode')
         cSphereNode.addSolid(self.cSphere)
         cSphereNodePath = self.avatarNodePath.attachNewNode(cSphereNode)
@@ -204,7 +209,7 @@ class GravityWalker(DirectObject.DirectObject):
 
         self.setupRay(floorBitmask, self.floorOffset)
         self.setupWallSphere(wallBitmask, avatarRadius)
-        self.setupFloorSphere(floorBitmask, avatarRadius)
+        self.setupFloorSphere(wallBitmask|floorBitmask, avatarRadius)
 
         self.setCollisionsActive(1)
 
@@ -236,6 +241,9 @@ class GravityWalker(DirectObject.DirectObject):
         assert(self.debugPrint("collisionsActive(active=%s)"%(active,)))
         if self.collisionsActive != active:
             self.collisionsActive = active
+            # Each time we change the collision geometry, make one 
+            # more pass to ensure we aren't standing in a wall.
+            self.oneTimeCollide()
             if active:
                 self.cTrav.addCollider(self.cWallSphereNodePath, self.pusher)
                 self.cTrav.addCollider(self.cFloorSphereNodePath, self.event)
@@ -244,14 +252,24 @@ class GravityWalker(DirectObject.DirectObject):
                 self.cTrav.removeCollider(self.cWallSphereNodePath)
                 self.cTrav.removeCollider(self.cFloorSphereNodePath)
                 self.cTrav.removeCollider(self.cRayNodePath)
-                # Now that we have disabled collisions, make one more pass
-                # right now to ensure we aren't standing in a wall.
-                self.oneTimeCollide()
 
     def getCollisionsActive(self):
         assert(self.debugPrint("getCollisionsActive() returning=%s"%(
             self.collisionsActive,)))
         return self.collisionsActive
+
+    def FixCliff(self, task):
+        """
+        People are still making polygons that are marked
+        as floor, but are nearly vertical.  This ray is
+        a hack to help deal with the cliff.
+        """
+        if self.lifter.isInOuterSpace():
+            temp = self.cRayNodePath.getZ()
+            self.cRayNodePath.setZ(14.0)
+            self.oneTimeCollide()
+            self.cRayNodePath.setZ(temp)
+        return Task.cont
 
     def oneTimeCollide(self):
         """
@@ -294,7 +312,7 @@ class GravityWalker(DirectObject.DirectObject):
         reverse = inputState.isSet("reverse")
         turnLeft = inputState.isSet("turnLeft")
         turnRight = inputState.isSet("turnRight")
-        slide = inputState.isSet("slide")
+        slide = 0 #hack -- was: inputState.isSet("slide")
         jump = inputState.isSet("jump")
         pie = inputState.isSet("pie")
         # Determine what the speeds are based on the buttons:
@@ -328,6 +346,8 @@ class GravityWalker(DirectObject.DirectObject):
             onScreenDebug.add("velocity", self.lifter.getVelocity()) #*#
             onScreenDebug.add("isAirborne", self.isAirborne) #*#
             onScreenDebug.add("jump", jump) #*#
+
+            onScreenDebug.add("inOuterSpace", self.lifter.isInOuterSpace()) #*#
         if self.lifter.isOnGround():
             if self.isAirborne:
                 self.isAirborne = 0
@@ -408,13 +428,26 @@ class GravityWalker(DirectObject.DirectObject):
         if __debug__:
             self.accept("control-f3", self.spawnTest) #*#
 
-        taskName = "AvatarControls%s"%(id(self),)
         # remove any old
-        taskMgr.remove(taskName)
+        if self.controlsTask:
+            self.controlsTask.remove()
         # spawn the new task
-        taskMgr.add(self.handleAvatarControls, taskName, 25)
+        taskName = "AvatarControls%s"%(id(self),)
+        self.controlsTask = taskMgr.add(self.handleAvatarControls, taskName, 25)
+
+        # remove any old
+        if self.fixCliffTask:
+            self.fixCliffTask.remove()
+        # spawn the new task
+        taskName = "AvatarControls-FixCliff%s"%(id(self),)
+        self.fixCliffTask = taskMgr.add(self.FixCliff, taskName, 31)
+
         if self.physVelocityIndicator:
-            taskMgr.add(self.avatarPhysicsIndicator, "AvatarControlsIndicator%s"%(id(self),), 35)
+            if self.indicatorTask:
+                self.indicatorTask.remove()
+            self.indicatorTask = taskMgr.add(
+                self.avatarPhysicsIndicator,
+                "AvatarControlsIndicator%s"%(id(self),), 35)
 
     def disableAvatarControls(self):
         """
@@ -422,11 +455,15 @@ class GravityWalker(DirectObject.DirectObject):
         """
         assert(self.debugPrint("disableAvatarControls()"))
         print id(self), "GW.disableAvatarControls()"
-        taskName = "AvatarControls%s"%(id(self),)
-        taskMgr.remove(taskName)
-
-        taskName = "AvatarControlsIndicator%s"%(id(self),)
-        taskMgr.remove(taskName)
+        if self.controlsTask:
+            self.controlsTask.remove()
+            self.controlsTask = None
+        if self.fixCliffTask:
+            self.fixCliffTask.remove()
+            self.fixCliffTask = None
+        if self.indicatorTask:
+            self.indicatorTask.remove()
+            self.indicatorTask = None
 
         if __debug__:
             self.ignore("control-f3") #*#

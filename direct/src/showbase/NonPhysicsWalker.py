@@ -23,6 +23,9 @@ class NonPhysicsWalker(DirectObject.DirectObject):
 
     notify = DirectNotifyGlobal.directNotify.newCategory("NonPhysicsWalker")
 
+    # Ghost mode overrides this:
+    slideName = "slide-is-disabled"
+
     # special methods
     def __init__(self):
         DirectObject.DirectObject.__init__(self)
@@ -151,7 +154,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         reverse = inputState.isSet("reverse")
         turnLeft = inputState.isSet("turnLeft")
         turnRight = inputState.isSet("turnRight")
-        slide = inputState.isSet("slide")
+        slide = inputState.isSet(self.slideName)
         #jump = inputState.isSet("jump")
         # Determine what the speeds are based on the buttons:
         self.speed=(forward and self.avatarControlForwardSpeed or 

@@ -6,6 +6,7 @@ from ShowBaseGlobal import *
 
 import Avatar
 import DirectNotifyGlobal
+import GhostWalker
 import GravityWalker
 import NonPhysicsWalker
 import PhysicsWalker
@@ -21,7 +22,10 @@ class ControlManager:
     def __init__(self, avatar):
         self.avatar = avatar
         assert(self.debugPrint("ControlManager()"))
-        self.swimControls=NonPhysicsWalker.NonPhysicsWalker()
+        self.swimControls=GravityWalker.GravityWalker(
+                    gravity = -32.1740 * 2.0)
+        #self.swimControls=NonPhysicsWalker.NonPhysicsWalker()
+        self.ghostControls=GhostWalker.GhostWalker()
         if self.wantAvatarPhysics:
             self.walkControls=GravityWalker.GravityWalker(
                     gravity = -32.1740 * 2.0) # * 2.0 is a hack;
@@ -57,6 +61,7 @@ class ControlManager:
         inputState.watch("jump", "alt-control", "alt-control-up")
         inputState.watch("jump", "shift-control", "shift-control-up")
         
+        # FYI, ghost mode uses jump for slide.
         inputState.watch("slide", "slide-is-disabled", "slide-is-disabled")
         
         #inputState.watch("slideLeft", "shift-arrow_left", "shift-arrow_left-up")
@@ -71,6 +76,24 @@ class ControlManager:
         #inputState.watch("slideRight", "shift-arrow_right", "shift-arrow_right-up")
         inputState.watch("slideRight", "slide-is-disabled", "slide-is-disabled")
 
+    def add(self, controls, name="basic"):
+        controls = self.controls.get(name)
+        if controls is not None:
+            print "Replacing controls:", name
+            controls.delete()
+        self.controls[name] = controls
+
+    def use(self, name="basic"):
+        controls = self.controls.get(name)
+        if controls is not None:
+            if controls is not self.currentControls:
+                self.currentControls.disableAvatarControls()
+                self.currentControls.setCollisionsActive(0)
+                self.currentControls = controls
+                self.currentControls.setCollisionsActive(1)
+        else:
+            print "Unkown controls:", name
+
     def useSwimControls(self):
         assert(self.debugPrint("useSwimControls()"))
         if self.currentControls is not self.swimControls:
@@ -78,6 +101,16 @@ class ControlManager:
             self.currentControls.setCollisionsActive(0)
             self.swimControls.setCollisionsActive(1)
             self.currentControls = self.swimControls
+            if self.isEnabled:
+                self.currentControls.enableAvatarControls()
+
+    def useGhostControls(self):
+        assert(self.debugPrint("useGhostControls()"))
+        if self.currentControls is not self.ghostControls:
+            self.currentControls.disableAvatarControls()
+            self.currentControls.setCollisionsActive(0)
+            self.ghostControls.setCollisionsActive(1)
+            self.currentControls = self.ghostControls
             if self.isEnabled:
                 self.currentControls.enableAvatarControls()
 
@@ -106,6 +139,11 @@ class ControlManager:
             toonJumpForce,
             toonReverseSpeed,
             toonRotateSpeed)
+        self.ghostControls.setWalkSpeed(
+            toonForwardSpeed,
+            toonJumpForce,
+            toonReverseSpeed,
+            toonRotateSpeed)
         self.walkControls.setWalkSpeed(
             toonForwardSpeed,
             toonJumpForce,
@@ -116,7 +154,7 @@ class ControlManager:
         return self.currentControls.getSpeeds()
     
     def initializeCollisions(self, cTrav,
-            wallBitmask, floorBitmask, avatarRadius, floorOffset):
+            wallBitmask, floorBitmask, ghostBitMask, avatarRadius, floorOffset):
         assert(self.debugPrint("initializeCollisions()"))
         
         self.walkControls.initializeCollisions(cTrav, self.avatar,
@@ -130,6 +168,12 @@ class ControlManager:
         self.swimControls.setAirborneHeightFunc(self.avatar.getAirborneHeight)
         self.swimControls.disableAvatarControls()
         self.swimControls.setCollisionsActive(0)
+        
+        self.ghostControls.initializeCollisions(cTrav, self.avatar,
+                ghostBitMask, floorBitmask, avatarRadius, floorOffset)
+        self.ghostControls.setAirborneHeightFunc(self.avatar.getAirborneHeight)
+        self.ghostControls.disableAvatarControls()
+        self.ghostControls.setCollisionsActive(0)
 
         self.walkControls.setCollisionsActive(1)
         self.walkControls.enableAvatarControls()
@@ -138,6 +182,7 @@ class ControlManager:
         assert(self.debugPrint("deleteCollisions()"))
         self.walkControls.deleteCollisions()
         self.swimControls.deleteCollisions()
+        self.ghostControls.deleteCollisions()
 
     def collisionsOn(self):
         assert(self.debugPrint("collisionsOn()"))
