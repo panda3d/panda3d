@@ -36,7 +36,7 @@ PUBLISHED:
   U32 allocate();
   void free(U32 index);
   float percent_used() const;
-  void print_to(ostream& os, bool verbose=false) const;
+  void output(ostream& os, bool verbose=false) const;
 
 protected:
   U32* _table;

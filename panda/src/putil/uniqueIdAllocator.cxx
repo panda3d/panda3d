@@ -57,9 +57,9 @@ UniqueIdAllocator(U32 min, U32 max)
   : _min(min), _max(max) {
   uniqueIdAllocator_debug("UniqueIdAllocator("<<min<<", "<<max<<")");
   _size=_max-_min+1; // +1 because min and max are inclusive.
-  assert(_size); // size must be > 0.
+  nassertv(_size); // size must be > 0.
   _table=new U32[_size];
-  assert(_table); // This should be redundant if new throws an exception.
+  nassertv(_table); // This should be redundant if new throws an exception.
   for (U32 i=0; i<_size; ++i) {
     _table[i]=i+1;
   }
@@ -97,7 +97,7 @@ allocate() {
   }
   U32 id=_min+_next_free;
   _next_free=_table[_next_free];
-  assert(_table[id-_min]=-2); // this assignment is debug only.
+  nassertr(_table[id-_min]=-2, -1); // this assignment is debug only.
   --_free;
   uniqueIdAllocator_debug("allocate() returning "<<id);
   return id;
@@ -113,10 +113,10 @@ allocate() {
 void UniqueIdAllocator::
 free(U32 index) {
   uniqueIdAllocator_debug("free("<<index<<")");
-  assert(index>=_min); // Attempt to free out-of-range id.
-  assert(index<=_max); // Attempt to free out-of-range id.
+  nassertv(index>=_min); // Attempt to free out-of-range id.
+  nassertv(index<=_max); // Attempt to free out-of-range id.
   index=index-_min; // Convert to _table index.
-  assert(_table[index]==-2); // Attempt to free non-allocated id.
+  nassertv(_table[index]==-2); // Attempt to free non-allocated id.
   _table[index]=-1; // Mark this element as the end of the list.
   _table[_last_free]=index;
   if (_next_free==-1) {
@@ -146,7 +146,7 @@ percent_used() const {
 //  Description: ...intended for debugging only.
 ////////////////////////////////////////////////////////////////////
 void UniqueIdAllocator::
-print_to(ostream& os, bool verbose) const {
+output(ostream& os, bool verbose) const {
   os  <<"[_next_free: "<<long(_next_free)
       <<"; _last_free: "<<long(_last_free)
       <<"; _size: "<<_size
