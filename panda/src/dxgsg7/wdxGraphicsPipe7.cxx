@@ -29,6 +29,8 @@ TypeHandle wdxGraphicsPipe7::_type_handle;
 ////////////////////////////////////////////////////////////////////
 wdxGraphicsPipe7::
 wdxGraphicsPipe7() {
+  _hDDrawDLL = NULL;
+  _is_valid = init();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -38,6 +40,10 @@ wdxGraphicsPipe7() {
 ////////////////////////////////////////////////////////////////////
 wdxGraphicsPipe7::
 ~wdxGraphicsPipe7() {
+  if (_hDDrawDLL != NULL) {
+    FreeLibrary(_hDDrawDLL);
+    _hDDrawDLL = NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -75,4 +81,34 @@ pipe_constructor() {
 PT(GraphicsWindow) wdxGraphicsPipe7::
 make_window() {
   return new wdxGraphicsWindow7(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wdxGraphicsPipe7::init
+//       Access: Private
+//  Description: Performs some initialization steps to load up
+//               function pointers from the relevant DLL's, and
+//               determine the number and type of available graphics
+//               adapters, etc.  Returns true on success, false on
+//               failure.
+////////////////////////////////////////////////////////////////////
+bool wdxGraphicsPipe7::
+init() {
+  static const char * const ddraw_name = "ddraw.dll";
+  _hDDrawDLL = LoadLibrary(ddraw_name);
+  if(_hDDrawDLL == 0) {
+    wdxdisplay7_cat.error()
+      << "can't locate " << ddraw_name << "!\n";
+    return false;
+  }
+
+  _DirectDrawCreateEx = 
+    (LPDIRECTDRAWCREATEEX)GetProcAddress(_hDDrawDLL, "DirectDrawCreateEx");
+  if (_DirectDrawCreateEx == NULL) {
+    wdxdisplay7_cat.error()
+      << "GetProcAddr failed for DDCreateEx" << endl;
+    return false;
+  }
+
+  return true;
 }

@@ -108,9 +108,6 @@ EnumDisplayModesCallBack(LPDDSURFACEDESC2 lpDDSurfaceDesc,LPVOID lpContext) {
 #define IS_ATI(DDDEVICEID) (DDDEVICEID.dwVendorId==0x1002) 
 #define IS_MATROX(DDDEVICEID) (DDDEVICEID.dwVendorId==0x102B)
 
-HINSTANCE wdxGraphicsWindow7::_hDDrawDLL = NULL;
-LPDIRECTDRAWCREATEEX wdxGraphicsWindow7::_pDDCreateEx = NULL;
-
 TypeHandle wdxGraphicsWindow7::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -149,7 +146,6 @@ make_gsg() {
   // Tell the associated dxGSG about the window handle.
   _dxgsg->scrn.hWnd = _mwindow;
 
-  init_ddraw();
   if (!search_for_device(0, NULL)) {
     wdxdisplay7_cat.error()
       << "Unable to find suitable rendering device.\n";
@@ -957,6 +953,9 @@ create_screen_buffers_and_device(DXScreenData &Display, bool force_16bpp_zbuffer
 ////////////////////////////////////////////////////////////////////
 bool wdxGraphicsWindow7::
 search_for_device(int devnum, DXDeviceInfo *pDevinfo) {
+  wdxGraphicsPipe7 *dxpipe;
+  DCAST_INTO_R(dxpipe, _pipe, false);
+
   DWORD dwRenderWidth = get_properties().get_x_size();
   DWORD dwRenderHeight = get_properties().get_y_size();
   LPDIRECTDRAW7 pDD=NULL;
@@ -971,11 +970,11 @@ search_for_device(int devnum, DXDeviceInfo *pDevinfo) {
     pDDDeviceGUID = &pDevinfo->guidDeviceIdentifier;
   }
 
-  assert(_pDDCreateEx != NULL);
+  assert(dxpipe->_DirectDrawCreateEx != NULL);
 
   // Create the Direct Draw Objects
-  hr = (*(_pDDCreateEx))(pDDDeviceGUID,(void **)&pDD, 
-                         IID_IDirectDraw7, NULL);
+  hr = (*dxpipe->_DirectDrawCreateEx)(pDDDeviceGUID, (void **)&pDD, 
+                                      IID_IDirectDraw7, NULL);
   if ((hr != DD_OK) || (pDD == NULL)) {
     wdxdisplay7_cat.fatal()
       << "DirectDrawCreateEx failed for monitor(" << devnum
@@ -1300,32 +1299,4 @@ set_coop_levels_and_display_modes() {
   }
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: wdxGraphicsWindow7::init_ddraw
-//       Access: Private, Static
-//  Description: Gets the pointer to the DirectDrawCreateEx function
-//               from ddraw.dll, if it hasn't been retrieved already.
-////////////////////////////////////////////////////////////////////
-void wdxGraphicsWindow7::
-init_ddraw() {
-  if (_hDDrawDLL != NULL) {
-    return;
-  }
-
-  static const char * const ddraw_name = "ddraw.dll";
-  _hDDrawDLL = LoadLibrary(ddraw_name);
-  if(_hDDrawDLL == 0) {
-    wdxdisplay7_cat.fatal()
-      << "can't locate " << ddraw_name <<"!\n";
-    exit(1);
-  }
-
-  _pDDCreateEx = (LPDIRECTDRAWCREATEEX)GetProcAddress(_hDDrawDLL,"DirectDrawCreateEx");
-  if(_pDDCreateEx == NULL) {
-    wdxdisplay7_cat.fatal()
-      << "Panda currently requires at least DirectX 7.0!\n";
-    exit(1);
-  }
-}
 

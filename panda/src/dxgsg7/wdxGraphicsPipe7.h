@@ -38,6 +38,15 @@ public:
 protected:
   virtual PT(GraphicsWindow) make_window();
 
+private:
+  bool init();
+
+private:
+  HINSTANCE _hDDrawDLL;
+
+  typedef HRESULT (WINAPI * LPDIRECTDRAWCREATEEX)(GUID FAR * lpGuid, LPVOID *lplpDD, REFIID iid, IUnknown FAR *pUnkOuter);
+  LPDIRECTDRAWCREATEEX _DirectDrawCreateEx;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -54,6 +63,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class wdxGraphicsWindow7;
 };
 
 #include "wdxGraphicsPipe7.I"

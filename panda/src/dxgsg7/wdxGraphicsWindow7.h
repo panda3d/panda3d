@@ -62,12 +62,7 @@ private:
   bool search_for_device(int devnum, DXDeviceInfo *pDevinfo);
   void set_coop_levels_and_display_modes();
 
-  static void init_ddraw();
-
   DXGraphicsStateGuardian7 *_dxgsg;
-
-  static HINSTANCE _hDDrawDLL;
-  static LPDIRECTDRAWCREATEEX _pDDCreateEx;
 
 public:
   static TypeHandle get_class_type() {
