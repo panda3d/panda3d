@@ -101,7 +101,7 @@ private:
   int _disk_write_frequency;
   float _frequency;
   float _byte_rate; 
-  int _receive_size;
+  ulong _receive_size;
   int _disk_buffer_size;
   ofstream _dest_stream;
   bool _recompute_buffer;

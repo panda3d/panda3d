@@ -371,6 +371,9 @@ run(void) {
 
   // Recompute the buffer size if necessary
   if (_recompute_buffer == true) {
+    if (downloader_cat.is_debug())
+      downloader_cat.debug()
+	<< "Downloader::run() - Recomputing the buffer" << endl;
 
     // Flush the current buffer if it holds any data
     if (_current_status->_bytes_in_buffer > 0) {
@@ -381,12 +384,14 @@ run(void) {
     }
 
     // Allocate a new buffer
-    _buffer.clear();  
-    _receive_size = (int)ceil(_frequency * _byte_rate);
+    _buffer.clear();
+    _receive_size = _frequency * _byte_rate;
     _disk_buffer_size = _receive_size * _disk_write_frequency;
     _buffer = new Buffer(_disk_buffer_size);
     _current_status->_buffer = _buffer->_buffer;
     _current_status->reset();
+    // Reset the flag
+    _recompute_buffer = false;
 
   } else if (_current_status->_bytes_in_buffer + _receive_size > 
 						_disk_buffer_size) {
