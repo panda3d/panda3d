@@ -34,6 +34,7 @@
 #include "eggTexture.h"
 #include "eggTextureCollection.h"
 #include "eggXfmSAnim.h"
+#include "eggSAnimData.h"
 #include "string_utils.h"
 #include "dcast.h"
 
@@ -730,20 +731,37 @@ close_api() {
 ////////////////////////////////////////////////////////////////////
 bool SoftToEggConverter::
 convert_char_model() {
-#if 0
-  if (has_neutral_frame()) {
-    MTime frame(get_neutral_frame(), MTime::uiUnit());
-    softegg_cat.info(false)
-      << "neutral frame " << frame.value() << "\n";
-    MGlobal::viewFrame(frame);
-  }
-#endif
   softegg_cat.spam() << "character name " << _character_name << "\n";
   EggGroup *char_node = new EggGroup(eggGroupName);
   get_egg_data().add_child(char_node);
   char_node->set_dart_type(EggGroup::DT_default);
 
   return convert_hierarchy(char_node);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SoftToEggConverter::find_morph_table
+//       Access: Public
+//  Description: Given a tablename, it either creates a new 
+//               eggSAnimData structure (if doesn't exist) or 
+//               locates it.
+////////////////////////////////////////////////////////////////////
+EggSAnimData *SoftToEggConverter::
+find_morph_table(char *name) {
+  EggSAnimData *anim = NULL;
+  MorphTable::iterator mt;
+  for (mt = _morph_table.begin(); mt != _morph_table.end(); ++mt) {
+    anim = (*mt);
+    if (!strcmp(anim->get_name().c_str(), name))
+      return anim;
+  }
+
+  // create an entry
+  anim = new EggSAnimData(name);
+  anim->set_fps(_tree._fps);
+  _morph_table.push_back(anim);
+  morph_node->add_child(anim);
+  return anim;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -769,10 +787,8 @@ convert_char_chan() {
   root_table_node->add_child(bundle_node);
   EggTable *skeleton_node = new EggTable("<skeleton>");
   bundle_node->add_child(skeleton_node);
-#if 0
-  EggTable *root_node = new EggTable("root");
-  skeleton_node->add_child(root_node);
-#endif
+
+  morph_node = new EggTable("morph");
 
   // Set the frame rate before we start asking for anim tables to be
   // created.
@@ -836,6 +852,9 @@ convert_char_chan() {
         softegg_cat.debug() << endl;
         continue;
       }
+      if (make_morph) {
+        node_desc->make_morph_table(time);
+      }
       if (node_desc->is_joint()) {
         softegg_cat.spam() << "-----joint " << node_desc->get_name() << "\n";
         EggXfmSAnim *anim = _tree.get_egg_anim(node_desc);
@@ -846,6 +865,9 @@ convert_char_chan() {
 
     //    frame += frame_inc;
   }
+
+  if (has_morph)
+    bundle_node->add_child(morph_node);
 
   // Now optimize all of the tables we just filled up, for no real
   // good reason, except that it makes the resulting egg file a little
@@ -979,19 +1001,15 @@ process_model_node(SoftNodeDesc *node_desc) {
 ////////////////////////////////////////////////////////////////////
 void SoftToEggConverter::
 make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
-  string name = node_desc->get_name();
   int id = 0;
-
-  float *uCoords = NULL;
-  float *vCoords = NULL;
-
-
+  int i, idx;
+  int numShapes;
   SAA_Boolean valid;
   SAA_Boolean visible;
-
-  int i, idx;
-
-  
+  float *uCoords = NULL;
+  float *vCoords = NULL;
+  string name = node_desc->get_name();
+ 
   SAA_modelGetNodeVisibility( &scene, node_desc->get_model(), &visible ); 
   softegg_cat.spam() << "model visibility: " << visible << endl; 
   
@@ -1009,6 +1027,10 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
          ((type == SAA_MSMSH) || (type == SAA_MFACE )) ))
        )
     {
+      // Get the number of key shapes
+      SAA_modelGetNbShapes( &scene, node_desc->get_model(), &numShapes );
+      softegg_cat.spam() << "process_model_node: num shapes: " << numShapes << endl;
+      
       // load all node data from soft for this node_desc
       node_desc->load_poly_model(&scene, type);
 
@@ -1166,7 +1188,7 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
                                  << v << endl;
               
               vert.set_uv(TexCoordd(u, v));
-              //        vert.set_uv(TexCoordd(uCoords[i], vCoords[i]));
+              //vert.set_uv(TexCoordd(uCoords[i], vCoords[i]));
             }
           }
           vert.set_external_index(indices[i]);
@@ -1202,6 +1224,10 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
       }
       }
     }
+
+  // if model has key shapes, generate vertex offsets
+  if ( numShapes > 0 && make_morph )
+    node_desc->make_vertex_offsets( numShapes);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1213,18 +1239,14 @@ make_polyset(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
 ////////////////////////////////////////////////////////////////////
 void SoftToEggConverter::
 make_nurb_surface(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType type) {
-  string name = node_desc->get_name();
   int id = 0;
-
-  float *uCoords = NULL;
-  float *vCoords = NULL;
-
-
+  int i, j, k;
+  int numShapes;
   SAA_Boolean valid;
   SAA_Boolean visible;
-
-  int i, j, k;
-
+  float *uCoords = NULL;
+  float *vCoords = NULL;
+  string name = node_desc->get_name();
   
   SAA_modelGetNodeVisibility( &scene, node_desc->get_model(), &visible ); 
   softegg_cat.spam() << "model visibility: " << visible << endl; 
@@ -1236,6 +1258,10 @@ make_nurb_surface(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType ty
   if ( (type == SAA_MNSRF) && ( visible ) && (( make_nurbs ) 
                                               || ( !make_nurbs && !make_poly &&  make_duv )) )
     {
+      // Get the number of key shapes
+      SAA_modelGetNbShapes( &scene, node_desc->get_model(), &numShapes );
+      softegg_cat.spam() << "process_model_node: num shapes: " << numShapes << endl;
+      
       // load all node data from soft for this node_desc
       node_desc->load_nurbs_model(&scene, type);
 
@@ -1473,6 +1499,10 @@ make_nurb_surface(SoftNodeDesc *node_desc, EggGroup *egg_group, SAA_ModelType ty
           softegg_cat.spam() << "texname :" << node_desc->texNameArray[0] << endl;
       }
     }
+
+  // if model has key shapes, generate vertex offsets
+  if ( numShapes > 0 && make_morph )
+    node_desc->make_vertex_offsets( numShapes);
 }
 
 ////////////////////////////////////////////////////////////////////

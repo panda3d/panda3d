@@ -20,6 +20,7 @@
 #include "config_softegg.h"
 #include "eggGroup.h"
 #include "eggXfmSAnim.h"
+#include "eggSAnimData.h"
 #include "softToEggConverter.h"
 
 TypeHandle SoftNodeDesc::_type_handle;
@@ -890,6 +891,477 @@ load_nurbs_model(SAA_Scene *scene, SAA_ModelType type) {
     }
     
     softegg_cat.spam() << "got textures\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: find_shape_vert
+//       Access: Public
+//  Description: given a vertex, find its corresponding shape vertex
+//               and return its index.
+////////////////////////////////////////////////////////////////////
+int SoftNodeDesc::
+find_shape_vert(LPoint3d p3d, SAA_DVector *vertices, int numVert) {
+  int i, found = 0;
+
+  for (i = 0; i < numVert && !found ; i++) {
+    if ((p3d[0] == vertices[i].x) && 
+        (p3d[1] == vertices[i].y) && 
+        (p3d[2] == vertices[i].z)) {
+      found = 1;
+      softegg_cat.spam() << "found shape vert at index " << i << endl;
+    }
+  }
+
+  if (!found )
+    i = -1;
+  else
+    i--;
+
+  return i;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: make_vertex_offsets
+//       Access: Public 
+//  Description: Given a scene, a model , the vertices of its original
+//               shape and its name find the difference between the 
+//               geometry of its key shapes and the models original 
+//               geometry and add morph vertices to the egg data to 
+//               reflect these changes.
+////////////////////////////////////////////////////////////////////
+void SoftNodeDesc::
+make_vertex_offsets(int numShapes) {
+  int i, j;
+  int offset;
+  int numCV;
+  char tableName[_MAX_PATH];
+  SAA_DVector *shapeVerts = NULL;
+  SAA_DVector *uniqueVerts = NULL;
+  SAA_Elem *model = get_model();
+  SAA_Scene *scene = &stec.scene;
+
+  EggVertexPool *vpool = NULL;
+  string vpool_name = get_name() + ".verts";
+  EggNode *t = stec._tree.get_egg_root()->find_child(vpool_name);
+  if (t)
+    DCAST_INTO_V(vpool, t);
+
+  int numOrigVert = (int) vpool->size();
+  EggVertexPool::iterator vi;
+
+  if ((type == SAA_MNSRF) && stec.make_nurbs)
+    SAA_nurbsSurfaceSetStep( scene, model, stec.nurbs_step, stec.nurbs_step );
+
+  SAA_modelGetNbVertices( scene, model, &numCV );
+
+  // get the shape verts
+  uniqueVerts = new SAA_DVector[numCV];
+  SAA_modelGetVertices( scene, model, SAA_GEOM_ORIGINAL, 0,
+                        numCV, uniqueVerts );
+
+  softegg_cat.spam() << numCV << " CV's\n";
+
+  for ( i = 0; i < numCV; i++ )
+    // convert vertices to global
+    _VCT_X_MAT( uniqueVerts[i], uniqueVerts[i], matrix);
+    softegg_cat.spam() << "uniqueVerts[" << i << "] = " << uniqueVerts[i].x << " " << uniqueVerts[i].y
+         << " " << uniqueVerts[i].z << " " << uniqueVerts[i].w << endl;
+
+  // iterate through for each key shape (except original)
+  for ( i = 1; i < numShapes; i++ ) {
+    
+    sprintf(tableName, "%s.%d", get_name().c_str(), i);
+
+    softegg_cat.spam() << "\nMaking geometry offsets for " << tableName << "...\n";
+
+    if ((type == SAA_MNSRF) && stec.make_nurbs)
+      softegg_cat.spam() << "calculating NURBS morphs...\n";
+    else 
+      softegg_cat.spam() << "calculating triangle morphs...\n";
+    
+    // get the shape verts
+    shapeVerts = new SAA_DVector[numCV];
+    SAA_modelGetVertices( scene, model, SAA_GEOM_SHAPE, i+1, numCV, shapeVerts );
+
+    for ( j=0; j < numCV; j++ ) {
+      // convert vertices to global
+      _VCT_X_MAT( shapeVerts[j], shapeVerts[j], matrix);
+    
+      softegg_cat.spam() << "shapeVerts[" << j << "] = " << shapeVerts[j].x << " " 
+           << shapeVerts[j].y << " " << shapeVerts[j].z << endl;
+    }
+    softegg_cat.spam() << endl;
+
+    // for every original vertex, compare to the corresponding
+    // key shape vertex and see if a vertex offset is needed 
+    j = 0;
+    for (vi = vpool->begin(); vi != vpool->end(); ++vi, ++j) {
+
+      double dx, dy, dz;
+      EggVertex *vert = (*vi);
+      LPoint3d p3d = vert->get_pos3();
+      
+      softegg_cat.spam() << "oVert[" << j << "] = " <<  p3d[0] << " " <<  p3d[1] << " " <<  p3d[2] << endl;
+      if ((type == SAA_MNSRF) && stec.make_nurbs) {
+        dx = shapeVerts[j].x - p3d[0]; 
+        dy = shapeVerts[j].y - p3d[1]; 
+        dz = shapeVerts[j].z - p3d[2]; 
+
+        softegg_cat.spam() << "global shapeVerts[" << j << "] = " << shapeVerts[j].x << " "
+             << shapeVerts[j].y << " " << shapeVerts[j].z << " " << shapeVerts[j].w << endl;
+      }
+      else {
+        // we need to map from original vertices
+        // to triangle shape vertices here
+        offset = find_shape_vert(p3d, uniqueVerts, numCV);
+
+        dx = shapeVerts[offset].x - p3d[0]; 
+        dy = shapeVerts[offset].y - p3d[1]; 
+        dz = shapeVerts[offset].z - p3d[2]; 
+
+        softegg_cat.spam() << "global shapeVerts[" << offset << "] = " << shapeVerts[offset].x << " "
+             << shapeVerts[offset].y << " " << shapeVerts[offset].z << endl;
+      }
+
+      softegg_cat.spam() << j << ": dx = " << dx << ", dy = " << dy << ", dz = " << dz << endl;
+
+      // if change isn't negligible, make a morph vertex entry 
+      double total = fabs(dx)+fabs(dy)+fabs(dz);
+      if ( total > 0.00001 ) {
+        if ( vpool != NULL ) {
+          // create offset
+          LVector3d p(dx, dy, dz);
+          EggMorphVertex *dxyz = new EggMorphVertex(tableName, p);
+          // add the offset to the vertex
+          vert->_dxyzs.insert(*dxyz);
+        }
+        else
+          softegg_cat.spam() << "Error: couldn't find vertex pool " << vpool_name << endl; 
+                
+      } // if total
+    } //for j
+  } //for i
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: make_morph_table
+//       Access: Public 
+//  Description: Given a scene, a model, a name and a frame time,
+//               determine what type of shape interpolation is
+//               used and call the appropriate function to extract
+//               the shape weight info for this frame...
+////////////////////////////////////////////////////////////////////
+void SoftNodeDesc::
+make_morph_table(  float time ) {
+  int numShapes;
+  SAA_Elem *model = NULL;
+  SAA_AnimInterpType type;
+  SAA_Scene *scene = &stec.scene;
+  
+  if (has_model())
+    model = get_model();
+  else 
+    return;
+
+  // Get the number of key shapes
+  SAA_modelGetNbShapes( scene, model, &numShapes );
+
+  if ( numShapes <= 0 ) {
+    return;
+  }
+
+  stec.has_morph = true;
+
+  softegg_cat.spam() << "make_morph_table: " << get_name() << " : num shapes: " << numShapes << endl;
+
+  SAA_modelGetShapeInterpolation( scene, model, &type );
+
+  if ( type == SAA_ANIM_LINEAR || type == SAA_ANIM_CARDINAL ) {
+    softegg_cat.spam() << "linear morph" << endl;
+    make_linear_morph_table( numShapes, time );
+  }
+  else {    // must be weighted...
+    // check first for expressions
+    softegg_cat.spam() << "expression morph" << endl;
+    make_expression_morph_table( numShapes, time );
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: make_linear_morph_table
+//       Access: Public 
+//  Description: Given a scene, a model, its name, and the time,
+//               get the shape fcurve for the model and determine
+//               the shape weights for the given time and use them
+//               to populate the morph table.
+////////////////////////////////////////////////////////////////////
+void SoftNodeDesc::
+make_linear_morph_table(int numShapes, float time) {    
+  int i;
+  float curveVal;
+  char tableName[_MAX_PATH];
+  SAA_Elem fcurve;
+  //SAnimTable *thisTable;
+  EggSAnimData *anim;
+  SAA_Elem *model = get_model();
+  SAA_Scene *scene = &stec.scene;
+
+  softegg_cat.spam() << "linear interp, getting fcurve\n";
+
+  SAA_modelFcurveGetShape( scene, model, &fcurve );
+
+  SAA_fcurveEval( scene, &fcurve, time, &curveVal );    
+    
+  softegg_cat.spam() << "at time " << time << ", fcurve for " << get_name() << " = " << curveVal << endl;
+
+  float nextVal = 0.0f;
+
+  // populate morph table values for this frame
+  for ( i = 1; i < numShapes; i++ ) {
+    // derive table name from the model name
+    sprintf(tableName, "%s.%d", get_name().c_str(), i);
+
+    softegg_cat.spam() << "Linear: looking for table '" << tableName << "'\n";
+
+    //find the morph table associated with this key shape
+    anim = stec.find_morph_table(tableName);
+
+    if ( anim != NULL ) {
+      if ( i == (int)curveVal ) {
+        if ( curveVal - i == 0 ) {
+          anim->add_data(1.0f ); 
+          softegg_cat.spam() << "adding element 1.0f\n";
+        }
+        else {
+          anim->add_data(1.0f - (curveVal - i));
+          nextVal = curveVal - i;
+          softegg_cat.spam() << "adding element " << 1.0f - (curveVal - i) << endl;
+        }
+      }
+      else {
+        if ( nextVal ) {
+          anim->add_data(nextVal );
+          nextVal = 0.0f;
+          softegg_cat.spam() << "adding element " << nextVal << endl;
+        }
+        else {
+          anim->add_data(0.0f);
+          softegg_cat.spam() << "adding element 0.0f\n";
+        }
+      }
+      
+      softegg_cat.spam() <<" to '" << tableName << "'\n";
+    }
+    else
+      softegg_cat.spam() << i << " : Couldn't find table '" << tableName << "'\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: make_weighted_morph_table
+//       Access: Public 
+//  Description: Given a scene, a model, a list of all models in the
+//               scene, the number of models in the scece, the number 
+//               of key shapes for this model, the name of the model
+//               and the current time, determine what method of
+//               controlling the shape weights is used and call the
+//               appropriate routine.
+////////////////////////////////////////////////////////////////////
+void SoftNodeDesc::
+make_weighted_morph_table(int numShapes, float time) {
+  float curveVal;
+  SI_Error result;
+  char tableName[_MAX_PATH];
+  SAA_Elem *weightCurves;
+  //SAnimTable *thisTable;
+  EggSAnimData *anim;
+  SAA_Elem *model = get_model();
+  SAA_Scene *scene = &stec.scene;
+
+  // allocate array of weight curves (one for each shape)
+  weightCurves = new SAA_Elem[numShapes]; 
+
+  result = SAA_modelFcurveGetShapeWeights(scene, model, numShapes, weightCurves);
+
+  if ( result == SI_SUCCESS ) {
+    for ( int i = 1; i < numShapes; i++ ) {
+      SAA_fcurveEval( scene, &weightCurves[i], time, &curveVal );    
+
+      // make sure soft gave us a reasonable number
+      //if (!isNum(curveVal))
+      //curveVal = 0.0f;
+      
+      softegg_cat.spam() << "at time " << time << ", weightCurve[" << i << "] for " << get_name() << " = " << curveVal << endl;
+      
+      // derive table name from the model name
+      sprintf(tableName, "%s.%d", get_name().c_str(), i);
+      
+      // find and populate shape table
+      softegg_cat.spam() << "Weight: looking for table '" << tableName << "'\n";
+      
+      //find the morph table associated with this key shape
+      anim = stec.find_morph_table(tableName);
+      
+      if ( anim != NULL ) {    
+        anim->add_data(curveVal); 
+        softegg_cat.spam() << "adding element " << curveVal << endl;
+      }
+      else
+        softegg_cat.spam() << i << " : Couldn't find table '" << tableName << "'\n";
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: make_expression_morph_table
+//       Access: Public 
+//  Description: Given a scene, a model and its number of key shapes
+//               generate a morph table describing transitions btwn
+//               the key shapes by evaluating the positions of the
+//               controlling sliders. 
+////////////////////////////////////////////////////////////////////
+void SoftNodeDesc::
+make_expression_morph_table(int numShapes, float time)
+{    
+  //int j;
+  int numExp;
+  char *track;
+  //float expVal;
+  //float sliderVal;
+  //char *tableName;
+  //char *sliderName;
+  //SAnimTable *thisTable;
+  SAA_Elem *expressions;
+  SI_Error result;
+
+  SAA_Elem *model = get_model();
+  SAA_Scene *scene = &stec.scene;
+
+  // populate morph table values for this frame
+
+  // compose track name
+  track = NULL;
+
+  // find how many expressions for this shape
+  SAA_elementGetNbExpressions( scene, model, track, FALSE, &numExp );
+
+  softegg_cat.spam() << get_name() << " has " << numExp << " RHS expressions\n";
+
+  if ( numExp ) {
+    // get the expressions for this shape
+    expressions = new SAA_Elem[numExp];
+    softegg_cat.spam() << "getting " << numExp << " RHS expressions...\n";
+
+    result = SAA_elementGetExpressions( scene, model, track, FALSE,
+                                        numExp, expressions );
+    /*
+    if ( !result ) {
+      for ( j = 1; j < numExp; j++ ) {
+        if ( verbose >= 2 )
+                {
+                // debug see what we got
+                int numvars;
+        
+                SAA_expressionGetNbVars( scene, &expressions[j], &numvars );
+
+                int *varnamelen;
+                int *varstrlen;
+                int  expstrlen;
+
+                varnamelen = (int *)malloc(sizeof(int)*numvars);
+                varstrlen = (int *)malloc(sizeof(int)*numvars);
+
+                SAA_expressionGetStringLengths( scene, &expressions[j],
+                    numvars, varnamelen, varstrlen, &expstrlen );    
+
+                int *varnamesizes;    
+                int *varstrsizes;
+
+                varnamesizes = (int *)malloc(sizeof(int)*numvars);
+                varstrsizes = (int *)malloc(sizeof(int)*numvars);
+
+                for ( int k = 0; k < numvars; k++ )
+                {
+                    varnamesizes[k] = varnamelen[k] + 1;
+                    varstrsizes[k] = varstrlen[k] + 1;
+                }
+    
+                int expstrsize = expstrlen + 1;
+
+                char **varnames;
+                char **varstrs;
+
+                varnames = (char **)malloc(sizeof(char *)*numvars);
+                varstrs = (char **)malloc(sizeof(char *)*numvars);
+
+                for ( k = 0; k < numvars; k++ )
+                {
+                    varnames[k] = (char *)malloc(sizeof(char)*
+                        varnamesizes[k]);
+
+                    varstrs[k] = (char *)malloc(sizeof(char)*
+                        varstrsizes[k]);
+                }
+        
+                char *expstr = (char *)malloc(sizeof(char)* expstrsize );    
+
+                SAA_expressionGetStrings( scene, &expressions[j], numvars,
+                    varnamesizes, varstrsizes, expstrsize, varnames,
+                    varstrs, expstr );
+                
+                if ( verbose >= 2 )
+                {
+                    fprintf( outStream, "expression = '%s'\n", expstr );
+                    fprintf( outStream, "has %d variables\n", numvars );
+                }
+                } //if verbose
+                
+                if ( verbose >= 2 )
+                    fprintf( outStream, "evaling expression...\n" );
+
+                SAA_expressionEval( scene, &expressions[j], time, &expVal ); 
+
+                if ( verbose >= 2 )
+                    fprintf( outStream, "time %f: exp val %f\n", 
+                        time, expVal );
+
+                // derive table name from the model name
+                tableName = MakeTableName( name, j );
+
+                if ( verbose >= 2 )
+                    fprintf( outStream, "Exp: looking for table '%s'\n", 
+                        tableName );
+
+                //find the morph table associated with this key shape
+                anim = (SAnimTable *)
+                    (morphRoot->FindDescendent( tableName ));
+
+                if ( anim != NULL )
+                {    
+                    anim->AddElement( expVal ); 
+                    if ( verbose >= 1 )    
+                        fprintf( outStream, "%d: adding element %f to %s\n",
+                            j, expVal, tableName );
+                    fflush( outStream );
+                }
+                else
+                {
+                    fprintf( outStream, "%d: Couldn't find table '%s'", j, 
+                            tableName ); 
+
+                    fprintf( outStream, " for value %f\n", expVal );
+                }
+            }
+        }
+        else
+            fprintf( outStream, "couldn't get expressions!!!\n" );
+    */
+  }
+  else {
+    softegg_cat.spam() << "weighted morph" << endl;
+    // no expression, use weight curves
+    make_weighted_morph_table(numShapes, time );
   }
 }
 

@@ -44,6 +44,7 @@ class EggVertexPool;
 class EggNurbsCurve;
 class EggPrimitive;
 class EggXfmSAnim;
+class EggSAnimData;
 
 
 ////////////////////////////////////////////////////////////////////
@@ -171,6 +172,12 @@ public:
   TransformType _transform_type;
 
   static TransformType string_transform_type(const string &arg);
+
+  typedef pvector<EggSAnimData *> MorphTable;
+  MorphTable _morph_table;
+
+  EggTable *morph_node;
+  EggSAnimData *find_morph_table(char *name);
 };
 
 extern const int TEX_PER_MAT;
