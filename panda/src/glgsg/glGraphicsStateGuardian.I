@@ -331,7 +331,7 @@ INLINE void GLGraphicsStateGuardian::
 call_glStencilOp(GLenum fail,GLenum zfail,GLenum zpass) {
 #ifdef GSG_VERBOSE
     glgsg_cat.debug() << "glStencilOp(fail, zfail, ";
-    switch (op) {
+    switch (zpass) {
     case GL_KEEP:
       glgsg_cat.debug(false) << "GL_KEEP)";
       break;
