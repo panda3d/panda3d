@@ -49,7 +49,7 @@ create_AudioManager() {
   static lib_load;
   if (!lib_load) {
     lib_load=1;
-    if (!audio_library_name->empty() && *audio_library_name != "null") {
+    if (!audio_library_name->empty() && !((*audio_library_name) == "null")) {
       Filename dl_name = Filename::dso_filename(
           "lib"+*audio_library_name+".so");
       dl_name.to_os_specific();
