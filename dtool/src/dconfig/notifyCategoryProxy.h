@@ -165,10 +165,11 @@ INLINE ostream &operator << (ostream &out, NotifyCategoryProxy<GetCategory> &pro
 // (e.g. parent_cat), or it may be the quoted fullname of the parent.
 
 #ifdef CPPPARSER
+#define NotifyCategoryDefName(basename, actual_name, parent_category)
 #define NotifyCategoryDef(basename, parent_category)
 
 #else
-#define NotifyCategoryDef(basename, parent_category) \
+#define NotifyCategoryDefName(basename, actual_name, parent_category) \
   NotifyCategoryProxy<NotifyCategoryGetCategory_ ## basename> basename ## _cat; \
   static NotifyCategoryGetCategory_ ## basename force_init_ ## basename ## _cat; \
   NotifyCategoryGetCategory_ ## basename:: \
@@ -177,8 +178,11 @@ INLINE ostream &operator << (ostream &out, NotifyCategoryProxy<GetCategory> &pro
   } \
   NotifyCategory *NotifyCategoryGetCategory_ ## basename:: \
   get_category() { \
-    return Notify::ptr()->get_category(string(#basename), parent_category); \
+    return Notify::ptr()->get_category(string(actual_name), parent_category); \
   }
+#define NotifyCategoryDef(basename, parent_category) \
+  NotifyCategoryDefName(basename, #basename, parent_category);
+
 #endif // CPPPARSER
 
 

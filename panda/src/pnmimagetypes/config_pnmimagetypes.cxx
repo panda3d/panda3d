@@ -40,15 +40,15 @@
 #include "dconfig.h"
 
 Configure(config_pnmimagetypes);
-NotifyCategoryDef(pnmimage_sgi, pnmimage_cat);
-NotifyCategoryDef(pnmimage_alias, pnmimage_cat);
-NotifyCategoryDef(pnmimage_tiff, pnmimage_cat);
-NotifyCategoryDef(pnmimage_tga, pnmimage_cat);
-NotifyCategoryDef(pnmimage_img, pnmimage_cat);
-NotifyCategoryDef(pnmimage_soft, pnmimage_cat);
-NotifyCategoryDef(pnmimage_bmp, pnmimage_cat);
-NotifyCategoryDef(pnmimage_jpg, pnmimage_cat);
-NotifyCategoryDef(pnmimage_jpg2000, pnmimage_cat);
+NotifyCategoryDefName(pnmimage_sgi, "sgi", pnmimage_cat);
+NotifyCategoryDefName(pnmimage_alias, "alias", pnmimage_cat);
+NotifyCategoryDefName(pnmimage_tiff, "tiff", pnmimage_cat);
+NotifyCategoryDefName(pnmimage_tga, "tga", pnmimage_cat);
+NotifyCategoryDefName(pnmimage_img, "img", pnmimage_cat);
+NotifyCategoryDefName(pnmimage_soft, "soft", pnmimage_cat);
+NotifyCategoryDefName(pnmimage_bmp, "bmp", pnmimage_cat);
+NotifyCategoryDefName(pnmimage_jpg, "jpg", pnmimage_cat);
+NotifyCategoryDefName(pnmimage_jpg2000, "jpg2000", pnmimage_cat);
 
 int sgi_storage_type = STORAGE_RLE;
 const string sgi_imagename = config_pnmimagetypes.GetString("sgi-imagename", "");
