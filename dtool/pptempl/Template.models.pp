@@ -180,6 +180,7 @@ $[TAB]rm -rf $[filter_dirs]
     $[if $[POLY_MODEL(soft_char_egg)] $[NURBS_MODEL(soft_char_egg)],$[soft_maps_dir]] \
     $[texattrib_dir] \
     $[install_egg_dirs] \
+    $[install_dna_dirs] \
     $[install_other_dirs] \
     ]
 $[directory] :
