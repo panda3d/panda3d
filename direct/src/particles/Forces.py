@@ -12,8 +12,8 @@ class Forces(DirectObject):
 	"""__init__(self)"""
 
 	if (name == None):
-	    self.name = 'Forces-%d' % forceNum
-	    forceNum = forceNum + 1
+	    self.name = 'Forces-%d' % self.forceNum
+	    self.forceNum = self.forceNum + 1
 	else:
 	    self.name = name
 

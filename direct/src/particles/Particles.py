@@ -37,8 +37,8 @@ class Particles(ParticleSystem.ParticleSystem):
 	"""__init__(self, name, poolSize)"""
 
 	if (name == None):
-	    self.name = 'particles-%d' % particleNum
-	    particleNum = particleNum + 1
+	    self.name = 'particles-%d' % self.particleNum
+	    self.particleNum = self.particleNum + 1
 	else:
 	    self.name = name
 	ParticleSystem.ParticleSystem.__init__(self, poolSize)
@@ -47,7 +47,7 @@ class Particles(ParticleSystem.ParticleSystem):
 	self.setLitterSpread(0)
 
 	# Set up a physical node
-	self.node = PhysicalNode.PhysicalNode(self.name)
+	self.node = PhysicalNode(self.name)
 	self.nodePath = hidden.attachNewNode(self.node)
 	self.setRenderParent(self.node)
 	self.node.addPhysical(self)
