@@ -912,6 +912,10 @@ class LevelEditor(NodePath, PandaObject):
             self.DNATarget = dnaObject
             menuMode = 'street_texture'
 
+        # No valid menu mode, get the hell out of here!
+        if menuMode == None:
+            return
+
         # Now spawn apropriate menu task if menu selected
         self.activeMenu = self.getMenu(menuMode)
         # Set initial state
@@ -1595,20 +1599,24 @@ class LevelEditor(NodePath, PandaObject):
             f.close()
 
     def saveBuildingStyle(self):
-        if self.lastBuilding:
-            # Valid wall, add style to file
-            filename = self.neighborhood + '_building_styles.txt'
-            fname = Filename(self.styleManager.stylePathPrefix +
-                             '/alpha/DIRECT/LevelEditor/StyleFiles/' +
-                             filename)
-            f = open(fname.toOsSpecific(), 'a')
-            # Add a blank line
-            f.write('\n')
-            # Now output style details to file
-            style = DNAFlatBuildingStyle(building = self.lastBuilding)
-            style.output(f)
-            # Close the file
-            f.close()
+        dnaObject = self.selectedDNARoot
+        if dnaObject:
+            if DNAClassEqual(dnaObject, DNA_FLAT_BUILDING):
+                # Valid wall, add style to file
+                filename = self.neighborhood + '_building_styles.txt'
+                fname = Filename(self.styleManager.stylePathPrefix +
+                                 '/alpha/DIRECT/LevelEditor/StyleFiles/' +
+                                 filename)
+                f = open(fname.toOsSpecific(), 'a')
+                # Add a blank line
+                f.write('\n')
+                # Now output style details to file
+                style = DNAFlatBuildingStyle(building = dnaObject)
+                style.output(f)
+                # Close the file
+                f.close()
+                return
+        print 'Must select building before saving building style'
 
     # GET/SET
     # DNA Object elements
