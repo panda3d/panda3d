@@ -17,6 +17,7 @@
 #include <vector>
 #include <string>
 #include <pointerTo.h>
+#include <map>
 
 
 /*
@@ -193,6 +194,13 @@ public:
   // Magic number for knowing this is a download Db
   static PN_uint32 _magic_number;  
 
+  typedef vector<unsigned long> vector_ulong;
+  typedef map<int, vector_ulong> VersionMap;
+  void add_version(const Filename &name, ulong hash, int version);
+  int get_version(const Filename &name, ulong hash);
+
+protected:
+  VersionMap _versions;
 };
 
 INLINE ostream &operator << (ostream &out, const DownloadDb &dldb) {

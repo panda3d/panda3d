@@ -911,9 +911,31 @@ output(ostream &out) const {
   out << " FileRecord: " << _name << "  version: " << _version << endl;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: DownloadDb::add_version
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void DownloadDb::
+add_version(const Filename &name, ulong hash, int version) {
+  int name_code = atoi(name.get_fullpath().c_str());
+  _versions[name_code][version] = hash;
+}
 
-
-
+////////////////////////////////////////////////////////////////////
+//     Function: DownloadDb::get_version
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+int DownloadDb::
+get_version(const Filename &name, ulong hash) {
+  int name_code = atoi(name.get_fullpath().c_str());
+  vector_ulong ulvec = _versions[name_code];
+  vector_ulong::iterator i = find(ulvec.begin(), ulvec.end(), hash);
+  if (i != ulvec.end())
+    return (ulvec.begin() - i);
+  return -1;
+}
 
 
 
