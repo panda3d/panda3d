@@ -194,7 +194,7 @@ void GuiButton::switch_state(GuiButton::States nstate) {
 }
 
 void GuiButton::recompute_frame(void) {
-  GuiItem::recompute_frame();
+  GuiBehavior::recompute_frame();
   _up->recompute();
   _down->recompute();
   if (_up_rollover != (GuiLabel*)0L)
@@ -208,14 +208,43 @@ void GuiButton::recompute_frame(void) {
   _rgn->set_region(_left, _right, _bottom, _top);
 }
 
+void GuiButton::behavior_up(CPT_Event, void* data) {
+  GuiButton* button = (GuiButton*)data;
+  button->run_button_up();
+}
+
+void GuiButton::behavior_down(CPT_Event, void* data) {
+  GuiButton* button = (GuiButton*)data;
+  button->run_button_down();
+}
+
+void GuiButton::run_button_up(void) {
+  if (_eh == (EventHandler*)0L)
+    return;
+  _eh->remove_hook(_up_event, GuiButton::behavior_up, (void*)this);
+  _eh->remove_hook(_up_rollover_event, GuiButton::behavior_up, (void*)this);
+  if (!_behavior_event.empty())
+    throw_event(_behavior_event);
+  if (_behavior_functor != (GuiBehavior::BehaviorFunctor*)0L)
+    _behavior_functor->doit(this);
+}
+
+void GuiButton::run_button_down(void) {
+  if (_eh == (EventHandler*)0L)
+    return;
+  _eh->add_hook(_up_event, GuiButton::behavior_up, (void*)this);
+  _eh->add_hook(_up_rollover_event, GuiButton::behavior_up, (void*)this);
+}
+
 GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* down)
-  : GuiItem(name), _up(up), _up_rollover((GuiLabel*)0L), _down(down),
+  : GuiBehavior(name), _up(up), _up_rollover((GuiLabel*)0L), _down(down),
     _down_rollover((GuiLabel*)0L), _inactive((GuiLabel*)0L),
     _up_event(name + "-up"), _up_rollover_event(""),
     _down_event(name +"-down"), _down_rollover_event(""),
     _inactive_event(""), _up_scale(up->get_scale()), _upr_scale(1.),
     _down_scale(down->get_scale()), _downr_scale(1.), _inactive_scale(1.),
-    _state(GuiButton::NONE) {
+    _state(GuiButton::NONE),
+    _behavior_functor((GuiBehavior::BehaviorFunctor*)0L) {
   GetExtents(up, down, _up_rollover, _down_rollover, _inactive, _left, _right,
 	     _bottom, _top);
   _rgn = new GuiRegion("button-" + name, _left, _right, _bottom, _top, true);
@@ -228,13 +257,14 @@ GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* down)
 
 GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* down,
 		     GuiLabel* inactive)
-  : GuiItem(name), _up(up), _up_rollover((GuiLabel*)0L), _down(down),
+  : GuiBehavior(name), _up(up), _up_rollover((GuiLabel*)0L), _down(down),
     _down_rollover((GuiLabel*)0L), _inactive(inactive),
     _up_event(name + "-up"), _up_rollover_event(""),
     _down_event(name +"-down"), _down_rollover_event(""),
     _inactive_event(name + "-inactive"), _up_scale(up->get_scale()),
     _upr_scale(1.), _down_scale(down->get_scale()), _downr_scale(1.),
-    _inactive_scale(inactive->get_scale()), _state(GuiButton::NONE) {
+    _inactive_scale(inactive->get_scale()), _state(GuiButton::NONE),
+    _behavior_functor((GuiBehavior::BehaviorFunctor*)0L) {
   GetExtents(up, down, _up_rollover, _down_rollover, inactive, _left, _right,
 	     _bottom, _top);
   _rgn = new GuiRegion("button-" + name, _left, _right, _bottom, _top, true);
@@ -247,14 +277,15 @@ GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* down,
 
 GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* up_roll,
 		     GuiLabel* down, GuiLabel* down_roll, GuiLabel* inactive)
-  : GuiItem(name), _up(up), _up_rollover(up_roll), _down(down),
+  : GuiBehavior(name), _up(up), _up_rollover(up_roll), _down(down),
     _down_rollover(down_roll), _inactive(inactive), _up_event(name + "-up"),
     _up_rollover_event(name + "-up-rollover"), _down_event(name +"-down"),
     _down_rollover_event(name + "-down-rollover"),
     _inactive_event(name + "-inactive"), _up_scale(up->get_scale()),
     _upr_scale(up_roll->get_scale()), _down_scale(down->get_scale()),
     _downr_scale(down_roll->get_scale()),
-    _inactive_scale(inactive->get_scale()), _state(GuiButton::NONE) {
+    _inactive_scale(inactive->get_scale()), _state(GuiButton::NONE),
+    _behavior_functor((GuiBehavior::BehaviorFunctor*)0L) {
   GetExtents(up, down, up_roll, down_roll, inactive, _left, _right, _bottom,
 	     _top);
   _rgn = new GuiRegion("button-" + name, _left, _right, _bottom, _top, true);
@@ -276,6 +307,9 @@ GuiButton::~GuiButton(void) {
   buttons.erase("gui-button-" + name + "-mouse1");
   buttons.erase("gui-button-" + name + "-mouse2");
   buttons.erase("gui-button-" + name + "-mouse3");
+
+  if (_behavior_functor != (GuiBehavior::BehaviorFunctor*)0L)
+    delete _behavior_functor;
 }
 
 void GuiButton::manage(GuiManager* mgr, EventHandler& eh) {
@@ -289,7 +323,9 @@ void GuiButton::manage(GuiManager* mgr, EventHandler& eh) {
   }
   if (_mgr == (GuiManager*)0L) {
     mgr->add_region(_rgn);
-    GuiItem::manage(mgr, eh);
+    GuiBehavior::manage(mgr, eh);
+    if (_behavior_running)
+      this->start_behavior();
     switch_state(UP);
   } else
     gui_cat->warning() << "tried to manage button (0x" << (void*)this
@@ -299,8 +335,10 @@ void GuiButton::manage(GuiManager* mgr, EventHandler& eh) {
 void GuiButton::unmanage(void) {
   if (_mgr != (GuiManager*)0L)
     _mgr->remove_region(_rgn);
+  if (_behavior_running)
+    this->stop_behavior();
   switch_state(NONE);
-  GuiItem::unmanage();
+  GuiBehavior::unmanage();
 }
 
 int GuiButton::freeze() {
@@ -338,7 +376,7 @@ void GuiButton::set_scale(float f) {
     _down_rollover->set_scale(f * _downr_scale);
   if (_inactive != (GuiLabel*)0L)
     _inactive->set_scale(f * _inactive_scale);
-  GuiItem::set_scale(f);
+  GuiBehavior::set_scale(f);
   this->recompute_frame();
 }
 
@@ -351,12 +389,24 @@ void GuiButton::set_pos(const LVector3f& p) {
     _down_rollover->set_pos(p);
   if (_inactive != (GuiLabel*)0L)
     _inactive->set_pos(p);
-  GuiItem::set_pos(p);
+  GuiBehavior::set_pos(p);
   this->recompute_frame();
 }
 
+void GuiButton::start_behavior(void) {
+  GuiBehavior::start_behavior();
+}
+
+void GuiButton::stop_behavior(void) {
+  GuiBehavior::stop_behavior();
+}
+
+void GuiButton::reset_behavior(void) {
+  GuiBehavior::reset_behavior();
+}
+
 void GuiButton::output(ostream& os) const {
-  GuiItem::output(os);
+  GuiBehavior::output(os);
   os << "  Button data:" << endl;
   os << "    up - 0x" << (void*)_up << endl;
   os << "    up_rollover - 0x" << (void*)_up_rollover << endl;

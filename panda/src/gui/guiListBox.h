@@ -6,12 +6,12 @@
 #ifndef __GUILISTBOX_H__
 #define __GUILISTBOX_H__
 
-#include "guiItem.h"
+#include "guiBehavior.h"
 
 #include <vector>
 #include <deque>
 
-class EXPCL_PANDA GuiListBox : public GuiItem {
+class EXPCL_PANDA GuiListBox : public GuiBehavior {
 private:
   typedef vector< PT(GuiItem) > ItemVector;
   typedef deque< PT(GuiItem) > ItemDeque;
@@ -46,6 +46,10 @@ PUBLISHED:
   virtual void set_scale(float);
   virtual void set_pos(const LVector3f&);
 
+  virtual void start_behavior(void);
+  virtual void stop_behavior(void);
+  virtual void reset_behavior(void);
+
   virtual void output(ostream&) const;
 public:
   // type interface
@@ -53,9 +57,9 @@ public:
     return _type_handle;
   }
   static void init_type(void) {
-    GuiItem::init_type();
+    GuiBehavior::init_type();
     register_type(_type_handle, "GuiListBox",
-		  GuiItem::get_class_type());
+		  GuiBehavior::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

@@ -7,6 +7,15 @@
 
 TypeHandle GuiBehavior::_type_handle;
 
+GuiBehavior::BehaviorFunctor::BehaviorFunctor(void) {
+}
+
+GuiBehavior::BehaviorFunctor::~BehaviorFunctor(void) {
+}
+
+void GuiBehavior::BehaviorFunctor::doit(GuiBehavior*) {
+}
+
 GuiBehavior::GuiBehavior(const string& name) : GuiItem(name),
 					       _eh((EventHandler*)0L) {
 }
@@ -22,7 +31,7 @@ void GuiBehavior::manage(GuiManager* mgr, EventHandler& eh) {
 void GuiBehavior::unmanage(void) {
   if (_behavior_running)
     this->stop_behavior();
-  _eh = (EventHandler)0L;
+  _eh = (EventHandler*)0L;
   GuiItem::unmanage();
 }
 

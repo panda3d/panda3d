@@ -6,12 +6,12 @@
 #ifndef __GUIBUTTON_H__
 #define __GUIBUTTON_H__
 
-#include "guiItem.h"
+#include "guiBehavior.h"
 #include "guiRegion.h"
 #include "guiLabel.h"
 #include "guiManager.h"
 
-class EXPCL_PANDA GuiButton : public GuiItem {
+class EXPCL_PANDA GuiButton : public GuiBehavior {
 private:
   PT(GuiLabel) _up;
   PT(GuiLabel) _up_rollover;
@@ -32,10 +32,17 @@ private:
 		INACTIVE_ROLLOVER };
   States _state;
 
+  string _behavior_event;
+  GuiBehavior::BehaviorFunctor* _behavior_functor;
+
   INLINE GuiButton(void);
   void switch_state(States);
   virtual void recompute_frame(void);
 
+  static void behavior_up(CPT_Event, void*);
+  static void behavior_down(CPT_Event, void*);
+  void run_button_up(void);
+  void run_button_down(void);
 PUBLISHED:
   GuiButton(const string&, GuiLabel*, GuiLabel*);
   GuiButton(const string&, GuiLabel*, GuiLabel*, GuiLabel*);
@@ -80,6 +87,10 @@ PUBLISHED:
   virtual void set_scale(float);
   virtual void set_pos(const LVector3f&);
 
+  virtual void start_behavior(void);
+  virtual void stop_behavior(void);
+  virtual void reset_behavior(void);
+
   virtual void output(ostream&) const;
 
 public:
@@ -88,9 +99,9 @@ public:
     return _type_handle;
   }
   static void init_type(void) {
-    GuiItem::init_type();
+    GuiBehavior::init_type();
     register_type(_type_handle, "GuiButton",
-		  GuiItem::get_class_type());
+		  GuiBehavior::get_class_type());
   }
   virtual TypeHandle get_type(void) const {
     return get_class_type();

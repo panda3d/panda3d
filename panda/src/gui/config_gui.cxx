@@ -12,6 +12,8 @@
 #include "guiButton.h"
 #include "guiFrame.h"
 #include "guiListBox.h"
+#include "guiBehavior.h"
+#include "guiBackground.h"
 
 #include <dconfig.h>
 
@@ -22,11 +24,13 @@ ConfigureFn(config_gui) {
   GuiLabel::init_type();
   GuiRegion::init_type();
   GuiItem::init_type();
+  GuiBehavior::init_type();
   GuiSign::init_type();
   GuiRollover::init_type();
   GuiButton::init_type();
   GuiFrame::init_type();
   GuiListBox::init_type();
+  GuiBackground::init_type();
 }
 
 float simple_text_margin_top =

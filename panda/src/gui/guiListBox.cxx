@@ -8,7 +8,7 @@
 TypeHandle GuiListBox::_type_handle;
 
 void GuiListBox::recompute_frame(void) {
-  GuiItem::recompute_frame();
+  GuiBehavior::recompute_frame();
   LVector3f p = _pos;
   float lft = 100000.;
   float rgt = -100000.;
@@ -91,7 +91,7 @@ void GuiListBox::visible_patching(void) {
 }
 
 GuiListBox::GuiListBox(const string& name, int N, GuiItem* up, GuiItem* down)
-  : GuiItem(name), _arrow_top(false), _arrow_bottom(false), _up_arrow(up),
+  : GuiBehavior(name), _arrow_top(false), _arrow_bottom(false), _up_arrow(up),
     _down_arrow(down), _n_visible(N) {
   if (N < 4) {
     gui_cat->warning() << "ListBoxes should have at least 4 visible slots"
@@ -199,7 +199,7 @@ void GuiListBox::manage(GuiManager* mgr, EventHandler& eh) {
     for (ItemVector::iterator i=_visible.begin(); i!=_visible.end(); ++i)
       (*i)->manage(mgr, eh);
     _eh = &eh;
-    GuiItem::manage(mgr, eh);
+    GuiBehavior::manage(mgr, eh);
   } else
     gui_cat->warning() << "tried to manage listbox (0x" << (void*)this
 		       << ") that is already managed" << endl;
@@ -208,7 +208,7 @@ void GuiListBox::manage(GuiManager* mgr, EventHandler& eh) {
 void GuiListBox::unmanage(void) {
   for (ItemVector::iterator i=_visible.begin(); i!=_visible.end(); ++i)
     (*i)->unmanage();
-  GuiItem::unmanage();
+  GuiBehavior::unmanage();
 }
 
 void GuiListBox::set_scale(float f) {
@@ -220,7 +220,7 @@ void GuiListBox::set_scale(float f) {
   for (ItemDeque::iterator j=_bottom_stack.begin(); j!=_bottom_stack.end();
        ++j)
     (*j)->set_scale(f);
-  GuiItem::set_scale(f);
+  GuiBehavior::set_scale(f);
 }
 
 void GuiListBox::set_pos(const LVector3f& p) {
@@ -232,11 +232,23 @@ void GuiListBox::set_pos(const LVector3f& p) {
   for (ItemDeque::iterator j=_bottom_stack.begin(); j!=_bottom_stack.end();
        ++j)
     (*j)->set_pos(p);
-  GuiItem::set_pos(p);
+  GuiBehavior::set_pos(p);
+}
+
+void GuiListBox::start_behavior(void) {
+  GuiBehavior::start_behavior();
+}
+
+void GuiListBox::stop_behavior(void) {
+  GuiBehavior::stop_behavior();
+}
+
+void GuiListBox::reset_behavior(void) {
+  GuiBehavior::reset_behavior();
 }
 
 void GuiListBox::output(ostream& os) const {
-  GuiItem::output(os);
+  GuiBehavior::output(os);
   os << "  Listbox data:" << endl;
   os << "    There is ";
   if (!_arrow_top)
