@@ -322,6 +322,8 @@ EggGroup *SoftNodeTree::
 get_egg_group(SoftNodeDesc *node_desc) {
   nassertr(_egg_root != (EggGroupNode *)NULL, NULL);
 
+  cout << node_desc->_egg_group << endl;
+  cout << node_desc->_parent << endl;
   if (node_desc->_egg_group == (EggGroup *)NULL) {
     // We need to make a new group node.
     EggGroup *egg_group;
@@ -330,8 +332,15 @@ get_egg_group(SoftNodeDesc *node_desc) {
     if (node_desc->is_joint()) {
       egg_group->set_group_type(EggGroup::GT_joint);
     }
-    // For now lets add this group to egg_root.
-    _egg_root->add_child(egg_group);
+
+    if (!node_desc->_parent || node_desc->_parent == _root) {
+      // The parent is the root.
+      _egg_root->add_child(egg_group);
+    } else {
+      // The parent is another node.
+      EggGroup *parent_egg_group = get_egg_group(node_desc->_parent);
+      parent_egg_group->add_child(egg_group);
+    }
 
 #if 0
     SoftEggGroupUserData *parent_user_data = NULL;
@@ -562,23 +571,30 @@ build_node(SAA_Scene *scene, SAA_Elem *model) {
 ////////////////////////////////////////////////////////////////////
 SoftNodeDesc *SoftNodeTree::
 r_build_node(SoftNodeDesc *parent_node, const string &name) {
+  SoftNodeDesc *node_desc;
+
   // If we have already encountered this pathname, return the
   // corresponding MayaNodeDesc immediately.
   NodesByName::const_iterator ni = _nodes_by_name.find(name);
   if (ni != _nodes_by_name.end()) {
     cout << (*ni).first << endl;
-    return (*ni).second;
+    node_desc = (*ni).second;
+    node_desc->set_parent(parent_node);
+    return node_desc;
   }
 
   // Otherwise, we have to create it.  Do this recursively, so we
   // create each node along the path.
-  SoftNodeDesc *node_desc;
+  /*
   if (!parent_node) {
     node_desc = _root;
   }
   else {
+  */
     node_desc = new SoftNodeDesc(parent_node, name);
+    /*
   }
+    */
   cout << " node name : " << name << endl;
   _nodes.push_back(node_desc);
 

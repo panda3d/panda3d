@@ -84,6 +84,27 @@ set_model(SAA_Elem *model) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SoftNodeDesc::set_parent
+//       Access: Public
+//  Description: Sometimes, parent is not known at node creation
+//               As soon as it is known, set the parent
+////////////////////////////////////////////////////////////////////
+void SoftNodeDesc::
+set_parent(SoftNodeDesc *parent) {
+  if (_parent) {
+    cout << "expected _parent to be null!?\n";
+    if (_parent == parent)
+      cout << "parent already set\n";
+    else {
+      cout << "current parent " << _parent->get_name() << " new parent " 
+           << parent << endl;
+    }
+    return;
+  }
+  _parent = parent;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SoftNodeDesc::has_model
 //       Access: Public
 //  Description: Returns true if a Soft dag path has been associated
