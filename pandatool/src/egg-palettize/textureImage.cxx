@@ -456,7 +456,7 @@ get_preferred_source() {
   }
 
   SourceTextureImage *best = (SourceTextureImage *)NULL;
-  int best_size;
+  int best_size = 0;
 
   for (si = _sources.begin(); si != _sources.end() && !any_referenced; ++si) {
     SourceTextureImage *source = (*si).second;
