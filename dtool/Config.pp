@@ -207,7 +207,7 @@
 #if $[eq $[PLATFORM],Win32]
   #define GL_LIBS \
      opengl32.lib glu32.lib winmm.lib kernel32.lib \
-     oldnames.lib mswsock.lib ws2_32.lib \
+     oldnames.lib mswsock.lib wsock32.lib \
      advapi32.lib user32.lib gdi32.lib comdlg32.lib winspool.lib
 #else
   #define GL_LIBS GL GLU
@@ -264,7 +264,7 @@
 #define NET_IPATH
 #define NET_LPATH
 #if $[eq $[PLATFORM],Win32]
-  #define NET_LIBS ws2_32.lib
+  #define NET_LIBS wsock32.lib
 #else
   #define NET_LIBS
 #endif
