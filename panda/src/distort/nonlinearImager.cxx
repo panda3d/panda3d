@@ -203,8 +203,9 @@ set_texture_size(int index, int width, int height) {
   screen._tex_height = height;
 
   if (screen._buffer != (GraphicsOutput *)NULL) {
-    _engine->remove_window(screen._buffer);
+    bool removed = _engine->remove_window(screen._buffer);
     screen._buffer = (GraphicsOutput *)NULL;
+    nassertv(removed);
   }
 
   _stale = true;
@@ -249,8 +250,9 @@ set_screen_active(int index, bool active) {
 
     // Also remove its buffer.
     if (screen._buffer != (GraphicsOutput *)NULL) {
-      _engine->remove_window(screen._buffer);
+      bool removed = _engine->remove_window(screen._buffer);
       screen._buffer = (GraphicsOutput *)NULL;
+      nassertv(removed);
     }
 
   } else {
