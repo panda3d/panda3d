@@ -277,7 +277,7 @@ $[TAB]maya2egg $[MAYA2EGG_OPTS] -a chan -cn "$[CHAR_NAME]" -o $[target] -sf $[be
   #define target $[scene_file]
   #define source $[DATABASE]/$[SCENE_PREFIX]$[MODEL].mf
 $[target] : $[source]
-$[TAB]multify xvf $[source] -C $[DATABASE]
+$[TAB]multify xf $[source] -C $[DATABASE]
 #end scene_file
 
 // Egg character model generation from Soft databases.
