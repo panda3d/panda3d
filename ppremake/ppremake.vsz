@@ -1,0 +1,8 @@
+VSWIZARD 7.0
+Wizard=VsWizard.VsWizardEngine
+
+Param="WIZARD_NAME = ppremake"
+Param="ABSOLUTE_PATH = C:\Cygwin\home\drose\player\ppremake"
+Param="FALLBACK_LCID = 1033"
+Param="WIZARD_UI = FALSE"
+Param="SOURCE_FILTER = txt"

@@ -23,8 +23,8 @@
 /* Define if we're compiling for a Windows platform.  */
 #undef PLATFORM_WIN32
 
-/* The current version number. */
-#define VERSION 0.0
+/* Define if we're compiling using Windows Microsoft Visual C++. */
+#undef WIN32_VC
 
 /* The platform ppremake is compiled for.  This primarily controls the
    initial setting of the $[PLATFORM] variable. */

@@ -8,11 +8,20 @@
 #include "ppCommandFile.h"
 #include "ppDirectory.h"
 #include "tokenize.h"
+#include "include_access.h"
 
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+
 #include <assert.h>
 #include <errno.h>
 #include <stdio.h> // for perror
+
+#ifdef WIN32_VC
+#include <direct.h>  // Windows requires this for getcwd()
+#define getcwd _getcwd
+#endif  // WIN32_VC
 
 string PPMain::_root;
 

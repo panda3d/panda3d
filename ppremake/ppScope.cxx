@@ -14,19 +14,36 @@
 #include "tokenize.h"
 #include "find_searchpath.h"
 #include "filename.h"
+#include "include_access.h"
+
+#ifdef HAVE_GLOB_H
+#include <glob.h>
+#endif
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+
+#ifdef HAVE_SYS_WAIT_H
+#include <sys/wait.h>
+#endif
 
 #include <stdlib.h>
 #include <algorithm>
 #include <ctype.h>
-#include <glob.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <stdio.h>  // for perror() and sprintf().
 #include <errno.h>
 #include <signal.h>
-#include <sys/types.h>
-#include <sys/wait.h>
 #include <assert.h>
+
+#ifdef WIN32_VC
+#include <windows.h>  // for GetFileAttributes()
+#endif  // WIN32_VC
 
 static const string variable_patsubst(VARIABLE_PATSUBST);
 
@@ -1280,14 +1297,24 @@ expand_isdir(const string &params) {
   }
 
   const string &filename = results[0];
-  struct stat stbuf;
 
   string result;
+#ifdef WIN32_VC
+  DWORD dresults = GetFileAttributes(filename.c_str());
+  if (dresults != -1) {
+    if ((dresults & FILE_ATTRIBUTE_DIRECTORY) != 0) {
+      result = filename;
+    }
+  }
+
+#else  // WIN32_VC
+  struct stat stbuf;
   if (stat(filename.c_str(), &stbuf) == 0) {
     if (S_ISDIR(stbuf.st_mode)) {
       result = filename;
     }
   }
+#endif // WIN32_VC
 
   return result;
 }
@@ -1313,14 +1340,25 @@ expand_isfile(const string &params) {
   }
 
   const string &filename = results[0];
-  struct stat stbuf;
 
   string result;
+
+#ifdef WIN32_VC
+  DWORD dresults = GetFileAttributes(filename.c_str());
+  if (dresults != -1) {
+    if (dresults == FILE_ATTRIBUTE_NORMAL) {
+      result = filename;
+    }
+  }
+
+#else  // WIN32_VC
+  struct stat stbuf;
   if (stat(filename.c_str(), &stbuf) == 0) {
     if (S_ISREG(stbuf.st_mode)) {
       result = filename;
     }
   }
+#endif  // WIN32_VC
 
   return result;
 }
@@ -1495,6 +1533,11 @@ expand_bintest(const string &params) {
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_shell(const string &params) {
+#ifdef WIN32_VC
+  cerr << "$[shell] is not presently supported on Win32 without Cygwin.\n";
+  string output;
+
+#else  // WIN32_VC
   // We run $[shell] commands within the directory indicated by
   // $[THISDIRPREFIX].  This way, local filenames will be expanded the
   // way we expect.
@@ -1572,6 +1615,7 @@ expand_shell(const string &params) {
     }
   }
   close(pd[0]);
+#endif  // WIN32_VC
 
   // Now get the output.  We split it into words and then reconnect
   // it, to simulate the shell's backpop operator.
@@ -3086,6 +3130,10 @@ p_find_map_variable(const string &varname) {
 ////////////////////////////////////////////////////////////////////
 void PPScope::
 glob_string(const string &str, vector<string> &results) {
+#ifdef WIN32_VC
+  cerr << "glob temporarily unsupported in Win32 without Cygwin.\n";
+
+#else  // WIN32_VC
   // We run glob_string() within the directory indicated by
   // $[THISDIRPREFIX].  This way, local filenames will be expanded the
   // way we expect.
@@ -3126,4 +3174,5 @@ glob_string(const string &str, vector<string> &results) {
     // Now restore the current directory back to where it should be.
     PPMain::chdir_root();
   }
+#endif  // WIN32_VC
 }

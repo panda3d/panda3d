@@ -279,7 +279,7 @@ do_command(SedScript &script, SedContext &context) {
 void SedCommand::
 do_s_command(SedContext &context) {
   size_t nmatch = _re.re_nsub + 1;
-  regmatch_t pmatch[nmatch];
+  regmatch_t *pmatch = new regmatch_t[nmatch];
 
   string result;
   const char *str = context._pattern_space.c_str();
@@ -327,6 +327,7 @@ do_s_command(SedContext &context) {
       // If we don't have the global flag set, stop after the first iteration.
       result += str;
       context._pattern_space = result;
+      delete[] pmatch;
       return;
     }
 
@@ -336,4 +337,5 @@ do_s_command(SedContext &context) {
   // All done.
   result += str;
   context._pattern_space = result;
+  delete[] pmatch;
 }

@@ -8,8 +8,11 @@
 #include "ppDirectoryTree.h"
 #include "check_include.h"
 
-#include <assert.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+
+#include <assert.h>
 #include <sys/stat.h>
 #include <algorithm>
 
@@ -443,11 +446,13 @@ stat_file() {
     return;
   }
 
+#ifdef S_ISREG
   if (!S_ISREG(st.st_mode)) {
     // The file exists, but it's not a regular file--we consider that
     // not existing.
     return;
   }
+#endif  // S_ISREG
 
   _flags |= F_exists;
   _mtime = st.st_mtime;

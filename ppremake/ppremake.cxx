@@ -13,14 +13,18 @@
 #ifdef HAVE_GETOPT
 #include <getopt.h>
 #else
-#include <gnu_getopt.h>
+#include "gnu_getopt.h"
+#endif
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
 #endif
 
 #include <set>
 #include <vector>
 #include <algorithm>
 #include <sys/stat.h>
-#include <unistd.h>
+#include <assert.h>
 
 bool unix_platform = false;
 bool windows_platform = false;

@@ -8,7 +8,13 @@
 #ifndef PPREMAKE_H
 #define PPREMAKE_H
 
-#include "config.h"
+#ifdef _MSC_VER
+  /* For Visual C, include the special config.h file. */
+  #include "config_msvc.h"
+#else
+  /* Otherwise, include the normal automatically-generated file. */
+  #include "config.h"
+#endif
 
 #ifdef __cplusplus
 #ifdef HAVE_IOSTREAM
@@ -27,6 +33,11 @@
 using namespace std;
 #endif
 #endif /* __cplusplus */
+
+#ifndef HAVE_ALLOCA_H
+  /* If we don't have alloca.h, use malloc() to implement gnu_regex. */
+  #define REGEX_MALLOC 1
+#endif
 
 #define PACKAGE_FILENAME "Package.pp"
 #define SOURCE_FILENAME "Sources.pp"

@@ -17,7 +17,7 @@
    GNU General Public License for more details.  */
 
 
-#include <ppremake.h>
+#include "ppremake.h"
 
 #if !defined(HAVE_GETOPT)
 

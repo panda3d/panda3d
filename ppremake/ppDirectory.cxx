@@ -10,11 +10,27 @@
 #include "ppCommandFile.h"
 #include "ppDependableFile.h"
 #include "tokenize.h"
+#include "include_access.h"
 
-#include <sys/types.h>
+#ifdef HAVE_DIRENT_H
 #include <dirent.h>
+#endif
+
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+
 #include <algorithm>
+#include <assert.h>
+
+#ifdef WIN32_VC
+#include <direct.h>
+#include <windows.h>
+#endif
 
 PPDirectory *current_output_directory = (PPDirectory *)NULL;
 
@@ -390,16 +406,47 @@ r_scan(const string &prefix) {
   if (!prefix.empty()) {
     root_name = prefix.substr(0, prefix.length() - 1);
   }
-  
+
+  // Collect all the filenames in the directory in this vector first,
+  // so we can sort them.
+  vector<string> filenames;
+
+#ifdef WIN32_VC
+  // Use FindFirstFile()/FindNextFile() to walk through the list of
+  // files in a directory.
+  string match;
+  if (root_name.empty()) {
+    match = "*.*";
+  } else {
+    match = root_name + "\\*.*";
+  }
+  WIN32_FIND_DATA find_data;
+
+  HANDLE handle = FindFirstFile(match.c_str(), &find_data);
+  if (handle == INVALID_HANDLE_VALUE) {
+    if (GetLastError() == ERROR_NO_MORE_FILES) {
+      // No matching files is not an error.
+      return true;
+    }
+    return false;
+  }
+
+  do {
+    string filename = find_data.cFileName;
+    if (filename != "." && filename != "..") {
+      filenames.push_back(filename);
+    }
+  } while (FindNextFile(handle, &find_data));
+
+  bool scan_ok = (GetLastError() == ERROR_NO_MORE_FILES);
+  FindClose(handle);
+
+#else  // WIN32_VC  
   DIR *root = opendir(root_name.c_str());
   if (root == (DIR *)NULL) {
     cerr << "Unable to scan directory " << root_name << "\n";
     return false;
   }
-
-  // Collect all the filenames in the directory in this vector first,
-  // so we can sort them.
-  vector<string> filenames;
 
   struct dirent *d;
   d = readdir(root);
@@ -408,6 +455,7 @@ r_scan(const string &prefix) {
     d = readdir(root);
   }
   closedir(root);
+#endif  // WIN32_VC
 
   sort(filenames.begin(), filenames.end());
 
@@ -675,7 +723,11 @@ update_file_dependencies(const string &cache_filename) {
   if (!_dependables.empty()) {
     bool wrote_anything = false;
 
+#ifdef WIN32_VC
+    ofstream out(cache_pathname.c_str(), ios::out);
+#else
     ofstream out(cache_pathname.c_str(), ios::out, 0666);
+#endif
     if (!out) {
       cerr << "Cannot update cache dependency file " << cache_pathname << "\n";
       return;

@@ -4,8 +4,11 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "find_searchpath.h"
+#include "include_access.h"
 
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 
 string
 find_searchpath(const vector<string> &directories, const string &filename) {

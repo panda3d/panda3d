@@ -35,7 +35,7 @@ extern "C" {
    Also, when `ordering' is RETURN_IN_ORDER,
    each non-option ARGV-element is returned here.  */
 
-extern char EXPCL_DTOOL *optarg;
+extern char *optarg;
 
 /* Index in ARGV of the next element to be scanned.
    This is used for communication to and from the caller
@@ -49,7 +49,7 @@ extern char EXPCL_DTOOL *optarg;
    Otherwise, `optind' communicates from one call to the next
    how much of ARGV has been scanned so far.  */
 
-extern int EXPCL_DTOOL optind;
+extern int optind;
 
 /* Callers store zero here to inhibit the error message `getopt' prints
    for unrecognized options.  */
@@ -101,12 +101,12 @@ struct option
 #define required_argument       1
 #define optional_argument       2
 
-extern EXPCL_DTOOL int
+extern int
 getopt (int argc, char *const *argv, const char *shortopts);
-extern EXPCL_DTOOL int
+extern int
 getopt_long (int argc, char *const *argv, const char *shortopts,
              const struct option *long_options, int *opt_index);
-extern EXPCL_DTOOL int
+extern int
 getopt_long_only (int argc, char *const *argv,
                   const char *shortopts,
                   const struct option *long_options, 

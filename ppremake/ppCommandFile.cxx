@@ -8,14 +8,24 @@
 #include "ppNamedScopes.h"
 #include "ppSubroutine.h"
 #include "tokenize.h"
+#include "include_access.h"
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
+#ifdef HAVE_UTIME_H
+#include <utime.h>
+#endif
+
+#ifdef HAVE_SYS_UTIME_H
+#include <sys/utime.h>
+#endif
 
 #include <ctype.h>
 #include <stdio.h>  // for tempnam()
-#include <unistd.h>
 #include <sys/types.h>
-#include <utime.h>
 #include <assert.h>
-#include <strstream.h>
 
 static const string begin_comment(BEGIN_COMMENT);
 
@@ -1664,7 +1674,11 @@ compare_output(const string &new_contents, const string &filename,
       }
     }
 
+#ifdef WIN32_VC
+    ofstream out_b(filename.c_str(), ios::out);
+#else  // WIN32_VC
     ofstream out_b(filename.c_str(), ios::out, 0666);
+#endif  // WIN32_VC
     if (!out_b) {
       cerr << "Unable to open file " << filename << " for writing.\n";
       return false;
