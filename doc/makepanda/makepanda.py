@@ -1070,11 +1070,12 @@ def CopyFile(dstfile,srcfile):
 ##
 ########################################################################
 
-def CopyAllFiles(dstdir,srcdir):
+def CopyAllFiles(dstdir,srcdir,suffix=""):
     files = os.listdir(srcdir)
     for x in files:
         if (os.path.isfile(srcdir+x)):
-            CopyFile(dstdir+x, srcdir+x)
+            if x[-len(suffix):] == suffix:
+                CopyFile(dstdir+x, srcdir+x)
 
 ########################################################################
 ##
@@ -1507,6 +1508,23 @@ def CompileLink(dll=0, obj=[], opts=[], xdep=[]):
             if (opts.count("GLUT")):           cmd = cmd + " -lGL -lGLU"
             oscmd(cmd)
             updatefiledate(wdll)
+
+##########################################################################################
+#
+# CompileBAM
+#
+# Generate a BAM file from an EGG or FLT
+#
+##########################################################################################
+
+def CompileBAM(bam, egg):
+    dotexe = ".exe"
+    if (sys.platform != "win32"): dotexe = ""
+    if (egg[-4:]==".flt"):
+        oscmd(PREFIX + "/built/bin/flt2egg" + dotexe + " " + egg + " " + PREFIX + "/tmp/tmp.egg")
+        oscmd(PREFIX + "/built/bin/egg2bam" + dotexe + " " + PREFIX + "/tmp/tmp.egg" + " " + bam)
+    else:
+        oscmd(PREFIX + "/built/bin/egg2bam" + dotexe + " " + egg + " " + bam)
 
 ##########################################################################################
 #
@@ -5932,40 +5950,23 @@ CompileLink(opts=['ADVAPI', 'NSPR', 'FFTW'], dll='stitch-image.exe', obj=[
 
 MakeDirectory(PREFIX+"/audio")
 MakeDirectory(PREFIX+"/audio/sfx")
-
-CopyFile(PREFIX+"/audio/sfx/GUI_rollover.wav",       "dmodels/src/audio/sfx/GUI_rollover.wav")
-CopyFile(PREFIX+"/audio/sfx/GUI_click.wav",          "dmodels/src/audio/sfx/GUI_click.wav")
-
 MakeDirectory(PREFIX+"/icons")
-
-CopyFile(PREFIX+"/icons/folder.gif",     "dmodels/src/icons/folder.gif")
-CopyFile(PREFIX+"/icons/minusnode.gif",  "dmodels/src/icons/minusnode.gif")
-CopyFile(PREFIX+"/icons/openfolder.gif", "dmodels/src/icons/openfolder.gif")
-CopyFile(PREFIX+"/icons/plusnode.gif",   "dmodels/src/icons/plusnode.gif")
-CopyFile(PREFIX+"/icons/python.gif",     "dmodels/src/icons/python.gif")
-CopyFile(PREFIX+"/icons/Sources.pp",     "dmodels/src/icons/Sources.pp")
-CopyFile(PREFIX+"/icons/sphere2.gif",    "dmodels/src/icons/sphere2.gif")
-CopyFile(PREFIX+"/icons/tk.gif",         "dmodels/src/icons/tk.gif")
-CopyFile(PREFIX+"/icons/actor.gif",      "dmodels/src/icons/actor.gif")
-CopyFile(PREFIX+"/icons/blank.gif",      "dmodels/src/icons/blank.gif")
-CopyFile(PREFIX+"/icons/control.gif",    "dmodels/src/icons/control.gif")
-CopyFile(PREFIX+"/icons/grid.gif",       "dmodels/src/icons/grid.gif")
-CopyFile(PREFIX+"/icons/help.gif",       "dmodels/src/icons/help.gif")
-CopyFile(PREFIX+"/icons/lights.gif",     "dmodels/src/icons/lights.gif")
-CopyFile(PREFIX+"/icons/model.gif",      "dmodels/src/icons/model.gif")
-CopyFile(PREFIX+"/icons/mopath.gif",     "dmodels/src/icons/mopath.gif")
-CopyFile(PREFIX+"/icons/new.gif",        "dmodels/src/icons/new.gif")
-CopyFile(PREFIX+"/icons/open.gif",       "dmodels/src/icons/open.gif")
-CopyFile(PREFIX+"/icons/particles.gif",  "dmodels/src/icons/particles.gif")
-CopyFile(PREFIX+"/icons/placer.gif",     "dmodels/src/icons/placer.gif")
-CopyFile(PREFIX+"/icons/save.gif",       "dmodels/src/icons/save.gif")
-CopyFile(PREFIX+"/icons/smoke.gif",      "dmodels/src/icons/smoke.gif")
-
+MakeDirectory(PREFIX+"/maps")
 MakeDirectory(PREFIX+"/models")
 MakeDirectory(PREFIX+"/models/misc")
 MakeDirectory(PREFIX+"/models/gui")
 
+CopyAllFiles(PREFIX+"/audio/sfx/",   "dmodels/src/audio/sfx/", ".wav")
+CopyAllFiles(PREFIX+"/icons/",       "dmodels/src/icons/",     ".gif")
+
+CopyAllFiles(PREFIX+"/models/",     "models/",                ".egg")
+CopyAllFiles(PREFIX+"/models/",     "models/",                ".bam")
+CopyAllFiles(PREFIX+"/maps/",       "models/maps/",           ".jpg")
+CopyAllFiles(PREFIX+"/maps/",       "models/maps/",           ".png")
+CopyAllFiles(PREFIX+"/maps/",       "models/maps/",           ".rgb")
+
 CompileBAM(PREFIX+"/models/gui/dialog_box_gui.bam",  "dmodels/src/gui/dialog_box_gui.flt")
+
 CompileBAM(PREFIX+"/models/misc/camera.bam",         "dmodels/src/misc/camera.flt")
 CompileBAM(PREFIX+"/models/misc/fade.bam",           "dmodels/src/misc/fade.flt")
 CompileBAM(PREFIX+"/models/misc/fade_sphere.bam",    "dmodels/src/misc/fade_sphere.flt")

@@ -119,6 +119,7 @@ cp built/direct/__init__.py  $RPM_BUILD_ROOT/usr/lib/$PYTHONV/direct/__init__.py
 cp --recursive built/models  $RPM_BUILD_ROOT/usr/share/panda3d/models
 cp --recursive built/icons   $RPM_BUILD_ROOT/usr/share/panda3d/icons
 cp --recursive built/audio   $RPM_BUILD_ROOT/usr/share/panda3d/audio
+cp --recursive built/maps    $RPM_BUILD_ROOT/usr/share/panda3d/maps
 cp --recursive samples       $RPM_BUILD_ROOT/usr/share/panda3d/samples
 cp --recursive SceneEditor   $RPM_BUILD_ROOT/usr/lib/$PYTHONV/SceneEditor
 cp doc/LICENSE               $RPM_BUILD_ROOT/usr/lib/panda3d/LICENSE
@@ -176,7 +177,7 @@ oscmd("ln -sf ../pandatool    "+TARDIR+"/pandatool")
 oscmd("ln -sf ../ppremake     "+TARDIR+"/ppremake")
 oscmd("ln -sf ../SceneEditor  "+TARDIR+"/SceneEditor")
 oscmd("ln -sf ../dmodels      "+TARDIR+"/dmodels")
-oscmd("ln -sf ../cmu-models   "+TARDIR+"/cmu-models")
+oscmd("ln -sf ../models       "+TARDIR+"/models")
 oscmd("ln -sf ../samples      "+TARDIR+"/samples")
 oscmd("ln -sf ../doc          "+TARDIR+"/doc")
 oscmd("ln -sf ../makepanda    "+TARDIR+"/makepanda")
@@ -197,7 +198,7 @@ oscmd("ln -sf ../pandatool    "+TARDIR+"/pandatool")
 oscmd("ln -sf ../ppremake     "+TARDIR+"/ppremake")
 oscmd("ln -sf ../SceneEditor  "+TARDIR+"/SceneEditor")
 oscmd("ln -sf ../dmodels      "+TARDIR+"/dmodels")
-oscmd("ln -sf ../cmu-models   "+TARDIR+"/cmu-models")
+oscmd("ln -sf ../models       "+TARDIR+"/models")
 oscmd("ln -sf ../samples      "+TARDIR+"/samples")
 oscmd("ln -sf ../doc          "+TARDIR+"/doc")
 oscmd("ln -sf ../makepanda    "+TARDIR+"/makepanda")
