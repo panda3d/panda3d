@@ -25,10 +25,15 @@
      pnmFileTypeSoftImage.cxx pnmFileTypeTIFF.cxx  \
      pnmFileTypeTGA.cxx pnmFileTypeYUV.cxx
      
-
-  #define IF_JPEG_SOURCES \
-    pnmFileTypeJPG.cxx pnmFileTypeJPG.h \
+  #define IF_JPEG_INCLUDED_SOURCES \
+    pnmFileTypeJPG.cxx \
     pnmFileTypeJPGReader.cxx pnmFileTypeJPGWriter.cxx
+    
+  #define IF_JPEG_SOURCES \
+    pnmFileTypeJPG.h 
+    
+  #define IF_JPEG_COMBINED_SOURCES \    
+    $[TARGET]_composite3.cxx        
 
   #define INSTALL_HEADERS \
     config_pnmimagetypes.h
