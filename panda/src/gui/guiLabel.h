@@ -14,6 +14,7 @@
 #include <renderRelation.h>
 #include <texture.h>
 #include <typedReferenceCount.h>
+#include <geom.h>
 
 // label-ish behavior for GUI objects (labels, buttons, rollovers)
 
@@ -21,12 +22,13 @@ class GuiManager;
 
 class EXPCL_PANDA GuiLabel : public TypedReferenceCount {
 private:
-  enum LabelType { NONE, SIMPLE_TEXTURE, SIMPLE_TEXT };
+  enum LabelType { NONE, SIMPLE_TEXTURE, SIMPLE_TEXT, SIMPLE_CARD };
   LabelType _type;
   PT_Node _geom;
   RenderRelation* _arc;
   PT(Texture) _tex;
   RenderRelation* _internal;
+  Geom* _gset;
 
   float _scale;
   LVector3f _pos;
@@ -37,6 +39,7 @@ private:
   float _width;
   bool _have_height;
   float _height;
+  float _depth;
 
   INLINE Node* get_geometry(void) const;
   INLINE void set_arc(RenderRelation*);
@@ -54,6 +57,7 @@ PUBLISHED:
   static GuiLabel* make_simple_texture_label(Texture*);
   static GuiLabel* make_simple_text_label(const string&, Node*,
 					  Texture* = (Texture*)0L);
+  static GuiLabel* make_simple_card_label(void);
 
   int freeze();
   int thaw();
@@ -61,6 +65,7 @@ PUBLISHED:
   void get_extents(float&, float&, float&, float&);
   float get_width(void);
   float get_height(void);
+  INLINE float get_depth(void) const;
 
   INLINE void set_width(float);
   INLINE void set_height(float);
@@ -68,6 +73,7 @@ PUBLISHED:
   INLINE void set_scale(float);
   INLINE void set_pos(float, float, float);
   INLINE void set_pos(const LVector3f&);
+  INLINE void set_depth(float);
 
   INLINE float get_scale(void) const;
   INLINE LVector3f get_pos(void) const;

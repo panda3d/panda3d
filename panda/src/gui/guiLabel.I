@@ -6,13 +6,15 @@
 INLINE GuiLabel::GuiLabel(void) : _type(GuiLabel::NONE),
 				  _arc((RenderRelation*)0L),
 				  _tex((Texture*)0L),
-				  _internal((RenderRelation*)0L), _scale(1.),
+				  _internal((RenderRelation*)0L),
+				  _gset((Geom*)0L), _scale(1.),
 				  _pos(0., 0., 0.),
 				  _foreground(1., 1., 1., 1.),
 				  _have_background(false),
 				  _background(0., 0., 0., 0.),
 				  _have_width(false), _width(0.),
-				  _have_height(false), _height(0.) {
+				  _have_height(false), _height(0.),
+				  _depth(0.) {
 }
 
 INLINE Node* GuiLabel::get_geometry(void) const {
@@ -61,6 +63,18 @@ INLINE void GuiLabel::set_pos(float x, float y, float z) {
 INLINE void GuiLabel::set_pos(const LVector3f& p) {
   _pos = p;
   recompute_transform();
+}
+
+INLINE void GuiLabel::set_depth(float x) {
+  float r = _pos.dot(_pos.right());
+  float u = _pos.dot(_pos.up());
+  _pos = LVector3f::rfu(r, x, u);
+  _depth = x;
+  recompute_transform();
+}
+
+INLINE float GuiLabel::get_depth(void) const {
+  return _pos.dot(_pos.forward());
 }
 
 INLINE float GuiLabel::get_scale(void) const {

@@ -11,10 +11,14 @@
 
 class EXPCL_PANDA GuiBackground : public GuiItem {
 private:
+  PT(GuiLabel) _bg;
+  PT(GuiItem) _item;
+
   INLINE GuiBackground(void);
   virtual void recompute_frame(void);
 PUBLISHED:
-  GuiBackground(const string&);
+  GuiBackground(const string&, GuiItem*);
+  GuiBackground(const string&, GuiItem*, Texture*);
   ~GuiBackground(void);
 
   virtual void manage(GuiManager*, EventHandler&);

@@ -22,6 +22,7 @@ void GuiLabel::recompute_transform(void) {
     }
     break;
   case SIMPLE_TEXTURE:
+  case SIMPLE_CARD:
     {
       LMatrix4f mat = LMatrix4f::scale_mat(_scale) *
 	LMatrix4f::translate_mat(_pos);
@@ -84,6 +85,20 @@ void GuiLabel::set_properties(void) {
     break;
   case SIMPLE_TEXTURE:
     _internal->set_transition(new ColorTransition(_foreground));
+    break;
+  case SIMPLE_CARD:
+    _internal->set_transition(new ColorTransition(_foreground));
+    {
+      float w, h;
+      w = _have_width?(_width * 0.5):0.5;
+      h = _have_height?(_height * 0.5):0.5;
+      PTA_Vertexf verts;
+      verts.push_back(Vertexf::rfu(-w, 0., h));
+      verts.push_back(Vertexf::rfu(-w, 0., -h));
+      verts.push_back(Vertexf::rfu(w, 0., h));
+      verts.push_back(Vertexf::rfu(w, 0., -h));
+      _gset->set_coords(verts, G_PER_VERTEX);
+    }
     break;
   default:
     gui_cat->warning() << "recompute_transform on invalid label type ("
@@ -150,6 +165,7 @@ GuiLabel* GuiLabel::make_simple_texture_label(Texture* texture) {
   uvs.push_back(TexCoordf(1., 0.));
   geoset->set_texcoords(uvs, G_PER_VERTEX);
   n2->add_geom(geoset);
+  ret->_gset = geoset;
   return ret;
 }
 
@@ -173,6 +189,30 @@ GuiLabel* GuiLabel::make_simple_text_label(const string& text, Node* font,
   ret->set_scale(1.);
   ret->set_pos(LVector3f(0., 0., 0.));
   ret->recompute_transform();
+  return ret;
+}
+
+GuiLabel* GuiLabel::make_simple_card_label(void) {
+  GuiLabel* ret = new GuiLabel();
+  ret->_type = SIMPLE_CARD;
+  ret->_geom = new NamedNode("GUI label");
+  GeomNode* n2 = new GeomNode();
+  ret->_internal = new RenderRelation(ret->_geom, n2);
+  ret->_internal->set_transition(
+				new ColorTransition(Colorf(ret->_foreground)));
+  GeomTristrip *geoset = new GeomTristrip;
+  PTA_int lengths(0);
+  lengths.push_back(4);
+  PTA_Vertexf verts;
+  verts.push_back(Vertexf::rfu(-0.5, 0., 0.5));
+  verts.push_back(Vertexf::rfu(-0.5, 0., -0.5));
+  verts.push_back(Vertexf::rfu(0.5, 0., 0.5));
+  verts.push_back(Vertexf::rfu(0.5, 0., -0.5));
+  geoset->set_num_prims(1);
+  geoset->set_lengths(lengths);
+  geoset->set_coords(verts, G_PER_VERTEX);
+  n2->add_geom(geoset);
+  ret->_gset = geoset;
   return ret;
 }
 
@@ -255,6 +295,14 @@ void GuiLabel::get_extents(float& l, float& r, float& b, float& t) {
       t = ul.dot(ul.up());
     }
     break;
+  case SIMPLE_CARD:
+    {
+      l = _have_width?-(_width*0.5):-0.5;
+      r = _have_width?(_width*0.5):0.5;
+      b = _have_height?-(_height*0.5):-0.5;
+      t = _have_height?(_height*0.5):0.5;
+    }
+    break;
   default:
     gui_cat->warning()
       << "trying to get extents from something I don't know how to" << endl;
@@ -310,6 +358,9 @@ void GuiLabel::set_text(const string& val) {
     break;
   case SIMPLE_TEXTURE:
     gui_cat->warning() << "tried to set text on a texture label" << endl;
+    break;
+  case SIMPLE_CARD:
+    gui_cat->warning() << "tried to set text on a card label" << endl;
     break;
   default:
     gui_cat->warning() << "trying to set text on an unknown label type ("
