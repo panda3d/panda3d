@@ -40,7 +40,9 @@ class DirectJoybox(PandaObject):
         # Get buttons and analogs
         self.device = device
         self.analogs = direct.deviceManager.createAnalogs(self.device)
+        print 'NUM ANALOGS', len(self.analogs)
         self.buttons = direct.deviceManager.createButtons(self.device)
+        print 'NUM BUTTONS', len(self.buttons)
         self.aList = [0,0,0,0,0,0,0,0]
         self.bList = [0,0,0,0,0,0,0,0]
         # For joybox fly mode
@@ -121,7 +123,7 @@ class DirectJoybox(PandaObject):
         return DirectJoybox.hprMultiplier
 
     def updateTask(self, state):
-        self.updateVals()
+        self.updateValsUnrolled()
         self.updateFunc()
         return Task.cont
     
@@ -137,6 +139,34 @@ class DirectJoybox(PandaObject):
         for i in range(len(self.buttons)):
             try:
                 self.bList[i] = self.buttons[i]
+            except IndexError:
+                # That channel may not have been updated yet
+                self.bList[i] = 0
+    
+    def updateValsUnrolled(self):
+        # Update delta time
+        cTime = globalClock.getFrameTime()
+        self.deltaTime = cTime - self.lastTime
+        self.lastTime = cTime
+        # Update analogs
+        for chan in range(len(self.analogs)):
+            val = self.analogs.getControlState(chan)
+            # Scale up slider values
+            if (chan == 2) or (chan == 6):
+                val *= 3.0
+            # Zero out values in deadband
+            if val < 0:
+                val =  min(val + ANALOG_DEADBAND, 0.0)
+            else:
+                val =  max(val - ANALOG_DEADBAND, 0.0)
+            # Now clamp value between minVal and maxVal
+            val = CLAMP(val, ANALOG_MIN, ANALOG_MAX)
+            self.aList[chan] = (((maxVal - minVal) * ((val - ANALOG_MIN) / ANALOG_RANGE))
+                                + minVal)
+        # Update buttons
+        for i in range(len(self.buttons)):
+            try:
+                self.bList[i] = self.buttons.getButtonState(i)
             except IndexError:
                 # That channel may not have been updated yet
                 self.bList[i] = 0
@@ -184,10 +214,14 @@ class DirectJoybox(PandaObject):
         # Do nothing if no nodePath selected
         if self.nodePath == None:
             return
+        """
         hprScale = (self.analogs.normalizeChannel(L_SLIDE, 0.1, 100) *
                     DirectJoybox.hprMultiplier)
         posScale = (self.analogs.normalizeChannel(R_SLIDE, 0.1, 100) *
                     DirectJoybox.xyzMultiplier)
+        """
+        hprScale = (self.aList[L_SLIDE] + 1.0) * 50.0 * DirectJoybox.hprMultiplier
+        posScale = (self.aList[R_SLIDE] + 1.0) * 50.0 * DirectJoybox.xyzMultiplier
         def getAxisVal(index, s = self):
             try:
                 return s.aList[s.mapping[index]]
