@@ -29,6 +29,10 @@
 EXPCL_DTOOL void *
 load_dso(const Filename &filename);
 
+// true indicates success
+EXPCL_DTOOL bool
+unload_dso(void *dso_handle);
+
 // Returns the error message from the last failed load_dso() call.
 
 EXPCL_DTOOL string

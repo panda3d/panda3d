@@ -28,11 +28,16 @@ load_dso(const Filename &)
   return (void *) NULL;
 }
 
+bool
+unload_dso(void *dso_handle) {
+ return false;
+}
+
 string
 load_dso_error()
 {
   ostringstream ps2errmsg;
-  ps2errmsg << "load_dso_error() unsupported on PS2.  (CSN)";
+  ps2errmsg << "load_dso_error() unsupported on PS2";
 
   return ps2errmsg.str();
 }
@@ -51,6 +56,14 @@ void *
 load_dso(const Filename &filename) {
   string os_specific = filename.to_os_specific();
   return LoadLibrary(os_specific.c_str());
+}
+
+bool
+unload_dso(void *dso_handle) {
+  HMODULE dll_handle = (HMODULE) dso_handle;
+
+  // true indicates success
+  return FreeLibrary(dll_handle);
 }
 
 string
@@ -134,6 +147,11 @@ void *
 load_dso(const Filename &filename) {
   string os_specific = filename.to_os_specific();
   return dlopen(os_specific.c_str(), RTLD_NOW);
+}
+
+bool
+unload_dso(void *dso_handle) {
+  return dlclose(dso_handle)==0;
 }
 
 string
