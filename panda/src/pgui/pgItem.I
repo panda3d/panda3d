@@ -318,6 +318,19 @@ get_release_prefix() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGItem::get_keystroke_prefix
+//       Access: Published, Static
+//  Description: Returns the prefix that is used to define the
+//               keystroke event for all PGItems.  The keystroke event
+//               is the concatenation of this string followed by a
+//               hyphen and get_id().
+////////////////////////////////////////////////////////////////////
+INLINE string PGItem::
+get_keystroke_prefix() {
+  return "keystroke-";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGItem::get_enter_event
 //       Access: Published
 //  Description: Returns the event name that will be thrown when the
@@ -416,6 +429,17 @@ get_press_event(const ButtonHandle &button) const {
 INLINE string PGItem::
 get_release_event(const ButtonHandle &button) const {
   return get_release_prefix() + button.get_name() + "-" + get_id();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::get_keystroke_event
+//       Access: Published
+//  Description: Returns the event name that will be thrown when the
+//               item is active and any key is pressed by the user.
+////////////////////////////////////////////////////////////////////
+INLINE string PGItem::
+get_keystroke_event() const {
+  return get_keystroke_prefix() + "-" + get_id();
 }
 
 ////////////////////////////////////////////////////////////////////

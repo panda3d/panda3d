@@ -37,6 +37,7 @@ PUBLISHED:
 
   virtual void press(const MouseWatcherParameter &param);
   virtual void release(const MouseWatcherParameter &param);
+  virtual void keystroke(const MouseWatcherParameter &param);
 
 public:
   static TypeHandle get_class_type() {

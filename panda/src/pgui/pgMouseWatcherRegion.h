@@ -43,6 +43,7 @@ public:
   virtual void without(const MouseWatcherParameter &param);
   virtual void press(const MouseWatcherParameter &param);
   virtual void release(const MouseWatcherParameter &param);
+  virtual void keystroke(const MouseWatcherParameter &param);
 
 private:
   PGItem *_item;

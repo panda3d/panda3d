@@ -35,6 +35,7 @@ MouseWatcherParameter() {
 INLINE MouseWatcherParameter::
 MouseWatcherParameter(const MouseWatcherParameter &copy) :
   _button(copy._button),
+  _keycode(copy._keycode),
   _mods(copy._mods),
   _mouse(copy._mouse),
   _flags(copy._flags)
@@ -49,6 +50,7 @@ MouseWatcherParameter(const MouseWatcherParameter &copy) :
 INLINE void MouseWatcherParameter::
 operator = (const MouseWatcherParameter &copy) {
   _button = copy._button;
+  _keycode = copy._keycode;
   _mods = copy._mods;
   _mouse = copy._mouse;
   _flags = copy._flags;
@@ -73,6 +75,17 @@ INLINE void MouseWatcherParameter::
 set_button(const ButtonHandle &button) {
   _button = button;
   _flags |= F_has_button;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherParameter::set_keycode
+//       Access: Public
+//  Description: Sets the keycode associated with this event, if any.
+////////////////////////////////////////////////////////////////////
+INLINE void MouseWatcherParameter::
+set_keycode(int keycode) {
+  _keycode = keycode;
+  _flags |= F_has_keycode;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -136,6 +149,28 @@ has_button() const {
 INLINE ButtonHandle MouseWatcherParameter::
 get_button() const {
   return _button;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherParameter::has_keycode
+//       Access: Published
+//  Description: Returns true if this parameter has an associated
+//               keycode, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool MouseWatcherParameter::
+has_keycode() const {
+  return (_flags & F_has_keycode) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcherParameter::get_keycode
+//       Access: Published
+//  Description: Returns the keycode associated with this event.  If
+//               has_keycode(), above, returns false, this returns 0.
+////////////////////////////////////////////////////////////////////
+INLINE int MouseWatcherParameter::
+get_keycode() const {
+  return _keycode;
 }
 
 ////////////////////////////////////////////////////////////////////

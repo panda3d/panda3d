@@ -25,7 +25,8 @@
 INLINE ButtonEvent::
 ButtonEvent() :
   _button(ButtonHandle::none()),
-  _down(false)
+  _keycode(0),
+  _type(T_down)
 {
 }
 
@@ -35,9 +36,23 @@ ButtonEvent() :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ButtonEvent::
-ButtonEvent(ButtonHandle button, bool down) :
+ButtonEvent(ButtonHandle button, ButtonEvent::Type type) :
   _button(button),
-  _down(down)
+  _keycode(0),
+  _type(type)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ButtonEvent::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE ButtonEvent::
+ButtonEvent(short keycode) :
+  _button(ButtonHandle::none()),
+  _keycode(keycode),
+  _type(T_keystroke)
 {
 }
 
@@ -49,7 +64,8 @@ ButtonEvent(ButtonHandle button, bool down) :
 INLINE ButtonEvent::
 ButtonEvent(const ButtonEvent &copy) :
   _button(copy._button),
-  _down(copy._down)
+  _keycode(copy._keycode),
+  _type(copy._type)
 {
 }
 
@@ -61,7 +77,8 @@ ButtonEvent(const ButtonEvent &copy) :
 INLINE void ButtonEvent::
 operator = (const ButtonEvent &copy) {
   _button = copy._button;
-  _down = copy._down;
+  _keycode = copy._keycode;
+  _type = copy._type;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -72,7 +89,8 @@ operator = (const ButtonEvent &copy) {
 INLINE bool ButtonEvent::
 operator == (const ButtonEvent &other) const {
   return (_button == other._button &&
-          _down == other._down);
+          _keycode == other._keycode &&
+          _type == other._type);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -95,6 +113,9 @@ operator < (const ButtonEvent &other) const {
   if (_button != other._button) {
     return _button < other._button;
   }
+  if (_keycode != other._keycode) {
+    return _keycode < other._keycode;
+  }
 
-  return _down < other._down;
+  return _type < other._type;
 }

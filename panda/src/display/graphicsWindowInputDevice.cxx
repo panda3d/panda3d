@@ -155,7 +155,7 @@ get_button_event() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
 button_down(ButtonHandle button) {
-  _button_events.push_back(ButtonEvent(button, true));
+  _button_events.push_back(ButtonEvent(button, ButtonEvent::T_down));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -165,5 +165,16 @@ button_down(ButtonHandle button) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindowInputDevice::
 button_up(ButtonHandle button) {
-  _button_events.push_back(ButtonEvent(button, false));
+  _button_events.push_back(ButtonEvent(button, ButtonEvent::T_up));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsWindowInputDevice::keystroke
+//       Access: Public
+//  Description: Records that the indicated keystroke has been
+//               generated.
+////////////////////////////////////////////////////////////////////
+void GraphicsWindowInputDevice::
+keystroke(int keycode) {
+  _button_events.push_back(ButtonEvent(keycode));
 }

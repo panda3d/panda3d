@@ -435,27 +435,31 @@ transmit_data(AllTransitionsWrapper &data) {
     ButtonEventDataTransition::const_iterator bi;
     for (bi = b->begin(); bi != b->end(); ++bi) {
       const ButtonEvent &be = (*bi);
-      if (be._down) {
-        // We only trap button down events if (a) the mouse is in the
-        // window, and (b) we aren't set to ignore the mouse.
-        if (got_mouse && !_ignore_mouse) {
+      if (be._type != ButtonEvent::T_keystroke) {
+        bool down = (be._type == ButtonEvent::T_down);
+
+        if (down) {
+          // We only trap button down events if (a) the mouse is in the
+          // window, and (b) we aren't set to ignore the mouse.
+          if (got_mouse && !_ignore_mouse) {
+            _mods.add_event(be);
+          }
+        } else {
+          // However, we always trap button up events, so we don't get
+          // confused and believe a button is still being held down when
+          // it is not.
           _mods.add_event(be);
         }
-      } else {
-        // However, we always trap button up events, so we don't get
-        // confused and believe a button is still being held down when
-        // it is not.
-        _mods.add_event(be);
-      }
-
-      if (be._button == KeyboardButton::up()) {
-        _up_arrow.set_key(be._down);
-      } else if (be._button == KeyboardButton::down()) {
-        _down_arrow.set_key(be._down);
-      } else if (be._button == KeyboardButton::left()) {
-        _left_arrow.set_key(be._down);
-      } else if (be._button == KeyboardButton::right()) {
-        _right_arrow.set_key(be._down);
+        
+        if (be._button == KeyboardButton::up()) {
+          _up_arrow.set_key(down);
+        } else if (be._button == KeyboardButton::down()) {
+          _down_arrow.set_key(down);
+        } else if (be._button == KeyboardButton::left()) {
+          _left_arrow.set_key(down);
+        } else if (be._button == KeyboardButton::right()) {
+          _right_arrow.set_key(down);
+        }
       }
     }
   }

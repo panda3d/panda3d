@@ -350,6 +350,22 @@ release(const MouseWatcherParameter &param, bool background) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGItem::keystroke
+//       Access: Public, Virtual
+//  Description: This is a callback hook function, called whenever
+//               the user presses a key.
+////////////////////////////////////////////////////////////////////
+void PGItem::
+keystroke(const MouseWatcherParameter &param, bool background) {
+  if (!background) {
+    PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
+    string event = get_keystroke_event();
+    play_sound(event);
+    throw_event(event, EventParameter(ep));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGItem::background_press
 //       Access: Public, Static
 //  Description: Calls press() on all the PGItems with background
@@ -379,6 +395,23 @@ background_release(const MouseWatcherParameter &param) {
     PGItem *item = *fi;
     if (!item->get_focus()) {
       item->release(param, true);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGItem::background_keystroke
+//       Access: Public, Static
+//  Description: Calls keystroke() on all the PGItems with background
+//               focus.
+////////////////////////////////////////////////////////////////////
+void PGItem::
+background_keystroke(const MouseWatcherParameter &param) {
+  BackgroundFocus::const_iterator fi;
+  for (fi = _background_focus.begin(); fi != _background_focus.end(); ++fi) {
+    PGItem *item = *fi;
+    if (!item->get_focus()) {
+      item->keystroke(param, true);
     }
   }
 }

@@ -682,6 +682,37 @@ release(ButtonHandle button) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::keystroke
+//       Access: Protected
+//  Description: Records that the indicated keystroke has been
+//               generated.
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+keystroke(int keycode) {
+  MouseWatcherParameter param;
+  param.set_keycode(keycode);
+  param.set_modifier_buttons(_mods);
+  param.set_mouse(_mouse);
+
+  // Send the event to every region that wants keyboard buttons,
+  // regardless of the mouse position.
+  if (_preferred_region != (MouseWatcherRegion *)NULL) {
+    // Our current region, the one under the mouse, always get
+    // all the keyboard events, even if it doesn't set its
+    // keyboard flag.
+    _preferred_region->keystroke(param);
+  }
+
+  if ((_suppress_flags & MouseWatcherRegion::SF_other_button) == 0) {
+    // All the other regions only get the keyboard events if they
+    // set their global keyboard flag, *and* the current region does
+    // not suppress keyboard buttons.
+    param.set_outside(true);
+    global_keystroke(param);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::global_keyboard_press
 //       Access: Protected
 //  Description: Calls press() on all regions that are interested in
@@ -712,7 +743,6 @@ global_keyboard_press(const MouseWatcherParameter &param) {
     }
   }
 }
-
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::global_keyboard_release
 //       Access: Protected
@@ -740,6 +770,38 @@ global_keyboard_release(const MouseWatcherParameter &param) {
 
       if (region != _preferred_region && region->get_keyboard()) {
         region->release(param);
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::global_keystroke
+//       Access: Protected
+//  Description: Calls keystroke() on all regions that are interested
+//               in receiving global keyboard events, except for the
+//               current region (which already received this one).
+////////////////////////////////////////////////////////////////////
+void MouseWatcher::
+global_keystroke(const MouseWatcherParameter &param) {
+  Regions::const_iterator ri;
+  for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
+    MouseWatcherRegion *region = (*ri);
+
+    if (region != _preferred_region && region->get_keyboard()) {
+      region->keystroke(param);
+    }
+  }
+
+  // Also check all of our sub-groups.
+  Groups::const_iterator gi;
+  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+    MouseWatcherGroup *group = (*gi);
+    for (ri = group->_regions.begin(); ri != group->_regions.end(); ++ri) {
+      MouseWatcherRegion *region = (*ri);
+
+      if (region != _preferred_region && region->get_keyboard()) {
+        region->keystroke(param);
       }
     }
   }
@@ -835,10 +897,18 @@ transmit_data(AllTransitionsWrapper &data) {
       const ButtonEvent &be = (*bi);
       _mods.add_event(be);
 
-      if (be._down) {
+      switch (be._type) {
+      case ButtonEvent::T_down:
         press(be._button);
-      } else {
+        break;
+
+      case ButtonEvent::T_up:
         release(be._button);
+        break;
+
+      case ButtonEvent::T_keystroke:
+        keystroke(be._keycode);
+        break;
       }
     }
   }
@@ -864,7 +934,8 @@ transmit_data(AllTransitionsWrapper &data) {
         const ButtonEvent &be = (*bi);
         bool suppress = true;
 
-        if (MouseButton::is_mouse_button(be._button)) {
+        if (be._type != ButtonEvent::T_keystroke && 
+            MouseButton::is_mouse_button(be._button)) {
           suppress = ((suppress_buttons & MouseWatcherRegion::SF_mouse_button) != 0);
         } else {
           suppress = ((suppress_buttons & MouseWatcherRegion::SF_other_button) != 0);

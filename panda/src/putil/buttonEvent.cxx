@@ -25,10 +25,17 @@
 ////////////////////////////////////////////////////////////////////
 void ButtonEvent::
 output(ostream &out) const {
-  out << "button " << _button;
-  if (_down) {
-    out << " down";
-  } else {
-    out << " up";
+  switch (_type) {
+  case T_down:
+    out << "button " << _button << " down";
+    break;
+
+  case T_up:
+    out << "button " << _button << " up";
+    break;
+
+  case T_keystroke:
+    out << "keystroke " << _keycode;
+    break;
   }
 }

@@ -66,3 +66,14 @@ void PGMouseWatcherBackground::
 release(const MouseWatcherParameter &param) {
   PGItem::background_release(param);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGMouseWatcherBackground::keystroke
+//       Access: Public, Virtual
+//  Description: This is a callback hook function, called whenever
+//               the user presses a key.
+////////////////////////////////////////////////////////////////////
+void PGMouseWatcherBackground::
+keystroke(const MouseWatcherParameter &param) {
+  PGItem::background_keystroke(param);
+}

@@ -237,7 +237,7 @@ press(const MouseWatcherParameter &param, bool background) {
             _cursor_stale = true;
           }
           
-        } else if (button.has_ascii_equivalent()) {
+        } else if (!use_keystrokes && button.has_ascii_equivalent()) {
           char key = button.get_ascii_equivalent();
           if (isprint(key)) {
             // A normal visible character.  Add a new character to the
@@ -338,6 +338,121 @@ press(const MouseWatcherParameter &param, bool background) {
     }
   }
   PGItem::press(param, background);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::keystroke
+//       Access: Public, Virtual
+//  Description: This is a callback hook function, called whenever
+//               the user types a key.
+////////////////////////////////////////////////////////////////////
+void PGEntry::
+keystroke(const MouseWatcherParameter &param, bool background) {
+  if (get_active()) {
+    if (param.has_keycode()) {
+      int keycode = param.get_keycode();
+          
+      if (use_keystrokes) {
+        if (!isascii(keycode) || isprint(keycode)) {
+          // A normal visible character.  Add a new character to the
+          // text entry, if there's room.
+
+          string new_char(1, (char)keycode);
+            
+          if (get_max_chars() > 0 && (int)_text.length() >= get_max_chars()) {
+            overflow(param);
+          } else {
+            string new_text = 
+              _text.substr(0, _cursor_position) + new_char +
+              _text.substr(_cursor_position);
+            
+            // Get a string to measure its length.  In normal mode,
+            // we measure the text itself.  In obscure mode, we
+            // measure a string of n asterisks.
+            string measure_text;
+            if (_obscure_mode) {
+              measure_text = get_display_text() + '*';
+            } else {
+              measure_text = new_text;
+            }
+            
+            // Check the length.
+            bool too_long = false;
+            if (_max_width > 0.0f) {
+              TextNode *text_node = get_text_def(S_focus);
+              if (_num_lines <= 1) {
+                // If we have only one line, we can check the length
+                // by simply measuring the width of the text.
+                too_long = (text_node->calc_width(measure_text) > _max_width);
+                
+              } else {
+                // If we have multiple lines, we have to check the
+                // length by wordwrapping it and counting up the
+                // number of lines.
+                string ww_text = text_node->wordwrap_to(measure_text, _max_width, true);
+                int num_lines = 1;
+                size_t last_line_start = 0;
+                for (size_t p = 0;
+                     p < ww_text.length() && !too_long;
+                     ++p) {
+                  if (ww_text[p] == '\n') {
+                    last_line_start = p + 1;
+                    num_lines++;
+                    too_long = (num_lines > _num_lines);
+                  }
+                }
+                
+                if (!too_long) {
+                  // We must also ensure that the last line is not too
+                  // long (it might be, because of additional
+                  // whitespace on the end).
+                  string last_line = ww_text.substr(last_line_start);
+                  float last_line_width = text_node->calc_width(last_line);
+                  if (num_lines == _num_lines) {
+                    // Mainly we only care about this if we're on
+                    // the very last line.
+                    too_long = (last_line_width > _max_width);
+                    
+                  } else {
+                    // If we're not on the very last line, the width
+                    // is still important, just so we don't allow an
+                    // infinite number of spaces to accumulate.
+                    // However, we must allow at least *one* space
+                    // on the end of a line.
+                    if (_text.length() >= 1 && 
+                        _text[_text.length() - 1] == ' ') {
+                      if (last_line_width > _max_width) {
+                        // In this case, however, it's not exactly
+                        // an overflow; we just want to reject the
+                        // space.
+                        return;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            
+            if (too_long) {
+              overflow(param);
+              
+            } else {
+              _text = new_text;
+              if (_obscure_mode) {
+                _obscured_text = measure_text;
+              }
+              
+              _cursor_position += new_char.size();
+              _cursor_stale = true;
+              _text_geom_stale = true;
+              type(param);
+            }
+          }
+        }
+      }
+    }
+  }
+  PGItem::keystroke(param, background);
 }
 
 ////////////////////////////////////////////////////////////////////

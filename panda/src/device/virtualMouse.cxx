@@ -101,7 +101,7 @@ set_mouse_on(bool flag) {
 ////////////////////////////////////////////////////////////////////
 void VirtualMouse::
 press_button(ButtonHandle button) {
-  _next_button_events->push_back(ButtonEvent(button, true));
+  _next_button_events->push_back(ButtonEvent(button, ButtonEvent::T_down));
 }
   
 ////////////////////////////////////////////////////////////////////
@@ -112,7 +112,7 @@ press_button(ButtonHandle button) {
 ////////////////////////////////////////////////////////////////////
 void VirtualMouse::
 release_button(ButtonHandle button) {
-  _next_button_events->push_back(ButtonEvent(button, false));
+  _next_button_events->push_back(ButtonEvent(button, ButtonEvent::T_up));
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -138,3 +138,16 @@ release(const MouseWatcherParameter &param) {
     _item->release(param, false);
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGMouseWatcherRegion::keystroke
+//       Access: Public, Virtual
+//  Description: This is a callback hook function, called whenever 
+//               the user presses a key.
+////////////////////////////////////////////////////////////////////
+void PGMouseWatcherRegion::
+keystroke(const MouseWatcherParameter &param) {
+  if (_item != (PGItem *)NULL) {
+    _item->keystroke(param, false);
+  }
+}

@@ -335,7 +335,7 @@ transmit_data(AllTransitionsWrapper &data) {
       const ButtonEvent &be = (*bi);
       string event_name = be._button.get_name();
 
-      if (be._down) {
+      if (be._type == ButtonEvent::T_down) {
         // Button down.
         if (!_mods.button_down(be._button)) {
           // We only prepend modifier names on the button-down events,
@@ -356,7 +356,7 @@ transmit_data(AllTransitionsWrapper &data) {
           new_b->push_back(be);
         }
           
-      } else {
+      } else if (be._type == ButtonEvent::T_up) {
         // Button up.
         _mods.button_up(be._button);
 
@@ -376,6 +376,14 @@ transmit_data(AllTransitionsWrapper &data) {
           }
           new_b->push_back(be);
         }
+
+      } else {
+        // Some other kind of button event (e.g. keypress).  Don't
+        // throw an event for this, but do pass it down.
+        if (new_b == (ButtonEventDataTransition *)NULL) {
+          new_b = new ButtonEventDataTransition;
+        }
+        new_b->push_back(be);
       }
     }
   }

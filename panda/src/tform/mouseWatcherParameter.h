@@ -39,6 +39,7 @@ public:
   INLINE ~MouseWatcherParameter();
 
   INLINE void set_button(const ButtonHandle &button);
+  INLINE void set_keycode(int keycode);
   INLINE void set_modifier_buttons(const ModifierButtons &mods);
   INLINE void set_mouse(const LPoint2f &mouse);
   INLINE void set_outside(bool flag);
@@ -46,6 +47,9 @@ public:
 PUBLISHED:
   INLINE bool has_button() const;
   INLINE ButtonHandle get_button() const;
+
+  INLINE bool has_keycode() const;
+  INLINE int get_keycode() const;
 
   INLINE const ModifierButtons &get_modifier_buttons() const;
 
@@ -58,6 +62,7 @@ PUBLISHED:
 
 public:
   ButtonHandle _button;
+  short _keycode;
   ModifierButtons _mods;
   LPoint2f _mouse;
 
@@ -65,6 +70,7 @@ public:
     F_has_button  = 0x001,
     F_has_mouse   = 0x002,
     F_is_outside  = 0x004,
+    F_has_keycode = 0x008,
   };
   int _flags;
 };

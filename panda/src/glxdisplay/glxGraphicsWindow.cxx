@@ -735,6 +735,9 @@ handle_keypress(ButtonHandle key, int x, int y) {
   _input_devices[0].set_pointer_in_window(x, y);
   if (key != ButtonHandle::none()) {
     _input_devices[0].button_down(key);
+    if (key.has_ascii_equivalent()) {
+      _input_devices[0].keystroke(key.get_ascii_equivalent());
+    }
   }
 }
 

@@ -100,10 +100,15 @@ get_button(int index) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool ModifierButtons::
 add_event(const ButtonEvent &event) {
-  if (event._down) {
+  switch (event._type) {
+  case ButtonEvent::T_down:
     return button_down(event._button);
-  } else {
+
+  case ButtonEvent::T_up:
     return button_up(event._button);
+
+  default:
+    return false;
   }
 }
 

@@ -81,9 +81,11 @@ public:
   virtual void focus_out();
   virtual void press(const MouseWatcherParameter &param, bool background);
   virtual void release(const MouseWatcherParameter &param, bool background);
+  virtual void keystroke(const MouseWatcherParameter &param, bool background);
 
   static void background_press(const MouseWatcherParameter &param);
   static void background_release(const MouseWatcherParameter &param);
+  static void background_keystroke(const MouseWatcherParameter &param);
 
 PUBLISHED:
   INLINE void set_frame(float left, float right, float bottom, float top);
@@ -127,6 +129,7 @@ PUBLISHED:
   INLINE static string get_focus_out_prefix();
   INLINE static string get_press_prefix();
   INLINE static string get_release_prefix();
+  INLINE static string get_keystroke_prefix();
 
   INLINE string get_enter_event() const;
   INLINE string get_exit_event() const;
@@ -136,6 +139,7 @@ PUBLISHED:
   INLINE string get_focus_out_event() const;
   INLINE string get_press_event(const ButtonHandle &button) const;
   INLINE string get_release_event(const ButtonHandle &button) const;
+  INLINE string get_keystroke_event() const;
 
 #ifdef HAVE_AUDIO
   void set_sound(const string &event, AudioSound *sound);

@@ -53,7 +53,7 @@ set_button_state(int index, bool down) {
 
   ButtonHandle handle = _buttons[index]._handle;
   if (handle != ButtonHandle::none()) {
-    _button_events->push_back(ButtonEvent(handle, down));
+    _button_events->push_back(ButtonEvent(handle, down ? ButtonEvent::T_down : ButtonEvent::T_up));
   }
 }
 
