@@ -194,30 +194,23 @@ class DistributedObject(PandaObject):
         """
         return self.doId
     
-    def updateRequiredFields(self, cdc, di):
-        for i in cdc.broadcastRequiredCDU:
-            i.updateField(cdc, self, di)
+    def updateRequiredFields(self, dclass, di):
+        dclass.receiveUpdateBroadcastRequired(self, di)
         self.announceGenerate()
     
-    def updateAllRequiredFields(self, cdc, di):
-        for i in cdc.allRequiredCDU:
-            i.updateField(cdc, self, di)
+    def updateAllRequiredFields(self, dclass, di):
+        dclass.receiveUpdateAllRequired(self, di)
         self.announceGenerate()
 
-    def updateRequiredOtherFields(self, cdc, di):
+    def updateRequiredOtherFields(self, dclass, di):
         # First, update the required fields
-        for i in cdc.broadcastRequiredCDU:
-            i.updateField(cdc, self, di)
+        dclass.receiveUpdateBroadcastRequired(self, di)
 
         # Announce generate after updating all the required fields,
         # but before we update the non-required fields.
         self.announceGenerate()
-        
-        # Determine how many other fields there are
-        numberOfOtherFields = di.getArg(STUint16)
-        # Update each of the other fields
-        for i in range(numberOfOtherFields):
-            cdc.updateField(self, di)
+
+        dclass.receiveUpdateOther(self, di)
 
     def sendUpdate(self, fieldName, args = [], sendToId = None):
         self.cr.sendUpdate(self, fieldName, args, sendToId)

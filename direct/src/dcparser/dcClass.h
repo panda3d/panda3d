@@ -37,23 +37,48 @@ PUBLISHED:
   bool has_parent() const;
   DCClass *get_parent() const;
 
-  int get_num_fields();
-  DCField *get_field(int n);
-  DCField *get_field_by_name(const string &name);
+  int get_num_fields() const;
+  DCField *get_field(int n) const;
+  DCField *get_field_by_name(const string &name) const;
 
-  int get_num_inherited_fields();
-  DCField *get_inherited_field(int n);
+  int get_num_inherited_fields() const;
+  DCField *get_inherited_field(int n) const;
+
+#ifdef HAVE_PYTHON
+  void set_class_def(PyObject *class_def);
+  PyObject *get_class_def() const;
+
+  void receive_update(PyObject *distobj, DatagramIterator &iterator) const;
+  void receive_update_broadcast_required(PyObject *distobj, DatagramIterator &iterator) const;
+  void receive_update_all_required(PyObject *distobj, DatagramIterator &iterator) const;
+  void receive_update_other(PyObject *distobj, DatagramIterator &iterator) const;
+  void named_update(PyObject *distobj, const string &field_name, 
+                    const Datagram &datagram);
+  void pack_required_field(Datagram &dg, PyObject *distobj, 
+                           DCField *field) const;
+
+
+  Datagram client_format_update(const string &field_name, int do_id, 
+                                PyObject *args) const;
+  Datagram ai_format_update(const string &field_name, int do_id, 
+                            int to_id, int from_id, PyObject *args) const;
+  Datagram ai_format_generate(PyObject *distobj, int do_id, int zone_id,
+                              int district_id, int from_channel_id,
+                              PyObject *optional_fields) const;
+#endif 
 
 public:
-  DCClass();
+  DCClass(const string &name);
   ~DCClass();
 
   void write(ostream &out, bool brief, int indent_level) const;
   void generate_hash(HashGenerator &hash) const;
 
   bool add_field(DCField *field);
+  void add_parent(DCClass *parent);
 
-public:
+private:
+
   // These members define the primary interface to the distributed
   // class as read from the file.
   int _number;
@@ -65,11 +90,15 @@ public:
   typedef pvector<DCField *> Fields;
   Fields _fields;
 
+  PyObject *_class_def;
+
 public:
   // These members are built up during parsing for the convenience of
   // the parser.
   typedef pmap<string, DCField *> FieldsByName;
   FieldsByName _fields_by_name;
+
+  friend class DCFile;
 };
 
 #endif

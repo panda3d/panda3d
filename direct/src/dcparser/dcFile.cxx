@@ -196,6 +196,25 @@ write(Filename filename, bool brief) const {
 ////////////////////////////////////////////////////////////////////
 bool DCFile::
 write(ostream &out, bool brief) const {
+  Imports::const_iterator ii;
+  for (ii = _imports.begin(); ii != _imports.end(); ++ii) {
+    const Import &import = (*ii);
+    if (import._symbols.empty()) {
+      out << "import " << import._module << "\n";
+    } else {
+      out << "from " << import._module << " import ";
+      ImportSymbols::const_iterator si = import._symbols.begin();
+      out << *si;
+      ++si;
+      while (si != import._symbols.end()) {
+        out << ", " << *si;
+        ++si;
+      }
+      out << "\n";
+    }
+  }
+  out << "\n";
+
   Classes::const_iterator ci;
   for (ci = _classes.begin(); ci != _classes.end(); ++ci) {
     (*ci)->write(out, brief, 0);
@@ -242,6 +261,56 @@ get_class_by_name(const string &name) {
   }
 
   return (DCClass *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCFile::get_num_import_modules
+//       Access: Published
+//  Description: Returns the number of import lines read from the .dc
+//               file(s).
+////////////////////////////////////////////////////////////////////
+int DCFile::
+get_num_import_modules() const {
+  return _imports.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCFile::get_import_module
+//       Access: Published
+//  Description: Returns the module named by the nth import line read
+//               from the .dc file(s).
+////////////////////////////////////////////////////////////////////
+string DCFile::
+get_import_module(int n) const {
+  nassertr(n >= 0 && n < (int)_imports.size(), string());
+  return _imports[n]._module;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCFile::get_num_import_symbols
+//       Access: Published
+//  Description: Returns the number of symbols explicitly imported by
+//               the nth import line.  If this is 0, the line is
+//               "import modulename"; if it is more than 0, the line
+//               is "from modulename import symbol, symbol ... ".
+////////////////////////////////////////////////////////////////////
+int DCFile::
+get_num_import_symbols(int n) const {
+  nassertr(n >= 0 && n < (int)_imports.size(), 0);
+  return _imports[n]._symbols.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCFile::get_import_symbol
+//       Access: Published
+//  Description: Returns the ith symbol named by the nth import line
+//               read from the .dc file(s).
+////////////////////////////////////////////////////////////////////
+string DCFile::
+get_import_symbol(int n, int i) const {
+  nassertr(n >= 0 && n < (int)_imports.size(), string());
+  nassertr(i >= 0 && i < (int)_imports[n]._symbols.size(), string());
+  return _imports[n]._symbols[i];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -296,4 +365,34 @@ add_class(DCClass *dclass) {
   dclass->_number = get_num_classes();
   _classes.push_back(dclass);
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCFile::add_import_module
+//       Access: Public
+//  Description: Adds a new name to the list of names of Python
+//               modules that are to be imported by the client or AI
+//               to define the code that is associated with the class
+//               interfaces named within the .dc file.
+////////////////////////////////////////////////////////////////////
+void DCFile::
+add_import_module(const string &import_module) {
+  Import import;
+  import._module = import_module;
+  _imports.push_back(import);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCFile::add_import_symbol
+//       Access: Public
+//  Description: Adds a new name to the list of symbols that are to be
+//               explicitly imported from the most-recently added
+//               module, e.g. "from module_name import symbol".  If
+//               the list of symbols is empty, the syntax is taken to
+//               be "import module_name".
+////////////////////////////////////////////////////////////////////
+void DCFile::
+add_import_symbol(const string &import_symbol) {
+  nassertv(!_imports.empty());
+  _imports.back()._symbols.push_back(import_symbol);
 }

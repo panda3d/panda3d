@@ -4,7 +4,6 @@ from PandaModules import *
 from MsgTypes import *
 import Task
 import DirectNotifyGlobal
-import ClientDistClass
 import CRCache
 import ConnectionRepository
 import PythonUtil
@@ -23,11 +22,8 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
 
         self.recorder = base.recorder
         
-        self.number2cdc={}
-        self.name2cdc={}
         self.doId2do={}
-        self.doId2cdc={}
-        self.parseDcFile()
+        self.readDCFile()
         self.cache=CRCache.CRCache()
         self.serverDelta = 0
 
@@ -97,43 +93,25 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         """
         return time.time() + self.serverDelta
 
-    def parseDcFile(self):
-        self.dcFile = DCFile()
-        readResult = self.dcFile.readAll()
-        if not readResult:
-            self.notify.error("Could not read dc file.")
-        self.hashVal = self.dcFile.getHash()
-        return self.parseDcClasses(self.dcFile)
-
-    def parseDcClasses(self, dcFile):
-        numClasses = dcFile.getNumClasses()
-        for i in range(0, numClasses):
-            # Create a clientDistClass from the dcClass
-            dcClass = dcFile.getClass(i)
-            clientDistClass = ClientDistClass.ClientDistClass(dcClass)
-            # List the cdc in the number and name dictionaries
-            self.number2cdc[dcClass.getNumber()]=clientDistClass
-            self.name2cdc[dcClass.getName()]=clientDistClass
-
     def handleGenerateWithRequired(self, di):
         # Get the class Id
         classId = di.getArg(STUint16);
         # Get the DO Id
         doId = di.getArg(STUint32)
-        # Look up the cdc
-        cdc = self.number2cdc[classId]
+        # Look up the dclass
+        dclass = self.dclassesByNumber[classId]
         # Create a new distributed object, and put it in the dictionary
-        distObj = self.generateWithRequiredFields(cdc, doId, di)
+        distObj = self.generateWithRequiredFields(dclass, doId, di)
 
     def handleGenerateWithRequiredOther(self, di):
         # Get the class Id
         classId = di.getArg(STUint16);
         # Get the DO Id
         doId = di.getArg(STUint32)
-        # Look up the cdc
-        cdc = self.number2cdc[classId]
+        # Look up the dclass
+        dclass = self.dclassesByNumber[classId]
         # Create a new distributed object, and put it in the dictionary
-        distObj = self.generateWithRequiredOtherFields(cdc, doId, di)
+        distObj = self.generateWithRequiredOtherFields(dclass, doId, di)
 
     def handleQuietZoneGenerateWithRequired(self, di):
         # Special handler for quiet zone generates -- we need to filter
@@ -141,13 +119,13 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         classId = di.getArg(STUint16);
         # Get the DO Id
         doId = di.getArg(STUint32)
-        # Look up the cdc
-        cdc = self.number2cdc[classId]
+        # Look up the dclass
+        dclass = self.dclassesByNumber[classId]
         # If the class is a neverDisable class (which implies uberzone) we
         # should go ahead and generate it even though we are in the quiet zone
-        if cdc.constructor.neverDisable:
+        if dclass.getClassDef().neverDisable:
             # Create a new distributed object, and put it in the dictionary
-            distObj = self.generateWithRequiredFields(cdc, doId, di)
+            distObj = self.generateWithRequiredFields(dclass, doId, di)
 
     def handleQuietZoneGenerateWithRequiredOther(self, di):
         # Special handler for quiet zone generates -- we need to filter
@@ -155,83 +133,89 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         classId = di.getArg(STUint16);
         # Get the DO Id
         doId = di.getArg(STUint32)
-        # Look up the cdc
-        cdc = self.number2cdc[classId]
+        # Look up the dclass
+        dclass = self.dclassesByNumber[classId]
         # If the class is a neverDisable class (which implies uberzone) we
         # should go ahead and generate it even though we are in the quiet zone
-        if cdc.constructor.neverDisable:
+        if dclass.getClassDef().neverDisable:
             # Create a new distributed object, and put it in the dictionary
-            distObj = self.generateWithRequiredOtherFields(cdc, doId, di)
+            distObj = self.generateWithRequiredOtherFields(dclass, doId, di)
 
-    def generateWithRequiredFields(self, cdc, doId, di):
+    def generateWithRequiredFields(self, dclass, doId, di):
         if self.doId2do.has_key(doId):
             # ...it is in our dictionary.
             # Just update it.
             distObj = self.doId2do[doId]
+            assert(distObj.dclass == dclass)
             distObj.generate()
-            distObj.updateRequiredFields(cdc, di)
+            distObj.updateRequiredFields(dclass, di)
             # updateRequiredFields calls announceGenerate
         elif self.cache.contains(doId):
             # ...it is in the cache.
             # Pull it out of the cache:
             distObj = self.cache.retrieve(doId)
-            # put it in both dictionaries:
+            assert(distObj.dclass == dclass)
+            # put it in the dictionary:
             self.doId2do[doId] = distObj
-            self.doId2cdc[doId] = cdc
             # and update it.
             distObj.generate()
-            distObj.updateRequiredFields(cdc, di)
+            distObj.updateRequiredFields(dclass, di)
             # updateRequiredFields calls announceGenerate
         else:
             # ...it is not in the dictionary or the cache.
             # Construct a new one
-            distObj = cdc.constructor(self)
+            classDef = dclass.getClassDef()
+            if classDef == None:
+                self.notify.error("Could not create an undefined %s object." % (dclass.getName()))
+            distObj = classDef(self)
+            distObj.dclass = dclass
             # Assign it an Id
             distObj.doId = doId
-            # Put the new do in both dictionaries
+            # Put the new do in the dictionary
             self.doId2do[doId] = distObj
-            self.doId2cdc[doId] = cdc
             # Update the required fields
             distObj.generateInit()  # Only called when constructed
             distObj.generate()
-            distObj.updateRequiredFields(cdc, di)
+            distObj.updateRequiredFields(dclass, di)
             # updateRequiredFields calls announceGenerate
         return distObj
 
-    def generateWithRequiredOtherFields(self, cdc, doId, di):
+    def generateWithRequiredOtherFields(self, dclass, doId, di):
         if self.doId2do.has_key(doId):
             # ...it is in our dictionary.
             # Just update it.
             distObj = self.doId2do[doId]
+            assert(distObj.dclass == dclass)
             distObj.generate()
-            distObj.updateRequiredOtherFields(cdc, di)
+            distObj.updateRequiredOtherFields(dclass, di)
             # updateRequiredOtherFields calls announceGenerate
         elif self.cache.contains(doId):
             # ...it is in the cache.
             # Pull it out of the cache:
             distObj = self.cache.retrieve(doId)
-            # put it in both dictionaries:
+            assert(distObj.dclass == dclass)
+            # put it in the dictionary:
             self.doId2do[doId] = distObj
-            self.doId2cdc[doId] = cdc
             # and update it.
             distObj.generate()
-            distObj.updateRequiredOtherFields(cdc, di)
+            distObj.updateRequiredOtherFields(dclass, di)
             # updateRequiredOtherFields calls announceGenerate
         else:
             # ...it is not in the dictionary or the cache.
             # Construct a new one
-            if cdc.constructor == None:
-                self.notify.error("Could not create an undefined %s object." % (cdc.name))
-            distObj = cdc.constructor(self)
+            classDef = dclass.getClassDef()
+            if classDef == None:
+                self.notify.error("Could not create an undefined %s object." % (dclass.getName()))
+            distObj = classDef(self)
+            distObj.dclass = dclass
             # Assign it an Id
             distObj.doId = doId
-            # Put the new do in both dictionaries
+            # Put the new do in the dictionary
             self.doId2do[doId] = distObj
-            self.doId2cdc[doId] = cdc
             # Update the required fields
             distObj.generateInit()  # Only called when constructed
             distObj.generate()
-            distObj.updateRequiredOtherFields(cdc, di)
+            distObj.updateRequiredOtherFields(dclass, di)
             # updateRequiredOtherFields calls announceGenerate
         return distObj
 
@@ -247,10 +231,8 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         if self.doId2do.has_key(doId):
             # Look up the object
             distObj = self.doId2do[doId]
-            # remove the object from both dictionaries
+            # remove the object from the dictionary
             del(self.doId2do[doId])
-            del(self.doId2cdc[doId])
-            assert(len(self.doId2do) == len(self.doId2cdc))
 
             # Only cache the object if it is a "cacheable" type
             # object; this way we don't clutter up the caches with
@@ -285,14 +267,11 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         This is not a distributed message and does not delete the
         object on the server or on any other client.
         """
-        # If it is in the dictionaries, remove it.
+        # If it is in the dictionary, remove it.
         if self.doId2do.has_key(doId):
             obj = self.doId2do[doId]
-            # Remove it from the dictionaries
+            # Remove it from the dictionary
             del(self.doId2do[doId])
-            del(self.doId2cdc[doId])
-            # Sanity check the dictionaries
-            assert(len(self.doId2do) == len(self.doId2cdc))
             # Disable, announce, and delete the object itself...
             # unless delayDelete is on...
             obj.deleteOrDelay()
@@ -313,10 +292,9 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         # Find the DO
             
         do = self.doId2do.get(doId)
-        cdc = self.doId2cdc.get(doId)
-        if (do != None and cdc != None):
-            # Let the cdc finish the job
-            cdc.updateField(do, di)
+        if (do != None):
+            # Let the dclass finish the job
+            do.dclass.receiveUpdate(do, di)
         else:
             ClientRepository.notify.warning(
                 "Asked to update non-existent DistObj " + str(doId))
@@ -456,32 +434,11 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
                               "heartBeat")        
         
     def sendUpdate(self, do, fieldName, args, sendToId = None):
-        # Get the DO id
-        doId = do.doId
-        # Get the cdc
-        cdc = self.doId2cdc.get(doId, None)
-        if cdc:
-            # Let the cdc finish the job
-            cdc.sendUpdate(self, do, fieldName, args, sendToId)
+        dg = do.dclass.clientFormatUpdate(fieldName, sendToId or do.doId, args)
+        self.send(dg)
 
     def replaceMethod(self, oldMethod, newFunction):
-        foundIt = 0
-        import new
-        # Iterate over the ClientDistClasses
-        for cdc in self.number2cdc.values():
-            # Iterate over the ClientDistUpdates
-            for cdu in cdc.allCDU:
-                method = cdu.func
-                # See if this is a match
-                if (method and (method.im_func == oldMethod)):
-                    # Create a new unbound method out of this new function
-                    newMethod = new.instancemethod(newFunction,
-                                                   method.im_self,
-                                                   method.im_class)
-                    # Set the new method on the cdu
-                    cdu.func = newMethod
-                    foundIt = 1
-        return foundIt
+        return 0
 
     def getAllOfType(self, type):
         # Returns a list of all DistributedObjects in the repository

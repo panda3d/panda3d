@@ -56,9 +56,15 @@ PUBLISHED:
   bool is_airecv() const;
 
 public:
-  DCAtomicField();
+  DCAtomicField(const string &name);
   virtual void write(ostream &out, bool brief, int indent_level) const;
   virtual void generate_hash(HashGenerator &hash) const;
+
+public:
+#ifdef HAVE_PYTHON
+  virtual bool do_pack_args(Datagram &datagram, PyObject *tuple, int &index) const;
+  virtual bool do_unpack_args(pvector<PyObject *> &args, DatagramIterator &iterator) const;
+#endif
 
 public:
   // These members define the primary interface to the atomic field
@@ -76,6 +82,11 @@ public:
     bool end_array();
 
     void output(ostream &out, bool brief) const;
+
+#ifdef HAVE_PYTHON
+    void pack_arg(Datagram &datagram, PyObject *item, DCSubatomicType = ST_invalid) const;
+    PyObject *unpack_arg(DatagramIterator &iterator, DCSubatomicType = ST_invalid) const;
+#endif
 
     DCSubatomicType _type;
     string _name;

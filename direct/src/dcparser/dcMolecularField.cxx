@@ -66,8 +66,7 @@ get_atomic(int n) const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DCMolecularField::
-DCMolecularField() {
-  _number = 0;
+DCMolecularField(const string &name) : DCField(name) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -82,10 +81,10 @@ write(ostream &out, bool brief, int indent_level) const {
 
   if (!_fields.empty()) {
     Fields::const_iterator fi = _fields.begin();
-    out << " : " << (*fi)->_name;
+    out << " : " << (*fi)->get_name();
     ++fi;
     while (fi != _fields.end()) {
-      out << ", " << (*fi)->_name;
+      out << ", " << (*fi)->get_name();
       ++fi;
     }
   }
@@ -114,3 +113,51 @@ generate_hash(HashGenerator &hashgen) const {
     (*fi)->generate_hash(hashgen);
   }
 }
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: DCMolecularField::do_pack_args
+//       Access: Public, Virtual
+//  Description: Packs the Python arguments beginning from the
+//               indicated index of the indicated tuple into the
+//               datagram, appending to the end of the datagram.
+//               Increments index according to the number of arguments
+//               packed.  Returns true if the tuple contained at least
+//               enough arguments to match the field, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCMolecularField::
+do_pack_args(Datagram &datagram, PyObject *tuple, int &index) const {
+  Fields::const_iterator fi;
+  for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
+    DCField *field = (*fi);
+    if (!field->do_pack_args(datagram, tuple, index)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: DCMolecularField::do_unpack_args
+//       Access: Public, Virtual
+//  Description: Unpacks the values from the datagram, beginning at
+//               the current point in the interator, into a vector of
+//               Python objects (each with its own reference count).
+//               Returns true if there are enough values in the
+//               datagram, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCMolecularField::
+do_unpack_args(pvector<PyObject *> &args, DatagramIterator &iterator) const {
+  Fields::const_iterator fi;
+  for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
+    if (!(*fi)->do_unpack_args(args, iterator)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+#endif  // HAVE_PYTHON

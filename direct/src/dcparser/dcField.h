@@ -21,6 +21,17 @@
 
 #include "dcbase.h"
 
+#ifdef HAVE_PYTHON
+
+#undef HAVE_LONG_LONG  // NSPR and Python both define this.
+#include <Python.h>
+
+// We only need these headers if we are also building a Python interface.
+#include "datagram.h"
+#include "datagramIterator.h"
+
+#endif  // HAVE_PYTHON
+
 class DCAtomicField;
 class DCMolecularField;
 class HashGenerator;
@@ -38,14 +49,33 @@ PUBLISHED:
   virtual DCAtomicField *as_atomic_field();
   virtual DCMolecularField *as_molecular_field();
 
+#ifdef HAVE_PYTHON
+  void pack_args(Datagram &datagram, PyObject *tuple) const;
+  PyObject *unpack_args(DatagramIterator &iterator) const;
+
+  void receive_update(PyObject *distobj, DatagramIterator &iterator) const;
+
+  Datagram client_format_update(int do_id, PyObject *args) const;
+  Datagram ai_format_update(int do_id, int to_id, int from_id, PyObject *args) const;
+#endif 
+
 public:
+  DCField(const string &name);
   virtual ~DCField();
   virtual void write(ostream &out, bool brief, int indent_level) const=0;
   virtual void generate_hash(HashGenerator &hash) const;
 
-public:
+protected:
   int _number;
   string _name;
+
+public:
+#ifdef HAVE_PYTHON
+  virtual bool do_pack_args(Datagram &datagram, PyObject *tuple, int &index) const=0;
+  virtual bool do_unpack_args(pvector<PyObject *> &args, DatagramIterator &iterator) const=0;
+#endif
+
+  friend class DCClass;
 };
 
 #endif

@@ -47,6 +47,8 @@ dc_cleanup_parser() {
 %token <str> STRING HEX_STRING IDENTIFIER
 
 %token KW_DCLASS 
+%token KW_FROM 
+%token KW_IMPORT 
 
 %token KW_INT8
 %token KW_INT16
@@ -90,15 +92,15 @@ dc:
         empty
         | dc ';'
         | dc dclass
+        | dc import
         ;
 
 dclass:
         KW_DCLASS IDENTIFIER 
 {
-  current_class = new DCClass;
-  current_class->_name = $2;
+  current_class = new DCClass($2);
   if (!dc_file->add_class(current_class)) {
-    yyerror("Duplicate class name: " + current_class->_name);
+    yyerror("Duplicate class name: " + current_class->get_name());
   }
 }
         dclass_derivation '{' dclass_fields '}'
@@ -118,6 +120,37 @@ dclass_name:
 }
 	;
 
+import:
+	KW_IMPORT IDENTIFIER
+{
+  dc_file->add_import_module($2);
+}
+	| KW_FROM IDENTIFIER KW_IMPORT 
+{
+  dc_file->add_import_module($2);
+}
+	import_symbol_list_or_star
+	;
+
+import_symbol_list_or_star:
+	import_symbol_list
+	| '*'
+{
+  dc_file->add_import_symbol("*");
+}
+	;
+
+import_symbol_list:
+	IDENTIFIER
+{
+  dc_file->add_import_symbol($1);
+}
+	| import_symbol_list ',' IDENTIFIER
+{
+  dc_file->add_import_symbol($3);
+}
+	;
+
 dclass_derivation:
         empty
         | ':' base_list
@@ -127,13 +160,13 @@ base_list:
         dclass_name
 {
   if ($1 != (DCClass *)NULL) {
-    current_class->_parents.push_back($1);
+    current_class->add_parent($1);
   }
 }
         | base_list ',' dclass_name
 {
   if ($3 != (DCClass *)NULL) {
-    current_class->_parents.push_back($3);
+    current_class->add_parent($3);
   }
 }
         ;
@@ -148,10 +181,9 @@ dclass_fields:
 atomic_field:
         IDENTIFIER '('
 {
-  current_atomic = new DCAtomicField;
-  current_atomic->_name = $1;
+  current_atomic = new DCAtomicField($1);
   if (!current_class->add_field(current_atomic)) {
-    yyerror("Duplicate field name: " + current_atomic->_name);
+    yyerror("Duplicate field name: " + current_atomic->get_name());
   }
 }
         parameter_list ')' atomic_flags
@@ -430,10 +462,9 @@ atomic_flags:
 molecular_field:
         IDENTIFIER ':'
 {
-  current_molecular = new DCMolecularField;
-  current_molecular->_name = $1;
+  current_molecular = new DCMolecularField($1);
   if (!current_class->add_field(current_molecular)) {
-    yyerror("Duplicate field name: " + current_molecular->_name);
+    yyerror("Duplicate field name: " + current_molecular->get_name());
   }
 }
         molecular_atom_list
@@ -452,8 +483,8 @@ molecular_atom_list:
     current_molecular->_fields.push_back($3);
     if (current_molecular->_fields[0]->_flags != $3->_flags) {
       yyerror("Mismatched flags in molecule between " + 
-              current_molecular->_fields[0]->_name + " and " +
-              $3->_name);
+              current_molecular->_fields[0]->get_name() + " and " +
+              $3->get_name());
     }
   }
 }

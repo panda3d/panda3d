@@ -236,6 +236,366 @@ output(ostream &out, bool brief) const {
   }
 }
 
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::ElementType::pack_arg
+//       Access: Public
+//  Description: Packs the Python object into the datagram, appending
+//               to the end of the datagram.
+////////////////////////////////////////////////////////////////////
+void DCAtomicField::ElementType::
+pack_arg(Datagram &datagram, PyObject *item, DCSubatomicType type) const {
+  char *str;
+  int size;
+
+  if (type == ST_invalid) {
+    type = _type;
+  }
+
+  // Check for an array type.  These are handled recursively.
+  DCSubatomicType array_subtype;
+  int num_bytes = 0;
+  switch (type) {
+  case ST_int16array:
+    array_subtype = ST_int16;
+    num_bytes = 2;
+    break;
+
+  case ST_int32array:
+    array_subtype = ST_int32;
+    num_bytes = 4;
+    break;
+
+  case ST_uint16array:
+    array_subtype = ST_uint16;
+    num_bytes = 2;
+    break;
+
+  case ST_uint32array:
+    array_subtype = ST_uint32;
+    num_bytes = 4;
+    break;
+
+  case ST_int8array:
+    array_subtype = ST_int8;
+    num_bytes = 1;
+    break;
+
+  case ST_uint8array:
+    array_subtype = ST_uint8;
+    num_bytes = 1;
+    break;
+
+  case ST_uint32uint8array:
+    array_subtype = ST_uint32;
+    num_bytes = 5;
+    break;
+
+  default:
+    array_subtype = ST_invalid;
+  }
+
+  if (array_subtype != ST_invalid) {
+    int size = PySequence_Size(item);
+    datagram.add_uint16(size * num_bytes);
+    if (type == ST_uint32uint8array) {
+      // This one is a special case: an array of tuples.
+      for (int i = 0; i < size; i++) {
+        PyObject *tuple = PySequence_GetItem(item, i);
+        pack_arg(datagram, PyTuple_GetItem(tuple, 0), ST_uint32);
+        pack_arg(datagram, PyTuple_GetItem(tuple, 1), ST_uint8);
+        Py_DECREF(tuple);
+      }
+    } else {
+      for (int i = 0; i < size; i++) {
+        PyObject *element = PySequence_GetItem(item, i);
+        pack_arg(datagram, element, array_subtype);
+        Py_DECREF(element);
+      }
+    }
+
+    return;
+  }
+
+  if (_divisor == 1) {
+    switch (type) {
+    case ST_int8:
+      datagram.add_int8(PyInt_AsLong(item));
+      break;
+
+    case ST_int16:
+      datagram.add_int16(PyInt_AsLong(item));
+      break;
+
+    case ST_int32:
+      datagram.add_int32(PyInt_AsLong(item));
+      break;
+
+    case ST_int64:
+      datagram.add_int64(PyLong_AsLongLong(item));
+      break;
+
+    case ST_uint8:
+      datagram.add_uint8(PyInt_AsLong(item));
+      break;
+
+    case ST_uint16:
+      datagram.add_uint16(PyInt_AsLong(item));
+      break;
+
+    case ST_uint32:
+      datagram.add_uint32(PyInt_AsLong(item));
+      break;
+
+    case ST_uint64:
+      datagram.add_uint64(PyLong_AsUnsignedLongLong(item));
+      break;
+
+    case ST_float64:
+      datagram.add_float64(PyFloat_AsDouble(item));
+      break;
+
+    case ST_string:
+    case ST_blob:
+      PyString_AsStringAndSize(item, &str, &size);
+      datagram.add_string(string(str, size));
+      break;
+      
+    case ST_blob32:
+      PyString_AsStringAndSize(item, &str, &size);
+      datagram.add_string32(string(str, size));
+      break;
+
+    default:
+      break;
+    }
+
+  } else {
+    switch (type) {
+    case ST_int8:
+      datagram.add_int8(floor(PyFloat_AsDouble(item) * _divisor + 0.5));
+      break;
+
+    case ST_int16:
+      datagram.add_int16(floor(PyFloat_AsDouble(item) * _divisor + 0.5));
+      break;
+
+    case ST_int32:
+      datagram.add_int32(floor(PyFloat_AsDouble(item) * _divisor + 0.5));
+      break;
+
+    case ST_int64:
+      datagram.add_int64(floor(PyFloat_AsDouble(item) * _divisor + 0.5));
+      break;
+
+    case ST_uint8:
+      datagram.add_uint8(floor(PyFloat_AsDouble(item) * _divisor + 0.5));
+      break;
+
+    case ST_uint16:
+      datagram.add_uint16(floor(PyFloat_AsDouble(item) * _divisor + 0.5));
+      break;
+
+    case ST_uint32:
+      datagram.add_uint32(floor(PyFloat_AsDouble(item) * _divisor + 0.5));
+      break;
+
+    case ST_uint64:
+      datagram.add_uint64(floor(PyFloat_AsDouble(item) * _divisor + 0.5));
+      break;
+
+    case ST_float64:
+      datagram.add_float64(PyFloat_AsDouble(item) * _divisor);
+      break;
+
+    case ST_string:
+    case ST_blob:
+      PyString_AsStringAndSize(item, &str, &size);
+      datagram.add_string(string(str, size));
+      break;
+      
+    case ST_blob32:
+      PyString_AsStringAndSize(item, &str, &size);
+      datagram.add_string32(string(str, size));
+      break;
+    }
+  }
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::ElementType::unpack_arg
+//       Access: Public
+//  Description: Unpacks a Python object from the datagram, beginning
+//               at the current point in the interator, and returns a
+//               new reference, or NULL if there was not enough data
+//               in the datagram.
+////////////////////////////////////////////////////////////////////
+PyObject *DCAtomicField::ElementType::
+unpack_arg(DatagramIterator &iterator, DCSubatomicType type) const {
+  string str;
+
+  if (type == ST_invalid) {
+    type = _type;
+  }
+
+  // Check for an array type.  These are handled recursively.
+  DCSubatomicType array_subtype;
+  int num_bytes = 0;
+  switch (type) {
+  case ST_int16array:
+    array_subtype = ST_int16;
+    num_bytes = 2;
+    break;
+
+  case ST_int32array:
+    array_subtype = ST_int32;
+    num_bytes = 4;
+    break;
+
+  case ST_uint16array:
+    array_subtype = ST_uint16;
+    num_bytes = 2;
+    break;
+
+  case ST_uint32array:
+    array_subtype = ST_uint32;
+    num_bytes = 4;
+    break;
+
+  case ST_int8array:
+    array_subtype = ST_int8;
+    num_bytes = 1;
+    break;
+
+  case ST_uint8array:
+    array_subtype = ST_uint8;
+    num_bytes = 1;
+    break;
+
+  case ST_uint32uint8array:
+    array_subtype = ST_uint32;
+    num_bytes = 5;
+    break;
+
+  default:
+    array_subtype = ST_invalid;
+  }
+
+  if (array_subtype != ST_invalid) {
+    int size_bytes = iterator.get_uint16();
+    int size = size_bytes / num_bytes;
+    nassertr(size * num_bytes == size_bytes, NULL);
+
+    PyObject *list = PyList_New(size);
+    if (type == ST_uint32uint8array) {
+      // This one is a special case: an array of tuples.
+      for (int i = 0; i < size; i++) {
+        PyObject *a = unpack_arg(iterator, ST_uint32);
+        PyObject *b = unpack_arg(iterator, ST_uint8);
+        PyObject *tuple = PyTuple_New(2);
+        PyTuple_SET_ITEM(tuple, 0, a);
+        PyTuple_SET_ITEM(tuple, 1, b);
+        PyList_SET_ITEM(list, i, tuple);
+      }
+    } else {
+      for (int i = 0; i < size; i++) {
+        PyObject *element = unpack_arg(iterator, array_subtype);
+        PyList_SET_ITEM(list, i, element);
+      }
+    }
+
+    return list;
+  }
+
+  if (_divisor == 1) {
+    switch (type) {
+    case ST_int8:
+      return PyInt_FromLong(iterator.get_int8());
+
+    case ST_int16:
+      return PyInt_FromLong(iterator.get_int16());
+
+    case ST_int32:
+      return PyInt_FromLong(iterator.get_int32());
+
+    case ST_int64:
+      return PyLong_FromLongLong(iterator.get_int64());
+
+    case ST_uint8:
+      return PyInt_FromLong(iterator.get_uint8());
+
+    case ST_uint16:
+      return PyInt_FromLong(iterator.get_uint16());
+
+    case ST_uint32:
+      return PyInt_FromLong(iterator.get_uint32());
+
+    case ST_uint64:
+      return PyLong_FromUnsignedLongLong(iterator.get_uint64());
+
+    case ST_float64:
+      return PyFloat_FromDouble(iterator.get_float64());
+
+    case ST_string:
+    case ST_blob:
+      str = iterator.get_string();
+      return PyString_FromStringAndSize(str.data(), str.size());
+      
+    case ST_blob32:
+      str = iterator.get_string32();
+      return PyString_FromStringAndSize(str.data(), str.size());
+
+    default:
+      return Py_BuildValue("");
+    }
+
+  } else {
+    switch (type) {
+    case ST_int8:
+      return PyFloat_FromDouble(iterator.get_int8() / (double)_divisor);
+
+    case ST_int16:
+      return PyFloat_FromDouble(iterator.get_int16() / (double)_divisor);
+
+    case ST_int32:
+      return PyFloat_FromDouble(iterator.get_int32() / (double)_divisor);
+
+    case ST_int64:
+      return PyFloat_FromDouble(iterator.get_int64() / (double)_divisor);
+
+    case ST_uint8:
+      return PyFloat_FromDouble(iterator.get_uint8() / (double)_divisor);
+
+    case ST_uint16:
+      return PyFloat_FromDouble(iterator.get_uint16() / (double)_divisor);
+
+    case ST_uint32:
+      return PyFloat_FromDouble(iterator.get_uint32() / (double)_divisor);
+
+    case ST_uint64:
+      return PyFloat_FromDouble(iterator.get_uint64() / (double)_divisor);
+
+    case ST_float64:
+      return PyFloat_FromDouble(iterator.get_float64() / (double)_divisor);
+
+    case ST_string:
+    case ST_blob:
+      str = iterator.get_string();
+      return PyString_FromStringAndSize(str.data(), str.size());
+      
+    case ST_blob32:
+      str = iterator.get_string32();
+      return PyString_FromStringAndSize(str.data(), str.size());
+
+    default:
+      return Py_BuildValue("");
+    }
+  }
+}
+#endif  // HAVE_PYTHON
+
 ////////////////////////////////////////////////////////////////////
 //     Function: DCAtomicField::ElementType::format_default_value
 //       Access: Private
@@ -591,8 +951,7 @@ is_airecv() const {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DCAtomicField::
-DCAtomicField() {
-  _number = 0;
+DCAtomicField(const string &name) : DCField(name) {
   _flags = 0;
 }
 
@@ -673,3 +1032,62 @@ generate_hash(HashGenerator &hashgen) const {
   }
   hashgen.add_int(_flags);
 }
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::do_pack_args
+//       Access: Public, Virtual
+//  Description: Packs the Python arguments beginning from the
+//               indicated index of the indicated tuple into the
+//               datagram, appending to the end of the datagram.
+//               Increments index according to the number of arguments
+//               packed.  Returns true if the tuple contained at least
+//               enough arguments to match the field, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCAtomicField::
+do_pack_args(Datagram &datagram, PyObject *tuple, int &index) const {
+  int size = PySequence_Size(tuple);
+
+  Elements::const_iterator ei;
+  for (ei = _elements.begin(); ei != _elements.end(); ++ei) {
+    const ElementType &element = (*ei);
+    if (index >= size) {
+      // Not enough elements in the tuple.
+      return false;
+    }
+    PyObject *item = PySequence_GetItem(tuple, index);
+    index++;
+    element.pack_arg(datagram, item);
+    Py_DECREF(item);
+  }
+
+  return true;
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::do_unpack_args
+//       Access: Public, Virtual
+//  Description: Unpacks the values from the datagram, beginning at
+//               the current point in the interator, into a vector of
+//               Python objects (each with its own reference count).
+//               Returns true if there are enough values in the
+//               datagram, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool DCAtomicField::
+do_unpack_args(pvector<PyObject *> &args, DatagramIterator &iterator) const {
+  Elements::const_iterator ei;
+  for (ei = _elements.begin(); ei != _elements.end(); ++ei) {
+    const ElementType &element = (*ei);
+    PyObject *item = element.unpack_arg(iterator);
+    if (item == (PyObject *)NULL) {
+      // Ran out of datagram bytes.
+      return false;
+    }
+    args.push_back(item);
+  }
+
+  return true;
+}
+#endif  // HAVE_PYTHON

@@ -46,20 +46,36 @@ PUBLISHED:
 
   int get_num_classes();
   DCClass *get_class(int n);
-
   DCClass *get_class_by_name(const string &name);
+
+  int get_num_import_modules() const;
+  string get_import_module(int n) const;
+  int get_num_import_symbols(int n) const;
+  string get_import_symbol(int n, int i) const;
 
   unsigned long get_hash() const;
 
 public:
   void generate_hash(HashGenerator &hash) const;
   bool add_class(DCClass *dclass);
+  void add_import_module(const string &import_module);
+  void add_import_symbol(const string &import_symbol);
 
 public:
   // This vector is the primary interface to the distributed classes
   // read from the file.
   typedef pvector<DCClass *> Classes;
   Classes _classes;
+
+  typedef pvector<string> ImportSymbols;
+  class Import {
+  public:
+    string _module;
+    ImportSymbols _symbols;
+  };
+
+  typedef pvector<Import> Imports;
+  Imports _imports;
 
 public:
   // This map is built up during parsing for the convenience of the parser.

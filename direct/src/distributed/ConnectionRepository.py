@@ -4,6 +4,8 @@ import DirectNotifyGlobal
 import DirectObject
 from PyDatagram import PyDatagram
 
+import types
+
 class ConnectionRepository(DirectObject.DirectObject):
     """
     This is a base class for things that know how to establish a
@@ -53,6 +55,91 @@ class ConnectionRepository(DirectObject.DirectObject):
         self.rsLastUpdate = 0
         self.rsDoReport = self.config.GetBool('reader-statistics', 0)
         self.rsUpdateInterval = self.config.GetDouble('reader-statistics-interval', 10)
+
+    def readDCFile(self, dcFileNames = None):
+
+        """ Reads in the dc files listed in dcFileNames, or if
+        dcFileNames is None, reads in all of the dc files listed in
+        the Configrc file.
+
+        The resulting DCFile object is stored in self.dcFile. """
+        
+        self.dcFile = DCFile()
+        self.dclassesByName = {}
+        self.dclassesByNumber = {}
+        
+        dcImports = {}
+        if dcFileNames == None:
+            readResult = self.dcFile.readAll()
+            if not readResult:
+                self.notify.error("Could not read dc file.")
+        else:
+            for dcFileName in dcFileNames:
+                readResult = self.dcFile.read(Filename(dcFileName))
+                if not readResult:
+                    self.notify.error("Could not read dc file: %s" % (dcFileName))
+        self.hashVal = self.dcFile.getHash()
+
+        # Now import all of the modules required by the DC file.
+        for n in range(self.dcFile.getNumImportModules()):
+            moduleName = self.dcFile.getImportModule(n)
+            moduleName = self.mangleDCName(moduleName)
+
+            module = __import__(moduleName, globals(), locals())
+
+            if self.dcFile.getNumImportSymbols(n) > 0:
+                # "from moduleName import symbolName, symbolName, ..."
+                # Copy just the named symbols into the dictionary.
+                for i in range(self.dcFile.getNumImportSymbols(n)):
+                    symbolName = self.dcFile.getImportSymbol(n, i)
+                    if symbolName == '*':
+                        # Get all symbols.
+                        dcImports.update(module.__dict__)
+                    else:
+                        if not hasattr(module, symbolName):
+                            self.notify.error("Symbol %s not found in module %s." % (
+                                symbolName, moduleName))
+                        dcImports[symbolName] = getattr(module, symbolName)
+            else:
+                # "import moduleName"
+                # Copy the module itself into the dictionary.
+                dcImports[moduleName] = module
+
+        # Now get the class definition for the classes named in the DC
+        # file.
+        for i in range(self.dcFile.getNumClasses()):
+            dclass = self.dcFile.getClass(i)
+            number = dclass.getNumber()
+            className = dclass.getName()
+            className = self.mangleDCName(className)
+
+            # Does the class have a definition defined in the newly
+            # imported namespace?
+            classDef = dcImports.get(className)
+            if classDef == None:
+                self.notify.info("No class definition for %s." % (className))
+            else:
+                if type(classDef) == types.ModuleType:
+                    if not hasattr(classDef, className):
+                        self.notify.error("Module %s does not define class %s." % (className, className))
+                    classDef = getattr(classDef, className)
+                    
+                if type(classDef) != types.ClassType:
+                    self.notify.error("Symbol %s is not a class name." % (className))
+                else:
+                    dclass.setClassDef(classDef)
+
+            self.dclassesByName[className] = dclass
+            self.dclassesByNumber[number] = dclass
+
+    def mangleDCName(self, name):
+        """ This is provided as a hook so that derived classes
+        (e.g. the AIRepository) can rename symbols from the .dc file
+        according to the conventions associated with this particular
+        repository (e.g., an AIRepository appends 'AI' to class and
+        module names)."""
+        
+        return name
 
     def connect(self, serverList, 
                 successCallback = None, successArgs = [],

@@ -333,6 +333,16 @@ REALNUM          ([+-]?(([0-9]+[.])|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   return KW_DCLASS;
 }
 
+"from" {
+  accept();
+  return KW_FROM;
+}
+
+"import" {
+  accept();
+  return KW_IMPORT;
+}
+
 "int8" {
   accept();
   return KW_INT8;
