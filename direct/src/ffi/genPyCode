@@ -2,45 +2,28 @@
 
 # This is just a helper script to generatePythonCode to cover
 # the three or four cases we use all the time
-# usage: genPyCode [-t] win-[linux/win-debug/win-release/win-publish] [other libs]
-# -t adds libtoontown
+# usage: genPyCode [-t] [-v] [-n] win-[linux/win-debug/win-release/win-publish] [other libs]
 
-firstarg="$1"
+# -t adds libtoontown
+# -v adds libvrpn
+# -n doesn't perform a squeeze
+
 extra_genPyCode_libs=""
 fSqueeze="squeezeMe"
 optimizeFlag=""
 ppythonOptimizeFlag=""
 
-if [ "$firstarg" = "-t" ]; then
-extra_genPyCode_libs="$extra_genPyCode_libs libtoontown"
-shift
-firstarg="$1"
-fi
+while getopts tvn flag; do
+  case $flag in
+    t) extra_genPyCode_libs="$extra_genPyCode_libs libtoontown" ;;
+    v) extra_genPyCode_libs="$extra_genPyCode_libs libvrpn" ;;
+    n) fSqueeze="" ;;
+  esac
+done
 
-if [ "$firstarg" = "-b" ]; then
-extra_genPyCode_libs="$extra_genPyCode_libs libbartop"
-shift
-firstarg="$1"
-fi
+shift `expr $OPTIND - 1`
 
-if [ "$firstarg" = "-tt" ]; then
-extra_genPyCode_libs="$extra_genPyCode_libs libttrader"
-shift
 firstarg="$1"
-fi
-
-if [ "$firstarg" = "-v" ]; then
-extra_genPyCode_libs="$extra_genPyCode_libs libvrpn"
-shift
-firstarg="$1"
-fi
-
-if [ "$firstarg" = "-ns" ]; then
-fSqueeze=""
-shift
-firstarg="$1"
-fi
-
 shift
 extra_genPyCode_libs="$extra_genPyCode_libs $*"
 
@@ -49,22 +32,19 @@ if [ "$firstarg" = "linux" ]; then
     cd $DIRECT/bin
     ppython -d generatePythonCode -v -d $pyDir -e $DIRECT/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
     pSqueezer=$DIRECT/src/showbase/pandaSqueezer.py
-fi
 
-if [ "$firstarg" = "win-debug" ]; then
+elif [ "$firstarg" = "win-debug" ]; then
     pyDir=`cygpath -w $DIRECT/lib/py`
     cd $DIRECT/bin
     ppython -d generatePythonCode -v -d $pyDir -e `cygpath -w $DIRECT/src/extensions` -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
-fi
 
-if [ "$firstarg" = "win-release" ]; then
+elif [ "$firstarg" = "win-release" ]; then
     pyDir=`cygpath -w $DIRECT/lib/py`
     cd $DIRECT/bin
     ppython generatePythonCode -v -d $pyDir -e `cygpath -w $DIRECT/src/extensions` -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
     pSqueezer=`cygpath -w $DIRECT/src/showbase/pandaSqueezer.py`
-fi
 
-if [ "$firstarg" = "win-publish" ]; then
+elif [ "$firstarg" = "win-publish" ]; then
     # no assertions, no comments, no docstrings
     pyDir=`cygpath -w $DIRECT/lib/py`
     cd $DIRECT/bin
@@ -72,20 +52,22 @@ if [ "$firstarg" = "win-publish" ]; then
     optimizeFlag="-O"
     ppythonOptimizeFlag="-OO"
     pSqueezer=`cygpath -w $DIRECT/src/showbase/pandaSqueezer.py`
-fi
 
-if [ "$firstarg" = "install" ]; then
+elif [ "$firstarg" = "install" ]; then
     # as installed on a machine without ctattach etc.
     pyDir=install/lib/py
     install/bin/ppython -d install/bin/generatePythonCode -O -v -d $pyDir -e direct/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
     pSqueezer=`pwd`/direct/src/showbase/pandaSqueezer.py
-fi
 
-if [ "$firstarg" = "release" ]; then
+elif [ "$firstarg" = "release" ]; then
     # as installed on a machine without ctattach etc. 
     pyDir=install/lib/py
     install/bin/ppython install/bin/generatePythonCode -v -d $pyDir -e direct/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
     pSqueezer=`pwd`/direct/src/showbase/pandaSqueezer.py
+
+else
+    echo "Invalid parameter: $firstarg"
+    exit 1
 fi
 
 if [ "$fSqueeze" = "squeezeMe" ]; then
