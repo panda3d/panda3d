@@ -525,8 +525,7 @@ class Actor(PandaObject, NodePath):
         if (self.__partBundleDict.has_key(lodName)):
             partBundleDict = self.__partBundleDict[lodName]
             if (partBundleDict.has_key(part)):
-                joint = NodePath(partBundleDict[part],
-                                 "**/" + jointName)
+                joint = partBundleDict[part].find("**/" + jointName)
                 if (joint.isEmpty()):
                     Actor.notify.warning("%s not found!" % (jointName))
                 else:
@@ -543,8 +542,7 @@ class Actor(PandaObject, NodePath):
             partBundleDict = self.__partBundleDict[lodName]
             if (partBundleDict.has_key(partName)):
                 if (partBundleDict.has_key(anotherPart)):
-                    joint = NodePath(partBundleDict[anotherPart],
-                                 "**/" + jointName)
+                    joint = partBundleDict[anotherPart].find("**/" + jointName)
                     if (joint.isEmpty()):
                         Actor.notify.warning("%s not found!" % (jointName))
                     else:
@@ -582,7 +580,7 @@ class Actor(PandaObject, NodePath):
                 root = self
 
         # make the back part have the proper transition
-        backPart = NodePath(root, "**/" + backPartName)
+        backPart = root.find("**/" + backPartName)
         if (backPart.isEmpty()):
             Actor.notify.warning("no part named %s!" % (backPartName))
         else:
@@ -786,7 +784,7 @@ class Actor(PandaObject, NodePath):
         if (model == None):
             print "model = None!!!"
             
-        bundle = NodePath(model, "**/+PartBundleNode")
+        bundle = model.find("**/+PartBundleNode")
         if (bundle.isEmpty()):
             Actor.notify.warning("%s is not a character!" % (modelPath))
         else:
@@ -834,7 +832,7 @@ class Actor(PandaObject, NodePath):
             # load the anim and get its anim bundle
             anim = loader.loadModelOnce(anims[animName])
             animBundle = \
-                (NodePath(anim, "**/+AnimBundleNode").node()).getBundle()
+                (anim.find("**/+AnimBundleNode").node()).getBundle()
 
             # bind anim
             bundleNode = (
