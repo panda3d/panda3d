@@ -451,14 +451,14 @@ resize_data() {
     return;
   }
 
-  PNMImage *small = 
+  PNMImage *reduced = 
     new PNMImage(_orig_size_pixels[0], _orig_size_pixels[1], 
                  _data->get_color_type());
 
-  cerr << "Filtering to " << small->get_x_size() << " by " 
-       << small->get_y_size() << "\n";
+  cerr << "Filtering to " << reduced->get_x_size() << " by " 
+       << reduced->get_y_size() << "\n";
 
-  small->box_filter_from(1.0, *_data);
+  reduced->box_filter_from(1.0, *_data);
   delete _data;
-  _data = small;
+  _data = reduced;
 }
