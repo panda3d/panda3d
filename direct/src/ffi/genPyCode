@@ -2,28 +2,41 @@
 
 # This is just a helper script to generatePythonCode to cover
 # the three or four cases we use all the time
+# usage: genPyCode [-t] win-[linux/win-debug/win-release/win-publish] [other libs]
+# -t adds libtoontown
 
-if [ "$1" = "linux" ]; then
+firstarg="$1"
+
+if [ "$firstarg" = "-t" ]; then
+extra_genPyCode_libs="libtoontown"
+shift
+firstarg="$1"
+fi
+
+shift
+extra_genPyCode_libs="$extra_genPyCode_libs $*"
+
+if [ "$firstarg" = "linux" ]; then
     cd $DIRECT/bin
-    exec ppython -d generatePythonCode -v -d $DIRECT/lib/py -e $DIRECT/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect 
+    exec ppython -d generatePythonCode -v -d $DIRECT/lib/py -e $DIRECT/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs
     exit 1
 fi
 
-if [ "$1" = "win-debug" ]; then
+if [ "$firstarg" = "win-debug" ]; then
     cd $DIRECT/bin
-    exec ppython -d generatePythonCode -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect  
+    exec ppython -d generatePythonCode -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs
     exit 1
 fi
 
-if [ "$1" = "win-release" ]; then
+if [ "$firstarg" = "win-release" ]; then
     cd $DIRECT/bin
-    exec ppython generatePythonCode -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect 
+    exec ppython generatePythonCode -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs
     exit 1
 fi
 
-if [ "$1" = "win-publish" ]; then
+if [ "$firstarg" = "win-publish" ]; then
     # no assertions, no comments, no docstrings
     cd $DIRECT/bin
-    exec ppython -OO generatePythonCode -O -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect 
+    exec ppython -OO generatePythonCode -O -v -d `cygpath -w $DIRECT/lib/py` -e `cygpath -w $DIRECT/src/extensions` -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs
     exit 1
 fi
