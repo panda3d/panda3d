@@ -131,6 +131,28 @@ auto_bind(PandaNode *root_node, AnimControlCollection &controls,
   Parts parts;
   r_find_bundles(root_node, anims, parts);
 
+  if (chan_cat.is_debug()) {
+    chan_cat.debug()
+      << "Found " << anims.size() << " anims:\n";
+    Anims::const_iterator ai;
+    for (ai = anims.begin(); ai != anims.end(); ++ai) {
+      chan_cat.debug(false)
+        << " " << (*ai).first;
+    }
+    chan_cat.debug(false)
+      << "\n";
+
+    chan_cat.debug()
+      << "Found " << parts.size() << " parts:\n";
+    Parts::const_iterator pi;
+    for (pi = parts.begin(); pi != parts.end(); ++pi) {
+      chan_cat.debug(false)
+        << " " << (*pi).first;
+    }
+    chan_cat.debug(false)
+      << "\n";
+  }
+
   // Now, match up the bundles by name.
 
   Anims::const_iterator ai = anims.begin();
