@@ -171,6 +171,13 @@ private:
   PT(EventStoreTransform) _transform;
   PT(EventStoreVec3) _velocity;
 
+  // This is the smallest meaningful value we can set on the hpr via
+  // the public set_hpr() interface.  It's intended to filter out
+  // small meaningless perturbations of hpr that may get introduced
+  // due to numerical inaccuracy as we compute relative orientations
+  // in the show.
+  static const float _hpr_quantize;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

@@ -31,6 +31,7 @@
 #include "dataGraphTraverser.h"
 
 TypeHandle DriveInterface::_type_handle;
+const float DriveInterface::_hpr_quantize = 0.001;
 
 DriveInterface::KeyHeld::
 KeyHeld() {

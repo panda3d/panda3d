@@ -356,27 +356,29 @@ get_r() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DriveInterface::
 set_hpr(const LVecBase3f &hpr) {
-  _hpr = hpr;
+  set_hpr(hpr[0], hpr[1], hpr[2]);
 }
 
 INLINE void DriveInterface::
 set_hpr(float h, float p, float r) {
-  _hpr.set(h, p, r);
+  set_h(h);
+  set_p(p);
+  set_r(r);
 }
 
 INLINE void DriveInterface::
 set_h(float h) {
-  _hpr[0] = h;
+  _hpr[0] = _hpr_quantize * floor(h / _hpr_quantize + 0.5f);
 }
 
 INLINE void DriveInterface::
 set_p(float p) {
-  _hpr[1] = p;
+  _hpr[1] = _hpr_quantize * floor(p / _hpr_quantize + 0.5f);
 }
 
 INLINE void DriveInterface::
 set_r(float r) {
-  _hpr[2] = r;
+  _hpr[2] = _hpr_quantize * floor(r / _hpr_quantize + 0.5f);
 }
 
 ////////////////////////////////////////////////////////////////////
