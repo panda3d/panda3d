@@ -55,9 +55,8 @@ INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LQuaternion)::
 xform(const FLOATNAME(LVecBase3) &v) const {
   FLOATNAME(LQuaternion) v_quat(0.0f, v[0], v[1], v[2]);
 
-  FLOATNAME(LQuaternion) inv;
-  inv.invert_from(*this);
-  v_quat = inv * v_quat * (*this);
+  FLOATNAME(LQuaternion) inv(_v.data[0], -_v.data[1], -_v.data[2], -_v.data[3]);
+  v_quat = (*this) * v_quat * inv;
 
   return FLOATNAME(LVecBase3)(v_quat[1], v_quat[2], v_quat[3]);
 }
