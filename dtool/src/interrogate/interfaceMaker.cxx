@@ -377,6 +377,11 @@ make_function_remap(const InterrogateType &itype,
         get_unique_prefix() + _def->library_hash_name + remap->_hash;
       remap->_wrapper_name = 
         get_wrapper_prefix() + _def->library_hash_name + remap->_hash;
+      remap->_reported_name = remap->_wrapper_name;
+      if (true_wrapper_names) {
+        remap->_reported_name = 
+          InterrogateBuilder::clean_identifier(remap->_cppfunc->get_local_name(&parser));
+      }
     }
     return remap;
   }

@@ -103,7 +103,7 @@ write_module(ostream &out, InterrogateModuleDef *def) {
     Function::Remaps::const_iterator ri;
     for (ri = func->_remaps.begin(); ri != func->_remaps.end(); ++ri) {
       FunctionRemap *remap = (*ri);
-      out << "  { \"" << remap->_unique_name << "\", &" 
+      out << "  { \"" << remap->_reported_name << "\", &" 
           << remap->_wrapper_name << ", METH_VARARGS },\n";
     }
   }  

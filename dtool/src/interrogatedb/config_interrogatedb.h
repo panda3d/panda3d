@@ -25,6 +25,6 @@
 
 NotifyCategoryDecl(interrogatedb, EXPCL_DTOOLCONFIG, EXPTP_DTOOLCONFIG);
 
-const DSearchPath &get_interrogatedb_path();
+DSearchPath &get_interrogatedb_path();
 
 #endif

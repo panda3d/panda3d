@@ -48,6 +48,8 @@ public:
 
 public:
   // Functions to read the database.
+  bool get_error_flag();
+
   int get_num_global_types();
   TypeIndex get_global_type(int n);
   int get_num_all_types();
@@ -87,6 +89,8 @@ public:
 
 public:
   // Functions to build the database.
+  void set_error_flag(bool error_flag);
+
   int get_next_index();
   void add_type(TypeIndex index, const InterrogateType &type);
   void add_function(FunctionIndex index, InterrogateFunction *function);
@@ -157,6 +161,7 @@ private:
   typedef vector<InterrogateModuleDef *> Requests;
   Requests _requests;
 
+  bool _error_flag;
   int _next_index;
 
   enum LookupType {

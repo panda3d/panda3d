@@ -21,6 +21,19 @@
 #include "interrogateType.h"
 #include "interrogateFunction.h"
 
+// This function adds one more directory to the list of directories
+// search for interrogate (*.in) files.  In the past, this list has
+// been defined the environment variable ETC_PATH, but now it is
+// passed in by the code generator.
+void 
+interrogate_add_search_directory(const char *dirname) {
+  get_interrogatedb_path().append_directory(Filename::from_os_specific(dirname));
+}
+
+bool interrogate_error_flag() {
+  return InterrogateDatabase::get_ptr()->get_error_flag();
+}
+
 int
 interrogate_number_of_manifests() {
   return InterrogateDatabase::get_ptr()->get_num_global_manifests();

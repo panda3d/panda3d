@@ -69,6 +69,14 @@
   // freshen the cache file.
   #define dep_sources $[sort $[filter %.c %.cxx %.yxx %.lxx %.h %.I %.T,$[dep_sources_1]]]
 
+  // If there is an __init__.py in the directory, then all Python
+  // files in the directory just get installed without having to be
+  // named.
+  #if $[and $[INSTALL_PYTHON_SOURCE],$[wildcard $[TOPDIR]/$[DIRPREFIX]__init__.py]]
+    #define py_sources $[wildcard $[TOPDIR]/$[DIRPREFIX]*.py]
+  #endif
+  #define install_py $[py_sources:$[TOPDIR]/$[DIRPREFIX]%=%]
+
 #endif  // $[build_directory]
 
 
@@ -128,6 +136,7 @@
     $[if $[install_data],$[install_data_dir]] \
     $[if $[install_config],$[install_config_dir]] \
     $[if $[install_igatedb],$[install_igatedb_dir]] \
+    $[if $[install_py],$[install_py_dir] $[install_py_package_dir]] \
     ]
 
 // Similarly, we need to ensure that $[ODIR] exists.  Trying to make
@@ -189,7 +198,9 @@ $[TAB] rm -f $[patsubst %,$[%_obj],$[st_sources]]
 #if $[lib_targets] $[static_lib_targets] $[bin_targets] $[test_bin_targets]
 $[TAB] rm -f $[lib_targets] $[static_lib_targets] $[bin_targets] $[test_bin_targets]
 #endif
+#if $[py_sources]
 $[TAB] rm -f *.pyc *.pyo // Also scrub out old generated Python code.
+#endif
                          
 // 'cleanall' is intended to undo all the effects of running ppremake
 // and building.  It removes everything except the Makefile.
@@ -232,7 +243,8 @@ $[TAB] rm -f $[igatemout] $[$[igatemout]_obj]
      $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
      $[INSTALL_PARSER_INC:%=$[install_parser_inc_dir]/%] \
      $[INSTALL_DATA:%=$[install_data_dir]/%] \
-     $[INSTALL_CONFIG:%=$[install_config_dir]/%]
+     $[INSTALL_CONFIG:%=$[install_config_dir]/%] \
+     $[if $[install_py],$[install_py:%=$[install_py_dir]/%] $[install_py_package_dir]/__init__.py]
 
 #define installed_igate_files \
      $[get_igatedb(metalib_target lib_target ss_lib_target):$[ODIR]/%=$[install_igatedb_dir]/%]
@@ -706,6 +718,18 @@ $[install_config_dir]/$[file] : $[file]
 #define dest $[install_config_dir]
 $[TAB] $[INSTALL]
 #end file
+
+#foreach file $[install_py]
+$[install_py_dir]/$[file] : $[file]
+#define local $[file]
+#define dest $[install_py_dir]
+$[TAB] $[INSTALL]
+#end file
+
+#if $[install_py]
+$[install_py_package_dir]/__init__.py :
+$[TAB] touch $[install_py_package_dir]/__init__.py
+#endif
 
 // Finally, all the special targets.  These are commands that just need
 // to be invoked; we don't pretend to know what they are.

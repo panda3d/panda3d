@@ -255,12 +255,6 @@ make_wrapper_entry(FunctionIndex function_index) {
   iwrapper._name = _wrapper_name;
   iwrapper._unique_name = _unique_name;
 
-  if (true_wrapper_names) {
-    // If we're reporting "true" names, it means we set the
-    // wrapper's name to the name of the function it wraps.
-    iwrapper._name = 
-      InterrogateBuilder::clean_identifier(_cppfunc->get_local_name(&parser));
-  }
   if (output_function_names) {
     // If we're keeping the function names, record that the wrapper is
     // callable.

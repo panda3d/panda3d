@@ -88,6 +88,9 @@ enum AtomicToken {
   AT_string = 7
 };
 
+EXPCL_DTOOLCONFIG void interrogate_add_search_directory(const char *dirname);
+EXPCL_DTOOLCONFIG bool interrogate_error_flag();
+
 //////////////////////////////////////////////////////////////////////////
 //
 // Manifest Symbols

@@ -84,6 +84,19 @@
 // itself (although this may be overridden).
 #define INSTALL_DIR /usr/local/panda
 
+// If you intend to use Panda only as a Python module, you may find
+// the following define useful (but you should put in the correct path
+// to site-packages within your own installed Python).  This will
+// install the Panda libraries into the standard Python search space
+// so that they can be accessed as Python modules.  (Also see the
+// PYTHON_IPATH variable, below.)
+
+// If you don't do this, you can still use Panda as a Python module,
+// but you must put /usr/local/python/lib (or $INSTALL_DIR/lib) on
+// your PYTHONPATH.
+
+// #define INSTALL_LIB_DIR /usr/lib/python2.2/site-packages
+
 
 // What level of compiler optimization/debug symbols should we build?
 // The various optimize levels are defined as follows:
@@ -142,13 +155,27 @@
 #define INTERROGATE_MODULE interrogate_module
 
 // Is Python installed, and should Python interfaces be generated?  If
-// Python is installed, which directory is it in?  (If the directory
-// is someplace standard like /usr/include, you may leave it blank.)
-#define PYTHON_IPATH /usr/local/include/python1.6
+// Python is installed, which directory is it in?
+#define PYTHON_IPATH /usr/include/python2.2
 #define PYTHON_LPATH
 #define PYTHON_FPATH
 #define PYTHON_FRAMEWORK
 #defer HAVE_PYTHON $[isdir $[PYTHON_IPATH]]
+
+// Define the default set of libraries to be instrumented by
+// genPyCode.  You may wish to add to this list to add your own
+// libraries, or if you want to use some of the more obscure
+// interfaces like libpandaegg and libpandafx.
+#define GENPYCODE_LIBS libpandaexpress libpanda libpandaphysics libdirect
+
+// Normally, Python source files are copied into the INSTALL_LIB_DIR
+// defined above, along with the compiled C++ library objects, when
+// you make install.  If you prefer not to copy these Python source
+// files, but would rather run them directly out of the source
+// directory (presumably so you can develop them and make changes
+// without having to reinstall), comment out this definition and put
+// your source directory on your PYTHONPATH.
+#define INSTALL_PYTHON_SOURCE 1
 
 // Do you want to enable the "in_interpreter" global variable?  This
 // will enable some callbacks, particularly the MemoryUsage object, to

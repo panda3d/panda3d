@@ -564,12 +564,14 @@ Warning: Variable $[upcase $[tree]]_INSTALL is not set!
   #endif
 #end tree
 
-#define install_lib_dir $[install_dir]/lib
-#define install_bin_dir $[install_dir]/bin
-#define install_headers_dir $[install_dir]/include
-#define install_data_dir $[install_dir]/shared
-#define install_igatedb_dir $[install_dir]/etc
-#define install_config_dir $[install_dir]/etc
+#define install_lib_dir $[or $[INSTALL_LIB_DIR],$[install_dir]/lib]
+#define install_bin_dir $[or $[INSTALL_BIN_DIR],$[install_dir]/bin]
+#define install_headers_dir $[or $[INSTALL_HEADERS_DIR],$[install_dir]/include]
+#define install_data_dir $[or $[INSTALL_DATA_DIR],$[install_dir]/shared]
+#define install_igatedb_dir $[or $[INSTALL_IGATEDB_DIR],$[install_dir]/etc]
+#define install_config_dir $[or $[INSTALL_CONFIG_DIR],$[install_dir]/etc]
+#defer install_py_dir $[install_lib_dir]/$[PACKAGE]/$[DIRNAME]
+#defer install_py_package_dir $[install_lib_dir]/$[PACKAGE]
 
 #if $[ne $[DTOOL_INSTALL],]
   #define install_parser_inc_dir $[DTOOL_INSTALL]/include/parser-inc

@@ -69,7 +69,7 @@ ConfigureFn(config_interrogatedb) {
 #endif
 }
 
-const DSearchPath &
+DSearchPath &
 get_interrogatedb_path() {
   static DSearchPath *interrogatedb_path = NULL;
   if (interrogatedb_path == (DSearchPath *)NULL) {

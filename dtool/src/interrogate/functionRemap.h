@@ -95,6 +95,7 @@ public:
   string _function_signature;
   string _hash;
   string _unique_name;
+  string _reported_name;
   string _wrapper_name;
   FunctionWrapperIndex _wrapper_index;
   

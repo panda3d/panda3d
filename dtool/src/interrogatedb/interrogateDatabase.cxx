@@ -34,6 +34,7 @@ int InterrogateDatabase::_current_minor_version = 2;
 ////////////////////////////////////////////////////////////////////
 InterrogateDatabase::
 InterrogateDatabase() {
+  _error_flag = false;
   _next_index = 1;
   _lookups_fresh = 0;
 }
@@ -100,6 +101,19 @@ request_module(InterrogateModuleDef *def) {
   if (def->database_filename != (const char *)NULL) {
     _requests.push_back(def);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateDatabase::get_error_flag
+//       Access: Public
+//  Description: Returns the global error flag.  This will be set true
+//               if there was some problem importing the database
+//               (e.g. cannot find an .in file), or false if
+//               everything is ok.
+////////////////////////////////////////////////////////////////////
+bool InterrogateDatabase::
+get_error_flag() {
+  return _error_flag;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -479,6 +493,18 @@ get_current_major_version() {
 int InterrogateDatabase::
 get_current_minor_version() {
   return _current_minor_version;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateDatabase::set_error_flag
+//       Access: Public
+//  Description: Sets the global error flag.  This should be set true
+//               if there was some problem importing the database
+//               (e.g. cannot find an .in file).
+////////////////////////////////////////////////////////////////////
+void InterrogateDatabase::
+set_error_flag(bool error_flag) {
+  _error_flag = error_flag;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -885,12 +911,16 @@ load_latest() {
       if (pathname.empty()) {
         interrogatedb_cat->error()
           << "Unable to find " << filename << " on " << searchpath << "\n";
+        set_error_flag(true);
+
       } else {
 
         ifstream input;
         pathname.set_text();
         if (!pathname.open_read(input)) {
           interrogatedb_cat->error() << "Unable to read " << pathname << ".\n";
+          set_error_flag(true);
+
         } else {
           int file_identifier;
           input >> file_identifier
@@ -902,6 +932,7 @@ load_latest() {
               << "Interrogate data in " << pathname
               << " is out of sync with the compiled-in data"
               << " (" << file_identifier << " != " << def->file_identifier << ").\n";
+            set_error_flag(true);
           }
 
           if (_file_major_version != _current_major_version ||
@@ -912,6 +943,8 @@ load_latest() {
               << _file_minor_version << " while we are expecting "
               << _current_major_version << "." << _current_minor_version
               << ".\n";
+            set_error_flag(true);
+
           } else {
             if (interrogatedb_cat->is_debug()) {
               interrogatedb_cat->debug()
@@ -920,6 +953,7 @@ load_latest() {
             if (!read(input, def)) {
               interrogatedb_cat->error()
                 << "Error reading " << pathname << ".\n";
+              set_error_flag(true);
             }
           }
         }
