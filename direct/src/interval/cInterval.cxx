@@ -76,6 +76,8 @@ set_t(double t) {
     priv_initialize(t);
     if (is_playing()) {
       setup_resume();
+    } else {
+      priv_interrupt();
     }
     break;
 
@@ -94,13 +96,15 @@ set_t(double t) {
     // change the state to S_started, so we must then change it back
     // to S_paused by hand (because we're still paused).
     priv_step(t);
-    _state = S_paused;
+    priv_interrupt();
     break;
 
   case S_final:
     priv_reverse_initialize(t);
     if (is_playing()) {
       setup_resume();
+    } else {
+      priv_interrupt();
     }
     break;
   }
@@ -607,7 +611,13 @@ step_play() {
     }
   }
 
-  return (_loop_count == 0 || _do_loop);
+  bool should_continue = (_loop_count == 0 || _do_loop);
+
+  if (!should_continue && _state == S_started) {
+    priv_interrupt();
+  }
+
+  return should_continue;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -3,6 +3,7 @@
 from DirectObject import *
 from PandaModules import *
 import Task
+import PythonUtil
 import math
 
 class Interval(DirectObject):
@@ -68,10 +69,8 @@ class Interval(DirectObject):
             self.privInitialize(t)
             if self.isPlaying():
                 self.setupResume()
-        elif state == CInterval.SFinal:
-            self.privReverseInitialize(t)
-            if self.isPlaying():
-                self.setupResume()
+            else:
+                self.privInterrupt()
         elif state == CInterval.SStarted:
             # Support modifying t while the interval is playing.  We
             # assume is_playing() will be true in this state.
@@ -79,8 +78,22 @@ class Interval(DirectObject):
             self.privInterrupt()
             self.privStep(t)
             self.setupResume()
-        else:
+        elif state == CInterval.SPaused:
+            # Support modifying t while the interval is paused.  In
+            # this case, we simply step to the new value of t; but
+            # this will change the state to S_started, so we must then
+            # change it back to S_paused by hand (because we're still
+            # paused).
             self.privStep(t)
+            self.privInterrupt()
+        elif state == CInterval.SFinal:
+            self.privReverseInitialize(t)
+            if self.isPlaying():
+                self.setupResume()
+            else:
+                self.privInterrupt()
+        else:
+            self.notify.error("Invalid state: %s" % (state))
         self.privPostEvent()
         
     def getT(self):
@@ -274,11 +287,18 @@ class Interval(DirectObject):
                     self.__clockStart += numLoops * timePerLoop
 
         else:
-            # Playing backwards.
-            # Not supported at the moment.
+            # Playing backwards.  Not supported at the moment for
+            # Python-style intervals.  To add support, copy the code
+            # from C++-style intervals in cInterval.cxx, and modify it
+            # for Python (as the above).
             pass
 
-        return (self.__loopCount == 0 or self.__doLoop)
+        shouldContinue = (self.__loopCount == 0 or self.__doLoop)
+
+        if (not shouldContinue and self.getState() == CInterval.SStarted):
+            self.privInterrupt()
+
+        return shouldContinue
 
     def __repr__(self, indent=0):
         """ __repr__(indent)
@@ -293,12 +313,15 @@ class Interval(DirectObject):
     # for the CInterval class via the file CInterval-extensions.py.
 
     def play(self, *args, **kw):
+        self.notify.warning("using deprecated Interval.play() interface")
         self.start(*args, **kw)
 
     def stop(self):
+        self.notify.warning("using deprecated Interval.stop() interface")
         self.finish()
 
     def setFinalT(self):
+        self.notify.warning("using deprecated Interval.setFinalT() interface")
         self.finish()
 
     def privPostEvent(self):
