@@ -9,8 +9,8 @@ boat = loader.loadModel('models/misc/smiley')
 boat.reparentTo(render)
 
 donald = Actor()
-donald.loadModel("phase_6/models/char/donald-wheel-mod")
-donald.loadAnims({"steer":"phase_6/models/char/donald-wheel-chan"})
+donald.loadModel("phase_6/models/char/donald-wheel-1000")
+donald.loadAnims({"steer":"phase_6/models/char/donald-wheel-wheel"})
 donald.reparentTo(boat)
 
 dock = loader.loadModel('models/misc/smiley')
