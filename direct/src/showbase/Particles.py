@@ -169,11 +169,7 @@ class Particles(ParticleSystem.ParticleSystem):
 	if (bakeflag == 0):
 	    targ = 'p'
 	    file.write('from Particles import *\n')
-	    file.write('p = Particles()\n')
-	    file.write('ppath = p.getNodePath()\n')
-	    file.write('ppath.setPos(0.0, 2.0, 4.0)\n')
-	    file.write('ppath.reparentTo(render)\n')
-	    file.write('p.start()\n')
+	    file.write('p = Particles(\'' + self.name + '\')\n')
 	file.write('# Particles parameters\n')
 	file.write(targ + '.setFactory(\"' + self.factoryType + '\")\n')
 	file.write(targ + '.setRenderer(\"' + self.rendererType + '\")\n')
