@@ -256,7 +256,8 @@ run() {
   }
 
   if (!_txa_filename.exists()) {
-    nout << _txa_filename << " does not exist; cannot run.\n";
+    nout << FilenameUnifier::make_user_filename(_txa_filename)
+	 << " does not exist; cannot run.\n";
     exit(1);
   }
 
@@ -268,7 +269,8 @@ run() {
   BamFile state_file;
 
   if (!state_filename.exists()) {
-    nout << state_filename << " does not exist; starting palettization from scratch.\n";
+    nout << FilenameUnifier::make_user_filename(state_filename)
+	 << " does not exist; starting palettization from scratch.\n";
     pal = new Palettizer;
 
   } else {
@@ -282,12 +284,14 @@ run() {
 
     TypedWriteable *obj = state_file.read_object();
     if (obj == (TypedWriteable *)NULL || !state_file.resolve()) {
-      nout << state_filename << " exists, but appears to be corrupt.  Perhaps you should remove it so a new one can be created.\n";
+      nout << FilenameUnifier::make_user_filename(state_filename)
+	   << " exists, but appears to be corrupt.  Perhaps you should remove it so a new one can be created.\n";
       exit(1);
     }
 
     if (!obj->is_of_type(Palettizer::get_class_type())) {
-      nout << state_filename << " exists, but does not appear to be "
+      nout << FilenameUnifier::make_user_filename(state_filename)
+	   << " exists, but does not appear to be "
 	   << "an egg-palettize output file.  Perhaps you "
 	   << "should remove it so a new one can be created.\n";
       exit(1);

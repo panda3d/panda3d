@@ -71,6 +71,7 @@ public:
   // and palettes.  These values are stored in the bam file for future
   // reference.
   string _map_dirname;
+  Filename _shadow_dirname;
   Filename _rel_dirname;
   int _pal_x_size, _pal_y_size;
   int _margin;
@@ -83,6 +84,8 @@ public:
   RemapUV _remap_uv;
   PNMFileType *_color_type;
   PNMFileType *_alpha_type;
+  PNMFileType *_shadow_color_type;
+  PNMFileType *_shadow_alpha_type;
 
 private:
   typedef map<string, EggFile *> EggFiles;

@@ -38,12 +38,15 @@ Palettizer() {
   _pi_version = 0;
 
   _map_dirname = "%g";
+  _shadow_dirname = "shadow";
   _margin = 2;
   _coverage_threshold = 2.5;
   _aggressively_clean_mapdir = true;
   _force_power_2 = true;
   _color_type = PNMFileTypeRegistry::get_ptr()->get_type_from_extension("rgb");
   _alpha_type = (PNMFileType *)NULL;
+  _shadow_color_type = (PNMFileType *)NULL;
+  _shadow_alpha_type = (PNMFileType *)NULL;
   _pal_x_size = _pal_y_size = 512;
 
   _round_uvs = true;
@@ -64,6 +67,8 @@ report_pi() const {
   cout 
     << "\nparams\n"
     << "  map directory: " << _map_dirname << "\n"
+    << "  shadow directory: " 
+    << FilenameUnifier::make_user_filename(_shadow_dirname) << "\n"
     << "  egg relative directory: " 
     << FilenameUnifier::make_user_filename(_rel_dirname) << "\n"
     << "  palettize size: " << _pal_x_size << " by " << _pal_y_size << "\n"
@@ -97,6 +102,15 @@ report_pi() const {
 	 << _color_type->get_suggested_extension();
     if (_alpha_type != (PNMFileType *)NULL) {
       cout << "," << _alpha_type->get_suggested_extension();
+    }
+    cout << "\n";
+  }
+
+  if (_shadow_color_type != (PNMFileType *)NULL) {
+    cout << "  generate shadow palette files of type: " 
+	 << _shadow_color_type->get_suggested_extension();
+    if (_shadow_alpha_type != (PNMFileType *)NULL) {
+      cout << "," << _shadow_alpha_type->get_suggested_extension();
     }
     cout << "\n";
   }
@@ -604,6 +618,7 @@ void Palettizer::
 write_datagram(BamWriter *writer, Datagram &datagram) {
   datagram.add_int32(_pi_version);
   datagram.add_string(_map_dirname);
+  datagram.add_string(FilenameUnifier::make_bam_filename(_shadow_dirname));
   datagram.add_string(FilenameUnifier::make_bam_filename(_rel_dirname));
   datagram.add_int32(_pal_x_size);
   datagram.add_int32(_pal_y_size);
@@ -617,6 +632,8 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   datagram.add_int32((int)_remap_uv);
   writer->write_pointer(datagram, _color_type);
   writer->write_pointer(datagram, _alpha_type); 
+  writer->write_pointer(datagram, _shadow_color_type);
+  writer->write_pointer(datagram, _shadow_alpha_type); 
 
   datagram.add_int32(_egg_files.size());
   EggFiles::const_iterator ei;
@@ -651,7 +668,7 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
 ////////////////////////////////////////////////////////////////////
 int Palettizer::
 complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
-  nassertr((int)plist.size() >= 2 + _num_egg_files + _num_groups + _num_textures, 0);
+  nassertr((int)plist.size() >= 4 + _num_egg_files + _num_groups + _num_textures, 0);
   int index = 0;
 
   if (plist[index] != (TypedWriteable *)NULL) {
@@ -661,6 +678,16 @@ complete_pointers(vector_typedWriteable &plist, BamReader *manager) {
 
   if (plist[index] != (TypedWriteable *)NULL) {
     DCAST_INTO_R(_alpha_type, plist[index], index);
+  }
+  index++;
+
+  if (plist[index] != (TypedWriteable *)NULL) {
+    DCAST_INTO_R(_shadow_color_type, plist[index], index);
+  }
+  index++;
+
+  if (plist[index] != (TypedWriteable *)NULL) {
+    DCAST_INTO_R(_shadow_alpha_type, plist[index], index);
   }
   index++;
 
@@ -721,6 +748,7 @@ void Palettizer::
 fillin(DatagramIterator &scan, BamReader *manager) {
   _pi_version = scan.get_int32();
   _map_dirname = scan.get_string();
+  _shadow_dirname = FilenameUnifier::get_bam_filename(scan.get_string());
   _rel_dirname = FilenameUnifier::get_bam_filename(scan.get_string());
   FilenameUnifier::set_rel_dirname(_rel_dirname);
   _pal_x_size = scan.get_int32();
@@ -735,6 +763,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _remap_uv = (RemapUV)scan.get_int32();
   manager->read_pointer(scan, this);  // _color_type
   manager->read_pointer(scan, this);  // _alpha_type
+  manager->read_pointer(scan, this);  // _shadow_color_type
+  manager->read_pointer(scan, this);  // _shadow_alpha_type
 
   _num_egg_files = scan.get_int32();
   manager->read_pointers(scan, this, _num_egg_files);

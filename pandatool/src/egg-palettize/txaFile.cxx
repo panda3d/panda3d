@@ -71,6 +71,9 @@ read(Filename filename) {
       } else if (words[0] == ":imagetype") {
 	okflag = parse_imagetype_line(words);
 
+      } else if (words[0] == ":shadowtype") {
+	okflag = parse_shadowtype_line(words);
+
       } else if (words[0] == ":round") {
 	okflag = parse_round_line(words);
 
@@ -322,6 +325,32 @@ parse_imagetype_line(const vector_string &words) {
   }
   const string &imagetype = words[1];
   if (!parse_image_type_request(imagetype, pal->_color_type, pal->_alpha_type)) {
+    nout << "\nKnown image types are:\n";
+    PNMFileTypeRegistry::get_ptr()->write_types(nout, 2);
+    nout << "\n";
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TxaFile::parse_shadowtype_line
+//       Access: Private
+//  Description: Handles the line in a .txa file that begins with the
+//               keyword ":shadowtype" and indicates the image file
+//               type to convert working copies of the palette images
+//               to.
+////////////////////////////////////////////////////////////////////
+bool TxaFile::
+parse_shadowtype_line(const vector_string &words) {
+  if (words.size() != 2) {
+    nout << "Exactly one parameter required for :shadowtype.\n";
+    return false;
+  }
+  const string &shadowtype = words[1];
+  if (!parse_image_type_request(shadowtype, pal->_shadow_color_type,
+				pal->_shadow_alpha_type)) {
     nout << "\nKnown image types are:\n";
     PNMFileTypeRegistry::get_ptr()->write_types(nout, 2);
     nout << "\n";

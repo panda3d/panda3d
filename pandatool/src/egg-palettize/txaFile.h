@@ -38,6 +38,7 @@ private:
   bool parse_margin_line(const vector_string &words);
   bool parse_coverage_line(const vector_string &words);
   bool parse_imagetype_line(const vector_string &words);
+  bool parse_shadowtype_line(const vector_string &words);
   bool parse_round_line(const vector_string &words);
   bool parse_remap_line(const vector_string &words);
 
