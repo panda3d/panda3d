@@ -410,10 +410,10 @@ class ClientRepository(DirectObject.DirectObject):
         # Get the DO id
         doId = do.doId
         # Get the cdc
-        assert(self.doId2cdc.has_key(doId))
-        cdc = self.doId2cdc[doId]
-        # Let the cdc finish the job
-        cdc.sendUpdate(self, do, fieldName, args, sendToId)
+        cdc = self.doId2cdc.get(doId, None)
+        if cdc:
+            # Let the cdc finish the job
+            cdc.sendUpdate(self, do, fieldName, args, sendToId)
 
     def send(self, datagram):
         if self.notify.getDebug():
