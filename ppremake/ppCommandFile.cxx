@@ -1435,10 +1435,11 @@ handle_mkdir_command() {
   } else {
     vector<string>::const_iterator wi;
     for (wi = words.begin(); wi != words.end(); ++wi) {
-      Filename dirname(*wi, ".");
-      if (!dirname.make_dir()) {
+      Filename dirname(*wi);
+      Filename filename(*wi, "file");
+      if (!filename.make_dir()) {
         if (!dirname.is_directory()) {
-          cerr << "Unable to create directory " << *wi << "\n";
+          cerr << "Unable to create directory " << dirname << "\n";
         }
       }
     }
