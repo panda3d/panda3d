@@ -2529,6 +2529,7 @@ apply_fog(qpFog *fog) {
 ////////////////////////////////////////////////////////////////////
 void CRGraphicsStateGuardian::apply_light( PointLight* light )
 {
+#if 0
   // The light position will be relative to the current matrix, so
   // we have to know what the current matrix is.  Find a better
   // solution later.
@@ -2580,6 +2581,7 @@ void CRGraphicsStateGuardian::apply_light( PointLight* light )
     << "crPopMatrix()" << endl;
 #endif
   report_errors();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2589,6 +2591,7 @@ void CRGraphicsStateGuardian::apply_light( PointLight* light )
 ////////////////////////////////////////////////////////////////////
 void CRGraphicsStateGuardian::apply_light( DirectionalLight* light )
 {
+#if 0
   // The light position will be relative to the current matrix, so
   // we have to know what the current matrix is.  Find a better
   // solution later.
@@ -2638,6 +2641,7 @@ void CRGraphicsStateGuardian::apply_light( DirectionalLight* light )
     << "crPopMatrix()" << endl;
 #endif
   report_errors();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2647,6 +2651,7 @@ void CRGraphicsStateGuardian::apply_light( DirectionalLight* light )
 ////////////////////////////////////////////////////////////////////
 void CRGraphicsStateGuardian::apply_light( Spotlight* light )
 {
+#if 0
   // The light position will be relative to the current matrix, so
   // we have to know what the current matrix is.  Find a better
   // solution later.
@@ -2694,6 +2699,7 @@ void CRGraphicsStateGuardian::apply_light( Spotlight* light )
     << "crPopMatrix()" << endl;
 #endif
   report_errors();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
