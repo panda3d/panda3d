@@ -75,6 +75,7 @@ private:
   static LONG WINAPI static_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
   int _brush_origin;
+  string _net_value_text;
 
   static bool _window_class_registered;
   static const char * const _window_class_name;

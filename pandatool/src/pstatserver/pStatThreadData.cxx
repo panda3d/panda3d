@@ -230,6 +230,56 @@ get_latest_frame() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatThreadData::get_elapsed_frames
+//       Access: Public
+//  Description: Computes the oldest frame number not older than time
+//               seconds, and the newest frame number.  Handy for
+//               computing average frame rate over a time.  Returns
+//               true if there is any data in that range, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool PStatThreadData::
+get_elapsed_frames(int &then_i, int &now_i, float time) const {
+  if (_frames.empty()) {
+    // No frames in the data at all.
+    return false;
+  }
+
+  now_i = _frames.size() - 1;
+  while (now_i > 0 && _frames[now_i] == (PStatFrameData *)NULL) {
+    now_i--;
+  }
+  if (now_i < 0) {
+    // No frames have any real data.
+    return false;
+  }
+  nassertr(_frames[now_i] != (PStatFrameData *)NULL, false);
+
+  float now = _frames[now_i]->get_end();
+  float then = now - time;
+
+  int old_i = now_i;
+  then_i = now_i;
+
+  while (old_i >= 0) {
+    const PStatFrameData *frame = _frames[old_i];
+    if (frame != (PStatFrameData *)NULL) {
+      if (frame->get_start() > then) {
+        then_i = old_i;
+      } else {
+        break;
+      }
+    }
+    old_i--;
+  }
+
+  nassertr(then_i >= 0, false);
+  nassertr(_frames[then_i] != (PStatFrameData *)NULL, false);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatThreadData::get_frame_rate
 //       Access: Public
 //  Description: Computes the average frame rate over the past number
@@ -238,45 +288,14 @@ get_latest_frame() const {
 ////////////////////////////////////////////////////////////////////
 float PStatThreadData::
 get_frame_rate(float time) const {
-  if (_frames.empty()) {
-    // No frames in the data at all; nothing to base the frame rate
-    // on.
-    return 0.0;
+  int then_i, now_i;
+  if (!get_elapsed_frames(then_i, now_i, time)) {
+    return 0.0f;
   }
 
-  int now_i = _frames.size() - 1;
-  while (now_i > 0 && _frames[now_i] == (PStatFrameData *)NULL) {
-    now_i--;
-  }
-  if (now_i < 0) {
-    // No frames have any real data.
-    return 0.0;
-  }
-  nassertr(_frames[now_i] != (PStatFrameData *)NULL, 0.0);
-
+  int num_frames = now_i - then_i + 1;
   float now = _frames[now_i]->get_end();
-  float then = now - time;
-
-  int then_i = now_i;
-  int last_good_i = now_i;
-
-  while (then_i >= 0) {
-    const PStatFrameData *frame = _frames[then_i];
-    if (frame != (PStatFrameData *)NULL) {
-      if (frame->get_start() > then) {
-        last_good_i = then_i;
-      } else {
-        break;
-      }
-    }
-    then_i--;
-  }
-
-  nassertr(last_good_i >= 0, 0.0);
-  nassertr(_frames[last_good_i] != (PStatFrameData *)NULL, 0.0);
-
-  int num_frames = now_i - last_good_i + 1;
-  return (float)num_frames / (now - _frames[last_good_i]->get_start());
+  return (float)num_frames / (now - _frames[then_i]->get_start());
 }
 
 

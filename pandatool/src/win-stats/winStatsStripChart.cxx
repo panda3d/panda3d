@@ -43,7 +43,7 @@ WinStatsStripChart(WinStatsMonitor *monitor, int thread_index,
 
   _left_margin = 96;
   _right_margin = 32;
-  _top_margin = 8;
+  _top_margin = 16;
   _bottom_margin = 8;
 
   // Let's show the units on the guide bar labels.  There's room.
@@ -93,6 +93,15 @@ new_data(int thread_index, int frame_number) {
 
   if (!_pause) {
     update();
+
+    string text = format_number(get_average_net_value(), get_guide_bar_units(), get_guide_bar_unit_name());
+    if (_net_value_text != text) {
+      _net_value_text = text;
+      RECT rect;
+      GetClientRect(_window, &rect);
+      rect.bottom = _top_margin;
+      InvalidateRect(_window, &rect, TRUE);
+    }
   }
 }
 
@@ -136,6 +145,10 @@ set_time_units(int unit_mask) {
     RECT rect;
     GetClientRect(_window, &rect);
     rect.left = _right_margin;
+    InvalidateRect(_window, &rect, TRUE);
+
+    GetClientRect(_window, &rect);
+    rect.bottom = _top_margin;
     InvalidateRect(_window, &rect, TRUE);
   }
 }
@@ -503,14 +516,21 @@ additional_window_paint(HDC hdc) {
     last_y = draw_guide_label(hdc, x, get_guide_bar(i), last_y);
   }
 
+  GuideBar top_value = make_guide_bar(get_vertical_scale());
+  draw_guide_label(hdc, x, top_value, last_y);
+
   last_y = -100;
   int num_user_guide_bars = get_num_user_guide_bars();
   for (i = 0; i < num_user_guide_bars; i++) {
     last_y = draw_guide_label(hdc, x, get_user_guide_bar(i), last_y);
   }
 
-  GuideBar top_value = make_guide_bar(get_vertical_scale());
-  draw_guide_label(hdc, x, top_value, last_y);
+  // Now draw the "net value" label at the top.
+  SetTextAlign(hdc, TA_RIGHT | TA_BOTTOM);
+  SetTextColor(hdc, RGB(0, 0, 0));
+  TextOut(hdc, rect.right - _right_margin, _top_margin,
+          _net_value_text.data(), _net_value_text.length()); 
+
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -60,6 +60,7 @@ public:
 
   const PStatFrameData &get_latest_frame() const;
 
+  bool get_elapsed_frames(int &then_i, int &now_i, float time) const;
   float get_frame_rate(float time = 3.0) const;
 
 

@@ -86,6 +86,8 @@ protected:
   typedef pmap<int, FrameData> Data;
 
   const FrameData &get_frame_data(int frame_number);
+  float get_net_value(int frame_number) const;
+  float get_average_net_value(float time = 3.0) const;
 
   void changed_size(int xsize, int ysize);
   void force_redraw();

@@ -197,15 +197,8 @@ set_auto_vertical_scale() {
       thread_data->get_frame_number_at_time(time, frame_number);
 
     if (thread_data->has_frame(frame_number)) {
-      const FrameData &frame = get_frame_data(frame_number);
-
-      float overall_value = 0.0;
-      FrameData::const_iterator fi;
-      for (fi = frame.begin(); fi != frame.end(); ++fi) {
-        const ColorData &cd = (*fi);
-        overall_value += cd._net_value;
-      }
-      max_value = max(max_value, overall_value);
+      float net_value = get_net_value(frame_number);
+      max_value = max(max_value, net_value);
     }
   }
 
@@ -350,6 +343,49 @@ get_frame_data(int frame_number) {
   }
 
   return data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatStripChart::get_net_value
+//       Access: Protected
+//  Description: Returns the net value of the chart's collector for
+//               the indicated fraem number.
+////////////////////////////////////////////////////////////////////
+float PStatStripChart::
+get_net_value(int frame_number) const {
+  const FrameData &frame = 
+    ((PStatStripChart *)this)->get_frame_data(frame_number);
+
+  float net_value = 0.0;
+  FrameData::const_iterator fi;
+  for (fi = frame.begin(); fi != frame.end(); ++fi) {
+    const ColorData &cd = (*fi);
+    net_value += cd._net_value;
+  }
+
+  return net_value;
+}
+  
+////////////////////////////////////////////////////////////////////
+//     Function: PStatStripChart::get_average_net_value
+//       Access: Protected
+//  Description: Computes the average value of the chart's collector
+//               over the past indicated number of seconds.
+////////////////////////////////////////////////////////////////////
+float PStatStripChart::
+get_average_net_value(float time) const {
+  const PStatThreadData *thread_data = _view.get_thread_data();
+  int now_i, then_i;
+  if (!thread_data->get_elapsed_frames(then_i, now_i, time)) {
+    return 0.0f;
+  }
+
+  float net_value = 0.0f;
+  for (int frame_number = then_i; frame_number <= now_i; frame_number++) {
+    net_value += get_net_value(frame_number);
+  }
+  int num_frames = now_i - then_i + 1;
+  return net_value / (float)num_frames;
 }
 
 ////////////////////////////////////////////////////////////////////
