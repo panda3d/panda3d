@@ -74,3 +74,42 @@ clear_switches(void) {
   _lod._switch_vector.erase(_lod._switch_vector.begin(),
 		    	    _lod._switch_vector.end());
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::get_num_switches
+//       Access: Public
+//  Description: Returns the number of switch ranges added to the
+//               LODNode.  This should correspond to the number of
+//               children of the node in order for the LODNode to
+//               function correctly.
+////////////////////////////////////////////////////////////////////
+INLINE int LODNode::
+get_num_switches() const {
+  return _lod._switch_vector.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::get_in
+//       Access: Public
+//  Description: Returns the "in" distance of the indicated switch
+//               range.  This should be larger than the "out" distance
+//               of the same range.
+////////////////////////////////////////////////////////////////////
+INLINE float LODNode::
+get_in(int index) const {
+  nassertr(index >= 0 && index < (int)_lod._switch_vector.size(), 0.0);
+  return _lod._switch_vector[index].get_in();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LODNode::get_out
+//       Access: Public
+//  Description: Returns the "out" distance of the indicated switch
+//               range.  This should be smaller than the "in" distance
+//               of the same range.
+////////////////////////////////////////////////////////////////////
+INLINE float LODNode::
+get_out(int index) const {
+  nassertr(index >= 0 && index < (int)_lod._switch_vector.size(), 0.0);
+  return _lod._switch_vector[index].get_out();
+}

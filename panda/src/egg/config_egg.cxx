@@ -49,6 +49,7 @@ ConfigureFn(config_egg) {
   EggComment::init_type();
   EggCoordinateSystem::init_type();
   EggCurve::init_type();
+  EggData::init_type();
   EggExternalReference::init_type();
   EggFilenameNode::init_type();
   EggGroup::init_type();

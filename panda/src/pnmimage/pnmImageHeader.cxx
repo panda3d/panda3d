@@ -11,7 +11,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::read_header
-//       Access: Public, Static
+//       Access: Public
 //  Description: Opens up the image file and tries to read its header
 //               information to determine its size, number of
 //               channels, etc.  If successful, updates the header
@@ -24,6 +24,7 @@ read_header(const Filename &filename, PNMFileType *type) {
   if (reader != (PNMReader *)NULL) {
     (*this) = (*reader);
     _type = reader->get_type();
+    delete reader;
     return true;
   }
 
@@ -32,13 +33,16 @@ read_header(const Filename &filename, PNMFileType *type) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::make_reader
-//       Access: Public, Static
-//  Description: Returns a PNMReader of the suitable type for reading
-//               from the indicated image filename, or NULL if the
-//               filename cannot be read for some reason.  The
-//               filename "-" always stands for standard input.  If
-//               type is specified, it is a suggestion for the file
-//               type to use.
+//       Access: Public
+//  Description: Returns a newly-allocated PNMReader of the suitable
+//               type for reading from the indicated image filename,
+//               or NULL if the filename cannot be read for some
+//               reason.  The filename "-" always stands for standard
+//               input.  If type is specified, it is a suggestion for
+//               the file type to use.
+//
+//               The PNMReader should be deleted when it is no longer
+//               needed.
 ////////////////////////////////////////////////////////////////////
 PNMReader *PNMImageHeader::
 make_reader(const Filename &filename, PNMFileType *type) const {
@@ -87,10 +91,10 @@ make_reader(const Filename &filename, PNMFileType *type) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::make_reader
-//       Access: Public, Static
-//  Description: Returns a PNMReader of the suitable type for reading
-//               from the already-opened image file, or NULL if the
-//               file cannot be read for some reason.  
+//       Access: Public
+//  Description: Returns a newly-allocated PNMReader of the suitable
+//               type for reading from the already-opened image file,
+//               or NULL if the file cannot be read for some reason.
 //
 //               owns_file should be set true if the PNMReader is to
 //               be considered the owner of the FILE stream (in which
@@ -110,6 +114,9 @@ make_reader(const Filename &filename, PNMFileType *type) const {
 //
 //               If type is non-NULL, it is a suggestion for the file
 //               type to use.
+//
+//               The PNMReader should be deleted when it is no longer
+//               needed.
 ////////////////////////////////////////////////////////////////////
 PNMReader *PNMImageHeader::
 make_reader(FILE *file, bool owns_file, const Filename &filename,
@@ -199,13 +206,16 @@ make_reader(FILE *file, bool owns_file, const Filename &filename,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::make_writer
-//       Access: Public, Static
-//  Description: Returns a PNMWriter of the suitable type for writing
-//               an image to the indicated filename, or NULL if the
-//               filename cannot be written for some reason.  The
-//               filename "-" always stands for standard output.  If
-//               type is specified, it is a suggestion for the file
-//               type to use.
+//       Access: Public
+//  Description: Returns a newly-allocated PNMWriter of the suitable
+//               type for writing an image to the indicated filename,
+//               or NULL if the filename cannot be written for some
+//               reason.  The filename "-" always stands for standard
+//               output.  If type is specified, it is a suggestion for
+//               the file type to use.
+//
+//               The PNMWriter should be deleted when it is no longer
+//               needed.
 ////////////////////////////////////////////////////////////////////
 PNMWriter *PNMImageHeader::
 make_writer(const Filename &filename, PNMFileType *type) const {
@@ -244,10 +254,10 @@ make_writer(const Filename &filename, PNMFileType *type) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImageHeader::make_writer
-//       Access: Public, Static
-//  Description: Returns a PNMWriter of the suitable type for writing
-//               to the already-opened image file, or NULL if the
-//               file cannot be written for some reason.  
+//       Access: Public
+//  Description: Returns a newly-allocated PNMWriter of the suitable
+//               type for writing to the already-opened image file, or
+//               NULL if the file cannot be written for some reason.
 //
 //               owns_file should be set true if the PNMWriter is to
 //               be considered the owner of the FILE stream (in which
@@ -262,6 +272,9 @@ make_writer(const Filename &filename, PNMFileType *type) const {
 //
 //               If type is non-NULL, it is a suggestion for the file
 //               type to use.
+//
+//               The PNMWriter should be deleted when it is no longer
+//               needed.
 ////////////////////////////////////////////////////////////////////
 PNMWriter *PNMImageHeader::
 make_writer(FILE *file, bool owns_file, const Filename &filename,
@@ -325,7 +338,7 @@ make_writer(FILE *file, bool owns_file, const Filename &filename,
 ////////////////////////////////////////////////////////////////////
 bool PNMImageHeader::
 read_magic_number(FILE *file, string &magic_number, int num_bytes) {
-  while (magic_number.size() < num_bytes) {
+  while ((int)magic_number.size() < num_bytes) {
     int ch = getc(file);
     if (ch == EOF) {
       return false;

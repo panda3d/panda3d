@@ -17,6 +17,8 @@ extern int eggyyparse(void);
 #include "parserDefs.h"
 #include "lexerDefs.h"
 
+TypeHandle EggData::_type_handle;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: EggData::resolve_egg_filename
 //       Access: Public, Static

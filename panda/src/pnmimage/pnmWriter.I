@@ -12,8 +12,8 @@
 INLINE PNMWriter::
 PNMWriter(PNMFileType *type, FILE *file, bool owns_file) :
   _type(type),
-  _file(file),
-  _owns_file(owns_file)
+  _owns_file(owns_file),
+  _file(file)
 {
 }
 

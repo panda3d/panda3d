@@ -39,6 +39,12 @@ public:
   INLINE bool set_switch(int index, float in, float out);
   INLINE void clear_switches(void);
 
+  INLINE int get_num_switches() const;
+  INLINE float get_in(int index) const;
+  INLINE float get_out(int index) const;
+
+  virtual void output(ostream &out) const;
+
   virtual bool sub_render(const AllAttributesWrapper &attrib,
 			  AllTransitionsWrapper &trans,
 			  GraphicsStateGuardianBase *gsgbase);

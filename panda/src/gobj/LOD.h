@@ -11,9 +11,8 @@
 ////////////////////////////////////////////////////////////////////
 #include <pandabase.h>
 
-#include <typeHandle.h>
 #include <luse.h>
-#include <referenceCount.h>
+#include <typedReferenceCount.h>
 
 class Datagram;
 class DatagramIterator;
@@ -34,6 +33,8 @@ class EXPCL_PANDA LODSwitch {
 public:
   INLINE LODSwitch(float in, float out);
   INLINE void get_range(float &in, float &out) const;
+  INLINE float get_in() const;
+  INLINE float get_out() const;
   INLINE void set_range(float in, float out);
   INLINE bool in_range(float dist_squared) const;
 
@@ -61,7 +62,7 @@ typedef vector<LODSwitch> LODSwitchVector;
 // Description : Computes whether a level-of-detail should be rendered
 //		 or not based on distance from the rendering camera.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA LOD : public ReferenceCount, public TypedObject {
+class EXPCL_PANDA LOD : public TypedReferenceCount {
 public:
   LOD(void);
   LOD(const LOD &copy);
@@ -75,6 +76,9 @@ public:
   void write_datagram(Datagram &destination) const;
   void read_datagram(DatagramIterator &source);
 
+  void output(ostream &out) const;
+  void write(ostream &out, int indent_level = 0) const;
+
 public:
   LPoint3f		_center;
   LODSwitchVector	_switch_vector;
@@ -84,11 +88,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    ReferenceCount::init_type();
-    TypedObject::init_type();
+    TypedReferenceCount::init_type();
     register_type(_type_handle, "LOD",
-		  ReferenceCount::get_class_type(),
-                  TypedObject::get_class_type());
+		  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -98,6 +100,11 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+INLINE ostream &operator << (ostream &out, const LOD &lod) {
+  lod.output(out);
+  return out;
+}
 
 #include "LOD.I"
 

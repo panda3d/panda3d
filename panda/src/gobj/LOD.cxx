@@ -10,6 +10,7 @@
 
 #include <datagram.h>
 #include <datagramIterator.h>
+#include <indent.h>
 
 ////////////////////////////////////////////////////////////////////
 // Static variables
@@ -127,3 +128,46 @@ read_datagram(DatagramIterator &source) {
     _switch_vector.back().read_datagram(source);
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: LOD::output
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void LOD::
+output(ostream &out) const {
+  if (_switch_vector.empty()) {
+    out << "no switches.";
+  } else {
+    LODSwitchVector::const_iterator si;
+    si = _switch_vector.begin();
+    out << "(" << (*si).get_in() << "/" << (*si).get_out() << ")";
+    ++si;
+    while (si != _switch_vector.end()) {
+      out << " (" << (*si).get_in() << "/" << (*si).get_out() << ")";
+      ++si;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LOD::write
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void LOD::
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level)
+    << "LOD, " << _switch_vector.size() << " switches:\n";
+  LODSwitchVector::const_iterator si;
+  int i = 0;
+  for (si = _switch_vector.begin();
+       si != _switch_vector.end();
+       ++si) {
+    indent(out, indent_level + 2)
+      << i << ". in at " << (*si).get_in() 
+      << ", out at " << (*si).get_out() << "\n";
+    i++;
+  }
+}
+
