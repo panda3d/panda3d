@@ -456,7 +456,7 @@ $[TAB]cp $[local] $[dest]
 $[dest]/$[remote] : $[local]
 //      cd ./$[sourcedir] && $[INSTALL]
 $[TAB]rm -f $[dest]/$[remote]
-$[TAB]cp $[sourcedir]/$[local] $[dest]/$[remote]
+$[TAB]cp $[local] $[dest]/$[remote]
 
     #end file
   #endif
