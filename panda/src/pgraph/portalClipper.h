@@ -63,12 +63,12 @@ public:
   PortalClipper(GeometricBoundingVolume *frustum, SceneSetup *scene_setup);
   ~PortalClipper();
 
-  INLINE bool is_in_view(const NodePath &node_path);
-  INLINE bool is_facing_camera(const NodePath &node_path);
+  INLINE bool is_whole_portal_in_view(const NodePath &node_path);
+  INLINE bool is_partial_portal_in_view(const NodePath &node_path);
+  INLINE bool is_facing_view(Planef portal_plane);
+
   void prepare_portal(const NodePath &node_path);
-
   void clip_portal(const NodePath &node_path);
-
   PT(BoundingVolume) get_reduced_frustum(const NodePath &node_path);
 
   void draw_lines();
@@ -83,7 +83,7 @@ public:
 
   INLINE float get_plane_depth(float x, float z, Planef *portal_plane);
 
-  INLINE void  set_reduced_frustum(BoundingHexahedron *frustum);
+  INLINE void  set_view_frustum(BoundingHexahedron *frustum);
 
 public:
   static TypeHandle get_class_type() {
@@ -129,7 +129,6 @@ private:
   PT(GeomLinestrip) _geom_linestrip;
 
   BoundingHexahedron *_view_frustum;
-  BoundingHexahedron *_reduced_frustum;
 
   PortalNode *_portal_node;  // current working portal for dereference ease
 
