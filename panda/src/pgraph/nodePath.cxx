@@ -542,8 +542,12 @@ set_transform(const NodePath &other, const TransformState *transform) const {
   nassertv_always(!is_empty());
 
   // First, we perform a wrt to the parent, to get the conversion.
-  NodePath parent = get_parent();
-  CPT(TransformState) rel_trans = other.get_transform(parent);
+  CPT(TransformState) rel_trans;
+  if (has_parent()) {
+    rel_trans = other.get_transform(get_parent());
+  } else {
+    rel_trans = other.get_transform(NodePath());
+  }
 
   CPT(TransformState) new_trans = rel_trans->compose(transform);
   set_transform(new_trans);
