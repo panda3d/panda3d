@@ -44,15 +44,12 @@ XFileToEgg() :
 
   add_option
     ("a", "name", 0,
-     "Convert as an animatable model, converting Frames into Joints.  "
-     "Note that animation support in x2egg is currently experimental and "
-     "likely to be broken.",
-  /*
-     "Convert as an animatable model, converting Frames into Joints.  This "
-     "should be specified for a model which is intended to be animated.  The "
-     "default is to convert the model as a normal static model, which is "
-     "usually more optimal if animation is not required.",
-  */
+     "Specify the name of the animated character to generate.  This option "
+     "forces the model to be converted as an animatable character, even "
+     "if animation channels are not found in the file.  Without this "
+     "option, the model is converted as a static model (which "
+     "is usually more efficient to load within Panda), unless animation "
+     "channels are present in the .x file.",
      &XFileToEgg::dispatch_string, &_make_char, &_char_name);
 
   add_option
