@@ -26,6 +26,54 @@
 #include "pset.h"
 #include <algorithm>
 
+// Two different compilers that both should have known better had
+// problems parsing the inheritance of typedefs in the template
+// classes below.  Both gcc 2.95.3 and the Intel Windows compiler (not
+// sure of the version) got confused in different ways.  It is a
+// mystery how these compilers are able to handle the actual STL
+// headers, which do this sort of thing all over the place.
+
+// One effective workaround for both compilers seems to be to rename
+// the typedef names slightly.  If the following symbol is declared,
+// the macros in this file will do the job of renaming the typedef
+// names for these broken compilers.  We should probably make this a
+// configurable parameter, but since it doesn't do any harm to leave
+// it declared even for non-broken compilers, we might as well just
+// leave it alone.
+#define BROKEN_TYPEDEF_INHERITANCE 1
+
+// Maybe eventually, when STL is more than only about ten years old
+// and compiler support of anything more than trivial template classes
+// is more universal, we can pull this nonsense out of here.
+
+#ifdef BROKEN_TYPEDEF_INHERITANCE
+  #define KEY_TYPE key_type_0
+  #define VALUE_TYPE value_type_0
+  #define REFERENCE reference_0
+  #define CONST_REFERENCE const_reference_0
+  #define KEY_COMPARE key_compare_0
+  #define VALUE_COMPARE value_compare_0
+  #define ITERATOR iterator_0
+  #define CONST_ITERATOR const_iterator_0
+  #define REVERSE_ITERATOR reverse_iterator_0
+  #define CONST_REVERSE_ITERATOR const_reverse_iterator_0
+  #define DIFFERENCE_TYPE difference_type_0
+  #define SIZE_TYPE size_type_0
+#else
+  #define KEY_TYPE key_type
+  #define VALUE_TYPE value_type
+  #define REFERENCE reference
+  #define CONST_REFERENCE const_reference
+  #define KEY_COMPARE key_compare
+  #define VALUE_COMPARE value_compare
+  #define ITERATOR iterator
+  #define CONST_ITERATOR const_iterator
+  #define REVERSE_ITERATOR reverse_iterator
+  #define CONST_REVERSE_ITERATOR const_reverse_iterator
+  #define DIFFERENCE_TYPE difference_type
+  #define SIZE_TYPE size_type
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //       Class : ordered_vector
 // Description : This template class presents an interface similar to
@@ -69,23 +117,41 @@ private:
   
 public:
   // Typedefs
-  typedef Key key_type;
-  typedef Key value_type;
-  typedef Key &reference;
-  typedef const Key &const_reference;
-  typedef Compare key_compare;
-  typedef Compare value_compare;
+  typedef Key KEY_TYPE;
+  typedef Key VALUE_TYPE;
+  typedef Key &REFERENCE;
+  typedef const Key &CONST_REFERENCE;
+  typedef Compare KEY_COMPARE;
+  typedef Compare VALUE_COMPARE;
 
   // Be careful when using the non-const iterators that you do not
   // disturb the sorted order of the vector, or that if you do, you
   // call sort() when you are done.
-  typedef Vector::iterator iterator;
-  typedef Vector::const_iterator const_iterator;
-  typedef Vector::reverse_iterator reverse_iterator;
-  typedef Vector::const_reverse_iterator const_reverse_iterator;
+  typedef Vector::iterator ITERATOR;
+  typedef Vector::const_iterator CONST_ITERATOR;
+  typedef Vector::reverse_iterator REVERSE_ITERATOR;
+  typedef Vector::const_reverse_iterator CONST_REVERSE_ITERATOR;
 
-  typedef Vector::difference_type difference_type;
-  typedef Vector::size_type size_type;
+  typedef Vector::difference_type DIFFERENCE_TYPE;
+  typedef Vector::size_type SIZE_TYPE;
+
+#ifdef BROKEN_TYPEDEF_INHERITANCE
+  // Since the #define symbols do not actually expand to the correct
+  // names, we have to re-typedef them so callers can reference them
+  // by their correct, lowercase names.
+  typedef KEY_TYPE key_type;
+  typedef VALUE_TYPE value_type;
+  typedef REFERENCE reference;
+  typedef CONST_REFERENCE const_reference;
+  typedef KEY_COMPARE key_compare;
+  typedef VALUE_COMPARE value_compare;
+  typedef ITERATOR iterator;
+  typedef CONST_ITERATOR const_iterator;
+  typedef REVERSE_ITERATOR reverse_iterator;
+  typedef CONST_REVERSE_ITERATOR const_reverse_iterator;
+  typedef DIFFERENCE_TYPE difference_type;
+  typedef SIZE_TYPE size_type;
+#endif
 
 public:
   // Constructors.  We don't implement the whole slew of STL
@@ -96,23 +162,23 @@ public:
   INLINE ~ordered_vector();
 
   // Iterator access.
-  INLINE iterator begin();
-  INLINE iterator end();
-  INLINE reverse_iterator rbegin();
-  INLINE reverse_iterator rend();
+  INLINE ITERATOR begin();
+  INLINE ITERATOR end();
+  INLINE REVERSE_ITERATOR rbegin();
+  INLINE REVERSE_ITERATOR rend();
 
-  INLINE const_iterator begin() const;
-  INLINE const_iterator end() const;
-  INLINE const_reverse_iterator rbegin() const;
-  INLINE const_reverse_iterator rend() const;
+  INLINE CONST_ITERATOR begin() const;
+  INLINE CONST_ITERATOR end() const;
+  INLINE CONST_REVERSE_ITERATOR rbegin() const;
+  INLINE CONST_REVERSE_ITERATOR rend() const;
 
   // Random access.
-  INLINE reference operator [] (size_type n);
-  INLINE const_reference operator [] (size_type n) const;
+  INLINE reference operator [] (SIZE_TYPE n);
+  INLINE const_reference operator [] (SIZE_TYPE n) const;
 
   // Size information.
-  INLINE size_type size() const;
-  INLINE size_type max_size() const;
+  INLINE SIZE_TYPE size() const;
+  INLINE SIZE_TYPE max_size() const;
   INLINE bool empty() const;
 
   // Equivalence and lexicographical comparisons.
@@ -125,64 +191,64 @@ public:
   INLINE bool operator >= (const ordered_vector<Key, Compare> &other) const;
 
   // Insert operations.
-  iterator insert_unique(iterator position, const value_type &key);
-  iterator insert_nonunique(iterator position, const value_type &key);
-  INLINE pair<iterator, bool> insert_unique(const value_type &key);
-  INLINE iterator insert_nonunique(const value_type &key);
+  ITERATOR insert_unique(ITERATOR position, const VALUE_TYPE &key);
+  ITERATOR insert_nonunique(ITERATOR position, const VALUE_TYPE &key);
+  INLINE pair<ITERATOR, bool> insert_unique(const VALUE_TYPE &key);
+  INLINE ITERATOR insert_nonunique(const VALUE_TYPE &key);
 
   // Erase operations.
-  INLINE iterator erase(iterator position);
-  INLINE size_type erase(const key_type &key);
-  INLINE void erase(iterator first, iterator last);
+  INLINE ITERATOR erase(ITERATOR position);
+  INLINE SIZE_TYPE erase(const KEY_TYPE &key);
+  INLINE void erase(ITERATOR first, ITERATOR last);
   INLINE void clear();
 
   // Find operations.
-  INLINE iterator find(const key_type &key);
-  INLINE const_iterator find(const key_type &key) const;
-  INLINE iterator find_particular(const key_type &key);
-  INLINE const_iterator find_particular(const key_type &key) const;
-  INLINE size_type count(const key_type &key) const;
+  INLINE ITERATOR find(const KEY_TYPE &key);
+  INLINE CONST_ITERATOR find(const KEY_TYPE &key) const;
+  INLINE ITERATOR find_particular(const KEY_TYPE &key);
+  INLINE CONST_ITERATOR find_particular(const KEY_TYPE &key) const;
+  INLINE SIZE_TYPE count(const KEY_TYPE &key) const;
 
-  INLINE iterator lower_bound(const key_type &key);
-  INLINE const_iterator lower_bound(const key_type &key) const;
-  INLINE iterator upper_bound(const key_type &key);
-  INLINE const_iterator upper_bound(const key_type &key) const;
-  INLINE pair<iterator, iterator> equal_range(const key_type &key);
-  INLINE pair<const_iterator, const_iterator> equal_range(const key_type &key) const;
+  INLINE ITERATOR lower_bound(const KEY_TYPE &key);
+  INLINE CONST_ITERATOR lower_bound(const KEY_TYPE &key) const;
+  INLINE ITERATOR upper_bound(const KEY_TYPE &key);
+  INLINE CONST_ITERATOR upper_bound(const KEY_TYPE &key) const;
+  INLINE pair<ITERATOR, ITERATOR> equal_range(const KEY_TYPE &key);
+  INLINE pair<CONST_ITERATOR, CONST_ITERATOR> equal_range(const KEY_TYPE &key) const;
 
   // Special operations.
   INLINE void swap(ordered_vector<Key, Compare> &other);
-  INLINE void reserve(size_type n);
+  INLINE void reserve(SIZE_TYPE n);
   INLINE void sort_unique();
   INLINE void sort_nonunique();
 
-  INLINE void push_back(const value_type &key);
+  INLINE void push_back(const VALUE_TYPE &key);
 
 private:
-  INLINE iterator nci(const_iterator iterator);
-  INLINE iterator find_insert_position(iterator first, iterator last, 
-                                       const key_type &key);
-  iterator r_find_insert_position(iterator first, iterator last, 
-                                  const key_type &key);
-  const_iterator r_find(const_iterator first, const_iterator last,
-                        const_iterator not_found,
-                        const key_type &key) const;
-  const_iterator r_find_particular(const_iterator first, const_iterator last,
-                                   const_iterator not_found,
-                                   const key_type &key) const;
-  size_type r_count(const_iterator first, const_iterator last,
-                    const key_type &key) const;
-  const_iterator r_lower_bound(const_iterator first, const_iterator last,
-                               const key_type &key) const;
-  const_iterator r_upper_bound(const_iterator first, const_iterator last,
-                               const key_type &key) const;
-  pair<const_iterator, const_iterator>
-  r_equal_range(const_iterator first, const_iterator last,
-                const key_type &key) const;
+  INLINE ITERATOR nci(CONST_ITERATOR i);
+  INLINE ITERATOR find_insert_position(ITERATOR first, ITERATOR last, 
+                                       const KEY_TYPE &key);
+  ITERATOR r_find_insert_position(ITERATOR first, ITERATOR last, 
+                                  const KEY_TYPE &key);
+  CONST_ITERATOR r_find(CONST_ITERATOR first, CONST_ITERATOR last,
+                        CONST_ITERATOR not_found,
+                        const KEY_TYPE &key) const;
+  CONST_ITERATOR r_find_particular(CONST_ITERATOR first, CONST_ITERATOR last,
+                                   CONST_ITERATOR not_found,
+                                   const KEY_TYPE &key) const;
+  SIZE_TYPE r_count(CONST_ITERATOR first, CONST_ITERATOR last,
+                    const KEY_TYPE &key) const;
+  CONST_ITERATOR r_lower_bound(CONST_ITERATOR first, CONST_ITERATOR last,
+                               const KEY_TYPE &key) const;
+  CONST_ITERATOR r_upper_bound(CONST_ITERATOR first, CONST_ITERATOR last,
+                               const KEY_TYPE &key) const;
+  pair<CONST_ITERATOR, CONST_ITERATOR>
+  r_equal_range(CONST_ITERATOR first, CONST_ITERATOR last,
+                const KEY_TYPE &key) const;
   INLINE bool verify_list();
 
 #ifndef NDEBUG
-  bool verify_list_impl(iterator first, iterator last);
+  bool verify_list_impl(ITERATOR first, ITERATOR last);
 #endif
 
   // This function object is used in sort_unique().  It returns true
@@ -195,7 +261,7 @@ private:
     // template class cannot be defined outside the class".
     INLINE EquivalentTest(const Compare &compare) :
       _compare(compare) { }
-    INLINE bool operator () (const key_type &a, const key_type &b) {
+    INLINE bool operator () (const KEY_TYPE &a, const KEY_TYPE &b) {
       nassertr(!_compare(b, a), false);
       return !_compare(a, b);
     }
@@ -216,28 +282,12 @@ private:
 template<class Key, class Compare = less<Key> >
 class ov_set : public ordered_vector<Key, Compare> {
 public:
-  // The Intel compiler doesn't seem to inherit these typedefs
-  // completely--it gets confused in certain cases.  We'll make it
-  // explicit.
-  typedef ordered_vector<Key, Compare>::key_type key_type;
-  typedef ordered_vector<Key, Compare>::value_type value_type;
-  typedef ordered_vector<Key, Compare>::reference reference;
-  typedef ordered_vector<Key, Compare>::const_reference const_reference;
-  typedef ordered_vector<Key, Compare>::key_compare key_compare;
-  typedef ordered_vector<Key, Compare>::value_compare value_compare;
-  typedef ordered_vector<Key, Compare>::iterator iterator;
-  typedef ordered_vector<Key, Compare>::const_iterator const_iterator;
-  typedef ordered_vector<Key, Compare>::reverse_iterator reverse_iterator;
-  typedef ordered_vector<Key, Compare>::const_reverse_iterator const_reverse_iterator;
-  typedef ordered_vector<Key, Compare>::difference_type difference_type;
-  typedef ordered_vector<Key, Compare>::size_type size_type;
-
   INLINE ov_set(const Compare &compare = Compare());
   INLINE ov_set(const ov_set<Key, Compare> &copy);
   INLINE ov_set<Key, Compare> &operator = (const ov_set<Key, Compare> &copy);
 
-  INLINE iterator insert(iterator position, const value_type &key);
-  INLINE pair<iterator, bool> insert(const value_type &key);
+  INLINE ITERATOR insert(ITERATOR position, const VALUE_TYPE &key0);
+  INLINE pair<ITERATOR, bool> insert(const VALUE_TYPE &key0);
 
   INLINE void sort();
 };
@@ -251,28 +301,12 @@ public:
 template<class Key, class Compare = less<Key> >
 class ov_multiset : public ordered_vector<Key, Compare> {
 public:
-  // The Intel compiler doesn't seem to inherit these typedefs
-  // completely--it gets confused in certain cases.  We'll make it
-  // explicit.
-  typedef ordered_vector<Key, Compare>::key_type key_type;
-  typedef ordered_vector<Key, Compare>::value_type value_type;
-  typedef ordered_vector<Key, Compare>::reference reference;
-  typedef ordered_vector<Key, Compare>::const_reference const_reference;
-  typedef ordered_vector<Key, Compare>::key_compare key_compare;
-  typedef ordered_vector<Key, Compare>::value_compare value_compare;
-  typedef ordered_vector<Key, Compare>::iterator iterator;
-  typedef ordered_vector<Key, Compare>::const_iterator const_iterator;
-  typedef ordered_vector<Key, Compare>::reverse_iterator reverse_iterator;
-  typedef ordered_vector<Key, Compare>::const_reverse_iterator const_reverse_iterator;
-  typedef ordered_vector<Key, Compare>::difference_type difference_type;
-  typedef ordered_vector<Key, Compare>::size_type size_type;
-
   INLINE ov_multiset(const Compare &compare = Compare());
   INLINE ov_multiset(const ov_multiset<Key, Compare> &copy);
   INLINE ov_multiset<Key, Compare> &operator = (const ov_multiset<Key, Compare> &copy);
 
-  INLINE iterator insert(iterator position, const value_type &key);
-  INLINE iterator insert(const value_type &key);
+  INLINE ITERATOR insert(ITERATOR position, const VALUE_TYPE &key);
+  INLINE ITERATOR insert(const VALUE_TYPE &key);
 
   INLINE void sort();
 };
