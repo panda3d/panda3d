@@ -75,10 +75,10 @@ typedef DWORD DXShaderHandle;
     var.dwSize = sizeof(type);
     
 #define SAFE_DELSHADER(TYPE,HANDLE,PDEVICE)  \
-  if(HANDLE!=NULL) {  PDEVICE->Delete##TYPE##Shader(HANDLE);  HANDLE=NULL;  }
+  if((HANDLE!=NULL)&&IS_VALID_PTR(PDEVICE)) { PDEVICE->Delete##TYPE##Shader(HANDLE);  HANDLE=NULL; }
 
 #define SAFE_DELETE(p)       { if(p) { assert(IS_VALID_PTR(p));   delete (p);     (p)=NULL; } }
-#define SAFE_DELETE_ARRAY(p) { if(p) { assert(IS_VALID_PTR(p));   delete[] (p);   (p)=NULL; } }
+#define SAFE_DELETE_ARRAY(p) { if(p) { assert(IS_VALID_PTR(p));   delete [] (p);   (p)=NULL; } }
 
 // for stuff outside a panda class
 #define SAFE_RELEASE(p)      { if(p) { assert(IS_VALID_PTR(p)); (p)->Release(); (p)=NULL; } }
