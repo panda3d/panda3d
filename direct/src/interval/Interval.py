@@ -28,7 +28,7 @@ class Interval(DirectObject):
         self.stopEventList = []
         self.setTHooks = []
         # Set true if interval responds to setT(t): t>duration
-        self.fOpenEnded = openEnded
+        self.openEnded = openEnded
         self.reverse = reverse
 
     def getName(self):
@@ -41,15 +41,15 @@ class Interval(DirectObject):
         """
         return self.duration
 
-    def setfOpenEnded(self, openEnded):
-        """ setfOpenEnded(openEnded)
+    def setOpenEnded(self, openEnded):
+        """ setOpenEnded(openEnded)
         """
-        self.fOpenEnded = openEnded
+        self.openEnded = openEnded
 
-    def getfOpenEnded(self):
-        """ getfOpenEnded()
+    def getOpenEnded(self):
+        """ getOpenEnded()
         """
-        return self.fOpenEnded
+        return self.openEnded
 
     def setT(self, t, event = IVAL_NONE):
         """ setT(t, event)

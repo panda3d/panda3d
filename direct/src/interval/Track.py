@@ -237,7 +237,7 @@ class Track(Interval.Interval):
                         # execute the interval at its end time
                         # and flag event as Interval.IVAL_DONE
                         ival.setT(ival.getDuration(), Interval.IVAL_DONE)
-                    elif ((event == Interval.IVAL_INIT) and ival.getfOpenEnded()):
+                    elif ((event == Interval.IVAL_INIT) and ival.getOpenEnded()):
                         # or its an INIT event after the interval's end
                         # and the interval is openended,
                         # then execute the interval at its end time

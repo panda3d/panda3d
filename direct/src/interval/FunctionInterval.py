@@ -35,8 +35,8 @@ class FunctionInterval(Interval.Interval):
         # Initialize superclass
         # Set openEnded true if IVAL_INIT calls after end time cause interval
         # function to be called.  If false, IVAL_INIT calls have no effect
-        # Event, Accept, Ignore intervals default to fOpenEnded = 0
-        # Parent, Pos, Hpr, etc intervals default to fOpenEnded = 1
+        # Event, Accept, Ignore intervals default to openEnded = 0
+        # Parent, Pos, Hpr, etc intervals default to openEnded = 1
         Interval.Interval.__init__(self, name, duration = 0.0, openEnded = openEnded)
     
     def updateFunc(self, t, event = Interval.IVAL_NONE):
