@@ -22,6 +22,9 @@
 #include <algorithm>
 #include "pvector.h"
 
+ConfigVariableInt PhysicsManager::_random_seed
+("physics_manager_random_seed", 139);
+
 ////////////////////////////////////////////////////////////////////
 //     Function : PhysicsManager
 //       Access : Public
@@ -42,6 +45,20 @@ PhysicsManager() {
 ////////////////////////////////////////////////////////////////////
 PhysicsManager::
 ~PhysicsManager() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : InitRandomSeed
+//       Access : Public
+//  Description : One-time config function, sets up the random seed
+//                used by the physics and particle systems.
+//                For synchronizing across distributed computers
+////////////////////////////////////////////////////////////////////
+void PhysicsManager::
+init_random_seed(void) {
+  // Use the random seed specified by the physics_manager_random_seed
+  // Config Variable
+  srand(_random_seed);
 }
 
 ////////////////////////////////////////////////////////////////////

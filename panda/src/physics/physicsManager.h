@@ -32,6 +32,8 @@
 #include "plist.h"
 #include "pvector.h"
 
+#include "configVariableInt.h"
+
 ////////////////////////////////////////////////////////////////////
 //       Class : PhysicsManager
 // Description : Physics don't get much higher-level than this.
@@ -74,6 +76,7 @@ PUBLISHED:
   void remove_linear_force(LinearForce *f);
   void remove_angular_force(AngularForce *f);
   void do_physics(float dt);
+  void init_random_seed();
   
   virtual void output(ostream &out) const;
   virtual void write_physicals(ostream &out, unsigned int indent=0) const;
@@ -85,6 +88,7 @@ PUBLISHED:
 
 public:
   friend class Physical;
+  static ConfigVariableInt _random_seed;
 
 private:
   float _viscosity;
