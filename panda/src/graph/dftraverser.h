@@ -25,6 +25,7 @@
 #include "nodeRelation.h"
 
 #include <typedObject.h>
+#include <notify.h>
 
 ///////////////////////////////////////////////////////////////////
 //       Class : DFTraverser
