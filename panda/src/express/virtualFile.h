@@ -53,10 +53,10 @@ PUBLISHED:
   void ls_all(ostream &out = cout) const;
 
   INLINE string read_file() const;
+  virtual istream *open_read_file() const;
 
 public:
   bool read_file(string &result) const;
-  virtual istream *open_read_file() const;
 
 
 protected:

@@ -716,6 +716,68 @@ get_subfile_compressed_length(int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Multifile::open_read_subfile
+//       Access: Published
+//  Description: Returns an istream that may be used to read the
+//               indicated subfile.  You may seek() within this
+//               istream to your heart's content; even though it will
+//               be a reference to the already-opened fstream of the
+//               Multifile itself, byte 0 appears to be the beginning
+//               of the subfile and EOF appears to be the end of the
+//               subfile.
+//
+//               The returned istream will have been allocated via
+//               new; you should delete it when you are finished
+//               reading the subfile.
+//
+//               Any future calls to repack() or close() (or the
+//               Multifile destructor) will invalidate all currently
+//               open subfile pointers.
+//
+//               The return value will be NULL if the stream cannot be
+//               opened for some reason.
+////////////////////////////////////////////////////////////////////
+istream *Multifile::
+open_read_subfile(int index) {
+  nassertr(is_read_valid(), NULL);
+  nassertr(index >= 0 && index < (int)_subfiles.size(), NULL);
+  Subfile *subfile = _subfiles[index];
+
+  if (subfile->_source != (istream *)NULL ||
+      !subfile->_source_filename.empty()) {
+    // The subfile has not yet been copied into the physical
+    // Multifile.  Force a flush operation to incorporate it.
+    flush();
+
+    // That shouldn't change the subfile index or delete the subfile
+    // pointer.
+    nassertr(subfile == _subfiles[index], NULL);
+  }
+
+  // Return an ISubStream object that references into the open
+  // Multifile istream.
+  nassertr(subfile->_data_start != (streampos)0, NULL);
+  istream *stream = 
+    new ISubStream(_read, subfile->_data_start,
+                   subfile->_data_start + (streampos)subfile->_data_length); 
+  
+  if ((subfile->_flags & SF_compressed) != 0) {
+    // Oops, the subfile is compressed.  So actually, return an
+    // IDecompressStream that wraps around the ISubStream.
+    IDecompressStream *wrapper = new IDecompressStream(stream, true);
+    stream = wrapper;
+  }
+
+  if (stream->fail()) {
+    // Hmm, some inexplicable problem.
+    delete stream;
+    return NULL;
+  }
+
+  return stream;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Multifile::extract_subfile
 //       Access: Published
 //  Description: Extracts the nth subfile into a file with the given
@@ -777,6 +839,10 @@ read_subfile(int index, string &result) {
   result = string();
 
   istream *in = open_read_subfile(index);
+  if (in == (istream *)NULL) {
+    return false;
+  }
+
   int byte = in->get();
   while (!in->eof() && !in->fail()) {
     result += (char)byte;
@@ -884,6 +950,9 @@ extract_subfile_to(int index, ostream &out) {
   nassertr(index >= 0 && index < (int)_subfiles.size(), false);
 
   istream *in = open_read_subfile(index);
+  if (in == (istream *)NULL) {
+    return false;
+  }
 
   int byte = in->get();
   while (!in->fail() && !in->eof()) {
@@ -896,62 +965,6 @@ extract_subfile_to(int index, ostream &out) {
   nassertr(!failed, false);
 
   return (!out.fail());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::open_read_subfile
-//       Access: Public
-//  Description: Returns an istream that may be used to read the
-//               indicated subfile.  You may seek() within this
-//               istream to your heart's content; even though it will
-//               be a reference to the already-opened fstream of the
-//               Multifile itself, byte 0 appears to be the beginning
-//               of the subfile and EOF appears to be the end of the
-//               subfile.
-//
-//               The returned istream will have been allocated via
-//               new; you should delete it when you are finished
-//               reading the subfile.
-//
-//               Any future calls to repack() or close() (or the
-//               Multifile destructor) will invalidate all currently
-//               open subfile pointers.
-//
-//               The return value will never be NULL.  If there is a
-//               problem, an unopened fstream is returned.
-////////////////////////////////////////////////////////////////////
-istream *Multifile::
-open_read_subfile(int index) {
-  nassertr(is_read_valid(), new fstream);
-  nassertr(index >= 0 && index < (int)_subfiles.size(), new fstream);
-  Subfile *subfile = _subfiles[index];
-
-  if (subfile->_source != (istream *)NULL ||
-      !subfile->_source_filename.empty()) {
-    // The subfile has not yet been copied into the physical
-    // Multifile.  Force a flush operation to incorporate it.
-    flush();
-
-    // That shouldn't change the subfile index or delete the subfile
-    // pointer.
-    nassertr(subfile == _subfiles[index], new fstream);
-  }
-
-  // Return an ISubStream object that references into the open
-  // Multifile istream.
-  nassertr(subfile->_data_start != (streampos)0, new fstream);
-  istream *stream = 
-    new ISubStream(_read, subfile->_data_start,
-                   subfile->_data_start + (streampos)subfile->_data_length); 
-  
-  if ((subfile->_flags & SF_compressed) != 0) {
-    // Oops, the subfile is compressed.  So actually, return an
-    // IDecompressStream that wraps around the ISubStream.
-    IDecompressStream *wrapper = new IDecompressStream(stream, true);
-    stream = wrapper;
-  }
-
-  return stream;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1076,7 +1089,7 @@ read_index() {
   }
 
   // Now get the version numbers out.
-  StreamReader reader(_read);
+  StreamReader reader(_read, false);
   _file_major_ver = reader.get_int16();
   _file_minor_ver = reader.get_int16();
   _scale_factor = reader.get_uint32();

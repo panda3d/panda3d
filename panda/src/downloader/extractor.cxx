@@ -172,6 +172,13 @@ step() {
     _subfile_length = _multifile.get_subfile_length(_subfile_index);
     _subfile_pos = 0;
     _read = _multifile.open_read_subfile(_subfile_index);
+    if (_read == (istream *)NULL) {
+      downloader_cat.error()
+        << "Unable to read subfile "
+        << _multifile.get_subfile_name(_subfile_index) << ".\n";
+      cleanup();
+      return EU_error_abort;
+    }
 
   } else if (_subfile_pos >= _subfile_length) {
     // Time to close this subfile.

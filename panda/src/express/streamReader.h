@@ -34,7 +34,8 @@
 class EXPCL_PANDAEXPRESS StreamReader {
 public:
   INLINE StreamReader(istream &in);
-  INLINE StreamReader(istream *in);
+PUBLISHED:
+  INLINE StreamReader(istream *in, bool owns_stream);
   INLINE StreamReader(const StreamReader &copy);
   INLINE void operator = (const StreamReader &copy);
   INLINE ~StreamReader();
@@ -70,8 +71,11 @@ public:
   void skip_bytes(size_t size);
   string extract_bytes(size_t size);
 
+  string readline();
+
 private:
   istream *_in;
+  bool _owns_stream;
 };
 
 #include "streamReader.I"

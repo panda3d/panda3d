@@ -72,6 +72,7 @@ PUBLISHED:
   size_t get_subfile_compressed_length(int index) const;
 
   INLINE string read_subfile(int index);
+  istream *open_read_subfile(int index);
   bool extract_subfile(int index, const Filename &filename);
 
   void output(ostream &out) const;
@@ -88,7 +89,6 @@ public:
                      int compression_level);
 
   bool extract_subfile_to(int index, ostream &out);
-  istream *open_read_subfile(int index);
 
 private:
   enum SubfileFlags {

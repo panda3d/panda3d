@@ -150,6 +150,19 @@ ls_all(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::open_read_file
+//       Access: Published, Virtual
+//  Description: Opens the file for reading.  Returns a newly
+//               allocated istream on success (which you should
+//               eventually delete when you are done reading).
+//               Returns NULL on failure.
+////////////////////////////////////////////////////////////////////
+istream *VirtualFile::
+open_read_file() const {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFile::read_file
 //       Access: Public
 //  Description: Fills up the indicated string with the contents of
@@ -179,19 +192,6 @@ read_file(string &result) const {
       << "Error while reading " << get_filename() << "\n";
   }
   return !failed;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFile::open_read_file
-//       Access: Public, Virtual
-//  Description: Opens the file for reading.  Returns a newly
-//               allocated istream on success (which you should
-//               eventually delete when you are done reading).
-//               Returns NULL on failure.
-////////////////////////////////////////////////////////////////////
-istream *VirtualFile::
-open_read_file() const {
-  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

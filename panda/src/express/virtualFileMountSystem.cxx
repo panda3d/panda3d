@@ -63,7 +63,7 @@ is_regular_file(const Filename &file) const {
 //  Description: Opens the file for reading, if it exists.  Returns a
 //               newly allocated istream on success (which you should
 //               eventually delete when you are done reading).
-//               Returns NULL or an invalid istream on failure.
+//               Returns NULL on failure.
 ////////////////////////////////////////////////////////////////////
 istream *VirtualFileMountSystem::
 open_read_file(const Filename &file) const {

@@ -128,7 +128,7 @@ pm_freerow(char *itrow) {
 
 int
 pm_readbigshort(istream *in, short *sP) {
-  StreamReader reader(in);
+  StreamReader reader(in, false);
   *sP = reader.get_be_int16();
   return (!in->eof() && !in->fail()) ? 0 : -1;
 }
@@ -142,7 +142,7 @@ pm_writebigshort(ostream *out, short s) {
 
 int
 pm_readbiglong(istream *in, long *lP) {
-  StreamReader reader(in);
+  StreamReader reader(in, false);
   *lP = reader.get_be_int32();
   return (!in->eof() && !in->fail()) ? 0 : -1;
 }
@@ -156,7 +156,7 @@ pm_writebiglong(ostream *out, long l) {
 
 int
 pm_readlittleshort(istream *in, short *sP) {
-  StreamReader reader(in);
+  StreamReader reader(in, false);
   *sP = reader.get_int16();
   return (!in->eof() && !in->fail()) ? 0 : -1;
 }
@@ -170,7 +170,7 @@ pm_writelittleshort(ostream *out, short s) {
 
 int
 pm_readlittlelong(istream *in, long *lP) {
-  StreamReader reader(in);
+  StreamReader reader(in, false);
   *lP = reader.get_int32();
   return (!in->eof() && !in->fail()) ? 0 : -1;
 }

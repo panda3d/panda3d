@@ -24,54 +24,64 @@
 ////////////////////////////////////////////////////////////////////
 INLINE StreamReader::
 StreamReader(istream &in) :
-  _in(&in)
+  _in(&in),
+  _owns_stream(false)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::Constructor
-//       Access: Public
-//  Description:
+//       Access: Published
+//  Description: If owns_stream is true, the stream pointer will be
+//               deleted when the StreamReader destructs.
 ////////////////////////////////////////////////////////////////////
 INLINE StreamReader::
-StreamReader(istream *in) :
-  _in(in)
+StreamReader(istream *in, bool owns_stream) :
+  _in(in),
+  _owns_stream(owns_stream)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::Copy Constructor
-//       Access: Public
-//  Description:
+//       Access: Published
+//  Description: The copy constructor does not copy ownership of the
+//               stream.
 ////////////////////////////////////////////////////////////////////
 INLINE StreamReader::
 StreamReader(const StreamReader &copy) :
-  _in(copy._in)
+  _in(copy._in),
+  _owns_stream(false)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::Copy Assignment Operator
-//       Access: Public
-//  Description:
+//       Access: Published
+//  Description: The copy constructor does not copy ownership of the
+//               stream.
 ////////////////////////////////////////////////////////////////////
 INLINE void StreamReader::
 operator = (const StreamReader &copy) {
   _in = copy._in;
+  _owns_stream = false;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE StreamReader::
 ~StreamReader() {
+  if (_owns_stream) {
+    delete _in;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::get_istream
-//       Access: Public
+//       Access: Published
 //  Description: Returns the stream in use.
 ////////////////////////////////////////////////////////////////////
 INLINE istream *StreamReader::
@@ -81,7 +91,7 @@ get_istream() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::get_bool
-//       Access: Public
+//       Access: Published
 //  Description: Extracts a boolean value.
 ////////////////////////////////////////////////////////////////////
 INLINE bool StreamReader::
@@ -91,7 +101,7 @@ get_bool() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::get_int8
-//       Access: Public
+//       Access: Published
 //  Description: Extracts a signed 8-bit integer.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_int8 StreamReader::
@@ -101,7 +111,7 @@ get_int8() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::get_uint8
-//       Access: Public
+//       Access: Published
 //  Description: Extracts an unsigned 8-bit integer.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_uint8 StreamReader::
@@ -111,7 +121,7 @@ get_uint8() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::get_int16
-//       Access: Public
+//       Access: Published
 //  Description: Extracts a signed 16-bit integer.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_int16 StreamReader::
@@ -125,7 +135,7 @@ get_int16() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::get_int32
-//       Access: Public
+//       Access: Published
 //  Description: Extracts a signed 32-bit integer.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_int32 StreamReader::
@@ -139,7 +149,7 @@ get_int32() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::get_int64
-//       Access: Public
+//       Access: Published
 //  Description: Extracts a signed 64-bit integer.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_int64 StreamReader::
@@ -153,7 +163,7 @@ get_int64() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::get_uint16
-//       Access: Public
+//       Access: Published
 //  Description: Extracts an unsigned 16-bit integer.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_uint16 StreamReader::
@@ -167,7 +177,7 @@ get_uint16() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::get_uint32
-//       Access: Public
+//       Access: Published
 //  Description: Extracts an unsigned 32-bit integer.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_uint32 StreamReader::
@@ -181,7 +191,7 @@ get_uint32() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::get_uint64
-//       Access: Public
+//       Access: Published
 //  Description: Extracts an unsigned 64-bit integer.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_uint64 StreamReader::
@@ -195,7 +205,7 @@ get_uint64() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::get_float32
-//       Access: Public
+//       Access: Published
 //  Description: Extracts a 32-bit single-precision floating-point
 //               number.  Since this kind of float is not necessarily
 //               portable across different architectures, special care
@@ -217,7 +227,7 @@ get_float32() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::get_float64
-//       Access: Public
+//       Access: Published
 //  Description: Extracts a 64-bit floating-point number.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_float64 StreamReader::
@@ -231,7 +241,7 @@ get_float64() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::get_be_int16
-//       Access: Public
+//       Access: Published
 //  Description: Extracts a signed big-endian 16-bit integer.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_int16 StreamReader::
@@ -245,7 +255,7 @@ get_be_int16() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::get_be_int32
-//       Access: Public
+//       Access: Published
 //  Description: Extracts a signed big-endian 32-bit integer.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_int32 StreamReader::
@@ -259,7 +269,7 @@ get_be_int32() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::get_be_int64
-//       Access: Public
+//       Access: Published
 //  Description: Extracts a signed big-endian 64-bit integer.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_int64 StreamReader::
@@ -273,7 +283,7 @@ get_be_int64() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::get_be_uint16
-//       Access: Public
+//       Access: Published
 //  Description: Extracts an unsigned big-endian 16-bit integer.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_uint16 StreamReader::
@@ -287,7 +297,7 @@ get_be_uint16() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::get_be_uint32
-//       Access: Public
+//       Access: Published
 //  Description: Extracts an unsigned big-endian 32-bit integer.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_uint32 StreamReader::
@@ -301,7 +311,7 @@ get_be_uint32() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::get_be_uint64
-//       Access: Public
+//       Access: Published
 //  Description: Extracts an unsigned big-endian 64-bit integer.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_uint64 StreamReader::
@@ -315,7 +325,7 @@ get_be_uint64() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::get_be_float32
-//       Access: Public
+//       Access: Published
 //  Description: Extracts a 32-bit single-precision big-endian
 //               floating-point number.  Since this kind of float is
 //               not necessarily portable across different
@@ -337,7 +347,7 @@ get_be_float32() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::get_be_float64
-//       Access: Public
+//       Access: Published
 //  Description: Extracts a 64-bit big-endian floating-point number.
 ////////////////////////////////////////////////////////////////////
 INLINE PN_float64 StreamReader::

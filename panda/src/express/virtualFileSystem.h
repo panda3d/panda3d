@@ -81,10 +81,10 @@ PUBLISHED:
   static VirtualFileSystem *get_global_ptr();
 
   INLINE string read_file(const Filename &filename) const;
+  INLINE istream *open_read_file(const Filename &filename) const;
 
 public:
   INLINE bool read_file(const Filename &filename, string &result) const;
-  INLINE istream *open_read_file(const Filename &filename) const;
 
   void scan_mount_points(vector_string &names, const Filename &path) const;
 

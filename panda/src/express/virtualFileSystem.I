@@ -106,21 +106,8 @@ read_file(const Filename &filename) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileSystem::read_file
-//       Access: Public
-//  Description: Convenience function; fills the string up with the
-//               data from the indicated file, if it exists and can be
-//               read.  Returns true on success, false otherwise.
-////////////////////////////////////////////////////////////////////
-INLINE bool VirtualFileSystem::
-read_file(const Filename &filename, string &result) const {
-  PT(VirtualFile) file = get_file(filename);
-  return (file != (VirtualFile *)NULL && file->read_file(result));
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSystem::open_read_file
-//       Access: Public
+//       Access: Published
 //  Description: Convenience function; returns a newly allocated
 //               istream if the file exists and can be read, or NULL
 //               otherwise.  Does not return an invalid istream.
@@ -137,4 +124,17 @@ open_read_file(const Filename &filename) const {
     str = (istream *)NULL;
   }
   return str;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::read_file
+//       Access: Public
+//  Description: Convenience function; fills the string up with the
+//               data from the indicated file, if it exists and can be
+//               read.  Returns true on success, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool VirtualFileSystem::
+read_file(const Filename &filename, string &result) const {
+  PT(VirtualFile) file = get_file(filename);
+  return (file != (VirtualFile *)NULL && file->read_file(result));
 }

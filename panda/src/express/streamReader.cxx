@@ -21,7 +21,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::get_string
-//       Access: Public
+//       Access: Published
 //  Description: Extracts a variable-length string.
 ////////////////////////////////////////////////////////////////////
 string StreamReader::
@@ -41,7 +41,7 @@ get_string() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::get_z_string
-//       Access: Public
+//       Access: Published
 //  Description: Extracts a variable-length string, as a
 //               NULL-terminated string.
 ////////////////////////////////////////////////////////////////////
@@ -60,7 +60,7 @@ get_z_string() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::get_fixed_string
-//       Access: Public
+//       Access: Published
 //  Description: Extracts a fixed-length string.  However, if a zero
 //               byte occurs within the string, it marks the end of
 //               the string.
@@ -81,7 +81,7 @@ get_fixed_string(size_t size) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::skip_bytes
-//       Access: Public
+//       Access: Published
 //  Description: Skips over the indicated number of bytes in the
 //               stream.
 ////////////////////////////////////////////////////////////////////
@@ -98,7 +98,7 @@ skip_bytes(size_t size) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamReader::extract_bytes
-//       Access: Public
+//       Access: Published
 //  Description: Extracts the indicated number of bytes in the
 //               stream and returns them as a string.
 ////////////////////////////////////////////////////////////////////
@@ -113,5 +113,34 @@ extract_bytes(size_t size) {
   }
 
   return result;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: StreamReader::readline
+//       Access: Published
+//  Description: Assumes the stream represents a text file, and
+//               extracts one line up to and including the trailing
+//               newline character.  Returns empty string when the end
+//               of file is reached.
+//
+//               The interface here is intentionally designed to be
+//               similar to that for Python's File.readline()
+//               function.
+////////////////////////////////////////////////////////////////////
+string StreamReader::
+readline() {
+  string line;
+  int ch = _in->get();
+  while (!_in->eof() && !_in->fail()) {
+    line += ch;
+    if (ch == '\n') {
+      // Here's the newline character.
+      return line;
+    }
+    ch = _in->get();
+  }
+
+  return line;
 }
 
