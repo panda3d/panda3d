@@ -39,8 +39,8 @@ TypeHandle glxGraphicsBuffer::_type_handle;
 glxGraphicsBuffer::
 glxGraphicsBuffer(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
                   const string &name,
-                  int x_size, int y_size, bool want_texture) :
-  GraphicsBuffer(pipe, gsg, name, x_size, y_size, want_texture) 
+                  int x_size, int y_size) :
+  GraphicsBuffer(pipe, gsg, name, x_size, y_size) 
 {
   glxGraphicsPipe *glx_pipe;
   DCAST_INTO_V(glx_pipe, _pipe);
