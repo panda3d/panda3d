@@ -53,6 +53,30 @@ set_model_path_convert(PathConvert mpc,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::set_merge_externals
+//       Access: Public
+//  Description: Sets the merge_externals flag.  When this is true,
+//               external references within the source file are read
+//               in and merged directly; otherwise, only a reference
+//               to a similarly-named egg file is inserted.
+////////////////////////////////////////////////////////////////////
+INLINE void SomethingToEggConverter::
+set_merge_externals(bool merge_externals) {
+  _merge_externals = merge_externals;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::get_merge_externals
+//       Access: Public
+//  Description: Returns the current state of the merge_externals
+//               flag.  See set_merge_externals().
+////////////////////////////////////////////////////////////////////
+INLINE bool SomethingToEggConverter::
+get_merge_externals() const {
+  return _merge_externals;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SomethingToEggConverter::clear_egg_data
 //       Access: Public
 //  Description: Sets the EggData to NULL and makes the converter
@@ -71,6 +95,28 @@ clear_egg_data() {
 INLINE EggData &SomethingToEggConverter::
 get_egg_data() {
   return *_egg_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::handle_external_reference
+//       Access: Public
+//  Description: Handles an external reference in the source file.  If
+//               the merge_externals flag is true (see
+//               set_merge_externals()), this causes the named file to
+//               be read in and converted, and the converted egg
+//               geometry is parented to egg_parent.  Otherwise, only
+//               a reference to a similarly named egg file is parented
+//               to egg_parent.
+//
+//               The parameters orig_filename and searchpath are as
+//               those passed to convert_model_path().
+//
+//               Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool SomethingToEggConverter::
+handle_external_reference(EggGroupNode *egg_parent,
+			  const Filename &orig_filename) {
+  return handle_external_reference(egg_parent, orig_filename, get_model_path());
 }
 
 

@@ -35,6 +35,17 @@ LwoToEggConverter() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LwoToEggConverter::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+LwoToEggConverter::
+LwoToEggConverter(const LwoToEggConverter &copy) :
+  SomethingToEggConverter(copy)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LwoToEggConverter::Destructor
 //       Access: Public, Virtual
 //  Description: 
@@ -42,6 +53,16 @@ LwoToEggConverter() {
 LwoToEggConverter::
 ~LwoToEggConverter() {
   cleanup();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LwoToEggConverter::make_copy
+//       Access: Public, Virtual
+//  Description: Allocates and returns a new copy of the converter.
+////////////////////////////////////////////////////////////////////
+SomethingToEggConverter *LwoToEggConverter::
+make_copy() {
+  return new LwoToEggConverter(*this);
 }
 
 ////////////////////////////////////////////////////////////////////

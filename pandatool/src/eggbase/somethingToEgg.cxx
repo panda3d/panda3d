@@ -43,6 +43,7 @@ SomethingToEgg(const string &format_name,
   _texture_path_convert = SomethingToEggConverter::PC_unchanged;
   _model_path_convert = SomethingToEggConverter::PC_unchanged;
   _append_to_sys_paths = false;
+  _merge_externals = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -194,6 +195,19 @@ add_search_path_options(bool append_to_sys_paths) {
      "does not store absolute pathnames.  The directory containing "
      "the source filename is always implicitly included.",
      &SomethingToEgg::dispatch_search_path, &_got_search_path, &_search_path);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEgg::add_merge_externals_options
+//       Access: Public
+//  Description: Adds -f.
+////////////////////////////////////////////////////////////////////
+void SomethingToEgg::
+add_merge_externals_options() {
+  add_option
+    ("f", "", 40, 
+     "Follow and convert all external references in the source file.",
+     &SomethingToEgg::dispatch_none, &_merge_externals);
 }
 
 ////////////////////////////////////////////////////////////////////

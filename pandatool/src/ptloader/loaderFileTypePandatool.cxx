@@ -21,6 +21,7 @@ LoaderFileTypePandatool::
 LoaderFileTypePandatool(SomethingToEggConverter *converter) :
   _converter(converter)
 {
+  converter->set_merge_externals(true);
 }
 
 ////////////////////////////////////////////////////////////////////

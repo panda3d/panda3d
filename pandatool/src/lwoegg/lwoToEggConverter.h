@@ -32,7 +32,10 @@ class LwoClip;
 class LwoToEggConverter : public SomethingToEggConverter {
 public:
   LwoToEggConverter();
+  LwoToEggConverter(const LwoToEggConverter &copy);
   virtual ~LwoToEggConverter();
+
+  virtual SomethingToEggConverter *make_copy();
 
   virtual string get_name() const;
   virtual string get_extension() const;

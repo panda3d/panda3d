@@ -41,7 +41,10 @@ class EggPrimitive;
 class FltToEggConverter : public SomethingToEggConverter {
 public:
   FltToEggConverter();
+  FltToEggConverter(const FltToEggConverter &copy);
   ~FltToEggConverter();
+
+  virtual SomethingToEggConverter *make_copy();
 
   virtual string get_name() const;
   virtual string get_extension() const;

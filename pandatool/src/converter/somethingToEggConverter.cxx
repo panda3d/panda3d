@@ -6,6 +6,7 @@
 #include "somethingToEggConverter.h"
 
 #include <eggData.h>
+#include <eggExternalReference.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SomethingToEggConverter::Constructor
@@ -14,10 +15,29 @@
 ////////////////////////////////////////////////////////////////////
 SomethingToEggConverter::
 SomethingToEggConverter() {
-  _egg_data = (EggData *)NULL;
-  _owns_egg_data = false;
   _tpc = PC_absolute;
   _mpc = PC_absolute;
+  _merge_externals = false;
+  _egg_data = (EggData *)NULL;
+  _owns_egg_data = false;
+  _error = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+SomethingToEggConverter::
+SomethingToEggConverter(const SomethingToEggConverter &copy) :
+  _tpc(copy._tpc),
+  _tpc_directory(copy._tpc_directory),
+  _mpc(copy._mpc),
+  _mpc_directory(copy._mpc_directory),
+  _merge_externals(copy._merge_externals)
+{
+  _egg_data = (EggData *)NULL;
+  _owns_egg_data = false;
   _error = false;
 }
 
@@ -48,6 +68,69 @@ set_egg_data(EggData *egg_data, bool owns_egg_data) {
   }
   _egg_data = egg_data;
   _owns_egg_data = owns_egg_data;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::handle_external_reference
+//       Access: Public
+//  Description: Handles an external reference in the source file.  If
+//               the merge_externals flag is true (see
+//               set_merge_externals()), this causes the named file to
+//               be read in and converted, and the converted egg
+//               geometry is parented to egg_parent.  Otherwise, only
+//               a reference to a similarly named egg file is parented
+//               to egg_parent.
+//
+//               The parameters orig_filename and searchpath are as
+//               those passed to convert_model_path().
+//
+//               Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool SomethingToEggConverter::
+handle_external_reference(EggGroupNode *egg_parent,
+			  const Filename &orig_filename,
+			  const DSearchPath &searchpath) {
+  if (_merge_externals) {
+    SomethingToEggConverter *ext = make_copy();
+    EggData egg_data;
+    egg_data.set_coordinate_system(get_egg_data().get_coordinate_system());
+    ext->set_egg_data(&egg_data, false);
+
+    // If we're reading references directly, don't mamby around with
+    // the path conversion stuff, just look for the file and read it.
+    Filename as_found = orig_filename;
+    if (!as_found.resolve_filename(searchpath)) {
+      // If the filename can't be found, try just the truncated
+      // filename.
+      Filename truncated = orig_filename.get_basename();
+      if (truncated.resolve_filename(searchpath)) {
+	as_found = truncated;
+      }
+    }
+
+    if (!ext->convert_file(as_found)) {
+      delete ext;
+      nout << "Unable to read external reference: " << orig_filename << "\n";
+      _error = true;
+      return false;
+    }
+
+    egg_parent->steal_children(egg_data);
+    delete ext;
+    return true;
+
+  } else {
+    // If we're installing external references instead of reading
+    // them, we should massage the filename as specified.
+    Filename filename = convert_model_path(orig_filename, searchpath);
+
+    filename.set_extension("egg");
+
+    EggExternalReference *egg_ref = new EggExternalReference("", filename);
+    egg_parent->add_child(egg_ref);
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

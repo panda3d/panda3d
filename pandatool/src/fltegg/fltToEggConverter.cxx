@@ -37,6 +37,17 @@ FltToEggConverter() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FltToEggConverter::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+FltToEggConverter::
+FltToEggConverter(const FltToEggConverter &copy) :
+  SomethingToEggConverter(copy)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FltToEggConverter::Destructor
 //       Access: Public
 //  Description: 
@@ -44,6 +55,16 @@ FltToEggConverter() {
 FltToEggConverter::
 ~FltToEggConverter() {
   cleanup();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltToEggConverter::make_copy
+//       Access: Public, Virtual
+//  Description: Allocates and returns a new copy of the converter.
+////////////////////////////////////////////////////////////////////
+SomethingToEggConverter *FltToEggConverter::
+make_copy() {
+  return new FltToEggConverter(*this);
 }
 
 
@@ -371,13 +392,8 @@ convert_ext_ref(const FltExternalReference *flt_ext, FltToEggLevelState &state) 
   EggGroupNode *egg_parent = 
     state.get_synthetic_group("", flt_ext->get_transform());
 
-  Filename filename = 
-    convert_model_path(flt_ext->_filename, _flt_header->get_model_path());
-
-  filename.set_extension("egg");
-
-  EggExternalReference *egg_ref = new EggExternalReference("", filename);
-  egg_parent->add_child(egg_ref);
+  handle_external_reference(egg_parent,
+			    flt_ext->_filename, _flt_header->get_model_path());
 }
 
 ////////////////////////////////////////////////////////////////////

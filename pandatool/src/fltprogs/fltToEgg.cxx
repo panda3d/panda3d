@@ -24,6 +24,7 @@ FltToEgg() :
   add_model_path_options();
   add_rel_dir_options();
   add_search_path_options(false);
+  add_merge_externals_options();
 
   set_program_description
     ("This program converts MultiGen OpenFlight (.flt) files to egg.  Most "
@@ -64,6 +65,7 @@ run() {
   }
 
   FltToEggConverter converter;
+  converter.set_merge_externals(_merge_externals);
   converter.set_egg_data(&_data, false);
   converter.set_texture_path_convert(_texture_path_convert, _make_rel_dir);
   converter.set_model_path_convert(_model_path_convert, _make_rel_dir);

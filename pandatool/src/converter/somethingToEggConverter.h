@@ -12,6 +12,7 @@
 #include <config_util.h>  // for get_texture_path() and get_model_path()
 
 class EggData;
+class EggGroupNode;
 
 ////////////////////////////////////////////////////////////////////
 // 	 Class : SomethingToEggConverter
@@ -26,7 +27,10 @@ class EggData;
 class SomethingToEggConverter {
 public:
   SomethingToEggConverter();
+  SomethingToEggConverter(const SomethingToEggConverter &copy);
   virtual ~SomethingToEggConverter();
+
+  virtual SomethingToEggConverter *make_copy()=0;
 
   enum PathConvert {
     PC_relative,
@@ -40,6 +44,9 @@ public:
   INLINE void set_model_path_convert(PathConvert mpc,
 				     const Filename &mpc_directory = Filename());
 
+  INLINE void set_merge_externals(bool merge_externals);
+  INLINE bool get_merge_externals() const;
+
   void set_egg_data(EggData *egg_data, bool owns_egg_data);
   INLINE void clear_egg_data();
   INLINE EggData &get_egg_data();
@@ -48,6 +55,12 @@ public:
   virtual string get_extension() const=0;
 
   virtual bool convert_file(const Filename &filename)=0;
+
+  bool handle_external_reference(EggGroupNode *egg_parent,
+				 const Filename &orig_filename,
+				 const DSearchPath &searchpath);
+  INLINE bool handle_external_reference(EggGroupNode *egg_parent,
+					const Filename &orig_filename);
 
 
   INLINE Filename convert_texture_path(const Filename &orig_filename);
@@ -69,6 +82,8 @@ protected:
   Filename _tpc_directory;
   PathConvert _mpc;
   Filename _mpc_directory;
+
+  bool _merge_externals;
 
   EggData *_egg_data;
   bool _owns_egg_data;
