@@ -26,7 +26,7 @@
 #include <textureTransition.h>
 #include <chancfg.h>
 #include <camera.h>
-#include <perspectiveProjection.h>
+#include <perspectiveLens.h>
 #include <frustum.h>
 
 StitchImageConverter::
@@ -55,16 +55,8 @@ void StitchImageConverter::
 setup_camera(const RenderRelation &camera_arc) {
   PT(Camera) cam = DCAST(Camera, camera_arc.get_child());
 
-  Frustumf frust;
-  frust._t = 0.5;
-  frust._b = -0.5;
-  frust._l = -0.5;
-  frust._r = 0.5;
-  frust._fnear = 0.5;
-  frust._ffar = 2.0;
-
-  PerspectiveProjection proj(frust);
-  cam->set_projection(proj);
+  PT(Lens) lens = new PerspectiveLens;
+  cam->set_lens(lens);
 }
 
 bool StitchImageConverter::

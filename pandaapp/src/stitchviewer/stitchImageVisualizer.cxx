@@ -207,7 +207,7 @@ setup() {
       group_node_index < chanConfig.get_num_groups();
       group_node_index++) {
     DisplayRegion *dr = chanConfig.get_dr(group_node_index);
-    dr->get_camera()->set_near_far(1.0, 10000.0);
+    dr->get_camera()->get_lens()->set_near_far(1.0, 10000.0);
     new RenderRelation(_render, chanConfig.get_group_node(group_node_index));
     
   }
