@@ -490,6 +490,11 @@ def rgbPanel(nodePath, callback = None):
             esg.set((color[0], color[1], color[2], esg.getAt(3)))
     menu.insert_command(index = 4, label = 'Popup Color Picker',
                         command = popupColorPicker)
+    def printToLog(nodePath=nodePath):
+        c=nodePath.getColor()
+        print "Vec4(%.3f, %.3f, %.3f, %.3f)"%(c[0], c[1], c[2], c[3])
+    menu.insert_command(index = 5, label = 'Print to log',
+                        command = printToLog)
     
     # Set callback
     def onRelease(r,g,b,a, nodePath = nodePath):
