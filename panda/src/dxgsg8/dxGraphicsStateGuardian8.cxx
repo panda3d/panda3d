@@ -1907,15 +1907,6 @@ draw_prim_setup(const Geom *geom) {
             _perComp &= ~PER_COLOR;
          } else if(ColorBinding == G_OVERALL){
             GET_NEXT_COLOR();
-
-/*
-    Colorf tempcolor = geom->get_next_color(ci);                                    
-    if(!_color_transform_required) {                                                
-        _curD3Dcolor = Colorf_to_D3DCOLOR(tempcolor);                               
-    } else {                                                                        
-        transform_color(tempcolor,_curD3Dcolor);                                    
-    }
-*/
             _perVertex &= ~PER_COLOR;
             _perPrim &= ~PER_COLOR;
             _perComp &= ~PER_COLOR;
@@ -2898,7 +2889,7 @@ draw_tri(GeomTri *geom, GeomContext *gc) {
                _perVertex |= PER_TEXCOORD;
         } 
 
-        bool bPerPrimColor=((_perPrim & PER_COLOR)!=0);
+        bool bPerPrimColor=(ColorBinding == G_PER_PRIM);
         if(bPerPrimColor)
            _perPrim |= PER_COLOR;
           else if(ColorBinding == G_PER_VERTEX)    
