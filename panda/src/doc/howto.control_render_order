@@ -112,8 +112,8 @@ The order of all the predefined bins (and their predefined sort
 orders) is as follows:
 
   10 - 'background'  : GeomBinFixed
-  20 - 'opaque'      : GeomBinNormal (opaque sub-bin)
-  30 - 'transparent' : GeomBinNormal (transparent sub-bin)
+  20 - 'opaque'      : GeomBinNormal (opaque sub-bin of 'default')
+  30 - 'transparent' : GeomBinNormal (transparent sub-bin of 'default')
   40 - 'fixed'       : GeomBinFixed
   50 - 'unsorted'    : GeomBinUnsorted
 
