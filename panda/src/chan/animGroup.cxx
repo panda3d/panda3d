@@ -156,26 +156,31 @@ make_child_dynamic(const string &name) {
         // The new child was appended to the end of our children list
         // by its constructor.  Reposition it to replace the original
         // child.
-#ifndef __GNUC__
-        // There appears to be a compiler bug in gcc 3.2 that causes
-        // the following not to compile correctly:
-        (*ci) = new_child;
-        _children.pop_back();
-#else
+
+        // I would like to use these lines, but for some reason it
+        // crashes:
+        /*
+        {
+          (*ci) = new_child;
+          _children.pop_back();
+        }
+        */
+
         // But this longer way of achieving the same result works
         // instead:
-        Children::iterator nci;
-        Children new_children;
-        for (nci = _children.begin(); nci != _children.end(); ++nci) {
-          if ((*nci) == child) {
-            new_children.push_back(new_child);
-          } else if ((*nci) != new_child) {
-            new_children.push_back(*nci);
+        {
+          Children::iterator nci;
+          Children new_children;
+          for (nci = _children.begin(); nci != _children.end(); ++nci) {
+            if ((*nci) == child) {
+              new_children.push_back(new_child);
+            } else if ((*nci) != new_child) {
+              new_children.push_back(*nci);
+            }
           }
+          new_children.swap(_children);
         }
-        new_children.swap(_children);
-        new_children.clear();
-#endif
+
         return new_child;
       }
     }

@@ -60,7 +60,7 @@ private:
   // This is used only if we are using the explicit set_value()
   // interface.
   bool _value_changed;
-  bool _float_value;
+  float _float_value;
 
 public:
   static void register_with_read_factory();
