@@ -380,11 +380,13 @@ void SoftNodeDesc::
 get_transform(SAA_Scene *scene, EggGroup *egg_group, bool global) {
   // Get the model's matrix
   int scale_joint = 0;
-  
+
+  /*
   if ( strstr( _parent->get_name().c_str(), "scale" ) != NULL ) {
-    scale_joint = 1;    
+    scale_joint = 1;
     cout << "scale joint flag set!\n";
   }
+  */
 
   if (!global && _parent->is_joint() && !stec.flatten && !scale_joint) {
 
@@ -410,10 +412,10 @@ get_transform(SAA_Scene *scene, EggGroup *egg_group, bool global) {
                   matrix[1][0], matrix[1][1], matrix[1][2], matrix[1][3],
                   matrix[2][0], matrix[2][1], matrix[2][2], matrix[2][3],
                   matrix[3][0], matrix[3][1], matrix[3][2], matrix[3][3]);
-    //    if (!m4d.almost_equal(LMatrix4d::ident_mat(), 0.0001)) {
+    if (!m4d.almost_equal(LMatrix4d::ident_mat(), 0.0001)) {
       egg_group->set_transform(m4d);
       cout << "set transform in egg_group\n";
-      //    }
+    }
   }
   return;
 }
@@ -440,25 +442,17 @@ get_joint_transform(SAA_Scene *scene,  EggGroup *egg_group, EggXfmSAnim *anim, b
     float i,j,k;
     float h,p,r;
     float x,y,z;
-    int size;
-    SAA_Boolean globalFlag = FALSE;
-    SAA_Boolean bigEndian;
     int scale_joint = 0;
     
+    /*
     if ( strstr( _parent->get_name().c_str(), "scale" ) != NULL ) {
       scale_joint = 1;    
       cout << "scale joint flag set!\n";
     }
+    */
 
     cout << "\n\nanimating child " << name << endl;
 
-    SAA_elementGetUserDataSize( scene, skeletonPart, "GLOBAL", &size );
-        
-    if ( size != 0 )
-      SAA_elementGetUserData( scene, skeletonPart, "GLOBAL", 
-                              sizeof( SAA_Boolean), &bigEndian, (void *)&globalFlag );
-
-    //    if ( global ) {
     if (_parent->is_joint() && !stec.flatten && !scale_joint ) {
       cout << "using local matrix\n";
 
