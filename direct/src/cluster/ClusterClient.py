@@ -82,10 +82,11 @@ class ClusterClient(DirectObject.DirectObject):
         taskMgr.add(self.synchronizeTimeTask, "synchronizeTimeTask", -40)
 
     def synchronizeTimeTask(self,task):
+        frameCount = globalClock.getFrameCount()
         frameTime = globalClock.getFrameTime()
         dt = globalClock.getDt()
         for server in self.serverList:
-            server.sendTimeData(frameTime, dt)
+            server.sendTimeData(frameCount, frameTime, dt)
         return Task.cont
 
     def startMoveCamTask(self):
@@ -293,9 +294,10 @@ class DisplayConnection:
         datagram = self.msgHandler.makeExitDatagram()
         self.cw.send(datagram, self.tcpConn)
 
-    def sendTimeData(self,frameTime, dt):
+    def sendTimeData(self,frameCount, frameTime, dt):
         ClusterClient.notify.debug("send time data...")
-        datagram = self.msgHandler.makeTimeDataDatagram(frameTime, dt)
+        datagram = self.msgHandler.makeTimeDataDatagram(
+            frameCount, frameTime, dt)
         self.cw.send(datagram, self.tcpConn)
 
 class ClusterConfigItem:

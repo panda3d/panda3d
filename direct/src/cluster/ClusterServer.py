@@ -50,8 +50,8 @@ class ClusterServer(DirectObject.DirectObject):
         if clusterSyncFlag:
             self.startSwapCoordinator()
             base.graphicsEngine.setAutoFlip(0)
-        # Set global clock mode to non-real time
-        globalClock.setMode(ClockObject.MNonRealTime)
+        # Set global clock mode to slave mode
+        globalClock.setMode(ClockObject.MSlave)
         # Send verification of startup to client
         self.daemon = DirectD()
         # These must be passed in as bootstrap arguments and stored in
@@ -204,9 +204,9 @@ class ClusterServer(DirectObject.DirectObject):
 
     def handleTimeData(self,dgi):
         """ Update cameraJig position to reflect latest position """
-        (frameTime, dt) = self.msgHandler.parseTimeDataDatagram(dgi)
+        (frameCount,frameTime,dt) = self.msgHandler.parseTimeDataDatagram(dgi)
         # Use frame time from client for both real and frame time
-        globalClock.setRealTime(frameTime)
+        globalClock.setFrameCount(frameCount)
         globalClock.setFrameTime(frameTime)
         globalClock.setDt(dt)
 

@@ -226,20 +226,22 @@ class ClusterMsgHandler:
         datagram.addUint8(CLUSTER_EXIT)
         return datagram
         
-    def makeTimeDataDatagram(self,frameTime, dt):
+    def makeTimeDataDatagram(self,frameCount, frameTime, dt):
         datagram = PyDatagram()
         datagram.addUint32(self.packetNumber)
         self.packetNumber = self.packetNumber + 1
         datagram.addUint8(CLUSTER_TIME_DATA)
+        datagram.addUint32(frameCount)
         datagram.addFloat32(frameTime)
         datagram.addFloat32(dt)
         return datagram
 
     def parseTimeDataDatagram(self, dgi):
+        frameCount=dgi.getUint32()
         frameTime=dgi.getFloat32()
         dt=dgi.getFloat32()
         self.notify.debug('time data=%f %f' % (frameTime, dt))
-        return (frameTime, dt)
+        return (frameCount, frameTime, dt)
 
 
 
