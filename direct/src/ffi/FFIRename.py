@@ -1,4 +1,5 @@
 import FFIConstants
+import UsePgraph
 from string import *
 
 
@@ -80,6 +81,76 @@ classRenameDictionary = {
     'Frustumf'                  : 'Frustum',
     'Frustumd'                  : 'FrustumD'
     }
+
+# The following is a bit of temporary kludginess to allow switching in
+# the pgraph stuff for testing.
+pgraphMethodRenameDictionary = {
+    'loadSync'                  : 'sploadSync',
+    'setCamera'                 : 'spsetCamera',
+
+    'qploadSync'                : 'loadSync',
+    'setQpcamera'               : 'setCamera',
+    }
+
+pgraphClassRenameDictionary = {
+    'AnalogNode'                : 'SpAnalogNode',
+    'AnimBundleNode'            : 'SpAnimBundleNode',
+    'ButtonNode'                : 'SpButtonNode',
+    'ButtonThrower'             : 'SpButtonThrower',
+    'Camera'                    : 'SpCamera',
+    'ChanConfig'                : 'SpChanConfig',
+    'Character'                 : 'SpCharacter',
+    'DataGraphTraverser'        : 'SpDataGraphTraverser',
+    'DataNode'                  : 'SpDataNode',
+    'DialNode'                  : 'SpDialNode',
+    'DriveInterface'            : 'SpDriveInterface',
+    'DriverInterface'           : 'SpDriveInterface',
+    'GeomNode'                  : 'SpGeomNode',
+    'LODNode'                   : 'SpLODNode',
+    'LensNode'                  : 'SpLensNode',
+    'ModelPool'                 : 'SpModelPool',
+    'MouseAndKeyboard'          : 'SpMouseAndKeyboard',
+    'MouseWatcher'              : 'SpMouseWatcher',
+    'NodePath'                  : 'SpNodePath',
+    'NodePathCollection'        : 'SpNodePathCollection',
+    'PartBundleNode'            : 'SpPartBundleNode',
+    'SequenceNode'              : 'SpSequenceNode',
+    'Trackball'                 : 'SpTrackball',
+    'TrackerNode'               : 'SpTrackerNode',
+    'Transform2SG'              : 'SpTransform2SG',
+    'VirtualMouse'              : 'SpVirtualMouse',
+
+    'QpAnalogNode'              : 'AnalogNode',
+    'QpAnimBundleNode'          : 'AnimBundleNode',
+    'QpButtonNode'              : 'ButtonNode',
+    'QpButtonThrower'           : 'ButtonThrower',
+    'QpCamera'                  : 'Camera',
+    'QpChanConfig'              : 'ChanConfig',
+    'QpCharacter'               : 'Character',
+    'QpDataGraphTraverser'      : 'DataGraphTraverser',
+    'QpDataNode'                : 'DataNode',
+    'QpDialNode'                : 'DialNode',
+    'QpDriveInterface'          : 'DriveInterface',
+    'QpDriverInterface'         : 'DriveInterface',
+    'QpGeomNode'                : 'GeomNode',
+    'QpLODNode'                 : 'LODNode',
+    'QpLensNode'                : 'LensNode',
+    'QpModelPool'               : 'ModelPool',
+    'QpMouseAndKeyboard'        : 'MouseAndKeyboard',
+    'QpMouseWatcher'            : 'MouseWatcher',
+    'QpNodePath'                : 'NodePath',
+    'QpNodePathCollection'      : 'NodePathCollection',
+    'QpPartBundleNode'          : 'PartBundleNode',
+    'QpSequenceNode'            : 'SequenceNode',
+    'QpTrackball'               : 'Trackball',
+    'QpTrackerNode'             : 'TrackerNode',
+    'QpTransform2SG'            : 'Transform2SG',
+    'QpVirtualMouse'            : 'VirtualMouse',
+    }
+
+if UsePgraph.use:
+    methodRenameDictionary.update(pgraphMethodRenameDictionary)
+    classRenameDictionary.update(pgraphClassRenameDictionary)
 
 
 def checkKeyword(cppName):

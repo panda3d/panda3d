@@ -112,6 +112,9 @@ class Loader:
             # A traditional model file is probably an old-style,
             # static font.
             node = ModelPool.loadModel(modelPath)
+            if node == None:
+                return StaticTextFont(Node())
+            
             # Create a temp node path so you can adjust priorities
             nodePath = hidden.attachNewNode(node)
             nodePath.adjustAllPriorities(priority)

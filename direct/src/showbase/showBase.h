@@ -44,8 +44,10 @@ EXPCL_DIRECT DSearchPath &get_particle_path();
 
 EXPCL_DIRECT PT(GraphicsPipe) make_graphics_pipe();
 EXPCL_DIRECT ChanConfig
-  make_graphics_window(GraphicsPipe *pipe,
-                       NodeRelation *render_arc);
+make_graphics_window(GraphicsPipe *pipe,
+                     NodeRelation *render_arc);
+EXPCL_DIRECT qpChanConfig
+qpmake_graphics_window(GraphicsPipe *pipe, const qpNodePath &render);
 
 EXPCL_DIRECT void throw_new_frame();
 EXPCL_DIRECT NodePath setup_panda_2d(GraphicsWindow *win, const string &name);

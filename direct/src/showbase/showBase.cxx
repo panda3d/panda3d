@@ -18,33 +18,38 @@
 
 #include "showBase.h"
 
-#include <throw_event.h>
-#include <camera.h>
-#include <renderRelation.h>
-#include <namedNode.h>
-#include <renderModeTransition.h>
-#include <textureTransition.h>
-#include <textureTransition.h>
-#include <interactiveGraphicsPipe.h>
-#include <graphicsWindow.h>
-#include <chancfg.h>
-#include <cullFaceTransition.h>
-#include <dftraverser.h>
-#include <renderBuffer.h>
-#include <clockObject.h>
-#include <animControl.h>
-#include <nodeRelation.h>
-#include <dataGraphTraversal.h>
-#include <depthTestTransition.h>
-#include <depthWriteTransition.h>
-#include <lightTransition.h>
-#include <materialTransition.h>
-#include <camera.h>
-#include <orthographicLens.h>
-#include <appTraverser.h>
-#include <get_config_path.h>
-#include <allTransitionsWrapper.h>
-#include <dataGraphTraversal.h>
+#include "throw_event.h"
+#include "camera.h"
+#include "renderRelation.h"
+#include "namedNode.h"
+#include "renderModeTransition.h"
+#include "textureTransition.h"
+#include "textureTransition.h"
+#include "interactiveGraphicsPipe.h"
+#include "graphicsWindow.h"
+#include "chancfg.h"
+#include "cullFaceTransition.h"
+#include "dftraverser.h"
+#include "renderBuffer.h"
+#include "clockObject.h"
+#include "animControl.h"
+#include "nodeRelation.h"
+#include "dataGraphTraversal.h"
+#include "depthTestTransition.h"
+#include "depthWriteTransition.h"
+#include "lightTransition.h"
+#include "materialTransition.h"
+#include "camera.h"
+#include "orthographicLens.h"
+#include "appTraverser.h"
+#include "get_config_path.h"
+#include "allTransitionsWrapper.h"
+#include "dataGraphTraversal.h"
+#include "depthTestAttrib.h"
+#include "depthWriteAttrib.h"
+#include "cullFaceAttrib.h"
+#include "materialAttrib.h"
+#include "qpcamera.h"
 
 ConfigureDef(config_showbase);
 ConfigureFn(config_showbase) {
@@ -107,6 +112,26 @@ ChanConfig make_graphics_window(GraphicsPipe *pipe, NodeRelation *render_arc) {
 
   std::string conf = config_showbase.GetString("chan-config", chan_config);
   ChanConfig chan_config(pipe, conf, render_top, override);
+  main_win = chan_config.get_win();
+  assert(main_win != (GraphicsWindow*)0L);
+
+  return chan_config;
+}
+
+qpChanConfig
+qpmake_graphics_window(GraphicsPipe *pipe, const qpNodePath &render) {
+  PT(GraphicsWindow) main_win;
+  ChanCfgOverrides override;
+
+  // Now use ChanConfig to create the window.
+  override.setField(ChanCfgOverrides::Mask,
+                    ((unsigned int)(W_DOUBLE|W_DEPTH|W_MULTISAMPLE)));
+
+  std::string title = config_showbase.GetString("window-title", window_title);
+  override.setField(ChanCfgOverrides::Title, title);
+
+  std::string conf = config_showbase.GetString("chan-config", chan_config);
+  qpChanConfig chan_config(pipe, conf, render, override);
   main_win = chan_config.get_win();
   assert(main_win != (GraphicsWindow*)0L);
 
@@ -178,7 +203,6 @@ add_render_layer(GraphicsWindow *win, Node *render_top, Camera *camera) {
   dr->set_camera(camera);
 }
 
-
 bool
 toggle_wireframe(NodeRelation *render_arc) {
   static bool wireframe_mode = false;
@@ -222,7 +246,8 @@ toggle_backface(NodeRelation *render_arc) {
 }
 
 
-bool toggle_texture(NodeRelation *render_arc) {
+bool 
+toggle_texture(NodeRelation *render_arc) {
   static bool textures_enabled = true;
 
   textures_enabled = !textures_enabled;
@@ -238,12 +263,12 @@ bool toggle_texture(NodeRelation *render_arc) {
   return textures_enabled;
 }
 
-void take_snapshot(GraphicsWindow *win, const string &name) {
+void
+take_snapshot(GraphicsWindow *win, const string &name) {
   GraphicsStateGuardian* gsg = win->get_gsg();
   const RenderBuffer& rb = gsg->get_render_buffer(RenderBuffer::T_front);
 
-  //  CPT(DisplayRegion) dr = gsg->get_current_display_region();
-  CPT(DisplayRegion) dr = win->get_channel(0)->get_layer(0)->get_dr(0);
+  CPT(DisplayRegion) dr = win->get_display_region(0);
   nassertv(dr != (DisplayRegion *)NULL);
 
   int width = dr->get_pixel_width();
