@@ -1465,6 +1465,28 @@ draw_sphere(GeomSphere *geom, GeomContext *) {
 TextureContext *GLGraphicsStateGuardian::
 prepare_texture(Texture *tex) {
   //  activate();
+
+  GLint max_tex_size; 
+  glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_tex_size); 
+
+  int xsize = tex->_pbuffer->get_xsize();
+  int ysize = tex->_pbuffer->get_ysize();
+
+  if((xsize> max_tex_size) || (ysize > max_tex_size)) {
+      glgsg_cat.error() << "prepare_texture failed on "<< tex->get_name() <<": "<< xsize << "x" << ysize << " exceeds max tex size " << max_tex_size << "x" << max_tex_size << endl;
+      return NULL;
+  }
+
+  // regular GL does not allow non-pow2 size textures
+  // the GL_NV_texture_rectangle EXT does allow non-pow2 sizes, albeit with no mipmaps or coord wrapping
+  // should probably add checks for that in here at some point
+  // or you could use gluBuild2DMipMaps to scale the texture to the nearest pow2 size
+
+  if(!(ISPOW2(xsize) && ISPOW2(ysize))) {
+      glgsg_cat.error() << "prepare_texture failed on "<< tex->get_name() <<": "<< xsize << "x" << ysize << " is not a power of 2 size!\n";
+      return NULL;
+  }
+
   GLTextureContext *gtc = new GLTextureContext(tex);
   glGenTextures(1, &gtc->_index);
 
@@ -1704,6 +1726,7 @@ release_geom_node(GeomNodeContext *gnc) {
 #endif  // temporarily disabled until we bring to new scene graph
 }
 
+#if 0
 static int logs[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048,
                       4096, 0 };
 
@@ -1716,6 +1739,7 @@ static int binary_log_cap(const int x) {
     return 4096;
   return logs[i];
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::copy_texture
@@ -1730,32 +1754,37 @@ copy_texture(TextureContext *tc, const DisplayRegion *dr) {
 
   Texture *tex = tc->_texture;
 
+  int xo, yo, w, h;
+
+#if 0
   // Determine the size of the grab from the given display region
   // If the requested region is not a power of two, grab a region that is
   // a power of two that contains the requested region
-  int xo, yo, req_w, req_h;
+  int req_w, req_h;
   dr->get_region_pixels(xo, yo, req_w, req_h);
-  int w = binary_log_cap(req_w);
-  int h = binary_log_cap(req_h);
+  w = binary_log_cap(req_w);
+  h = binary_log_cap(req_h);
   if (w != req_w || h != req_h) {
     tex->_requested_w = req_w;
     tex->_requested_h = req_h;
     tex->_has_requested_size = true;
   }
+#else
+  // doing the above is bad unless you also provide some way
+  // for the caller to adjust his texture coordinates accordingly
+  // this was done for 'draw_texture' but not for anything else
+  
+  dr->get_region_pixels(xo, yo, w, h);
+#endif
 
   PixelBuffer *pb = tex->_pbuffer;
-
-  pb->set_xorg(xo);
-  pb->set_yorg(yo);
-  pb->set_xsize(w);
-  pb->set_ysize(h);
+  pb->set_size(xo,yo,w,h);
 
   bind_texture(tc);
 
   glCopyTexImage2D(GL_TEXTURE_2D, 0,
                    get_internal_image_format(pb->get_format()),
-                   pb->get_xorg(), pb->get_yorg(),
-                   pb->get_xsize(), pb->get_ysize(), pb->get_border());
+                   xo, yo, w, h, pb->get_border());
 
   // Clear the internal texture state, since we've just monkeyed with it.
   modify_state(get_untextured_state());
@@ -2795,7 +2824,15 @@ apply_texture_immediate(Texture *tex) {
   glTexImage2D(GL_TEXTURE_2D, 0, internal_format,
                xsize, ysize, pb->get_border(),
                external_format, type, image);
-  report_errors();
+
+  //report_errors();
+  // want to give explict error for texture creation failure
+  GLenum error_code = glGetError();
+  if(error_code != GL_NO_ERROR) {
+    const GLubyte *error_string = gluErrorString(error_code);
+    glgsg_cat.error() << "GL texture creation failed for " << tex->get_name() << 
+                        ((error_string != (const GLubyte *)NULL) ? " : " : "") << endl;
+  }
 
   if (locally_allocated_image != (uchar *)NULL) {
     delete[] locally_allocated_image;
@@ -2852,12 +2889,17 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr) {
   gluOrtho2D(0, 1, 0, 1);
 
   float txl, txr, tyt, tyb;
-  txl = tyb = 0.;
+  txl = tyb = 0.0f;
+#if 0
+ // remove this auto-scaling stuff for now
+ // has_requested_size is only used here for draw_texture()
   if (tex->_has_requested_size) {
     txr = ((float)(tex->_requested_w)) / ((float)(tex->_pbuffer->get_xsize()));
     tyt = ((float)(tex->_requested_h)) / ((float)(tex->_pbuffer->get_ysize()));
-  } else {
-    txr = tyt = 1.;
+  } else 
+#endif     
+  {
+    txr = tyt = 1.0f;
   }
 
   // This two-triangle strip is actually a quad.  But it's usually

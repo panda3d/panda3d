@@ -341,6 +341,8 @@ private:
 #define DO_PSTATS_STUFF(XX)
 #endif
 
+#define ISPOW2(X) (((X) & ((X)-1))==0)
+
 #include "glGraphicsStateGuardian.I"
 
 #endif
