@@ -125,6 +125,39 @@ xform(const LMatrix4f &mat) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionNode::combine_with
+//       Access: Public, Virtual
+//  Description: Collapses this node with the other node, if possible,
+//               and returns a pointer to the combined node, or NULL
+//               if the two nodes cannot safely be combined.
+//
+//               The return value may be this, other, or a new node
+//               altogether.
+//
+//               This function is called from GraphReducer::flatten(),
+//               and need not deal with children; its job is just to
+//               decide whether to collapse the two nodes and what the
+//               collapsed node should look like.
+////////////////////////////////////////////////////////////////////
+Node *CollisionNode::
+combine_with(Node *other) {
+  if (is_exact_type(get_class_type()) &&
+      other->is_exact_type(get_class_type())) {
+    // Two CollisionNodes can combine, but only if they have the same
+    // name.
+    CollisionNode *cother = DCAST(CollisionNode, other);
+    if (get_name() == cother->get_name()) {
+      const PT(CollisionSolid) *solids_begin = &cother->_solids[0];
+      const PT(CollisionSolid) *solids_end = solids_begin + cother->_solids.size();
+      _solids.insert(_solids.end(), solids_begin, solids_end);
+      return this;
+    }
+  }
+
+  return (Node *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionNode::preserve_name
 //       Access: Public, Virtual
 //  Description: Returns true if the node's name has extrinsic meaning

@@ -290,6 +290,11 @@ consider_siblings(Node *, NodeRelation *arc1, NodeRelation *arc2) {
 
   // We can't collapse siblings with arcs that contain sub_render
   // transitions.  That could be bad.
+
+  // On the other hand, maybe we can; why not?  The only one that
+  // could cause grief is the DecalTransition, which we'll
+  // special-case in SceneGraphReducer.
+  /*
   if (arc1->has_sub_render_trans()) {
     if (graph_cat.is_debug()) {
       graph_cat.debug()
@@ -298,6 +303,7 @@ consider_siblings(Node *, NodeRelation *arc1, NodeRelation *arc2) {
     }
     return false;
   }
+  */
 
   return true;
 }

@@ -23,6 +23,7 @@
 #include <geom.h>
 #include <indent.h>
 #include <billboardTransition.h>
+#include <decalTransition.h>
 
 
 ////////////////////////////////////////////////////////////////////
@@ -283,6 +284,25 @@ r_apply_transitions(NodeRelation *arc, int transition_types,
     NodeRelation *child_arc = (*drpi);
     r_apply_transitions(child_arc, transition_types, trans, duplicate);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SceneGraphReducer::consider_siblings
+//       Access: Protected, Virtual
+//  Description: Decides whether or not the indicated sibling nodes
+//               (and their associated arcs) should be collapsed into
+//               a single node or not.  Returns true if the arcs may
+//               be collapsed, false if they should be kept distinct.
+////////////////////////////////////////////////////////////////////
+bool SceneGraphReducer::
+consider_siblings(Node *parent, NodeRelation *arc1, NodeRelation *arc2) {
+  // We can't collapse siblings with arcs that contain the
+  // DecalTransition; however, other transitions are OK.
+  if (arc1->has_transition(DecalTransition::get_class_type())) {
+    return false;
+  }
+
+  return GraphReducer::consider_siblings(parent, arc1, arc2);
 }
 
 ////////////////////////////////////////////////////////////////////

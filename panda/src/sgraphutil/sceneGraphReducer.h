@@ -70,6 +70,9 @@ protected:
                            AccumulatedTransitions trans,
                            bool duplicate);
 
+  virtual bool consider_siblings(Node *parent,
+                                 NodeRelation *arc1, NodeRelation *arc2);
+
   virtual Node *collapse_nodes(Node *node1, Node *node2, bool siblings);
 
 private:

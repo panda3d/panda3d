@@ -44,6 +44,7 @@ public:
   virtual ~CollisionNode();
   virtual Node *make_copy() const;
   virtual void xform(const LMatrix4f &mat);
+  virtual Node *combine_with(Node *other); 
   virtual bool preserve_name() const;
 
 PUBLISHED:
