@@ -156,7 +156,7 @@ setup() {
     want_pipe_type = NoninteractiveGraphicsPipe::get_class_type();
   }
 
-  _main_pipe = GraphicsPipe::_factory.make_instance(want_pipe_type);
+  _main_pipe = GraphicsPipe::get_factory().make_instance(want_pipe_type);
 
   if (_main_pipe == (GraphicsPipe*)0L) {
     nout << "No suitable pipe is available!  Check your Configrc!\n";
