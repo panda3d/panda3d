@@ -10,7 +10,7 @@ def randHash(num):
     bit patterns (i.e. doIds or zoneIds) to numbers with random bit patterns
     """
     rng = RandomNumGen(num)
-    return rng.randint(0,1<<16)
+    return rng.randint(0, (1<<16) - 1)
 
 class RandomNumGen:
     notify = \
