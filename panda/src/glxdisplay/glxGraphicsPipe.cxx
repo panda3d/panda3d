@@ -398,7 +398,9 @@ choose_fbconfig(FrameBufferProperties &properties) const {
       }
 
       if (fbconfig == None) {
-        glxdisplay_cat.error()
+        // This is only an info message, because we can still fall
+        // back to the XVisual interface.
+        glxdisplay_cat.info()
           << "Could not get any GLX fbconfig.\n";
         return None;
       }
@@ -571,7 +573,7 @@ try_for_fbconfig(int framebuffer_mode,
   attrib_list[n] = (int)None;
 
   int num_configs = 0;
-  GLXFBConfig *configs = 
+  GLXFBConfig *configs =
     glXChooseFBConfig(_display, _screen, attrib_list, &num_configs);
 
   if (glxdisplay_cat.is_debug()) {

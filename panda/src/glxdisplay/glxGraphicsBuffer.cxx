@@ -125,6 +125,12 @@ open_buffer() {
   glxGraphicsStateGuardian *glxgsg;
   DCAST_INTO_R(glxgsg, _gsg, false);
 
+  if (glxgsg->_fbconfig == None) {
+    // If we didn't use an fbconfig to create the GSG, we can't create
+    // a PBuffer.
+    return false;
+  }
+
   static const int max_attrib_list = 32;
   int attrib_list[max_attrib_list];
   int n=0;
