@@ -145,12 +145,12 @@ xform(const LMatrix4f &mat) {
   // and then convert them back.  Hopefully we won't lose too much
   // precision during all of this.
 
-  if (collide_cat.is_debug()) {
-    collide_cat.debug()
+  if (collide_cat.is_spam()) {
+    collide_cat.spam()
       << "CollisionPolygon transformed by:\n";
-    mat.write(collide_cat.debug(false), 2);
+    mat.write(collide_cat.spam(false), 2);
     if (_points.empty()) {
-      collide_cat.debug(false)
+      collide_cat.spam(false)
         << "  (no points)\n";
     }
   }
@@ -627,12 +627,12 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
     }
   }
 
-  if (collide_cat.is_debug()) {
-    collide_cat.debug()
+  if (collide_cat.is_spam()) {
+    collide_cat.spam()
       << "CollisionPolygon defined with " << num_points << " vertices:\n";
     const LPoint3f *pi;
     for (pi = begin; pi != end; ++pi) {
-      collide_cat.debug(false) << "  " << (*pi) << "\n";
+      collide_cat.spam(false) << "  " << (*pi) << "\n";
     }
   }
 #endif
