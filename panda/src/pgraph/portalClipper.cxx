@@ -185,7 +185,7 @@ draw_lines()
       if (line_index.size() <= 2) {
         // Here's a special case: just one line segment.
         _geom_line->set_num_prims(1);
-        _geom_line->set_width(_thick);
+        //_geom_line->set_width(_thick);
         geom = _geom_line;
 
       } else {
@@ -193,7 +193,7 @@ draw_lines()
         // end-to-end like a series of linestrips.
         _geom_linestrip->set_num_prims(lengths.size());
         _geom_linestrip->set_lengths(lengths);
-        _geom_linestrip->set_width(_thick);
+        //_geom_linestrip->set_width(_thick);
         geom = _geom_linestrip;
       }
 
