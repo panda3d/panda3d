@@ -145,22 +145,19 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
     camera_transform = _look_at.get_net_transform();
   }
 
-  CPT(TransformState) billboard_transform =
-    compute_billboard(net_transform, camera_transform);
-
-  node_transform = billboard_transform->compose(node_transform);
+  compute_billboard(node_transform, net_transform, camera_transform);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardEffect::has_net_transform
+//     Function: BillboardEffect::has_adjust_transform
 //       Access: Public, Virtual
 //  Description: Should be overridden by derived classes to return
-//               true if net_transform() has been defined, and
+//               true if adjust_transform() has been defined, and
 //               therefore the RenderEffect has some effect on the
-//               node's apparent net transform.
+//               node's apparent local and net transforms.
 ////////////////////////////////////////////////////////////////////
 bool BillboardEffect::
-has_net_transform() const {
+has_adjust_transform() const {
   // A BillboardEffect can only affect the net transform when it is to
   // a particular node.  A billboard to a camera is camera-dependent,
   // of course, so it has no effect in the absence of any particular
@@ -169,31 +166,30 @@ has_net_transform() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BillboardEffect::net_transform
+//     Function: BillboardEffect::adjust_transform
 //       Access: Public, Virtual
-//  Description: Given the node's parent's net transform, compute its
-//               parent's new net transform after application of the
-//               RenderEffect.  Presumably this interposes some
-//               special transform derived from the RenderEffect.
-//               This may only be called if has_net_transform(),
-//               above, has been defined to return true.
+//  Description: Performs some operation on the node's apparent net
+//               and/or local transforms.  This will only be called if
+//               has_adjust_transform() is redefined to return true.
+//
+//               Both parameters are in/out.  The original transforms
+//               will be passed in, and they may (or may not) be
+//               modified in-place by the RenderEffect.
 ////////////////////////////////////////////////////////////////////
-CPT(TransformState) BillboardEffect::
-net_transform(const TransformState *orig_net_transform) const {
+void BillboardEffect::
+adjust_transform(CPT(TransformState) &net_transform,
+                 CPT(TransformState) &node_transform) const {
   // A BillboardEffect can only affect the net transform when it is to
   // a particular node.  A billboard to a camera is camera-dependent,
   // of course, so it has no effect in the absence of any particular
   // camera viewing it.
   if (_look_at.is_empty()) {
-    return orig_net_transform;
+    return;
   }
 
   CPT(TransformState) camera_transform = _look_at.get_net_transform();
 
-  CPT(TransformState) billboard_transform =
-    compute_billboard(orig_net_transform, camera_transform);
-
-  return orig_net_transform->compose(billboard_transform);
+  compute_billboard(node_transform, net_transform, camera_transform);
 }
 
 
@@ -246,12 +242,26 @@ compare_to_impl(const RenderEffect *other) const {
 //       Access: Private
 //  Description: Computes the billboard operation given the parent's
 //               net transform and the camera transform.
+//
+//               The result is applied to node_transform, which is
+//               modified in-place.
 ////////////////////////////////////////////////////////////////////
-CPT(TransformState) BillboardEffect::
-compute_billboard(const TransformState *net_transform, 
+void BillboardEffect::
+compute_billboard(CPT(TransformState) &node_transform, 
+                  const TransformState *net_transform, 
                   const TransformState *camera_transform) const {
+  // First, extract out just the translation component of the node's
+  // local transform.  This gets applied to the net transform, to
+  // compute the look-at direction properly.
+  CPT(TransformState) translate = TransformState::make_pos(node_transform->get_pos());
+
+  // And then the translation gets removed from the node, but we keep
+  // its rotation etc., which gets applied after the billboard
+  // operation.
+  node_transform = node_transform->set_pos(LPoint3f(0.0f, 0.0f, 0.0f));
+
   CPT(TransformState) rel_transform =
-    net_transform->invert_compose(camera_transform);
+    net_transform->compose(translate)->invert_compose(camera_transform);
   const LMatrix4f &rel_mat = rel_transform->get_mat();
 
   // Determine the look_at point in the camera space.
@@ -289,7 +299,7 @@ compute_billboard(const TransformState *net_transform,
     rotate.set_row(3, translate);
   }
 
-  return TransformState::make_mat(rotate);
+  node_transform = translate->compose(TransformState::make_mat(rotate))->compose(node_transform);
 }
 
 ////////////////////////////////////////////////////////////////////

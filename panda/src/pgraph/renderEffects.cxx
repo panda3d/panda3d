@@ -421,10 +421,10 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderEffects::net_transform
+//     Function: RenderEffects::adjust_transform
 //       Access: Public
-//  Description: Calls net_transform() on all effects.  You may check
-//               has_net_transform() first to see if any effects
+//  Description: Calls adjust_transform() on all effects.  You may check
+//               has_adjust_transform() first to see if any effects
 //               define this method to do anything useful.
 //
 //               The order in which the individual effects are applied
@@ -432,15 +432,13 @@ cull_callback(CullTraverser *trav, CullTraverserData &data,
 //               change to the transform on any particular node, you
 //               might get indeterminate results.
 ////////////////////////////////////////////////////////////////////
-CPT(TransformState) RenderEffects::
-net_transform(const TransformState *orig_net_transform) const {
-  CPT(TransformState) net_transform = orig_net_transform;
+void RenderEffects::
+adjust_transform(CPT(TransformState) &net_transform,
+                 CPT(TransformState) &node_transform) const {
   Effects::const_iterator ei;
   for (ei = _effects.begin(); ei != _effects.end(); ++ei) {
-    net_transform = (*ei)._effect->net_transform(net_transform);
+    (*ei)._effect->adjust_transform(net_transform, node_transform);
   }
-
-  return net_transform;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -597,18 +595,18 @@ determine_cull_callback() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderEffects::determine_net_transform
+//     Function: RenderEffects::determine_adjust_transform
 //       Access: Private
-//  Description: This is the private implementation of has_net_transform().
+//  Description: This is the private implementation of has_adjust_transform().
 ////////////////////////////////////////////////////////////////////
 void RenderEffects::
-determine_net_transform() {
-  _flags |= F_checked_net_transform;
+determine_adjust_transform() {
+  _flags |= F_checked_adjust_transform;
 
   Effects::const_iterator ei;
   for (ei = _effects.begin(); ei != _effects.end(); ++ei) {
-    if ((*ei)._effect->has_net_transform()) {
-      _flags |= F_has_net_transform;
+    if ((*ei)._effect->has_adjust_transform()) {
+      _flags |= F_has_adjust_transform;
       return;
     }
   }

@@ -201,19 +201,19 @@ has_cull_callback() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderEffects::has_net_transform
+//     Function: RenderEffects::has_adjust_transform
 //       Access: Public
 //  Description: This function is provided as an optimization, to
 //               speed up the render-time checking for the existance
-//               of an effect with a compute_net_transform on this
+//               of an effect with a compute_adjust_transform on this
 //               state.
 ////////////////////////////////////////////////////////////////////
 INLINE bool RenderEffects::
-has_net_transform() const {
-  if ((_flags & F_checked_net_transform) == 0) {
+has_adjust_transform() const {
+  if ((_flags & F_checked_adjust_transform) == 0) {
     // We pretend this function is const, even though it transparently
-    // modifies the internal net_transform cache.
-    ((RenderEffects *)this)->determine_net_transform();
+    // modifies the internal adjust_transform cache.
+    ((RenderEffects *)this)->determine_adjust_transform();
   }
-  return ((_flags & F_has_net_transform) != 0);
+  return ((_flags & F_has_adjust_transform) != 0);
 }

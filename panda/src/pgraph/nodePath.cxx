@@ -4821,8 +4821,8 @@ r_get_net_transform(NodePathComponent *comp) const {
     CPT(TransformState) transform = comp->get_node()->get_transform();
 
     CPT(RenderEffects) effects = comp->get_node()->get_effects();
-    if (effects->has_net_transform()) {
-      net_transform = effects->net_transform(net_transform);
+    if (effects->has_adjust_transform()) {
+      effects->adjust_transform(net_transform, transform);
     }
       
     return net_transform->compose(transform);
@@ -4846,7 +4846,7 @@ r_get_partial_transform(NodePathComponent *comp, int n) const {
   if (n == 0 || comp == (NodePathComponent *)NULL) {
     return TransformState::make_identity();
   } else {
-    if (comp->get_node()->get_effects()->has_net_transform()) {
+    if (comp->get_node()->get_effects()->has_adjust_transform()) {
       return NULL;
     }
     CPT(TransformState) transform = comp->get_node()->get_transform();

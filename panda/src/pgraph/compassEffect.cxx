@@ -144,12 +144,13 @@ cull_callback(CullTraverser *, CullTraverserData &data,
   }
 
   CPT(TransformState) true_net_transform = data._net_transform;
-  CPT(TransformState) want_transform = net_transform(data._net_transform);
+  CPT(TransformState) want_net_transform = data._net_transform;
+  adjust_transform(want_net_transform, node_transform);
 
   // Now compute the transform that will convert true_net_transform to
   // want_transform.  This is inv(true_net_transform) * want_transform.
   CPT(TransformState) compass_transform =
-    true_net_transform->invert_compose(want_transform);
+    true_net_transform->invert_compose(want_net_transform);
 
   // And modify our local node's apparent transform so that
   // true_net_transform->compose(new_node_transform) produces the same
@@ -159,33 +160,35 @@ cull_callback(CullTraverser *, CullTraverserData &data,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CompassEffect::has_net_transform
+//     Function: CompassEffect::has_adjust_transform
 //       Access: Public, Virtual
 //  Description: Should be overridden by derived classes to return
-//               true if net_transform() has been defined, and
+//               true if adjust_transform() has been defined, and
 //               therefore the RenderEffect has some effect on the
-//               node's apparent net transform.
+//               node's apparent local and net transforms.
 ////////////////////////////////////////////////////////////////////
 bool CompassEffect::
-has_net_transform() const {
+has_adjust_transform() const {
   return (_properties != 0);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CompassEffect::net_transform
+//     Function: CompassEffect::adjust_transform
 //       Access: Public, Virtual
-//  Description: Given the node's parent's net transform, compute its
-//               parent's new net transform after application of the
-//               RenderEffect.  Presumably this interposes some
-//               special transform derived from the RenderEffect.
-//               This may only be called if has_net_transform(),
-//               above, has been defined to return true.
+//  Description: Performs some operation on the node's apparent net
+//               and/or local transforms.  This will only be called if
+//               has_adjust_transform() is redefined to return true.
+//
+//               Both parameters are in/out.  The original transforms
+//               will be passed in, and they may (or may not) be
+//               modified in-place by the RenderEffect.
 ////////////////////////////////////////////////////////////////////
-CPT(TransformState) CompassEffect::
-net_transform(const TransformState *orig_net_transform) const {
+void CompassEffect::
+adjust_transform(CPT(TransformState) &net_transform,
+                 CPT(TransformState) &node_transform) const {
   if (_properties == 0) {
     // Nothing to do.
-    return orig_net_transform;
+    return;
   }
 
   // The reference transform: where we are acting as if we inherit
@@ -198,19 +201,19 @@ net_transform(const TransformState *orig_net_transform) const {
     ref_transform = _reference.get_net_transform();
   }
 
-  // Now compute the transform we actually want to achieve.  This is
-  // all of the components from the net transform we want to inherit
-  // normally from our parent, with all of the components from the ref
-  // transform we want to inherit from our reference.
-  CPT(TransformState) want_transform;
+  // Now compute the net transform we actually want to achieve.  This
+  // is all of the components from the net transform we want to
+  // inherit normally from our parent, with all of the components from
+  // the ref transform we want to inherit from our reference.
+  CPT(TransformState) want_net_transform;
   if (_properties == P_all) {
     // If we want to steal the whole transform, that's easy.
-    want_transform = ref_transform;
+    want_net_transform = ref_transform;
 
   } else {
     // How much of the pos do we want to steal?  We can always
     // determine a transform's pos, even if it's nondecomposable.
-    LVecBase3f want_pos = orig_net_transform->get_pos();
+    LVecBase3f want_pos = net_transform->get_pos();
     const LVecBase3f &ref_pos = ref_transform->get_pos();
     if ((_properties & P_x) != 0) {
       want_pos[0] = ref_pos[0];
@@ -224,29 +227,29 @@ net_transform(const TransformState *orig_net_transform) const {
 
     if ((_properties & ~P_pos) == 0) {
       // If we only want to steal the pos, that's pretty easy.
-      want_transform = orig_net_transform->set_pos(want_pos);
+      want_net_transform = net_transform->set_pos(want_pos);
   
     } else if ((_properties & (P_rot | P_scale)) == (P_rot | P_scale)) {
       // If we want to steal everything *but* the pos, also easy.
-      want_transform = ref_transform->set_pos(want_pos);
+      want_net_transform = ref_transform->set_pos(want_pos);
       
     } else {
       // For any other combination, we have to be able to decompose both
       // transforms.
-      if (!orig_net_transform->has_components() || 
+      if (!net_transform->has_components() || 
           !ref_transform->has_components()) {
         // If we can't decompose, just do the best we can: steal
         // everything but the pos.
-        want_transform = ref_transform->set_pos(want_pos);
+        want_net_transform = ref_transform->set_pos(want_pos);
 
       } else {
         // If we can decompose, then take only the components we want.
-        LQuaternionf want_quat = orig_net_transform->get_quat();
+        LQuaternionf want_quat = net_transform->get_quat();
         if ((_properties & P_rot) != 0) {
           want_quat = ref_transform->get_quat();
         }
 
-        LVecBase3f want_scale = orig_net_transform->get_scale();
+        LVecBase3f want_scale = net_transform->get_scale();
         const LVecBase3f &ref_scale = ref_transform->get_scale();
         if ((_properties & P_sx) != 0) {
           want_scale[0] = ref_scale[0];
@@ -258,13 +261,13 @@ net_transform(const TransformState *orig_net_transform) const {
           want_scale[2] = ref_scale[2];
         }
 
-        want_transform =
+        want_net_transform =
           TransformState::make_pos_quat_scale(want_pos, want_quat, want_scale);
       }
     }
   }
 
-  return want_transform;
+  net_transform = want_net_transform;
 }
 
 ////////////////////////////////////////////////////////////////////

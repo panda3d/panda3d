@@ -63,15 +63,17 @@ public:
                              CPT(TransformState) &node_transform,
                              CPT(RenderState) &node_state) const;
 
-  virtual bool has_net_transform() const;
-  virtual CPT(TransformState) net_transform(const TransformState *orig_net_transform) const;
+  virtual bool has_adjust_transform() const;
+  virtual void adjust_transform(CPT(TransformState) &net_transform,
+                                CPT(TransformState) &node_transform) const;
 
 protected:
   virtual int compare_to_impl(const RenderEffect *other) const;
 
 private:
-  CPT(TransformState) compute_billboard(const TransformState *net_transform, 
-                                        const TransformState *camera_transform) const;
+  void compute_billboard(CPT(TransformState) &node_transform, 
+                         const TransformState *net_transform, 
+                         const TransformState *camera_transform) const;
 
 private:
   bool _off;
