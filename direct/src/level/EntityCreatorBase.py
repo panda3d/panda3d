@@ -22,6 +22,11 @@ class EntityCreatorBase:
         # inheritor must define doCreateEntity
         return self.doCreateEntity(self.entType2Ctor[entType], entId)
 
+    def getEntityTypes(self):
+        """by definition, this object knows the full list of entity types
+        that may exist within the level"""
+        return self.entType2Ctor.keys()
+
     def privRegisterType(self, entType, ctor):
         if self.entType2Ctor.has_key(entType):
             self.notify.warning('replacing %s ctor %s with %s' %
