@@ -147,7 +147,7 @@ $[directory] :
 $[TAB]@test -d $[directory] || echo mkdir -p $[directory]
 $[TAB]@test -d $[directory] || mkdir -p $[directory]
 
-// Sometimes we need a target to depend on the directory existing, without 
+// Sometimes we need a target to depend on the directory existing, without
 // being fooled by the directory's modification times.  We use this
 // phony timestamp file to achieve that.
 $[directory]/stamp :
@@ -282,14 +282,20 @@ $[TAB]touch $[pt]
     #define target $[bam_dir]/$[notdir $[egg:%.egg=%.bam]]
 $[target] : $[source] $[bam_dir]/stamp
 $[TAB]egg2bam -kp -tp $[install_dir] $[EGG2BAM_OPTS] -o $[target] $[source]
-
   #end egg
+
   #foreach egg $[UNPAL_SOURCES]
     #define source $[source_prefix]$[egg]
     #define target $[bam_dir]/$[notdir $[egg:%.egg=%.bam]]
 $[target] : $[source] $[bam_dir]/stamp
 $[TAB]egg2bam -kp -tp $[install_dir] $[EGG2BAM_OPTS] -o $[target] $[source]
+  #end egg
 
+  #foreach egg $[UNPAL_SOURCES_NC]
+    #define source $[source_prefix]$[egg]
+    #define target $[bam_dir]/$[notdir $[egg:%.egg=%.bam]]
+$[target] : $[source] $[bam_dir]/stamp
+$[TAB]egg2bam -kp -tp $[install_dir] $[EGG2BAM_OPTS] -NC -o $[target] $[source]
   #end egg
 #end install_egg
 
@@ -539,7 +545,7 @@ $[TAB]cd ./$[RELDIR] && $(MAKE) install-other
 #end dirname
 
 #formap dirname subdirs
-install-$[dirname] : 
+install-$[dirname] :
 $[TAB]cd ./$[RELDIR] && $(MAKE) install
 #end dirname
 
