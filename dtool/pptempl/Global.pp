@@ -619,6 +619,9 @@
   #if $[UNIX_PLATFORM]
     #set alt_libs $[alt_libs] $[UNIX_SYS_LIBS] $[components $[UNIX_SYS_LIBS],$[active_component_libs] $[transitive_link]]
   #endif
+  #if $[WINDOWS_PLATFORM]
+    #set alt_libs $[alt_libs] $[WIN_SYS_LIBS] $[components $[WIN_SYS_LIBS],$[active_component_libs] $[transitive_link]]
+  #endif
 
   $[alt_libs]
 #end get_libs
