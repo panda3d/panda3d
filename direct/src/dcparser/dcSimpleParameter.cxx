@@ -36,7 +36,8 @@ DCClassParameter *DCSimpleParameter::_uint32uint8_type = NULL;
 DCSimpleParameter::
 DCSimpleParameter(DCSubatomicType type, unsigned int divisor) :
   _type(type),
-  _divisor(1)
+  _divisor(1),
+  _has_modulus(false)
 {
   _pack_type = PT_invalid;
   _nested_type = ST_invalid;
@@ -210,11 +211,17 @@ DCSimpleParameter(const DCSimpleParameter &copy) :
   _divisor(copy._divisor),
   _nested_field(copy._nested_field),
   _bytes_per_element(copy._bytes_per_element),
+  _orig_range(copy._orig_range),
+  _has_modulus(copy._has_modulus),
+  _orig_modulus(copy._orig_modulus),
   _int_range(copy._int_range),
   _uint_range(copy._uint_range),
   _int64_range(copy._int64_range),
   _uint64_range(copy._uint64_range),
-  _double_range(copy._double_range)
+  _double_range(copy._double_range),
+  _uint_modulus(copy._uint_modulus),
+  _uint64_modulus(copy._uint64_modulus),
+  _double_modulus(copy._double_modulus)
 {
 }
 
@@ -272,6 +279,33 @@ get_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCSimpleParameter::has_modulus
+//       Access: Published
+//  Description: Returns true if there is a modulus associated, false
+//               otherwise.,
+////////////////////////////////////////////////////////////////////
+bool DCSimpleParameter::
+has_modulus() const {
+  return _has_modulus;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSimpleParameter::get_modulus
+//       Access: Published
+//  Description: Returns the modulus associated with this type, if
+//               any.  It is an error to call this if has_modulus()
+//               returned false.
+//
+//               If present, this is the modulus that is used to
+//               constrain the numeric value of the field before it is
+//               packed (and range-checked).
+////////////////////////////////////////////////////////////////////
+double DCSimpleParameter::
+get_modulus() const {
+  return _orig_modulus;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCSimpleParameter::get_divisor
 //       Access: Published
 //  Description: Returns the divisor associated with this type.  This
@@ -287,11 +321,96 @@ get_divisor() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCSimpleParameter::is_numeric_type
+//       Access: Public
+//  Description: Returns true if the type is a numeric type (and
+//               therefore can accept a divisor and/or a modulus), or
+//               false if it is some string-based type.
+////////////////////////////////////////////////////////////////////
+bool DCSimpleParameter::
+is_numeric_type() const {
+  return !(_pack_type == PT_string || _pack_type == PT_blob);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSimpleParameter::set_modulus
+//       Access: Public
+//  Description: Assigns the indicated modulus to the simple type.
+//               Any packed value will be constrained to be within [0,
+//               modulus).
+//
+//               Returns true if assigned, false if this type cannot
+//               accept a modulus or if the modulus is invalid.
+////////////////////////////////////////////////////////////////////
+bool DCSimpleParameter::
+set_modulus(double modulus) {
+  if (_pack_type == PT_string || _pack_type == PT_blob || modulus <= 0.0) {
+    return false;
+  }
+
+  _has_modulus = true;
+  _orig_modulus = modulus;
+
+  bool range_error = false;
+  _double_modulus = modulus * _divisor;
+  _uint64_modulus = (PN_uint64)floor(_double_modulus + 0.5);
+  _uint_modulus = (unsigned int)_uint64_modulus;
+
+  // Check the range.  The legitimate range for a modulus value is 1
+  // through (maximum_value + 1).
+  switch (_type) {
+  case ST_int8:
+  case ST_int8array:
+    validate_uint64_limits(_uint64_modulus - 1, 7, range_error);
+    break;
+
+  case ST_int16:
+  case ST_int16array:
+    validate_uint64_limits(_uint64_modulus - 1, 15, range_error);
+    break;
+
+  case ST_int32:
+  case ST_int32array:
+    validate_uint64_limits(_uint64_modulus - 1, 31, range_error);
+    break;
+    
+  case ST_int64:
+    validate_uint64_limits(_uint64_modulus - 1, 63, range_error);
+    break;
+
+  case ST_char:
+  case ST_uint8:
+  case ST_uint8array:
+    validate_uint64_limits(_uint64_modulus - 1, 8, range_error);
+    break;
+
+  case ST_uint16:
+  case ST_uint16array:
+    validate_uint64_limits(_uint64_modulus - 1, 16, range_error);
+    break;
+
+  case ST_uint32:
+  case ST_uint32array:
+    validate_uint64_limits(_uint64_modulus - 1, 32, range_error);
+    break;
+    
+  case ST_uint64:
+  case ST_float64:
+    break;
+
+  default:
+    return false;
+  }
+
+  return !range_error;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCSimpleParameter::set_divisor
 //       Access: Public
 //  Description: Assigns the indicated divisor to the simple type.
 //               Returns true if assigned, false if this type cannot
-//               accept a divisor.
+//               accept a divisor or if the divisor is invalid.
 ////////////////////////////////////////////////////////////////////
 bool DCSimpleParameter::
 set_divisor(unsigned int divisor) {
@@ -304,6 +423,13 @@ set_divisor(unsigned int divisor) {
       (_pack_type == PT_int || _pack_type == PT_int64 ||
        _pack_type == PT_uint || _pack_type == PT_uint64)) {
     _pack_type = PT_double;
+  }
+
+  if (_has_range_limits) {
+    set_range(_orig_range);
+  }
+  if (_has_modulus) {
+    set_modulus(_orig_modulus);
   }
 
   return true;
@@ -326,6 +452,7 @@ set_range(const DCDoubleRange &range) {
   int i;
 
   _has_range_limits = (num_ranges != 0);
+  _orig_range = range;
 
   switch (_type) {
   case ST_int8:
@@ -523,6 +650,16 @@ void DCSimpleParameter::
 pack_double(DCPackData &pack_data, double value,
             bool &pack_error, bool &range_error) const {
   double real_value = value * _divisor;
+  if (_has_modulus) {
+    if (real_value < 0.0) {
+      real_value = _double_modulus - fmod(-real_value, _double_modulus);
+      if (real_value == _double_modulus) {
+        real_value = 0.0;
+      }
+    } else {
+      real_value = fmod(real_value, _double_modulus);
+    }
+  }
 
   switch (_type) {
   case ST_int8:
@@ -614,6 +751,13 @@ void DCSimpleParameter::
 pack_int(DCPackData &pack_data, int value,
          bool &pack_error, bool &range_error) const {
   int int_value = value * _divisor;
+  if (_has_modulus && _uint_modulus != 0) {
+    if (int_value < 0) {
+      int_value = _uint_modulus - 1 - (-int_value - 1) % _uint_modulus;
+    } else {
+      int_value = int_value % _uint_modulus;
+    }
+  }
 
   switch (_type) {
   case ST_int8:
@@ -693,6 +837,9 @@ void DCSimpleParameter::
 pack_uint(DCPackData &pack_data, unsigned int value,
           bool &pack_error, bool &range_error) const {
   unsigned int int_value = value * _divisor;
+  if (_has_modulus && _uint_modulus != 0) {
+    int_value = int_value % _uint_modulus;
+  }
 
   switch (_type) {
   case ST_int8:
@@ -772,6 +919,13 @@ void DCSimpleParameter::
 pack_int64(DCPackData &pack_data, PN_int64 value,
             bool &pack_error, bool &range_error) const {
   PN_int64 int_value = value * _divisor;
+  if (_has_modulus && _uint64_modulus != 0) {
+    if (int_value < 0) {
+      int_value = _uint64_modulus - 1 - (-int_value - 1) % _uint64_modulus;
+    } else {
+      int_value = int_value % _uint64_modulus;
+    }
+  }
 
   switch (_type) {
   case ST_int8:
@@ -853,6 +1007,9 @@ void DCSimpleParameter::
 pack_uint64(DCPackData &pack_data, PN_uint64 value,
             bool &pack_error, bool &range_error) const {
   PN_uint64 int_value = value * _divisor;
+  if (_has_modulus && _uint64_modulus != 0) {
+    int_value = int_value % _uint64_modulus;
+  }
 
   switch (_type) {
   case ST_int8:
@@ -2113,6 +2270,9 @@ output_instance(ostream &out, bool brief, const string &prename,
 
   } else {
     out << _type;
+    if (_has_modulus) {
+      out << "%" << _orig_modulus;
+    }
     if (_divisor != 1) {
       out << "/" << _divisor;
     }
@@ -2193,6 +2353,9 @@ generate_hash(HashGenerator &hashgen) const {
 
   hashgen.add_int(_type);
   hashgen.add_int(_divisor);
+  if (_has_modulus) {
+    hashgen.add_int((int)_double_modulus);
+  }
 
   _int_range.generate_hash(hashgen);
   _int64_range.generate_hash(hashgen);

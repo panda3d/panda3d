@@ -146,6 +146,7 @@ dc_cleanup_parser() {
 %type <u.field> atomic_field
 %type <u.field> molecular_field
 %type <u.subatomic> type_token
+%type <u.parameter> simple_type_name
 %type <u.parameter> type_name
 %type <u.parameter> type_definition
 %type <u.parameter> named_parameter
@@ -591,58 +592,53 @@ parameter_description:
 }
 	;
 
-type_name:
-        type_token
+simple_type_name:
+	type_token
 {
   $$ = new DCSimpleParameter($1);
 }
-        | type_token '(' double_range ')'
+	| simple_type_name '(' double_range ')'
 {
-  DCSimpleParameter *simple_param = new DCSimpleParameter($1);
+  DCSimpleParameter *simple_param = $1->as_simple_parameter();
+  nassertr(simple_param != (DCSimpleParameter *)NULL, 0);
   if (!simple_param->set_range(double_range)) {
     yyerror("Inappropriate range for type");
   }
   $$ = simple_param;
 }
-        | type_token '/' small_unsigned_integer
+        | simple_type_name '/' small_unsigned_integer
 {
-  DCSimpleParameter *simple_param = new DCSimpleParameter($1);
-  if ($3 == 0) {
-    yyerror("Invalid divisor.");
+  DCSimpleParameter *simple_param = $1->as_simple_parameter();
+  nassertr(simple_param != (DCSimpleParameter *)NULL, 0);
+  if (!simple_param->is_numeric_type()) {
+    yyerror("A divisor is only valid on a numeric type.");
 
   } else if (!simple_param->set_divisor($3)) {
-    yyerror("A divisor is only valid on a numeric type.");
-  }
-  $$ = simple_param;
-}
-	| type_token '/' small_unsigned_integer '(' double_range ')'
-{
-  DCSimpleParameter *simple_param = new DCSimpleParameter($1);
-  if ($3 == 0) {
     yyerror("Invalid divisor.");
 
-  } else if (!simple_param->set_divisor($3)) {
-    yyerror("A divisor is only valid on a numeric type.");
-  }
-  if (!simple_param->set_range(double_range)) {
-    yyerror("Inappropriate range for type");
+  } else if (simple_param->has_modulus() && !simple_param->set_modulus(simple_param->get_modulus())) {
+    // Changing the divisor may change the valid range for the modulus.
+    yyerror("Invalid modulus.");
   }
   $$ = simple_param;
 }
-	| type_token '(' double_range ')' '/' small_unsigned_integer
-{
-  DCSimpleParameter *simple_param = new DCSimpleParameter($1);
-  if ($6 == 0) {
-    yyerror("Invalid divisor.");
+	;
+        | simple_type_name '%' number
+{ 
+  DCSimpleParameter *simple_param = $1->as_simple_parameter();
+  nassertr(simple_param != (DCSimpleParameter *)NULL, 0);
+  if (!simple_param->is_numeric_type()) {
+    yyerror("A divisor is only valid on a numeric type.");
 
-  } else if (!simple_param->set_divisor($6)) {
-    yyerror("A divisor is only valid on a numeric type.");
-  }
-  if (!simple_param->set_range(double_range)) {
-    yyerror("Inappropriate range for type");
+  } else if (!simple_param->set_modulus($3)) {
+    yyerror("Invalid modulus.");
   }
   $$ = simple_param;
 }
+	;
+
+type_name:
+        simple_type_name
 	| IDENTIFIER
 {
   if (dc_file == (DCFile *)NULL) {
@@ -828,15 +824,31 @@ parameter_definition:
 }
         | parameter_definition '/' small_unsigned_integer
 {
-  if ($3 == 0) {
-    yyerror("Invalid divisor.");
-
-  } else if ($1->as_simple_parameter() == NULL || $1->get_typedef() != (DCTypedef *)NULL) {
+  DCSimpleParameter *simple_param = $1->as_simple_parameter();
+  if (simple_param == NULL || simple_param->get_typedef() != (DCTypedef *)NULL) {
     yyerror("A divisor is only allowed on a primitive type.");
 
-  } else {
-    if (!$1->as_simple_parameter()->set_divisor($3)) {
+  } else if (!simple_param->is_numeric_type()) {
       yyerror("A divisor is only valid on a numeric type.");
+
+  } else {
+    if (!simple_param->set_divisor($3)) {
+      yyerror("Invalid divisor.");
+    }
+  }
+}
+        | parameter_definition '%' number
+{
+  DCSimpleParameter *simple_param = $1->as_simple_parameter();
+  if (simple_param == NULL || simple_param->get_typedef() != (DCTypedef *)NULL) {
+    yyerror("A modulus is only allowed on a primitive type.");
+
+  } else if (!simple_param->is_numeric_type()) {
+      yyerror("A modulus is only valid on a numeric type.");
+
+  } else {
+    if (!simple_param->set_modulus($3)) {
+      yyerror("Invalid modulus.");
     }
   }
 }

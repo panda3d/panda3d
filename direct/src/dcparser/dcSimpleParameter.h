@@ -45,9 +45,13 @@ PUBLISHED:
   virtual bool is_valid() const;
 
   DCSubatomicType get_type() const;
+  bool has_modulus() const;
+  double get_modulus() const;
   int get_divisor() const;
 
 public:
+  bool is_numeric_type() const;
+  bool set_modulus(double modulus);
   bool set_divisor(unsigned int divisor);
   bool set_range(const DCDoubleRange &range);
 
@@ -114,11 +118,24 @@ private:
   typedef pmap<DCSubatomicType, DivisorMap> NestedFieldMap;
   static NestedFieldMap _nested_field_map;
 
+  // These are the range and modulus values as specified by the user,
+  // unscaled by the divisor.
+  DCDoubleRange _orig_range;
+  bool _has_modulus;
+  double _orig_modulus;
+
+  // Only the range appropriate to this type will be filled in.
   DCIntRange _int_range;
   DCUnsignedIntRange _uint_range;
   DCInt64Range _int64_range;
   DCUnsignedInt64Range _uint64_range;
   DCDoubleRange _double_range;
+
+  // All of these modulus values will be filled in, regardless of the
+  // type.
+  unsigned int _uint_modulus;
+  PN_uint64 _uint64_modulus;
+  double _double_modulus;
 
   static DCClassParameter *_uint32uint8_type;
 };
