@@ -1973,7 +1973,7 @@ int D3DFMT_to_DepthBits(D3DFORMAT fmt) {
     }
 }
 
-bool wdxGraphicsWindow::FindBestDepthFormat(DXScreenData &Display,D3DDISPLAYMODE &TestDisplayMode,D3DFORMAT *pBestFmt,bool bWantStencil,bool bForce16bpp) const {
+bool wdxGraphicsWindow::FindBestDepthFormat(DXScreenData &Display,D3DDISPLAYMODE &TestDisplayMode,D3DFORMAT *pBestFmt,bool bWantStencil,bool bForce16bpp,bool bVerboseMode) const {
     // list fmts in order of preference
     #define NUM_TEST_ZFMTS 3
     static D3DFORMAT NoStencilPrefList[NUM_TEST_ZFMTS]={D3DFMT_D32,D3DFMT_D24X8,D3DFMT_D16};
@@ -1991,6 +1991,9 @@ bool wdxGraphicsWindow::FindBestDepthFormat(DXScreenData &Display,D3DDISPLAYMODE
     bool bOnlySelect16bpp= (dx_force_16bpp_zbuffer || bForce16bpp ||
         (IS_NVIDIA(Display.DXDeviceID) && IS_16BPP_DISPLAY_FORMAT(TestDisplayMode.Format)));
 
+    if(bVerboseMode)
+        wdxdisplay_cat.info() << "FindBestDepthFmt: bSelectOnly16bpp: " << bOnlySelect16bpp << endl;
+
     for(int i=0;i<NUM_TEST_ZFMTS;i++) {
         D3DFORMAT TestDepthFmt = (bWantStencil ? StencilPrefList[i] : NoStencilPrefList[i]);
 
@@ -2001,8 +2004,11 @@ bool wdxGraphicsWindow::FindBestDepthFormat(DXScreenData &Display,D3DDISPLAYMODE
                                               D3DUSAGE_DEPTHSTENCIL,D3DRTYPE_SURFACE,TestDepthFmt);
 
         if(FAILED(hr)) {
-          if(hr==D3DERR_NOTAVAILABLE)
+          if(hr==D3DERR_NOTAVAILABLE) {
+              if(bVerboseMode)
+                  wdxdisplay_cat.info() << "FindBestDepthFmt: ChkDevFmt returns NotAvail for " << D3DFormatStr(TestDepthFmt) << endl;
               continue;
+          }
 
           wdxdisplay_cat.error() << "unexpected CheckDeviceFormat failure" << D3DERRORSTRING(hr);
           exit(1);
@@ -2012,17 +2018,22 @@ bool wdxGraphicsWindow::FindBestDepthFormat(DXScreenData &Display,D3DDISPLAYMODE
                                            TestDisplayMode.Format,   // adapter format
                                            TestDisplayMode.Format,   // backbuffer fmt  (should be the same in my apps)
                                            TestDepthFmt);
-
-        if(FAILED(hr) && (hr!=D3DERR_NOTAVAILABLE)) {
-          wdxdisplay_cat.error() << "unexpected CheckDepthStencilMatch failure" << D3DERRORSTRING(hr);
-          exit(1);
-        }
-
         if(SUCCEEDED(hr)) {
            *pBestFmt = TestDepthFmt;
            break;
+        } else {
+            if(hr==D3DERR_NOTAVAILABLE) {
+              if(bVerboseMode)
+                  wdxdisplay_cat.info() << "FindBestDepthFmt: ChkDepMatch returns NotAvail for " << D3DFormatStr(TestDisplayMode.Format) << ", " << D3DFormatStr(TestDepthFmt) << endl;
+            } else {
+                wdxdisplay_cat.error() << "unexpected CheckDepthStencilMatch failure for " << D3DFormatStr(TestDisplayMode.Format) << ", " << D3DFormatStr(TestDepthFmt) << endl;
+                exit(1);
+            }
         }
     }
+
+    if(bVerboseMode)
+        wdxdisplay_cat.info() << "FindBestDepthFmt returns fmt " << D3DFormatStr(*pBestFmt) << endl;
 
     return (*pBestFmt != D3DFMT_UNKNOWN);
 }
@@ -2031,7 +2042,7 @@ bool wdxGraphicsWindow::FindBestDepthFormat(DXScreenData &Display,D3DDISPLAYMODE
 // if no valid mode found, returns *pSuggestedPixFmt = D3DFMT_UNKNOWN;
 void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT RequestedYsize,bool bWantZBuffer,bool bWantStencil,
                                                      UINT *pSupportedScreenDepthsMask,bool *pCouldntFindAnyValidZBuf,
-                                                     D3DFORMAT *pSuggestedPixFmt) {
+                                                     D3DFORMAT *pSuggestedPixFmt, bool bVerboseMode) {
     assert(IS_VALID_PTR(_dxgsg));
     assert(IS_VALID_PTR(_dxgsg->scrn.pD3D8));
     HRESULT hr;
@@ -2043,13 +2054,15 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
     #endif
 
     *pSuggestedPixFmt = D3DFMT_UNKNOWN;
-
     *pSupportedScreenDepthsMask = 0x0;
+    *pCouldntFindAnyValidZBuf=false;
+
     int cNumModes=_dxgsg->scrn.pD3D8->GetAdapterModeCount(_dxgsg->scrn.CardIDNum);
     D3DDISPLAYMODE BestDispMode;
     ZeroMemory(&BestDispMode,sizeof(BestDispMode));
 
-    *pCouldntFindAnyValidZBuf=false;
+    if(bVerboseMode)
+       wdxdisplay_cat.info() << "searching for valid display modes at res: (" << RequestedXsize << "," << RequestedYsize << "), TotalModes: " << cNumModes<< endl;
 
     for(int i=0;i<cNumModes;i++) {
         D3DDISPLAYMODE dispmode;
@@ -2064,6 +2077,8 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
 
         if((dispmode.RefreshRate<60) && (dispmode.RefreshRate>1)) {
             // dont want refresh rates under 60Hz, but 0 or 1 might indicate a default refresh rate, which is usually >=60
+            if(bVerboseMode)
+                wdxdisplay_cat.info() << "skipping mode["<<i<<"], bad refresh rate: " << dispmode.RefreshRate << endl;
             continue;
         }
 
@@ -2073,9 +2088,11 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
         hr = _dxgsg->scrn.pD3D8->CheckDeviceFormat(_dxgsg->scrn.CardIDNum,D3DDEVTYPE_HAL,dispmode.Format,
                                                    D3DUSAGE_RENDERTARGET,D3DRTYPE_SURFACE,dispmode.Format);
         if(FAILED(hr)) {
-           if(hr==D3DERR_NOTAVAILABLE)
+           if(hr==D3DERR_NOTAVAILABLE) {
+               if(bVerboseMode)
+                   wdxdisplay_cat.info() << "skipping mode["<<i<<"], CheckDevFmt returns NotAvail for fmt: " << D3DFormatStr(dispmode.Format) << endl;
                continue;
-             else {
+           } else {
                  wdxdisplay_cat.error() << "CheckDeviceFormat failed for device #" <<_dxgsg->scrn.CardIDNum << D3DERRORSTRING(hr);
                  exit(1);
              }
@@ -2103,13 +2120,13 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
 
              RendTgtMinMemReqmt = ((float)RequestedXsize)*((float)RequestedYsize)*bytes_per_pixel*2+REQD_TEXMEM;
 
-             if(wdxdisplay_cat.is_spam())
-                wdxdisplay_cat.spam() << "Testing Mode (" <<RequestedXsize<<"x" << RequestedYsize <<","
+             if(bVerboseMode || wdxdisplay_cat.is_spam())
+                wdxdisplay_cat.info() << "Testing Mode (" <<RequestedXsize<<"x" << RequestedYsize <<","
                  << D3DFormatStr(dispmode.Format) << ")\nReqdVidMem: "<< (int)RendTgtMinMemReqmt << " AvailVidMem: " << _dxgsg->scrn.MaxAvailVidMem << endl;
 
              if(RendTgtMinMemReqmt>_dxgsg->scrn.MaxAvailVidMem) {
-                 if(wdxdisplay_cat.is_debug())
-                     wdxdisplay_cat.debug() << "not enough VidMem for render tgt, skipping display fmt " << D3DFormatStr(dispmode.Format)
+                 if(bVerboseMode || wdxdisplay_cat.is_debug())
+                     wdxdisplay_cat.info() << "not enough VidMem for render tgt, skipping display fmt " << D3DFormatStr(dispmode.Format)
                                             << " (" << (int)RendTgtMinMemReqmt << " > " << _dxgsg->scrn.MaxAvailVidMem << ")\n";
                  continue;
              }
@@ -2128,13 +2145,13 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
                 float zbytes_per_pixel = (IS_16BPP_ZBUFFER(zformat) ? 2 : 4);
                 float MinMemReqmt = RendTgtMinMemReqmt + ((float)RequestedXsize)*((float)RequestedYsize)*zbytes_per_pixel;
 
-                if(wdxdisplay_cat.is_spam())
-                 wdxdisplay_cat.spam() << "Testing Mode w/Z (" <<RequestedXsize<<"x" << RequestedYsize <<","
+                if(bVerboseMode || wdxdisplay_cat.is_spam())
+                  wdxdisplay_cat.info() << "Testing Mode w/Z (" << RequestedXsize << "x" << RequestedYsize << ","
                     << D3DFormatStr(dispmode.Format) << ")\nReqdVidMem: "<< (int)MinMemReqmt << " AvailVidMem: " << _dxgsg->scrn.MaxAvailVidMem << endl;
 
                 if(MinMemReqmt>_dxgsg->scrn.MaxAvailVidMem) {
-                    if(wdxdisplay_cat.is_debug())
-                        wdxdisplay_cat.debug() << "not enough VidMem for RendTgt+zbuf, skipping display fmt " << D3DFormatStr(dispmode.Format)
+                    if(bVerboseMode || wdxdisplay_cat.is_debug())
+                        wdxdisplay_cat.info() << "not enough VidMem for RendTgt+zbuf, skipping display fmt " << D3DFormatStr(dispmode.Format)
                                                << " (" << (int)MinMemReqmt << " > " << _dxgsg->scrn.MaxAvailVidMem << ")\n";
                     continue;
                 }
@@ -2143,7 +2160,9 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
                     if(!IS_16BPP_ZBUFFER(zformat)) {
                         // see if things fit with a 16bpp zbuffer
 
-                        if(!FindBestDepthFormat(_dxgsg->scrn,dispmode,&zformat,bWantStencil,true)) {
+                        if(!FindBestDepthFormat(_dxgsg->scrn,dispmode,&zformat,bWantStencil,true,bVerboseMode)) {
+                            if(bVerboseMode)
+                                wdxdisplay_cat.info() << "FindBestDepthFmt rejected Mode["<<i<<"] (" <<RequestedXsize<<"x" << RequestedYsize <<","<< D3DFormatStr(dispmode.Format) << endl;
                             *pCouldntFindAnyValidZBuf=true;
                             continue;
                         }
@@ -2154,6 +2173,10 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
                 }
             }
         }
+
+        if(bVerboseMode || wdxdisplay_cat.is_spam())
+            wdxdisplay_cat.info() << "Validated Mode (" <<RequestedXsize<<"x" << RequestedYsize <<","
+                 << D3DFormatStr(dispmode.Format) << endl;
 
         switch(dispmode.Format) {
             case D3DFMT_X1R5G5B5:
@@ -2170,7 +2193,7 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
                 break;
             default:
                 //Render target formats should be only D3DFMT_X1R5G5B5, D3DFMT_R5G6B5, D3DFMT_X8R8G8B8 (or R8G8B8?)
-                wdxdisplay_cat.debug() << "unrecognized supported screen D3DFMT returned by EnumAdapterDisplayModes!\n";
+                wdxdisplay_cat.error() << "unrecognized supported fmt "<< D3DFormatStr(dispmode.Format)<<" returned by EnumAdapterDisplayModes!\n";
         }
     }
 
@@ -2183,6 +2206,9 @@ void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT Re
         *pSuggestedPixFmt = D3DFMT_R5G6B5;
     else if(*pSupportedScreenDepthsMask & X1R5G5B5_FLAG)
         *pSuggestedPixFmt = D3DFMT_X1R5G5B5;
+
+    if(bVerboseMode || wdxdisplay_cat.is_spam())
+       wdxdisplay_cat.info() << "search_for_valid_device returns fmt: "<< D3DFormatStr(*pSuggestedPixFmt) << endl;
 }
 
 bool is_badvidmem_card(D3DADAPTER_IDENTIFIER8 *pDevID) {
@@ -2280,7 +2306,6 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
 
         bool bCouldntFindValidZBuf;
         if(!_dxgsg->scrn.bIsLowVidMemCard) {
-
             bool bUseDefaultSize=dx_pick_best_screenres&&
                                  ((_dxgsg->scrn.MaxAvailVidMem == UNKNOWN_VIDMEM_SIZE) ||
                                   is_badvidmem_card(&_dxgsg->scrn.DXDeviceID));
@@ -2356,6 +2381,12 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
                     wdxdisplay_cat.fatal()
                         << (bCouldntFindValidZBuf ? "Couldnt find valid zbuffer format to go with FullScreen mode" : "No supported FullScreen modes")
                         << " at " << dwRenderWidth << "x" << dwRenderHeight << " for device #" << _dxgsg->scrn.CardIDNum <<endl;
+
+                    // run it again in verbose mode to get more dbg info to log
+                    search_for_valid_displaymode(dwRenderWidth,dwRenderHeight,bNeedZBuffer,bWantStencil,
+                                             &_dxgsg->scrn.SupportedScreenDepthsMask,
+                                             &bCouldntFindValidZBuf,
+                                             &pixFmt,true);
                    return false;
                 }
             }
@@ -2382,6 +2413,12 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
                else {
                    wdxdisplay_cat.fatal() << "Low Memory VidCard has no supported FullScreen 16bpp resolutions at "<< dwRenderWidth << "x" << dwRenderHeight
                    << " for device #" << pDevInfo->cardID << " (" <<  _dxgsg->scrn.DXDeviceID.Description <<"), skipping device...\n";
+
+                   // run it again in verbose mode to get more dbg info to log
+                   search_for_valid_displaymode(dwRenderWidth,dwRenderHeight,bNeedZBuffer,bWantStencil,
+                                     &_dxgsg->scrn.SupportedScreenDepthsMask,
+                                     &bCouldntFindValidZBuf,
+                                     &pixFmt,true);
                    return false;
                }
 
@@ -2466,7 +2503,7 @@ CreateScreenBuffersAndDevice(DXScreenData &Display) {
     pPresParams->Windowed = !_props._fullscreen;
 
     if(dx_multisample_antialiasing_level>1) {
-    // need to check both rendertarget and zbuffer fmts
+        // need to check both rendertarget and zbuffer fmts
         hr = pD3D8->CheckDeviceMultiSampleType(Display.CardIDNum, D3DDEVTYPE_HAL, Display.DisplayMode.Format,
                                                      _props._fullscreen, D3DMULTISAMPLE_TYPE(dx_multisample_antialiasing_level));
         if(FAILED(hr)) {
