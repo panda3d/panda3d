@@ -57,6 +57,19 @@ PandaNode(name)
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PolylightNode::make_copy
+//       Access: Public, Virtual
+//  Description: Returns a newly-allocated Node that is a shallow copy
+//               of this one.  It will be a different Node pointer,
+//               but its internal data may or may not be shared with
+//               that of the original Node.
+////////////////////////////////////////////////////////////////////
+PandaNode *PolylightNode::
+make_copy() const {
+  return new PolylightNode(*this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PolylightNode::Constructor
 //       Access: Public
 //  Description: If flickering is on, the do_poly_light function

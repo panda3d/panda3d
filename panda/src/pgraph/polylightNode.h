@@ -103,6 +103,7 @@ PUBLISHED:
 
 public:
   Colorf flicker() const;
+  virtual PandaNode *make_copy() const;
 
   
 private:
