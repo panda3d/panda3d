@@ -824,6 +824,15 @@ should_include(const string &filename) const {
     return false;
   }
 
+  // Finally, don't include *_src.h or *_src.cxx.  These are special
+  // "template" files that should not generally be included directly.
+  if (filename.length() > 6 && filename.substr(filename.length() - 6) == "_src.h") {
+    return false;
+  }
+  if (filename.length() > 8 && filename.substr(filename.length() - 8) == "_src.cxx") {
+    return false;
+  }
+
   // Otherwise, no problem.
   return true;
 }
