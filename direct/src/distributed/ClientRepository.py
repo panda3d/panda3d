@@ -46,9 +46,10 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         self.bootedIndex = None
         self.bootedText = None
 
-        self.worldScale = render.attachNewNode("worldScale") # for grid zones.
-        self.worldScale.setScale(base.config.GetFloat('world-scale', 100))
-        self.priorWorldPos = None
+        if 0: # unused:
+            self.worldScale = render.attachNewNode("worldScale") # for grid zones.
+            self.worldScale.setScale(base.config.GetFloat('world-scale', 100))
+            self.priorWorldPos = None
 
         # create a parentMgr to handle distributed reparents
         # this used to be 'token2nodePath'
@@ -98,39 +99,40 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             self.disconnect()
         self.stopHeartbeat()
 
-    def setWorldOffset(self, xOffset=0, yOffset=0):
-        self.worldXOffset=xOffset
-        self.worldYOffset=yOffset
+    if 0: # Code that became obsolete before it was used:
+        def setWorldOffset(self, xOffset=0, yOffset=0):
+            self.worldXOffset=xOffset
+            self.worldYOffset=yOffset
 
-    def getWorldPos(self, nodePath):
-        pos = nodePath.getPos(self.worldScale)
-        return (int(round(pos.getX())), int(round(pos.getY())))
+        def getWorldPos(self, nodePath):
+            pos = nodePath.getPos(self.worldScale)
+            return (int(round(pos.getX())), int(round(pos.getY())))
 
-    def sendWorldPos(self, x, y):
-        # The server will need to know the world
-        # offset of our current render node path
-        # and adjust the x, y accordingly.  At one
-        # point I considered adding the world offset
-        # here, but that would just use extra bits.
+        def sendWorldPos(self, x, y):
+            # The server will need to know the world
+            # offset of our current render node path
+            # and adjust the x, y accordingly.  At one
+            # point I considered adding the world offset
+            # here, but that would just use extra bits.
 
-        onScreenDebug.add("worldPos", "%-4d, %-4d"%(x, y))
-        return #*#
+            onScreenDebug.add("worldPos", "%-4d, %-4d"%(x, y))
+            return #*#
 
-        datagram = PyDatagram()
-        # Add message type
-        datagram.addUint16(CLIENT_SET_WORLD_POS)
-        # Add x
-        datagram.addInt16(x)
-        # Add y
-        datagram.addSint16(y)
-        # send the message
-        self.send(datagram)
+            datagram = PyDatagram()
+            # Add message type
+            datagram.addUint16(CLIENT_SET_WORLD_POS)
+            # Add x
+            datagram.addInt16(x)
+            # Add y
+            datagram.addSint16(y)
+            # send the message
+            self.send(datagram)
 
-    def checkWorldPos(self, nodePath):
-        worldPos = self.getWorldPos(nodePath)
-        if self.priorWorldPos != worldPos:
-            self.priorWorldPos = worldPos
-            self.sendWorldPos(worldPos[0], worldPos[1])
+        def checkWorldPos(self, nodePath):
+            worldPos = self.getWorldPos(nodePath)
+            if self.priorWorldPos != worldPos:
+                self.priorWorldPos = worldPos
+                self.sendWorldPos(worldPos[0], worldPos[1])
 
     def setServerDelta(self, delta):
         """
