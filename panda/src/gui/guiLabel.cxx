@@ -269,3 +269,21 @@ void GuiLabel::set_background_color(const Colorf& color) {
   _have_background = (color != zero);
   set_properties();
 }
+
+void GuiLabel::set_text(const string& val) {
+  switch (_type) {
+  case SIMPLE_TEXT:
+    {
+      TextNode* n = DCAST(TextNode, _geom);
+      n->set_text(val);
+    }
+    break;
+  case SIMPLE_TEXTURE:
+    gui_cat->warning() << "tried to set text on a texture label" << endl;
+    break;
+  default:
+    gui_cat->warning() << "trying to set text on an unknown label type ("
+		       << (int)_type << ")" << endl;
+  }
+  recompute();
+}

@@ -409,6 +409,7 @@ static void test7(GuiManager* mgr, Node* font) {
 }
 */
 
+/*
 GuiManager* g_mgr;
 PT(GuiSign) s1;
 PT(GuiSign) s4;
@@ -471,6 +472,60 @@ static void test8(GuiManager* mgr, Node* font) {
   f1->recompute();
   f1->manage(mgr, event_handler);
 }
+*/
+
+GuiManager* g_mgr;
+PT(GuiLabel) l4;
+PT(GuiFrame) f1;
+static bool frame_state = true;
+
+static void test9(GuiManager* mgr, Node* font) {
+  f1 = new GuiFrame("canids");
+  GuiLabel* l1 = GuiLabel::make_simple_text_label("dingo", font);
+  l1->set_foreground_color(0., 0., 0., 1.);
+  l1->set_background_color(1., 1., 1., 1.);
+  GuiSign* s1 = new GuiSign("dingo", l1);
+  s1->set_scale(0.1);
+  f1->add_item(s1);
+  GuiLabel* l2 = GuiLabel::make_simple_text_label("jackel", font);
+  l2->set_foreground_color(0., 0., 0., 1.);
+  l2->set_background_color(1., 1., 1., 1.);
+  GuiSign* s2 = new GuiSign("jackel", l2);
+  s2->set_scale(0.1);
+  f1->add_item(s2);
+  GuiLabel* l3 = GuiLabel::make_simple_text_label("hyena", font);
+  l3->set_foreground_color(0., 0., 0., 1.);
+  l3->set_background_color(1., 1., 1., 1.);
+  GuiSign* s3 = new GuiSign("jackel", l3);
+  s3->set_scale(0.1);
+  f1->add_item(s3);
+  l4 = GuiLabel::make_simple_text_label("wolf", font);
+  l4->set_foreground_color(0., 0., 0., 1.);
+  l4->set_background_color(1., 1., 1., 1.);
+  GuiSign* s4 = new GuiSign("wolf", l4);
+  s4->set_scale(0.1);
+  f1->add_item(s4);
+  f1->pack_item(s2, GuiFrame::UNDER, s1);
+  f1->pack_item(s2, GuiFrame::LEFT, s1);
+  f1->pack_item(s3, GuiFrame::UNDER, s1);
+  f1->pack_item(s3, GuiFrame::RIGHT, s1);
+  f1->pack_item(s4, GuiFrame::UNDER, s1);
+  f1->pack_item(s4, GuiFrame::ALIGN_LEFT, s1);
+  float w, w1, w2;
+  w1 = l1->get_width();
+  w2 = l2->get_width();
+  w = (w1>w2)?w1:w2;
+  w2 = l3->get_width();
+  w = (w>w2)?w:w2;
+  w2 = l4->get_width();
+  w = (w>w2)?w:w2;
+  l1->set_width(w);
+  l2->set_width(w);
+  l3->set_width(w);
+  l4->set_width(w);
+  f1->recompute();
+  f1->manage(mgr, event_handler);
+}
 
 static void setup_gui(void) {
   GuiManager* mgr = GuiManager::get_ptr(main_win, mak);
@@ -491,7 +546,9 @@ static void setup_gui(void) {
   //  test7(mgr, font);
   //  g_mgr = mgr;
   // test 8
-  test8(mgr, font);
+  //  test8(mgr, font);
+  // test 9
+  test9(mgr, font);
   g_mgr = mgr;
 }
 
@@ -524,6 +581,7 @@ static void event_3(CPT_Event) {
 }
 */
 
+/*
 // for test 8
 static void event_3(CPT_Event) {
   if (frame_state) {
@@ -538,6 +596,18 @@ static void event_3(CPT_Event) {
     f1->pack_item(s4, GuiFrame::UNDER, s1);
     f1->pack_item(s4, GuiFrame::ALIGN_LEFT, s1);
     s4->manage(g_mgr, event_handler);
+  }
+  f1->recompute();
+  frame_state = !frame_state;
+}
+*/
+
+// for test 9
+static void event_3(CPT_Event) {
+  if (frame_state) {
+    l4->set_text("fox");
+  } else {
+    l4->set_text("wolf");
   }
   f1->recompute();
   frame_state = !frame_state;

@@ -77,6 +77,8 @@ PUBLISHED:
   INLINE Colorf get_foreground_color(void) const;
   INLINE Colorf get_background_color(void) const;
 
+  void set_text(const string&);
+
   INLINE void recompute(void);
 
 public:
