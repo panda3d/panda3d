@@ -22,6 +22,7 @@
 #include "pnmTextMaker.h"
 #include "indexParameters.h"
 #include "pnmImage.h"
+#include "pnmReader.h"
 
 #include "string_utils.h"
 
@@ -113,12 +114,12 @@ generate_images(const Filename &archive_dir, PNMTextMaker *text_maker) {
       _dir->get_newest_contributing_filename();
     if (!newest_contributing_filename.empty()) {
       generate_index_image = 
-	(output_filename.compare_timestamps(newest_contributing_filename) < 0);
+        (output_filename.compare_timestamps(newest_contributing_filename) < 0);
     }
 
     for (pi = _photos.begin(); 
-	 pi != _photos.end() && !generate_index_image; 
-	 ++pi) {
+         pi != _photos.end() && !generate_index_image; 
+         ++pi) {
       const PhotoInfo &pinfo = (*pi);
       Photo *photo = _dir->get_photo(pinfo._photo_index);
       Filename photo_filename(_dir->get_dir(), photo->get_basename());
@@ -126,7 +127,7 @@ generate_images(const Filename &archive_dir, PNMTextMaker *text_maker) {
       // If any of the source photos are newer than the index image,
       // we must regenerate it.
       generate_index_image = 
-	(output_filename.compare_timestamps(photo_filename) < 0);
+        (output_filename.compare_timestamps(photo_filename) < 0);
     }
   }
 
@@ -166,34 +167,67 @@ generate_images(const Filename &archive_dir, PNMTextMaker *text_maker) {
     PNMImage reduced_image;
 
     if (!dummy_mode && photo_filename != reduced_filename &&
-	(force_regenerate || 
-	 reduced_filename.compare_timestamps(photo_filename) < 0)) {
+        (force_regenerate || 
+         reduced_filename.compare_timestamps(photo_filename) < 0)) {
       // If the reduced filename does not exist or is older than the
       // source filename, we must read the complete source filename to
       // generate the reduced image.
-      nout << "Reading " << photo_filename << "\n";
-
       PNMImage photo_image;
-      if (!photo_image.read(photo_filename)) {
-	nout << "Unable to read.\n";
-	return false;
+      PNMReader *reader = photo_image.make_reader(photo_filename);
+      if (reader == (PNMReader *)NULL) {        
+        nout << "Unable to read " << photo_filename << ".\n";
+        return false;
       }
+      photo_image.copy_header_from(*reader);
       
       photo->_full_x_size = photo_image.get_x_size();
       photo->_full_y_size = photo_image.get_y_size();
       
       // Generate a reduced image for the photo.
-      compute_reduction(photo_image, reduced_image, reduced_width, reduced_height);
+      compute_reduction(photo_image, reduced_image, 
+                        reduced_width, reduced_height);
 
       photo->_reduced_x_size = reduced_image.get_x_size();
       photo->_reduced_y_size = reduced_image.get_y_size();
 
-      reduced_image.quick_filter_from(photo_image);
-      reduced_filename.make_dir();
-      nout << "Writing " << reduced_filename << "\n";
-      if (!reduced_image.write(reduced_filename)) {
-	nout << "Unable to write.\n";
-	return false;
+      // Only bother making a reduced version if it would actually be
+      // smaller than the original.
+      if (photo->_reduced_x_size < photo->_full_x_size ||
+          photo->_reduced_y_size < photo->_full_y_size) {
+	nout << "Reading " << photo_filename << "\n";
+        if (!photo_image.read(reader)) {
+          nout << "Unable to read.\n";
+          return false;
+        }
+	reader = NULL;
+
+        reduced_image.quick_filter_from(photo_image);
+        reduced_filename.make_dir();
+        nout << "Writing " << reduced_filename << "\n";
+        if (!reduced_image.write(reduced_filename)) {
+          nout << "Unable to write.\n";
+          delete reader;
+          return false;
+        }
+	photo->_has_reduced = true;
+
+      } else {
+	// We're not making a reduced version.  But maybe we still
+	// need to read the original so we can make a thumbnail.
+	reduced_filename = photo_filename;
+	reduced_image.copy_header_from(photo_image);
+
+	if (!dummy_mode && generate_index_image) {
+	  nout << "Reading " << photo_filename << "\n";
+	  if (!reduced_image.read(reader)) {
+	    nout << "Unable to read image.\n";
+	    return false;
+	  }
+	  reader = NULL;
+	}  
+      }
+      if (reader != (PNMReader *)NULL) {
+	delete reader;
       }
 
     } else {
@@ -203,43 +237,44 @@ generate_images(const Filename &archive_dir, PNMTextMaker *text_maker) {
       // We still read the image header to determine its size.
       PNMImageHeader photo_image;
       if (!photo_image.read_header(photo_filename)) {
-	nout << "Unable to read " << photo_filename << "\n";
-	return false;
+        nout << "Unable to read " << photo_filename << "\n";
+        return false;
       }
       
       photo->_full_x_size = photo_image.get_x_size();
       photo->_full_y_size = photo_image.get_y_size();
+      photo->_has_reduced = true;
 
       if (dummy_mode) {
-	// In dummy mode, we may or may not actually have a reduced
-	// image.  In either case, ignore the file and compute its
-	// appropriate size from the source image.
-	compute_reduction(photo_image, reduced_image, reduced_width, reduced_height);
-	photo->_reduced_x_size = reduced_image.get_x_size();
-	photo->_reduced_y_size = reduced_image.get_y_size();
+        // In dummy mode, we may or may not actually have a reduced
+        // image.  In either case, ignore the file and compute its
+        // appropriate size from the source image.
+        compute_reduction(photo_image, reduced_image, reduced_width, reduced_height);
+        photo->_reduced_x_size = reduced_image.get_x_size();
+        photo->_reduced_y_size = reduced_image.get_y_size();
 
       } else if (generate_index_image) {
-	// Now read the reduced image from disk, so we can put it on
-	// the index image.
-	nout << "Reading " << reduced_filename << "\n";
-	
-	if (!reduced_image.read(reduced_filename)) {
-	  nout << "Unable to read.\n";
-	  return false;
-	}
+        // Now read the reduced image from disk, so we can put it on
+        // the index image.
+        nout << "Reading " << reduced_filename << "\n";
+        
+        if (!reduced_image.read(reduced_filename)) {
+          nout << "Unable to read.\n";
+          return false;
+        }
 
-	photo->_reduced_x_size = reduced_image.get_x_size();
-	photo->_reduced_y_size = reduced_image.get_y_size();
+        photo->_reduced_x_size = reduced_image.get_x_size();
+        photo->_reduced_y_size = reduced_image.get_y_size();
 
       } else {
-	// If we're not generating an index image, we don't even need
-	// the reduced image--just scan its header to get its size.
-	if (!reduced_image.read_header(reduced_filename)) {
-	  nout << "Unable to read " << reduced_filename << "\n";
-	  return false;
-	}
-	photo->_reduced_x_size = reduced_image.get_x_size();
-	photo->_reduced_y_size = reduced_image.get_y_size();
+        // If we're not generating an index image, we don't even need
+        // the reduced image--just scan its header to get its size.
+        if (!reduced_image.read_header(reduced_filename)) {
+          nout << "Unable to read " << reduced_filename << "\n";
+          return false;
+        }
+        photo->_reduced_x_size = reduced_image.get_x_size();
+        photo->_reduced_y_size = reduced_image.get_y_size();
       }
     }
 
@@ -247,34 +282,34 @@ generate_images(const Filename &archive_dir, PNMTextMaker *text_maker) {
       // Generate a thumbnail image for the photo.
       PNMImage thumbnail_image;
       compute_reduction(reduced_image, thumbnail_image, 
-			thumb_interior_width, thumb_interior_height);
+                        thumb_interior_width, thumb_interior_height);
 
       if (dummy_mode) {
-	draw_box(thumbnail_image);
+        draw_box(thumbnail_image);
       } else {
-	thumbnail_image.quick_filter_from(reduced_image);
+        thumbnail_image.quick_filter_from(reduced_image);
       }
       // Center the thumbnail image within its box.
       int x_center = (thumb_width - thumbnail_image.get_x_size()) / 2;
       int y_center = (thumb_height - thumbnail_image.get_y_size()) / 2;
 
       if (draw_frames) {
-	draw_frame(index_image, 
-		   pinfo._x_place, pinfo._y_place,
-		   thumb_width, thumb_height,
-		   pinfo._x_place + x_center, pinfo._y_place + y_center,
-		   thumbnail_image.get_x_size(), thumbnail_image.get_y_size());
+        draw_frame(index_image, 
+                   pinfo._x_place, pinfo._y_place,
+                   thumb_width, thumb_height,
+                   pinfo._x_place + x_center, pinfo._y_place + y_center,
+                   thumbnail_image.get_x_size(), thumbnail_image.get_y_size());
       }
 
       thumbnail_image.set_color_type(index_image.get_color_type());
       index_image.copy_sub_image(thumbnail_image, 
-				 pinfo._x_place + x_center, 
-				 pinfo._y_place + y_center);
+                                 pinfo._x_place + x_center, 
+                                 pinfo._y_place + y_center);
       
       if (text_maker != (PNMTextMaker *)NULL) {
-	text_maker->generate_into(photo->get_frame_number(), index_image, 
-				  pinfo._x_place + thumb_width / 2, 
-				  pinfo._y_place + thumb_height + thumb_caption_height);
+        text_maker->generate_into(photo->get_frame_number(), index_image, 
+                                  pinfo._x_place + thumb_width / 2, 
+                                  pinfo._y_place + thumb_height + thumb_caption_height);
       }
     }
   }
@@ -398,6 +433,10 @@ generate_reduced_html(ostream &html, Photo *photo, int photo_index, int pi,
 
   Filename reduced_dir("../../reduced", _dir->get_basename());
   Filename reduced(reduced_dir, photo->get_basename());
+  if (!photo->_has_reduced) {
+    reduced_dir = full_dir;
+    reduced = full;
+  }
 
   string up_href = "../" + _dir->get_basename() + ".htm#" + _name;
 
@@ -494,9 +533,7 @@ generate_reduced_html(ostream &html, Photo *photo, int photo_index, int pi,
     << " height=" << photo->_reduced_y_size << " alt=\"" << photo->get_name()
     << "\"></a></p>\n";
 
-  if (!omit_full_links && 
-      (photo->_full_x_size != photo->_reduced_x_size || 
-       photo->_full_y_size != photo->_reduced_y_size)) {
+  if (!omit_full_links && photo->_has_reduced) {
     html
       << "<p><a href=\"" << full << "\">View full size image ("
       << photo->_full_x_size << " x " << photo->_full_y_size << ")</a></p>";
@@ -645,8 +682,8 @@ draw_box(PNMImage &image) {
 ////////////////////////////////////////////////////////////////////
 void IndexImage::
 draw_frame(PNMImage &image,
-	   int frame_left, int frame_top, int frame_width, int frame_height,
-	   int hole_left, int hole_top, int hole_width, int hole_height) {
+           int frame_left, int frame_top, int frame_width, int frame_height,
+           int hole_left, int hole_top, int hole_width, int hole_height) {
   // Gray levels.
   static const RGBColord mid(0.5, 0.5, 0.5);
   static const RGBColord light(0.7, 0.7, 0.7);

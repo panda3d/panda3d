@@ -44,6 +44,7 @@ public:
   int _full_y_size;
   int _reduced_x_size;
   int _reduced_y_size;
+  bool _has_reduced;
 
 private:
   RollDirectory *_dir;

@@ -50,6 +50,7 @@ Photo(RollDirectory *dir, const Filename &basename) :
   _full_y_size = 0;
   _reduced_x_size = 0;
   _reduced_y_size = 0;
+  _has_reduced = false;
 }
 
 ////////////////////////////////////////////////////////////////////
