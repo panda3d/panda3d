@@ -206,10 +206,8 @@ set_properties_now(WindowProperties &properties) {
 
   if (properties.has_cursor_hidden()) {
     bool hide_cursor = properties.get_cursor_hidden();
-    cerr << "Setting cursor_hidden to " << hide_cursor << "\n";
     _properties.set_cursor_hidden(hide_cursor);
     if (_cursor_window == this) {
-      cerr << "in window now\n";
       hide_or_show_cursor(hide_cursor);
     }
 
