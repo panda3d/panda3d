@@ -79,6 +79,7 @@ public:
   INLINE int get_num_joints() const;
   INLINE EggJointData *get_joint(int n) const;
   bool do_reparent();
+  void choose_optimal_hierarchy();
 
   INLINE int get_num_sliders() const;
   INLINE EggSliderData *get_slider(int n) const;

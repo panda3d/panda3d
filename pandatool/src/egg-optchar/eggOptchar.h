@@ -67,7 +67,7 @@ private:
   void analyze_joints(EggJointData *joint_data);
   void analyze_sliders(EggCharacterData *char_data);
   void list_joints(EggJointData *joint_data, int indent_level, bool verbose);
-  void list_joints_p(EggJointData *joint_data);
+  void list_joints_p(EggJointData *joint_data, int &col);
   void list_scalars(EggCharacterData *char_data, bool verbose);
   void describe_component(EggComponentData *comp_data, int indent_level,
                           bool verbose);
@@ -108,6 +108,7 @@ private:
   typedef pvector<FlagGroupsEntry> FlagGroups;
   FlagGroups _flag_groups;
 
+  bool _optimal_hierarchy;
   double _vref_quantum;
 };
 

@@ -239,6 +239,61 @@ do_reparent() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggCharacterData::choose_optimal_hierarchy
+//       Access: Public
+//  Description: Chooses the best possible parent joint for each of
+//               the joints in the hierarchy, based on the score
+//               computed by EggJointData::score_reparent_to().  This
+//               is a fairly expensive operation that involves lots of
+//               recomputing of transforms across the hierarchy.
+//
+//               The joints are not actually reparented yet, but the
+//               new_parent of each joint is set.  Call do_reparent()
+//               to actually perform the suggested reparenting
+//               operation.
+////////////////////////////////////////////////////////////////////
+void EggCharacterData::
+choose_optimal_hierarchy() {
+  Joints::const_iterator ji, jj;
+  for (ji = _joints.begin(); ji != _joints.end(); ++ji) {
+    EggJointData *joint_data = (*ji);
+
+    EggJointData *best_parent = joint_data->get_parent();
+    int best_score = joint_data->score_reparent_to(best_parent);
+
+    for (jj = _joints.begin(); jj != _joints.end(); ++jj) {
+      EggJointData *possible_parent = (*jj);
+      if (possible_parent != joint_data && possible_parent != best_parent &&
+          !joint_data->is_new_ancestor(possible_parent)) {
+
+        int score = joint_data->score_reparent_to(possible_parent);
+        if (score >= 0 && (best_score < 0 || score < best_score)) {
+          best_parent = possible_parent;
+          best_score = score;
+        }
+      }
+    }
+
+    // Also consider reparenting the node to the root.
+    EggJointData *possible_parent = get_root_joint();
+    if (possible_parent != best_parent) {
+      int score = joint_data->score_reparent_to(possible_parent);
+      if (score >= 0 && (best_score < 0 || score < best_score)) {
+        best_parent = possible_parent;
+        best_score = score;
+      }
+    }
+
+    if (best_parent != (EggJointData *)NULL && 
+        best_parent != joint_data->_parent) {
+      nout << "best parent for " << joint_data->get_name() << " is "
+           << best_parent->get_name() << "\n";
+      joint_data->reparent_to(best_parent);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggCharacterData::find_slider
 //       Access: Public
 //  Description: Returns the slider with the indicated name, or NULL

@@ -45,6 +45,7 @@ public:
 
   LMatrix4d get_frame(int model_index, int n) const;
   LMatrix4d get_net_frame(int model_index, int n) const;
+  LMatrix4d get_net_frame_inv(int model_index, int n) const;
 
   INLINE bool has_rest_frame() const;
   INLINE bool rest_frames_differ() const;
@@ -53,6 +54,7 @@ public:
 
   INLINE void reparent_to(EggJointData *new_parent);
   void move_vertices_to(EggJointData *new_owner);
+  int score_reparent_to(EggJointData *new_parent);
 
   bool do_rebuild();
   void optimize();
@@ -72,6 +74,7 @@ private:
   EggJointData *find_joint_exact(const string &name);
   EggJointData *find_joint_matches(const string &name);
 
+  bool is_new_ancestor(EggJointData *child) const;
   const LMatrix4d &get_new_net_frame(int model_index, int n);
   const LMatrix4d &get_new_net_frame_inv(int model_index, int n);
   LMatrix4d get_new_frame(int model_index, int n);

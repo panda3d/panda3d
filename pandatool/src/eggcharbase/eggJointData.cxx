@@ -24,6 +24,8 @@
 #include "eggGroup.h"
 #include "eggTable.h"
 #include "indent.h"
+#include "fftCompressor.h"
+#include "zStream.h"
 
 TypeHandle EggJointData::_type_handle;
 
@@ -73,11 +75,61 @@ get_frame(int model_index, int n) const {
 ////////////////////////////////////////////////////////////////////
 LMatrix4d EggJointData::
 get_net_frame(int model_index, int n) const {
-  LMatrix4d mat = get_frame(model_index, n);
-  if (_parent != (EggJointData *)NULL) {
-    mat = mat * _parent->get_net_frame(model_index, n);
+  EggBackPointer *back = get_model(model_index);
+  if (back == (EggBackPointer *)NULL) {
+    return LMatrix4d::ident_mat();
   }
-  return mat;
+
+  EggJointPointer *joint;
+  DCAST_INTO_R(joint, back, LMatrix4d::ident_mat());
+
+  if (joint->get_num_net_frames() < n) {
+    // Recursively get the previous frame's net, so we have a place to
+    // stuff this frame's value.
+    get_net_frame(model_index, n - 1);
+  }
+
+  if (joint->get_num_net_frames() == n) {
+    // Compute this frame's net, and stuff it in.
+    LMatrix4d mat = get_frame(model_index, n);
+    if (_parent != (EggJointData *)NULL) {
+      mat = mat * _parent->get_net_frame(model_index, n);
+    }
+    joint->add_net_frame(mat);
+  }
+
+  return joint->get_net_frame(n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::get_net_frame_inv
+//       Access: Public
+//  Description: Returns the inverse of get_net_frame().
+////////////////////////////////////////////////////////////////////
+LMatrix4d EggJointData::
+get_net_frame_inv(int model_index, int n) const {
+  EggBackPointer *back = get_model(model_index);
+  if (back == (EggBackPointer *)NULL) {
+    return LMatrix4d::ident_mat();
+  }
+
+  EggJointPointer *joint;
+  DCAST_INTO_R(joint, back, LMatrix4d::ident_mat());
+
+  if (joint->get_num_net_frame_invs() < n) {
+    // Recursively get the previous frame's net, so we have a place to
+    // stuff this frame's value.
+    get_net_frame_inv(model_index, n - 1);
+  }
+
+  if (joint->get_num_net_frame_invs() == n) {
+    // Compute this frame's net inverse, and stuff it in.
+    LMatrix4d mat = get_net_frame(model_index, n);
+    mat.invert_in_place();
+    joint->add_net_frame_inv(mat);
+  }
+
+  return joint->get_net_frame_inv(n);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -117,14 +169,138 @@ force_initial_rest_frame() {
 void EggJointData::
 move_vertices_to(EggJointData *new_owner) {
   int num_models = get_num_models();
-  for (int model_index = 0; model_index < num_models; model_index++) {
-    if (has_model(model_index) && new_owner->has_model(model_index)) {
-      EggJointPointer *joint, *new_joint;
-      DCAST_INTO_V(joint, get_model(model_index));
-      DCAST_INTO_V(new_joint, new_owner->get_model(model_index));
-      joint->move_vertices_to(new_joint);
+
+  if (new_owner == (EggJointData *)NULL) {
+    for (int model_index = 0; model_index < num_models; model_index++) {
+      if (has_model(model_index)) {
+        EggJointPointer *joint;
+        DCAST_INTO_V(joint, get_model(model_index));
+        joint->move_vertices_to((EggJointPointer *)NULL);
+      }
+    }
+  } else {
+    for (int model_index = 0; model_index < num_models; model_index++) {
+      if (has_model(model_index) && new_owner->has_model(model_index)) {
+        EggJointPointer *joint, *new_joint;
+        DCAST_INTO_V(joint, get_model(model_index));
+        DCAST_INTO_V(new_joint, new_owner->get_model(model_index));
+        joint->move_vertices_to(new_joint);
+      }
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::score_reparent
+//       Access: Public
+//  Description: Computes a score >= 0 reflecting the similarity of
+//               the current joint's animation (in world space) to
+//               that of the indicated potential parent joint (in
+//               world space).  The lower the number, the more similar
+//               the motion, and the more suitable is the proposed
+//               parent-child relationship.  Returns -1 if there is an
+//               error.
+////////////////////////////////////////////////////////////////////
+int EggJointData::
+score_reparent_to(EggJointData *new_parent) {
+  if (!FFTCompressor::is_compression_available()) {
+    // If we don't have compression compiled in, we can't meaningfully
+    // score the joints.
+    return -1;
+  }
+
+  // First, build up a big array of the new transforms this joint
+  // would receive in all frames of all models, were it reparented to
+  // the indicated joint.
+  vector_float i, j, k, a, b, c, x, y, z;
+  vector_LVecBase3f hprs;
+  int num_rows = 0;
+
+  int num_models = get_num_models();
+  for (int model_index = 0; model_index < num_models; model_index++) {
+    EggBackPointer *back = get_model(model_index);
+    if (back != (EggBackPointer *)NULL) {
+      EggJointPointer *joint;
+      DCAST_INTO_R(joint, back, false);
+
+      int num_frames = get_num_frames(model_index);
+      for (int n = 0; n < num_frames; n++) {
+        LMatrix4d transform;
+        if (_parent == new_parent) {
+          // We already have this parent.
+          transform = LMatrix4d::ident_mat();
+          
+        } else if (_parent == (EggJointData *)NULL) {
+          // We are moving from outside the joint hierarchy to within it.
+          transform = new_parent->get_net_frame_inv(model_index, n);
+          
+        } else if (new_parent == (EggJointData *)NULL) {
+          // We are moving from within the hierarchy to outside it.
+          transform = _parent->get_net_frame(model_index, n);
+          
+        } else {
+          // We are changing parents within the hierarchy.
+          transform = 
+            _parent->get_net_frame(model_index, n) *
+            new_parent->get_net_frame_inv(model_index, n);
+        }
+
+        transform = joint->get_frame(n) * transform;
+        LVecBase3d scale, shear, hpr, translate;
+        if (!decompose_matrix(transform, scale, shear, hpr, translate)) {
+          // Invalid transform.
+          return -1;
+        }
+        i.push_back(scale[0]);
+        j.push_back(scale[1]);
+        k.push_back(scale[2]);
+        a.push_back(shear[0]);
+        b.push_back(shear[1]);
+        c.push_back(shear[2]);
+        hprs.push_back(LCAST(float, hpr));
+        x.push_back(translate[0]);
+        y.push_back(translate[1]);
+        z.push_back(translate[2]);
+        num_rows++;
+      }
+    }
+  }
+
+  if (num_rows == 0) {
+    // No data, no score.
+    return -1;
+  }
+
+  // Now, we derive a score, by the simple expedient of using the
+  // FFTCompressor to compress the generated transforms, and measuring
+  // the length of the resulting bitstream.
+  FFTCompressor compressor;
+  Datagram dg;
+  compressor.write_reals(dg, &i[0], num_rows);
+  compressor.write_reals(dg, &j[0], num_rows);
+  compressor.write_reals(dg, &k[0], num_rows);
+  compressor.write_reals(dg, &a[0], num_rows);
+  compressor.write_reals(dg, &b[0], num_rows);
+  compressor.write_reals(dg, &c[0], num_rows);
+  compressor.write_hprs(dg, &hprs[0], num_rows);
+  compressor.write_reals(dg, &x[0], num_rows);
+  compressor.write_reals(dg, &y[0], num_rows);
+  compressor.write_reals(dg, &z[0], num_rows);
+
+
+#ifndef HAVE_ZLIB
+  return dg.get_length();
+
+#else
+  // The FFTCompressor does minimal run-length encoding, but to really
+  // get an accurate measure we should zlib-compress the resulting
+  // stream.
+  ostringstream sstr;
+  OCompressStream zstr(&sstr, false);
+  zstr.write((const char *)dg.get_data(), dg.get_length());
+  zstr.flush();
+  return sstr.str().length();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -363,12 +539,12 @@ do_compute_reparent(int model_index, int n) {
 
   } else if (_new_parent == (EggJointData *)NULL) {
     // We are moving from within the hierarchy to outside it.
-    transform = _parent->get_new_net_frame(model_index, n);
+    transform = _parent->get_net_frame(model_index, n);
 
   } else {
     // We are changing parents within the hierarchy.
     transform = 
-      _parent->get_new_net_frame(model_index, n) *
+      _parent->get_net_frame(model_index, n) *
       _new_parent->get_new_net_frame_inv(model_index, n);
   }
 
@@ -401,6 +577,7 @@ do_finish_reparent() {
       EggJointPointer *joint;
       DCAST_INTO_R(joint, get_model(model_index), false);
       joint->do_finish_reparent(parent_joint);
+      joint->clear_net_frames();
       if (!joint->do_rebuild()) {
         all_ok = false;
       }
@@ -460,6 +637,27 @@ find_joint_matches(const string &name) {
   }
 
   return (EggJointData *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::is_new_ancestor
+//       Access: Protected
+//  Description: Returns true if this joint is an ancestor of the
+//               indicated joint, in the "new" hierarchy (that is, the
+//               one defined by _new_parent, as set by reparent_to()
+//               before do_finish_reparent() is called).
+////////////////////////////////////////////////////////////////////
+bool EggJointData::
+is_new_ancestor(EggJointData *child) const {
+  if (child == this) {
+    return true;
+  }
+
+  if (child->_new_parent == (EggJointData *)NULL) {
+    return false;
+  }
+
+  return is_new_ancestor(child->_new_parent);
 }
 
 ////////////////////////////////////////////////////////////////////

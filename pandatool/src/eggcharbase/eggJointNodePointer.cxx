@@ -128,10 +128,15 @@ do_finish_reparent(EggJointPointer *new_parent) {
 ////////////////////////////////////////////////////////////////////
 void EggJointNodePointer::
 move_vertices_to(EggJointPointer *new_joint) {
-  EggJointNodePointer *new_node;
-  DCAST_INTO_V(new_node, new_joint);
+  if (new_joint == (EggJointPointer *)NULL) {
+    _joint->unref_all_vertices();
 
-  new_node->_joint->steal_vrefs(_joint);
+  } else {
+    EggJointNodePointer *new_node;
+    DCAST_INTO_V(new_node, new_joint);
+
+    new_node->_joint->steal_vrefs(_joint);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -32,6 +32,7 @@
 #include "dcast.h"
 #include "pset.h"
 #include "compose_matrix.h"
+#include "fftCompressor.h"
 
 #include <algorithm>
 
@@ -119,6 +120,21 @@ EggOptchar() {
      "is not affected (the effect is similar to NodePath::wrt_reparent_to).",
      &EggOptchar::dispatch_vector_string_pair, NULL, &_reparent_joints);
 
+  if (FFTCompressor::is_compression_available()) {
+    add_option
+      ("optimal", "", 0,
+       "Computes the optimal joint hierarchy for the character by analyzing "
+       "all of the joint animation and reparenting joints to minimize "
+       "transformations.  This can repair skeletons that have been flattened "
+       "or whose hierarchy was otherwise damaged in conversion; it can also "
+       "detect joints that are constrained to follow other joints and should "
+       "therefore be parented to the master joints.  The result is a file "
+       "from which more joints may be successfully removed, that generally "
+       "compresses better and with fewer artifacts.  However, this is a "
+       "fairly expensive operation.",
+       &EggOptchar::dispatch_none, &_optimal_hierarchy);
+  }
+
   add_option
     ("q", "quantum", 0,
      "Quantize joint membership values to the given unit.  This is "
@@ -127,6 +143,7 @@ EggOptchar() {
      "values.",
      &EggOptchar::dispatch_double, NULL, &_vref_quantum);
 
+  _optimal_hierarchy = false;
   _vref_quantum = 0.01;
 }
 
@@ -174,7 +191,8 @@ run() {
     for (ci = 0; ci < num_characters; ci++) {
       EggCharacterData *char_data = _collection->get_character(ci);
       nout << "Character: " << char_data->get_name() << "\n";
-      list_joints_p(char_data->get_root_joint());
+      int col = 0;
+      list_joints_p(char_data->get_root_joint(), col);
       // A newline to cout is needed after the above call.
       cout << "\n";
       nout << char_data->get_num_joints() << " joints.\n";
@@ -390,10 +408,14 @@ determine_removed_components() {
   for (int ci = 0; ci < num_characters; ci++) {
     EggCharacterData *char_data = _collection->get_character(ci);
     int num_components = char_data->get_num_components();
+    cerr << char_data->get_name() << " has " << num_components << " components.\n";
     for (int i = 0; i < num_components; i++) {
       EggComponentData *comp_data = char_data->get_component(i);
+      nassertv(comp_data != (EggComponentData *)NULL);
+
       EggOptcharUserData *user_data = 
         DCAST(EggOptcharUserData, comp_data->get_user_data());
+      nassertv(user_data != (EggOptcharUserData *)NULL);
 
       const string &name = comp_data->get_name();
       if (_keep_all || keep_names.find(name) != keep_names.end()) {
@@ -469,9 +491,11 @@ move_vertices() {
         joint_data->move_vertices_to(best_joint);
 
         // Now we can't remove the joint.
-        EggOptcharUserData *best_user_data = 
-          DCAST(EggOptcharUserData, best_joint->get_user_data());
-        best_user_data->_flags &= ~(EggOptcharUserData::F_empty | EggOptcharUserData::F_remove);
+        if (best_joint != (EggJointData *)NULL) {
+          EggOptcharUserData *best_user_data = 
+            DCAST(EggOptcharUserData, best_joint->get_user_data());
+          best_user_data->_flags &= ~(EggOptcharUserData::F_empty | EggOptcharUserData::F_remove);
+        }
       }
     }
   }
@@ -488,6 +512,7 @@ move_vertices() {
 ////////////////////////////////////////////////////////////////////
 bool EggOptchar::
 process_joints() {
+  cerr << "process_joints\n";
   bool removed_any = false;
   int num_characters = _collection->get_num_characters();
   for (int ci = 0; ci < num_characters; ci++) {
@@ -594,14 +619,16 @@ find_best_parent(EggJointData *joint_data) const {
 ////////////////////////////////////////////////////////////////////
 EggJointData *EggOptchar::
 find_best_vertex_joint(EggJointData *joint_data) const {
+  if (joint_data == (EggJointData *)NULL) {
+    return NULL;
+  }
+
   EggOptcharUserData *user_data = 
     DCAST(EggOptcharUserData, joint_data->get_user_data());
 
   if ((user_data->_flags & EggOptcharUserData::F_static) != 0) {
     // Keep going.
-    if (joint_data->get_parent() != (EggJointData *)NULL) {
-      return find_best_vertex_joint(joint_data->get_parent());
-    }
+    return find_best_vertex_joint(joint_data->get_parent());
   }
 
   // This is the one!
@@ -618,6 +645,7 @@ find_best_vertex_joint(EggJointData *joint_data) const {
 bool EggOptchar::
 apply_user_reparents() {
   bool did_anything = false;
+
   int num_characters = _collection->get_num_characters();
 
   StringPairs::const_iterator spi;
@@ -642,6 +670,18 @@ apply_user_reparents() {
         node_a->reparent_to(node_b);
         did_anything = true;
       }
+    }
+  }
+
+  if (_optimal_hierarchy) {
+    did_anything = true;
+    for (int ci = 0; ci < num_characters; ci++) {
+      EggCharacterData *char_data = _collection->get_character(ci);
+      nout << "Computing optimal hierarchy for "
+           << char_data->get_name() << ".\n";
+      char_data->choose_optimal_hierarchy();
+      nout << "Done computing optimal hierarchy for "
+           << char_data->get_name() << ".\n";
     }
   }
 
@@ -849,19 +889,34 @@ list_joints(EggJointData *joint_data, int indent_level, bool verbose) {
 //               -p joint,parent commands.
 ////////////////////////////////////////////////////////////////////
 void EggOptchar::
-list_joints_p(EggJointData *joint_data) {
+list_joints_p(EggJointData *joint_data, int &col) {
   // As above, don't list the root joint.
 
   int num_children = joint_data->get_num_children();
+  static const int max_col = 72;
+
   for (int i = 0; i < num_children; i++) {
     EggJointData *child_data = joint_data->get_child(i);
     // We send output to cout instead of nout to avoid the
     // word-wrapping, and also to allow the user to redirect this
     // easily to a file.
-    cout << " -p " << child_data->get_name() << "," 
-         << joint_data->get_name();
 
-    list_joints_p(child_data);
+    string text = string(" -p ") + child_data->get_name() + 
+      string(",") + joint_data->get_name();
+    if (col == 0) {
+      cout << "    " << text;
+      col = 4 + text.length();
+    } else {
+      col += text.length();
+      if (col >= max_col) {
+        cout << " \\\n    " << text;
+        col = 4 + text.length();
+      } else {
+        cout << text;
+      }
+    }
+
+    list_joints_p(child_data, col);
   }
 }
 

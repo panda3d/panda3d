@@ -50,6 +50,16 @@ public:
   INLINE const LMatrix4d &get_rebuild_frame(int n) const;
   virtual bool do_rebuild();
 
+  INLINE void clear_net_frames();
+  INLINE void add_net_frame(const LMatrix4d &mat);
+  INLINE int get_num_net_frames() const;
+  INLINE const LMatrix4d &get_net_frame(int n) const;
+
+  INLINE void clear_net_frame_invs();
+  INLINE void add_net_frame_inv(const LMatrix4d &mat);
+  INLINE int get_num_net_frame_invs() const;
+  INLINE const LMatrix4d &get_net_frame_inv(int n) const;
+
   virtual void optimize();
   virtual void expose(EggGroup::DCSType dcs_type);
   virtual void zero_channels(const string &components);
@@ -57,6 +67,8 @@ public:
 protected:
   typedef pvector<LMatrix4d> RebuildFrames;
   RebuildFrames _rebuild_frames;
+  RebuildFrames _net_frames;
+  RebuildFrames _net_frame_invs;
 
 public:
   static TypeHandle get_class_type() {

@@ -4,6 +4,7 @@
     eggbase progbase
   #define OTHER_LIBS \
     egg:c panda:m
+  #define USE_PACKAGES zlib
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx 
 
