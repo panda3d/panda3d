@@ -25,6 +25,7 @@
 #include "textureAttrib.h"
 #include "texturePool.h"
 #include "billboardAttrib.h"
+#include "cullFaceAttrib.h"
 #include "qpgeomNode.h"
 #include "string_utils.h"
 #include "eggPrimitive.h"
@@ -986,13 +987,13 @@ setup_bucket(BuilderBucket &bucket, PandaNode *parent,
     bin = render_mode->get_bin();
   }
 
-  bucket._state = bucket._state->add_attrib(TextureAttrib::make_off());
+  bucket.add_attrib(TextureAttrib::make_off());
   if (egg_prim->has_texture()) {
     PT(EggTexture) egg_tex = egg_prim->get_texture();
 
     const TextureDef &def = _textures[egg_tex];
     if (def._texture != (const RenderAttrib *)NULL) {
-      bucket._state = bucket._state->add_attrib(def._texture);
+      bucket.add_attrib(def._texture);
       //      bucket._trans.set_transition(def._apply);
 
       // If neither the primitive nor the texture specified an alpha
@@ -1108,16 +1109,14 @@ setup_bucket(BuilderBucket &bucket, PandaNode *parent,
   }
   */
 
-  /*
   if (egg_prim->get_bface_flag()) {
     // The primitive is marked with backface culling disabled--we want
     // to see both sides.
-    bucket._trans.set_transition(new CullFaceTransition(CullFaceProperty::M_cull_none));
+    bucket.add_attrib(CullFaceAttrib::make(CullFaceAttrib::M_cull_none));
 
   } else {
-    bucket._trans.set_transition(new CullFaceTransition(CullFaceProperty::M_cull_clockwise));
+    bucket.add_attrib(CullFaceAttrib::make(CullFaceAttrib::M_cull_clockwise));
   }
-  */
 }
 
 

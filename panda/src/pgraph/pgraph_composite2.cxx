@@ -1,3 +1,5 @@
+#include "nodeChain.cxx"
+#include "nodeChainComponent.cxx"
 #include "pandaNode.cxx"
 #include "pipeline.cxx"
 #include "pipelineCycler.cxx"

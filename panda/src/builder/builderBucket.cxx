@@ -150,6 +150,18 @@ done_geom(Geom *geom) {
   return geom;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: BuilderBucket::add_attrib
+//       Access: Public
+//  Description: A convenience function to add the indicated render
+//               attribute to the bucket's state.
+////////////////////////////////////////////////////////////////////
+void BuilderBucket::
+add_attrib(const RenderAttrib *attrib) {
+  _state = _state->add_attrib(attrib);
+}
+
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BuilderBucket::Ordering operator

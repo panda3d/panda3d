@@ -10,6 +10,7 @@
     qpcamera.h qpcamera.I \
     colorAttrib.h colorAttrib.I \
     config_pgraph.h \
+    cullFaceAttrib.h cullFaceAttrib.I \
     cullHandler.h \
     qpcullTraverser.h qpcullTraverser.I \
     cycleData.h cycleData.I \
@@ -34,6 +35,7 @@
     qpcamera.cxx \
     colorAttrib.cxx \
     config_pgraph.cxx \
+    cullFaceAttrib.cxx \
     cullHandler.cxx \
     qpcullTraverser.cxx \
     cycleData.cxx \
@@ -63,6 +65,7 @@
     qpcamera.h qpcamera.I \
     colorAttrib.h colorAttrib.I \
     config_pgraph.h \
+    cullFaceAttrib.h cullFaceAttrib.I \
     cullHandler.h \
     qpcullTraverser.h qpcullTraverser.I \
     cycleData.h cycleData.I \

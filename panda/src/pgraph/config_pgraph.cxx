@@ -21,6 +21,7 @@
 #include "billboardAttrib.h"
 #include "qpcamera.h"
 #include "colorAttrib.h"
+#include "cullFaceAttrib.h"
 #include "qpgeomNode.h"
 #include "qplensNode.h"
 #include "nodeChain.h"
@@ -61,6 +62,7 @@ init_libpgraph() {
   BillboardAttrib::init_type();
   qpCamera::init_type();
   ColorAttrib::init_type();
+  CullFaceAttrib::init_type();
   qpGeomNode::init_type();
   qpLensNode::init_type();
   NodeChain::init_type();
@@ -74,6 +76,7 @@ init_libpgraph() {
 
   BillboardAttrib::register_with_read_factory();
   ColorAttrib::register_with_read_factory();
+  CullFaceAttrib::register_with_read_factory();
   qpGeomNode::register_with_read_factory();
   PandaNode::register_with_read_factory();
   RenderState::register_with_read_factory();

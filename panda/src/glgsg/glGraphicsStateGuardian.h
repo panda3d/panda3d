@@ -158,6 +158,7 @@ public:
 
   virtual void issue_transform(const TransformState *transform);
   virtual void issue_texture(const TextureAttrib *attrib);
+  virtual void issue_cull_face(const CullFaceAttrib *attrib);
 
   virtual bool wants_normals(void) const;
   virtual bool wants_texcoords(void) const;

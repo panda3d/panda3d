@@ -66,6 +66,7 @@
 #include "pointShapeTransition.h"
 #include "polygonOffsetTransition.h"
 #include "textureAttrib.h"
+#include "cullFaceAttrib.h"
 #include "clockObject.h"
 #include "string_utils.h"
 #include "dcast.h"
@@ -3447,6 +3448,39 @@ issue_texture(const TextureAttrib *attrib) {
     Texture *tex = attrib->get_texture();
     nassertv(tex != (Texture *)NULL);
     tex->apply(this);
+  }
+  report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::issue_cull_face
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+issue_cull_face(const CullFaceAttrib *attrib) {
+  CullFaceAttrib::Mode mode = attrib->get_mode();
+
+  switch (mode) {
+  case CullFaceAttrib::M_cull_none:
+    glDisable(GL_CULL_FACE);
+    break;
+  case CullFaceAttrib::M_cull_clockwise:
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    break;
+  case CullFaceAttrib::M_cull_counter_clockwise:
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
+    break;
+  case CullFaceAttrib::M_cull_all:
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT_AND_BACK);
+    break;
+  default:
+    glgsg_cat.error()
+      << "invalid cull face mode " << (int)mode << endl;
+    break;
   }
   report_errors();
 }

@@ -177,17 +177,18 @@ make_default_geometry(PandaNode *parent) {
   geom->set_texcoords(uvs, G_PER_VERTEX);
   geom->set_normals(norms, G_PER_PRIM);
   geom->set_colors(colors, G_PER_VERTEX, cindex);
-  
-  qpGeomNode *geomnode = new qpGeomNode("tri");
-  parent->add_child(geomnode);
-  geomnode->add_geom(geom, RenderState::make_empty());
-  
+
+  CPT(RenderState) state = RenderState::make_empty();
   Texture *tex = TexturePool::load_texture("rock-floor.rgb");
   if (tex != (Texture *)NULL) {
     tex->set_minfilter(Texture::FT_linear);
     tex->set_magfilter(Texture::FT_linear);
-    geomnode->set_attrib(TextureAttrib::make(tex));
+    state->add_attrib(TextureAttrib::make(tex));
   }
+  
+  qpGeomNode *geomnode = new qpGeomNode("tri");
+  parent->add_child(geomnode);
+  geomnode->add_geom(geom, state);
 }
 
 void

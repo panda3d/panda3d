@@ -42,7 +42,6 @@ class GeomNode;
 class PandaNode;
 class qpGeomNode;
 
-
 ///////////////////////////////////////////////////////////////////
 //       Class : BuilderBucket
 // Description : The main grouping tool for BuilderPrims.  See the
@@ -72,6 +71,7 @@ public:
   virtual GeomNode *make_geom_node();
   virtual qpGeomNode *qpmake_geom_node();
   virtual Geom *done_geom(Geom *geom);
+  void add_attrib(const RenderAttrib *attrib);
 
   virtual bool operator < (const BuilderBucket &other) const;
 

@@ -75,8 +75,29 @@ class LinesmoothTransition;
 class PointShapeTransition;
 class PolygonOffsetTransition;
 
-class TextureAttrib;
+class TransformAttrib;
+class ColorMatrixAttrib;
+class AlphaTransformAttrib;
+class TexMatrixAttrib;
 class ColorAttrib;
+class TextureAttrib;
+class LightAttrib;
+class MaterialAttrib;
+class RenderModeAttrib;
+class ColorBlendAttrib;
+class TextureApplyAttrib;
+class ColorMaskAttrib;
+class DepthTestAttrib;
+class DepthWriteAttrib;
+class TexGenAttrib;
+class CullFaceAttrib;
+class StencilAttrib;
+class ClipPlaneAttrib;
+class TransparencyAttrib;
+class FogAttrib;
+class LinesmoothAttrib;
+class PointShapeAttrib;
+class PolygonOffsetAttrib;
 
 class Node;
 class GeomNode;
@@ -191,8 +212,29 @@ public:
   virtual void issue_point_shape(const PointShapeTransition *) { }
   virtual void issue_polygon_offset(const PolygonOffsetTransition *) { }
 
-  virtual void issue_texture(const TextureAttrib *) { }
+  virtual void issue_transform(const TransformAttrib *) { }
+  virtual void issue_color_transform(const ColorMatrixAttrib *) { }
+  virtual void issue_alpha_transform(const AlphaTransformAttrib *) { }
+  virtual void issue_tex_matrix(const TexMatrixAttrib *) { }
   virtual void issue_color(const ColorAttrib *) { }
+  virtual void issue_texture(const TextureAttrib *) { }
+  virtual void issue_light(const LightAttrib *) { }
+  virtual void issue_material(const MaterialAttrib *) { }
+  virtual void issue_render_mode(const RenderModeAttrib *) { }
+  virtual void issue_color_blend(const ColorBlendAttrib *) { }
+  virtual void issue_texture_apply(const TextureApplyAttrib *) { }
+  virtual void issue_color_mask(const ColorMaskAttrib *) { }
+  virtual void issue_depth_test(const DepthTestAttrib *) { }
+  virtual void issue_depth_write(const DepthWriteAttrib *) { }
+  virtual void issue_tex_gen(const TexGenAttrib *) { }
+  virtual void issue_cull_face(const CullFaceAttrib *) { }
+  virtual void issue_stencil(const StencilAttrib *) { }
+  virtual void issue_clip_plane(const ClipPlaneAttrib *) { }
+  virtual void issue_transparency(const TransparencyAttrib *) { }
+  virtual void issue_fog(const FogAttrib *) { }
+  virtual void issue_linesmooth(const LinesmoothAttrib *) { }
+  virtual void issue_point_shape(const PointShapeAttrib *) { }
+  virtual void issue_polygon_offset(const PolygonOffsetAttrib *) { }
 
 PUBLISHED:
   static TypeHandle get_class_type() {
