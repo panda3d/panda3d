@@ -110,7 +110,7 @@ read_source(const string &root) {
     return false;
   }
 
-  _root = Filename::from_os_specific(get_cwd());
+  _root = get_cwd();
   cerr << "Root is " << _root << "\n";
 
   _def_scope = new PPScope(&_named_scopes);
@@ -381,7 +381,7 @@ read_global_file() {
 //  Description: Calls the system getcwd(), automatically allocating a
 //               large enough string.
 ////////////////////////////////////////////////////////////////////
-string PPMain::
+Filename PPMain::
 get_cwd() {
   static size_t bufsize = 1024;
   static char *buffer = NULL;
@@ -401,5 +401,5 @@ get_cwd() {
     assert(buffer != (char *)NULL);
   }
 
-  return string(buffer);
+  return Filename::from_os_specific(buffer);
 }

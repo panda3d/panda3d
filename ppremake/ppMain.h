@@ -40,7 +40,7 @@ private:
   bool r_process_all(PPDirectory *dir);
   bool p_process(PPDirectory *dir);
   bool read_global_file();
-  static string get_cwd();
+  static Filename get_cwd();
 
 
   PPScope *_global_scope;

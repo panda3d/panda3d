@@ -137,6 +137,15 @@
 			RelativePath="filename.h">
 		</File>
 		<File
+			RelativePath="globPattern.I">
+		</File>
+		<File
+			RelativePath="globPattern.cxx">
+		</File>
+		<File
+			RelativePath="globPattern.h">
+		</File>
+		<File
 			RelativePath="gnu_getopt.c">
 		</File>
 		<File
