@@ -12,7 +12,7 @@ $rebase_path="/msvc7/Common7/Tools/bin";
 $ENV{'PATH'}=$rebase_path.":".$ENV{'PATH'};
 
 # note: this is the order dlls will be laid out in memory
-@dll_names=("libpanda","libpandadx","libpandadx7","libpandagl","libpandaexpress","libpandaphysics","libpandafx","libdtool","libdtoolconfig","libpystub","libdirect","libtoontown","libmiles_audio","libpandaegg");
+@dll_names=("libpanda","libpandadx","libpandadx7","libpandagl","libpandaexpress","libpandaphysics","libpandafx","libdtool","libdtoolconfig","libpystub","libdirect","libtoontown","libmiles_audio","libpandaegg","libframework");
 
 # old audio dlls
 #            "libaudio_load_midi","libaudio_load_mp3","libaudio_load_st","libaudio_load_wav",
@@ -105,3 +105,4 @@ print $args[0]." ".$args[1]." ".$args[2]."\n";
 system(@args);
 
 exit(0);
+
