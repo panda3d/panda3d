@@ -16,7 +16,7 @@ class DCMolecularField;
 // Description : A single field of a Distributed Class, either atomic
 //               or molecular.
 ////////////////////////////////////////////////////////////////////
-class DCField {
+class EXPCL_DIRECT DCField {
 PUBLISHED:
   int get_number() const;
   const string &get_name() const;

@@ -19,7 +19,7 @@
 //               Distributed Class, and is always implemented as a
 //               remote procedure method.
 ////////////////////////////////////////////////////////////////////
-class DCAtomicField : public DCField {
+class EXPCL_DIRECT DCAtomicField : public DCField {
 PUBLISHED:
   virtual DCAtomicField *as_atomic_field();
 

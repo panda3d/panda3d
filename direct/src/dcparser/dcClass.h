@@ -17,7 +17,7 @@
 // Description : Defines a particular DistributedClass as read from an
 //               input .dc file.
 ////////////////////////////////////////////////////////////////////
-class DCClass {
+class EXPCL_DIRECT DCClass {
 PUBLISHED:
   int get_number() const;
   string get_name() const;

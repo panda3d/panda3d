@@ -20,7 +20,7 @@ class DCAtomicField;
 //               of two or more related atomic fields, that will often
 //               be treated as a unit.
 ////////////////////////////////////////////////////////////////////
-class DCMolecularField : public DCField {
+class EXPCL_DIRECT DCMolecularField : public DCField {
 PUBLISHED:
   virtual DCMolecularField *as_molecular_field();
 

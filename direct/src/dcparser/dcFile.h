@@ -17,7 +17,7 @@
 // Description : Represents the complete list of Distributed Class
 //               descriptions as read from a .dc file.
 ////////////////////////////////////////////////////////////////////
-class DCFile {
+class EXPCL_DIRECT DCFile {
 PUBLISHED:
   DCFile();
   ~DCFile();
