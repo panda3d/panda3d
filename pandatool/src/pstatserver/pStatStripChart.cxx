@@ -117,6 +117,7 @@ update() {
       di = _data.begin();
       while (di != _data.end() &&
              thread_data->get_frame((*di).first).get_start() < oldest_time) {
+        dec_label_usage((*di).second);
         _data.erase(di);
         di = _data.begin();
       }
@@ -153,6 +154,7 @@ set_collector_index(int collector_index) {
     _collector_index = collector_index;
     _title_unknown = true;
     _data.clear();
+    clear_label_usage();
     force_redraw();
     update_labels();
   }
@@ -449,7 +451,7 @@ get_frame_data(int frame_number) {
   const PStatThreadData *thread_data = _view.get_thread_data();
   _view.set_to_frame(thread_data->get_frame(frame_number));
 
-  FrameData &data = _data[frame_number];
+  FrameData &fdata = _data[frame_number];
 
   const PStatViewLevel *level = _view.get_level(_collector_index);
   int num_children = level->get_num_children();
@@ -460,7 +462,7 @@ get_frame_data(int frame_number) {
     cd._i = (unsigned short)i;
     cd._net_value = child->get_net_value();
     if (cd._net_value != 0.0) {
-      data.push_back(cd);
+      fdata.push_back(cd);
     }
   }
 
@@ -471,10 +473,12 @@ get_frame_data(int frame_number) {
   cd._i = (unsigned short)num_children;
   cd._net_value = level->get_value_alone();
   if (cd._net_value != 0.0) {
-    data.push_back(cd);
+    fdata.push_back(cd);
   }
 
-  return data;
+  inc_label_usage(fdata);
+
+  return fdata;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -802,15 +806,17 @@ update_labels() {
   int num_children = level->get_num_children();
   for (int i = 0; i < num_children; i++) {
     const PStatViewLevel *child = level->get_child(i);
-    int collector = child->get_collector();
-    _labels.push_back(collector);
+    int collector_index = child->get_collector();
+    if (is_label_used(collector_index)) {
+      _labels.push_back(collector_index);
+    }
   }
 
   SortCollectorLabels2 sort_labels(get_monitor()->get_client_data());
   sort(_labels.begin(), _labels.end(), sort_labels);
 
-  int collector = level->get_collector();
-  _labels.push_back(collector);
+  int collector_index = level->get_collector();
+  _labels.push_back(collector_index);
 
   _labels_changed = true;
   _level_index = _view.get_level_index();
@@ -958,4 +964,68 @@ draw_pixels(int first_pixel, int last_pixel) {
   }
 
   end_draw(first_pixel, last_pixel);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatStripChart::clear_label_usage
+//       Access: Private
+//  Description: Erases all elements from the label usage data.
+////////////////////////////////////////////////////////////////////
+void PStatStripChart::
+clear_label_usage() {
+  _label_usage.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatStripChart::dec_label_usage
+//       Access: Private
+//  Description: Erases the indicated frame data from the current
+//               label usage.  This indicates that the given FrameData
+//               has fallen off the end of the chart.  This must have
+//               been proceeded by an earlier call to
+//               inc_label_usage() for the same FrameData
+////////////////////////////////////////////////////////////////////
+void PStatStripChart::
+dec_label_usage(const FrameData &fdata) {
+  FrameData::const_iterator fi;
+  for (fi = fdata.begin(); fi != fdata.end(); ++fi) {
+    const ColorData &cd = (*fi);
+    nassertv(cd._collector_index < (int)_label_usage.size());
+    nassertv(_label_usage[cd._collector_index] > 0);
+    _label_usage[cd._collector_index]--;
+    if (_label_usage[cd._collector_index] == 0) {
+      // If a label drops out of usage, it's time to regenerate
+      // labels.
+      _level_index = -1;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatStripChart::inc_label_usage
+//       Access: Private
+//  Description: Records the labels named in the indicated FrameData
+//               in the table of current labels in use.  This should
+//               be called when the given FrameData has been added to
+//               the chart; it will increment the reference count for
+//               each collector named in the FrameData.  The reference
+//               count will eventually be decremented when
+//               dec_label_usage() is called later.
+////////////////////////////////////////////////////////////////////
+void PStatStripChart::
+inc_label_usage(const FrameData &fdata) {
+  FrameData::const_iterator fi;
+  for (fi = fdata.begin(); fi != fdata.end(); ++fi) {
+    const ColorData &cd = (*fi);
+    while (cd._collector_index >= (int)_label_usage.size()) {
+      _label_usage.push_back(0);
+    }
+    nassertv(_label_usage[cd._collector_index] >= 0);
+    _label_usage[cd._collector_index]++;
+    if (_label_usage[cd._collector_index] == 1) {
+      // If a label appears for the first time, it's time to
+      // regenerate labels.
+      _level_index = -1;
+    }
+  }
 }

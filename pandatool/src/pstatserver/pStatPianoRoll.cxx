@@ -288,12 +288,11 @@ void PStatPianoRoll::
 compute_page(const PStatFrameData &frame_data) {
   _start_time = frame_data.get_start();
 
-  PageData::iterator pi;
-  for (pi = _page_data.begin(); pi != _page_data.end(); ++pi) {
-    (*pi).second.clear();
-  }
-
-  size_t num_bars = _page_data.size();
+  // Clear out the page data and copy it to previous, so we can fill
+  // it up again and then check to see if we changed the set of bars
+  // this frame.
+  PageData previous;
+  _page_data.swap(previous);
 
   int num_events = frame_data.get_num_events();
   for (int i = 0; i < num_events; i++) {
@@ -302,12 +301,27 @@ compute_page(const PStatFrameData &frame_data) {
     _page_data[collector_index].add_data_point(time);
   }
 
-  if (_page_data.size() != num_bars) {
-    // If we added some new bars this time, we'll have to update our
-    // list.
+  // Now check to see if the set of bars has changed.
+  bool changed_bars = (_page_data.size() != previous.size());
+
+  if (!changed_bars) {
+    PageData::const_iterator ai, bi;
+    ai = _page_data.begin();
+    bi = previous.begin();
+    while (ai != _page_data.end() && !changed_bars) {
+      changed_bars = ((*ai).first == (*bi).first);
+      ++ai;
+      ++bi;
+    }
+  }
+
+  if (changed_bars) {
+    // If we added or removed some new bars this time, we'll have to
+    // update our list.
     const PStatClientData *client_data = _monitor->get_client_data();
 
     _labels.clear();
+    PageData::const_iterator pi;
     for (pi = _page_data.begin(); pi != _page_data.end(); ++pi) {
       int collector_index = (*pi).first;
       if (client_data->has_collector(collector_index)) {
@@ -323,6 +337,7 @@ compute_page(const PStatFrameData &frame_data) {
 
   // Finally, make sure all of the bars are closed.
   float time = frame_data.get_end();
+  PageData::iterator pi;
   for (pi = _page_data.begin(); pi != _page_data.end(); ++pi) {
     (*pi).second.finish(time);
   }

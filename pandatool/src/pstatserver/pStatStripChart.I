@@ -197,3 +197,18 @@ INLINE float PStatStripChart::
 pixel_to_height(int x) const {
   return _value_height * (float)(get_ysize() - x) / (float)get_ysize();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatStripChart::is_label_used
+//       Access: Protected
+//  Description: Returns true if the indicated collector appears
+//               anywhere on the chart at the current time, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool PStatStripChart::
+is_label_used(int collector_index) const {
+  if (collector_index < (int)_label_usage.size()) {
+    return _label_usage[collector_index] > 0;
+  }
+  return false;
+}

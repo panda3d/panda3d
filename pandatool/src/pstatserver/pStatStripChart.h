@@ -114,9 +114,15 @@ protected:
   virtual void end_draw(int from_x, int to_x);
   virtual void idle();
 
+  INLINE bool is_label_used(int collector_index) const;
+
 private:
   void draw_frames(int first_frame, int last_frame);
   void draw_pixels(int first_pixel, int last_pixel);
+
+  void clear_label_usage();
+  void dec_label_usage(const FrameData &fdata);
+  void inc_label_usage(const FrameData &fdata);
 
   PStatView &_view;
   int _collector_index;
@@ -135,6 +141,9 @@ private:
   float _start_time;
   float _value_height;
   bool _title_unknown;
+
+  typedef vector_int LabelUsage;
+  LabelUsage _label_usage;
 };
 
 #include "pStatStripChart.I"
