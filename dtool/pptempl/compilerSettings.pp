@@ -90,7 +90,7 @@
   // use "unsafe" QIfist flt->int rounding only if FAST_FLT_TO_INT is defined
   #define REGULAR_OPTFLAGS /O2 /Ob2 /G6 $[if $[ne $[FAST_FLT_TO_INT],], /QIfist,]
 
-  #defer OPTFLAGS $[if $[OPT_MINSIZE],/O1 /Og /Ob1 /Oi /Os /G6,$[REGULAR_OPTFLAGS]]
+  #defer OPTFLAGS $[if $[OPT_MINSIZE],/Ox /Og /Ob1 /Oi /Os /Oy /GL /G6,$[REGULAR_OPTFLAGS]]
 
   //  #define OPT1FLAGS /RTCsu /GS  removing /RTCu because it crashes in dxgsg with internal compiler bug
   #define OPT1FLAGS /RTCs /GS
