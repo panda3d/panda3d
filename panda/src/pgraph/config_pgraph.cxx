@@ -33,13 +33,14 @@
 #include "depthWriteAttrib.h"
 #include "qpgeomNode.h"
 #include "qplensNode.h"
+#include "materialAttrib.h"
 #include "nodeChain.h"
 #include "nodeChainComponent.h"
 #include "pandaNode.h"
 #include "renderAttrib.h"
 #include "renderState.h"
+#include "textureApplyAttrib.h"
 #include "textureAttrib.h"
-#include "colorAttrib.h"
 #include "transformState.h"
 #include "transparencyAttrib.h"
 
@@ -89,13 +90,14 @@ init_libpgraph() {
   DepthWriteAttrib::init_type();
   qpGeomNode::init_type();
   qpLensNode::init_type();
+  MaterialAttrib::init_type();
   NodeChain::init_type();
   NodeChainComponent::init_type();
   PandaNode::init_type();
   RenderAttrib::init_type();
   RenderState::init_type();
+  TextureApplyAttrib::init_type();
   TextureAttrib::init_type();
-  ColorAttrib::init_type();
   TransformState::init_type();
   TransparencyAttrib::init_type();
 
@@ -108,10 +110,11 @@ init_libpgraph() {
   DepthTestAttrib::register_with_read_factory();
   DepthWriteAttrib::register_with_read_factory();
   qpGeomNode::register_with_read_factory();
+  MaterialAttrib::register_with_read_factory();
   PandaNode::register_with_read_factory();
   RenderState::register_with_read_factory();
+  TextureApplyAttrib::register_with_read_factory();
   TextureAttrib::register_with_read_factory();
-  ColorAttrib::register_with_read_factory();
   TransformState::register_with_read_factory();
   TransparencyAttrib::register_with_read_factory();
 }

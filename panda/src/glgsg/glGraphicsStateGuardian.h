@@ -34,8 +34,8 @@
 #include "stencilProperty.h"
 #include "fog.h"
 #include "pt_Light.h"
-
 #include "depthTestAttrib.h"
+#include "textureApplyAttrib.h"
 #include "pointerToArray.h"
 
 #ifdef WIN32_VC
@@ -160,6 +160,7 @@ public:
 
   virtual void issue_transform(const TransformState *transform);
   virtual void issue_texture(const TextureAttrib *attrib);
+  virtual void issue_texture_apply(const TextureApplyAttrib *attrib);
   virtual void issue_cull_face(const CullFaceAttrib *attrib);
   virtual void issue_transparency(const TransparencyAttrib *attrib);
   virtual void issue_color_write(const ColorWriteAttrib *attrib);
@@ -264,6 +265,7 @@ protected:
   GLenum get_external_image_format(PixelBuffer::Format format);
   GLenum get_internal_image_format(PixelBuffer::Format format);
   GLint get_texture_apply_mode_type( TextureApplyProperty::Mode am ) const;
+  GLint get_texture_apply_mode_type(TextureApplyAttrib::Mode am) const;
   GLenum get_depth_func_type(DepthTestProperty::Mode m) const;
   GLenum get_depth_func_type(DepthTestAttrib::Mode m) const;
   GLenum get_stencil_func_type(StencilProperty::Mode m) const;

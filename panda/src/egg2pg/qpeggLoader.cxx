@@ -23,12 +23,17 @@
 #include "renderState.h"
 #include "transformState.h"
 #include "textureAttrib.h"
+#include "textureApplyAttrib.h"
 #include "texturePool.h"
 #include "billboardAttrib.h"
 #include "cullFaceAttrib.h"
 #include "cullBinAttrib.h"
 #include "transparencyAttrib.h"
 #include "decalAttrib.h"
+#include "depthTestAttrib.h"
+#include "depthWriteAttrib.h"
+#include "materialAttrib.h"
+#include "materialPool.h"
 #include "qpgeomNode.h"
 #include "string_utils.h"
 #include "eggPrimitive.h"
@@ -125,7 +130,6 @@ build_graph() {
   make_node(&_data, _root);
   _builder.qpbuild();
 
-  //  reset_directs();
   reparent_decals();
 
   //  apply_deferred_arcs(_root);
@@ -195,54 +199,6 @@ reparent_decals() {
     }
   }
 }
-
-/*
-////////////////////////////////////////////////////////////////////
-//     Function: qpEggLoader::reset_directs
-//       Access: Public
-//  Description: This applies to all of the nodes marked with the
-//               "render" flag, i.e. direct rendering of a subgraph,
-//               in depth-first order, as opposed to state-sorting
-//               within the subgraph.  For each such node, it moves
-//               all the transitions from the first GeomNode under
-//               that node up to the node itself, just so we'll be
-//               able to state-sort at least the tops of the
-//               subgraphs.
-////////////////////////////////////////////////////////////////////
-void qpEggLoader::
-reset_directs() {
-  Directs::const_iterator di;
-  for (di = _directs.begin(); di != _directs.end(); ++di) {
-    RenderRelation *arc = (*di);
-    nassertv(arc != (RenderRelation *)NULL);
-    PandaNode *node = DCAST(PandaNode, arc->get_child());
-    nassertv(node != (PandaNode *)NULL);
-
-    // First, search for the first GeomNode.
-    GeomNode *geom = NULL;
-    NodeRelation *child_arc = NULL;
-
-    int num_children =
-      node->get_num_children(RenderRelation::get_class_type());
-    for (int i = 0; i < num_children && geom == (GeomNode *)NULL; i++) {
-      child_arc = node->get_child(RenderRelation::get_class_type(), i);
-      nassertv(child_arc != (NodeRelation *)NULL);
-      Node *child = child_arc->get_child();
-      nassertv(child != (Node *)NULL);
-
-      if (child->is_of_type(GeomNode::get_class_type())) {
-        DCAST_INTO_V(geom, child);
-      }
-    }
-
-    if (geom != (GeomNode *)NULL) {
-      // Now copy all of the GeomNode's transitions up to its parent.
-      nassertv(child_arc != (NodeRelation *)NULL);
-      arc->copy_transitions_from(child_arc);
-    }
-  }
-}
-*/
 
 
 ////////////////////////////////////////////////////////////////////
@@ -512,16 +468,11 @@ load_texture(TextureDef &def, const EggTexture *egg_tex) {
     }
   }
 
-  /*
-  PT(TextureApplyTransition) apply =
-    new TextureApplyTransition(TextureApplyProperty::M_modulate);
-  */
-
   apply_texture_attributes(tex, egg_tex);
-  //  apply_texture_apply_attributes(apply, egg_tex);
+  CPT(RenderAttrib) apply = get_texture_apply_attributes(egg_tex);
 
   def._texture = TextureAttrib::make(tex);
-  //  def._apply = *(_texture_applies.insert(apply).first);
+  def._apply = apply;
 
   return true;
 }
@@ -819,26 +770,25 @@ apply_texture_attributes(Texture *tex, const EggTexture *egg_tex) {
   }
 }
 
-/*
 ////////////////////////////////////////////////////////////////////
 //     Function: qpEggLoader::apply_texture_apply_attributes
 //       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void qpEggLoader::
-apply_texture_apply_attributes(TextureApplyTransition *apply,
-                               const EggTexture *egg_tex) {
+CPT(RenderAttrib) qpEggLoader::
+get_texture_apply_attributes(const EggTexture *egg_tex) {
+  CPT(RenderAttrib) result = TextureApplyAttrib::make(TextureApplyAttrib::M_modulate);
   if (egg_always_decal_textures) {
-    apply->set_mode(TextureApplyProperty::M_decal);
+    result = TextureApplyAttrib::make(TextureApplyAttrib::M_decal);
 
   } else {
     switch (egg_tex->get_env_type()) {
     case EggTexture::ET_modulate:
-      apply->set_mode(TextureApplyProperty::M_modulate);
+      result = TextureApplyAttrib::make(TextureApplyAttrib::M_modulate);
       break;
 
     case EggTexture::ET_decal:
-      apply->set_mode(TextureApplyProperty::M_decal);
+      result = TextureApplyAttrib::make(TextureApplyAttrib::M_decal);
       break;
 
     case EggTexture::ET_unspecified:
@@ -850,19 +800,19 @@ apply_texture_apply_attributes(TextureApplyTransition *apply,
         << (int)egg_tex->get_env_type() << "\n";
     }
   }
-}
-*/
 
-/*
+  return result;
+}
+
 ////////////////////////////////////////////////////////////////////
-//     Function: qpEggLoader::get_material_transition
+//     Function: qpEggLoader::get_material_attrib
 //       Access: Private
-//  Description: Returns a transition suitable for enabling the
+//  Description: Returns a RenderAttrib suitable for enabling the
 //               material indicated by the given EggMaterial, and with
 //               the indicated backface flag.
 ////////////////////////////////////////////////////////////////////
-MaterialTransition *qpEggLoader::
-get_material_transition(const EggMaterial *egg_mat, bool bface) {
+CPT(RenderAttrib) qpEggLoader::
+get_material_attrib(const EggMaterial *egg_mat, bool bface) {
   Materials &materials = bface ? _materials_bface : _materials;
 
   // First, check whether we've seen this material before.
@@ -902,13 +852,12 @@ get_material_transition(const EggMaterial *egg_mat, bool bface) {
   // Now get a global Material pointer, shared with other models.
   const Material *shared_mat = MaterialPool::get_material(mat);
 
-  // And create a MaterialTransition for this Material.
-  PT(MaterialTransition) mt = new MaterialTransition(shared_mat);
+  // And create a MaterialAttrib for this Material.
+  CPT(RenderAttrib) mt = MaterialAttrib::make(shared_mat);
   materials.insert(Materials::value_type(egg_mat, mt));
 
   return mt;
 }
-*/
 
 
 ////////////////////////////////////////////////////////////////////
@@ -989,7 +938,7 @@ setup_bucket(BuilderBucket &bucket, PandaNode *parent,
     const TextureDef &def = _textures[egg_tex];
     if (def._texture != (const RenderAttrib *)NULL) {
       bucket.add_attrib(def._texture);
-      //      bucket.add_attrib(def._apply);
+      bucket.add_attrib(def._apply);
 
       // If neither the primitive nor the texture specified an alpha
       // mode, assume it should be alpha'ed if the texture has an
@@ -1006,13 +955,12 @@ setup_bucket(BuilderBucket &bucket, PandaNode *parent,
     }
   }
 
-  /*
   if (egg_prim->has_material()) {
-    MaterialTransition *mt = get_material_transition(egg_prim->get_material(),
-                                                     egg_prim->get_bface_flag());
+    CPT(RenderAttrib) mt =
+      get_material_attrib(egg_prim->get_material(),
+                          egg_prim->get_bface_flag());
     bucket.add_attrib(mt);
   }
-  */
 
 
   // Also check the color of the primitive to see if we should assume
@@ -1047,7 +995,7 @@ setup_bucket(BuilderBucket &bucket, PandaNode *parent,
 
   case EggRenderMode::AM_blend_no_occlude:
     bucket.add_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
-    //    bucket.add_attrib(new DepthWriteTransition(DepthWriteTransition::off()));
+    bucket.add_attrib(DepthWriteAttrib::make(DepthWriteAttrib::M_off));
     break;
 
   case EggRenderMode::AM_ms:
@@ -1063,35 +1011,31 @@ setup_bucket(BuilderBucket &bucket, PandaNode *parent,
     break;
   }
 
-  /*
   switch (dwm) {
   case EggRenderMode::DWM_on:
-    bucket.add_attrib(new DepthWriteTransition);
+    bucket.add_attrib(DepthWriteAttrib::make(DepthWriteAttrib::M_on));
     break;
 
   case EggRenderMode::DWM_off:
-    bucket.add_attrib(new DepthWriteTransition(DepthWriteTransition::off()));
+    bucket.add_attrib(DepthWriteAttrib::make(DepthWriteAttrib::M_off));
     break;
 
   default:
     break;
   }
-  */
 
-  /*
   switch (dtm) {
   case EggRenderMode::DTM_on:
-    bucket.add_attrib(new DepthTestTransition(DepthTestProperty::M_less));
+    bucket.add_attrib(DepthTestAttrib::make(DepthTestAttrib::M_less));
     break;
 
   case EggRenderMode::DTM_off:
-    bucket.add_attrib(new DepthTestTransition(DepthTestProperty::M_none));
+    bucket.add_attrib(DepthTestAttrib::make(DepthTestAttrib::M_none));
     break;
 
   default:
     break;
   }
-  */
 
   if (has_bin) {
     bucket.add_attrib(CullBinAttrib::make(bin, draw_order));
@@ -1477,7 +1421,7 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
 //     Function: qpEggLoader::create_group_arc
 //       Access: Private
 //  Description: Creates the arc parenting a new group to the scene
-//               graph, and applies any relevant transitions to the
+//               graph, and applies any relevant attribs to the
 //               arc according to the EggGroup node that inspired the
 //               group.
 ////////////////////////////////////////////////////////////////////
@@ -1522,22 +1466,6 @@ create_group_arc(EggGroup *egg_group, PandaNode *parent, PandaNode *node) {
     // afterward.
     _decals.insert(node);
   }
-
-  /*
-  if (egg_group->get_direct_flag()) {
-    // If the group has the "direct" flag set, it means that
-    // everything at this node and below should be rendered in direct
-    // mode, i.e. in depth-first tree order, without state-sorting.
-
-    arc->set_transition(new DirectRenderTransition);
-
-    // We'll also want to set up the transitions on this arc to
-    // reflect the geometry at the top of the tree below this node, so
-    // we get good state-sorting behavior.  We'll have to do this
-    // later.
-    _directs.insert(arc);
-  }
-  */
 
   /*
   // If the group specified some property that should propagate down
@@ -2002,7 +1930,7 @@ void qpEggLoader::
 apply_deferred_arcs(Node *root) {
   DeferredArcTraverser trav(_deferred_arcs);
 
-  df_traverse(root, trav, NullTransitionWrapper(), DeferredArcProperty(),
+  df_traverse(root, trav, NullAttribWrapper(), DeferredArcProperty(),
               PandaNode::get_class_type());
 }
 */

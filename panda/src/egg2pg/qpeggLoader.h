@@ -64,7 +64,6 @@ public:
 
   void build_graph();
   void reparent_decals();
-  void reset_directs();
 
   void make_nonindexed_primitive(EggPrimitive *egg_prim, PandaNode *parent,
                                  const LMatrix4d *transform = NULL);
@@ -77,19 +76,16 @@ private:
   class TextureDef {
   public:
     CPT(RenderAttrib) _texture;
-    //    PT(TextureApplyTransition) _apply;
+    CPT(RenderAttrib) _apply;
   };
 
   void load_textures();
   bool load_texture(TextureDef &def, const EggTexture *egg_tex);
   void apply_texture_attributes(Texture *tex, const EggTexture *egg_tex);
-  void apply_texture_apply_attributes(TextureApplyTransition *apply,
-                                      const EggTexture *egg_tex);
+  CPT(RenderAttrib) get_texture_apply_attributes(const EggTexture *egg_tex);
 
-  /*
-  MaterialTransition *get_material_transition(const EggMaterial *egg_mat,
-                                              bool bface);
-  */
+  CPT(RenderAttrib) get_material_attrib(const EggMaterial *egg_mat,
+                                        bool bface);
 
   void setup_bucket(BuilderBucket &bucket, PandaNode *parent,
                     EggPrimitive *egg_prim);
@@ -133,19 +129,14 @@ private:
   typedef pmap<PT_EggTexture, TextureDef> Textures;
   Textures _textures;
 
-  /*
-  typedef pmap<CPT_EggMaterial, PT(MaterialTransition) > Materials;
+  typedef pmap<CPT_EggMaterial, CPT(RenderAttrib) > Materials;
   Materials _materials;
   Materials _materials_bface;
-  */
 
   typedef pset<PandaNode *> Decals;
   Decals _decals;
 
   /*
-  typedef pset<PandaNode *> Directs;
-  Directs _directs;
-
   DeferredArcs _deferred_arcs;
   */
 

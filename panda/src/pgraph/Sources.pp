@@ -28,11 +28,13 @@
     drawCullHandler.h drawCullHandler.I \
     qpgeomNode.h qpgeomNode.I \
     qplensNode.h qplensNode.I \
+    materialAttrib.h materialAttrib.I \
     nodeChain.h nodeChain.I \
     nodeChainComponent.h nodeChainComponent.I \
     pandaNode.h pandaNode.I \
     renderAttrib.h renderAttrib.I \
     renderState.h renderState.I \
+    textureApplyAttrib.h textureApplyAttrib.I \
     textureAttrib.h textureAttrib.I \
     transformState.h transformState.I \
     transparencyAttrib.h transparencyAttrib.I
@@ -61,11 +63,13 @@
     drawCullHandler.cxx \
     qpgeomNode.cxx \
     qplensNode.cxx \
+    materialAttrib.cxx \
     nodeChain.cxx \
     nodeChainComponent.cxx \
     pandaNode.cxx \
     renderAttrib.cxx \
     renderState.cxx \
+    textureApplyAttrib.cxx \
     textureAttrib.cxx \
     transformState.cxx \
     transparencyAttrib.cxx
@@ -99,11 +103,13 @@
     drawCullHandler.h drawCullHandler.I \
     qpgeomNode.h qpgeomNode.I \
     qplensNode.h qplensNode.I \
+    materialAttrib.h materialAttrib.I \
     nodeChain.h nodeChain.I \
     nodeChainComponent.h nodeChainComponent.I \
     pandaNode.h pandaNode.I \
     renderAttrib.h renderAttrib.I \
     renderState.h renderState.I \
+    textureApplyAttrib.h textureApplyAttrib.I \
     textureAttrib.h textureAttrib.I \
     transformState.h transformState.I \
     transparencyAttrib.h transparencyAttrib.I

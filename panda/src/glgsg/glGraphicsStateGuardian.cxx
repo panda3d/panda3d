@@ -3456,6 +3456,18 @@ issue_texture(const TextureAttrib *attrib) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::issue_texture_apply
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+void GLGraphicsStateGuardian::
+issue_texture_apply(const TextureApplyAttrib *attrib) {
+  GLint glmode = get_texture_apply_mode_type(attrib->get_mode());
+  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, glmode);
+  report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::issue_cull_face
 //       Access: Public, Virtual
 //  Description:
@@ -4383,6 +4395,26 @@ get_texture_apply_mode_type( TextureApplyProperty::Mode am ) const
   }
   glgsg_cat.error()
     << "Invalid TextureApplyProperty::Mode value" << endl;
+  return GL_MODULATE;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::get_texture_apply_mode_type
+//       Access: Protected
+//  Description: Maps from the texture environment's mode types
+//       to the corresponding OpenGL ids
+////////////////////////////////////////////////////////////////////
+GLint GLGraphicsStateGuardian::
+get_texture_apply_mode_type(TextureApplyAttrib::Mode am) const {
+  switch (am) {
+  case TextureApplyAttrib::M_modulate: return GL_MODULATE;
+  case TextureApplyAttrib::M_decal: return GL_DECAL;
+  case TextureApplyAttrib::M_blend: return GL_BLEND;
+  case TextureApplyAttrib::M_replace: return GL_REPLACE;
+  case TextureApplyAttrib::M_add: return GL_ADD;
+  }
+  glgsg_cat.error()
+    << "Invalid TextureApplyAttrib::Mode value" << endl;
   return GL_MODULATE;
 }
 

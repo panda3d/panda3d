@@ -13,3 +13,5 @@
 #include "cullHandler.cxx"
 #include "cullResult.cxx"
 #include "qpcullTraverser.cxx"
+#include "cullableObject.cxx"
+
