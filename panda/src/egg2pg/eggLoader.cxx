@@ -2270,10 +2270,12 @@ create_collision_polygons(CollisionNode *cnode, EggPolygon *egg_poly,
     if (vertices.size() >= 3) {
       const Vertexf *vertices_begin = &vertices[0];
       const Vertexf *vertices_end = vertices_begin + vertices.size();
-      CollisionPolygon *cspoly =
+      PT(CollisionPolygon) cspoly =
         new CollisionPolygon(vertices_begin, vertices_end);
-      apply_collision_flags(cspoly, flags);
-      cnode->add_solid(cspoly);
+      if (cspoly->is_valid()) {
+        apply_collision_flags(cspoly, flags);
+        cnode->add_solid(cspoly);
+      }
     }
   }
 }
