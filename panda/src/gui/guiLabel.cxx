@@ -158,14 +158,22 @@ void GuiLabel::get_extents(float& l, float& r, float& b, float& t) {
   case SIMPLE_TEXT:
     {
       TextNode* n = DCAST(TextNode, _geom);
-      LVector3f ul = n->get_upper_left_3d() - LPoint3f::origin();
-      LVector3f lr = n->get_lower_right_3d() - LPoint3f::origin();
-      LVector3f up = LVector3f::up();
-      LVector3f right = LVector3f::right();
-      l = ul.dot(right);
-      r = lr.dot(right);
-      b = lr.dot(up);
-      t = ul.dot(up);
+      if (n->has_card()) {
+	LVecBase4f v = n->get_card_transformed();
+	l = v[0];
+	r = v[1];
+	b = v[2];
+	t = v[3];
+      } else {
+	LVector3f ul = n->get_upper_left_3d() - LPoint3f::origin();
+	LVector3f lr = n->get_lower_right_3d() - LPoint3f::origin();
+	LVector3f up = LVector3f::up();
+	LVector3f right = LVector3f::right();
+	l = ul.dot(right);
+	r = lr.dot(right);
+	b = lr.dot(up);
+	t = ul.dot(up);
+      }
     }
     break;
   case SIMPLE_TEXTURE:

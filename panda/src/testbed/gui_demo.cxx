@@ -256,10 +256,14 @@ static void setup_gui(void) {
   GuiButton* b5 = new GuiButton("fox", b5l1, b5l2, b5l3, b5l3, b5l1);
   b5->set_scale(0.1);
   f1->add_item(b5);
-  f1->pack_item(b2, GuiFrame::UNDER, b1);
-  f1->pack_item(b3, GuiFrame::UNDER, b2);
-  f1->pack_item(b4, GuiFrame::UNDER, b3);
-  f1->pack_item(b5, GuiFrame::UNDER, b4);
+  f1->pack_item(b2, GuiFrame::UNDER, b1, 0.05);
+  f1->pack_item(b2, GuiFrame::ALIGN_LEFT, b1);
+  f1->pack_item(b3, GuiFrame::UNDER, b2, 0.05);
+  f1->pack_item(b3, GuiFrame::ALIGN_LEFT, b2);
+  f1->pack_item(b4, GuiFrame::UNDER, b3, 0.05);
+  f1->pack_item(b4, GuiFrame::ALIGN_LEFT, b3);
+  f1->pack_item(b5, GuiFrame::UNDER, b4, 0.05);
+  f1->pack_item(b5, GuiFrame::ALIGN_LEFT, b4);
   float w, w1, w2;
   w1 = b1l1->get_width();
   w2 = b2l1->get_width();
@@ -285,6 +289,7 @@ static void setup_gui(void) {
   b5l1->set_width(w);
   b5l2->set_width(w);
   b5l3->set_width(w);
+  f1->recompute();
   f1->manage(mgr, event_handler);
 }
 
