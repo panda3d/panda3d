@@ -32,6 +32,7 @@ TypeHandle ActorNode::_type_handle;
 ActorNode::
 ActorNode(const string &name) :
     PhysicalNode(name) {
+  _contact_vector = LVector3f::zero();
   add_physical(new Physical(1, true));
   _mass_center = get_physical(0)->get_phys_body();
   _mass_center->set_active(true);
@@ -46,6 +47,7 @@ ActorNode(const string &name) :
 ActorNode::
 ActorNode(const ActorNode &copy) :
   PhysicalNode(copy) {
+  _contact_vector = LVector3f::zero();
   _ok_to_callback = true;
   _mass_center = get_physical(0)->get_phys_body();
 }
