@@ -113,12 +113,21 @@ Step 6: Grab the cvs trees
   > cvs co dtool (only if local dtool will be built)
   > cvs co panda (only if local panda will be built)
   > cvs co direct
-  # Choose which optimize level you want. This is set in /usr/local/etc/Config.pp
-  # Look for #defing OPTIMIZE and follow instructions above that
+
+  # Choose which optimize level you want. This is set in
+  # /usr/local/etc/Config.pp .
+  # Look for #define OPTIMIZE and follow instructions above that.
+
+  # You can only choose an arbitrary optimize level if you are building
+  # your own DTOOL and PANDA; otherwise, you must set it to the optimize
+  # level corresponding to the version of DTOOL/PANDA you intend to attach
+  # to (install is built OPTIMIZE 2, release is built OPTIMIZE 3).
 
 Step 7: (Optional) Build $DTOOL
   # Now you must use the tcsh shortcut to open a new shell - it should attach
-  # to $DTOOL automatically.
+  # to $DTOOL:install automatically, but you will need to attach to your
+  # own DTOOL if you want to build your own.
+  > cta dtool personal
   > cd $DTOOL
   > ppremake
   > nmake install
@@ -128,7 +137,7 @@ Step 8: (Optional) Install DirectX
   # successfully build all of panda.
 
 Step 9: (Optional) Build $PANDA 
-  > cta panda
+  > cta panda personal
   > cd $PANDA
   > ppremake
   > nmake install
@@ -149,12 +158,18 @@ Step 11: Install Emacs
   > cd /c
   > tar xvzf ~/emacs-20.7-fullbin-i386.tar.gz
 
-  # This will install emacs into C:/emacs-20.7/ (not under program files)
+  # This will install emacs into C:/emacs-20.7 .
+    (do not attempt to install it under a directory containing a space,
+     like Program Files.)
 
   > cp $DIRECT/src/directscripts/python-mode.el /c/emacs-20.7/lisp/progmodes
   > cp $DIRECT/src/directscripts/runPythonEmacs /usr/local/bin
 
 Step 12: Update environment variables (win2000)
+  # You should only need to do this if you intend to invoke Panda from
+  # a non-Cygwin prompt.  If you will always be using Cygwin, simply
+  # edit your .cshrc file to extend the path appropriately.
+
   # right click on your computer icon at the top left of the screen
   # select "properties"
   # click on the "Advanced" tab
@@ -165,13 +180,13 @@ Step 12: Update environment variables (win2000)
   # click ok - ok - ok to exit (you must exit for the change to take effect)
 
 Step 13: Build $DIRECT
-  > cta direct
+  > cta direct personal
   > cd $DIRECT
   > ppremake
   > nmake install
 
 Step 14: Build $TOONTOWN
-  > cta toontown
+  > cta toontown personal
   > cd $TOONTOWN
   > ppremake
   > nmake install
