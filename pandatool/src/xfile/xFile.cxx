@@ -207,18 +207,27 @@ write(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 XFileTemplate *XFile::
 find_template(const string &name) const {
+  XFileTemplate *standard = (XFileTemplate *)NULL;
+  const XFile *standard_templates = get_standard_templates();
+  if (standard_templates != this) {
+    standard = standard_templates->find_template(name);
+  }
+
   XFileNode *child = find_child(name);
   if (child != (XFileNode *)NULL &&
       child->is_of_type(XFileTemplate::get_class_type())) {
-    return DCAST(XFileTemplate, child);
+    XFileTemplate *xtemplate = DCAST(XFileTemplate, child);
+    if (standard != (XFileTemplate *)NULL && xtemplate->matches(standard)) {
+      // If the template matches a standard template, return the
+      // standard instead.  The assumption is that code may expect a
+      // certain naming scheme for the data elements of the standard
+      // template, so we want to be sure to provide it.
+      return standard;
+    }
+    return xtemplate;
   }
 
-  const XFile *standard_templates = get_standard_templates();
-  if (standard_templates != this) {
-    return standard_templates->find_template(name);
-  }
-
-  return NULL;
+  return standard;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -229,19 +238,28 @@ find_template(const string &name) const {
 ////////////////////////////////////////////////////////////////////
 XFileTemplate *XFile::
 find_template(const WindowsGuid &guid) const {
+  XFileTemplate *standard = (XFileTemplate *)NULL;
+  const XFile *standard_templates = get_standard_templates();
+  if (standard_templates != this) {
+    standard = standard_templates->find_template(guid);
+  }
+
   NodesByGuid::const_iterator gi;
   gi = _nodes_by_guid.find(guid);
   if (gi != _nodes_by_guid.end() && 
       (*gi).second->is_of_type(XFileTemplate::get_class_type())) {
-    return DCAST(XFileTemplate, (*gi).second);
+    XFileTemplate *xtemplate = DCAST(XFileTemplate, (*gi).second);
+    if (standard != (XFileTemplate *)NULL && xtemplate->matches(standard)) {
+      // If the template matches a standard template, return the
+      // standard instead.  The assumption is that code may expect a
+      // certain naming scheme for the data elements of the standard
+      // template, so we want to be sure to provide it.
+      return standard;
+    }
+    return xtemplate;
   }
 
-  const XFile *standard_templates = get_standard_templates();
-  if (standard_templates != this) {
-    return standard_templates->find_template(guid);
-  }
-
-  return NULL;
+  return standard;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -496,6 +514,15 @@ get_standard_templates() {
     if (!_standard_templates->read(in, "standardTemplates.x")) {
       xfile_cat.error()
         << "Internal error: Unable to parse built-in standardTemplates.x!\n";
+    }
+
+    // Now flag all of these templates as "standard".
+    for (int i = 0; i < _standard_templates->get_num_children(); i++) {
+      XFileNode *child = _standard_templates->get_child(i);
+      if (child->is_of_type(XFileTemplate::get_class_type())) {
+        XFileTemplate *xtemplate = DCAST(XFileTemplate, child);
+        xtemplate->_is_standard = true;
+      }
     }
   }
   

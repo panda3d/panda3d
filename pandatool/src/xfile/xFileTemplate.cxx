@@ -30,6 +30,7 @@ XFileTemplate::
 XFileTemplate(XFile *x_file, const string &name, const WindowsGuid &guid) : 
   XFileNode(x_file, name),
   _guid(guid),
+  _is_standard(false),
   _open(false)
 {
 }
@@ -114,4 +115,26 @@ write_text(ostream &out, int indent_level) const {
 
   indent(out, indent_level)
     << "}\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileTemplate::matches
+//       Access: Public, Virtual
+//  Description: Returns true if the node, particularly a template
+//               node, is structurally equivalent to the other node
+//               (which must be of the same type).  This checks data
+//               element types, but does not compare data element
+//               names.
+////////////////////////////////////////////////////////////////////
+bool XFileTemplate::
+matches(const XFileNode *other) const {
+  if (!XFileNode::matches(other)) {
+    return false;
+  }
+
+  // We *could* compare the open/closed/options associated with the
+  // template, but since this is only used for validating the set of
+  // children for the instances of this template (which we don't even
+  // bother to do anyway), it doesn't seem to matter.
+  return true;
 }

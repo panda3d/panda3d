@@ -43,6 +43,9 @@ public:
 
   void output(ostream &out) const;
 
+  bool matches(const XFileArrayDef &other, const XFileDataDef *parent,
+               const XFileDataDef *other_parent) const;
+
 private:
   int _fixed_size;
   XFileDataDef *_dynamic_size;

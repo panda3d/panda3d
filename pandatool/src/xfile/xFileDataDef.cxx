@@ -253,6 +253,45 @@ fill_zero_data(XFileDataObject *object) const {
   return XFileNode::fill_zero_data(object);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: XFileDataDef::matches
+//       Access: Public, Virtual
+//  Description: Returns true if the node, particularly a template
+//               node, is structurally equivalent to the other node
+//               (which must be of the same type).  This checks data
+//               element types, but does not compare data element
+//               names.
+////////////////////////////////////////////////////////////////////
+bool XFileDataDef::
+matches(const XFileNode *other) const {
+  if (!XFileNode::matches(other)) {
+    return false;
+  }
+
+  const XFileDataDef *data_def = DCAST(XFileDataDef, other);
+  if (data_def->get_data_type() != get_data_type()) {
+    return false;
+  }
+
+  if (get_data_type() == T_template &&
+      !get_template()->matches(data_def->get_template())) {
+    return false;
+  }
+
+  if (data_def->get_num_array_defs() != get_num_array_defs()) {
+    return false;
+  }
+
+  for (int i = 0; i < get_num_array_defs(); i++) {
+    if (!get_array_def(i).matches(data_def->get_array_def(i),
+                                  this, data_def)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: XFileDataDef::unpack_integer_value

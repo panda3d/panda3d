@@ -41,15 +41,20 @@ public:
   virtual void clear();
   virtual void write_text(ostream &out, int indent_level) const;
 
+  INLINE bool is_standard() const;
+
   INLINE void set_open(bool open);
   INLINE bool get_open() const;
 
   INLINE void add_option(XFileTemplate *option);
   INLINE int get_num_options() const;
   INLINE XFileTemplate *get_option(int n) const;
+
+  virtual bool matches(const XFileNode *other) const;
   
 private:
   WindowsGuid _guid;
+  bool _is_standard;
   bool _open;
 
   typedef pvector< PT(XFileTemplate) > Options;
@@ -71,6 +76,8 @@ public:
 
 private:
   static TypeHandle _type_handle;
+
+  friend class XFile;
 };
 
 #include "xFileTemplate.I"

@@ -56,3 +56,35 @@ output(ostream &out) const {
     out << "[" << _dynamic_size->get_name() << "]";
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileArrayDef::matches
+//       Access: Public, Virtual
+//  Description: Returns true if the node, particularly a template
+//               node, is structurally equivalent to the other node
+//               (which must be of the same type).  This checks data
+//               element types, but does not compare data element
+//               names.
+////////////////////////////////////////////////////////////////////
+bool XFileArrayDef::
+matches(const XFileArrayDef &other, const XFileDataDef *parent,
+        const XFileDataDef *other_parent) const {
+  if (other.is_fixed_size() != is_fixed_size()) {
+    return false;
+  }
+  if (is_fixed_size()) {
+    if (other.get_fixed_size() != get_fixed_size()) {
+      return false;
+    }
+
+  } else {
+    int child_index = parent->find_child_index(get_dynamic_size());
+    int other_child_index = 
+      other_parent->find_child_index(other.get_dynamic_size());
+    if (other_child_index != child_index) {
+      return false;
+    }
+  }
+
+  return true;
+}

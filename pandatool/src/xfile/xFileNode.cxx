@@ -84,6 +84,23 @@ find_child_index(const string &name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: XFileNode::find_child_index
+//       Access: Public
+//  Description: Returns the index number of the indicated child,
+//               or -1 if none.
+////////////////////////////////////////////////////////////////////
+int XFileNode::
+find_child_index(const XFileNode *child) const {
+  for (int i = 0; i < (int)_children.size(); i++) {
+    if (_children[i] == child) {
+      return i;
+    }
+  }
+
+  return -1;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: XFileNode::find_descendent
 //       Access: Public
 //  Description: Returns the first child or descendent found with the
@@ -131,8 +148,21 @@ get_guid() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: XFileNode::add_child
+//     Function: XFileNode::is_standard_object
 //       Access: Public, Virtual
+//  Description: Returns true if this node represents an instance of
+//               the standard template with the indicated name, or
+//               false otherwise.  If this returns true, the object
+//               must be of type XFileDataNodeTemplate.
+////////////////////////////////////////////////////////////////////
+bool XFileNode::
+is_standard_object(const string &template_name) const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileNode::add_child
+//       Access: Public
 //  Description: Adds the indicated node as a child of this node.
 ////////////////////////////////////////////////////////////////////
 void XFileNode::
@@ -218,6 +248,34 @@ fill_zero_data(XFileDataObject *object) const {
   Children::const_iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     if (!(*ci)->fill_zero_data(object)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileNode::matches
+//       Access: Public, Virtual
+//  Description: Returns true if the node, particularly a template
+//               node, is structurally equivalent to the other node
+//               (which must be of the same type).  This checks data
+//               element types, but does not compare data element
+//               names.
+////////////////////////////////////////////////////////////////////
+bool XFileNode::
+matches(const XFileNode *other) const {
+  if (other->get_type() != get_type()) {
+    return false;
+  }
+
+  if (other->get_num_children() != get_num_children()) {
+    return false;
+  }
+
+  for (int i = 0; i < get_num_children(); i++) {
+    if (!get_child(i)->matches(other->get_child(i))) {
       return false;
     }
   }

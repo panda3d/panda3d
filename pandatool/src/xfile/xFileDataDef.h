@@ -75,6 +75,8 @@ public:
 
   virtual bool fill_zero_data(XFileDataObject *object) const;
 
+  virtual bool matches(const XFileNode *other) const;
+
 private:
   typedef PT(XFileDataObject) 
     (XFileDataDef::*UnpackMethod)(const XFileParseDataList &parse_data_list, 

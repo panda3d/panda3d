@@ -54,12 +54,15 @@ public:
   INLINE XFileNode *get_child(int n) const;
   XFileNode *find_child(const string &name) const;
   int find_child_index(const string &name) const;
+  int find_child_index(const XFileNode *child) const;
   XFileNode *find_descendent(const string &name) const;
 
   virtual bool has_guid() const;
   virtual const WindowsGuid &get_guid() const;
 
-  virtual void add_child(XFileNode *node);
+  virtual bool is_standard_object(const string &template_name) const;
+
+  void add_child(XFileNode *node);
   virtual void clear();
 
   virtual void write_text(ostream &out, int indent_level) const;
@@ -73,16 +76,12 @@ public:
 
   virtual bool fill_zero_data(XFileDataObject *object) const;
 
+  virtual bool matches(const XFileNode *other) const;
 
   // The following methods can be used to create instances of the
   // standard template objects.  These definitions match those defined
   // in standardTemplates.x in this directory (and compiled into the
   // executable).
-  /*
-  PT(XFileNode) make_Header(int major, int minor, int flags);
-  PT(XFileNode) make_Vector(const LVecBase3d &vector);
-  PT(XFileNode) make_MeshFace(int num_vertex_indices, const int *vertex_indices);
-  */
   XFileDataNode *add_Mesh(const string &name);
   XFileDataNode *add_MeshNormals(const string &name);
   XFileDataNode *add_MeshVertexColors(const string &name);

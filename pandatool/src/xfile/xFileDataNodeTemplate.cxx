@@ -37,6 +37,24 @@ XFileDataNodeTemplate(XFile *x_file, const string &name,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: XFileDataNodeTemplate::is_standard_object
+//       Access: Public, Virtual
+//  Description: Returns true if this node represents an instance of
+//               the standard template with the indicated name, or
+//               false otherwise.  If this returns true, the object
+//               must be of type XFileDataNodeTemplate.
+////////////////////////////////////////////////////////////////////
+bool XFileDataNodeTemplate::
+is_standard_object(const string &template_name) const {
+  if (_template->is_standard() &&
+      _template->get_name() == template_name) {
+    return true;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: XFileDataNodeTemplate::zero_fill
 //       Access: Public
 //  Description: Fills the data node with zero-valued elements
