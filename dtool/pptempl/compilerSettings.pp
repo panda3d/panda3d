@@ -79,17 +79,20 @@
   #define COMPILER icl
   #define LINKER xilink
   #define LIBBER xilib
+  #define COMMONFLAGS /Gi- /Qwd985
+  
+  // Note: Zi cannot be used on multiproc builds with precomp hdrs, Z7 must be used instead
+  #defer DEBUGPDBFLAGS /Zi /Qinline_debug_info /Fd"$[osfilename $[target:%.obj=%.pdb]]" 
+  // Oy- needed for MS debugger
+  #defer DEBUGFLAGS /Oy- /MDd $[BROWSEINFO_FLAG] $[DEBUGINFOFLAGS] $[DEBUGPDBFLAGS] 
+  #define RELEASEFLAGS /MD
+  #define WARNING_LEVEL_FLAG /W3    
   
   #define CDEFINES_OPT4 UNKNOWN_ALLOCATOR  
   
-  #define COMMONFLAGS /Gi- /Qwd985
 //  #define OPTFLAGS /O3 /G6 /Qvc6 /Qipo /QaxW /Qvec_report1 
   #define OPTFLAGS /O3 /G6 /Qvc6 /Qip /QIfist
-  // Oy- needed for MS debugger
-  #define DEBUGFLAGS /MDd /Zi /Qinline_debug_info /Oy-
   #define OPT1FLAGS /GZ /Od
-  #define RELEASEFLAGS /MD
-  #define WARNING_LEVEL_FLAG /W3    
   // We assume the Intel compiler installation dir is mounted as /ia32.
   #define EXTRA_LIBPATH /ia32/lib
   #define EXTRA_INCPATH /ia32/include  
