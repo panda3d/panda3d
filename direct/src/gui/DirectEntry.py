@@ -25,6 +25,7 @@ class DirectEntry(DirectFrame):
             # Define type of DirectGuiWidget
             ('pgFunc',          PGEntry,          None),
             ('numStates',       3,                None),
+            ('state',           NORMAL,           None),
             ('width',           10,               self.setup),
             ('numLines',        5,                self.setup),
             ('focus',           0,                self.setFocus),

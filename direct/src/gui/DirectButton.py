@@ -27,6 +27,7 @@ class DirectButton(DirectFrame):
             # Define type of DirectGuiWidget
             ('pgFunc',         PGButton,   None),
             ('numStates',      4,          None),
+            ('state',          NORMAL,     None),
             ('invertedFrames', (1,),       None),
             # Command to be called on button click
             ('command',        None,       None),

@@ -16,10 +16,12 @@ class DirectLabel(DirectFrame):
         # The same image/geom/text can be used for all states or each
         # state can have a different text/geom/image
         # State transitions happen under user control
+
         optiondefs = (
             # Define type of DirectGuiWidget
             ('pgFunc',          PGItem,    None),
             ('numStates',       1,         None),
+            ('state',           self.inactiveInitState, None),
             ('activeState',     0,         self.setActiveState),
             )
         # Merge keyword options with default options

@@ -643,7 +643,17 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
     # Toggle if you wish widget's to snap to grid when draggin
     snapToGrid = 0
     gridSpacing = 0.05
-    
+
+    # Determine the default initial state for inactive (or
+    # unclickable) components.  If we are in edit mode, these are
+    # actually clickable by default.
+    guiEdit = base.config.GetBool('direct-gui-edit', 0)
+    if guiEdit:
+        inactiveInitState = NORMAL
+    else:
+        inactiveInitState = DISABLED
+            
+
     def __init__(self, parent = guiTop, **kw):
         # Direct gui widgets are node paths
         # Direct gui widgets have:
@@ -730,7 +740,7 @@ class DirectGuiWidget(DirectGuiBase, NodePath):
         self.ur = Point3(0)
 
         # Is drag and drop enabled?
-        if base.config.GetBool('direct-gui-edit', 0):
+        if self.guiEdit:
             self.enableEdit()
 
         # Bind destroy hook

@@ -15,6 +15,7 @@ class DirectFrame(DirectGuiWidget):
             # Define type of DirectGuiWidget
             ('pgFunc',          PGItem,     None),
             ('numStates',       1,          None),
+            ('state',           self.inactiveInitState, None),
             # Frame can have:
             # A background texture
             ('image',           None,       self.setImage),
