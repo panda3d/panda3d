@@ -1543,7 +1543,7 @@ bool wdxGraphicsWindow::resize(unsigned int xsize,unsigned int ysize) {
 // overrides of the general estimator for known working cases
 bool wdxGraphicsWindow::
 special_check_fullscreen_resolution(UINT xsize,UINT ysize) {
-    assert(IS_VALID_PTR(_dxgsg));
+    //assert(IS_VALID_PTR(_dxgsg));
 
     DWORD VendorId=_dxgsg->scrn.DXDeviceID.dwVendorId;
     DWORD DeviceId=_dxgsg->scrn.DXDeviceID.dwDeviceId;
