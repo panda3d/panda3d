@@ -82,8 +82,8 @@ run() {
     ExtraData ed;
     ed._type = FT_maya;
 
-    CVSSourceDirectory *dest = import(*fi, &ed, _model_dir);
-    if (dest == (CVSSourceDirectory *)NULL) {
+    CVSSourceTree::FilePath path = import(*fi, &ed, _model_dir);
+    if (!path.is_valid()) {
       nout << "\nUnable to copy, aborting!\n\n";
       exit(1);
     }
@@ -205,8 +205,8 @@ copy_maya_file(const Filename &source, const Filename &dest,
     ExtraData ed;
     ed._type = FT_maya;
 
-    CVSSourceDirectory *dest = import(filename, &ed, _model_dir);
-    if (dest == (CVSSourceDirectory *)NULL) {
+    CVSSourceTree::FilePath path = import(filename, &ed, _model_dir);
+    if (!path.is_valid()) {
       exit(1);
     }
     */
@@ -238,16 +238,16 @@ extract_texture(MayaShaderColorDef &color_def, CVSSourceDirectory *dir) {
       ExtraData ed;
       ed._type = FT_texture;
       
-      CVSSourceDirectory *texture_dir =
+      CVSSourceTree::FilePath texture_path =
         import(texture_filename, &ed, _map_dir);
-      if (texture_dir == (CVSSourceDirectory *)NULL) {
+
+      if (!texture_path.is_valid()) {
         return false;
       }
       
       // Update the texture reference to point to the new texture
       // filename, relative to the maya file.
-      Filename new_filename = dir->get_rel_to(texture_dir) + "/" +
-        filter_filename(texture_filename.get_basename());
+      Filename new_filename = texture_path.get_rel_from(dir);
       color_def.reset_maya_texture(new_filename);
     }
   }

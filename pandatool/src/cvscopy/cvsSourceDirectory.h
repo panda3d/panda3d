@@ -32,6 +32,14 @@ class CVSSourceTree;
 //               hierarchy of source directory files.  We must scan
 //               the source directory to identify where the related
 //               files have previously been copied.
+//
+//               The tree is maintained in a case-insensitive manner,
+//               even on a non-Windows system, since you might want to
+//               eventually check out the CVS tree onto a Windows
+//               system--and if you do, you'll be sad if there are
+//               case conflicts within the tree.  So we make an effort
+//               to ensure this doesn't happen by treating two files
+//               with a different case as the same file.
 ////////////////////////////////////////////////////////////////////
 class CVSSourceDirectory {
 public:
@@ -40,9 +48,9 @@ public:
   ~CVSSourceDirectory();
 
   string get_dirname() const;
-  string get_fullpath() const;
-  string get_path() const;
-  string get_rel_to(const CVSSourceDirectory *other) const;
+  Filename get_fullpath() const;
+  Filename get_path() const;
+  Filename get_rel_to(const CVSSourceDirectory *other) const;
 
   int get_num_children() const;
   CVSSourceDirectory *get_child(int n) const;

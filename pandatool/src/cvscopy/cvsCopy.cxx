@@ -110,10 +110,10 @@ CVSCopy() {
 //               copy the file, if it does not already exist
 //               elsewhere.
 //
-//               On success, returns the CVSSourceDirectory it was
-//               actually copied to.  On failure, returns NULL.
+//               On success, returns the FilePath it was actually
+//               copied to.  On failure, returns an invalid FilePath.
 ////////////////////////////////////////////////////////////////////
-CVSSourceDirectory *CVSCopy::
+CVSSourceTree::FilePath CVSCopy::
 import(const Filename &source, void *extra_data,
        CVSSourceDirectory *suggested_dir) {
   CopiedFiles::const_iterator ci;
@@ -125,30 +125,30 @@ import(const Filename &source, void *extra_data,
 
   if (!source.exists()) {
     nout << "Source filename " << source << " does not exist!\n";
-    return (CVSSourceDirectory *)NULL;
+    return CVSSourceTree::FilePath();
   }
 
   string basename = filter_filename(source.get_basename());
 
-  CVSSourceDirectory *dir =
+  CVSSourceTree::FilePath path =
     _tree.choose_directory(basename, suggested_dir, _force, _interactive);
-  nassertr(dir != (CVSSourceDirectory *)NULL, dir);
+  nassertr(path.is_valid(), path);
 
-  _copied_files[source] = dir;
-  Filename dest = dir->get_fullpath() + "/" + basename;
+  _copied_files[source] = path;
+  Filename dest = path.get_fullpath();
 
   bool new_file = !dest.exists();
-  if (!new_file && verify_file(source, dest, dir, extra_data)) {
+  if (!new_file && verify_file(source, dest, path._dir, extra_data)) {
     // The file is unchanged.
-    nout << dir->get_path() + "/" + basename << " is unchanged.\n";
+    nout << path.get_path() << " is unchanged.\n";
 
   } else {
     // The file has changed.
-    nout << "Copying " << basename << " to " << dir->get_path() << "\n";
+    nout << "Copying " << basename << " to " << path.get_path() << "\n";
 
-    if (!copy_file(source, dest, dir, extra_data, new_file)) {
+    if (!copy_file(source, dest, path._dir, extra_data, new_file)) {
       if (!continue_after_error()) {
-        return (CVSSourceDirectory *)NULL;
+        return CVSSourceTree::FilePath();
       }
     } else {
       if (new_file) {
@@ -157,7 +157,7 @@ import(const Filename &source, void *extra_data,
     }
   }
 
-  return dir;
+  return path;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -22,6 +22,7 @@
 #include "filename.h"
 #include "executionEnvironment.h"
 #include "notify.h"
+#include "string_utils.h"
 
 #include <algorithm>
 #include <ctype.h>
@@ -112,7 +113,7 @@ find_directory(const Filename &path) {
   // path is a subdirectory within the source hierarchy if and only if
   // root_fullpath is an initial prefix of fullpath.
   if (root_fullpath.length() > fullpath.length() ||
-      fullpath.substr(0, root_fullpath.length()) != root_fullpath) {
+      cmp_nocase(fullpath.substr(0, root_fullpath.length()), root_fullpath) != 0) {
     // Nope!
     return (CVSSourceDirectory *)NULL;
   }
@@ -147,7 +148,7 @@ find_relpath(const string &relpath) {
     rest = relpath.substr(slash + 1);
   }
 
-  if (first == _root->get_dirname()) {
+  if (cmp_nocase(first, _root->get_dirname()) == 0) {
     return _root->find_relpath(rest);
   }
 
@@ -176,23 +177,23 @@ find_dirname(const string &dirname) {
 //               matching files are found, prompts the user for the
 //               directory, or uses suggested_dir.
 ////////////////////////////////////////////////////////////////////
-CVSSourceDirectory *CVSSourceTree::
-choose_directory(const Filename &filename, CVSSourceDirectory *suggested_dir,
+CVSSourceTree::FilePath CVSSourceTree::
+choose_directory(const string &basename, CVSSourceDirectory *suggested_dir,
                  bool force, bool interactive) {
-  static Directories empty_dirs;
+  static FilePaths empty_paths;
 
-  Filenames::const_iterator fi;
-  fi = _filenames.find(filename);
-  if (fi != _filenames.end()) {
+  Basenames::const_iterator bi;
+  bi = _basenames.find(downcase(basename));
+  if (bi != _basenames.end()) {
     // The filename already exists somewhere.
-    const Directories &dirs = (*fi).second;
+    const FilePaths &paths = (*bi).second;
 
-    return prompt_user(filename, suggested_dir, dirs,
+    return prompt_user(basename, suggested_dir, paths,
                        force, interactive);
   }
 
   // Now we have to prompt the user for a suitable place to put it.
-  return prompt_user(filename, suggested_dir, empty_dirs,
+  return prompt_user(basename, suggested_dir, empty_paths,
                      force, interactive);
 }
 
@@ -232,8 +233,9 @@ get_root_dirname() const {
 //               should not be called directly by the user.
 ////////////////////////////////////////////////////////////////////
 void CVSSourceTree::
-add_file(const Filename &filename, CVSSourceDirectory *dir) {
-  _filenames[filename].push_back(dir);
+add_file(const string &basename, CVSSourceDirectory *dir) {
+  FilePath file_path(dir, basename);
+  _basenames[downcase(basename)].push_back(file_path);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -283,27 +285,27 @@ restore_cwd() {
 //  Description: Prompts the user, if necessary, to choose a directory
 //               to import the given file into.
 ////////////////////////////////////////////////////////////////////
-CVSSourceDirectory *CVSSourceTree::
-prompt_user(const string &filename, CVSSourceDirectory *suggested_dir,
-            const CVSSourceTree::Directories &dirs,
+CVSSourceTree::FilePath CVSSourceTree::
+prompt_user(const string &basename, CVSSourceDirectory *suggested_dir,
+            const CVSSourceTree::FilePaths &paths,
             bool force, bool interactive) {
-  if (dirs.size() == 1) {
+  if (paths.size() == 1) {
     // The file already exists in exactly one place.
     if (!interactive) {
-      return dirs[0];
+      return paths[0];
     }
-    CVSSourceDirectory *result = ask_existing(filename, dirs[0]);
-    if (result != (CVSSourceDirectory *)NULL) {
+    FilePath result = ask_existing(basename, paths[0]);
+    if (result.is_valid()) {
       return result;
     }
 
-  } else if (dirs.size() > 1) {
+  } else if (paths.size() > 1) {
     // The file already exists in multiple places.
     if (force && !interactive) {
-      return dirs[0];
+      return paths[0];
     }
-    CVSSourceDirectory *result = ask_existing(filename, dirs, suggested_dir);
-    if (result != (CVSSourceDirectory *)NULL) {
+    FilePath result = ask_existing(basename, paths, suggested_dir);
+    if (result.is_valid()) {
       return result;
     }
   }
@@ -311,18 +313,29 @@ prompt_user(const string &filename, CVSSourceDirectory *suggested_dir,
   // The file does not already exist, or the user declined to replace
   // an existing file.
   if (force && !interactive) {
-    return suggested_dir;
+    return FilePath(suggested_dir, basename);
   }
 
-  if (find(dirs.begin(), dirs.end(), suggested_dir) == dirs.end()) {
-    CVSSourceDirectory *result = ask_new(filename, suggested_dir);
-    if (result != (CVSSourceDirectory *)NULL) {
+  // Is the file already in the suggested directory?  If not, prompt
+  // the user to put it there.
+  bool found_dir = false;
+  FilePaths::const_iterator pi;
+  for (pi = paths.begin(); pi != paths.end(); ++pi) {
+    if ((*pi)._dir == suggested_dir) {
+      found_dir = true;
+      break;
+    }
+  }
+
+  if (!found_dir) {
+    FilePath result = ask_new(basename, suggested_dir);
+    if (result.is_valid()) {
       return result;
     }
   }
 
   // Ask the user where the damn thing should go.
-  return ask_any(filename);
+  return ask_any(basename, paths);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -331,18 +344,18 @@ prompt_user(const string &filename, CVSSourceDirectory *suggested_dir,
 //  Description: Asks the user if he wants to replace an existing
 //               file.
 ////////////////////////////////////////////////////////////////////
-CVSSourceDirectory *CVSSourceTree::
-ask_existing(const string &filename, CVSSourceDirectory *dir) {
+CVSSourceTree::FilePath CVSSourceTree::
+ask_existing(const string &basename, const CVSSourceTree::FilePath &path) {
   while (true) {
-    nout << filename << " found in tree at "
-         << dir->get_path() + "/" + filename << ".\n";
+    nout << basename << " found in tree at "
+         << path.get_path() << ".\n";
     string result = prompt("Overwrite this file (y/n)? ");
-    nassertr(!result.empty(), (CVSSourceDirectory *)NULL);
+    nassertr(!result.empty(), FilePath());
     if (result.size() == 1) {
       if (tolower(result[0]) == 'y') {
-        return dir;
+        return path;
       } else if (tolower(result[0]) == 'n') {
-        return NULL;
+        return FilePath();
       }
     }
 
@@ -356,30 +369,32 @@ ask_existing(const string &filename, CVSSourceDirectory *dir) {
 //  Description: Asks the user which of several existing files he
 //               wants to replace.
 ////////////////////////////////////////////////////////////////////
-CVSSourceDirectory *CVSSourceTree::
-ask_existing(const string &filename, const CVSSourceTree::Directories &dirs,
+CVSSourceTree::FilePath CVSSourceTree::
+ask_existing(const string &basename, const CVSSourceTree::FilePaths &paths,
              CVSSourceDirectory *suggested_dir) {
   while (true) {
-    nout << filename << " found in tree at more than one place:\n";
+    nout << basename << " found in tree at more than one place:\n";
 
     bool any_suggested = false;
-    for (int i = 0; i < (int)dirs.size(); i++) {
+    for (int i = 0; i < (int)paths.size(); i++) {
       nout << "  " << (i + 1) << ". "
-           << dirs[i]->get_path() + "/" + filename << "\n";
-      if (dirs[i] == suggested_dir) {
+           << paths[i].get_path() << "\n";
+      if (paths[i]._dir == suggested_dir) {
         any_suggested = true;
       }
     }
 
-    int next_option = dirs.size() + 1;
+    int next_option = paths.size() + 1;
     int suggested_option = -1;
 
     if (!any_suggested) {
+      // If it wasn't already in the suggested directory, offer to put
+      // it there.
       suggested_option = next_option;
       next_option++;
       nout << "\n" << suggested_option
            << ". create "
-           << suggested_dir->get_path() + "/" + filename
+           << Filename(suggested_dir->get_path(), basename)
            << "\n";
     }
 
@@ -387,19 +402,19 @@ ask_existing(const string &filename, const CVSSourceTree::Directories &dirs,
     nout << other_option << ". Other\n";
 
     string result = prompt("Choose an option: ");
-    nassertr(!result.empty(), (CVSSourceDirectory *)NULL);
+    nassertr(!result.empty(), FilePath());
     const char *nptr = result.c_str();
     char *endptr;
     int option = strtol(nptr, &endptr, 10);
     if (*endptr == '\0') {
-      if (option >= 1 && option <= (int)dirs.size()) {
-        return dirs[option - 1];
+      if (option >= 1 && option <= (int)paths.size()) {
+        return paths[option - 1];
 
       } else if (option == suggested_option) {
-        return suggested_dir;
+        return FilePath(suggested_dir, basename);
 
       } else if (option == other_option) {
-        return NULL;
+        return FilePath();
       }
     }
 
@@ -410,21 +425,20 @@ ask_existing(const string &filename, const CVSSourceTree::Directories &dirs,
 ////////////////////////////////////////////////////////////////////
 //     Function: CVSSourceTree::ask_new
 //       Access: Private
-//  Description: Asks the user if he wants to replace an existing
-//               file.
+//  Description: Asks the user if he wants to create a new file.
 ////////////////////////////////////////////////////////////////////
-CVSSourceDirectory *CVSSourceTree::
-ask_new(const string &filename, CVSSourceDirectory *dir) {
+CVSSourceTree::FilePath CVSSourceTree::
+ask_new(const string &basename, CVSSourceDirectory *dir) {
   while (true) {
-    nout << filename << " will be created in "
+    nout << basename << " will be created in "
          << dir->get_path() << ".\n";
     string result = prompt("Create this file (y/n)? ");
-    nassertr(!result.empty(), (CVSSourceDirectory *)NULL);
+    nassertr(!result.empty(), FilePath());
     if (result.size() == 1) {
       if (tolower(result[0]) == 'y') {
-        return dir;
+        return FilePath(dir, basename);
       } else if (tolower(result[0]) == 'n') {
-        return NULL;
+        return FilePath();
       }
     }
 
@@ -438,12 +452,13 @@ ask_new(const string &filename, CVSSourceDirectory *dir) {
 //  Description: Asks the user to type in the name of the directory in
 //               which to store the file.
 ////////////////////////////////////////////////////////////////////
-CVSSourceDirectory *CVSSourceTree::
-ask_any(const string &filename) {
+CVSSourceTree::FilePath CVSSourceTree::
+ask_any(const string &basename,
+        const CVSSourceTree::FilePaths &paths) {
   while (true) {
     string result =
-      prompt("Enter the name of the directory to copy " + filename + " to: ");
-    nassertr(!result.empty(), (CVSSourceDirectory *)NULL);
+      prompt("Enter the name of the directory to copy " + basename + " to: ");
+    nassertr(!result.empty(), FilePath());
 
     // The user might enter a fully-qualified path to the directory,
     // or a relative path from the root (with or without the root's
@@ -457,7 +472,18 @@ ask_any(const string &filename) {
     }
 
     if (dir != (CVSSourceDirectory *)NULL) {
-      return dir;
+      // If the file is already in this directory, we must preserve
+      // its existing case.
+      FilePaths::const_iterator pi;
+      for (pi = paths.begin(); pi != paths.end(); ++pi) {
+        if ((*pi)._dir == dir) {
+          return (*pi);
+        }
+      }
+
+      // Otherwise, since we're creating a new file, keep the original
+      // case.
+      return FilePath(dir, basename);
     }
 
     nout << "*** Not a valid directory name: " << result << "\n\n";
@@ -524,3 +550,75 @@ get_start_fullpath() {
   }
   return _start_fullpath;
 }
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: CVSSourceTree::FilePath::Constructor
+//       Access: Public
+//  Description: Creates an invalid FilePath specification.
+////////////////////////////////////////////////////////////////////
+CVSSourceTree::FilePath::
+FilePath() :
+  _dir(NULL)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CVSSourceTree::FilePath::Constructor
+//       Access: Public
+//  Description: Creates a valid FilePath specification with the
+//               indicated directory and basename.
+////////////////////////////////////////////////////////////////////
+CVSSourceTree::FilePath::
+FilePath(CVSSourceDirectory *dir, const string &basename) :
+  _dir(dir),
+  _basename(basename)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CVSSourceTree::FilePath::is_valid
+//       Access: Public
+//  Description: Returns true if this FilePath represents a valid
+//               file, or false if it represents an error return.
+////////////////////////////////////////////////////////////////////
+bool CVSSourceTree::FilePath::
+is_valid() const {
+  return (_dir != (CVSSourceDirectory *)NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CVSSourceTree::FilePath::get_path
+//       Access: Public
+//  Description: Returns the relative path to this file from the root
+//               of the source tree.
+////////////////////////////////////////////////////////////////////
+Filename CVSSourceTree::FilePath::
+get_path() const {
+  nassertr(_dir != (CVSSourceDirectory *)NULL, Filename());
+  return Filename(_dir->get_path(), _basename);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CVSSourceTree::FilePath::get_fullpath
+//       Access: Public
+//  Description: Returns the full path to this file.
+////////////////////////////////////////////////////////////////////
+Filename CVSSourceTree::FilePath::
+get_fullpath() const {
+  nassertr(_dir != (CVSSourceDirectory *)NULL, Filename());
+  return Filename(_dir->get_fullpath(), _basename);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CVSSourceTree::FilePath::get_rel_from
+//       Access: Public
+//  Description: Returns the relative path to this file as seen from
+//               the indicated source directory.
+////////////////////////////////////////////////////////////////////
+Filename CVSSourceTree::FilePath::
+get_rel_from(const CVSSourceDirectory *other) const {
+  nassertr(_dir != (CVSSourceDirectory *)NULL, Filename());
+  return Filename(other->get_rel_to(_dir), _basename);
+}
+

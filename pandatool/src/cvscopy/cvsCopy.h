@@ -38,7 +38,7 @@ class CVSCopy : public ProgramBase {
 public:
   CVSCopy();
 
-  CVSSourceDirectory *
+  CVSSourceTree::FilePath
   import(const Filename &source, void *extra_data,
          CVSSourceDirectory *suggested_dir);
 
@@ -89,7 +89,7 @@ protected:
   CVSSourceDirectory *_model_dir;
   CVSSourceDirectory *_map_dir;
 
-  typedef pmap<string, CVSSourceDirectory *> CopiedFiles;
+  typedef pmap<string, CVSSourceTree::FilePath> CopiedFiles;
   CopiedFiles _copied_files;
 };
 

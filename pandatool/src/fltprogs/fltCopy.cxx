@@ -61,8 +61,8 @@ run() {
     ExtraData ed;
     ed._type = FT_flt;
 
-    CVSSourceDirectory *dest = import(*fi, &ed, _model_dir);
-    if (dest == (CVSSourceDirectory *)NULL) {
+    CVSSourceTree::FilePath dest = import(*fi, &ed, _model_dir);
+    if (!dest.is_valid()) {
       exit(1);
     }
   }
@@ -131,16 +131,15 @@ copy_flt_file(const Filename &source, const Filename &dest,
       ExtraData ed;
       ed._type = FT_flt;
 
-      CVSSourceDirectory *ref_dir =
+      CVSSourceTree::FilePath ref_path =
         import(ref_filename, &ed, _model_dir);
-      if (ref_dir == (CVSSourceDirectory *)NULL) {
+      if (!ref_path.is_valid()) {
         return false;
       }
 
       // Update the reference to point to the new flt filename, relative
       // to the base flt file.
-      ref->set_ref_filename(dir->get_rel_to(ref_dir) + "/" +
-			    ref_filename.get_basename());
+      ref->set_ref_filename(ref_path.get_rel_from(dir));
     }
   }
 
@@ -162,16 +161,15 @@ copy_flt_file(const Filename &source, const Filename &dest,
       ed._type = FT_texture;
       ed._texture = tex;
 
-      CVSSourceDirectory *texture_dir =
+      CVSSourceTree::FilePath texture_path =
         import(texture_filename, &ed, _map_dir);
-      if (texture_dir == (CVSSourceDirectory *)NULL) {
+      if (!texture_path.is_valid()) {
         return false;
       }
 
       // Update the texture reference to point to the new texture
       // filename, relative to the flt file.
-      tex->set_texture_filename(dir->get_rel_to(texture_dir) + "/" +
-				texture_filename.get_basename());
+      tex->set_texture_filename(texture_path.get_rel_from(dir));
       header->add_texture(tex);
     }
   }

@@ -18,6 +18,7 @@
 
 #include "cvsSourceDirectory.h"
 #include "cvsSourceTree.h"
+#include "string_utils.h"
 
 #include "notify.h"
 
@@ -69,12 +70,12 @@ get_dirname() const {
 //  Description: Returns the full pathname to this particular
 //               directory.
 ////////////////////////////////////////////////////////////////////
-string CVSSourceDirectory::
+Filename CVSSourceDirectory::
 get_fullpath() const {
   if (_parent == (CVSSourceDirectory *)NULL) {
     return _tree->get_root_fullpath();
   }
-  return _parent->get_fullpath() + "/" + _dirname;
+  return Filename(_parent->get_fullpath(), _dirname);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -83,12 +84,12 @@ get_fullpath() const {
 //  Description: Returns the relative pathname to this particular
 //               directory, as seen from the root of the tree.
 ////////////////////////////////////////////////////////////////////
-string CVSSourceDirectory::
+Filename CVSSourceDirectory::
 get_path() const {
   if (_parent == (CVSSourceDirectory *)NULL) {
     return _dirname;
   }
-  return _parent->get_path() + "/" + _dirname;
+  return Filename(_parent->get_path(), _dirname);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -97,7 +98,7 @@ get_path() const {
 //  Description: Returns the relative path to the other directory from
 //               this one.  This does not include a trailing slash.
 ////////////////////////////////////////////////////////////////////
-string CVSSourceDirectory::
+Filename CVSSourceDirectory::
 get_rel_to(const CVSSourceDirectory *other) const {
   const CVSSourceDirectory *a = this;
   const CVSSourceDirectory *b = other;
@@ -189,7 +190,7 @@ find_relpath(const string &relpath) {
   // Check for a child with the name indicated by first.
   Children::const_iterator ci;
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
-    if ((*ci)->get_dirname() == first) {
+    if (cmp_nocase((*ci)->get_dirname(), first) == 0) {
       return (*ci)->find_relpath(rest);
     }
   }
@@ -207,7 +208,7 @@ find_relpath(const string &relpath) {
 ////////////////////////////////////////////////////////////////////
 CVSSourceDirectory *CVSSourceDirectory::
 find_dirname(const string &dirname) {
-  if (dirname == _dirname) {
+  if (cmp_nocase(dirname, _dirname) == 0) {
     return this;
   }
 
@@ -242,15 +243,15 @@ scan(const Filename &directory, const string &key_filename) {
 
   vector_string::const_iterator fi;
   for (fi = contents.begin(); fi != contents.end(); ++fi) {
-    const string &filename = (*fi);
+    const string &basename = (*fi);
 
     // Is this possibly a subdirectory name?
-    Filename next_path(directory, filename);
+    Filename next_path(directory, basename);
     Filename key(next_path, key_filename);
 
     if (key.exists()) {
       CVSSourceDirectory *subdir =
-        new CVSSourceDirectory(_tree, this, filename);
+        new CVSSourceDirectory(_tree, this, basename);
       _children.push_back(subdir);
 
       if (!subdir->scan(next_path, key_filename)) {
@@ -259,7 +260,7 @@ scan(const Filename &directory, const string &key_filename) {
 
     } else {
       // It's not a subdirectory; call it a regular file.
-      _tree->add_file(filename, this);
+      _tree->add_file(basename, this);
     }
   }
 
