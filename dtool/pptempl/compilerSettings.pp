@@ -11,6 +11,17 @@
   #defer DEBUGFLAGS /MDd $[BROWSEINFO_FLAG] /Zi /Fd"$[osfilename $[target:%.obj=%.pdb]]"  
   #define RELEASEFLAGS /MD
   
+  #define MAPINFOFLAGS /MAPINFO:EXPORTS /MAPINFO:FIXUPS /MAPINFO:LINES
+  
+  #if $[ENABLE_PROFILING]
+      // note according to docs, this should force /PDB:none /DEBUGTYPE:cv, so no pdb file is generated for debug??  (doesnt seem to be true)
+    #define PROFILE_FLAG /PROFILE 
+  #else
+    #define PROFILE_FLAG 
+  #endif
+  
+  #define LINKER_FLAGS $[PROFILE_FLAG] /MAP $[MAPINFOFLAGS]
+  
 // in case we have mixed intel/msvc build
   #define EXTRA_LIBPATH /ia32/lib
   #define EXTRA_INCPATH /ia32/include    
