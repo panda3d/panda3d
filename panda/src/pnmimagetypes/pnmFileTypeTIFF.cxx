@@ -724,7 +724,7 @@ write_data(xel *array, xelval *alpha) {
                        iostream_dont_close, ostream_size,
                        iostream_map, iostream_unmap);
   if ( tif == NULL ) {
-    return false;
+    return 0;
   }
 
   /* Figure out TIFF parameters. */
