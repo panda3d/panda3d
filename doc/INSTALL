@@ -419,7 +419,7 @@ if you intend to use the Python interfaces.
 
 And you may build pandatool.  You only need to build this if you want
 to take advantage of model conversion utilities for Panda like
-maya2egg and egg2bam.
+maya2egg and egg2bam, or if you want to use other tools like pstats.
 
   cd ~/panda3d/pandatool
   ppremake
@@ -521,17 +521,21 @@ need the support DLL, cygwin1.dll.
 
 You will need a directory for holding the installed Panda.  This can
 be anywhere you like; the default is C:\Panda3d.  If you choose to
-specify otherwise you should redefine INSTALL_DIR within your
-Config.pp file (described above).
+specify otherwise you should modify the INSTALL_DIR line in
+ppremake\config_msvc.h before you build ppremake (below).
+(Alternatively, you can leave ppremake alone and simply redefine
+INSTALL_DIR in your Config.pp file, but then you will also need to
+define the environment variable PPREMAKE_CONFIG to point to your
+Config.pp.)
 
   md C:\Panda3d
 
 You will first need to build a copy of ppremake.exe.  There is a
-Microsoft project file in the ppremake directory that will build this.
-Once it is built, copy it to the Panda bin directory (which you will
-have to make yourself).  This will be a directory called "bin" below
-the root of the installed directory you created above; for instance,
-C:\Panda3d\bin.
+Microsoft VC7 project file in the ppremake directory that will build
+this.  Once it is built, copy it to the Panda bin directory (which you
+will have to make yourself).  This will be a directory called "bin"
+below the root of the installed directory you created above; for
+instance, C:\Panda3d\bin.
 
 Make sure the Panda bin and lib directories are on your path, and set
 a few environment variables for building.  We suggest creating a file
@@ -558,11 +562,13 @@ Now set up your personal Config.pp file to control your local
 configuration settings, as described above.  By default, ppremake will
 look for this file in the root of the install directory,
 e.g. C:\Panda3d\Config.pp; if you want to put it somewhere else you
-should define the variable PPREMAKE_CONFIG to its full path.
+should define the environment variable PPREMAKE_CONFIG to the full
+path to your Config.pp.
 
-Add the appropriate lines to your Config.pp to define the correct
-paths to the various packages you have installed on your system.  See
-HOW TO CONFIGURE PANDA FOR YOUR ENVIRONMENT, above.
+Use your favorite text editor to add the appropriate lines to your
+Config.pp to define the correct paths to the various third-party
+packages you have installed on your system.  See HOW TO CONFIGURE
+PANDA FOR YOUR ENVIRONMENT, above.
 
   edit C:\Panda3d\Config.pp
 
@@ -572,27 +578,35 @@ Now you should be able to build dtool.
   C:
   cd \Panda3d\dtool
   ppremake
+
+When you run ppremake within the dtool directory, it will generate a
+file, dtool_config.h (as well as all of the Makefiles).  This file
+will be included by all of the Panda3D sources, and reveals the
+settings of many of the options you have configured.  You should
+examine this file now to ensure that your settings have been made the
+way you expect.
+
   make
   make install
 
-And then build panda.
+Once dtool is fully built and installed, you can build panda.
 
   cd \Panda3d\panda
   ppremake
   make
   make install
 
-And (optionally) build direct.  You only need to build this if you
-intend to use the Python interfaces.
+If you wish, you may also build direct.  You only need to build this
+if you intend to use the Python interfaces.
 
   cd \Panda3d\direct
   ppremake
   make
   make install
 
-And (optionally) build pandatool.  You only need to build this if you
-want to take advantage of model conversion utilities for Panda like
-maya2egg and egg2bam.
+And you may build pandatool.  You only need to build this if you want
+to take advantage of model conversion utilities for Panda like
+maya2egg and egg2bam, or if you want to use other tools like pstats.
 
   cd \Panda3d\pandatool
   ppremake
@@ -763,16 +777,14 @@ panda, and direct, and then re-run genPyCode, to install the Panda
 libraries and Python files directly into the Python site-packages
 directory.
 
-Unix users should note that you must have write permission to the
-site-packages directory.  You may run these steps as root to avoid
-this problem.  If you have difficulty running genPyCode as root, make
-sure that you still have LD_LIBRARY_PATH defined appropriately once
-you have become root.  Alternatively, instead of running genPyCode as
-root, you may simply create the directory site-packages/pandac as
-root, and then give yourself write permission to this directory (this
-is all that genPyCode requires).
-
 You may also need to set your LD_LIBRARY_PATH (on Unix) or PATH (on
 Windows) to reference this new directory instead of $INSTALL_DIR/lib,
 especially if you want to be able run pview or any of the model
 converters occasionally.
+
+Unix users should note that you must have write permission to the
+site-packages directory in order to install files there.  You may
+choose to run these install steps (ppremake, make install, genPyCode)
+as root to avoid this problem.  If you encounter difficulty running
+genPyCode as root, make sure that you still have LD_LIBRARY_PATH
+defined appropriately once you have become root.
