@@ -191,7 +191,7 @@ report_pi() const {
 
   // Sort the palette groups into order of preference, so that the
   // more specific ones appear at the bottom.
-  vector<PaletteGroup *> sorted_groups;
+  pvector<PaletteGroup *> sorted_groups;
   Groups::const_iterator gi;
   for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
     sorted_groups.push_back((*gi).second);
@@ -200,7 +200,7 @@ report_pi() const {
        SortGroupsByPreference());
 
   cout << "\npalette groups\n";
-  vector<PaletteGroup *>::iterator si;
+  pvector<PaletteGroup *>::iterator si;
   for (si = sorted_groups.begin(); si != sorted_groups.end(); ++si) {
     PaletteGroup *group = (*si);
     if (si != sorted_groups.begin()) {
@@ -245,7 +245,7 @@ void Palettizer::
 report_statistics() const {
   // Sort the groups into order by dependency order, for the user's
   // convenience.
-  vector<PaletteGroup *> sorted_groups;
+  pvector<PaletteGroup *> sorted_groups;
 
   Groups::const_iterator gi;
   for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
@@ -257,7 +257,7 @@ report_statistics() const {
 
   Placements overall_placements;
 
-  vector<PaletteGroup *>::const_iterator si;
+  pvector<PaletteGroup *>::const_iterator si;
   for (si = sorted_groups.begin();
        si != sorted_groups.end();
        ++si) {

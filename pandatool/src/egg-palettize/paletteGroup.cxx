@@ -132,7 +132,7 @@ get_groups() const {
 //               the vector first.
 ////////////////////////////////////////////////////////////////////
 void PaletteGroup::
-get_placements(vector<TexturePlacement *> &placements) const {
+get_placements(pvector<TexturePlacement *> &placements) const {
   Placements::const_iterator pi;
   for (pi = _placements.begin(); pi != _placements.end(); ++pi) {
     placements.push_back(*pi);
@@ -147,7 +147,7 @@ get_placements(vector<TexturePlacement *> &placements) const {
 //               vector.  See get_placements().
 ////////////////////////////////////////////////////////////////////
 void PaletteGroup::
-get_complete_placements(vector<TexturePlacement *> &placements) const {
+get_complete_placements(pvector<TexturePlacement *> &placements) const {
   PaletteGroups complete;
   complete.make_complete(_dependent);
 
@@ -671,7 +671,7 @@ complete_pointers(vector_typedWritable &p_list, BamReader *manager) {
 void PaletteGroup::
 finalize() {
   // Now we can copy the pages into the actual map.
-  vector<PalettePage *>::const_iterator pi;
+  pvector<PalettePage *>::const_iterator pi;
   for (pi = _load_pages.begin(); pi != _load_pages.end(); ++pi) {
     PalettePage *page = (*pi);
     bool inserted = _pages.

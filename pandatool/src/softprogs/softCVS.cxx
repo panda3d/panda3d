@@ -151,7 +151,7 @@ traverse_subdir(const Filename &directory) {
 
   // We need to know the set of files in this directory that are CVS
   // elements.
-  set<string> cvs_elements;
+  pset<string> cvs_elements;
   bool in_cvs = false;
   if (!_no_cvs) {
     in_cvs = scan_cvs(directory, cvs_elements);
@@ -401,7 +401,7 @@ rename_file(SoftCVS::SceneFiles::iterator begin,
 //               CVS-controlled, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool SoftCVS::
-scan_cvs(const string &dirname, set<string> &cvs_elements) {
+scan_cvs(const string &dirname, pset<string> &cvs_elements) {
   Filename cvs_entries = dirname + "/CVS/Entries";
   if (!cvs_entries.exists()) {
     // Try to CVSify the directory.

@@ -83,7 +83,7 @@ new_collector() {
   // Determine the set of collectors that display level data.  We'll
   // want to put these on the "Levels" pull-down menu.
 
-  set<int> levels;
+  pset<int> levels;
 
   int num_collectors = client_data->get_num_collectors();
   for (int i = 0; i < num_collectors; i++) {
@@ -109,7 +109,7 @@ new_collector() {
 
   // Now put the collectors we found on the menu.
   _levels_menu->items().clear();
-  set<int>::const_iterator li;
+  pset<int>::const_iterator li;
   for (li = levels.begin(); li != levels.end(); ++li) {
     int collector_index = (*li);
     _levels_menu->items().push_back

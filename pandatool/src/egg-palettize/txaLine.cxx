@@ -119,7 +119,7 @@ parse(const string &line) {
 
       } else {
         // Collect a number of consecutive numeric fields.
-        vector<int> numbers;
+        pvector<int> numbers;
         while (wi != words.end() && isdigit((*wi)[0])) {
           const string &word = *wi;
           int num;

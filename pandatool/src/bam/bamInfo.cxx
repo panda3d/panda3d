@@ -23,7 +23,7 @@
 #include <renderRelation.h>
 #include <geomNode.h>
 
-#include <vector>
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamInfo::Constructor
@@ -126,7 +126,7 @@ get_info(const Filename &filename) {
   nout << filename << " : Bam version " << bam_file.get_file_major_ver()
        << "." << bam_file.get_file_minor_ver() << "\n";
 
-  typedef vector<TypedWritable *> Objects;
+  typedef pvector<TypedWritable *> Objects;
   Objects objects;
   TypedWritable *object = bam_file.read_object();
   while (object != (TypedWritable *)NULL || !bam_file.is_eof()) {

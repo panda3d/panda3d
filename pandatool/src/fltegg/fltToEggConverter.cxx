@@ -372,7 +372,7 @@ convert_face(const FltFace *flt_face, FltToEggLevelState &state) {
   }
 
   // Collect the vertices for this primitive.
-  vector< PT_EggVertex > vertices;
+  pvector< PT_EggVertex > vertices;
 
   const FltVertexList *vlist = (FltVertexList *)NULL;
   int num_children = flt_face->get_num_children();

@@ -127,7 +127,7 @@ scan_textures() {
 //               appended to the existing set.
 ////////////////////////////////////////////////////////////////////
 void EggFile::
-get_textures(set<TextureImage *> &result) const {
+get_textures(pset<TextureImage *> &result) const {
   Textures::const_iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     result.insert((*ti)->get_texture());

@@ -201,7 +201,7 @@ read_surface_color(MObject color) {
     } else {
       // If we don't have a heavy verbose count, only report each type
       // of unsupportted shader once.
-      static set<MFn::Type> bad_types;
+      static pset<MFn::Type> bad_types;
       if (bad_types.insert(color.apiType()).second) {
         if (verbose == 1) {
           nout << "\n";

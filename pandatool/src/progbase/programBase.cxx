@@ -211,13 +211,13 @@ parse_command_line(int argc, char *argv[]) {
 
   // Build up the long options list and the short options string for
   // getopt_long_only().
-  vector<struct option> long_options;
+  pvector<struct option> long_options;
   string short_options;
 
   // We also need to build a temporary map of int index numbers to
   // Option pointers.  We'll pass these index numbers to GNU's
   // getopt_long() so we can tell one option from another.
-  typedef map<int, const Option *> Options;
+  typedef pmap<int, const Option *> Options;
   Options options;
 
   OptionsByName::const_iterator oi;

@@ -23,7 +23,7 @@
 #include <vector_int.h>
 
 #include <algorithm>
-#include <list>
+#include "plist.h"
 
 
 
@@ -36,7 +36,7 @@
 ////////////////////////////////////////////////////////////////////
 class FrameSample {
 public:
-  typedef list<FrameSample *> Started;
+  typedef plist<FrameSample *> Started;
 
   FrameSample() {
     _touched = false;
@@ -323,7 +323,7 @@ void PStatView::
 update_time_data(const PStatFrameData &frame_data) {
   int num_events = frame_data.get_num_events();
 
-  typedef vector<FrameSample> Samples;
+  typedef pvector<FrameSample> Samples;
   Samples samples(_client_data->get_num_collectors());
 
   FrameSample::Started started;
@@ -332,7 +332,7 @@ update_time_data(const PStatFrameData &frame_data) {
 
 
   // This tracks the set of samples we actually care about.
-  typedef set<int> GotSamples;
+  typedef pset<int> GotSamples;
   GotSamples got_samples;
 
   int i;
@@ -432,7 +432,7 @@ update_level_data(const PStatFrameData &frame_data) {
 
 
   // This tracks the set of level values we got.
-  typedef map<int, float> GotValues;
+  typedef pmap<int, float> GotValues;
   GotValues net_values;
 
   int i;
