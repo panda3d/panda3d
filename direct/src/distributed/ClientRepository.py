@@ -277,13 +277,23 @@ class ClientRepository(DirectObject.DirectObject):
         return None
 
     def handleUnexpectedMsgType(self, msgType, di):
+        currentLoginState = self.loginFSM.getCurrentState()
+        if currentLoginState:
+            currentLoginStateName = currentLoginState.getName()
+        else:
+            currentLoginStateName = "None"
+        currentGameState = self.gameFSM.getCurrentState()
+        if currentGameState:
+            currentGameStateName = currentGameState.getName()
+        else:
+            currentGameStateName = "None"
         ClientRepository.notify.warning(
             "Ignoring unexpected message type: " +
             str(msgType) +
             " login state: " +
-            self.loginFSM.getCurrentState().getName() +
+            currentLoginStateName +
             " game state: " +
-            self.gameFSM.getCurrentState().getName())
+            currentGameStateName)
         return None
 
     def sendSetShardMsg(self, shardId):
