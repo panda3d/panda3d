@@ -403,7 +403,7 @@ class LevelEditor(NodePath, PandaObject):
 	self.attributeDictionary['streetTexture'] = 'street_street_tex'
 	self.attributeDictionary['sidewalkTexture'] = 'street_sidewalk_tex'
         self.dnaOutputFile = 'toontown_central_working.dna'
-        self.editMenu.selectitem('Toontown Central')
+        self.panel.editMenu.selectitem('Toontown Central')
 
     def editDonaldsDock(self):
 	self.levelMap.setPos(0.0,0.0,0.0)
