@@ -63,6 +63,9 @@ PUBLISHED:
 
   int get_num_subfiles() const;
   int find_subfile(const string &subfile_name) const;
+  bool has_directory(const string &subfile_name) const;
+  bool scan_directory(vector_string &contents,
+                      const string &subfile_name) const;
   void remove_subfile(int index);
   const string &get_subfile_name(int index) const;
   size_t get_subfile_length(int index) const;

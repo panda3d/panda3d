@@ -74,7 +74,7 @@ read_file(Datagram &data) const {
     util_cat.info()
       << "Error while reading " << get_filename() << "\n";
   }
-  return failed;
+  return !failed;
 }
 
 ////////////////////////////////////////////////////////////////////

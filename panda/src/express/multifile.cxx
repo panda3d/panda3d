@@ -548,6 +548,82 @@ find_subfile(const string &subfile_name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Multifile::has_directory
+//       Access: Published
+//  Description: Returns true if the indicated subfile name is the
+//               directory prefix to one or more files within the
+//               Multifile.  That is, the Multifile contains at least
+//               one file named "subfile_name/...".
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+has_directory(const string &subfile_name) const {
+  string prefix = subfile_name;
+  if (!prefix.empty()) {
+    prefix += '/';
+  }
+  Subfile find_subfile(prefix);
+  Subfiles::const_iterator fi;
+  fi = _subfiles.upper_bound(&find_subfile);
+  if (fi == _subfiles.end()) {
+    // Not present.
+    return false;
+  }
+
+  // At least one subfile exists whose name sorts after prefix.  If it
+  // contains prefix as the initial substring, then we have a match.
+  Subfile *subfile = (*fi);
+  return (subfile->_name.length() > prefix.length() &&
+          subfile->_name.substr(0, prefix.length()) == prefix);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::scan_directory
+//       Access: Published
+//  Description: Considers subfile_name to be the name of a
+//               subdirectory within the Multifile, but not a file
+//               itself; ills the given vector up with the sorted list
+//               of subdirectories or files within the named
+//               directory.
+//
+//               Note that directories do not exist explicitly within
+//               a Multifile; this just checks for the existence of
+//               files with the given initial prefix.
+//
+//               Returns true if successful, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+scan_directory(vector_string &contents, const string &subfile_name) const {
+  string prefix = subfile_name;
+  if (!prefix.empty()) {
+    prefix += '/';
+  }
+  Subfile find_subfile(prefix);
+  Subfiles::const_iterator fi;
+  fi = _subfiles.upper_bound(&find_subfile);
+
+  string previous = "";
+  while (fi != _subfiles.end()) {
+    Subfile *subfile = (*fi);
+    if (!(subfile->_name.length() > prefix.length() &&
+          subfile->_name.substr(0, prefix.length()) == prefix)) {
+      // We've reached the end of the list of subfiles beneath the
+      // indicated direcotry prefix.
+      return true;
+    }
+
+    size_t slash = subfile->_name.find('/', prefix.length());
+    string basename = subfile->_name.substr(prefix.length(), slash);
+    if (basename != previous) {
+      contents.push_back(basename);
+      previous = basename;
+    }
+    ++fi;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Multifile::remove_subfile
 //       Access: Published
 //  Description: Removes the nth subfile from the Multifile.  This

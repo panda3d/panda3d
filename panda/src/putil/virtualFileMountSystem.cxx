@@ -81,11 +81,10 @@ open_read_file(const Filename &file) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileMountSystem::scan_directory
 //       Access: Public, Virtual
-//  Description: Fills the given vector up with the sorted list of
-//               filenames that are local to this directory, if the
-//               filename is a directory.  Returns true if successful,
-//               or false if the file is not a directory or cannot be
-//               read.
+//  Description: Fills the given vector up with the list of filenames
+//               that are local to this directory, if the filename is
+//               a directory.  Returns true if successful, or false if
+//               the file is not a directory or cannot be read.
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileMountSystem::
 scan_directory(vector_string &contents, const Filename &dir) const {

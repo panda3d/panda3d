@@ -45,7 +45,9 @@ VirtualFileMountMultifile::
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileMountMultifile::
 has_file(const Filename &file) const {
-  return false;
+  return (file.empty() ||
+          _multifile->find_subfile(file) >= 0 ||
+          _multifile->has_directory(file));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -56,7 +58,7 @@ has_file(const Filename &file) const {
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileMountMultifile::
 is_directory(const Filename &file) const {
-  return false;
+  return (file.empty() || _multifile->has_directory(file));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -67,7 +69,7 @@ is_directory(const Filename &file) const {
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileMountMultifile::
 is_regular_file(const Filename &file) const {
-  return false;
+  return (_multifile->find_subfile(file) >= 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -80,20 +82,23 @@ is_regular_file(const Filename &file) const {
 ////////////////////////////////////////////////////////////////////
 istream *VirtualFileMountMultifile::
 open_read_file(const Filename &file) const {
-  return NULL;
+  int subfile_index = _multifile->find_subfile(file);
+  if (subfile_index < 0) {
+    return NULL;
+  }
+  return _multifile->open_read_subfile(subfile_index);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileMountMultifile::scan_directory
 //       Access: Public, Virtual
-//  Description: Fills the given vector up with the sorted list of
-//               filenames that are local to this directory, if the
-//               filename is a directory.  Returns true if successful,
-//               or false if the file is not a directory or cannot be
-//               read.
+//  Description: Fills the given vector up with the list of filenames
+//               that are local to this directory, if the filename is
+//               a directory.  Returns true if successful, or false if
+//               the file is not a directory or cannot be read.
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileMountMultifile::
 scan_directory(vector_string &contents, const Filename &dir) const {
-  return false;
+  return _multifile->scan_directory(contents, dir);
 }
 
