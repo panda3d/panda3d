@@ -19,6 +19,9 @@
 #include "multifile.h"
 
 #include "config_express.h"
+#include "streamWriter.h"
+#include "streamReader.h"
+
 #include <algorithm>
 
 // This sequence of bytes begins each Multifile to identify it as a
@@ -369,9 +372,8 @@ flush() {
       // And update the forward link from the last_index to point to
       // this new index location.
       _write->seekp(_last_index);
-      Datagram dg;
-      dg.add_uint32(streampos_to_word(_next_index));
-      _write->write((const char *)dg.get_data(), dg.get_length());
+      StreamWriter writer(_write);
+      writer.add_uint32(streampos_to_word(_next_index));
     }
 
     _write->seekp(_next_index);
@@ -389,9 +391,8 @@ flush() {
     
     // Now we're at the end of the index.  Write a 0 here to mark the
     // end.
-    Datagram dg;
-    dg.add_uint32(0);
-    _write->write((const char *)dg.get_data(), dg.get_length());
+    StreamWriter writer(_write);
+    writer.add_uint32(0);
     _next_index += 4;
     _next_index = pad_to_streampos(_next_index);
 
@@ -1008,11 +1009,10 @@ clear_subfiles() {
 bool Multifile::
 read_index() {
   nassertr(_read != (istream *)NULL, false);
-  static const size_t header_followup_size = 2 + 2 + 4;
-  static const size_t total_header_size = _header_size + header_followup_size;
-  char this_header[total_header_size];
-  _read->read(this_header, total_header_size);
-  if (_read->fail() || _read->gcount() != total_header_size) {
+
+  char this_header[_header_size];
+  _read->read(this_header, _header_size);
+  if (_read->fail() || _read->gcount() != _header_size) {
     express_cat.info()
       << "Unable to read Multifile header " << _multifile_name << ".\n";
     close();
@@ -1025,12 +1025,17 @@ read_index() {
   }
 
   // Now get the version numbers out.
-  Datagram dg(this_header + _header_size, header_followup_size);
-  DatagramIterator dgi(dg);
-  _file_major_ver = dgi.get_int16();
-  _file_minor_ver = dgi.get_int16();
-  _scale_factor = dgi.get_uint32();
+  StreamReader reader(_read);
+  _file_major_ver = reader.get_int16();
+  _file_minor_ver = reader.get_int16();
+  _scale_factor = reader.get_uint32();
   _new_scale_factor = _scale_factor;
+
+  if (_read->eof() || _read->fail()) {
+    express_cat.info()
+      << _multifile_name << " header is truncated.\n";
+    return false;
+  }
 
   if (_file_major_ver != _current_major_ver ||
       (_file_major_ver == _current_major_ver && 
@@ -1102,11 +1107,10 @@ write_header() {
   nassertr(_write != (ostream *)NULL, false);
   nassertr(_write->tellp() == (streampos)0, false);
   _write->write(_header, _header_size);
-  Datagram dg;
-  dg.add_int16(_current_major_ver);
-  dg.add_int16(_current_minor_ver);
-  dg.add_uint32(_scale_factor);
-  _write->write((const char *)dg.get_data(), dg.get_length());
+  StreamWriter writer(_write);
+  writer.add_int16(_current_major_ver);
+  writer.add_int16(_current_minor_ver);
+  writer.add_uint32(_scale_factor);
 
   _next_index = _write->tellp();
   _next_index = pad_to_streampos(_next_index);
@@ -1137,42 +1141,30 @@ read_index(istream &read, streampos fpos, Multifile *multifile) {
 
   // First, get the next stream position.  We do this separately,
   // because if it is zero, we don't get anything else.
+  StreamReader reader(read);
 
-  static const size_t next_index_size = 4;
-  char next_index_buffer[next_index_size];
-  read.read(next_index_buffer, next_index_size);
-  if (read.fail() || read.gcount() != next_index_size) {
+  streampos next_index = multifile->word_to_streampos(reader.get_uint32());
+  if (read.eof() || read.fail()) {
     _flags |= SF_index_invalid;
     return 0;
   }
-
-  Datagram idg(next_index_buffer, next_index_size);
-  DatagramIterator idgi(idg);
-  streampos next_index = multifile->word_to_streampos(idgi.get_uint32());
 
   if (next_index == (streampos)0) {
     return 0;
   }
 
-  // Now get the rest of the index (except the name, which is variable
-  // length).
+  // Now get the rest of the index.
 
   _index_start = fpos;
-
-  static const size_t index_size = 4 + 4 + 2 + 2;
-  char index_buffer[index_size];
-  read.read(index_buffer, index_size);
-  if (read.fail() || read.gcount() != index_size) {
+  
+  _data_start = multifile->word_to_streampos(reader.get_uint32());
+  _data_length = reader.get_uint32();
+  _flags = reader.get_uint16();
+  size_t name_length = reader.get_uint16();
+  if (read.eof() || read.fail()) {
     _flags |= SF_index_invalid;
     return 0;
   }
-
-  Datagram dg(index_buffer, index_size);
-  DatagramIterator dgi(dg);
-  _data_start = multifile->word_to_streampos(dgi.get_uint32());
-  _data_length = dgi.get_uint32();
-  _flags = dgi.get_uint16();
-  size_t name_length = dgi.get_uint16();
 
   // And finally, get the rest of the name.
   char *name_buffer = new char[name_length];
@@ -1182,6 +1174,11 @@ read_index(istream &read, streampos fpos, Multifile *multifile) {
   }
   _name = string(name_buffer, name_length);
   delete[] name_buffer;
+
+  if (read.eof() || read.fail()) {
+    _flags |= SF_index_invalid;
+    return 0;
+  }
 
   return next_index;
 }
@@ -1204,7 +1201,8 @@ write_index(ostream &write, streampos fpos, Multifile *multifile) {
 
   _index_start = fpos;
 
-  // This will be the contents of this particular index record.
+  // This will be the contents of this particular index record.  We
+  // build it up first since it will be variable length.
   Datagram dg;
   dg.add_uint32(multifile->streampos_to_word(_data_start));
   dg.add_uint32(_data_length);
@@ -1333,10 +1331,9 @@ rewrite_index_data_start(ostream &write, Multifile *multifile) {
   write.seekp(data_start_pos);
   nassertv(!write.fail());
 
-  Datagram dg;
-  dg.add_uint32(multifile->streampos_to_word(_data_start));
-  dg.add_uint32(_data_length);
-  write.write((const char *)dg.get_data(), dg.get_length());
+  StreamWriter writer(write);
+  writer.add_uint32(multifile->streampos_to_word(_data_start));
+  writer.add_uint32(_data_length);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1355,7 +1352,6 @@ rewrite_index_flags(ostream &write) {
   write.seekp(flags_pos);
   nassertv(!write.fail());
 
-  Datagram dg;
-  dg.add_uint16(_flags);
-  write.write((const char *)dg.get_data(), dg.get_length());
+  StreamWriter writer(write);
+  writer.add_uint16(_flags);
 }

@@ -8,6 +8,8 @@
 #include "referenceCount.cxx"
 #include "register_type.cxx"
 #include "reversedNumericData.cxx"
+#include "streamReader.cxx"
+#include "streamWriter.cxx"
 #include "subStream.cxx"
 #include "subStreamBuf.cxx"
 #include "trueClock.cxx"

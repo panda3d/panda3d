@@ -35,6 +35,7 @@
     pta_uchar.h referenceCount.I referenceCount.h \
     register_type.I register_type.h \
     reversedNumericData.I reversedNumericData.h \
+    streamReader.I streamReader.h streamWriter.I streamWriter.h \
     subStream.I subStream.h subStreamBuf.h \
     tokenBoard.I \
     tokenBoard.h trueClock.I trueClock.h typeHandle.I \
@@ -61,6 +62,7 @@
     profileTimer.cxx \
     pta_uchar.cxx referenceCount.cxx register_type.cxx \
     reversedNumericData.cxx \
+    streamReader.cxx streamWriter.cxx \
     subStream.cxx subStreamBuf.cxx \
     trueClock.cxx typeHandle.cxx \
     typedObject.cxx typedReferenceCount.cxx \
@@ -88,6 +90,7 @@
     profileTimer.h pta_uchar.h referenceCount.I referenceCount.h \
     register_type.I register_type.h \
     reversedNumericData.I reversedNumericData.h \
+    streamReader.I streamReader.h streamWriter.I streamWriter.h \
     subStream.I subStream.h subStreamBuf.h \
     tokenBoard.I \
     tokenBoard.h trueClock.I trueClock.h typeHandle.I typeHandle.h \
