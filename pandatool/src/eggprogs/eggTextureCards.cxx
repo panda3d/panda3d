@@ -70,6 +70,15 @@ EggTextureCards() : EggWriter(true, true) {
      &EggTextureCards::dispatch_double_pair, &_got_pixel_scale, &_pixel_scale[0]);
 
   add_option
+    ("suffix", "string", 0,
+     "Normally, each polygon is given a name based on the basename of its "
+     "corresponding texture's filename (without the filename extension).  "
+     "This option specifies an ignorable suffix in the texture filename(s); "
+     "if this suffix is present, it is not included in the polygon's name.  "
+     "This option may be repeated multiple times.",
+     &EggTextureCards::dispatch_vector_string, NULL, &_suffixes);
+
+  add_option
     ("c", "r,g,b[,a]", 0,
      "Specifies the color of each polygon.  The default is white: 1,1,1,1.",
      &EggTextureCards::dispatch_color, NULL, &_polygon_color[0]);
@@ -305,6 +314,16 @@ run() {
   for (ti = _texture_names.begin(); ti != _texture_names.end(); ++ti) {
     Filename filename = (*ti);
     string name = filename.get_basename_wo_extension();
+
+    // Strip off any suffixes from the name.
+    vector_string::const_iterator si;
+    for (si = _suffixes.begin(); si != _suffixes.end(); ++si) {
+      const string &suffix = (*si);
+      int prefix = (int)name.length() - (int)suffix.length();
+      if (prefix > 0 && name.substr(prefix) == suffix) {
+        name = name.substr(0, prefix);
+      }
+    }
 
     // Read in the texture header and determine its size.
     LVecBase4d geometry;

@@ -31,6 +31,7 @@
 #include "dconfig.h"
 #include "config_dconfig.h"
 #include "string_utils.h"
+#include "vector_string.h"
 
 #include <stdlib.h>
 #include <algorithm>
@@ -990,6 +991,26 @@ bool ProgramBase::
 dispatch_string(const string &, const string &arg, void *var) {
   string *ip = (string *)var;
   (*ip) = arg;
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProgramBase::dispatch_vector_string
+//       Access: Protected, Static
+//  Description: Standard dispatch function for an option that takes
+//               one parameter, which is to be interpreted as a
+//               string.  This is different from dispatch_string in
+//               that the parameter may be repeated multiple times,
+//               and each time the string value is appended to a
+//               vector.
+//
+//               The data pointer is to a vector_string variable.
+////////////////////////////////////////////////////////////////////
+bool ProgramBase::
+dispatch_vector_string(const string &, const string &arg, void *var) {
+  vector_string *ip = (vector_string *)var;
+  (*ip).push_back(arg);
 
   return true;
 }

@@ -24,6 +24,7 @@
 #include "eggWriter.h"
 #include "eggTexture.h"
 #include "luse.h"
+#include "vector_string.h"
 
 class EggVertexPool;
 class EggVertex;
@@ -56,6 +57,7 @@ public:
   LVecBase4d _polygon_geometry;
   LVecBase2d _pixel_scale;
   bool _got_pixel_scale;
+  vector_string _suffixes;
   Colorf _polygon_color;
   vector_string _texture_names;
   EggTexture::WrapMode _wrap_mode;

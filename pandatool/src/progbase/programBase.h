@@ -97,6 +97,7 @@ protected:
   static bool dispatch_double_quad(const string &opt, const string &arg, void *var);
   static bool dispatch_color(const string &opt, const string &arg, void *var);
   static bool dispatch_string(const string &opt, const string &arg, void *var);
+  static bool dispatch_vector_string(const string &opt, const string &arg, void *var);
   static bool dispatch_filename(const string &opt, const string &arg, void *var);
   static bool dispatch_search_path(const string &opt, const string &arg, void *var);
   static bool dispatch_coordinate_system(const string &opt, const string &arg, void *var);
