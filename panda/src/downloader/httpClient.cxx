@@ -954,7 +954,7 @@ parse_x509_name(const string &source) {
         }
       }
 
-      int nid = OBJ_txt2nid(type.c_str());
+      int nid = OBJ_txt2nid((char *)type.c_str());
       if (nid == NID_undef) {
         downloader_cat.info()
           << "Unknown type " << type << " in X509 name: " << source

@@ -34,6 +34,11 @@
 
 #include <openssl/ssl.h>
 
+// Windows may define this macro inappropriately.
+#ifdef WIN32
+#undef X509_NAME
+#endif
+
 class Filename;
 
 ////////////////////////////////////////////////////////////////////
