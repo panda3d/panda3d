@@ -10,7 +10,7 @@ class DirectFrame(DirectGuiWidget):
         # Each of these has 1 or more states
         # The same object can be used for all states or each
         # state can have a different text/geom/image (for radio button
-        # and check button indicators, for example
+        # and check button indicators, for example).
         optiondefs = (
             # Define type of DirectGuiWidget
             ('pgFunc',          PGItem,     None),
