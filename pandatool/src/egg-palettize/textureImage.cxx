@@ -267,25 +267,24 @@ post_txa_file() {
     _x_size = _request._x_size;
     _y_size = _request._y_size;
   }
+
+  // Examine the image to determine if we can downgrade the number
+  // of channels, for instance from color to grayscale.
+  if (_properties._got_num_channels &&
+      (_properties._num_channels == 3 || _properties._num_channels == 4)) {
+    consider_grayscale();
+  }
     
+  // Also consider downgrading from alpha to non-alpha.
+  if (_properties._got_num_channels &&
+      (_properties._num_channels == 2 || _properties._num_channels == 4)) {
+    consider_unalpha();
+  }
+
+  // However, if we got an explicit request for channels, honor that.
   if (_request._got_num_channels) {
     _properties._got_num_channels = true;
     _properties._num_channels = _request._num_channels;
-
-  } else {
-    // If we didn't request a particular number of channels, examine
-    // the image to determine if we can downgrade it, for instance
-    // from color to grayscale.  
-    if (_properties._got_num_channels &&
-	(_properties._num_channels == 3 || _properties._num_channels == 4)) {
-      consider_grayscale();
-    }
-    
-    // Also consider downgrading from alpha to non-alpha.
-    if (_properties._got_num_channels &&
-	(_properties._num_channels == 2 || _properties._num_channels == 4)) {
-      consider_unalpha();
-    }
   }
 
   if (_request._format != EggTexture::F_unspecified) {
