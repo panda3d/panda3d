@@ -16,10 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "computedVertices.h"
-#include "characterJoint.h"
-#include "character.h"
-#include "config_char.h"
+#include "char_headers.h"
+#pragma hdrstop
 
 #include <algorithm>
 #include <datagram.h>

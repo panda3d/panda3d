@@ -16,16 +16,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "dynamicVertices.h"
-#include "config_char.h"
-#include <bamReader.h>
-#include <bamWriter.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <ioPtaDatagramLinMath.h>
+#include "char_headers.h"
+#pragma hdrstop
 
 TypeHandle DynamicVertices::_type_handle;
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DynamicVertices::Constructor

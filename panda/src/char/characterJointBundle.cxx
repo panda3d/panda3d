@@ -16,12 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "characterJointBundle.h"
-#include "character.h"
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
+#include "char_headers.h"
+#pragma hdrstop
 
 TypeHandle CharacterJointBundle::_type_handle;
 

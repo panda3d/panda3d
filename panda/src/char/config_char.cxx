@@ -16,16 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_char.h"
-#include "character.h"
-#include "characterJoint.h"
-#include "characterJointBundle.h"
-#include "characterSlider.h"
-#include "computedVertices.h"
-#include "dynamicVertices.h"
-
-#include <dconfig.h>
-#include <luse.h>
+#include "char_headers.h"
+#pragma hdrstop
 
 Configure(config_char);
 NotifyCategoryDef(char, "");

@@ -16,19 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "character.h"
-#include "characterJoint.h"
-#include "computedVertices.h"
-#include "config_char.h"
-
-#include <clockObject.h>
-#include <animControl.h>
-#include <geomNode.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
-#include <pStatTimer.h>
+#include "char_headers.h"
+#pragma hdrstop
 
 TypeHandle Character::_type_handle;
 

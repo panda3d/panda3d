@@ -16,11 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "characterSlider.h"
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
+#include "char_headers.h"
+#pragma hdrstop
 
 TypeHandle CharacterSlider::_type_handle;
 

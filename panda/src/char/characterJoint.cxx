@@ -16,15 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "characterJoint.h"
-#include "config_char.h"
-
-#include <compose_matrix.h>
-#include <transformTransition.h>
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
+#include "char_headers.h"
+#pragma hdrstop
 
 TypeHandle CharacterJoint::_type_handle;
 

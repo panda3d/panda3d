@@ -1,6 +1,6 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-				   
+                   
 #begin lib_target
   #define TARGET char
   #define LOCAL_LIBS \
@@ -21,6 +21,8 @@
     characterJointBundle.h characterSlider.h computedVertices.I \
     computedVertices.h computedVerticesMorph.I computedVerticesMorph.h \
     config_char.h dynamicVertices.h
+    
+  #define PRECOMPILED_HEADER char_headers.h
 
   #define IGATESCAN all
 

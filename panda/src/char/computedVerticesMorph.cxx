@@ -16,12 +16,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "computedVerticesMorph.h"
-
-#include <datagram.h>
-#include <datagramIterator.h>
-#include <bamReader.h>
-#include <bamWriter.h>
+#include "char_headers.h"
+#pragma hdrstop
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ComputedVerticesMorphValue2::write_datagram
