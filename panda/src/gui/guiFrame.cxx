@@ -27,7 +27,7 @@ void GuiFrame::recompute_frame(void) {
   // go thru and make sure everything is packed correctly.  This is a stupid
   // and brute-force algorithm.  Hopefully it will be replaced with something
   // more ellegant later
-  for (i=_items.begin(); i!=_items.end(); ++i) {
+    for (i=_items.begin(); i!=_items.end(); ++i) {
     GuiItem* here = (*i).get_item();
     here->recompute();
     int n = (*i).get_num_links();
@@ -39,8 +39,8 @@ void GuiFrame::recompute_frame(void) {
 	if (pack == NONE)
 	  continue;
 	GuiItem* to = (*i).get_nth_to(j);
-	float gap = (*i).get_nth_gap(j);
 	LVector4f ext_t = to->get_frame();
+	float gap = (*i).get_nth_gap(j);
 	switch (pack) {
 	case ABOVE:
 	  {
@@ -152,6 +152,43 @@ void GuiFrame::recompute_frame(void) {
     GuiItem* foo = (*i).get_item();
     foo->set_pos(foo->get_pos() + delta);
   }
+  // get the bounds again
+  _left = _bottom = 10000000.;
+  _right = _top = -10000000.;
+  for (i=_items.begin(); i!=_items.end(); ++i) {
+    float tmp = (*i).get_item()->get_left();
+    _left = (_left<tmp)?_left:tmp;
+    tmp = (*i).get_item()->get_right();
+    _right = (_right<tmp)?tmp:_right;
+    tmp = (*i).get_item()->get_bottom();
+    _bottom = (_bottom<tmp)?_bottom:tmp;
+    tmp = (*i).get_item()->get_top();
+    _top = (_top<tmp)?tmp:_top;
+  }
+  // check for alignment to the DisplayRegion
+  LVector3f move_left, move_right, move_top, move_bottom;
+  move_left = move_right = move_top = move_bottom = LVector3f(0., 0., 0.);
+  if (_align_to_left) {
+    float diff = -1. - _left;
+    move_left = LVector3f::rfu(diff, 0., 0.);
+  }
+  if (_align_to_right) {
+    float diff = 1. - _right;
+    move_right = LVector3f::rfu(diff, 0., 0.);
+  }
+  if (_align_to_top) {
+    float diff = 1. - _top;
+    move_top = LVector3f::rfu(0., 0., diff);
+  }
+  if (_align_to_bottom) {
+    float diff = -1. - _bottom;
+    move_bottom = LVector3f::rfu(0., 0., diff);
+  }
+  LVector3f move = move_left + move_right + move_top + move_bottom;
+  for (i=_items.begin(); i!=_items.end(); ++i) {
+    GuiItem* foo = (*i).get_item();
+    foo->set_pos(foo->get_pos() + move);
+  }
   // lastly, get the finial bounds
   _left = _bottom = 10000000.;
   _right = _top = -10000000.;
@@ -167,7 +204,10 @@ void GuiFrame::recompute_frame(void) {
   }
 }
 
-GuiFrame::GuiFrame(const string& name) : GuiItem(name) {
+GuiFrame::GuiFrame(const string& name) : GuiItem(name), _align_to_left(false),
+					 _align_to_right(false),
+					 _align_to_top(false),
+					 _align_to_bottom(false) {
 }
 
 GuiFrame::~GuiFrame(void) {

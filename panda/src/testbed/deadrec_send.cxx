@@ -63,14 +63,18 @@ static void event_frame(CPT_Event) {
   send(add_pos(d));
 }
 
-enum MotionType { M_None, M_Line, M_SLine, M_Box, M_Circle, M_Random };
+enum MotionType { M_None, M_Line, M_SLine, M_Box, M_SBox, M_Circle, M_SCircle,
+                  M_Random, M_SRandom };
 PT(AutonomousLerp) curr_lerp;
 MotionType curr_type;
 PT(GuiButton) lineButton;
 PT(GuiButton) slineButton;
 PT(GuiButton) boxButton;
+PT(GuiButton) sboxButton;
 PT(GuiButton) circleButton;
+PT(GuiButton) scircleButton;
 PT(GuiButton) randomButton;
+PT(GuiButton) srandomButton;
 
 // the various motion generators
 
@@ -109,10 +113,48 @@ private:
 };
 TypeHandle MyPosFunctor::_type_handle;
 
+class MyRotFunctor : public FloatLerpFunctor {
+public:
+  MyRotFunctor(float start, float end) : FloatLerpFunctor(start, end) {}
+  MyRotFunctor(const MyRotFunctor& p) : FloatLerpFunctor(p) {}
+  virtual ~MyRotFunctor(void) {}
+  virtual void operator()(float t) {
+    float p = interpolate(t);
+    LVector3f tmp = my_pos;
+    float x, y;
+    x = 10. * cos(p);
+    y = 10. * sin(p);
+    my_pos = LVector3f::rfu(x, 0., y);
+    my_vel = my_pos - tmp;
+    update_smiley();
+  }
+public:
+  // type stuff
+  static TypeHandle get_class_type(void) { return _type_handle; }
+  static void init_type(void) {
+    FloatLerpFunctor::init_type();
+    register_type(_type_handle, "MyRotFunctor",
+		  FloatLerpFunctor::get_class_type());
+  }
+  virtual TypeHandle get_type(void) const { return get_class_type(); }
+  virtual TypeHandle force_init_type(void) {
+    init_type();
+    return get_class_type();
+  }
+private:
+  static TypeHandle _type_handle;
+};
+TypeHandle MyRotFunctor::_type_handle;
+
+inline float unit_rand(void) {
+  return ((float)rand() / (float)RAND_MAX);
+}
+
 static void init_funcs(void) {
   static bool inited = false;
   if (!inited) {
     MyPosFunctor::init_type();
+    MyRotFunctor::init_type();
     inited = true;
   }
 }
@@ -190,11 +232,34 @@ static void run_box(bool smooth) {
 }
 
 static void run_circle(bool smooth) {
+  LerpBlendType* blend;
+
   init_funcs();
+  if (smooth)
+    blend = new EaseInOutBlendType();
+  else
+    blend = new NoBlendType();
+  curr_lerp = new AutonomousLerp(new MyRotFunctor(0., 6.283185), 5., blend,
+				 &event_handler);
+  curr_lerp->set_end_event("lerp_done");
+  curr_lerp->start();
 }
 
 static void run_random(bool smooth) {
+  LerpBlendType* blend;
+
   init_funcs();
+  if (smooth)
+    blend = new EaseInOutBlendType();
+  else
+    blend = new NoBlendType();
+  float x = (20. * unit_rand()) - 10.;
+  float y = (20. * unit_rand()) - 10.;
+  LVector3f p = LVector3f::rfu(x, 0., y);
+  curr_lerp = new AutonomousLerp(new MyPosFunctor(my_pos, p), 5., blend,
+				 &event_handler);
+  curr_lerp->set_end_event("lerp_done");
+  curr_lerp->start();
 }
 
 static void handle_lerp(void) {
@@ -213,11 +278,20 @@ static void handle_lerp(void) {
   case M_Box:
     run_box(false);
     break;
+  case M_SBox:
+    run_box(true);
+    break;
   case M_Circle:
     run_circle(false);
     break;
+  case M_SCircle:
+    run_circle(true);
+    break;
   case M_Random:
     run_random(false);
+    break;
+  case M_SRandom:
+    run_random(true);
     break;
   default:
     deadrec_cat->error() << "unknown motion type (" << (int)curr_type << ")"
@@ -238,11 +312,20 @@ static void make_active(void) {
   case M_Box:
     boxButton->up();
     break;
+  case M_SBox:
+    sboxButton->up();
+    break;
   case M_Circle:
     circleButton->up();
     break;
+  case M_SCircle:
+    scircleButton->up();
+    break;
   case M_Random:
     randomButton->up();
+    break;
+  case M_SRandom:
+    srandomButton->up();
     break;
   default:
     deadrec_cat->error() <<" unknown motion type (" << (int)curr_type << ")"
@@ -274,6 +357,13 @@ static void event_button_down(CPT_Event e) {
       handle_lerp();
       boxButton->inactive();
     }
+  } else if (s == "s-box") {
+    if (curr_type != M_SBox) {
+      make_active();
+      curr_type = M_SBox;
+      handle_lerp();
+      sboxButton->inactive();
+    }
   } else if (s == "circle") {
     if (curr_type != M_Circle) {
       make_active();
@@ -281,12 +371,26 @@ static void event_button_down(CPT_Event e) {
       handle_lerp();
       circleButton->inactive();
     }
+  } else if (s == "s-circle") {
+    if (curr_type != M_SCircle) {
+      make_active();
+      curr_type = M_SCircle;
+      handle_lerp();
+      scircleButton->inactive();
+    }
   } else if (s == "random") {
     if (curr_type != M_Random) {
       make_active();
       curr_type = M_Random;
       handle_lerp();
       randomButton->inactive();
+    }
+  } else if (s == "s-random") {
+    if (curr_type != M_SRandom) {
+      make_active();
+      curr_type = M_SRandom;
+      handle_lerp();
+      srandomButton->inactive();
     }
   } else {
     deadrec_cat->error() << "got invalid button event '" << s << "'" << endl;
@@ -359,23 +463,39 @@ static void deadrec_setup(EventHandler& eh) {
   boxButton = make_button("box", font, eh);
   boxButton->set_scale(0.08);
   f1->add_item(boxButton);
+  sboxButton = make_button("s-box", font, eh);
+  sboxButton->set_scale(0.08);
+  f1->add_item(sboxButton);
   circleButton = make_button("circle", font, eh);
   circleButton->set_scale(0.08);
   f1->add_item(circleButton);
+  scircleButton = make_button("s-circle", font, eh);
+  scircleButton->set_scale(0.08);
+  f1->add_item(scircleButton);
   randomButton = make_button("random", font, eh);
   randomButton->set_scale(0.08);
   f1->add_item(randomButton);
+  srandomButton = make_button("s-random", font, eh);
+  srandomButton->set_scale(0.08);
+  f1->add_item(srandomButton);
   f1->pack_item(lineButton, GuiFrame::UNDER, s1);
   f1->pack_item(lineButton, GuiFrame::ALIGN_LEFT, s1);
   f1->pack_item(slineButton, GuiFrame::UNDER, s1);
   f1->pack_item(slineButton, GuiFrame::RIGHT, lineButton, 0.02);
   f1->pack_item(boxButton, GuiFrame::UNDER, s1);
   f1->pack_item(boxButton, GuiFrame::RIGHT, slineButton, 0.02);
+  f1->pack_item(sboxButton, GuiFrame::UNDER, s1);
+  f1->pack_item(sboxButton, GuiFrame::RIGHT, boxButton, 0.02);
   f1->pack_item(circleButton, GuiFrame::UNDER, s1);
-  f1->pack_item(circleButton, GuiFrame::RIGHT, boxButton, 0.02);
+  f1->pack_item(circleButton, GuiFrame::RIGHT, sboxButton, 0.02);
+  f1->pack_item(scircleButton, GuiFrame::UNDER, s1);
+  f1->pack_item(scircleButton, GuiFrame::RIGHT, circleButton, 0.02);
   f1->pack_item(randomButton, GuiFrame::UNDER, s1);
-  f1->pack_item(randomButton, GuiFrame::RIGHT, circleButton, 0.02);
-  f1->set_pos(LVector3f::rfu(-0.1, 0., 0.9));
+  f1->pack_item(randomButton, GuiFrame::RIGHT, scircleButton, 0.02);
+  f1->pack_item(srandomButton, GuiFrame::UNDER, s1);
+  f1->pack_item(srandomButton, GuiFrame::RIGHT, randomButton, 0.02);
+  f1->align_to_left(0.05);
+  f1->align_to_top(0.05);
   f1->recompute();
   f1->manage(mgr, eh);
 }

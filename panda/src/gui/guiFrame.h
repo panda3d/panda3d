@@ -67,6 +67,14 @@ private:
   typedef vector<Box> Boxes;
 
   Boxes _items;
+  bool _align_to_left;
+  bool _align_to_right;
+  bool _align_to_top;
+  bool _align_to_bottom;
+  float _left_gap;
+  float _right_gap;
+  float _top_gap;
+  float _bottom_gap;
 
   INLINE GuiFrame(void);
   Boxes::iterator find_box(GuiItem*);
@@ -81,6 +89,27 @@ PUBLISHED:
   void pack_item(GuiItem*, Packing, GuiItem*, float = 0.);
   void clear_packing(GuiItem*);
   void clear_all_packing(void);
+
+  INLINE bool is_aligned_left(void) const;
+  INLINE bool is_aligned_right(void) const;
+  INLINE bool is_aligned_top(void) const;
+  INLINE bool is_aligned_bottom(void) const;
+
+  INLINE float get_left_gap(void) const;
+  INLINE float get_right_gap(void) const;
+  INLINE float get_top_gap(void) const;
+  INLINE float get_bottom_gap(void) const;
+
+  INLINE void clear_left_alignment(void);
+  INLINE void clear_right_alignment(void);
+  INLINE void clear_top_alignment(void);
+  INLINE void clear_bottom_alignment(void);
+  INLINE void clear_all_alignment(void);
+
+  INLINE void align_to_left(float = 0.);
+  INLINE void align_to_right(float = 0.);
+  INLINE void align_to_top(float = 0.);
+  INLINE void align_to_bottom(float = 0.);
 
   virtual void manage(GuiManager*, EventHandler&);
   virtual void unmanage(void);
