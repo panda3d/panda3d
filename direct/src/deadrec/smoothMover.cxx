@@ -42,10 +42,12 @@ SmoothMover() {
   _smooth_pos.set(0.0, 0.0, 0.0);
   _smooth_hpr.set(0.0, 0.0, 0.0);
   _smooth_mat = LMatrix4f::ident_mat();
+  _forward_axis.set(0.0, 1.0, 0.0);
   _smooth_timestamp = 0.0;
   _smooth_position_known = false;
   _smooth_position_changed = true;
   _computed_smooth_mat = true;
+  _computed_forward_axis = true;
 
   _smooth_forward_velocity = 0.0;
   _smooth_rotational_velocity = 0.0;
@@ -130,18 +132,37 @@ mark_position() {
   } else {
     // Otherwise, smoothing is in effect and we store a true position
     // report.
-    
-    if (_points.full()) {
-      // If we have too many position reports, throw away the oldest
-      // one.
-      _points.pop_front();
+
+    if (!_points.empty() && _points.back()._timestamp > _sample._timestamp) {
+      // If we get a timestamp out of order, one of us must have just
+      // reset our clock.  Flush the sequence and start again.
+      _points.clear();
 
       // That invalidates the index numbers.
       _last_point_before = -1;
       _last_point_after = -1;
+
+      _points.push_back(_sample);
+
+    } else if (!_points.empty() && _points.back()._timestamp == _sample._timestamp) {
+      // If the new timestamp is the same as the last timestamp, the
+      // value simply replaces the previous value.
+      _points.back() = _sample;
+
+    } else if (_points.full()) {
+      // If we have too many position reports, throw away the oldest
+      // one.
+      _points.pop_front();
+
+      --_last_point_before;
+      --_last_point_after;
+
+      _points.push_back(_sample);
+
+    } else {
+      // In the ordinary case, just add another sample.
+      _points.push_back(_sample);
     }
-    
-    _points.push_back(_sample);
   }
 }
 
@@ -156,9 +177,7 @@ mark_position() {
 ////////////////////////////////////////////////////////////////////
 void SmoothMover::
 clear_positions(bool reset_velocity) {
-  while (!_points.empty()) {
-    _points.pop_front();
-  }
+  _points.clear();
   _last_point_before = -1;
   _last_point_after = -1;
   _smooth_position_known = false;
@@ -185,6 +204,7 @@ clear_positions(bool reset_velocity) {
 ////////////////////////////////////////////////////////////////////
 bool SmoothMover::
 compute_smooth_position(double timestamp) {
+  //cerr << _points.size() << " points\n";
   if (_points.empty()) {
     // With no position reports available, this function does nothing,
     // except to make sure that our velocity gets reset to zero after
@@ -199,6 +219,8 @@ compute_smooth_position(double timestamp) {
     }
     bool result = _smooth_position_changed;
     _smooth_position_changed = false;
+
+    //cerr << "  no points: " << result << "\n";
     return result;
   }
   if (_smooth_mode == SM_off) {
@@ -208,6 +230,8 @@ compute_smooth_position(double timestamp) {
     clear_positions(false);
     bool result = _smooth_position_changed;
     _smooth_position_changed = false;
+
+    //cerr << "  disabled: " << result << "\n";
     return result;
   }
 
@@ -218,6 +242,15 @@ compute_smooth_position(double timestamp) {
     timestamp -= get_avg_timestamp_delay();
   }
 
+  /*
+  cerr << "time = " << timestamp << ", " << _points.size() << " points, last = " << _last_point_before << ", " << _last_point_after << "\n";
+  cerr << "  ";
+  for (int pi = 0; pi < _points.size(); pi++) {
+    cerr << _points[pi]._timestamp << " ";
+  }
+  cerr << "\n";
+  */
+
   // Now look for the two bracketing position reports.
   int point_way_before = -1;
   int point_before = -1;
@@ -225,35 +258,30 @@ compute_smooth_position(double timestamp) {
   int point_after = -1;
   double timestamp_after = 0.0;
 
-  // This loop doesn't make any assumptions about the ordering of
-  // timestamps in the queue.  We could probably make it faster by
-  // assuming timestamps are ordered from oldest to newest (as they
-  // are generally guaranteed to be, except for the minor detail of
-  // clients occasionally resetting their clocks).
   int num_points = _points.size();
-  for (int i = 0; i < num_points; i++) {
-    const SamplePoint &point = _points[i];
-    if (point._timestamp < timestamp) {
-      // This point is before the desired time.  Find the newest of
-      // these.
-      if (point_before == -1 || point._timestamp > timestamp_before) {
-        point_way_before = point_before;
-        point_before = i;
-        timestamp_before = point._timestamp;
-      }
-    }
-    if (point._timestamp >= timestamp) {
-      // This point is after the desired time.  Find the oldest of
-      // these.
-      if (point_after == -1 || point._timestamp < timestamp_after) {
-        point_after = i;
-        timestamp_after = point._timestamp;
-      }
-    }
+  int i;
+
+  // Find the newest of the points before the indicated time.  Assume
+  // that this will be no older than _last_point_before.
+  i = max(0, _last_point_before);
+  while (i < num_points && _points[i]._timestamp < timestamp) {
+    point_before = i;
+    timestamp_before = _points[i]._timestamp;
+    ++i;
+  }
+  point_way_before = max(point_before - 1, -1);
+
+  // Now the next point is presumably the oldest point after the
+  // indicated time.
+  if (i < num_points) {
+    point_after = i;
+    timestamp_after = _points[i]._timestamp;
   }
 
-  if (point_before == -1) {
-    nassertr(point_after != -1, false);
+  //cerr << "  found points (" << point_way_before << ") " << point_before << ", " << point_after << "\n";
+
+  if (point_before < 0) {
+    nassertr(point_after >= 0, false);
     // If we only have an after point, we have to start there.
     bool result = !(_last_point_before == point_before && 
                     _last_point_after == point_after);
@@ -263,17 +291,18 @@ compute_smooth_position(double timestamp) {
     _smooth_rotational_velocity = 0.0;
     _last_point_before = point_before;
     _last_point_after = point_after;
+    //cerr << "  only an after point: " << _last_point_before << ", " << _last_point_after << "\n";
     return result;
   }
 
   bool result = true;
 
-  if (point_after == -1 && _prediction_mode != PM_off) {
+  if (point_after < 0 && _prediction_mode != PM_off) {
     // With prediction in effect, we're allowed to anticipate where
     // the avatar is going by a tiny bit, if we don't have current
     // enough data.  This works only if we have at least two points of
     // old data.
-    if (point_way_before != -1) {
+    if (point_way_before >= 0) {
       // To implement simple prediction, we simply back up in time to
       // the previous two timestamps, and base our linear
       // interpolation off of those two, extending into the future.
@@ -291,15 +320,17 @@ compute_smooth_position(double timestamp) {
     }
   }
 
-  if (point_after == -1) {
+  if (point_after < 0) {
     // If we only have a before point even after we've checked for the
     // possibility of using prediction, then we have to stop there.
-    if (point_way_before != -1) {
+    if (point_way_before >= 0) {
       // Use the previous two points, if we've got 'em, so we can
       // still reflect the avatar's velocity.
+      //cerr << "  previous two\n";
       linear_interpolate(point_way_before, point_before, timestamp_before);
 
     } else {
+      //cerr << "  one point\n";
       // If we really only have one point, use it.
       const SamplePoint &point = _points[point_before];
       set_smooth_pos(point._pos, point._hpr, timestamp);
@@ -316,25 +347,56 @@ compute_smooth_position(double timestamp) {
 
     result = !(_last_point_before == point_before && 
                _last_point_after == point_after);
-    _last_point_before = point_before;
-    _last_point_after = point_after;
-
   } else {
     // If we have two points, we can linearly interpolate between them.
+    //cerr << "  normal interpolate\n";
     linear_interpolate(point_before, point_after, timestamp);
   }
 
+  //cerr << "  changing " << _last_point_before << ", " << _last_point_after << " to " << point_before << ", " << point_after << "\n";
+  _last_point_before = point_before;
+  _last_point_after = point_after;
+
+
   // Assume we'll never get another compute_smooth_position() request
   // for an older time than this, and remove all the timestamps at the
-  // head of the queue before point_way_before.
-  double timestamp_way_before = _points[point_way_before]._timestamp;
-  while (!_points.empty() && _points.front()._timestamp < timestamp_way_before) {
+  // head of the queue up to but not including point_way_before.
+  while (point_way_before > 0) {
+    nassertr(!_points.empty(), result);
     _points.pop_front();
 
-    // This invalidates the index numbers.
-    _last_point_before = -1;
-    _last_point_after = -1;
+    --point_way_before;
+    --_last_point_before;
+    --_last_point_after;
+    //cerr << "  popping old point: " << _last_point_before << ", " << _last_point_after << "\n";
   }
+
+  // If we are not using prediction mode, we can also remove
+  // point_way_before.
+  if (_prediction_mode == PM_off) {
+    if (point_way_before == 0) {
+      nassertr(!_points.empty(), result);
+      _points.pop_front();
+      
+      --point_way_before;
+      --_last_point_before;
+      --_last_point_after;
+      //cerr << "  popping way_before point: " << _last_point_before << ", " << _last_point_after << "\n";
+    }
+
+    // And if there's only one point left, remove even that one
+    // after a while.
+    if (_points.size() == 1) {
+      double age = timestamp - _points.back()._timestamp;
+      //cerr << "considering clearing all points, age = " << age << "\n";
+      if (age > _reset_velocity_age) {
+        //cerr << "clearing all points.\n";
+        _points.clear();
+      }
+    }
+  }
+
+  //cerr << "  result = " << result << "\n";
 
   return result;
 }
@@ -399,12 +461,19 @@ write(ostream &out) const {
 void SmoothMover::
 set_smooth_pos(const LPoint3f &pos, const LVecBase3f &hpr,
                double timestamp) {
-  _smooth_pos = pos;
-  _smooth_hpr = hpr;
+  if (_smooth_pos != pos) {
+    _smooth_pos = pos;
+    _smooth_position_changed = true;
+    _computed_smooth_mat = false;
+  }
+  if (_smooth_hpr != hpr) {
+    _smooth_hpr = hpr;
+    _computed_smooth_mat = false;
+    _computed_forward_axis = false;
+  }
+
   _smooth_timestamp = timestamp;
   _smooth_position_known = true;
-  _smooth_position_changed = true;
-  _computed_smooth_mat = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -434,6 +503,7 @@ linear_interpolate(int point_before, int point_after, double timestamp) {
 
   if (point_before == _last_point_before && 
       point_after == _last_point_after) {
+    //cerr << "  same two points\n";
     // If these are the same two points we found last time (which is
     // likely), we can save a bit of work.
     double t = (timestamp - point_b._timestamp) / age;
@@ -444,9 +514,6 @@ linear_interpolate(int point_before, int point_after, double timestamp) {
     // The velocity remains the same as last time.
 
   } else {
-    _last_point_before = point_before;
-    _last_point_after = point_after;
-    
     if (age > _max_position_age) {
       // If the first point is too old, assume there were a lot of
       // implicit standing still messages that weren't sent.  Reset
@@ -454,7 +521,7 @@ linear_interpolate(int point_before, int point_after, double timestamp) {
       point_b._timestamp = min(timestamp, point_a._timestamp - _max_position_age);
       age = (point_a._timestamp - point_b._timestamp);
     }
-    
+
     // To interpolate the hpr's, we must first make sure that both
     // angles are on the same side of the discontinuity.
     for (int j = 0; j < 3; j++) {
@@ -488,13 +555,19 @@ compute_velocity(const LVector3f &pos_delta, const LVecBase3f &hpr_delta,
   // Also compute the velocity.  To get just the forward component
   // of velocity, we need to project the velocity vector onto the y
   // axis, as rotated by the current hpr.
-  LMatrix3f rot_mat;
-  compose_matrix(rot_mat, LVecBase3f(1.0, 1.0, 1.0), _smooth_hpr);
-  LVector3f y_axis = LVector3f(0.0, 1.0, 0.0) * rot_mat;
-  float forward_distance = pos_delta.dot(y_axis);
+  if (!_computed_forward_axis) {
+    LMatrix3f rot_mat;
+    compose_matrix(rot_mat, LVecBase3f(1.0, 1.0, 1.0), _smooth_hpr);
+    _forward_axis = LVector3f(0.0, 1.0, 0.0) * rot_mat;
+    //cerr << "  compute forward_axis = " << _forward_axis << "\n";
+  }
+   
+  float forward_distance = pos_delta.dot(_forward_axis);
   
   _smooth_forward_velocity = forward_distance / age;
   _smooth_rotational_velocity = hpr_delta[0] / age;
+
+  //cerr << "  compute_velocity = " << _smooth_forward_velocity << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////

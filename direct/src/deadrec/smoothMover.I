@@ -345,6 +345,50 @@ apply_smooth_mat(NodePath &node) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::compute_and_apply_smooth_pos
+//       Access: Published
+//  Description: A further optimization to reduce Python calls.  This
+//               computes the smooth position and applies it to the
+//               indicated node in one call.
+////////////////////////////////////////////////////////////////////
+INLINE void SmoothMover::
+compute_and_apply_smooth_pos(NodePath &node) {
+  if (compute_smooth_position()) {
+    apply_smooth_pos(node);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::compute_and_apply_smooth_pos_hpr
+//       Access: Published
+//  Description: A further optimization to reduce Python calls.  This
+//               computes the smooth position and applies it to the
+//               indicated node or nodes in one call.  The pos_node
+//               and hpr_node might be the same NodePath.
+////////////////////////////////////////////////////////////////////
+INLINE void SmoothMover::
+compute_and_apply_smooth_pos_hpr(NodePath &pos_node, NodePath &hpr_node) {
+  if (compute_smooth_position()) {
+    apply_smooth_pos(pos_node);
+    apply_smooth_hpr(hpr_node);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::compute_and_apply_smooth_mat
+//       Access: Published
+//  Description: A further optimization to reduce Python calls.  This
+//               computes the smooth position and applies it to the
+//               indicated node in one call.
+////////////////////////////////////////////////////////////////////
+INLINE void SmoothMover::
+compute_and_apply_smooth_mat(NodePath &node) {
+  if (compute_smooth_position()) {
+    apply_smooth_mat(node);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SmoothMover::get_smooth_mat
 //       Access: Published
 //  Description: Returns the complete smoothed transformation matrix

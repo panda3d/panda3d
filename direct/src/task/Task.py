@@ -413,11 +413,10 @@ class TaskManager:
         task = Task(func)
         # if told to, append the task object to the extra args list so the method
         # called will be able to access any properties on the task
-        if (appendTask == True and extraArgs):
+        if (appendTask == True and extraArgs != None):
             extraArgs.append(task)
         task.name = taskName
-        if extraArgs:
-            task.extraArgs = extraArgs
+        task.extraArgs = extraArgs
         if uponDeath:
             task.uponDeath = uponDeath
         # TaskManager.notify.debug('spawning doLater: %s' % (task))
@@ -456,8 +455,7 @@ class TaskManager:
             self.notify.error('add: Tried to add a task that was not a Task or a func')
         task.setPriority(priority)
         task.name = name
-        if extraArgs:
-            task.extraArgs = extraArgs
+        task.extraArgs = extraArgs
         if uponDeath:
             task.uponDeath = uponDeath
         # be sure to ask the globalClock for the current frame time
@@ -598,8 +596,8 @@ class TaskManager:
         task.setCurrentTimeFrame(self.currentTime, self.currentFrame)
         if not self.taskTimerVerbose:
             # don't record timing info
-            if task.extraArgs:
-                ret = apply(task, task.extraArgs)
+            if task.extraArgs != None:
+                ret = task(*task.extraArgs)
             else:
                 ret = task(task)
         else:
@@ -607,8 +605,8 @@ class TaskManager:
             if task.pstats:
                 task.pstats.start()
             startTime = globalClock.getRealTime()
-            if task.extraArgs:
-                ret = apply(task, task.extraArgs)
+            if task.extraArgs != None:
+                ret = task(*task.extraArgs)
             else:
                 ret = task(task)
             endTime = globalClock.getRealTime()

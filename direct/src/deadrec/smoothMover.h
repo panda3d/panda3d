@@ -98,6 +98,10 @@ PUBLISHED:
   INLINE void apply_smooth_hpr(NodePath &node) const;
   INLINE void apply_smooth_mat(NodePath &node);
 
+  INLINE void compute_and_apply_smooth_pos(NodePath &node);
+  INLINE void compute_and_apply_smooth_pos_hpr(NodePath &pos_node, NodePath &hpr_node);
+  INLINE void compute_and_apply_smooth_mat(NodePath &node);
+
   INLINE float get_smooth_forward_velocity() const;
   INLINE float get_smooth_rotational_velocity() const;
 
@@ -164,10 +168,12 @@ private:
   LPoint3f _smooth_pos;
   LVecBase3f _smooth_hpr;
   LMatrix4f _smooth_mat;
+  LVector3f _forward_axis;
   double _smooth_timestamp;
   bool _smooth_position_known;
   bool _smooth_position_changed;
   bool _computed_smooth_mat;
+  bool _computed_forward_axis;
 
   double _smooth_forward_velocity;
   double _smooth_rotational_velocity;

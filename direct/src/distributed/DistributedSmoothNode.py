@@ -103,9 +103,8 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         smoothed position.  This may be overridden by a derived class
         to specialize the behavior.
         """
-        if self.smoother.computeSmoothPosition():
-            self.smoother.applySmoothMat(self)
-
+        self.smoother.computeAndApplySmoothMat(self)
+            
     def doSmoothTask(self, task):
         self.smoothPosition()
         return Task.cont
