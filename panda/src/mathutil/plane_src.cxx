@@ -20,9 +20,9 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: Plane::get_reflection_mat
 //       Access: Published
-//  Description: This computes a transform matrix that performs the
-//               perspective transform defined by the frustum,
-//               accordinate to the indicated coordinate system.
+//  Description: This computes a transform matrix that reflects the
+//               universe to the other side of the plane, as in a
+//               mirror.
 ////////////////////////////////////////////////////////////////////
 FLOATNAME(LMatrix4) FLOATNAME(Plane)::
 get_reflection_mat(void) const {
