@@ -94,6 +94,7 @@ PUBLISHED:
   void resume(double start_t);
   void resume_until(double end_t);
   void finish();
+  void clear_to_initial();
   bool is_playing() const;
 
   // These functions control the actual playback of the interval.

@@ -247,6 +247,23 @@ finish() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CInterval::clear_to_initial
+//       Access: Published
+//  Description: Pauses the interval, if it is playing, and resets its
+//               state to its initial state, abandoning any state
+//               changes already in progress in the middle of the
+//               interval.  Calling this is like pausing the interval
+//               and discarding it, creating a new one in its place.
+////////////////////////////////////////////////////////////////////
+void CInterval::
+clear_to_initial() {
+  pause();
+
+  _state = S_initial;
+  _curr_t = 0.0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CInterval::is_playing
 //       Access: Published
 //  Description: Returns true if the interval is currently playing,

@@ -145,6 +145,15 @@ class Interval(DirectObject):
             self.privFinalize()
         self.privPostEvent()
         self.__removeTask()
+        
+    def clearToInitial(self):
+        # This method resets the interval's internal state to the
+        # initial state, abandoning any parts of the interval that
+        # have not yet been called.  Calling it is like pausing the
+        # interval and creating a new one in its place.
+        self.pause()
+        self.state = CInterval.SInitial
+        self.currT = 0.0
 
     def isPlaying(self):
         return taskMgr.hasTaskNamed(self.getName() + '-play')
@@ -325,18 +334,6 @@ class Interval(DirectObject):
 
     # The rest of these methods are duplicates of functions defined
     # for the CInterval class via the file CInterval-extensions.py.
-
-    def play(self, *args, **kw):
-        self.notify.error("using deprecated Interval.play() interface")
-        self.start(*args, **kw)
-
-    def stop(self):
-        self.notify.error("using deprecated Interval.stop() interface")
-        self.finish()
-
-    def setFinalT(self):
-        self.notify.error("using deprecated Interval.setFinalT() interface")
-        self.finish()
 
     def privPostEvent(self):
         # Call after calling any of the priv* methods to do any required
