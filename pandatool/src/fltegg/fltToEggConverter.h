@@ -19,18 +19,17 @@
 #ifndef FLTTOEGGCONVERTER_H
 #define FLTTOEGGCONVERTER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltToEggLevelState.h"
-
-#include <somethingToEggConverter.h>
-#include <fltHeader.h>
-#include <eggVertex.h>
-#include <eggVertexPool.h>
-#include <eggTexture.h>
-#include <pt_EggTexture.h>
-#include <pt_EggVertex.h>
-#include <pointerTo.h>
+#include "somethingToEggConverter.h"
+#include "fltHeader.h"
+#include "eggVertex.h"
+#include "eggVertexPool.h"
+#include "eggTexture.h"
+#include "pt_EggTexture.h"
+#include "pt_EggVertex.h"
+#include "pointerTo.h"
 
 class FltRecord;
 class FltLOD;

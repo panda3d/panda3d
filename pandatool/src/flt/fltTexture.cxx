@@ -20,6 +20,7 @@
 #include "fltRecordReader.h"
 #include "fltRecordWriter.h"
 #include "fltHeader.h"
+#include "pathReplace.h"
 
 TypeHandle FltTexture::_type_handle;
 
@@ -88,18 +89,37 @@ FltTexture(FltHeader *header) : FltRecord(header) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FltTexture::convert_paths
+//       Access: Public, Virtual
+//  Description: Converts all of the paths referenced by this record
+//               and below according to the indicated path replace
+//               parameters.  If the resulting paths are absolute
+//               (beginning with a slash), they are converted to
+//               os-specific form before writing them out; otherwise,
+//               if they are relative, they are left in panda-specific
+//               form (under the assumption that a slash-delimited set
+//               of directory names is universally understood).
+////////////////////////////////////////////////////////////////////
+void FltTexture::
+convert_paths(PathReplace *path_replace) {
+  Filename new_filename = path_replace->convert_path(get_texture_filename());
+  if (new_filename.is_local()) {
+    _filename = new_filename;
+  } else {
+    _filename = new_filename.to_os_specific();
+  }
+  
+  FltRecord::convert_paths(path_replace);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FltTexture::get_texture_filename
 //       Access: Public
-//  Description: Returns the name of the texture image file.  If it
-//               appears to be a relative filename, it will be
-//               converted to the correct full pathname according to
-//               the texture_path specified in the header.
+//  Description: Returns the name of the texture image file.
 ////////////////////////////////////////////////////////////////////
 Filename FltTexture::
 get_texture_filename() const {
-  Filename file = Filename::from_os_specific(_filename);
-  file.resolve_filename(_header->get_texture_path());
-  return file;
+  return Filename::from_os_specific(_filename);
 }
 
 ////////////////////////////////////////////////////////////////////

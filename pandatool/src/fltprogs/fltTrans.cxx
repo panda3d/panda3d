@@ -42,12 +42,8 @@ FltTrans() :
   add_runline("[opts] input.flt output.flt");
   add_runline("[opts] -o output.flt input.flt");
 
-  add_option
-    ("tp", "path", 0,
-     "Add the indicated colon-delimited paths to the path that is searched "
-     "for textures referenced by the flt file.  This "
-     "option may also be repeated to add multiple paths.",
-     &FltTrans::dispatch_search_path, NULL, &_texture_path);
+  add_path_replace_options();
+  add_path_store_options();
 
   add_option
     ("v", "version", 0,
@@ -84,7 +80,6 @@ run() {
   }
 
   PT(FltHeader) header = new FltHeader;
-  header->set_texture_path(_texture_path);
 
   nout << "Reading " << _input_filename << "\n";
   FltError result = header->read_flt(_input_filename);
@@ -101,6 +96,8 @@ run() {
     int new_version = (int)floor(_new_version * 100.0 + 0.5);
     header->set_flt_version(new_version);
   }
+
+  header->convert_paths(_path_replace);
 
   result = header->write_flt(get_output());
   if (result != FE_ok) {

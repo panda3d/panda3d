@@ -18,10 +18,10 @@
 
 #include "lwoToEgg.h"
 
-#include <lwoToEggConverter.h>
-#include <lwoHeader.h>
-#include <lwoInputFile.h>
-#include <config_lwo.h>
+#include "lwoToEggConverter.h"
+#include "lwoHeader.h"
+#include "lwoInputFile.h"
+#include "config_lwo.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LwoToEgg::Constructor
@@ -32,12 +32,11 @@ LwoToEgg::
 LwoToEgg() :
   SomethingToEgg("Lightwave", ".lwo")
 {
+  add_path_replace_options();
+  add_path_store_options();
   add_units_options();
   add_normals_options();
   add_transform_options();
-  add_texture_path_options();
-  add_rel_dir_options();
-  add_search_path_options(true);
 
   set_program_description
     ("This program converts Lightwave Object (.lwo) files to egg.  Many "
@@ -75,8 +74,7 @@ run() {
 
   LwoToEggConverter converter;
   converter.set_egg_data(&_data, false);
-  converter.set_texture_path_convert(_texture_path_convert, _make_rel_dir);
-  converter.set_model_path_convert(_model_path_convert, _make_rel_dir);
+  apply_parameters(converter);
 
   if (!converter.convert_file(_input_filename)) {
     nout << "Errors in conversion.\n";

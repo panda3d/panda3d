@@ -18,7 +18,11 @@
 
 #include "eggBase.h"
 
-#include <eggComment.h>
+#include "eggGroupNode.h"
+#include "eggTexture.h"
+#include "eggFilenameNode.h"
+#include "eggComment.h"
+#include "dcast.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggBase::Constructor
@@ -69,6 +73,36 @@ as_reader() {
 EggWriter *EggBase::
 as_writer() {
   return (EggWriter *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggBase::convert_paths
+//       Access: Public, Static
+//  Description: Recursively walks the egg hierarchy.  Any filenames
+//               encountered are replaced according to the indicated
+//               PathReplace.
+////////////////////////////////////////////////////////////////////
+void EggBase::
+convert_paths(EggNode *node, PathReplace *path_replace,
+              const DSearchPath &additional_path) {
+  if (node->is_of_type(EggTexture::get_class_type())) {
+    EggTexture *egg_tex = DCAST(EggTexture, node);
+    egg_tex->set_filename(path_replace->convert_path(egg_tex->get_filename(),
+                                                     additional_path));
+    if (egg_tex->has_alpha_file()) {
+      egg_tex->set_alpha_file(path_replace->convert_path(egg_tex->get_alpha_file(), additional_path));
+    }
+
+  } else if (node->is_of_type(EggFilenameNode::get_class_type())) {
+    EggFilenameNode *egg_fname = DCAST(EggFilenameNode, node);
+    egg_fname->set_filename(path_replace->convert_path(egg_fname->get_filename(), additional_path));
+  } else if (node->is_of_type(EggGroupNode::get_class_type())) {
+    EggGroupNode *egg_group = DCAST(EggGroupNode, node);
+    EggGroupNode::const_iterator ci;
+    for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
+      convert_paths(*ci, path_replace, additional_path);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

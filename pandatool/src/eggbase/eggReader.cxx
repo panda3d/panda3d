@@ -159,28 +159,32 @@ handle_args(ProgramBase::Args &args) {
   // Any separate egg files that are listed on the command line will
   // get implicitly loaded up into one big egg file.
 
-  DSearchPath local_path(".");
-
+  if (!args.empty()) {
+    _data.set_egg_filename(args[0]);
+  }
   Args::const_iterator ai;
   for (ai = args.begin(); ai != args.end(); ++ai) {
     Filename filename = *ai;
-    // First, we always try to resolve a filename from the current
-    // directory.  This means a local filename will always be found
-    // before the model path is searched.
-    filename.resolve_filename(local_path);
 
-    if (!_data.read(filename)) {
+    EggData file_data;
+    if (!file_data.read(filename)) {
       // Rather than returning false, we simply exit here, so the
       // ProgramBase won't try to tell the user how to run the program
       // just because we got a bad egg file.
       exit(1);
     }
 
+    DSearchPath file_path;
+    file_path.append_directory(filename.get_dirname());
+    convert_paths(&file_data, _path_replace, file_path);
+    
     if (_force_complete) {
-      if (!_data.resolve_externals()) {
+      if (!file_data.load_externals()) {
         exit(1);
       }
     }
+
+    _data.merge(file_data);
   }
 
   return true;

@@ -24,6 +24,8 @@
 #include "filename.h"
 #include "config_util.h"  // for get_texture_path() and get_model_path()
 #include "animationConvert.h"
+#include "pathReplace.h"
+#include "pointerTo.h"
 
 class EggData;
 class EggGroupNode;
@@ -46,17 +48,10 @@ public:
 
   virtual SomethingToEggConverter *make_copy()=0;
 
-  enum PathConvert {
-    PC_relative,
-    PC_absolute,
-    PC_rel_abs,
-    PC_strip,
-    PC_unchanged
-  };
-  INLINE void set_texture_path_convert(PathConvert tpc,
-                                       const Filename &tpc_directory = Filename());
-  INLINE void set_model_path_convert(PathConvert mpc,
-                                     const Filename &mpc_directory = Filename());
+  INLINE void set_path_replace(PathReplace *path_replace);
+  INLINE PathReplace *get_path_replace();
+  INLINE const PathReplace *get_path_replace() const;
+
   // These methods dealing with animation and frame rate are only
   // relevant to converter types that understand animation.
   INLINE void set_animation_convert(AnimationConvert animation_convert);
@@ -111,33 +106,17 @@ public:
 
   bool handle_external_reference(EggGroupNode *egg_parent,
                                  const Filename &orig_filename,
-                                 const DSearchPath &searchpath);
-  INLINE bool handle_external_reference(EggGroupNode *egg_parent,
-                                        const Filename &orig_filename);
-
+                                 const DSearchPath &searchpath = DSearchPath());
 
   INLINE Filename convert_texture_path(const Filename &orig_filename);
-  INLINE Filename convert_texture_path(const Filename &orig_filename,
-                                       const DSearchPath &searchpath);
   INLINE Filename convert_model_path(const Filename &orig_filename);
-  INLINE Filename convert_model_path(const Filename &orig_filename,
-                                     const DSearchPath &searchpath);
-
-  static Filename convert_path(const Filename &orig_filename,
-                               const DSearchPath &searchpath,
-                               const Filename &rel_dir,
-                               PathConvert path_convert);
-
 
   // Set this true to treat errors as warnings and generate output
   // anyway.
   bool _allow_errors;
 
 protected:
-  PathConvert _tpc;
-  Filename _tpc_directory;
-  PathConvert _mpc;
-  Filename _mpc_directory;
+  PT(PathReplace) _path_replace;
 
   AnimationConvert _animation_convert;
   string _character_name;

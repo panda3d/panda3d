@@ -17,8 +17,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "somethingToEgg.h"
+#include "somethingToEggConverter.h"
 
-#include <config_util.h>
+#include "config_util.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SomethingToEgg::Constructor
@@ -65,9 +66,6 @@ SomethingToEgg(const string &format_name,
   _got_neutral_frame = false;
   _got_input_frame_rate = false;
   _got_output_frame_rate = false;
-  _texture_path_convert = SomethingToEggConverter::PC_unchanged;
-  _model_path_convert = SomethingToEggConverter::PC_unchanged;
-  _append_to_sys_paths = false;
   _merge_externals = false;
 }
 
@@ -162,131 +160,6 @@ add_animation_options() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SomethingToEgg::add_texture_path_options
-//       Access: Public
-//  Description: Adds -rt etc. as valid options for this program.
-//               These specify how the texture pathnames that appear
-//               in the source file should be changed for the egg
-//               file.
-////////////////////////////////////////////////////////////////////
-void SomethingToEgg::
-add_texture_path_options() {
-  add_option
-    ("rt", "", 40,
-     "Convert texture filenames to relative pathnames, relative to the "
-     "directory specified by -rd.",
-     &SomethingToEgg::dispatch_path_convert_relative, NULL, &_texture_path_convert);
-
-  add_option
-    ("rta", "", 40,
-     "Convert texture filenames to absolute pathnames.",
-     &SomethingToEgg::dispatch_path_convert_absolute, NULL, &_texture_path_convert);
-
-  add_option
-    ("rtA", "", 40,
-     "Convert texture filenames to absolute pathnames that begin with the "
-     "prefix specified by -rd.",
-     &SomethingToEgg::dispatch_path_convert_rel_abs, NULL, &_texture_path_convert);
-
-  add_option
-    ("rts", "", 40,
-     "Strip paths from texture filenames.  Only the basename of the texture "
-     "will be preserved.",
-     &SomethingToEgg::dispatch_path_convert_strip, NULL, &_texture_path_convert);
-
-  add_option
-    ("rtu", "", 40,
-     "Leave texture filenames unchanged.  They will be relative if they "
-     "are relative in the source file, or absolute if they are absolute in "
-     "the source file.",
-     &SomethingToEgg::dispatch_path_convert_unchanged, NULL, &_texture_path_convert);
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: SomethingToEgg::add_model_path_options
-//       Access: Public
-//  Description: Adds -re etc. as valid options for this program.
-//               These specify how the model pathnames that appear
-//               in the source file should be changed for the egg
-//               file.
-////////////////////////////////////////////////////////////////////
-void SomethingToEgg::
-add_model_path_options() {
-  add_option
-    ("re", "", 40,
-     "Convert model filenames (external references) to relative pathnames, "
-     "relative to the directory specified by -rd.",
-     &SomethingToEgg::dispatch_path_convert_relative, NULL, &_model_path_convert);
-
-  add_option
-    ("rea", "", 40,
-     "Convert model filenames to absolute pathnames.",
-     &SomethingToEgg::dispatch_path_convert_absolute, NULL, &_model_path_convert);
-
-  add_option
-    ("reA", "", 40,
-     "Convert model filenames to absolute pathnames that begin with the "
-     "prefix specified by -rd.",
-     &SomethingToEgg::dispatch_path_convert_rel_abs, NULL, &_model_path_convert);
-
-  add_option
-    ("res", "", 40,
-     "Strip paths from model filenames.  Only the basename of the model "
-     "will be preserved.",
-     &SomethingToEgg::dispatch_path_convert_strip, NULL, &_model_path_convert);
-
-  add_option
-    ("reu", "", 40,
-     "Leave model filenames unchanged.  They will be relative if they "
-     "are relative in the source file, or absolute if they are absolute in "
-     "the source file.",
-     &SomethingToEgg::dispatch_path_convert_unchanged, NULL, &_model_path_convert);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SomethingToEgg::add_rel_dir_options
-//       Access: Public
-//  Description: Adds -rd.  This should generally be called if
-//               add_texture_path_options() or
-//               add_model_path_options() is called.
-////////////////////////////////////////////////////////////////////
-void SomethingToEgg::
-add_rel_dir_options() {
-  add_option
-    ("rd", "dir", 40,
-     "Specify the directory to make relative to.  This is the "
-     "directory that all pathnames given in the source file will be "
-     "rewritten to be relative to, if -re or -rt is given.  It is "
-     "ignored if one of these options is not given.  If omitted, it "
-     "is taken from the source filename.",
-     &SomethingToEgg::dispatch_string, &_got_make_rel_dir, &_make_rel_dir);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SomethingToEgg::add_search_path_options
-//       Access: Public
-//  Description: Adds -rs.  If append_to_sys_paths is true, the
-//               specified search path is prepended to the system
-//               paths returned by get_texture_path() and
-//               get_model_path(); otherwise, it's up to the caller to
-//               do the right thing with the _search_path.
-////////////////////////////////////////////////////////////////////
-void SomethingToEgg::
-add_search_path_options(bool append_to_sys_paths) {
-  _append_to_sys_paths = append_to_sys_paths;
-  add_option
-    ("rs", "path", 40,
-     "A search path for textures and external file references.  This "
-     "is a colon-separated set of directories that will be searched "
-     "for filenames that are not fully specified in the source file.  It "
-     "is unrelated to -re and -rt, and is used only if the source file "
-     "does not store absolute pathnames.  The directory containing "
-     "the source filename is always implicitly included.",
-     &SomethingToEgg::dispatch_search_path, &_got_search_path, &_search_path);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: SomethingToEgg::add_merge_externals_options
 //       Access: Public
 //  Description: Adds -f.
@@ -318,14 +191,17 @@ apply_units_scale(EggData &data) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SomethingToEgg::apply_animation_parameters
+//     Function: SomethingToEgg::apply_parameters
 //       Access: Protected
-//  Description: Copies the animation parameters specified by the user
-//               on the command line (if add_animation_options() was
-//               used) to the converter.
+//  Description: Copies the relevant parameters specified by the user
+//               on the command line (if add_path_replace_options(),
+//               add_path_store_options(), or add_animation_options()
+//               was used) to the converter.
 ////////////////////////////////////////////////////////////////////
 void SomethingToEgg::
-apply_animation_parameters(SomethingToEggConverter &converter) {
+apply_parameters(SomethingToEggConverter &converter) {
+  converter.set_path_replace(_path_replace);
+
   converter.set_animation_convert(_animation_convert);
   converter.set_character_name(_character_name);
   if (_got_start_frame) {
@@ -412,28 +288,13 @@ handle_args(Args &args) {
 ////////////////////////////////////////////////////////////////////
 bool SomethingToEgg::
 post_command_line() {
-  if (!_got_make_rel_dir) {
-    _make_rel_dir = _input_filename.get_dirname();
+  // Prepend the source filename to the model path.
+  DSearchPath &model_path = get_model_path();
+  Filename directory = _input_filename.get_dirname();
+  if (directory.empty()) {
+    directory = ".";
   }
-
-  if (_append_to_sys_paths) {
-    DSearchPath &texture_path = get_texture_path();
-    DSearchPath &model_path = get_model_path();
-
-    // Prepend the source filename to the search paths.
-    Filename directory = _input_filename.get_dirname();
-    if (directory.empty()) {
-      directory = ".";
-    }
-    texture_path.prepend_directory(directory);
-    model_path.prepend_directory(directory);
-
-    // Then prepend whatever the user specified on the command line.
-    if (_got_search_path) {
-      texture_path.prepend_path(_search_path);
-      model_path.prepend_path(_search_path);
-    }
-  }
+  model_path.prepend_directory(directory);
 
   return EggConverter::post_command_line();
 }
@@ -472,75 +333,5 @@ dispatch_animation_convert(const string &opt, const string &arg, void *var) {
     return false;
   }    
 
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SomethingToEgg::dispatch_path_convert_relative
-//       Access: Protected, Static
-//  Description: Dispatch function to set the given path convert mode
-//               to PC_relative.  var is a pointer to a
-//               SomethingToEggConverter::PathConvert variable.
-////////////////////////////////////////////////////////////////////
-bool SomethingToEgg::
-dispatch_path_convert_relative(const string &opt, const string &, void *var) {
-  SomethingToEggConverter::PathConvert *ip = (SomethingToEggConverter::PathConvert *)var;
-  (*ip) = SomethingToEggConverter::PC_relative;
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SomethingToEgg::dispatch_path_convert_absolute
-//       Access: Protected, Static
-//  Description: Dispatch function to set the given path convert mode
-//               to PC_absolute.  var is a pointer to a
-//               SomethingToEggConverter::PathConvert variable.
-////////////////////////////////////////////////////////////////////
-bool SomethingToEgg::
-dispatch_path_convert_absolute(const string &opt, const string &, void *var) {
-  SomethingToEggConverter::PathConvert *ip = (SomethingToEggConverter::PathConvert *)var;
-  (*ip) = SomethingToEggConverter::PC_absolute;
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SomethingToEgg::dispatch_path_convert_rel_abs
-//       Access: Protected, Static
-//  Description: Dispatch function to set the given path convert mode
-//               to PC_rel_abs.  var is a pointer to a
-//               SomethingToEggConverter::PathConvert variable.
-////////////////////////////////////////////////////////////////////
-bool SomethingToEgg::
-dispatch_path_convert_rel_abs(const string &opt, const string &, void *var) {
-  SomethingToEggConverter::PathConvert *ip = (SomethingToEggConverter::PathConvert *)var;
-  (*ip) = SomethingToEggConverter::PC_rel_abs;
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SomethingToEgg::dispatch_path_convert_strip
-//       Access: Protected, Static
-//  Description: Dispatch function to set the given path convert mode
-//               to PC_strip.  var is a pointer to a
-//               SomethingToEggConverter::PathConvert variable.
-////////////////////////////////////////////////////////////////////
-bool SomethingToEgg::
-dispatch_path_convert_strip(const string &opt, const string &, void *var) {
-  SomethingToEggConverter::PathConvert *ip = (SomethingToEggConverter::PathConvert *)var;
-  (*ip) = SomethingToEggConverter::PC_strip;
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SomethingToEgg::dispatch_path_convert_unchanged
-//       Access: Protected, Static
-//  Description: Dispatch function to set the given path convert mode
-//               to PC_unchanged.  var is a pointer to a
-//               SomethingToEggConverter::PathConvert variable.
-////////////////////////////////////////////////////////////////////
-bool SomethingToEgg::
-dispatch_path_convert_unchanged(const string &opt, const string &, void *var) {
-  SomethingToEggConverter::PathConvert *ip = (SomethingToEggConverter::PathConvert *)var;
-  (*ip) = SomethingToEggConverter::PC_unchanged;
   return true;
 }

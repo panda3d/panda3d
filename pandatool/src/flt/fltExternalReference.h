@@ -19,11 +19,11 @@
 #ifndef FLTEXTERNALREFERENCE_H
 #define FLTEXTERNALREFERENCE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltBead.h"
 
-#include <filename.h>
+#include "filename.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FltExternalReference
@@ -34,6 +34,7 @@ class FltExternalReference : public FltBead {
 public:
   FltExternalReference(FltHeader *header);
 
+  virtual void convert_paths(PathReplace *path_replace);
   virtual void output(ostream &out) const;
 
   enum Flags {

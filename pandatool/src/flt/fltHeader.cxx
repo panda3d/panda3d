@@ -111,14 +111,6 @@ read_flt(Filename filename) {
     return FE_could_not_open;
   }
 
-  // By default, the filename's directory is added to the texture and
-  // model search path.
-  string dirname = filename.get_dirname();
-  if (!dirname.empty()) {
-    _texture_path.prepend_directory(dirname);
-    _model_path.prepend_directory(dirname);
-  }
-
   return read_flt(in);
 }
 
@@ -923,74 +915,6 @@ add_texture(FltTexture *texture) {
 void FltHeader::
 remove_texture(int texture_index) {
   _textures.erase(texture_index);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::set_texture_path
-//       Access: Public
-//  Description: Sets the search path that relative texture filenames
-//               will be looked for along.
-////////////////////////////////////////////////////////////////////
-void FltHeader::
-set_texture_path(const DSearchPath &path) {
-  _texture_path = path;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::update_texture_path
-//       Access: Public
-//  Description: Returns a non-const reference to the texture search
-//               path, so that it may be appended to or otherwise
-//               modified.
-////////////////////////////////////////////////////////////////////
-DSearchPath &FltHeader::
-update_texture_path() {
-  return _texture_path;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_texture_path
-//       Access: Public
-//  Description: Returns the search path for looking up texture
-//               filenames.
-////////////////////////////////////////////////////////////////////
-const DSearchPath &FltHeader::
-get_texture_path() const {
-  return _texture_path;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::set_model_path
-//       Access: Public
-//  Description: Sets the search path that relative external
-//               references will be looked for along.
-////////////////////////////////////////////////////////////////////
-void FltHeader::
-set_model_path(const DSearchPath &path) {
-  _model_path = path;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::update_model_path
-//       Access: Public
-//  Description: Returns a non-const reference to the model search
-//               path, so that it may be appended to or otherwise
-//               modified.
-////////////////////////////////////////////////////////////////////
-DSearchPath &FltHeader::
-update_model_path() {
-  return _model_path;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FltHeader::get_model_path
-//       Access: Public
-//  Description: Returns the search path for looking up external
-//               references.
-////////////////////////////////////////////////////////////////////
-const DSearchPath &FltHeader::
-get_model_path() const {
-  return _model_path;
 }
 
 ////////////////////////////////////////////////////////////////////

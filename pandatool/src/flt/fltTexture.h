@@ -34,6 +34,8 @@ class FltTexture : public FltRecord {
 public:
   FltTexture(FltHeader *header);
 
+  virtual void convert_paths(PathReplace *path_replace);
+
   string _filename;
   int _pattern_index;
   int _x_location;

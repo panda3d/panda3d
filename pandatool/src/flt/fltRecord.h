@@ -19,19 +19,20 @@
 #ifndef FLTRECORD_H
 #define FLTRECORD_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
 #include "fltOpcode.h"
 #include "fltError.h"
 
-#include <typedObject.h>
-#include <typedReferenceCount.h>
-#include <pointerTo.h>
+#include "typedObject.h"
+#include "typedReferenceCount.h"
+#include "pointerTo.h"
 
 class FltHeader;
 class FltRecordReader;
 class FltRecordWriter;
 class DatagramIterator;
+class PathReplace;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FltRecord
@@ -73,6 +74,8 @@ public:
 
   void check_remaining_size(const DatagramIterator &di, 
                             const string &name = string()) const;
+
+  virtual void convert_paths(PathReplace *path_replace);
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;

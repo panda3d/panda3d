@@ -18,8 +18,8 @@
 
 #include "eggMultiFilter.h"
 
-#include <notify.h>
-#include <eggData.h>
+#include "notify.h"
+#include "eggData.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMultiFilter::Constructor
@@ -103,6 +103,15 @@ handle_args(ProgramBase::Args &args) {
     }
   }
 
+  // We need to set up _path_replace before we call read_egg().
+  if (!_got_path_directory) {
+    // Put in the name of the output directory.
+    if (_got_output_filename) {
+      _path_replace->_path_directory = _output_filename.get_dirname();
+    } else if (_got_output_dirname) {
+      _path_replace->_path_directory = _output_dirname;
+    }
+  }
 
   Args::const_iterator ai;
   for (ai = args.begin(); ai != args.end(); ++ai) {

@@ -4,11 +4,15 @@
   #define SOURCES \
     animationConvert.cxx animationConvert.h \
     distanceUnit.cxx distanceUnit.h \
-    pandatoolbase.cxx pandatoolbase.h pandatoolsymbols.h
+    pandatoolbase.cxx pandatoolbase.h pandatoolsymbols.h \
+    pathReplace.cxx pathReplace.I pathReplace.h \
+    pathStore.cxx pathStore.h
 
   #define INSTALL_HEADERS \
     animationConvert.h \
     distanceUnit.h \
-    pandatoolbase.h pandatoolsymbols.h
+    pandatoolbase.h pandatoolsymbols.h \
+    pathReplace.I pathReplace.h \
+    pathStore.h
 
 #end ss_lib_target

@@ -19,14 +19,16 @@
 #ifndef EGGBASE_H
 #define EGGBASE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include <programBase.h>
-#include <coordinateSystem.h>
-#include <eggData.h>
+#include "programBase.h"
+#include "coordinateSystem.h"
+#include "eggData.h"
 
 class EggReader;
 class EggWriter;
+class EggNode;
+class PathReplace;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggBase
@@ -44,6 +46,9 @@ public:
 
   virtual EggReader *as_reader();
   virtual EggWriter *as_writer();
+
+  static void convert_paths(EggNode *node, PathReplace *path_replace,
+                            const DSearchPath &additional_path);
 
 protected:
   virtual bool post_command_line();

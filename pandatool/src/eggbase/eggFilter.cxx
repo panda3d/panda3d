@@ -59,6 +59,11 @@ handle_args(ProgramBase::Args &args) {
     return false;
   }
 
+  if (!_got_path_directory && _got_output_filename) {
+    // Put in the name of the output directory.
+    _path_replace->_path_directory = _output_filename.get_dirname();
+  }
+
   return EggReader::handle_args(args);
 }
 
@@ -69,5 +74,7 @@ handle_args(ProgramBase::Args &args) {
 ////////////////////////////////////////////////////////////////////
 bool EggFilter::
 post_command_line() {
-  return EggReader::post_command_line() && EggWriter::post_command_line();
+  // writer first, so we can fiddle with the _path_replace options if
+  // necessary.
+  return EggWriter::post_command_line() && EggReader::post_command_line();
 }

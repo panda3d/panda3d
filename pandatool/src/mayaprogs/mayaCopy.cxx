@@ -60,6 +60,8 @@ MayaCopy() {
      "Don't attempt to strip the Maya version number from the tail of the "
      "source filename before it is copied into the tree.",
      &CVSCopy::dispatch_none, &_keep_ver);
+
+  add_path_replace_options();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -158,7 +160,8 @@ copy_maya_file(const Filename &source, const Filename &dest,
   for (int i = 0; i < num_shaders; i++) {
     MayaShader *shader = _shaders.get_shader(i);
     if (shader->_has_texture) {
-      Filename texture_filename = shader->_texture;
+      Filename texture_filename = 
+        _path_replace->convert_path(shader->_texture);
       if (!texture_filename.exists()) {
         nout << "*** Warning: texture " << texture_filename
              << " does not exist.\n";
@@ -204,7 +207,8 @@ copy_maya_file(const Filename &source, const Filename &dest,
       << "External references are not yet properly supported by mayacopy!\n";
   }
   for (unsigned int ref_index = 0; ref_index < num_refs; ref_index++) {
-    Filename filename = refs[ref_index].asChar();
+    Filename filename = 
+      _path_replace->convert_path(refs[ref_index].asChar());
     maya_cat.warning()
       << "External ref: " << filename << "\n";
     /*

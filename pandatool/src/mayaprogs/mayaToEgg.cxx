@@ -29,13 +29,12 @@ MayaToEgg::
 MayaToEgg() :
   SomethingToEgg("Maya", ".mb")
 {
+  add_path_replace_options();
+  add_path_store_options();
   add_animation_options();
   add_units_options();
   add_normals_options();
   add_transform_options();
-  add_texture_path_options();
-  add_rel_dir_options();
-  add_search_path_options(false);
 
   set_program_description
     ("This program converts Maya model files to egg.  Nothing fancy yet.");
@@ -98,8 +97,8 @@ run() {
   converter._polygon_tolerance = _polygon_tolerance;
   converter._ignore_transforms = _ignore_transforms;
 
-  // Copy in the animation parameters.
-  apply_animation_parameters(converter);
+  // Copy in the path and animation parameters.
+  apply_parameters(converter);
 
   // Set the coordinate system to match Maya's.
   if (!_got_coordinate_system) {
@@ -113,7 +112,7 @@ run() {
   }
 
   converter.set_egg_data(&_data, false);
-  converter.set_texture_path_convert(_texture_path_convert, _make_rel_dir);
+  apply_parameters(converter);
 
   if (!converter.convert_file(_input_filename)) {
     nout << "Errors in conversion.\n";

@@ -331,6 +331,29 @@ check_remaining_size(const DatagramIterator &di, const string &name) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FltRecord::convert_paths
+//       Access: Public, Virtual
+//  Description: Converts all of the paths referenced by this record
+//               and below according to the indicated path replace
+//               parameters.  If the resulting paths are absolute
+//               (beginning with a slash), they are converted to
+//               os-specific form before writing them out; otherwise,
+//               if they are relative, they are left in panda-specific
+//               form (under the assumption that a slash-delimited set
+//               of directory names is universally understood).
+////////////////////////////////////////////////////////////////////
+void FltRecord::
+convert_paths(PathReplace *path_replace) {
+  Records::const_iterator ci;
+  for (ci = _subfaces.begin(); ci != _subfaces.end(); ++ci) {
+    (*ci)->convert_paths(path_replace);
+  }
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    (*ci)->convert_paths(path_replace);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FltRecord::output
 //       Access: Public
 //  Description: Writes a quick one-line description of the record, but

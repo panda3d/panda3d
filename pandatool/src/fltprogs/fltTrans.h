@@ -19,12 +19,10 @@
 #ifndef FLTTRANS_H
 #define FLTTRANS_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include <programBase.h>
-#include <withOutputFile.h>
-
-#include <dSearchPath.h>
+#include "programBase.h"
+#include "withOutputFile.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FltTrans
@@ -42,7 +40,6 @@ protected:
   virtual bool handle_args(Args &args);
 
   Filename _input_filename;
-  DSearchPath _texture_path;
   bool _got_new_version;
   double _new_version;
 };

@@ -19,13 +19,14 @@
 #ifndef PROGRAMBASE_H
 #define PROGRAMBASE_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include <distanceUnit.h>
-#include <filename.h>
-#include <vector_string.h>
-
-#include <string>
+#include "distanceUnit.h"
+#include "pathReplace.h"
+#include "pathStore.h"
+#include "filename.h"
+#include "pointerTo.h"
+#include "vector_string.h"
 #include "pvector.h"
 #include "pdeque.h"
 #include "pmap.h"
@@ -81,6 +82,9 @@ protected:
   bool redescribe_option(const string &option, const string &description);
   bool remove_option(const string &option);
 
+  void add_path_replace_options();
+  void add_path_store_options();
+
   static bool dispatch_none(const string &opt, const string &arg, void *);
   static bool dispatch_true(const string &opt, const string &arg, void *var);
   static bool dispatch_false(const string &opt, const string &arg, void *var);
@@ -98,12 +102,19 @@ protected:
   static bool dispatch_coordinate_system(const string &opt, const string &arg, void *var);
   static bool dispatch_units(const string &opt, const string &arg, void *var);
   static bool dispatch_image_type(const string &opt, const string &arg, void *var);
+  static bool dispatch_path_replace(const string &opt, const string &arg, void *var);
+  static bool dispatch_path_store(const string &opt, const string &arg, void *var);
 
   static bool handle_help_option(const string &opt, const string &arg, void *);
 
   static void format_text(ostream &out, bool &last_newline,
                           const string &prefix, int indent_width,
                           const string &text, int line_width);
+
+  PT(PathReplace) _path_replace;
+  bool _got_path_store;
+  bool _got_path_directory;
+
 
 private:
   void sort_options();

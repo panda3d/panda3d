@@ -19,12 +19,12 @@
 #ifndef LWOTOEGG_H
 #define LWOTOEGG_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include <somethingToEgg.h>
-#include <lwoToEggConverter.h>
+#include "somethingToEgg.h"
+#include "lwoToEggConverter.h"
 
-#include <dSearchPath.h>
+#include "dSearchPath.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LwoToEgg
@@ -36,8 +36,6 @@ public:
   LwoToEgg();
 
   void run();
-
-protected:
 };
 
 #endif

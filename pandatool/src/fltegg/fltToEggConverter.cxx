@@ -408,8 +408,7 @@ convert_ext_ref(const FltExternalReference *flt_ext, FltToEggLevelState &state) 
   EggGroupNode *egg_parent =
     state.get_synthetic_group("", flt_ext);
 
-  handle_external_reference(egg_parent,
-                            flt_ext->_filename, _flt_header->get_model_path());
+  handle_external_reference(egg_parent, flt_ext->get_ref_filename());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -745,9 +744,7 @@ make_egg_texture(const FltTexture *flt_texture) {
 
   // Create a new one.
   string tref_name = format_string(flt_texture->_pattern_index);
-  Filename filename =
-    convert_texture_path(flt_texture->_filename,
-                         _flt_header->get_texture_path());
+  Filename filename = convert_texture_path(flt_texture->get_texture_filename());
 
   PT_EggTexture egg_texture = new EggTexture(tref_name, filename);
 

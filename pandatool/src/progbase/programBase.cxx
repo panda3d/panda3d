@@ -87,6 +87,15 @@ ProgramBase() {
   // And we'll want to be sure to flush that in all normal exit cases.
   atexit(&flush_nout);
 
+  _path_replace = new PathReplace;
+
+  // If a program never adds the path store options, the default path
+  // store is PS_absolute.  This is the most robust solution for
+  // programs that read files but do not need to write them.
+  _path_replace->_path_store = PS_absolute;
+  _got_path_store = false;
+  _got_path_directory = false;
+
   _next_sequence = 0;
   _sorted_options = false;
   _last_newline = false;
@@ -619,6 +628,86 @@ remove_option(const string &option) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ProgramBase::add_path_replace_options
+//       Access: Public
+//  Description: Adds -pr etc. as valid options for this program.
+//               These are appropriate for a model converter or model
+//               reader type program, and specify how to locate
+//               possibly-invalid pathnames in the source model file.
+////////////////////////////////////////////////////////////////////
+void ProgramBase::
+add_path_replace_options() {
+  add_option
+    ("pr", "path_replace", 40,
+     "Sometimes references to other files (textures, external references) "
+     "are stored with a full path that is appropriate for some other system, "
+     "but does not exist here.  This option may be used to specify how "
+     "those invalid paths map to correct paths.  Generally, this is of "
+     "the form 'orig_prefix=replacement_prefix', which indicates a "
+     "particular initial sequence of characters that should be replaced "
+     "with a new sequence; e.g. '/c/home/models=/beta/fish'.  "
+     "If the replacement prefix does not begin with a slash, the file "
+     "will then be searched for along the search path specified by -pp.  "
+     "You may use standard filename matching characters ('*', '?', etc.) in "
+     "the original prefix, and '**' as a component by itself stands for "
+     "any number of components.\n\n"
+
+     "This option may be repeated as necessary; each file will be tried "
+     "against each specified method, in the order in which they appear in "
+     "the command line, until the file is found.  If the file is not found, "
+     "the last matching prefix is used anyway.",
+     &ProgramBase::dispatch_path_replace, NULL, _path_replace.p());
+
+  add_option
+    ("pp", "dirname", 40,
+     "Adds the indicated directory name to the list of directories to "
+     "search for filenames referenced by the source file.  This is used "
+     "only for relative paths, or for paths that are made relative by a "
+     "-pr replacement string that doesn't begin with a leading slash.  "
+     "The model-path is always implicitly searched anyway.",
+     &ProgramBase::dispatch_search_path, NULL, &(_path_replace->_path));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProgramBase::add_path_store_options
+//       Access: Public
+//  Description: Adds -ps etc. as valid options for this program.
+//               These are appropriate for a model converter type
+//               program, and specify how to represent filenames in
+//               the output file.
+////////////////////////////////////////////////////////////////////
+void ProgramBase::
+add_path_store_options() {
+  // If a program has path store options at all, the default path
+  // store is relative.
+  _path_replace->_path_store = PS_relative;
+
+  add_option
+    ("ps", "path_store", 40,
+     "Specifies the way an externally referenced file is to be "
+     "represented in the resulting output file.  This "
+     "assumes the named filename actually exists; "
+     "see -pr to indicate how to deal with external "
+     "references that have bad pathnames.  "
+     "This option will not help you to find a missing file, but simply "
+     "controls how filenames are represented in the output.\n\n"
+
+     "The option may be one of: rel, abs, rel_abs, strip, or keep.  If "
+     "either rel or rel_abs is specified, the files are made relative to "
+     "the directory specified by -pd.  The default is rel.",
+     &ProgramBase::dispatch_path_store, &_got_path_store, 
+     &(_path_replace->_path_store));
+
+  add_option
+    ("pd", "path_directory", 40,
+     "Specifies the name of a directory to make paths relative to, if "
+     "'-ps rel' or '-ps rel_abs' is specified.  If this is omitted, the "
+     "directory name is taken from the name of the output file.",
+     &ProgramBase::dispatch_filename, &_got_path_directory, 
+     &(_path_replace->_path_directory));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ProgramBase::dispatch_none
 //       Access: Protected, Static
 //  Description: Standard dispatch function for an option that takes
@@ -1013,6 +1102,51 @@ dispatch_image_type(const string &opt, const string &arg, void *var) {
     nout << "Invalid image type for -" << opt << ": " << arg << "\n"
          << "The following image types are known:\n";
     reg->write_types(nout, 2);
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProgramBase::dispatch_path_replace
+//       Access: Protected, Static
+//  Description: Standard dispatch function for an option that takes
+//               one parameter, which is to be interpreted as a
+//               single component of a path replace request.  The data
+//               pointer is to a PathReplace variable.
+////////////////////////////////////////////////////////////////////
+bool ProgramBase::
+dispatch_path_replace(const string &opt, const string &arg, void *var) {
+  PathReplace *ip = (PathReplace *)var;
+  size_t equals = arg.find('=');
+  if (equals == string::npos) {
+    nout << "Invalid path replacement string for -" << opt << ": " << arg << "\n"
+         << "String should be of the form 'old-prefix=new-prefix'.\n";
+    return false;
+  }
+  ip->add_pattern(arg.substr(0, equals), arg.substr(equals + 1));
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ProgramBase::dispatch_path_store
+//       Access: Protected, Static
+//  Description: Standard dispatch function for an option that takes
+//               one parameter, which is to be interpreted as a
+//               path store string.  The data pointer is to a
+//               PathStore variable.
+////////////////////////////////////////////////////////////////////
+bool ProgramBase::
+dispatch_path_store(const string &opt, const string &arg, void *var) {
+  PathStore *ip = (PathStore *)var;
+  (*ip) = string_path_store(arg);
+
+  if ((*ip) == PS_invalid) {
+    nout << "Invalid path store for -" << opt << ": " << arg << "\n"
+         << "Valid path store strings are any of 'rel', 'abs', "
+         << "'rel_abs', 'strip', or 'keep'.\n";
     return false;
   }
 

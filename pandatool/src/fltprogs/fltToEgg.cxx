@@ -30,13 +30,11 @@ FltToEgg::
 FltToEgg() :
   SomethingToEgg("MultiGen", ".flt")
 {
+  add_path_replace_options();
+  add_path_store_options();
   add_units_options();
   add_normals_options();
   add_transform_options();
-  add_texture_path_options();
-  add_model_path_options();
-  add_rel_dir_options();
-  add_search_path_options(false);
   add_merge_externals_options();
 
   set_program_description
@@ -48,12 +46,17 @@ FltToEgg() :
      "Specify the coordinate system of the input " + _format_name +
      " file.  Normally, this is z-up.");
 
+  // Does anyone really care about this option?  It's mainly useful
+  // for debugging the flt2egg logic.
+  /*
   add_option
     ("C", "", 0,
      "Compose node transforms into a single matrix before writing them to "
      "the egg file, instead of writing them as individual scale, rotate, and "
-     "translate operations",
+     "translate operations.",
      &FltToEgg::dispatch_none, &_compose_transforms);
+  */
+  _compose_transforms = false;
 
   _coordinate_system = CS_zup_right;
 }
@@ -66,8 +69,6 @@ FltToEgg() :
 void FltToEgg::
 run() {
   PT(FltHeader) header = new FltHeader;
-  header->set_texture_path(_search_path);
-  header->set_model_path(_search_path);
 
   nout << "Reading " << _input_filename << "\n";
   FltError result = header->read_flt(_input_filename);
@@ -87,10 +88,10 @@ run() {
   FltToEggConverter converter;
   converter.set_merge_externals(_merge_externals);
   converter.set_egg_data(&_data, false);
-  converter.set_texture_path_convert(_texture_path_convert, _make_rel_dir);
-  converter.set_model_path_convert(_model_path_convert, _make_rel_dir);
   converter._compose_transforms = _compose_transforms;
   converter._allow_errors = _allow_errors;
+
+  apply_parameters(converter);
 
   if (!converter.convert_flt(header)) {
     nout << "Errors in conversion.\n";

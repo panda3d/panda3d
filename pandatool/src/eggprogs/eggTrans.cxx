@@ -17,8 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "eggTrans.h"
-
-#include <eggGroupUniquifier.h>
+#include "eggGroupUniquifier.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggTrans::Constructor
@@ -27,6 +26,8 @@
 ////////////////////////////////////////////////////////////////////
 EggTrans::
 EggTrans() {
+  add_path_replace_options();
+  add_path_store_options();
   add_normals_options();
   add_transform_options();
   add_texture_options();

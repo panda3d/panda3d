@@ -17,10 +17,11 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "eggMultiBase.h"
-
-#include <eggData.h>
-#include <eggComment.h>
-#include <filename.h>
+#include "eggBase.h"
+#include "eggData.h"
+#include "eggComment.h"
+#include "filename.h"
+#include "dSearchPath.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggMultiBase::Constructor
@@ -116,20 +117,17 @@ PT(EggData) EggMultiBase::
 read_egg(const Filename &filename) {
   PT(EggData) data = new EggData;
 
-  // First, we always try to resolve a filename from the current
-  // directory.  This means a local filename will always be found
-  // before the model path is searched.
-  Filename local_filename = filename;
-  DSearchPath local_path(".");
-  local_filename.resolve_filename(local_path);
-
-  if (!data->read(local_filename)) {
+  if (!data->read(filename)) {
     // Failure reading.
     return (EggData *)NULL;
   }
 
+  DSearchPath file_path;
+  file_path.append_directory(filename.get_dirname());
+  EggBase::convert_paths(data, _path_replace, file_path);
+
   if (_force_complete) {
-    if (!data->resolve_externals()) {
+    if (!data->load_externals()) {
       return (EggData *)NULL;
     }
   }

@@ -442,7 +442,7 @@ read_egg() {
   dir.append_directory(_current_directory);
   data->resolve_filenames(dir);
 
-  if (!data->resolve_externals()) {
+  if (!data->load_externals()) {
     // Failure reading an external.
     delete data;
     return false;

@@ -282,6 +282,11 @@ handle_args(ProgramBase::Args &args) {
     return false;
   }
 
+  if (!_got_path_directory && _got_output_filename) {
+    // Put in the name of the output directory.
+    _path_replace->_path_directory = _output_filename.get_dirname();
+  }
+
   return true;
 }
 

@@ -18,8 +18,8 @@
 
 #include "somethingToEggConverter.h"
 
-#include <eggData.h>
-#include <eggExternalReference.h>
+#include "eggData.h"
+#include "eggExternalReference.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SomethingToEggConverter::Constructor
@@ -29,8 +29,7 @@
 SomethingToEggConverter::
 SomethingToEggConverter() {
   _allow_errors = false;
-  _tpc = PC_absolute;
-  _mpc = PC_absolute;
+  _path_replace = new PathReplace;
   _animation_convert = AC_none;
   _start_frame = 0.0;
   _end_frame = 0.0;
@@ -53,10 +52,7 @@ SomethingToEggConverter() {
 SomethingToEggConverter::
 SomethingToEggConverter(const SomethingToEggConverter &copy) :
   _allow_errors(copy._allow_errors),
-  _tpc(copy._tpc),
-  _tpc_directory(copy._tpc_directory),
-  _mpc(copy._mpc),
-  _mpc_directory(copy._mpc_directory),
+  _path_replace(copy._path_replace),
   _merge_externals(copy._merge_externals)
 {
   _egg_data = (EggData *)NULL;
@@ -119,18 +115,10 @@ handle_external_reference(EggGroupNode *egg_parent,
     egg_data.set_coordinate_system(get_egg_data().get_coordinate_system());
     ext->set_egg_data(&egg_data, false);
 
-    // If we're reading references directly, don't mamby around with
-    // the path conversion stuff, just look for the file and read it.
-    Filename as_found = orig_filename;
-    if (!as_found.resolve_filename(searchpath)) {
-      // If the filename can't be found, try just the truncated
-      // filename.
-      Filename truncated = orig_filename.get_basename();
-      if (truncated.resolve_filename(searchpath)) {
-        as_found = truncated;
-      }
-    }
-
+    // If we're reading references directly, we don't need to convert
+    // the pathname to something appropriate for storing, but we do
+    // need to hunt for it.
+    Filename as_found = _path_replace->match_path(orig_filename, searchpath);
     if (!ext->convert_file(as_found)) {
       delete ext;
       nout << "Unable to read external reference: " << orig_filename << "\n";
@@ -147,8 +135,7 @@ handle_external_reference(EggGroupNode *egg_parent,
   } else {
     // If we're installing external references instead of reading
     // them, we should massage the filename as specified.
-    Filename filename = convert_model_path(orig_filename, searchpath);
-
+    Filename filename = _path_replace->convert_path(orig_filename, searchpath);
     filename.set_extension("egg");
 
     EggExternalReference *egg_ref = new EggExternalReference("", filename);
@@ -156,66 +143,4 @@ handle_external_reference(EggGroupNode *egg_parent,
   }
 
   return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SomethingToEggConverter::convert_path
-//       Access: Public, Static
-//  Description: Converts the pathname reference by the source file as
-//               requested.  This may either make it absolute,
-//               relative, or leave it alone.
-//
-//               orig_filename is the filename as it actually appeared
-//               in the source file; searchpath is the search path to
-//               look for it along.  rel_dir is the directory to make
-//               the pathname relative to in the case of PC_relative
-//               or PC_rel_abs.
-////////////////////////////////////////////////////////////////////
-Filename SomethingToEggConverter::
-convert_path(const Filename &orig_filename, const DSearchPath &searchpath,
-             const Filename &rel_dir, PathConvert path_convert) {
-  // Try to look up the filename along the search path.
-  Filename as_found = orig_filename;
-  if (!as_found.resolve_filename(searchpath)) {
-    // If the filename can't be found, try just the truncated
-    // filename.
-    Filename truncated = orig_filename.get_basename();
-    if (truncated.resolve_filename(searchpath)) {
-      as_found = truncated;
-    }
-  }
-
-  Filename result;
-
-  switch (path_convert) {
-  case PC_relative:
-    result = as_found;
-    result.make_relative_to(rel_dir);
-    return result;
-
-  case PC_absolute:
-    result = as_found;
-    if (!result.exists()) {
-      nout << "Warning: file " << orig_filename << " not found.\n";
-      return result;
-    }
-    result.make_absolute();
-    return result;
-
-  case PC_rel_abs:
-    result = as_found;
-    result.make_relative_to(rel_dir);
-    result = Filename(rel_dir, result);
-    return result;
-
-  case PC_strip:
-    return orig_filename.get_basename();
-
-  case PC_unchanged:
-    return orig_filename;
-  }
-
-  // Error case.
-  nout << "Invalid PathConvert type: " << (int)path_convert << "\n";
-  return orig_filename;
 }

@@ -16,53 +16,43 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
 ////////////////////////////////////////////////////////////////////
-//     Function: SomethingToEggConverter::set_texture_path_convert
+//     Function: SomethingToEggConverter::set_path_replace
 //       Access: Public
-//  Description: Sets the mode for converting texture paths extracted
-//               from the source file.  The following options are
-//               defined:
-//
-//                 PC_relative - texture pathnames are made relative
-//                 to the indicated tpc_directory.
-//
-//                 PC_absolute - textures are looked up along the
-//                 search path and then converted to absolute
-//                 filenames.  tpc_directory is ignored.
-//
-//                 PC_rel_abs - as above, but the resulting filename
-//                 is guaranteed to be relative to tpc_directory, and
-//                 may include a number of ../ paths to guarantee
-//                 this, if necessary.
-//
-//                 PC_strip - pathname components are stripped from
-//                 the texture names, and only the base filename is
-//                 retained.
-//
-//                 PC_unchanged - texture pathnames are left exactly
-//                 as they appear in the source file.
+//  Description: Replaces the PathReplace object (which specifies how
+//               to mangle paths from the source to the destination
+//               egg file) with a new one.
 ////////////////////////////////////////////////////////////////////
 INLINE void SomethingToEggConverter::
-set_texture_path_convert(PathConvert tpc,
-                         const Filename &tpc_directory) {
-  _tpc = tpc;
-  _tpc_directory = tpc_directory;
+set_path_replace(PathReplace *path_replace) {
+  _path_replace = path_replace;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SomethingToEggConverter::set_model_path_convert
+//     Function: SomethingToEggConverter::get_path_replace
 //       Access: Public
-//  Description: Sets the mode for converting model paths extracted
-//               from the source file.  These are typically for
-//               external references.  See set_texture_path_convert
-//               for a complete list of PathConvert values and their
-//               interpretations.
+//  Description: Returns a pointer to the PathReplace object
+//               associated with this converter.  If the converter is
+//               non-const, this returns a non-const pointer, which
+//               can be adjusted.
 ////////////////////////////////////////////////////////////////////
-INLINE void SomethingToEggConverter::
-set_model_path_convert(PathConvert mpc,
-                       const Filename &mpc_directory) {
-  _mpc = mpc;
-  _mpc_directory = mpc_directory;
+INLINE PathReplace *SomethingToEggConverter::
+get_path_replace() {
+  return _path_replace;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::get_path_replace
+//       Access: Public
+//  Description: Returns a pointer to the PathReplace object
+//               associated with this converter.  If the converter is
+//               non-const, this returns a non-const pointer, which
+//               can be adjusted.
+////////////////////////////////////////////////////////////////////
+INLINE const PathReplace *SomethingToEggConverter::
+get_path_replace() const {
+  return _path_replace;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -487,29 +477,6 @@ get_egg_data() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SomethingToEggConverter::handle_external_reference
-//       Access: Public
-//  Description: Handles an external reference in the source file.  If
-//               the merge_externals flag is true (see
-//               set_merge_externals()), this causes the named file to
-//               be read in and converted, and the converted egg
-//               geometry is parented to egg_parent.  Otherwise, only
-//               a reference to a similarly named egg file is parented
-//               to egg_parent.
-//
-//               The parameters orig_filename and searchpath are as
-//               those passed to convert_model_path().
-//
-//               Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
-bool SomethingToEggConverter::
-handle_external_reference(EggGroupNode *egg_parent,
-                          const Filename &orig_filename) {
-  return handle_external_reference(egg_parent, orig_filename, get_model_path());
-}
-
-
-////////////////////////////////////////////////////////////////////
 //     Function: SomethingToEggConverter::convert_texture_path
 //       Access: Public
 //  Description: Converts the indicated texture filename to a relative
@@ -518,20 +485,7 @@ handle_external_reference(EggGroupNode *egg_parent,
 ////////////////////////////////////////////////////////////////////
 INLINE Filename SomethingToEggConverter::
 convert_texture_path(const Filename &orig_filename) {
-  return convert_path(orig_filename, get_texture_path(), _tpc_directory, _tpc);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SomethingToEggConverter::convert_texture_path
-//       Access: Public
-//  Description: Converts the indicated texture filename to a relative
-//               or absolute or whatever filename, according to _tpc
-//               and _tpc_directory.  See convert_path().
-////////////////////////////////////////////////////////////////////
-INLINE Filename SomethingToEggConverter::
-convert_texture_path(const Filename &orig_filename,
-                     const DSearchPath &searchpath) {
-  return convert_path(orig_filename, searchpath, _tpc_directory, _tpc);
+  return _path_replace->convert_path(orig_filename, get_texture_path());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -543,18 +497,5 @@ convert_texture_path(const Filename &orig_filename,
 ////////////////////////////////////////////////////////////////////
 INLINE Filename SomethingToEggConverter::
 convert_model_path(const Filename &orig_filename) {
-  return convert_path(orig_filename, get_model_path(), _mpc_directory, _mpc);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SomethingToEggConverter::convert_model_path
-//       Access: Public
-//  Description: Converts the indicated model filename to a relative
-//               or absolute or whatever filename, according to _mpc
-//               and _mpc_directory.  See convert_path().
-////////////////////////////////////////////////////////////////////
-INLINE Filename SomethingToEggConverter::
-convert_model_path(const Filename &orig_filename,
-                   const DSearchPath &searchpath) {
-  return convert_path(orig_filename, searchpath, _mpc_directory, _mpc);
+  return _path_replace->convert_path(orig_filename);
 }
