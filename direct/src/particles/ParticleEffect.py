@@ -25,11 +25,11 @@ class ParticleEffect(NodePath):
         # The effect's particle system
         if (particles != None):
             self.addParticles(particles)
-        self.worldRelative = 0
+        self.renderParent = None
 
-    def start(self, parent=None, worldRelative=1):
+    def start(self, parent=None, renderParent=None):
         assert(self.notify.debug('start() - name: %s' % self.name))
-        self.worldRelative = worldRelative
+        self.renderParent = renderParent
         self.enable()
         if (parent != None):
             self.reparentTo(parent)
@@ -53,9 +53,9 @@ class ParticleEffect(NodePath):
 
     def enable(self):
         """enable()"""
-        if (self.worldRelative == 1):
+        if (self.renderParent != None):
             for p in self.particlesDict.values():
-                p.setRenderParent(render.node())
+                p.setRenderParent(self.renderParent.node())
         for f in self.forceGroupDict.values():
             f.enable()
         for p in self.particlesDict.values():
@@ -64,9 +64,8 @@ class ParticleEffect(NodePath):
 
     def disable(self):
         """disable()"""
-        if (self.worldRelative == 1):
-            for p in self.particlesDict.values():
-                p.setRenderParent(hidden.node()) 
+        for p in self.particlesDict.values():
+            p.setRenderParent(p.node)
         for f in self.forceGroupDict.values():
             f.disable()
         for p in self.particlesDict.values():
