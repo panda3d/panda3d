@@ -25,6 +25,7 @@
 #include "lmatrix.h"
 
 class MObject;
+class MayaShader;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MayaShaderColorDef
@@ -82,7 +83,7 @@ public:
   double _rotate_uv;
   
 private:
-  void read_surface_color(MObject color);
+  void read_surface_color(const MayaShader *shader, MObject color);
   void set_projection_type(const string &type);
 
   LPoint2d map_planar(const LPoint3d &pos, const LPoint3d &centroid) const;

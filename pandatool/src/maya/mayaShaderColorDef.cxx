@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "mayaShaderColorDef.h"
+#include "mayaShader.h"
 #include "maya_funcs.h"
 #include "config_maya.h"
 #include "string_utils.h"
@@ -181,7 +182,7 @@ reset_maya_texture(const Filename &texture) {
 //               properties.
 ////////////////////////////////////////////////////////////////////
 void MayaShaderColorDef::
-read_surface_color(MObject color) {
+read_surface_color(const MayaShader *shader, MObject color) {
   RGBColorf color_gain;
   if (get_vec3f_attribute(color, "colorGain", color_gain)) {
     _color_gain[0] *= color_gain[0];
@@ -199,6 +200,13 @@ read_surface_color(MObject color) {
     _has_texture = get_string_attribute(color, "fileTextureName", filename);
     if (_has_texture) {
       _texture = Filename::from_os_specific(filename);
+      if (_texture.is_directory()) {
+        maya_cat.warning()
+          << "Shader " << shader->get_name() 
+          << " references texture filename " << filename
+          << " which is a directory; ignoring.\n";
+        _has_texture = false;
+      }
     }
 
     get_vec2f_attribute(color, "coverage", _coverage);
@@ -224,7 +232,7 @@ read_surface_color(MObject color) {
       image_plug.connectedTo(image_pa, true, false);
       
       for (size_t i = 0; i < image_pa.length(); i++) {
-        read_surface_color(image_pa[0].node());
+        read_surface_color(shader, image_pa[0].node());
       }
     }
 

@@ -166,7 +166,7 @@ read_surface_shader(MObject shader) {
     color_plug.connectedTo(color_pa, true, false);
 
     for (size_t i = 0; i < color_pa.length(); i++) {
-      _color.read_surface_color(color_pa[0].node());
+      _color.read_surface_color(this, color_pa[0].node());
     }
   }
 
@@ -181,7 +181,7 @@ read_surface_shader(MObject shader) {
     trans_plug.connectedTo(trans_pa, true, false);
 
     for (size_t i = 0; i < trans_pa.length(); i++) {
-      _transparency.read_surface_color(trans_pa[0].node());
+      _transparency.read_surface_color(this, trans_pa[0].node());
     }
   }
 
