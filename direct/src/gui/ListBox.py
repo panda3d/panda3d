@@ -28,12 +28,16 @@ class ListBox(DirectObject):
         self.up = Button.Button(name + '-up', arrow,
                                 geomRect = (-1, 1, 0, 0.5),
                                 scale = arrowScale,
-                                drawOrder = drawOrder)
+                                drawOrder = drawOrder,
+                                downStyle = (0.5, 0, 0, 1),
+                                supportInactive = 1)
         arrow.setR(180)
         self.down = Button.Button(name + '-down', arrow,
                                   geomRect = (-1, 1, -0.5, 0),
                                   scale = arrowScale,
-                                  drawOrder = drawOrder)
+                                  drawOrder = drawOrder,
+                                  downStyle = (0.5, 0, 0, 1),
+                                  supportInactive = 1)
         arrow.removeNode()
 
         self.listBox = GuiListBox(self.name + '-lb', self.numSlots,

@@ -15,7 +15,11 @@ class Button(DirectObject):
                  font = getDefaultFont(),
                  pos = (0, 0),
                  geomRect = None,
-                 style = Label.ButtonUp):
+                 supportInactive = 0,
+                 upStyle = Label.ButtonUp,
+                 litStyle = Label.ButtonLit,
+                 downStyle = Label.ButtonDown,
+                 inactiveStyle = Label.ButtonInactive):
         self.name = name
         self.width = width
         # if no label given, use the button name
@@ -27,40 +31,62 @@ class Button(DirectObject):
             # text label, make text button
             self.label = label
 
-            self.l1 = Label.textLabel(self.label, style,
-                                      scale, width, drawOrder, font)
+            self.lUp = Label.textLabel(self.label, upStyle,
+                                       scale, width, drawOrder, font)
 
             if width == None:
-                width = self.l1.getWidth() / scale
+                width = self.lUp.getWidth() / scale
                 self.width = width
             
-            self.l2 = Label.textLabel(self.label, Label.ButtonLit,
-                                      scale, width, drawOrder, font)
-            self.l3 = Label.textLabel(self.label, Label.ButtonDown,
-                                      scale, width, drawOrder, font)
+            self.lLit = Label.textLabel(self.label, litStyle,
+                                        scale, width, drawOrder, font)
+            self.lDown = Label.textLabel(self.label, downStyle,
+                                         scale, width, drawOrder, font)
+
+            if supportInactive:
+                self.lInactive = Label.textLabel(self.label, inactiveStyle,
+                                                 scale, width, drawOrder, font)
 
         elif (isinstance(label, NodePath)):
             # If it's a NodePath, assume it's a little texture card.
-            self.l1 = Label.modelLabel(label,
-                                       geomRect = geomRect,
-                                       scale = scale,
-                                       drawOrder = drawOrder)
+            self.lUp = Label.modelLabel(label,
+                                        geomRect = geomRect,
+                                        style = upStyle,
+                                        scale = scale,
+                                        drawOrder = drawOrder)
 
             if width == None:
-                width = self.l1.getWidth() / scale
+                width = self.lUp.getWidth() / scale
                 self.width = width
-            
-            self.l2 = self.l1
-            self.l3 = self.l1
+
+            self.lLit = Label.modelLabel(label,
+                                         geomRect = geomRect,
+                                         style = litStyle,
+                                         scale = scale,
+                                         drawOrder = drawOrder)
+            self.lDown = Label.modelLabel(label,
+                                          geomRect = geomRect,
+                                          style = downStyle,
+                                          scale = scale,
+                                          drawOrder = drawOrder)
+            if supportInactive:
+                self.lInactive = Label.modelLabel(label,
+                                                  geomRect = geomRect,
+                                                  style = inactiveStyle,
+                                                  scale = scale,
+                                                  drawOrder = drawOrder)
             
         else:
             # label provided, use it for all labels
-            self.l1 = self.l2 = self.l3 = label
+            self.lUp = self.lLit = self.lDown = self.lInactive = label
             if width == None:
-                width = self.l1.getWidth()
+                width = self.lUp.getWidth()
 
-        self.button = GuiButton.GuiButton(self.name, self.l1, self.l2,
-                                          self.l3, self.l3, self.l1)
+        if not supportInactive:
+            self.lInactive = self.lUp
+
+        self.button = GuiButton.GuiButton(self.name, self.lUp, self.lLit,
+                                          self.lDown, self.lDown, self.lInactive)
         self.button.setDrawOrder(drawOrder)
         self.setPos(pos[0], pos[1])
         self.managed = 0
@@ -70,8 +96,10 @@ class Button(DirectObject):
     def cleanup(self):
         if (self.managed):
             self.unmanage()
-        self.l1 = None
-        self.l2 = None
+        self.lUp = None
+        self.lLit = None
+        self.lDown = None
+        self.lInactive = None
         self.button = None
 	return None
         
@@ -92,21 +120,24 @@ class Button(DirectObject):
         return self.width
     
     def setWidth(self, width):
-        self.l1.setWidth(width)
-        self.l2.setWidth(width)
-        self.l3.setWidth(width)
+        self.lUp.setWidth(width)
+        self.lLit.setWidth(width)
+        self.lDown.setWidth(width)
+        self.lInactive.setWidth(width)
 
-    def freeze(self):
-        self.l1.freeze()
-        self.l2.freeze()
-        self.l3.freeze()
-        self.button.freeze()
+##     def freeze(self):
+##         self.lUp.freeze()
+##         self.lLit.freeze()
+##         self.lDown.freeze()
+##         self.lInactive.freeze()
+##         self.button.freeze()
 
-    def thaw(self):
-        self.l1.thaw()
-        self.l2.thaw()
-        self.l3.thaw()
-        self.button.thaw()
+##     def thaw(self):
+##         self.lUp.thaw()
+##         self.lLit.thaw()
+##         self.lDown.thaw()
+##         self.lInactive.thaw()
+##         self.button.thaw()
         
     def manage(self, nodepath = aspect2d):
         if nodepath:

@@ -6,12 +6,13 @@ from GuiGlobals import *
 ## the way the label looks.
 
 ButtonUp = 1
-ButtonLit = 2
-ButtonDown = 3
-Sign = 4
-ScrollTitle = 5
-ScrollItem = 6
-ButtonUpGui = 7
+ButtonUpGui = 2
+ButtonLit = 3
+ButtonDown = 4
+ButtonInactive = 5
+Sign = 6
+ScrollTitle = 7
+ScrollItem = 8
 
 def textLabel(string, style,
               scale = 0.1,
@@ -80,6 +81,11 @@ def textLabelAndText(string, style,
         text.setTextColor(1.0, 1.0, 1.0, 1.0)
         text.setCardColor(0.0, 0.0, 0.0, 1.0)
         
+    elif style == ButtonInactive:
+        # When the button is inactive, it's gray on gray.
+        text.setTextColor(0.4, 0.4, 0.4, 1.0)
+        text.setCardColor(0.6, 0.6, 0.6, 1.0)
+        
     elif style == Sign:
         # For a sign, we want red text with no background card.
         text.setTextColor(1., 0., 0., 1.)
@@ -122,6 +128,7 @@ def textLabelAndText(string, style,
 
 def modelLabel(model,
                geomRect = None,
+               style = None,
                scale = 0.1,
                drawOrder = getDefaultDrawOrder()):
 
@@ -131,6 +138,26 @@ def modelLabel(model,
     mi = model.instanceTo(topnp)
     mi.setScale(scale)
     mi.setBin('fixed', drawOrder)
+
+    if style != None:
+        # For a modelLabel, the style determines the color that may be
+        # applied.
+        color = None
+        
+        # The style might *itself* be a four-component color.
+        if (isinstance(style, types.TupleType) or
+            isinstance(style, VBase4)):
+            color = style
+
+        # Otherwise, there might be a predefined default color for one
+        # of the canned styles.  Most don't have a default color,
+        # though.
+        elif style == ButtonInactive:
+            color = (0.5, 0.5, 0.5, 1.0)
+            
+        if color != None:
+            mi.setColor(color[0], color[1], color[2], color[3])
+        
 
     if geomRect == None:
         geomRect = (1, 1)
