@@ -413,12 +413,40 @@ reset_all_windows(bool swapchain) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::is_empty
 //       Access: Published
-//  Description: Returns true if there are no windows managed by the
-//               engine, false if there is at least one.
+//  Description: Returns true if there are no windows or buffers
+//               managed by the engine, false if there is at least
+//               one.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsEngine::
 is_empty() const {
   return _windows.empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::get_num_windows
+//       Access: Published
+//  Description: Returns the number of windows (or buffers) managed by
+//               the engine.
+////////////////////////////////////////////////////////////////////
+int GraphicsEngine::
+get_num_windows() const {
+  return _windows.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::get_window
+//       Access: Published
+//  Description: Returns the nth window or buffers managed by the
+//               engine, in sorted order.
+////////////////////////////////////////////////////////////////////
+GraphicsOutput *GraphicsEngine::
+get_window(int n) const {
+  nassertr(n >= 0 && n < (int)_windows.size(), NULL);
+
+  if (!_windows_sorted) {
+    ((GraphicsEngine *)this)->do_resort_windows();
+  }
+  return _windows[n];
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -88,7 +88,10 @@ PUBLISHED:
   bool remove_window(GraphicsOutput *window);
   void remove_all_windows();
   void reset_all_windows(bool swapchain);
+
   bool is_empty() const;
+  int get_num_windows() const;
+  GraphicsOutput *get_window(int n) const;
 
   void render_frame();
   void open_windows();
