@@ -101,20 +101,22 @@ overflow(int ch) {
 ////////////////////////////////////////////////////////////////////
 void WordWrapStreamBuf::
 write_chars(const char *start, int length) {
-  set_literal_mode((_owner->flags() & Notify::get_literal_flag()) != 0);
-  string new_data(start, length);
-  size_t newline = new_data.find_first_of("\n\r");
-  size_t p = 0;
-  while (newline != string::npos) {
-    // The new data contains a newline; flush our data to that point.
-    _data += new_data.substr(p, newline - p + 1);
-    flush_data();
-    p = newline + 1;
-    newline = new_data.find_first_of("\n\r", p);
-  }
+  if (length > 0) {
+    set_literal_mode((_owner->flags() & Notify::get_literal_flag()) != 0);
+    string new_data(start, length);
+    size_t newline = new_data.find_first_of("\n\r");
+    size_t p = 0;
+    while (newline != string::npos) {
+      // The new data contains a newline; flush our data to that point.
+      _data += new_data.substr(p, newline - p + 1);
+      flush_data();
+      p = newline + 1;
+      newline = new_data.find_first_of("\n\r", p);
+    }
 
-  // Save the rest for the next write.
-  _data += new_data.substr(p);
+    // Save the rest for the next write.
+    _data += new_data.substr(p);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
