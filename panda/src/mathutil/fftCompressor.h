@@ -92,7 +92,7 @@ private:
   double get_scale_factor(int i, int length) const;
   static double interpolate(double t, double a, double b);
 
-  double get_error(const double *data, const double *half_complex, int length) const;
+  float get_compressability(const float *data, int length) const;
 
   int _bam_minor_version;
   int _quality;

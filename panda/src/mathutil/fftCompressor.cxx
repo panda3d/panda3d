@@ -270,26 +270,16 @@ write_reals(Datagram &datagram, const float *array, int length) {
   }
 
   // Normal case: FFT the array, and write that out.
-  double *data = (double *)alloca(length * sizeof(double));
-  int i;
-  for (i = 0; i < length; i++) {
-    data[i] = array[i];
-  }
 
-  double *half_complex = (double *)alloca(length * sizeof(double));
-
-  rfftw_plan plan = get_real_compress_plan(length);
-  rfftw_one(plan, data, half_complex);
-
+  // First, check the compressability.
   bool reject_compression = false;
 
   if (_use_error_threshold) {
-    // As a sanity check, decode the numbers again and see how far off
-    // we will be from the original string.
-    double error = get_error(data, half_complex, length);
+    // Don't encode the data if it moves too erratically.
+    float error = get_compressability(array, length);
     if (error > fft_error_threshold) {
-      // No good: the compression is too damage.  Just write out
-      // lossless data.
+      // No good: the data probably won't compress well.  Just write
+      // out lossless data.
       reject_compression = true;
     }
   }
@@ -305,6 +295,19 @@ write_reals(Datagram &datagram, const float *array, int length) {
     }
     return;
   }
+
+  // Now generate the Fourier transform.
+  double *data = (double *)alloca(length * sizeof(double));
+  int i;
+  for (i = 0; i < length; i++) {
+    data[i] = array[i];
+  }
+
+  double *half_complex = (double *)alloca(length * sizeof(double));
+
+  rfftw_plan plan = get_real_compress_plan(length);
+  rfftw_one(plan, data, half_complex);
+
 
   // Now encode the numbers, run-length encoded by size, so we only
   // write out the number of bits we need for each number.
@@ -970,66 +973,38 @@ interpolate(double t, double a, double b) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FFTCompressor::get_error
+//     Function: FFTCompressor::get_compressability
 //       Access: Private
-//  Description: Measures the error that would be incurred from
-//               compressing the string of reals.
+//  Description: Returns a factor that indicates how erratically the
+//               values are changing.  The lower the result, the
+//               calmer the numbers, and the greater its likelihood of
+//               being successfully compressed.
 ////////////////////////////////////////////////////////////////////
-double FFTCompressor::
-get_error(const double *data, const double *half_complex, int length) const {
-  double *truncated_half_complex = (double *)alloca(length * sizeof(double));
-  int i;
-  for (i = 0; i < length; i++) {
-    double scale_factor = get_scale_factor(i, length);
-    double num = cfloor(half_complex[i] / scale_factor + 0.5);
-    truncated_half_complex[i] = num * scale_factor;
+float FFTCompressor::
+get_compressability(const float *data, int length) const {
+  // The result returned is actually the standard deviation of the
+  // table of deltas between consecutive frames.  This number is
+  // larger if the frames have wildly different values.
+
+  if (length <= 2) {
+    return 0.0;
   }
 
-  double *new_data = (double *)alloca(length * sizeof(double));
-  rfftw_plan plan = get_real_decompress_plan(length);
-  rfftw_one(plan, &truncated_half_complex[0], new_data);
+  float sum = 0.0;
+  float sum2 = 0.0;
+  for (int i = 1; i < length; i++) {
+    float delta = data[i] - data[i - 1];
 
-  double scale = 1.0 / (double)length;
-  for (i = 0; i < length; i++) {
-    new_data[i] *= scale;
+    sum += delta;
+    sum2 += delta * delta;
   }
-
-  double last_value = data[0];
-  double last_new_value = new_data[0];
-
-  for (i = 0; i < length; i++) {
-    // First, we get the delta from each frame to the next.
-    double next_value = data[i];
-    double data_delta = data[i] - last_value;
-    last_value = next_value;
-
-    double next_new_value = new_data[i];
-    double data_new_delta = new_data[i] - last_value;
-    last_new_value = next_new_value;
-
-    // And we store the relative change in delta between our original
-    // values and our compressed values.
-    new_data[i] = data_new_delta - data_delta;
-  }
-
-  // Our error measurement is nothing more than the standard deviation
-  // of the relative change in delta, from above.  If this is large,
-  // the compressed values are moving substantially more erratically
-  // than the original values.
-
-  double sum = 0.0;
-  double sum2 = 0.0;
-  for (i = 0; i < length; i++) {
-    sum += new_data[i];
-    sum2 += new_data[i] * new_data[i];
-  }
-  double variance = (sum2 - (sum * sum) / length) / (length - 1);
+  float variance = (sum2 - (sum * sum) / (length - 1)) / (length - 2);
   if (variance < 0.0) {
     // This can only happen due to tiny roundoff error.
     return 0.0;
   }
 
-  double std_deviation = sqrt(variance);
+  float std_deviation = csqrt(variance);
 
   return std_deviation;
 }
