@@ -25,6 +25,8 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "checksumHashGenerator.h"
+#include "mathNumbers.h"
+#include "deg_2_rad.h"
 
 #include "cmath.h"
 #include "nearly_zero.h"

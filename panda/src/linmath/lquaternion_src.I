@@ -107,6 +107,28 @@ operator - (const FLOATNAME(LQuaternion) &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LVector::angle_rad
+//       Access: Published
+//  Description: Returns the angle between this quat and the other
+//               one, expressed in radians.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATTYPE FLOATNAME(LQuaternion)::
+angle_rad(const FLOATNAME(LQuaternion) &other) const {
+  return get_axis().angle_rad(other.get_axis());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVector::angle_deg
+//       Access: Published
+//  Description: Returns the angle between this vector and the other
+//               one, expressed in degrees.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATTYPE FLOATNAME(LQuaternion)::
+angle_deg(const FLOATNAME(LQuaternion) &other) const {
+  return rad_2_deg(angle_rad(other));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LQuaternion::quaternion * scalar
 //       Access: Public
 //  Description:
@@ -256,11 +278,12 @@ set_from_matrix(const FLOATNAME(LMatrix4) &m) {
 //       Access: Public
 //  Description: This, along with get_angle(), returns the rotation
 //               represented by the quaternion as an angle about an
-//               arbitrary axis.  This returns the axis.
+//               arbitrary axis.  This returns the axis; it is not
+//               normalized.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LQuaternion)::
 get_axis() const {
-  return ::normalize(FLOATNAME(LVector3)(_v.data[1], _v.data[2], _v.data[3]));
+  return FLOATNAME(LVector3)(_v.data[1], _v.data[2], _v.data[3]);
 }
 
 ////////////////////////////////////////////////////////////////////

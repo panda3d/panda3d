@@ -41,6 +41,9 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LQuaternion)
   operator - (const FLOATNAME(LQuaternion) &other) const;
 
+  INLINE_LINMATH FLOATTYPE angle_rad(const FLOATNAME(LQuaternion) &other) const;
+  INLINE_LINMATH FLOATTYPE angle_deg(const FLOATNAME(LQuaternion) &other) const;
+
   INLINE_LINMATH FLOATNAME(LQuaternion) operator * (FLOATTYPE scalar) const;
   INLINE_LINMATH FLOATNAME(LQuaternion) operator / (FLOATTYPE scalar) const;
 

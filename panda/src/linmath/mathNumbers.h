@@ -31,6 +31,15 @@ PUBLISHED:
   static const double ln2;
   static const double rad_2_deg;
   static const double deg_2_rad;
+
+public:
+  INLINE static float cpi(float);
+  INLINE static float cln2(float);
+
+  INLINE static double cpi(double);
+  INLINE static double cln2(double);
 };
+
+#include "mathNumbers.I"
 
 #endif

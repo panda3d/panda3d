@@ -19,7 +19,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::Default Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3)::
@@ -28,7 +28,7 @@ FLOATNAME(LVector3)() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::Copy Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3)::
@@ -37,7 +37,7 @@ FLOATNAME(LVector3)(const FLOATNAME(LVecBase3) &copy) : FLOATNAME(LVecBase3)(cop
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::Copy Assignment Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3) &FLOATNAME(LVector3)::
@@ -48,7 +48,7 @@ operator = (const FLOATNAME(LVecBase3) &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::Copy Fill Operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3) &FLOATNAME(LVector3)::
@@ -59,7 +59,7 @@ operator = (FLOATTYPE fill_value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3)::
@@ -70,7 +70,7 @@ FLOATNAME(LVector3)(FLOATTYPE fill_value) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3)::
@@ -81,7 +81,7 @@ FLOATNAME(LVector3)(FLOATTYPE x, FLOATTYPE y, FLOATTYPE z) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::zero Named Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Returns a zero-length vector.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH const FLOATNAME(LVector3) &FLOATNAME(LVector3)::
@@ -91,7 +91,7 @@ zero() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::unit_x Named Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Returns a unit X vector.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH const FLOATNAME(LVector3) &FLOATNAME(LVector3)::
@@ -101,7 +101,7 @@ unit_x() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::unit_y Named Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Returns a unit Y vector.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH const FLOATNAME(LVector3) &FLOATNAME(LVector3)::
@@ -111,7 +111,7 @@ unit_y() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::unit_z Named Constructor
-//       Access: Public
+//       Access: Published
 //  Description: Returns a unit Z vector.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH const FLOATNAME(LVector3) &FLOATNAME(LVector3)::
@@ -121,7 +121,7 @@ unit_z() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::unary -
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
@@ -131,7 +131,7 @@ operator - () const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::vector + vecbase
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVector3)::
@@ -141,7 +141,7 @@ operator + (const FLOATNAME(LVecBase3) &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::vector + vector
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
@@ -151,7 +151,7 @@ operator + (const FLOATNAME(LVector3) &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::vector - vecbase
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVector3)::
@@ -161,7 +161,7 @@ operator - (const FLOATNAME(LVecBase3) &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::vector - vector
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
@@ -171,7 +171,7 @@ operator - (const FLOATNAME(LVector3) &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::length
-//       Access: Public
+//       Access: Published
 //  Description: Returns the length of the vector, by the Pythagorean
 //               theorem.
 ////////////////////////////////////////////////////////////////////
@@ -182,7 +182,7 @@ length() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::length_squared
-//       Access: Public
+//       Access: Published
 //  Description: Returns the square of the vector's length, cheap and
 //               easy.
 ////////////////////////////////////////////////////////////////////
@@ -193,7 +193,7 @@ length_squared() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::normalize
-//       Access: Public
+//       Access: Published
 //  Description: Normalizes the vector in place.  Returns true if the
 //               vector was normalized, false if it was a zero-length
 //               vector.
@@ -214,7 +214,7 @@ normalize() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::cross
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
@@ -223,8 +223,36 @@ cross(const FLOATNAME(LVecBase3) &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LVector::angle_rad
+//       Access: Published
+//  Description: Returns the angle between this vector and the other
+//               one, expressed in radians.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATTYPE FLOATNAME(LVector3)::
+angle_rad(const FLOATNAME(LVector3) &other) const {
+  // This algorithm yields better results than acos(dot(other)), which
+  // behaves poorly as dot(other) approaches 1.0.
+  if (dot(other) < 0.0f) {
+    return MathNumbers::cpi((FLOATTYPE)0.0f) - 2.0f * casin((-(*this)-other).length());
+  } else {
+    return 2.0f * casin(((*this)-other).length() / 2.0f);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVector::angle_deg
+//       Access: Published
+//  Description: Returns the angle between this vector and the other
+//               one, expressed in degrees.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATTYPE FLOATNAME(LVector3)::
+angle_deg(const FLOATNAME(LVector3) &other) const {
+  return rad_2_deg(angle_rad(other));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LVector3::operator * scalar
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
@@ -234,7 +262,7 @@ operator * (FLOATTYPE scalar) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::operator / scalar
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
@@ -245,7 +273,7 @@ operator / (FLOATTYPE scalar) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::up
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns the up vector for the given coordinate
 //               system.
 ////////////////////////////////////////////////////////////////////
@@ -272,7 +300,7 @@ up(CoordinateSystem cs) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::right
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns the right vector for the given coordinate
 //               system.
 ////////////////////////////////////////////////////////////////////
@@ -283,7 +311,7 @@ right(CoordinateSystem) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::forward
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns the forward vector for the given coordinate
 //               system.
 ////////////////////////////////////////////////////////////////////
@@ -314,7 +342,7 @@ forward(CoordinateSystem cs) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::down
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns the down vector for the given coordinate
 //               system.
 ////////////////////////////////////////////////////////////////////
@@ -325,7 +353,7 @@ down(CoordinateSystem cs) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::left
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns the left vector for the given coordinate
 //               system.
 ////////////////////////////////////////////////////////////////////
@@ -336,7 +364,7 @@ left(CoordinateSystem cs) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::back
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns the back vector for the given coordinate
 //               system.
 ////////////////////////////////////////////////////////////////////
@@ -347,7 +375,7 @@ back(CoordinateSystem cs) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector3::rfu
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns a vector that is described by its right,
 //               forward, and up components, in whatever way the
 //               coordinate system represents that vector.

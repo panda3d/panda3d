@@ -34,9 +34,11 @@ INLINE float csin(float v);
 INLINE float ccos(float v);
 INLINE float ctan(float v);
 INLINE void  csincos(float v, float *pSinResult, float *pCosResult);  // does both at once (faster on x86)
+INLINE float csin_over_x(float v);
 INLINE float cabs(float v);
 INLINE float catan(float v);
 INLINE float catan2(float y, float x);
+INLINE float casin(float v);
 //INLINE float cfloor(float f);
 //INLINE float cceil(float f);
 
@@ -46,10 +48,11 @@ INLINE double csqrt(double v);
 INLINE double csin(double v);
 INLINE double ccos(double v);
 INLINE double ctan(double v);
+INLINE void   csincos(double v, double *pSinResult, double *pCosResult);  // does both at once (faster on x86)
 INLINE double cabs(double v);
 INLINE double catan(double v);
 INLINE double catan2(double y, double x);
-INLINE void   csincos(double v, double *pSinResult, double *pCosResult);  // does both at once (faster on x86)
+INLINE double casin(double y, double x);
 
 // Returns true if the number is nan, false if it's a genuine number
 // or infinity.

@@ -47,49 +47,35 @@ INLINE float ctan(float v) {
 }
 
 INLINE void
-sincosf(float v, float *pSinResult, float *pCosResult) {
-
-// MS VC defines _M_IX86 for x86.  gcc should define _X86_
+csincos(float v, float *pSinResult, float *pCosResult) {
+  // MS VC defines _M_IX86 for x86.  gcc should define _X86_
 #if defined(_M_IX86) || defined(_X86_)
-//#define fsincos_opcode __asm _emit 0xd9 __asm _emit 0xfb
-    __asm {
-        mov eax, pSinResult
-        mov edx, pCosResult
-        fld v
-        fsincos
-        fstp DWORD ptr [edx]
-        fstp DWORD ptr [eax]
-    }
+  //#define fsincos_opcode __asm _emit 0xd9 __asm _emit 0xfb
+  __asm {
+    mov eax, pSinResult
+      mov edx, pCosResult
+      fld v
+      fsincos
+      fstp DWORD ptr [edx]
+      fstp DWORD ptr [eax]
+      }
 #else //!_X86_
-    *pSinResult = sinf(v);
-    *pCosResult = cosf(v);
+  *pSinResult = sinf(v);
+  *pCosResult = cosf(v);
 #endif //!_X86_
 }
 
-INLINE void
-sincosd(double v, double *pSinResult, double *pCosResult) {
-#if defined(_M_IX86) || defined(_X86_)
-//#define fsincos_opcode __asm _emit 0xd9 __asm _emit 0xfb
-    __asm {
-        mov eax, pSinResult
-        mov edx, pCosResult
-        fld v
-        fsincos
-        fstp QWORD ptr [edx]
-        fstp QWORD ptr [eax]
-    }
-#else //!_X86_
-    *pSinResult = sin(v);
-    *pCosResult = cos(v);
-#endif //!_X86_
-}
-
-INLINE void csincos(float v,float *pSinResult, float *pCosResult) {
-  sincosf(v,pSinResult,pCosResult);
-}
-
-INLINE void csincos(double v,double *pSinResult, double *pCosResult) {
-  sincosd(v,pSinResult,pCosResult);
+////////////////////////////////////////////////////////////////////
+//     Function: csin_over_x
+//  Description: Computes sin(x) / x, well-behaved as x approaches 0.
+////////////////////////////////////////////////////////////////////
+INLINE float 
+csin_over_x(float v) {
+  if (1.0f + v * v == 1.0f) {
+    return 1.0f;
+  } else {
+    return csin(v) / v;
+  }
 }
 
 INLINE float cabs(float v) {
@@ -102,6 +88,14 @@ INLINE float catan(float v) {
 
 INLINE float catan2(float y, float x) {
   return atan2f(y, x);
+}
+
+INLINE float casin(float v) {
+  return asinf(v);
+}
+
+INLINE float cacos(float v) {
+  return acosf(v);
 }
 
 #ifdef __INTEL_COMPILER
@@ -152,6 +146,37 @@ INLINE double ctan(double v) {
   return tan(v);
 }
 
+INLINE void
+csincos(double v, double *pSinResult, double *pCosResult) {
+#if defined(_M_IX86) || defined(_X86_)
+  //#define fsincos_opcode __asm _emit 0xd9 __asm _emit 0xfb
+  __asm {
+    mov eax, pSinResult
+      mov edx, pCosResult
+      fld v
+      fsincos
+      fstp QWORD ptr [edx]
+      fstp QWORD ptr [eax]
+      }
+#else //!_X86_
+  *pSinResult = sin(v);
+  *pCosResult = cos(v);
+#endif //!_X86_
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: csin_over_x
+//  Description: Computes sin(x) / x, well-behaved as x approaches 0.
+////////////////////////////////////////////////////////////////////
+INLINE double 
+csin_over_x(double v) {
+  if (1.0 + v * v == 1.0) {
+    return 1.0;
+  } else {
+    return csin(v) / v;
+  }
+}
+
 INLINE double cabs(double v) {
   return fabs(v);
 }
@@ -162,6 +187,14 @@ INLINE double catan(double v) {
 
 INLINE double catan2(double y, double x) {
   return atan2(y, x);
+}
+
+INLINE double casin(double v) {
+  return asin(v);
+}
+
+INLINE double cacos(double v) {
+  return acos(v);
 }
 
 INLINE bool cnan(double v) {

@@ -33,7 +33,7 @@
      lvecBase4_src.h lvector2.h lvector2_src.I lvector2_src.cxx  \
      lvector2_src.h lvector3.h lvector3_src.I lvector3_src.cxx  \
      lvector3_src.h lvector4.h lvector4_src.I lvector4_src.cxx  \
-     lvector4_src.h mathNumbers.h pta_Colorf.h  \
+     lvector4_src.h mathNumbers.h mathNumbers.I pta_Colorf.h  \
      pta_Normalf.h pta_TexCoordf.h pta_Vertexf.h vector_Colorf.h  \
      vector_LPoint2f.h vector_LVecBase3f.h vector_Normalf.h  \
      vector_TexCoordf.h vector_Vertexf.h
@@ -68,7 +68,7 @@
     lvecBase3_src.I lvecBase3_src.h lvecBase4.h lvecBase4_src.I \
     lvecBase4_src.h lvector2.h lvector2_src.I lvector2_src.h \
     lvector3.h lvector3_src.I lvector3_src.h lvector4.h lvector4_src.I \
-    lvector4_src.h mathNumbers.h pta_Colorf.h \
+    lvector4_src.h mathNumbers.h mathNumbers.I pta_Colorf.h \
     pta_Normalf.h pta_TexCoordf.h pta_Vertexf.h vector_Colorf.h \
     vector_LPoint2f.h vector_LVecBase3f.h vector_Normalf.h \
     vector_TexCoordf.h vector_Vertexf.h
