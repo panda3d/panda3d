@@ -183,26 +183,26 @@ make_geometry(float intensity, float length, int num_facets)
 {
   Colorf diffuse = _color;
   diffuse[3] = intensity;
-  Colorf black(0.0, 0.0, 0.0, intensity);
+  Colorf black(0.0f, 0.0f, 0.0f, intensity);
   float radius = length * (float)tan(deg_2_rad(get_cutoff_angle()));
   float ang_inc = 2.0f*MathNumbers::pi_f / (float)num_facets;
   int num_verts = num_facets + 1;
   int num_indices = num_facets + 2;
-  LVector3f offset(0.0, length, 0.0);
-  LPoint3f first_last_vert(radius, length, 0.0);
+  LVector3f offset(0.0f, length, 0.0f);
+  LPoint3f first_last_vert(radius, length, 0.0f);
 
-  PTA_Vertexf coords(num_verts);
-  PTA_ushort vindex(num_indices);
-  PTA_Colorf colors(2);
-  PTA_ushort cindex(num_indices);
-  PTA_int lengths(1);
+  PTA_Vertexf coords=PTA_Vertexf::empty_array(num_verts);
+  PTA_ushort vindex=PTA_ushort::empty_array(num_indices);
+  PTA_Colorf colors=PTA_Colorf::empty_array(2);
+  PTA_ushort cindex=PTA_ushort::empty_array(num_indices);
+  PTA_int lengths=PTA_int::empty_array(1);
 
   lengths[0] = num_indices;
 
   float ang = ang_inc;
-  LPoint3f origin(0.0, 0.0, 0.0);
-  LVector3f x_axis(1.0, 0.0, 0.0);
-  LVector3f z_axis(0.0, 0.0, 1.0);
+  LPoint3f origin(0.0f, 0.0f, 0.0f);
+  LVector3f x_axis(1.0f, 0.0f, 0.0f);
+  LVector3f z_axis(0.0f, 0.0f, 1.0f);
   LPoint3f dx, dz;
   float t;
 
@@ -214,8 +214,9 @@ make_geometry(float intensity, float length, int num_facets)
 
   int i;
   for (i = 2; i < num_indices-1; i++) {
-        float sine,cosine;
-        csincos(ang,&sine,&cosine);
+    float sine,cosine;
+
+    csincos(ang,&sine,&cosine);
     t = cosine * radius;
     dx = x_axis * t;
     t = sine * radius;
@@ -232,7 +233,7 @@ make_geometry(float intensity, float length, int num_facets)
     cindex[i] = 1;
 
   GeomTrifan* tfan = new GeomTrifan;
-  tfan->set_coords(coords, G_PER_VERTEX, vindex);
+  tfan->set_coords(coords, vindex);
   tfan->set_colors(colors, G_PER_VERTEX, cindex);
   tfan->set_num_prims(1);
   tfan->set_lengths(lengths);

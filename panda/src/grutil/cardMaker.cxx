@@ -33,13 +33,13 @@
 void CardMaker::
 reset() {
   _has_uvs = true;
-  _ll.set(0.0, 0.0);
-  _ur.set(1.0, 1.0);
-  _frame.set(0.0, 1.0, 0.0, 1.0);
+  _ll.set(0.0f, 0.0f);
+  _ur.set(1.0f, 1.0f);
+  _frame.set(0.0f, 1.0f, 0.0f, 1.0f);
   _has_color = false;
-  _color.set(1.0, 1.0, 1.0, 1.0);
+  _color.set(1.0f, 1.0f, 1.0f, 1.0f);
   _source_geometry = (Node *)NULL;
-  _source_frame.set(0.0, 0.0, 0.0, 0.0);
+  _source_frame.set(0.0f, 0.0f, 0.0f, 0.0f);
 }
 
 
@@ -64,19 +64,19 @@ generate() {
   float bottom = _frame[2];
   float top = _frame[3];
 
-  PTA_int lengths(0);
+  PTA_int lengths=PTA_int::empty_array(0);
   lengths.push_back(4);
 
   PTA_Vertexf verts;
-  verts.push_back(Vertexf::rfu(left, 0.0, top));
-  verts.push_back(Vertexf::rfu(left, 0.0, bottom));
-  verts.push_back(Vertexf::rfu(right, 0.0, top));
-  verts.push_back(Vertexf::rfu(right, 0.0, bottom));
+  verts.push_back(Vertexf::rfu(left, 0.0f, top));
+  verts.push_back(Vertexf::rfu(left, 0.0f, bottom));
+  verts.push_back(Vertexf::rfu(right, 0.0f, top));
+  verts.push_back(Vertexf::rfu(right, 0.0f, bottom));
 
   geom->set_num_prims(1);
   geom->set_lengths(lengths);
 
-  geom->set_coords(verts, G_PER_VERTEX);
+  geom->set_coords(verts);
 
   PTA_Colorf colors;
   colors.push_back(_color);
@@ -107,20 +107,20 @@ rescale_source_geometry() {
     new RenderRelation(root, _source_geometry->copy_subgraph(RenderRelation::get_class_type()));
 
   // Determine the translate and scale appropriate for our geometry.
-  float geom_center_x = (_source_frame[0] + _source_frame[1]) / 2.0;
-  float geom_center_y = (_source_frame[2] + _source_frame[3]) / 2.0;
+  float geom_center_x = (_source_frame[0] + _source_frame[1]) * 0.5f;
+  float geom_center_y = (_source_frame[2] + _source_frame[3]) * 0.5f;
 
-  float frame_center_x = (_frame[0] + _frame[1]) / 2.0;
-  float frame_center_y = (_frame[2] + _frame[3]) / 2.0;
+  float frame_center_x = (_frame[0] + _frame[1]) * 0.5f;
+  float frame_center_y = (_frame[2] + _frame[3]) * 0.5f;
 
   float scale_x = 
     (_frame[1] - _frame[0]) / (_source_frame[1] - _source_frame[0]);
   float scale_y = 
     (_frame[3] - _frame[2]) / (_source_frame[3] - _source_frame[2]);
 
-  LVector3f trans = LVector3f::rfu(frame_center_x - geom_center_x, 0.0, 
+  LVector3f trans = LVector3f::rfu(frame_center_x - geom_center_x, 0.0f, 
                                    frame_center_y - geom_center_y);
-  LVector3f scale = LVector3f::rfu(scale_x, 1.0, scale_y);
+  LVector3f scale = LVector3f::rfu(scale_x, 1.0f, scale_y);
 
   LMatrix4f mat = 
     LMatrix4f::scale_mat(scale) *

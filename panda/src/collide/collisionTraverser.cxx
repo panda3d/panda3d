@@ -612,9 +612,8 @@ compare_collider_to_geom(CollisionEntry &entry, Geom *geom,
     nassertv(ci != _colliders.end());
 
     PTA_Vertexf coords;
-    GeomBindType bind;
     PTA_ushort vindex;
-    geom->get_coords(coords, bind, vindex);
+    geom->get_coords(coords, vindex);
     PTA_ushort tris = geom->get_tris();
 
     for (int i = 0; i < (int)tris.size(); i += 3) {

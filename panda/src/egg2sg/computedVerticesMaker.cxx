@@ -34,10 +34,13 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 ComputedVerticesMaker::
-ComputedVerticesMaker() :
-  _coords(0), _norms(0), _colors(0), _texcoords(0)
+ComputedVerticesMaker()
 {
-  _current_vc = NULL;
+    _coords= PTA_Vertexf::empty_array(0);
+    _norms= PTA_Normalf::empty_array(0);
+    _colors= PTA_Colorf::empty_array(0);
+    _texcoords= PTA_TexCoordf::empty_array(0);
+    _current_vc = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

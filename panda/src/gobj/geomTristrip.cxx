@@ -298,10 +298,10 @@ GeomTristrip::get_num_tris() const {
 ////////////////////////////////////////////////////////////////////
 Geom *GeomTristrip::
 explode() const {
-  PTA_Vertexf coords(0);
-  PTA_Normalf normals(0);
-  PTA_TexCoordf texcoords(0);
-  PTA_Colorf colors(0);
+  PTA_Vertexf coords=PTA_Vertexf::empty_array(0);
+  PTA_Normalf normals=PTA_Normalf::empty_array(0);
+  PTA_TexCoordf texcoords=PTA_TexCoordf::empty_array(0);
+  PTA_Colorf colors=PTA_Colorf::empty_array(0);
 
   VertexIterator vi = make_vertex_iterator();
   NormalIterator ni = make_normal_iterator();
@@ -420,7 +420,7 @@ explode() const {
   }
 
   Geom *tris = new GeomTri;
-  tris->set_coords(coords, get_binding(G_COORD));
+  tris->set_coords(coords);
   tris->set_normals(normals,
                     get_binding(G_NORMAL) == G_PER_COMPONENT ?
                     G_PER_PRIM : get_binding(G_NORMAL));

@@ -243,28 +243,28 @@ make_orig(Character *character) {
   if (character->_cv._coords.empty()) {
     _orig_coords.clear();
   } else {
-    _orig_coords = PTA_Vertexf(0);
+    _orig_coords = PTA_Vertexf::empty_array(0);
     _orig_coords.v() = character->_cv._coords.v();
   }
 
   if (character->_cv._norms.empty()) {
     _orig_norms.clear();
   } else {
-    _orig_norms = PTA_Normalf(0);
+    _orig_norms = PTA_Normalf::empty_array(0);
     _orig_norms.v() = character->_cv._norms.v();
   }
 
   if (character->_cv._colors.empty()) {
     _orig_colors.clear();
   } else {
-    _orig_colors = PTA_Colorf(0);
+    _orig_colors = PTA_Colorf::empty_array(0);
     _orig_colors.v() = character->_cv._colors.v();
   }
 
   if (character->_cv._texcoords.empty()) {
     _orig_texcoords.clear();
   } else {
-    _orig_texcoords = PTA_TexCoordf(0);
+    _orig_texcoords = PTA_TexCoordf::empty_array(0);
     _orig_texcoords.v() = character->_cv._texcoords.v();
   }
 }

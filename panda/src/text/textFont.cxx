@@ -422,9 +422,8 @@ find_characters(Node *root) {
       // origin of the next character.
       PTA_Vertexf alist;
       PTA_ushort ilist;
-      GeomBindType bind;
       float width;
-      dot->get_coords(alist, bind, ilist);
+      dot->get_coords(alist, ilist);
       if (ilist.empty()) {
         width = alist[0][0];
       } else {
@@ -447,8 +446,7 @@ find_characters(Node *root) {
       // design size indicator.
       PTA_Vertexf alist;
       PTA_ushort ilist;
-      GeomBindType bind;
-      dot->get_coords(alist, bind, ilist);
+      dot->get_coords(alist, ilist);
       if (ilist.empty()) {
         _font_height = alist[0][2];
       } else {

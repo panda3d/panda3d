@@ -15,6 +15,7 @@
 // panda3d@yahoogroups.com .
 //
 ////////////////////////////////////////////////////////////////////
+
 #include "pixelBuffer.h"
 #include "config_gobj.h"
 
@@ -64,7 +65,7 @@ PixelBuffer(int xsize, int ysize, int components, int component_width,
   _component_width = component_width;
   _type = type;
   _format = format;
-  _image = PTA_uchar(_xsize * _ysize * _components * _component_width);
+  _image = PTA_uchar::empty_array((unsigned int)(_xsize * _ysize * _components * _component_width));
   _loaded = true;
 }
 
@@ -219,7 +220,7 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
     // Most common case: one byte per pixel, and the source image
     // shows a maxval of 255.  No scaling is necessary.
     _type = T_unsigned_byte;
-    _image = PTA_uchar(_xsize * _ysize * _components);
+    _image = PTA_uchar::empty_array((int)(_xsize * _ysize * _components));
     int idx = 0;
     
     for (int j = _ysize-1; j >= 0; j--) {
@@ -241,7 +242,7 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
     // Another possible case: two bytes per pixel, and the source
     // image shows a maxval of 65535.  Again, no scaling is necessary.
     _type = T_unsigned_short;
-    _image = PTA_uchar(_xsize * _ysize * _components * 2);
+//    _image = PTA_uchar::empty_array(_xsize * _ysize * _components * 2);
     int idx = 0;
     
     for (int j = _ysize-1; j >= 0; j--) {
@@ -264,7 +265,7 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
     // something other than 255.  In this case, we should scale the
     // pixel values up to the appropriate amount.
     _type = T_unsigned_byte;
-    _image = PTA_uchar(_xsize * _ysize * _components);
+    _image = PTA_uchar::empty_array(_xsize * _ysize * _components);
     int idx = 0;
     double scale = 255.0 / (double)maxval;
     
@@ -288,7 +289,7 @@ bool PixelBuffer::load(const PNMImage& pnmimage)
     // something other than 65535.  Again, we must scale the pixel
     // values.
     _type = T_unsigned_short;
-    _image = PTA_uchar(_xsize * _ysize * _components * 2);
+    _image = PTA_uchar::empty_array(_xsize * _ysize * _components * 2);
     int idx = 0;
     double scale = 65535.0 / (double)maxval;
     
@@ -384,7 +385,7 @@ copy(const PixelBuffer *pb) {
   _border = pb->_border;
   _components = pb->_components;
   _format = pb->_format;
-  _image = PTA_uchar(0);
+  _image = PTA_uchar::empty_array(0);
   if (!pb->_image.empty())
     _image.v() = pb->_image.v();
 }
@@ -411,3 +412,4 @@ void PixelBuffer::draw(GraphicsStateGuardianBase *gsg, const DisplayRegion *dr,
                         const RenderBuffer &rb) {
   gsg->draw_pixel_buffer(this, dr, rb);
 }
+

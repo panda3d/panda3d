@@ -197,38 +197,38 @@ resize_pool(int new_size) {
 
   // handle the x texel ratio
   if (_animate_x_ratio == true) {
-    _x_texel_array = PTA_float(new_size);
+    _x_texel_array = PTA_float::empty_array(new_size);
     _x_bind = G_PER_PRIM;
   }
   else {
-    _x_texel_array = PTA_float(1);
+    _x_texel_array = PTA_float::empty_array(1);
     _x_bind = G_OVERALL;
   }
 
   // handle the y texel ratio
   if (_animate_y_ratio == true) {
-    _y_texel_array = PTA_float(new_size);
+    _y_texel_array = PTA_float::empty_array(new_size);
     _y_bind = G_PER_PRIM;
   }
   else {
-    _y_texel_array = PTA_float(1);
+    _y_texel_array = PTA_float::empty_array(1);
     _y_bind = G_OVERALL;
   }
 
   // handle the theta vector
   if (_animate_theta == true) {
-    _theta_array = PTA_float(new_size);
+    _theta_array = PTA_float::empty_array(new_size);
     _theta_bind = G_PER_PRIM;
   }
   else {
-    _theta_array = PTA_float(1);
+    _theta_array = PTA_float::empty_array(1);
     _theta_bind = G_OVERALL;
   }
 
-  _vertex_array = PTA_Vertexf(new_size);
-  _color_array = PTA_Colorf(new_size);
+  _vertex_array = PTA_Vertexf::empty_array(new_size);
+  _color_array = PTA_Colorf::empty_array(new_size);
 
-  _sprite_primitive->set_coords(_vertex_array, G_PER_VERTEX);
+  _sprite_primitive->set_coords(_vertex_array);
   _sprite_primitive->set_colors(_color_array, G_PER_PRIM);
   _sprite_primitive->set_x_texel_ratio(_x_texel_array, _x_bind);
   _sprite_primitive->set_y_texel_ratio(_y_texel_array, _y_bind);

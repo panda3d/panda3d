@@ -140,11 +140,13 @@ public:
 
   void get_min_max(Vertexf &min, Vertexf &max) const;
 
-
   void set_coords(const PTA_Vertexf &coords,
-                  GeomBindType bind,
-                  const PTA_ushort &vindex =
-                  PTA_ushort());
+                   const PTA_ushort &vindex =
+                   PTA_ushort());
+  void set_coords(const PTA_Vertexf &coords,
+                   GeomBindType bind,
+                   const PTA_ushort &vindex =
+                   PTA_ushort());
   void set_normals(const PTA_Normalf &norms,
                    GeomBindType bind,
                    const PTA_ushort &nindex =
@@ -161,6 +163,10 @@ public:
   void get_coords(PTA_Vertexf &coords,
                   GeomBindType &bind,
                   PTA_ushort &vindex) const;
+
+  void get_coords(PTA_Vertexf &coords,
+                  PTA_ushort &vindex) const;
+
   void get_normals(PTA_Normalf &norms,
                    GeomBindType &bind,
                    PTA_ushort &nindex) const;

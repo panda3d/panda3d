@@ -34,17 +34,14 @@ PointerToArray() :
 {
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: PointerToArray::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
+// return an empty array of size n
 template<class Element>
-INLINE PointerToArray<Element>::
-PointerToArray(size_type n) :
-  PointerToBase<RefCountObj<pvector<Element> > >(new RefCountObj<pvector<Element> >) {
-  _ptr->reserve(n);
-  insert(begin(), n, Element());
+INLINE PointerToArray<Element> 
+PointerToArray<Element>::empty_array(size_type n) {
+    PointerToArray<Element> temp;
+    temp.reserve(n);
+    temp._ptr->insert(temp._ptr->begin(), n, Element());
+    return temp;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -85,9 +85,9 @@ make_geometry(const Colorf &color,
   lbf = yf + ((zb + xl) * fs);
   rbf = yf + ((zb + xr) * fs);
 
-  PTA_Vertexf coords(0);
-  PTA_ushort vindex(0);
-  PTA_Colorf colors(0);
+  PTA_Vertexf coords=PTA_Vertexf::empty_array(0);
+  PTA_ushort vindex=PTA_ushort::empty_array(0);
+  PTA_Colorf colors=PTA_Colorf::empty_array(0);
 
   // We just specify overall color
   colors.push_back(color);
@@ -121,7 +121,7 @@ make_geometry(const Colorf &color,
   vindex.push_back(8); vindex.push_back(7);
 
   GeomLine* gline = new GeomLine;
-  gline->set_coords(coords, G_PER_VERTEX, vindex);
+  gline->set_coords(coords, vindex);
   gline->set_colors(colors, G_OVERALL);
   gline->set_num_prims(12);
 

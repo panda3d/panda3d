@@ -207,17 +207,28 @@ operator = (const Geom &copy) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Geom::
-set_coords(const PTA_Vertexf &coords, GeomBindType bind,
+set_coords(const PTA_Vertexf &coords, 
            const PTA_ushort &vindex) {
   _coords = coords;
-  assert(bind == G_PER_VERTEX);
-  _bind[G_COORD] = bind;
+  _bind[G_COORD] = G_PER_VERTEX;
 
   if ( vindex )
     _vindex = vindex;
 
   mark_bound_stale();
   make_dirty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::set_coords
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void Geom::
+set_coords(const PTA_Vertexf &coords, GeomBindType bind,
+           const PTA_ushort &vindex) {
+  nassertv(bind==G_PER_VERTEX);
+  set_coords(coords,vindex);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -270,6 +281,20 @@ set_texcoords(const PTA_TexCoordf &texcoords, GeomBindType bind,
     _tindex = tindex;
 
   make_dirty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Geom::get_coords
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void Geom::
+get_coords(PTA_Vertexf &coords,
+           PTA_ushort &vindex) const {
+  coords = _coords;
+  vindex = _vindex;
+
+  // G_PER_VERTEX is implicit binding
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -807,7 +832,6 @@ describe_attr(ostream &out, const Geom *geom,
 ////////////////////////////////////////////////////////////////////
 void Geom::
 write_verbose(ostream &out, int indent_level) const {
-  GeomBindType bind_coords;
   GeomBindType bind_normals;
   GeomBindType bind_tcoords;
   GeomBindType bind_colors;
@@ -822,7 +846,7 @@ write_verbose(ostream &out, int indent_level) const {
   PTA_ushort i_tcoords;
   PTA_ushort i_colors;
 
-  get_coords(g_coords, bind_coords, i_coords);
+  get_coords(g_coords, i_coords);
   get_normals(g_normals, bind_normals, i_normals);
   get_texcoords(g_tcoords, bind_tcoords, i_tcoords);
   get_colors(g_colors, bind_colors, i_colors);
@@ -832,18 +856,18 @@ write_verbose(ostream &out, int indent_level) const {
     << get_type() << " contains "
     << get_num_prims() << " primitives:\n";
 
-  if (bind_coords == G_OFF) {
+  if ((i_coords == NULL) && (g_coords == NULL)) {
     indent(out, indent_level)
       << "No coords\n";
   } else if (i_coords!=(ushort*)0L) {
     indent(out, indent_level)
       << "Indexed coords = " << (void *)g_coords << ", length = "
       << g_coords.size() << ":\n";
-    describe_attr(out, this, bind_coords, i_coords, false, indent_level + 2);
+    describe_attr(out, this, G_PER_VERTEX, i_coords, false, indent_level + 2);
   } else {
     indent(out, indent_level)
       << "Nonindexed coords:\n";
-    describe_attr(out, this, bind_coords, g_coords, true, indent_level + 2);
+    describe_attr(out, this, G_PER_VERTEX, g_coords, true, indent_level + 2);
   }
 
   if (bind_colors == G_OFF) {

@@ -2159,7 +2159,7 @@ xfm_s_anim_body:
 integer_list:
         empty
 {
-  $$ = PTA_double(0);
+  $$ = PTA_double::empty_array(0);
 }
         | integer_list integer
 {
@@ -2177,7 +2177,7 @@ integer_list:
 real_list:
         empty
 {
-  $$ = PTA_double(0);
+  $$ = PTA_double::empty_array(0);
 }
         | real_list real
 {

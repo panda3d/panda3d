@@ -276,7 +276,7 @@ reset() {
   GLint max_clip_planes;
   glGetIntegerv(GL_MAX_CLIP_PLANES, &max_clip_planes);
   _max_clip_planes = max_clip_planes;
-  _available_clip_plane_ids = PTA(PlaneNode*)(_max_clip_planes);
+  _available_clip_plane_ids = PTA(PlaneNode*)::empty_array(_max_clip_planes);
   _clip_plane_enabled = new bool[_max_clip_planes];
   _cur_clip_plane_enabled = new bool[_max_clip_planes];
   int i;
@@ -2185,7 +2185,7 @@ texture_to_pixel_buffer(TextureContext *tc, PixelBuffer *pb,
     int w = pb->get_xsize();
     int h = pb->get_ysize();
     draw_texture(tc, dr);
-    pb->_image = PTA_uchar(w * h * pb->get_num_components());
+    pb->_image = PTA_uchar::empty_array(w * h * pb->get_num_components());
     copy_pixel_buffer(pb, dr);
   }
   report_errors();

@@ -671,7 +671,7 @@ build_geoms(InputIterator first, InputIterator last,
   }
 
   if (want_lengths) {
-    lengths = PTA_int(num_prims);
+    lengths = PTA_int::empty_array(num_prims);
     j = 0;
     for (i = first; i != last; ++i) {
       if ((*i).is_valid()) {
@@ -682,10 +682,10 @@ build_geoms(InputIterator first, InputIterator last,
   }
 
   // Now build up some arrays.
-  PTA(VType) coords(0);
-  PTA(NType) normals(0);
-  PTA(TType) texcoords(0);
-  PTA(CType) colors(0);
+  PTA(VType) coords=PTA(VType)::empty_array(0);
+  PTA(NType) normals=PTA(NType)::empty_array(0);
+  PTA(TType) texcoords=PTA(TType)::empty_array(0);
+  PTA(CType) colors=PTA(CType)::empty_array(0);
 
   int total_verts = 0;
   int total_components = 0;

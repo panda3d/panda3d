@@ -298,12 +298,12 @@ copy_geom(Geom *source, const Character *from) {
 
   PT(Geom) dest = source;
 
-  source->get_coords(coords, bind, index);
-  if (bind != G_OFF && coords == from->_cv._coords) {
+  source->get_coords(coords, index);
+  if ((coords != NULL) && (coords == (from->_cv._coords))) {
     if (dest == source) {
       dest = source->make_copy();
     }
-    dest->set_coords(_cv._coords, bind, index);
+    dest->set_coords(_cv._coords, index);
   }
 
   source->get_normals(norms, bind, index);

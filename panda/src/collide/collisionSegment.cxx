@@ -163,8 +163,8 @@ recompute_viz(Node *parent) {
   PTA_Colorf colors;
   verts.push_back(_a);
   verts.push_back(_b);
-  colors.push_back(Colorf(1.0, 1.0, 1.0, 1.0));
-  segment->set_coords(verts, G_PER_VERTEX);
+  colors.push_back(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+  segment->set_coords(verts);
   segment->set_colors(colors, G_OVERALL);
 
   segment->set_num_prims(1);

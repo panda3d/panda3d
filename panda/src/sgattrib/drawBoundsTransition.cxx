@@ -126,7 +126,7 @@ sub_render(NodeRelation *arc, const AllTransitionsWrapper &input_trans,
       verts.push_back(center);
       center[0] += sphere->get_radius();
       verts.push_back(center);
-      geom.set_coords(verts, G_PER_VERTEX);
+      geom.set_coords(verts);
       geom.set_num_prims(1);
 
       gsg->draw_sphere(&geom, NULL);

@@ -367,7 +367,7 @@ add_geom(dDrawable *geom) {
     _geoms.push_back(geom);
   } else {
     // Copy on write.
-    Geoms new_geoms(0);
+    Geoms new_geoms = Geoms::empty_array(0);
     if (_geoms.size() != 0) {
       new_geoms.v() = _geoms.v();
     }
@@ -397,7 +397,7 @@ add_geoms_from(const GeomNode *other) {
 
   } else {
     // Copy on write.
-    Geoms new_geoms(0);
+    Geoms new_geoms = Geoms::empty_array(0);
     if (_geoms.size() != 0) {
       new_geoms.v() = _geoms.v();
     }

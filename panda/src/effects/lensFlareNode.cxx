@@ -87,12 +87,12 @@ add_blind(PT(Texture) blind)
   //The lengths and number of prims will never change, so give
   //it valid values for those, but pass it an empty array of
   //vertices
-  PTA_Vertexf coords(0);
-  PTA_float tex_scales(0);
+  PTA_Vertexf coords=PTA_Vertexf::empty_array(0);
+  PTA_float tex_scales=PTA_float::empty_array(0);
 
   tex_scales.push_back(_texel_scale);
 
-  sprite->set_coords(coords, G_PER_VERTEX);
+  sprite->set_coords(coords);
   sprite->set_num_prims(1);
   sprite->set_texture(_blind);
 
@@ -112,9 +112,10 @@ set_geometry(GeomSprite *sprite, const PTA_float &geom_scales,
              const PTA_Colorf &geom_colors, const LVector3f &delta,
              const LPoint3f &light, const float &angle)
 {
-  PTA_Vertexf coords(0);
-  PTA_float tex_scales(0);
-  PTA_Colorf colors(0);
+
+  PTA_Vertexf coords=PTA_Vertexf::empty_array(0);
+  PTA_float tex_scales=PTA_float::empty_array(0);
+  PTA_Colorf colors=PTA_Colorf::empty_array(0);
 
   //Sanity check
   nassertv(geom_scales.size() == geom_offsets.size());
@@ -132,26 +133,26 @@ set_geometry(GeomSprite *sprite, const PTA_float &geom_scales,
     //will actually be the normal use of angle scales
     if (geom_angle_scales[i] < 0)
     {
-      view_scale = (1-pow(angle, 15)) * -geom_angle_scales[i];
+      view_scale = (1.0f-pow(angle, 15.0f)) * -geom_angle_scales[i];
     }
     else
     {
-      view_scale = pow(angle, 15) * geom_angle_scales[i];
+      view_scale = pow(angle, 15.0f) * geom_angle_scales[i];
     }
-    float offset = (angle - 1) / _flare_fall_off;
-    offset = (offset < 0) ? 0 : ((offset > 1) ? 1 : offset);
+    float offset = (angle - 1.0f) / _flare_fall_off;
+    offset = (offset < 0.0f) ? 0.0f : ((offset > 1.0f) ? 1.0f : offset);
     float r = geom_colors[i][0] - offset;
     float g = geom_colors[i][1] - offset;
     float b = geom_colors[i][2] - offset;
-    r = (r < 0) ? 0 : r;
-    g = (g < 0) ? 0 : g;
-    b = (b < 0) ? 0 : b;
+    r = (r < 0.0f) ? 0.0f : r;
+    g = (g < 0.0f) ? 0.0f : g;
+    b = (b < 0.0f) ? 0.0f : b;
 
     coords.push_back(position); tex_scales.push_back(geom_scales[i] * (world_scale + view_scale));
     colors.push_back(Colorf(r, g, b, 1));
   }
 
-  sprite->set_coords(coords, G_PER_VERTEX);
+  sprite->set_coords(coords);
   sprite->set_x_texel_ratio(tex_scales, G_PER_PRIM);
   sprite->set_y_texel_ratio(tex_scales, G_PER_PRIM);
   sprite->set_colors(colors, G_PER_PRIM);
@@ -185,9 +186,9 @@ prepare_flares(const LVector3f &delta, const LPoint3f &light, const float &angle
         //The lengths and number of prims will never change, so give
         //it valid values for those, but pass it an empty array of
         //vertices
-        PTA_Vertexf coords(0);
+        PTA_Vertexf coords=PTA_Vertexf::empty_array(0);
 
-        sprite->set_coords(coords, G_PER_VERTEX);
+        sprite->set_coords(coords);
         sprite->set_num_prims(_flare_offsets[i].size());
 
         node->add_geom(sprite);
@@ -228,14 +229,14 @@ prepare_blind(const float &angle, const float &tnear)
     GeomNode *node = DCAST(GeomNode, _blind_arc->get_child());
     GeomSprite *sprite = DCAST(GeomSprite, node->get_geom(0));
 
-    float offset = (angle - 1) / _blind_fall_off;
+    float offset = (angle - 1.0f) / _blind_fall_off;
     //Make sure that it always blends some
-    offset = (offset < 0.3) ? 0.3 : ((offset > 1) ? 1 : offset);
+    offset = (offset < 0.3f) ? 0.3f : ((offset > 1.0f) ? 1.0f : offset);
 
-    PTA_Vertexf coords(0);
-    PTA_Colorf colors(0);
-    PTA_float x_tex_scales(0);
-    PTA_float y_tex_scales(0);
+    PTA_Vertexf coords=PTA_Vertexf::empty_array(0);
+    PTA_Colorf colors=PTA_Colorf::empty_array(0);
+    PTA_float x_tex_scales=PTA_float::empty_array(0);
+    PTA_float y_tex_scales=PTA_float::empty_array(0);
 
     //The height and the width are set to two as sprites are always
     //drawn in a frustum of size 2.
@@ -244,15 +245,15 @@ prepare_blind(const float &angle, const float &tnear)
     float x_offset_scale = width / _blind->_pbuffer->get_xsize();
     float y_offset_scale = height / _blind->_pbuffer->get_ysize();
 
-    float inten = 1 - offset;
+    float inten = 1.0f - offset;
 
-    coords.push_back(Vertexf(0, 0, -tnear ));
-    colors.push_back(Colorf(inten,inten,inten,1));
+    coords.push_back(Vertexf(0.0f, 0.0f, -tnear ));
+    colors.push_back(Colorf(inten,inten,inten,1.0f));
     x_tex_scales.push_back(x_offset_scale); y_tex_scales.push_back(y_offset_scale);
 
     sprite->set_x_texel_ratio(x_tex_scales, G_PER_PRIM);
     sprite->set_y_texel_ratio(y_tex_scales, G_PER_PRIM);
-    sprite->set_coords(coords, G_PER_VERTEX);
+    sprite->set_coords(coords);
     sprite->set_colors(colors, G_PER_PRIM);
 
     //Tell it to recompute it's bounding volume
@@ -350,7 +351,7 @@ sub_render(const AllTransitionsWrapper &input_trans,
   LVector3f view_dir = center - origin;
 
   float dot = view_dir.dot(light_dir);
-  dot = (dot < 0) ? -dot : dot;
+  dot = (dot < 0.0f) ? -dot : dot;
 
   prepare_flares(delta, light_pos, dot);
   prepare_blind(dot, pp->get_frustum()._fnear);
@@ -462,7 +463,7 @@ fillin(DatagramIterator &scan, BamReader *manager)
   size = scan.get_uint16();
   for(i = 0; i < size; i++)
   {
-    PTA_float temp(0);
+    PTA_float temp=PTA_float::empty_array(0);
     READ_PTA(manager, scan, IPD_float::read_datagram, temp)
     _flare_scales.push_back(temp);
   }
@@ -470,7 +471,7 @@ fillin(DatagramIterator &scan, BamReader *manager)
   size = scan.get_uint16();
   for(i = 0; i < size; i++)
   {
-    PTA_float temp(0);
+    PTA_float temp=PTA_float::empty_array(0);
     READ_PTA(manager, scan, IPD_float::read_datagram, temp)
     _flare_angle_scales.push_back(temp);
   }
@@ -478,7 +479,7 @@ fillin(DatagramIterator &scan, BamReader *manager)
   size = scan.get_uint16();
   for(i = 0; i < size; i++)
   {
-    PTA_float temp(0);
+    PTA_float temp=PTA_float::empty_array(0);
     READ_PTA(manager, scan, IPD_float::read_datagram, temp)
     _flare_offsets.push_back(temp);
   }
@@ -486,7 +487,7 @@ fillin(DatagramIterator &scan, BamReader *manager)
   size = scan.get_uint16();
   for(i = 0; i < size; i++)
   {
-    PTA_Colorf temp(0);
+    PTA_Colorf temp=PTA_Colorf::empty_array(0);
     READ_PTA(manager, scan, IPD_Colorf::read_datagram, temp)
     _flare_colors.push_back(temp);
   }
@@ -688,7 +689,7 @@ prepare_sparkles(vector_relation &arcs, const vector_texture &sparkles,
         //vertices
         PTA_Vertexf coords(0);
 
-        sprite->set_coords(coords, G_PER_VERTEX);
+        sprite->set_coords(coords);
         sprite->set_num_prims(1);
 
         node->add_geom(sprite);
@@ -717,7 +718,7 @@ prepare_sparkles(vector_relation &arcs, const vector_texture &sparkles,
 
       sprite_colors.push_back(colors[i]);
 
-      sprite->set_coords(coords, G_PER_VERTEX);
+      sprite->set_coords(coords);
       sprite->set_x_texel_ratio(tex_scales, G_PER_PRIM);
       sprite->set_y_texel_ratio(tex_scales, G_PER_PRIM);
       sprite->set_colors(sprite_colors, G_PER_PRIM);

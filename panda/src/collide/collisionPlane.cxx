@@ -254,7 +254,7 @@ recompute_viz(Node *parent) {
   verts.push_back(cp + p4 * plane_scale);
 
   GeomQuad *quad = new GeomQuad;
-  quad->set_coords(verts, G_PER_VERTEX);
+  quad->set_coords(verts);
   quad->set_num_prims(1);
 
   GeomNode *viz = new GeomNode("viz-plane");

@@ -31,8 +31,8 @@
 ////////////////////////////////////////////////////////////////////
 LineSegs::
 LineSegs() {
-  _color.set(1.0, 1.0, 1.0, 1.0);
-  _thick = 1.0;
+  _color.set(1.0f, 1.0f, 1.0f, 1.0f);
+  _thick = 1.0f;
 }
 
 
@@ -122,7 +122,7 @@ const Vertexf &LineSegs::
 get_current_position() {
   if (_list.empty()) {
     // Our pen isn't anywhere.  We'll put it somewhere.
-    move_to(Vertexf(0.0, 0.0, 0.0));
+    move_to(Vertexf(0.0f, 0.0f, 0.0f));
   }
 
   return _list.back().back()._point;
@@ -202,7 +202,7 @@ create(GeomNode *previous, bool) {
       }
 
       geom->set_colors(_created_colors, G_PER_VERTEX, line_index);
-      geom->set_coords(_created_verts, G_PER_VERTEX, line_index);
+      geom->set_coords(_created_verts, line_index);
 
       previous->add_geom(geom);
     }
@@ -215,7 +215,7 @@ create(GeomNode *previous, bool) {
       geom->set_num_prims(point_index.size());
       geom->set_size(_thick);
       geom->set_colors(_created_colors, G_PER_VERTEX, point_index);
-      geom->set_coords(_created_verts, G_PER_VERTEX, point_index);
+      geom->set_coords(_created_verts, point_index);
 
       previous->add_geom(geom);
     }

@@ -37,7 +37,7 @@
 ////////////////////////////////////////////////////////////////////
 AnimBundleMaker::
 AnimBundleMaker(EggTable *root) : _root(root) {
-  _fps = 0.0;
+  _fps = 0.0f;
   _num_frames = 1;
 
   _ok_fps = true;
@@ -49,11 +49,11 @@ AnimBundleMaker(EggTable *root) : _root(root) {
     egg2sg_cat.warning()
       << "AnimBundle " << _root->get_name()
       << " specifies contradictory frame rates.\n";
-  } else if (_fps == 0.0) {
+  } else if (_fps == 0.0f) {
     egg2sg_cat.warning()
       << "AnimBundle " << _root->get_name()
       << " does not specify a frame rate.\n";
-    _fps = 24.0;
+    _fps = 24.0f;
   }
 
   if (!_ok_num_frames) {
@@ -109,7 +109,7 @@ inspect_tree(EggNode *egg_node) {
     // Check frame rate.
     EggAnimData *egg_anim = DCAST(EggAnimData, egg_node);
     if (egg_anim->has_fps()) {
-      if (_fps == 0.0) {
+      if (_fps == 0.0f) {
         _fps = egg_anim->get_fps();
       } else if (_fps != egg_anim->get_fps()) {
         // Whoops!  This table differs in opinion from the other tables.
@@ -123,7 +123,7 @@ inspect_tree(EggNode *egg_node) {
     // Check frame rate.
     EggXfmSAnim *egg_anim = DCAST(EggXfmSAnim, egg_node);
     if (egg_anim->has_fps()) {
-      if (_fps == 0.0) {
+      if (_fps == 0.0f) {
         _fps = egg_anim->get_fps();
       } else if (_fps != egg_anim->get_fps()) {
         // Whoops!  This table differs in opinion from the other tables.
@@ -240,7 +240,7 @@ create_s_channel(EggSAnimData *egg_anim, const string &name,
 
   // First we have to copy the table data from PTA_double to
   // PTA_float.
-  PTA_float new_data(egg_anim->get_num_rows());
+  PTA_float new_data=PTA_float::empty_array(egg_anim->get_num_rows());
   for (int i = 0; i < egg_anim->get_num_rows(); i++) {
     new_data[i] = (float)egg_anim->get_value(i);
   }
@@ -325,7 +325,7 @@ create_xfm_channel(EggXfmSAnim *egg_anim, const string &name,
 
           // Now we have to copy the table data from PTA_double to
           // PTA_float.
-          PTA_float new_data(child->get_num_rows());
+          PTA_float new_data=PTA_float::empty_array(child->get_num_rows());
           for (int i = 0; i < child->get_num_rows(); i++) {
             new_data[i] = (float)child->get_value(i);
           }

@@ -247,7 +247,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
 
   bool wrote_compressed = scan.get_bool();
 
-  PTA_float temp_table(0);
+  PTA_float temp_table=PTA_float::empty_array(0);
 
   if (!wrote_compressed) {
     // Regular floats.

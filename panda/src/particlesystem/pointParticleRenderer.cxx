@@ -94,10 +94,10 @@ resize_pool(int new_size) {
 
   _max_pool_size = new_size;
 
-  _vertex_array = PTA_Vertexf(new_size);
-  _color_array = PTA_Colorf(new_size);
+  _vertex_array = PTA_Vertexf::empty_array(new_size);
+  _color_array = PTA_Colorf::empty_array(new_size);
 
-  _point_primitive->set_coords(_vertex_array, G_PER_VERTEX);
+  _point_primitive->set_coords(_vertex_array);
   _point_primitive->set_colors(_color_array, G_PER_VERTEX);
 
   init_geoms();

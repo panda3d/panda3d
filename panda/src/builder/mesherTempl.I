@@ -325,7 +325,7 @@ void MesherTempl<PrimType>::
 finalize() {
   if (!_colors.empty()) {
     // Create an array in the bucket we might use to add to geoms.
-    PTA_Colorf colors(_colors.size());
+    PTA_Colorf colors=PTA_Colorf::empty_array(_colors.size());
     for (int i = 0; i < (int)_colors.size(); i++) {
       colors[i] = _colors[i];
     }

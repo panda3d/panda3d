@@ -139,7 +139,7 @@ fill_geom(Geom *geom, const PTA_BuilderV &v_array,
   // to a Vertexf, we can get away with casting this to a
   // PTA_Vertexf.
 
-  geom->set_coords((PTA_Vertexf &)v_array, G_PER_VERTEX);
+  geom->set_coords((PTA_Vertexf &)v_array);
 
   if (n_attr != G_OFF) {
     geom->set_normals((PTA_Normalf &)n_array, n_attr);
@@ -243,7 +243,7 @@ fill_geom(Geom *geom, const PTA_ushort &v_array,
     }
   }
 
-  geom->set_coords(v_data, G_PER_VERTEX, v_array);
+  geom->set_coords(v_data, v_array);
 
   if (n_attr != G_OFF) {
     geom->set_normals(n_data, n_attr, n_array);

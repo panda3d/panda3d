@@ -52,12 +52,11 @@ transform_vertices(Geom *geom, const LMatrix4f &mat) {
   nassertr(geom != (Geom *)NULL, false);
 
   PTA_Vertexf coords;
-  GeomBindType bind;
   PTA_ushort index;
 
-  geom->get_coords(coords, bind, index);
+  geom->get_coords(coords, index);
 
-  if (bind != G_OFF) {
+  if (coords != NULL) {
     // Look up the Geom's coords in our table--have we already
     // transformed this array?
     SourceVertices sv;
@@ -76,12 +75,13 @@ transform_vertices(Geom *geom, const LMatrix4f &mat) {
       nassertr(new_coords.size() == coords.size(), false);
     }
 
-    geom->set_coords(new_coords, bind, index);
+    geom->set_coords(new_coords, index);
     transformed = true;
   }
 
   // Now do the same thing for normals.
   PTA_Normalf norms;
+  GeomBindType bind;
 
   geom->get_normals(norms, bind, index);
 

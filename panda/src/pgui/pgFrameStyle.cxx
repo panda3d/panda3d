@@ -147,7 +147,7 @@ generate_into(Node *node, const LVecBase4f &frame) {
     arc = new RenderRelation(node, gnode, -1);
   }
 
-  if (arc != (NodeRelation *)NULL && _color[3] != 1.0) {
+  if (arc != (NodeRelation *)NULL && _color[3] != 1.0f) {
     // We've got some alpha on the color; we need transparency.
     TransparencyProperty::Mode mode = TransparencyProperty::M_alpha;
     TransparencyTransition *tt = new TransparencyTransition(mode);
@@ -174,19 +174,19 @@ generate_flat_geom(const LVecBase4f &frame) {
   float bottom = frame[2];
   float top = frame[3];
 
-  PTA_int lengths(0);
+  PTA_int lengths=PTA_int::empty_array(0);
   lengths.push_back(4);
 
   PTA_Vertexf verts;
-  verts.push_back(Vertexf(left, 0.0, top));
-  verts.push_back(Vertexf(left, 0.0, bottom));
-  verts.push_back(Vertexf(right, 0.0, top));
-  verts.push_back(Vertexf(right, 0.0, bottom));
+  verts.push_back(Vertexf(left, 0.0f, top));
+  verts.push_back(Vertexf(left, 0.0f, bottom));
+  verts.push_back(Vertexf(right, 0.0f, top));
+  verts.push_back(Vertexf(right, 0.0f, bottom));
 
   geom->set_num_prims(1);
   geom->set_lengths(lengths);
 
-  geom->set_coords(verts, G_PER_VERTEX);
+  geom->set_coords(verts);
 
   PTA_Colorf colors;
   colors.push_back(_color);
@@ -316,14 +316,14 @@ generate_bevel_geom(const LVecBase4f &frame, bool in) {
   // Tristrip 1.
   lengths.push_back(8);
     
-  verts.push_back(Vertexf(right, 0.0, bottom));
-  verts.push_back(Vertexf(inner_right, 0.0, inner_bottom));
-  verts.push_back(Vertexf(left, 0.0, bottom));
-  verts.push_back(Vertexf(inner_left, 0.0, inner_bottom));
-  verts.push_back(Vertexf(left, 0.0, top));
-  verts.push_back(Vertexf(inner_left, 0.0, inner_top));
-  verts.push_back(Vertexf(right, 0.0, top));
-  verts.push_back(Vertexf(inner_right, 0.0, inner_top));
+  verts.push_back(Vertexf(right, 0.0f, bottom));
+  verts.push_back(Vertexf(inner_right, 0.0f, inner_bottom));
+  verts.push_back(Vertexf(left, 0.0f, bottom));
+  verts.push_back(Vertexf(inner_left, 0.0f, inner_bottom));
+  verts.push_back(Vertexf(left, 0.0f, top));
+  verts.push_back(Vertexf(inner_left, 0.0f, inner_top));
+  verts.push_back(Vertexf(right, 0.0f, top));
+  verts.push_back(Vertexf(inner_right, 0.0f, inner_top));
   
   colors.push_back(cbottom);
   colors.push_back(cbottom);
@@ -335,12 +335,12 @@ generate_bevel_geom(const LVecBase4f &frame, bool in) {
   // Tristrip 2.
   lengths.push_back(6);
 
-  verts.push_back(Vertexf(right, 0.0, bottom));
-  verts.push_back(Vertexf(right, 0.0, top));
-  verts.push_back(Vertexf(inner_right, 0.0, inner_bottom));
-  verts.push_back(Vertexf(inner_right, 0.0, inner_top));
-  verts.push_back(Vertexf(inner_left, 0.0, inner_bottom));
-  verts.push_back(Vertexf(inner_left, 0.0, inner_top));
+  verts.push_back(Vertexf(right, 0.0f, bottom));
+  verts.push_back(Vertexf(right, 0.0f, top));
+  verts.push_back(Vertexf(inner_right, 0.0f, inner_bottom));
+  verts.push_back(Vertexf(inner_right, 0.0f, inner_top));
+  verts.push_back(Vertexf(inner_left, 0.0f, inner_bottom));
+  verts.push_back(Vertexf(inner_left, 0.0f, inner_top));
 
   colors.push_back(cright);
   colors.push_back(cright);
@@ -349,7 +349,7 @@ generate_bevel_geom(const LVecBase4f &frame, bool in) {
 
   geom->set_num_prims(2);
   geom->set_lengths(lengths);
-  geom->set_coords(verts, G_PER_VERTEX);
+  geom->set_coords(verts);
   geom->set_colors(colors, G_PER_COMPONENT);
   
   return gnode.p();
@@ -468,26 +468,26 @@ generate_groove_geom(const LVecBase4f &frame, bool in) {
   float bottom = frame[2];
   float top = frame[3];
 
-  float mid_left = left + 0.5 * _width[0];
-  float mid_right = right - 0.5 * _width[0];
-  float mid_bottom = bottom + 0.5 * _width[1];
-  float mid_top = top - 0.5 * _width[1];
+  float mid_left = left + 0.5f * _width[0];
+  float mid_right = right - 0.5f * _width[0];
+  float mid_bottom = bottom + 0.5f * _width[1];
+  float mid_top = top - 0.5f * _width[1];
 
   float inner_left = left + _width[0];
   float inner_right = right - _width[0];
   float inner_bottom = bottom + _width[1];
   float inner_top = top - _width[1];
 
-  float left_color_scale = 1.2;
-  float right_color_scale = 0.8;
-  float bottom_color_scale = 0.7;
-  float top_color_scale = 1.3;
+  float left_color_scale = 1.2f;
+  float right_color_scale = 0.8f;
+  float bottom_color_scale = 0.7f;
+  float top_color_scale = 1.3f;
 
   if (in) {
-    right_color_scale = 1.2;
-    left_color_scale = 0.8;
-    top_color_scale = 0.7;
-    bottom_color_scale = 1.3;
+    right_color_scale = 1.2f;
+    left_color_scale = 0.8f;
+    top_color_scale = 0.7f;
+    bottom_color_scale = 1.3f;
   }
 
   // Clamp all colors at white, and don't scale the alpha.
@@ -522,14 +522,14 @@ generate_groove_geom(const LVecBase4f &frame, bool in) {
   // Tristrip 1.
   lengths.push_back(8);
     
-  verts.push_back(Vertexf(right, 0.0, bottom));
-  verts.push_back(Vertexf(mid_right, 0.0, mid_bottom));
-  verts.push_back(Vertexf(left, 0.0, bottom));
-  verts.push_back(Vertexf(mid_left, 0.0, mid_bottom));
-  verts.push_back(Vertexf(left, 0.0, top));
-  verts.push_back(Vertexf(mid_left, 0.0, mid_top));
-  verts.push_back(Vertexf(right, 0.0, top));
-  verts.push_back(Vertexf(mid_right, 0.0, mid_top));
+  verts.push_back(Vertexf(right, 0.0f, bottom));
+  verts.push_back(Vertexf(mid_right, 0.0f, mid_bottom));
+  verts.push_back(Vertexf(left, 0.0f, bottom));
+  verts.push_back(Vertexf(mid_left, 0.0f, mid_bottom));
+  verts.push_back(Vertexf(left, 0.0f, top));
+  verts.push_back(Vertexf(mid_left, 0.0f, mid_top));
+  verts.push_back(Vertexf(right, 0.0f, top));
+  verts.push_back(Vertexf(mid_right, 0.0f, mid_top));
   
   colors.push_back(cbottom);
   colors.push_back(cbottom);
@@ -541,14 +541,14 @@ generate_groove_geom(const LVecBase4f &frame, bool in) {
   // Tristrip 2.
   lengths.push_back(8);
     
-  verts.push_back(Vertexf(mid_right, 0.0, mid_bottom));
-  verts.push_back(Vertexf(inner_right, 0.0, inner_bottom));
-  verts.push_back(Vertexf(mid_left, 0.0, mid_bottom));
-  verts.push_back(Vertexf(inner_left, 0.0, inner_bottom));
-  verts.push_back(Vertexf(mid_left, 0.0, mid_top));
-  verts.push_back(Vertexf(inner_left, 0.0, inner_top));
-  verts.push_back(Vertexf(mid_right, 0.0, mid_top));
-  verts.push_back(Vertexf(inner_right, 0.0, inner_top));
+  verts.push_back(Vertexf(mid_right, 0.0f, mid_bottom));
+  verts.push_back(Vertexf(inner_right, 0.0f, inner_bottom));
+  verts.push_back(Vertexf(mid_left, 0.0f, mid_bottom));
+  verts.push_back(Vertexf(inner_left, 0.0f, inner_bottom));
+  verts.push_back(Vertexf(mid_left, 0.0f, mid_top));
+  verts.push_back(Vertexf(inner_left, 0.0f, inner_top));
+  verts.push_back(Vertexf(mid_right, 0.0f, mid_top));
+  verts.push_back(Vertexf(inner_right, 0.0f, inner_top));
   
   colors.push_back(ctop);
   colors.push_back(ctop);
@@ -560,14 +560,14 @@ generate_groove_geom(const LVecBase4f &frame, bool in) {
   // Tristrip 3.
   lengths.push_back(8);
 
-  verts.push_back(Vertexf(right, 0.0, bottom));
-  verts.push_back(Vertexf(right, 0.0, top));
-  verts.push_back(Vertexf(mid_right, 0.0, mid_bottom));
-  verts.push_back(Vertexf(mid_right, 0.0, mid_top));
-  verts.push_back(Vertexf(inner_right, 0.0, inner_bottom));
-  verts.push_back(Vertexf(inner_right, 0.0, inner_top));
-  verts.push_back(Vertexf(inner_left, 0.0, inner_bottom));
-  verts.push_back(Vertexf(inner_left, 0.0, inner_top));
+  verts.push_back(Vertexf(right, 0.0f, bottom));
+  verts.push_back(Vertexf(right, 0.0f, top));
+  verts.push_back(Vertexf(mid_right, 0.0f, mid_bottom));
+  verts.push_back(Vertexf(mid_right, 0.0f, mid_top));
+  verts.push_back(Vertexf(inner_right, 0.0f, inner_bottom));
+  verts.push_back(Vertexf(inner_right, 0.0f, inner_top));
+  verts.push_back(Vertexf(inner_left, 0.0f, inner_bottom));
+  verts.push_back(Vertexf(inner_left, 0.0f, inner_top));
 
   colors.push_back(cright);
   colors.push_back(cright);
@@ -578,7 +578,7 @@ generate_groove_geom(const LVecBase4f &frame, bool in) {
 
   geom->set_num_prims(3);
   geom->set_lengths(lengths);
-  geom->set_coords(verts, G_PER_VERTEX);
+  geom->set_coords(verts);
   geom->set_colors(colors, G_PER_COMPONENT);
   
   return gnode.p();

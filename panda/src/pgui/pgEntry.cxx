@@ -45,12 +45,12 @@ PGEntry(const string &name) : PGItem(name)
   _cursor_position = 0;
   _cursor_stale = true;
   _max_chars = 0;
-  _max_width = 0.0;
+  _max_width = 0.0f;
   _num_lines = 1;
   _last_text_def = (TextNode *)NULL;
   _text_geom_stale = true;
-  _blink_start = 0.0;
-  _blink_rate = 1.0;
+  _blink_start = 0.0f;
+  _blink_rate = 1.0f;
 
   _text_render_root = new NamedNode("text_root");
   _current_text_arc = (NodeRelation *)NULL;
@@ -262,7 +262,7 @@ press(const MouseWatcherParameter &param, bool background) {
               
               // Check the length.
               bool too_long = false;
-              if (_max_width > 0.0) {
+              if (_max_width > 0.0f) {
                 TextNode *text_node = get_text_def(S_focus);
                 if (_num_lines <= 1) {
                   // If we have only one line, we can check the length
@@ -420,10 +420,10 @@ setup(float width, int num_lines) {
   float line_height = text_node->get_line_height();
 
   // Define determine the four corners of the frame.
-  LPoint3f ll(0.0, 0.0, -0.3 * line_height - (line_height * (num_lines - 1)));
-  LPoint3f ur(width, 0.0, line_height);
-  LPoint3f lr(ur[0], 0.0, ll[2]);
-  LPoint3f ul(ll[0], 0.0, ur[2]);
+  LPoint3f ll(0.0f, 0.0f, -0.3f * line_height - (line_height * (num_lines - 1)));
+  LPoint3f ur(width, 0.0f, line_height);
+  LPoint3f lr(ur[0], 0.0f, ll[2]);
+  LPoint3f ul(ll[0], 0.0f, ur[2]);
 
   // Transform each corner by the TextNode's transform.
   LMatrix4f mat = text_node->get_transform();
@@ -453,31 +453,31 @@ setup(float width, int num_lines) {
 
   case TM_ALIGN_RIGHT:
     frame[0] = -width;
-    frame[1] = 0.0;
+    frame[1] = 0.0f;
     break;
   }
 
-  set_frame(frame[0] - 0.15, frame[1] + 0.15, frame[2], frame[3]);
+  set_frame(frame[0] - 0.15f, frame[1] + 0.15f, frame[2], frame[3]);
 
   PGFrameStyle style;
-  style.set_width(0.1, 0.1);
+  style.set_width(0.1f, 0.1f);
   style.set_type(PGFrameStyle::T_bevel_in);
-  style.set_color(0.8, 0.8, 0.8, 1.0);
+  style.set_color(0.8f, 0.8f, 0.8f, 1.0f);
 
   set_frame_style(S_no_focus, style);
 
-  style.set_color(0.9, 0.9, 0.9, 1.0);
+  style.set_color(0.9f, 0.9f, 0.9f, 1.0f);
   set_frame_style(S_focus, style);
 
-  style.set_color(0.6, 0.6, 0.6, 1.0);
+  style.set_color(0.6f, 0.6f, 0.6f, 1.0f);
   set_frame_style(S_inactive, style);
 
   // Set up a default cursor: a vertical bar.
   clear_cursor_def();
   LineSegs ls;
-  ls.set_color(0.0, 0.0, 0.0, 1.0);
-  ls.move_to(0.0, 0.0, -0.15 * line_height);
-  ls.draw_to(0.0, 0.0, 0.85 * line_height);
+  ls.set_color(0.0f, 0.0f, 0.0f, 1.0f);
+  ls.move_to(0.0f, 0.0f, -0.15f * line_height);
+  ls.draw_to(0.0f, 0.0f, 0.85f * line_height);
   new RenderRelation(get_cursor_def(), ls.create());
 
   // An underscore cursor would work too.
@@ -501,7 +501,7 @@ setup(float width, int num_lines) {
 ////////////////////////////////////////////////////////////////////
 void PGEntry::
 set_text_def(int state, TextNode *node) {
-  nassertv(state >= 0 && state < 1000);  // Sanity check.
+  nassertv(state >= 0 && state < 1.0f);  // Sanity check.
   if (node == (TextNode *)NULL && state >= (int)_text_defs.size()) {
     // If we're setting it to NULL, we don't need to slot a new one.
     return;
@@ -614,7 +614,7 @@ update_text() {
     // We need to regenerate.
     _last_text_def = node;
 
-    if (_max_width > 0.0 && _num_lines > 1) {
+    if (_max_width > 0.0f && _num_lines > 1) {
       // Fold the text into multiple lines.
       string ww_text = 
         _last_text_def->wordwrap_to(display_text, _max_width, true);
@@ -629,7 +629,7 @@ update_text() {
         line._str = ww_text.substr(p, q - p);
 
         // Get the left edge of the text at this line.
-        line._left = 0.0;
+        line._left = 0.0f;
         if (_last_text_def->get_align() != TM_ALIGN_LEFT) {
           _last_text_def->set_text(line._str);
           line._left = _last_text_def->get_left();
@@ -643,7 +643,7 @@ update_text() {
       line._str = ww_text.substr(p);
       
       // Get the left edge of the text at this line.
-      line._left = 0.0;
+      line._left = 0.0f;
       if (_last_text_def->get_align() != TM_ALIGN_LEFT) {
         _last_text_def->set_text(line._str);
         line._left = _last_text_def->get_left();
@@ -703,7 +703,7 @@ update_cursor() {
       _last_text_def->calc_width(_ww_lines[row]._str.substr(0, column));
     float line_height = _last_text_def->get_line_height();
 
-    LVecBase3f trans(_ww_lines[row]._left + width, 0.0, -line_height * row);
+    LVecBase3f trans(_ww_lines[row]._left + width, 0.0f, -line_height * row);
     LMatrix4f mat = LMatrix4f::translate_mat(trans) * node->get_transform();
     _cursor_def->set_transition(new TransformTransition(mat));
 

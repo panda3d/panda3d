@@ -35,8 +35,8 @@ get_source_type() const {
 INLINE void SpriteParticleRenderer::
 set_texture(Texture *tex) {
   _sprite_primitive->set_texture(tex);
-  _sprite_primitive->set_ll_uv(TexCoordf(0.0, 0.0));
-  _sprite_primitive->set_ur_uv(TexCoordf(1.0, 1.0));
+  _sprite_primitive->set_ll_uv(TexCoordf(0.0f, 0.0f));
+  _sprite_primitive->set_ur_uv(TexCoordf(1.0f, 1.0f));
   _source_type = ST_texture;
 }
 
@@ -82,11 +82,11 @@ set_color(const Colorf &color) {
 INLINE void SpriteParticleRenderer::
 set_x_scale_flag(bool animate_x_ratio) {
   if (animate_x_ratio == true && _animate_x_ratio == false) {
-    _x_texel_array = PTA_float(_pool_size);
+    _x_texel_array = PTA_float::empty_array(_pool_size);
     _sprite_primitive->set_x_texel_ratio(_x_texel_array, G_PER_PRIM);
   }
   else if (animate_x_ratio == false && _animate_x_ratio == true) {
-    _x_texel_array = PTA_float(1);
+    _x_texel_array = PTA_float::empty_array(1);
     _sprite_primitive->set_x_texel_ratio(_x_texel_array, G_OVERALL);
   }
 
@@ -100,11 +100,11 @@ set_x_scale_flag(bool animate_x_ratio) {
 INLINE void SpriteParticleRenderer::
 set_y_scale_flag(bool animate_y_ratio) {
   if (animate_y_ratio == true && _animate_y_ratio == false) {
-    _y_texel_array = PTA_float(_pool_size);
+    _y_texel_array = PTA_float::empty_array(_pool_size);
     _sprite_primitive->set_y_texel_ratio(_y_texel_array, G_PER_PRIM);
   }
   else if (animate_y_ratio == false && _animate_y_ratio == true) {
-    _y_texel_array = PTA_float(1);
+    _y_texel_array = PTA_float::empty_array(1);
     _sprite_primitive->set_y_texel_ratio(_y_texel_array, G_OVERALL);
   }
 
@@ -118,11 +118,11 @@ set_y_scale_flag(bool animate_y_ratio) {
 INLINE void SpriteParticleRenderer::
 set_anim_angle_flag(bool animate_theta) {
   if (animate_theta == true && _animate_theta == false) {
-    _theta_array = PTA_float(_pool_size);
+    _theta_array = PTA_float::empty_array(_pool_size);
     _sprite_primitive->set_thetas(_theta_array, G_PER_PRIM);
   }
   else if (animate_theta == false && _animate_theta == true) {
-    _theta_array = PTA_float(_pool_size);
+    _theta_array = PTA_float::empty_array(_pool_size);
     _sprite_primitive->set_thetas(_theta_array, G_OVERALL);
   }
 

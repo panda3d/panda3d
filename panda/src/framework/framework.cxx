@@ -236,15 +236,14 @@ reached_node(Node *node, NullTransitionWrapper &, NullLevelState &) {
       }
     }
     if (vert_count > 0) {
-      PTA_Vertexf verts(2 * vert_count);
+      PTA_Vertexf verts=PTA_Vertexf::empty_array(2 * vert_count);
       for (i = 0; i < geom->get_num_geoms(); i++) {
         dDrawable *d = geom->get_geom(i);
         if (d->is_of_type(Geom::get_class_type())) {
           PTA_Vertexf lverts;
           PTA_ushort iverts;
-          GeomBindType vbond;
           Geom *g = DCAST(Geom, d);
-          g->get_coords(lverts, vbond, iverts);
+          g->get_coords(lverts, iverts);
           int vert_idx = 0;
           if (g->get_binding(G_NORMAL) == G_OFF) {
             for (int j=0; j<g->get_num_prims(); ++j) {
@@ -269,7 +268,7 @@ reached_node(Node *node, NullTransitionWrapper &, NullLevelState &) {
         }
       }
       gn->set_num_prims(vert_count);
-      gn->set_coords(verts, G_PER_VERTEX);
+      gn->set_coords(verts);
     }
     geom->add_geom(gn);
   }
@@ -1327,7 +1326,7 @@ int framework_main(int argc, char *argv[]) {
 
     PT(GeomTri) geom = new GeomTri;
     geom->set_num_prims(1);
-    geom->set_coords(coords, G_PER_VERTEX);
+    geom->set_coords(coords);
     geom->set_texcoords(uvs, G_PER_VERTEX);
     geom->set_normals(norms, G_PER_PRIM);
     geom->set_colors(colors, G_PER_VERTEX, cindex);

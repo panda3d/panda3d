@@ -190,7 +190,7 @@ setup(const string &label) {
   PT_Node geom = text_node->generate();
 
   LVecBase4f frame = text_node->get_card_actual();
-  set_frame(frame[0] - 0.4, frame[1] + 0.4, frame[2] - 0.15, frame[3] + 0.15);
+  set_frame(frame[0] - 0.4f, frame[1] + 0.4f, frame[2] - 0.15f, frame[3] + 0.15f);
 
   new RenderRelation(get_state_def(S_ready), geom);
   NodeRelation *down = new RenderRelation(get_state_def(S_depressed), geom);
@@ -198,24 +198,24 @@ setup(const string &label) {
   NodeRelation *inact = new RenderRelation(get_state_def(S_inactive), geom);
 
   PGFrameStyle style;
-  style.set_color(0.8, 0.8, 0.8, 1.0);
-  style.set_width(0.1, 0.1);
+  style.set_color(0.8f, 0.8f, 0.8f, 1.0);
+  style.set_width(0.1f, 0.1f);
 
   style.set_type(PGFrameStyle::T_bevel_out);
   set_frame_style(S_ready, style);
 
-  style.set_color(0.9, 0.9, 0.9, 1.0);
+  style.set_color(0.9f, 0.9f, 0.9f, 1.0);
   set_frame_style(S_rollover, style);
 
-  ColorTransition *ct = new ColorTransition(Colorf(0.8, 0.8, 0.8, 1.0));
+  ColorTransition *ct = new ColorTransition(Colorf(0.8f, 0.8f, 0.8f, 1.0f));
   inact->set_transition(ct);
-  style.set_color(0.6, 0.6, 0.6, 1.0);
+  style.set_color(0.6f, 0.6f, 0.6f, 1.0);
   set_frame_style(S_inactive, style);
 
   style.set_type(PGFrameStyle::T_bevel_in);
-  style.set_color(0.8, 0.8, 0.8, 1.0);
+  style.set_color(0.8f, 0.8f, 0.8f, 1.0);
   set_frame_style(S_depressed, style);
-  LMatrix4f translate = LMatrix4f::translate_mat(0.05, 0.0, -0.05);
+  LMatrix4f translate = LMatrix4f::translate_mat(0.05f, 0.0f, -0.05f);
   TransformTransition *tt = new TransformTransition(translate);
   down->set_transition(tt);
 }

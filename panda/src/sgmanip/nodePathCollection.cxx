@@ -81,7 +81,7 @@ add_path(const NodePath &node_path) {
 
   if (_node_paths.get_ref_count() > 1) {
     PTA(ArcChain) old_node_paths = _node_paths;
-    _node_paths = PTA(ArcChain)(0);
+    _node_paths = PTA(ArcChain)::empty_array(0);
     _node_paths.v() = old_node_paths.v();
   }
 
@@ -116,7 +116,7 @@ remove_path(const NodePath &node_path) {
 
   if (_node_paths.get_ref_count() > 1) {
     PTA(ArcChain) old_node_paths = _node_paths;
-    _node_paths = PTA(ArcChain)(0);
+    _node_paths = PTA(ArcChain)::empty_array(0);
     _node_paths.v() = old_node_paths.v();
   }
 

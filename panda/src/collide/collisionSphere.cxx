@@ -68,7 +68,7 @@ xform(const LMatrix4f &mat) {
 
   // This is a little cheesy and fails miserably in the presence of a
   // non-proportionate scale.
-  LVector3f radius_v = LVector3f(_radius, 0.0, 0.0) * mat;
+  LVector3f radius_v = LVector3f(_radius, 0.0f, 0.0f) * mat;
   _radius = length(radius_v);
 
   clear_viz_arcs();
@@ -125,7 +125,7 @@ test_intersection_from_sphere(CollisionHandler *record,
 
   LPoint3f from_center = sphere->get_center() * entry.get_wrt_space();
   LVector3f from_radius_v =
-    LVector3f(sphere->get_radius(), 0.0, 0.0) * entry.get_wrt_space();
+    LVector3f(sphere->get_radius(), 0.0f, 0.0f) * entry.get_wrt_space();
   float from_radius = length(from_radius_v);
 
   LPoint3f into_center = _center;
@@ -268,8 +268,8 @@ recompute_viz(Node *parent) {
   GeomSphere *sphere = new GeomSphere;
   PTA_Vertexf verts;
   verts.push_back(_center);
-  verts.push_back(_center + LVector3f(_radius, 0.0, 0.0));
-  sphere->set_coords(verts, G_PER_VERTEX);
+  verts.push_back(_center + LVector3f(_radius, 0.0f, 0.0f));
+  sphere->set_coords(verts);
   sphere->set_num_prims(1);
 
   GeomNode *viz = new GeomNode("viz-sphere");

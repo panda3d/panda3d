@@ -44,34 +44,34 @@ TypeHandle TextNode::_type_handle;
 ////////////////////////////////////////////////////////////////////
 TextNode::
 TextNode(const string &name) : NamedNode(name) {
-  _slant = 0.0;
+  _slant = 0.0f;
 
   _flags = 0;
   _align = TM_ALIGN_LEFT;
-  _wordwrap_width = 1.0;
+  _wordwrap_width = 1.0f;
 
-  _text_color.set(1.0, 1.0, 1.0, 1.0);
-  _frame_color.set(1.0, 1.0, 1.0, 1.0);
-  _card_color.set(1.0, 1.0, 1.0, 1.0);
-  _shadow_color.set(1.0, 1.0, 1.0, 1.0);
+  _text_color.set(1.0f, 1.0f, 1.0f, 1.0f);
+  _frame_color.set(1.0f, 1.0f, 1.0f, 1.0f);
+  _card_color.set(1.0f, 1.0f, 1.0f, 1.0f);
+  _shadow_color.set(1.0f, 1.0f, 1.0f, 1.0f);
 
-  _frame_width = 1.0;
+  _frame_width = 1.0f;
 
-  _frame_ul.set(0.0, 0.0);
-  _frame_lr.set(0.0, 0.0);
-  _card_ul.set(0.0, 0.0);
-  _card_lr.set(0.0, 0.0);
-  _shadow_offset.set(0.0, 0.0);
+  _frame_ul.set(0.0f, 0.0f);
+  _frame_lr.set(0.0f, 0.0f);
+  _card_ul.set(0.0f, 0.0f);
+  _card_lr.set(0.0f, 0.0f);
+  _shadow_offset.set(0.0f, 0.0f);
 
   _draw_order = 1;
 
   _transform = LMatrix4f::ident_mat();
   _coordinate_system = CS_default;
 
-  _ul2d.set(0.0, 0.0);
-  _lr2d.set(0.0, 0.0);
-  _ul3d.set(0.0, 0.0, 0.0);
-  _lr3d.set(0.0, 0.0, 0.0);
+  _ul2d.set(0.0f, 0.0f);
+  _lr2d.set(0.0f, 0.0f);
+  _ul3d.set(0.0f, 0.0f, 0.0f);
+  _lr3d.set(0.0f, 0.0f, 0.0f);
   _num_rows = 0;
 
   _freeze_level = 0;
@@ -214,10 +214,10 @@ generate() {
   // horizontally and vertically, and for each row, there is another
   // node for each character.
 
-  _ul2d.set(0.0, 0.0);
-  _lr2d.set(0.0, 0.0);
-  _ul3d.set(0.0, 0.0, 0.0);
-  _lr3d.set(0.0, 0.0, 0.0);
+  _ul2d.set(0.0f, 0.0f);
+  _lr2d.set(0.0f, 0.0f);
+  _ul3d.set(0.0f, 0.0f, 0.0f);
+  _lr3d.set(0.0f, 0.0f, 0.0f);
   _num_rows = 0;
 
   // Now build a new sub-tree for all the text components.
@@ -269,8 +269,8 @@ generate() {
   _num_rows = num_rows;
   _ul2d = ul;
   _lr2d = lr;
-  _ul3d.set(ul[0], 0.0, ul[1]);
-  _lr3d.set(lr[0], 0.0, lr[1]);
+  _ul3d.set(ul[0], 0.0f, ul[1]);
+  _lr3d.set(lr[0], 0.0f, lr[1]);
 
   _ul3d = _ul3d * _transform;
   _lr3d = _lr3d * _transform;
@@ -286,13 +286,13 @@ generate() {
     // this will need to be addressed in the future.
 
     LMatrix4f offset =
-      LMatrix4f::translate_mat(_shadow_offset[0], 0.0, -_shadow_offset[1]);
+      LMatrix4f::translate_mat(_shadow_offset[0], 0.0f, -_shadow_offset[1]);
     RenderRelation *shadow_arc =
       new RenderRelation(sub_root, text_root, _draw_order + 1);
     shadow_arc->set_transition(new TransformTransition(offset));
     shadow_arc->set_transition(new ColorTransition(_shadow_color));
 
-    if (_shadow_color[3] != 1.0) {
+    if (_shadow_color[3] != 1.0f) {
       shadow_arc->set_transition
         (new TransparencyTransition(TransparencyProperty::M_alpha));
     }
@@ -308,7 +308,7 @@ generate() {
     RenderRelation *frame_arc =
       new RenderRelation(sub_root, frame_root, _draw_order + 1);
     frame_arc->set_transition(new ColorTransition(_frame_color));
-    if (_frame_color[3] != 1.0) {
+    if (_frame_color[3] != 1.0f) {
       frame_arc->set_transition
         (new TransparencyTransition(TransparencyProperty::M_alpha));
     }
@@ -328,7 +328,7 @@ generate() {
     RenderRelation *card_arc =
       new RenderRelation(sub_root, card_root, _draw_order);
     card_arc->set_transition(new ColorTransition(_card_color));
-    if (_card_color[3] != 1.0) {
+    if (_card_color[3] != 1.0f) {
       card_arc->set_transition
         (new TransparencyTransition(TransparencyProperty::M_alpha));
     }
@@ -394,10 +394,10 @@ do_rebuild() {
 ////////////////////////////////////////////////////////////////////
 void TextNode::
 do_measure() {
-  _ul2d.set(0.0, 0.0);
-  _lr2d.set(0.0, 0.0);
-  _ul3d.set(0.0, 0.0, 0.0);
-  _lr3d.set(0.0, 0.0, 0.0);
+  _ul2d.set(0.0f, 0.0f);
+  _lr2d.set(0.0f, 0.0f);
+  _ul3d.set(0.0f, 0.0f, 0.0f);
+  _lr3d.set(0.0f, 0.0f, 0.0f);
   _num_rows = 0;
 
   if (_text.empty() || _font.is_null()) {
@@ -416,8 +416,8 @@ do_measure() {
   _num_rows = num_rows;
   _ul2d = ul;
   _lr2d = lr;
-  _ul3d.set(ul[0], 0.0, ul[1]);
-  _lr3d.set(lr[0], 0.0, lr[1]);
+  _ul3d.set(ul[0], 0.0f, ul[1]);
+  _lr3d.set(lr[0], 0.0f, lr[1]);
 
   _ul3d = _ul3d * _transform;
   _lr3d = _lr3d * _transform;
@@ -434,15 +434,15 @@ do_measure() {
 ////////////////////////////////////////////////////////////////////
 float TextNode::
 assemble_row(const char *&source, Node *dest) {
-  nassertr(_font != (TextFont *)NULL, 0.0);
+  nassertr(_font != (TextFont *)NULL, 0.0f);
 
-  float xpos = 0.0;
+  float xpos = 0.0f;
   while (*source != '\0' && *source != '\n') {
     int character = (unsigned char)*source;
 
     if (character == ' ') {
       // A space is a special case.
-      xpos += 0.25;
+      xpos += 0.25f;
 
     } else {
       // A printable character.
@@ -465,7 +465,7 @@ assemble_row(const char *&source, Node *dest) {
         const AllTransitionsWrapper &trans = def->_trans;
 
         LMatrix4f mat = LMatrix4f::ident_mat();
-        mat.set_row(3, LVector3f(xpos, 0, 0));
+        mat.set_row(3, LVector3f(xpos, 0.0f, 0.0f));
         if (char_geom != NULL) {
           string ch(1, (char)character);
           GeomNode *geode = new GeomNode(ch);
@@ -497,13 +497,13 @@ assemble_text(const char *source, LVector2f &ul, LVector2f &lr,
   nassertr(_font != (TextFont *)NULL, (Node *)NULL);
   float line_height = get_line_height();
 
-  ul.set(0.0, 0.8 * line_height);
-  lr.set(0.0, 0.0);
+  ul.set(0.0f, 0.8f * line_height);
+  lr.set(0.0f, 0.0f);
 
   // Make a group node to hold our formatted text geometry.
   Node *root_node = new NamedNode("text");
 
-  float posy = 0.0;
+  float posy = 0.0f;
   int row_index = 0;
   while (*source != '\0') {
     char numstr[20];
@@ -519,26 +519,27 @@ assemble_text(const char *source, LVector2f &ul, LVector2f &lr,
 
     LMatrix4f mat = LMatrix4f::ident_mat();
     if (_align == TM_ALIGN_LEFT) {
-      mat.set_row(3, LVector3f(0, 0, posy));
+      mat.set_row(3, LVector3f(0.0f, 0.0f, posy));
       lr[0] = max(lr[0], row_width);
 
     } else if (_align == TM_ALIGN_RIGHT) {
-      mat.set_row(3, LVector3f(-row_width, 0, posy));
+      mat.set_row(3, LVector3f(-row_width, 0.0f, posy));
       ul[0] = min(ul[0], -row_width);
 
     } else {
-      mat.set_row(3, LVector3f(-row_width / 2.0, 0, posy));
-      lr[0] = max(lr[0], row_width / 2);
-      ul[0] = min(ul[0], -row_width / 2);
+      float half_row_width=0.5f*row_width;
+      mat.set_row(3, LVector3f(-half_row_width, 0.0f, posy));
+      lr[0] = max(lr[0], half_row_width);
+      ul[0] = min(ul[0], -half_row_width);
     }
 
     // Also apply whatever slant the user has asked for to the entire
     // row.  This is an X shear.
-    if (_slant != 0.0) {
-      LMatrix4f shear(1, 0, 0, 0,
-                      0, 1, 0, 0,
-                      _slant, 0, 1, 0,
-                      0, 0, 0, 1);
+    if (_slant != 0.0f) {
+      LMatrix4f shear(1.0f, 0.0f, 0.0f, 0.0f,
+                      0.0f, 1.0f, 0.0f, 0.0f,
+                      _slant, 0.0f, 1.0f, 0.0f,
+                      0.0f, 0.0f, 0.0f, 1.0f);
       mat = shear * mat;
     }
 
@@ -549,7 +550,7 @@ assemble_text(const char *source, LVector2f &ul, LVector2f &lr,
     num_rows++;
   }
 
-  lr[1] = posy + 0.8 * line_height;
+  lr[1] = posy + 0.8f * line_height;
 
   return root_node;
 }
@@ -563,13 +564,13 @@ assemble_text(const char *source, LVector2f &ul, LVector2f &lr,
 ////////////////////////////////////////////////////////////////////
 float TextNode::
 measure_row(const char *&source) {
-  float xpos = 0.0;
+  float xpos = 0.0f;
   while (*source != '\0' && *source != '\n') {
     int character = (unsigned char)*source;
 
     if (character == ' ') {
       // A space is a special case.
-      xpos += 0.25;
+      xpos += 0.25f;
 
     } else {
       // A printable character.
@@ -598,10 +599,10 @@ measure_text(const char *source, LVector2f &ul, LVector2f &lr,
   nassertv(_font != (TextFont *)NULL);
   float line_height = get_line_height();
 
-  ul.set(0.0, 0.8 * line_height);
-  lr.set(0.0, 0.0);
+  ul.set(0.0f, 0.8f * line_height);
+  lr.set(0.0f, 0.0f);
 
-  float posy = 0.0;
+  float posy = 0.0f;
   while (*source != '\0') {
     float row_width = measure_row(source);
     if (*source != '\0') {
@@ -616,15 +617,17 @@ measure_text(const char *source, LVector2f &ul, LVector2f &lr,
       ul[0] = min(ul[0], -row_width);
 
     } else {
-      lr[0] = max(lr[0], row_width / 2);
-      ul[0] = min(ul[0], -row_width / 2);
+      float half_row_width=0.5f*row_width;
+
+      lr[0] = max(lr[0], half_row_width);
+      ul[0] = min(ul[0], -half_row_width);
     }
 
     posy -= line_height;
     num_rows++;
   }
 
-  lr[1] = posy + 0.8 * line_height;
+  lr[1] = posy + 0.8f * line_height;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -643,19 +646,19 @@ make_frame() {
   float top = dimensions[3];
 
   GeomLinestrip *geoset = new GeomLinestrip;
-  PTA_int lengths(0);
+  PTA_int lengths=PTA_int::empty_array(0);
   PTA_Vertexf verts;
   lengths.push_back(5);
-  verts.push_back(Vertexf(left, 0.0, top));
-  verts.push_back(Vertexf(left, 0.0, bottom));
-  verts.push_back(Vertexf(right, 0.0, bottom));
-  verts.push_back(Vertexf(right, 0.0, top));
-  verts.push_back(Vertexf(left, 0.0, top));
+  verts.push_back(Vertexf(left, 0.0f, top));
+  verts.push_back(Vertexf(left, 0.0f, bottom));
+  verts.push_back(Vertexf(right, 0.0f, bottom));
+  verts.push_back(Vertexf(right, 0.0f, top));
+  verts.push_back(Vertexf(left, 0.0f, top));
 
   geoset->set_num_prims(1);
   geoset->set_lengths(lengths);
 
-  geoset->set_coords(verts, G_PER_VERTEX);
+  geoset->set_coords(verts);
   geoset->set_width(_frame_width);
   frame_geode->add_geom(geoset);
 
@@ -663,7 +666,7 @@ make_frame() {
     GeomPoint *geoset = new GeomPoint;
 
     geoset->set_num_prims(4);
-    geoset->set_coords(verts, G_PER_VERTEX);
+    geoset->set_coords(verts);
     geoset->set_size(_frame_width);
     frame_geode->add_geom(geoset);
   }
@@ -687,26 +690,26 @@ make_card() {
   float top = dimensions[3];
 
   GeomTristrip *geoset = new GeomTristrip;
-  PTA_int lengths(0);
+  PTA_int lengths=PTA_int::empty_array(0);
   lengths.push_back(4);
 
   PTA_Vertexf verts;
-  verts.push_back(Vertexf::rfu(left, 0.02, top));
-  verts.push_back(Vertexf::rfu(left, 0.02, bottom));
-  verts.push_back(Vertexf::rfu(right, 0.02, top));
-  verts.push_back(Vertexf::rfu(right, 0.02, bottom));
+  verts.push_back(Vertexf::rfu(left, 0.02f, top));
+  verts.push_back(Vertexf::rfu(left, 0.02f, bottom));
+  verts.push_back(Vertexf::rfu(right, 0.02f, top));
+  verts.push_back(Vertexf::rfu(right, 0.02f, bottom));
 
   geoset->set_num_prims(1);
   geoset->set_lengths(lengths);
 
-  geoset->set_coords(verts, G_PER_VERTEX);
+  geoset->set_coords(verts);
 
   if (has_card_texture()) {
     PTA_TexCoordf uvs;
-    uvs.push_back(TexCoordf(0.0, 1.0));
-    uvs.push_back(TexCoordf(0.0, 0.0));
-    uvs.push_back(TexCoordf(1.0, 1.0));
-    uvs.push_back(TexCoordf(1.0, 0.0));
+    uvs.push_back(TexCoordf(0.0f, 1.0f));
+    uvs.push_back(TexCoordf(0.0f, 0.0f));
+    uvs.push_back(TexCoordf(1.0f, 1.0f));
+    uvs.push_back(TexCoordf(1.0f, 0.0f));
 
     geoset->set_texcoords(uvs, G_PER_VERTEX);
   }
@@ -749,29 +752,29 @@ make_card_with_border() {
 
   PTA_Vertexf verts;
   // verts 1,2,3,4
-  verts.push_back(Vertexf::rfu(left, 0.02, top));
-  verts.push_back(Vertexf::rfu(left, 0.02, top - _card_border_size));
-  verts.push_back(Vertexf::rfu(left + _card_border_size, 0.02, top));
-  verts.push_back(Vertexf::rfu(left + _card_border_size, 0.02,
+  verts.push_back(Vertexf::rfu(left, 0.02f, top));
+  verts.push_back(Vertexf::rfu(left, 0.02f, top - _card_border_size));
+  verts.push_back(Vertexf::rfu(left + _card_border_size, 0.02f, top));
+  verts.push_back(Vertexf::rfu(left + _card_border_size, 0.02f,
                                top - _card_border_size));
   // verts 5,6,7,8
-  verts.push_back(Vertexf::rfu(right - _card_border_size, 0.02, top));
-  verts.push_back(Vertexf::rfu(right - _card_border_size, 0.02,
+  verts.push_back(Vertexf::rfu(right - _card_border_size, 0.02f, top));
+  verts.push_back(Vertexf::rfu(right - _card_border_size, 0.02f,
                                top - _card_border_size));
-  verts.push_back(Vertexf::rfu(right, 0.02, top));
-  verts.push_back(Vertexf::rfu(right, 0.02, top - _card_border_size));
+  verts.push_back(Vertexf::rfu(right, 0.02f, top));
+  verts.push_back(Vertexf::rfu(right, 0.02f, top - _card_border_size));
   // verts 9,10,11,12
-  verts.push_back(Vertexf::rfu(left, 0.02, bottom + _card_border_size));
-  verts.push_back(Vertexf::rfu(left, 0.02, bottom));
-  verts.push_back(Vertexf::rfu(left + _card_border_size, 0.02,
+  verts.push_back(Vertexf::rfu(left, 0.02f, bottom + _card_border_size));
+  verts.push_back(Vertexf::rfu(left, 0.02f, bottom));
+  verts.push_back(Vertexf::rfu(left + _card_border_size, 0.02f,
                                bottom + _card_border_size));
-  verts.push_back(Vertexf::rfu(left + _card_border_size, 0.02, bottom));
+  verts.push_back(Vertexf::rfu(left + _card_border_size, 0.02f, bottom));
   // verts 13,14,15,16
-  verts.push_back(Vertexf::rfu(right - _card_border_size, 0.02,
+  verts.push_back(Vertexf::rfu(right - _card_border_size, 0.02f,
                                bottom + _card_border_size));
-  verts.push_back(Vertexf::rfu(right - _card_border_size, 0.02, bottom));
-  verts.push_back(Vertexf::rfu(right, 0.02, bottom + _card_border_size));
-  verts.push_back(Vertexf::rfu(right, 0.02, bottom));
+  verts.push_back(Vertexf::rfu(right - _card_border_size, 0.02f, bottom));
+  verts.push_back(Vertexf::rfu(right, 0.02f, bottom + _card_border_size));
+  verts.push_back(Vertexf::rfu(right, 0.02f, bottom));
 
   PTA_ushort indices;
   // tristrip #1
@@ -805,30 +808,30 @@ make_card_with_border() {
   geoset->set_num_prims(3);
   geoset->set_lengths(lengths);
 
-  geoset->set_coords(verts, G_PER_VERTEX, indices);
+  geoset->set_coords(verts,indices);
 
   if (has_card_texture()) {
     PTA_TexCoordf uvs;
-    uvs.push_back(TexCoordf(0.0, 1.0)); //1
-    uvs.push_back(TexCoordf(0.0, 1.0 - _card_border_uv_portion)); //2
-    uvs.push_back(TexCoordf(0.0 + _card_border_uv_portion, 1.0)); //3
-    uvs.push_back(TexCoordf(0.0 + _card_border_uv_portion,
-      1.0 - _card_border_uv_portion)); //4
-    uvs.push_back(TexCoordf( 1.0 -_card_border_uv_portion, 1.0)); //5
-    uvs.push_back(TexCoordf( 1.0 -_card_border_uv_portion,
-      1.0 - _card_border_uv_portion)); //6
-    uvs.push_back(TexCoordf(1.0, 1.0)); //7
-    uvs.push_back(TexCoordf(1.0, 1.0 - _card_border_uv_portion)); //8
+    uvs.push_back(TexCoordf(0.0f, 1.0f)); //1
+    uvs.push_back(TexCoordf(0.0f, 1.0f - _card_border_uv_portion)); //2
+    uvs.push_back(TexCoordf(0.0f + _card_border_uv_portion, 1.0f)); //3
+    uvs.push_back(TexCoordf(0.0f + _card_border_uv_portion,
+      1.0f - _card_border_uv_portion)); //4
+    uvs.push_back(TexCoordf( 1.0f -_card_border_uv_portion, 1.0f)); //5
+    uvs.push_back(TexCoordf( 1.0f -_card_border_uv_portion,
+      1.0f - _card_border_uv_portion)); //6
+    uvs.push_back(TexCoordf(1.0f, 1.0f)); //7
+    uvs.push_back(TexCoordf(1.0f, 1.0f - _card_border_uv_portion)); //8
 
-    uvs.push_back(TexCoordf(0.0, _card_border_uv_portion)); //9
-    uvs.push_back(TexCoordf(0.0, 0.0)); //10
+    uvs.push_back(TexCoordf(0.0f, _card_border_uv_portion)); //9
+    uvs.push_back(TexCoordf(0.0f, 0.0f)); //10
     uvs.push_back(TexCoordf(_card_border_uv_portion, _card_border_uv_portion)); //11
-    uvs.push_back(TexCoordf(_card_border_uv_portion, 0.0)); //12
+    uvs.push_back(TexCoordf(_card_border_uv_portion, 0.0f)); //12
 
-    uvs.push_back(TexCoordf(1.0 - _card_border_uv_portion, _card_border_uv_portion));//13
-    uvs.push_back(TexCoordf(1.0 - _card_border_uv_portion, 0.0));//14
-    uvs.push_back(TexCoordf(1.0, _card_border_uv_portion));//15
-    uvs.push_back(TexCoordf(1.0, 0.0));//16
+    uvs.push_back(TexCoordf(1.0f - _card_border_uv_portion, _card_border_uv_portion));//13
+    uvs.push_back(TexCoordf(1.0f - _card_border_uv_portion, 0.0f));//14
+    uvs.push_back(TexCoordf(1.0f, _card_border_uv_portion));//15
+    uvs.push_back(TexCoordf(1.0f, 0.0f));//16
 
     // we can use same ref's as before (same order)
     geoset->set_texcoords(uvs, G_PER_VERTEX, indices);

@@ -149,7 +149,7 @@ recompute_viz(Node *parent) {
     colors.push_back(Colorf(1.0, 1.0, 1.0, 1.0) +
                      ((double)i / 100.0) * Colorf(0.0, 0.0, 0.0, -1.0));
   }
-  ray->set_coords(verts, G_PER_VERTEX);
+  ray->set_coords(verts);
   ray->set_colors(colors, G_PER_VERTEX);
 
   PTA_int lengths;

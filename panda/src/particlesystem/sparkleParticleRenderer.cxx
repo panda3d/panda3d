@@ -125,10 +125,10 @@ kill_particle(int) {
 
 void SparkleParticleRenderer::
 resize_pool(int new_size) {
-  _vertex_array = PTA_Vertexf(new_size * 12);
-  _color_array = PTA_Colorf(new_size * 12);
+  _vertex_array = PTA_Vertexf::empty_array(new_size * 12);
+  _color_array = PTA_Colorf::empty_array(new_size * 12);
 
-  _line_primitive->set_coords(_vertex_array, G_PER_VERTEX);
+  _line_primitive->set_coords(_vertex_array);
   _line_primitive->set_colors(_color_array, G_PER_VERTEX);
 
   _max_pool_size = new_size;

@@ -62,19 +62,19 @@ DynamicVertices DynamicVertices::
 deep_copy(const DynamicVertices &copy) {
   DynamicVertices dv;
   if (!copy._coords.empty()) {
-    dv._coords = PTA_Vertexf(0);
+    dv._coords = PTA_Vertexf::empty_array(0);
     dv._coords.v() = copy._coords.v();
   }
   if (!copy._norms.empty()) {
-    dv._norms = PTA_Normalf(0);
+    dv._norms = PTA_Normalf::empty_array(0);
     dv._norms.v() = copy._norms.v();
   }
   if (!copy._colors.empty()) {
-    dv._colors = PTA_Colorf(0);
+    dv._colors = PTA_Colorf::empty_array(0);
     dv._colors.v() = copy._colors.v();
   }
   if (!copy._texcoords.empty()) {
-    dv._texcoords = PTA_TexCoordf(0);
+    dv._texcoords = PTA_TexCoordf::empty_array(0);
     dv._texcoords.v() = copy._texcoords.v();
   }
   return dv;

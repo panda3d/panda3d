@@ -463,7 +463,7 @@ recompute_viz(Node *parent) {
   lengths.push_back(_points.size());
 
   GeomPolygon *polygon = new GeomPolygon;
-  polygon->set_coords(verts, G_PER_VERTEX);
+  polygon->set_coords(verts);
   polygon->set_num_prims(1);
   polygon->set_lengths(lengths);
 

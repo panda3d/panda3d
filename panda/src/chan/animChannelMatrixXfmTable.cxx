@@ -37,7 +37,7 @@ AnimChannelMatrixXfmTable::_table_ids[AnimChannelMatrixXfmTable::num_tables] =
 
 const float
 AnimChannelMatrixXfmTable::_default_values[AnimChannelMatrixXfmTable::num_tables] =
-{ 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+{ 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f };
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelMatrixXfmTable::Constructor
@@ -107,9 +107,9 @@ get_value(int frame, LMatrix4f &mat) {
 void AnimChannelMatrixXfmTable::
 get_value_no_scale(int frame, LMatrix4f &mat) {
   float components[num_tables];
-  components[0] = 1.0;
-  components[1] = 1.0;
-  components[2] = 1.0;
+  components[0] = 1.0f;
+  components[1] = 1.0f;
+  components[2] = 1.0f;
 
   for (int i = 3; i < num_tables; i++) {
     if (_tables[i].empty()) {
@@ -339,7 +339,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
     int i;
     // First, read in the scales.
     for(i = 0; i < 3; i++) {
-      PTA_float ind_table(0);
+      PTA_float ind_table=PTA_float::empty_array(0);
       compressor.read_reals(scan, ind_table.v());
       _tables[i] = ind_table;
     }
@@ -347,9 +347,10 @@ fillin(DatagramIterator& scan, BamReader* manager)
     // Read in the HPR array and store it back in the joint angles.
     vector_LVecBase3f hprs;
     compressor.read_hprs(scan, hprs);
-    PTA_float h_table(hprs.size());
-    PTA_float p_table(hprs.size());
-    PTA_float r_table(hprs.size());
+    PTA_float h_table=PTA_float::empty_array(hprs.size());
+    PTA_float p_table=PTA_float::empty_array(hprs.size());
+    PTA_float r_table=PTA_float::empty_array(hprs.size());
+
     for (i = 0; i < (int)hprs.size(); i++) {
       h_table[i] = hprs[i][0];
       p_table[i] = hprs[i][1];
@@ -361,7 +362,7 @@ fillin(DatagramIterator& scan, BamReader* manager)
 
     // Now read in the translations.
     for (i = 6; i < 9; i++) {
-      PTA_float ind_table(0);
+      PTA_float ind_table=PTA_float::empty_array(0);
       compressor.read_reals(scan, ind_table.v());
       _tables[i] = ind_table;
     }

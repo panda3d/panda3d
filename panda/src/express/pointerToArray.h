@@ -74,6 +74,12 @@
 #include "pointerTo.h"
 #include "pvector.h"
 
+#if defined(WIN32_VC) || !defined(__INTEL_COMPILER)
+// disable mysterious MSVC warning for static inline PTA::empty_array method
+// need to chk if vc 7.0 still has this problem, would like to keep it enabled
+#pragma warning (disable : 4506)
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //       Class : PointerToArray
 // Description : A special kind of PointerTo that stores an array of
@@ -97,7 +103,8 @@ public:
 
 PUBLISHED:
   INLINE PointerToArray();
-  INLINE PointerToArray(size_type n);
+  //  INLINE PointerToArray(size_type n);  this is too dangerous to use, since arrays created automatically for any const parameter, use empty_array instead
+  INLINE static PointerToArray<Element> empty_array(size_type n);
   INLINE PointerToArray(size_type n, const Element &value);
   INLINE PointerToArray(const PointerToArray<Element> &copy);
 
