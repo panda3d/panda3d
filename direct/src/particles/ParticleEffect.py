@@ -213,7 +213,7 @@ class ParticleEffect(NodePath):
             else:
                 execfile(filename.toOsSpecific())
         except:
-            self.notify.error('loadConfig: failed to load particle file: '+filename)
+            self.notify.error('loadConfig: failed to load particle file: '+ repr(filename))
 
 
 
