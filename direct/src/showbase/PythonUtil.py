@@ -462,12 +462,25 @@ PyUtilProfileDefaultSorts = ['cumulative', 'time', 'calls']
 
 # call this from the prompt, and break back out to the prompt
 # to stop profiling
+#
+# OR to do inline profiling, you must make a globally-visible
+# function to be profiled, i.e. to profile 'self.load()', do
+# something like this:
+#
+#        def func(self=self):
+#            self.load()
+#        import __builtin__
+#        __builtin__.func = func
+#        PythonUtil.startProfile(cmd='func()', filename='loadProfile')
+#        del __builtin__.func
+#
 def startProfile(filename=PyUtilProfileDefaultFilename,
                  lines=PyUtilProfileDefaultLines,
                  sorts=PyUtilProfileDefaultSorts,
-                 silent=0):
+                 silent=0,
+                 cmd='run()'):
     import profile
-    profile.run('run()', filename)
+    profile.run(cmd, filename)
     if not silent:
         printProfile(filename, lines, sorts)
 
