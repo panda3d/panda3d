@@ -657,6 +657,10 @@ void WinMusic::destroy(AudioTraits::MusicClass* music) {
 WinPlaying::~WinPlaying(void) {
 }
 
+AudioTraits::PlayingClass::PlayingStatus WinPlaying::status(void) {
+  return AudioTraits::PlayingClass::BAD;
+}
+
 WinPlayer* WinPlayer::_global_instance = (WinPlayer*)0L;
 
 WinPlayer::~WinPlayer(void) {

@@ -42,6 +42,15 @@ INLINE void AudioManager::spawn_update(void) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::shutdown
+//       Access: Public, Static
+//  Description: kill any internal threads, free any internal data
+////////////////////////////////////////////////////////////////////
+INLINE void AudioManager::shutdown(void) {
+  get_ptr()->ns_shutdown();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AudioManager::set_volume (sample)
 //       Access: Public, Static
 //  Description: set the volume on a sample
@@ -66,4 +75,4 @@ INLINE void AudioManager::set_volume(AudioMusic* music, int v) {
 //               directly; there's only supposed to be one AudioManager
 //               in the universe and it constructs itself.
 ////////////////////////////////////////////////////////////////////
-INLINE AudioManager::AudioManager(void) : _spawned((thread*)0L) {}
+INLINE AudioManager::AudioManager(void) {}

@@ -9,7 +9,11 @@
 AudioManager* AudioManager::_global_ptr = (AudioManager*)0L;
 AudioManager::UpdateFunc* AudioManager::_update_func =
     (AudioManager::UpdateFunc*)0L;
+AudioManager::ShutdownFunc* AudioManager::_shutdown_func =
+    (AudioManager::ShutdownFunc*)0L;
 mutex AudioManager::_manager_mutex;
+bool* AudioManager::_quit = (bool*)0L;
+thread* AudioManager::_spawned = (thread*)0L;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AudioManager::set_update_func
@@ -22,6 +26,21 @@ void AudioManager::set_update_func(AudioManager::UpdateFunc* func) {
     audio_cat->error() << "There maybe be more then one audio driver installed"
 		       << endl;
   _update_func = func;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::set_shutdown_func
+//       Access: Public, Static
+//  Description: register a function that will shutdown the internal
+//               audio state
+////////////////////////////////////////////////////////////////////
+void AudioManager::set_shutdown_func(AudioManager::ShutdownFunc* func) {
+  if (_shutdown_func != (AudioManager::ShutdownFunc*)0L)
+    audio_cat->error() << "There maybe be more then one audio driver installed"
+		       << endl;
+  _shutdown_func = func;
+  if (_quit == (bool*)0L)
+    _quit = new bool(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -59,11 +78,15 @@ void AudioManager::ns_play(AudioMusic* music) {
 //       Access: static
 //  Description: the thread function to call update forever.
 ////////////////////////////////////////////////////////////////////
-void AudioManager::spawned_update(void*) {
-  while (1) {
+void* AudioManager::spawned_update(void* data) {
+  bool* flag = (bool*)data;
+  while (! (*flag)) {
     AudioManager::update();
     ipc_traits::sleep(0, audio_auto_update_delay);
   }
+  *flag = false;
+  audio_cat->debug() << "exiting update thread" << endl;
+  return (void*)0L;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -90,6 +113,28 @@ void AudioManager::ns_set_volume(AudioMusic* music, int v) {
 //  Description: spawn a thread that calls update every so often
 ////////////////////////////////////////////////////////////////////
 void AudioManager::ns_spawn_update(void) {
-  _spawned = thread::create(spawned_update, (void*)0L,
-			    thread::PRIORITY_NORMAL);
+  if (_spawned == (thread*)0L) {
+    if (_quit == (bool*)0L)
+      _quit = new bool(false);
+    *_quit = false;
+    _spawned = thread::create(spawned_update, _quit, thread::PRIORITY_NORMAL);
+  } else {
+    audio_cat->error() << "tried to spawn 2 update threads" << endl;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::ns_shutdown
+//       Access: Private
+//  Description: non-static implementation of shutdown stuff
+////////////////////////////////////////////////////////////////////
+void AudioManager::ns_shutdown(void) {
+  if (_quit != (bool*)0L)
+    *_quit = true;
+  if (_shutdown_func != (ShutdownFunc*)0L)
+    (*_shutdown_func)();
+  if (_spawned != (thread*)0L)
+    while (*_quit);
+  audio_cat->debug() << "update thread has shutdown" << endl;
+  delete _quit;
 }

@@ -69,6 +69,8 @@ class EXPCL_PANDA WinPlaying : public AudioTraits::PlayingClass {
 public:
   INLINE WinPlaying(void);
   ~WinPlaying(void);
+
+  virtual AudioTraits::PlayingClass::PlayingStatus status(void);
 };
 
 class EXPCL_PANDA WinPlayer : public AudioTraits::PlayerClass {

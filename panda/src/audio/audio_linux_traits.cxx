@@ -29,6 +29,7 @@ static byte* scratch_buffer;
 static byte* fetch_buffer;
 static int want_buffers = 0, have_buffers = 0;
 static bool initializing = true;
+static bool stop_mixing = false;
 static int output_fd;
 static thread* update_thread;
 static int sample_size = sizeof(short);
@@ -158,35 +159,35 @@ static void update_linux(void) {
   }
 }
 
-static void internal_update(void*) {
+static void* internal_update(void*) {
   if ((output_fd = open(audio_device->c_str(), O_WRONLY, 0)) == -1) {
     audio_cat->error() << "could not open '" << audio_device << "'" << endl;
-    return;
+    return (void*)0L;
   }
   // this one I don't know about
   int fragsize = 0x0004000c;
   if (ioctl(output_fd, SNDCTL_DSP_SETFRAGMENT, &fragsize) == -1) {
     audio_cat->error() << "faied to set fragment size" << endl;
-    return;
+    return (void*)0L;
   }
   // for now signed, 16-bit, little endian
   int format = AFMT_S16_LE;
   if (ioctl(output_fd, SNDCTL_DSP_SETFMT, &format) == -1) {
     audio_cat->error() << "failed to set format on the dsp" << endl;
-    return;
+    return (void*)0L;
   }
   // set stereo
   int stereo = 1;
   if (ioctl(output_fd, SNDCTL_DSP_STEREO, &stereo) == -1) {
     audio_cat->error() << "failed to set stereo on the dsp" << endl;
-    return;
+    return (void*)0L;
   }
   // set the frequency
   if (ioctl(output_fd, SNDCTL_DSP_SPEED, &audio_mix_freq) == -1) {
     audio_cat->error() << "failed to set frequency on the dsp" << endl;
-    return;
+    return (void*)0L;
   }
-  while (1) {
+  while (!stop_mixing) {
     if (have_buffers == 0) {
       ipc_traits::sleep(0, audio_auto_update_delay);
     } else {
@@ -199,6 +200,20 @@ static void internal_update(void*) {
       }
     }
   }
+  delete [] buffer1;
+  delete [] buffer2;
+  delete [] scratch_buffer;
+  delete [] fetch_buffer;
+  delete [] zero_buffer;
+  stop_mixing = false;
+  audio_cat->debug() << "exiting internal thread" << endl;
+  return (void*)0L;
+}
+
+static void shutdown_linux(void) {
+  stop_mixing = true;
+  while (stop_mixing);
+  audio_cat->debug() << "I believe the internal thread has exited" << endl;
 }
 
 static void initialize(void) {
@@ -220,12 +235,14 @@ static void initialize(void) {
   want_buffers = 2;
   have_buffers = 0;
   initializing = true;
+  stop_mixing = false;
 
   audio_cat->info() << "spawning internal update thread" << endl;
   update_thread = thread::create(internal_update, (void*)0L,
 				 thread::PRIORITY_NORMAL);
 
   AudioManager::set_update_func(update_linux);
+  AudioManager::set_shutdown_func(shutdown_linux);
   have_initialized = true;
 }
 
