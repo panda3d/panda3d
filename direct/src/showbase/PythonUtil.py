@@ -763,9 +763,12 @@ def mostDerivedLast(classList):
     """pass in list of classes. sorts list in-place, with derived classes
     appearing after their bases"""
     def compare(a,b):
-        if a is b:
-            return 0
         if issubclass(a,b):
-            return 1
-        return -1
+            result=1
+        elif issubclass(b,a):
+            result=-1
+        else:
+            result=0
+        #print a,b,result
+        return result
     classList.sort(compare)
