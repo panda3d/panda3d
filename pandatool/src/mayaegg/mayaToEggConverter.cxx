@@ -2279,10 +2279,12 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader, const M
           //tex.set_format(EggTexture::F_rgb);
         }
         
+        /*
         // if multi-textured, first texture in maya is on top, so
         // default it to decal
         if ((shader._color.size() > 1) && (i!=shader._color.size()-1))
           tex.set_env_type(EggTexture::ET_decal);
+        */
         
       } else {  // trans_def._has_texture
         // We have a texture on transparency only.  Apply it as the
