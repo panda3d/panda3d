@@ -595,10 +595,18 @@ class ShowBase(DirectObject.DirectObject):
         if flag:
             if not self.frameRateMeter:
                 self.frameRateMeter = FrameRateMeter('frameRateMeter')
-                self.frameRateMeter.setupWindow(self.win)
+                # Temporary try..except for old pandas.
+                try:
+                    self.frameRateMeter.setupLayer(self.win)
+                except:
+                    self.frameRateMeter.setupWindow(self.win)
         else:
             if self.frameRateMeter:
-                self.frameRateMeter.clearWindow()
+                # Temporary try..except for old pandas.
+                try:
+                    self.frameRateMeter.clearLayer()
+                except:
+                    self.frameRateMeter.clearWindow()
                 self.frameRateMeter = None
 
     
@@ -644,8 +652,8 @@ class ShowBase(DirectObject.DirectObject):
 
         self.render2d.setMaterialOff(1)
         self.render2d.setTwoSided(1)
-        
-        # The normal 2-d DisplayRegoin has an aspect ratio that
+
+        # The normal 2-d DisplayRegion has an aspect ratio that
         # matches the window, but its coordinate system is square.
         # This means anything we parent to render2d gets stretched.
         # For things where that makes a difference, we set up
@@ -735,19 +743,22 @@ class ShowBase(DirectObject.DirectObject):
         return aspectRatio
 
     def makeCamera(self, win, sort = 0, scene = None,
-                   displayRegion = (0, 1, 0, 1), aspectRatio = None,
-                   camName = 'cam'):
+                   displayRegion = (0, 1, 0, 1), aspectRatio = None, camName = 'cam'):
         """
         Makes a new 3-d camera associated with the indicated window,
         and creates a display region in the indicated subrectangle.
         """
+        # Temporary test for old pandas.
+        if hasattr(win, "getChannel"):
+            chan = win.getChannel(0)
+            layer = chan.makeLayer(sort)
+            dr = layer.makeDisplayRegion(*displayRegion)
+        else:
+            dr = win.makeDisplayRegion(*displayRegion)
+            dr.setSort(sort)
+
         if scene == None:
             scene = self.render
-
-        # Make a display region on this window of the requested
-        # area.
-        dr = win.makeDisplayRegion(*displayRegion)
-        dr.setSort(sort)
 
         # By default, we do not clear 3-d display regions (the entire
         # window will be cleared, which is normally sufficient).
@@ -787,10 +798,14 @@ class ShowBase(DirectObject.DirectObject):
         Makes a new camera2d associated with the indicated window, and
         assigns it to render the indicated subrectangle of render2d.
         """
-        # Make a display region on this window of the requested
-        # area.
-        dr = win.makeDisplayRegion(*displayRegion)
-        dr.setSort(sort)
+        # Temporary test for old pandas.
+        if hasattr(win, "getChannel"):
+            chan = win.getChannel(0)
+            layer = chan.makeLayer(sort)
+            dr = layer.makeDisplayRegion(*displayRegion)
+        else:
+            dr = win.makeDisplayRegion(*displayRegion)
+            dr.setSort(sort)
 
         # Enable clearing of the depth buffer on this new display
         # region (see the comment in setupRender2d, above).
@@ -823,10 +838,14 @@ class ShowBase(DirectObject.DirectObject):
         Makes a new camera2dp associated with the indicated window, and
         assigns it to render the indicated subrectangle of render2dp.
         """
-        # Make a display region on this window of the requested
-        # area.
-        dr = win.makeDisplayRegion(*displayRegion)
-        dr.setSort(sort)
+        # Temporary test for old pandas.
+        if hasattr(win, "getChannel"):
+            chan = win.getChannel(0)
+            layer = chan.makeLayer(sort)
+            dr = layer.makeDisplayRegion(*displayRegion)
+        else:
+            dr = win.makeDisplayRegion(*displayRegion)
+            dr.setSort(sort)
 
         # Enable clearing of the depth buffer on this new display
         # region (see the comment in setupRender2d, above).
