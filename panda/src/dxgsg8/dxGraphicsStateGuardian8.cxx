@@ -315,6 +315,7 @@ dx_init(void) {
 
     // these both reflect d3d defaults
     _color_writemask = 0xFFFFFFFF;
+    _CurFVFType = 0x0;  // guards SetVertexShader fmt
 
     _bGouraudShadingOn = false;
     _pD3DDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT);
