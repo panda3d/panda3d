@@ -233,7 +233,7 @@ DoGetopts(int &argc, char **&argv) {
   softegg_cat.info() << endl << _commandLine << endl;
   
   i = 1;
-  while ((i < argc-1) && (argv[i][0] == '-') && okflag) {
+  while ((i < argc) && (argv[i][0] == '-') && okflag) {
     softegg_cat.info() << "arg " << i << " is " << argv[i] << "\n";
     okflag = HandleGetopts(i, argc, argv);
   }
@@ -430,19 +430,13 @@ HandleGetopts(int &idx, int argc, char **argv)
       break;
       
     case 'b':     // Set animation start frame.
-      if ( strcmp( argv[idx+1], "" ) ) {
-        anim_start = atoi(argv[idx+1]);
-        softegg_cat.info() << "animation starting at frame:  " << anim_start << endl;
-      }
-      ++idx;
+      anim_start = atoi(argv[idx]+2);
+      softegg_cat.info() << "animation starting at frame:  " << anim_start << endl;
       break;
       
     case 'e':     /// Set animation end frame.
-      if ( strcmp( argv[idx+1], "" ) ) {
-        anim_end = atoi(argv[idx+1]);
-        softegg_cat.info() << "animation ending at frame:  " << anim_end << endl;
-      }
-      ++idx;
+      anim_end = atoi(argv[idx]+2);
+      softegg_cat.info() << "animation ending at frame:  " << anim_end << endl;
       break;
       
     case 'f':     /// Set animation frame rate.
