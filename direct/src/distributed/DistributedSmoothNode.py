@@ -335,3 +335,4 @@ class DistributedSmoothNode(DistributedNode.DistributedNode):
             self.reloadPosition()
         else:
             NodePath.wrtReparentTo(self, parent)
+
