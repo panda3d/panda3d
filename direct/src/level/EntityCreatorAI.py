@@ -1,18 +1,12 @@
-"""EntityCreatorAI.py: contains methods for creation of Entities"""
+"""EntityCreatorAI module: contains the EntityCreatorAI class"""
 
-from PythonUtil import Functor
-import DistributedBeanBarrelAI
-import DistributedLiftAI
-import DistributedDoorEntityAI
-import DistributedGagBarrelAI
-import DistributedStomperPairAI
-import DistributedSwitchAI
-import DistributedStomperAI
+import DirectNotifyGlobal
 import LogicGateAI
 
-
-def cDE(AIclass, air, levelDoId, entId, zoneId):
-    """create a distributed entity"""
+# some useful constructor functions
+# ctor functions must take (air, level doId, entId, zoneId)
+def createDistributedEntity(AIclass, air, levelDoId, entId, zoneId):
+    """create a distributed entity and call generate"""
     ent = AIclass(air, levelDoId, entId)
     ent.generateWithRequired(zoneId)
     return ent
@@ -21,26 +15,31 @@ def nothing(air, levelDoId, entId, zoneId):
     """Create entity that doesn't have a server side representation."""
     return None
 
-# Server (AI) side factory functions:
-EntityType2Ctor = {
-    # Map entity type name to constructor function that takes
-    # (air, level doId, entId, zoneId)
-    'beanBarrel': Functor(cDE, DistributedBeanBarrelAI.DistributedBeanBarrelAI),
-    'door': DistributedDoorEntityAI.DistributedDoorEntityAI,
-    'gagBarrel': Functor(cDE, DistributedGagBarrelAI.DistributedGagBarrelAI),
-    'lift': Functor(cDE, DistributedLiftAI.DistributedLiftAI),
-    'nodepath': nothing,
-    'platform': nothing,
-    'stomper': Functor(cDE, DistributedStomperAI.DistributedStomperAI),
-    'stomperPair': Functor(cDE, DistributedStomperPairAI.DistributedStomperPairAI),
-    'switch': DistributedSwitchAI.DistributedSwitchAI,
+class EntityCreatorAI:
+    """This class is responsible for creating instances of Entities on the AI.
+    It can be subclassed to handle more Entity types."""
+    notify = DirectNotifyGlobal.directNotify.newCategory('EntityCreatorAI')
 
-    'logicGate': LogicGateAI.LogicGateAI,
-    }
+    def __init__(self):
+        self.entType2Ctor = {}
+        self.privRegisterTypes({
+            'logicGate': LogicGateAI.LogicGateAI,
+            'nodepath': nothing,
+            })
 
-def createEntity(entType, air, levelDoId, entId, zoneId):
-    if not EntityType2Ctor.has_key(entType):
-        print "createEntity(entType=%s, air=%s, levelDoId=%s, entId=%s, zoneId=%s) not found"%(
-                entType, "the air", levelDoId, entId, zoneId)
-        return None
-    return EntityType2Ctor[entType](air, levelDoId, entId, zoneId)
+    def privRegisterType(self, entType, ctor):
+        assert(not self.entType2Ctor.has_key(entType))
+        self.entType2Ctor[entType] = ctor
+
+    def privRegisterTypes(self, type2ctor):
+        for entType, ctor in type2ctor.items():
+            self.privRegisterType(entType, ctor)
+
+    def createEntity(self, entType, air, levelDoId, entId, zoneId):
+        if not self.entType2Ctor.has_key(entType):
+            EntityCreatorAI.notify.warning(
+                'createEntity(entType=%s, levelDoId=%s, '
+                'entId=%s, zoneId=%s) not found' %
+                (entType, levelDoId, entId, zoneId))
+            return None
+        return self.entType2Ctor[entType](air, levelDoId, entId, zoneId)

@@ -138,12 +138,16 @@ class DistributedLevel(DistributedObject.DistributedObject,
         # currently-visible zones?
         self.localEntities = {}
         for entId, spec in self.entId2Spec.iteritems():
-            entity = EntityCreator.createEntity(spec['type'], self, entId)
+            entity = self.entityCreator.createEntity(spec['type'], self, entId)
             if entity is not None:
                 self.localEntities[entId] = entity
 
         # there should not be any pending reparents left
         assert len(self.parent2ChildIds) == 0
+
+    def makeEntityCreator(self):
+        """inheritors, override if desired"""
+        return EntityCreator.EntityCreator()
 
     def announceGenerate(self):
         self.notify.debug('announceGenerate')

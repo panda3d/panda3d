@@ -2,6 +2,7 @@
 
 import DirectNotifyGlobal
 import string
+from PythonUtil import lineInfo
 
 class LevelBase:
     """LevelBase: shared client and AI code
@@ -32,6 +33,13 @@ class LevelBase:
 
         # this will be filled in as the entities are created and report in
         self.entities = {}
+
+        # get an entity creator object
+        self.entityCreator = self.makeEntityCreator()
+
+    def makeEntityCreator(self):
+        self.notify.error(
+            'concrete Level class must override %s' % lineInfo()[2])
 
     def destroyLevel(self):
         del self.entities

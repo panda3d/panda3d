@@ -38,6 +38,10 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         self.startTimestamp = globalClockDelta.localToNetworkTime(
             self.startTime, bits=32)
 
+    def makeEntityCreator(self):
+        """inheritors, override if desired"""
+        return EntityCreatorAI.EntityCreatorAI()
+
     # required-field getters
     def getZoneIds(self):
         return self.zoneIds
@@ -58,7 +62,7 @@ class DistributedLevelAI(DistributedObjectAI.DistributedObjectAI,
         self.aiEntities = {}
         for entId, spec in self.entId2Spec.iteritems():
             self.notify.debug('creating %s %s' % (spec['type'], entId))
-            entity = EntityCreatorAI.createEntity(
+            entity = self.entityCreator.createEntity(
                 spec['type'], self.air, self.doId, entId,
                 self.getZoneId(spec['zone']))
             if entity is not None:
