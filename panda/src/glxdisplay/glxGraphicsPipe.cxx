@@ -368,38 +368,6 @@ choose_fbconfig(FrameBufferProperties &properties) const {
       // Ok, not good enough.  Now try to eliminate options, but keep
       // as many bits as we asked for.
 
-      // This array keeps the bitmasks of options that we pull out of
-      // the requested frame_buffer_mode, in order.
-
-      static const int strip_properties[] = {
-        // One esoteric option removed.
-        FrameBufferProperties::FM_multisample,
-        FrameBufferProperties::FM_stencil,
-        FrameBufferProperties::FM_accum,
-        FrameBufferProperties::FM_alpha,
-        FrameBufferProperties::FM_stereo,
-
-        // Two esoteric options removed.
-        FrameBufferProperties::FM_stencil | FrameBufferProperties::FM_multisample,
-        FrameBufferProperties::FM_accum | FrameBufferProperties::FM_multisample,
-        FrameBufferProperties::FM_alpha | FrameBufferProperties::FM_multisample,
-        FrameBufferProperties::FM_stereo | FrameBufferProperties::FM_multisample,
-        FrameBufferProperties::FM_stencil | FrameBufferProperties::FM_accum,
-        FrameBufferProperties::FM_alpha | FrameBufferProperties::FM_stereo,
-        FrameBufferProperties::FM_stencil | FrameBufferProperties::FM_accum | FrameBufferProperties::FM_multisample,
-        FrameBufferProperties::FM_alpha | FrameBufferProperties::FM_stereo | FrameBufferProperties::FM_multisample,
-
-        // All esoteric options removed.
-        FrameBufferProperties::FM_stencil | FrameBufferProperties::FM_accum | FrameBufferProperties::FM_alpha | FrameBufferProperties::FM_stereo | FrameBufferProperties::FM_multisample,
-
-        // All esoteric options, plus some we'd really really prefer,
-        // removed.
-        FrameBufferProperties::FM_stencil | FrameBufferProperties::FM_accum | FrameBufferProperties::FM_alpha | FrameBufferProperties::FM_stereo | FrameBufferProperties::FM_multisample | FrameBufferProperties::FM_double_buffer,
-
-        // A zero marks the end of the array.
-        0
-      };
-
       pset<int> tried_masks;
       tried_masks.insert(frame_buffer_mode);
 
@@ -703,35 +671,6 @@ choose_visual(FrameBufferProperties &properties) const {
 
       // This array keeps the bitmasks of options that we pull out of
       // the requested frame_buffer_mode, in order.
-
-      static const int strip_properties[] = {
-        // One esoteric option removed.
-        FrameBufferProperties::FM_multisample,
-        FrameBufferProperties::FM_stencil,
-        FrameBufferProperties::FM_accum,
-        FrameBufferProperties::FM_alpha,
-        FrameBufferProperties::FM_stereo,
-
-        // Two esoteric options removed.
-        FrameBufferProperties::FM_stencil | FrameBufferProperties::FM_multisample,
-        FrameBufferProperties::FM_accum | FrameBufferProperties::FM_multisample,
-        FrameBufferProperties::FM_alpha | FrameBufferProperties::FM_multisample,
-        FrameBufferProperties::FM_stereo | FrameBufferProperties::FM_multisample,
-        FrameBufferProperties::FM_stencil | FrameBufferProperties::FM_accum,
-        FrameBufferProperties::FM_alpha | FrameBufferProperties::FM_stereo,
-        FrameBufferProperties::FM_stencil | FrameBufferProperties::FM_accum | FrameBufferProperties::FM_multisample,
-        FrameBufferProperties::FM_alpha | FrameBufferProperties::FM_stereo | FrameBufferProperties::FM_multisample,
-
-        // All esoteric options removed.
-        FrameBufferProperties::FM_stencil | FrameBufferProperties::FM_accum | FrameBufferProperties::FM_alpha | FrameBufferProperties::FM_stereo | FrameBufferProperties::FM_multisample,
-
-        // All esoteric options, plus some we'd really really prefer,
-        // removed.
-        FrameBufferProperties::FM_stencil | FrameBufferProperties::FM_accum | FrameBufferProperties::FM_alpha | FrameBufferProperties::FM_stereo | FrameBufferProperties::FM_multisample | FrameBufferProperties::FM_double_buffer,
-
-        // A zero marks the end of the array.
-        0
-      };
 
       pset<int> tried_masks;
       tried_masks.insert(frame_buffer_mode);

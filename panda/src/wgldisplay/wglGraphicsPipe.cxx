@@ -26,7 +26,6 @@ typedef enum {Software, MCD, ICD} OGLDriverType;
 
 TypeHandle wglGraphicsPipe::_type_handle;
   
-
 ////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsPipe::Constructor
 //       Access: Public
@@ -111,6 +110,9 @@ make_gsg(const FrameBufferProperties &properties,
 
   if (!gl_force_pixfmt.has_value()) {
     temp_pfnum = choose_pfnum(properties, hdc);
+    if (temp_pfnum == 0) {
+      return NULL;
+    }
 
   } else {
     wgldisplay_cat.info()
@@ -214,18 +216,24 @@ make_buffer(GraphicsStateGuardian *gsg, const string &name,
 //  Description: Selects a suitable pixel format number for the given
 //               frame buffer properties.  Returns the selected number
 //               if successful, or 0 otherwise.
-//
-//               If successful, this may modify properties to reflect
-//               the actual visual chosen.
 ////////////////////////////////////////////////////////////////////
 int wglGraphicsPipe::
 choose_pfnum(const FrameBufferProperties &properties, HDC hdc) {
-  int pfnum;
+  int frame_buffer_mode = 0;
 
-  int mode = properties.get_frame_buffer_mode();
-  bool hardware = ((mode & FrameBufferProperties::FM_hardware) != 0);
-  bool software = ((mode & FrameBufferProperties::FM_software) != 0);
+  if (properties.has_frame_buffer_mode()) {
+    frame_buffer_mode = properties.get_frame_buffer_mode();
+  }
 
+  int want_depth_bits = properties.get_depth_bits();
+  int want_color_bits = properties.get_color_bits();
+  int want_alpha_bits = properties.get_alpha_bits();
+  int want_stencil_bits = properties.get_stencil_bits();
+
+  // We decide these up front, and don't modify them--if the user asks
+  // for hardware, we never fail over to software.
+  bool hardware = ((frame_buffer_mode & FrameBufferProperties::FM_hardware) != 0);
+  bool software = ((frame_buffer_mode & FrameBufferProperties::FM_software) != 0);
   // If the user specified neither hardware nor software frame buffer,
   // he gets either one.
   if (!hardware && !software) {
@@ -233,43 +241,290 @@ choose_pfnum(const FrameBufferProperties &properties, HDC hdc) {
     software = true;
   }
 
-  if (hardware) {
-    pfnum = find_pixfmtnum(properties, hdc, true);
-    if (pfnum == 0) {
-      if (software) {
-        pfnum = find_pixfmtnum(properties, hdc, false);
-        if (pfnum == 0) {
-          wgldisplay_cat.error()
-            << "Couldn't find HW or Software OpenGL pixfmt appropriate for this desktop!!\n";
-        } else {
-          wgldisplay_cat.info()
-            << "Couldn't find compatible OGL HW pixelformat, using software rendering.\n";
-        }
+  int pfnum = 
+    try_for_pfnum(hdc, hardware, software, frame_buffer_mode, 
+                  want_depth_bits, want_color_bits, want_alpha_bits,
+                  want_stencil_bits);
+  if (pfnum == 0) {
+    wgldisplay_cat.info()
+      << "wglGraphicsPipe::choose_pfnum() - pfnum with requested "
+      << "capabilities not found; trying for lesser pfnum.\n";
 
-      } else {
-        wgldisplay_cat.error()
-          << "Couldn't find HW-accelerated OpenGL pixfmt appropriate for this desktop!!\n";
+    bool special_size_request =
+      (want_depth_bits != 1 || want_color_bits != 1);
+
+    // We try to be smart about choosing a close match for the pfnum.
+    // First, we'll eliminate some of the more esoteric options one at
+    // a time, then two at a time, and finally we'll try just the bare
+    // minimum.
+
+    if (special_size_request) {
+      // Actually, first we'll eliminate all of the minimum sizes, to
+      // try to open a window with all of the requested options, but
+      // maybe not as many bits in some options as we'd like.
+      pfnum = try_for_pfnum(hdc, hardware, software, frame_buffer_mode);
+    }
+
+    if (pfnum == 0) {
+      // Ok, not good enough.  Now try to eliminate options, but keep
+      // as many bits as we asked for.
+
+      pset<int> tried_masks;
+      tried_masks.insert(frame_buffer_mode);
+
+      int i;
+      for (i = 0; pfnum == 0 && strip_properties[i] != 0; i++) {
+        int new_frame_buffer_mode = frame_buffer_mode & ~strip_properties[i];
+        if (tried_masks.insert(new_frame_buffer_mode).second) {
+          pfnum = try_for_pfnum(hdc, hardware, software, new_frame_buffer_mode,
+                                want_depth_bits, want_color_bits, 
+                                want_alpha_bits, want_stencil_bits);
+        }
       }
-      
+
+      if (special_size_request) {
+        tried_masks.clear();
+        tried_masks.insert(frame_buffer_mode);
+
+        if (pfnum == 0) {
+          // Try once more, this time eliminating all of the size
+          // requests.
+          for (i = 0; pfnum == 0 && strip_properties[i] != 0; i++) {
+            int new_frame_buffer_mode = frame_buffer_mode & ~strip_properties[i];
+            if (tried_masks.insert(new_frame_buffer_mode).second) {
+              pfnum = try_for_pfnum(hdc, hardware, software, 
+                                    new_frame_buffer_mode);
+            }
+          }
+        }
+      }
+
+      if (pfnum == 0) {
+        // Here's our last-ditch desparation attempt: give us any pixel
+        // format at all!
+        pfnum = try_for_pfnum(hdc, hardware, software, 0);
+      }
+
       if (pfnum == 0) {
         wgldisplay_cat.error()
-          << "make sure OpenGL driver is installed, and try reducing the screen size, reducing the\n"
-          << "desktop screen pixeldepth to 16bpp,and check your panda window properties\n";
+          << "Could not get any OpenGL pixel format.\n";
         return 0;
       }
     }
+  }
 
-  } else {
-    pfnum = find_pixfmtnum(properties, hdc, false);
+  return pfnum;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsPipe::try_for_pfnum
+//       Access: Private, Static
+//  Description: Attempt to get the requested pixel format, if it is
+//               available, using the standard DescribePixelFormat
+//               call.  It returns the pfnum if one is available, or 0
+//               if no available pixel formats match the requested
+//               options.
+////////////////////////////////////////////////////////////////////
+int wglGraphicsPipe::
+try_for_pfnum(HDC hdc, bool hardware, bool software, int frame_buffer_mode,
+              int want_depth_bits, int want_color_bits,
+              int want_alpha_bits, int want_stencil_bits) {
+  PIXELFORMATDESCRIPTOR pfd;
+  ZeroMemory(&pfd,sizeof(PIXELFORMATDESCRIPTOR));
+  pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+  pfd.nVersion = 1;
+
+  DWORD want_flags = (PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW);
+  DWORD dont_want_flags = 0;
+
+  switch (frame_buffer_mode & FrameBufferProperties::FM_buffer) {
+  case FrameBufferProperties::FM_single_buffer:
+    dont_want_flags |= PFD_DOUBLEBUFFER;
+    break;
     
-    if (pfnum == 0) {
-      wgldisplay_cat.error()
-        << "Couldn't find compatible software-renderer OpenGL pixfmt, check your window properties!\n";
-      return 0;
+  case FrameBufferProperties::FM_double_buffer:
+  case FrameBufferProperties::FM_triple_buffer:
+    want_flags |= PFD_DOUBLEBUFFER;
+    break;
+  }
+
+  wgldisplay_cat.debug()
+    << "try_for_pfnum(hdc, hardware = " << hardware
+    << ", software = " << software
+    << ", frame_buffer_mode = 0x" << hex << frame_buffer_mode << dec
+    << ", want_depth_bits = " << want_depth_bits
+    << ", want_color_bits = " << want_color_bits
+    << ", want_alpha_bits = " << want_alpha_bits
+    << ", want_stencil_bits = " << want_stencil_bits
+    << ")\n";
+
+  // We have to call DescribePixelFormat() once just to get the
+  // highest pfnum available.  Then we can iterate through all of the
+  // pfnums.
+  int max_pfnum = DescribePixelFormat(hdc, 1, 0, NULL);
+  int pfnum = 0;
+
+  int found_pfnum = 0;
+  int found_colorbits = 0;
+  int found_depthbits = 0;
+  bool found_is_hardware;
+
+  for (pfnum = 1; pfnum <= max_pfnum; pfnum++) {
+    DescribePixelFormat(hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
+
+    // skip driver types we are not looking for
+    bool is_hardware = ((pfd.dwFlags & PFD_GENERIC_FORMAT) == 0);
+    if ((is_hardware && !hardware) || (!is_hardware && !software)) {
+      continue;
+    }
+
+    if ((pfd.iPixelType == PFD_TYPE_COLORINDEX) && 
+        (frame_buffer_mode & FrameBufferProperties::FM_index) == 0) {
+      continue;
+    }
+
+    if ((pfd.dwFlags & want_flags) != want_flags) {
+      continue;
+
+    } else if (pfd.cColorBits < want_color_bits) {
+      continue;
+
+    } else if ((frame_buffer_mode & FrameBufferProperties::FM_alpha) != 0 && 
+               (pfd.cAlphaBits < want_alpha_bits)) {
+      continue;
+
+    } else if ((frame_buffer_mode & FrameBufferProperties::FM_depth) != 0 && 
+               (pfd.cDepthBits < want_depth_bits)) {
+      continue;
+
+    } else if ((frame_buffer_mode & FrameBufferProperties::FM_stencil) != 0 && 
+               (pfd.cStencilBits < want_stencil_bits)) {
+      continue;
+    }
+
+    // We've passed all the tests; this is an acceptable format.  Do
+    // we prefer this one over the previously-found acceptable
+    // formats?
+    bool preferred = false;
+
+    if (found_pfnum == 0) {
+      // If this is the first acceptable format we've found, of course
+      // we prefer it.
+      preferred = true;
+
+    } else if (!found_is_hardware && is_hardware) {
+      // We always prefer hardware-supported modes, given a choice.
+      preferred = true;
+
+    } else if ((frame_buffer_mode & FrameBufferProperties::FM_depth) != 0
+               && pfd.cDepthBits > found_depthbits) {
+      // We like having lots of depth bits, to a point.
+      if (pfd.cColorBits < found_colorbits && found_depthbits >= 16) {
+        // We don't like sacrificing color bits if we have at least 16
+        // bits of Z.
+      } else {
+        preferred = true;
+      }
+
+    } else if (pfd.cColorBits > found_colorbits) {
+      // We also like having lots of color bits.
+      preferred = true;
+    }
+
+    if (preferred) {
+      found_pfnum = pfnum;
+      found_colorbits = pfd.cColorBits;
+      found_depthbits = pfd.cDepthBits;
+      found_is_hardware = is_hardware;
     }
   }
-  
-  return pfnum;
+
+  if (found_pfnum != 0) {
+    if (wgldisplay_cat.is_debug()) {
+      wgldisplay_cat.debug()
+        << "found pfnum " << found_pfnum << ":\n";
+
+      DescribePixelFormat(hdc, found_pfnum, 
+                          sizeof(PIXELFORMATDESCRIPTOR), &pfd);
+
+      wgldisplay_cat.debug() 
+        << "  color = " << (int)(pfd.cColorBits)
+        << " = R" << (int)(pfd.cRedBits) 
+        << " G" << (int)(pfd.cGreenBits)
+        << " B" << (int)(pfd.cBlueBits)
+        << " A" << (int)(pfd.cAlphaBits) << "\n";
+
+      if ((frame_buffer_mode & FrameBufferProperties::FM_alpha) != 0) {
+        wgldisplay_cat.debug()
+          << "  alpha = " << (int)(pfd.cAlphaBits) << "\n";
+      }
+      if ((frame_buffer_mode & FrameBufferProperties::FM_depth) != 0) {
+        wgldisplay_cat.debug()
+          << "  depth = " << (int)(pfd.cDepthBits) << "\n";
+      }
+      if ((frame_buffer_mode & FrameBufferProperties::FM_stencil) != 0) {
+        wgldisplay_cat.debug()
+          << "  stencil = " << (int)(pfd.cStencilBits) << "\n";
+      }
+      wgldisplay_cat.debug()
+        << "  flags = " << format_pfd_flags(pfd.dwFlags) << " (missing "
+        << format_pfd_flags((~pfd.dwFlags) & want_flags) << ", extra "
+        << format_pfd_flags(pfd.dwFlags & dont_want_flags) << ")\n";
+    }
+  }
+
+  return found_pfnum;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsPipe::get_properties
+//       Access: Private, Static
+//  Description: Gets the FrameBufferProperties to match the
+//               indicated pixel format descriptor.
+////////////////////////////////////////////////////////////////////
+void wglGraphicsPipe::
+get_properties(FrameBufferProperties &properties, HDC hdc,
+               int pfnum) {
+  PIXELFORMATDESCRIPTOR pfd;
+  ZeroMemory(&pfd,sizeof(PIXELFORMATDESCRIPTOR));
+  pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+  pfd.nVersion = 1;
+
+  DescribePixelFormat(hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
+
+  properties.clear();
+
+  int mode = 0;
+  if (pfd.dwFlags & PFD_DOUBLEBUFFER) {
+    mode |= FrameBufferProperties::FM_double_buffer;
+  }
+  if (pfd.dwFlags & PFD_STEREO) {
+    mode |= FrameBufferProperties::FM_stereo;
+  }
+  if (pfd.dwFlags & PFD_GENERIC_FORMAT) {
+    mode |= FrameBufferProperties::FM_software;
+  } else {
+    mode |= FrameBufferProperties::FM_hardware;
+  }
+
+  if (pfd.cColorBits != 0) {
+    mode |= FrameBufferProperties::FM_rgb;
+    properties.set_color_bits(pfd.cColorBits);
+  }
+  if (pfd.cAlphaBits != 0) {
+    mode |= FrameBufferProperties::FM_alpha;
+    properties.set_alpha_bits(pfd.cAlphaBits);
+  }
+  if (pfd.cDepthBits != 0) {
+    mode |= FrameBufferProperties::FM_depth;
+    properties.set_depth_bits(pfd.cDepthBits);
+  }
+  if (pfd.cStencilBits != 0) {
+    mode |= FrameBufferProperties::FM_stencil;
+    properties.set_stencil_bits(pfd.cStencilBits);
+  }
+
+  properties.set_frame_buffer_mode(mode);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -277,7 +532,9 @@ choose_pfnum(const FrameBufferProperties &properties, HDC hdc) {
 //       Access: Private, Static
 //  Description: Uses the WGL extensions, if available, to find a
 //               suitable pfnum.  This requires having created a
-//               temporary context first.
+//               temporary context first.  Returns the pixel format
+//               chosen if successful, or the original pixel format
+//               number on failure.
 ////////////////////////////////////////////////////////////////////
 int wglGraphicsPipe::
 choose_pfnum_advanced(const FrameBufferProperties &properties, 
@@ -295,6 +552,101 @@ choose_pfnum_advanced(const FrameBufferProperties &properties,
   int want_stencil_bits = properties.get_stencil_bits();
   int want_multisamples = properties.get_multisamples();
 
+  int pfnum = 
+    try_for_pfnum_advanced(orig_pfnum, wglgsg, window_dc, frame_buffer_mode, 
+                           want_depth_bits, want_color_bits, want_alpha_bits,
+                           want_stencil_bits, want_multisamples);
+  if (pfnum == 0) {
+    wgldisplay_cat.info()
+      << "wglGraphicsPipe::choose_pfnum() - pfnum with requested "
+      << "capabilities not found; trying for lesser pfnum.\n";
+
+    bool special_size_request =
+      (want_depth_bits != 1 || want_color_bits != 1);
+
+    // We try to be smart about choosing a close match for the pfnum.
+    // First, we'll eliminate some of the more esoteric options one at
+    // a time, then two at a time, and finally we'll try just the bare
+    // minimum.
+
+    if (special_size_request) {
+      // Actually, first we'll eliminate all of the minimum sizes, to
+      // try to open a window with all of the requested options, but
+      // maybe not as many bits in some options as we'd like.
+      pfnum = try_for_pfnum_advanced(orig_pfnum, wglgsg, window_dc, 
+                                     frame_buffer_mode);
+    }
+
+    if (pfnum == 0) {
+      // Ok, not good enough.  Now try to eliminate options, but keep
+      // as many bits as we asked for.
+
+      pset<int> tried_masks;
+      tried_masks.insert(frame_buffer_mode);
+
+      int i;
+      for (i = 0; pfnum == 0 && strip_properties[i] != 0; i++) {
+        int new_frame_buffer_mode = frame_buffer_mode & ~strip_properties[i];
+        if (tried_masks.insert(new_frame_buffer_mode).second) {
+          pfnum = try_for_pfnum_advanced(orig_pfnum, wglgsg, window_dc, 
+                                         new_frame_buffer_mode, 
+                                         want_depth_bits, want_color_bits, 
+                                         want_alpha_bits, want_stencil_bits,
+                                         want_multisamples);
+        }
+      }
+
+      if (special_size_request) {
+        tried_masks.clear();
+        tried_masks.insert(frame_buffer_mode);
+
+        if (pfnum == 0) {
+          // Try once more, this time eliminating all of the size
+          // requests.
+          for (i = 0; pfnum == 0 && strip_properties[i] != 0; i++) {
+            int new_frame_buffer_mode = frame_buffer_mode & ~strip_properties[i];
+            if (tried_masks.insert(new_frame_buffer_mode).second) {
+              pfnum = try_for_pfnum_advanced(orig_pfnum, wglgsg, window_dc,
+                                             new_frame_buffer_mode);
+            }
+          }
+        }
+      }
+
+      if (pfnum == 0) {
+        // Here's our last-ditch desparation attempt: give us any pixel
+        // format at all!
+        pfnum = try_for_pfnum_advanced(orig_pfnum, wglgsg, window_dc, 0);
+      }
+
+      if (pfnum == 0) {
+        // This is only an info message, because we just return the
+        // original pfnum in this case.
+        wgldisplay_cat.info()
+          << "Could not get any pfnum using wglChoosePixelFormatARB.\n";
+        return orig_pfnum;
+      }
+    }
+  }
+
+  return pfnum;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsPipe::try_for_pfnum_advanced
+//       Access: Private, Static
+//  Description: Attempt to get the requested pixel format, if it is
+//               available, using the advanced wglChoosePixelFormatARB
+//               call.  It returns the pfnum if one is available, or 0
+//               if no available pixel formats match the requested
+//               options.
+////////////////////////////////////////////////////////////////////
+int wglGraphicsPipe::
+try_for_pfnum_advanced(int orig_pfnum, const wglGraphicsStateGuardian *wglgsg,
+                       HDC window_dc, int frame_buffer_mode,
+                       int want_depth_bits, int want_color_bits,
+                       int want_alpha_bits, int want_stencil_bits,
+                       int want_multisamples) {
   static const int max_attrib_list = 32;
   int iattrib_list[max_attrib_list];
   float fattrib_list[max_attrib_list];
@@ -378,7 +730,7 @@ choose_pfnum_advanced(const FrameBufferProperties &properties,
       wgldisplay_cat.info()
         << "Couldn't find a suitable advanced pixel format.\n";
     }
-    return orig_pfnum;
+    return 0;
   }
   
   nformats = min(nformats, max_pformats);
@@ -395,242 +747,33 @@ choose_pfnum_advanced(const FrameBufferProperties &properties,
   }
   
   // If our original pfnum is on the list, take it.
-  for (unsigned int i = 0; i < nformats; i++) {
+  unsigned int i;
+  for (i = 0; i < nformats; i++) {
     if (pformat[i] == orig_pfnum) {
       return orig_pfnum;
     }
   }
 
-  // Otherwise, return the first available.
+  // Try to find one on the list that corresponds closely with our
+  // original pfnum choice.
+  FrameBufferProperties orig_props;
+  get_properties(orig_props, window_dc, orig_pfnum);
+
+  for (i = 0; i < nformats; i++) {
+    FrameBufferProperties new_props;
+    if (get_properties_advanced(new_props, wglgsg, window_dc, pformat[i])) {
+      if (new_props.get_color_bits() == orig_props.get_color_bits() &&
+          new_props.get_alpha_bits() == orig_props.get_alpha_bits() &&
+          new_props.get_depth_bits() == orig_props.get_depth_bits() &&
+          new_props.get_stencil_bits() == orig_props.get_stencil_bits()) {
+        return pformat[i];
+      }
+    }
+  }
+
+  // Otherwise, just pick the first one on the list, which is the
+  // "best" one according to WGL.
   return pformat[0];
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsPipe::find_pixfmtnum
-//       Access: Private, Static
-//  Description: This helper routine looks for either HW-only or
-//               SW-only format, but not both.  Returns the
-//               pixelformat number, or 0 if a suitable format could
-//               not be found.
-////////////////////////////////////////////////////////////////////
-int wglGraphicsPipe::
-find_pixfmtnum(const FrameBufferProperties &properties, HDC hdc,
-               bool bLookforHW) {
-  int frame_buffer_mode = properties.get_frame_buffer_mode();
-  int depth_bits = properties.get_depth_bits();
-  int color_bits = properties.get_color_bits();
-  int alpha_bits = properties.get_alpha_bits();
-  int stencil_bits = properties.get_stencil_bits();
-  OGLDriverType drvtype;
-
-  PIXELFORMATDESCRIPTOR pfd;
-  ZeroMemory(&pfd,sizeof(PIXELFORMATDESCRIPTOR));
-  pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-  pfd.nVersion = 1;
-
-  // We have to call DescribePixelFormat() once just to get the
-  // highest pfnum available.  Then we can iterate through all of the
-  // pfnums.
-  int max_pfnum = DescribePixelFormat(hdc, 1, 0, NULL);
-  int cur_bpp = GetDeviceCaps(hdc, BITSPIXEL);
-  int pfnum = 0;
-
-  int found_pfnum = 0;
-  int found_colorbits = 0;
-  int found_depthbits = 0;
-
-  for (pfnum = 1; pfnum <= max_pfnum; pfnum++) {
-    DescribePixelFormat(hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
-
-    // official, nvidia sanctioned way.
-    if ((pfd.dwFlags & PFD_GENERIC_FORMAT) != 0) {
-      drvtype = Software;
-    } else if (pfd.dwFlags & PFD_GENERIC_ACCELERATED) {
-      drvtype = MCD;
-    } else {
-      drvtype = ICD;
-    }
-
-    // skip driver types we are not looking for
-    if (bLookforHW) {
-      if (drvtype == Software) {
-        continue;
-      }
-    } else {
-      if (drvtype != Software) {
-        continue;
-      }
-    }
-
-    if ((pfd.iPixelType == PFD_TYPE_COLORINDEX) && 
-        (frame_buffer_mode & FrameBufferProperties::FM_index) == 0) {
-      continue;
-    }
-
-    DWORD want_flags = (PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW);
-    DWORD dont_want_flags = 0;
-
-    switch (frame_buffer_mode & FrameBufferProperties::FM_buffer) {
-    case FrameBufferProperties::FM_single_buffer:
-      dont_want_flags |= PFD_DOUBLEBUFFER;
-      break;
-      
-    case FrameBufferProperties::FM_double_buffer:
-    case FrameBufferProperties::FM_triple_buffer:
-      want_flags |= PFD_DOUBLEBUFFER;
-      break;
-    }
-
-    if (wgldisplay_cat.is_debug()) {
-      wgldisplay_cat.debug()
-        << "---------------- pfnum " << pfnum << "\n";
-
-      wgldisplay_cat.debug() 
-        << "color = " << (int)(pfd.cColorBits)
-        << " = R" << (int)(pfd.cRedBits) 
-        << " G" << (int)(pfd.cGreenBits)
-        << " B" << (int)(pfd.cBlueBits)
-        << " A" << (int)(pfd.cAlphaBits) << "\n";
-
-      if ((frame_buffer_mode & FrameBufferProperties::FM_alpha) != 0) {
-        wgldisplay_cat.debug()
-          << "alpha = " << (int)(pfd.cAlphaBits) << "\n";
-      }
-      if ((frame_buffer_mode & FrameBufferProperties::FM_depth) != 0) {
-        wgldisplay_cat.debug()
-          << "depth = " << (int)(pfd.cDepthBits) << "\n";
-      }
-      if ((frame_buffer_mode & FrameBufferProperties::FM_stencil) != 0) {
-        wgldisplay_cat.debug()
-          << "stencil = " << (int)(pfd.cStencilBits) << "\n";
-      }
-      wgldisplay_cat.debug()
-        << "flags = " << format_pfd_flags(pfd.dwFlags) << " (missing "
-        << format_pfd_flags((~pfd.dwFlags) & want_flags) << ", extra "
-        << format_pfd_flags(pfd.dwFlags & dont_want_flags) << ")\n";
-    }
-
-    if ((frame_buffer_mode & FrameBufferProperties::FM_alpha) != 0 && 
-        (pfd.cAlphaBits < alpha_bits)) {
-      wgldisplay_cat.debug() 
-        << "  rejecting.\n";
-      continue;
-    }
-    if ((frame_buffer_mode & FrameBufferProperties::FM_depth) != 0 && 
-        (pfd.cDepthBits < depth_bits)) {
-      wgldisplay_cat.debug() 
-        << "  rejecting.\n";
-      continue;
-    }
-    if ((frame_buffer_mode & FrameBufferProperties::FM_stencil) != 0 && 
-        (pfd.cStencilBits < stencil_bits)) {
-      wgldisplay_cat.debug() 
-        << "  rejecting.\n";
-      continue;
-    }
-
-    if ((pfd.dwFlags & want_flags) != want_flags ||
-        (pfd.dwFlags & dont_want_flags) != 0) {
-      wgldisplay_cat.debug() 
-        << "  rejecting.\n";
-      continue;
-    }
-
-    if (pfd.cColorBits < color_bits) {
-      wgldisplay_cat.debug() 
-        << "  rejecting.\n";
-      continue;
-    }
-
-    // We've passed all the tests; this is an acceptable format.  Do
-    // we prefer this one over the previously-found acceptable
-    // formats?
-    bool preferred = false;
-
-    if (found_pfnum == 0) {
-      // If this is the first acceptable format we've found, of course
-      // we prefer it.
-      preferred = true;
-
-    } else if ((frame_buffer_mode & FrameBufferProperties::FM_depth) != 0
-               && pfd.cDepthBits > found_depthbits) {
-      // We like having lots of depth bits, to a point.
-      if (pfd.cColorBits < found_colorbits && found_depthbits >= 16) {
-        // We don't like sacrificing color bits if we have at least 16
-        // bits of Z.
-      } else {
-        preferred = true;
-      }
-
-    } else if (pfd.cColorBits > found_colorbits) {
-      // We also like having lots of color bits.
-      preferred = true;
-    }
-
-    if (preferred) {
-      wgldisplay_cat.debug() 
-        << "  format is acceptable, and preferred.\n";
-      found_pfnum = pfnum;
-      found_colorbits = pfd.cColorBits;
-      found_depthbits = pfd.cDepthBits;
-    } else {
-      wgldisplay_cat.debug() 
-        << "  format is acceptable, but not preferred.\n";
-    }
-  }
-
-  return found_pfnum;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsPipe::get_properties
-//       Access: Private, Static
-//  Description: Gets the FrameBufferProperties to match the
-//               indicated pixel format descriptor.
-////////////////////////////////////////////////////////////////////
-void wglGraphicsPipe::
-get_properties(FrameBufferProperties &properties, HDC hdc,
-               int pfnum) {
-  PIXELFORMATDESCRIPTOR pfd;
-  ZeroMemory(&pfd,sizeof(PIXELFORMATDESCRIPTOR));
-  pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-  pfd.nVersion = 1;
-
-  DescribePixelFormat(hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), &pfd);
-
-  properties.clear();
-
-  int mode = 0;
-  if (pfd.dwFlags & PFD_DOUBLEBUFFER) {
-    mode |= FrameBufferProperties::FM_double_buffer;
-  }
-  if (pfd.dwFlags & PFD_STEREO) {
-    mode |= FrameBufferProperties::FM_stereo;
-  }
-  if (pfd.dwFlags & PFD_GENERIC_FORMAT) {
-    mode |= FrameBufferProperties::FM_software;
-  } else {
-    mode |= FrameBufferProperties::FM_hardware;
-  }
-
-  if (pfd.cColorBits != 0) {
-    mode |= FrameBufferProperties::FM_rgb;
-    properties.set_color_bits(pfd.cColorBits);
-  }
-  if (pfd.cAlphaBits != 0) {
-    mode |= FrameBufferProperties::FM_alpha;
-    properties.set_alpha_bits(pfd.cAlphaBits);
-  }
-  if (pfd.cDepthBits != 0) {
-    mode |= FrameBufferProperties::FM_depth;
-    properties.set_depth_bits(pfd.cDepthBits);
-  }
-  if (pfd.cStencilBits != 0) {
-    mode |= FrameBufferProperties::FM_stencil;
-    properties.set_stencil_bits(pfd.cStencilBits);
-  }
-
-  properties.set_frame_buffer_mode(mode);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -642,7 +785,7 @@ get_properties(FrameBufferProperties &properties, HDC hdc,
 ////////////////////////////////////////////////////////////////////
 bool wglGraphicsPipe::
 get_properties_advanced(FrameBufferProperties &properties, 
-                        wglGraphicsStateGuardian *wglgsg, 
+                        const wglGraphicsStateGuardian *wglgsg, 
                         HDC window_dc, int pfnum) {
 
   static const int max_attrib_list = 32;

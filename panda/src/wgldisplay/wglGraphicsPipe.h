@@ -48,15 +48,25 @@ protected:
                                          int x_size, int y_size, bool want_texture);
 private:
   static int choose_pfnum(const FrameBufferProperties &properties, HDC hdc);
+  static int try_for_pfnum(HDC hdc, bool hardware, bool software, 
+                           int frame_buffer_mode,
+                           int want_depth_bits = 1, int want_color_bits = 1,
+                           int want_alpha_bits = 1, int want_stencil_bits = 1);
+
+  static void get_properties(FrameBufferProperties &properties, HDC hdc,
+                             int pfnum);
+
   static int choose_pfnum_advanced(const FrameBufferProperties &properties, 
                                    const wglGraphicsStateGuardian *wglgsg,
                                    HDC window_dc, int orig_pfnum);
-  static int find_pixfmtnum(const FrameBufferProperties &properties, HDC hdc,
-                            bool bLookforHW);
-  static void get_properties(FrameBufferProperties &properties, HDC hdc,
-                             int pfnum);
+  static int try_for_pfnum_advanced(int orig_pfnum, 
+                                    const wglGraphicsStateGuardian *wglgsg,
+                                    HDC window_dc, int frame_buffer_mode,
+                                    int want_depth_bits = 1, int want_color_bits = 1,
+                                    int want_alpha_bits = 1, int want_stencil_bits = 1,
+                                    int want_multisamples = 1);
   static bool get_properties_advanced(FrameBufferProperties &properties, 
-                                      wglGraphicsStateGuardian *wglgsg, 
+                                      const wglGraphicsStateGuardian *wglgsg, 
                                       HDC window_dc, int pfnum);
   static string format_pfd_flags(DWORD pfd_flags);
 

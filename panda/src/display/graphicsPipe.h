@@ -110,6 +110,8 @@ protected:
   int _display_height;
   PT(GraphicsDevice) _device;
 
+  static const int strip_properties[];
+
 public:
 
   static TypeHandle get_class_type() {
