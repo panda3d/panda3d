@@ -1,3 +1,4 @@
+
 from libpandaexpressModules import *
 from DirectNotifyGlobal import *
 from PythonUtil import *
@@ -621,7 +622,7 @@ class TaskManager:
             if (ret == cont):
                 # Leave it for next frame, its not done yet
                 pass
-            elif ((ret == done) or (ret == exit)):
+            elif ((ret == done) or (ret == exit) or (ret == None)):
                 assert(TaskManager.notify.debug('__stepThroughList: task is finished %s' % (task)))
                 # Remove the task
                 if not task.isRemoved():
@@ -638,7 +639,7 @@ class TaskManager:
                 # Do not increment the iterator
                 continue
             else:
-                raise StandardError, "Task named %s did not return cont, exit, or done" % task.name
+                raise StandardError, "Task named %s did not return cont, exit, done, or None" % task.name
             # Move to the next element
             i += 1
 
