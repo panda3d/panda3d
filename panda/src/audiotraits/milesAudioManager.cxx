@@ -47,9 +47,7 @@ void fMilesShutdown(void) {
 
     if (MilesAudioManager::_dls_field!=NULL) {
       HDLSDEVICE dls= NULL;
-      audio_cat->info() << "xxxx m1\n";
       AIL_quick_handles(0, 0, &dls);
-      audio_cat->info() << "dls == 0x" << (void*)dls << endl;
       if(dls!=NULL) {
           AIL_DLS_unload(dls,MilesAudioManager::_dls_field);
       }
