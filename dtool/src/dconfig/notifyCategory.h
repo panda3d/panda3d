@@ -34,8 +34,14 @@ PUBLISHED:
   INLINE void set_severity(NotifySeverity severity);
   
   INLINE bool is_on(NotifySeverity severity) const;
+
+#ifndef NDEBUG
   INLINE bool is_spam() const;
   INLINE bool is_debug() const;
+#else
+  INLINE static bool is_spam();
+  INLINE static bool is_debug();
+#endif
   INLINE bool is_info() const;
   INLINE bool is_warning() const;
   INLINE bool is_error() const;

@@ -57,6 +57,7 @@ is_on(NotifySeverity severity) const {
   return (int)severity >= (int)_severity;
 }
 
+#ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategory::is_spam
 //       Access: Public
@@ -64,11 +65,7 @@ is_on(NotifySeverity severity) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool NotifyCategory::
 is_spam() const {
-#ifndef NDEBUG
   return is_on(NS_spam);
-#else
-  return false;
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -78,12 +75,35 @@ is_spam() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool NotifyCategory::
 is_debug() const {
-#ifndef NDEBUG
   return is_on(NS_debug);
-#else
-  return false;
-#endif
 }
+#else
+////////////////////////////////////////////////////////////////////
+//     Function: NotifyCategory::is_spam
+//       Access: Public, Static
+//  Description: In NDEBUG mode, the categories are never set to
+//               "spam" or "debug" severities, and these methods are
+//               redefined to be static to make the more obvious to
+//               the compiler.
+////////////////////////////////////////////////////////////////////
+INLINE bool NotifyCategory::
+is_spam() {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NotifyCategory::is_debug
+//       Access: Public
+//  Description: In NDEBUG mode, the categories are never set to
+//               "spam" or "debug" severities, and these methods are
+//               redefined to be static to make the more obvious to
+//               the compiler.
+////////////////////////////////////////////////////////////////////
+INLINE bool NotifyCategory::
+is_debug() {
+  return false;
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NotifyCategory::is_info
