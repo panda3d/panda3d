@@ -85,6 +85,8 @@ AudioManager* AudioManager::get_ptr(void) {
 //  Description: get the player off the sound, and start it playing
 ////////////////////////////////////////////////////////////////////
 void AudioManager::ns_play(AudioSound* sound) {
+  if (sound->status() == AudioSound::PLAYING)
+    this->ns_stop(sound);
   sound->get_player()->play_sound(sound->get_sound(), sound->get_state());
 }
 
@@ -95,7 +97,8 @@ void AudioManager::ns_play(AudioSound* sound) {
 ////////////////////////////////////////////////////////////////////
 void AudioManager::ns_stop(AudioSound* sound) {
   this->ns_set_loop(sound, false);
-  sound->get_player()->stop_sound(sound->get_sound(), sound->get_state());
+  if (sound->status() == AudioSound::PLAYING)
+    sound->get_player()->stop_sound(sound->get_sound(), sound->get_state());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -104,7 +107,7 @@ void AudioManager::ns_stop(AudioSound* sound) {
 //  Description: set the looping state of the given sound
 ////////////////////////////////////////////////////////////////////
 void AudioManager::ns_set_loop(AudioSound* sound, bool state) {
-  if ((_loopset == (LoopSet*)0L) && state)
+  if (_loopset == (LoopSet*)0L)
     _loopset = new LoopSet;
   if (state)
     _loopset->insert(sound);

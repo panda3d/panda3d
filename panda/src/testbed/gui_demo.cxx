@@ -474,6 +474,7 @@ static void test8(GuiManager* mgr, Node* font) {
 }
 */
 
+/*
 GuiManager* g_mgr;
 PT(GuiLabel) l4;
 PT(GuiFrame) f1;
@@ -526,6 +527,38 @@ static void test9(GuiManager* mgr, Node* font) {
   f1->recompute();
   f1->manage(mgr, event_handler);
 }
+*/
+
+PT(GuiSign) s1;
+PT(GuiSign) s2;
+PT(GuiSign) s3;
+static bool prior_state = true;
+
+static void test10(GuiManager* mgr, Node* font) {
+  GuiLabel* l1 = GuiLabel::make_simple_text_label("A", font);
+  l1->set_foreground_color(0., 0., 0., 1.);
+  l1->set_background_color(1., 0., 0., 1.);
+  s1 = new GuiSign("A", l1);
+  s1->set_scale(0.1);
+  s1->set_priority(GuiItem::P_Low);
+  s1->manage(mgr, event_handler);
+  GuiLabel* l2 = GuiLabel::make_simple_text_label("B", font);
+  l2->set_foreground_color(0., 0., 0., 1.);
+  l2->set_background_color(0., 1., 0., 1.);
+  s2 = new GuiSign("B", l2);
+  s2->set_scale(0.1);
+  s2->set_pos(LVector3f::rfu(0.05, 0., 0.05));
+  s2->set_priority(GuiItem::P_Normal);
+  s2->manage(mgr, event_handler);
+  GuiLabel* l3 = GuiLabel::make_simple_text_label("C", font);
+  l3->set_foreground_color(0., 0., 0., 1.);
+  l3->set_background_color(0., 0., 1., 1.);
+  s3 = new GuiSign("C", l3);
+  s3->set_scale(0.1);
+  s3->set_pos(LVector3f::rfu(0.1, 0., 0.1));
+  s3->set_priority(GuiItem::P_High);
+  s3->manage(mgr, event_handler);
+}
 
 static void setup_gui(void) {
   GuiManager* mgr = GuiManager::get_ptr(main_win, mak);
@@ -547,9 +580,12 @@ static void setup_gui(void) {
   //  g_mgr = mgr;
   // test 8
   //  test8(mgr, font);
+  //  g_mgr = mgr;
   // test 9
-  test9(mgr, font);
-  g_mgr = mgr;
+  //  test9(mgr, font);
+  //  g_mgr = mgr;
+  // test 10
+  test10(mgr, font);
 }
 
 static void event_2(CPT_Event) {
@@ -602,6 +638,7 @@ static void event_3(CPT_Event) {
 }
 */
 
+/*
 // for test 9
 static void event_3(CPT_Event) {
   if (frame_state) {
@@ -611,6 +648,19 @@ static void event_3(CPT_Event) {
   }
   f1->recompute();
   frame_state = !frame_state;
+}
+*/
+
+// for test 10
+static void event_3(CPT_Event) {
+  if (prior_state) {
+    s1->set_priority(GuiItem::P_High);
+    s3->set_priority(GuiItem::P_Low);
+  } else {
+    s1->set_priority(GuiItem::P_Low);
+    s3->set_priority(GuiItem::P_High);
+  }
+  prior_state = !prior_state;
 }
 
 void gui_keys(EventHandler&) {
