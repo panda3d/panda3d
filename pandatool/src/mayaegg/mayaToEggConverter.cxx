@@ -1776,15 +1776,17 @@ make_polyset(MayaNodeDesc *node_desc, const MDagPath &dag_path,
           if (color_def->has_projection()) {
             // If the shader has a projection, use it instead of the
             // polygon's built-in UV's.
-            vert.set_uv(tex_p->get_uv_name(),color_def->project_uv(p3d, centroid));
+            vert.set_uv(tex_p->get_uv_name(), 
+                        color_def->project_uv(p3d, centroid));
           } else {
             // Get the UV's from the polygon.
             float2 uvs;
-            status = pi.getUV(i, uvs, &MString(uv_name.c_str()));
+            MString uv_mstring(uv_name.c_str());
+            status = pi.getUV(i, uvs, &uv_mstring);
             if (!status) {
               status.perror("MItMeshPolygon::getUV");
             } else {
-              vert.set_uv(tex_p->get_uv_name(),TexCoordd(uvs[0], uvs[1]));
+              vert.set_uv(tex_p->get_uv_name(), TexCoordd(uvs[0], uvs[1]));
             }
           }
         }
