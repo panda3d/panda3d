@@ -36,7 +36,10 @@ float get_pstats_max_rate() {
 }
 
 const string pstats_host = config_pstats.GetString("pstats-host", "localhost");
-const int pstats_port = config_pstats.GetInt("pstats-port", 5180);
+
+// The default port for PStats used to be 5180, but that's used by AIM.
+const int pstats_port = config_pstats.GetInt("pstats-port", 5185);
+
 const float pstats_target_frame_rate = config_pstats.GetFloat("pstats-target-frame-rate", 30.0);
 
 // The rest are different in that they directly control the server,
