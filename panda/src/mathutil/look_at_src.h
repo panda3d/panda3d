@@ -64,6 +64,24 @@ INLINE_MATHUTIL void
 look_at(FLOATNAME(LMatrix4) &mat, const FLOATNAME(LVector3) &fwd,
         CoordinateSystem cs);
 
+
+
+INLINE_MATHUTIL void
+heads_up(FLOATNAME(LQuaternion) &quat, const FLOATNAME(LVector3) &fwd,
+         const FLOATNAME(LVector3) &up = FLOATNAME(LVector3)::up(),
+         CoordinateSystem cs = CS_default);
+INLINE_MATHUTIL void
+look_at(FLOATNAME(LQuaternion) &quat, const FLOATNAME(LVector3) &fwd,
+        const FLOATNAME(LVector3) &up = FLOATNAME(LVector3)::up(),
+        CoordinateSystem cs = CS_default);
+
+INLINE_MATHUTIL void
+heads_up(FLOATNAME(LQuaternion) &quat, const FLOATNAME(LVector3) &fwd,
+         CoordinateSystem cs);
+INLINE_MATHUTIL void
+look_at(FLOATNAME(LQuaternion) &quat, const FLOATNAME(LVector3) &fwd,
+        CoordinateSystem cs);
+
 END_PUBLISH
 
 #include "look_at_src.I"
