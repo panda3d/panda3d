@@ -22,6 +22,10 @@
 #include "indent.h"
 #include "notify.h"
 #include "string_utils.h"
+#include "indexParameters.h"
+
+#include <ctype.h>
+#include <algorithm>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RollDirectory::Constructor
@@ -33,6 +37,11 @@ RollDirectory(const Filename &dir) :
   _dir(dir)
 {
   _basename = _dir.get_basename();
+  if (format_rose) {
+    _name = format_basename(_basename);
+  } else {
+    _name = _basename;
+  }
   _prev = (RollDirectory *)NULL;
   _next = (RollDirectory *)NULL;
 }
@@ -78,23 +87,92 @@ get_basename() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RollDirectory::get_name
+//       Access: Public
+//  Description: Returns the formatted name of the directory.  This is
+//               often the same as the basename, but if -r is
+//               specified on the command line it might be a somewhat
+//               different, reformatted name.  In any case, it is the
+//               name of the roll as it should be presented to the
+//               user.
+////////////////////////////////////////////////////////////////////
+const string &RollDirectory::
+get_name() const {
+  return _name;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RollDirectory::scan
 //       Access: Public
 //  Description: Scans the directory for all the listed photos.
 ////////////////////////////////////////////////////////////////////
 bool RollDirectory::
 scan(const string &extension) {
-  vector_string contents;
-  if (!_dir.scan_directory(contents)) {
-    nout << "Could not read " << _dir << "\n";
-    return false;
+  bool reverse_order = false;
+  bool explicit_list = false;
+
+  // Check for an .ls file in the roll directory, which may give an
+  // explicit ordering, or if empty, it specifies reverse ordering.
+  Filename ls_filename(_dir, _basename + ".ls");
+  if (ls_filename.exists()) {
+    add_contributing_filename(ls_filename);
+    ls_filename.set_text();
+    ifstream ls;
+    if (!ls_filename.open_read(ls)) {
+      nout << "Could not read " << ls_filename << "\n";
+    } else {
+      bool any_words = false;
+      string word;
+      ls >> word;
+      while (!ls.eof() && !ls.fail()) {
+	any_words = true;
+	Filename try_filename(_dir, word);
+	if (!try_filename.exists()) {
+	  try_filename = Filename(_dir, word + "." + extension);
+	}
+	if (!try_filename.exists()) {
+	  try_filename = Filename(_dir, _basename + word + "." + extension);
+	}
+	if (!try_filename.exists()) {
+	  try_filename = Filename(_dir, _basename + "0" + word + "." + extension);
+	}
+	if (try_filename.exists()) {
+	  _photos.push_back(new Photo(this, try_filename.get_basename()));
+	} else {
+	  nout << "Frame " << word << " not found in " << _name << "\n";
+	}
+	ls >> word;
+      }
+
+      if (!any_words) {
+	// An empty .ls file just means reverse the order.
+	reverse_order = true;
+      } else {
+	// A non-empty .ls file has listed all the files we need; no
+	// need to scan the directory.
+	explicit_list = true;
+      }
+    }
   }
 
-  vector_string::iterator ci;
-  for (ci = contents.begin(); ci != contents.end(); ++ci) {
-    Filename basename = (*ci);
-    if (basename.get_extension() == extension) {
-      _photos.push_back(new Photo(this, basename));
+  if (!explicit_list) {
+    vector_string contents;
+    
+    if (!_dir.scan_directory(contents)) {
+      nout << "Could not read " << _dir << "\n";
+      return false;
+    }
+
+    if (reverse_order) {
+      reverse(contents.begin(), contents.end());
+    }
+
+    vector_string::iterator ci;
+    for (ci = contents.begin(); ci != contents.end(); ++ci) {
+      Filename basename = (*ci);
+      if (basename.get_extension() == extension) {
+	_photos.push_back(new Photo(this, basename));
+      }
     }
   }
 
@@ -129,6 +207,20 @@ collect_index_images() {
       nassertv(result);
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RollDirectory::get_newest_contributing_filename
+//       Access: Public
+//  Description: Returns the Filename with the newest timestamp that
+//               contributes to the contents of the index images in
+//               this directory, if any (other than the images
+//               themselves).  This is used by the IndexImage code to
+//               determine if it needs to regenerate the index image.
+////////////////////////////////////////////////////////////////////
+const Filename &RollDirectory::
+get_newest_contributing_filename() const {
+  return _newest_contributing_filename;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -218,8 +310,11 @@ generate_html(ostream &root_html, const Filename &archive_dir,
 
   } else {
     root_html
-      << "<h2>" << _basename << "</h2>\n";
+      << "<h2>" << _name << "</h2>\n";
   }
+
+  nout << "Generating " << Filename(archive_dir, "html/")
+       << _basename << "/*\n";
 
   IndexImages::iterator ii;
   for (ii = _index_images.begin(); ii != _index_images.end(); ++ii) {
@@ -239,7 +334,7 @@ generate_html(ostream &root_html, const Filename &archive_dir,
 ////////////////////////////////////////////////////////////////////
 void RollDirectory::
 output(ostream &out) const {
-  out << _basename;
+  out << _name;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -300,6 +395,7 @@ insert_html_comment(ostream &html, Filename cm_filename) {
   }
 
   // We didn't find it.  Insert the whole file.
+  cm.clear();
   cm.seekg(0);
   int ch = cm.get();
   while (ch != EOF) {
@@ -308,6 +404,20 @@ insert_html_comment(ostream &html, Filename cm_filename) {
   }    
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RollDirectory::add_contributing_filename
+//       Access: Private
+//  Description: Specifies an additional filename that contributes to
+//               the index image.
+////////////////////////////////////////////////////////////////////
+void RollDirectory::
+add_contributing_filename(const Filename &filename) {
+  if (_newest_contributing_filename.empty() ||
+      _newest_contributing_filename.compare_timestamps(filename) < 0) {
+    _newest_contributing_filename = filename;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -333,4 +443,37 @@ insert_html_comment_body(ostream &html, istream &cm) {
 
   // Reached end of file; good enough.
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RollDirectory::format_basename
+//       Access: Private, Static
+//  Description: Reformats the roll directory into a user-friendly
+//               name based on its encoded directory name.
+////////////////////////////////////////////////////////////////////
+string RollDirectory::
+format_basename(const string &basename) {
+  if (basename.length() <= 4) {
+    return basename;
+  }
+
+  // The first four characters must be digits.
+  for (size_t i = 0; i < 4; i++) {
+    if (!isdigit(basename[i])) {
+      return basename;
+    }
+  }
+
+  string mm = basename.substr(0, 2);
+  string yy = basename.substr(2, 2);
+  string ss = basename.substr(4);
+
+  if (mm[0] == '0') {
+    mm = mm[1];
+  }
+  while (ss.length() > 1 && ss[0] == '0') {
+    ss = ss.substr(1);
+  }
+
+  return mm + "-" + yy + "/" + ss;
 }

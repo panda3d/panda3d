@@ -44,6 +44,9 @@ extern Filename prev_icon;
 extern Filename next_icon;
 extern Filename up_icon;
 
+extern bool force_regenerate;
+extern bool format_rose;
+
 void finalize_parameters();
 
 // The following parameters are all computed based on the above.

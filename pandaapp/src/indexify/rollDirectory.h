@@ -40,8 +40,11 @@ public:
 
   const Filename &get_dir() const;
   const string &get_basename() const;
+  const string &get_name() const;
   bool scan(const string &extension);
   void collect_index_images();
+
+  const Filename &get_newest_contributing_filename() const;
 
   int get_num_photos() const;
   Photo *get_photo(int n) const;
@@ -59,7 +62,9 @@ public:
   static bool insert_html_comment(ostream &html, Filename cm_filename);
 
 private:
+  void add_contributing_filename(const Filename &filename);
   static bool insert_html_comment_body(ostream &html, istream &cm);
+  static string format_basename(const string &basename);
 
 public:
   RollDirectory *_prev;
@@ -68,8 +73,11 @@ public:
 private:
   Filename _dir;
   string _basename;
+  string _name;
   typedef pvector<Photo *> Photos;
   Photos _photos;
+  
+  Filename _newest_contributing_filename;
 
   typedef pvector<IndexImage *> IndexImages;
   IndexImages _index_images;

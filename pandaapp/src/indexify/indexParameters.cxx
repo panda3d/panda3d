@@ -37,6 +37,9 @@ Filename prev_icon;
 Filename next_icon;
 Filename up_icon;
 
+bool force_regenerate = false;
+bool format_rose = false;
+
 // Computed parameters
 int thumb_count_x;
 int thumb_count_y;

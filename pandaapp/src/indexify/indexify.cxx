@@ -41,7 +41,33 @@ Indexify() {
      "archives (typically JPEG files), and will generate a number of "
      "thumbnail images and a series of HTML pages to browse them.  It is "
      "especially useful in preparation for burning the photo archives to "
-     "CD.");
+     "CD.\n\n"
+
+     "A number of directories is named on the command line; each "
+     "directory must contain a number of image files, and all directories "
+     "should be within the same parent directory.  Each directory is "
+     "considered a \"roll\", which may or may not correspond to a physical "
+     "roll of film, and the photos within each directory are grouped "
+     "correspondingly on the generated HTML pages.\n\n"
+
+     "If a file exists by the same name as an image file but with the "
+     "extension \"cm\", that file is taken to be a HTML comment about that "
+     "particular image and is inserted the HTML page for that image.  "
+     "Similarly, if there is a file within a roll directory with the same "
+     "name as the directory itself (but with the extension \"cm\"), that file "
+     "is inserted into the front page to introduce that particular roll.\n\n"
+
+     "Normally, all image files with the specified extension (normally "
+     "\"jpg\") within a roll directory are included in the index, and sorted "
+     "into alphabetical (or numeric) order.  If you wish to specify a "
+     "different order, or use only a subset of the images in a directory, "
+     "create a file in the roll directory with the same name as the "
+     "directory itself, and the extension \"ls\".  This file should "
+     "simply list the filenames (with or without extension) within the "
+     "roll directory in the order they should be listed.  If the ls "
+     "file exists but is empty, it indicates that the files should be "
+     "listed in reverse order, as from a camera that loads its film "
+     "upside-down.");
 
   add_option
     ("t", "title", 0,
@@ -62,6 +88,21 @@ Indexify() {
      "parameter specifies the relative path to the directory above the roll "
      "directories, from the directory named by -a.",
      &Indexify::dispatch_filename, NULL, &_roll_dir_root);
+
+  add_option
+    ("f", "", 0,
+     "Forces the regeneration of all reduced and thumbnail images, even if "
+     "image files already exist that seem to be newer than the source "
+     "image files.",
+     &Indexify::dispatch_none, &force_regenerate);
+
+  add_option
+    ("r", "", 0,
+     "Specifies that roll directory names are encoded using the Rose "
+     "convention of six digits: mmyyss, where mm and yy are the month and "
+     "year, and ss is a sequence number of the roll within the month.  This "
+     "name will be reformatted to m-yy/s for output.",
+     &Indexify::dispatch_none, &format_rose);
 
   add_option
     ("e", "extension", 0,
@@ -170,18 +211,23 @@ handle_args(ProgramBase::Args &args) {
     Filename filename = Filename::from_os_specific(*ai);
     filename.standardize();
     if (filename.is_directory()) {
-      RollDirectory *roll_dir = new RollDirectory(filename);
-      if (prev_roll_dir != (RollDirectory *)NULL) {
-        roll_dir->_prev = prev_roll_dir;
-        prev_roll_dir->_next = roll_dir;
+      string basename = filename.get_basename();
+      if (basename == "icons" || basename == "html" || basename == "reduced") {
+	nout << "Ignoring " << filename << "; indexify-generated directory.\n";
+
+      } else {
+	RollDirectory *roll_dir = new RollDirectory(filename);
+	if (prev_roll_dir != (RollDirectory *)NULL) {
+	  roll_dir->_prev = prev_roll_dir;
+	  prev_roll_dir->_next = roll_dir;
+	}
+	
+	_roll_dirs.push_back(roll_dir);
+	prev_roll_dir = roll_dir;
       }
 
-      _roll_dirs.push_back(roll_dir);
-      prev_roll_dir = roll_dir;
-
     } else if (filename.exists()) {
-      nout << filename << " is not a directory name.\n";
-      return false;
+      nout << "Ignoring " << filename << "; not a directory.\n";
 
     } else {
       nout << filename << " does not exist.\n";
@@ -225,9 +271,9 @@ post_command_line() {
   if (_front_title.empty()) {
     // Supply a default title.
     if (_roll_dirs.size() == 1) {
-      _front_title = _roll_dirs.front()->get_basename();
+      _front_title = _roll_dirs.front()->get_name();
     } else {
-      _front_title = _roll_dirs.front()->get_basename() + " to " + _roll_dirs.back()->get_basename();
+      _front_title = _roll_dirs.front()->get_name() + " to " + _roll_dirs.back()->get_name();
     }
   }
     
@@ -257,41 +303,51 @@ post_command_line() {
     if (prev_icon.empty()) {
       prev_icon = Filename("icons", default_left_icon_filename);
       Filename icon_filename(_archive_dir, prev_icon);
-      icon_filename.make_dir();
-      icon_filename.set_binary();
 
-      ofstream output;
-      if (!icon_filename.open_write(output)) {
-        nout << "Unable to write to " << icon_filename << "\n";
-        exit(1);
+      if (force_regenerate || !icon_filename.exists()) {
+	nout << "Generating " << icon_filename << "\n";
+	icon_filename.make_dir();
+	icon_filename.set_binary();
+
+	ofstream output;
+	if (!icon_filename.open_write(output)) {
+	  nout << "Unable to write to " << icon_filename << "\n";
+	  exit(1);
+	}
+	output.write(default_left_icon, default_left_icon_size);
       }
-      output.write(default_left_icon, default_left_icon_size);
     }
     if (next_icon.empty()) {
       next_icon = Filename("icons", default_right_icon_filename);
       Filename icon_filename(_archive_dir, next_icon);
-      icon_filename.make_dir();
-      icon_filename.set_binary();
-
-      ofstream output;
-      if (!icon_filename.open_write(output)) {
-        nout << "Unable to write to " << icon_filename << "\n";
-        exit(1);
+      if (force_regenerate || !icon_filename.exists()) {
+	nout << "Generating " << icon_filename << "\n";
+	icon_filename.make_dir();
+	icon_filename.set_binary();
+	
+	ofstream output;
+	if (!icon_filename.open_write(output)) {
+	  nout << "Unable to write to " << icon_filename << "\n";
+	  exit(1);
+	}
+	output.write(default_right_icon, default_right_icon_size);
       }
-      output.write(default_right_icon, default_right_icon_size);
     }
     if (up_icon.empty()) {
       up_icon = Filename("icons", default_up_icon_filename);
       Filename icon_filename(_archive_dir, up_icon);
-      icon_filename.make_dir();
-      icon_filename.set_binary();
-
-      ofstream output;
-      if (!icon_filename.open_write(output)) {
-        nout << "Unable to write to " << icon_filename << "\n";
-        exit(1);
+      if (force_regenerate || !icon_filename.exists()) {
+	nout << "Generating " << icon_filename << "\n";
+	icon_filename.make_dir();
+	icon_filename.set_binary();
+      
+	ofstream output;
+	if (!icon_filename.open_write(output)) {
+	  nout << "Unable to write to " << icon_filename << "\n";
+	  exit(1);
+	}
+	output.write(default_up_icon, default_up_icon_size);
       }
-      output.write(default_up_icon, default_up_icon_size);
     }
   }
 
@@ -339,6 +395,7 @@ run() {
   // Then go back and generate the HTML.
 
   Filename html_filename(_archive_dir, "index.htm");
+  nout << "Generating " << html_filename << "\n";
   html_filename.set_text();
   ofstream root_html;
   if (!html_filename.open_write(root_html)) {
