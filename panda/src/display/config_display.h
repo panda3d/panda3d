@@ -35,6 +35,7 @@ extern const bool pstats_unused_states;
 
 extern const string threading_model;
 extern const bool auto_flip;
+extern const bool yield_timeslice;
 
 extern EXPCL_PANDA void init_libdisplay();
 

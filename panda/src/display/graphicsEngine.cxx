@@ -30,6 +30,14 @@
 #include "mutexHolder.h"
 #include "string_utils.h"
 
+#if defined(WIN32)
+  #define WINDOWS_LEAN_AND_MEAN
+  #include <wtypes.h>
+  #undef WINDOWS_LEAN_AND_MEAN  
+#else
+  #include <sys/time.h>
+#endif
+
 #ifndef CPPPARSER
 PStatCollector GraphicsEngine::_cull_pcollector("Cull");
 PStatCollector GraphicsEngine::_draw_pcollector("Draw");
@@ -346,6 +354,15 @@ render_frame() {
   // now.  No point in waiting if we're single-threaded.
   if (_threads.empty() && _auto_flip) {
     do_flip_frame();
+  }
+
+  if (yield_timeslice) { 
+    // Nap for a moment to yield the timeslice, to be polite to other
+    // running applications.
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 0;
+    select(0, NULL, NULL, NULL, &tv);
   }
 }
 

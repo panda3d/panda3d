@@ -63,6 +63,10 @@ const string threading_model = config_display.GetString("threading-model", "");
 // until an explicit call to flip_frame() or the next render_frame().
 const bool auto_flip = config_display.GetBool("auto-flip", true);
 
+// Set this true to yield the timeslice at the end of the frame to be
+// more polite to other applications that are trying to run.
+const bool yield_timeslice = config_display.GetBool("yield-timeslice", false);
+
 // Use the variable load-display to specifiy the name of the default
 // graphics display library or GraphicsPipe to load.  It is the name
 // of a shared library (or * for all libraries named in aux-display),
