@@ -81,10 +81,6 @@ run() {
 
   _data.set_coordinate_system(_coordinate_system);
 
-  if (_input_units == DU_invalid) {
-    _input_units = header->get_units();
-  }
-
   FltToEggConverter converter;
   converter.set_merge_externals(_merge_externals);
   converter.set_egg_data(&_data, false);
@@ -96,6 +92,10 @@ run() {
   if (!converter.convert_flt(header)) {
     nout << "Errors in conversion.\n";
     exit(1);
+  }
+
+  if (_input_units == DU_invalid) {
+    _input_units = converter.get_input_units();
   }
 
   write_egg_file();

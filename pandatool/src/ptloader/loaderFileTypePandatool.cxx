@@ -17,7 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "loaderFileTypePandatool.h"
-
+#include "config_ptloader.h"
 #include "somethingToEggConverter.h"
 #include "config_util.h"
 #include "load_egg_file.h"
@@ -107,6 +107,18 @@ load_file(const Filename &path, bool) const {
   _converter->get_path_replace()->_path = file_path;
 
   if (_converter->convert_file(path)) {
+    DistanceUnit input_units = _converter->get_input_units();
+    if (input_units != DU_invalid && ptloader_units != DU_invalid && 
+        input_units != ptloader_units) {
+      // Convert the file to the units specified by the ptloader-units
+      // Configrc variable.
+      ptloader_cat.info()
+        << "Converting from " << format_long_unit(input_units)
+        << " to " << format_long_unit(ptloader_units) << "\n";
+      double scale = convert_units(input_units, ptloader_units);
+      egg_data.transform(LMatrix4d::scale_mat(scale));
+    }
+
     result = load_egg_data(egg_data);
   }
   _converter->clear_egg_data();

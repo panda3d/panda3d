@@ -195,6 +195,20 @@ convert_file(const Filename &filename) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MayaToEggConverter::get_input_units
+//       Access: Public, Virtual
+//  Description: This may be called after convert_file() has been
+//               called and returned true, indicating a successful
+//               conversion.  It will return the distance units
+//               represented by the converted egg file, if known, or
+//               DU_invalid if not known.
+////////////////////////////////////////////////////////////////////
+DistanceUnit MayaToEggConverter::
+get_input_units() {
+  _maya->get_units();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MayaToEggConverter::convert_maya
 //       Access: Public
 //  Description: Fills up the egg_data structure according to the

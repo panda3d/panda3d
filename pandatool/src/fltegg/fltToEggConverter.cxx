@@ -49,6 +49,7 @@
 FltToEggConverter::
 FltToEggConverter() {
   _compose_transforms = false;
+  _flt_units = DU_invalid;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -130,7 +131,24 @@ convert_file(const Filename &filename) {
   }
 
   header->check_version();
+
+  _flt_units = header->get_units();
+
   return convert_flt(header);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FltToEggConverter::get_input_units
+//       Access: Public, Virtual
+//  Description: This may be called after convert_file() has been
+//               called and returned true, indicating a successful
+//               conversion.  It will return the distance units
+//               represented by the converted egg file, if known, or
+//               DU_invalid if not known.
+////////////////////////////////////////////////////////////////////
+DistanceUnit FltToEggConverter::
+get_input_units() {
+  return _flt_units;
 }
 
 ////////////////////////////////////////////////////////////////////

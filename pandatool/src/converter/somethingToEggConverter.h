@@ -26,6 +26,7 @@
 #include "animationConvert.h"
 #include "pathReplace.h"
 #include "pointerTo.h"
+#include "distanceUnit.h"
 
 class EggData;
 class EggGroupNode;
@@ -104,6 +105,7 @@ public:
   virtual string get_additional_extensions() const;
 
   virtual bool convert_file(const Filename &filename)=0;
+  virtual DistanceUnit get_input_units();
 
   bool handle_external_reference(EggGroupNode *egg_parent,
                                  const Filename &ref_filename);

@@ -103,6 +103,20 @@ get_additional_extensions() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SomethingToEggConverter::get_input_units
+//       Access: Public, Virtual
+//  Description: This may be called after convert_file() has been
+//               called and returned true, indicating a successful
+//               conversion.  It will return the distance units
+//               represented by the converted egg file, if known, or
+//               DU_invalid if not known.
+////////////////////////////////////////////////////////////////////
+DistanceUnit SomethingToEggConverter::
+get_input_units() {
+  return DU_invalid;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SomethingToEggConverter::handle_external_reference
 //       Access: Public
 //  Description: Handles an external reference in the source file.  If

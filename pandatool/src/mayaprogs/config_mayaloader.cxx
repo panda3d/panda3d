@@ -1,5 +1,5 @@
-// Filename: config_ptloader.cxx
-// Created by:  drose (26Apr01)
+// Filename: config_mayaloader.cxx
+// Created by:  drose (09Oct03)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,36 +16,24 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_ptloader.h"
+#include "pandatoolbase.h"
 #include "loaderFileTypePandatool.h"
-
-#include "config_lwo.h"
-#include "fltToEggConverter.h"
-#include "config_flt.h"
-#include "lwoToEggConverter.h"
-
-/*
-#ifdef HAVE_DX
-#include "config_xfile.h"
-#include "xFileToEggConverter.h"
-#endif
-*/
+#include "config_mayaegg.h"
+#include "mayaToEggConverter.h"
 
 #include "dconfig.h"
 #include "loaderFileTypeRegistry.h"
-#include "eggData.h"
 
-ConfigureDef(config_ptloader);
-NotifyCategoryDef(ptloader, "");
+Configure(config_mayaloader);
 
-ConfigureFn(config_ptloader) {
-  init_libptloader();
+void EXPCL_MISC init_libmayaloader();
+
+ConfigureFn(config_mayaloader) {
+  init_libmayaloader();
 }
 
-DistanceUnit ptloader_units = DU_invalid;
-
 ////////////////////////////////////////////////////////////////////
-//     Function: init_libptloader
+//     Function: init_libmayaloader
 //  Description: Initializes the library.  This must be called at
 //               least once before any of the functions or classes in
 //               this library can be used.  Normally it will be
@@ -53,7 +41,7 @@ DistanceUnit ptloader_units = DU_invalid;
 //               called explicitly, but special cases exist.
 ////////////////////////////////////////////////////////////////////
 void
-init_libptloader() {
+init_libmayaloader() {
   static bool initialized = false;
   if (initialized) {
     return;
@@ -64,28 +52,7 @@ init_libptloader() {
 
   LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
 
-  init_liblwo();
-  FltToEggConverter *flt = new FltToEggConverter;
-  reg->register_type(new LoaderFileTypePandatool(flt));
-
-  init_libflt();
-  LwoToEggConverter *lwo = new LwoToEggConverter;
-  reg->register_type(new LoaderFileTypePandatool(lwo));
-
-  /*
-#ifdef HAVE_DX
-  init_libxfile();
-  XFileToEggConverter *xfile = new XFileToEggConverter;
-  reg->register_type(new LoaderFileTypePandatool(xfile));
-#endif
-  */
-
-  string units = config_ptloader.GetString("ptloader-units", "feet");
-  if (!units.empty()) {
-    ptloader_units = string_distance_unit(units);
-    if (ptloader_units == DU_invalid) {
-      ptloader_cat->warning()
-        << "Invalid ptloader-units: " << units << "\n";
-    }
-  }
+  init_libmayaegg();
+  MayaToEggConverter *maya = new MayaToEggConverter;
+  reg->register_type(new LoaderFileTypePandatool(maya));
 }

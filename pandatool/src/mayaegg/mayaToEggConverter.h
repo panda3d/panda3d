@@ -73,6 +73,7 @@ public:
   virtual string get_additional_extensions() const;
 
   virtual bool convert_file(const Filename &filename);
+  virtual DistanceUnit get_input_units();
   bool convert_maya(bool from_selection);
 
   bool open_api();

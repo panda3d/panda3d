@@ -131,20 +131,20 @@ run() {
   }
   _data.set_coordinate_system(_coordinate_system);
 
-  // Use the standard Maya units, if the user didn't specify
-  // otherwise.  This always returns centimeters, which is the way all
-  // Maya files are stored internally (and is the units returned by
-  // all of the API functions called here).
-  if (_input_units == DU_invalid) {
-    _input_units = converter._maya->get_units();
-  }
-
   converter.set_egg_data(&_data, false);
   apply_parameters(converter);
 
   if (!converter.convert_file(_input_filename)) {
     nout << "Errors in conversion.\n";
     exit(1);
+  }
+
+  // Use the standard Maya units, if the user didn't specify
+  // otherwise.  This always returns centimeters, which is the way all
+  // Maya files are stored internally (and is the units returned by
+  // all of the API functions called here).
+  if (_input_units == DU_invalid) {
+    _input_units = converter.get_input_units();
   }
 
   write_egg_file();

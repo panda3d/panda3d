@@ -30,6 +30,7 @@
 #include "pt_EggTexture.h"
 #include "pt_EggVertex.h"
 #include "pointerTo.h"
+#include "distanceUnit.h"
 
 class FltRecord;
 class FltLOD;
@@ -64,6 +65,7 @@ public:
   virtual string get_extension() const;
 
   virtual bool convert_file(const Filename &filename);
+  virtual DistanceUnit get_input_units();
   bool convert_flt(const FltHeader *flt_header);
 
   // Set this true to store transforms in egg files as the fully
@@ -102,6 +104,7 @@ private:
   PT_EggTexture make_egg_texture(const FltTexture *flt_texture);
 
   CPT(FltHeader) _flt_header;
+  DistanceUnit _flt_units;
 
   PT(EggVertexPool) _main_egg_vpool;
 

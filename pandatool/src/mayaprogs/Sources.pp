@@ -105,8 +105,7 @@
     egg2pg:c builder:c egg:c pandaegg:m \
     mathutil:c linmath:c putil:c panda:m \
     express:c pandaexpress:m \
-    dtoolconfig dtool \
-    $[if $[UNIX_PLATFORM],OpenMayalib]
+    dtoolconfig dtool
 
   #define SOURCES \
     config_mayaloader.cxx
