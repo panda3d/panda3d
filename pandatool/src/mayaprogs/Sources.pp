@@ -42,8 +42,9 @@
     express:c pandaexpress:m \
     dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
 
+  // Irix requires this to be named explicitly.
   #define UNIX_SYS_LIBS \
-    m
+    ExtensionLayer
 
   #define SOURCES \
     mayaToEgg.cxx mayaToEgg.h
@@ -62,6 +63,10 @@
     express:c pandaexpress:m \
     dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
 
+  // Irix requires this to be named explicitly.
+  #define UNIX_SYS_LIBS \
+    ExtensionLayer
+
   #define SOURCES \
     mayaCopy.cxx mayaCopy.h
 
@@ -79,8 +84,6 @@
     express:c pandaexpress:m \
     dtoolutil:c dtoolbase:c dconfig:c dtoolconfig:m dtool:m pystub
 
-  #define UNIX_SYS_LIBS \
-    m
   #define BUILDING_DLL BUILDING_MISC
 
   #if $[WINDOWS_PLATFORM]
