@@ -1,5 +1,5 @@
 Microsoft Visual Studio Solution File, Format Version 7.00
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "makepanda", "makepanda.vcproj", "{F4935D7A-20AD-4132-B3CB-ADFF4F928D25}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "makepanda70", "makepanda70.vcproj", "{F4935D7A-20AD-4132-B3CB-ADFF4F928D25}"
 EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution

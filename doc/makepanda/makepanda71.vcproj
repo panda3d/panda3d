@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding = "Windows-1252"?>
+<?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
-	Name="makepanda"
+	Version="7.10"
+	Name="makepanda71"
 	ProjectGUID="{F4935D7A-20AD-4132-B3CB-ADFF4F928D25}"
 	Keyword="MakeFileProj">
 	<Platforms>
@@ -21,6 +21,8 @@
 				Output="built\python\python.exe"/>
 		</Configuration>
 	</Configurations>
+	<References>
+	</References>
 	<Files>
 		<Filter
 			Name="Source Files"

@@ -1,0 +1,21 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "makepanda71", "makepanda71.vcproj", "{F4935D7A-20AD-4132-B3CB-ADFF4F928D25}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{F4935D7A-20AD-4132-B3CB-ADFF4F928D25}.Debug.ActiveCfg = Debug|Win32
+		{F4935D7A-20AD-4132-B3CB-ADFF4F928D25}.Debug.Build.0 = Debug|Win32
+		{F4935D7A-20AD-4132-B3CB-ADFF4F928D25}.Release.ActiveCfg = Release|Win32
+		{F4935D7A-20AD-4132-B3CB-ADFF4F928D25}.Release.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
