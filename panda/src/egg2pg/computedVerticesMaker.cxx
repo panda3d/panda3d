@@ -64,13 +64,13 @@ void ComputedVerticesMaker::
 add_joint(EggNode *joint, double membership) {
   // This must be called between a call to begin_new_space() and
   // mark_space().
-  assert(_current_vc == NULL);
+  nassertv(_current_vc == NULL);
 
   if (membership == 0.0) {
     return;
   }
 
-  assert(membership > 0.0);
+  nassertv(membership > 0.0);
 
   JointWeights::iterator jwi = _current_jw.find(joint);
 
@@ -144,7 +144,7 @@ add_vertex_joints(EggVertex *vertex, EggNode *object) {
 void ComputedVerticesMaker::
 mark_space() {
   // This must be called after a call to begin_new_space().
-  assert(_current_vc == NULL);
+  nassertv(_current_vc == NULL);
 
   _current_jw.normalize_weights();
 
@@ -167,7 +167,7 @@ add_vertex(const Vertexd &vertex, const EggMorphVertexList &morphs,
            const LMatrix4d &transform) {
   // This must be called after a call to mark_space(), and before a
   // call to begin_new_space().
-  assert(_current_vc != NULL);
+  nassertr(_current_vc != NULL, -1);
 
   Vertexf tv = LCAST(float, vertex * transform);
   int index = _current_vc->_vmap.add_value(tv, morphs, _coords);
@@ -185,7 +185,8 @@ add_vertex(const Vertexd &vertex, const EggMorphVertexList &morphs,
       VertexMorphList::iterator vmi = mlist._vmorphs.find(index);
       if (vmi != mlist._vmorphs.end()) {
         // Yes, we have.
-        assert(offset.almost_equal(LCAST(double, (*vmi).second), 0.0001));
+        nassertr((*vmi).second.almost_equal(LCAST(float, offset), 0.001), index);
+
       } else {
         // No, we haven't yet; morph it now.
         mlist._vmorphs[index] = LCAST(float, offset);
@@ -208,7 +209,7 @@ add_normal(const Normald &normal, const EggMorphNormalList &morphs,
            const LMatrix4d &transform) {
   // This must be called after a call to mark_space(), and before a
   // call to begin_new_space().
-  assert(_current_vc != NULL);
+  nassertr(_current_vc != NULL, -1);
 
   Normald norm = normal * transform;
   norm.normalize();
@@ -227,7 +228,7 @@ add_normal(const Normald &normal, const EggMorphNormalList &morphs,
       NormalMorphList::iterator vmi = mlist._nmorphs.find(index);
       if (vmi != mlist._nmorphs.end()) {
         // Yes, we have.
-        assert(offset.almost_equal(LCAST(double, (*vmi).second), 0.0001));
+        nassertr((*vmi).second.almost_equal(LCAST(float, offset), 0.001), index);
       } else {
         // No, we haven't yet; morph it now.
         mlist._nmorphs[index] = LCAST(float, offset);
@@ -265,7 +266,7 @@ add_texcoord(const TexCoordd &texcoord, const EggMorphTexCoordList &morphs,
       TexCoordMorphList::iterator vmi = mlist._tmorphs.find(index);
       if (vmi != mlist._tmorphs.end()) {
         // Yes, we have.
-        assert(offset.almost_equal(LCAST(double, (*vmi).second), 0.0001));
+        nassertr((*vmi).second.almost_equal(LCAST(float, offset), 0.001), index);
       } else {
         // No, we haven't yet; morph it now.
         mlist._tmorphs[index] = LCAST(float, offset);
@@ -300,7 +301,7 @@ add_color(const Colorf &color, const EggMorphColorList &morphs) {
       ColorMorphList::iterator vmi = mlist._cmorphs.find(index);
       if (vmi != mlist._cmorphs.end()) {
         // Yes, we have.
-        assert(offset.almost_equal((*vmi).second, 0.0001));
+        nassertr((*vmi).second.almost_equal(offset, 0.001), index);
       } else {
         // No, we haven't yet; morph it now.
         mlist._cmorphs[index] = offset;
@@ -531,10 +532,10 @@ normalize_weights() {
     iterator i;
     for (i = begin(); i != end(); ++i) {
       double weight = (*i).second;
-      assert(weight > 0.0);
+      nassertv(weight > 0.0);
       net_weight += weight;
     }
-    assert(net_weight != 0.0);
+    nassertv(net_weight != 0.0);
 
     for (i = begin(); i != end(); ++i) {
       (*i).second /= net_weight;
