@@ -216,15 +216,17 @@ get_frame_rate(double time) const {
   nassertr(!_frames.empty(), 0.0);
 
   int now_i = _frames.size() - 1;
+  while (now_i > 0 && _frames[now_i] == (PStatFrameData *)NULL) {
+    now_i--;
+  }
+  nassertr(now_i >= 0, 0.0);
+  nassertr(_frames[now_i] != (PStatFrameData *)NULL, 0.0);
+
   double now = _frames[now_i]->get_end();
   double then = now - time;
 
   int then_i = now_i;
   int last_good_i = now_i;
-
-  while (then_i > 0 && _frames[then_i] == (PStatFrameData *)NULL) {
-    then_i--;
-  }
 
   while (then_i > 0 && _frames[then_i]->get_start() > then) {
     last_good_i = now_i;
@@ -233,6 +235,8 @@ get_frame_rate(double time) const {
       then_i--;
     }
   }
+  nassertr(last_good_i >= 0, 0.0);
+  nassertr(_frames[last_good_i] != (PStatFrameData *)NULL, 0.0);
 
   int num_frames = now_i - last_good_i + 1;
   return (double)num_frames / (now - _frames[last_good_i]->get_start());
