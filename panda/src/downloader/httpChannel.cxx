@@ -2198,7 +2198,7 @@ void HTTPChannel::
 make_request_text() {
   _request_text = _header;
 
-  if (!_proxy.empty() && 
+  if (!_proxy.empty() && !_proxy_tunnel &&
       _proxy_auth != (HTTPAuthorization *)NULL && !_proxy_username.empty()) {
     _request_text += "Proxy-Authorization: ";
     _request_text += 
