@@ -34,6 +34,11 @@ FrameStyleDict = {'flat' : FLAT, 'raised' : RAISED, 'sunken': SUNKEN,
                   'groove' : GROOVE, 'ridge' : RIDGE 
                   }
 
+# Dialog button values
+DIALOG_NO = 0
+DIALOG_OK = DIALOG_YES = DIALOG_RETRY = 1
+DIALOG_CANCEL = -1
+
 # User can bind commands to these gui events
 DESTROY = 'destroy-'
 PRINT = 'print-'
@@ -59,6 +64,8 @@ ERASE = PGEntry.getErasePrefix()
 IMAGE_SORT_INDEX = 10
 GEOM_SORT_INDEX = 20
 TEXT_SORT_INDEX = 30
+FADE_SORT_INDEX = 100
+DIALOG_SORT_INDEX = 200
 
 defaultFont = None
 defaultClickSound = None

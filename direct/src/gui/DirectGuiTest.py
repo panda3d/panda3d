@@ -114,9 +114,6 @@ fancyDialog = YesNoDialog(text = 'Testing Direct Dialog',
                           geom_pos = (-0.3,0,0),
                           command = printDialogValue)
 
-toontownDialog = TTOkCancelDialog(text = 'Exit Toontown?',
-                                  command = printDialogValue)
-
 customDialog = DirectDialog(text = 'Pick a number',
                             buttonTextList = map(str, range(10)),
                             buttonValueList = range(10),
