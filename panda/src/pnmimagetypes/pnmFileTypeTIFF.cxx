@@ -513,7 +513,9 @@ Reader(PNMFileType *type, istream *file, bool owns_file, string magic_number) :
 ////////////////////////////////////////////////////////////////////
 PNMFileTypeTIFF::Reader::
 ~Reader() {
-  TIFFClose( tif );
+  if (tif != (struct tiff *)NULL) {
+    TIFFClose(tif);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
