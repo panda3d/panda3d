@@ -359,6 +359,27 @@ def contains(whole, sub):
     # If you got here, whole must contain sub
     return 1
 
+def replace(list, old, new, all=0):
+    """
+    replace 'old' with 'new' in 'list'
+    if all == 0, replace first occurrence
+    otherwise replace all occurrences
+    returns the number of items replaced
+    """
+    if old not in list:
+        return 0
+
+    if not all:
+        i = list.index(old)
+        list[i] = new
+        return 1
+    else:
+        numReplaced = list.count(old)
+        for i in xrange(numReplaced):
+            ind = list.index(old)
+            list[ind] = new
+        return numReplaced
+
 def reduceAngle(deg):
     """
     Reduces an angle (in degrees) to a value between -180. and 180.
