@@ -78,9 +78,9 @@ class DirectScrolledList(DirectFrame):
         if (len(self["items"]) <= self["numItemsVisible"]):
             self.incButton['state'] = DISABLED
             self.decButton['state'] = DISABLED
-            # Hmm.. just reset self.index to 0 I guess
+            # Hmm.. just reset self.index to 0 and bail out
             self.index = 0
-            return
+            return 0
         
         if (self.index <= 0):
             self.index = 0
