@@ -4,12 +4,13 @@ import Button
 import StateData
 
 from DirectObject import *
+from ShowBaseGlobal import *
 
 class ForceAcknowledge(StateData.StateData):
 
     def __init__(self, doneEvent, message):
 	"""___init___(self, Event)"""
-	StateData.__init__(doneEvent)
+	StateData.StateData.__init__(self, doneEvent)
 	self.soundRollover = None
 	self.soundOk = None
 
@@ -40,7 +41,7 @@ class ForceAcknowledge(StateData.StateData):
     def load(self):
 	"""load(self)"""
 	# create a message
-	self.text = OnscreenText.OnscreenText("", 0.0, 0.5)
+	self.text = OnscreenText.OnscreenText("", 0.0, 0.25)
 	self.text.node().setAlign(0)
 	self.text.node().setTextColor(0.0, 0.0, 0.0, 1.0)
 	self.text.node().setFrameColor(1.0, 1.0, 1.0, 1.0)
@@ -50,8 +51,8 @@ class ForceAcknowledge(StateData.StateData):
 	self.okButton = Button.Button("ForceAcknowledge", "OK")
 	self.okButton.setPos(0.0, -0.5)
 	# set rollover event
-	self.okButton.setUpRolloverEvent("ForceAcknowledge-rollover")
-	self.okButton.setDownRolloverEvent("ForceAcknowledge-ok")
+	self.okButton.button.setUpRolloverEvent("ForceAcknowledge-rollover")
+	self.okButton.button.setDownRolloverEvent("ForceAcknowledge-ok")
 
 	self.exit()
 	self.isLoaded = 1
@@ -59,7 +60,7 @@ class ForceAcknowledge(StateData.StateData):
     def unload(self):
 	"""unload(self)"""
 	# GUI
-	self.title.removeNode()
+	self.text.removeNode()
 	del(self.okButton)
 	self.isLoaded = 0
 
