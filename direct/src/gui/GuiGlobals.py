@@ -7,6 +7,8 @@ guiMgr = GuiManager.GuiManager.getPtr(base.win, base.mak.node(),
                                       base.render2d.node())
 
 font = None
+sndClick = None
+sndRollover = None
 panel = None
 drawOrder = 100
 
@@ -35,17 +37,23 @@ def setDefaultDrawOrder(newDrawOrder):
     drawOrder = newDrawOrder
 
 def getDefaultRolloverSound():
-    return base.loadSfx("phase_3/audio/sfx/GUI_rollover.mp3")
+    global sndRollover
+    if sndRollover == None:
+        sndRollover = base.loadSfx("phase_3/audio/sfx/GUI_rollover.mp3")
+    return sndRollover
 
 def getDefaultClickSound():
-    return base.loadSfx("phase_3/audio/sfx/GUI_create_toon_fwd.mp3")
+    global sndClick
+    if sndClick == None:
+        sndClick = base.loadSfx("phase_3/audio/sfx/GUI_create_toon_fwd.mp3")
+    return sndClick
 
 def getNewRolloverFunctor(sound = None):
     val = None
     if sound:
         roll = sound
     else:
-        roll = base.loadSfx("phase_3/audio/sfx/GUI_rollover.mp3")
+        roll = getDefaultRolloverSound()
     if roll:
         val = AudioGuiFunctor(roll)
     else:
@@ -57,7 +65,7 @@ def getNewClickFunctor(sound = None):
     if sound:
         click = sound
     else:
-        click = base.loadSfx("phase_3/audio/sfx/GUI_create_toon_fwd.mp3")
+        click = getDefaultClickSound()
     if click:
         val = AudioGuiFunctor(click)
     else:
