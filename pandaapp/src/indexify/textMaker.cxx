@@ -108,7 +108,7 @@ TextMaker(const char *font_data, int font_data_size, int face_index) {
   }
 
   int error = FT_New_Memory_Face(_ft_library,
-                                 (const FT_Byte *)font_data, font_data_size,
+                                 (FT_Byte *)font_data, font_data_size,
                                  face_index,
                                  &_face);
   if (error == FT_Err_Unknown_File_Format) {
