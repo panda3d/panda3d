@@ -19,6 +19,7 @@
 #include "graphicsOutput.h"
 #include "graphicsPipe.h"
 #include "graphicsEngine.h"
+#include "graphicsWindow.h"
 #include "config_display.h"
 #include "mutexHolder.h"
 #include "hardwareChannel.h"
@@ -54,6 +55,9 @@ GraphicsOutput(GraphicsPipe *pipe, GraphicsStateGuardian *gsg,
   _flip_ready = false;
   _needs_context = true;
   _sort = 0;
+  _active = true;
+  _one_shot = false;
+  _delete_flag = false;
 
   int mode = gsg->get_properties().get_frame_buffer_mode();
   if ((mode & FrameBufferProperties::FM_buffer) == FrameBufferProperties::FM_single_buffer) {
@@ -113,6 +117,73 @@ GraphicsOutput::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::detach_texture
+//       Access: Published
+//  Description: Disassociates the texture from the GraphicsOutput.
+//               It will no longer be filled as the frame renders, and
+//               it may be used (with its current contents) as a
+//               texture in its own right.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+detach_texture() {
+  MutexHolder holder(_lock);
+  _texture = NULL;
+  _copy_texture = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::setup_copy_texture
+//       Access: Published
+//  Description: Creates a new Texture object, suitable for copying
+//               the contents of this buffer into, and stores it in
+//               _texture.  This also disassociates the previous
+//               texture (if any).
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+setup_copy_texture(const string &name) {
+  MutexHolder holder(_lock);
+
+  _texture = new Texture();
+  _texture->set_name(name);
+  _texture->set_wrapu(Texture::WM_clamp);
+  _texture->set_wrapv(Texture::WM_clamp);
+
+  // We should match the texture format up with the framebuffer
+  // format.  Easier said than done!
+  if (_gsg != (GraphicsStateGuardian *)NULL) {
+    int mode = _gsg->get_properties().get_frame_buffer_mode();
+    PixelBuffer *pb = _texture->_pbuffer;
+
+    if (mode & FrameBufferProperties::FM_alpha) {
+      pb->set_format(PixelBuffer::F_rgba8);
+      pb->set_num_components(4);
+      pb->set_component_width(1);
+      pb->set_image_type(PixelBuffer::T_unsigned_byte);
+
+    } else {
+      pb->set_format(PixelBuffer::F_rgb8);
+      pb->set_num_components(3);
+      pb->set_component_width(1);
+      pb->set_image_type(PixelBuffer::T_unsigned_byte);
+    }
+  }
+
+  _copy_texture = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::set_active
+//       Access: Published
+//  Description: Sets the active flag associated with the
+//               GraphicsOutput.  If the GraphicsOutput is marked
+//               inactive, nothing is rendered.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+set_active(bool active) {
+  _active = active;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::is_active
 //       Access: Published, Virtual
 //  Description: Returns true if the window is ready to be rendered
@@ -120,7 +191,7 @@ GraphicsOutput::
 ////////////////////////////////////////////////////////////////////
 bool GraphicsOutput::
 is_active() const {
-  return is_valid();
+  return _active && is_valid();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -571,6 +642,15 @@ end_frame() {
   if (!_gsg->get_properties().is_single_buffered()) {
     _flip_ready = true;
   }
+
+  if (_one_shot && !show_buffers) {
+    // In one-shot mode, we request the GraphicsEngine to delete the
+    // window after we have rendered a frame.  But when show-buffers
+    // mode is enabled, we don't do this, to give the user a chance to
+    // see the output.
+    _active = false;
+    _delete_flag = true;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -682,43 +762,6 @@ declare_channel(int index, GraphicsChannel *chan) {
 
   nassertv(index < (int)_channels.size());
   _channels[index] = chan;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::setup_copy_texture
-//       Access: Protected
-//  Description: Creates a new Texture object, suitable for copying
-//               the contents of this buffer into, and stores it in
-//               _texture.
-////////////////////////////////////////////////////////////////////
-void GraphicsOutput::
-setup_copy_texture(const string &name) {
-  _texture = new Texture();
-  _texture->set_name(name);
-  _texture->set_wrapu(Texture::WM_clamp);
-  _texture->set_wrapv(Texture::WM_clamp);
-
-  // We should match the texture format up with the framebuffer
-  // format.  Easier said than done!
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
-    int mode = _gsg->get_properties().get_frame_buffer_mode();
-    PixelBuffer *pb = _texture->_pbuffer;
-
-    if (mode & FrameBufferProperties::FM_alpha) {
-      pb->set_format(PixelBuffer::F_rgba8);
-      pb->set_num_components(4);
-      pb->set_component_width(1);
-      pb->set_image_type(PixelBuffer::T_unsigned_byte);
-
-    } else {
-      pb->set_format(PixelBuffer::F_rgb8);
-      pb->set_num_components(3);
-      pb->set_component_width(1);
-      pb->set_image_type(PixelBuffer::T_unsigned_byte);
-    }
-  }
-
-  _copy_texture = true;
 }
 
 ////////////////////////////////////////////////////////////////////

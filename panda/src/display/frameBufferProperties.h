@@ -38,7 +38,6 @@ PUBLISHED:
   INLINE bool operator != (const FrameBufferProperties &other) const;
 
   enum FrameBufferMode {
-    FM_rgba =          0x0000,
     FM_rgb =           0x0000,
     FM_index =         0x0001,
     FM_single_buffer = 0x0000,
@@ -47,6 +46,7 @@ PUBLISHED:
     FM_buffer        = 0x0006,  // == (FM_single_buffer | FM_double_buffer | FM_triple_buffer)
     FM_accum =         0x0008,
     FM_alpha =         0x0010,
+    FM_rgba =          0x0010,  // == (FM_rgb | FM_alpha)
     FM_depth =         0x0020,
     FM_stencil =       0x0040,
     FM_multisample =   0x0080,

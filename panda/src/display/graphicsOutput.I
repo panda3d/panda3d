@@ -161,6 +161,59 @@ is_valid() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::set_one_shot
+//       Access: Published
+//  Description: Changes the current setting of the one-shot flag.
+//               When this is true, the GraphicsOutput will
+//               automatically detach its texture (if it has one) and
+//               remove itself from the GraphicsEngine after it
+//               renders the next frame.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsOutput::
+set_one_shot(bool one_shot) {
+  _one_shot = one_shot;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_one_shot
+//       Access: Published
+//  Description: Returns the current setting of the one-shot flag.
+//               When this is true, the GraphicsOutput will
+//               automatically detach its texture (if it has one) and
+//               remove itself from the GraphicsEngine after it
+//               renders the next frame.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsOutput::
+get_one_shot() const {
+  return _one_shot;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::clear_delete_flag
+//       Access: Published
+//  Description: Resets the delete flag, so the GraphicsOutput will
+//               not be automatically deleted before the beginning of
+//               the next frame.
+////////////////////////////////////////////////////////////////////
+INLINE void GraphicsOutput::
+clear_delete_flag() {
+  _delete_flag = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_delete_flag
+//       Access: Published
+//  Description: Returns the current setting of the delete flag.  When
+//               this is true, the GraphicsOutput will automatically
+//               be removed before the beginning of the next frame by
+//               the GraphicsEngine.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsOutput::
+get_delete_flag() const {
+  return _delete_flag;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::get_sort
 //       Access: Published
 //  Description: Returns the sorting order of this particular

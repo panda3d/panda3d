@@ -18,6 +18,8 @@
 
 #include "pandaFramework.h"
 #include "textNode.h"
+#include "multitexReducer.h"
+#include "configVariableBool.h"
 
 #ifndef HAVE_GETOPT
   #include "gnu_getopt.h"
@@ -28,6 +30,11 @@
 #endif
 
 PandaFramework framework;
+
+ConfigVariableBool pview_test_hack
+("pview-test-hack", false,
+ "Enable the '0' key in pview to run whatever hacky test happens to be in "
+ "there right now.");
 
 void
 event_W(CPT_Event, void *) {
@@ -96,6 +103,19 @@ event_2(CPT_Event event, void *) {
     split->setup_trackball();
     framework.get_models().instance_to(split->get_render());
   }
+}
+
+void
+event_0(CPT_Event event, void *) {
+  // 0: run hacky test.
+  MultitexReducer mr;
+
+  NodePath models = framework.get_models();
+  mr.scan(models.node(), models.get_net_state(), models.get_net_transform());
+
+  WindowFramework *wf = framework.get_window(0);
+  GraphicsWindow *win = wf->get_graphics_window();
+  mr.flatten(win);
 }
 
 void 
@@ -210,6 +230,9 @@ main(int argc, char *argv[]) {
     framework.define_key("shift-w", "open a new window", event_W, NULL);
     framework.define_key("alt-enter", "toggle between window/fullscreen", event_Enter, NULL);
     framework.define_key("2", "split the window", event_2, NULL);
+    if (pview_test_hack) {
+      framework.define_key("0", "run quick hacky test", event_0, NULL);
+    }
     framework.main_loop();
     framework.report_frame_rate(nout);
   }

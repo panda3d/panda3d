@@ -75,16 +75,25 @@ PUBLISHED:
 
   INLINE bool has_texture() const;  
   INLINE Texture *get_texture() const;  
+  void detach_texture();
+  void setup_copy_texture(const string &name);
 
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;
   INLINE bool has_size() const;
   INLINE bool is_valid() const;
 
+  void set_active(bool active);
   virtual bool is_active() const;
 
-  INLINE int get_sort() const;
+  INLINE void set_one_shot(bool one_shot);
+  INLINE bool get_one_shot() const;
+
+  INLINE void clear_delete_flag();
+  INLINE bool get_delete_flag() const;
+
   void set_sort(int sort);
+  INLINE int get_sort() const;
 
   GraphicsChannel *get_channel(int index);
   void remove_channel(int index);
@@ -145,7 +154,6 @@ public:
 
 protected:
   void declare_channel(int index, GraphicsChannel *chan);
-  void setup_copy_texture(const string &name);
   
 protected:
   PT(GraphicsStateGuardian) _gsg;
@@ -161,6 +169,11 @@ private:
   void do_determine_display_regions();
 
   int _sort;
+
+protected:
+  bool _active;
+  bool _one_shot;
+  bool _delete_flag;
 
 protected:
   Mutex _lock; 

@@ -110,7 +110,7 @@ uses_mipmaps() const {
 //  Description: Returns true if the Texture has its image contents
 //               available in main RAM, false if it exists only in
 //               texture memory or in the prepared GSG context.
-
+//
 //               Note that this has nothing to do with whether
 //               get_ram_image() will fail or not.  Even if
 //               has_ram_image() returns false, get_ram_image() may
@@ -135,6 +135,21 @@ uses_mipmaps() const {
 INLINE bool Texture::
 has_ram_image() const {
   return !_pbuffer->_image.empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::might_have_ram_image
+//       Access: Public
+//  Description: Returns true if the texture's image contents are
+//               currently available in main RAM, or there is reason
+//               to believe it can be loaded on demand.  That is, this
+//               function returns a "best guess" as to whether
+//               get_ram_image() will succeed without actually calling
+//               it first.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+might_have_ram_image() const {
+  return (has_ram_image() || has_filename());
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -12,7 +12,8 @@
     cardMaker.I cardMaker.h \
     config_grutil.h \
     frameRateMeter.I frameRateMeter.h \
-    lineSegs.I lineSegs.h
+    lineSegs.I lineSegs.h \
+    multitexReducer.I multitexReducer.h multitexReducer.cxx
     
   #define INCLUDED_SOURCES \
     cardMaker.cxx \

@@ -217,7 +217,7 @@ protected:
                          const RenderBuffer &rb);
 
   GLenum get_texture_wrap_mode(Texture::WrapMode wm) const;
-  static GLenum get_texture_filter_type(Texture::FilterType ft);
+  static GLenum get_texture_filter_type(Texture::FilterType ft, bool ignore_mipmaps);
   static GLenum get_image_type(PixelBuffer::Type type);
   GLint get_external_image_format(PixelBuffer::Format format) const;
   static GLint get_internal_image_format(PixelBuffer::Format format);

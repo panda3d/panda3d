@@ -205,7 +205,7 @@ TransformState::
 bool TransformState::
 operator < (const TransformState &other) const {
   static const int significant_flags = 
-    (F_is_invalid | F_is_identity | F_components_given | F_hpr_given);
+    (F_is_invalid | F_is_identity | F_components_given | F_hpr_given | F_quat_given);
 
   int flags = (_flags & significant_flags);
   int other_flags = (other._flags & significant_flags);
@@ -219,8 +219,7 @@ operator < (const TransformState &other) const {
     return 0;
   }
 
-  if ((_flags & (F_components_given | F_hpr_given | F_quat_given)) == 
-      (F_components_given | F_hpr_given | F_quat_given)) {
+  if ((_flags & F_components_given) != 0) {
     // If the transform was specified componentwise, compare them
     // componentwise.
     int c = _pos.compare_to(other._pos);

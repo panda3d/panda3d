@@ -383,7 +383,7 @@ remove_all_windows() {
     GraphicsOutput *win = (*wi);
     do_remove_window(win);
   }
-
+  
   _windows.clear();
 
   _app.do_release(this);
@@ -449,6 +449,21 @@ render_frame() {
   if (_flip_state != FS_flip) {
     do_flip_frame();
   }
+
+  // Are any of the windows ready to be deleted?
+  Windows new_windows;
+  new_windows.reserve(_windows.size());
+  Windows::iterator wi;
+  for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
+    GraphicsOutput *win = (*wi);
+    if (win->get_delete_flag()) {
+      do_remove_window(win);
+
+    } else {
+      new_windows.push_back(win);
+    }
+  }
+  new_windows.swap(_windows);
   
   // Grab each thread's mutex again after all windows have flipped.
   Threads::const_iterator ti;
@@ -1303,7 +1318,7 @@ add_window(Windows &wlist, GraphicsOutput *window) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::WindowRenderer::remove_window_now
+//     Function: GraphicsEngine::WindowRenderer::remove_window
 //       Access: Public
 //  Description: Immediately removes the indicated window from all
 //               lists.  If the window is currently open and is

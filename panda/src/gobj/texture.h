@@ -116,6 +116,7 @@ public:
   int release_all();
 
   INLINE bool has_ram_image() const;
+  INLINE bool might_have_ram_image() const;
   PixelBuffer *get_ram_image();
   INLINE void set_keep_ram_image(bool keep_ram_image);
   INLINE bool get_keep_ram_image() const;

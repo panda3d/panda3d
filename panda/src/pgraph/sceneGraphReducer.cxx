@@ -18,16 +18,11 @@
 
 #include "sceneGraphReducer.h"
 #include "config_pgraph.h"
-#include "colorAttrib.h"
-#include "texMatrixAttrib.h"
-#include "colorScaleAttrib.h"
 #include "accumulatedAttribs.h"
 
-#include "geomNode.h"
 #include "pointerTo.h"
-#include "geom.h"
-#include "indent.h"
 #include "plist.h"
+#include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphReducer::flatten

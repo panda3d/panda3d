@@ -2030,27 +2030,7 @@ copy_texture(Texture *tex, const DisplayRegion *dr) {
   nassertv(tex != NULL && dr != NULL);
 
   int xo, yo, w, h;
-
-#if 0
-  // Determine the size of the grab from the given display region
-  // If the requested region is not a power of two, grab a region that is
-  // a power of two that contains the requested region
-  int req_w, req_h;
-  dr->get_region_pixels(xo, yo, req_w, req_h);
-  w = binary_log_cap(req_w);
-  h = binary_log_cap(req_h);
-  if (w != req_w || h != req_h) {
-    tex->_requested_w = req_w;
-    tex->_requested_h = req_h;
-    tex->_has_requested_size = true;
-  }
-#else
-  // doing the above is bad unless you also provide some way
-  // for the caller to adjust his texture coordinates accordingly
-  // this was done for 'draw_texture' but not for anything else
-  
   dr->get_region_pixels(xo, yo, w, h);
-#endif
 
   PixelBuffer *pb = tex->_pbuffer;
   pb->set_xsize(w);
@@ -3230,8 +3210,7 @@ specify_texture(Texture *tex) {
 
   Texture::FilterType minfilter = tex->get_minfilter();
   Texture::FilterType magfilter = tex->get_magfilter();
-
-  bool uses_mipmaps = tex->uses_mipmaps();
+  bool uses_mipmaps = tex->uses_mipmaps() && !CLP(ignore_mipmaps);
 
 #ifndef NDEBUG
   if (CLP(force_mipmaps)) {
@@ -3240,11 +3219,25 @@ specify_texture(Texture *tex) {
     uses_mipmaps = true;
   }
 #endif
+
+  if (_supports_generate_mipmap) {
+    // If the hardware can automatically generate mipmaps, ask it to
+    // do so now, but only if the texture requires them.
+    GLP(TexParameteri)(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, uses_mipmaps);
+
+  } else if (!tex->might_have_ram_image()) {
+    // If the hardware can't automatically generate mipmaps, but it's
+    // a dynamically generated texture (that is, the RAM image isn't
+    // available so it didn't pass through the CPU), then we'd better
+    // not try to enable mipmap filtering, since we can't generate
+    // mipmaps.
+    uses_mipmaps = false;
+  }
  
   GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                     get_texture_filter_type(tex->get_minfilter()));
+                     get_texture_filter_type(minfilter, !uses_mipmaps));
   GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-                     get_texture_filter_type(tex->get_magfilter()));
+                     get_texture_filter_type(magfilter, true));
 
   report_my_gl_errors();
 }
@@ -3378,10 +3371,7 @@ apply_texture_immediate(CLP(TextureContext) *gtc, Texture *tex) {
       
     } else 
 #endif 
-      if (_supports_generate_mipmap) {
-        GLP(TexParameteri)(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
-
-      } else {
+      if (!_supports_generate_mipmap) {
         // We only need to build the mipmaps by hand if the GL
         // doesn't support generating them automatically.
         GLUP(Build2DMipmaps)(GL_TEXTURE_2D, internal_format,
@@ -3402,10 +3392,6 @@ apply_texture_immediate(CLP(TextureContext) *gtc, Texture *tex) {
         report_my_gl_errors();
         return true;
       }
-  } else {
-    if (_supports_generate_mipmap) {
-      GLP(TexParameteri)(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_FALSE);
-    }
   }
 
   GLint border_width = tex->get_border_width();
@@ -3711,11 +3697,11 @@ get_texture_wrap_mode(Texture::WrapMode wm) const {
 //               to GL's.
 ////////////////////////////////////////////////////////////////////
 GLenum CLP(GraphicsStateGuardian)::
-get_texture_filter_type(Texture::FilterType ft) {
+get_texture_filter_type(Texture::FilterType ft, bool ignore_mipmaps) {
   if (CLP(ignore_filters)) {
     return GL_NEAREST;
 
-  } else if (CLP(ignore_mipmaps)) {
+  } else if (ignore_mipmaps) {
     switch (ft) {
     case Texture::FT_nearest_mipmap_nearest:
     case Texture::FT_nearest:

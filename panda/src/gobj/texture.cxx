@@ -619,12 +619,16 @@ release_all() {
 //               false return value from has_ram_image() indicates
 //               only that get_ram_image() may need to reload the
 //               texture from disk, which it will do automatically.
+//               However, you can call might_have_ram_image(), which
+//               will return true if the ram image exists, or there is
+//               a reasonable reason to believe it can be loaded.
 //
 //               On the other hand, it is possible that the texture
 //               cannot be found on disk or is otherwise unavailable.
-//               If that happens, this function returns NULL.  There
-//               is no way to predict whether get_ram_image() will
-//               return NULL without calling it first.
+//               If that happens, this function will return NULL.
+//               There is no way to predict with 100% accuracy whether
+//               get_ram_image() will return NULL without calling it
+//               first; might_have_ram_image() is the closest.
 ////////////////////////////////////////////////////////////////////
 PixelBuffer *Texture::
 get_ram_image() {
