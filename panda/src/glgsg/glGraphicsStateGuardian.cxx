@@ -467,6 +467,8 @@ render_frame(const AllAttributesWrapper &initial_state) {
     << " --------------------------------------------" << endl;
 #endif
 
+  _lighting_enabled_this_frame = false;
+
   _win->begin_frame();
   report_errors();
   _decal_level = 0;
@@ -515,10 +517,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
 
   // Now we're done with the frame processing.  Clean up.
 
-  // We can't necessarily rely on this test not to this this right
-  // now.  Come up with a better optimization later.
-
-  //  if (_lighting_enabled) {
+  if (_lighting_enabled) {
 
     // Let's turn off all the lights we had on, and clear the light
     // cache--to force the lights to be reissued next frame, in case
@@ -540,7 +539,7 @@ render_frame(const AllAttributesWrapper &initial_state) {
     // ideal--there may be a better way.  Maybe if the lights were just
     // more aware of whether their parameters or positions have changed
     // at all?
-    //  }
+  }
 
 #ifndef NDEBUG
   report_errors();

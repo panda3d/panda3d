@@ -757,6 +757,7 @@ enable_lighting(bool val) {
 	<< "glEnable(GL_LIGHTING)" << endl;
 #endif
       glEnable(GL_LIGHTING);
+      _lighting_enabled_this_frame = true;
     } else {
 #ifdef GSG_VERBOSE
       glgsg_cat.debug()

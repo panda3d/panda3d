@@ -298,6 +298,7 @@ protected:
   bool _point_smooth_enabled;
   bool _scissor_enabled;
   bool _lighting_enabled;
+  bool _lighting_enabled_this_frame;
   bool _texturing_enabled;
   bool _dither_enabled;
   bool _stencil_test_enabled;
