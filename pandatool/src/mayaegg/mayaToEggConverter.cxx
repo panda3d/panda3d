@@ -34,6 +34,7 @@
 #include "eggTextureCollection.h"
 #include "eggXfmSAnim.h"
 #include "string_utils.h"
+#include "dcast.h"
 
 #include "pre_maya_include.h"
 #include <maya/MArgList.h>
@@ -278,6 +279,8 @@ convert_maya(bool from_selection) {
     }
     break;
   };
+
+  reparent_decals(&get_egg_data());
 
   if (all_ok) {
     mayaegg_cat.info()
@@ -1638,9 +1641,6 @@ r_get_egg_group(const string &name, const MDagPath &dag_path,
     // Check for an object type setting, from Oliver's plug-in.
     MObject dag_object = dag_path.node();
     string object_type;
-    if (get_enum_attribute(dag_object, "eggObjectTypes", object_type)) {
-      egg_group->add_object_type(object_type);
-    }
     if (get_enum_attribute(dag_object, "eggObjectTypes1", object_type)) {
       egg_group->add_object_type(object_type);
     }
@@ -1772,4 +1772,92 @@ set_shader_attributes(EggPrimitive &primitive, const MayaShader &shader) {
     primitive.set_color(Colorf(shader._color[0], shader._color[1], 
                                shader._color[2], 1.0f));
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MayaShader::reparent_decals
+//       Access: Public
+//  Description: Recursively walks the egg hierarchy, reparenting
+//               "decal" type nodes below their corresponding
+//               "decalbase" type nodes, and setting the flags.
+//
+//               Returns true on success, false if some nodes were
+//               incorrect.
+////////////////////////////////////////////////////////////////////
+bool MayaToEggConverter::
+reparent_decals(EggGroupNode *egg_parent) {
+  bool okflag = true;
+
+  // First, walk through all children of this node, looking for the
+  // one decal base, if any.
+  EggGroup *decal_base = (EggGroup *)NULL;
+  pvector<EggGroup *> decal_children;
+
+  EggGroupNode::iterator ci;
+  for (ci = egg_parent->begin(); ci != egg_parent->end(); ++ci) {
+    EggNode *child =  (*ci);
+    if (child->is_of_type(EggGroup::get_class_type())) {
+      EggGroup *child_group = DCAST(EggGroup, child);
+      if (child_group->has_object_type("decalbase")) {
+        if (decal_base != (EggNode *)NULL) {
+          mayaegg_cat.error()
+            << "Two children of " << egg_parent->get_name()
+            << " both have decalbase set: " << decal_base->get_name()
+            << " and " << child_group->get_name() << "\n";
+          okflag = false;
+        }
+        child_group->remove_object_type("decalbase");
+        decal_base = child_group;
+
+      } else if (child_group->has_object_type("decal")) {
+        child_group->remove_object_type("decal");
+        decal_children.push_back(child_group);
+      }
+    }
+  }
+
+  if (decal_base == (EggGroup *)NULL) {
+    if (!decal_children.empty()) {
+      mayaegg_cat.warning()
+        << decal_children.front()->get_name()
+        << " has decal, but no sibling node has decalbase.\n";
+    }
+
+  } else {
+    if (decal_children.empty()) {
+      mayaegg_cat.warning()
+        << decal_base->get_name()
+        << " has decalbase, but no sibling nodes have decal.\n";
+
+    } else {
+      // All the decal children get moved to be a child of decal base.
+      // This usually will not affect the vertex positions, but it
+      // could if the decal base has a transform and the decal child
+      // is an instance node.  So don't do that.  Also, we assume it's
+      // undesired to have a transform on a decal, so we flatten those
+      // out here--there's no real requirement to do this, however.
+      pvector<EggGroup *>::iterator di;
+      for (di = decal_children.begin(); di != decal_children.end(); ++di) {
+        EggGroup *child_group = (*di);
+        child_group->flatten_transforms();
+        decal_base->add_child(child_group);
+      }
+
+      // Also set the decal state on the base.
+      decal_base->set_decal_flag(true);
+    }
+  }
+
+  // Now recurse on each of the child nodes.
+  for (ci = egg_parent->begin(); ci != egg_parent->end(); ++ci) {
+    EggNode *child =  (*ci);
+    if (child->is_of_type(EggGroupNode::get_class_type())) {
+      EggGroupNode *child_group = DCAST(EggGroupNode, child);
+      if (!reparent_decals(child_group)) {
+        okflag = false;
+      }
+    }
+  }
+
+  return okflag;
 }

@@ -120,6 +120,8 @@ private:
   void set_shader_attributes(EggPrimitive &primitive,
                              const MayaShader &shader);
 
+  bool reparent_decals(EggGroupNode *egg_parent);
+
   typedef pmap<string, EggGroup *> Groups;
   Groups _groups;
 
