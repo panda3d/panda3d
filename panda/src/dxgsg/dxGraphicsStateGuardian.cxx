@@ -4907,10 +4907,6 @@ begin_decal(GeomNode *base_geom) {
 
 #ifndef DISABLE_DECALING
 
-    // need to save current xform matrix in case it is changed during subrendering, so subsequent decal draws use same xform
-    _bTransformIssued = false;
-    _d3dDevice->GetTransform( D3DTRANSFORMSTATE_WORLD, &_SavedTransform);
-
  #ifndef DISABLE_POLYGON_OFFSET_DECALING
     if (dx_decal_type == GDT_offset) {
  #define POLYGON_OFFSET_MULTIPLIER 2
@@ -4928,9 +4924,13 @@ begin_decal(GeomNode *base_geom) {
  #endif
 
     {
-        if (_decal_level > 1)
+        if (_decal_level > 1) {
             base_geom->draw(this);  // If we're already decaling, just draw the geometry.
-        else {
+        } else {
+            // need to save current xform matrix in case it is changed during subrendering, so subsequent decal draws use same xform
+            _bTransformIssued = false;
+            _d3dDevice->GetTransform( D3DTRANSFORMSTATE_WORLD, &_SavedTransform);
+
             // First turn off writing the depth buffer to render the base geometry.
             _d3dDevice->GetRenderState(D3DRENDERSTATE_ZWRITEENABLE, (DWORD *)&_depth_write_enabled);  //save cur val
             _d3dDevice->SetRenderState(D3DRENDERSTATE_ZWRITEENABLE, FALSE);
@@ -5001,7 +5001,6 @@ end_decal(GeomNode *base_geom) {
 #endif
 // Note: For DX8, use D3DRS_COLORWRITEENABLE  (check D3DPMISCCAPS_COLORWRITEENABLE first)
 
-
             // No need to have texturing on for this.
             enable_texturing(false);
 
@@ -5013,21 +5012,6 @@ end_decal(GeomNode *base_geom) {
 
             // Finally, restore the depth write and color mask states to the
             // way they're supposed to be.
-/*
-      DepthWriteAttribute *depth_write;
-      if (get_attribute_into(depth_write, _state,
-                 DepthWriteTransition::get_class_type()))
-            issue_depth_write(depth_write);
-
-     ColorMaskAttribute *color_mask;
-    if (get_attribute_into(color_mask, _state,
-                   ColorMaskTransition::get_class_type())) {
-      issue_color_mask(color_mask);
-    } else {
-
-      glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-    }
-*/
 
             if (dx_decal_type == GDT_blend) {
                 enable_blend(was_blend);
