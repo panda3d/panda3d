@@ -555,18 +555,10 @@ class ShowBase(DirectObject.DirectObject):
         if flag:
             if not self.frameRateMeter:
                 self.frameRateMeter = FrameRateMeter('frameRateMeter')
-                # Temporary try..except for old pandas.
-                try:
-                    self.frameRateMeter.setupLayer(self.win)
-                except:
-                    self.frameRateMeter.setupWindow(self.win)
+                self.frameRateMeter.setupWindow(self.win)
         else:
             if self.frameRateMeter:
-                # Temporary try..except for old pandas.
-                try:
-                    self.frameRateMeter.clearLayer()
-                except:
-                    self.frameRateMeter.clearWindow()
+                self.frameRateMeter.clearWindow()
                 self.frameRateMeter = None
 
     
@@ -708,14 +700,8 @@ class ShowBase(DirectObject.DirectObject):
         Makes a new 3-d camera associated with the indicated window,
         and creates a display region in the indicated subrectangle.
         """
-        # Temporary test for old pandas.
-        if hasattr(win, "getChannel"):
-            chan = win.getChannel(0)
-            layer = chan.makeLayer(sort)
-            dr = layer.makeDisplayRegion(*displayRegion)
-        else:
-            dr = win.makeDisplayRegion(*displayRegion)
-            dr.setSort(sort)
+        dr = win.makeDisplayRegion(*displayRegion)
+        dr.setSort(sort)
 
         if scene == None:
             scene = self.render
@@ -758,14 +744,8 @@ class ShowBase(DirectObject.DirectObject):
         Makes a new camera2d associated with the indicated window, and
         assigns it to render the indicated subrectangle of render2d.
         """
-        # Temporary test for old pandas.
-        if hasattr(win, "getChannel"):
-            chan = win.getChannel(0)
-            layer = chan.makeLayer(sort)
-            dr = layer.makeDisplayRegion(*displayRegion)
-        else:
-            dr = win.makeDisplayRegion(*displayRegion)
-            dr.setSort(sort)
+        dr = win.makeDisplayRegion(*displayRegion)
+        dr.setSort(sort)
 
         # Enable clearing of the depth buffer on this new display
         # region (see the comment in setupRender2d, above).
@@ -798,14 +778,8 @@ class ShowBase(DirectObject.DirectObject):
         Makes a new camera2dp associated with the indicated window, and
         assigns it to render the indicated subrectangle of render2dp.
         """
-        # Temporary test for old pandas.
-        if hasattr(win, "getChannel"):
-            chan = win.getChannel(0)
-            layer = chan.makeLayer(sort)
-            dr = layer.makeDisplayRegion(*displayRegion)
-        else:
-            dr = win.makeDisplayRegion(*displayRegion)
-            dr.setSort(sort)
+        dr = win.makeDisplayRegion(*displayRegion)
+        dr.setSort(sort)
 
         # Enable clearing of the depth buffer on this new display
         # region (see the comment in setupRender2d, above).
