@@ -120,8 +120,8 @@ struct cppyyltype {
 // last_column, whereas here we use the struct assignment operator to
 // copy all the members of the structure).
 #define YYLLOC_DEFAULT(Current, Rhs, N)          \
-  Current = Rhs[1];                              \
-  Current.last_line    = Rhs[N].last_line;       \
-  Current.last_column  = Rhs[N].last_column;
+  (Current) = (Rhs)[1];                              \
+  (Current).last_line    = (Rhs)[N].last_line;       \
+  (Current).last_column  = (Rhs)[N].last_column;
 
 #endif
