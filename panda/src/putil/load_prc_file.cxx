@@ -83,7 +83,7 @@ load_prc_file(const string &filename) {
 //               load_prc_file().  Returns true if successful, false
 //               if the file was unknown.
 ////////////////////////////////////////////////////////////////////
-EXPCL_PANDAEXPRESS bool
+bool
 unload_prc_file(ConfigPage *page) {
   ConfigPageManager *cp_mgr = ConfigPageManager::get_global_ptr();
   return cp_mgr->delete_explicit_page(page);
