@@ -113,7 +113,7 @@ test_intersection_from_sphere(CollisionHandler *record,
   if (collide_cat.is_debug()) {
     collide_cat.debug()
       << "intersection detected from " << *entry.get_from_node() << " into " 
-      << *entry.get_into_node() << "\n";
+      << entry.get_into_node_path() << "\n";
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
@@ -158,7 +158,7 @@ test_intersection_from_ray(CollisionHandler *record,
   if (collide_cat.is_debug()) {
     collide_cat.debug()
       << "intersection detected from " << *entry.get_from_node() << " into " 
-      << *entry.get_into_node() << "\n";
+      << entry.get_into_node_path() << "\n";
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
@@ -204,7 +204,7 @@ test_intersection_from_segment(CollisionHandler *record,
   if (collide_cat.is_debug()) {
     collide_cat.debug()
       << "intersection detected from " << *entry.get_from_node() << " into " 
-      << *entry.get_into_node() << "\n";
+      << entry.get_into_node_path() << "\n";
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
