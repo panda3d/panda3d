@@ -634,12 +634,16 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
                 (turnLeft and self.ship.turnRate) or
                 (turnRight and -self.ship.turnRate))
 
+
+        # Enable debug turbo mode
+        maxSpeed = self.ship.maxSpeed
         if __debug__:
             debugRunning = inputState.isSet("debugRunning")
-            if debugRunning:
+            if debugRunning or base.localAvatar.getTurbo():
                 self.__speed*=4.0
                 self.__slideSpeed*=4.0
                 self.__rotationSpeed*=1.25
+                maxSpeed = self.ship.maxSpeed * 4.0
 
 
         #*#
@@ -790,7 +794,7 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
             #newVector = self.acForce.getLocalVector()+Vec3(step)
             newVector = Vec3(step)
             #newVector=Vec3(rotMat.xform(newVector))
-            #maxLen = self.ship.maxSpeed
+            #maxLen = maxSpeed
             maxLen = self.ship.acceleration
             if newVector.length() > maxLen:
                 newVector.normalize()
@@ -832,9 +836,9 @@ class ShipPilot(PhysicsWalker.PhysicsWalker):
         #*#
         speed = physObject.getVelocity()
         speedLen = speed.length()
-        if speedLen > self.ship.maxSpeed:
+        if speedLen > maxSpeed:
             speed.normalize()
-            speed *= self.ship.maxSpeed
+            speed *= maxSpeed
 
         self.avatarViscosity.setCoef(0.5)
 
