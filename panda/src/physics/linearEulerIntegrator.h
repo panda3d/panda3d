@@ -22,7 +22,7 @@
 #include "linearIntegrator.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : LINEAREulerIntegrator
+//       Class : LinearEulerIntegrator
 // Description : Performs Euler integration on a vector of
 //               physically modelable objects given a quantum dt.
 ////////////////////////////////////////////////////////////////////
