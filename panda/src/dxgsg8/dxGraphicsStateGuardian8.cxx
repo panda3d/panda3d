@@ -2705,6 +2705,7 @@ begin_draw_primitives(const qpGeom *geom, const qpGeomMunger *munger,
     if (_transform_stale) {
       const D3DMATRIX *d3d_mat = (const D3DMATRIX *)_transform->get_mat().get_data();
       _pD3DDevice->SetTransform(D3DTS_WORLD, d3d_mat);
+      _transform_stale = false;
     }
   }
 
