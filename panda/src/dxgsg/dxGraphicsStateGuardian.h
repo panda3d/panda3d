@@ -10,6 +10,8 @@
 
 #include <pandabase.h>
 
+#define D3D_OVERLOADS   //  get D3DVECTOR '+' operator, etc from d3dtypes.h
+
 #include <graphicsStateGuardian.h>
 #include <geomprimitives.h>
 #include <texture.h>
@@ -34,6 +36,7 @@ extern char * ConvD3DErrorToString(const HRESULT &error);   // defined in wdxGra
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #undef WIN32_LEAN_AND_MEAN
+
 
 #include <ddraw.h>
 #include <d3d.h>
@@ -184,9 +187,8 @@ protected:
   void bind_texture(TextureContext *tc);
 
   // for storage of the flexible vertex format
-  char *_fvf_buf;   
-  char *_sav_fvf;    // base of malloced array
-  INLINE void add_to_FVF(void *data,  size_t bytes) ;
+  char *_pCurFvfBufPtr,*_pFvfBufBasePtr;   
+  INLINE void add_to_FVFBuf(void *data,  size_t bytes) ;
   WORD *_index_buf;  // base of malloced array
   
   bool				    _dx_ready;
@@ -221,6 +223,7 @@ protected:
   INLINE void enable_color_material(bool val);
   INLINE void enable_clip_plane(int clip_plane, bool val);
   INLINE void enable_fog(bool val);
+  INLINE void set_shademode(D3DSHADEMODE val);
 
 /*  INLINE void enable_multisample_alpha_one(bool val);
   INLINE void enable_multisample_alpha_mask(bool val);
@@ -304,6 +307,8 @@ protected:
 
   bool  _issued_color_enabled;		// WBD ADDED
   D3DCOLOR _issued_color;			// WBD ADDED
+
+  D3DSHADEMODE _CurShadeMode;
 
   bool _multisample_enabled;
   bool _line_smooth_enabled;
