@@ -229,7 +229,7 @@ output(ostream &out) const {
 BoundingVolume *qpCollisionNode::
 recompute_internal_bound() {
   // First, get ourselves a fresh, empty bounding volume.
-  BoundingVolume *bound = PandaNode::recompute_bound();
+  BoundingVolume *bound = PandaNode::recompute_internal_bound();
   nassertr(bound != (BoundingVolume *)NULL, bound);
 
   // Now actually compute the bounding volume by putting it around all
