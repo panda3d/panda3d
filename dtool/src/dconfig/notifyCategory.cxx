@@ -85,6 +85,16 @@ ostream &NotifyCategory::
 out(NotifySeverity severity, bool prefix) const {
   if (is_on(severity)) {
     if (prefix) {
+      if (get_notify_timestamp()) {
+	// Format a timestamp to include as a prefix as well.
+	time_t now = time(NULL);
+	struct tm *ptm = localtime(&now);
+	
+	char buffer[128];
+	strftime(buffer, 128, ":%m-%d-%Y %H:%M:%S ", ptm);
+	nout << buffer;
+      }
+
       if (severity == NS_info) {
 	return nout << *this << ": ";
       } else {

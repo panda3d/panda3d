@@ -10,6 +10,7 @@
 #include <filename.h>
 
 #include <ctype.h>
+#include <time.h>  // for strftime().
 
 Notify *Notify::_global_ptr = (Notify *)NULL;
 

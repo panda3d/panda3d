@@ -22,3 +22,13 @@ get_assert_abort() {
   }
   return *assert_abort;
 }
+
+bool
+get_notify_timestamp() {
+  static bool *notify_timestamp = (bool *)NULL;
+  if (notify_timestamp == (bool *)NULL) {
+    notify_timestamp = new bool;
+    *notify_timestamp = config_notify.GetBool("notify-timestamp", false);
+  }
+  return *notify_timestamp;
+}
