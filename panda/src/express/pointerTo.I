@@ -452,11 +452,21 @@ operator -> () const {
 //               don't care which way it goes because either will be
 //               correct.
 ////////////////////////////////////////////////////////////////////
+
+#ifndef CPPPARSER
 template<class T>
 INLINE typename ConstPointerTo<T>::
 operator const typename PointerToBase<T>::To *() const {
   return _ptr;
 }
+#else
+// work around lame interrogate parser bugs
+template<class T>
+INLINE ConstPointerTo<T>::
+operator const PointerToBase<T>::To *() const {
+  return _ptr;
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ConstPointerTo::p
