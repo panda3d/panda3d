@@ -64,6 +64,7 @@ class Particles(ParticleSystem.ParticleSystem):
 	self.setEmitter("SphereVolumeEmitter")
 
 	# Enable particles by default
+	self.fEnabled = 0
 	self.enable()
 
     def enable(self):
