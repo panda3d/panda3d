@@ -18,6 +18,7 @@
 
 #include "xFileToEgg.h"
 #include "xFileToEggConverter.h"
+#include "config_xfile.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: XFileToEgg::Constructor
@@ -71,6 +72,7 @@ run() {
 
 
 int main(int argc, char *argv[]) {
+  init_libxfile();
   XFileToEgg prog;
   prog.parse_command_line(argc, argv);
   prog.run();

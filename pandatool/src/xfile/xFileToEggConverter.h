@@ -64,6 +64,7 @@ private:
   bool convert_object(LPDIRECTXFILEOBJECT obj, EggGroupNode *egg_parent);
   bool convert_data_object(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent);
   bool convert_frame(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent);
+  bool convert_transform(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent);
   bool convert_mesh(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent);
 
   bool convert_mesh_object(LPDIRECTXFILEOBJECT obj, XFileMesh &mesh);

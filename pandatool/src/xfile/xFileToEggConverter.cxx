@@ -20,6 +20,7 @@
 #include "xFileMesh.h"
 #include "xFileMaterial.h"
 #include "xFileTemplates.h"
+#include "config_xfile.h"
 
 #include "eggData.h"
 #include "eggGroup.h"
@@ -202,7 +203,8 @@ get_toplevel() {
   }
 
   if (hr != DXFILEERR_NOMOREOBJECTS) {
-    cerr << "Error extracting top-level objects.\n";
+    xfile_cat.error()
+      << "Error extracting top-level objects.\n";
     return false;
   }
 
@@ -228,8 +230,9 @@ convert_object(LPDIRECTXFILEOBJECT obj, EggGroupNode *egg_parent) {
   }
 
   // It isn't.
-  cerr << "Ignoring object of unknown type: " << get_object_name(obj)
-       << "\n";
+  xfile_cat.error()
+    << "Ignoring object of unknown type: " << get_object_name(obj)
+    << "\n";
   return true;
 }
 
@@ -248,7 +251,8 @@ convert_data_object(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent) {
   const GUID *type;
   hr = obj->GetType(&type);
   if (hr != DXFILE_OK) {
-    cerr << "Unable to get type of template\n";
+    xfile_cat.error()
+      << "Unable to get type of template\n";
     return false;
   }
 
@@ -259,13 +263,21 @@ convert_data_object(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent) {
     if (!convert_frame(obj, egg_parent)) {
       return false;
     }
+
+  } else if (*type == TID_D3DRMFrameTransformMatrix) {
+    if (!convert_transform(obj, egg_parent)) {
+      return false;
+    }
+
   } else if (*type == TID_D3DRMMesh) {
     if (!convert_mesh(obj, egg_parent)) {
       return false;
     }
+
   } else {
-    cerr << "Ignoring data object of unknown type: " << get_object_name(obj)
-         << "\n";
+    xfile_cat.error()
+      << "Ignoring data object of unknown type: " << get_object_name(obj)
+      << "\n";
   }
   
   return true;
@@ -297,8 +309,42 @@ convert_frame(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent) {
   }
 
   if (hr != DXFILEERR_NOMOREOBJECTS) {
-    cerr << "Error extracting children of frame " << name << ".\n";
+    xfile_cat.error()
+      << "Error extracting children of frame " << name << ".\n";
     return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileToEggConverter::convert_transform
+//       Access: Private
+//  Description: Reads a transform matrix, a child of a given frame,
+//               and applies it to the node.  Normally this can only
+//               be done if the node in question is an EggGroup, which
+//               should be the case if the transform was a child of a
+//               frame.
+////////////////////////////////////////////////////////////////////
+bool XFileToEggConverter::
+convert_transform(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent) {
+  Datagram raw_data;
+  if (!get_data(obj, raw_data)) {
+    return false;
+  }
+
+  DatagramIterator di(raw_data);
+  LMatrix4f mat;
+  mat.read_datagram(di);
+
+  if (egg_parent->is_of_type(EggGroup::get_class_type())) {
+    EggGroup *egg_group = DCAST(EggGroup, egg_parent);
+    egg_group->set_transform(LCAST(double, mat));
+    egg_group->set_group_type(EggGroup::GT_instance);
+  } else {
+    xfile_cat.error()
+      << "Transform " << get_object_name(obj)
+      << " encountered without frame!\n";
   }
 
   return true;
@@ -337,8 +383,9 @@ convert_mesh(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent) {
   }
 
   if (hr != DXFILEERR_NOMOREOBJECTS) {
-    cerr << "Error extracting children of mesh " << get_object_name(obj)
-         << ".\n";
+    xfile_cat.error()
+      << "Error extracting children of mesh " << get_object_name(obj)
+      << ".\n";
     return false;
   }
 
@@ -368,8 +415,9 @@ convert_mesh_object(LPDIRECTXFILEOBJECT obj, XFileMesh &mesh) {
   }
 
   // It isn't.
-  cerr << "Ignoring object of unknown type: " << get_object_name(obj)
-       << "\n";
+  xfile_cat.error()
+    << "Ignoring object of unknown type: " << get_object_name(obj)
+    << "\n";
   return true;
 }
 
@@ -387,7 +435,8 @@ convert_mesh_data_object(LPDIRECTXFILEDATA obj, XFileMesh &mesh) {
   const GUID *type;
   hr = obj->GetType(&type);
   if (hr != DXFILE_OK) {
-    cerr << "Unable to get type of template\n";
+    xfile_cat.error()
+      << "Unable to get type of template\n";
     return false;
   }
 
@@ -412,8 +461,9 @@ convert_mesh_data_object(LPDIRECTXFILEDATA obj, XFileMesh &mesh) {
     }
 
   } else {
-    cerr << "Ignoring data object of unknown type: " << get_object_name(obj)
-         << "\n";
+    xfile_cat.error()
+      << "Ignoring data object of unknown type: " << get_object_name(obj)
+      << "\n";
   }
   
   return true;
@@ -511,8 +561,9 @@ convert_mesh_material_list(LPDIRECTXFILEDATA obj, XFileMesh &mesh) {
   }
 
   if (hr != DXFILEERR_NOMOREOBJECTS) {
-    cerr << "Error extracting children of MeshMaterialList "
-         << get_object_name(obj) << ".\n";
+    xfile_cat.error()
+      << "Error extracting children of MeshMaterialList "
+      << get_object_name(obj) << ".\n";
     return false;
   }
 
@@ -538,8 +589,9 @@ convert_material_list_object(LPDIRECTXFILEOBJECT obj, XFileMesh &mesh) {
   }
 
   // It isn't.
-  cerr << "Ignoring object of unknown type: " << get_object_name(obj)
-       << "\n";
+  xfile_cat.error()
+    << "Ignoring object of unknown type: " << get_object_name(obj)
+    << "\n";
   return true;
 }
 
@@ -557,7 +609,8 @@ convert_material_list_data_object(LPDIRECTXFILEDATA obj, XFileMesh &mesh) {
   const GUID *type;
   hr = obj->GetType(&type);
   if (hr != DXFILE_OK) {
-    cerr << "Unable to get type of template\n";
+    xfile_cat.error()
+      << "Unable to get type of template\n";
     return false;
   }
 
@@ -566,8 +619,9 @@ convert_material_list_data_object(LPDIRECTXFILEDATA obj, XFileMesh &mesh) {
       return false;
     }
   } else {
-    cerr << "Ignoring data object of unknown type: " << get_object_name(obj)
-         << "\n";
+    xfile_cat.error()
+      << "Ignoring data object of unknown type: " << get_object_name(obj)
+      << "\n";
   }
   
   return true;
@@ -609,8 +663,9 @@ convert_material(LPDIRECTXFILEDATA obj, XFileMesh &mesh) {
   }
 
   if (hr != DXFILEERR_NOMOREOBJECTS) {
-    cerr << "Error extracting children of Material " 
-         << get_object_name(obj) << ".\n";
+    xfile_cat.error()
+      << "Error extracting children of Material " 
+      << get_object_name(obj) << ".\n";
     return false;
   }
 
@@ -636,8 +691,9 @@ convert_material_object(LPDIRECTXFILEOBJECT obj, XFileMaterial &material) {
   }
 
   // It isn't.
-  cerr << "Ignoring object of unknown type: " << get_object_name(obj)
-       << "\n";
+  xfile_cat.error()
+    << "Ignoring object of unknown type: " << get_object_name(obj)
+    << "\n";
   return true;
 }
 
@@ -655,7 +711,8 @@ convert_material_data_object(LPDIRECTXFILEDATA obj, XFileMaterial &material) {
   const GUID *type;
   hr = obj->GetType(&type);
   if (hr != DXFILE_OK) {
-    cerr << "Unable to get type of template\n";
+    xfile_cat.error()
+      << "Unable to get type of template\n";
     return false;
   }
 
@@ -664,8 +721,9 @@ convert_material_data_object(LPDIRECTXFILEDATA obj, XFileMaterial &material) {
       return false;
     }
   } else {
-    cerr << "Ignoring data object of unknown type: " << get_object_name(obj)
-         << "\n";
+    xfile_cat.error()
+      << "Ignoring data object of unknown type: " << get_object_name(obj)
+      << "\n";
   }
   
   return true;
@@ -711,7 +769,8 @@ get_object_name(LPDIRECTXFILEOBJECT obj) {
 
   string result;
   if (hr != DXFILE_OK) {
-    cerr << "Unable to get object name.\n";
+    xfile_cat.error()
+      << "Unable to get object name.\n";
   } else {
     result = buffer;
   }
@@ -732,7 +791,8 @@ get_data(LPDIRECTXFILEDATA obj, Datagram &raw_data) {
   void *data;
   hr = obj->GetData(NULL, &length, &data);
   if (hr != DXFILE_OK) {
-    cerr << "Unable to get data for " << get_object_name(obj) << "\n";
+    xfile_cat.error()
+      << "Unable to get data for " << get_object_name(obj) << "\n";
     return false;
   }
 

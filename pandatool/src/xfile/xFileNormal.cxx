@@ -19,6 +19,7 @@
 #include "xFileNormal.h"
 #include "eggVertex.h"
 #include "eggPrimitive.h"
+#include "config_xfile.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: XFileNormal::Constructor
@@ -38,11 +39,24 @@ XFileNormal() {
 ////////////////////////////////////////////////////////////////////
 void XFileNormal::
 set_from_egg(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
-  if (egg_vertex->has_normal()) {
-    _normal = LCAST(float, egg_vertex->get_normal());
-    _has_normal = true;
-  } else if (egg_prim->has_normal()) {
-    _normal = LCAST(float, egg_prim->get_normal());
+  if (egg_vertex->has_normal() || egg_prim->has_normal()) {
+    Normald norm;
+    if (egg_vertex->has_normal()) {
+      norm = egg_vertex->get_normal();
+    } else {
+      norm = egg_prim->get_normal();
+    }
+
+    if (xfile_one_mesh) {
+      // If this is going into one big mesh, we must ensure every
+      // vertex is in world coordinates.
+      norm = norm * egg_prim->get_vertex_frame();
+    } else {
+      // Otherwise, we ensure the vertex is in local coordinates.
+      norm = norm * egg_prim->get_vertex_to_node();
+    }
+
+    _normal = LCAST(float, norm);
     _has_normal = true;
   }
 }

@@ -1,5 +1,5 @@
-// Filename: config_ptloader.cxx
-// Created by:  drose (26Apr01)
+// Filename: config_xfile.cxx
+// Created by:  drose (24Aug00)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,31 +16,25 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_ptloader.h"
-#include "loaderFileTypePandatool.h"
-
-#include "config_lwo.h"
-#include "fltToEggConverter.h"
-#include "config_flt.h"
-#include "lwoToEggConverter.h"
-
-#ifdef HAVE_DX
 #include "config_xfile.h"
-#include "xFileToEggConverter.h"
-#endif
 
-#include "dconfig.h"
-#include "loaderFileTypeRegistry.h"
-#include "eggData.h"
+#include <dconfig.h>
 
-ConfigureDef(config_ptloader);
+Configure(config_xfile);
+NotifyCategoryDef(xfile, "");
 
-ConfigureFn(config_ptloader) {
-  init_libptloader();
+// This is set true, typically by the user's command-line options, to
+// indicate that when a X file is generated it should include all
+// geometry in one big mesh, instead of preserving the hierarchy
+// from the source egg file.
+bool xfile_one_mesh = false;
+
+ConfigureFn(config_xfile) {
+  init_libxfile();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: init_libptloader
+//     Function: init_libxfile
 //  Description: Initializes the library.  This must be called at
 //               least once before any of the functions or classes in
 //               this library can be used.  Normally it will be
@@ -48,28 +42,11 @@ ConfigureFn(config_ptloader) {
 //               called explicitly, but special cases exist.
 ////////////////////////////////////////////////////////////////////
 void
-init_libptloader() {
+init_libxfile() {
   static bool initialized = false;
   if (initialized) {
     return;
   }
   initialized = true;
-
-  LoaderFileTypePandatool::init_type();
-
-  LoaderFileTypeRegistry *reg = LoaderFileTypeRegistry::get_ptr();
-
-  init_liblwo();
-  FltToEggConverter *flt = new FltToEggConverter;
-  reg->register_type(new LoaderFileTypePandatool(flt));
-
-  init_libflt();
-  LwoToEggConverter *lwo = new LwoToEggConverter;
-  reg->register_type(new LoaderFileTypePandatool(lwo));
-
-#ifdef HAVE_DX
-  init_libxfile();
-  XFileToEggConverter *xfile = new XFileToEggConverter;
-  reg->register_type(new LoaderFileTypePandatool(xfile));
-#endif
 }
+

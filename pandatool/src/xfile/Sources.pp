@@ -14,6 +14,7 @@
     d3dxof.lib
 
   #define SOURCES \
+    config_xfile.cxx config_xfile.h \
     xFileFace.cxx xFileFace.h \
     xFileMaker.cxx xFileMaker.h \
     xFileMaterial.cxx xFileMaterial.h \

@@ -112,6 +112,10 @@ run() {
     uniquifier.uniquify(&_data);
   }
 
+  if (!copy_textures()) {
+    exit(1);
+  }
+
   write_egg_file();
 }
 

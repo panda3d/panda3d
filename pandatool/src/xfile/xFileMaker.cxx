@@ -20,6 +20,7 @@
 #include "xFileMesh.h"
 #include "xFileMaterial.h"
 #include "xFileTemplates.h"
+#include "config_xfile.h"
 
 #include "notify.h"
 #include "eggGroupNode.h"
@@ -99,12 +100,14 @@ open(const Filename &filename) {
     &TID_D3DRMColorRGB,
     &TID_D3DRMIndexedColor,
     &TID_D3DRMTextureFilename,
+    &TID_D3DRMMatrix4x4,
     &TID_D3DRMMaterial,
     &TID_D3DRMMeshFace,
     &TID_D3DRMMesh,
     &TID_D3DRMMeshNormals,
     &TID_D3DRMMeshTextureCoords,
     &TID_D3DRMMeshMaterialList,
+    &TID_D3DRMFrameTransformMatrix,
     &TID_D3DRMFrame,
   };
   static const int num_temps = sizeof(temps) / sizeof(temps[0]);
@@ -145,12 +148,24 @@ close() {
 ////////////////////////////////////////////////////////////////////
 bool XFileMaker::
 add_tree(EggData &egg_data) {
+  _meshes.clear();
+
   // Now collect all the polygons together into polysets.
   EggPolysetMaker pmaker;
   int num_bins = pmaker.make_bins(&egg_data);
 
   // And now we're ready to traverse the egg hierarchy.
-  return recurse_nodes(&egg_data, NULL);
+  if (!recurse_nodes(&egg_data, NULL)) {
+    return false;
+  }
+
+  // Make sure we finalize any meshes in the root.
+  if (!finalize_mesh(NULL)) {
+    return false;
+  }
+
+  nassertr(_meshes.empty(), false);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -171,17 +186,28 @@ add_node(EggNode *egg_node, LPDIRECTXFILEDATA dx_parent) {
     // A grouping node of some kind.
     EggGroupNode *egg_group = DCAST(EggGroupNode, egg_node);
     LPDIRECTXFILEDATA obj;
-    if (!create_frame(obj, egg_group->get_name())) {
-      return false;
-    }
+
+    if (xfile_one_mesh) {
+      // Don't create any additional frames representing the egg
+      // hierarchy.
+      if (!recurse_nodes(egg_group, dx_parent)) {
+        return false;
+      }
+
+    } else {
+      // Create a frame for each EggGroup.
+      if (!create_frame(obj, egg_group->get_name())) {
+        return false;
+      }
     
-    if (!recurse_nodes(egg_group, obj)) {
-      obj->Release();
-      return false;
-    }
-    
-    if (!attach_and_release(obj, dx_parent)) {
-      return false;
+      if (!recurse_nodes(egg_group, obj)) {
+        obj->Release();
+        return false;
+      }
+      
+      if (!attach_and_release(obj, dx_parent)) {
+        return false;
+      }
     }
     
     return true;
@@ -198,18 +224,33 @@ add_node(EggNode *egg_node, LPDIRECTXFILEDATA dx_parent) {
 ////////////////////////////////////////////////////////////////////
 bool XFileMaker::
 add_group(EggGroup *egg_group, LPDIRECTXFILEDATA dx_parent) {
-  LPDIRECTXFILEDATA obj;
-  if (!create_frame(obj, egg_group->get_name())) {
-    return false;
-  }
+  if (xfile_one_mesh) {
+    // Don't create any additional frames representing the egg
+    // hierarchy.
+    if (!recurse_nodes(egg_group, dx_parent)) {
+      return false;
+    }
 
-  if (!recurse_nodes(egg_group, obj)) {
-    obj->Release();
-    return false;
-  }
+  } else {
+    // Create a frame for each EggGroup.
+    LPDIRECTXFILEDATA obj;
+    if (!create_frame(obj, egg_group->get_name())) {
+      return false;
+    }
 
-  if (!attach_and_release(obj, dx_parent)) {
-    return false;
+    // Set the transform on the frame, if we have one.
+    if (egg_group->has_transform()) {
+      add_frame_transform(obj, LCAST(float, egg_group->get_transform()));
+    }
+    
+    if (!recurse_nodes(egg_group, obj)) {
+      obj->Release();
+      return false;
+    }
+    
+    if (!attach_and_release(obj, dx_parent)) {
+      return false;
+    }
   }
 
   return true;
@@ -228,7 +269,8 @@ add_bin(EggBin *egg_bin, LPDIRECTXFILEDATA dx_parent) {
     return add_polyset(egg_bin, dx_parent);
   }
 
-  cerr << "Unexpected bin type " << egg_bin->get_bin_number() << "\n";
+  xfile_cat.error()
+    << "Unexpected bin type " << egg_bin->get_bin_number() << "\n";
   return false;
 }
 
@@ -243,121 +285,19 @@ add_polyset(EggBin *egg_bin, LPDIRECTXFILEDATA dx_parent) {
   // Make sure that all our polygons are reasonable.
   egg_bin->remove_invalid_primitives();
 
-  XFileMesh mesh;
+  XFileMesh *mesh = get_mesh(dx_parent);
 
   EggGroupNode::iterator ci;
   for (ci = egg_bin->begin(); ci != egg_bin->end(); ++ci) {
     EggPolygon *poly;
     DCAST_INTO_R(poly, *ci, false);
 
-    mesh.add_polygon(poly);
+    mesh->add_polygon(poly);
   }
 
-  // Get a unique number for each mesh.
-  _mesh_index++;
-  string mesh_index = format_string(_mesh_index);
-
-  // Finally, create the Mesh object.
-  Datagram raw_data;
-  mesh.make_mesh_data(raw_data);
-
-  LPDIRECTXFILEDATA xobj;
-  if (!create_object(xobj, TID_D3DRMMesh, "mesh" + mesh_index, raw_data)) {
-    return false;
-  }
-
-  if (mesh.has_normals()) {
-    // Tack on normals.
-    LPDIRECTXFILEDATA xnormals;
-    mesh.make_normal_data(raw_data);
-    if (!create_object(xnormals, TID_D3DRMMeshNormals, "norms" + mesh_index,
-                       raw_data)) {
-      return false;
-    }
-    if (!attach_and_release(xnormals, xobj)) {
-      return false;
-    }
-  }
-
-  if (mesh.has_colors()) {
-    // Tack on colors.
-    LPDIRECTXFILEDATA xcolors;
-    mesh.make_color_data(raw_data);
-    if (!create_object(xcolors, TID_D3DRMMeshVertexColors, 
-                       "colors" + mesh_index, raw_data)) {
-      return false;
-    }
-    if (!attach_and_release(xcolors, xobj)) {
-      return false;
-    }
-  }
-
-  if (mesh.has_uvs()) {
-    // Tack on texture coordinates.
-    LPDIRECTXFILEDATA xuvs;
-    mesh.make_uv_data(raw_data);
-    if (!create_object(xuvs, TID_D3DRMMeshTextureCoords, 
-                       "uvs" + mesh_index, raw_data)) {
-      return false;
-    }
-    if (!attach_and_release(xuvs, xobj)) {
-      return false;
-    }
-  }
-
-  if (mesh.has_materials()) {
-    // Tack on material definitions.
-    LPDIRECTXFILEDATA xmaterial_list;
-    mesh.make_material_list_data(raw_data);
-    if (!create_object(xmaterial_list, TID_D3DRMMeshMaterialList, 
-                       "materials" + mesh_index, raw_data)) {
-      return false;
-    }
-
-    // Now we need to iterate through the list of Materials
-    // themselves, and add *these* as children of the material list.
-    int num_materials = mesh.get_num_materials();
-    for (int i = 0; i < num_materials; i++) {
-      XFileMaterial *material = mesh.get_material(i);
-      LPDIRECTXFILEDATA xmaterial;
-      material->make_material_data(raw_data);
-      if (!create_object(xmaterial, TID_D3DRMMaterial, 
-                         "material" + mesh_index + "_" + format_string(i),
-                         raw_data)) {
-        return false;
-      }
-
-      // Also, if the Material has a texture map, we must add *this*
-      // as a child of the material.  What a weird system.
-      if (material->has_texture()) {
-        LPDIRECTXFILEDATA xtexture;
-        material->make_texture_data(raw_data);
-        if (!create_object(xtexture, TID_D3DRMTextureFilename, 
-                           "texture" + mesh_index + "_" + format_string(i),
-                           raw_data)) {
-          return false;
-        }
-
-        if (!attach_and_release(xtexture, xmaterial)) {
-          return false;
-        }
-      }
-
-      if (!attach_and_release(xmaterial, xmaterial_list)) {
-        return false;
-      }
-    }
-
-    if (!attach_and_release(xmaterial_list, xobj)) {
-      return false;
-    }
-  }
-
-  if (!attach_and_release(xobj, dx_parent)) {
-    return false;
-  }
   return true;
 }
+
   
 ////////////////////////////////////////////////////////////////////
 //     Function: XFileMaker::recurse_nodes
@@ -419,6 +359,28 @@ create_frame(LPDIRECTXFILEDATA &obj, const string &name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: XFileMaker::add_frame_transform
+//       Access: Private
+//  Description: Adds a transformation matrix to the indicated frame.
+////////////////////////////////////////////////////////////////////
+bool XFileMaker::
+add_frame_transform(LPDIRECTXFILEDATA obj, const LMatrix4f &mat) {
+  Datagram raw_data;
+  mat.write_datagram(raw_data);
+
+  LPDIRECTXFILEDATA xtransform;
+  if (!create_object(xtransform, TID_D3DRMFrameTransformMatrix, 
+                     "transform", raw_data)) {
+    return false;
+  }
+  if (!attach_and_release(xtransform, obj)) {
+    return false;
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: XFileMaker::attach_and_release
 //       Access: Private
 //  Description: Assigns the indicated X data object to the indicated
@@ -427,6 +389,12 @@ create_frame(LPDIRECTXFILEDATA &obj, const string &name) {
 bool XFileMaker::
 attach_and_release(LPDIRECTXFILEDATA obj, LPDIRECTXFILEDATA dx_parent) {
   HRESULT hr;
+
+  // First, make sure we don't have an outstanding mesh for this
+  // object.
+  if (!finalize_mesh(obj)) {
+    return false;
+  }
 
   if (dx_parent == NULL) {
     // No parent; it's a toplevel object.
@@ -470,4 +438,149 @@ make_nice_name(const string &str) {
   }
 
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileMaker::get_mesh
+//       Access: Private
+//  Description: Returns a suitable XFileMesh object for creating
+//               meshes within the indicated dx_parent object.
+////////////////////////////////////////////////////////////////////
+XFileMesh *XFileMaker::
+get_mesh(LPDIRECTXFILEDATA dx_parent) {
+  Meshes::iterator mi = _meshes.find(dx_parent);
+  if (mi != _meshes.end()) {
+    // We've already started working on this dx_parent before; use the
+    // same mesh object.
+    return (*mi).second;
+  }
+
+  // We haven't seen this dx_parent before; create a new mesh object.
+  XFileMesh *mesh = new XFileMesh;
+  _meshes.insert(Meshes::value_type(dx_parent, mesh));
+  return mesh;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: XFileMaker::finalize_mesh
+//       Access: Private
+//  Description: Creates the actual DX mesh object corresponding to
+//               the indicated dx_parent object.
+////////////////////////////////////////////////////////////////////
+bool XFileMaker::
+finalize_mesh(LPDIRECTXFILEDATA dx_parent) {
+  Meshes::iterator mi = _meshes.find(dx_parent);
+  if (mi == _meshes.end()) {
+    // We haven't got a mesh for this object; do nothing.
+    return true;
+  }
+
+  XFileMesh *mesh = (*mi).second;
+  _meshes.erase(mi);
+
+  // Get a unique number for each mesh.
+  _mesh_index++;
+  string mesh_index = format_string(_mesh_index);
+
+  // Finally, create the Mesh object.
+  Datagram raw_data;
+  mesh->make_mesh_data(raw_data);
+
+  LPDIRECTXFILEDATA xobj;
+  if (!create_object(xobj, TID_D3DRMMesh, "mesh" + mesh_index, raw_data)) {
+    return false;
+  }
+
+  if (mesh->has_normals()) {
+    // Tack on normals.
+    LPDIRECTXFILEDATA xnormals;
+    mesh->make_normal_data(raw_data);
+    if (!create_object(xnormals, TID_D3DRMMeshNormals, "norms" + mesh_index,
+                       raw_data)) {
+      return false;
+    }
+    if (!attach_and_release(xnormals, xobj)) {
+      return false;
+    }
+  }
+
+  if (mesh->has_colors()) {
+    // Tack on colors.
+    LPDIRECTXFILEDATA xcolors;
+    mesh->make_color_data(raw_data);
+    if (!create_object(xcolors, TID_D3DRMMeshVertexColors, 
+                       "colors" + mesh_index, raw_data)) {
+      return false;
+    }
+    if (!attach_and_release(xcolors, xobj)) {
+      return false;
+    }
+  }
+
+  if (mesh->has_uvs()) {
+    // Tack on texture coordinates.
+    LPDIRECTXFILEDATA xuvs;
+    mesh->make_uv_data(raw_data);
+    if (!create_object(xuvs, TID_D3DRMMeshTextureCoords, 
+                       "uvs" + mesh_index, raw_data)) {
+      return false;
+    }
+    if (!attach_and_release(xuvs, xobj)) {
+      return false;
+    }
+  }
+
+  if (mesh->has_materials()) {
+    // Tack on material definitions.
+    LPDIRECTXFILEDATA xmaterial_list;
+    mesh->make_material_list_data(raw_data);
+    if (!create_object(xmaterial_list, TID_D3DRMMeshMaterialList, 
+                       "materials" + mesh_index, raw_data)) {
+      return false;
+    }
+
+    // Now we need to iterate through the list of Materials
+    // themselves, and add *these* as children of the material list.
+    int num_materials = mesh->get_num_materials();
+    for (int i = 0; i < num_materials; i++) {
+      XFileMaterial *material = mesh->get_material(i);
+      LPDIRECTXFILEDATA xmaterial;
+      material->make_material_data(raw_data);
+      if (!create_object(xmaterial, TID_D3DRMMaterial, 
+                         "material" + mesh_index + "_" + format_string(i),
+                         raw_data)) {
+        return false;
+      }
+
+      // Also, if the Material has a texture map, we must add *this*
+      // as a child of the material.  What a weird system.
+      if (material->has_texture()) {
+        LPDIRECTXFILEDATA xtexture;
+        material->make_texture_data(raw_data);
+        if (!create_object(xtexture, TID_D3DRMTextureFilename, 
+                           "texture" + mesh_index + "_" + format_string(i),
+                           raw_data)) {
+          return false;
+        }
+
+        if (!attach_and_release(xtexture, xmaterial)) {
+          return false;
+        }
+      }
+
+      if (!attach_and_release(xmaterial, xmaterial_list)) {
+        return false;
+      }
+    }
+
+    if (!attach_and_release(xmaterial_list, xobj)) {
+      return false;
+    }
+  }
+
+  if (!attach_and_release(xobj, dx_parent)) {
+    return false;
+  }
+  return true;
 }

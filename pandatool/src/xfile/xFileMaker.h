@@ -19,9 +19,11 @@
 #ifndef XFILEMAKER_H
 #define XFILEMAKER_H
 
-#include <pandatoolbase.h>
+#include "pandatoolbase.h"
 
-#include <filename.h>
+#include "filename.h"
+#include "pmap.h"
+#include "luse.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -37,6 +39,7 @@ class EggBin;
 class EggData;
 class EggVertexPool;
 class Datagram;
+class XFileMesh;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : XFileMaker
@@ -64,14 +67,22 @@ private:
   bool create_object(LPDIRECTXFILEDATA &obj, REFGUID template_id,
                      const string &name, const Datagram &dg);
   bool create_frame(LPDIRECTXFILEDATA &obj, const string &name);
+  bool add_frame_transform(LPDIRECTXFILEDATA obj, const LMatrix4f &mat);
+
   bool attach_and_release(LPDIRECTXFILEDATA obj, LPDIRECTXFILEDATA dx_parent);
 
   static string make_nice_name(const string &str);
+
+  XFileMesh *get_mesh(LPDIRECTXFILEDATA dx_parent);
+  bool finalize_mesh(LPDIRECTXFILEDATA dx_parent);
 
   LPDIRECTXFILE _dx_file;
   LPDIRECTXFILESAVEOBJECT _dx_file_save;
 
   int _mesh_index;
+
+  typedef pmap<LPDIRECTXFILEDATA, XFileMesh *> Meshes;
+  Meshes _meshes;
 };
 
 #endif

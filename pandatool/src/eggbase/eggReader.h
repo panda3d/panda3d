@@ -43,10 +43,12 @@ protected:
   virtual bool handle_args(Args &args);
   virtual bool post_command_line();
 
-private:
   bool copy_textures();
 
+protected:
   bool _force_complete;
+
+private:
   Filename _tex_dirname;
   bool _got_tex_dirname;
   string _tex_extension;

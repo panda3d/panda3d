@@ -54,6 +54,11 @@ EggReader() {
 //               program.  If the user specifies one of the options on
 //               the command line, the textures will be copied and
 //               converted as each egg file is read.
+//
+//               Note that if you call this function to add these
+//               options, you must call copy_textures() at the
+//               appropriate point before or during processing to
+//               execute the options if the user specified them.
 ////////////////////////////////////////////////////////////////////
 void EggReader::
 add_texture_options() {
@@ -153,10 +158,6 @@ handle_args(ProgramBase::Args &args) {
 ////////////////////////////////////////////////////////////////////
 bool EggReader::
 post_command_line() {
-  if (!copy_textures()) {
-    exit(1);
-  }
-
   return EggBase::post_command_line();
 }
 

@@ -86,6 +86,11 @@ clear() {
   _unique_vertices.clear();
   _unique_normals.clear();
   _unique_materials.clear();
+
+  _has_normals = false;
+  _has_colors = false;
+  _has_uvs = false;
+  _has_materials = false;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -19,6 +19,7 @@
 #include "xFileVertex.h"
 #include "eggVertex.h"
 #include "eggPrimitive.h"
+#include "config_xfile.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: XFileVertex::Constructor
@@ -41,7 +42,18 @@ XFileVertex() {
 ////////////////////////////////////////////////////////////////////
 void XFileVertex::
 set_from_egg(EggVertex *egg_vertex, EggPrimitive *egg_prim) {
-  _point = LCAST(float, egg_vertex->get_pos3());
+  Vertexd pos = egg_vertex->get_pos3();
+
+  if (xfile_one_mesh) {
+    // If this is going into one big mesh, we must ensure every
+    // vertex is in world coordinates.
+    pos = pos * egg_prim->get_vertex_frame();
+  } else {
+    // Otherwise, we ensure the vertex is in local coordinates.
+    pos = pos * egg_prim->get_vertex_to_node();
+  }
+
+  _point = LCAST(float, pos);
 
   if (egg_vertex->has_uv()) {
     TexCoordd uv = egg_vertex->get_uv();

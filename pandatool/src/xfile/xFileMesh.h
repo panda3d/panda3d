@@ -91,7 +91,6 @@ private:
   Materials _materials;
   Faces _faces;
 
-private:
   typedef pmap<XFileVertex *, int, IndirectCompareTo<XFileVertex> > UniqueVertices;
   typedef pmap<XFileNormal *, int, IndirectCompareTo<XFileNormal> > UniqueNormals;
   typedef pmap<XFileMaterial *, int, IndirectCompareTo<XFileMaterial> > UniqueMaterials;
