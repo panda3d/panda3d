@@ -148,6 +148,12 @@
 #defer TRACK_IN_INTERPRETER $[<= $[OPTIMIZE], 2]
 
 
+// Info for the RAD game tools, Miles Sound System
+#define RAD_MSS_IPATH /usr/include/Miles6/include
+#define RAD_MSS_LPATH /usr/lib/Miles6/lib/win
+#define RAD_MSS_LIBS Mss32
+#defer HAVE_RAD_MSS $[libtest $[RAD_MSS_LPATH],$[RAD_MSS_LIBS]]
+
 // Is NSPR installed, and where?  This is the Netscape Portable
 // Runtime library, downloadable as part of the Mozilla package from
 // mozilla.org.  It provides portable threading and networking
