@@ -266,7 +266,7 @@ stored in the particle objects (position, orientation, velocity, etc.) and accor
 the type of the renderer.
 
 All particle renderers have the following parameters:
-  enum alphaMode  : {NO_ALPHA,ALPHA_OUT,ALPHA_IN,ALPHA_USER} // alpha setting over particles' lifetime
+  enum alphaMode  : {PR_ALPHA_NONE,PR_ALPHA_OUT,PR_ALPHA_IN,PR_ALPHA_USER} // alpha setting over particles' lifetime
   float userAlpha : [0,1] // alpha value for ALPHA_USER alpha mode
 
 ---------------------
