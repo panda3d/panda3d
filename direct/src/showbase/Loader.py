@@ -32,7 +32,7 @@ class Loader:
         else:
             nodePath = None
         return nodePath
-    
+
     def loadModelOnce(self, modelPath):
         """loadModelOnce(self, string)
         Attempt to load a model from modelPool, if not present
@@ -58,6 +58,11 @@ class Loader:
             return (nodePath.copyTo(self.__base.hidden))
         else:
             return None
+
+    def unloadModel(self, modelPath):
+	"""unloadModel(self, string)
+	Loader.notify.info("Unloading model: %s" % (modelPath))
+	ModelPool.releaseModel(modelPath)
             
     # texture loading funcs
     def loadTexture(self, texturePath):
@@ -68,6 +73,10 @@ class Loader:
         texture = TexturePool.loadTexture(texturePath)
         return texture
 
+    def unloadTexture(self, texture):
+	"""unloadTexture(self, texture)
+	TexturePool.releaseTexture(texture)
+
     # sound loading funcs
     def loadSound(self, soundPath):
         """loadSound(self, string)
@@ -76,6 +85,10 @@ class Loader:
         Loader.notify.info("Loading sound: %s" % (soundPath) )
         sound = AudioPool.loadSound(soundPath)
         return sound
+
+    def unloadSound(self, sound):
+	"""unloadSound(self, sound)
+	AudioPool.releaseSound(sound)
 
 
 
