@@ -988,6 +988,35 @@ def normalDistrib(a, b, gauss=random.gauss):
     """
     return max(a, min(b, gauss((a+b)*.5, (b-a)/6.)))
 
+def weightedRand(valDict, rng=random.random):
+    """
+    pass in a dictionary with a selection -> weight mapping.  Eg.
+    {"Choice 1" : 10,
+     "Choice 2" : 30,
+     "bear"     : 100}
+
+    -Weights need not add up to any particular value.
+    -The actual selection will be returned.
+    """
+    selections = valDict.keys()
+    weights = valDict.values()
+
+    totalWeight = 0
+    for weight in weights:
+        totalWeight += weight
+
+    # get a random value between 0 and the total of the weights
+    randomWeight = rng() * totalWeight
+
+    # find the index that corresponds with this weight
+    for i in range(len(weights)):
+        totalWeight -= weights[i]
+        if totalWeight <= randomWeight:
+            return selections[i]
+
+    assert(True, "Should never get here")
+    return selections[-1]
+
 def randUint31(rng=random.random):
     """returns a random integer in [0..2^31).
     rng must return float in [0..1]"""
