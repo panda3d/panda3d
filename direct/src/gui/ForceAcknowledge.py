@@ -23,7 +23,7 @@ class ForceAcknowledge(StateData.StateData):
 
 	if self.text:
 	    self.text.setText(message)
-	    self.text.reparentTo(render2d)
+	    self.text.reparentTo(aspect2d)
 
 	if self.okButton:
 	    self.okButton.manage()
