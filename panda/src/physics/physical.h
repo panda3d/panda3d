@@ -43,7 +43,8 @@ protected:
   // is still of course contained in the _physics_objects vector, but
   // this is kind of a quicker way there.
   PhysicsObject *_phys_body;
-public:
+
+PUBLISHED:
   Physical(int ttl_objects = 1, bool pre_alloc = false);
   Physical(const Physical& copy);
 
@@ -67,6 +68,7 @@ public:
   INLINE void remove_linear_force(LinearForce *f);
   INLINE void remove_angular_force(AngularForce *f);
 
+public:
   friend class PhysicsManager;
   friend class PhysicalNode;
 
