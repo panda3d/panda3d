@@ -72,7 +72,7 @@
 #define HAVE_SSTREAM
 
 // Do we have <new>?
-#define HAVE_NEW
+#define HAVE_NEW 1
 
 // Do we have <io.h>?
 #define HAVE_IO_H
