@@ -25,6 +25,7 @@
 
 #ifdef HAVE_SSL
 
+#include <openssl/rand.h>
 #ifndef NDEBUG
 #include <openssl/err.h>
 #endif
@@ -154,6 +155,10 @@ initialize_ssl() {
   ERR_load_SSL_strings();
 #endif
   OpenSSL_add_all_algorithms();
+
+  // Call RAND_status() here to force the random number generator to
+  // initialize early.
+  RAND_status();
 
   _ssl_initialized = true;
 }
