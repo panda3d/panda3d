@@ -16,10 +16,10 @@ install/etc directory (or in the directory named by the environment
 variable PRC_DIR if it is set) for all files named *.prc (that is, any
 files with an extension of "prc") and read each of them for runtime
 configuration.  (It is possible to change this default behavior; see
-CHANGING THE DEFAULT STARTUP BEHAVIOR, below.)
+COMPILE-TIME OPTIONS FOR FINDING PRC FILES, below.)
 
 All of the prc files are loaded in alphabetical order, so that the
-files that have the alphabetically later names are loaded last. Since
+files that have alphabetically later names are loaded last.  Since
 variables defined in an later file may shadow variables defined in an
 earlier file, this means that filenames towards the end of the
 alphabet have the most precedence.
@@ -72,9 +72,9 @@ applies.
 
 However, some variables accept multiple values.  This is particularly
 common for variables that name search directories, like model-path.
-In the case of these variables, all definitions given for the variable
-are taken together; it is possible to extend the definition by adding
-another prc file, but you cannot completely hide any value defined in
+In the case of this kind of variable, all definitions given for the
+variable are taken together; it is possible to extend the definition
+by adding another prc file, but you cannot remove any value defined in
 a previously-loaded prc file.
 
 
@@ -126,7 +126,7 @@ ConfigVariableList -
   Unlike the other kinds of config variables, a ConfigVariableList is
   read-only; it can be modified only by loading additional prc files,
   rather than directly setting its value.  Also, its constructor lacks
-  a default_value parameter (there is no default value; if the
+  a default_value parameter, since there is no default value (if the
   variable is not defined in any prc file, it simply returns an empty
   list).
 
@@ -169,7 +169,7 @@ may generally treat it directly as a simple variable of that type.
 This works in both C++ and in Python.  For instance, you may write
 code such as this:
 
-ConfigVariableInt foo_level("foo-level", -1, "The initial level of foo");
+ConfigVariableInt foo_level("foo-level", -1, "The level of foo");
 
 if (foo_level < 0) {
   cerr << "You didn't specify a valid foo_level!\n";
@@ -186,20 +186,21 @@ variable.get_value() to retrieve the variable's value explicitly.
 
 DIRECTLY ASSIGNING CONFIG VARIABLES
 
-In general, config variables can also be assigned values appropriate
-to their type, again as if they were ordinary variables.  In C++, the
-assignment operator is overloaded to perform this function, e.g.:
+In general, config variables can be directly assigned values
+appropriate to their type, as if they were ordinary variables.  In
+C++, the assignment operator is overloaded to perform this function,
+e.g.:
 
   foo_level = 5;
 
-In Python, this is not possible--the assignment operator in Python
-completely replaces the value of the assigned symbol and cannot be
-overloaded.  So the above statement in Python would replace foo_level
-with an actual integer of the value 5.  In many cases, this is close
-enough to what you intended anyway, but if you want to keep the
-original functionality of the config variable (e.g. so you can restore
-it to its original value later), you need to use the set_value()
-method instead, like this:
+In Python, this syntax is not possible--the assignment operator in
+Python completely replaces the value of the assigned symbol and cannot
+be overloaded.  So the above statement in Python would replace
+foo_level with an actual integer of the value 5.  In many cases, this
+is close enough to what you intended anyway, but if you want to keep
+the original functionality of the config variable (e.g. so you can
+restore it to its original value later), you need to use the
+set_value() method instead, like this:
 
   fooLevel.setValue(5)
 
@@ -210,10 +211,9 @@ the topmost prc file, use clear_local_value():
 
   fooLevel.clearLocalValue()
 
-In general, this interface for assigning config variables is primarily
-intended for the convenience of developing an application
-interactively; it is sometimes useful to change the value of a
-variable on the fly.
+This interface for assigning config variables is primarily intended
+for the convenience of developing an application interactively; it is
+sometimes useful to change the value of a variable on the fly.
 
 
 QUERYING CONFIG VARIABLES
@@ -223,7 +223,7 @@ config variables, as well as for finding the complete list of
 available config variables.
 
 In particular, one easy way to query an existing config variable's
-value is simply to create a new instance, e.g.:
+value is simply to create a new instance of that variable, e.g.:
 
   print ConfigVariableInt("foo-level")
 
@@ -237,28 +237,27 @@ specify different default values.
 (Note that, although it is convenient to create a new instance of the
 variable in order to query or modify its value interactively, we
 recommend that all the references to a particular variable in code
-should reference the same instance wherever possible.  This minimizes
-the potential confusion about which instance should define the
-variable's default value and/or description, and reduces chance of
-conflicts should two such instances differ.)
+should use the same instance wherever possible.  This minimizes the
+potential confusion about which instance should define the variable's
+default value and/or description, and reduces chance of conflicts
+should two such instances differ.)
 
 If you don't know the type of the variable, you can also simply create
 an instance of the generic ConfigVariable class, for the purpose of
-querying an existing variable only (you cannot define a new variable
-with the generic class).
+querying an existing variable only (you should not define a new
+variable using the generic class).
 
-For more detail about a variable, use the ls() method in Python (or
-the write() method in C++), e.g.:
+To find out more detail about a variable and its value, use the ls()
+method in Python (or the write() method in C++), e.g.:
 
   ConfigVariable("foo-level").ls()
 
-In additional to the variable's current and default values, this also
-prints a breakdown of all of the prc files that contribute to the
-value of the variable, as well as the description passed as the third
-parameter to the primary ConfigVariable constructor.
+In addition to the variable's current and default values, this also
+prints a list of all of the prc files that contributed to the value of
+the variable, as well as the description provided for the variable.
 
 To get a list of all known config variables, use the methods on
-ConfigVariableManager.  In C++, you can get this object via
+ConfigVariableManager.  In C++, you can get a pointer this object via
 ConfigVariableManager::get_global_ptr(); in Python, use the cvMgr
 builtin, created by ShowBase.py.
 
@@ -275,7 +274,7 @@ builtin, created by ShowBase.py.
     been created at runtime, whether or not its value has been changed
     from the default.  This may omit variables defined in some unused
     subsystem (like pandaegg, for instance), and it will omit
-    variables defined by Python code which hasn't yet executed
+    variables defined by Python code which hasn't yet been executed
     (e.g. variables within defined with a function that hasn't yet
     been called).
 
@@ -347,9 +346,9 @@ have called unload_prc_file(), the pointer is invalid and should no
 longer be used.  It is an error to call unload_prc_file() twice on the
 same pointer.
 
-The filename given to load_prc_file() may refer to any file that is on
-the standard prc file search path (e.g. $PRC_DIR), as well as on the
-model-path.  It may be a physical file on disk, or a subfile of a
+The filename passed to load_prc_file() may refer to any file that is
+on the standard prc file search path (e.g. $PRC_DIR), as well as on
+the model-path.  It may be a physical file on disk, or a subfile of a
 multifile (and mounted via Panda's virtual file system).
 
 You can see the complete list of prc files that have been loaded into
@@ -378,6 +377,10 @@ oversimplification.  The complete default behavior is as follows:
     which is usually the install/etc directory, alone on the search
     path.
 
+    Steps (1), (2), and (3) define what is referred to in this
+    document as "the standard prc search path".  You can query this
+    search path via cpMgr.getSearchPath().
+
 (4) Look for all files named *.prc on each directory of the resulting
     search path, and load them up in reverse search path order, and
     within each directory, in forward alphabetical order.  This means
@@ -393,7 +396,7 @@ following Config.pp variables may be defined:
 #define PRC_PATH_ENVVARS PRC_PATH
 #define PRC_DIR_ENVVARS PRC_DIR
 
-  This names the environment variable(s) to use instead of PRC_PATH
+  These name the environment variable(s) to use instead of PRC_PATH
   and PRC_DIR.  In either case, you may name multiple environment
   variables separated by a space; each variable is consulted one at a
   time, in the order named, and the results are concatenated.
@@ -406,7 +409,7 @@ following Config.pp variables may be defined:
   first check $CFG_PATH, and then $ETC_PATH, and the final search path
   will be the concatenation of both.
 
-  You can also set either or both of PRC_PATH_ENVVARS or
+  You can also define either or both of PRC_PATH_ENVVARS or
   PRC_DIR_ENVVARS to the empty string; this will disable runtime
   checking of environment variables, and force all prc files to be
   loaded from the directory named by DEFAULT_PRC_DIR.
@@ -461,15 +464,15 @@ file.
 By default the contents of the environment variable
 $PRC_EXECUTABLE_ARGS are passed as arguments to the executable
 program.  You can change this to a different environment variable by
-redefining PRC_EXECUTABLE_ARGS_ENVVAR in your Config.pp (or disable
-this feature by defining this to the empty string).
+redefining PRC_EXECUTABLE_ARGS_ENVVAR in your Config.pp (or prevent
+the passing of arguments by defining this to the empty string).
 
 
 SIGNED PRC FILES
 
 Another esoteric feature of Panda's config system is the ability to
 restrict certain config variables to modification only by a prc file
-that has been provided from an authorized source.  This is primarily
+that has been provided by an authorized source.  This is primarily
 useful when Panda is to be used for deployment of applications (games,
 etc.) to a client; it has little utility in a fully trusted
 environment.
@@ -480,7 +483,7 @@ value, greater than 0 (and <= ConfigFlags::F_trust_level_mask), which
 should be or'ed in with the flags parameter.
 
 A number of random keys must be generated ahead of time and compiled
-into Panda; there must be a different key for each required trust
+into Panda; there must be a different key for each different trust
 level.  Each prc file can then optionally be signed by exactly one of
 the available keys.  When a prc file has been signed by a recognized
 key, Panda assigns the corresponding trust level to that prc file.  An
@@ -492,19 +495,21 @@ trust level drops to 0.  The newly-modified file must be signed again
 to restore its trust level.
 
 When a ConfigVariable is constructed with a nonzero trust level, that
-variable's value may then not be modified by any prc file with a trust
+variable's value may then not be set by any prc file with a trust
 level lower that the variable's trust level.  If a prc file with an
 insufficient trust level attempts to modify the variable, the new
 value is ignored, and the value from the previous trusted prc file (or
 the variable's default value) is retained.
 
 The default trust level for a ConfigVariable is 0, which means the
-variable can be set by any prc file, signed or unsigned.  To
-explicitly specify a trust level of 0, you should use
-ConfigFlags::F_open.
+variable can be set by any prc file, signed or unsigned.  To set any
+nonzero trust level, pass the integer trust level value as the flags
+parameter to the ConfigVariable constructor.  To explicitly specify a
+trust level of 0, pass ConfigFlags::F_open.
 
 To specify a ConfigVariable that cannot be set by any prc files at
 all, regardless of trust level, use ConfigFlags::F_closed.
+
 
 This feature is not enabled by default.  It is somewhat complicated to
 enable this feature, because doing so requres generating one or more
@@ -512,5 +517,147 @@ private/public key pairs, and compiling the public keys into the
 low-level Panda system so that it can recognize signed prc files when
 they are provided, and compiling the private keys into standalone
 executables, one for each private key, that can be used to officially
-sign approved prc files.
+sign approved prc files.  This initial setup therefore requires a bit
+of back-and-forth building and rebuilding in the dtool directory.
 
+To enable this feature, follow the following procedure.
+
+(1) Decide how many different trust levels you require.  You can have
+    as many as you want, but most applications will require only one
+    trust level, or possibly two.  The rare application will require
+    three or more.  If you decide to use multiple trust levels, you
+    can make a distinction between config variables that are somewhat
+    sensitive and those that are highly sensitive.
+
+(2) Obtain and install the OpenSSL library, if it is not already
+    installed (http://www.openssl.org).  Adjust your Config.pp file as
+    necessary to point to the installed OpenSSL headers and libraries
+    (in particular, define SSL_IPATH and SSL_LIBS), and then ppremake
+    and make install your dtool tree.  It is not necessary to build
+    the panda tree or any subsequent trees yet.
+
+(3) Set up a directory to hold the generated public keys.  The
+    contents of this directory must be accessible to anyone building
+    Panda for your application; it also must have a lifetime at least
+    as long as the lifetime of your application.  It probably makes
+    sense to make this directory part of your application's source
+    tree.  The contents of this directory will not be particularly
+    sensitive and need not be kept any more secret than the rest of
+    your application's source code.
+
+(4) Set up a directory in a secure place to hold the generated private
+    keys.  The contents of this directory should be regarded as
+    somewhat sensitive, and should not be available to more than a
+    manageable number of developers.  It need not be accessible to
+    people building Panda.  However, this directory should have a
+    lifetime as long as the lifetime of your application.  Depending
+    on your environment, it may or may not make sense to make this
+    directory a part of your application's source tree; it can be the
+    same directory as that chosen for (3), above.
+
+(5) Run the program make-prc-key.  This program generates the public
+    and private key pairs for each of your trust levels.  The
+    following is an example:
+
+    make-prc-key -a <pubdir>/keys.cxx -b <privdir>/sign#.cxx 1 2
+
+    The output of make-prc-key will be compilable C++ source code.
+    The first parameter, -a, specifies the name of the public key
+    output file.  This file will contain all of the public keys for
+    the different trust levels, and will become part of the libdtool
+    library.  It is not particularly sensitive, and must be accessible
+    to anyone who will be compiling dtool.
+
+    The second parameter, -b, specifies a collection of output files,
+    one for each trust level.  Each file can be compiled as a
+    standalone program (that links with libdtool); the resulting
+    program can then be used to sign any prc files with the
+    corresponding trust level.  The hash character '#' appearing in
+    the filename will be filled in with the numeric trust level.
+
+    The remaining arguments to make-prc-key are the list of trust
+    levels to generate key pairs for.  In the example above, we are
+    generating two key pairs, for trust level 1 and for trust level 2.
+
+    The program will prompt you to enter a pass phrase for each
+    private key.  This pass phrase is used to encrypt the private key
+    as written into the output file, to reduce the sensitivity of the
+    prc signing program (and its source code).  The user of the
+    signing program must re-enter this pass phrase in order to sign a
+    prc file.  You may specify a different pass phrase for each trust
+    level, or you may use the -p "pass phrase" command-line option to
+    provide the same pass phrase for all trust levels.  If you do not
+    want to use a pass phrase feature at all, use -p "", and keep the
+    generated programs in a safe place.
+
+(6) Modify your Config.pp file (for yourself, and for anyone else who
+    will be building dtool for your application) to add the following
+    line:
+
+    #define PRC_PUBLIC_KEYS_FILENAME <pubdir>/keys.cxx
+
+    Where <pubdir>/keys.cxx is the file named by -a, above.
+
+    Consider whether you want to enforce the trust level in the
+    development environment.  The default is to respect the trust
+    level only when Panda is compiled for a release build, i.e. when
+    OPTIMIZE is set to 4.  You can redefine PRC_RESPECT_TRUST_LEVEL if
+    you want to change this default behavior.
+
+    Re-run ppremake and then make install in dtool.
+
+(7) Set up a Sources.pp file in your private key directory to compile
+    the files named by -b against dtool.  It should contain an entry
+    something like these for each trust level:
+    
+    #begin bin_target
+      #define OTHER_LIBS dtool
+      #define USE_PACKAGES ssl
+      #define TARGET sign1
+      #define SOURCES sign1.cxx
+    #end bin_target
+
+    #begin bin_target
+      #define OTHER_LIBS dtool
+      #define USE_PACKAGES ssl
+      #define TARGET sign2
+      #define SOURCES sign2.cxx
+    #end bin_target
+
+(8) If your private key directory is not a part of your application
+    source hierarchy (or your application does not use ppremake),
+    create a Package.pp in the same directory to mark the root of a
+    ppremake source tree.  You can copy the Package.pp file from the
+    root of the panda source tree.
+
+(9) Run ppremake and then make install in the private key directory.
+    This will generate the programs sign1 and sign2 (or whatever you
+    have named them).  Distribute these programs to the appropriate
+    people who have need to sign prc files, and tell them the pass
+    phrases that you used to generate them.
+
+(10) Build the rest of the Panda trees normally.
+
+Advanced tip: if you follow the directions above, your sign1 and sign2
+programs will require libdtool.dll at runtime, and may need to be
+recompiled from time to time if you get a new version of dtool.  To
+avoid this, you can link these programs statically, so that they are
+completely standalone.  This requires one more back-and-forth
+rebuilding of dtool:
+
+(a) Put the following line in your Config.pp file:
+
+   #define LINK_ALL_STATIC 1
+
+(b) Run ppremake and make clean install in dtool.  Note that you must
+    make clean.  This will generate a static version of libdtool.lib.
+
+(c) Run ppremake and make clean install in your private key directory,
+    to recompile the sign programs against the new static libdtool.lib.
+
+(d) Remove (or comment out) the LINK_ALL_STATIC line in your Config.pp
+    file.
+
+(e) Run ppremake and make clean install in dtool to restore the normal
+    dynamic library, so that builds of panda and the rest of your
+    application will use the dynamic libdtool.dll properly.
