@@ -25,6 +25,7 @@
      dcPackerCatalog.h dcPackerCatalog.I \
      dcPackerInterface.h dcPackerInterface.I \
      dcParameter.h dcClassParameter.h dcArrayParameter.h dcSimpleParameter.h \
+     dcNumericRange.h dcNumericRange.I \
      dcTypedef.h \
      dcbase.h dcindent.h hashGenerator.h  \
      primeNumberGenerator.h  

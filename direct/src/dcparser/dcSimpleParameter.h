@@ -22,6 +22,7 @@
 #include "dcbase.h"
 #include "dcParameter.h"
 #include "dcSubatomicType.h"
+#include "dcNumericRange.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DCSimpleParameter
@@ -47,6 +48,7 @@ PUBLISHED:
 
 public:
   bool set_divisor(int divisor);
+  void set_range(const DCDoubleRange &range);
 
   virtual int calc_num_nested_fields(size_t length_bytes) const;
   virtual DCPackerInterface *get_nested_field(int n) const;
@@ -97,6 +99,12 @@ private:
     DCSimpleParameter *_uint32_type;
     DCSimpleParameter *_uint8_type;
   };
+
+  DCIntRange _int_range;
+  DCUnsignedIntRange _uint_range;
+  DCInt64Range _int64_range;
+  DCUnsignedInt64Range _uint64_range;
+  DCDoubleRange _double_range;
 
   static Uint32Uint8Type *_uint32uint8_type;
 };

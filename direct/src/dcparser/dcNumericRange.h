@@ -1,0 +1,75 @@
+// Filename: dcNumericRange.h
+// Created by:  drose (21Jun04)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) 2001 - 2004, Disney Enterprises, Inc.  All rights reserved
+//
+// All use of this software is subject to the terms of the Panda 3d
+// Software license.  You should have received a copy of this license
+// along with this source code; you will also find a current copy of
+// the license at http://etc.cmu.edu/panda3d/docs/license/ .
+//
+// To contact the maintainers of this program write to
+// panda3d-general@lists.sourceforge.net .
+//
+////////////////////////////////////////////////////////////////////
+
+#ifndef DCNUMERICRANGE_H
+#define DCNUMERICRANGE_H
+
+#include "dcbase.h"
+
+////////////////////////////////////////////////////////////////////
+//       Class : DCNumericRange
+// Description : Represents a range of legal integer or floating-point
+//               values.  This is used to constrain simple numeric
+//               types, as well as array sizes.
+////////////////////////////////////////////////////////////////////
+template <class NUM>
+class DCNumericRange {
+public:
+  typedef NUM Number;
+
+  INLINE DCNumericRange();
+  INLINE DCNumericRange(const DCNumericRange &copy);
+  INLINE void operator = (const DCNumericRange &copy);
+
+  bool is_in_range(Number num) const;
+  INLINE void validate(Number num, bool &validation_error) const;
+
+  void output(ostream &out, Number divisor = 1) const;
+
+public:
+  INLINE void clear();
+  bool add_range(Number min, Number max);
+
+  INLINE bool is_empty() const;
+  INLINE int get_num_ranges() const;
+  INLINE Number get_min(int n) const;
+  INLINE Number get_max(int n) const;
+
+private:
+  class MinMax {
+  public:
+    INLINE bool operator < (const MinMax &other) const;
+
+    Number _min;
+    Number _max;
+  };
+  INLINE void output_minmax(ostream &out, Number divisor, const MinMax &range) const;
+
+  typedef pvector<MinMax> Ranges;
+  Ranges _ranges;
+};
+
+#include "dcNumericRange.I"
+
+typedef DCNumericRange<int> DCIntRange;
+typedef DCNumericRange<unsigned int> DCUnsignedIntRange;
+typedef DCNumericRange<PN_int64> DCInt64Range;
+typedef DCNumericRange<PN_uint64> DCUnsignedInt64Range;
+typedef DCNumericRange<double> DCDoubleRange;
+
+#endif

@@ -67,6 +67,7 @@
 using namespace std;
 
 #define INLINE inline
+#define TYPENAME typename
 
 // These symbols are used within the Panda environment for exporting
 // classes and functions to the scripting language.  They're largely

@@ -15,6 +15,7 @@
 #include "dcSimpleParameter.h"
 #include "dcTypedef.h"
 #include "dcPacker.h"
+#include "dcNumericRange.h"
 
 // Because our token type contains objects of type string, which
 // require correct copy construction (and not simply memcpying), we
@@ -32,6 +33,7 @@ static DCAtomicField::ElementType atomic_element(new DCSimpleParameter(ST_invali
 static DCParameter *current_parameter = (DCParameter *)NULL;
 static DCPacker default_packer;
 static DCPacker *current_packer;
+static DCDoubleRange double_range;
 
 ////////////////////////////////////////////////////////////////////
 // Defining the interface to the parser.
@@ -117,6 +119,7 @@ dc_cleanup_parser() {
 %type <u.parameter> parameter_definition
 %type <str> import_identifier
 %type <str> slash_identifier
+%type <u.real> number
 
 %%
 
@@ -365,6 +368,12 @@ type_name:
 {
   $$ = new DCSimpleParameter($1);
 }
+        | type_token '(' double_range ')'
+{
+  DCSimpleParameter *simple_param = new DCSimpleParameter($1);
+  simple_param->set_range(double_range);
+  $$ = simple_param;
+}
         | type_token '/' INTEGER
 {
   DCSimpleParameter *simple_param = new DCSimpleParameter($1);
@@ -374,6 +383,30 @@ type_name:
   } else if (!simple_param->set_divisor($3)) {
     yyerror("A divisor is only valid on a numeric type.");
   }
+  $$ = simple_param;
+}
+	| type_token '/' INTEGER '(' double_range ')'
+{
+  DCSimpleParameter *simple_param = new DCSimpleParameter($1);
+  if ($3 == 0) {
+    yyerror("Invalid divisor.");
+
+  } else if (!simple_param->set_divisor($3)) {
+    yyerror("A divisor is only valid on a numeric type.");
+  }
+  simple_param->set_range(double_range);
+  $$ = simple_param;
+}
+	| type_token '(' double_range ')' '/' INTEGER
+{
+  DCSimpleParameter *simple_param = new DCSimpleParameter($1);
+  if ($6 == 0) {
+    yyerror("Invalid divisor.");
+
+  } else if (!simple_param->set_divisor($6)) {
+    yyerror("A divisor is only valid on a numeric type.");
+  }
+  simple_param->set_range(double_range);
   $$ = simple_param;
 }
 	| IDENTIFIER
@@ -394,6 +427,58 @@ type_name:
   }
 
   $$ = dtypedef->make_new_parameter();
+}
+	;
+
+double_range:
+	empty
+{
+  double_range.clear();
+}
+	| number
+{
+  double_range.clear();
+  if (!double_range.add_range($1, $1)) {
+    yyerror("Overlapping range");
+  }
+}
+	| number '-' number
+{
+  double_range.clear();
+  if (!double_range.add_range($1, $3)) {
+    yyerror("Overlapping range");
+  }
+}
+	| number number
+{
+  double_range.clear();
+  if ($2 >= 0) {
+    yyerror("Syntax error");
+  }
+  if (!double_range.add_range($1, -$2)) {
+    yyerror("Overlapping range");
+  }
+}
+	| double_range ',' number
+{
+  if (!double_range.add_range($3, $3)) {
+    yyerror("Overlapping range");
+  }
+}
+	| double_range ',' number '-' number
+{
+  if (!double_range.add_range($3, $5)) {
+    yyerror("Overlapping range");
+  }
+}
+	| double_range ',' number number
+{
+  if ($4 >= 0) {
+    yyerror("Syntax error");
+  }
+  if (!double_range.add_range($3, -$4)) {
+    yyerror("Overlapping range");
+  }
 }
 	;
 
@@ -437,6 +522,14 @@ parameter_definition:
 {
   $$ = new DCArrayParameter($1, $3);
 }
+	;
+
+number:
+	INTEGER
+{
+  $$ = (double)$1;
+}
+	| REAL
 	;
 
 parameter_value:

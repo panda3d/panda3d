@@ -194,7 +194,12 @@ DCSimpleParameter(const DCSimpleParameter &copy) :
   _type(copy._type),
   _divisor(copy._divisor),
   _nested_field(copy._nested_field),
-  _bytes_per_element(copy._bytes_per_element)
+  _bytes_per_element(copy._bytes_per_element),
+  _int_range(copy._int_range),
+  _uint_range(copy._uint_range),
+  _int64_range(copy._int64_range),
+  _uint64_range(copy._uint64_range),
+  _double_range(copy._double_range)
 {
 }
 
@@ -280,6 +285,74 @@ set_divisor(int divisor) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCSimpleParameter::set_range
+//       Access: Public
+//  Description: Sets the parameter with the indicated range.  A
+//               DCDoubleRange is used for specification, since this
+//               is the most generic type; but it is converted to the
+//               appropriate type internally.
+////////////////////////////////////////////////////////////////////
+void DCSimpleParameter::
+set_range(const DCDoubleRange &range) {
+  int num_ranges = range.get_num_ranges();
+  int i;
+
+  switch (_type) {
+  case ST_int8:
+  case ST_int16:
+  case ST_int32:
+    _int_range.clear();
+    for (i = 0; i < num_ranges; i++) {
+      int min = (int)floor(range.get_min(i) * _divisor + 0.5);
+      int max = (int)floor(range.get_max(i) * _divisor + 0.5);
+      _int_range.add_range(min, max);
+    }
+    break;
+    
+  case ST_int64:
+    _int64_range.clear();
+    for (i = 0; i < num_ranges; i++) {
+      PN_int64 min = (PN_int64)floor(range.get_min(i) * _divisor + 0.5);
+      PN_int64 max = (PN_int64)floor(range.get_max(i) * _divisor + 0.5);
+      _int64_range.add_range(min, max);
+    }
+    break;
+    
+  case ST_uint8:
+  case ST_uint16:
+  case ST_uint32:
+    _uint_range.clear();
+    for (i = 0; i < num_ranges; i++) {
+      unsigned int min = (unsigned int)floor(range.get_min(i) * _divisor + 0.5);
+      unsigned int max = (unsigned int)floor(range.get_max(i) * _divisor + 0.5);
+      _uint_range.add_range(min, max);
+    }
+    break;
+    
+  case ST_uint64:
+    _uint64_range.clear();
+    for (i = 0; i < num_ranges; i++) {
+      PN_uint64 min = (PN_uint64)floor(range.get_min(i) * _divisor + 0.5);
+      PN_uint64 max = (PN_uint64)floor(range.get_max(i) * _divisor + 0.5);
+      _uint64_range.add_range(min, max);
+    }
+    break;
+
+  case ST_float64:
+    _double_range.clear();
+    for (i = 0; i < num_ranges; i++) {
+      double min = range.get_min(i) * _divisor;
+      double max = range.get_max(i) * _divisor;
+      _double_range.add_range(min, max);
+    }
+    break;
+
+  default:
+    break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCSimpleParameter::calc_num_nested_fields
 //       Access: Public, Virtual
 //  Description: This flavor of get_num_nested_fields is used during
@@ -323,46 +396,71 @@ pack_double(DCPackData &pack_data, double value) const {
 
   switch (_type) {
   case ST_int8:
-    do_pack_int8(pack_data.get_write_pointer(1), 
-                 (int)floor(real_value + 0.5), pack_error);
+    {
+      int int_value = (int)floor(real_value + 0.5);
+      _int_range.validate(int_value, pack_error);
+      do_pack_int8(pack_data.get_write_pointer(1), int_value, pack_error);
+    }
     break;
 
   case ST_int16:
-    do_pack_int16(pack_data.get_write_pointer(2), 
-                  (int)floor(real_value + 0.5), pack_error);
+    {
+      int int_value = (int)floor(real_value + 0.5);
+      _int_range.validate(int_value, pack_error);
+      do_pack_int16(pack_data.get_write_pointer(2), int_value, pack_error);
+    }
     break;
     
   case ST_int32:
-    do_pack_int32(pack_data.get_write_pointer(4), 
-                  (int)floor(real_value + 0.5), pack_error);
+    {
+      int int_value = (int)floor(real_value + 0.5);
+      _int_range.validate(int_value, pack_error);
+      do_pack_int32(pack_data.get_write_pointer(4), int_value, pack_error);
+    }
     break;
     
   case ST_int64:
-    do_pack_int64(pack_data.get_write_pointer(8), 
-                  (PN_int64)floor(real_value + 0.5), pack_error);
+    {
+      PN_int64 int64_value = (PN_int64)floor(real_value + 0.5);
+      _int64_range.validate(int64_value, pack_error);
+      do_pack_int64(pack_data.get_write_pointer(8), int64_value, pack_error);
+    }
     break;
     
   case ST_uint8:
-    do_pack_uint8(pack_data.get_write_pointer(1), 
-                  (unsigned int)floor(real_value + 0.5), pack_error);
+    {
+      unsigned int int_value = (unsigned int)floor(real_value + 0.5);
+      _uint_range.validate(int_value, pack_error);
+      do_pack_uint8(pack_data.get_write_pointer(1), int_value, pack_error);
+    }
     break;
     
   case ST_uint16:
-    do_pack_uint16(pack_data.get_write_pointer(2), 
-                   (unsigned int)floor(real_value + 0.5), pack_error);
+    {
+      unsigned int int_value = (unsigned int)floor(real_value + 0.5);
+      _uint_range.validate(int_value, pack_error);
+      do_pack_uint16(pack_data.get_write_pointer(2), int_value, pack_error);
+    }
     break;
     
   case ST_uint32:
-    do_pack_uint32(pack_data.get_write_pointer(4), 
-                   (unsigned int)floor(real_value + 0.5), pack_error);
+    {
+      unsigned int int_value = (unsigned int)floor(real_value + 0.5);
+      _uint_range.validate(int_value, pack_error);
+      do_pack_uint32(pack_data.get_write_pointer(4), int_value, pack_error);
+    }
     break;
     
   case ST_uint64:
-    do_pack_uint64(pack_data.get_write_pointer(8), 
-                   (PN_uint64)floor(real_value + 0.5), pack_error);
+    {
+      PN_uint64 int64_value = (PN_uint64)floor(real_value + 0.5);
+      _uint64_range.validate(int64_value, pack_error);
+      do_pack_uint64(pack_data.get_write_pointer(8), int64_value, pack_error);
+    }
     break;
 
   case ST_float64:
+    _double_range.validate(real_value, pack_error);
     do_pack_float64(pack_data.get_write_pointer(8), real_value, pack_error);
     break;
 
@@ -386,38 +484,47 @@ pack_int(DCPackData &pack_data, int value) const {
 
   switch (_type) {
   case ST_int8:
+    _int_range.validate(int_value, pack_error);
     do_pack_int8(pack_data.get_write_pointer(1), int_value, pack_error);
     break;
 
   case ST_int16:
+    _int_range.validate(int_value, pack_error);
     do_pack_int16(pack_data.get_write_pointer(2), int_value, pack_error);
     break;
 
   case ST_int32:
+    _int_range.validate(int_value, pack_error);
     do_pack_int32(pack_data.get_write_pointer(4), int_value, pack_error);
     break;
 
   case ST_int64:
+    _int64_range.validate(int_value, pack_error);
     do_pack_int64(pack_data.get_write_pointer(8), int_value, pack_error);
     break;
 
   case ST_uint8:
+    _uint_range.validate((unsigned int)int_value, pack_error);
     do_pack_uint8(pack_data.get_write_pointer(1), (unsigned int)int_value, pack_error);
     break;
 
   case ST_uint16:
+    _uint_range.validate((unsigned int)int_value, pack_error);
     do_pack_uint16(pack_data.get_write_pointer(2), (unsigned int)int_value, pack_error);
     break;
 
   case ST_uint32:
+    _uint_range.validate((unsigned int)int_value, pack_error);
     do_pack_uint32(pack_data.get_write_pointer(4), (unsigned int)int_value, pack_error);
     break;
 
   case ST_uint64:
+    _uint64_range.validate((unsigned int)int_value, pack_error);
     do_pack_uint64(pack_data.get_write_pointer(8), (unsigned int)int_value, pack_error);
     break;
 
   case ST_float64:
+    _double_range.validate(int_value, pack_error);
     do_pack_float64(pack_data.get_write_pointer(8), int_value, pack_error);
     break;
 
@@ -441,39 +548,48 @@ pack_uint(DCPackData &pack_data, unsigned int value) const {
 
   switch (_type) {
   case ST_int8:
+    _int_range.validate((int)int_value, pack_error);
     do_pack_int8(pack_data.get_write_pointer(1), (int)int_value, pack_error);
     break;
 
   case ST_int16:
+    _int_range.validate((int)int_value, pack_error);
     do_pack_int16(pack_data.get_write_pointer(2), (int)int_value, pack_error);
     break;
 
   case ST_int32:
+    _int_range.validate((int)int_value, pack_error);
     do_pack_int32(pack_data.get_write_pointer(4), (int)int_value, pack_error);
     break;
 
   case ST_int64:
+    _int64_range.validate((int)int_value, pack_error);
     do_pack_int64(pack_data.get_write_pointer(8), (int)int_value, pack_error);
     break;
 
   case ST_uint8:
+    _uint_range.validate(int_value, pack_error);
     do_pack_uint8(pack_data.get_write_pointer(1), int_value, pack_error);
     break;
 
   case ST_uint16:
+    _uint_range.validate(int_value, pack_error);
     do_pack_uint16(pack_data.get_write_pointer(2), int_value, pack_error);
     break;
 
   case ST_uint32:
+    _uint_range.validate(int_value, pack_error);
     do_pack_uint32(pack_data.get_write_pointer(4), int_value, pack_error);
     break;
 
   case ST_uint64:
+    _uint64_range.validate(int_value, pack_error);
     do_pack_uint64(pack_data.get_write_pointer(8), int_value, pack_error);
     break;
 
   case ST_float64:
-    do_pack_float64(pack_data.get_write_pointer(8), (double)int_value, pack_error);
+    _double_range.validate(int_value, pack_error);
+    do_pack_float64(pack_data.get_write_pointer(8), int_value, pack_error);
     break;
 
   default:
@@ -496,38 +612,47 @@ pack_int64(DCPackData &pack_data, PN_int64 value) const {
 
   switch (_type) {
   case ST_int8:
+    _int_range.validate((int)int_value, pack_error);
     do_pack_int8(pack_data.get_write_pointer(1), (int)int_value, pack_error);
     break;
 
   case ST_int16:
+    _int_range.validate((int)int_value, pack_error);
     do_pack_int16(pack_data.get_write_pointer(2), (int)int_value, pack_error);
     break;
 
   case ST_int32:
+    _int_range.validate((int)int_value, pack_error);
     do_pack_int32(pack_data.get_write_pointer(4), (int)int_value, pack_error);
     break;
 
   case ST_int64:
+    _int64_range.validate(int_value, pack_error);
     do_pack_int64(pack_data.get_write_pointer(8), int_value, pack_error);
     break;
 
   case ST_uint8:
+    _uint_range.validate((unsigned int)(PN_uint64)int_value, pack_error);
     do_pack_uint8(pack_data.get_write_pointer(1), (unsigned int)(PN_uint64)int_value, pack_error);
     break;
 
   case ST_uint16:
+    _uint_range.validate((unsigned int)(PN_uint64)int_value, pack_error);
     do_pack_uint16(pack_data.get_write_pointer(2), (unsigned int)(PN_uint64)int_value, pack_error);
     break;
 
   case ST_uint32:
+    _uint_range.validate((unsigned int)(PN_uint64)int_value, pack_error);
     do_pack_uint32(pack_data.get_write_pointer(4), (unsigned int)(PN_uint64)int_value, pack_error);
     break;
 
   case ST_uint64:
+    _uint64_range.validate((PN_uint64)int_value, pack_error);
     do_pack_uint64(pack_data.get_write_pointer(8), (PN_uint64)int_value, pack_error);
     break;
 
   case ST_float64:
+    _double_range.validate((double)int_value, pack_error);
     do_pack_float64(pack_data.get_write_pointer(8), (double)int_value, pack_error);
     break;
 
@@ -551,38 +676,47 @@ pack_uint64(DCPackData &pack_data, PN_uint64 value) const {
 
   switch (_type) {
   case ST_int8:
+    _int_range.validate((int)(PN_int64)int_value, pack_error);
     do_pack_int8(pack_data.get_write_pointer(1), (int)(PN_int64)int_value, pack_error);
     break;
 
   case ST_int16:
+    _int_range.validate((int)(PN_int64)int_value, pack_error);
     do_pack_int16(pack_data.get_write_pointer(2), (int)(PN_int64)int_value, pack_error);
     break;
 
   case ST_int32:
+    _int_range.validate((int)(PN_int64)int_value, pack_error);
     do_pack_int32(pack_data.get_write_pointer(4), (int)(PN_int64)int_value, pack_error);
     break;
 
   case ST_int64:
+    _int64_range.validate((PN_int64)int_value, pack_error);
     do_pack_int64(pack_data.get_write_pointer(8), (PN_int64)int_value, pack_error);
     break;
 
   case ST_uint8:
+    _uint_range.validate((unsigned int)int_value, pack_error);
     do_pack_uint8(pack_data.get_write_pointer(1), (unsigned int)int_value, pack_error);
     break;
 
   case ST_uint16:
+    _uint_range.validate((unsigned int)int_value, pack_error);
     do_pack_uint16(pack_data.get_write_pointer(2), (unsigned int)int_value, pack_error);
     break;
 
   case ST_uint32:
+    _uint_range.validate((unsigned int)int_value, pack_error);
     do_pack_uint32(pack_data.get_write_pointer(4), (unsigned int)int_value, pack_error);
     break;
 
   case ST_uint64:
+    _uint64_range.validate(int_value, pack_error);
     do_pack_uint64(pack_data.get_write_pointer(8), int_value, pack_error);
     break;
 
   case ST_float64:
+    _double_range.validate((double)int_value, pack_error);
     do_pack_float64(pack_data.get_write_pointer(8), (double)int_value, pack_error);
     break;
 
@@ -602,19 +736,21 @@ pack_uint64(DCPackData &pack_data, PN_uint64 value) const {
 bool DCSimpleParameter::
 pack_string(DCPackData &pack_data, const string &value) const {
   bool pack_error = false;
+  size_t string_length = value.length();
+  _uint_range.validate(string_length, pack_error);
 
   switch (_type) {
   case ST_string:
   case ST_blob:
-    do_pack_uint16(pack_data.get_write_pointer(2), value.length(),
+    do_pack_uint16(pack_data.get_write_pointer(2), string_length,
                    pack_error);
-    pack_data.append_data(value.data(), value.length());
+    pack_data.append_data(value.data(), string_length);
     break;
 
   case ST_blob32:
-    do_pack_uint32(pack_data.get_write_pointer(4), value.length(),
+    do_pack_uint32(pack_data.get_write_pointer(4), string_length,
                    pack_error);
-    pack_data.append_data(value.data(), value.length());
+    pack_data.append_data(value.data(), string_length);
     break;
 
   default:
@@ -1197,11 +1333,62 @@ output_instance(ostream &out, const string &prename, const string &name,
                 const string &postname) const {
   if (get_typedef() != (DCTypedef *)NULL) {
     out << get_typedef()->get_name();
+
   } else {
     out << _type;
-  }
-  if (_divisor != 1) {
-    out << "/" << _divisor;
+    if (_divisor != 1) {
+      out << "/" << _divisor;
+    }
+
+
+    switch (_type) {
+    case ST_int8:
+    case ST_int16:
+    case ST_int32:
+      if (!_int_range.is_empty()) {
+        out << "(";
+        _int_range.output(out, _divisor);
+        out << ")";
+      }
+      break;
+    
+    case ST_int64:
+      if (!_int64_range.is_empty()) {
+        out << "(";
+        _int64_range.output(out, _divisor);
+        out << ")";
+      }
+      break;
+    
+    case ST_uint8:
+    case ST_uint16:
+    case ST_uint32:
+      if (!_uint_range.is_empty()) {
+        out << "(";
+        _uint_range.output(out, _divisor);
+        out << ")";
+      }
+      break;
+    
+    case ST_uint64:
+      if (!_uint64_range.is_empty()) {
+        out << "(";
+        _uint64_range.output(out, _divisor);
+        out << ")";
+      }
+      break;
+
+    case ST_float64:
+      if (!_double_range.is_empty()) {
+        out << "(";
+        _double_range.output(out, _divisor);
+        out << ")";
+      }
+      break;
+
+    default:
+      break;
+    }
   }
 
   if (!prename.empty() || !name.empty() || !postname.empty()) {
