@@ -57,7 +57,7 @@ class DirectJoybox(PandaObject):
         # Text object to display current mode
         self.readout = OnscreenText.OnscreenText( '', -0.9, -0.95 )
         # List of functions to cycle through
-        self.modeList = [self.joeMode, self.driveMode]
+        self.modeList = [self.joeMode, self.driveMode, self.orbitMode]
         # Pick initial mode
         self.updateFunc = self.joyboxFly
         self.modeName = 'Joe Mode'
@@ -247,26 +247,23 @@ class DirectJoybox(PandaObject):
                     DirectJoybox.hprMultiplier)
         posScale = (self.analogs.normalizeChannel(R_SLIDE, 0.1, 100) *
                     DirectJoybox.xyzMultiplier)
-        rx = hprScale * self.aList[R_LEFT_RIGHT] * self.deltaTime
-        ry = -1 * hprScale * self.aList[R_FWD_BACK] * self.deltaTime
-        h = -1 * hprScale * self.aList[R_TWIST] * self.deltaTime
         r = -0.01 * posScale * self.aList[R_FWD_BACK] * self.deltaTime
+        rx = hprScale * self.aList[R_LEFT_RIGHT] * self.deltaTime
+        ry = hprScale * self.aList[R_TWIST] * self.deltaTime
         x = posScale * self.aList[L_LEFT_RIGHT] * self.deltaTime
         z = posScale * self.aList[L_FWD_BACK] * self.deltaTime
+        h = -1 * hprScale * self.aList[L_TWIST] * self.deltaTime
         # Move dcs
         self.nodePath.setX(self.nodePath, x)
         self.nodePath.setZ(self.nodePath, z)
         self.nodePath.setH(self.nodePath, h)
-        if self.bList[R_STICK]:
-            self.orbitNode(rx, ry, 0)
-        else:
-            self.orbitNode(rx, 0, 0)
-            pos = self.nodePath.getPos(self.refCS)
-            if Vec3(pos).length() < 0.005:
-                pos.set(0,-0.01, 0)
-            # Now move on out
-            pos.assign(pos * (1 + r))
-            self.nodePath.setPos(self.refCS, pos)
+        self.orbitNode(rx, ry, 0)
+        pos = self.nodePath.getPos(self.refCS)
+        if Vec3(pos).length() < 0.005:
+            pos.set(0,-0.01, 0)
+        # Now move on out
+        pos.assign(pos * (1 + r))
+        self.nodePath.setPos(self.refCS, pos)
 
     def orbitNode(self, h, p, r):
         # Position the temp node path at the ref CS

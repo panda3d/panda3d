@@ -572,6 +572,8 @@ class MopathRecorder(AppShell, PandaObject):
             # Reset curve fitters
             self.xyzCurveFitter.reset()
             self.hprCurveFitter.reset()
+            # Remove old curve
+            self.nurbsCurveDrawer.hide()
             # Create a new point set to hold raw data
             self.createNewPointSet()
             # Continuous or keyframe?
