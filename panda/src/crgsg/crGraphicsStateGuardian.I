@@ -21,18 +21,6 @@
 #include <graphicsWindow.h>
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CRGraphicsStateGuardian::LightInfo::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE CRGraphicsStateGuardian::LightInfo::
-LightInfo() {
-  _light = (Light *)NULL;
-  _enabled = false;
-  _next_enabled = false;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CRGraphicsStateGuardian::activate
 //       Access: Public
 //  Description: Sets this context to be the active context for future
@@ -225,24 +213,6 @@ call_glViewport(GLint x, GLint y, GLsizei width, GLsizei height)
         _viewport_width = width; _viewport_height = height;
         chromium.Viewport( x, y, width, height );
     }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CRGraphicsStateGuardian::call_glLightModelAmbient
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void CRGraphicsStateGuardian::
-call_glLightModelAmbient( const Colorf& color )
-{
-  if (_lmodel_ambient != color) {
-    _lmodel_ambient = color;
-#ifdef GSG_VERBOSE
-    crgsg_cat.debug()
-      << "crLightModel(GL_LIGHT_MODEL_AMBIENT, " << color << ")" << endl;
-#endif
-    chromium.LightModelfv(GL_LIGHT_MODEL_AMBIENT, color.get_data());
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -734,32 +704,6 @@ enable_point_smooth(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CRGraphicsStateGuardian::enable_lighting
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void CRGraphicsStateGuardian::
-enable_lighting(bool val) {
-  if (_lighting_enabled != val) {
-    _lighting_enabled = val;
-    if (val) {
-#ifdef GSG_VERBOSE
-      crgsg_cat.debug()
-        << "crEnable(GL_LIGHTING)" << endl;
-#endif
-      chromium.Enable(GL_LIGHTING);
-      _lighting_enabled_this_frame = true;
-    } else {
-#ifdef GSG_VERBOSE
-      crgsg_cat.debug()
-        << "crDisable(GL_LIGHTING)" << endl;
-#endif
-      chromium.Disable(GL_LIGHTING);
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CRGraphicsStateGuardian::enable_dither
 //       Access:
 //  Description:
@@ -807,35 +751,6 @@ enable_stencil_test(bool val) {
       chromium.Disable(GL_STENCIL_TEST);
     }
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CRGraphicsStateGuardian::enable_light
-//       Access:
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void CRGraphicsStateGuardian::enable_light(int light, bool val)
-{
-    if ( _light_info[light]._enabled != val )
-    {
-        _light_info[light]._enabled = val;
-        if ( val )
-        {
-#ifdef GSG_VERBOSE
-          crgsg_cat.debug()
-            << "crEnable(GL_LIGHT" << light << ")" << endl;
-#endif
-            chromium.Enable( get_light_id( light ) );
-        }
-        else
-        {
-#ifdef GSG_VERBOSE
-          crgsg_cat.debug()
-            << "crDisable(GL_LIGHT" << light << ")" << endl;
-#endif
-            chromium.Disable( get_light_id( light ) );
-        }
-    }
 }
 
 ////////////////////////////////////////////////////////////////////

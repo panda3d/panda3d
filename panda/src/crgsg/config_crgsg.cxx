@@ -65,6 +65,11 @@ bool cr_save_mipmaps = config_crgsg.GetBool("cr-save-mipmaps", false);
 // variable.
 bool cr_auto_normalize_lighting = config_crgsg.GetBool("auto-normalize-lighting", false);
 
+// Configure this true to try to implement decals using a
+// DepthOffsetAttrib, false to do them with the more reliable 3-pass
+// rendering method instead.
+bool cr_depth_offset_decals = config_crgsg.GetBool("depth-offset-decals", false);
+
 // Configure this true to indicate the current version of GL fully
 // supports textures with B, G, R ordering; false if it only supports
 // R, G, B.  false will always work, but true might be faster if the

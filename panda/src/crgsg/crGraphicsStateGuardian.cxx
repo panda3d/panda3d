@@ -36,7 +36,6 @@
 #include "lens.h"
 #include "get_rel_pos.h"
 #include "perspectiveLens.h"
-#include "ambientLight.h"
 #include "directionalLight.h"
 #include "pointLight.h"
 #include "spotlight.h"
@@ -46,7 +45,6 @@
 #include "colorMatrixTransition.h"
 #include "alphaTransformTransition.h"
 #include "colorTransition.h"
-#include "lightTransition.h"
 #include "textureTransition.h"
 #include "renderModeTransition.h"
 #include "materialTransition.h"
@@ -66,6 +64,7 @@
 #include "pointShapeTransition.h"
 #include "polygonOffsetTransition.h"
 #include "textureAttrib.h"
+#include "lightAttrib.h"
 #include "cullFaceAttrib.h"
 #include "transparencyAttrib.h"
 #include "depthTestAttrib.h"
@@ -157,7 +156,6 @@ issue_transformed_color_gl(const Geom *geom, Geom::ColorIterator &citerator,
 ////////////////////////////////////////////////////////////////////
 CRGraphicsStateGuardian::
 CRGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
-  _light_info = (LightInfo *)NULL;
   _clip_plane_enabled = (bool *)NULL;
   _cur_clip_plane_enabled = (bool *)NULL;
 
@@ -261,8 +259,6 @@ reset() {
   _line_smooth_enabled = false;
   _point_smooth_enabled = false;
   _scissor_enabled = false;
-  _lighting_enabled = false;
-  _lighting_enabled_this_frame = false;
   _normals_enabled = false;
   _texturing_enabled = false;
   _multisample_alpha_one_enabled = false;
@@ -294,9 +290,8 @@ reset() {
 
   // Set up the light id map
   GLint max_lights;
-  chromium.GetIntegerv( GL_MAX_LIGHTS, &max_lights );
-  _max_lights = max_lights;
-  _light_info = new LightInfo[_max_lights];
+  chromium.GetIntegerv(GL_MAX_LIGHTS, &max_lights);
+  init_lights(max_lights);
 
   // Set up the clip plane id map
   GLint max_clip_planes;
@@ -319,14 +314,15 @@ reset() {
   PT(DepthTestTransition) dta = new DepthTestTransition;
   PT(DepthWriteTransition) dwa = new DepthWriteTransition;
   PT(CullFaceTransition) cfa = new CullFaceTransition;
-  PT(LightTransition) la = new LightTransition;
   PT(TextureTransition) ta = new TextureTransition;
 
   dta->issue(this);
   dwa->issue(this);
   cfa->issue(this);
-  la->issue(this);
   ta->issue(this);
+
+  Material empty;
+  apply_material(&empty);
 
   if (cr_cheap_textures) {
     crgsg_cat.info()
@@ -531,7 +527,6 @@ render_frame() {
   _win->begin_frame();
   report_errors();
   _decal_level = 0;
-  _lighting_enabled_this_frame = false;
 
 #ifdef DO_PSTATS
   // For Pstats to track our current texture memory usage, we have to
@@ -581,28 +576,6 @@ render_frame() {
   }
 
   // Now we're done with the frame processing.  Clean up.
-
-  if (_lighting_enabled_this_frame) {
-
-    // Let's turn off all the lights we had on, and clear the light
-    // cache--to force the lights to be reissued next frame, in case
-    // their parameters or positions have changed between frames.
-
-    for (int i = 0; i < _max_lights; i++) {
-      enable_light(i, false);
-      _light_info[i]._light = (Light *)NULL;
-    }
-
-    // Also force the lighting state to unlit, so that issue_light()
-    // will be guaranteed to be called next frame even if we have the
-    // same set of light pointers we had this frame.
-    clear_attribute(LightTransition::get_class_type());
-
-    // All this work to undo the lighting state each frame doesn't seem
-    // ideal--there may be a better way.  Maybe if the lights were just
-    // more aware of whether their parameters or positions have changed
-    // at all?
-  }
 
 #ifndef NDEBUG
   report_errors();
@@ -1020,16 +993,9 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
   // save the modelview matrix
   const LMatrix4f &modelview_mat = _transform->get_mat();
 
-  // get the camera information
-
-  // Hmm, this doesn't work any more, since we don't store the camera
-  // pointer in new scene graph land.  Need to find a better way to
-  // get the current window's aspect ratio.  Here's a temporary hack
-  // for now.
-
-  //  float aspect_ratio = 
-  //    get_current_camera()->get_lens()->get_aspect_ratio();
-  float aspect_ratio = 1.333333;
+  // We don't need to mess with the aspect ratio, since we are now
+  // using the default projection matrix, which has the right aspect
+  // ratio built in.
 
   // load up our own matrices
   chromium.MatrixMode(GL_MODELVIEW);
@@ -1089,7 +1055,7 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
 
   // y direction
   if (y_overall)
-    scaled_height = geom->_y_texel_ratio[0] * half_height * aspect_ratio;
+    scaled_height = geom->_y_texel_ratio[0] * half_height;
   else {
     nassertv(((int)geom->_y_texel_ratio.size() >= geom->get_num_prims()));
     y_walk = &geom->_y_texel_ratio[0];
@@ -1171,7 +1137,7 @@ draw_sprite(GeomSprite *geom, GeomContext *) {
       scaled_width = cur_image._x_ratio * half_width;
 
     if (y_overall == false)
-      scaled_height = cur_image._y_ratio * half_height * aspect_ratio;
+      scaled_height = cur_image._y_ratio * half_height;
 
     // if not G_OVERALL, do some trig for this z rotate
     if (theta_on) {
@@ -2087,7 +2053,6 @@ draw_texture(TextureContext *tc, const DisplayRegion *dr) {
   TextureApplyTransition *taa = new TextureApplyTransition;
   taa->set_mode(TextureApplyProperty::M_decal);
 
-  state.set_transition(new LightTransition);
   state.set_transition(new ColorMaskTransition);
   state.set_transition(new RenderModeTransition);
   state.set_transition(new TexMatrixTransition);
@@ -2303,7 +2268,6 @@ draw_pixel_buffer(PixelBuffer *pb, const DisplayRegion *dr,
   prepare_display_region();
 
   NodeTransitions state(na);
-  state.set_transition(new LightTransition);
   state.set_transition(new TextureTransition);
   state.set_transition(new TransformTransition);
   //state.set_transition(new ColorBlendTransition);
@@ -2523,196 +2487,6 @@ apply_fog(qpFog *fog) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CRGraphicsStateGuardian::apply_light
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CRGraphicsStateGuardian::apply_light( PointLight* light )
-{
-#if 0
-  // The light position will be relative to the current matrix, so
-  // we have to know what the current matrix is.  Find a better
-  // solution later.
-#ifdef GSG_VERBOSE
-  crgsg_cat.debug()
-    << "crMatrixMode(GL_MODELVIEW)" << endl;
-  crgsg_cat.debug()
-    << "crPushMatrix()" << endl;
-  crgsg_cat.debug()
-    << "crLoadIdentity()" << endl;
-#endif
-  chromium.MatrixMode(GL_MODELVIEW);
-  chromium.PushMatrix();
-
-  chromium.LoadMatrixf(LMatrix4f::convert_mat(_coordinate_system, CS_yup_right)
-                .get_data());
-
-  GLenum id = get_light_id( _cur_light_id );
-  Colorf black(0, 0, 0, 1);
-  chromium.Lightfv(id, GL_AMBIENT, black.get_data());
-  chromium.Lightfv(id, GL_DIFFUSE, light->get_color().get_data());
-  chromium.Lightfv(id, GL_SPECULAR, light->get_specular().get_data());
-
-    // Position needs to specify x, y, z, and w
-    // w == 1 implies non-infinite position
-  LPoint3f pos = get_rel_pos( light, _current_camera );
-  LPoint4f fpos( pos[0], pos[1], pos[2], 1 );
-  chromium.Lightfv( id, GL_POSITION, fpos.get_data() );
-
-  // GL_SPOT_DIRECTION is not significant when cutoff == 180
-
-    // Exponent == 0 implies uniform light distribution
-  chromium.Lightf( id, GL_SPOT_EXPONENT, 0 );
-
-  // Cutoff == 180 means uniform point light source
-  chromium.Lightf( id, GL_SPOT_CUTOFF, 180.0 );
-
-  chromium.Lightf( id, GL_CONSTANT_ATTENUATION,
-            light->get_constant_attenuation() );
-  chromium.Lightf( id, GL_LINEAR_ATTENUATION,
-            light->get_linear_attenuation() );
-  chromium.Lightf( id, GL_QUADRATIC_ATTENUATION,
-            light->get_quadratic_attenuation() );
-
-  chromium.PopMatrix();
-
-#ifdef GSG_VERBOSE
-  crgsg_cat.debug()
-    << "crPopMatrix()" << endl;
-#endif
-  report_errors();
-#endif
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CRGraphicsStateGuardian::apply_light
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CRGraphicsStateGuardian::apply_light( DirectionalLight* light )
-{
-#if 0
-  // The light position will be relative to the current matrix, so
-  // we have to know what the current matrix is.  Find a better
-  // solution later.
-#ifdef GSG_VERBOSE
-  crgsg_cat.debug()
-    << "crMatrixMode(GL_MODELVIEW)" << endl;
-  crgsg_cat.debug()
-    << "crPushMatrix()" << endl;
-  crgsg_cat.debug()
-    << "crLoadIdentity()" << endl;
-#endif
-  chromium.MatrixMode(GL_MODELVIEW);
-  chromium.PushMatrix();
-  chromium.LoadMatrixf(LMatrix4f::convert_mat(_coordinate_system, CS_yup_right)
-                .get_data());
-
-  GLenum id = get_light_id( _cur_light_id );
-  Colorf black(0, 0, 0, 1);
-  chromium.Lightfv(id, GL_AMBIENT, black.get_data());
-  chromium.Lightfv(id, GL_DIFFUSE, light->get_color().get_data());
-  chromium.Lightfv(id, GL_SPECULAR, light->get_specular().get_data());
-
-    // Position needs to specify x, y, z, and w
-    // w == 0 implies light is at infinity
-  LPoint3f dir = get_rel_forward( light, _current_camera,
-                                  _coordinate_system );
-  LPoint4f pos( -dir[0], -dir[1], -dir[2], 0 );
-  chromium.Lightfv( id, GL_POSITION, pos.get_data() );
-
-  // GL_SPOT_DIRECTION is not significant when cutoff == 180
-  // In this case, position x, y, z specifies direction
-
-  // Exponent == 0 implies uniform light distribution
-  chromium.Lightf( id, GL_SPOT_EXPONENT, 0 );
-
-  // Cutoff == 180 means uniform point light source
-  chromium.Lightf( id, GL_SPOT_CUTOFF, 180.0 );
-
-  // Default attenuation values (only spotlight can modify these)
-  chromium.Lightf( id, GL_CONSTANT_ATTENUATION, 1 );
-  chromium.Lightf( id, GL_LINEAR_ATTENUATION, 0 );
-  chromium.Lightf( id, GL_QUADRATIC_ATTENUATION, 0 );
-
-  chromium.PopMatrix();
-#ifdef GSG_VERBOSE
-  crgsg_cat.debug()
-    << "crPopMatrix()" << endl;
-#endif
-  report_errors();
-#endif
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CRGraphicsStateGuardian::apply_light
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CRGraphicsStateGuardian::apply_light( Spotlight* light )
-{
-#if 0
-  // The light position will be relative to the current matrix, so
-  // we have to know what the current matrix is.  Find a better
-  // solution later.
-#ifdef GSG_VERBOSE
-  crgsg_cat.debug()
-    << "crMatrixMode(GL_MODELVIEW)" << endl;
-  crgsg_cat.debug()
-    << "crPushMatrix()" << endl;
-  crgsg_cat.debug()
-    << "crLoadIdentity()" << endl;
-#endif
-  chromium.MatrixMode(GL_MODELVIEW);
-  chromium.PushMatrix();
-  chromium.LoadMatrixf(LMatrix4f::convert_mat(_coordinate_system, CS_yup_right)
-                .get_data());
-
-  GLenum id = get_light_id( _cur_light_id );
-  Colorf black(0, 0, 0, 1);
-  chromium.Lightfv(id, GL_AMBIENT, black.get_data());
-  chromium.Lightfv(id, GL_DIFFUSE, light->get_color().get_data());
-  chromium.Lightfv(id, GL_SPECULAR, light->get_specular().get_data());
-
-    // Position needs to specify x, y, z, and w
-    // w == 1 implies non-infinite position
-  LPoint3f pos = get_rel_pos( light, _current_camera );
-  LPoint4f fpos( pos[0], pos[1], pos[2], 1 );
-  chromium.Lightfv( id, GL_POSITION, fpos.get_data() );
-
-  chromium.Lightfv( id, GL_SPOT_DIRECTION,
-             get_rel_forward( light, _current_camera,
-                              _coordinate_system ).get_data() );
-  chromium.Lightf( id, GL_SPOT_EXPONENT, light->get_exponent() );
-  chromium.Lightf( id, GL_SPOT_CUTOFF,
-            light->get_cutoff_angle() );
-  chromium.Lightf( id, GL_CONSTANT_ATTENUATION,
-            light->get_constant_attenuation() );
-  chromium.Lightf( id, GL_LINEAR_ATTENUATION,
-            light->get_linear_attenuation() );
-  chromium.Lightf( id, GL_QUADRATIC_ATTENUATION,
-            light->get_quadratic_attenuation() );
-
-  chromium.PopMatrix();
-#ifdef GSG_VERBOSE
-  crgsg_cat.debug()
-    << "crPopMatrix()" << endl;
-#endif
-  report_errors();
-#endif
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CRGraphicsStateGuardian::apply_light
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CRGraphicsStateGuardian::apply_light( AmbientLight* )
-{
-  // Ambient lights are handled as a special case in issue_light().
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CRGraphicsStateGuardian::issue_transform
 //       Access: Public, Virtual
 //  Description:
@@ -2726,36 +2500,6 @@ issue_transform(const TransformTransition *attrib) {
 #endif
   chromium.MatrixMode(GL_MODELVIEW);
   chromium.LoadMatrixf(attrib->get_matrix().get_data());
-
-#ifndef NDEBUG
-  if (cr_show_transforms) {
-    bool lighting_was_enabled = _lighting_enabled;
-    bool texturing_was_enabled = _texturing_enabled;
-    enable_lighting(false);
-    enable_texturing(false);
-
-    chromium.Begin(GL_LINES);
-
-    // X axis in red
-    chromium.Color3f(1.0f, 0.0f, 0.0f);
-    chromium.Vertex3f(0.0f, 0.0f, 0.0f);
-    chromium.Vertex3f(1.0f, 0.0f, 0.0f);
-
-    // Y axis in green
-    chromium.Color3f(0.0f, 1.0f, 0.0f);
-    chromium.Vertex3f(0.0f, 0.0f, 0.0f);
-    chromium.Vertex3f(0.0f, 1.0f, 0.0f);
-
-    // Z axis in blue
-    chromium.Color3f(0.0f, 0.0f, 1.0f);
-    chromium.Vertex3f(0.0f, 0.0f, 0.0f);
-    chromium.Vertex3f(0.0f, 0.0f, 1.0f);
-
-    chromium.End();
-    enable_lighting(lighting_was_enabled);
-    enable_texturing(texturing_was_enabled);
-  }
-#endif
   report_errors();
 }
 
@@ -2980,106 +2724,6 @@ issue_render_mode(const RenderModeTransition *attrib) {
   default:
     crgsg_cat.error()
       << "Unknown render mode " << (int)mode << endl;
-  }
-  report_errors();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CRGraphicsStateGuardian::issue_light
-//       Access: Public, Virtual
-//  Description:
-////////////////////////////////////////////////////////////////////
-void CRGraphicsStateGuardian::issue_light(const LightTransition *attrib )
-{
-  nassertv(attrib->get_default_dir() != TD_on);
-  //  activate();
-
-  // Initialize the current ambient light total and newly enabled
-  // light list
-  Colorf cur_ambient_light(0.0f, 0.0f, 0.0f, 1.0f);
-  int i;
-  for (i = 0; i < _max_lights; i++) {
-    _light_info[i]._next_enabled = false;
-  }
-
-  int num_enabled = 0;
-  LightTransition::const_iterator li;
-  for (li = attrib->begin(); li != attrib->end(); ++li) {
-    Light *light = (*li).first;
-    nassertv(light != (Light *)NULL);
-    TransitionDirection dir = (*li).second;
-
-    if (dir == TD_on) {
-      num_enabled++;
-      enable_lighting(true);
-
-      if (light->get_light_type() == AmbientLight::get_class_type()) {
-        // Ambient lights don't require specific light ids; simply add
-        // in the ambient contribution to the current total
-        cur_ambient_light += light->get_color();
-        
-      } else {
-        // Check to see if this light has already been bound to an id
-        _cur_light_id = -1;
-        for (i = 0; i < _max_lights; i++) {
-          if (_light_info[i]._light == light) {
-            // Light has already been bound to an id, we only need
-            // to enable the light, not apply it
-            _cur_light_id = -2;
-            enable_light(i, true);
-            _light_info[i]._next_enabled = true;
-            break;
-          }
-        }
-        
-        // See if there are any unbound light ids
-        if (_cur_light_id == -1) {
-          for (i = 0; i < _max_lights; i++) {
-            if (_light_info[i]._light == (Light *)NULL) {
-              _light_info[i]._light = light;
-              _cur_light_id = i;
-              break;
-            }
-          }
-        }
-        
-        // If there were no unbound light ids, see if we can replace
-        // a currently unused but previously bound id
-        if (_cur_light_id == -1) {
-          for (i = 0; i < _max_lights; i++) {
-            if (attrib->is_off(_light_info[i]._light)) {
-              _light_info[i]._light = light;
-              _cur_light_id = i;
-              break;
-            }
-          }
-        }
-        
-        if (_cur_light_id >= 0) {
-          enable_light(_cur_light_id, true);
-          _light_info[i]._next_enabled = true;
-          
-          // We need to do something different for each type of light
-          light->apply(this);
-        } else if (_cur_light_id == -1) {
-          crgsg_cat.error()
-            << "issue_light() - failed to bind light to id" << endl;
-        }
-      }
-    }
-  }
-
-  // Disable all unused lights
-  for (i = 0; i < _max_lights; i++) {
-    if (!_light_info[i]._next_enabled)
-      enable_light(i, false);
-  }
-
-  // If no lights were enabled, disable lighting
-  if (num_enabled == 0) {
-    enable_lighting(false);
-  } else {
-    call_glLightModelAmbient(cur_ambient_light);
   }
   report_errors();
 }
@@ -3508,6 +3152,10 @@ issue_material(const MaterialAttrib *attrib) {
   const Material *material = attrib->get_material();
   if (material != (const Material *)NULL) {
     apply_material(material);
+  } else {
+    // Apply a default material when materials are turned off.
+    Material empty;
+    apply_material(&empty);
   }
   report_errors();
 }
@@ -3718,14 +3366,138 @@ issue_depth_offset(const DepthOffsetAttrib *attrib) {
   int offset = attrib->get_offset();
 
   if (offset != 0) {
-    GLfloat newfactor = 1.0f;
-    GLfloat newunits = (GLfloat)offset;
-    chromium.PolygonOffset(newfactor, newunits);
+    // The relationship between these two parameters is a little
+    // unclear and poorly explained in the GL man pages.
+    chromium.PolygonOffset((GLfloat) -offset, (GLfloat) -offset);
     enable_polygon_offset(true);
 
   } else {
     enable_polygon_offset(false);
   }
+
+  report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CRGraphicsStateGuardian::bind_light
+//       Access: Public, Virtual
+//  Description: Called the first time a particular light has been
+//               bound to a given id within a frame, this should set
+//               up the associated hardware light with the light's
+//               properties.
+////////////////////////////////////////////////////////////////////
+void CRGraphicsStateGuardian::
+bind_light(PointLight *light, int light_id) {
+  GLenum id = get_light_id(light_id);
+  static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
+  chromium.Lightfv(id, GL_AMBIENT, black.get_data());
+  chromium.Lightfv(id, GL_DIFFUSE, light->get_color().get_data());
+  chromium.Lightfv(id, GL_SPECULAR, light->get_specular_color().get_data());
+
+  // Position needs to specify x, y, z, and w
+  // w == 1 implies non-infinite position
+  qpNodePath light_np(light);
+  const LMatrix4f &light_mat = light_np.get_mat(_scene_setup->get_scene_root());
+  LPoint3f pos = light->get_point() * light_mat;
+
+  LPoint4f fpos(pos[0], pos[1], pos[2], 1.0f);
+  chromium.Lightfv(id, GL_POSITION, fpos.get_data());
+
+  // GL_SPOT_DIRECTION is not significant when cutoff == 180
+
+  // Exponent == 0 implies uniform light distribution
+  chromium.Lightf(id, GL_SPOT_EXPONENT, 0.0f);
+
+  // Cutoff == 180 means uniform point light source
+  chromium.Lightf(id, GL_SPOT_CUTOFF, 180.0f);
+
+  const LVecBase3f &att = light->get_attenuation();
+  chromium.Lightf(id, GL_CONSTANT_ATTENUATION, att[0]);
+  chromium.Lightf(id, GL_LINEAR_ATTENUATION, att[1]);
+  chromium.Lightf(id, GL_QUADRATIC_ATTENUATION, att[2]);
+
+  report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CRGraphicsStateGuardian::bind_light
+//       Access: Public, Virtual
+//  Description: Called the first time a particular light has been
+//               bound to a given id within a frame, this should set
+//               up the associated hardware light with the light's
+//               properties.
+////////////////////////////////////////////////////////////////////
+void CRGraphicsStateGuardian::
+bind_light(DirectionalLight *light, int light_id) {
+  GLenum id = get_light_id( light_id );
+  static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
+  chromium.Lightfv(id, GL_AMBIENT, black.get_data());
+  chromium.Lightfv(id, GL_DIFFUSE, light->get_color().get_data());
+  chromium.Lightfv(id, GL_SPECULAR, light->get_specular_color().get_data());
+
+  // Position needs to specify x, y, z, and w.
+  // w == 0 implies light is at infinity
+  qpNodePath light_np(light);
+  const LMatrix4f &light_mat = light_np.get_mat(_scene_setup->get_scene_root());
+  LVector3f dir = light->get_direction() * light_mat;
+  LPoint4f fdir(-dir[0], -dir[1], -dir[2], 0);
+  chromium.Lightfv(id, GL_POSITION, fdir.get_data());
+
+  // GL_SPOT_DIRECTION is not significant when cutoff == 180
+  // In this case, position x, y, z specifies direction
+
+  // Exponent == 0 implies uniform light distribution
+  chromium.Lightf(id, GL_SPOT_EXPONENT, 0.0f);
+
+  // Cutoff == 180 means uniform point light source
+  chromium.Lightf(id, GL_SPOT_CUTOFF, 180.0f);
+
+  // Default attenuation values (only spotlight and point light can
+  // modify these)
+  chromium.Lightf(id, GL_CONSTANT_ATTENUATION, 1.0f);
+  chromium.Lightf(id, GL_LINEAR_ATTENUATION, 0.0f);
+  chromium.Lightf(id, GL_QUADRATIC_ATTENUATION, 0.0f);
+
+  report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CRGraphicsStateGuardian::bind_light
+//       Access: Public, Virtual
+//  Description: Called the first time a particular light has been
+//               bound to a given id within a frame, this should set
+//               up the associated hardware light with the light's
+//               properties.
+////////////////////////////////////////////////////////////////////
+void CRGraphicsStateGuardian::
+bind_light(Spotlight *light, int light_id) {
+  Lens *lens = light->get_lens();
+  nassertv(lens != (Lens *)NULL);
+
+  GLenum id = get_light_id(light_id);
+  static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
+  chromium.Lightfv(id, GL_AMBIENT, black.get_data());
+  chromium.Lightfv(id, GL_DIFFUSE, light->get_color().get_data());
+  chromium.Lightfv(id, GL_SPECULAR, light->get_specular_color().get_data());
+
+  // Position needs to specify x, y, z, and w
+  // w == 1 implies non-infinite position
+  qpNodePath light_np(light);
+  const LMatrix4f &light_mat = light_np.get_mat(_scene_setup->get_scene_root());
+  LPoint3f pos = lens->get_nodal_point() * light_mat;
+  LVector3f dir = lens->get_view_vector() * light_mat;
+
+  LPoint4f fpos(pos[0], pos[1], pos[2], 1.0f);
+  chromium.Lightfv(id, GL_POSITION, fpos.get_data());
+  chromium.Lightfv(id, GL_SPOT_DIRECTION, dir.get_data());
+
+  chromium.Lightf(id, GL_SPOT_EXPONENT, light->get_exponent());
+  chromium.Lightf(id, GL_SPOT_CUTOFF, lens->get_hfov());
+
+  const LVecBase3f &att = light->get_attenuation();
+  chromium.Lightf(id, GL_CONSTANT_ATTENUATION, att[0]);
+  chromium.Lightf(id, GL_LINEAR_ATTENUATION, att[1]);
+  chromium.Lightf(id, GL_QUADRATIC_ATTENUATION, att[2]);
 
   report_errors();
 }
@@ -3893,6 +3665,19 @@ end_decal(GeomNode *base_geom) {
     }
   }
   report_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CRGraphicsStateGuardian::depth_offset_decals
+//       Access: Public, Virtual
+//  Description: Returns true if this GSG can implement decals using a
+//               DepthOffsetAttrib, or false if that is unreliable
+//               and the three-step rendering process should be used
+//               instead.
+////////////////////////////////////////////////////////////////////
+bool CRGraphicsStateGuardian::
+depth_offset_decals() {
+  return cr_depth_offset_decals;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4755,6 +4540,93 @@ issue_transformed_color(const Colorf &color) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CRGraphicsStateGuardian::enable_lighting
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by a derived class to
+//               enable or disable the use of lighting overall.  This
+//               is called by issue_light() according to whether any
+//               lights are in use or not.
+////////////////////////////////////////////////////////////////////
+void CRGraphicsStateGuardian::
+enable_lighting(bool enable) {
+  if (enable) {
+    chromium.Enable(GL_LIGHTING);
+  } else {
+    chromium.Disable(GL_LIGHTING);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CRGraphicsStateGuardian::set_ambient_light
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by a derived class to
+//               indicate the color of the ambient light that should
+//               be in effect.  This is called by issue_light() after
+//               all other lights have been enabled or disabled.
+////////////////////////////////////////////////////////////////////
+void CRGraphicsStateGuardian::
+set_ambient_light(const Colorf &color) {
+  chromium.LightModelfv(GL_LIGHT_MODEL_AMBIENT, color.get_data());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CRGraphicsStateGuardian::enable_light
+//       Access: Protected, Virtual
+//  Description: Intended to be overridden by a derived class to
+//               enable the indicated light id.  A specific Light will
+//               already have been bound to this id via bind_light().
+////////////////////////////////////////////////////////////////////
+void CRGraphicsStateGuardian::
+enable_light(int light_id, bool enable) {
+  if (enable) {
+    chromium.Enable(get_light_id(light_id));
+  } else {
+    chromium.Disable(get_light_id(light_id));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CRGraphicsStateGuardian::begin_bind_lights
+//       Access: Protected, Virtual
+//  Description: Called immediately before bind_light() is called,
+//               this is intended to provide the derived class a hook
+//               in which to set up some state (like transform) that
+//               might apply to several lights.
+//
+//               The sequence is: begin_bind_lights() will be called,
+//               then one or more bind_light() calls, then
+//               end_bind_lights().
+////////////////////////////////////////////////////////////////////
+void CRGraphicsStateGuardian::
+begin_bind_lights() {
+  // We need to temporarily load a new matrix so we can define the
+  // light in a known coordinate system.  We pick the transform of the
+  // root.  (Alternatively, we could leave the current transform where
+  // it is and compute the light position relative to that transform
+  // instead of relative to the root, by composing with the matrix
+  // computed by _transform->invert_compose(render_transform).  But I
+  // think loading a completely new matrix is simpler.)
+  chromium.MatrixMode(GL_MODELVIEW);
+  chromium.PushMatrix();
+  chromium.LoadMatrixf(_scene_setup->get_render_transform()->get_mat().get_data());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CRGraphicsStateGuardian::end_bind_lights
+//       Access: Protected, Virtual
+//  Description: Called after before bind_light() has been called one
+//               or more times (but before any geometry is issued or
+//               additional state is changed), this is intended to
+//               clean up any temporary changes to the state that may
+//               have been made by begin_bind_lights().
+////////////////////////////////////////////////////////////////////
+void CRGraphicsStateGuardian::
+end_bind_lights() {
+  chromium.MatrixMode(GL_MODELVIEW);
+  chromium.PopMatrix();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CRGraphicsStateGuardian::free_pointers
 //       Access: Protected
 //  Description: Frees some memory that was explicitly allocated
@@ -4762,10 +4634,6 @@ issue_transformed_color(const Colorf &color) const {
 ////////////////////////////////////////////////////////////////////
 void CRGraphicsStateGuardian::
 free_pointers() {
-  if (_light_info != (LightInfo *)NULL) {
-    delete[] _light_info;
-    _light_info = (LightInfo *)NULL;
-  }
   if (_clip_plane_enabled != (bool *)NULL) {
     delete[] _clip_plane_enabled;
     _clip_plane_enabled = (bool *)NULL;
@@ -5044,10 +4912,6 @@ dump_state(void)
       dump << "\t\t" << "GL_LINE_SMOOTH " << _line_smooth_enabled << " " << (bool)chromium.IsEnabled(GL_LINE_SMOOTH) << "\n";
       dump << "\t\t" << "GL_POINT_SMOOTH " << _point_smooth_enabled << " " << (bool)chromium.IsEnabled(GL_POINT_SMOOTH) << "\n";
       dump << "\t\t" << "GL_LIGHTING " << _lighting_enabled << " " << (bool)chromium.IsEnabled(GL_LIGHTING) << "\n";
-      for(i = 0; i < _max_lights; i++)
-        {
-          dump << "\t\t\t\t" << "GL_LIGHT" << i << " " << _light_info[i]._enabled << " " << (bool)chromium.IsEnabled(GL_LIGHT0+i) << "\n";
-        }
       dump << "\t\t" << "GL_SCISSOR_TEST " << _scissor_enabled << " " << (bool)chromium.IsEnabled(GL_SCISSOR_TEST) << "\n";
       dump << "\t\t" << "GL_TEXTURE_2D " << _texturing_enabled << " " << (bool)chromium.IsEnabled(GL_TEXTURE_2D) << "\n";
       dump << "\t\t" << "GL_DITHER " << _dither_enabled << " " << (bool)chromium.IsEnabled(GL_DITHER) << "\n";

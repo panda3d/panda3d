@@ -32,6 +32,7 @@ extern bool cr_force_mipmaps;
 extern bool cr_show_mipmaps;
 extern bool cr_save_mipmaps;
 extern bool cr_auto_normalize_lighting;
+extern bool cr_depth_offset_decals;
 extern bool cr_supports_bgr;
 
 // Ways to implement decals.

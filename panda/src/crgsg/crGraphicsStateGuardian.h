@@ -33,7 +33,6 @@
 #include "depthTestProperty.h"
 #include "stencilProperty.h"
 #include "fog.h"
-#include "pt_Light.h"
 #include "depthTestAttrib.h"
 #include "textureApplyAttrib.h"
 #include "pointerToArray.h"
@@ -141,18 +140,12 @@ public:
   virtual void apply_fog(Fog *fog);
   void apply_fog(qpFog *fog);
 
-  virtual void apply_light(PointLight* light);
-  virtual void apply_light(DirectionalLight* light);
-  virtual void apply_light(Spotlight* light);
-  virtual void apply_light(AmbientLight* light);
-
   virtual void issue_transform(const TransformTransition *attrib);
   virtual void issue_color_transform(const ColorMatrixTransition *attrib);
   virtual void issue_alpha_transform(const AlphaTransformTransition *attrib);
   virtual void issue_tex_matrix(const TexMatrixTransition *attrib);
   virtual void issue_color(const ColorTransition *attrib);
   virtual void issue_texture(const TextureTransition *attrib);
-  virtual void issue_light(const LightTransition *attrib);
   virtual void issue_material(const MaterialTransition *attrib);
   virtual void issue_render_mode(const RenderModeTransition *attrib);
   virtual void issue_color_blend(const ColorBlendTransition *attrib);
@@ -171,11 +164,8 @@ public:
   virtual void issue_polygon_offset(const PolygonOffsetTransition *attrib);
 
   virtual void issue_transform(const TransformState *transform);
-  //  virtual void issue_color_scale(const ColorScaleAttrib *attrib);
-  //  virtual void issue_color(const ColorAttrib *attrib);
   virtual void issue_tex_matrix(const TexMatrixAttrib *attrib);
   virtual void issue_texture(const TextureAttrib *attrib);
-  //  virtual void issue_light(const LightAttrib *attrib);
   virtual void issue_material(const MaterialAttrib *attrib);
   virtual void issue_render_mode(const RenderModeAttrib *attrib);
   virtual void issue_texture_apply(const TextureApplyAttrib *attrib);
@@ -191,11 +181,17 @@ public:
   //  virtual void issue_stencil(const StencilAttrib *attrib);
   //  virtual void issue_clip_plane(const ClipPlaneAttrib *attrib);
 
+  virtual void bind_light(PointLight *light, int light_id);
+  virtual void bind_light(DirectionalLight *light, int light_id);
+  virtual void bind_light(Spotlight *light, int light_id);
+
   virtual bool wants_normals(void) const;
   virtual bool wants_texcoords(void) const;
 
   virtual void begin_decal(GeomNode *base_geom, AllTransitionsWrapper &attrib);
   virtual void end_decal(GeomNode *base_geom);
+
+  virtual bool depth_offset_decals();
 
   virtual CoordinateSystem get_internal_coordinate_system() const;
   virtual float compute_distance_to(const LPoint3f &point) const;
@@ -214,6 +210,12 @@ public:
   void issue_transformed_color(const Colorf &color) const;
 
 protected:
+  virtual void enable_lighting(bool enable);
+  virtual void set_ambient_light(const Colorf &color);
+  virtual void enable_light(int light_id, bool enable);
+  virtual void begin_bind_lights();
+  virtual void end_bind_lights();
+
   void free_pointers();
   virtual PT(SavedFrameBuffer) save_frame_buffer(const RenderBuffer &buffer,
                                                  CPT(DisplayRegion) dr);
@@ -234,7 +236,6 @@ protected:
   INLINE void call_glCullFace(GLenum mode);
   INLINE void call_glScissor(GLint x, GLint y, GLsizei width, GLsizei height);
   INLINE void call_glViewport(GLint x, GLint y, GLsizei width, GLsizei height);
-  INLINE void call_glLightModelAmbient(const Colorf& color);
   INLINE void call_glLightModelLocal(GLboolean local);
   INLINE void call_glLightModelTwoSide(GLboolean twoside);
   INLINE void call_glStencilFunc(GLenum func,GLint refval,GLuint mask);
@@ -256,8 +257,6 @@ protected:
   INLINE void enable_multisample(bool val);
   INLINE void enable_line_smooth(bool val);
   INLINE void enable_point_smooth(bool val);
-  INLINE void enable_lighting(bool val);
-  INLINE void enable_light(int light, bool val);
   INLINE void enable_texturing(bool val);
   INLINE void enable_scissor(bool val);
   INLINE void enable_dither(bool val);
@@ -321,7 +320,6 @@ protected:
   GLsizei _viewport_height;
   GLboolean _lmodel_local;
   GLboolean _lmodel_twoside;
-  Colorf _lmodel_ambient;
   Colorf _material_ambient;
   Colorf _material_diffuse;
   Colorf _material_specular;
@@ -350,8 +348,6 @@ protected:
   bool _line_smooth_enabled;
   bool _point_smooth_enabled;
   bool _scissor_enabled;
-  bool _lighting_enabled;
-  bool _lighting_enabled_this_frame;
   bool _texturing_enabled;
   bool _dither_enabled;
   bool _stencil_test_enabled;
@@ -365,16 +361,6 @@ protected:
   bool _polygon_offset_enabled;
   int _decal_level;
 
-  class LightInfo {
-  public:
-    INLINE LightInfo();
-    PT_Light _light;
-    bool _enabled;
-    bool _next_enabled;
-  };
-
-  int _max_lights;
-  LightInfo *_light_info;          // LightInfo[_max_lights]
   int _cur_light_id;
 
   LMatrix4f _current_projection_mat;
