@@ -9,7 +9,8 @@ class OnscreenImage(PandaObject, NodePath):
                  hpr = None,
                  scale = None,
                  color = None,
-                 parent = aspect2d):
+                 parent = aspect2d,
+                 sort = 0):
         """__init__(self, ...)
 
         Make a image node from string or a node path,
@@ -41,13 +42,13 @@ class OnscreenImage(PandaObject, NodePath):
         NodePath.__init__(self)
         # Assign geometry
         if isinstance(image, NodePath):
-            self.assign(image.copyTo(parent))
+            self.assign(image.copyTo(parent, sort))
         elif type(image) == type(''):
             # Assume its a file name and create a texture card
             tex = loader.loadTexture(image)
             cm = CardMaker()
             cm.setFrame(-1, 1, -1, 1)
-            self.assign(parent.attachNewNode(cm.generate()))
+            self.assign(parent.attachNewNode(cm.generate(), sort))
             self.setTexture(tex)
         elif type(image) == type(()):
             # Assume its a file+node name, extract texture from node
@@ -56,7 +57,7 @@ class OnscreenImage(PandaObject, NodePath):
                 node = model.find(image[1])
                 if node:
                     self.assign(node)
-                    self.reparentTo(parent)
+                    self.reparentTo(parent, sort)
                 else:
                     print 'OnscreenImage: node %s not found' % image[1]
                     return

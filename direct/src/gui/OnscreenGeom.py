@@ -9,7 +9,8 @@ class OnscreenGeom(PandaObject, NodePath):
                  hpr = None,
                  scale = None,
                  color = None,
-                 parent = aspect2d):
+                 parent = aspect2d,
+                 sort = 0):
         """__init__(self, ...)
 
         Make a geom node from string or a node path,
@@ -40,11 +41,12 @@ class OnscreenGeom(PandaObject, NodePath):
         # We ARE a node path.  Initially, we're an empty node path.
         NodePath.__init__(self)
         # Assign geometry
+        self.sort = sort
         if isinstance(geom, NodePath):
-            self.assign(geom.copyTo(parent))
+            self.assign(geom.copyTo(parent, self.sort))
         elif type(geom) == type(''):
             self.assign(loader.loadModelCopy(geom))
-            self.reparentTo(parent)
+            self.reparentTo(parent, self.sort)
 
         # Adjust pose
         # Set pos

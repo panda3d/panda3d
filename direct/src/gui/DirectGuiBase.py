@@ -1,14 +1,95 @@
 from DirectGuiGlobals import *
+"""
+Base class for all Direct Gui items.  Handles composite widgets and
+command line argument parsing.
+"""
 
 # Symbolic constants for the indexes into an optionInfo list.
 _OPT_DEFAULT         = 0
 _OPT_VALUE           = 1
 _OPT_FUNCTION        = 2
 
+"""
+Code Overview:
+
+1   Each widget defines a set of options (optiondefs) as a list of tuples
+    of the form ('name', defaultValue, handler).
+    'name' is the name of the option (used during construction of configure)
+    handler can be: None, method, or INITOPT.  If a method is specified,
+    it will be called during widget construction (via initialiseoptions),
+    if the Handler is specified as an INITOPT, this is an option that can
+    only be set during widget construction.
+
+2)  DirectGuiBase.defineoptions is called.  defineoption creates:
+
+    self._constructorKeywords = { keyword : [value, useFlag] }
+    a dictionary of the keyword options specified as part of the constructor
+    keywords can be of the form 'component_option', where component is
+    the name of a widget's component, a component group or a component alias
+    
+    self._dynamicGroups, a list of group names for which it is permissible
+    to specify options before components of that group are created.
+    If a widget is a derived class the order of execution would be:
+    foo.optiondefs = {}
+    foo.defineoptions()
+      fooParent()
+         fooParent.optiondefs = {}
+         fooParent.definoptions()
+
+3)  addoptions is called.  This combines options specified as keywords to
+    the widget constructor (stored in self._constuctorKeywords)
+    with the default options (stored in optiondefs).  Results are stored in
+    self._optionInfo = { keyword: [default, current, handler] }
+    If a keyword is of the form 'component_option' it is left in the
+    self._constructorKeywords dictionary (for use by component constructors),
+    otherwise it is 'used', and deleted from self._constructorKeywords.
+    Notes: - constructor keywords override the defaults.
+           - derived class default values override parent class defaults
+           - derived class handler functions override parent class functions
+
+4)  Superclass initialization methods are called (resulting in nested calls
+    to define options (see 2 above)
+
+5)  Widget components are created via calls to self.createcomponent.
+    User can specify aliases and groups for each component created.
+
+    Aliases are alternate names for components, e.g. a widget may have a
+    component with a name 'entryField', which itself may have a component
+    named 'entry', you could add an alias 'entry' for the 'entryField_entry'
+    These are stored in self.__componentAliases.  If an alias is found,
+    all keyword entries which use that alias are expanded to their full
+    form (to avoid conversion later)
+
+    Groups allow option specifications that apply to all members of the group.
+    If a widget has components: 'text1', 'text2', and 'text3' which all belong
+    to the 'text' group, they can be all configured with keywords of the form:
+    'text_keyword' (e.g. text_font = 'comic.rgb').  A component's group
+    is stored as the fourth element of its entry in self.__componentInfo
+
+    Note: the widget constructors have access to all remaining keywords in
+    _constructorKeywords (those not transferred to _optionInfo by
+    define/addoptions).  If a component defines an alias that applies to
+    one of the keywords, that keyword is replaced with a new keyword with
+    the alias expanded.
+
+    If a keyword (or substituted alias keyword) is used during creation of the
+    component, it is deleted from self._constructorKeywords.  If a group
+    keyword applies to the component, that keyword is marked as used, but is
+    not deleted from self._constructorKeywords, in case it applies to another
+    component.  If any constructor keywords remain at the end of component
+    construction (and initialisation), an error is raised.
+
+5)  initialiseoptions is called.  This method calls any option handlers to
+    respond to any keyword/default values, then checks to see if any keywords
+    are left unused.  If so, an error is raised.
+"""
+
 class DirectGuiBase(PandaObject):
-    def __init__(self, optiondefs, dynamicGroups, **kw):
+    def __init__(self):
         # Default id of all gui object, subclasses should override this
         self.guiId = 'guiObject'
+        # List of all active hooks
+        self.hookDict = {}
 	# Mapping from each megawidget option to a list of information
 	# about the option
 	#   - default value
@@ -58,14 +139,19 @@ class DirectGuiBase(PandaObject):
         # no components with this group have been created.
         # self._dynamicGroups = ()
 
-        self.defineoptions(kw, optiondefs, dynamicGroups)
-        
     def defineoptions(self, keywords, optionDefs, dynamicGroups = ()):
+        """ defineoptions(keywords, optionDefs, dynamicGroups = {}) """
 	# Create options, providing the default value and the method
 	# to call when the value is changed.  If any option created by
 	# base classes has the same name as one in <optionDefs>, the
 	# base class's value and function will be overriden.
         
+        # keywords is a dictionary of keyword/value pairs from the constructor
+        # optionDefs is a dictionary of default options for the widget
+        # dynamicGroups is a tuple of component groups for which you can
+        # specify options even though no components of this group have
+        # been created
+
 	# This should be called before the constructor of the base
 	# class, so that default values defined in the derived class
 	# override those in the base class.
@@ -83,6 +169,7 @@ class DirectGuiBase(PandaObject):
         self.addoptions(optionDefs)
         
     def addoptions(self, optionDefs):
+        """ addoptions(optionDefs) - add option def to option info """
 	# Add additional options, providing the default value and the
 	# method to call when the value is changed.  See
 	# "defineoptions" for more details
@@ -105,12 +192,13 @@ class DirectGuiBase(PandaObject):
                         # Overridden by keyword, use keyword value
                         value = keywords[name][0]
                         optionInfo[name] = [default, value, function]
+                        # Delete it from self._constructorKeywords
                         del keywords[name]
                     else:
                         # Use optionDefs value
                         optionInfo[name] = [default, default, function]
                 elif optionInfo[name][FUNCTION] is None:
-                    # Override function
+                    # Only override function if not defined by derived class
                     optionInfo[name][FUNCTION] = function
 	    else:
 		# This option is of the form "component_option".  If this is
@@ -121,11 +209,24 @@ class DirectGuiBase(PandaObject):
 		    keywords[name] = [default, 0]
                 
     def initialiseoptions(self, myClass):
+        """
+        initialiseoptions(myClass) - call all initialisation functions
+        to initialize widget options to default of keyword value
+        """
+        # This is to make sure this method class is only called by
+        # the most specific class in the class hierarchy
 	if self.__class__ is myClass:
+	    # Call the configuration callback function for every option.
+	    FUNCTION = _OPT_FUNCTION
+	    for info in self._optionInfo.values():
+		func = info[FUNCTION]
+		if func is not None and func is not INITOPT:
+		    func()
+
+            # Now check if anything is left over
 	    unusedOptions = []
 	    keywords = self._constructorKeywords
 	    for name in keywords.keys():
-                print name
 		used = keywords[name][1]
 		if not used:
                     # This keyword argument has not been used.  If it
@@ -142,18 +243,20 @@ class DirectGuiBase(PandaObject):
 		    text = 'Unknown options "'
 		raise KeyError, text + string.join(unusedOptions, ', ') + \
 			'" for ' + myClass.__name__
-            
-	    # Call the configuration callback function for every option.
-	    FUNCTION = _OPT_FUNCTION
-	    for info in self._optionInfo.values():
-		func = info[FUNCTION]
-		if func is not None and func is not INITOPT:
-		    func()
                     
     def isinitoption(self, option):
+        """
+        isinitoption(option)
+        Is this opition one that can only be specified at construction?
+        """
 	return self._optionInfo[option][_OPT_FUNCTION] is INITOPT
     
     def options(self):
+        """
+        options()
+        Print out a list of available widget options.
+        Does not include subcomponent options.
+        """
 	options = []
 	if hasattr(self, '_optionInfo'):
 	    for option, info in self._optionInfo.items():
@@ -164,7 +267,10 @@ class DirectGuiBase(PandaObject):
 	return options
     
     def configure(self, option=None, **kw):
-	# Query or configure the megawidget options.
+        """
+        configure(option = None)
+	Query or configure the megawidget options.
+        """
 	#
 	# If not empty, *kw* is a dictionary giving new
 	# values for some of the options of this gui item
@@ -232,29 +338,39 @@ class DirectGuiBase(PandaObject):
 		index = string.find(option, '_')
 		if index >= 0:
 		    # This option may be of the form <component>_<option>.
+                    # e.g. if alias ('efEntry', 'entryField_entry')
+                    # and option = efEntry_width
+                    # component = efEntry, componentOption = width
 		    component = option[:index]
 		    componentOption = option[(index + 1):]
 
 		    # Expand component alias
 		    if componentAliases_has_key(component):
+                        # component = entryField, subcomponent = entry
 			component, subComponent = componentAliases[component]
 			if subComponent is not None:
+                            # componentOption becomes entry_width
 			    componentOption = subComponent + '_' \
 				    + componentOption
 
 			# Expand option string to write on error
+                        # option = entryField_entry_width
 			option = component + '_' + componentOption
 
                     # Does this component exist
 		    if componentInfo_has_key(component):
 			# Get the configure func for the named component
+                        # component = entryField
 			componentConfigFuncs = [componentInfo[component][1]]
 		    else:
 			# Check if this is a group name and configure all
 			# components in the group.
 			componentConfigFuncs = []
+                        # For each component
 			for info in componentInfo.values():
+                            # Check if it is a member of this group
 			    if info[4] == component:
+                                # Yes, append its config func
 			        componentConfigFuncs.append(info[1])
 
                         if len(componentConfigFuncs) == 0 and \
@@ -268,6 +384,8 @@ class DirectGuiBase(PandaObject):
 		    for componentConfigFunc in componentConfigFuncs:
 			if not indirectOptions_has_key(componentConfigFunc):
 			    indirectOptions[componentConfigFunc] = {}
+                        # Create a dictionary of keyword/values keyed
+                        # on configuration function
 			indirectOptions[componentConfigFunc][componentOption] \
 				= value
 		else:
@@ -275,6 +393,7 @@ class DirectGuiBase(PandaObject):
 			    '" for ' + self.__class__.__name__
 
 	# Call the configure methods for any components.
+        # Pass in the dictionary of keyword/values created above
 	map(apply, indirectOptions.keys(),
 		((),) * len(indirectOptions), indirectOptions.values())
             
@@ -290,8 +409,10 @@ class DirectGuiBase(PandaObject):
         apply(self.configure, (), {key: value})
         
     def cget(self, option):
-	# Get current configuration setting.
-        
+        """
+        cget(option)
+	Get current configuration setting for this option
+        """
 	# Return the value of an option, for example myWidget['font']. 
 	if self._optionInfo.has_key(option):
 	    return self._optionInfo[option][_OPT_VALUE]
@@ -332,11 +453,14 @@ class DirectGuiBase(PandaObject):
     
     def createcomponent(self, componentName, componentAliases, componentGroup,
                         widgetClass, *widgetArgs, **kw):
-	"""Create a component (during construction or later)."""
+	"""
+        Create a component (during construction or later) for this widget.
+        """
         # Check for invalid component name
 	if '_' in componentName:
 	    raise ValueError, \
                     'Component name "%s" must not contain "_"' % componentName
+        
         # Get construction keywords
 	if hasattr(self, '_constructorKeywords'):
 	    keywords = self._constructorKeywords
@@ -347,8 +471,10 @@ class DirectGuiBase(PandaObject):
 	    # Create aliases to the component and its sub-components.
 	    index = string.find(component, '_')
 	    if index < 0:
+                # Just a shorter name for one of this widget's components
 		self.__componentAliases[alias] = (component, None)
 	    else:
+                # An alias for a component of one of this widget's components
 		mainComponent = component[:index]
 		subComponent = component[(index + 1):]
 		self.__componentAliases[alias] = (mainComponent, subComponent)
@@ -356,7 +482,6 @@ class DirectGuiBase(PandaObject):
 	    # Remove aliases from the constructor keyword arguments by
 	    # replacing any keyword arguments that begin with *alias*
 	    # with corresponding keys beginning with *component*.
-
 	    alias = alias + '_'
 	    aliasLen = len(alias)
 	    for option in keywords.keys():
@@ -420,19 +545,24 @@ class DirectGuiBase(PandaObject):
 	    remainingComponents = name[(index + 1):]
 
 	# Expand component alias
+        # Example entry which is an alias for entryField_entry
 	if self.__componentAliases.has_key(component):
+            # component = entryField, subComponent = entry
 	    component, subComponent = self.__componentAliases[component]
 	    if subComponent is not None:
 		if remainingComponents is None:
+                    # remainingComponents = entry
 		    remainingComponents = subComponent
 		else:
 		    remainingComponents = subComponent + '_' \
 			    + remainingComponents
-
+        # Get the component from __componentInfo dictionary
 	widget = self.__componentInfo[component][0]
 	if remainingComponents is None:
+            # Not looking for subcomponent
 	    return widget
 	else:
+            # Recursive call on subcomponent
 	    return widget.component(remainingComponents)
 
     def components(self):
@@ -452,15 +582,33 @@ class DirectGuiBase(PandaObject):
 	del self.__componentInfo[name]
 
     def destroy(self):
-        # Clean up optionInfo in case it contains circular references
-        # in the function field, such as self._settitle in class
-        # MegaToplevel.
+        # Clean out any hooks
+        for event in self.hookDict.keys():
+            self.ignore(event)
 
-	self._optionInfo = {}
-
-    def bind(self, sequence, command):
-        self.accept(sequence + '-' + self.guiId, command)
+    def bind(self, event, command):
+        """
+        Bind the command (which should expect one arg) to the specified
+        event (such as ENTER, EXIT, B1PRESS, B1CLICK, etc.)
+        See DirectGuiGlobals for possible events
+        """
+        # Need to tack on gui item specific id
+        gEvent = event + self.guiId
+        self.accept(gEvent, command)
+        # Keep track of all events you're accepting
+        self.hookDict[gEvent] = command
         
-    def unbind(self, sequence):
-        self.ignore(sequence + '-' + self.guiId)
+    def unbind(self, event):
+        """
+        Unbind the specified event
+        """
+        # Need to tack on gui item specific id
+        gEvent = event + self.guiId
+        self.ignore(gEvent)
+        if self.hookDict.has_key(gEvent):
+            del(self.hookDict[gEvent])
+
+
+class DirectGuiWidget(DirectGuiBase):
+    pass
 

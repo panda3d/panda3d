@@ -29,6 +29,7 @@ class OnscreenText(PandaObject, NodePath):
                  drawOrder = GuiGlobals.getDefaultDrawOrder(),
                  font = GuiGlobals.getDefaultFont(),
                  parent = aspect2d,
+                 sort = 0,
                  mayChange = 0):
         """__init__(self, ...)
 
@@ -204,7 +205,7 @@ class OnscreenText(PandaObject, NodePath):
 	self.isClean = 0
 
         # Set ourselves up as the NodePath that points to this node.
-        self.assign(parent.attachNewNode(self.textNode))
+        self.assign(parent.attachNewNode(self.textNode, sort))
     
     def cleanup(self):
 	"""cleanup(self)

@@ -11,18 +11,20 @@ smiley = loader.loadModel('models/directmodels/smiley')
 db = DirectButton(image = 'phase_4/maps/middayskyB.jpg',
                   geom = smiley,
                   text = ('Hi!', 'Ouch!', 'Bye!', 'ZZZZ!'),
-                  scale = .15, relief = 'raised')
+                  scale = .15, relief = 'raised',
+                  # Here we set an option for a component of the button
+                  geom1_color = Vec4(1,0,0,1),
+                  # Here is an example of a component group option
+                  text_pos = (.6, -.8))
 
-# Adjust text position and scale
-db['text_pos'] = (.6, -.8)
-db['text_scale'] = .5
-# Set the color of the pressed button's geometry
-db['geom1_color'] = Vec4(1,0,0,1)
+# You can set component or component group options after a gui item
+# has been created
+db['text_scale'] = 0.5
 
-# Specify the button's command
-# Note, command must expect one argument
-def dummyCmd(event):
+# Here we specify the button's command
+def dummyCmd():
     print 'POW!!!!'
+
 db['command'] = dummyCmd
 
 # Get a handle on the geometry for the rollover state
@@ -63,6 +65,8 @@ def ouch(event):
 db.bind(ENTER, shrink)
 db.bind(EXIT, expand)
 db.bind(B1PRESS, ouch)
-
 # Pop up placer when button 2 is pressed
 db.bind(B2PRESS, lambda x, s = db: s.place())
+
+# To get rid of button and clear out hooks call:
+# db.destroy()

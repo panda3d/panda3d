@@ -1,5 +1,9 @@
 from DirectGuiBase import *
 
+IMAGE_SORT_INDEX = 10
+GEOM_SORT_INDEX = 20
+TEXT_SORT_INDEX = 30
+
 class DirectButton(DirectGuiBase, NodePath):
     def __init__(self, parent = guiTop, **kw):
         # Pass in a background texture, and/or a geometry object,
@@ -14,39 +18,57 @@ class DirectButton(DirectGuiBase, NodePath):
         #  - a VBase4(L,R,B,T)
         #  - a bounding box object
         optiondefs = (
+            # Button can have:
+            # A background texture
             ('image',           None,       self.setImage),
+            # A midground geometry item
             ('geom',            None,       self.setGeom),
-            ('text',            '',         self.setText),
+            # A foreground text node
+            ('text',            None,       self.setText),
+            # Command to be called on button click
             ('command',         None,       None),
+            ('extraArgs',       [],         None),
+            # Which mouse buttons can be used to click the button
             ('commandButtons',  (1,),       self.setCommandButtons),
+            # Buttons initial state
+            ('state',           NORMAL,     self.setState),
+            # Button frame characteristics
             ('relief',          FLAT,       self.setRelief),
             ('frameColor',      (1,1,1,1),  self.setFrameColor),
             ('borderWidth',     (.1,.1),    self.setBorderWidth),
             ('frameSize',       None,       self.setFrameSize),
-            ('pressEffect',     1,          None),
-            ('padSX',           1.2,        None),
-            ('padSZ',           1.1,        None),
-            ('pos',             None,       None),
-            ('scale',           None,       None),
-            ('state',           NORMAL,     self.setState),
+            ('pad',             (.25,.15),  self.resetFrameSize),
+            # Sounds to be used for button events
             ('rolloverSound',   None,       None),
             ('clickSound',      None,       None),
+            # Can only be specified at time of widget contruction
+            # Do the text/graphics appear to move when the button is clicked
+            ('pressEffect',     1,          INITOPT),
+            # Initial pos/scale of the button
+            ('pos',             None,       INITOPT),
+            ('scale',           None,       INITOPT),
             )
-        # Update options to reflect keyword parameters
-        apply(DirectGuiBase.__init__, (self, optiondefs, ('text',)), kw)
-        # Initialize the superclass
+        # Merge keyword options with default options
+        self.defineoptions(kw, optiondefs,
+                           dynamicGroups = ('text', 'geom', 'image'))
+
+        # Initialize superclasses
+        DirectGuiBase.__init__(self)
         NodePath.__init__(self)
         # Create a button
         self.guiItem = PGButton()
         self.guiId = self.guiItem.getId()
         # Attach button to parent and make that self
         self.assign(parent.attachNewNode( self.guiItem ) )
-        # Set up names
+        # Initialize names
         self.guiItem.setName(self.guiId)
         self.setName(self.guiId + 'NodePath')
+        # Get a handle on the button's hidden node paths for each state
         self.stateNodePath = []
         for i in range(4):
             self.stateNodePath.append(NodePath(self.guiItem.getStateDef(i)))
+        # If specifed, add scaling to the pressed state to make it look
+        # like the button is moving when you press it
         if self['pressEffect']:
             np = self.stateNodePath[1].attachNewNode('pressEffect')
             np.setScale(0.98)
@@ -58,33 +80,38 @@ class DirectButton(DirectGuiBase, NodePath):
         # For holding bounds info
         self.ll = Point3(0)
         self.ur = Point3(0)
-        # Call initialization functions if necessary
-        # To avoid doing things redundantly
+        # Call option initialization functions
+        # To avoid doing things redundantly set fInit flag
         self.fInit = 1
         self.initialiseoptions(DirectButton)
         self.fInit = 0
-        # Allow changes to take effect
+        # Now allow changes to take effect
         self.updateFrameStyle()
         if not self['frameSize']:
             self.setFrameSize()
-        # Update pose
+        # Update pose to initial values
         if self['pos']:
-            if type(self['pos']) == type(()):
-                apply(self.setPos, self['pos'])
+            pos = self['pos']
+            # Can either be a Point3 or a tuple of 3 values
+            if isintance(pos, Point3):
+                self.setPos(pos)
             else:
-                apply(self.setPos, (self['pos'],))
+                apply(self.setPos, pos)
         if self['scale']:
-            if type(self['scale']) == type(()):
-                apply(self.setScale, self['scale'])
+            scale = self['scale']
+            # Can either be a Vec3 or a tuple of 3 values
+            if (isinstance(scale, Vec3) or
+                (type(scale) == types.IntType) or
+                (type(scale) == types.FloatType)):
+                self.setScale(scale)
             else:
-                apply(self.setScale, (self['scale'],))
+                apply(self.setScale, self['scale'])
 
     def updateFrameStyle(self):
         for i in range(4):
             self.guiItem.setFrameStyle(i, self.frameStyle[i])
 
     def setRelief(self, fSetStyle = 1):
-        print 'setting Frame'
         relief = self['relief']
         if relief == None:
             for i in range(4):
@@ -104,7 +131,8 @@ class DirectButton(DirectGuiBase, NodePath):
             self.updateFrameStyle()
 
     def resetFrameSize(self):
-        self.setFrameSize(fClearFrame = 1)
+        if not self.fInit:
+            self.setFrameSize(fClearFrame = 1)
         
     def setFrameSize(self, fClearFrame = 0):
         if self['frameSize']:
@@ -121,8 +149,10 @@ class DirectButton(DirectGuiBase, NodePath):
             # Clear out frame before computing bounds
             self.stateNodePath[0].calcTightBounds(self.ll, self.ur)
             # Scale bounds to give a pad around graphics
-            bounds = (self.ll[0] * self['padSX'], self.ur[0] * self['padSX'],
-                      self.ll[2] * self['padSZ'], self.ur[2] * self['padSZ'])
+            bounds = (self.ll[0] - self['pad'][0],
+                      self.ur[0] + self['pad'][0],
+                      self.ll[2] - self['pad'][1],
+                      self.ur[2] + self['pad'][1])
             # Restore frame style if necessary
             if (frameType != PGFrameStyle.TNone):
                 self.frameStyle[0].setType(frameType)
@@ -160,6 +190,7 @@ class DirectButton(DirectGuiBase, NodePath):
                     OnscreenText.OnscreenText,
                     (), parent = self.stateNodePath[i],
                     text = text[i], scale = 1,
+                    sort = TEXT_SORT_INDEX,
                     mayChange = 1)
             else:
                 self[component + '_text'] = text[i]
@@ -179,6 +210,7 @@ class DirectButton(DirectGuiBase, NodePath):
                     component, (), 'geom',
                     OnscreenGeom.OnscreenGeom,
                     (), parent = self.stateNodePath[i],
+                    sort = GEOM_SORT_INDEX,
                     geom = geom[i], scale = 1)
             else:
                 self[component + '_geom'] = geom[i]
@@ -206,6 +238,7 @@ class DirectButton(DirectGuiBase, NodePath):
                     component, (), 'image',
                     OnscreenImage.OnscreenImage,
                     (), parent = self.stateNodePath[i],
+                    sort = IMAGE_SORT_INDEX,
                     image = image[i], scale = 1)
             else:
                 self[component + '_image'] = image[i]
@@ -239,5 +272,10 @@ class DirectButton(DirectGuiBase, NodePath):
 
     def commandFunc(self, event):
         if self['command']:
-            self['command'](event)
+            # Pass any extra args to command
+            apply(self['command'], self['extraArgs'])
             
+    def destroy(self):
+        DirectGuiBase.destroy(self)
+        # Get rid of node path
+        self.removeNode()

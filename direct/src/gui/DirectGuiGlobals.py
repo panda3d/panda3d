@@ -1,17 +1,27 @@
+"""
+Global definitions used by Direct Gui Classes and handy constants
+that can be used during widget construction
+"""
+
 from PandaObject import *
 from PGTop import *
 from PGButton import *
+# Import these after PGButton to get actual class definitions
 from PGItem import *
 from PGFrameStyle import *
+# Helper classes used as components of Direct Gui Widgets
 import OnscreenText
 import OnscreenGeom
 import OnscreenImage
 import types
 
 # USEFUL GUI CONSTANTS
+
+# Widget state
 NORMAL = 'normal'
 DISABLED = 'disabled'
 
+# Frame style
 FLAT = PGFrameStyle.TFlat
 RAISED = PGFrameStyle.TBevelOut
 SUNKEN = PGFrameStyle.TBevelIn
@@ -31,10 +41,11 @@ def getGenericMouseEvent(event, mouse):
     elif event == 'release':
         eventFunc = PGButton().getReleaseEvent
     eventString = eventFunc(mb)
-    return eventString[:eventString.rfind('-')]
+    return eventString[:eventString.rfind('-') + 1]
 
-ENTER = 'enter'
-EXIT = 'exit'
+# User can bind commands to these gui events
+ENTER = 'enter-'
+EXIT = 'exit-'
 B1CLICK = getGenericMouseEvent('click', 1)
 B2CLICK = getGenericMouseEvent('click', 2)
 B3CLICK = getGenericMouseEvent('click', 3)
