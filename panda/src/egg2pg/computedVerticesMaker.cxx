@@ -18,6 +18,7 @@
 
 #include "computedVerticesMaker.h"
 #include "characterMaker.h"
+#include "config_egg2pg.h"
 
 #include "characterJoint.h"
 #include "character.h"
@@ -70,7 +71,15 @@ add_joint(EggNode *joint, double membership) {
     return;
   }
 
-  nassertv(membership > 0.0);
+  if (membership < 0.0) {
+    // Not sure what a negative membership should mean.  Probably it's
+    // just a skinning error; for now we'll print a warning and ignore
+    // it.
+    egg2pg_cat.warning()
+      << "Joint " << joint->get_name() << " has vertices with membership "
+      << membership << ".\n";
+    return;
+  }
 
   JointWeights::iterator jwi = _current_jw.find(joint);
 
