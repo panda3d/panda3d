@@ -35,7 +35,8 @@ CVSCopy() {
   add_option
     ("i", "", 80,
      "The opposite of -f, this will prompt the user before each action.  "
-     "The default is only to prompt the user when an action is ambiguous.",
+     "The default is only to prompt the user when an action is ambiguous "
+     "or unusual.",
      &CVSCopy::dispatch_none, &_interactive);
 
   add_option

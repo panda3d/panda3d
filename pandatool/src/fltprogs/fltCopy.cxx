@@ -19,7 +19,7 @@
 FltCopy::
 FltCopy() {
   set_program_description
-    ("This program copies one or more MultiGen .flt files into a "
+    ("fltcopy copies one or more MultiGen .flt files into a "
      "CVS source hierarchy.  "
      "Rather than copying the named files immediately into the current "
      "directory, it first scans the entire source hierarchy, identifying all "
