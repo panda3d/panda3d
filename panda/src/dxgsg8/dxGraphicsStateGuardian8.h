@@ -158,8 +158,8 @@ protected:
                               ColorBlendAttrib::Mode color_blend_mode,
                               TransparencyAttrib::Mode transparency_mode);
 
-  void free_local_resources();            // free local internal buffers
-  void free_dxgsg_objects(void);   // free the DirectX objects we create
+  void free_nondx_resources();            // free local internal buffers
+  void free_d3d_device(void);
   virtual PT(SavedFrameBuffer) save_frame_buffer(const RenderBuffer &buffer,
                          CPT(DisplayRegion) dr);
   virtual void restore_frame_buffer(SavedFrameBuffer *frame_buffer);
@@ -306,8 +306,6 @@ protected:
   Texture::FilterType _CurTexMagFilter,_CurTexMinFilter;
   DWORD _CurTexAnisoDegree;
   Texture::WrapMode _CurTexWrapModeU,_CurTexWrapModeV;
-  DXShaderHandle _CurVertexShader,_CurPixelShader;
-
   LMatrix4f _current_projection_mat;
   int _projection_mat_stack_count;
 
@@ -336,8 +334,13 @@ public:
   INLINE void SetDXReady(bool status)  { _bDXisReady = status; }
   INLINE bool GetDXReady(void)  { return _bDXisReady;}
   void DXGraphicsStateGuardian::SetTextureBlendMode(TextureApplyAttrib::Mode TexBlendMode,bool bJustEnable);
+
+  // Shader Stuff
   DXShaderHandle read_vertex_shader(string &filename);
   DXShaderHandle read_pixel_shader(string &filename);
+  void init_shader(ShaderType stype,DXShaderHandle &hShader,string *pFname);
+  IDirect3DTexture8 *_pGlobalTexture;  // used for FX
+  DXShaderHandle _CurVertexShader,_CurPixelShader;
 
   void  dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled);
   void reset_panda_gsg(void);

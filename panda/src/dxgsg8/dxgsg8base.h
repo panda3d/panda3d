@@ -61,6 +61,9 @@
 #endif
 #endif
 
+#define D3D_MAXTEXTURESTAGES 8
+
+typedef enum {VertexShader,PixelShader} ShaderType;
 typedef DWORD DXShaderHandle;
 
 #define ISPOW2(X) (((X) & ((X)-1))==0)
@@ -70,6 +73,9 @@ typedef DWORD DXShaderHandle;
     type var;                       \
     ZeroMemory(&var, sizeof(type)); \
     var.dwSize = sizeof(type);
+    
+#define SAFE_DELSHADER(TYPE,HANDLE,PDEVICE)  \
+  if(HANDLE!=NULL) {  PDEVICE->Delete##TYPE##Shader(HANDLE);  HANDLE=NULL;  }
 
 #define SAFE_DELETE(p)       { if(p) { assert(IS_VALID_PTR(p));   delete (p);     (p)=NULL; } }
 #define SAFE_DELETE_ARRAY(p) { if(p) { assert(IS_VALID_PTR(p));   delete[] (p);   (p)=NULL; } }

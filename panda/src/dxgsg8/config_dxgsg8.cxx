@@ -113,6 +113,11 @@ DXDecalType dx_decal_type = GDT_mask;
 string *pdx_vertexshader_filename=NULL;
 string *pdx_pixelshader_filename=NULL;
 
+// texture file to be set globally, usually for special FX
+string *pdx_globaltexture_filename=NULL;
+// tex stagenum to set the global tex to
+UINT dx_globaltexture_stagenum = (UINT) config_dxgsg.GetInt("dx-globaltexture-stagenum", 0);
+
 static DXDecalType
 parse_decal_type(const string &type) {
   if (type == "mask") {
@@ -128,6 +133,17 @@ parse_decal_type(const string &type) {
 
 ConfigureFn(config_dxgsg) {
   init_libdxgsg8();
+}
+
+void init_config_string(string *&pFname,const char *ConfigrcVarname) {
+  // pFname is reference to string ptr
+
+  // dont try to take the & of a soon-to-be-gone stack var string, this must be on the heap!
+  pFname = new string(config_dxgsg.GetString(ConfigrcVarname, ""));
+  if(pFname->empty()) {
+      delete pFname;
+      pFname=NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -151,18 +167,9 @@ init_libdxgsg8() {
     dx_decal_type = parse_decal_type(decal_type);
   }
 
-  // dont try to take the & of a soon-to-be-gone stack var string, this must be on the heap!
-  pdx_vertexshader_filename = new string(config_dxgsg.GetString("dx-vertexshader-filename", ""));
-  if(pdx_vertexshader_filename->empty()) {
-      delete pdx_vertexshader_filename;
-      pdx_vertexshader_filename=NULL;
-  }
-
-  pdx_pixelshader_filename = new string(config_dxgsg.GetString("dx-pixelshader-filename", ""));
-  if(pdx_pixelshader_filename->empty()) {
-      delete pdx_pixelshader_filename;
-      pdx_pixelshader_filename=NULL;
-  }
+  init_config_string(pdx_vertexshader_filename,"dx-vertexshader-filename");
+  init_config_string(pdx_pixelshader_filename,"dx-pixelshader-filename");
+  init_config_string(pdx_globaltexture_filename,"dx-globaltexture-filename");
 
   DXGraphicsStateGuardian::init_type();
   DXSavedFrameBuffer::init_type();

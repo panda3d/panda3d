@@ -465,8 +465,8 @@ DXGraphicsStateGuardian(GraphicsWindow *win) : GraphicsStateGuardian(win) {
     _pStatMeterFont=NULL;
     _bShowFPSMeter = false;
 
-    _CurVertexShader = NULL;  // may persist across dx_init's?
-    _CurPixelShader = NULL;   // may persist across dx_init's?  (for dx8.1 but not dx8.0?)
+    // may persist across dx_init's?  (for dx8.1 but not dx8.0?)
+    _CurVertexShader = _CurPixelShader = NULL;
 
     //    _max_light_range = __D3DLIGHT_RANGE_MAX;
 
@@ -494,7 +494,7 @@ DXGraphicsStateGuardian::
         scrn.pD3DDevice->SetTexture(0, NULL);  // this frees reference to the old texture
     _pCurTexContext = NULL;
 
-    free_local_resources();
+    free_nondx_resources();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -513,24 +513,41 @@ reset(void) {
     //dx_init();
 }
 
-// recreate dx objects without modifying gsg state, other than clearing state cache
+// setup up for re-calling dx_init(), this is not the final exit cleanup routine (see dx_cleanup)
 void DXGraphicsStateGuardian::
-free_dxgsg_objects(void) {
+free_d3d_device(void) {
     // dont want a full reset of gsg, just a state clear      
     set_state(RenderState::make_empty());
     // want gsg to pass all state settings through
 
     _bDXisReady = false;
     
-    if (scrn.pD3DDevice!=NULL)
-        scrn.pD3DDevice->SetTexture(0,NULL);  // should release this stuff internally anyway
+    if(scrn.pD3DDevice!=NULL)
+     for(int i=0;D3D_MAXTEXTURESTAGES;i++)
+         scrn.pD3DDevice->SetTexture(i,NULL);  // d3d should release this stuff internally anyway, but whatever
 
     DeleteAllDeviceObjects();
 
     if (scrn.pD3DDevice!=NULL)
         RELEASE(scrn.pD3DDevice,dxgsg,"d3dDevice",RELEASE_DOWN_TO_ZERO);
 
-    free_local_resources();
+    free_nondx_resources();
+
+    // obviously we dont release ID3D8, just ID3DDevice8
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian::free_nondx_resources
+//       Access: Public
+//  Description: Frees some memory that was explicitly allocated
+//               within the dxgsg.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian::
+free_nondx_resources() {
+    // this must not release any objects associated with D3D/DX!
+    // those should be released in free_dxgsg_objects instead
+    SAFE_DELETE_ARRAY(_index_buf);
+    SAFE_DELETE_ARRAY(_pFvfBufBasePtr);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -904,47 +921,73 @@ dx_init(HCURSOR hMouseCursor) {
     dwa->issue(this);
     cfa->issue(this);
 
-    // initial test just allows 1 shader at a time, specified at init time
-    if((pdx_vertexshader_filename!=NULL) && (!pdx_vertexshader_filename->empty())) {
-        if((_CurVertexShader!=NULL)&&(!scrn.bIsDX81)) {
-            // for dx8.0, need to release and recreate shaders after Reset() has been called
-            hr = scrn.pD3DDevice->DeleteVertexShader(_CurVertexShader);
-            if(FAILED(hr))
-                dxgsg_cat.error() << "DeleteVertexShader failed!" << D3DERRORSTRING(hr);
-            _CurVertexShader=NULL;
-        }
+    // this is all prelim hacked in testing stuff
+    init_shader(VertexShader,_CurVertexShader,pdx_vertexshader_filename);
+    init_shader(PixelShader,_CurPixelShader,pdx_pixelshader_filename);
 
-        // gets set in set_vertex_format()
-        if(_CurVertexShader==NULL) 
-           _CurVertexShader=read_vertex_shader(*pdx_vertexshader_filename);
-    }
-
-    // initial test just allows 1 shader at a time, specified at init time
-    if((pdx_pixelshader_filename!=NULL) && (!pdx_pixelshader_filename->empty())) {
-        if(!scrn.bCanUsePixelShaders) {
-            dxgsg_cat.error() << "HW doesnt support pixel shaders!\n";
+    if(pdx_globaltexture_filename!=NULL) {
+        // bypasses panda tex mechanism
+        hr = D3DXCreateTextureFromFile(scrn.pD3DDevice,pdx_globaltexture_filename->c_str(),&_pGlobalTexture);
+        if(FAILED(hr)) {
+            dxgsg_cat.fatal() << "CreateTexFromFile failed" << D3DERRORSTRING(hr);
             exit(1);
         }
 
-        if((_CurPixelShader!=NULL)&&(!scrn.bIsDX81)) {
-            // for dx8.0, need to release and recreate shaders after Reset() has been called
-            hr = scrn.pD3DDevice->DeletePixelShader(_CurPixelShader);
-            if(FAILED(hr))
-                dxgsg_cat.error() << "DeletePixelShader failed!" << D3DERRORSTRING(hr);
-            _CurPixelShader=NULL;
+        hr=scrn.pD3DDevice->SetTexture(dx_globaltexture_stagenum,_pGlobalTexture);
+        if(FAILED(hr)) {
+               dxgsg_cat.fatal() << "SetTexture failed" << D3DERRORSTRING(hr);
+               exit(1);
         }
-
-        if(_CurPixelShader==NULL) 
-             _CurPixelShader=read_pixel_shader(*pdx_pixelshader_filename);
-
-        // just set it globally for testing.  this really should be an object attribute
-        // like current-texture is so it gets set and unset during traversal
-        hr = scrn.pD3DDevice->SetPixelShader(_CurPixelShader);
-        if(FAILED(hr))
-            dxgsg_cat.error() << "SetPixelShader failed!" << D3DERRORSTRING(hr);
     }
 
     PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
+}
+
+void DXGraphicsStateGuardian::
+init_shader(ShaderType stype,DXShaderHandle &hShader,string *pFname) {
+
+    if((pFname==NULL) || pFname->empty()) {
+      hShader=NULL;
+      return;
+    }
+
+    HRESULT hr;
+
+    char *sh_typename;
+    if(stype==VertexShader) 
+      sh_typename="Vertex";
+    else sh_typename="Pixel";
+
+    if((stype==PixelShader) && (!scrn.bCanUsePixelShaders)) {
+            dxgsg_cat.error() << "HW doesnt support pixel shaders!\n";
+            exit(1);
+    }
+
+    if((hShader!=NULL)&&(!scrn.bIsDX81)) {
+        // for dx8.0, need to release and recreate shaders after Reset() has been called
+        if(stype==VertexShader) 
+            hr = scrn.pD3DDevice->DeleteVertexShader(hShader);
+          else hr = scrn.pD3DDevice->DeletePixelShader(hShader);
+        if(FAILED(hr))
+            dxgsg_cat.error() << "Delete"<< sh_typename<<"Shader failed!" << D3DERRORSTRING(hr);
+        hShader=NULL;
+    }
+    
+    if(hShader==NULL) {
+      // doing SetShader globally for testing purps.  this really should be an object attribute
+      // like current-texture is so it gets set and unset during traversal
+
+      if(stype==VertexShader) {
+          hShader=read_vertex_shader(*pFname);
+          hr = scrn.pD3DDevice->SetVertexShader(hShader);
+      } else {
+          hShader=read_pixel_shader(*pFname);
+          hr = scrn.pD3DDevice->SetPixelShader(hShader);
+      }
+
+      if(FAILED(hr))
+         dxgsg_cat.error() << "Set"<<sh_typename<<"Shader failed!" << D3DERRORSTRING(hr);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1478,7 +1521,7 @@ draw_prim_setup(const Geom *geom) {
        //////
 
        ti = geom->make_texcoord_iterator();
-       newFVFflags |= (D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0));
+        newFVFflags |= (D3DFVF_TEX1 | D3DFVF_TEXCOORDSIZE2(0));
        vertex_size += sizeof(float) * 2;
    }
 
@@ -4412,20 +4455,6 @@ set_blend_mode(ColorWriteAttrib::Mode color_write_mode,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DXGraphicsStateGuardian::free_local_resources
-//       Access: Public
-//  Description: Frees some memory that was explicitly allocated
-//               within the dxgsg.
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::
-free_local_resources() {
-    // this must not release any objects associated with D3D/DX!
-    // those should be released in free_dxgsg_objects instead
-    SAFE_DELETE_ARRAY(_index_buf);
-    SAFE_DELETE_ARRAY(_pFvfBufBasePtr);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian::save_frame_buffer
 //       Access: Public
 //  Description: Saves the indicated planes of the frame buffer
@@ -4504,7 +4533,7 @@ void DXGraphicsStateGuardian::init_type(void) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: dx_cleanup
-//  Description: Clean up the DirectX environment.
+//  Description: Clean up the DirectX environment, accounting for exit()
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian::
 dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled) {
@@ -4524,58 +4553,34 @@ dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled) {
 
     // unsafe to do the D3D releases after exit() called, since DLL_PROCESS_DETACH
     // msg already delivered to d3d.dll and it's unloaded itself
-    if(!bAtExitFnEverCalled) {
 
-        PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
+    free_nondx_resources();
 
-        // these 2 calls release ddraw surfaces and vbuffers.  unsafe unless not on exit
-        release_all_textures();
-        release_all_geoms();
+    PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
 
-        PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
+    // these 2 calls release ddraw surfaces and vbuffers.  unsafe unless not on exit
+    release_all_textures();
+    release_all_geoms();
 
-        SAFE_DELETE(_pStatMeterFont);
+    PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
 
-        PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
+    // delete non-panda-texture/geom DX objects (VBs/textures/shaders)
+    SAFE_DELETE(_pStatMeterFont);
+    SAFE_DELSHADER(Vertex,_CurVertexShader,scrn.pD3DDevice);
+    SAFE_DELSHADER(Pixel,_CurPixelShader,scrn.pD3DDevice);
+    SAFE_RELEASE(_pGlobalTexture);
 
-        // Do a safe check for releasing the D3DDEVICE. RefCount should be zero.
-        // if we're called from exit(), scrn.pD3DDevice may already have been released
-        if (scrn.pD3DDevice!=NULL) {
-            scrn.pD3DDevice->SetTexture(0,NULL);  // should release this stuff internally anyway
-            RELEASE(scrn.pD3DDevice,dxgsg,"d3dDevice",RELEASE_DOWN_TO_ZERO);
-        }
-    }
+    PRINT_REFCNT(dxgsg,scrn.pD3DDevice);
 
-#if 0
-    // for some reason, DLL_PROCESS_DETACH has not yet been sent to ddraw, so we can still call its fns
-    // Do a safe check for releasing DDRAW. RefCount should be zero.
+    // Do a safe check for releasing the D3DDEVICE. RefCount should be zero.
+    // if we're called from exit(), scrn.pD3DDevice may already have been released
     if (scrn.pD3DDevice!=NULL) {
-        // note: restoredisplaymode may get done anyway when you release the d3ddevice
-        if(bRestoreDisplayMode) {
-          HRESULT hr = scrn.pD3DDevice->RestoreDisplayMode(); 
-          if(dxgsg_cat.is_spam())
-                dxgsg_cat.spam() << "dx_cleanup -  Restoring original desktop DisplayMode\n";
-          if(FAILED(hr)) {
-                dxgsg_cat.error() << "dx_cleanup -  RestoreDisplayMode failed" << D3DERRORSTRING(hr);
-          }
-        }
-
-        if(bAtExitFnCalled) {
-           // if exit() called, there is definitely no more need for the IDDraw object,
-           // so we can make sure it's fully released
-           // note currently this is never called 
-           RELEASE(scrn.pD3DDevice,dxgsg,"IDirectDraw7 scrn.pD3DDevice", RELEASE_DOWN_TO_ZERO);
-        } else {
-           // seems wrong to release to zero, since it might be being used somewhere else?
-
-           RELEASE(scrn.pD3DDevice,dxgsg,"IDirectDraw7 scrn.pD3DDevice", false);  
-           if(refcnt>0) {
-              if(dxgsg_cat.is_spam())
-                dxgsg_cat.debug() << "dx_cleanup -  warning IDDraw7 refcnt = " << refcnt << ", should be zero!\n";
-           }
-        }
+        for(int i=0;D3D_MAXTEXTURESTAGES;i++)
+           scrn.pD3DDevice->SetTexture(i,NULL);  // d3d should release this stuff internally anyway, but whatever
+        RELEASE(scrn.pD3DDevice,dxgsg,"d3dDevice",RELEASE_DOWN_TO_ZERO);
     }
-#endif
+
+    RELEASE(scrn.pD3D8,dxgsg,"ID3D8",RELEASE_DOWN_TO_ZERO);
 }
 
 bool refill_tex_callback(TextureContext *tc,void *void_dxgsg_ptr) {
@@ -4612,14 +4617,27 @@ HRESULT DXGraphicsStateGuardian::DeleteAllDeviceObjects(void) {
   // BUGBUG: need to release any vertexbuffers here
 
   // cant access template in libpanda.dll directly due to vc++ limitations, use traverser to get around it
+
+  // dont call release_all_textures() because we want the panda tex obj around so it can reload its texture
+
+  // bugbug:  do I still need to delete all the textures since they are all D3DPOOL_MANAGED now?
   traverse_prepared_textures(delete_tex_callback,this);
 
   if(dxgsg_cat.is_debug())
       dxgsg_cat.debug() << "release of all textures complete\n";
 
-  if(IS_VALID_PTR(_pStatMeterFont)) {
-       _pStatMeterFont->DeleteDeviceObjects();
-  }
+  // delete non-panda-texture/geom DX objects (VBs/textures/shaders)
+  SAFE_DELETE(_pStatMeterFont);
+  SAFE_DELSHADER(Vertex,_CurVertexShader,scrn.pD3DDevice);
+  SAFE_DELSHADER(Pixel,_CurPixelShader,scrn.pD3DDevice);
+  SAFE_RELEASE(_pGlobalTexture);
+
+  assert(scrn.pD3DDevice);
+
+  SAFE_DELSHADER(Vertex,_CurVertexShader,scrn.pD3DDevice);
+  SAFE_DELSHADER(Pixel,_CurPixelShader,scrn.pD3DDevice);
+  SAFE_RELEASE(_pGlobalTexture);
+
   return S_OK;
 }
 
@@ -4657,9 +4675,9 @@ void DXGraphicsStateGuardian::show_frame(void) {
     return;
 
   DO_PSTATS_STUFF(PStatTimer timer(_win->_swap_pcollector));  // this times just the flip, so it must go here in dxgsg, instead of wdxdisplay, which would time the whole frame
+  HRESULT hr;
 
-  HRESULT hr = scrn.pD3DDevice->Present((CONST RECT*)NULL,(CONST RECT*)NULL,
-                                        (HWND)NULL,NULL);
+  hr = scrn.pD3DDevice->Present((CONST RECT*)NULL,(CONST RECT*)NULL,(HWND)NULL,NULL);
   if(FAILED(hr)) {
     if(hr == D3DERR_DEVICELOST) {
         CheckCooperativeLevel();
@@ -4668,93 +4686,7 @@ void DXGraphicsStateGuardian::show_frame(void) {
       exit(1);
     }
   }
-/*
-  if(dx_full_screen) {
-    show_full_screen_frame();
-  } else {
-    show_windowed_frame();
-  }
-*/  
 }
-/*
-////////////////////////////////////////////////////////////////////
-//     Function: show_full_screen_frame
-//       Access:
-//       Description:   Repaint primary buffer from back buffer
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::show_full_screen_frame(void) {
-  HRESULT hr;
-  
-  // Flip the front and back buffers, to make what we just rendered
-  // visible.
-
-  DWORD dwFlipFlags = DDFLIP_WAIT;
-
-  if (!dx_sync_video) {
-    // If the user indicated via Config that we shouldn't wait for
-    // video sync, then don't wait (if the hardware supports this).
-    // This will introduce visible artifacts like tearing, and may
-    // cause the frame rate to grow excessively (and pointlessly)
-    // high, starving out other processes.
-    dwFlipFlags |= DDFLIP_NOVSYNC;
-//  dwFlipFlags = DDFLIP_DONOTWAIT | DDFLIP_NOVSYNC;
-  }
-
-  // bugbug: dont we want triple buffering instead of wasting time
-  // waiting for vsync?
-  hr = scrn.pD3DDevicesPrimary->Flip( NULL, dwFlipFlags);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: show_windowed_frame
-//       Access: Public
-//  Description: Repaint primary buffer from back buffer (windowed
-//               mode only)
-////////////////////////////////////////////////////////////////////
-void DXGraphicsStateGuardian::show_windowed_frame(void) {
-  HRESULT hr;
-
-  DX_DECLARE_CLEAN(DDBLTFX, bltfx);
-
-  if (dx_sync_video) {
-    // Wait for the video refresh *before* we blt the rendered image
-    // onto the window.  This will (a) prevent the "tearing" of the
-    // image that would occur if only part of the image happened to be
-    // copied into the window before the video refresh occurred, and
-    // (b) prevent our frame rate from going excessively (and
-    // pointlessly) higher than our video refresh rate, starving out
-    // other processes.
-
-    // Unfortunately, when the system is even lightly loaded, this
-    // wait call sometimes appears to wait through multiple frames
-    // before returning, causing our frame rate to be unreasonably low
-    // and erratic.  There doesn't appear to be any way to prevent
-    // this behavior; thus, we allow the user to avoid this wait,
-    // based on the Config settings.
-
-    bltfx.dwDDFX |= DDBLTFX_NOTEARING;  // hmm, does any driver actually recognize this flag?
-  }
-
-  hr = scrn.pD3DDevicesPrimary->Blt( &scrn.view_rect, scrn.pD3DDevicesBack,  NULL, DDBLT_DDFX | DDBLT_WAIT, &bltfx );
-
-  if (dx_sync_video) {
-    HRESULT hr = scrn.pD3DDevice->WaitForVerticalBlank(DDWAITVB_BLOCKBEGIN, NULL);
-    if(hr != DD_OK) {
-      dxgsg_cat.error() << "WaitForVerticalBlank() failed : " << D3DERRORSTRING(hr);
-      exit(1);
-    }
-  }
-
-  if(FAILED(hr)) {
-    if((hr == DDERR_SURFACELOST) || (hr == DDERR_SURFACEBUSY)) {
-      CheckCooperativeLevel();
-    } else {
-      dxgsg_cat.error() << "show_frame() - Blt failed : " << D3DERRORSTRING(hr);
-      exit(1);
-    }
-  }
-}
-*/
 
 HRESULT DXGraphicsStateGuardian::reset_d3d_device(D3DPRESENT_PARAMETERS *pPresParams) {
   HRESULT hr;
