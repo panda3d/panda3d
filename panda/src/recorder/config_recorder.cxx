@@ -37,11 +37,14 @@ ConfigureFn(config_recorder) {
   RecorderHeader::init_type();
   RecorderTable::init_type();
   ReferenceCount::init_type();
-  SocketStreamRecorder::init_type();
 
   MouseRecorder::register_with_read_factory();
   RecorderFrame::register_with_read_factory();
   RecorderHeader::register_with_read_factory();
   RecorderTable::register_with_read_factory();
+
+#ifdef HAVE_SSL
+  SocketStreamRecorder::init_type();
   SocketStreamRecorder::register_with_read_factory();
+#endif
 }
