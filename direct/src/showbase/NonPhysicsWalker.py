@@ -20,8 +20,8 @@ import DirectNotifyGlobal
 import DirectObject
 
 class NonPhysicsWalker(DirectObject.DirectObject):
-
     notify = DirectNotifyGlobal.directNotify.newCategory("NonPhysicsWalker")
+    wantDebugIndicator = base.config.GetBool('want-avatar-physics-indicator', 0)
 
     # Ghost mode overrides this:
     slideName = "slide-is-disabled"
@@ -46,7 +46,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         #assert(self.debugPrint("getSpeeds()"))
         return (self.speed, self.rotationSpeed)
 
-    def initializeCollisions(self, collisionTraverser, avatarNodePath, 
+    def initializeCollisions(self, collisionTraverser, avatarNodePath,
             wallCollideMask, floorCollideMask,
             avatarRadius = 1.4, floorOffset = 1.0, reach = 1.0):
         """
@@ -162,6 +162,12 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         tempCTrav.addCollider(self.cRayNodePath, self.lifter)
         tempCTrav.traverse(render)
 
+    def displayDebugInfo(self):
+        """
+        For debug use.
+        """
+        onScreenDebug.add("controls", "NonPhysicsWalker")
+
     def handleAvatarControls(self, task):
         """
         Check on the arrow keys and update the avatar.
@@ -187,7 +193,9 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         self.rotationSpeed=not slide and (
                 (turnLeft and self.avatarControlRotateSpeed) or
                 (turnRight and -self.avatarControlRotateSpeed))
-            
+           
+        if self.wantDebugIndicator:
+            self.displayDebugInfo()
         # How far did we move based on the amount of time elapsed?
         dt=ClockObject.getGlobalClock().getDt()
         # Check to see if we're moving at all:
@@ -230,7 +238,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         assert(self.debugPrint("enableAvatarControls"))
         assert self.collisionsActive
 
-        taskName = "AvatarControls%s"%(id(self),)
+        taskName = "AvatarControls-%s"%(id(self),)
         # remove any old
         taskMgr.remove(taskName)
         # spawn the new task
@@ -241,7 +249,7 @@ class NonPhysicsWalker(DirectObject.DirectObject):
         Ignore the arrow keys, etc.
         """
         assert(self.debugPrint("disableAvatarControls"))
-        taskName = "AvatarControls%s"%(id(self),)
+        taskName = "AvatarControls-%s"%(id(self),)
         taskMgr.remove(taskName)
     
     if __debug__:
