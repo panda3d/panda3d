@@ -90,13 +90,13 @@ elif [ "$buildType" = "win-publish" ]; then
 
 elif [ "$buildType" = "install" ]; then
     # Use relative paths; as installed on a machine without ctattach etc.
-    pyDir=$install_dir/pandac
+    pyDir=$install_dir/lib/pandac
     ppython=$install_dir/bin/ppython
     pSqueezer=$DIRECT/src/showbase/pandaSqueezer.py
     $ppython -d $install_dir/bin/generatePythonCode -O -v -d $pyDir -e $DIRECT/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
 elif [ "$buildType" = "release" ]; then
     # Use relative paths; as installed on a machine without ctattach etc.
-    pyDir=$install_dir/pandac
+    pyDir=$install_dir/lib/pandac
     ppython=$install_dir/bin/ppython
     pSqueezer=$DIRECT/src/showbase/pandaSqueezer.py
     $ppython $install_dir/bin/generatePythonCode -v -d $pyDir -e $DIRECT/src/extensions -i libdtoolconfig libpandaexpress libpanda libpandaphysics libdirect $extra_genPyCode_libs || exit
