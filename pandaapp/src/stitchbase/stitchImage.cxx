@@ -19,6 +19,7 @@
 #include "stitchImage.h"
 #include "stitchLens.h"
 #include "layeredImage.h"
+#include "fadeImagePool.h"
 
 #include "compose_matrix.h"
 #include "rotate_to.h"
@@ -486,7 +487,7 @@ setup_pixel_scales() {
 //       Access: Private
 //  Description: Resizes the image generated in _data back to
 //               _orig_size_pixels, if it has been generated larger,
-//               int preparation to writing it out.
+//               in preparation to writing it out.
 ////////////////////////////////////////////////////////////////////
 void StitchImage::
 resize_data() {
@@ -523,35 +524,24 @@ void StitchImage::
 fade_out() {
   assert(_data != (PNMImage *)NULL);
 
-  cerr << "Reading fade image " << get_fade_filename() << "\n";
-  PNMImage *fade = new PNMImage(get_fade_filename());
-  if (!fade->is_valid()) {
-    cerr << "Unable to read fade image.\n";
+  const PNMImage *fade = 
+    FadeImagePool::get_image(get_fade_filename(),
+                             _data->get_x_size(), _data->get_y_size());
+  if (fade == (PNMImage *)NULL) {
     return;
-  }
-
-  if (fade->get_x_size() != _data->get_x_size() ||
-      fade->get_y_size() != _data->get_y_size()) {
-    cerr << "Resizing fade image to " << _data->get_x_size()
-         << " by " << _data->get_y_size() << "\n";
-    PNMImage *resized_fade = 
-      new PNMImage(_data->get_x_size(), _data->get_y_size(),
-                   fade->get_num_channels(), fade->get_maxval());
-    resized_fade->quick_filter_from(*fade);
-    delete fade;
-    fade = resized_fade;
   }
 
   // Now apply the fade factor to darken each of our pixels.
   cerr << "Applying fade image.\n";
   for (int y = 0; y < _data->get_y_size(); y++) {
     for (int x = 0; x < _data->get_x_size(); x++) {
-      double bright = fade->get_bright(x, y);
+      // Because we know the fade image is guaranteed to be grayscale,
+      // we can simply ask for its gray component rather than
+      // computing its bright component.
+      double bright = fade->get_gray(x, y);
       _data->set_red_val(x, y, (xelval)_data->get_red_val(x, y) * bright);
       _data->set_green_val(x, y, (xelval)_data->get_green_val(x, y) * bright);
       _data->set_blue_val(x, y, (xelval)_data->get_blue_val(x, y) * bright);
     }
   }
-
-  delete fade;
 }

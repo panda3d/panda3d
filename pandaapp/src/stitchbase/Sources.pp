@@ -11,7 +11,10 @@
     m
 
   #define SOURCES \
-    config_stitch.cxx config_stitch.h layeredImage.cxx layeredImage.h \
+    config_stitch.cxx config_stitch.h \
+    fadeImagePool.I fadeImagePool.cxx fadeImagePool.h \
+    fixedPoint.h \
+    layeredImage.cxx layeredImage.h \
     morphGrid.cxx morphGrid.h stitchCommand.cxx stitchCommand.h \
     stitchCommandReader.cxx stitchCommandReader.h \
     stitchCylindricalLens.cxx stitchCylindricalLens.h stitchFile.cxx \
@@ -31,7 +34,9 @@
     stitchScreen.cxx stitchScreen.h
 
   #define INSTALL_HEADERS \
-    config_stitch.h fixedPoint.h layeredImage.h morphGrid.h stitchCommand.h \
+    config_stitch.h \
+    fadeImagePool.I fadeImagePool.h \
+    fixedPoint.h layeredImage.h morphGrid.h stitchCommand.h \
     stitchCommandReader.h stitchCylindricalLens.h stitchFile.h \
     stitchFisheyeLens.h stitchImage.h stitchImageCommandOutput.h \
     stitchImageOutputter.h stitchImageRasterizer.h stitchLens.h \
