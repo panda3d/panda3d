@@ -28,14 +28,26 @@ DCPackerInterface::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPackerInterface::has_nested_fields
+//       Access: Public, Virtual
+//  Description: Returns true if this field type has any nested fields
+//               (and thus expects a push() .. pop() interface to the
+//               DCPacker), or false otherwise.  If this returns true,
+//               get_num_nested_fields() may be called to determine
+//               how many nested fields are expected.
+////////////////////////////////////////////////////////////////////
+bool DCPackerInterface::
+has_nested_fields() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::get_num_nested_fields
 //       Access: Public, Virtual
 //  Description: Returns the number of nested fields required by this
 //               field type.  These may be array elements or structure
-//               elements.  The return value should be 0 if the field
-//               type does not have any nested fields.  It may also be
-//               -1 to indicate the number of nested fields is
-//               variable.
+//               elements.  The return value may be -1 to indicate the
+//               number of nested fields is variable.
 ////////////////////////////////////////////////////////////////////
 int DCPackerInterface::
 get_num_nested_fields() const {
@@ -58,11 +70,11 @@ get_nested_field(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DCPackerInterface::get_length_bytes
 //       Access: Public, Virtual
-//  Description: If get_num_nested_fields() returns non-zero, this
-//               should return either 0, 2, or 4, indicating the
-//               number of bytes this field's data should be prefixed
-//               with to record its length.  This is respected by
-//               push() and pop().
+//  Description: If has_nested_fields() returns true, this should
+//               return either 0, 2, or 4, indicating the number of
+//               bytes this field's data should be prefixed with to
+//               record its length.  This is respected by push() and
+//               pop().
 ////////////////////////////////////////////////////////////////////
 size_t DCPackerInterface::
 get_length_bytes() const {
@@ -82,45 +94,45 @@ get_pack_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCPackerInterface::pack_value
+//     Function: DCPackerInterface::pack_double
 //       Access: Public, Virtual
 //  Description: Packs the indicated numeric or string value into the
 //               stream.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool DCPackerInterface::
-pack_value(DCPackData &, double) const {
+pack_double(DCPackData &, double) const {
   return false;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCPackerInterface::pack_value
+//     Function: DCPackerInterface::pack_int
 //       Access: Public, Virtual
 //  Description: Packs the indicated numeric or string value into the
 //               stream.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool DCPackerInterface::
-pack_value(DCPackData &, int) const {
+pack_int(DCPackData &, int) const {
   return false;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCPackerInterface::pack_value
+//     Function: DCPackerInterface::pack_int64
 //       Access: Public, Virtual
 //  Description: Packs the indicated numeric or string value into the
 //               stream.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool DCPackerInterface::
-pack_value(DCPackData &, PN_int64) const {
+pack_int64(DCPackData &, PN_int64) const {
   return false;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCPackerInterface::pack_value
+//     Function: DCPackerInterface::pack_string
 //       Access: Public, Virtual
 //  Description: Packs the indicated numeric or string value into the
 //               stream.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool DCPackerInterface::
-pack_value(DCPackData &, const string &) const {
+pack_string(DCPackData &, const string &) const {
   return false;
 }

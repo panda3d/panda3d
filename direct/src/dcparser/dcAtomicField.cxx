@@ -407,37 +407,46 @@ generate_hash(HashGenerator &hashgen) const {
   hashgen.add_int(_flags);
 }
 
-#ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
-//     Function: DCAtomicField::do_pack_args
+//     Function: DCAtomicField::has_nested_fields
 //       Access: Public, Virtual
-//  Description: Packs the Python arguments beginning from the
-//               indicated index of the indicated tuple into the
-//               datagram, appending to the end of the datagram.
-//               Increments index according to the number of arguments
-//               packed.  Returns true if the tuple contained at least
-//               enough arguments to match the field, false otherwise.
+//  Description: Returns true if this field type has any nested fields
+//               (and thus expects a push() .. pop() interface to the
+//               DCPacker), or false otherwise.  If this returns true,
+//               get_num_nested_fields() may be called to determine
+//               how many nested fields are expected.
 ////////////////////////////////////////////////////////////////////
 bool DCAtomicField::
-do_pack_args(Datagram &datagram, PyObject *tuple, int &index) const {
-  int size = PySequence_Size(tuple);
-
-  Elements::const_iterator ei;
-  for (ei = _elements.begin(); ei != _elements.end(); ++ei) {
-    const ElementType &element = (*ei);
-    if (index >= size) {
-      // Not enough elements in the tuple.
-      return false;
-    }
-    PyObject *item = PySequence_GetItem(tuple, index);
-    index++;
-    element._type->pack_arg(datagram, item);
-    Py_DECREF(item);
-  }
-
+has_nested_fields() const {
   return true;
 }
-#endif  // HAVE_PYTHON
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::get_num_nested_fields
+//       Access: Public, Virtual
+//  Description: Returns the number of nested fields required by this
+//               field type.  These may be array elements or structure
+//               elements.  The return value may be -1 to indicate the
+//               number of nested fields is variable.
+////////////////////////////////////////////////////////////////////
+int DCAtomicField::
+get_num_nested_fields() const {
+  return _elements.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCAtomicField::get_nested_field
+//       Access: Public, Virtual
+//  Description: Returns the DCPackerInterface object that represents
+//               the nth nested field.  This may return NULL if there
+//               is no such field (but it shouldn't do this if n is in
+//               the range 0 <= n < get_num_nested_fields()).
+////////////////////////////////////////////////////////////////////
+DCPackerInterface *DCAtomicField::
+get_nested_field(int n) const {
+  nassertr(n >= 0 && n < (int)_elements.size(), NULL);
+  return _elements[n]._type;
+}
 
 #ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////

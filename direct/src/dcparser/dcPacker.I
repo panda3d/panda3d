@@ -18,14 +18,31 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::has_nested_fields
+//       Access: Public, Virtual
+//  Description: Returns true if the current field has any nested
+//               fields (and thus expects a push() .. pop()
+//               interface), or false otherwise.  If this returns
+//               true, get_num_nested_fields() may be called to
+//               determine how many nested fields are expected.
+////////////////////////////////////////////////////////////////////
+INLINE bool DCPacker::
+has_nested_fields() const {
+  if (_current_field == NULL) {
+    return false;
+  } else {
+    return _current_field->has_nested_fields();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPacker::get_num_nested_fields
 //       Access: Published
 //  Description: Returns the number of nested fields associated with
-//               the current field.  If this returns nonzero, it will
-//               be necessary to call push(), followed by pack_value()
-//               the indicated number of times, followed by pop().
+//               the current field, if has_nested_fields() returned
+//               true.
 //
-//               The return value may also be -1 to indicate that a
+//               The return value may be -1 to indicate that a
 //               variable number of nested fields are accepted by this
 //               field type (e.g. a variable-length array).
 ////////////////////////////////////////////////////////////////////
@@ -52,17 +69,17 @@ get_pack_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCPacker::pack_value
+//     Function: DCPacker::pack_double
 //       Access: Published
 //  Description: Packs the indicated numeric or string value into the
 //               stream.
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPacker::
-pack_value(double value) {
+pack_double(double value) {
   if (_current_field == NULL) {
     _pack_error = true;
   } else {
-    if (!_current_field->pack_value(_pack_data, value)) {
+    if (!_current_field->pack_double(_pack_data, value)) {
       _pack_error = true;
     }
     advance();
@@ -70,17 +87,17 @@ pack_value(double value) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCPacker::pack_value
+//     Function: DCPacker::pack_int
 //       Access: Published
 //  Description: Packs the indicated numeric or string value into the
 //               stream.
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPacker::
-pack_value(int value) {
+pack_int(int value) {
   if (_current_field == NULL) {
     _pack_error = true;
   } else {
-    if (!_current_field->pack_value(_pack_data, value)) {
+    if (!_current_field->pack_int(_pack_data, value)) {
       _pack_error = true;
     }
     advance();
@@ -88,17 +105,17 @@ pack_value(int value) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCPacker::pack_value
+//     Function: DCPacker::pack_int64
 //       Access: Published
 //  Description: Packs the indicated numeric or string value into the
 //               stream.
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPacker::
-pack_value(PN_int64 value) {
+pack_int64(PN_int64 value) {
   if (_current_field == NULL) {
     _pack_error = true;
   } else {
-    if (!_current_field->pack_value(_pack_data, value)) {
+    if (!_current_field->pack_int64(_pack_data, value)) {
       _pack_error = true;
     }
     advance();
@@ -106,17 +123,17 @@ pack_value(PN_int64 value) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCPacker::pack_value
+//     Function: DCPacker::pack_string
 //       Access: Published
 //  Description: Packs the indicated numeric or string value into the
 //               stream.
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPacker::
-pack_value(const string &value) {
+pack_string(const string &value) {
   if (_current_field == NULL) {
     _pack_error = true;
   } else {
-    if (!_current_field->pack_value(_pack_data, value)) {
+    if (!_current_field->pack_string(_pack_data, value)) {
       _pack_error = true;
     }
     advance();
@@ -198,6 +215,7 @@ get_data() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DCPacker::
 advance() {
+  _current_field_index++;
   if (_num_nested_fields >= 0 &&
       _current_field_index >= _num_nested_fields) {
     // Done with all the fields on this parent.  The caller must now
@@ -206,7 +224,6 @@ advance() {
 
   } else {
     // We have another field to advance to.
-    _current_field_index++;
     _current_field = _current_parent->get_nested_field(_current_field_index);
   }
 }

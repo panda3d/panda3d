@@ -38,15 +38,16 @@ class EXPCL_DIRECT DCPackerInterface {
 public:
   virtual ~DCPackerInterface();
 
+  virtual bool has_nested_fields() const;
   virtual int get_num_nested_fields() const;
   virtual DCPackerInterface *get_nested_field(int n) const;
   virtual size_t get_length_bytes() const;
 
   virtual DCSubatomicType get_pack_type() const;
-  virtual bool pack_value(DCPackData &pack_data, double value) const;
-  virtual bool pack_value(DCPackData &pack_data, int value) const;
-  virtual bool pack_value(DCPackData &pack_data, PN_int64 value) const;
-  virtual bool pack_value(DCPackData &pack_data, const string &value) const;
+  virtual bool pack_double(DCPackData &pack_data, double value) const;
+  virtual bool pack_int(DCPackData &pack_data, int value) const;
+  virtual bool pack_int64(DCPackData &pack_data, PN_int64 value) const;
+  virtual bool pack_string(DCPackData &pack_data, const string &value) const;
 };
 
 #endif

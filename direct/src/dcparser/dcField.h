@@ -51,7 +51,7 @@ PUBLISHED:
   virtual DCMolecularField *as_molecular_field();
 
 #ifdef HAVE_PYTHON
-  void pack_args(Datagram &datagram, PyObject *tuple) const;
+  bool pack_args(Datagram &datagram, PyObject *sequence) const;
   PyObject *unpack_args(DatagramIterator &iterator) const;
 
   void receive_update(PyObject *distobj, DatagramIterator &iterator) const;
@@ -72,7 +72,6 @@ protected:
 
 public:
 #ifdef HAVE_PYTHON
-  virtual bool do_pack_args(Datagram &datagram, PyObject *tuple, int &index) const=0;
   virtual bool do_unpack_args(pvector<PyObject *> &args, DatagramIterator &iterator) const=0;
 #endif
 

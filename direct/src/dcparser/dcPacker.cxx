@@ -49,7 +49,7 @@ DCPacker::
 //               DCType or DCField.
 ////////////////////////////////////////////////////////////////////
 void DCPacker::
-begin(DCPackerInterface *root) {
+begin(const DCPackerInterface *root) {
   // If this assertion fails, we didn't match begin() up with end().
   nassertv(_stack.empty() && 
            _current_field == NULL &&
@@ -96,37 +96,39 @@ end() {
 //               array or the individual fields in a structure field.
 //               It must also be balanced by a matching pop().
 //
-//               It is necessary to use push() / pop() if and only if
-//               get_num_nested_fields() returns nonzero.
+//               It is necessary to use push() / pop() only if
+//               has_nested_fields() returns true.
 ////////////////////////////////////////////////////////////////////
 void DCPacker::
 push() {
-  if (_current_field == NULL) {
+  if (!has_nested_fields()) {
     _pack_error = true;
 
   } else {
     int num_nested_fields = _current_field->get_num_nested_fields();
-    if (num_nested_fields == 0) {
-      _pack_error = true;
+    StackElement element;
+    element._current_parent = _current_parent;
+    element._current_field_index = _current_field_index;
+    element._push_start = _push_start;
+    _stack.push_back(element);
+    
+    _current_parent = _current_field;
+    _num_nested_fields = num_nested_fields;
+    _current_field_index = 0;
 
+    if (_num_nested_fields >= 0 &&
+        _current_field_index >= _num_nested_fields) {
+      _current_field = NULL;
+      
     } else {
-      StackElement element;
-      element._current_parent = _current_parent;
-      element._current_field_index = _current_field_index;
-      element._push_start = _push_start;
-      _stack.push_back(element);
-
-      _current_parent = _current_field;
-      _current_field_index = 0;
-      _current_field = _current_parent->get_nested_field(0);
-      _num_nested_fields = num_nested_fields;
-
-      // Reserve length_bytes for when we figure out what the length
-      // is.
-      _push_start = _pack_data.get_length();
-      size_t length_bytes = _current_parent->get_length_bytes();
-      _pack_data.append_junk(length_bytes);
+      _current_field = _current_parent->get_nested_field(_current_field_index);
     }
+    
+    // Reserve length_bytes for when we figure out what the length
+    // is.
+    _push_start = _pack_data.get_length();
+    size_t length_bytes = _current_parent->get_length_bytes();
+    _pack_data.append_junk(length_bytes);
   }
 }
 
@@ -180,3 +182,48 @@ pop() {
 
   advance();
 }
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::pack_object
+//       Access: Published
+//  Description: Packs the Python object of whatever type into the
+//               packer.  Each numeric object and string object maps
+//               to the corresponding pack_value() call; a tuple or
+//               sequence maps to a push() followed by all of the
+//               tuple's contents followed by a pop().
+////////////////////////////////////////////////////////////////////
+void DCPacker::
+pack_object(PyObject *object) {
+  PyObject *str = PyObject_Str(object);
+  Py_DECREF(str);
+
+  if (PyInt_Check(object)) {
+    pack_int(PyInt_AS_LONG(object));
+
+  } else if (PyFloat_Check(object)) {
+    pack_double(PyFloat_AS_DOUBLE(object));
+
+  } else if (PyLong_Check(object)) {
+    pack_int64(PyLong_AsLongLong(object));
+
+  } else if (PyString_Check(object) || PyUnicode_Check(object)) {
+    char *buffer;
+    int length;
+    PyString_AsStringAndSize(object, &buffer, &length);
+    if (buffer) {
+      pack_string(string(buffer, length));
+    }
+
+  } else if (PySequence_Check(object)) {
+    push();
+    int size = PySequence_Size(object);
+    for (int i = 0; i < size; i++) {
+      PyObject *element = PySequence_GetItem(object, i);
+      pack_object(element);
+      Py_DECREF(element);
+    }
+    pop();
+  }
+}
+#endif  // HAVE_PYTHON

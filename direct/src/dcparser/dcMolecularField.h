@@ -40,26 +40,31 @@ PUBLISHED:
 
 public:
   DCMolecularField(const string &name);
+
+  void add_atomic(DCAtomicField *atomic);
+
   virtual void write(ostream &out, bool brief, int indent_level) const;
   virtual void generate_hash(HashGenerator &hash) const;
 
+  virtual bool has_nested_fields() const;
+  virtual int get_num_nested_fields() const;
+  virtual DCPackerInterface *get_nested_field(int n) const;
+
 public:
 #ifdef HAVE_PYTHON
-  virtual bool do_pack_args(Datagram &datagram, PyObject *tuple, int &index) const;
   virtual bool do_unpack_args(pvector<PyObject *> &args, DatagramIterator &iterator) const;
 #endif
 
-public:
+private:
   // These members define the primary interface to the molecular field
   // definition as read from the file.
   typedef pvector<DCAtomicField *> Fields;
   Fields _fields;
 
-private:
   DCType *get_next_pack_element();
 
-  size_t _pack_field_index;
-  size_t _pack_element_index;
+  typedef pvector<DCPackerInterface *> NestedFields;
+  NestedFields _nested_fields;
 };
 
 #endif

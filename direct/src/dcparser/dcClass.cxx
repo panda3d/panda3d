@@ -330,8 +330,10 @@ direct_update(PyObject *distobj, const string &field_name,
 //               presumably either a required field or a specified
 //               optional field, and we are building up a datagram for
 //               the generate-with-required message.
+//
+//               Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
-void DCClass::
+bool DCClass::
 pack_required_field(Datagram &dg, PyObject *distobj, DCField *field) const {
   DCAtomicField *atom = field->as_atomic_field();
   if (atom == (DCAtomicField *)NULL) {
@@ -339,7 +341,7 @@ pack_required_field(Datagram &dg, PyObject *distobj, DCField *field) const {
     strm << "Cannot pack non-atomic field " << field->get_name()
          << " for generate";
     nassert_raise(strm.str());
-    return;
+    return false;
   }
 
   // We need to get the initial value of this field.  There isn't a
@@ -354,7 +356,7 @@ pack_required_field(Datagram &dg, PyObject *distobj, DCField *field) const {
     ostringstream strm;
     strm << "Required field " << set_name << " has no parameters!";
     nassert_raise(strm.str());
-    return;
+    return false;
   }
   
   if (set_name.substr(0, 3) != string("set")) {
@@ -362,7 +364,7 @@ pack_required_field(Datagram &dg, PyObject *distobj, DCField *field) const {
     ostringstream strm;
     strm << "Required field " << set_name << " does not begin with 'set'";
     nassert_raise(strm.str());
-    return;
+    return false;
   }
   string get_name = set_name;
   get_name[0] = 'g';
@@ -374,11 +376,11 @@ pack_required_field(Datagram &dg, PyObject *distobj, DCField *field) const {
     strm << "Required field " << set_name
          << " doesn't have matching field named " << get_name;
     nassert_raise(strm.str());
-    return;
+    return false;
   }
   PyObject *func = 
     PyObject_GetAttrString(distobj, (char *)get_name.c_str());
-  nassertv(func != (PyObject *)NULL);
+  nassertr(func != (PyObject *)NULL, false);
   
   PyObject *empty_args = PyTuple_New(0);
   PyObject *result = PyObject_CallObject(func, empty_args);
@@ -386,7 +388,7 @@ pack_required_field(Datagram &dg, PyObject *distobj, DCField *field) const {
   Py_DECREF(func);
   if (result == (PyObject *)NULL) {
     cerr << "Error when calling " << get_name << "\n";
-    return;
+    return false;
   }
   
   if (atom->get_num_elements() == 1) {
@@ -398,8 +400,10 @@ pack_required_field(Datagram &dg, PyObject *distobj, DCField *field) const {
   }        
   
   // Now pack the arguments into the datagram.
-  atom->pack_args(dg, result);
+  bool pack_ok = atom->pack_args(dg, result);
   Py_DECREF(result);
+
+  return pack_ok;
 }
 #endif  // HAVE_PYTHON
 
@@ -488,7 +492,9 @@ ai_format_generate(PyObject *distobj, int do_id,
     DCField *field = get_inherited_field(i);
     DCAtomicField *atom = field->as_atomic_field();
     if (atom != (DCAtomicField *)NULL && atom->is_required()) {
-      pack_required_field(dg, distobj, atom);
+      if (!pack_required_field(dg, distobj, atom)) {
+        return Datagram();
+      }
     }
   }
 
@@ -511,7 +517,9 @@ ai_format_generate(PyObject *distobj, int do_id,
         return Datagram();
       }
 
-      pack_required_field(dg, distobj, field);
+      if (!pack_required_field(dg, distobj, field)) {
+        return Datagram();
+      }
     }
   }
 

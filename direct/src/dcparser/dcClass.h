@@ -58,7 +58,7 @@ PUBLISHED:
                      const string &value_blob);
   void direct_update(PyObject *distobj, const string &field_name, 
                      const Datagram &datagram);
-  void pack_required_field(Datagram &dg, PyObject *distobj, 
+  bool pack_required_field(Datagram &dg, PyObject *distobj, 
                            DCField *field) const;
 
 

@@ -35,19 +35,24 @@ PUBLISHED:
   DCPacker();
   ~DCPacker();
 
-  void begin(DCPackerInterface *root);
+  void begin(const DCPackerInterface *root);
   bool end();
 
+  INLINE bool has_nested_fields() const;
   INLINE int get_num_nested_fields() const;
   void push();
   void pop();
 
   INLINE DCSubatomicType get_pack_type() const;
-  INLINE void pack_value(double value);
-  INLINE void pack_value(int value);
-  INLINE void pack_value(PN_int64 value);
-  INLINE void pack_value(const string &value);
+  INLINE void pack_double(double value);
+  INLINE void pack_int(int value);
+  INLINE void pack_int64(PN_int64 value);
+  INLINE void pack_string(const string &value);
   INLINE void pack_literal_value(const string &value);
+
+#ifdef HAVE_PYTHON
+  void pack_object(PyObject *object);
+#endif
 
   INLINE bool had_pack_error() const;
 
@@ -64,15 +69,15 @@ private:
 
   class StackElement {
   public:
-    DCPackerInterface *_current_parent;
+    const DCPackerInterface *_current_parent;
     int _current_field_index;
     size_t _push_start;
   };
-  typedef vector<StackElement> Stack;
+  typedef pvector<StackElement> Stack;
 
   Stack _stack;
-  DCPackerInterface *_current_field;
-  DCPackerInterface *_current_parent;
+  const DCPackerInterface *_current_field;
+  const DCPackerInterface *_current_parent;
   int _current_field_index;
   size_t _push_start;
   int _num_nested_fields;

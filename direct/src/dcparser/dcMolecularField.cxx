@@ -70,6 +70,24 @@ DCMolecularField(const string &name) : DCField(name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCMolecularField::add_atomic
+//       Access: Public
+//  Description: Adds the indicated atomic field to the end of the
+//               list of atomic fields that make up the molecular
+//               field.  This is normally called only during parsing
+//               of the dc file.
+////////////////////////////////////////////////////////////////////
+void DCMolecularField::
+add_atomic(DCAtomicField *atomic) {
+  _fields.push_back(atomic);
+
+  int num_nested_fields = atomic->get_num_nested_fields();
+  for (int i = 0; i < num_nested_fields; i++) {
+    _nested_fields.push_back(atomic->get_nested_field(i));
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCMolecularField::write
 //       Access: Public, Virtual
 //  Description: Generates a parseable description of the object to
@@ -114,30 +132,46 @@ generate_hash(HashGenerator &hashgen) const {
   }
 }
 
-#ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
-//     Function: DCMolecularField::do_pack_args
+//     Function: DCMolecularField::has_nested_fields
 //       Access: Public, Virtual
-//  Description: Packs the Python arguments beginning from the
-//               indicated index of the indicated tuple into the
-//               datagram, appending to the end of the datagram.
-//               Increments index according to the number of arguments
-//               packed.  Returns true if the tuple contained at least
-//               enough arguments to match the field, false otherwise.
+//  Description: Returns true if this field type has any nested fields
+//               (and thus expects a push() .. pop() interface to the
+//               DCPacker), or false otherwise.  If this returns true,
+//               get_num_nested_fields() may be called to determine
+//               how many nested fields are expected.
 ////////////////////////////////////////////////////////////////////
 bool DCMolecularField::
-do_pack_args(Datagram &datagram, PyObject *tuple, int &index) const {
-  Fields::const_iterator fi;
-  for (fi = _fields.begin(); fi != _fields.end(); ++fi) {
-    DCField *field = (*fi);
-    if (!field->do_pack_args(datagram, tuple, index)) {
-      return false;
-    }
-  }
-
+has_nested_fields() const {
   return true;
 }
-#endif  // HAVE_PYTHON
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCMolecularField::get_num_nested_fields
+//       Access: Public, Virtual
+//  Description: Returns the number of nested fields required by this
+//               field type.  These may be array elements or structure
+//               elements.  The return value may be -1 to indicate the
+//               number of nested fields is variable.
+////////////////////////////////////////////////////////////////////
+int DCMolecularField::
+get_num_nested_fields() const {
+  return _nested_fields.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCMolecularField::get_nested_field
+//       Access: Public, Virtual
+//  Description: Returns the DCPackerInterface object that represents
+//               the nth nested field.  This may return NULL if there
+//               is no such field (but it shouldn't do this if n is in
+//               the range 0 <= n < get_num_nested_fields()).
+////////////////////////////////////////////////////////////////////
+DCPackerInterface *DCMolecularField::
+get_nested_field(int n) const {
+  nassertr(n >= 0 && n < (int)_nested_fields.size(), NULL);
+  return _nested_fields[n];
+}
 
 #ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////

@@ -45,15 +45,16 @@ PUBLISHED:
   void set_divisor(int divisor);
 
 public:
+  virtual bool has_nested_fields() const;
   virtual int get_num_nested_fields() const;
   virtual DCPackerInterface *get_nested_field(int n) const;
   virtual size_t get_length_bytes() const;
 
   virtual DCSubatomicType get_pack_type() const;
-  virtual bool pack_value(DCPackData &pack_data, double value) const;
-  virtual bool pack_value(DCPackData &pack_data, int value) const;
-  virtual bool pack_value(DCPackData &pack_data, PN_int64 value) const;
-  virtual bool pack_value(DCPackData &pack_data, const string &value) const;
+  virtual bool pack_double(DCPackData &pack_data, double value) const;
+  virtual bool pack_int(DCPackData &pack_data, int value) const;
+  virtual bool pack_int64(DCPackData &pack_data, PN_int64 value) const;
+  virtual bool pack_string(DCPackData &pack_data, const string &value) const;
 
   virtual void output(ostream &out, const string &parameter_name, 
                       bool brief) const;
@@ -84,13 +85,14 @@ private:
   // The rest of this is to maintain the static list of
   // DCPackerInterface objects for _nested_field, above.  We allocate
   // each possible object once, and don't delete it.
-  typedef map<int, DCSimpleType *> DivisorMap;
-  typedef map<DCSubatomicType, DivisorMap> NestedFieldMap;
+  typedef pmap<int, DCSimpleType *> DivisorMap;
+  typedef pmap<DCSubatomicType, DivisorMap> NestedFieldMap;
   static NestedFieldMap _nested_field_map;
 
   class Uint32Uint8Type : public DCPackerInterface {
   public:
     Uint32Uint8Type();
+    virtual bool has_nested_fields() const;
     virtual int get_num_nested_fields() const;
     virtual DCPackerInterface *get_nested_field(int n) const;
 

@@ -158,14 +158,26 @@ set_divisor(int divisor) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCSimpleType::has_nested_fields
+//       Access: Public, Virtual
+//  Description: Returns true if this field type has any nested fields
+//               (and thus expects a push() .. pop() interface to the
+//               DCPacker), or false otherwise.  If this returns true,
+//               get_num_nested_fields() may be called to determine
+//               how many nested fields are expected.
+////////////////////////////////////////////////////////////////////
+bool DCSimpleType::
+has_nested_fields() const {
+  return _is_array;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCSimpleType::get_num_nested_fields
 //       Access: Public, Virtual
 //  Description: Returns the number of nested fields required by this
 //               field type.  These may be array elements or structure
-//               elements.  The return value should be 0 if the field
-//               type does not have any nested fields.  It may also be
-//               -1 to indicate the number of nested fields is
-//               variable.
+//               elements.  The return value may be -1 to indicate the
+//               number of nested fields is variable.
 ////////////////////////////////////////////////////////////////////
 int DCSimpleType::
 get_num_nested_fields() const {
@@ -188,11 +200,11 @@ get_nested_field(int n) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DCSimpleType::get_length_bytes
 //       Access: Public, Virtual
-//  Description: If get_num_nested_fields() returns non-zero, this
-//               should return either 0, 2, or 4, indicating the
-//               number of bytes this field's data should be prefixed
-//               with to record its length.  This is respected by
-//               push() and pop().
+//  Description: If has_nested_fields() returns true, this should
+//               return either 0, 2, or 4, indicating the number of
+//               bytes this field's data should be prefixed with to
+//               record its length.  This is respected by push() and
+//               pop().
 ////////////////////////////////////////////////////////////////////
 size_t DCSimpleType::
 get_length_bytes() const {
@@ -212,13 +224,13 @@ get_pack_type() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::pack_value
+//     Function: DCSimpleType::pack_double
 //       Access: Published, Virtual
 //  Description: Packs the indicated numeric or string value into the
 //               stream.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool DCSimpleType::
-pack_value(DCPackData &pack_data, double value) const {
+pack_double(DCPackData &pack_data, double value) const {
   double real_value = value * _divisor;
   int int_value = (int)floor(real_value + 0.5);
 
@@ -286,13 +298,13 @@ pack_value(DCPackData &pack_data, double value) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::pack_value
+//     Function: DCSimpleType::pack_int
 //       Access: Published, Virtual
 //  Description: Packs the indicated numeric or string value into the
 //               stream.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool DCSimpleType::
-pack_value(DCPackData &pack_data, int value) const {
+pack_int(DCPackData &pack_data, int value) const {
   int int_value = value * _divisor;
 
   char buffer[8];
@@ -369,13 +381,13 @@ pack_value(DCPackData &pack_data, int value) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::pack_value
+//     Function: DCSimpleType::pack_int64
 //       Access: Published, Virtual
 //  Description: Packs the indicated numeric or string value into the
 //               stream.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool DCSimpleType::
-pack_value(DCPackData &pack_data, PN_int64 value) const {
+pack_int64(DCPackData &pack_data, PN_int64 value) const {
   PN_int64 int_value = value * _divisor;
 
   char buffer[8];
@@ -445,13 +457,13 @@ pack_value(DCPackData &pack_data, PN_int64 value) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DCSimpleType::pack_value
+//     Function: DCSimpleType::pack_string
 //       Access: Published, Virtual
 //  Description: Packs the indicated numeric or string value into the
 //               stream.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool DCSimpleType::
-pack_value(DCPackData &pack_data, const string &value) const {
+pack_string(DCPackData &pack_data, const string &value) const {
   char buffer[4];
 
   switch (_type) {
@@ -946,6 +958,16 @@ DCSimpleType::Uint32Uint8Type::
 Uint32Uint8Type() {
   _uint32_type = new DCSimpleType(ST_uint32);
   _uint8_type = new DCSimpleType(ST_uint8);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCSimpleType::Uint32Uint8Type::has_nested_fields
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool DCSimpleType::Uint32Uint8Type::
+has_nested_fields() const {
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

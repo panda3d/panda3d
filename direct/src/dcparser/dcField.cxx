@@ -17,6 +17,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "dcField.h"
+#include "dcPacker.h"
 #include "hashGenerator.h"
 #include "dcmsgtypes.h"
 
@@ -72,19 +73,31 @@ as_molecular_field() {
 //       Access: Published
 //  Description: Packs the Python arguments from the indicated tuple
 //               into the datagram, appending to the end of the
-//               datagram.
+//               datagram.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
-void DCField::
-pack_args(Datagram &datagram, PyObject *tuple) const {
-  nassertv(PySequence_Check(tuple));
-  int index = 0;
-  bool enough_args = do_pack_args(datagram, tuple, index);
-  if (!enough_args || index != PySequence_Size(tuple)) {
-    ostringstream strm;
-    strm << "Wrong number of arguments to field " << get_name();
-    nassert_raise(strm.str());
-    return;
+bool DCField::
+pack_args(Datagram &datagram, PyObject *sequence) const {
+  nassertr(PySequence_Check(sequence), false);
+  DCPacker packer;
+  packer.begin(this);
+  packer.pack_object(sequence);
+  if (packer.end()) {
+    datagram.append_data(packer.get_data(), packer.get_length());
+    return true;
   }
+
+  PyObject *tuple = PySequence_Tuple(sequence);
+  PyObject *str = PyObject_Str(tuple);
+  
+  ostringstream strm;
+  strm << "Incorrect arguments to field: " << get_name()
+       << PyString_AsString(str);
+
+  Py_DECREF(str);
+  Py_DECREF(tuple);
+    
+  nassert_raise(strm.str());
+  return false;
 }
 #endif  // HAVE_PYTHON
 

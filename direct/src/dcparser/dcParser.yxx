@@ -285,15 +285,15 @@ atomic_element_definition:
 default_value:
 	INTEGER
 {
-  default_value_packer.pack_value($1);
+  default_value_packer.pack_int($1);
 }
         | REAL
 {
-  default_value_packer.pack_value($1);
+  default_value_packer.pack_double($1);
 }
         | STRING
 {
-  default_value_packer.pack_value($1);
+  default_value_packer.pack_string($1);
 }
         | HEX_STRING
 {
@@ -310,13 +310,13 @@ default_value:
         | INTEGER '*' INTEGER
 {
   for (int i = 0; i < $3; i++) {
-    default_value_packer.pack_value($1);
+    default_value_packer.pack_int($1);
   }
 }
         | REAL '*' INTEGER
 {
   for (int i = 0; i < $3; i++) {
-    default_value_packer.pack_value($1);
+    default_value_packer.pack_double($1);
   }
 }
         | HEX_STRING '*' INTEGER
@@ -476,16 +476,16 @@ molecular_atom_list:
         atomic_name
 {
   if ($1 != (DCAtomicField *)NULL) {
-    current_molecular->_fields.push_back($1);
+    current_molecular->add_atomic($1);
   }
 }
         | molecular_atom_list ',' atomic_name
 {
   if ($3 != (DCAtomicField *)NULL) {
-    current_molecular->_fields.push_back($3);
-    if (current_molecular->_fields[0]->_flags != $3->_flags) {
+    current_molecular->add_atomic($3);
+    if (current_molecular->get_atomic(0)->_flags != $3->_flags) {
       yyerror("Mismatched flags in molecule between " + 
-              current_molecular->_fields[0]->get_name() + " and " +
+              current_molecular->get_atomic(0)->get_name() + " and " +
               $3->get_name());
     }
   }
