@@ -22,6 +22,12 @@ EggMultiBase() {
      "'y-up', 'z-up', 'y-up-left', or 'z-up-left'.",
      &EggMultiBase::dispatch_coordinate_system, 
      &_got_coordinate_system, &_coordinate_system);
+
+  add_option
+    ("f", "", 80, 
+     "Force complete loading: load up the egg file along with all of its "
+     "external references.",
+     &EggMultiBase::dispatch_none, &_force_complete);
 }
 
 
@@ -94,11 +100,18 @@ append_command_comment(EggData &data) {
 EggData *EggMultiBase::
 read_egg(const Filename &filename) {
   EggData *data = new EggData;
-  if (data->read(filename)) {
-    return data;
+  if (!data->read(filename)) {
+    // Failure reading.
+    delete data;
+    return (EggData *)NULL;
   }
 
-  // Failure reading.
-  delete data;
-  return (EggData *)NULL;
+  if (_force_complete) {
+    if (!data->resolve_externals()) {
+      delete data;
+      return (EggData *)NULL;
+    }
+  }
+   
+  return data;
 }

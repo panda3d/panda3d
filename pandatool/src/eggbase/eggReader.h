@@ -23,6 +23,7 @@ public:
 protected:
   virtual bool handle_args(Args &args);
 
+  bool _force_complete;
 };
 
 #endif

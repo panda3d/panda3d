@@ -20,6 +20,12 @@ EggReader() {
      "Specify the coordinate system to operate in.  This may be "
      " one of 'y-up', 'z-up', 'y-up-left', or 'z-up-left'.  The default "
      "is the coordinate system of the input egg file.");
+
+  add_option
+    ("f", "", 80, 
+     "Force complete loading: load up the egg file along with all of its "
+     "external references.",
+     &EggReader::dispatch_none, &_force_complete);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,6 +50,12 @@ handle_args(ProgramBase::Args &args) {
       // ProgramBase won't try to tell the user how to run the program
       // just because we got a bad egg file.
       exit(1);
+    }
+
+    if (_force_complete) {
+      if (!_data.resolve_externals()) {
+	exit(1);
+      }
     }
   }
 

@@ -152,6 +152,7 @@ write_eggs() {
       nassertv(_inplace);
     }
 
+    nout << "Writing " << filename << "\n";
     if (!data->write_egg(filename)) {
       // Error writing an egg file; abort.
       exit(1);

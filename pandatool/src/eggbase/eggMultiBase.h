@@ -38,6 +38,8 @@ protected:
 
   typedef vector<EggData *> Eggs;
   Eggs _eggs;
+
+  bool _force_complete;
 };
 
 #endif
