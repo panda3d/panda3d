@@ -1439,6 +1439,10 @@ make_polyset(EggBin *egg_bin, PandaNode *parent) {
   }
 
   // Convert the primitives' vertex pool to a GeomVertexData.
+  if (first_prim->get_pool() == (EggVertexPool *)NULL) {
+    // Whoops, must be a degenerate primitive.
+    return NULL;
+  }
   PT(qpGeomVertexData) vertex_data = 
     make_vertex_data(first_prim->get_pool(), first_prim->get_vertex_to_node());
   nassertr(vertex_data != (qpGeomVertexData *)NULL, NULL);
