@@ -127,6 +127,7 @@ GuiFrame::GuiFrame(const string& name) : GuiItem(name) {
 }
 
 GuiFrame::~GuiFrame(void) {
+  this->unmanage();
 }
 
 void GuiFrame::add_item(GuiItem* item) {

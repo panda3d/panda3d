@@ -16,6 +16,7 @@ GuiItem::GuiItem(const string& name) : Namable(name), _added_hooks(false),
 }
 
 GuiItem::~GuiItem(void) {
+  this->unmanage();
 }
 
 void GuiItem::manage(GuiManager* mgr, EventHandler&) {

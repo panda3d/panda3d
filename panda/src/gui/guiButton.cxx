@@ -213,6 +213,7 @@ GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* up_roll,
 }
 
 GuiButton::~GuiButton(void) {
+  this->unmanage();
 }
 
 void GuiButton::manage(GuiManager* mgr, EventHandler& eh) {

@@ -48,6 +48,7 @@ GuiRollover::GuiRollover(const string& name, GuiLabel* off, GuiLabel* on)
 }
 
 GuiRollover::~GuiRollover(void) {
+  this->unmanage();
 }
 
 void GuiRollover::manage(GuiManager* mgr, EventHandler& eh) {

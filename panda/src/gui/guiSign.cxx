@@ -17,6 +17,7 @@ GuiSign::GuiSign(const string& name, GuiLabel* sign) : GuiItem(name),
 }
 
 GuiSign::~GuiSign(void) {
+  this->unmanage();
 }
 
 void GuiSign::manage(GuiManager* mgr, EventHandler& eh) {
