@@ -10,10 +10,10 @@
 #include <notifyCategoryProxy.h>
 #include <collideMask.h>
 
-NotifyCategoryDecl(framework, EXPCL_FRAMEWORK, EXPTP_FRAMEWORK);
+NotifyCategoryDecl(framework, EXPCL_EMPTY, EXPCL_EMPTY);
 
 // Configure variables for framework package.
-extern const double EXPCL_FRAMEWORK drive_height;
-extern const CollideMask EXPCL_FRAMEWORK drive_mask;
+extern const double drive_height;
+extern const CollideMask drive_mask;
 
 #endif

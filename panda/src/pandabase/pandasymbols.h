@@ -84,14 +84,6 @@
   #define EXPTP_SHADER extern
 #endif
 
-#ifdef BUILDING_FRAMEWORK
-  #define EXPCL_FRAMEWORK __declspec(dllexport)
-  #define EXPTP_FRAMEWORK
-#else
-  #define EXPCL_FRAMEWORK __declspec(dllimport)
-  #define EXPTP_FRAMEWORK extern
-#endif
-
 /* These are temporarily here until we move them to their proper homes. */
 #ifdef BUILDING_DIRECT
   #define EXPCL_DIRECT __declspec(dllexport)

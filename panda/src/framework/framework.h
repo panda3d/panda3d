@@ -20,25 +20,24 @@
 #include <mouseWatcher.h>
 #include <chancfg.h>
 
-EXPCL_FRAMEWORK extern EventHandler event_handler;
-EXPCL_FRAMEWORK extern PT_NamedNode lights;
-EXPCL_FRAMEWORK extern PT_NamedNode root;
-EXPCL_FRAMEWORK extern PT_NamedNode data_root;
-EXPCL_FRAMEWORK extern PT_NamedNode render;
-EXPCL_FRAMEWORK extern PT_NamedNode cameras;
-EXPCL_FRAMEWORK extern PT(MouseAndKeyboard) mak;
-EXPCL_FRAMEWORK extern PT(MouseWatcher) mouse_watcher;
-EXPCL_FRAMEWORK extern PT(Trackball) trackball;
-EXPCL_FRAMEWORK extern PT(GraphicsWindow) main_win;
-EXPCL_FRAMEWORK extern PT(DirectionalLight) dlight;
-EXPCL_FRAMEWORK extern bool have_dlight;
-EXPCL_FRAMEWORK extern Loader loader;
+extern EventHandler event_handler;
+extern PT_NamedNode lights;
+extern PT_NamedNode root;
+extern PT_NamedNode data_root;
+extern PT_NamedNode render;
+extern PT_NamedNode cameras;
+extern PT(MouseAndKeyboard) mak;
+extern PT(MouseWatcher) mouse_watcher;
+extern PT(Trackball) trackball;
+extern PT(GraphicsWindow) main_win;
+extern PT(DirectionalLight) dlight;
+extern bool have_dlight;
+extern Loader loader;
 
-EXPCL_FRAMEWORK extern void set_alt_trackball(Node*);
-EXPCL_FRAMEWORK extern int framework_main(int argc, char *argv[]);
-EXPCL_FRAMEWORK extern void (*define_keys)(EventHandler&);
-EXPCL_FRAMEWORK extern void (*additional_idle)();
-EXPCL_FRAMEWORK extern void (*extra_overrides_func)(ChanCfgOverrides&,
-						    std::string&);
+extern void set_alt_trackball(Node*);
+extern int framework_main(int argc, char *argv[]);
+extern void (*define_keys)(EventHandler&);
+extern void (*additional_idle)();
+extern void (*extra_overrides_func)(ChanCfgOverrides&, std::string&);
 
 #endif
