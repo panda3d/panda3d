@@ -545,6 +545,10 @@ error_handler(Display *display, XErrorEvent *error) {
   glxdisplay_cat.error()
     << msg << "\n";
 
+  if (glx_error_abort) {
+    abort();
+  }
+
   // We return to allow the application to continue running, unlike
   // the default X error handler which exits.
   return 0;

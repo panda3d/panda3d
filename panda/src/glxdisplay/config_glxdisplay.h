@@ -27,5 +27,6 @@ NotifyCategoryDecl(glxdisplay, EXPCL_PANDAGL, EXPTP_PANDAGL);
 extern EXPCL_PANDAGL void init_libglxdisplay();
 
 extern const string display_cfg;
+extern const bool glx_error_abort;
 
 #endif /* __CONFIG_GLXDISPLAY_H__ */
