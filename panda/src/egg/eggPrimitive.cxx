@@ -117,7 +117,7 @@ determine_draw_order() {
     return this;
   }
 
-  EggRenderMode *result = EggNode::determine_depth_test_mode();
+  EggRenderMode *result = EggNode::determine_draw_order();
   if (result == (EggRenderMode *)NULL) {
     if (has_texture() && get_texture()->has_draw_order()) {
       result = get_texture();
@@ -141,7 +141,7 @@ determine_bin() {
     return this;
   }
 
-  EggRenderMode *result = EggNode::determine_depth_test_mode();
+  EggRenderMode *result = EggNode::determine_bin();
   if (result == (EggRenderMode *)NULL) {
     if (has_texture() && get_texture()->has_bin()) {
       result = get_texture();
