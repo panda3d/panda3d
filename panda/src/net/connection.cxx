@@ -25,6 +25,7 @@
 #include "config_net.h"
 #include "config_express.h" // for collect_tcp
 #include "clockObject.h"
+#include "notify.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -392,6 +393,14 @@ send_datagram(const NetDatagram &datagram) {
   }
 
   // We might queue up TCP packets for later sending.
+  if (datagram.get_length() >= 0x10000) {
+    net_cat.error()
+      << "Attempt to send TCP datagram of " << datagram.get_length()
+      << " bytes--too long!\n";
+    nassert_raise("Datagram too long");
+    return false;
+  }
+
   DatagramTCPHeader header(datagram);
 
   PR_Lock(_write_mutex);
