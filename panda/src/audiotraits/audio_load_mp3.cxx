@@ -24,6 +24,8 @@
 
 Configure(audio_load_mp3);
 
+#if !(defined(WIN32) && defined(AUDIO_USE_RAD_MSS))
+
 #include <math.h>
 
 extern "C" {
@@ -519,6 +521,7 @@ static void read_file(Filename filename, unsigned char** buf,
   memcpy(*buf, my_buf.data(), slen);
   */
 }
+#endif
 
 #ifdef AUDIO_USE_MIKMOD
 
