@@ -1669,9 +1669,16 @@ FillDDSurfTexturePixels(void) {
             DWORD src_row_bytelength=oldcurxsize*cPixelSize;
             DWORD two_src_row_bytelength=2*src_row_bytelength;
 
+        #ifdef GENMIPMAP_DO_INTEGER_DIV
             DWORD DivShift=2;
             if((oldcurxsize==1)||(oldcurysize==1))
                 DivShift = 1;
+        #else
+            float numpixels_per_filter=4.0f;
+            if((oldcurxsize==1)||(oldcurysize==1))
+                numpixels_per_filter=2.0f;                
+        #endif
+
             DWORD x_srcptr_inc = ((oldcurxsize==1)? cPixelSize: (2*cPixelSize));
 
             // box-filter shrink down, avg 4 pixels at a time
@@ -1691,8 +1698,11 @@ FillDDSurfTexturePixels(void) {
                             if(oldcurxsize>1)
                                 colr += *(pSrcWord+src_row_bytelength+cPixelSize+c);
                         }
-
-                        colr >>= DivShift;
+                        #ifdef GENMIPMAP_DO_INTEGER_DIV
+                           colr >>= DivShift;
+                        #else
+                           colr = (DWORD) ((((float)colr)/numpixels_per_filter)+0.5f);
+                        #endif
 
                         *(pDstWord+c)=(BYTE)colr;
                     }
