@@ -1,4 +1,4 @@
-#define BUILD_DIRECTORY $[and $[WINDOWS_PLATFORM],$[HAVE_NET],$[WANT_WINSTATS]]
+#define BUILD_DIRECTORY $[and $[WINDOWS_PLATFORM],$[HAVE_NET]]
 #define USE_PACKAGES net
 
 #begin bin_target
