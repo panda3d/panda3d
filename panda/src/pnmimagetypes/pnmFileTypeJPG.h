@@ -25,6 +25,10 @@
 #include <pnmReader.h>
 #include <pnmWriter.h>
 
+#if defined(_WIN32)
+#include <windows.h>  // we need to include this before jpeglib.
+#endif
+
 extern "C" {
 #include <jpeglib.h>
 #include <setjmp.h>
