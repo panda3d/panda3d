@@ -1,12 +1,12 @@
 //
-// _panda.prc.pp
+// panda.prc.pp
 //
-// This file defines the script to auto-generate _panda.prc at
+// This file defines the script to auto-generate panda.prc at
 // ppremake time.  This is intended to fill in some of the default
 // parameters, in particular the default display types.
 //
 
-#output 80_panda.prc
+#output 20_panda.prc
 #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE].
 ################################# DO NOT EDIT ###########################
 
@@ -57,4 +57,4 @@ load-file-type egg pandaegg
 egg-object-type-portal          <Scalar> portal { 1 }
 egg-object-type-polylight       <Scalar> polylight { 1 }
 
-#end 80_panda.prc
+#end 20_panda.prc

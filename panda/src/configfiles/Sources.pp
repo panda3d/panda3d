@@ -1,6 +1,6 @@
 
 #define INSTALL_CONFIG \
-  panda.emacs panda.emacs.Xdefaults 80_panda.prc
+  panda.emacs panda.emacs.Xdefaults 20_panda.prc
 
 
 #if $[CTPROJS]
@@ -9,4 +9,4 @@
 #endif
 
 
-#include $[THISDIRPREFIX]_panda.prc.pp
+#include $[THISDIRPREFIX]panda.prc.pp

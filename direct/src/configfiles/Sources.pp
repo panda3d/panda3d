@@ -1,5 +1,5 @@
 #define INSTALL_CONFIG \
-  70_direct.prc
+  40_direct.prc
 
 #if $[CTPROJS]
   // These files only matter to ctattach users.
@@ -7,4 +7,4 @@
 #endif
 
 
-#include $[THISDIRPREFIX]_direct.prc.pp
+#include $[THISDIRPREFIX]direct.prc.pp

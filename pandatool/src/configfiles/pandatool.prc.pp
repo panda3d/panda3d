@@ -1,11 +1,11 @@
 //
-// _pandatool.prc.pp
+// pandatool.prc.pp
 //
 // This file defines the script to auto-generate _pandatool.prc at
 // ppremake time.
 //
 
-#output 72_pandatool.prc
+#output 30_pandatool.prc
 #### Generated automatically by $[PPREMAKE] $[PPREMAKE_VERSION] from $[SOURCEFILE].
 ################################# DO NOT EDIT ###########################
 
@@ -18,4 +18,4 @@
 
 load-file-type ptloader
 
-#end 72_pandatool.prc
+#end 30_pandatool.prc

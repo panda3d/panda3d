@@ -193,10 +193,11 @@ void ConfigTable::ReadConfigFile() {
     if (directory.is_directory()) {
       vector_string files;
       directory.scan_directory(files);
-      // Scan the files in alphabetical order, so that the
-      // alphabetically last file has precedence.
-      for (vector_string::iterator fi = files.begin();
-           fi != files.end();
+      // Scan the files into reverse alphabetical order, to re-invert
+      // the native Config sorting, so that the alphabetically last
+      // file has precedence.
+      for (vector_string::reverse_iterator fi = files.rbegin();
+           fi != files.rend();
            ++fi) {
         bool matches = false;
         for (Globs::const_iterator gi = configname.begin();

@@ -1,6 +1,6 @@
 
 #define INSTALL_CONFIG \
-  72_pandatool.prc
+  30_pandatool.prc
 
 #if $[CTPROJS]
   // These files only matter to ctattach users.
@@ -8,4 +8,4 @@
 #endif
 
  
-#include $[THISDIRPREFIX]_pandatool.prc.pp
+#include $[THISDIRPREFIX]pandatool.prc.pp
