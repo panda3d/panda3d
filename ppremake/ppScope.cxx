@@ -1011,6 +1011,8 @@ r_expand_variable(const string &str, size_t &vp,
       return expand_shell(params);
     } else if (funcname == "standardize") {
       return expand_standardize(params);
+    } else if (funcname == "canonical") {
+      return expand_canonical(params);
     } else if (funcname == "length") {
       return expand_length(params);
     } else if (funcname == "substr") {
@@ -1675,52 +1677,34 @@ expand_shell(const string &params) {
 ////////////////////////////////////////////////////////////////////
 string PPScope::
 expand_standardize(const string &params) {
-  string filename = trim_blanks(expand_string(params));
+  Filename filename = trim_blanks(expand_string(params));
   if (filename.empty()) {
     return string();
   }
 
-  vector<string> components;
+  filename.standardize();
+  return filename;
+}
 
-  // Pull off the components of the filename one at a time.
-  bool global = (filename[0] == '/');
 
-  size_t p = 0;
-  while (p < filename.length() && filename[p] == '/') {
-    p++;
-  }
-  while (p < filename.length()) {
-    size_t slash = filename.find('/', p);
-    string component = filename.substr(p, slash - p);
-    if (component == ".") {
-      // Ignore /./.
-    } else if (component == ".." && !components.empty() && 
-               !(components.back() == "..")) {
-      // Back up.
-      components.pop_back();
-    } else {
-      components.push_back(component);
-    }
-
-    p = slash;
-    while (p < filename.length() && filename[p] == '/') {
-      p++;
-    }
-  }
-   
-  // Now reassemble the filename.
-  string result;
-  if (global) {
-    result = "/";
-  }
-  if (!components.empty()) {
-    result += components[0];
-    for (int i = 1; i < (int)components.size(); i++) {
-      result += "/" + components[i];
-    }
-  }
-
-  return result;
+////////////////////////////////////////////////////////////////////
+//     Function: PPScope::expand_canonical
+//       Access: Private
+//  Description: Expands the "canonical" function variable.  This
+//               converts this filename to a canonical name by
+//               replacing the directory part with the fully-qualified
+//               directory part.  This is done by changing to that
+//               directory and calling getcwd().
+//
+//               See filename::make_canonical() for a complete
+//               explanation of the implications of this and of the
+//               difference between this and standardize, above.
+////////////////////////////////////////////////////////////////////
+string PPScope::
+expand_canonical(const string &params) {
+  Filename filename = trim_blanks(expand_string(params));
+  filename.make_canonical();
+  return filename;
 }
 
 ////////////////////////////////////////////////////////////////////

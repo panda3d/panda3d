@@ -5,7 +5,7 @@ dnl ****************  UPDATE VERSION NUMBER HERE  ****************
 dnl **         Also be sure to change the version number        **
 dnl **                at the end of config_msvc.h.              **
 dnl ****************                              ****************
-AM_INIT_AUTOMAKE(ppremake, 1.12)
+AM_INIT_AUTOMAKE(ppremake, 1.13)
 dnl ****************  UPDATE VERSION NUMBER HERE  ****************
 
 AM_CONFIG_HEADER(config.h)
@@ -77,10 +77,12 @@ else
 fi
 
 if test "$PLATFORM" = "Cygwin"; then
-  AC_DEFINE(HAVE_CYGWIN)
+  AC_DEFINE(HAVE_CYGWIN, 1, [Define if we're compiling with Cygwin.])
 fi
 
-AC_DEFINE_UNQUOTED(PLATFORM, "$PLATFORM")
+AC_DEFINE_UNQUOTED(PLATFORM, "$PLATFORM", 
+   [The platform ppremake is compiled for.  This primarily controls the
+    initial setting of the PLATFORM ppremake variable.])
 
 
 AC_OUTPUT(Makefile)

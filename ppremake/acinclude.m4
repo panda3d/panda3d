@@ -24,7 +24,7 @@ fi
 
 ])
 if test $ac_cv_ios_binary = yes; then
-  AC_DEFINE(HAVE_IOS_BINARY)
+  AC_DEFINE(HAVE_IOS_BINARY, 1, [Define if the C++ iostream library supports ios::binary.])
 fi
 ])
 
@@ -48,7 +48,7 @@ fi
 
 ])
 if test $ac_cv_open_mask = yes; then
-  AC_DEFINE(HAVE_OPEN_MASK)
+  AC_DEFINE(HAVE_OPEN_MASK, 1, [Define if fstream::open() accepts a third parameter for umask.])
 fi
 ])
 
@@ -62,7 +62,7 @@ using namespace std;],
 [],
   ac_cv_namespace=yes, ac_cv_namespace=no)])
 if test $ac_cv_namespace = yes; then
-  AC_DEFINE(HAVE_NAMESPACE)
+  AC_DEFINE(HAVE_NAMESPACE, 1, [Define if the C++ compiler uses namespaces])
 fi
 ])
 
