@@ -8,7 +8,7 @@ class Entity(EntityTypeDesc):
     type = 'entity'
     attribs = (
         ('type', None),
-        ('name', 'unnamed'),
+        ('name', '<unnamed>', 'string'),
         ('comment', '', 'string'),
         )
 
