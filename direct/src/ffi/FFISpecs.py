@@ -140,7 +140,7 @@ class GlobalFunctionSpecification(FunctionSpecification):
     # Use generateCode when creating a global (non-class) function
     def generateGlobalDowncastCode(self, file):
         self.outputHeader(file)
-        self.outputBody(file, 0) # no downcast
+        self.outputBody(file, 0, 0) # no downcast, no type checking
         self.outputFooter(file)
 
     # Use generateMethodCode when creating a global->class function
@@ -161,7 +161,7 @@ class GlobalFunctionSpecification(FunctionSpecification):
                 file.write(', ')
         file.write('):\n')
         
-    def outputBody(self, file, needsDowncast=1):
+    def outputBody(self, file, needsDowncast=1, typeChecking=1):
         # The method body will look something like
         #     returnValue = PandaGlobal.method(arg)
         #     returnObject = NodePath()
@@ -170,7 +170,13 @@ class GlobalFunctionSpecification(FunctionSpecification):
         #     return returnObject
         self.outputCFunctionComment(file, 1)
         argTypes = self.typeDescriptor.argumentTypes
-        self.outputTypeChecking(None, argTypes, file, 1)
+        # The global downcast functions do not need type checking, and
+        # in fact have a problem where they assert you are downcasting
+        # from the immediate superclass when in fact you may be downcasting
+        # from a class way up the chain as long as their is single
+        # inheritance up to it
+        if typeChecking:
+            self.outputTypeChecking(None, argTypes, file, 1)
         indent(file, 1, 'returnValue = ' + self.typeDescriptor.moduleName
                    + '.' + self.typeDescriptor.wrapperName + '(')
         for i in range(len(argTypes)):
