@@ -9,7 +9,7 @@ if ( $OS == "Linux" ) then
   set path = ( /var/local/bin ~/bin . /usr/sbin /sbin /usr/bin /bin \
              /usr/bin/X11 /usr/etc /usr/local/bin )
 else if ( $OS == "IRIX64" ) then
-  set path = ( /var/local/bin /usr/local/bin/ptools ~/bin /usr/local/prman/bin \
+  set path = ( /var/local/bin ~/bin /usr/local/prman/bin \
              . /usr/sbin /usr/bsd /sbin /usr/bin /bin /usr/bin/X11 /usr/etc  \
              /usr/demos/bin /usr/local/bin )
   setenv LD_LIBRARY_PATH ".:/usr/local/lib"
@@ -26,7 +26,7 @@ else if (( $OS == "CYGWIN_98-4.10" ) || ( $OS == "WIN95" )) then
   setenv LIB `cygpath -w /msvc98/mfc/lib`\;`cygpath -w /msvc98/lib`\;`cygpath -w /usr/lib`
   setenv INCLUDE `cygpath -w /msvc98/Include`
 else
-  set path = ( /var/local/bin /usr/local/bin/ptools ~/bin /usr/local/prman/bin \
+  set path = ( /var/local/bin ~/bin /usr/local/prman/bin \
              . /usr/sbin /usr/bsd /sbin /usr/bin /bin /usr/bin/X11 /usr/etc  \
              /usr/demos/bin /usr/local/bin )
 endif
