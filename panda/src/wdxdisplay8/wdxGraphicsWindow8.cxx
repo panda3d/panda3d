@@ -1762,9 +1762,9 @@ find_all_card_memavails(void) {
            continue;
         }
 
-        if(dwVidMemTotal==0)   // unreliable driver
+        if(dwVidMemTotal==0) {  // unreliable driver
             dwVidMemTotal=UNKNOWN_VIDMEM_SIZE;
-         else {
+        } else {
              // assume they wont return a proper max value, so
              // round up to next pow of 2
              UINT count=0;
@@ -1926,6 +1926,7 @@ bool wdxGraphicsWindow::FindBestDepthFormat(DXScreenData &Display,D3DDISPLAYMODE
 }
 
 // all ptr args are output parameters
+// if no valid mode found, returns *pSuggestedPixFmt = D3DFMT_UNKNOWN;
 void wdxGraphicsWindow::search_for_valid_displaymode(UINT RequestedXsize,UINT RequestedYsize,bool bWantZBuffer,bool bWantStencil,
                                                      UINT *pSupportedScreenDepthsMask,bool *pCouldntFindAnyValidZBuf,
                                                      D3DFORMAT *pSuggestedPixFmt) {
@@ -2116,8 +2117,9 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
 
     // bugbug:  wouldnt we like to do GetAVailVidMem so we can do upper-limit memory computation for dx8 cards too?
     //          otherwise verify_window_sizes cant do much
-    if(d3dcaps.MaxStreams==0) {
-       wdxdisplay_cat.info() << "Note: video driver is a pre-DX8-class driver, checking for low memory cards\n";
+    if((d3dcaps.MaxStreams==0)|| dx_pick_best_screenres) {
+       if(wdxdisplay_cat.is_debug())
+           wdxdisplay_cat.debug() << "checking vidmem size\n";
        assert(IS_VALID_PTR(_pParentWindowGroup));
 
        // look for low memory video cards
@@ -2125,7 +2127,7 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
 
        UINT IDnum;
 
-       // simple linear search
+       // simple linear search to match DX7 card info w/DX8 card ID
        for(IDnum=0;IDnum<g_pCardIDVec->size();IDnum++) {
 //         wdxdisplay_cat.info() << "comparing '" << (*g_pCardIDVec)[IDnum].Driver << "' to '" << _dxgsg->scrn.DXDeviceID.Driver << "'\n";
            if(//(stricmp((*g_pCardIDVec)[IDnum].szDriver,pDevInfo->szDriver)==0) &&
@@ -2165,18 +2167,67 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
 
         bool bCouldntFindValidZBuf;
         if(!_dxgsg->scrn.bIsLowVidMemCard) {
-            search_for_valid_displaymode(dwRenderWidth,dwRenderHeight,bNeedZBuffer,bWantStencil,
-                                     &_dxgsg->scrn.SupportedScreenDepthsMask,
-                                     &bCouldntFindValidZBuf,
-                                     &pixFmt);
+            if(dx_pick_best_screenres) {
+              if(_dxgsg->scrn.MaxAvailVidMem == UNKNOWN_VIDMEM_SIZE) {
+                    wdxdisplay_cat.info() << "pick_best_screenres: defaulted 800x600 based on no reliable vidmem size\n";
+                    dwRenderWidth=800;  dwRenderHeight=600;
+              } else {
+                typedef struct {
+                    UINT memlimit;
+                    DWORD scrnX,scrnY;
+                } Memlimres;
 
-            // note I'm not saving refresh rate, will just use adapter default at given res for now
+                const Memlimres MemRes[] = {
+                                             {       0,  640, 480},                  
+                                             { 8000000,  800, 600},
+                                             {16000000, 1024, 768},
+                                             {32000000, 1280,1024},  // 32MB cards will choose this
+                                             {64000000, 1600,1200}   // 64MB cards will choose this
+                                           };
+                const NumResLims = (sizeof(MemRes)/sizeof(Memlimres));
 
-            if(pixFmt==D3DFMT_UNKNOWN) {
-                wdxdisplay_cat.fatal()
-                    << (bCouldntFindValidZBuf ? "Couldnt find valid zbuffer format to go with FullScreen mode" : "No supported FullScreen modes")
-                    << " at " << dwRenderWidth << "x" << dwRenderHeight << " for device #" << _dxgsg->scrn.CardIDNum <<endl;
-               return false;
+                for(int i=NumResLims-1;i>=0;i--) {
+                    // find biggest slot card can handle
+                    if(_dxgsg->scrn.MaxAvailVidMem > MemRes[i].memlimit) {
+                        dwRenderWidth=MemRes[i].scrnX;
+                        dwRenderHeight=MemRes[i].scrnY;
+
+                        wdxdisplay_cat.info() << "pick_best_screenres: picked " << dwRenderWidth << "x" << dwRenderHeight << " based on " << _dxgsg->scrn.MaxAvailVidMem << " bytes avail\n";
+
+                        search_for_valid_displaymode(dwRenderWidth,dwRenderHeight,bNeedZBuffer,bWantStencil,
+                                         &_dxgsg->scrn.SupportedScreenDepthsMask,
+                                         &bCouldntFindValidZBuf,
+                                         &pixFmt);
+    
+            
+                        // note I'm not saving refresh rate, will just use adapter default at given res for now
+            
+                        if(pixFmt==D3DFMT_UNKNOWN) {
+                            wdxdisplay_cat.debug() << "skipping scrnres; "
+                                << (bCouldntFindValidZBuf ? "Couldnt find valid zbuffer format to go with FullScreen mode" : "No supported FullScreen modes")
+                                << " at " << dwRenderWidth << "x" << dwRenderHeight << " for device #" << _dxgsg->scrn.CardIDNum << endl;
+                        } else 
+                            break;
+                    }
+                }
+                // otherwise just go with whatever was specified (we probably shouldve marked this card as lowmem if it gets to end of loop w/o breaking
+              }
+
+            } else {
+                search_for_valid_displaymode(dwRenderWidth,dwRenderHeight,bNeedZBuffer,bWantStencil,
+                                         &_dxgsg->scrn.SupportedScreenDepthsMask,
+                                         &bCouldntFindValidZBuf,
+                                         &pixFmt);
+    
+    
+                // note I'm not saving refresh rate, will just use adapter default at given res for now
+    
+                if(pixFmt==D3DFMT_UNKNOWN) {
+                    wdxdisplay_cat.fatal()
+                        << (bCouldntFindValidZBuf ? "Couldnt find valid zbuffer format to go with FullScreen mode" : "No supported FullScreen modes")
+                        << " at " << dwRenderWidth << "x" << dwRenderHeight << " for device #" << _dxgsg->scrn.CardIDNum <<endl;
+                   return false;
+                }
             }
         } else {
             // Low Memory card
@@ -2226,88 +2277,6 @@ bool wdxGraphicsWindow::search_for_device(LPDIRECT3D8 pD3D8,DXDeviceInfo *pDevIn
     _dxgsg->scrn.hMon=pDevInfo->hMon;
     return true;
 }
-
-#if 0
-void wdxGraphicsWindowGroup::
-SetCoopLevelsAndDisplayModes(void) {
-    HRESULT hr;
-    DWORD SCL_FPUFlag;
-
-    if(dx_preserve_fpu_state)
-      SCL_FPUFlag = DDSCL_FPUPRESERVE;  // tell d3d to preserve the fpu state across calls.  this hurts perf, but is good for dbgging
-    else SCL_FPUFlag = DDSCL_FPUSETUP;
-
-    DXScreenData *pScrn=&_windows[0]->_dxgsg->scrn;
-    // All SetCoopLevels must use the parent window
-
-    if(!_props._fullscreen) {
-        if(FAILED(hr = pScrn->pDD->SetCooperativeLevel(_hParentWindow, SCL_FPUFlag | DDSCL_NORMAL))) {
-            wdxdisplay_cat.fatal() << "SetCooperativeLevel failed" << ConvD3DErrorToString(hr) << endl;
-            exit(1);
-        }
-        return;
-    }
-
-    DWORD SCL_FLAGS = SCL_FPUFlag | DDSCL_FULLSCREEN | DDSCL_EXCLUSIVE | DDSCL_ALLOWREBOOT;
-
-    if(_windows.size()>1) {
-       SCL_FLAGS |= DDSCL_SETDEVICEWINDOW;
-    }
-
-    for(int devnum=0;devnum<_windows.size();devnum++) {
-       DXScreenData *pScrn=&_windows[devnum]->_dxgsg->scrn;
-
-       // need to set focus/device windows for multimon
-       // focus window is primary monitor that will receive keybd input
-       // all ddraw objs need to have same focus window
-       if(_windows.size()>1) {
-           if(FAILED(hr = pScrn->pDD->SetCooperativeLevel(_hParentWindow, DDSCL_SETFOCUSWINDOW))) {
-               wdxdisplay_cat.fatal() << "SetCooperativeLevel SetFocusWindow failed on device 0: hr = " << ConvD3DErrorToString(hr) << endl;
-               exit(1);
-           }
-       }
-
-       // s3 savage2000 on w95 seems to set EXCLUSIVE_MODE only if you call SetCoopLevel twice.
-       // so we do it, it really shouldnt be necessary if drivers werent buggy
-       for(int jj=0;jj<2;jj++) {
-           if(FAILED(hr = pScrn->pDD->SetCooperativeLevel(pScrn->hWnd, SCL_FLAGS))) {
-               wdxdisplay_cat.fatal() << "SetCooperativeLevel failed for device #"<< devnum<<": hr = " << ConvD3DErrorToString(hr) << endl;
-               exit(1);
-           }
-       }
-
-       if(FAILED(hr = pScrn->pDD->TestCooperativeLevel())) {
-           wdxdisplay_cat.fatal() << "TestCooperativeLevel failed for device #"<< devnum<<": hr = " << ConvD3DErrorToString(hr) << endl;
-           wdxdisplay_cat.fatal() << "Full screen app failed to get exclusive mode on init, exiting..\n";
-           exit(1);
-       }
-
-       // note: its important we call SetDisplayMode on all cards before creating surfaces on any of them
-       // let driver choose default refresh rate (hopefully its >=60Hz)
-       if(FAILED( hr = pScrn->pDD->SetDisplayMode( pScrn->dwRenderWidth, pScrn->dwRenderHeight,
-                                            pScrn->dwFullScreenBitDepth, 0, 0 ))) {
-           wdxdisplay_cat.fatal() << "SetDisplayMode failed to set ("<<pScrn->dwRenderWidth<<"x"<<pScrn->dwRenderHeight<<"x"<<pScrn->dwFullScreenBitDepth<<") on device #"<< pScrn->CardIDNum<<": hr = " << ConvD3DErrorToString(hr) << endl;
-           exit(1);
-       }
-
-       if(wdxdisplay_cat.is_debug()) {
-          DX_DECLARE_CLEAN(DDSURFACEDESC2,ddsd34);
-          pScrn->pDD->GetDisplayMode(&ddsd34);
-          wdxdisplay_cat.debug() << "set displaymode to " << ddsd34.dwWidth << "x" << ddsd34.dwHeight << " at "<< ddsd34.ddpfPixelFormat.dwRGBBitCount << "bpp, " << ddsd34.dwRefreshRate<< "Hz\n";
-
-         /*
-         #ifdef _DEBUG
-          if(FAILED(hr = (*Disply).pDD->GetAvailableVidMem(&ddsGAVMCaps,&dwVidMemTotal,&dwVidMemFree))) {
-              wdxdisplay_cat.debug() << "GetAvailableVidMem failed : hr = " << ConvD3DErrorToString(hr) << endl;
-              exit(1);
-          }
-          wdxdisplay_cat.debug() << "after fullscreen switch: GetAvailableVidMem returns Total: " << dwVidMemTotal/1000000.0 << "  Free: " << dwVidMemFree/1000000.0 << endl;
-         #endif
-         */
-       }
-    }
-}
-#endif
 
 //return true if successful
 void wdxGraphicsWindow::
