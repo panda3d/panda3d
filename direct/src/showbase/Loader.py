@@ -124,7 +124,6 @@ class Loader:
     def loadFont(self, modelPath, priority = 0, faceIndex = 0,
                  spaceAdvance = None, pointSize = None,
                  pixelsPerUnit = None, scaleFactor = None,
-                 smallCaps = None, smallCapsScale = None,
                  textureMargin = None, polyMargin = None,
                  minFilter = None, magFilter = None,
                  anisotropicDegree = None,
@@ -172,10 +171,6 @@ class Loader:
                 font.setPixelsPerUnit(pixelsPerUnit)
             if scaleFactor != None:
                 font.setScaleFactor(scaleFactor)
-            if smallCaps != None:
-                font.setSmallCaps(smallCaps)
-            if smallCapsScale != None:
-                font.setSmallCapsScale(smallCapsScale)
             if textureMargin != None:
                 font.setTextureMargin(textureMargin)
             if polyMargin != None:
