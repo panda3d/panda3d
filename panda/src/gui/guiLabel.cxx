@@ -41,11 +41,17 @@ void GuiLabel::set_properties(void) {
     {
       TextNode* n = DCAST(TextNode, _geom);
       n->set_text_color(_foreground);
-      if (!_have_background) {
-	n->clear_card();
-      } else {
-	n->set_card_color(_background);
+      n->clear_card();
+      if ((_have_background) || (_tex == (Texture*)0L)) {
+	if (_have_background)
+	  n->set_card_color(_background);
+	if (_tex != (Texture*)0L)
+	  n->set_card_texture(_tex);
 	if (_have_width || _have_height) {
+	  n->set_card_as_margin(simple_text_margin_left,
+				simple_text_margin_right,
+				simple_text_margin_bottom,
+				simple_text_margin_top);
 	  LVecBase4f v = n->get_card_actual();
 	  float w = v[1] - v[0];
 	  float h = v[3] - v[2];
@@ -54,16 +60,25 @@ void GuiLabel::set_properties(void) {
 	    w *= 0.5;
 	    v[1] += w;
 	    v[0] -= w;
+	  } else {
+	    v[0] -= simple_text_margin_left;
+	    v[1] += simple_text_margin_right;
 	  }
 	  if (_have_height) {
 	    h = _height - h;
 	    h *= 0.5;
 	    v[3] += h;
 	    v[2] -= h;
+	  } else {
+	    v[2] -= simple_text_margin_bottom;
+	    v[3] += simple_text_margin_top;
 	  }
 	  n->set_card_actual(v[0], v[1], v[2], v[3]);
 	} else
-	  n->set_card_as_margin(0., 0., 0., 0.);
+	  n->set_card_as_margin(simple_text_margin_left,
+				simple_text_margin_right,
+				simple_text_margin_bottom,
+				simple_text_margin_top);
       }
     }
     break;

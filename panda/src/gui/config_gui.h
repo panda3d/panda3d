@@ -11,4 +11,9 @@
 
 NotifyCategoryDecl(gui, EXPCL_PANDA, EXPTP_PANDA);
 
+extern float simple_text_margin_top;
+extern float simple_text_margin_bottom;
+extern float simple_text_margin_left;
+extern float simple_text_margin_right;
+
 #endif /* __CONFIG_GUI_H__ */

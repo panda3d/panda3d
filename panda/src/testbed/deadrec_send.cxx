@@ -6,7 +6,6 @@
 #include "framework.h"
 
 void deadrec_keys(EventHandler& eh) {
-  
 }
 
 int main(int argc, char* argv[]) {

@@ -301,7 +301,7 @@ static void event_2(CPT_Event) {
   }
 }
 
-void demo_keys(EventHandler&) {
+void gui_keys(EventHandler&) {
   new RenderRelation( lights, dlight );
   have_dlight = true;
 
@@ -309,6 +309,6 @@ void demo_keys(EventHandler&) {
 }
 
 int main(int argc, char *argv[]) {
-  define_keys = &demo_keys;
+  define_keys = &gui_keys;
   return framework_main(argc, argv);
 }
