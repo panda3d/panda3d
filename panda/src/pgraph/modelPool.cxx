@@ -26,6 +26,18 @@ ModelPool *ModelPool::_global_ptr = (ModelPool *)NULL;
 static Loader model_loader;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ModelPool::write
+//       Access: Published, Static
+//  Description: Lists the contents of the model pool to the
+//               indicated output stream.
+//               Helps with debugging.
+////////////////////////////////////////////////////////////////////
+void ModelPool::
+write(ostream &out) {
+  get_ptr()->ns_list_contents(out);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ModelPool::ns_has_model
 //       Access: Private
 //  Description: The nonstatic implementation of has_model().
@@ -158,16 +170,4 @@ get_ptr() {
     _global_ptr = new ModelPool;
   }
   return _global_ptr;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ModelPool::write
-//       Access: Public, Static
-//  Description: Lists the contents of the model pool to the
-//               indicated output stream.
-//               Helps with debugging.
-////////////////////////////////////////////////////////////////////
-void ModelPool::
-write(ostream &out, unsigned int) {
-  get_ptr()->ns_list_contents(out);
 }

@@ -61,7 +61,7 @@ PUBLISHED:
   INLINE static const string &get_fake_texture_image();
   
   // static void output(ostream &out);
-  static void write(ostream &out, unsigned int indent=0);
+  static void write(ostream &out);
 
 private:
   INLINE TexturePool();

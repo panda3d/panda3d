@@ -51,7 +51,7 @@ PUBLISHED:
   INLINE static const Material *get_material(const CPT(Material) &temp);
   INLINE static int garbage_collect();
   INLINE static void list_contents(ostream &out);
-  static void write(ostream &out, unsigned int indent=0);
+  static void write(ostream &out);
 
 private:
   INLINE MaterialPool();

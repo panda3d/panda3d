@@ -27,6 +27,18 @@ TexturePool *TexturePool::_global_ptr = (TexturePool *)NULL;
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::write
+//       Access: Published, Static
+//  Description: Lists the contents of the texture pool to the
+//               indicated output stream.
+//               For debugging.
+////////////////////////////////////////////////////////////////////
+void TexturePool::
+write(ostream &out) {
+  get_ptr()->ns_list_contents(out);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TexturePool::ns_has_texture
 //       Access: Private
 //  Description: The nonstatic implementation of has_texture().
@@ -264,16 +276,4 @@ get_ptr() {
     _global_ptr = new TexturePool;
   }
   return _global_ptr;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TexturePool::write
-//       Access: Published, Static
-//  Description: Lists the contents of the texture pool to the
-//               indicated output stream.
-//               For debugging.
-////////////////////////////////////////////////////////////////////
-void TexturePool::
-write(ostream &out, unsigned int) {
-  get_ptr()->ns_list_contents(out);
 }

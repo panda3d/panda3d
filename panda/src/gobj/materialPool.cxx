@@ -30,7 +30,7 @@ MaterialPool *MaterialPool::_global_ptr = (MaterialPool *)NULL;
 //               indicated output stream.
 ////////////////////////////////////////////////////////////////////
 void MaterialPool::
-write(ostream &out, unsigned int) {
+write(ostream &out) {
   get_ptr()->ns_list_contents(out);
 }
 

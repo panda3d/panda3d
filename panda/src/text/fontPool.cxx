@@ -30,6 +30,17 @@ FontPool *FontPool::_global_ptr = (FontPool *)NULL;
 static Loader model_loader;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FontPool::write
+//       Access: Published, Static
+//  Description: Lists the contents of the font pool to the
+//               indicated output stream.
+////////////////////////////////////////////////////////////////////
+void FontPool::
+write(ostream &out) {
+  get_ptr()->ns_list_contents(out);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FontPool::ns_has_font
 //       Access: Private
 //  Description: The nonstatic implementation of has_font().
@@ -242,15 +253,4 @@ get_ptr() {
     _global_ptr = new FontPool;
   }
   return _global_ptr;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: FontPool::write
-//       Access: Public, Static
-//  Description: Lists the contents of the font pool to the
-//               indicated output stream.
-////////////////////////////////////////////////////////////////////
-void FontPool::
-write(ostream &out, unsigned int) {
-  get_ptr()->ns_list_contents(out);
 }
