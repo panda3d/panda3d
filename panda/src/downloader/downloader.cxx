@@ -14,11 +14,13 @@
 #include <math.h>
 
 #if !defined(WIN32_VC)
-  #define errno wsaGetLastError()
   #include <sys/time.h>
   #include <netinet/in.h>
   #include <arpa/inet.h>
   #include <netdb.h>
+#else
+  #include <winsock2.h>
+  #define errno WSAGetLastError()
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -260,11 +262,18 @@ fast_receive(int socket, DownloadStatus *status, int rec_size) {
   if (ret == 0) {
     return FR_eof;
   } else if (ret == -1) {
-    downloader_cat.error()
-      << "Downloader::fast_receive() - recv() error: " 
-      //<< strerror(errno) << endl;
-      << errno << endl;
-    return FR_error;
+    int err = WSAGetLastError();
+    if (err == 0) {
+      if (downloader_cat.is_debug())
+	downloader_cat.debug()
+	  << "Downloader::fast_receive() - recv() error = 0" << endl;
+      return FR_no_data;
+    } else {
+      downloader_cat.error()
+        << "Downloader::fast_receive() - recv() error: " 
+        << errno << endl;
+      return FR_error;
+    }
   }
   if (downloader_cat.is_debug())
     downloader_cat.debug()
