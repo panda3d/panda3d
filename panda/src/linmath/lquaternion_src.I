@@ -57,7 +57,7 @@ xform(const FLOATNAME(LVecBase3) &v) const {
 
   FLOATNAME(LQuaternion) inv;
   inv.invert_from(*this);
-  v_quat = (*this) * v_quat * inv;
+  v_quat = inv * v_quat * (*this);
 
   return FLOATNAME(LVecBase3)(v_quat[1], v_quat[2], v_quat[3]);
 }
