@@ -47,15 +47,30 @@ class DirectButton(DirectFrame):
         # Initialize superclasses
         DirectFrame.__init__(self, parent)
         
-        # If specifed, add scaling to the pressed state to make it look
-        # like the button is moving when you press it
+        # If specifed, add scaling to the pressed state to make it
+        # look like the button is moving when you press it.  We have
+        # to set up the node first, before we call initialise options;
+        # but we can't actually apply the scale until we have the
+        # bounding volume (which happens during initialise options).
+        pressEffectNP = None
         if self['pressEffect']:
-            np = self.stateNodePath[1].attachNewNode('pressEffect', 1)
-            np.setScale(0.98)
-            self.stateNodePath[1] = np
+            pressEffectNP = self.stateNodePath[1].attachNewNode('pressEffect', 1)
+            self.stateNodePath[1] = pressEffectNP
             
         # Call option initialization functions
         self.initialiseoptions(DirectButton)
+
+        # Now apply the scale.
+        if pressEffectNP:
+            bounds = self.getBounds()
+            centerX = (bounds[0] + bounds[1]) / 2
+            centerY = (bounds[2] + bounds[3]) / 2
+
+            # Make a matrix that scales about the point
+            mat = Mat4.translateMat(-centerX, 0, -centerY) * \
+                  Mat4.scaleMat(0.98) * \
+                  Mat4.translateMat(centerX, 0, centerY)
+            pressEffectNP.setMat(mat)
 
     def setCommandButtons(self):
         # Attach command function to specified buttons
