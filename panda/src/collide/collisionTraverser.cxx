@@ -360,8 +360,8 @@ reached_node(Node *node, NullAttributeWrapper &,
 	  entry._from = level_state.get_collider(c);
 	  entry._from_space = level_state.get_space(c);
 	  
-	  LMatrix4f into_space_inv;
-	  get_rel_mat(NULL, node, into_space_inv, _graph_type);
+          NodePath root;
+	  LMatrix4f into_space_inv = root.get_mat(entry._into_node_path);
 	  entry._wrt_space = entry._from_space * into_space_inv;
 	  entry._inv_wrt_space = 
 	    entry._into_space * level_state.get_inv_space(c);

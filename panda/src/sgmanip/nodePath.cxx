@@ -1790,12 +1790,18 @@ set_mat(const NodePath &other, const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 LMatrix4f NodePath::
 get_mat(const NodePath &other) const {
-  nassertr(!is_empty(), LMatrix4f::ident_mat());
-
   NodeTransitionWrapper ntw(TransformTransition::get_class_type());
 
-  if (other.is_empty()) {
+  if (is_empty() && other.is_empty()) {
+    return LMatrix4f::ident_mat();
+
+  } else if (is_empty()) {
+    wrt(NULL, other.node(), other.begin(), other.end(),
+	ntw, _graph_type);
+
+  } else if (other.is_empty()) {
     wrt(node(), begin(), end(), (Node *)NULL, ntw, _graph_type);
+
   } else {
     wrt(node(), begin(), end(),
 	other.node(), other.begin(), other.end(),
