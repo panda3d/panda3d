@@ -1,12 +1,12 @@
 // Filename: physics_object.h
 // Created by:  charles (13Jun00)
-// 
+//
 ////////////////////////////////////////////////////////////////////
 
 #ifndef PHYSICS_OBJECT_H
 #define PHYSICS_OBJECT_H
 
-#include <compiler.h>
+#include <pandabase.h>
 #include <typedReferenceCount.h>
 #include <luse.h>
 
