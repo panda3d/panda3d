@@ -289,7 +289,7 @@ convert_executable_pathname(const string &unix_style_pathname, bool use_backslas
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: This constructor composes the filename out of a
 //               directory part and a basename part.  It will insert
 //               an intervening '/' if necessary.
@@ -311,7 +311,7 @@ Filename(const Filename &dirname, const Filename &basename) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::from_os_specific
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: This named constructor returns a Panda-style filename
 //               (that is, using forward slashes, and no drive letter)
 //               based on the supplied filename string that describes
@@ -392,7 +392,7 @@ from_os_specific(const string &os_specific, Filename::Type type) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::expand_from
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns the same thing as from_os_specific(), but
 //               embedded environment variable references
 //               (e.g. "$DMODELS/foo.txt") are expanded out.
@@ -405,7 +405,7 @@ expand_from(const string &os_specific, Filename::Type type) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::temporary
-//       Access: Public
+//       Access: Published
 //  Description: Generates a temporary filename within the indicated
 //               directory, using the indicated prefix.  If the
 //               directory is empty, a system-defined directory is
@@ -449,7 +449,7 @@ temporary(const string &dirname, const string &prefix, Type type) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::set_fullpath
-//       Access: Public
+//       Access: Published
 //  Description: Replaces the entire filename: directory, basename,
 //               extension.  This can also be achieved with the
 //               assignment operator.
@@ -461,7 +461,7 @@ set_fullpath(const string &s) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::set_dirname
-//       Access: Public
+//       Access: Published
 //  Description: Replaces the directory part of the filename.  This is
 //               everything in the filename up to, but not including
 //               the rightmost slash.
@@ -513,7 +513,7 @@ set_dirname(const string &s) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::set_basename
-//       Access: Public
+//       Access: Published
 //  Description: Replaces the basename part of the filename.  This is
 //               everything in the filename after the rightmost slash,
 //               including any extensions.
@@ -527,7 +527,7 @@ set_basename(const string &s) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::set_fullpath_wo_extension
-//       Access: Public
+//       Access: Published
 //  Description: Replaces the full filename--directory and basename
 //               parts--except for the extension.
 ////////////////////////////////////////////////////////////////////
@@ -546,7 +546,7 @@ set_fullpath_wo_extension(const string &s) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::set_basename_wo_extension
-//       Access: Public
+//       Access: Published
 //  Description: Replaces the basename part of the filename, without
 //               the file extension.
 ////////////////////////////////////////////////////////////////////
@@ -568,7 +568,7 @@ set_basename_wo_extension(const string &s) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::set_extension
-//       Access: Public
+//       Access: Published
 //  Description: Replaces the file extension.  This is everything after
 //               the rightmost dot, if there is one, or the empty
 //               string if there is not.
@@ -597,7 +597,7 @@ set_extension(const string &s) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::extract_components
-//       Access: Public
+//       Access: Published
 //  Description: Extracts out the individual directory components of
 //               the path into a series of strings.  get_basename()
 //               will be the last component stored in the vector.
@@ -630,7 +630,7 @@ extract_components(vector_string &components) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::standardize
-//       Access: Public
+//       Access: Published
 //  Description: Converts the filename to standard form by replacing
 //               consecutive slashes with a single slash, removing a
 //               trailing slash if present, and backing up over ../
@@ -689,7 +689,7 @@ standardize() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::make_absolute
-//       Access: Public
+//       Access: Published
 //  Description: Converts the filename to a fully-qualified pathname
 //               from the root (if it is a relative pathname), and
 //               then standardizes it (see standardize()).
@@ -710,7 +710,7 @@ make_absolute() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::make_absolute
-//       Access: Public
+//       Access: Published
 //  Description: Converts the filename to a fully-qualified filename
 //               from the root (if it is a relative filename), and
 //               then standardizes it (see standardize()).  This
@@ -728,7 +728,7 @@ make_absolute(const Filename &start_directory) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::make_canonical
-//       Access: Public
+//       Access: Published
 //  Description: Converts this filename to a canonical name by
 //               replacing the directory part with the fully-qualified
 //               directory part.  This is done by changing to that
@@ -769,8 +769,67 @@ make_canonical() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Filename::make_true_case
+//       Access: Published
+//  Description: On a case-insensitive operating system
+//               (e.g. Windows), this method looks up the file in the
+//               file system and resets the Filename to represent the
+//               actual case of the file as it exists on the disk.
+//               The return value is true if the file exists and the
+//               conversion can be made, or false if there is some
+//               error.
+//
+//               On a case-sensitive operating system, this method
+//               does nothing and always returns true.
+//
+//               An empty filename is considered to exist in this
+//               case.
+////////////////////////////////////////////////////////////////////
+bool Filename::
+make_true_case() {
+  if (empty()) {
+    return true;
+  }
+
+#ifdef WIN32
+  string os_specific = to_os_specific();
+
+  // First, we have to convert it to its short name, then back to its
+  // long name--that seems to be the trick to force Windows to throw
+  // away the case we give it and get the actual file case.
+  
+  char short_name[MAX_PATH + 1];
+  DWORD l = GetShortPathName(os_specific.c_str(), short_name, MAX_PATH + 1);
+  if (l == 0) {
+    // Couldn't query the path name for some reason.  Probably the
+    // file didn't exist.
+    return false;
+  }
+  // According to the Windows docs, l will return a value greater than
+  // the specified length if the short_name length wasn't enough--but also
+  // according to the Windows docs, MAX_PATH will always be enough.
+  assert(l < MAX_PATH + 1);
+  
+  char long_name[MAX_PATH + 1];
+  l = GetLongPathName(short_name, long_name, MAX_PATH + 1);
+  if (l == 0) {
+    // Couldn't query the path name for some reason.  Probably the
+    // file didn't exist.
+    return false;
+  }
+  assert(l < MAX_PATH + 1);
+
+  (*this) = Filename::from_os_specific(long_name);
+  return true;
+
+#else  // WIN32
+  return true;
+#endif  // WIN32
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Filename::to_os_specific
-//       Access: Public
+//       Access: Published
 //  Description: Converts the filename from our generic Unix-like
 //               convention (forward slashes starting with the root at
 //               '/') to the corresponding filename in the local
@@ -806,7 +865,7 @@ to_os_specific() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::to_os_generic
-//       Access: Public
+//       Access: Published
 //  Description: This is similar to to_os_specific(), but it is
 //               designed to generate a filename that can be
 //               understood on as many platforms as possible.  Since
@@ -843,7 +902,7 @@ to_os_generic() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::exists
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the filename exists on the disk,
 //               false otherwise.  If the type is indicated to be
 //               executable, this also tests that the file has execute
@@ -875,7 +934,7 @@ exists() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::is_regular_file
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the filename exists and is the
 //               name of a regular file (i.e. not a directory or
 //               device), false otherwise.
@@ -906,7 +965,7 @@ is_regular_file() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::is_directory
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the filename exists and is a
 //               directory name, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -935,7 +994,7 @@ is_directory() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::is_executable
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the filename exists and is
 //               executable
 ////////////////////////////////////////////////////////////////////
@@ -961,7 +1020,7 @@ is_executable() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::compare_timestamps
-//       Access: Public
+//       Access: Published
 //  Description: Returns a number less than zero if the file named by
 //               this object is older than the given file, zero if
 //               they have the same timestamp, or greater than zero if
@@ -1042,7 +1101,7 @@ compare_timestamps(const Filename &other,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::resolve_filename
-//       Access: Public
+//       Access: Published
 //  Description: Searches the given search path for the filename.  If
 //               it is found, updates the filename to the full
 //               pathname found and returns true; otherwise, returns
@@ -1092,7 +1151,7 @@ resolve_filename(const DSearchPath &searchpath,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::make_relative_to
-//       Access: Public
+//       Access: Published
 //  Description: Adjusts this filename, which must be a
 //               fully-specified pathname beginning with a slash, to
 //               make it a relative filename, relative to the
@@ -1156,7 +1215,7 @@ make_relative_to(Filename directory, bool allow_backups) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::find_on_searchpath
-//       Access: Public
+//       Access: Published
 //  Description: Performs the reverse of the resolve_filename()
 //               operation: assuming that the current filename is
 //               fully-specified pathname (i.e. beginning with '/'),
@@ -1187,7 +1246,7 @@ find_on_searchpath(const DSearchPath &searchpath) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::scan_directory
-//       Access: Public
+//       Access: Published
 //  Description: Attempts to open the named filename as if it were a
 //               directory and looks for the non-hidden files within
 //               the directory.  Fills the given vector up with the
@@ -1332,7 +1391,7 @@ scan_directory(vector_string &contents) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::open_read
-//       Access: Public
+//       Access: Published
 //  Description: Opens the indicated ifstream for reading the file, if
 //               possible.  Returns true if successful, false
 //               otherwise.  This requires the setting of the
@@ -1363,7 +1422,7 @@ open_read(ifstream &stream) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::open_write
-//       Access: Public
+//       Access: Published
 //  Description: Opens the indicated ifstream for writing the file, if
 //               possible.  Returns true if successful, false
 //               otherwise.  This requires the setting of the
@@ -1417,7 +1476,7 @@ open_write(ofstream &stream, bool truncate) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::open_append
-//       Access: Public
+//       Access: Published
 //  Description: Opens the indicated ifstream for writing the file, if
 //               possible.  Returns true if successful, false
 //               otherwise.  This requires the setting of the
@@ -1453,7 +1512,7 @@ open_append(ofstream &stream) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::open_read_write
-//       Access: Public
+//       Access: Published
 //  Description: Opens the indicated fstream for read/write access to
 //               the file, if possible.  Returns true if successful,
 //               false otherwise.  This requires the setting of the
@@ -1495,7 +1554,7 @@ open_read_write(fstream &stream) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::touch
-//       Access: Public
+//       Access: Published
 //  Description: Updates the modification time of the file to the
 //               current time.  If the file does not already exist, it
 //               will be created.  Returns true if successful, false
@@ -1577,7 +1636,7 @@ touch() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::unlink
-//       Access: Public
+//       Access: Published
 //  Description: Permanently deletes the file associated with the
 //               filename, if possible.  Returns true if successful,
 //               false if failure (for instance, because the file did
@@ -1592,7 +1651,7 @@ unlink() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::rename_to
-//       Access: Public
+//       Access: Published
 //  Description: Renames the file to the indicated new filename.  If
 //               the new filename is in a different directory, this
 //               will perform a move.  Returns true if successful,
@@ -1608,7 +1667,7 @@ rename_to(const Filename &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::make_dir
-//       Access: Public
+//       Access: Published
 //  Description: Creates all the directories in the path to the file
 //               specified in the filename, except for the basename
 //               itself.  This assumes that the Filename contains the

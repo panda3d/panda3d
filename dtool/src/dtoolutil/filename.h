@@ -133,6 +133,7 @@ PUBLISHED:
   void make_absolute(const Filename &start_directory);
 
   bool make_canonical();
+  bool make_true_case();
 
   string to_os_specific() const;
   string to_os_generic() const;

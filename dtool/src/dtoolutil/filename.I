@@ -18,7 +18,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename::
@@ -29,7 +29,7 @@ Filename(const string &filename) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename::
@@ -41,7 +41,7 @@ Filename(const char *filename) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Copy Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename::
@@ -57,7 +57,7 @@ Filename(const Filename &copy)
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::text_filename named constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename Filename::
@@ -69,7 +69,7 @@ text_filename(const string &filename) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::binary_filename named constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename Filename::
@@ -81,7 +81,7 @@ binary_filename(const string &filename) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::dso_filename named constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename Filename::
@@ -93,7 +93,7 @@ dso_filename(const string &filename) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::executable_filename named constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename Filename::
@@ -105,7 +105,7 @@ executable_filename(const string &filename) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename::
@@ -115,7 +115,7 @@ INLINE Filename::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Assignment operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename &Filename::
@@ -129,7 +129,7 @@ operator = (const string &filename) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Assignment operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename &Filename::
@@ -140,7 +140,7 @@ operator = (const char *filename) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Copy assignment operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename &Filename::
@@ -157,7 +157,7 @@ operator = (const Filename &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::string typecast operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE Filename::
@@ -167,7 +167,7 @@ operator const string & () const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::c_str
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE const char *Filename::
@@ -177,7 +177,7 @@ c_str() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::empty
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool Filename::
@@ -187,7 +187,7 @@ empty() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::length
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE size_t Filename::
@@ -197,7 +197,7 @@ length() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Indexing operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE char Filename::
@@ -209,7 +209,7 @@ operator [] (int n) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::get_fullpath
-//       Access: Public
+//       Access: Published
 //  Description: Returns the entire filename: directory, basename,
 //               extension.  This is the same thing returned by the
 //               string typecast operator, so this function is a
@@ -222,7 +222,7 @@ get_fullpath() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::get_dirname
-//       Access: Public
+//       Access: Published
 //  Description: Returns the directory part of the filename.  This is
 //               everything in the filename up to, but not including
 //               the rightmost slash.
@@ -234,7 +234,7 @@ get_dirname() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::get_basename
-//       Access: Public
+//       Access: Published
 //  Description: Returns the basename part of the filename.  This is
 //               everything in the filename after the rightmost slash,
 //               including any extensions.
@@ -247,7 +247,7 @@ get_basename() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::get_fullpath_wo_extension
-//       Access: Public
+//       Access: Published
 //  Description: Returns the full filename--directory and basename
 //               parts--except for the extension.
 ////////////////////////////////////////////////////////////////////
@@ -259,7 +259,7 @@ get_fullpath_wo_extension() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::get_basename_wo_extension
-//       Access: Public
+//       Access: Published
 //  Description: Returns the basename part of the filename, without
 //               the file extension.
 ////////////////////////////////////////////////////////////////////
@@ -275,7 +275,7 @@ get_basename_wo_extension() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::get_extension
-//       Access: Public
+//       Access: Published
 //  Description: Returns the file extension.  This is everything after
 //               the rightmost dot, if there is one, or the empty
 //               string if there is not.
@@ -291,7 +291,7 @@ get_extension() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::set_binary
-//       Access: Public
+//       Access: Published
 //  Description: Indicates that the filename represents a binary file.
 //               This is primarily relevant to the read_file() and
 //               write_file() methods, so they can set the appropriate
@@ -304,7 +304,7 @@ set_binary() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::set_text
-//       Access: Public
+//       Access: Published
 //  Description: Indicates that the filename represents a text file.
 //               This is primarily relevant to the read_file() and
 //               write_file() methods, so they can set the appropriate
@@ -317,7 +317,7 @@ set_text() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::is_binary
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the Filename has been indicated to
 //               represent a binary file via a previous call to
 //               set_binary().  It is possible that neither
@@ -331,7 +331,7 @@ is_binary() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::is_text
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the Filename has been indicated to
 //               represent a text file via a previous call to
 //               set_text().  It is possible that neither is_binary()
@@ -345,7 +345,7 @@ is_text() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::set_type
-//       Access: Public
+//       Access: Published
 //  Description: Sets the type of the file represented by the
 //               filename.  This is useful for to_os_specific(),
 //               resolve_filename(), test_existence(), and all such
@@ -369,7 +369,7 @@ set_type(Filename::Type type) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::get_type
-//       Access: Public
+//       Access: Published
 //  Description: Returns the type of the file represented by the
 //               filename, as previously set by set_type().
 ////////////////////////////////////////////////////////////////////
@@ -380,7 +380,7 @@ get_type() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::is_local
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the filename is local, e.g. does not
 //               begin with a slash, or false if the filename is fully
 //               specified from the root.
@@ -392,7 +392,7 @@ is_local() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::is_fully_qualified
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the filename is fully qualified,
 //               e.g. begins with a slash.  This is almost, but not
 //               quite, the same thing as !is_local().  It's not
@@ -412,7 +412,7 @@ is_fully_qualified() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Equality operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool Filename::
@@ -422,7 +422,7 @@ operator == (const string &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Inequality operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool Filename::
@@ -432,7 +432,7 @@ operator != (const string &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::Ordering operator
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE bool Filename::
@@ -443,7 +443,7 @@ operator < (const string &other) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::output
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void Filename::
