@@ -952,7 +952,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         // for handle_keystroke).
         if ((lparam & 0x40000000) == 0) {
           POINT point;
-          
           GetCursorPos(&point);
           ScreenToClient(hwnd, &point);
           handle_keypress(lookup_key(wparam), point.x, point.y,
@@ -982,6 +981,15 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
               CloseClipboard();
             }
           }
+
+        } else {
+          // Actually, for now we'll respect the repeat anyway, just
+          // so we support backspace properly.  Rethink later.
+          POINT point;
+          GetCursorPos(&point);
+          ScreenToClient(hwnd, &point);
+          handle_keypress(lookup_key(wparam), point.x, point.y,
+                          get_message_time());
         }
         break;
     
