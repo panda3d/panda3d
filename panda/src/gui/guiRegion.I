@@ -10,6 +10,8 @@ INLINE GuiRegion::GuiRegion(const string& name, float l, float r, float b,
 			    float t, bool buttons) : Namable(name), _left(l),
 						     _right(r), _bottom(b),
 						     _top(t) {
+  gui_cat->spam() << "region '" << name << "' constructed with (" << l
+		  << ", " << r << ", " << b << ", " << t << ")" << endl;
   _region = new MouseWatcherRegion(name, l, r, b, t);
   _region->set_suppress_below(buttons);
 }
@@ -35,6 +37,9 @@ INLINE void GuiRegion::set_region(float left, float right, float bottom,
   _right = right;
   _bottom = bottom;
   _top = top;
+  gui_cat->spam() << "reset region '" << this->get_name() << " to (" << left
+		  << ", " << right << ", " << bottom << ", " << top << ")"
+		  << endl;
 }
 
 INLINE LVector4f GuiRegion::get_frame(void) const {

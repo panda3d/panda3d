@@ -661,11 +661,11 @@ static void test12(GuiManager* mgr, Node* font) {
   GuiLabel* l5 = GuiLabel::make_simple_text_label("none", font);
   */
   PT_Node smile = ModelPool::load_model("smiley");
-  GuiLabel* l1 = GuiLabel::make_model_label(smile);
-  GuiLabel* l2 = GuiLabel::make_model_label(smile);
-  GuiLabel* l3 = GuiLabel::make_model_label(smile);
-  GuiLabel* l4 = GuiLabel::make_model_label(smile);
-  GuiLabel* l5 = GuiLabel::make_model_label(smile);
+  GuiLabel* l1 = GuiLabel::make_model_label(smile, 0.25, 0.25);
+  GuiLabel* l2 = GuiLabel::make_model_label(smile, 0.25, 0.25);
+  GuiLabel* l3 = GuiLabel::make_model_label(smile, 0.25, 0.25);
+  GuiLabel* l4 = GuiLabel::make_model_label(smile, 0.25, 0.25);
+  GuiLabel* l5 = GuiLabel::make_model_label(smile, 0.25, 0.25);
   gb1 = new GuiButton("test12", l1, l2, l3, l4, l5);
   gb1->set_scale(0.1);
   gb1->set_pos(LVector3f::rfu(-0.25, 0., 0.25));
@@ -1034,7 +1034,7 @@ static void test17(GuiManager* mgr, Node* font) {
   ch1->add_item(s4);
   ch1->add_item(s5);
   PT_Node panel = ModelPool::load_model("phase_3/models/props/panel");
-  GuiLabel* bgl = GuiLabel::make_model_label(panel);
+  GuiLabel* bgl = GuiLabel::make_model_label(panel, 0.1, 0.1);
   GuiBackground *bg = new GuiBackground("bg", ch1, bgl);
   bg->set_color(1., 0., 1., 1.);
   bg->thaw();

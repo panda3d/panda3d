@@ -11,6 +11,8 @@
 #include <pointerTo.h>
 #include <typedReferenceCount.h>
 
+#include "config_gui.h"
+
 // container for active regions of a GUI
 
 class GuiManager;

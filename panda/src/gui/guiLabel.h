@@ -33,6 +33,7 @@ private:
   PT(Texture) _tex;
   RenderRelation* _internal;
   Geom* _gset;
+  float _model_width, _model_height;
 
   float _scale;
   LVector3f _pos;
@@ -65,7 +66,7 @@ PUBLISHED:
   static GuiLabel* make_simple_text_label(const string&, Node*,
 					  Texture* = (Texture*)0L);
   static GuiLabel* make_simple_card_label(void);
-  static GuiLabel* make_model_label(Node*);
+  static GuiLabel* make_model_label(Node*, float, float);
 
   int freeze();
   int thaw();

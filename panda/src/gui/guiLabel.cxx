@@ -226,10 +226,12 @@ GuiLabel* GuiLabel::make_simple_card_label(void) {
   return ret;
 }
 
-GuiLabel* GuiLabel::make_model_label(Node* geom) {
+GuiLabel* GuiLabel::make_model_label(Node* geom, float w, float h) {
   GuiLabel* ret = new GuiLabel();
   ret->_type = MODEL;
   ret->_geom = new NamedNode("GUI label");
+  ret->_model_width = w;
+  ret->_model_height = h;
   ret->_internal = new RenderRelation(ret->_geom, geom);
   ret->_internal->set_transition(
 				new ColorTransition(Colorf(ret->_foreground)));
@@ -320,10 +322,7 @@ void GuiLabel::get_extents(float& l, float& r, float& b, float& t) {
     }
     break;
   case SIMPLE_CARD:
-  case MODEL:
     {
-      // this really isn't correct for model, but will do until there is time
-      // or need for more
       float x = _pos.dot(LVector3f::rfu(1., 0., 0.));
       float y = _pos.dot(LVector3f::rfu(0., 0., 1.));
       l = _have_width?-(_width*0.5):-0.5;
@@ -332,6 +331,20 @@ void GuiLabel::get_extents(float& l, float& r, float& b, float& t) {
       r += x;
       b = _have_height?-(_height*0.5):-0.5;
       t = _have_height?(_height*0.5):0.5;
+      b += y;
+      t += y;
+    }
+    break;
+  case MODEL:
+    {
+      float x = _pos.dot(LVector3f::rfu(1., 0., 0.));
+      float y = _pos.dot(LVector3f::rfu(0., 0., 1.));
+      l = _have_width?-(_width*_model_width*0.5):-(_model_width*0.5);
+      r = _have_width?(_width*_model_width*0.5):(_model_width*0.5);
+      l += x;
+      r += x;
+      b = _have_height?-(_height*_model_height*0.5):-(_model_height*0.5);
+      t = _have_height?(_height*_model_height*0.5):(_model_height*0.5);
       b += y;
       t += y;
     }
