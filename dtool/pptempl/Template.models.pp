@@ -43,14 +43,14 @@
 
 #define build_eggs $[sort $[build_models] $[build_chars] $[build_anims]]
 #define install_eggs $[sort $[SOURCES(install_egg)] $[UNPAL_SOURCES(install_egg)]]
-#define install_other $[sort $[SOURCES(install_audio install_dna install_icons)]]
+#define install_other $[sort $[SOURCES(install_audio install_dna install_icons install_misc)]]
 
 #define install_egg_dirs $[sort $[forscopes install_egg,$[install_model_dir]]]
 #define installed_eggs $[sort $[forscopes install_egg,$[SOURCES:%=$[install_model_dir]/%] $[UNPAL_SOURCES:%=$[install_model_dir]/%]]]
 #define installed_bams $[sort $[forscopes install_egg,$[SOURCES:%.egg=$[install_model_dir]/%.bam] $[UNPAL_SOURCES:%.egg=$[install_model_dir]/%.bam]]]
 
-#define install_other_dirs $[sort $[forscopes install_audio install_dna install_icons,$[install_model_dir]]]
-#define installed_other $[sort $[forscopes install_audio install_dna install_icons,$[SOURCES:%=$[install_model_dir]/%]]]
+#define install_other_dirs $[sort $[forscopes install_audio install_dna install_icons install_misc,$[install_model_dir]]]
+#define installed_other $[sort $[forscopes install_audio install_dna install_icons install_misc,$[SOURCES:%=$[install_model_dir]/%]]]
 
 #define pal_egg_targets $[sort $[SOURCES(install_egg):%=$[pal_egg_dir]/%]]
 #define bam_targets $[install_eggs:%.egg=$[bam_dir]/%.bam]
@@ -296,7 +296,7 @@ $[dest]/$[local] : $[sourcedir]/$[local]
 
 
 // Miscellaneous file installation.
-#forscopes install_audio install_dna install_icons
+#forscopes install_audio install_dna install_icons install_misc
   #foreach file $[SOURCES]
     #define local $[file]
     #define dest $[install_model_dir]
@@ -304,7 +304,7 @@ $[dest]/$[local] : $[local]
 	$[INSTALL]
 
   #end file
-#end install_audio install_dna install_icons
+#end install_audio install_dna install_icons install_misc
 
 #end Makefile
 
