@@ -31,7 +31,7 @@ TypeHandle CollisionHandlerEvent::_type_handle;
 //       Access: Public
 //  Description: The default CollisionHandlerEvent will throw no
 //               events.  Its pattern strings must first be set via a
-//               call to set_in_pattern() and/or set_out_pattern().
+//               call to add_in_pattern() and/or add_out_pattern().
 ////////////////////////////////////////////////////////////////////
 CollisionHandlerEvent::
 CollisionHandlerEvent() {
@@ -109,18 +109,18 @@ end_group() {
     if (order(*ca, *cb)) {
       // Here's an element in a but not in b.  That's a newly entered
       // intersection.
-      throw_event_pattern(_in_pattern, *ca);
+      throw_event_for(_in_patterns, *ca);
       ++ca;
 
     } else if (order(*cb, *ca)) {
       // Here's an element in b but not in a.  That's a newly exited
       // intersection.
-      throw_event_pattern(_out_pattern, *cb);
+      throw_event_for(_out_patterns, *cb);
       ++cb;
 
     } else {
       // This element is in both b and a.  It hasn't changed.
-      throw_event_pattern(_again_pattern, *cb);
+      throw_event_for(_again_patterns, *cb);
       ++ca;
       ++cb;
     }
@@ -129,14 +129,14 @@ end_group() {
   while (ca != _current_colliding.end()) {
     // Here's an element in a but not in b.  That's a newly entered
     // intersection.
-    throw_event_pattern(_in_pattern, *ca);
+    throw_event_for(_in_patterns, *ca);
     ++ca;
   }
 
   while (cb != _last_colliding.end()) {
     // Here's an element in b but not in a.  That's a newly exited
     // intersection.
-    throw_event_pattern(_out_pattern, *cb);
+    throw_event_for(_out_patterns, *cb);
     ++cb;
   }
 
@@ -154,7 +154,7 @@ end_group() {
 //               This can be called each frame to defeat the
 //               persistent "in" event mechanism, which prevents the
 //               same "in" event from being thrown repeatedly.
-//               However, also see set_again_pattern(), which can be
+//               However, also see add_again_pattern(), which can be
 //               used to set the event that is thrown when a collision
 //               is detected for two or more consecutive frames.
 ////////////////////////////////////////////////////////////////////
@@ -162,6 +162,20 @@ void CollisionHandlerEvent::
 clear() {
   _last_colliding.clear();
   _current_colliding.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerEvent::throw_event_for
+//       Access: Private
+//  Description: Throws whatever events are suggested by the list of
+//               patterns.
+////////////////////////////////////////////////////////////////////
+void CollisionHandlerEvent::
+throw_event_for(const vector_string &patterns, CollisionEntry *entry) {
+  vector_string::const_iterator pi;
+  for (pi = patterns.begin(); pi != patterns.end(); ++pi) {
+    throw_event_pattern(*pi, entry);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -213,27 +227,29 @@ throw_event_pattern(const string &pattern, CollisionEntry *entry) {
           (entry->has_into() ? 'c' : 'g');
 
       } else if (cmd == "fh") {
-        event += (entry->get_from_node()->has_tag(key) ? '1' : '0');
-
-      } else if (cmd == "ih") {
-        if (entry->has_into()) {
-          event += (entry->get_into_node()->has_tag(key) ? '1' : '0');
+        if (!entry->get_from_node()->has_tag(key)) {
+          return;
         }
 
-      } else if (cmd == "iH") {
-        if (entry->has_into()) {
-          event += (entry->get_into_node_path().has_net_tag(key) ? '1' : '0');
+      } else if (cmd == "fx") {
+        if (entry->get_from_node()->has_tag(key)) {
+          return;
+        }
+
+      } else if (cmd == "ih") {
+        if (!(entry->has_into() && entry->get_into_node_path().has_net_tag(key))) {
+          return;
+        }
+
+      } else if (cmd == "ix") {
+        if (entry->has_into() && entry->get_into_node_path().has_net_tag(key)) {
+          return;
         }
 
       } else if (cmd == "ft") {
         event += entry->get_from_node()->get_tag(key);
 
       } else if (cmd == "it") {
-        if (entry->has_into()) {
-          event += entry->get_into_node()->get_tag(key);
-        }
-
-      } else if (cmd == "iT") {
         if (entry->has_into()) {
           event += entry->get_into_node_path().get_net_tag(key);
         }
