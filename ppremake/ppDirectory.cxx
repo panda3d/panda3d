@@ -357,7 +357,8 @@ get_dependable_file(const string &filename, bool is_header) {
     
     if (!unique) {
       PPDependableFile *other = main_tree->find_dependable_file(filename);
-      if (_tree != main_tree) {
+      if (_tree != main_tree &&
+          other->get_directory()->get_tree() != main_tree) {
         // Both files are in external dependable trees.
         cerr << "Warning: header file " << dependable->get_fullpath()
              << " may be confused with " << other->get_fullpath()
@@ -365,10 +366,9 @@ get_dependable_file(const string &filename, bool is_header) {
 
       } else if (other->get_directory()->get_tree() != _tree) {
         // This file is a source file in this tree, while the other
-        // one is an external file.
-        cerr << "Warning: source file " << dependable->get_pathname()
-             << " may be confused with " << other->get_fullpath()
-             << ".\n";
+        // one is an external file.  This is not a warning condition,
+        // since maybe we've already installed the source file to the
+        // global install directory on some previous build.
 
       } else {
         // Both files are within the same source tree.
