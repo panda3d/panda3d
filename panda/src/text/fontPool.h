@@ -22,6 +22,7 @@
 #include "pandabase.h"
 
 #include "texture.h"
+#include "textFont.h"
 
 #include "filename.h"
 #include "pmap.h"
