@@ -449,11 +449,13 @@ get_proxies_for_url(const URLSpec &url, pvector<URLSpec> &proxies) const {
   // First, check if the hostname matches any listed in direct_hosts.
   string hostname = url.get_server();
 
-  DirectHosts::const_iterator si;
-  for (si = _direct_hosts.begin(); si != _direct_hosts.end(); ++si) {
-    if ((*si).matches(hostname)) {
+  if (!hostname.empty()) { // skip if hostname is just an empty 'http://' scheme
+    DirectHosts::const_iterator si;
+    for (si = _direct_hosts.begin(); si != _direct_hosts.end(); ++si) {
+      if ((*si).matches(hostname)) {
       // It matches, so don't use any proxies.
-      return;
+        return;
+      }
     }
   }
 
