@@ -343,29 +343,29 @@ set_current_regions(MouseWatcher::VRegions &regions) {
       new_region->within(param);
       throw_event_pattern(_within_pattern, new_region, ButtonHandle::none());
     }
+  }
 
-    // Determine which is the "preferred region", if any.  This is the
-    // topmost region that the mouse cursor is over, and the one that
-    // we are considered "entered" into.
-    MouseWatcherRegion *new_preferred_region = 
-      get_preferred_region(_current_regions);
-
-    if (_button_down && new_preferred_region != _preferred_button_down_region) {
-      // If the button's being held down, we're only allowed to select
-      // the preferred button down region.
-      new_preferred_region = (MouseWatcherRegion *)NULL;
+  // Determine which is the "preferred region", if any.  This is the
+  // topmost region that the mouse cursor is over, and the one that
+  // we are considered "entered" into.
+  MouseWatcherRegion *new_preferred_region = 
+    get_preferred_region(_current_regions);
+  
+  if (_button_down && new_preferred_region != _preferred_button_down_region) {
+    // If the button's being held down, we're only allowed to select
+    // the preferred button down region.
+    new_preferred_region = (MouseWatcherRegion *)NULL;
+  }
+  
+  if (new_preferred_region != _preferred_region) {
+    if (_preferred_region != (MouseWatcherRegion *)NULL) {
+      _preferred_region->exit(param);
+      throw_event_pattern(_leave_pattern, _preferred_region, ButtonHandle::none());
     }
-
-    if (new_preferred_region != _preferred_region) {
-      if (_preferred_region != (MouseWatcherRegion *)NULL) {
-        _preferred_region->exit(param);
-        throw_event_pattern(_leave_pattern, _preferred_region, ButtonHandle::none());
-      }
-      _preferred_region = new_preferred_region;
-      if (_preferred_region != (MouseWatcherRegion *)NULL) {
-        _preferred_region->enter(param);
-        throw_event_pattern(_enter_pattern, _preferred_region, ButtonHandle::none());
-      }
+    _preferred_region = new_preferred_region;
+    if (_preferred_region != (MouseWatcherRegion *)NULL) {
+      _preferred_region->enter(param);
+      throw_event_pattern(_enter_pattern, _preferred_region, ButtonHandle::none());
     }
   }
 }
