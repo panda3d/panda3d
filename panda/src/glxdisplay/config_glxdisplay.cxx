@@ -31,6 +31,12 @@ ConfigureFn(config_glxdisplay) {
   init_libglxdisplay();
 }
 
+ConfigVariableString display_cfg
+("display", "");
+
+ConfigVariableBool glx_error_abort
+("glx-error-abort", false);
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libglxdisplay
 //  Description: Initializes the library.  This must be called at
@@ -58,6 +64,3 @@ init_libglxdisplay() {
   selection->add_pipe_type(glxGraphicsPipe::get_class_type(),
                            glxGraphicsPipe::pipe_constructor);
 }
-
-const string display_cfg = config_glxdisplay.GetString("display", "");
-const bool glx_error_abort = config_glxdisplay.GetBool("glx-error-abort", false);

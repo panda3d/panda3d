@@ -21,12 +21,14 @@
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
+#include "configVariableString.h"
+#include "configVariableBool.h"
 
 NotifyCategoryDecl(glxdisplay, EXPCL_PANDAGL, EXPTP_PANDAGL);
 
 extern EXPCL_PANDAGL void init_libglxdisplay();
 
-extern const string display_cfg;
-extern const bool glx_error_abort;
+extern ConfigVariableString display_cfg;
+extern ConfigVariableBool glx_error_abort;
 
 #endif /* __CONFIG_GLXDISPLAY_H__ */

@@ -285,33 +285,20 @@ make_buffer(GraphicsStateGuardian *gsg, const string &name,
 GLXFBConfig glxGraphicsPipe::
 choose_fbconfig(FrameBufferProperties &properties) const {
   int frame_buffer_mode = 0;
-  int want_depth_bits = 0;
-  int want_color_bits = 0;
 
   if (properties.has_frame_buffer_mode()) {
     frame_buffer_mode = properties.get_frame_buffer_mode();
   }
 
-  if (properties.has_depth_bits()) {
-    want_depth_bits = properties.get_depth_bits();
-  }
-
-  if (properties.has_color_bits()) {
-    want_color_bits = properties.get_color_bits();
-  }
-
-  /*
-  if (frame_buffer_mode & FrameBufferProperties::FM_multisample) {
-    if (!glx_supports("GLX_SGIS_multisample")) {
-      glxdisplay_cat.info()
-        << "multisample not supported by this glx implementation.\n";
-      frame_buffer_mode &= ~FrameBufferProperties::FM_multisample;
-    }
-  }
-  */
+  int want_depth_bits = properties.get_depth_bits();
+  int want_color_bits = properties.get_color_bits();
+  int want_alpha_bits = properties.get_alpha_bits();
+  int want_stencil_bits = properties.get_stencil_bits();
+  int want_multisample_bits = properties.get_multisample_bits();
 
   GLXFBConfig fbconfig = 
-    try_for_fbconfig(frame_buffer_mode, want_depth_bits, want_color_bits);
+    try_for_fbconfig(frame_buffer_mode, want_depth_bits, want_color_bits,
+                     want_alpha_bits, want_stencil_bits, want_multisample_bits);
 
   // This is the severity level at which we'll report the details of
   // the fbconfig we actually do find.  Normally, it's debug-level
@@ -341,7 +328,7 @@ choose_fbconfig(FrameBufferProperties &properties) const {
       // Actually, first we'll eliminate all of the minimum sizes, to
       // try to open a window with all of the requested options, but
       // maybe not as many bits in some options as we'd like.
-      fbconfig = try_for_fbconfig(frame_buffer_mode, 1, 1);
+      fbconfig = try_for_fbconfig(frame_buffer_mode);
     }
 
     if (fbconfig == None) {
@@ -388,7 +375,9 @@ choose_fbconfig(FrameBufferProperties &properties) const {
         int new_frame_buffer_mode = frame_buffer_mode & ~strip_properties[i];
         if (tried_masks.insert(new_frame_buffer_mode).second) {
           fbconfig = try_for_fbconfig(new_frame_buffer_mode, want_depth_bits,
-                                      want_color_bits);
+                                      want_color_bits, want_alpha_bits, 
+                                      want_stencil_bits, want_multisample_bits);
+
         }
       }
 
@@ -402,7 +391,7 @@ choose_fbconfig(FrameBufferProperties &properties) const {
           for (i = 0; fbconfig == None && strip_properties[i] != 0; i++) {
             int new_frame_buffer_mode = frame_buffer_mode & ~strip_properties[i];
             if (tried_masks.insert(new_frame_buffer_mode).second) {
-              fbconfig = try_for_fbconfig(new_frame_buffer_mode, 1, 1);
+              fbconfig = try_for_fbconfig(new_frame_buffer_mode);
             }
           }
         }
@@ -411,7 +400,7 @@ choose_fbconfig(FrameBufferProperties &properties) const {
       if (fbconfig == None) {
         // Here's our last-ditch desparation attempt: give us any GLX
         // fbconfig at all!
-        fbconfig = try_for_fbconfig(0, 1, 1);
+        fbconfig = try_for_fbconfig(0);
       }
 
       if (fbconfig == None) {
@@ -506,7 +495,9 @@ choose_fbconfig(FrameBufferProperties &properties) const {
 ////////////////////////////////////////////////////////////////////
 GLXFBConfig glxGraphicsPipe::
 try_for_fbconfig(int framebuffer_mode,
-                 int want_depth_bits, int want_color_bits) const {
+                 int want_depth_bits, int want_color_bits,
+                 int want_alpha_bits, int want_stencil_bits,
+                 int want_multisample_bits) const {
   static const int max_attrib_list = 32;
   int attrib_list[max_attrib_list];
   int n=0;
@@ -514,12 +505,7 @@ try_for_fbconfig(int framebuffer_mode,
   glxdisplay_cat.debug()
     << "Trying for fbconfig with: RGB(" << want_color_bits << ")";
 
-  int want_color_component_bits;
-  if (framebuffer_mode & FrameBufferProperties::FM_alpha) {
-    want_color_component_bits = max(want_color_bits / 4, 1);
-  } else {
-    want_color_component_bits = max(want_color_bits / 3, 1);
-  }
+  int want_color_component_bits = max(want_color_bits / 3, 1);
 
   attrib_list[n++] = GLX_RED_SIZE;
   attrib_list[n++] = want_color_component_bits;
@@ -529,9 +515,9 @@ try_for_fbconfig(int framebuffer_mode,
   attrib_list[n++] = want_color_component_bits;
 
   if (framebuffer_mode & FrameBufferProperties::FM_alpha) {
-    glxdisplay_cat.debug(false) << " ALPHA";
+    glxdisplay_cat.debug(false) << " ALPHA(" << want_alpha_bits << ")";
     attrib_list[n++] = GLX_ALPHA_SIZE;
-    attrib_list[n++] = want_color_component_bits;
+    attrib_list[n++] = want_alpha_bits;
   }
 
   switch (framebuffer_mode & FrameBufferProperties::FM_buffer) {
@@ -565,9 +551,9 @@ try_for_fbconfig(int framebuffer_mode,
   }
 
   if (framebuffer_mode & FrameBufferProperties::FM_stencil) {
-    glxdisplay_cat.debug(false) << " STENCIL";
+    glxdisplay_cat.debug(false) << " STENCIL(" << want_stencil_bits << ")";
     attrib_list[n++] = GLX_STENCIL_SIZE;
-    attrib_list[n++] = 1;
+    attrib_list[n++] = want_stencil_bits;
   }
 
   if (framebuffer_mode & FrameBufferProperties::FM_accum) {
@@ -580,15 +566,14 @@ try_for_fbconfig(int framebuffer_mode,
     attrib_list[n++] = want_color_component_bits;
     if (framebuffer_mode & FrameBufferProperties::FM_alpha) {
       attrib_list[n++] = GLX_ACCUM_ALPHA_SIZE;
-      attrib_list[n++] = want_color_component_bits;
+      attrib_list[n++] = want_alpha_bits;
     }
   }
 
   if (framebuffer_mode & FrameBufferProperties::FM_multisample) {
-    glxdisplay_cat.debug(false) << " MULTISAMPLE";
+    glxdisplay_cat.debug(false) << " MULTISAMPLE(" << want_multisample_bits << ")";
     attrib_list[n++] = GLX_SAMPLES;
-    // We decide 4 is minimum number of samples
-    attrib_list[n++] = 4;
+    attrib_list[n++] = want_multisample_bits;
   }
 
   // Terminate the list
@@ -639,23 +624,20 @@ try_for_fbconfig(int framebuffer_mode,
 XVisualInfo *glxGraphicsPipe::
 choose_visual(FrameBufferProperties &properties) const {
   int frame_buffer_mode = 0;
-  int want_depth_bits = 0;
-  int want_color_bits = 0;
 
   if (properties.has_frame_buffer_mode()) {
     frame_buffer_mode = properties.get_frame_buffer_mode();
   }
 
-  if (properties.has_depth_bits()) {
-    want_depth_bits = properties.get_depth_bits();
-  }
-
-  if (properties.has_color_bits()) {
-    want_color_bits = properties.get_color_bits();
-  }
+  int want_depth_bits = properties.get_depth_bits();
+  int want_color_bits = properties.get_color_bits();
+  int want_alpha_bits = properties.get_alpha_bits();
+  int want_stencil_bits = properties.get_stencil_bits();
+  int want_multisample_bits = properties.get_multisample_bits();
 
   XVisualInfo *visual = 
-    try_for_visual(frame_buffer_mode, want_depth_bits, want_color_bits);
+    try_for_visual(frame_buffer_mode, want_depth_bits, want_color_bits,
+                   want_alpha_bits, want_stencil_bits, want_multisample_bits);
 
   // This is the severity level at which we'll report the details of
   // the visual we actually do find.  Normally, it's debug-level
@@ -685,7 +667,7 @@ choose_visual(FrameBufferProperties &properties) const {
       // Actually, first we'll eliminate all of the minimum sizes, to
       // try to open a window with all of the requested options, but
       // maybe not as many bits in some options as we'd like.
-      visual = try_for_visual(frame_buffer_mode, 1, 1);
+      visual = try_for_visual(frame_buffer_mode);
     }
 
     if (visual == NULL) {
@@ -732,7 +714,9 @@ choose_visual(FrameBufferProperties &properties) const {
         int new_frame_buffer_mode = frame_buffer_mode & ~strip_properties[i];
         if (tried_masks.insert(new_frame_buffer_mode).second) {
           visual = try_for_visual(new_frame_buffer_mode, want_depth_bits,
-                                  want_color_bits);
+                                  want_color_bits, want_alpha_bits, 
+                                  want_stencil_bits, want_multisample_bits);
+
         }
       }
 
@@ -746,7 +730,7 @@ choose_visual(FrameBufferProperties &properties) const {
           for (i = 0; visual == NULL && strip_properties[i] != 0; i++) {
             int new_frame_buffer_mode = frame_buffer_mode & ~strip_properties[i];
             if (tried_masks.insert(new_frame_buffer_mode).second) {
-              visual = try_for_visual(new_frame_buffer_mode, 1, 1);
+              visual = try_for_visual(new_frame_buffer_mode);
             }
           }
         }
@@ -755,7 +739,7 @@ choose_visual(FrameBufferProperties &properties) const {
       if (visual == NULL) {
         // Here's our last-ditch desparation attempt: give us any GLX
         // visual at all!
-        visual = try_for_visual(0, 1, 1);
+        visual = try_for_visual(0);
       }
 
       if (visual == NULL) {
@@ -851,7 +835,9 @@ choose_visual(FrameBufferProperties &properties) const {
 ////////////////////////////////////////////////////////////////////
 XVisualInfo *glxGraphicsPipe::
 try_for_visual(int framebuffer_mode,
-               int want_depth_bits, int want_color_bits) const {
+               int want_depth_bits, int want_color_bits,
+               int want_alpha_bits, int want_stencil_bits,
+               int want_multisample_bits) const {
   static const int max_attrib_list = 32;
   int attrib_list[max_attrib_list];
   int n=0;
@@ -859,12 +845,7 @@ try_for_visual(int framebuffer_mode,
   glxdisplay_cat.debug()
     << "Trying for visual with: RGB(" << want_color_bits << ")";
 
-  int want_color_component_bits;
-  if (framebuffer_mode & FrameBufferProperties::FM_alpha) {
-    want_color_component_bits = max(want_color_bits / 4, 1);
-  } else {
-    want_color_component_bits = max(want_color_bits / 3, 1);
-  }
+  int want_color_component_bits = max(want_color_bits / 3, 1);
 
   attrib_list[n++] = GLX_RGBA;
   attrib_list[n++] = GLX_RED_SIZE;
@@ -875,9 +856,9 @@ try_for_visual(int framebuffer_mode,
   attrib_list[n++] = want_color_component_bits;
 
   if (framebuffer_mode & FrameBufferProperties::FM_alpha) {
-    glxdisplay_cat.debug(false) << " ALPHA";
+    glxdisplay_cat.debug(false) << " ALPHA(" << want_alpha_bits << ")";
     attrib_list[n++] = GLX_ALPHA_SIZE;
-    attrib_list[n++] = want_color_component_bits;
+    attrib_list[n++] = want_alpha_bits;
   }
   if (framebuffer_mode & FrameBufferProperties::FM_double_buffer) {
     glxdisplay_cat.debug(false) << " DOUBLEBUFFER";
@@ -893,9 +874,9 @@ try_for_visual(int framebuffer_mode,
     attrib_list[n++] = want_depth_bits;
   }
   if (framebuffer_mode & FrameBufferProperties::FM_stencil) {
-    glxdisplay_cat.debug(false) << " STENCIL";
+    glxdisplay_cat.debug(false) << " STENCIL(" << want_stencil_bits << ")";
     attrib_list[n++] = GLX_STENCIL_SIZE;
-    attrib_list[n++] = 1;
+    attrib_list[n++] = want_stencil_bits;
   }
   if (framebuffer_mode & FrameBufferProperties::FM_accum) {
     glxdisplay_cat.debug(false) << " ACCUM";
@@ -907,14 +888,13 @@ try_for_visual(int framebuffer_mode,
     attrib_list[n++] = want_color_component_bits;
     if (framebuffer_mode & FrameBufferProperties::FM_alpha) {
       attrib_list[n++] = GLX_ACCUM_ALPHA_SIZE;
-      attrib_list[n++] = want_color_component_bits;
+      attrib_list[n++] = want_alpha_bits;
     }
   }
   if (framebuffer_mode & FrameBufferProperties::FM_multisample) {
-    glxdisplay_cat.debug(false) << " MULTISAMPLE";
+    glxdisplay_cat.debug(false) << " MULTISAMPLE(" << want_multisample_bits << ")";
     attrib_list[n++] = GLX_SAMPLES;
-    // We decide 4 is minimum number of samples
-    attrib_list[n++] = 4;
+    attrib_list[n++] = want_multisample_bits;
   }
 
   // Terminate the list
