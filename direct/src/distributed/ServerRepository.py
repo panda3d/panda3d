@@ -65,7 +65,7 @@ class ServerRepository:
                     importSymbols = module.__all__
                 else:
                     importSymbols = module.__dict__.keys()
-            
+
             for symbolName in importSymbols:
                 if hasattr(module, symbolName):
                     dcImports[symbolName] = getattr(module, symbolName)
@@ -93,7 +93,7 @@ class ServerRepository:
         self.dclassesByName = {}
         self.dclassesByNumber = {}
         self.hashVal = 0
-        
+
         dcImports = {}
         if dcFileNames == None:
             readResult = dcFile.readAll()
@@ -128,7 +128,7 @@ class ServerRepository:
                     symbolName += self.dcSuffix
 
                 importSymbols.append(symbolName)
-                
+
             self.importModule(dcImports, moduleName, importSymbols)
 
         # Now get the class definition for the classes named in the DC
@@ -148,7 +148,7 @@ class ServerRepository:
                     if not hasattr(classDef, className):
                         self.notify.error("Module %s does not define class %s." % (className, className))
                     classDef = getattr(classDef, className)
-                    
+
                 if type(classDef) != types.ClassType:
                     self.notify.error("Symbol %s is not a class name." % (className))
                 else:
@@ -195,8 +195,8 @@ class ServerRepository:
     def readerPollOnce(self):
         availGetVal = self.qcr.dataAvailable()
         if availGetVal:
-            datagram = NetDatagram() 
-            readRetVal = self.qcr.getData(datagram) 
+            datagram = NetDatagram()
+            readRetVal = self.qcr.getData(datagram)
             if readRetVal:
                 # need to send to message processing unit
                 self.handleDatagram(datagram)
@@ -257,10 +257,10 @@ class ServerRepository:
         return None
 
 
-# client wants to update an object, forward message along 
+# client wants to update an object, forward message along
 # to corresponding zone
 
-    def handleClientUpdateField(self, datagram, dgi):   
+    def handleClientUpdateField(self, datagram, dgi):
         connection = datagram.getConnection()
         doid = dgi.getUint32()
         fieldid = dgi.getUint16()
@@ -297,7 +297,7 @@ class ServerRepository:
 # object know about it
 
     def handleClientDeleteObject(self, datagram, doid):
-        if doid in self.DOIDtoZones:    
+        if doid in self.DOIDtoZones:
                 self.sendToZoneExcept(self.DOIDtoZones[doid], datagram, 0)
                 self.ClientObjects[datagram.getConnection()].remove(doid)
                 self.ZonetoDOIDs[self.DOIDtoZones[doid]].remove(doid)
@@ -330,7 +330,7 @@ class ServerRepository:
         datagram.addUint32(id)
         datagram.addUint32(self.DOIDrange)
         print "Sending DOID range: ",id,self.DOIDrange
-        self.cw.send(datagram, connection)      
+        self.cw.send(datagram, connection)
         return None
 
     # a client disconnected from us, we need to update our data, also tell other clients to remove
@@ -381,34 +381,34 @@ class ServerRepository:
     # client has moved zones, need to update them
     def handleRemoveZone(self, dgi, connection):
         while dgi.getRemainingSize() > 0:
-                ZoneID = dgi.getUint32()                
+                ZoneID = dgi.getUint32()
                 if self.ClientZones[connection].count(ZoneID) == 1:
                         self.ClientZones[connection].remove(ZoneID)
                 if ZoneID in self.ZonesToClients:
                         if self.ZonesToClients[ZoneID].count(connection) == 1:
-                                self.ZonesToClients[ZoneID].remove(connection)  
+                                self.ZonesToClients[ZoneID].remove(connection)
                 for i in self.ZonetoDOIDs[ZoneID]:
                         datagram = NetDatagram()
                         datagram.addUint16(CLIENT_OBJECT_DELETE)
                         datagram.addUint32(i)
-                        self.cw.send(datagram, connection)      
+                        self.cw.send(datagram, connection)
         return None
 
     # client did not tell us he was leaving but we lost connection to him, so we need to update our data and tell others
 
     def clientHardDisconnectTask(self, task):
-        for i in self.ClientIP.keys():  
+        for i in self.ClientIP.keys():
                 if (not self.qcr.isConnectionOk(i)):
                         self.handleClientDisconnect(i)
         return Task.cont
 
 
-    # sends a message to everyone who is in the zone    
-    def sendToZoneExcept(self, ZoneID, datagram, connection):   
+    # sends a message to everyone who is in the zone
+    def sendToZoneExcept(self, ZoneID, datagram, connection):
         if ZoneID in self.ZonesToClients:
                 for conn in self.ZonesToClients[ZoneID]:
                         if (conn != connection): self.cw.send(datagram, conn)
-        return None      
+        return None
 
     # sends a message to all connected clients
     def sendToAll(self, datagram):
