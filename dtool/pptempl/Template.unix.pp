@@ -38,42 +38,45 @@
 // $[bin_targets] the list of binaries.  $[test_bin_targets] is the
 // list of binaries that are to be built only when specifically asked
 // for.
-#define lib_targets $[active_target(metalib_target lib_target ss_lib_target noinst_lib_target):%=$[so_dir]/lib%.so]
-#define static_lib_targets $[active_target(static_lib_target):%=$[st_dir]/lib%.a]
-#define bin_targets $[active_target(bin_target noinst_bin_target sed_bin_target):%=$[st_dir]/%]
-#define test_bin_targets $[active_target(test_bin_target):%=$[st_dir]/%]
+#if $[build_directory]
+  #define lib_targets $[active_target(metalib_target lib_target ss_lib_target noinst_lib_target):%=$[so_dir]/lib%.so]
+  #define static_lib_targets $[active_target(static_lib_target):%=$[st_dir]/lib%.a]
+  #define bin_targets $[active_target(bin_target noinst_bin_target sed_bin_target):%=$[st_dir]/%]
+  #define test_bin_targets $[active_target(test_bin_target):%=$[st_dir]/%]
 
-// And these variables will define the various things we need to
-// install.
-#define install_lib $[active_target(metalib_target lib_target ss_lib_target static_lib_target)]
-#define install_bin $[active_target(bin_target)]
-#define install_scripts $[sort $[INSTALL_SCRIPTS(metalib_target lib_target ss_lib_target static_lib_target bin_target)] $[INSTALL_SCRIPTS]]
-#define install_headers $[sort $[INSTALL_HEADERS(metalib_target lib_target ss_lib_target static_lib_target bin_target)] $[INSTALL_HEADERS]]
-#define install_parser_inc $[sort $[INSTALL_PARSER_INC]]
-#define install_data $[sort $[INSTALL_DATA(metalib_target lib_target ss_lib_target static_lib_target bin_target)] $[INSTALL_DATA]]
-#define install_config $[sort $[INSTALL_CONFIG(metalib_target lib_target ss_lib_target static_lib_target bin_target)] $[INSTALL_CONFIG]]
-#define install_igatedb $[sort $[get_igatedb(metalib_target lib_target ss_lib_target)]]
+  // And these variables will define the various things we need to
+  // install.
+  #define install_lib $[active_target(metalib_target lib_target ss_lib_target static_lib_target)]
+  #define install_bin $[active_target(bin_target)]
+  #define install_scripts $[sort $[INSTALL_SCRIPTS(metalib_target lib_target ss_lib_target static_lib_target bin_target)] $[INSTALL_SCRIPTS]]
+  #define install_headers $[sort $[INSTALL_HEADERS(metalib_target lib_target ss_lib_target static_lib_target bin_target)] $[INSTALL_HEADERS]]
+  #define install_parser_inc $[sort $[INSTALL_PARSER_INC]]
+  #define install_data $[sort $[INSTALL_DATA(metalib_target lib_target ss_lib_target static_lib_target bin_target)] $[INSTALL_DATA]]
+  #define install_config $[sort $[INSTALL_CONFIG(metalib_target lib_target ss_lib_target static_lib_target bin_target)] $[INSTALL_CONFIG]]
+  #define install_igatedb $[sort $[get_igatedb(metalib_target lib_target ss_lib_target)]]
 
-// $[so_sources] is the set of sources that belong on a shared object,
-// and $[st_sources] is the set of sources that belong on a static
-// object, like a static library or an executable.  We make the
-// distinction because some architectures require a special parameter
-// to the compiler when we're compiling something to be put in a
-// shared object (to make the code relocatable).
-#define so_sources $[get_sources(metalib_target lib_target ss_lib_target noinst_lib_target)]
-#define st_sources $[get_sources(static_lib_target bin_target noinst_bin_target test_bin_target)]
-
-// These are the source files that our dependency cache file will
-// depend on.  If it's an empty list, we won't bother writing rules to
-// freshen the cache file.
-#define dep_sources $[sort $[filter %.c %.cxx %.yxx %.lxx %.h %.I %.T,$[so_sources] $[st_sources]]]
-
-#if $[eq $[so_dir],$[st_dir]]
-  // If the static and shared directories are the same, we have to use the
-  // same rules to build both shared and static targets.
-  #set st_sources $[so_sources] $[st_sources]
-  #set so_sources
-#endif
+  // $[so_sources] is the set of sources that belong on a shared object,
+  // and $[st_sources] is the set of sources that belong on a static
+  // object, like a static library or an executable.  We make the
+  // distinction because some architectures require a special parameter
+  // to the compiler when we're compiling something to be put in a
+  // shared object (to make the code relocatable).
+  #define so_sources $[get_sources(metalib_target lib_target ss_lib_target noinst_lib_target)]
+  #define st_sources $[get_sources(static_lib_target bin_target noinst_bin_target test_bin_target)]
+  
+  // These are the source files that our dependency cache file will
+  // depend on.  If it's an empty list, we won't bother writing rules to
+  // freshen the cache file.
+  #define dep_sources $[sort $[filter %.c %.cxx %.yxx %.lxx %.h %.I %.T,$[so_sources] $[st_sources]]]
+  
+  #if $[eq $[so_dir],$[st_dir]]
+    // If the static and shared directories are the same, we have to use the
+    // same rules to build both shared and static targets.
+    #set st_sources $[so_sources] $[st_sources]
+    #set so_sources
+  #endif
+  
+#endif  // $[build_directory]
 
 // And these are the various source files, extracted out by type.
 #define cxx_so_sources $[filter_out %_src.cxx,$[filter %.cxx,$[so_sources]]]

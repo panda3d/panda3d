@@ -245,6 +245,8 @@
 // or false (empty) when the directory is not to be built.
 #defer build_directory \
  $[and \
+     $[or $[not $[DIRECTORY_IF_WINDOWS]],$[WINDOWS_PLATFORM]], \
+     $[or $[not $[DIRECTORY_IF_UNIX]],$[UNIX_PLATFORM]], \
      $[or $[not $[DIRECTORY_IF_PYTHON]],$[HAVE_PYTHON]], \
      $[or $[not $[DIRECTORY_IF_NSPR]],$[HAVE_NSPR]], \
      $[or $[not $[DIRECTORY_IF_CRYPTO]],$[HAVE_CRYPTO]], \
@@ -277,6 +279,8 @@
 // the target is not to be built.
 #defer build_target \
  $[and \
+     $[or $[not $[TARGET_IF_WINDOWS]],$[WINDOWS_PLATFORM]], \
+     $[or $[not $[TARGET_IF_UNIX]],$[UNIX_PLATFORM]], \
      $[or $[not $[TARGET_IF_PYTHON]],$[HAVE_PYTHON]], \
      $[or $[not $[TARGET_IF_NSPR]],$[HAVE_NSPR]], \
      $[or $[not $[TARGET_IF_CRYPTO]],$[HAVE_CRYPTO]], \
