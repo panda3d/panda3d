@@ -713,7 +713,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
         self.send(datagram)
 
     if wantOtpServer:
-        def sendImulateSetZone(self, zoneId, visibleZoneList=None, parentIdin=None, event=None):
+        def sendEmulateSetZone(self, zoneId, visibleZoneList=None, parentIdin=None, event=None):
             """
             This Will Move The avatar and set an interest to that location ..            
             """
@@ -735,7 +735,7 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
             else:
                 self.alterInterest(self.old_setzone_interest_handle,parentId, InterestZones, "OldSetZone Imulator", event)                    
 
-        def sendImulateSetZoneOff(self):
+        def sendEmulateSetZoneOff(self):
             MyAvID = base.localAvatar.doId;
             self.sendSetLocation(MyAvID,0,0);                
             if self.old_setzone_interest_handle is not None:            
