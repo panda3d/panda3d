@@ -36,7 +36,7 @@ CInterval(const string &name, double duration, bool open_ended) :
   _state(S_initial),
   _curr_t(0.0),
   _name(name),
-  _duration(duration),
+  _duration(max(duration, 0.0)),
   _open_ended(open_ended),
   _dirty(false)
 {
@@ -53,7 +53,6 @@ CInterval(const string &name, double duration, bool open_ended) :
   _play_rate = 1.0;
   _do_loop = false;
   _loop_count = 0;
-  nassertv(_duration >= 0.0);
 }
 
 ////////////////////////////////////////////////////////////////////

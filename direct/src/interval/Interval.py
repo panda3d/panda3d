@@ -19,7 +19,7 @@ class Interval(DirectObject):
         """__init__(name, duration, openEnded)
         """
         self.name = name
-        self.duration = duration
+        self.duration = max(duration, 0.0)
         self.state = CInterval.SInitial
         self.currT = 0.0
         self.doneEvent = None
@@ -36,8 +36,6 @@ class Interval(DirectObject):
         # completely skipped over during initialize or finalize, false
         # if it should be ignored in this case.
         self.openEnded = openEnded
-
-        assert(self.duration >= 0)
 
     def getName(self):
         return self.name
