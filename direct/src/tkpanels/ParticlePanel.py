@@ -591,7 +591,7 @@ class ParticlePanel(AppShell):
         f = Frame(spritePage)
         Label(f, width = 6, text = 'Texture:').pack(side = LEFT)
         self.rendererSpriteTexture = StringVar()
-        self.rendererSpriteTexture.set('phase_3/maps/eyes.jpg')
+        self.rendererSpriteTexture.set(SpriteParticleRenderer.sourceTextureName)
         self.rendererSpriteTextureEntry = Entry(
             f, width = 12,
             textvariable = self.rendererSpriteTexture)
@@ -1050,7 +1050,8 @@ class ParticlePanel(AppShell):
             parent = self.parent)
         if particleFilename:
             # Delete existing particles and forces
-            self.particleEffect.loadConfig(Filename(particleFilename))
+            self.particleEffect.loadConfig(
+                Filename.fromOsSpecific(particleFilename))
             self.selectEffectNamed(self.particleEffect.getName())
             # Enable effect
             self.particleEffect.enable()
@@ -1468,12 +1469,16 @@ class ParticlePanel(AppShell):
             self.getVariable('Sparkle Renderer', 'Life Scale').set(lScale)
         elif isinstance(renderer, SpriteParticleRenderer):
             color = renderer.getColor() * 255.0
-            texture = renderer.getTexture()
-            if (texture != None):
-                self.rendererSpriteTexture.set(texture.getName())
+            # Update widgets to reflect current default values
+            # Texture
+            textureName = renderer.getSourceTextureName()
+            if textureName != None:
+                self.rendererSpriteTexture.set(textureName)
+            # File
             fileName = renderer.getSourceFileName()
             if fileName != None:
                 self.rendererSpriteFile.set(fileName)
+            # Node
             nodeName = renderer.getSourceNodeName()
             if nodeName != None:
                 self.rendererSpriteNode.set(nodeName)
@@ -1610,11 +1615,7 @@ class ParticlePanel(AppShell):
             self.rendererSpriteNodeEntry['background'] = 'SystemWindow'
     def setRendererSpriteTexture(self):
         if self.rendererSpriteSourceType.get() == SpriteParticleRenderer.STTexture:
-            t = loader.loadTexture(self.rendererSpriteTexture.get())
-            if (t != None):
-                self.particles.renderer.setTexture(t)
-            else:
-                print "Couldn't find rendererSpriteTexture"
+            self.particles.renderer.setTextureFromFile(self.rendererSpriteTexture.get())
         else:
             self.particles.renderer.setTextureFromNode(
                 self.rendererSpriteFile.get(), self.rendererSpriteNode.get())
