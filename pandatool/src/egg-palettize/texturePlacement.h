@@ -78,6 +78,7 @@ public:
   void write_placed(ostream &out, int indent_level = 0);
 
   bool is_filled() const;
+  void mark_unfilled();
   void fill_image(PNMImage &image);
   void flag_error_image(PNMImage &image);
 

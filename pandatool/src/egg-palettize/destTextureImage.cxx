@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "destTextureImage.h"
+#include "sourceTextureImage.h"
 #include "texturePlacement.h"
 #include "textureImage.h"
 
@@ -65,6 +66,15 @@ copy_if_stale(const DestTextureImage *other, TextureImage *texture) {
       other->get_y_size() != get_y_size() ||
       other->get_num_channels() != get_num_channels()) {
     copy(texture);
+
+  } else {
+    // Also check the timestamps.
+    SourceTextureImage *source = texture->get_preferred_source();
+
+    if (source != (SourceTextureImage *)NULL &&
+	source->get_filename().compare_timestamps(get_filename()) > 0) {
+      copy(texture);
+    }
   }
 }
 

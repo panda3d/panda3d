@@ -700,6 +700,17 @@ is_filled() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TexturePlacement::mark_unfilled
+//       Access: Public
+//  Description: Marks the texture as unfilled, so that it will need
+//               to be copied into the palette image again.
+////////////////////////////////////////////////////////////////////
+void TexturePlacement::
+mark_unfilled() {
+  _is_filled = false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TexturePlacement::fill_image
 //       Access: Public
 //  Description: Fills in the rectangle of the palette image

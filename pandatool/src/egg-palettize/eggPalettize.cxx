@@ -11,6 +11,9 @@
 
 #include <eggData.h>
 #include <bamFile.h>
+#include <notify.h>
+#include <notifyCategory.h>
+#include <notifySeverity.h>
 
 #include <stdio.h>
 
@@ -241,6 +244,17 @@ describe_input_file() {
 ////////////////////////////////////////////////////////////////////
 void EggPalettize::
 run() {
+  // Fiddle with the loader severity, so we don't confuse the user
+  // with spurious "reading" and "writing" messages about the state
+  // file.  If the severity is currently NS_info (the default), set it
+  // to NS_warning instead.
+  Notify *notify = Notify::ptr();
+  NotifyCategory *loader_cat = notify->get_category(":loader");
+  if (loader_cat != (NotifyCategory *)NULL &&
+      loader_cat->get_severity() == NS_info) {
+    loader_cat->set_severity(NS_warning);
+  }
+
   if (!_txa_filename.exists()) {
     nout << _txa_filename << " does not exist; cannot run.\n";
     exit(1);

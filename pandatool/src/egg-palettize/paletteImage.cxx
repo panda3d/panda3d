@@ -9,6 +9,7 @@
 #include "texturePlacement.h"
 #include "palettizer.h"
 #include "textureImage.h"
+#include "sourceTextureImage.h"
 #include "filenameUnifier.h"
 
 #include <indent.h>
@@ -436,7 +437,22 @@ update_image(bool redo_all) {
        pi != _placements.end() && !needs_update; 
        ++pi) {
     TexturePlacement *placement = (*pi);
-    needs_update = !placement->is_filled();
+
+    if (!placement->is_filled()) {
+      needs_update = true;
+
+    } else {
+      SourceTextureImage *source =
+	placement->get_texture()->get_preferred_source();
+
+      if (source != (SourceTextureImage *)NULL &&
+	  source->get_filename().compare_timestamps(get_filename()) > 0) {
+	// The source image is newer than the palette image; we need to
+	// regenerate.
+	placement->mark_unfilled();
+	needs_update = true;
+      }
+    }
   }
 
   if (!needs_update) {
