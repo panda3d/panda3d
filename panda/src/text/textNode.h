@@ -216,6 +216,9 @@ public:
   string encode_wtext(const wstring &wtext) const;
   wstring decode_text(const string &text) const;
 
+  // From parent class PandaNode
+  virtual void xform(const LMatrix4f &mat);
+
 private:
   wstring decode_text_impl(StringDecoder &decoder) const;
   int expand_amp_sequence(StringDecoder &decoder) const;

@@ -459,6 +459,18 @@ decode_text(const string &text) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextNode::xform
+//       Access: Public, Virtual
+//  Description: Transforms the contents of this PandaNode by the
+//               indicated matrix, if it means anything to do so.  For
+//               most kinds of PandaNodes, this does nothing.
+////////////////////////////////////////////////////////////////////
+void TextNode::
+xform(const LMatrix4f &mat) {
+  _transform *= mat;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextNode::decode_text_impl
 //       Access: Private
 //  Description: Decodes the eight-bit stream from the indicated
