@@ -441,7 +441,7 @@ upper(const string &source, TextEncoder::Encoding encoding) {
   TextEncoder encoder;
   encoder.set_encoding(encoding);
   encoder.set_text(source);
-  encoder.toupper_text();
+  encoder.make_upper();
   return encoder.get_text();
 }
 
@@ -467,7 +467,7 @@ lower(const string &source, TextEncoder::Encoding encoding) {
   TextEncoder encoder;
   encoder.set_encoding(encoding);
   encoder.set_text(source);
-  encoder.tolower_text();
+  encoder.make_lower();
   return encoder.get_text();
 }
 

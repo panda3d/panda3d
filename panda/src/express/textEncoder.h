@@ -57,8 +57,8 @@ PUBLISHED:
   INLINE void clear_text();
   INLINE bool has_text() const;
 
-  void toupper_text();
-  void tolower_text();
+  void make_upper();
+  void make_lower();
 
   INLINE string get_text() const;
   INLINE string get_text(Encoding encoding) const;

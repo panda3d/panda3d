@@ -24,14 +24,14 @@ TypeHandle TextEncoder::_type_handle;
 TextEncoder::Encoding TextEncoder::_default_encoding;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextEncoder::toupper_text
+//     Function: TextEncoder::make_upper
 //       Access: Published
 //  Description: Adjusts the text stored within the encoder to all
 //               uppercase letters (preserving accent marks
 //               correctly).
 ////////////////////////////////////////////////////////////////////
 void TextEncoder::
-toupper_text() {
+make_upper() {
   get_wtext();
   wstring::iterator si;
   for (si = _wtext.begin(); si != _wtext.end(); ++si) {
@@ -41,14 +41,14 @@ toupper_text() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextEncoder::tolower_text
+//     Function: TextEncoder::make_lower
 //       Access: Published
 //  Description: Adjusts the text stored within the encoder to all
 //               lowercase letters (preserving accent marks
 //               correctly).
 ////////////////////////////////////////////////////////////////////
 void TextEncoder::
-tolower_text() {
+make_lower() {
   get_wtext();
   wstring::iterator si;
   for (si = _wtext.begin(); si != _wtext.end(); ++si) {
