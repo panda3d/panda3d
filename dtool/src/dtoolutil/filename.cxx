@@ -32,6 +32,31 @@
 
 #include <direct.h>
 
+static const string & 
+get_panda_root() {
+  static string panda_root;
+  static bool got_panda_root = false;
+  
+  if (!got_panda_root) {
+    const char *envvar = getenv("PANDA_ROOT");
+    if (envvar == (const char *)NULL) {
+      envvar = getenv("CYGWIN_ROOT");
+    }
+    
+    if (envvar != (const char *)NULL) {
+      panda_root = front_to_back_slash(envvar);
+    }
+    
+    if (!panda_root.empty() && panda_root[panda_root.length() - 1] != '\\') {
+      panda_root += '\\';
+    }
+    
+    got_panda_root = true;
+  }
+
+  return panda_root;
+}
+
 static string
 front_to_back_slash(const string &str) {
   string result = str;
@@ -39,6 +64,19 @@ front_to_back_slash(const string &str) {
   for (si = result.begin(); si != result.end(); ++si) {
     if ((*si) == '/') {
       (*si) = '\\';
+    }
+  }
+
+  return result;
+}
+
+static string
+back_to_front_slash(const string &str) {
+  string result = str;
+  string::iterator si;
+  for (si = result.begin(); si != result.end(); ++si) {
+    if ((*si) == '\\') {
+      (*si) = '/';
     }
   }
 
@@ -82,27 +120,9 @@ convert_pathname(const string &unix_style_pathname) {
 
   } else {
     // It does not begin with a single letter, so prefix "PANDA_ROOT".
-    static string panda_root;
-    static bool got_panda_root = false;
-
-    if (!got_panda_root) {
-      const char *envvar = getenv("PANDA_ROOT");
-      if (envvar == (const char *)NULL) {
-	envvar = getenv("CYGWIN_ROOT");
-      }
-
-      if (envvar != (const char *)NULL) {
-	panda_root = front_to_back_slash(envvar);
-      }
-
-      if (!panda_root.empty() && panda_root[panda_root.length() - 1] != '\\') {
-	panda_root += '\\';
-      }
-
-      got_panda_root = true;
-    }
-
-    windows_pathname = panda_root + front_to_back_slash(unix_style_pathname);
+    
+    windows_pathname = 
+      get_panda_root() + front_to_back_slash(unix_style_pathname);
   }
 
   return windows_pathname;
@@ -177,6 +197,78 @@ Filename(const Filename &dirname, const Filename &basename) {
     (*this) = dirname.get_fullpath() + "/" + basename.get_fullpath();
   }
   _flags = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::from_os_specific
+//       Access: Public, Static
+//  Description: This named constructor returns a Panda-style filename
+//               (that is, using forward slashes, and no drive letter)
+//               based on the supplied filename string that describes
+//               a filename in the local system conventions (for
+//               instance, on Windows, it may use backslashes or begin
+//               with a drive letter and a colon).
+//
+//               Use this function to create a Filename from an
+//               externally-given filename string.  Use
+//               to_os_specific() again later to reconvert it back to
+//               the local operating system's conventions.
+//
+//               This function will do the right thing even if the
+//               filename is partially local conventions and partially
+//               Panda conventions; e.g. some backslashes and some
+//               forward slashes.
+////////////////////////////////////////////////////////////////////
+Filename Filename::
+from_os_specific(const string &os_specific, Filename::Type type) {
+#if defined(WIN32)
+  string result = back_to_front_slash(os_specific);
+  const string &panda_root = get_panda_root();
+
+  // If the initial prefix is the same as panda_root, remove it.
+  if (!panda_root.empty() && panda_root.length() < result.length()) {
+    bool matches = true;
+    size_t p;
+    for (p = 0; p < panda_root.length() && matches; p++) {
+      char c = tolower(panda_root[p]);
+      if (c == '\\') {
+	c = '/';
+      }
+      matches = (c == tolower(result[p]));
+    }
+    
+    if (matches) {
+      // The initial prefix matches!  Replace the initial bit with a
+      // leading slash.
+      result = result.substr(panda_root.length());
+      assert(!result.empty());
+      if (result[0] != '/') {
+	result = '/' + result;
+      }
+      Filename filename(result);
+      filename.set_type(type);
+      return filename;
+    }
+  }
+
+  // All right, the initial prefix was not under panda_root.  But
+  // maybe it begins with a drive letter.
+  if (result.size() >= 3 && isalpha(result[0]) &&
+      result[1] == ':' && result[2] == '/') {
+    result[1] = tolower(result[0]);
+    result[0] = '/';
+  }
+
+  Filename filename(result);
+  filename.set_type(type);
+  return filename;
+
+#else
+  // Generic Unix-style filenames--no conversion necessary.
+  Filename filename(os_specific);
+  filename.set_type(type);
+  return filename;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

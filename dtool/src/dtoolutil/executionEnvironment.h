@@ -33,6 +33,8 @@ public:
   
   INLINE static string get_binary_name();
 
+  static string get_cwd();
+
 private:
   bool ns_has_environment_variable(const string &var) const;
   string ns_get_environment_variable(const string &var) const;

@@ -68,6 +68,9 @@ public:
   INLINE static Filename dso_filename(const string &filename);
   INLINE static Filename executable_filename(const string &filename);
 
+  static Filename from_os_specific(const string &os_specific, 
+				   Type type = T_general);
+
   // Assignment is via the = operator.
   INLINE Filename &operator = (const string &filename);
   INLINE Filename &operator = (const char *filename);

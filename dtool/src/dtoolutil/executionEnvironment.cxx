@@ -6,6 +6,14 @@
 #include "executionEnvironment.h"
 #include <assert.h>
 
+#ifdef WIN32_VC
+// Windows requires this for getcwd().
+#include <direct.h>
+#define getcwd _getcwd
+#endif
+
+#include <errno.h>
+
 // We define the symbol PREREAD_ENVIRONMENT if we cannot rely on
 // getenv() to read environment variables at static init time.  In
 // this case, we must read all of the environment variables directly
@@ -42,6 +50,36 @@ ExecutionEnvironment::
 ExecutionEnvironment() {
   read_environment_variables();
   read_args();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ExecutionEnviroment::get_cwd
+//       Access: Public, Static
+//  Description: Returns the name of the current working directory.
+////////////////////////////////////////////////////////////////////
+string ExecutionEnvironment::
+get_cwd() {
+  // getcwd() requires us to allocate a dynamic buffer and grow it on
+  // demand.
+  static size_t bufsize = 1024;
+  static char *buffer = NULL;
+
+  if (buffer == (char *)NULL) {
+    buffer = new char[bufsize];
+  }
+
+  while (getcwd(buffer, bufsize) == (char *)NULL) {
+    if (errno != ERANGE) {
+      perror("getcwd");
+      return string();
+    }
+    delete[] buffer;
+    bufsize = bufsize * 2;
+    buffer = new char[bufsize];
+    assert(buffer != (char *)NULL);
+  }
+
+  return string(buffer);
 }
 
 ////////////////////////////////////////////////////////////////////
