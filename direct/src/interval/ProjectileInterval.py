@@ -29,7 +29,8 @@ class ProjectileInterval(Interval):
                  gravityMult = None, name = None):
         """
         You may specify several different sets of input parameters.
-        (If startPos is not provided, it will be obtained from the node.)
+        (If startPos is not provided, it will be obtained from the node's
+        current position)
         
         # go from startPos to endPos in duration seconds
         startPos, endPos, duration
@@ -60,12 +61,15 @@ class ProjectileInterval(Interval):
                 startVel, endZ, gravityMult)
         self.needToCalcTraj = 0
         if startPos is None:
-            assert duration is not None
             # we can't calc the trajectory until we know our starting
             # position; delay until the interval is actually started
             self.trajectoryArgs = args
             self.needToCalcTraj = 1
-            self.duration = duration
+            # if a duration was not provided, choose a temporary value
+            if duration is None:
+                self.duration = 1
+            else:
+                self.duration = duration
         else:
             self.__calcTrajectory(*args)
 
