@@ -218,20 +218,6 @@ back() const {
 ////////////////////////////////////////////////////////////////////
 template<class Element>
 INLINE PointerToArray<Element>::iterator PointerToArray<Element>::
-insert(iterator position) const {
-  nassertr(_ptr != NULL, position);
-  nassertr(position >= _ptr->begin() &&
-	   position <= _ptr->end(), position);
-  return _ptr->insert(position);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PointerToArray::insert
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-template<class Element>
-INLINE PointerToArray<Element>::iterator PointerToArray<Element>::
 insert(iterator position, const Element &x) const {
   nassertr(_ptr != NULL, position);
   nassertr(position >= _ptr->begin() &&

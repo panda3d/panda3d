@@ -253,6 +253,6 @@ string_to_double(const string &str, double &result) {
 bool
 string_to_float(const string &str, float &result) {
   string tail;
-  result = string_to_double(str, tail);
+  result = (float)string_to_double(str, tail);
   return tail.empty();
 }

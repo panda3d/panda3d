@@ -21,6 +21,10 @@
 //               rather than defining the vector again.
 ////////////////////////////////////////////////////////////////////
 
+#ifdef HAVE_DINKUM
+#define VV_NORMALF std::_Vector_val<Normalf, std::allocator<Normalf> >
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, VV_NORMALF)
+#endif
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, std::vector<Normalf>)
 typedef vector<Normalf> vector_Normalf;
 

@@ -21,6 +21,10 @@
 //               rather than defining the vector again.
 ////////////////////////////////////////////////////////////////////
 
+#ifdef HAVE_DINKUM
+#define VV_VERTEXF std::_Vector_val<Vertexf, std::allocator<Vertexf> >
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, VV_VERTEXF)
+#endif
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, std::vector<Vertexf>)
 typedef vector<Vertexf> vector_Vertexf;
 

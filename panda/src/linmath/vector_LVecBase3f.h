@@ -21,6 +21,10 @@
 //               rather than defining the vector again.
 ////////////////////////////////////////////////////////////////////
 
+#ifdef HAVE_DINKUM
+#define VV_LVECBASE3F std::_Vector_val<LVecBase3f, std::allocator<LVecBase3f> >
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, VV_LVECBASE3F)
+#endif
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, std::vector<LVecBase3f>)
 typedef vector<LVecBase3f> vector_LVecBase3f;
 

@@ -469,7 +469,10 @@ recompute_bound() {
     }
   }
 
-  gbv->around(vertices.begin(), vertices.end());
+  const LPoint3f *vertices_begin = &vertices[0];
+  const LPoint3f *vertices_end = vertices_begin + vertices.size();
+
+  gbv->around(vertices_begin, vertices_end);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -210,7 +210,9 @@ add_geom(dDrawable *geom) {
 ////////////////////////////////////////////////////////////////////
 void GeomNode::
 add_geoms_from(const GeomNode *other) {
-  _geoms.insert(_geoms.end(), other->_geoms.begin(), other->_geoms.end());
+  const PT(dDrawable) *geoms_begin = &other->_geoms[0];
+  const PT(dDrawable) *geoms_end = geoms_begin + other->_geoms.size();
+  _geoms.insert(_geoms.end(), geoms_begin, geoms_end);
   mark_bound_stale();
 }
 
@@ -234,7 +236,9 @@ recompute_bound() {
     child_volumes.push_back(&(*gi)->get_bound());
   }
 
-  _bound->around(child_volumes.begin(), child_volumes.end());
+  const BoundingVolume **child_begin = &child_volumes[0];
+  const BoundingVolume **child_end = child_begin + child_volumes.size();
+  _bound->around(child_begin, child_end);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -31,7 +31,11 @@ class DatagramIterator;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA LODSwitch {
 public:
+  INLINE LODSwitch();
   INLINE LODSwitch(float in, float out);
+  INLINE LODSwitch(const LODSwitch &copy);
+  INLINE void operator = (const LODSwitch &copy);
+
   INLINE void get_range(float &in, float &out) const;
   INLINE float get_in() const;
   INLINE float get_out() const;
@@ -54,6 +58,10 @@ protected:
   float _out;
 };
 
+#ifdef HAVE_DINKUM
+#define VV_LODSWITCH std::_Vector_val<LODSwitch, std::allocator<LODSwitch> >
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, VV_LODSWITCH)
+#endif
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, std::vector<LODSwitch>)
 typedef vector<LODSwitch> LODSwitchVector;
 

@@ -19,6 +19,10 @@
 //               rather than defining the vector again.
 ////////////////////////////////////////////////////////////////////
 
+#ifdef HAVE_DINKUM
+#define VV_USHORT std::_Vector_val<unsigned short, std::allocator<unsigned short> >
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, VV_USHORT)
+#endif
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, std::vector<unsigned short>)
 typedef vector<unsigned short> vector_ushort;
 

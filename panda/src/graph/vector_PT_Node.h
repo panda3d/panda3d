@@ -22,6 +22,10 @@
 //               rather than defining the vector again.
 ////////////////////////////////////////////////////////////////////
 
+#ifdef HAVE_DINKUM
+#define VV_PT_NODE std::_Vector_val<PT_Node, std::allocator<PT_Node> >
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, VV_PT_NODE)
+#endif
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, std::vector<PT_Node>)
 typedef vector<PT_Node> vector_PT_Node;
 

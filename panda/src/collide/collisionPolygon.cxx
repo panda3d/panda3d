@@ -151,7 +151,10 @@ xform(const LMatrix4f &mat) {
     if (_reversed) {
       reverse(verts.begin(), verts.end());
     }
-    setup_points(verts.begin(), verts.end());
+
+    const LPoint3f *verts_begin = &verts[0];
+    const LPoint3f *verts_end = verts_begin + verts.size();
+    setup_points(verts_begin, verts_end);
   }
     
   clear_viz_arcs();
@@ -202,7 +205,9 @@ recompute_bound() {
     vertices.push_back(to_3d(*pi));
   }
 
-  gbv->around(vertices.begin(), vertices.end());
+  const LPoint3f *vertices_begin = &vertices[0];
+  const LPoint3f *vertices_end = vertices_begin + vertices.size();
+  gbv->around(vertices_begin, vertices_end);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -14,13 +14,17 @@ class Writable;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : vector_writable
-// Description : A vector of TypedWritable.  This class is defined once here,
+// Description : A vector of Writable *.  This class is defined once here,
 //               and exported to PANDA.DLL; other packages that want
 //               to use a vector of this type (whether they need to
 //               export it or not) should include this header file,
 //               rather than defining the vector again.
 ////////////////////////////////////////////////////////////////////
 
+#ifdef HAVE_DINKUM
+#define VV_WRITABLE std::_Vector_val<Writable *, std::allocator<Writable *> >
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, VV_WRITABLE)
+#endif
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, std::vector<Writable*>)
 typedef vector<Writable*> vector_writable;
 

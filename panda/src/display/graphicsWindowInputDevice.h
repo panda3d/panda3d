@@ -31,6 +31,7 @@ public:
   static GraphicsWindowInputDevice keyboard_only(const string &name);
   static GraphicsWindowInputDevice pointer_and_keyboard(const string &name);
 
+  INLINE GraphicsWindowInputDevice();
   GraphicsWindowInputDevice(const GraphicsWindowInputDevice &copy);
   void operator = (const GraphicsWindowInputDevice &copy);
   ~GraphicsWindowInputDevice();
@@ -75,6 +76,10 @@ private:
 
 #include "graphicsWindowInputDevice.I"
 
+#ifdef HAVE_DINKUM
+#define VV_GRAPHICSWINDOWINPUTDEVICE std::_Vector_val<GraphicsWindowInputDevice, std::allocator<GraphicsWindowInputDevice> >
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, VV_GRAPHICSWINDOWINPUTDEVICE)
+#endif
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, std::vector<GraphicsWindowInputDevice>)
 typedef vector<GraphicsWindowInputDevice> vector_GraphicsWindowInputDevice;
 

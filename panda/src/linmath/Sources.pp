@@ -33,8 +33,8 @@
     pta_TexCoordf.cxx pta_TexCoordf.h pta_Vertexf.cxx pta_Vertexf.h \
     vector_Colorf.cxx vector_Colorf.h vector_LPoint2f.cxx \
     vector_LPoint2f.h vector_LVecBase3f.cxx vector_LVecBase3f.h \
-    vector_Normalf.cxx vector_Normalf.h vector_Vertexf.cxx \
-    vector_Vertexf.h
+    vector_Normalf.cxx vector_Normalf.h vector_TexCoordf.h \
+    vector_Vertexf.cxx vector_Vertexf.h
 
   #define INSTALL_HEADERS \
     cmath.I cmath.h compose_matrix.h compose_matrix_src.I \

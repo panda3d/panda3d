@@ -115,7 +115,6 @@ public:
   INLINE size_type capacity() const;
   INLINE reference front() const;
   INLINE reference back() const;
-  INLINE iterator insert(iterator position) const;
   INLINE iterator insert(iterator position, const Element &x) const;
   INLINE void insert(iterator position, size_type n, const Element &x) const;
 

@@ -21,6 +21,10 @@
 //               rather than defining the vector again.
 ////////////////////////////////////////////////////////////////////
 
+#ifdef HAVE_DINKUM
+#define VV_COLORF std::_Vector_val<Colorf, std::allocator<Colorf> >
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, VV_COLORF)
+#endif
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, std::vector<Colorf>)
 typedef vector<Colorf> vector_Colorf;
 

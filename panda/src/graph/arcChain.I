@@ -15,8 +15,8 @@ ArcComponent(Node *node) :
   _next(NULL)
 {
   MemoryUsage::update_type(this, get_class_type());
-  nassertv(node != (Node *)NULL);
   _p._node = node;
+  nassertv(node != (Node *)NULL);
   _p._node->ref();
 }
 
@@ -33,9 +33,9 @@ ArcComponent(NodeRelation *arc, ArcComponent *next) :
   _next(next)
 {
   MemoryUsage::update_type(this, get_class_type());
+  _p._arc = arc;
   nassertv(_next != (ArcComponent *)NULL);
   nassertv(arc != (NodeRelation *)NULL);
-  _p._arc = arc;
   _p._arc->ref();
   _p._arc->ref_parent();
 }
@@ -52,10 +52,12 @@ ArcComponent(const ArcComponent &copy) :
   MemoryUsage::update_type(this, get_class_type());
   if (has_arc()) {
     _p._arc = copy._p._arc;
+    nassertv(_p._arc != (NodeRelation *)NULL);
     _p._arc->ref();
     _p._arc->ref_parent();
   } else {
     _p._node = copy._p._node;
+    nassertv(_p._node != (Node *)NULL);
     _p._node->ref();
   }
 }
@@ -69,9 +71,11 @@ ArcComponent(const ArcComponent &copy) :
 INLINE_GRAPH ArcChain::ArcComponent::
 ~ArcComponent() {
   if (has_arc()) {
+    nassertv(_p._arc != (NodeRelation *)NULL);
     _p._arc->unref_parent();
     unref_delete(_p._arc);
   } else {
+    nassertv(_p._node != (Node *)NULL);
     unref_delete(_p._node);
   }
 }
@@ -251,10 +255,15 @@ ArcChain() {
 //               This chain may now be extended by repeatedly calling
 //               push_back() with each arc below that node in
 //               sequence.
+//
+//               If the Node pointer is NULL, this quietly creates an
+//               empty ArcChain.
 ////////////////////////////////////////////////////////////////////
 INLINE_GRAPH ArcChain::
 ArcChain(Node *top_node) {
-  _head = new ArcComponent(top_node);
+  if (top_node != (Node *)NULL) {
+    _head = new ArcComponent(top_node);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -19,6 +19,10 @@
 //               rather than defining the vector again.
 ////////////////////////////////////////////////////////////////////
 
+#ifdef HAVE_DINKUM
+#define VV_UCHAR std::_Vector_val<unsigned char, std::allocator<unsigned char> >
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, VV_UCHAR)
+#endif
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, std::vector<unsigned char>)
 typedef vector<unsigned char> vector_uchar;
 

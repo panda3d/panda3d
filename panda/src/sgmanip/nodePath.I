@@ -23,6 +23,9 @@ NodePath(TypeHandle graph_type) : NodePathBase(graph_type) {
 //               top node.  It's not yet much of a path, but it does
 //               reference at least the one node and can be used as an
 //               ordinary node pointer.
+//
+//               If the Node pointer is NULL, this quietly creates an
+//               empty NodePath.
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath::
 NodePath(Node *top_node, TypeHandle graph_type) : NodePathBase(top_node, graph_type) {

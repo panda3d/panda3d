@@ -21,6 +21,10 @@
 //               rather than defining the vector again.
 ////////////////////////////////////////////////////////////////////
 
+#ifdef HAVE_DINKUM
+#define VV_LPOINT2F std::_Vector_val<LPoint2f, std::allocator<LPoint2f> >
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, VV_LPOINT2F)
+#endif
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, std::vector<LPoint2f>)
 typedef vector<LPoint2f> vector_LPoint2f;
 

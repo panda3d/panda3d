@@ -22,6 +22,10 @@
 //               file, rather than defining the vector again.
 ////////////////////////////////////////////////////////////////////
 
+#ifdef HAVE_DINKUM
+#define VV_PT_EGGVERTEX std::_Vector_val<PT_EggVertex, std::allocator<PT_EggVertex> >
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, VV_PT_EGGVERTEX)
+#endif
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDAEGG, EXPTP_PANDAEGG, std::vector<PT_EggVertex>)
 typedef vector<PT_EggVertex> vector_PT_EggVertex;
 

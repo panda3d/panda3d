@@ -825,8 +825,11 @@ recompute_bound() {
     child_volumes.push_back(&(*drpi)->get_bound());
   }
 
+  const BoundingVolume **child_begin = &child_volumes[0];
+  const BoundingVolume **child_end = child_begin + child_volumes.size();
   bool success = 
-    _bound->around(child_volumes.begin(), child_volumes.end());
+    _bound->around(child_begin, child_end);
+
 
 #ifndef NDEBUG
   if (!success) {

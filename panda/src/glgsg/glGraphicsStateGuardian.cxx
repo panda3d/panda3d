@@ -250,6 +250,7 @@ reset() {
   _point_smooth_enabled = false;
   _scissor_enabled = false;
   _lighting_enabled = false;
+  _lighting_enabled_this_frame = false;
   _normals_enabled = false;
   _texturing_enabled = false;
   _multisample_alpha_one_enabled = false;

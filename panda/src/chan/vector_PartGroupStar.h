@@ -22,6 +22,10 @@
 //               vector again.
 ////////////////////////////////////////////////////////////////////
 
+#ifdef HAVE_DINKUM
+#define VV_PARTGROUPSTAR std::_Vector_val<PartGroup *, std::allocator<PartGroup *> >
+EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, VV_PARTGROUPSTAR)
+#endif
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA, EXPTP_PANDA, std::vector<PartGroup *>)
 typedef vector<PartGroup *> vector_PartGroupStar;
 
