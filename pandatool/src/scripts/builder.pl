@@ -285,7 +285,7 @@ sub archivetree() {
     if($newdayarchivename eq "") {
 
         ($devicenum,$inodenum,$mode,$nlink,$uid,$gid,$rdev,$size,$atime,$mtime,$ctime,$blksize,$blocks)
-           = stat($inst_dirs[2]);
+           = stat($inst_dirs[$treenum]."\\dtool\\Sources.pp");
         ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) 
            = localtime($mtime);
         $mon++;
@@ -564,6 +564,11 @@ if($do_install_dir[$INSTALLNUM]) {
   &buildall($INSTALLNUM);
 }
 
+if($do_install_dir[$RELEASENUM]) {
+    $ENV{'PANDA_OPTIMIZE'}='3';
+    &buildall($RELEASENUM);
+}
+
 BEFORE_DBGBUILD:
 
 if($do_install_dir[$DEBUGNUM]) {
@@ -578,11 +583,6 @@ if($do_install_dir[$DEBUGNUM]) {
 }
 
 AFTER_DBGBUILD:
-
-if($do_install_dir[$RELEASENUM]) {
-    $ENV{'PANDA_OPTIMIZE'}='3';
-    &buildall($RELEASENUM);
-}
 
 &logmsg("*** Panda Build Log Finished at ".&gettimestr()." ***");
 
