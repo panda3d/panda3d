@@ -80,6 +80,7 @@ public:
 
 protected:
   static TypedWritable *new_from_bam(RenderAttrib *attrib, BamReader *manager);
+  void fillin(DatagramIterator &scan, BamReader *manager);
   
 public:
   static TypeHandle get_class_type() {

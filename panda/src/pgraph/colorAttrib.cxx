@@ -18,6 +18,10 @@
 
 #include "colorAttrib.h"
 #include "dcast.h"
+#include "bamReader.h"
+#include "bamWriter.h"
+#include "datagram.h"
+#include "datagramIterator.h"
 
 TypeHandle ColorAttrib::_type_handle;
 
@@ -30,7 +34,7 @@ TypeHandle ColorAttrib::_type_handle;
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ColorAttrib::
 make_vertex() {
-  ColorAttrib *attrib = new ColorAttrib(T_vertex, Colorf(0.0f, 0.0f, 0.0f, 1.0f));
+  ColorAttrib *attrib = new ColorAttrib(T_vertex);
   return return_new(attrib);
 }
 
@@ -55,7 +59,7 @@ make_flat(const Colorf &color) {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ColorAttrib::
 make_off() {
-  ColorAttrib *attrib = new ColorAttrib(T_off, Colorf(0.0f, 0.0f, 0.0f, 1.0f));
+  ColorAttrib *attrib = new ColorAttrib(T_off);
   return return_new(attrib);
 }
 
@@ -123,5 +127,59 @@ compare_to_impl(const RenderAttrib *other) const {
 ////////////////////////////////////////////////////////////////////
 RenderAttrib *ColorAttrib::
 make_default_impl() const {
-  return new ColorAttrib(T_vertex, Colorf(0.0f, 0.0f, 0.0f, 1.0f));
+  return new ColorAttrib;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorAttrib::register_with_read_factory
+//       Access: Public, Static
+//  Description: Tells the BamReader how to create objects of type
+//               ColorAttrib.
+////////////////////////////////////////////////////////////////////
+void ColorAttrib::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorAttrib::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void ColorAttrib::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  RenderAttrib::write_datagram(manager, dg);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorAttrib::make_from_bam
+//       Access: Protected, Static
+//  Description: This function is called by the BamReader's factory
+//               when a new object of type ColorAttrib is encountered
+//               in the Bam file.  It should create the ColorAttrib
+//               and extract its information from the file.
+////////////////////////////////////////////////////////////////////
+TypedWritable *ColorAttrib::
+make_from_bam(const FactoryParams &params) {
+  ColorAttrib *attrib = new ColorAttrib;
+  DatagramIterator scan;
+  BamReader *manager;
+
+  parse_params(params, scan, manager);
+  attrib->fillin(scan, manager);
+
+  return new_from_bam(attrib, manager);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorAttrib::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new ColorAttrib.
+////////////////////////////////////////////////////////////////////
+void ColorAttrib::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  RenderAttrib::fillin(scan, manager);
 }

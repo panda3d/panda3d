@@ -51,9 +51,6 @@ private:
   const CycleDataType *_pointer;
 };
 
-// This abbreviation macro is used for ease of typing.
-#define CDR(type) CycleDataReader< type >
-
 #include "cycleDataReader.I"
 
 #endif

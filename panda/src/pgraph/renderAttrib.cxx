@@ -160,7 +160,7 @@ compare_to_impl(const RenderAttrib *other) const {
 //               RenderAttrib (that is, a subsequent RenderAttrib
 //               completely replaces the preceding one).  On the other
 //               hand, some kinds of RenderAttrib (for instance,
-//               TextureTransform) might combine in meaningful ways.
+//               TransformAttrib) might combine in meaningful ways.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) RenderAttrib::
 compose_impl(const RenderAttrib *other) const {
@@ -237,4 +237,15 @@ new_from_bam(RenderAttrib *attrib, BamReader *manager) {
   // We have to cast the pointer back to non-const, because the bam
   // reader expects that.
   return (RenderAttrib *)pointer.p();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderAttrib::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new RenderAttrib.
+////////////////////////////////////////////////////////////////////
+void RenderAttrib::
+fillin(DatagramIterator &scan, BamReader *manager) {
 }

@@ -52,8 +52,6 @@ private:
   CycleDataType *_pointer;
 };
 
-#define CDW(type) CycleDataWriter< type >
-
 #include "cycleDataWriter.I"
 
 #endif

@@ -51,6 +51,17 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::Constructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+PandaNode::
+PandaNode(const string &name) :
+  Namable(name)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::Copy Constructor
 //       Access: Published
 //  Description:
@@ -64,8 +75,8 @@ PandaNode(const PandaNode &copy) :
   // Copying a node does not copy its children.
 
   // Copy the other node's bounding volume.
-  CDR(CData) copy_cdata(copy._cycler);
-  CDW(CData) cdata(_cycler);
+  CDReader copy_cdata(copy._cycler);
+  CDWriter cdata(_cycler);
   cdata->_node_bounds = copy_cdata->_node_bounds;
 }
 
@@ -81,8 +92,8 @@ operator = (const PandaNode &copy) {
   ReferenceCount::operator = (copy);
 
   // Copy the other node's bounding volume.
-  CDR(CData) copy_cdata(copy._cycler);
-  CDW(CData) cdata(_cycler);
+  CDReader copy_cdata(copy._cycler);
+  CDWriter cdata(_cycler);
   cdata->_node_bounds = copy_cdata->_node_bounds;
 }
 
@@ -95,7 +106,7 @@ PandaNode::
 ~PandaNode() {
   // We shouldn't have any parents left by the time we destruct, or
   // there's a refcount fault somewhere.
-  CDR(CData) cdata(_cycler);
+  CDReader cdata(_cycler);
   nassertv(cdata->_up.empty());
 
   remove_all_children();
@@ -109,7 +120,7 @@ PandaNode::
 ////////////////////////////////////////////////////////////////////
 int PandaNode::
 find_child(PandaNode *node) const {
-  CDR(CData) cdata(_cycler);
+  CDReader cdata(_cycler);
 
   // We have to search for the child by brute force, since we don't
   // know what sort index it was added as.
@@ -139,8 +150,8 @@ find_child(PandaNode *node) const {
 int PandaNode::
 add_child(PandaNode *child, int sort) {
   remove_child(child);
-  CDW(CData) cdata(_cycler);
-  CDW(CData) cdata_child(child->_cycler);
+  CDWriter cdata(_cycler);
+  CDWriter cdata_child(child->_cycler);
 
   Down::iterator ci = cdata->_down.insert(DownConnection(child, sort));
   cdata_child->_up.insert(this);
@@ -155,11 +166,11 @@ add_child(PandaNode *child, int sort) {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 remove_child(int n) {
-  CDW(CData) cdata(_cycler);
+  CDWriter cdata(_cycler);
   nassertv(n >= 0 && n < (int)cdata->_down.size());
 
   PandaNode *child = cdata->_down[n].get_child();
-  CDW(CData) cdata_child(child->_cycler);
+  CDWriter cdata_child(child->_cycler);
 
   cdata->_down.erase(cdata->_down.begin() + n);
   int num_erased = cdata_child->_up.erase(this);
@@ -175,7 +186,7 @@ remove_child(int n) {
 ////////////////////////////////////////////////////////////////////
 bool PandaNode::
 remove_child(PandaNode *child) {
-  CDW(CData) cdata_child(child->_cycler);
+  CDWriter cdata_child(child->_cycler);
 
   // First, look for and remove this node from the child's parent
   // list.
@@ -185,7 +196,7 @@ remove_child(PandaNode *child) {
     return false;
   }
 
-  CDW(CData) cdata(_cycler);
+  CDWriter cdata(_cycler);
 
   // Now, look for and remove the child node from our down list.
   Down::iterator ci;
@@ -208,11 +219,11 @@ remove_child(PandaNode *child) {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 remove_all_children() {
-  CDW(CData) cdata(_cycler);
+  CDWriter cdata(_cycler);
   Down::iterator ci;
   for (ci = cdata->_down.begin(); ci != cdata->_down.end(); ++ci) {
     PandaNode *child = (*ci).get_child();
-    CDW(CData) child_cdata(child->_cycler);
+    CDWriter child_cdata(child->_cycler);
     child_cdata->_up.erase(this);
   }
 }
@@ -235,11 +246,27 @@ output(ostream &out) const {
 void PandaNode::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this;
-  CDR(CData) cdata(_cycler);
+  CDReader cdata(_cycler);
   if (!cdata->_state_changes->is_empty()) {
     out << " (" << *cdata->_state_changes << ")";
   }
   out << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::is_geom_node
+//       Access: Public, Virtual
+//  Description: A simple downcast check.  Returns true if this kind
+//               of node happens to inherit from GeomNode, false
+//               otherwise.
+//
+//               This is provided as a a faster alternative to calling
+//               is_of_type(GeomNode::get_class_type()), since this
+//               test is so important to rendering.
+////////////////////////////////////////////////////////////////////
+bool PandaNode::
+is_geom_node() const {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

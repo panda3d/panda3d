@@ -17,6 +17,10 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "textureAttrib.h"
+#include "bamReader.h"
+#include "bamWriter.h"
+#include "datagram.h"
+#include "datagramIterator.h"
 
 TypeHandle TextureAttrib::_type_handle;
 
@@ -96,4 +100,58 @@ compare_to_impl(const RenderAttrib *other) const {
 RenderAttrib *TextureAttrib::
 make_default_impl() const {
   return new TextureAttrib;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureAttrib::register_with_read_factory
+//       Access: Public, Static
+//  Description: Tells the BamReader how to create objects of type
+//               TextureAttrib.
+////////////////////////////////////////////////////////////////////
+void TextureAttrib::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureAttrib::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void TextureAttrib::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  RenderAttrib::write_datagram(manager, dg);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureAttrib::make_from_bam
+//       Access: Protected, Static
+//  Description: This function is called by the BamReader's factory
+//               when a new object of type TextureAttrib is encountered
+//               in the Bam file.  It should create the TextureAttrib
+//               and extract its information from the file.
+////////////////////////////////////////////////////////////////////
+TypedWritable *TextureAttrib::
+make_from_bam(const FactoryParams &params) {
+  TextureAttrib *attrib = new TextureAttrib;
+  DatagramIterator scan;
+  BamReader *manager;
+
+  parse_params(params, scan, manager);
+  attrib->fillin(scan, manager);
+
+  return new_from_bam(attrib, manager);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureAttrib::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new TextureAttrib.
+////////////////////////////////////////////////////////////////////
+void TextureAttrib::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  RenderAttrib::fillin(scan, manager);
 }

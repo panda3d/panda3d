@@ -50,15 +50,23 @@ protected:
 
 private:
   PT(Texture) _texture;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
   
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    TypedWritableReferenceCount::init_type();
+    RenderAttrib::init_type();
     register_type(_type_handle, "TextureAttrib",
-                  TypedWritableReferenceCount::get_class_type());
+                  RenderAttrib::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -272,6 +272,14 @@ compose(const RenderState *other) const {
 
   cerr << "composing " << *this << " with " << *other << "\n";
 
+  // We handle empty state (identity) as a trivial special case.
+  if (is_empty()) {
+    return other;
+  }
+  if (other->is_empty()) {
+    return this;
+  }
+
   if (other == this) {
     // compose(this) has to be handled as a special case, because the
     // caching problem is so different.

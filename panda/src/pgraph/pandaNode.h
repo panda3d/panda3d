@@ -41,10 +41,10 @@
 //               is the base class of all specialized nodes, and also
 //               serves as a generic node with no special properties.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA PandaNode : public TypedWritable, 
-                              public Namable, virtual public ReferenceCount {
+class EXPCL_PANDA PandaNode : public TypedWritable, public Namable,
+                              virtual public ReferenceCount {
 PUBLISHED:
-  INLINE PandaNode(const string &name);
+  PandaNode(const string &name);
   PandaNode(const PandaNode &copy);
   void operator = (const PandaNode &copy);
   virtual ~PandaNode();
@@ -74,6 +74,9 @@ PUBLISHED:
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;
+
+public:
+  virtual bool is_geom_node() const;
 
 private:
   class EXPCL_PANDA DownConnection {
@@ -114,6 +117,8 @@ private:
   };
 
   PipelineCycler<CData> _cycler;
+  typedef CycleDataReader<CData> CDReader;
+  typedef CycleDataWriter<CData> CDWriter;
 
 public:
   // Use this interface when you want to walk through the list of
@@ -122,14 +127,14 @@ public:
   // However, it does not protect you from self-modifying loops.
   class EXPCL_PANDA Children {
   public:
-    INLINE Children(const PipelineCycler<CData> &cycler);
+    INLINE Children(const CDReader &cdata);
     INLINE Children(const Children &copy);
 
     INLINE int get_num_children() const;
     INLINE PandaNode *get_child(int n) const;
 
   private:
-    CDR(CData) _cdata;
+    CDReader _cdata;
   };
 
   INLINE Children get_children() const;

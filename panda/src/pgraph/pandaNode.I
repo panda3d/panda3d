@@ -78,8 +78,8 @@ CData() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode::Children::
-Children(const PipelineCycler<PandaNode::CData> &cycler) :
-  _cdata(cycler)
+Children(const PandaNode::CDReader &cdata) :
+  _cdata(cdata)
 {
 }
 
@@ -116,17 +116,6 @@ get_child(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PandaNode::Constructor
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE PandaNode::
-PandaNode(const string &name) :
-  Namable(name)
-{
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::get_num_parents
 //       Access: Published
 //  Description: Returns the number of parent nodes this node has.  If
@@ -137,7 +126,7 @@ PandaNode(const string &name) :
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNode::
 get_num_parents() const {
-  CDR(CData) cdata(_cycler);
+  CDReader cdata(_cycler);
   return cdata->_up.size();
 }
 
@@ -149,7 +138,7 @@ get_num_parents() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *PandaNode::
 get_parent(int n) const {
-  CDR(CData) cdata(_cycler);
+  CDReader cdata(_cycler);
   nassertr(n >= 0 && n < (int)cdata->_up.size(), NULL);
   return cdata->_up[n];
 }
@@ -162,7 +151,7 @@ get_parent(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNode::
 find_parent(PandaNode *node) const {
-  CDR(CData) cdata(_cycler);
+  CDReader cdata(_cycler);
   Up::const_iterator ui = cdata->_up.find(node);
   if (ui == cdata->_up.end()) {
     return -1;
@@ -180,7 +169,7 @@ find_parent(PandaNode *node) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNode::
 get_num_children() const {
-  CDR(CData) cdata(_cycler);
+  CDReader cdata(_cycler);
   return cdata->_down.size();
 }
 
@@ -192,7 +181,7 @@ get_num_children() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *PandaNode::
 get_child(int n) const {
-  CDR(CData) cdata(_cycler);
+  CDReader cdata(_cycler);
   nassertr(n >= 0 && n < (int)cdata->_down.size(), NULL);
   return cdata->_down[n].get_child();
 }
@@ -206,7 +195,7 @@ get_child(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PandaNode::
 get_sort(int n) const {
-  CDR(CData) cdata(_cycler);
+  CDReader cdata(_cycler);
   nassertr(n >= 0 && n < (int)cdata->_down.size(), -1);
   return cdata->_down[n].get_sort();
 }
@@ -222,7 +211,7 @@ get_sort(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PandaNode::
 set_attrib(const RenderAttrib *attrib, int override) {
-  CDW(CData) cdata(_cycler);
+  CDWriter cdata(_cycler);
   cdata->_state_changes = cdata->_state_changes->add(attrib, override);
 }
 
@@ -237,7 +226,7 @@ set_attrib(const RenderAttrib *attrib, int override) {
 ////////////////////////////////////////////////////////////////////
 INLINE const RenderAttrib *PandaNode::
 get_attrib(TypeHandle type) const {
-  CDR(CData) cdata(_cycler);
+  CDReader cdata(_cycler);
   int index = cdata->_state_changes->find_attrib(type);
   if (index >= 0) {
     return cdata->_state_changes->get_attrib(index);
@@ -255,7 +244,7 @@ get_attrib(TypeHandle type) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PandaNode::
 clear_attrib(TypeHandle type) {
-  CDW(CData) cdata(_cycler);
+  CDWriter cdata(_cycler);
   cdata->_state_changes = cdata->_state_changes->remove(type);
 }
 
@@ -271,7 +260,7 @@ clear_attrib(TypeHandle type) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PandaNode::
 set_state(const RenderState *state) {
-  CDW(CData) cdata(_cycler);
+  CDWriter cdata(_cycler);
   cdata->_state_changes = state;
 }
 
@@ -286,7 +275,7 @@ set_state(const RenderState *state) {
 ////////////////////////////////////////////////////////////////////
 INLINE const RenderState *PandaNode::
 get_state() const {
-  CDR(CData) cdata(_cycler);
+  CDReader cdata(_cycler);
   return cdata->_state_changes;
 }
 
@@ -300,7 +289,7 @@ get_state() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PandaNode::
 clear_state() {
-  CDW(CData) cdata(_cycler);
+  CDWriter cdata(_cycler);
   cdata->_state_changes = RenderState::make_empty();
 }
 
@@ -320,6 +309,7 @@ clear_state() {
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode::Children PandaNode::
 get_children() const {
-  return Children(_cycler);
+  CDReader cdata(_cycler);
+  return Children(cdata);
 }
 

@@ -5,4 +5,5 @@
 #include "renderState.cxx"
 #include "test_pgraph.cxx"
 #include "textureAttrib.cxx"
+#include "transformAttrib.cxx"
 

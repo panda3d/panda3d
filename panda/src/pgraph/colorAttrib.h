@@ -36,7 +36,8 @@ PUBLISHED:
   };
 
 private:
-  INLINE ColorAttrib(Type type, const Colorf &color);
+  INLINE ColorAttrib(Type type = T_vertex, 
+                     const Colorf &color = Colorf(0.0f, 0.0f, 0.0f, 1.0f));
 
 PUBLISHED:
   static CPT(RenderAttrib) make_vertex();
@@ -56,15 +57,23 @@ protected:
 private:
   Type _type;
   Colorf _color;
+
+public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
   
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    TypedWritableReferenceCount::init_type();
+    RenderAttrib::init_type();
     register_type(_type_handle, "ColorAttrib",
-                  TypedWritableReferenceCount::get_class_type());
+                  RenderAttrib::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

@@ -19,7 +19,13 @@
 #include "pandaNode.h"
 #include "textureAttrib.h"
 #include "colorAttrib.h"
+#include "transformAttrib.h"
 #include "texture.h"
+#include "qpgeomNode.h"
+#include "geomTristrip.h"
+#include "geomTrifan.h"
+#include "qpcullTraverser.h"
+#include "cullHandler.h"
 
 void
 list_hierarchy(PandaNode *node, int indent_level) {
@@ -51,32 +57,31 @@ main(int argc, char *argv[]) {
   PandaNode *a1 = new PandaNode("a1");
   a->add_child(a1);
 
+  qpGeomNode *g1 = new qpGeomNode("g1");
+  a1->add_child(g1);
+
+  Geom *geom1 = new GeomTristrip;
+  g1->add_geom(geom1, RenderState::make_empty());
+  Geom *geom2 = new GeomTrifan;
+  g1->add_geom(geom2, b->get_state());
+
+  qpGeomNode *g2 = new qpGeomNode("g2");
+  b->add_child(g2);
+  g2->add_geom(geom1, b->get_state());
+  g2->set_attrib(TransformAttrib::make_mat(LMatrix4f::translate_mat(10, 0, 0)));
+
   cerr << "\n";
   list_hierarchy(root, 0);
 
-  cerr << "\nroot's attribs:\n";
-  root->get_state()->write(cerr, 0);
+  qpCullTraverser trav;
+  CullHandler cull_handler;
+  trav.set_cull_handler(&cull_handler);
+  cerr << "\n";
+  trav.traverse(root);
 
-  cerr << "\na's attribs:\n";
-  a->get_state()->write(cerr, 0);
+  cerr << "\n";
+  trav.traverse(root);
 
-  cerr << "\nroot compose a:\n";
-  CPT(RenderState) result1 = root->get_state()->compose(a->get_state());
-  result1->write(cerr, 0);
-
-  //  a->clear_state();
-
-  cerr << "\nroot compose root:\n";
-  CPT(RenderState) result2 = root->get_state()->compose(root->get_state());
-  result2->write(cerr, 0);
-
-  cerr << "\nroot compose a:\n";
-  CPT(RenderState) result3 = root->get_state()->compose(a->get_state());
-  result3->write(cerr, 0);
-
-  cerr << "\na compose root:\n";
-  CPT(RenderState) result4 = a->get_state()->compose(root->get_state());
-  result4->write(cerr, 0);
-
+  cerr << "\n";
   return 0;
 }
