@@ -186,7 +186,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       PT(BoundingVolume) reduced_frustum;
       
       portal_viewer->prepare_portal(data._node_path.get_node_path());
-      //portal_viewer->clip_portal(data._node_path.get_node_path());
+      portal_viewer->clip_portal(data._node_path.get_node_path());
       if ((reduced_frustum = portal_viewer->get_reduced_frustum(data._node_path.get_node_path()))) {
         // This reduced frustum is in camera space
         pgraph_cat.debug() << "got reduced frustum " << reduced_frustum << endl;
@@ -197,7 +197,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
           portal_viewer->_scene_setup->get_cull_center().get_transform(_zone_out);
         vf->xform(cull_center_transform->get_mat());
       }
-      pgraph_cat.debug() << "vf is " << *vf << "\n";
+      pgraph_cat.spam() << "vf is " << *vf << "\n";
 
       // Get the net trasform of the _zone_out
       CPT(TransformState) zone_transform = _zone_out.get_net_transform();
@@ -206,7 +206,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
                                   zone_transform,
                                   trav->get_initial_state(), vf, 
                                   trav->get_guard_band());
-      pgraph_cat.debug() << "cull_callback: traversing " << _zone_out.get_name() << endl;
+      pgraph_cat.spam() << "cull_callback: traversing " << _zone_out.get_name() << endl;
       // Make this zone show with the reduced frustum
       _zone_out.show();
       trav->traverse(next_data);

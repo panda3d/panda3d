@@ -97,41 +97,62 @@ draw_to(float x, float y, float z) {
 INLINE void PortalClipper::
 draw_camera_frustum() {
   _color = Colorf(1,1,1,1);
-  draw_hexahedron(_hex_frustum);
+  draw_hexahedron(_view_frustum);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PortalClipper::set_reduced_frustum
+//       Access: Public
+//  Description: set the current reduced frustum before traversing
+//           
+////////////////////////////////////////////////////////////////////
+INLINE void PortalClipper::
+set_reduced_frustum(BoundingHexahedron *frustum) {
+  _reduced_frustum = frustum;
+}
+////////////////////////////////////////////////////////////////////
+//     Function: PortalClipper::is_in_view
+//       Access: Public
+//  Description: checks if portal_node is within the view frustum.
+//               If so, then the portal is worth considering. This
+//               is a 1st level test to weed out most of the portals
+////////////////////////////////////////////////////////////////////
+INLINE bool PortalClipper::
+is_in_view(const NodePath &node_path) {
+
+  const BoundingVolume *bv = &_portal_node->get_bound();
+
+  // I am about to xform this gbv, so lets make a copy
+  BoundingVolume *cbv = bv->make_copy();
+  GeometricBoundingVolume *gbv = DCAST(GeometricBoundingVolume, cbv);
+
+  // trasform it to camera space
+  CPT(TransformState) ctransform = node_path.get_transform(_scene_setup->get_cull_center());
+  gbv->xform(ctransform->get_mat());
+
+  int result = _reduced_frustum->contains(gbv);
+  pgraph_cat.debug() << "1st level test if portal is in view " << result << endl;
+  return (result != 0);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PortalClipper::facing_camera
 //       Access: Public
-//  Description: checks if the _coords that forms  the plane is
-//               facing the camera
+//  Description: checks if any of the _coords is within the view frustum.
+//               If so, then the portal is facing the camera. 2nd level
+//               test to make sure this portal is worth visiting
 ////////////////////////////////////////////////////////////////////
 INLINE bool PortalClipper::
-is_facing_camera()
-{
-  Planef portal_plane(_coords[0], _coords[1], _coords[2]);
-  Planef camera_plane(_hex_frustum->get_point(4), _hex_frustum->get_point(5), _hex_frustum->get_point(6));
-#if 0
-  // use the camera's near plane to calculate direction
-  pgraph_cat.debug() << portal_plane.get_normal() << "; " << -camera_plane.get_normal() << endl;
-  float direction = portal_plane.get_normal().dot(-camera_plane.get_normal());
-  pgraph_cat.debug() << "Found direction of " << direction << endl;
-  return (direction < _FACING_THRESHOLD);
-#else
-  // use the center of camera's near plane to the center of the
-  // portal_plane to calulate the direction
-  LPoint3f portal_center = (_coords[0] + _coords[1] + _coords[2] + _coords[3]) / 4;
-  LPoint3f camera_center = (_hex_frustum->get_point(4) + _hex_frustum->get_point(5) + _hex_frustum->get_point(6) + _hex_frustum->get_point(7)) / 4;
-  LVector3f camera_to_portal = portal_center - camera_center;
-  camera_to_portal.normalize();
-  pgraph_cat.debug() << "portal_center " << portal_center << "; camera_center " << camera_center << "; camera_to_portal " << camera_to_portal << endl;
-  float direction = camera_plane.get_normal().dot(camera_to_portal);
-  _color = Colorf(0,1,0,1);
-  move_to(camera_center);
-  draw_to(portal_center);
-#endif
-  pgraph_cat.debug() << "Found direction of " << direction << endl;
-  return (direction < _FACING_THRESHOLD);
+is_facing_camera(const NodePath &node_path) {
+  int result = 0;
+
+  // check if the camera_center to portal_center lineseg is in view
+  for (int j=0; j<_num_vert; ++j) {
+    result |= _reduced_frustum->contains(_coords[j]);
+  }
+  pgraph_cat.debug() << "frustum->contains(coord) result = " << result << endl;
+
+  return (result != 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -144,8 +165,8 @@ get_plane_depth(float x, float z, Planef *portal_plane) {
   float y = 0.0;
   // Plane equation: Ax + By + Cz + D = 0
   // y = (Ax + Cz + D) / -B
-  pgraph_cat.debug() << *portal_plane << endl;
-  pgraph_cat.debug() << portal_plane->_v.v._0 << " " << portal_plane->_v.v._1 << " "
+  pgraph_cat.spam() << *portal_plane << endl;
+  pgraph_cat.spam() << portal_plane->_v.v._0 << " " << portal_plane->_v.v._1 << " "
                      << portal_plane->_v.v._2 << " " << portal_plane->_v.v._3 << endl;
 
   if (portal_plane->_v.v._1 != 0.0) {

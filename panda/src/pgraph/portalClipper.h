@@ -24,6 +24,7 @@
 #include "geom.h"
 #include "sceneSetup.h"
 #include "renderState.h"
+#include "portalNode.h"
 #include "transformState.h"
 #include "geometricBoundingVolume.h"
 #include "boundingHexahedron.h"
@@ -39,6 +40,7 @@
 #include "geomNode.h"
 
 class PandaNode;
+class PortalNode;
 class CullHandler;
 class CullTraverserData;
 class CullableObject;
@@ -61,7 +63,8 @@ public:
   PortalClipper(GeometricBoundingVolume *frustum, SceneSetup *scene_setup);
   ~PortalClipper();
 
-  INLINE bool is_facing_camera();
+  INLINE bool is_in_view(const NodePath &node_path);
+  INLINE bool is_facing_camera(const NodePath &node_path);
   void prepare_portal(const NodePath &node_path);
 
   void clip_portal(const NodePath &node_path);
@@ -79,6 +82,8 @@ public:
   void draw_to(const LVecBase3f &v);
 
   INLINE float get_plane_depth(float x, float z, Planef *portal_plane);
+
+  INLINE void  set_reduced_frustum(BoundingHexahedron *frustum);
 
 public:
   static TypeHandle get_class_type() {
@@ -123,7 +128,10 @@ private:
   PT(GeomPoint) _geom_point;
   PT(GeomLinestrip) _geom_linestrip;
 
-  BoundingHexahedron *_hex_frustum;
+  BoundingHexahedron *_view_frustum;
+  BoundingHexahedron *_reduced_frustum;
+
+  PortalNode *_portal_node;  // current working portal for dereference ease
 
   int _num_vert;
   Vertexf _coords[4];
