@@ -602,8 +602,9 @@ class ClassTypeDescriptor(BaseTypeDescriptor):
 
         indent(file, 0, '# Import all the C modules this class uses\n')
         for moduleName in self.getCModules():
-            indent(file, 0, 'import ' + moduleName + '\n')            
-            indent(file, 0, 'import ' + moduleName + 'Downcasts\n')
+            if moduleName:
+                indent(file, 0, 'import ' + moduleName + '\n')            
+                indent(file, 0, 'import ' + moduleName + 'Downcasts\n')
         indent(file, 0, '\n')
         indent(file, 0, 'import FFIExternalObject\n')
 

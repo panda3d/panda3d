@@ -59,7 +59,8 @@ def outputGlobalFileImports(file, methodList, CModuleName):
         if (not (method.typeDescriptor.moduleName in CModuleList)):
             CModuleList.append(method.typeDescriptor.moduleName)
     for CModuleName in CModuleList:
-        file.write('import ' + CModuleName + '\n')
+        if CModuleName:
+            file.write('import ' + CModuleName + '\n')
 
     moduleList = []
     for method in methodList:
@@ -85,7 +86,8 @@ def outputGlobalFileImports(file, methodList, CModuleName):
 
     
     for moduleName in moduleList:
-        file.write('import ' + moduleName + '\n')
+        if moduleName:
+            file.write('import ' + moduleName + '\n')
     
     file.write('\n')
 
@@ -130,7 +132,8 @@ def outputImportFileImports(file, typeList, CModuleName):
 
     file.write('# Import classes\n')
     for moduleName in moduleList:
-        file.write('import ' + moduleName + '\n')    
+        if moduleName:
+            file.write('import ' + moduleName + '\n')    
     file.write('\n')
 
     file.write('# Import the global module file into our name space\n')
@@ -219,6 +222,7 @@ def getTypeName(typeIndex, scoped=0):
 
     if not name:
         FFIConstants.notify.warning('typeIndex: ' + `typeIndex` + ' typeName: ' + typeName + ' has no name')
+        name = "UnnamedType"
 
     return name
 
@@ -625,13 +629,15 @@ class FFIInterrogateDatabase:
         descriptors = self.constructFunctionTypeDescriptors(globalIndex)
         if (len(descriptors) == 0):
             return None
+        funcSpecs = []
         for descriptor in descriptors:
             funcSpec = FFISpecs.GlobalFunctionSpecification()
             funcSpec.typeDescriptor = descriptor
             funcSpec.name = FFIRename.methodNameFromCppName(
                 funcSpec.typeDescriptor.foreignTypeName)
             funcSpec.index = globalIndex
-            return funcSpec
+            funcSpecs.append(funcSpec)
+        return funcSpecs
         
     def addGlobalFunctions(self, CModuleName):
         numGlobals = interrogate_number_of_global_functions()

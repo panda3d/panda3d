@@ -22,8 +22,8 @@ class FFIEnvironment:
         except KeyError:
             raise 'Type not found in FFIEnvironment'
     
-    def addGlobalFunction(self, typeDescriptor):
-        self.globalFunctions.append(typeDescriptor)
+    def addGlobalFunction(self, typeDescriptors):
+        self.globalFunctions.extend(typeDescriptors)
     def addDowncastFunction(self, typeDescriptor):
         self.downcastFunctions.append(typeDescriptor)
     def addGlobalValue(self, typeDescriptor):
