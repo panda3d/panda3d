@@ -183,8 +183,9 @@ class FFIExternalObject:
         if isinstance(other, self.__class__):
             return self.compareTo(other)
         # Otherwise, they must not be the same
+        # Just do a basic python id compare
         else:
-            return 1
+            return cmp(id(self), id(other))
 
     def __repr__(self):
         # Lots of Panda classes have an output function defined that takes an Ostream
