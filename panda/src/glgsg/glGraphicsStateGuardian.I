@@ -1037,23 +1037,7 @@ get_current_alpha_scale() const {
 ////////////////////////////////////////////////////////////////////
 INLINE GLenum GLGraphicsStateGuardian::get_light_id(int index) const
 {
-    switch( index )
-    {
-        case 0: return GL_LIGHT0;
-        case 1: return GL_LIGHT1;
-        case 2: return GL_LIGHT2;
-        case 3: return GL_LIGHT3;
-        case 4: return GL_LIGHT4;
-        case 5: return GL_LIGHT5;
-        case 6: return GL_LIGHT6;
-        case 7: return GL_LIGHT7;
-        default:
-            glgsg_cat.error()
-              << "get_light_id() - we don't currently support ids "
-              << "> 8" << endl;
-            break;
-    }
-    return GL_LIGHT0;
+  return GL_LIGHT0 + index;
 }
 
 ////////////////////////////////////////////////////////////////////
