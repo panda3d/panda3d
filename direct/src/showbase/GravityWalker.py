@@ -277,7 +277,7 @@ class GravityWalker(DirectObject.DirectObject):
         self.setupRay(floorBitmask, self.floorOffset)
         self.setupWallSphere(wallBitmask, avatarRadius)
         self.setupEventSphere(wallBitmask|floorBitmask, avatarRadius)
-        self.setupFloorSphere(floorBitmask, avatarRadius)
+        # self.setupFloorSphere(floorBitmask, avatarRadius)
 
         self.setCollisionsActive(1)
 
@@ -301,8 +301,8 @@ class GravityWalker(DirectObject.DirectObject):
         del self.cSphere
         self.cWallSphereNodePath.removeNode()
         del self.cWallSphereNodePath
-        self.cFloorSphereNodePath.removeNode()
-        del self.cFloorSphereNodePath
+        # self.cFloorSphereNodePath.removeNode()
+        # del self.cFloorSphereNodePath
 
         del self.pusher
         del self.pusherFloor
@@ -320,12 +320,12 @@ class GravityWalker(DirectObject.DirectObject):
             self.oneTimeCollide()
             if active:
                 self.cTrav.addCollider(self.cWallSphereNodePath, self.pusher)
-                self.cTrav.addCollider(self.cFloorSphereNodePath, self.pusherFloor)
+                # self.cTrav.addCollider(self.cFloorSphereNodePath, self.pusherFloor)
                 self.cTrav.addCollider(self.cEventSphereNodePath, self.event)
                 self.cTrav.addCollider(self.cRayNodePath, self.lifter)
             else:
                 self.cTrav.removeCollider(self.cWallSphereNodePath)
-                self.cTrav.removeCollider(self.cFloorSphereNodePath)
+                # self.cTrav.removeCollider(self.cFloorSphereNodePath)
                 self.cTrav.removeCollider(self.cEventSphereNodePath)
                 self.cTrav.removeCollider(self.cRayNodePath)
 
@@ -367,7 +367,7 @@ class GravityWalker(DirectObject.DirectObject):
         assert(self.debugPrint("oneTimeCollide()"))
         tempCTrav = CollisionTraverser()
         tempCTrav.addCollider(self.cWallSphereNodePath, self.pusher)
-        tempCTrav.addCollider(self.cFloorSphereNodePath, self.event)
+        # tempCTrav.addCollider(self.cFloorSphereNodePath, self.event)
         tempCTrav.addCollider(self.cRayNodePath, self.lifter)
         tempCTrav.traverse(render)
 
