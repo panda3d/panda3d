@@ -5,8 +5,6 @@ from MessengerGlobal import *
 from TaskManagerGlobal import *
 from EventManagerGlobal import *
 from AudioManagerGlobal import *
-# This should be on a dconfig variable
-from TkGlobal import *
 import Task
 import EventManager
 
@@ -15,6 +13,14 @@ class ShowBase:
     notify = None
 
     def __init__(self):
+
+        # Get the dconfig object
+        self.config = getConfigShowbase()
+
+        # Store dconfig variables
+        self.wantTk = self.config.GetBool('want-tk', 0)
+        self.wantSound = self.config.GetBool('want-sound', 1)
+        self.wantMusic = self.config.GetBool('want-music', 1)
         
         import Loader
 
@@ -45,7 +51,7 @@ class ShowBase:
 
         if (ShowBase.notify == None):
             ShowBase.notify = directNotify.newCategory("ShowBase")
-        
+
         self.loader = Loader.Loader(self)
 
         self.eventMgr = eventMgr
@@ -56,17 +62,14 @@ class ShowBase:
 
         self.audioMgr = audioMgr
 
-        self.wantTk = 1
         self.createRootPanel()
         
         self.restart()
 
-        self.wantSound = 1
-
-        self.wantMusic = 1
 
     def createRootPanel(self):
         if self.wantTk:
+            from TkGlobal import *
             self.tkroot = Pmw.initialise()
         else:
             self.tkroot = None
