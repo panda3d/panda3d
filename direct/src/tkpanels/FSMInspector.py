@@ -487,6 +487,9 @@ if __name__ == '__main__':
     fsmi = FSMInspector(title = 'My Little Viewer', FSM = fsm)
     mainloop()
 """
+# Set want-tk #t in Configrc
+import FSM
+import State
 def enterState():
     print 'enterState'
 def exitState():
@@ -497,6 +500,8 @@ fsm = FSM.FSM('stopLight',
             State.State('green', enterState, exitState, ['yellow']) ],
           'red',
           'red')
-inspector = FSMInspector(FSM = fsm)
+
+import FSMInspector
+inspector = FSMInspector.FSMInspector(FSM = fsm, title = fsm.getName())
 """
 
