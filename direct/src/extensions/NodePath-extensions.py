@@ -905,12 +905,6 @@
         base.startDirect()
         direct.deselect(self)
 
-    def setAlphaScale(self, alpha):
-        self.setColorScale(1, 1, 1, alpha)
-
-    def setAllColorScale(self, color):
-        self.setColorScale(color, color, color, 1)
-
     def showCS(self, mask = None):
         """showCS(self, mask)
         Shows the collision solids at or below this node.  If mask is

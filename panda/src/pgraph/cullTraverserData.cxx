@@ -110,6 +110,12 @@ is_in_view_impl() {
     DCAST(GeometricBoundingVolume, &node_volume);
 
   int result = _view_frustum->contains(node_gbv);
+
+  if (pgraph_cat.is_spam()) {
+    pgraph_cat.spam()
+      << _node_path << " cull result = " << hex << result << dec << "\n";
+  }
+
   if (result == BoundingVolume::IF_no_intersection) {
     // No intersection at all.  Cull.
     if (!fake_view_frustum_cull) {

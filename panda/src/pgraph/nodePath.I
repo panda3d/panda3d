@@ -595,108 +595,6 @@ get_mat() const {
   return node()->get_transform()->get_mat();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_color_scale
-//       Access: Published
-//  Description: Sets the color scale component of the transform
-////////////////////////////////////////////////////////////////////
-INLINE void NodePath::
-set_color_scale(float sr, float sg, float sb, float sa) {
-  set_color_scale(LVecBase4f(sr, sg, sb, sa));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_sr
-//       Access: Published
-//  Description: Sets the red scale component of the transform
-////////////////////////////////////////////////////////////////////
-INLINE void NodePath::
-set_sr(float sr) {
-  LVecBase4f new_scale = get_color_scale();
-  new_scale[0] = sr;
-
-  set_color_scale(new_scale);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_sg
-//       Access: Published
-//  Description: Sets the alpha scale component of the transform
-////////////////////////////////////////////////////////////////////
-INLINE void NodePath::
-set_sg(float sg) {
-  LVecBase4f new_scale = get_color_scale();
-  new_scale[1] = sg;
-
-  set_color_scale(new_scale);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_sb
-//       Access: Published
-//  Description: Sets the blue scale component of the transform
-////////////////////////////////////////////////////////////////////
-INLINE void NodePath::
-set_sb(float sb) {
-  LVecBase4f new_scale = get_color_scale();
-  new_scale[2] = sb;
-
-  set_color_scale(new_scale);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_sa
-//       Access: Published
-//  Description: Sets the alpha scale component of the transform
-////////////////////////////////////////////////////////////////////
-INLINE void NodePath::
-set_sa(float sa) {
-  LVecBase4f new_scale = get_color_scale();
-  new_scale[3] = sa;
-
-  set_color_scale(new_scale);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_sr
-//       Access: Published
-//  Description: Gets the red scale component of the transform
-////////////////////////////////////////////////////////////////////
-INLINE float NodePath::
-get_sr() const {
-  return get_color_scale()[0];
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_sg
-//       Access: Published
-//  Description: Gets the green scale component of the transform
-////////////////////////////////////////////////////////////////////
-INLINE float NodePath::
-get_sg() const {
-  return get_color_scale()[1];
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_sb
-//       Access: Published
-//  Description: Gets the blue scale component of the transform
-////////////////////////////////////////////////////////////////////
-INLINE float NodePath::
-get_sb() const {
-  return get_color_scale()[2];
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_sa
-//       Access: Published
-//  Description: Gets the alpha scale component of the transform
-////////////////////////////////////////////////////////////////////
-INLINE float NodePath::
-get_sa() const {
-  return get_color_scale()[3];
-}
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::look_at
@@ -885,6 +783,108 @@ INLINE float NodePath::
 get_distance(const NodePath &other) const {
   LPoint3f pos = get_pos(other);
   return length(LVector3f(pos));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_color_scale
+//       Access: Published
+//  Description: Sets the color scale component of the transform
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_color_scale(float sr, float sg, float sb, float sa, int priority) {
+  set_color_scale(LVecBase4f(sr, sg, sb, sa), priority);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_sr
+//       Access: Published
+//  Description: Sets the red scale component of the transform
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_sr(float sr) {
+  LVecBase4f new_scale = get_color_scale();
+  new_scale[0] = sr;
+
+  set_color_scale(new_scale);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_sg
+//       Access: Published
+//  Description: Sets the alpha scale component of the transform
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_sg(float sg) {
+  LVecBase4f new_scale = get_color_scale();
+  new_scale[1] = sg;
+
+  set_color_scale(new_scale);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_sb
+//       Access: Published
+//  Description: Sets the blue scale component of the transform
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_sb(float sb) {
+  LVecBase4f new_scale = get_color_scale();
+  new_scale[2] = sb;
+
+  set_color_scale(new_scale);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_sa
+//       Access: Published
+//  Description: Sets the alpha scale component of the transform
+////////////////////////////////////////////////////////////////////
+INLINE void NodePath::
+set_sa(float sa) {
+  LVecBase4f new_scale = get_color_scale();
+  new_scale[3] = sa;
+
+  set_color_scale(new_scale);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_sr
+//       Access: Published
+//  Description: Gets the red scale component of the transform
+////////////////////////////////////////////////////////////////////
+INLINE float NodePath::
+get_sr() const {
+  return get_color_scale()[0];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_sg
+//       Access: Published
+//  Description: Gets the green scale component of the transform
+////////////////////////////////////////////////////////////////////
+INLINE float NodePath::
+get_sg() const {
+  return get_color_scale()[1];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_sb
+//       Access: Published
+//  Description: Gets the blue scale component of the transform
+////////////////////////////////////////////////////////////////////
+INLINE float NodePath::
+get_sb() const {
+  return get_color_scale()[2];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_sa
+//       Access: Published
+//  Description: Gets the alpha scale component of the transform
+////////////////////////////////////////////////////////////////////
+INLINE float NodePath::
+get_sa() const {
+  return get_color_scale()[3];
 }
 
 ////////////////////////////////////////////////////////////////////

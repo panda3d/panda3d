@@ -293,21 +293,6 @@ PUBLISHED:
   INLINE bool has_mat() const;
   INLINE const LMatrix4f &get_mat() const;
 
-  bool has_color_scale() const;
-  void clear_color_scale();
-  void set_color_scale(const LVecBase4f &scale);
-  INLINE void set_color_scale(float sx, float sy, float sz, float sa);
-  INLINE void set_sr(float sr);
-  INLINE void set_sg(float sg);
-  INLINE void set_sb(float sb);
-  INLINE void set_sa(float sa);
-
-  const LVecBase4f &get_color_scale() const;
-  INLINE float get_sr() const;
-  INLINE float get_sg() const;
-  INLINE float get_sb() const;
-  INLINE float get_sa() const;
-
   INLINE void look_at(float x, float y, float z);
   void look_at(const LPoint3f &point, const LVector3f &up = LVector3f::up());
   INLINE void heads_up(float x, float y, float z);
@@ -405,6 +390,25 @@ PUBLISHED:
   void clear_color();
   bool has_color() const;
   Colorf get_color() const;
+
+  bool has_color_scale() const;
+  void clear_color_scale();
+  void set_color_scale(const LVecBase4f &scale,
+                       int priority = 0);
+  INLINE void set_color_scale(float sx, float sy, float sz, float sa,
+                              int priority = 0);
+  void set_alpha_scale(float scale, int priority = 0);
+  void set_all_color_scale(float scale, int priority = 0);
+  INLINE void set_sr(float sr);
+  INLINE void set_sg(float sg);
+  INLINE void set_sb(float sb);
+  INLINE void set_sa(float sa);
+
+  const LVecBase4f &get_color_scale() const;
+  INLINE float get_sr() const;
+  INLINE float get_sg() const;
+  INLINE float get_sb() const;
+  INLINE float get_sa() const;
 
   void set_bin(const string &bin_name, int draw_order, int priority = 0);
   void clear_bin();

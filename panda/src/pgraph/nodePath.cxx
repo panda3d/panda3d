@@ -852,68 +852,6 @@ set_mat(const LMatrix4f &mat) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::has_color_scale
-//       Access: Published
-//  Description: Returns true if a color scale has been applied
-//               to the referenced node, false otherwise.  It is still
-//               possible that color at this node might have been
-//               scaled by an ancestor node.
-////////////////////////////////////////////////////////////////////
-bool NodePath::
-has_color_scale() const {
-  nassertr_always(!is_empty(), false);
-  return node()->has_attrib(ColorScaleAttrib::get_class_type());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::clear_color_scale
-//       Access: Published
-//  Description: Completely removes any color scale from the
-//               referenced node.  This is preferable to simply
-//               setting the color scale to identity, as it also
-//               removes the overhead associated with having a color
-//               scale at all.
-////////////////////////////////////////////////////////////////////
-void NodePath::
-clear_color_scale() {
-  nassertv_always(!is_empty());
-  node()->clear_attrib(ColorScaleAttrib::get_class_type());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::set_color_scale
-//       Access: Published
-//  Description: Sets the color scale component of the transform,
-//               leaving translation and rotation untouched.
-////////////////////////////////////////////////////////////////////
-void NodePath::
-set_color_scale(const LVecBase4f &scale) {
-  nassertv_always(!is_empty());
-  node()->set_attrib(ColorScaleAttrib::make(scale));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: NodePath::get_color_scale
-//       Access: Published
-//  Description: Returns the complete color scale vector that has been
-//               applied to the bottom node, or all 1's (identity) if
-//               no scale has been applied.
-////////////////////////////////////////////////////////////////////
-const LVecBase4f &NodePath::
-get_color_scale() const {
-  static const LVecBase4f ident_scale(1.0f, 1.0f, 1.0f, 1.0f);
-  nassertr_always(!is_empty(), ident_scale);
-  const RenderAttrib *attrib =
-    node()->get_attrib(ColorScaleAttrib::get_class_type());
-  if (attrib != (const RenderAttrib *)NULL) {
-    const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attrib);
-    return csa->get_scale();
-  }
-
-  return ident_scale;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NodePath::look_at
 //       Access: Published
 //  Description: Sets the hpr on this NodePath so that it
@@ -1498,6 +1436,112 @@ get_color() const {
     << "get_color() called on " << *this << " which has no color set.\n";
 
   return Colorf(1.0f, 1.0f, 1.0f, 1.0f);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_color_scale
+//       Access: Published
+//  Description: Returns true if a color scale has been applied
+//               to the referenced node, false otherwise.  It is still
+//               possible that color at this node might have been
+//               scaled by an ancestor node.
+////////////////////////////////////////////////////////////////////
+bool NodePath::
+has_color_scale() const {
+  nassertr_always(!is_empty(), false);
+  return node()->has_attrib(ColorScaleAttrib::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_color_scale
+//       Access: Published
+//  Description: Completely removes any color scale from the
+//               referenced node.  This is preferable to simply
+//               setting the color scale to identity, as it also
+//               removes the overhead associated with having a color
+//               scale at all.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+clear_color_scale() {
+  nassertv_always(!is_empty());
+  node()->clear_attrib(ColorScaleAttrib::get_class_type());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_color_scale
+//       Access: Published
+//  Description: Sets the color scale component of the transform,
+//               leaving translation and rotation untouched.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_color_scale(const LVecBase4f &scale, int priority) {
+  nassertv_always(!is_empty());
+  node()->set_attrib(ColorScaleAttrib::make(scale), priority);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_alpha_scale
+//       Access: Published
+//  Description: Sets the alpha scale component of the transform
+//               without affecting the color scale.  Note that any
+//               priority specified will also apply to the color
+//               scale.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_alpha_scale(float scale, int priority) {
+  nassertv_always(!is_empty());
+  const RenderAttrib *attrib =
+    node()->get_attrib(ColorScaleAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attrib);
+    const LVecBase4f &sc = csa->get_scale();
+    set_color_scale(sc[0], sc[1], sc[2], scale, priority);
+  } else {
+    set_color_scale(1.0f, 1.0f, 1.0f, scale, priority);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_all_color_scale
+//       Access: Published
+//  Description: Scales all the color components of the object by the
+//               same amount, darkening the object, without affecting
+//               alpha.  Note that any priority specified will also
+//               apply to the alpha scale.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_all_color_scale(float scale, int priority) {
+  nassertv_always(!is_empty());
+  const RenderAttrib *attrib =
+    node()->get_attrib(ColorScaleAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attrib);
+    const LVecBase4f &sc = csa->get_scale();
+    set_color_scale(scale, scale, scale, sc[3], priority);
+  } else {
+    set_color_scale(scale, scale, scale, 1.0f, priority);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_color_scale
+//       Access: Published
+//  Description: Returns the complete color scale vector that has been
+//               applied to the bottom node, or all 1's (identity) if
+//               no scale has been applied.
+////////////////////////////////////////////////////////////////////
+const LVecBase4f &NodePath::
+get_color_scale() const {
+  static const LVecBase4f ident_scale(1.0f, 1.0f, 1.0f, 1.0f);
+  nassertr_always(!is_empty(), ident_scale);
+  const RenderAttrib *attrib =
+    node()->get_attrib(ColorScaleAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attrib);
+    return csa->get_scale();
+  }
+
+  return ident_scale;
 }
 
 ////////////////////////////////////////////////////////////////////
