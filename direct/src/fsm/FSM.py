@@ -132,6 +132,14 @@ class FSM(DirectObject.DirectObject):
         if self.state != 'Off':
             self.__setState('Off')
 
+    def getCurrentOrNextState(self):
+        # Returns the current state if we are in a state now, or the
+        # state we are transitioning into if we are currently within
+        # the enter or exit function for a state.
+        if self.state:
+            return self.state
+        return self.newState
+
     def forceTransition(self, newState):
         """Changes unconditionally to the indicated state.  This
         bypasses the filterState() function, and just calls
