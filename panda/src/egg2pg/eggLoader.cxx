@@ -1814,6 +1814,37 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     }
     return node;
 
+  } else if (egg_group->get_portal_flag()) {
+    // Create a portal instead of a regular polyset.  Scan the
+    // children of this node looking for a polygon, similar to the
+    // collision polygon case, above.
+    PortalNode *pnode = new PortalNode(egg_group->get_name());
+    node = pnode;
+
+    set_portal_polygon(egg_group, pnode);
+    if (pnode->get_num_vertices() == 0) {
+      egg2pg_cat.warning()
+        << "Portal " << egg_group->get_name() << " has no vertices!\n";
+	}
+
+  } else if (egg_group->get_polylight_flag()) {
+    // Create a polylight instead of a regular polyset.
+    // use make_sphere to get the center, radius and color
+    //egg2pg_cat.debug() << "polylight node\n";
+    LPoint3f center;
+    Colorf color;
+    float radius;
+    
+    if(!make_sphere(egg_group,center,radius,color)) {
+      egg2pg_cat.warning()
+        << "Polylight " << egg_group->get_name() << " make_sphere failed!\n";
+    }
+    PolylightNode *pnode = new PolylightNode(egg_group->get_name());
+    pnode->set_pos(center);
+    pnode->set_color(color);
+    pnode->set_radius(radius);
+    node = pnode;
+    
   } else if (egg_group->get_switch_flag()) {
     if (egg_group->get_switch_fps() != 0.0) {
       // Create a sequence node.
@@ -1852,37 +1883,6 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
       make_node(*ci, node);
     }
 
-  } else if (egg_group->get_portal_flag()) {
-    // Create a portal instead of a regular polyset.  Scan the
-    // children of this node looking for a polygon, similar to the
-    // collision polygon case, above.
-    PortalNode *pnode = new PortalNode(egg_group->get_name());
-    node = pnode;
-
-    set_portal_polygon(egg_group, pnode);
-    if (pnode->get_num_vertices() == 0) {
-      egg2pg_cat.warning()
-        << "Portal " << egg_group->get_name() << " has no vertices!\n";
-	}
-
-  } else if (egg_group->get_polylight_flag()) {
-    // Create a polylight instead of a regular polyset.
-    // use make_sphere to get the center, radius and color
-    //egg2pg_cat.debug() << "polylight node\n";
-    LPoint3f center;
-    Colorf color;
-    float radius;
-    
-    if(!make_sphere(egg_group,center,radius,color)) {
-      egg2pg_cat.warning()
-        << "Polylight " << egg_group->get_name() << " make_sphere failed!\n";
-    }
-    PolylightNode *pnode = new PolylightNode(egg_group->get_name());
-    pnode->set_pos(center);
-    pnode->set_color(color);
-    pnode->set_radius(radius);
-    node = pnode;
-    
   } else {
     // A normal group; just create a normal node, and traverse.
     node = new PandaNode(egg_group->get_name());
