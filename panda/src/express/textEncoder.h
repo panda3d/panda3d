@@ -20,6 +20,7 @@
 #define TEXTENCODER_H
 
 #include "pandabase.h"
+#include "unicodeLatinMap.h"
 
 class StringDecoder;
 
@@ -61,11 +62,20 @@ PUBLISHED:
   INLINE void append_unicode_char(int character);
   INLINE int get_num_chars() const;
   INLINE int get_unicode_char(int index) const;
+  INLINE void set_unicode_char(int index, int character);
   INLINE string get_encoded_char(int index) const;
   INLINE string get_encoded_char(int index, Encoding encoding) const;
   INLINE string get_text_as_ascii() const;
 
   INLINE static string reencode_text(const string &text, Encoding from, Encoding to);
+
+  INLINE static bool unicode_isalpha(int character);
+  INLINE static bool unicode_isdigit(int character);
+  INLINE static bool unicode_ispunct(int character);
+  INLINE static bool unicode_islower(int character);
+  INLINE static bool unicode_isupper(int character);
+  INLINE static int unicode_toupper(int character);
+  INLINE static int unicode_tolower(int character);
 
 public:
   // Direct support for wide-character strings.  Not publishable for

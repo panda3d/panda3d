@@ -226,6 +226,22 @@ get_unicode_char(int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextEncoder::set_unicode_char
+//       Access: Published
+//  Description: Sets the Unicode value of the nth character in the
+//               stored text.  This may be a wide character (greater
+//               than 255), after the string has been decoded
+//               according to set_encoding().
+////////////////////////////////////////////////////////////////////
+INLINE void TextEncoder::
+set_unicode_char(int index, int character) {
+  get_wtext();
+  nassertv(index >= 0 && index < (int)_wtext.length());
+  _wtext[index] = character;
+  _flags &= ~F_got_text;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextEncoder::get_encoded_char
 //       Access: Published
 //  Description: Returns the nth char of the stored text, as a one-,
@@ -285,6 +301,121 @@ INLINE string TextEncoder::
 reencode_text(const string &text, TextEncoder::Encoding from, 
               TextEncoder::Encoding to) {
   return encode_wtext(decode_text(text, from), to);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextEncoder::unicode_isalpha
+//       Access: Published, Static
+//  Description: Returns true if the indicated character is an
+//               alphabetic letter, false otherwise.  This is akin to
+//               ctype's isalpha(), extended to Unicode.
+////////////////////////////////////////////////////////////////////
+INLINE bool TextEncoder::
+unicode_isalpha(int character) {
+  const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
+  if (entry == (const UnicodeLatinMap::Entry *)NULL) {
+    return false;
+  }
+  return entry->_char_type == UnicodeLatinMap::CT_upper ||
+    entry->_char_type == UnicodeLatinMap::CT_lower;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextEncoder::unicode_isdigit
+//       Access: Published, Static
+//  Description: Returns true if the indicated character is a
+//               numeric digit, false otherwise.  This is akin to
+//               ctype's isdigit(), extended to Unicode.
+////////////////////////////////////////////////////////////////////
+INLINE bool TextEncoder::
+unicode_isdigit(int character) {
+  const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
+  if (entry == (const UnicodeLatinMap::Entry *)NULL) {
+    // The digits aren't actually listed in the map.
+    return (character >= '0' && character <= '9');
+  }
+  return isdigit(entry->_ascii_equiv);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextEncoder::unicode_ispunct
+//       Access: Published, Static
+//  Description: Returns true if the indicated character is a
+//               punctuation mark, false otherwise.  This is akin to
+//               ctype's ispunct(), extended to Unicode.
+////////////////////////////////////////////////////////////////////
+INLINE bool TextEncoder::
+unicode_ispunct(int character) {
+  const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
+  if (entry == (const UnicodeLatinMap::Entry *)NULL) {
+    // Some punctuation marks aren't listed in the map.
+    return (character >= 0 && character < 128 && ispunct(character));
+  }
+  return entry->_char_type == UnicodeLatinMap::CT_punct;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextEncoder::unicode_isupper
+//       Access: Published, Static
+//  Description: Returns true if the indicated character is an
+//               uppercase letter, false otherwise.  This is akin to
+//               ctype's isupper(), extended to Unicode.
+////////////////////////////////////////////////////////////////////
+INLINE bool TextEncoder::
+unicode_isupper(int character) {
+  const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
+  if (entry == (const UnicodeLatinMap::Entry *)NULL) {
+    return false;
+  }
+  return entry->_char_type == UnicodeLatinMap::CT_upper;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextEncoder::unicode_islower
+//       Access: Published, Static
+//  Description: Returns true if the indicated character is a
+//               lowercase letter, false otherwise.  This is akin to
+//               ctype's islower(), extended to Unicode.
+////////////////////////////////////////////////////////////////////
+INLINE bool TextEncoder::
+unicode_islower(int character) {
+  const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
+  if (entry == (const UnicodeLatinMap::Entry *)NULL) {
+    return false;
+  }
+  return entry->_char_type == UnicodeLatinMap::CT_lower;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextEncoder::unicode_toupper
+//       Access: Published, Static
+//  Description: Returns the uppercase equivalent of the given Unicode
+//               character.  This is akin to ctype's toupper(),
+//               extended to Unicode.
+////////////////////////////////////////////////////////////////////
+INLINE int TextEncoder::
+unicode_toupper(int character) {
+  const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
+  if (entry == (const UnicodeLatinMap::Entry *)NULL) {
+    return character;
+  } 
+  return entry->_toupper_character;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextEncoder::unicode_tolower
+//       Access: Published, Static
+//  Description: Returns the uppercase equivalent of the given Unicode
+//               character.  This is akin to ctype's tolower(),
+//               extended to Unicode.
+////////////////////////////////////////////////////////////////////
+INLINE int TextEncoder::
+unicode_tolower(int character) {
+  const UnicodeLatinMap::Entry *entry = UnicodeLatinMap::look_up(character);
+  if (entry == (const UnicodeLatinMap::Entry *)NULL) {
+    return character;
+  } 
+  return entry->_tolower_character;
 }
 
 ////////////////////////////////////////////////////////////////////
