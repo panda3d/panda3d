@@ -580,7 +580,6 @@ play_sound(const string &event) {
     AudioSound *sound = (*si).second;
     sound->play();
   }
-  return (AudioSound *)NULL;
 #endif  // HAVE_AUDIO
 }
 
