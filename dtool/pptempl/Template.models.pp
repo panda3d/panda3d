@@ -182,6 +182,7 @@ $[TAB]rm -rf $[filter_dirs]
     $[if $[pal_egg_targets],$[pal_egg_dir]] \
     $[if $[bam_targets],$[bam_dir]] \
     $[if $[POLY_MODEL(soft_char_egg)] $[NURBS_MODEL(soft_char_egg)],$[soft_maps_dir]] \
+    $[TARGET_DIR(filter_char_egg)] \
     $[texattrib_dir] \
     $[install_egg_dirs] \
     $[install_dna_dirs] \
