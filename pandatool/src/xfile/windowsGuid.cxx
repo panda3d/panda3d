@@ -31,11 +31,11 @@
 ////////////////////////////////////////////////////////////////////
 bool WindowsGuid::
 parse_string(const string &str) {
-  long data1;
-  short data2, data3;
-  short b1, b2, b3, b4, b5, b6, b7, b8;
+  unsigned long data1;
+  unsigned int data2, data3;
+  unsigned int b1, b2, b3, b4, b5, b6, b7, b8;
   int result = sscanf(str.c_str(),
-                      "%08lx-%04hx-%04hx-%02x%02x-%02x%02x%02x%02x%02x%02x",
+                      "%08lx-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x",
                       &data1, &data2, &data3,
                       &b1, &b2, &b3, &b4, &b5, &b6, &b7, &b8);
   if (result != 11) {
@@ -70,7 +70,7 @@ format_string() const {
           "%08lx-%04hx-%04hx-%02x%02x-%02x%02x%02x%02x%02x%02x",
           _data1, _data2, _data3,
           _b1, _b2, _b3, _b4, _b5, _b6, _b7, _b8);
-  nassertr(strlen(buffer) < buf_length, string());
+  nassertr((int)strlen(buffer) < buf_length, string());
 
   return string(buffer);
 }
