@@ -18,48 +18,27 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerPhysical::ColliderDef::set_drive_interface
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void CollisionHandlerPhysical::ColliderDef::
-set_drive_interface(DriveInterface *drive_interface) {
-  _drive_interface = drive_interface;
-  _node.clear();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerPhysical::ColliderDef::set_node
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void CollisionHandlerPhysical::ColliderDef::
-set_node(PandaNode *node) {
-  _node = node;
-  _drive_interface.clear();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerPhysical::ColliderDef::set_target
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionHandlerPhysical::ColliderDef::
-set_target(const NodePath &target) {
+set_target(const NodePath &target, DriveInterface *drive_interface) {
   _target = target;
-  if (!target.is_empty()) {
-    _node = target.node();
-  }
+  _drive_interface = drive_interface;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerPhysical::ColliderDef::is_valid
+//     Function: CollisionHandlerPhysical::ColliderDef::updated_transform
 //       Access: Public
-//  Description: Returns true if this ColliderDef is still valid;
-//               e.g. it refers to a valid node or drive interface.
+//  Description: Called by the handler when it has changed the
+//               transform on the target node, this applies the change
+//               to the drive interface if one is specified.
 ////////////////////////////////////////////////////////////////////
-INLINE bool CollisionHandlerPhysical::ColliderDef::
-is_valid() const {
-  return (_node != (PandaNode *)NULL) ||
-    (_drive_interface != (DriveInterface *)NULL);
+INLINE void CollisionHandlerPhysical::ColliderDef::
+updated_transform() {
+  if (_drive_interface != (DriveInterface *)NULL) {
+    _drive_interface->set_mat(_target.get_mat());
+    _drive_interface->force_dgraph();
+  }
 }

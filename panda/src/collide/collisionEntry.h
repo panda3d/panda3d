@@ -62,40 +62,56 @@ PUBLISHED:
   INLINE const NodePath &get_from_node_path() const;
   INLINE const NodePath &get_into_node_path() const;
 
-  INLINE const TransformState *get_from_space() const;
-  INLINE const TransformState *get_into_space() const;
-  INLINE const TransformState *get_wrt_space() const;
-  INLINE const TransformState *get_inv_wrt_space() const;
-  INLINE const TransformState *get_wrt_prev_space() const;
+  INLINE bool get_respect_prev_transform() const;
 
-  INLINE const LMatrix4f &get_from_mat() const;
-  INLINE const LMatrix4f &get_into_mat() const;
-  INLINE const LMatrix4f &get_wrt_mat() const;
-  INLINE const LMatrix4f &get_inv_wrt_mat() const;
-  INLINE const LMatrix4f &get_wrt_prev_mat() const;
+  INLINE void set_surface_point(const LPoint3f &point);
+  INLINE void set_surface_normal(const LVector3f &normal);
+  INLINE void set_interior_point(const LPoint3f &point);
 
-  INLINE void set_into_intersection_point(const LPoint3f &point);
+  INLINE bool has_surface_point() const;
+  INLINE bool has_surface_normal() const;
+  INLINE bool has_interior_point() const;
+
+  LPoint3f get_surface_point(const NodePath &space) const;
+  LVector3f get_surface_normal(const NodePath &space) const;
+  LPoint3f get_interior_point(const NodePath &space) const;
+  bool get_all(const NodePath &space,
+               LPoint3f &surface_point,
+               LVector3f &surface_normal,
+               LPoint3f &interior_point) const;
+
+
+  // The following methods are all deprecated in favor of the above
+  // methods.  They are here only temporarily to ease transition.
+
   INLINE bool has_into_intersection_point() const;
-  INLINE const LPoint3f &get_into_intersection_point() const;
+  INLINE LPoint3f get_into_intersection_point() const;
 
   INLINE bool has_from_intersection_point() const;
   INLINE LPoint3f get_from_intersection_point() const;
 
-  INLINE void set_into_surface_normal(const LVector3f &normal);
   INLINE bool has_into_surface_normal() const;
-  INLINE const LVector3f &get_into_surface_normal() const;
+  INLINE LVector3f get_into_surface_normal() const;
 
-  INLINE void set_from_surface_normal(const LVector3f &normal);
   INLINE bool has_from_surface_normal() const;
-  INLINE const LVector3f &get_from_surface_normal() const;
+  INLINE LVector3f get_from_surface_normal() const;
 
-  INLINE void set_into_depth(float depth);
   INLINE bool has_into_depth() const;
   INLINE float get_into_depth() const;
 
-  INLINE void set_from_depth(float depth);
   INLINE bool has_from_depth() const;
   INLINE float get_from_depth() const;
+
+public:
+  INLINE CPT(TransformState) get_wrt_space() const;
+  INLINE CPT(TransformState) get_inv_wrt_space() const;
+  INLINE CPT(TransformState) get_wrt_prev_space() const;
+
+  INLINE const LMatrix4f &get_wrt_mat() const;
+  INLINE const LMatrix4f &get_inv_wrt_mat() const;
+  INLINE const LMatrix4f &get_wrt_prev_mat() const;
+
+
 
 private:
   INLINE void test_intersection(CollisionHandler *record, 
@@ -109,27 +125,19 @@ private:
   PT(PandaNode) _into_node;
   NodePath _from_node_path;
   NodePath _into_node_path;
-  CPT(TransformState) _from_space;
-  CPT(TransformState) _into_space;
-  CPT(TransformState) _wrt_space;
-  CPT(TransformState) _inv_wrt_space;
-  CPT(TransformState) _wrt_prev_space;
 
   enum Flags {
-    F_has_into_intersection_point = 0x0001,
-    F_has_into_surface_normal     = 0x0002,
-    F_has_from_surface_normal     = 0x0004,
-    F_has_into_depth              = 0x0008,
-    F_has_from_depth              = 0x0010,
+    F_has_surface_point       = 0x0001,
+    F_has_surface_normal      = 0x0002,
+    F_has_interior_point      = 0x0004,
+    F_respect_prev_transform  = 0x0008,
   };
 
   int _flags;
 
-  LPoint3f _into_intersection_point;
-  LVector3f _into_surface_normal;
-  LVector3f _from_surface_normal;
-  float _into_depth;
-  float _from_depth;
+  LPoint3f _surface_point;
+  LVector3f _surface_normal;
+  LPoint3f _interior_point;
 
 public:
   static TypeHandle get_class_type() {

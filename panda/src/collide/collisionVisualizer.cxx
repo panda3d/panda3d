@@ -45,6 +45,7 @@ CollisionVisualizer(const string &name) : PandaNode(name) {
   // We always want to render the CollisionVisualizer node itself
   // (even if it doesn't appear to have any geometry within it).
   set_bound(OmniBoundingVolume());
+  _viz_scale = 1.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -167,28 +168,39 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       for (pi = viz_info._points.begin(); pi != viz_info._points.end(); ++pi) {
         const CollisionPoint &point = (*pi);
 
-        // Draw a tiny sphere at the collision point.
+        // Draw a small red sphere at the surface point, and a smaller
+        // white sphere at the interior point.
         {
           PT(GeomSphere) sphere = new GeomSphere;
           PTA_Vertexf verts;
-          verts.push_back(point._point);
-          verts.push_back(point._point + LVector3f(0.1f, 0.0f, 0.0f));
+          verts.push_back(point._surface_point);
+          verts.push_back(point._surface_point + 
+                          LVector3f(0.1f * _viz_scale, 0.0f, 0.0f));
           sphere->set_coords(verts);
-          sphere->set_colors(colors, G_OVERALL);
+          sphere->set_colors(colors, G_PER_PRIM);
           sphere->set_num_prims(1);
+          
+          if (point._interior_point != point._surface_point) {
+            verts.push_back(point._interior_point);
+            verts.push_back(point._interior_point + 
+                            LVector3f(0.05f * _viz_scale, 0.0f, 0.0f));
+            sphere->set_num_prims(2);
+          }
+
           CullableObject *object = 
             new CullableObject(sphere, empty_state, xform_data._render_transform);
           
           trav->get_cull_handler()->record_object(object);
         }
 
-        // Draw the normal vector at the collision point.
-        if (!point._normal.almost_equal(LVector3f::zero())) {
+        // Draw the normal vector at the surface point.
+        if (!point._surface_normal.almost_equal(LVector3f::zero())) {
           PT(GeomLine) line = new GeomLine;
         
           PTA_Vertexf verts;
-          verts.push_back(point._point);
-          verts.push_back(point._point + point._normal);
+          verts.push_back(point._surface_point);
+          verts.push_back(point._surface_point + 
+                          point._surface_normal * _viz_scale);
           line->set_coords(verts);
           line->set_colors(colors, G_PER_VERTEX);
           line->set_num_prims(1);
@@ -197,25 +209,6 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
             new CullableObject(line, empty_state, xform_data._render_transform);
           
           trav->get_cull_handler()->record_object(object);
-
-          // Also draw the depth vector.
-          if (point._depth != 0.0) {
-            PT(GeomLine) line = new GeomLine;
-            
-            PTA_Vertexf verts;
-            verts.push_back(point._point);
-            verts.push_back(point._point - point._normal * point._depth);
-            PTA_Colorf colors;
-            colors.push_back(Colorf(0.0f, 0.0f, 1.0f, 1.0f));
-
-            line->set_coords(verts);
-            line->set_colors(colors, G_OVERALL);
-            line->set_num_prims(1);
-            
-            CullableObject *object = 
-              new CullableObject(line, empty_state, xform_data._render_transform);
-            trav->get_cull_handler()->record_object(object);
-          }
         }
       }
     }
@@ -272,18 +265,15 @@ collision_tested(const CollisionEntry &entry, bool detected) {
   if (detected) {
     viz_info._solids[entry.get_into()]._detected_count++;
 
-    if (entry.has_into_intersection_point()) {
+    if (entry.has_surface_point()) {
       CollisionPoint p;
-      p._point = entry.get_into_intersection_point();
-      if (entry.has_into_surface_normal()) {
-        p._normal = entry.get_into_surface_normal();
+      p._surface_point = entry.get_surface_point(entry.get_into_node_path());
+      if (entry.has_surface_normal()) {
+        p._surface_normal = entry.get_surface_normal(entry.get_into_node_path());
       } else {
-        p._normal = LVector3f::zero();
-        p._depth = 0.0;
+        p._surface_normal = LVector3f::zero();
       }
-      if (entry.has_into_depth()) {
-        p._depth = entry.get_into_depth();
-      }
+      p._interior_point = entry.get_interior_point(entry.get_into_node_path());
       viz_info._points.push_back(p);
     }
 

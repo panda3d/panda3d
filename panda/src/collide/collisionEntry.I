@@ -25,11 +25,6 @@
 INLINE CollisionEntry::
 CollisionEntry() {
   _flags = 0;
-  _from_space = TransformState::make_identity();
-  _into_space = TransformState::make_identity();
-  _wrt_space = TransformState::make_identity();
-  _inv_wrt_space = TransformState::make_identity();
-  _wrt_prev_space = TransformState::make_identity();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -131,134 +126,105 @@ get_into_node_path() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::get_from_space
+//     Function: CollisionEntry::get_respect_prev_transform
 //       Access: Published
-//  Description: Returns the global coordinate space of the
-//               CollisionNode returned by get_from_node(), as of the
-//               time of the collision.  This will be equivalent to a
-//               wrt() from the node to render.
+//  Description: Returns true if the collision was detected by a
+//               CollisionTraverser whose respect_prev_transform
+//               flag was set true, meaning we should consider motion
+//               significant in evaluating collisions.
 ////////////////////////////////////////////////////////////////////
-INLINE const TransformState *CollisionEntry::
-get_from_space() const {
-  return _from_space;
+INLINE bool CollisionEntry::
+get_respect_prev_transform() const {
+  return (_flags & F_respect_prev_transform) != 0;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::get_into_space
-//       Access: Published
-//  Description: Returns the global coordinate space of the
-//               CollisionNode or GeomNode returned by
-//               get_into_node(), as of the time of the collision.
-////////////////////////////////////////////////////////////////////
-INLINE const TransformState *CollisionEntry::
-get_into_space() const {
-  return _into_space;
-}
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::get_wrt_space
+//     Function: CollisionEntry::set_surface_point
 //       Access: Published
-//  Description: Returns the relative transform of the from node as
-//               seen from the into node.
-////////////////////////////////////////////////////////////////////
-INLINE const TransformState *CollisionEntry::
-get_wrt_space() const {
-  return _wrt_space;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::get_inv_wrt_space
-//       Access: Published
-//  Description: Returns the relative transform of the into node as
-//               seen from the from node.
-////////////////////////////////////////////////////////////////////
-INLINE const TransformState *CollisionEntry::
-get_inv_wrt_space() const {
-  return _inv_wrt_space;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::get_wrt_prev_space
-//       Access: Published
-//  Description: Returns the relative transform of the from node as
-//               seen from the into node, as of the previous frame
-//               (according to set_prev_transform(), set_fluid_pos(),
-//               etc.)
-////////////////////////////////////////////////////////////////////
-INLINE const TransformState *CollisionEntry::
-get_wrt_prev_space() const {
-  return _wrt_prev_space;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::get_from_mat
-//       Access: Published
-//  Description: Returns the global coordinate space of the
-//               CollisionNode returned by get_from_node(), as of the
-//               time of the collision.  This will be equivalent to a
-//               wrt() from the node to render.
-////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &CollisionEntry::
-get_from_mat() const {
-  return _from_space->get_mat();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::get_into_mat
-//       Access: Published
-//  Description: Returns the global coordinate space of the
-//               CollisionNode or GeomNode returned by
-//               get_into_node(), as of the time of the collision.
-////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &CollisionEntry::
-get_into_mat() const {
-  return _into_space->get_mat();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::get_wrt_mat
-//       Access: Published
-//  Description: Returns the relative transform of the from node as
-//               seen from the into node.
-////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &CollisionEntry::
-get_wrt_mat() const {
-  return _wrt_space->get_mat();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::get_inv_wrt_mat
-//       Access: Published
-//  Description: Returns the relative transform of the into node as
-//               seen from the from node.
-////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &CollisionEntry::
-get_inv_wrt_mat() const {
-  return _inv_wrt_space->get_mat();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::get_wrt_prev_mat
-//       Access: Published
-//  Description: Returns the relative transform of the from node as
-//               seen from the into node, as of the previous frame
-//               (according to set_prev_transform(), set_fluid_pos(),
-//               etc.)
-////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &CollisionEntry::
-get_wrt_prev_mat() const {
-  return _wrt_prev_space->get_mat();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::set_into_intersection_point
-//       Access: Published
-//  Description:
+//  Description: Stores the point, on the surface of the "into"
+//               object, at which a collision is detected.
+//
+//               This point is specified in the coordinate space of
+//               the "into" object.
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionEntry::
-set_into_intersection_point(const LPoint3f &point) {
-  _into_intersection_point = point;
-  _flags |= F_has_into_intersection_point;
+set_surface_point(const LPoint3f &point) {
+  _surface_point = point;
+  _flags |= F_has_surface_point;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::set_surface_normal
+//       Access: Published
+//  Description: Stores the surface normal of the "into" object at the
+//               point of the intersection.
+//
+//               This normal is specified in the coordinate space of
+//               the "into" object.
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionEntry::
+set_surface_normal(const LVector3f &normal) {
+  _surface_normal = normal;
+  _flags |= F_has_surface_normal;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::set_interior_point
+//       Access: Published
+//  Description: Stores the point, within the interior of the "into"
+//               object, which represents the depth to which the
+//               "from" object has penetrated.  This can also be
+//               described as the intersection point on the surface of
+//               the "from" object (which is inside the "into"
+//               object).
+//
+//               This point is specified in the coordinate space of
+//               the "into" object.
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionEntry::
+set_interior_point(const LPoint3f &point) {
+  _interior_point = point;
+  _flags |= F_has_interior_point;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::has_surface_point
+//       Access: Published
+//  Description: Returns true if the surface point has been specified,
+//               false otherwise.  See get_surface_point().  Some
+//               types of collisions may not compute the surface
+//               point.
+////////////////////////////////////////////////////////////////////
+INLINE bool CollisionEntry::
+has_surface_point() const {
+  return (_flags & F_has_surface_point) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::has_surface_normal
+//       Access: Published
+//  Description: Returns true if the surface normal has been specified,
+//               false otherwise.  See get_surface_normal().  Some
+//               types of collisions may not compute the surface
+//               normal.
+////////////////////////////////////////////////////////////////////
+INLINE bool CollisionEntry::
+has_surface_normal() const {
+  return (_flags & F_has_surface_normal) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::has_interior_point
+//       Access: Published
+//  Description: Returns true if the interior point has been specified,
+//               false otherwise.  See get_interior_point().  Some
+//               types of collisions may not compute the interior
+//               point.
+////////////////////////////////////////////////////////////////////
+INLINE bool CollisionEntry::
+has_interior_point() const {
+  return (_flags & F_has_interior_point) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -270,7 +236,7 @@ set_into_intersection_point(const LPoint3f &point) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionEntry::
 has_into_intersection_point() const {
-  return (_flags & F_has_into_intersection_point) != 0;
+  return has_surface_point();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -281,10 +247,9 @@ has_into_intersection_point() const {
 //               call this if has_into_intersection_point() returns
 //               false.
 ////////////////////////////////////////////////////////////////////
-INLINE const LPoint3f &CollisionEntry::
+INLINE LPoint3f CollisionEntry::
 get_into_intersection_point() const {
-  nassertr(has_into_intersection_point(), _into_intersection_point);
-  return _into_intersection_point;
+  return get_surface_point(get_into_node_path());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -296,9 +261,7 @@ get_into_intersection_point() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionEntry::
 has_from_intersection_point() const {
-  // Since we derive the from_intersection_point from the
-  // into_intersection_point, this is really the same question.
-  return has_into_intersection_point();
+  return has_surface_point();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -311,18 +274,7 @@ has_from_intersection_point() const {
 ////////////////////////////////////////////////////////////////////
 INLINE LPoint3f CollisionEntry::
 get_from_intersection_point() const {
-  return get_into_intersection_point() * get_inv_wrt_mat();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::set_into_surface_normal
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void CollisionEntry::
-set_into_surface_normal(const LVector3f &normal) {
-  _into_surface_normal = normal;
-  _flags |= F_has_into_surface_normal;
+  return get_surface_point(get_from_node_path());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -334,7 +286,7 @@ set_into_surface_normal(const LVector3f &normal) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionEntry::
 has_into_surface_normal() const {
-  return (_flags & F_has_into_surface_normal) != 0;
+  return has_surface_normal();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -345,21 +297,9 @@ has_into_surface_normal() const {
 //               to call this if has_into_surface_normal() returns
 //               false.
 ////////////////////////////////////////////////////////////////////
-INLINE const LVector3f &CollisionEntry::
+INLINE LVector3f CollisionEntry::
 get_into_surface_normal() const {
-  nassertr(has_into_surface_normal(), _into_surface_normal);
-  return _into_surface_normal;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::set_from_surface_normal
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void CollisionEntry::
-set_from_surface_normal(const LVector3f &normal) {
-  _from_surface_normal = normal;
-  _flags |= F_has_from_surface_normal;
+  return get_surface_normal(get_into_node_path());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -371,7 +311,7 @@ set_from_surface_normal(const LVector3f &normal) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionEntry::
 has_from_surface_normal() const {
-  return (_flags & (F_has_into_surface_normal | F_has_from_surface_normal)) != 0;
+  return has_surface_normal();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -382,25 +322,9 @@ has_from_surface_normal() const {
 //               the collided-from object.  It is an error to call
 //               this if has_from_surface_normal() returns false.
 ////////////////////////////////////////////////////////////////////
-INLINE const LVector3f &CollisionEntry::
+INLINE LVector3f CollisionEntry::
 get_from_surface_normal() const {
-  nassertr(has_from_surface_normal(), _from_surface_normal);
-  if ((_flags & F_has_from_surface_normal) == 0) {
-    ((CollisionEntry *)this)->compute_from_surface_normal();
-  }
-  return _from_surface_normal;
-}
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::set_into_depth
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void CollisionEntry::
-set_into_depth(float depth) {
-  _into_depth = depth;
-  _flags |= F_has_into_depth;
+  return get_surface_normal(get_from_node_path());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -413,7 +337,7 @@ set_into_depth(float depth) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionEntry::
 has_into_depth() const {
-  return (_flags & F_has_into_depth) != 0;
+  return has_surface_point() && has_interior_point();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -428,18 +352,7 @@ has_into_depth() const {
 INLINE float CollisionEntry::
 get_into_depth() const {
   nassertr(has_into_depth(), 0.0);
-  return _into_depth;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::set_from_depth
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE void CollisionEntry::
-set_from_depth(float depth) {
-  _from_depth = depth;
-  _flags |= F_has_from_depth;
+  return (get_surface_point(get_into_node_path()) - get_interior_point(get_into_node_path())).length();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -452,7 +365,7 @@ set_from_depth(float depth) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionEntry::
 has_from_depth() const {
-  return (_flags & F_has_from_depth) != 0;
+  return has_surface_point() && has_interior_point();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -466,8 +379,82 @@ has_from_depth() const {
 ////////////////////////////////////////////////////////////////////
 INLINE float CollisionEntry::
 get_from_depth() const {
-  nassertr(has_from_depth(), 0.0);
-  return _from_depth;
+  return (get_surface_point(get_from_node_path()) - get_interior_point(get_from_node_path())).length();
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::get_wrt_space
+//       Access: Public
+//  Description: Returns the relative transform of the from node as
+//               seen from the into node.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) CollisionEntry::
+get_wrt_space() const {
+  return _from_node_path.get_transform(_into_node_path);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::get_inv_wrt_space
+//       Access: Public
+//  Description: Returns the relative transform of the into node as
+//               seen from the from node.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) CollisionEntry::
+get_inv_wrt_space() const {
+  return _into_node_path.get_transform(_from_node_path);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::get_wrt_prev_space
+//       Access: Public
+//  Description: Returns the relative transform of the from node as
+//               seen from the into node, as of the previous frame
+//               (according to set_prev_transform(), set_fluid_pos(),
+//               etc.)
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) CollisionEntry::
+get_wrt_prev_space() const {
+  if (get_respect_prev_transform()) {
+    return _from_node_path.get_prev_transform(_into_node_path);
+  } else {
+    return get_wrt_space();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::get_wrt_mat
+//       Access: Public
+//  Description: Returns the relative transform of the from node as
+//               seen from the into node.
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4f &CollisionEntry::
+get_wrt_mat() const {
+  return get_wrt_space()->get_mat();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::get_inv_wrt_mat
+//       Access: Public
+//  Description: Returns the relative transform of the into node as
+//               seen from the from node.
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4f &CollisionEntry::
+get_inv_wrt_mat() const {
+  return get_inv_wrt_space()->get_mat();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::get_wrt_prev_mat
+//       Access: Public
+//  Description: Returns the relative transform of the from node as
+//               seen from the into node, as of the previous frame
+//               (according to set_prev_transform(), set_fluid_pos(),
+//               etc.)
+////////////////////////////////////////////////////////////////////
+INLINE const LMatrix4f &CollisionEntry::
+get_wrt_prev_mat() const {
+  return get_wrt_prev_space()->get_mat();
 }
 
 ////////////////////////////////////////////////////////////////////

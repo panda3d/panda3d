@@ -108,6 +108,12 @@ private:
   PT(CollisionHandler) _default_handler;
   TypeHandle _graph_type;
 
+  // A map of NodePaths is slightly dangerous, since there is a
+  // (small) possiblity that a particular NodePath's sorting order
+  // relative to other NodePaths will spontaneously change.  This can
+  // only happen if two NodePaths get collapsed together due to a
+  // removal of a certain kind of instanced node; see the comments in
+  // NodePath.cxx.
   typedef pmap<NodePath,  PT(CollisionHandler) > Colliders;
   Colliders _colliders;
   typedef pvector<NodePath> OrderedColliders;

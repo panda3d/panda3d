@@ -41,6 +41,9 @@ PUBLISHED:
   CollisionVisualizer(const string &name);
   virtual ~CollisionVisualizer();
 
+  INLINE void set_viz_scale(float viz_scale);
+  INLINE float get_viz_scale() const;
+
   void clear();
 
 public:
@@ -69,9 +72,9 @@ private:
 
   class CollisionPoint {
   public:
-    LPoint3f _point;
-    LVector3f _normal;
-    float _depth;
+    LPoint3f _surface_point;
+    LVector3f _surface_normal;
+    LPoint3f _interior_point;
   };
   typedef pvector<CollisionPoint> Points;
 
@@ -83,6 +86,8 @@ private:
 
   typedef map<CPT(TransformState), VizInfo> Data;
   Data _data;
+
+  float _viz_scale;
 
 public:
   static TypeHandle get_class_type() {

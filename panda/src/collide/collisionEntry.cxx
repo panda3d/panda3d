@@ -33,15 +33,10 @@ CollisionEntry(const CollisionEntry &copy) :
   _into_node(copy._into_node),
   _from_node_path(copy._from_node_path),
   _into_node_path(copy._into_node_path),
-  _from_space(copy._from_space),
-  _into_space(copy._into_space),
-  _wrt_space(copy._wrt_space),
-  _inv_wrt_space(copy._inv_wrt_space),
-  _wrt_prev_space(copy._wrt_prev_space),
   _flags(copy._flags),
-  _into_intersection_point(copy._into_intersection_point),
-  _into_surface_normal(copy._into_surface_normal),
-  _into_depth(copy._into_depth)
+  _surface_point(copy._surface_point),
+  _surface_normal(copy._surface_normal),
+  _interior_point(copy._interior_point)
 {
 }
 
@@ -58,26 +53,101 @@ operator = (const CollisionEntry &copy) {
   _into_node = copy._into_node;
   _from_node_path = copy._from_node_path;
   _into_node_path = copy._into_node_path;
-  _from_space = copy._from_space;
-  _into_space = copy._into_space;
-  _wrt_space = copy._wrt_space;
-  _inv_wrt_space = copy._inv_wrt_space;
-  _wrt_prev_space = copy._wrt_prev_space;
   _flags = copy._flags;
-  _into_intersection_point = copy._into_intersection_point;
-  _into_surface_normal = copy._into_surface_normal;
-  _into_depth = copy._into_depth;
+  _surface_point = copy._surface_point;
+  _surface_normal = copy._surface_normal;
+  _interior_point = copy._interior_point;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionEntry::compute_from_surface_normal
-//       Access: Private
-//  Description: Computes the "from" surface normal by converting the
-//               "into" surface normal into the colliding object's
-//               space.
+//     Function: CollisionEntry::get_surface_point
+//       Access: Published
+//  Description: Returns the point, on the surface of the "into"
+//               object, at which a collision is detected.  This can
+//               be thought of as the first point of intersection.
+//
+//               The point will be converted into whichever coordinate
+//               space the caller specifies.
 ////////////////////////////////////////////////////////////////////
-void CollisionEntry::
-compute_from_surface_normal() {
-  _from_surface_normal = get_into_surface_normal() * get_inv_wrt_mat();
-  _flags |= F_has_from_surface_normal;
+LPoint3f CollisionEntry::
+get_surface_point(const NodePath &space) const {
+  nassertr(has_surface_point(), LPoint3f::zero());
+  return _surface_point * _into_node_path.get_mat(space);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::get_surface_normal
+//       Access: Published
+//  Description: Returns the surface normal of the "into" object at
+//               the point at which a collision is detected.
+//
+//               The normal will be converted into whichever coordinate
+//               space the caller specifies.
+////////////////////////////////////////////////////////////////////
+LVector3f CollisionEntry::
+get_surface_normal(const NodePath &space) const {
+  nassertr(has_surface_normal(), LVector3f::zero());
+  return _surface_normal * _into_node_path.get_mat(space);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::get_interior_point
+//       Access: Published
+//  Description: Returns the point, within the interior of the "into"
+//               object, which represents the depth to which the
+//               "from" object has penetrated.  This can also be
+//               described as the intersection point on the surface of
+//               the "from" object (which is inside the "into"
+//               object).  It can be thought of as the deepest point
+//               of intersection.
+//
+//               The point will be converted into whichever coordinate
+//               space the caller specifies.
+////////////////////////////////////////////////////////////////////
+LPoint3f CollisionEntry::
+get_interior_point(const NodePath &space) const {
+  if (!has_interior_point()) {
+    return get_surface_point(space);
+  }
+  return _interior_point * _into_node_path.get_mat(space);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionEntry::get_all
+//       Access: Published
+//  Description: Simultaneously transforms the surface point, surface
+//               normal, and interior point of the collision into the
+//               indicated coordinate space.
+//
+//               Returns true if all three properties are available,
+//               or false if any one of them is not.
+////////////////////////////////////////////////////////////////////
+bool CollisionEntry::
+get_all(const NodePath &space, LPoint3f &surface_point,
+        LVector3f &surface_normal, LPoint3f &interior_point) const {
+  const LMatrix4f &mat = _into_node_path.get_mat(space);
+  bool all_ok = true;
+
+  if (!has_surface_point()) {
+    surface_point = LPoint3f::zero();
+    all_ok = false;
+  } else {
+    surface_point = _surface_point * mat;
+  }
+
+  if (!has_surface_normal()) {
+    surface_normal = LVector3f::zero();
+    all_ok = false;
+  } else {
+    surface_normal = _surface_normal * mat;
+  }
+
+  if (!has_interior_point()) {
+    interior_point = surface_point;
+    all_ok = false;
+  } else {
+    interior_point = _interior_point * mat;
+  }
+
+  return true;
 }

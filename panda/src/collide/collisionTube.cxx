@@ -31,6 +31,7 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "cmath.h"
+#include "transformState.h"
 
 TypeHandle CollisionTube::_type_handle;
 
@@ -130,19 +131,24 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
   DCAST_INTO_R(sphere, entry.get_from(), 0);
 
-  LPoint3f from_a = sphere->get_center() * entry.get_wrt_mat();
+  CPT(TransformState) wrt_space = entry.get_wrt_space();
+  CPT(TransformState) wrt_prev_space = entry.get_wrt_space();
+
+  const LMatrix4f &wrt_mat = wrt_space->get_mat();
+
+  LPoint3f from_a = sphere->get_center() * wrt_mat;
   LPoint3f from_b = from_a;
 
-  if (entry.get_wrt_prev_space() != entry.get_wrt_space()) {
+  if (wrt_prev_space != wrt_space) {
     // If the sphere is moving relative to the tube, it becomes a tube
     // itself.
-    from_a = sphere->get_center() * entry.get_wrt_prev_mat();
+    from_a = sphere->get_center() * wrt_prev_space->get_mat();
   }
 
   LVector3f from_direction = from_b - from_a;
 
   LVector3f from_radius_v =
-    LVector3f(sphere->get_radius(), 0.0f, 0.0f) * entry.get_wrt_mat();
+    LVector3f(sphere->get_radius(), 0.0f, 0.0f) * wrt_mat;
   float from_radius = length(from_radius_v);
 
   double t1, t2;
@@ -189,8 +195,10 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
   DCAST_INTO_R(ray, entry.get_from(), 0);
 
-  LPoint3f from_origin = ray->get_origin() * entry.get_wrt_mat();
-  LVector3f from_direction = ray->get_direction() * entry.get_wrt_mat();
+  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+
+  LPoint3f from_origin = ray->get_origin() * wrt_mat;
+  LVector3f from_direction = ray->get_direction() * wrt_mat;
 
   double t1, t2;
   if (!intersects_line(t1, t2, from_origin, from_direction, 0.0f)) {
@@ -235,8 +243,10 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *segment;
   DCAST_INTO_R(segment, entry.get_from(), 0);
 
-  LPoint3f from_a = segment->get_point_a() * entry.get_wrt_mat();
-  LPoint3f from_b = segment->get_point_b() * entry.get_wrt_mat();
+  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+
+  LPoint3f from_a = segment->get_point_a() * wrt_mat;
+  LPoint3f from_b = segment->get_point_b() * wrt_mat;
   LVector3f from_direction = from_b - from_a;
 
   double t1, t2;
@@ -683,16 +693,9 @@ set_intersection_point(CollisionEntry *new_entry,
   // our collision was tangential.
   LPoint3f orig_point = into_intersection_point - normal * extra_radius;
 
-  // And the difference between point and orig_point is the depth to
-  // which the object has intersected the tube.
-  float depth = (point - orig_point).length();
-
-  new_entry->set_into_intersection_point(point);
-  new_entry->set_into_surface_normal(normal);
-  new_entry->set_into_depth(depth);
-
-  LVector3f from_depth_vec = (normal * depth) * new_entry->get_inv_wrt_mat();
-  new_entry->set_from_depth(from_depth_vec.length());
+  new_entry->set_surface_point(point);
+  new_entry->set_surface_normal(normal);
+  new_entry->set_interior_point(orig_point);
 }
 
 ////////////////////////////////////////////////////////////////////

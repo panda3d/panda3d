@@ -27,3 +27,30 @@ SolidInfo() {
   _detected_count = 0;
   _missed_count = 0;
 }
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionVisualizer::set_viz_scale
+//       Access: Published
+//  Description: Scales the objects that are drawn to represent the
+//               normals and points of the collisions.  By default,
+//               these objects are drawn at an arbitrary scale which
+//               is appropriate if the scene units are measured in
+//               feet.  Change this scale accordinatly if the scene
+//               units are measured on some other scale or if you need
+//               to observe these objects from farther away.
+////////////////////////////////////////////////////////////////////
+INLINE void CollisionVisualizer::
+set_viz_scale(float viz_scale) {
+  _viz_scale = viz_scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionVisualizer::get_viz_scale
+//       Access: Published
+//  Description: Returns the value last set by set_viz_scale().
+////////////////////////////////////////////////////////////////////
+INLINE float CollisionVisualizer::
+get_viz_scale() const {
+  return _viz_scale;
+}

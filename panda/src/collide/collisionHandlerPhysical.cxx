@@ -25,43 +25,6 @@ TypeHandle CollisionHandlerPhysical::_type_handle;
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerPhysical::ColliderDef::get_mat
-//       Access: Public
-//  Description: Fills mat with the matrix representing the current
-//               position and orientation of this collider.
-////////////////////////////////////////////////////////////////////
-void CollisionHandlerPhysical::ColliderDef::
-get_mat(LMatrix4f &mat) const {
-  if (_node != (PandaNode *)NULL) {
-    mat = _node->get_transform()->get_mat();
-  } else if (_drive_interface != (DriveInterface *)NULL) {
-    mat = _drive_interface->get_mat();
-  } else {
-    collide_cat.error()
-      << "Invalid CollisionHandlerPhysical::ColliderDef\n";
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerPhysical::ColliderDef::set_mat
-//       Access: Public
-//  Description: Moves this collider to the position and orientation
-//               indicated by the given transform.
-////////////////////////////////////////////////////////////////////
-void CollisionHandlerPhysical::ColliderDef::
-set_mat(const LMatrix4f &mat) {
-  if (_node != (PandaNode *)NULL) {
-    _node->set_transform(TransformState::make_mat(mat));
-  } else if (_drive_interface != (DriveInterface *)NULL) {
-    _drive_interface->set_mat(mat);
-    _drive_interface->force_dgraph();
-  } else {
-    collide_cat.error()
-      << "Invalid CollisionHandlerPhysical::ColliderDef\n";
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerPhysical::Constructor
 //       Access: Public
 //  Description:
@@ -141,6 +104,27 @@ add_collider(const NodePath &collider, const NodePath &target) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerPhysical::add_collider
+//       Access: Published
+//  Description: Adds a new collider to the list with a NodePath
+//               that will be updated with the collider's new
+//               position, or updates the existing collider with a new
+//               NodePath object.
+//
+//               The indicated DriveInterface will also be updated
+//               with the target's new transform each frame.  This
+//               method should be used when the target is directly
+//               controlled by a DriveInterface.
+////////////////////////////////////////////////////////////////////
+void CollisionHandlerPhysical::
+add_collider(const NodePath &collider, const NodePath &target,
+             DriveInterface *drive_interface) {
+  nassertv(!collider.is_empty() && collider.node()->is_of_type(CollisionNode::get_class_type()));
+  nassertv(!target.is_empty());
+  _colliders[collider].set_target(target, drive_interface);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionHandlerPhysical::remove_collider
 //       Access: Published
 //  Description: Removes the collider from the list of colliders that
@@ -188,17 +172,4 @@ clear_colliders() {
 void CollisionHandlerPhysical::
 add_collider_node(CollisionNode *node, PandaNode *target) {
   add_collider(NodePath(node), NodePath(target));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CollisionHandlerPhysical::add_collider_drive
-//       Access: Published
-//  Description: Adds a new collider to the list with a DriveInterface
-//               pointer that needs to be told about the collider's
-//               new position, or updates the existing collider with a
-//               new DriveInterface pointer.
-////////////////////////////////////////////////////////////////////
-void CollisionHandlerPhysical::
-add_collider_drive(CollisionNode *node, DriveInterface *drive_interface) {
-  _colliders[NodePath(node)].set_drive_interface(drive_interface);
 }

@@ -77,12 +77,7 @@ handle_entries() {
       okflag = false;
     } else {
       ColliderDef &def = (*ci).second;
-      if (!def.is_valid()) {
-        collide_cat.error()
-          << "Removing invalid collider " << from_node_path << " from "
-          << get_type() << "\n";
-        _colliders.erase(ci);
-      } else {
+      {
         // Get the maximum height for all collisions with this node.
         bool got_max = false;
         float max_height = 0.0f;
@@ -93,8 +88,8 @@ handle_entries() {
           nassertr(entry != (CollisionEntry *)NULL, false);
           nassertr(from_node_path == entry->get_from_node_path(), false);
           
-          if (entry->has_from_intersection_point()) {
-            LPoint3f point = entry->get_from_intersection_point();
+          if (entry->has_surface_point()) {
+            LPoint3f point = entry->get_surface_point(def._target);
             if (collide_cat.is_debug()) {
               collide_cat.debug()
                 << "Intersection point detected at " << point << "\n";
@@ -121,25 +116,15 @@ handle_entries() {
               _max_velocity * ClockObject::get_global_clock()->get_dt();
             adjust = max(adjust, -max_adjust);
           }
-          
-          if (def._node != (PandaNode *)NULL) {
-            // If we are adjusting a plain PandaNode, get the
-            // transform and adjust just the Z value to preserve
-            // maximum precision.
-            CPT(TransformState) trans = def._node->get_transform();
-            LVecBase3f pos = trans->get_pos();
-            pos[2] += adjust;
-            def._node->set_transform(trans->set_pos(pos));
 
-          } else {
-            // Otherwise, go ahead and do the matrix math to do things
-            // the old and clumsy way.
-            LMatrix4f mat;
-            def.get_mat(mat);
-            mat(3, 2) += adjust;
-            def.set_mat(mat);
-          }
+          CPT(TransformState) trans = def._target.get_transform();
+          LVecBase3f pos = trans->get_pos();
+          pos[2] += adjust;
+          def._target.set_transform(trans->set_pos(pos));
+          def.updated_transform();
+
           apply_linear_force(def, LVector3f(0.0f, 0.0f, adjust));
+
         } else {
           if (collide_cat.is_spam()) {
             collide_cat.spam()

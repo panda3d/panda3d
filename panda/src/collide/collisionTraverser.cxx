@@ -452,7 +452,9 @@ r_traverse(CollisionLevelState &level_state) {
     CollisionEntry entry;
     entry._into_node = cnode;
     entry._into_node_path = level_state.get_node_path();
-    entry._into_space = entry._into_node_path.get_net_transform();
+    if (_respect_prev_transform) {
+      entry._flags |= CollisionEntry::F_respect_prev_transform;
+    }
 
     int num_colliders = level_state.get_num_colliders();
     for (int c = 0; c < num_colliders; c++) {
@@ -463,17 +465,6 @@ r_traverse(CollisionLevelState &level_state) {
              cnode->get_into_collide_mask()) != 0) {
           entry._from_node_path = level_state.get_collider_node_path(c);
           entry._from = level_state.get_collider(c);
-          entry._from_space = entry._from_node_path.get_net_transform();
-
-          entry._wrt_space = entry._from_node_path.get_transform(entry._into_node_path);
-          entry._inv_wrt_space = entry._into_node_path.get_transform(entry._from_node_path);
-
-          if (_respect_prev_transform) {
-            entry._wrt_prev_space = entry._from_node_path.get_prev_transform(entry._into_node_path);
-
-          } else {
-            entry._wrt_prev_space = entry._wrt_space;
-          }
 
           compare_collider_to_node(entry, 
                                    level_state.get_parent_bound(c),
@@ -502,7 +493,9 @@ r_traverse(CollisionLevelState &level_state) {
     CollisionEntry entry;
     entry._into_node = gnode;
     entry._into_node_path = level_state.get_node_path();
-    entry._into_space = entry._into_node_path.get_net_transform();
+    if (_respect_prev_transform) {
+      entry._flags |= CollisionEntry::F_respect_prev_transform;
+    }
 
     int num_colliders = level_state.get_num_colliders();
     for (int c = 0; c < num_colliders; c++) {
@@ -510,10 +503,6 @@ r_traverse(CollisionLevelState &level_state) {
         entry._from_node = level_state.get_collider_node(c);
         entry._from_node_path = level_state.get_collider_node_path(c);
         entry._from = level_state.get_collider(c);
-        entry._from_space = entry._from_node_path.get_net_transform();
-
-        entry._wrt_space = entry._from_node_path.get_transform(entry._into_node_path);
-        entry._inv_wrt_space = entry._into_node_path.get_transform(entry._from_node_path);
 
         compare_collider_to_geom_node(entry, 
                                       level_state.get_parent_bound(c),
@@ -641,7 +630,7 @@ compare_collider_to_solid(CollisionEntry &entry,
   }
   if (within_solid_bounds) {
     Colliders::const_iterator ci;
-    ci = _colliders.find(entry.get_from_node());
+    ci = _colliders.find(entry.get_from_node_path());
     nassertv(ci != _colliders.end());
     entry.test_intersection((*ci).second, this);
   }
@@ -663,7 +652,7 @@ compare_collider_to_geom(CollisionEntry &entry, Geom *geom,
   }
   if (within_geom_bounds) {
     Colliders::const_iterator ci;
-    ci = _colliders.find(entry.get_from_node());
+    ci = _colliders.find(entry.get_from_node_path());
     nassertv(ci != _colliders.end());
 
     PTA_Vertexf coords;

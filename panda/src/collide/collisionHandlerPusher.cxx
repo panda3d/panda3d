@@ -91,12 +91,7 @@ handle_entries() {
       okflag = false;
     } else {
       ColliderDef &def = (*ci).second;
-      if (!def.is_valid()) {
-        collide_cat.error()
-          << "Removing invalid collider " << from_node_path << " from "
-          << get_type() << "\n";
-        _colliders.erase(ci);
-      } else {
+      {
         // How to apply multiple shoves from different solids onto the
         // same collider?  One's first intuition is to vector sum all
         // the shoves.  However, this causes problems when two parallel
@@ -113,20 +108,22 @@ handle_entries() {
           CollisionEntry *entry = (*ei);
           nassertr(entry != (CollisionEntry *)NULL, false);
           nassertr(from_node_path == entry->get_from_node_path(), false);
-          
-          if (!entry->has_from_surface_normal() ||
-              !entry->has_from_depth()) {
+
+          LPoint3f surface_point;
+          LVector3f normal;
+          LPoint3f interior_point;
+
+          if (!entry->get_all(def._target, surface_point, normal, interior_point)) {
             #ifndef NDEBUG          
             if (collide_cat.is_debug()) {
               collide_cat.debug()
                 << "Cannot shove on " << from_node_path << " for collision into "
-                << *entry->get_into_node() << "; no normal/depth information.\n";
+                << entry->get_into_node_path() << "; no normal/depth information.\n";
             }
             #endif            
           } else {
             // Shove it just enough to clear the volume.
-            if (entry->get_from_depth() != 0.0f) {
-              LVector3f normal = entry->get_from_surface_normal();
+            if (!surface_point.almost_equal(interior_point)) {
               if (_horizontal) {
                 normal[2] = 0.0f;
               }
@@ -137,7 +134,7 @@ handle_entries() {
 
               ShoveData sd;
               sd._vector = normal;
-              sd._length = entry->get_from_depth();
+              sd._length = (surface_point - interior_point).length();
               sd._valid = true;
               sd._entry = entry;
               
@@ -145,7 +142,7 @@ handle_entries() {
               if (collide_cat.is_debug()) {
                 collide_cat.debug()
                   << "Shove on " << from_node_path << " from "
-                  << *entry->get_into_node() << ": " << sd._vector
+                  << entry->get_into_node_path() << ": " << sd._vector
                   << " times " << sd._length << "\n";
               }
               #endif
@@ -248,23 +245,13 @@ handle_entries() {
           }
           #endif
           
-          if (def._node != (PandaNode *)NULL) {
-            // If we are adjusting a plain PandaNode, get the
-            // transform and adjust just the position to preserve
-            // maximum precision.
-            CPT(TransformState) trans = def._node->get_transform();
-            LVecBase3f pos = trans->get_pos();
-            pos += net_shove * trans->get_mat();
-            def._node->set_transform(trans->set_pos(pos));
-            
-            apply_linear_force(def, force_normal);
-          } else {          
-            // Otherwise, go ahead and do the matrix math to do things
-            // the old and clumsy way.
-            LMatrix4f mat;
-            def.get_mat(mat);
-            def.set_mat(LMatrix4f::translate_mat(net_shove) * mat);
-          }
+          CPT(TransformState) trans = def._target.get_transform();
+          LVecBase3f pos = trans->get_pos();
+          pos += net_shove * trans->get_mat();
+          def._target.set_transform(trans->set_pos(pos));
+          def.updated_transform();
+          
+          apply_linear_force(def, force_normal);
         }
       }
     }

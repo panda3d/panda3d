@@ -16,7 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
 #include "collisionPolygon.h"
 #include "collisionHandler.h"
 #include "collisionEntry.h"
@@ -34,6 +33,7 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "geomPolygon.h"
+#include "transformState.h"
 
 #include <algorithm>
 
@@ -273,16 +273,21 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   const CollisionSphere *sphere;
   DCAST_INTO_R(sphere, entry.get_from(), 0);
 
-  LPoint3f orig_center = sphere->get_center() * entry.get_wrt_mat();
+  CPT(TransformState) wrt_space = entry.get_wrt_space();
+  CPT(TransformState) wrt_prev_space = entry.get_wrt_space();
+
+  const LMatrix4f &wrt_mat = wrt_space->get_mat();
+
+  LPoint3f orig_center = sphere->get_center() * wrt_mat;
   LPoint3f from_center = orig_center;
   bool moved_from_center = false;
 
-  if (entry.get_wrt_prev_space() != entry.get_wrt_space()) {
+  if (wrt_prev_space != wrt_space) {
     // If we have a delta between the previous position and the
     // current position, we use that to determine some more properties
     // of the collision.
     LPoint3f b = from_center;
-    LPoint3f a = sphere->get_center() * entry.get_wrt_prev_mat();
+    LPoint3f a = sphere->get_center() * wrt_prev_space->get_mat();
     LVector3f delta = b - a;
 
     // First, there is no collision if the "from" object is moving in
@@ -317,7 +322,7 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
   }
 
   LVector3f from_radius_v =
-    LVector3f(sphere->get_radius(), 0.0f, 0.0f) * entry.get_wrt_mat();
+    LVector3f(sphere->get_radius(), 0.0f, 0.0f) * wrt_mat;
   float from_radius = length(from_radius_v);
 
   float dist = dist_to_plane(from_center);
@@ -406,15 +411,9 @@ test_intersection_from_sphere(const CollisionEntry &entry) const {
     into_depth = from_radius - dist_to_plane(orig_center);
   }
 
-  new_entry->set_into_surface_normal(get_normal());
-  new_entry->set_into_depth(into_depth);
-
-  LVector3f from_normal = get_normal() * entry.get_inv_wrt_mat();
-  LVector3f from_depth_vec = (get_normal() * into_depth) * entry.get_inv_wrt_mat();
-  new_entry->set_from_surface_normal(from_normal);
-  new_entry->set_from_depth(from_depth_vec.length());
-
-  new_entry->set_into_intersection_point(from_center - get_normal() * dist);
+  new_entry->set_surface_normal(get_normal());
+  new_entry->set_surface_point(from_center - get_normal() * dist);
+  new_entry->set_interior_point(from_center - get_normal() * (dist + into_depth));
 
   return new_entry;
 }
@@ -435,8 +434,10 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   const CollisionRay *ray;
   DCAST_INTO_R(ray, entry.get_from(), 0);
 
-  LPoint3f from_origin = ray->get_origin() * entry.get_wrt_mat();
-  LVector3f from_direction = ray->get_direction() * entry.get_wrt_mat();
+  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+
+  LPoint3f from_origin = ray->get_origin() * wrt_mat;
+  LVector3f from_direction = ray->get_direction() * wrt_mat;
 
   float t;
   if (!get_plane().intersects_line(t, from_origin, from_direction)) {
@@ -462,8 +463,8 @@ test_intersection_from_ray(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  new_entry->set_into_surface_normal(get_normal());
-  new_entry->set_into_intersection_point(plane_point);
+  new_entry->set_surface_normal(get_normal());
+  new_entry->set_surface_point(plane_point);
 
   return new_entry;
 }
@@ -484,8 +485,10 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   const CollisionSegment *segment;
   DCAST_INTO_R(segment, entry.get_from(), 0);
 
-  LPoint3f from_a = segment->get_point_a() * entry.get_wrt_mat();
-  LPoint3f from_b = segment->get_point_b() * entry.get_wrt_mat();
+  const LMatrix4f &wrt_mat = entry.get_wrt_mat();
+
+  LPoint3f from_a = segment->get_point_a() * wrt_mat;
+  LPoint3f from_b = segment->get_point_b() * wrt_mat;
   LPoint3f from_direction = from_b - from_a;
 
   float t;
@@ -513,8 +516,8 @@ test_intersection_from_segment(const CollisionEntry &entry) const {
   }
   PT(CollisionEntry) new_entry = new CollisionEntry(entry);
 
-  new_entry->set_into_surface_normal(get_normal());
-  new_entry->set_into_intersection_point(plane_point);
+  new_entry->set_surface_normal(get_normal());
+  new_entry->set_surface_point(plane_point);
 
   return new_entry;
 }
