@@ -676,7 +676,7 @@ get_text_node() {
 
     // The default TextNode is aligned to the left, for the
     // convenience of PGEntry.
-    _text_node->set_align(TM_ALIGN_LEFT);
+    _text_node->set_align(TextNode::A_left);
   }
   return _text_node;
 }
