@@ -30,7 +30,9 @@ ConfigVariableBase(const string &name,
                    const string &description, int flags) :
   _core(ConfigVariableManager::get_global_ptr()->make_variable(name))
 {
-  _core->set_value_type(value_type);
+  if (value_type != VT_undefined) {
+    _core->set_value_type(value_type);
+  }
   if (flags != 0) {
     _core->set_flags(flags);
   }

@@ -55,7 +55,8 @@ PUBLISHED:
   static ConfigVariableManager *get_global_ptr();
 
 private:
-  void list_variable(const ConfigVariableCore *variable) const;
+  void list_variable(const ConfigVariableCore *variable,
+                     bool include_descriptions) const;
 
   typedef pvector<ConfigVariableCore *> Variables;
   Variables _variables;

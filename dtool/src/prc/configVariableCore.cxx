@@ -340,6 +340,10 @@ write(ostream &out) const {
     out << "  " << *(*di) 
         << "  (from " << (*di)->get_page()->get_name() << ", untrusted)\n";
   }
+
+  if (!_description.empty()) {
+    out << "\n" << _description << "\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

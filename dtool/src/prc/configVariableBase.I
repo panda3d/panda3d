@@ -28,7 +28,9 @@ ConfigVariableBase(const string &name,
                    ConfigVariableBase::ValueType value_type) :
   _core(ConfigVariableManager::get_global_ptr()->make_variable(name))
 {
-  _core->set_value_type(value_type);
+  if (value_type != VT_undefined) {
+    _core->set_value_type(value_type);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
