@@ -17,7 +17,7 @@ class MetaInterval(CMetaInterval):
 
     # This is the base class of Sequence, Parallel, and Track.
 
-    notify = directNotify.newCategory("Interval")
+    notify = directNotify.newCategory("MetaInterval")
 
     SequenceNum = 1
     def __init__(self, *ivals, **kw):
