@@ -20,6 +20,7 @@
 #include "graphicsStateGuardian.h"
 #include "config_display.h"
 #include "textureContext.h"
+#include "dataContext.h"
 #include "renderBuffer.h"
 #include "colorAttrib.h"
 #include "colorScaleAttrib.h"
@@ -46,6 +47,8 @@ PStatCollector GraphicsStateGuardian::_total_texusage_pcollector("Texture usage"
 PStatCollector GraphicsStateGuardian::_active_texusage_pcollector("Texture usage:Active");
 PStatCollector GraphicsStateGuardian::_total_geom_pcollector("Prepared Geoms");
 PStatCollector GraphicsStateGuardian::_active_geom_pcollector("Prepared Geoms:Active");
+PStatCollector GraphicsStateGuardian::_total_buffers_pcollector("Prepared Bufferss");
+PStatCollector GraphicsStateGuardian::_active_buffers_pcollector("Prepared Bufferss:Active");
 PStatCollector GraphicsStateGuardian::_total_geom_node_pcollector("Prepared GeomNodes");
 PStatCollector GraphicsStateGuardian::_active_geom_node_pcollector("Prepared GeomNodes:Active");
 PStatCollector GraphicsStateGuardian::_total_texmem_pcollector("Texture memory");
@@ -265,6 +268,28 @@ prepare_geom(Geom *) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 release_geom(GeomContext *) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::prepare_data
+//       Access: Public, Virtual
+//  Description: Prepares the indicated data array for retained-mode
+//               rendering.
+////////////////////////////////////////////////////////////////////
+DataContext *GraphicsStateGuardian::
+prepare_data(qpGeomVertexArrayData *) {
+  return (DataContext *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::release_data
+//       Access: Public, Virtual
+//  Description: Frees the resources previously allocated via a call
+//               to prepare_data(), including deleting the DataContext
+//               itself, if necessary.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+release_data(DataContext *) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1458,7 +1483,7 @@ add_to_texture_record(TextureContext *tc) {
 //       Access: Protected
 //  Description: Records that the indicated Geom has been drawn this
 //               frame.  This function is only used to update the
-//               PStats current_texmem collector; it gets compiled out
+//               PStats active_geom collector; it gets compiled out
 //               if we aren't using PStats.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
@@ -1466,6 +1491,23 @@ add_to_geom_record(GeomContext *gc) {
   if (PStatClient::is_connected()) {
     if (gc != (GeomContext *)NULL && _current_geoms.insert(gc).second) {
       _active_geom_pcollector.add_level(1);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::add_to_data_record
+//       Access: Protected
+//  Description: Records that the indicated data array has been drawn
+//               this frame.  This function is only used to update the
+//               PStats active_buffers collector; it gets compiled out
+//               if we aren't using PStats.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+add_to_data_record(DataContext *dc) {
+  if (PStatClient::is_connected()) {
+    if (dc != (DataContext *)NULL && _current_datas.insert(dc).second) {
+      _active_buffers_pcollector.add_level(dc->_data->get_num_bytes());
     }
   }
 }

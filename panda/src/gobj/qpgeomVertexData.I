@@ -34,11 +34,15 @@ get_format() const {
 //  Description: Sets the length of the array to n vertices in all of
 //               the various arrays (presumably by adding vertices).
 //               The new vertex data is uninitialized.
+//
+//               The return value is true if the number of vertices
+//               was changed, false if the object already contained n
+//               vertices (or if there was some error).
 ////////////////////////////////////////////////////////////////////
-INLINE void qpGeomVertexData::
+INLINE bool qpGeomVertexData::
 set_num_vertices(int n) {
   CDWriter cdata(_cycler);
-  do_set_num_vertices(n, cdata);
+  return do_set_num_vertices(n, cdata);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -55,17 +59,17 @@ get_num_arrays() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::get_array_data
+//     Function: qpGeomVertexData::get_array
 //       Access: Published
 //  Description: Returns a const pointer to the vertex data for the
 //               indicated array, for application code to directly
 //               examine (but not modify) the underlying vertex data.
 ////////////////////////////////////////////////////////////////////
-INLINE CPTA_uchar qpGeomVertexData::
-get_array_data(int array) const {
+INLINE const qpGeomVertexArrayData *qpGeomVertexData::
+get_array(int i) const {
   CDReader cdata(_cycler);
-  nassertr(array >= 0 && array < (int)cdata->_arrays.size(), CPTA_uchar());
-  return cdata->_arrays[array];
+  nassertr(i >= 0 && i < (int)cdata->_arrays.size(), NULL);
+  return cdata->_arrays[i];
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -2684,7 +2684,7 @@ draw_triangles(const qpGeomTriangles *primitive) {
      primitive->get_num_primitives(), 
      primitive->get_flat_first_vertices(),
      D3DFMT_INDEX16,
-     _vertex_data->get_array_data(0), 
+     _vertex_data->get_array(0)->get_data(),
      _vertex_data->get_format()->get_array(0)->get_stride());
 }
 
@@ -2703,7 +2703,7 @@ draw_tristrips(const qpGeomTristrips *primitive) {
   CPTA_ushort maxs = primitive->get_maxs();
   nassertv(mins.size() == ends.size() && maxs.size() == ends.size());
 
-  CPTA_uchar array_data = _vertex_data->get_array_data(0);
+  CPTA_uchar array_data = _vertex_data->get_array(0)->get_data();
   int stride = _vertex_data->get_format()->get_array(0)->get_stride();
 
   unsigned int start = 0;

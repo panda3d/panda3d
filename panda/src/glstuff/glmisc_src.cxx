@@ -63,6 +63,7 @@ void CLP(init_classes)() {
   CLP(GraphicsStateGuardian)::init_type();
   CLP(TextureContext)::init_type();
   CLP(GeomContext)::init_type();
+  CLP(DataContext)::init_type();
 
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system(GLSYSTEM_NAME);

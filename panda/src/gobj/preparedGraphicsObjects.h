@@ -22,12 +22,16 @@
 #include "pandabase.h"
 #include "referenceCount.h"
 #include "texture.h"
+#include "geom.h"
+#include "qpgeomVertexArrayData.h"
+#include "pointerTo.h"
 #include "pStatCollector.h"
 #include "pset.h"
 #include "pmutex.h"
 
 class TextureContext;
 class GeomContext;
+class DataContext;
 class GraphicsStateGuardianBase;
 
 ////////////////////////////////////////////////////////////////////
@@ -68,6 +72,14 @@ public:
 
   GeomContext *prepare_geom_now(Geom *geom, GraphicsStateGuardianBase *gsg);
 
+  void enqueue_data(qpGeomVertexArrayData *data);
+  bool dequeue_data(qpGeomVertexArrayData *data);
+  void release_data(DataContext *gc);
+  int release_all_datas();
+
+  DataContext *prepare_data_now(qpGeomVertexArrayData *data,
+                                GraphicsStateGuardianBase *gsg);
+
   void update(GraphicsStateGuardianBase *gsg);
 
 private:
@@ -75,12 +87,16 @@ private:
   typedef phash_set< PT(Texture) > EnqueuedTextures;
   typedef phash_set<GeomContext *, pointer_hash> Geoms;
   typedef phash_set< PT(Geom) > EnqueuedGeoms;
+  typedef phash_set<DataContext *, pointer_hash> Datas;
+  typedef phash_set< PT(qpGeomVertexArrayData) > EnqueuedDatas;
 
   Mutex _lock;
   Textures _prepared_textures, _released_textures;  
   EnqueuedTextures _enqueued_textures;
   Geoms _prepared_geoms, _released_geoms;  
   EnqueuedGeoms _enqueued_geoms;
+  Datas _prepared_datas, _released_datas;  
+  EnqueuedDatas _enqueued_datas;
 
   static PStatCollector _total_texusage_pcollector;
 

@@ -1,5 +1,6 @@
 
 #include "boundedObject.cxx"
+#include "dataContext.cxx"
 #include "geom.cxx"
 #include "geomLine.cxx"
 #include "geomLinestrip.cxx"
@@ -17,6 +18,7 @@
 #include "qpgeomTriangles.cxx"
 #include "qpgeomTristrips.cxx"
 #include "qpgeomTrifans.cxx"
+#include "qpgeomVertexArrayData.cxx"
 #include "qpgeomVertexArrayFormat.cxx"
 #include "qpgeomVertexCacheManager.cxx"
 #include "qpgeomVertexData.cxx"

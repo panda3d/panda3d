@@ -1925,7 +1925,8 @@ make_vertex_data(EggVertexPool *vertex_pool, const LMatrix4d &transform) {
     qpGeomVertexFormat::register_format(new qpGeomVertexFormat(array_format));
 
   // Now create a new GeomVertexData using the indicated format.
-  PT(qpGeomVertexData) vertex_data = new qpGeomVertexData(format);
+  PT(qpGeomVertexData) vertex_data = 
+    new qpGeomVertexData(format, qpGeomVertexArrayData::UH_static);
 
   // And fill the data from the vertex pool.
   EggVertexPool::const_iterator vi;

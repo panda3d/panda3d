@@ -1,5 +1,5 @@
-// Filename: glstuff_src.cxx
-// Created by:  drose (09Feb04)
+// Filename: dataContext.cxx
+// Created by:  drose (17Mar05)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -16,17 +16,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-// This .cxx file includes all of the gl-related .cxx files in this
-// directory.  It works just like glstuff_src.h; see the comments in
-// that file for an explanation for what you're supposed to declare in
-// order to include this file.
+#include "dataContext.h"
 
-#include "glmisc_src.cxx"
-#include "glTextureContext_src.cxx"
-#include "glDataContext_src.cxx"
-#include "glGeomContext_src.cxx"
-#include "glGeomMunger_src.cxx"
-#include "glCgShaderContext_src.cxx"
-#include "glGraphicsStateGuardian_src.cxx"
-
-
+TypeHandle DataContext::_type_handle;

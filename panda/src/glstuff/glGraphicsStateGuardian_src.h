@@ -37,6 +37,7 @@
 #include "graphicsWindow.h"
 #include "pset.h"
 #include "pmap.h"
+#include "qpgeomVertexArrayData.h"
 #ifdef HAVE_CGGL
 #include "cgShader.h"
 #endif
@@ -102,6 +103,11 @@ public:
 
   virtual GeomContext *prepare_geom(Geom *geom);
   virtual void release_geom(GeomContext *gc);
+
+  virtual DataContext *prepare_data(qpGeomVertexArrayData *data);
+  virtual void apply_data(DataContext *dc);
+  virtual void release_data(DataContext *dc);
+  const unsigned char *setup_array_data(const qpGeomVertexArrayData *data);
 
   virtual CPT(qpGeomMunger) get_geom_munger(const RenderState *state);
 
@@ -236,6 +242,7 @@ protected:
   static GLenum get_fog_mode_type(Fog::Mode m);
   static GLenum get_blend_equation_type(ColorBlendAttrib::Mode mode);
   static GLenum get_blend_func(ColorBlendAttrib::Operand operand);
+  static GLenum get_usage(qpGeomVertexArrayData::UsageHint usage_hint);
 
   static CPT(RenderState) get_untextured_state();
   static CPT(RenderState) get_smooth_state();
@@ -325,6 +332,13 @@ public:
   bool _supports_multitexture;
   PFNGLACTIVETEXTUREPROC _glActiveTexture;
   PFNGLMULTITEXCOORD2FVPROC _glMultiTexCoord2fv;
+
+  bool _supports_buffers;
+  PFNGLGENBUFFERSPROC _glGenBuffers;
+  PFNGLBINDBUFFERPROC _glBindBuffer;
+  PFNGLBUFFERDATAPROC _glBufferData;
+  PFNGLBUFFERSUBDATAPROC _glBufferSubData;
+  PFNGLDELETEBUFFERSPROC _glDeleteBuffers;
 
   PFNGLBLENDEQUATIONPROC _glBlendEquation;
   PFNGLBLENDCOLORPROC _glBlendColor;

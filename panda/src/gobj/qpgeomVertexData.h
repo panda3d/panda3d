@@ -23,6 +23,7 @@
 #include "typedWritableReferenceCount.h"
 #include "qpgeomVertexFormat.h"
 #include "qpgeomVertexDataType.h"
+#include "qpgeomVertexArrayData.h"
 #include "internalName.h"
 #include "cycleData.h"
 #include "cycleDataReader.h"
@@ -32,7 +33,6 @@
 #include "pointerTo.h"
 #include "pmap.h"
 #include "pvector.h"
-#include "pta_uchar.h"
 
 class FactoryParams;
 class qpGeomVertexDataType;
@@ -62,7 +62,8 @@ class EXPCL_PANDA qpGeomVertexData : public TypedWritableReferenceCount {
 private:
   qpGeomVertexData();
 PUBLISHED:
-  qpGeomVertexData(const qpGeomVertexFormat *format);
+  qpGeomVertexData(const qpGeomVertexFormat *format, 
+                   qpGeomVertexArrayData::UsageHint usage_hint);
   qpGeomVertexData(const qpGeomVertexData &copy);
   void operator = (const qpGeomVertexData &copy);
   virtual ~qpGeomVertexData();
@@ -70,13 +71,13 @@ PUBLISHED:
   INLINE const qpGeomVertexFormat *get_format() const;
 
   int get_num_vertices() const;
-  INLINE void set_num_vertices(int n);
+  INLINE bool set_num_vertices(int n);
   void clear_vertices();
 
   INLINE int get_num_arrays() const;
-  INLINE CPTA_uchar get_array_data(int array) const;
-  PTA_uchar modify_array_data(int array);
-  void set_array_data(int array, PTA_uchar array_data);
+  INLINE const qpGeomVertexArrayData *get_array(int i) const;
+  qpGeomVertexArrayData *modify_array(int i);
+  void set_array(int i, const qpGeomVertexArrayData *array);
 
   int get_num_bytes() const;
 
@@ -93,7 +94,8 @@ public:
   void get_data(int array, const qpGeomVertexDataType *data_type,
                 int vertex, float *data, int num_values) const;
 
-  bool get_array_info(const InternalName *name, CPTA_uchar &array_data,
+  bool get_array_info(const InternalName *name, 
+                      const qpGeomVertexArrayData *&array_data,
                       int &num_components,
                       qpGeomVertexDataType::NumericType &numeric_type, 
                       int &start, int &stride) const;
@@ -111,7 +113,7 @@ private:
 private:
   CPT(qpGeomVertexFormat) _format;
 
-  typedef pvector<PTA_uchar> Arrays;
+  typedef pvector< PT(qpGeomVertexArrayData) > Arrays;
 
   // We have to use reference-counting pointers here instead of having
   // explicit cleanup in the GeomVertexFormat destructor, because the
@@ -139,7 +141,7 @@ private:
   typedef CycleDataWriter<CData> CDWriter;
 
 private:
-  void do_set_num_vertices(int n, CDWriter &cdata);
+  bool do_set_num_vertices(int n, CDWriter &cdata);
 
   static PStatCollector _munge_data_pcollector;
 

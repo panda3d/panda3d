@@ -57,6 +57,7 @@
 #include "vector_string.h"
 #include "string_utils.h"
 #include "pnmImage.h"
+#include "config_gobj.h"
 #ifdef DO_PSTATS
 #include "pStatTimer.h"
 #endif
@@ -453,6 +454,47 @@ reset() {
   }
   if (!_supports_multitexture) {
     _glActiveTexture = null_glActiveTexture;
+  }
+
+  _supports_buffers = false;
+    
+  if (is_at_least_version(1, 5)) {
+    _supports_buffers = true;
+
+    _glGenBuffers = (PFNGLGENBUFFERSPROC)
+      get_extension_func(GLPREFIX_QUOTED, "GenBuffers");
+    _glBindBuffer = (PFNGLBINDBUFFERPROC)
+      get_extension_func(GLPREFIX_QUOTED, "BindBuffer");
+    _glBufferData = (PFNGLBUFFERDATAPROC)
+      get_extension_func(GLPREFIX_QUOTED, "BufferData");
+    _glBufferSubData = (PFNGLBUFFERSUBDATAPROC)
+      get_extension_func(GLPREFIX_QUOTED, "BufferSubData");
+    _glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)
+      get_extension_func(GLPREFIX_QUOTED, "DeleteBuffers");
+
+  } else if (has_extension("GL_ARB_vertex_buffer_object")) {
+    _supports_buffers = true;
+
+    _glGenBuffers = (PFNGLGENBUFFERSPROC)
+      get_extension_func(GLPREFIX_QUOTED, "GenBuffersARB");
+    _glBindBuffer = (PFNGLBINDBUFFERPROC)
+      get_extension_func(GLPREFIX_QUOTED, "BindBufferARB");
+    _glBufferData = (PFNGLBUFFERDATAPROC)
+      get_extension_func(GLPREFIX_QUOTED, "BufferDataARB");
+    _glBufferSubData = (PFNGLBUFFERSUBDATAPROC)
+      get_extension_func(GLPREFIX_QUOTED, "BufferSubDataARB");
+    _glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)
+      get_extension_func(GLPREFIX_QUOTED, "DeleteBuffersARB");
+  }
+
+  if (_supports_buffers) {
+    if (_glGenBuffers == NULL || _glBindBuffer == NULL ||
+        _glBufferData == NULL || _glBufferSubData == NULL ||
+        _glDeleteBuffers == NULL) {
+      GLCAT.warning()
+        << "Buffers advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
+      _supports_buffers = false;
+    }
   }
 
   _glBlendEquation = NULL;
@@ -1984,7 +2026,7 @@ begin_draw_primitives(const qpGeomVertexData *vertex_data) {
   }
   nassertr(_vertex_data != (qpGeomVertexData *)NULL, false);
 
-  CPTA_uchar array_data;
+  const qpGeomVertexArrayData *array_data;
   int num_components;
   qpGeomVertexDataType::NumericType numeric_type;
   int start;
@@ -1993,8 +2035,9 @@ begin_draw_primitives(const qpGeomVertexData *vertex_data) {
   if (_vertex_data->get_array_info(InternalName::get_vertex(),
                                    array_data, num_components, numeric_type, 
                                    start, stride)) {
+    const unsigned char *client_pointer = setup_array_data(array_data);
     GLP(VertexPointer)(num_components, get_numeric_type(numeric_type), 
-                       stride, array_data + start);
+                       stride, client_pointer + start);
     GLP(EnableClientState)(GL_VERTEX_ARRAY);
   } else {
     // No vertex data?  No primitives!
@@ -2005,8 +2048,9 @@ begin_draw_primitives(const qpGeomVertexData *vertex_data) {
       _vertex_data->get_array_info(InternalName::get_normal(),
                                    array_data, num_components, numeric_type, 
                                    start, stride)) {
+    const unsigned char *client_pointer = setup_array_data(array_data);
     GLP(NormalPointer)(get_numeric_type(numeric_type), stride, 
-                       array_data + start);
+                       client_pointer + start);
     GLP(EnableClientState)(GL_NORMAL_ARRAY);
   } else {
     GLP(DisableClientState)(GL_NORMAL_ARRAY);
@@ -2016,13 +2060,14 @@ begin_draw_primitives(const qpGeomVertexData *vertex_data) {
     if (_vertex_data->get_array_info(InternalName::get_color(),
                                      array_data, num_components, numeric_type, 
                                      start, stride)) {
+      const unsigned char *client_pointer = setup_array_data(array_data);
       if (numeric_type == qpGeomVertexDataType::NT_packed_argb) {
         // Temporary hack--this will probably reverse r and b.
-        GLP(ColorPointer)(4, GL_UNSIGNED_BYTE, stride, array_data + start);
+        GLP(ColorPointer)(4, GL_UNSIGNED_BYTE, stride, client_pointer + start);
         
       } else {
         GLP(ColorPointer)(num_components, get_numeric_type(numeric_type), 
-                          stride, array_data + start);
+                          stride, client_pointer + start);
       }
       GLP(EnableClientState)(GL_COLOR_ARRAY);
 
@@ -2040,8 +2085,9 @@ begin_draw_primitives(const qpGeomVertexData *vertex_data) {
       _vertex_data->get_array_info(InternalName::get_texcoord(),
                                    array_data, num_components, numeric_type, 
                                    start, stride)) {
+    const unsigned char *client_pointer = setup_array_data(array_data);
     GLP(TexCoordPointer)(num_components, get_numeric_type(numeric_type), 
-                         stride, array_data + start);
+                         stride, client_pointer + start);
     GLP(EnableClientState)(GL_TEXTURE_COORD_ARRAY);
   } else {
     GLP(DisableClientState)(GL_TEXTURE_COORD_ARRAY);
@@ -2285,6 +2331,130 @@ release_geom(GeomContext *gc) {
 
   ggc->_index = 0;
   delete ggc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::prepare_data
+//       Access: Public, Virtual
+//  Description: Creates a new retained-mode representation of the
+//               given data, and returns a newly-allocated
+//               DataContext pointer to reference it.  It is the
+//               responsibility of the calling function to later
+//               call release_data() with this same pointer (which
+//               will also delete the pointer).
+//
+//               This function should not be called directly to
+//               prepare a data.  Instead, call Data::prepare().
+////////////////////////////////////////////////////////////////////
+DataContext *CLP(GraphicsStateGuardian)::
+prepare_data(qpGeomVertexArrayData *data) {
+  cerr << "prepare_data\n";
+
+  if (_supports_buffers) {
+    CLP(DataContext) *gdc = new CLP(DataContext)(data);
+    _glGenBuffers(1, &gdc->_index);
+
+    _glBindBuffer(GL_ARRAY_BUFFER, gdc->_index);
+    _glBufferData(GL_ARRAY_BUFFER, gdc->_data->get_num_bytes(),
+                  gdc->_data->get_data(), 
+                  get_usage(gdc->_data->get_usage_hint()));
+    gdc->_modified = gdc->_data->get_modified();
+    
+    report_my_gl_errors();
+    return gdc;
+  }
+
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::apply_data
+//       Access: Public, Virtual
+//  Description: Makes the data the currently available data for
+//               rendering.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+apply_data(DataContext *dc) {
+  cerr << "apply_data\n";
+
+  nassertv(_supports_buffers);
+
+  CLP(DataContext) *gdc = DCAST(CLP(DataContext), dc);
+
+  add_to_data_record(gdc);
+  _glBindBuffer(GL_ARRAY_BUFFER, gdc->_index);
+  
+  if (gdc->_modified != gdc->_data->get_modified()) {
+    _glBufferSubData(GL_ARRAY_BUFFER, 0, gdc->_data->get_num_bytes(),
+                     gdc->_data->get_data());
+
+    gdc->_modified = gdc->_data->get_modified();
+  }
+
+  report_my_gl_errors();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::release_data
+//       Access: Public, Virtual
+//  Description: Frees the GL resources previously allocated for the
+//               data.  This function should never be called
+//               directly; instead, call Data::release() (or simply
+//               let the Data destruct).
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+release_data(DataContext *dc) {
+  cerr << "release_data\n";
+
+  nassertv(_supports_buffers);
+  
+  CLP(DataContext) *gdc = DCAST(CLP(DataContext), dc);
+
+  _glDeleteBuffers(1, &gdc->_index);
+  report_my_gl_errors();
+
+  gdc->_index = 0;
+
+  delete gdc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::setup_array_data
+//       Access: Public
+//  Description: Internal function to bind a buffer object for the
+//               indicated data array, if appropriate, or to unbind a
+//               buffer object if it should be rendered from client
+//               memory.
+//
+//               If the buffer object is bound, this function returns
+//               NULL (reprsenting the start of the buffer object in
+//               server memory); if the buffer object is not bound,
+//               this function returns the pointer to the data array
+//               in client memory, that is, the data array passed in.
+////////////////////////////////////////////////////////////////////
+const unsigned char *CLP(GraphicsStateGuardian)::
+setup_array_data(const qpGeomVertexArrayData *data) {
+  if (!_supports_buffers) {
+    // No support for buffer objects; always render from client.
+    return data->get_data();
+  }
+  if (!vertex_buffers ||
+      data->get_usage_hint() == qpGeomVertexArrayData::UH_client) {
+    // The array specifies client rendering only, or buffer objects
+    // are configured off.
+    _glBindBuffer(GL_ARRAY_BUFFER, 0);
+    return data->get_data();
+  }
+
+  // Prepare the buffer object and bind it.
+  DataContext *dc = ((qpGeomVertexArrayData *)data)->prepare_now(get_prepared_objects(), this);
+  nassertr(dc != (DataContext *)NULL, data->get_data());
+
+  CLP(DataContext) *gdc = DCAST(CLP(DataContext), dc);
+  _glBindBuffer(GL_ARRAY_BUFFER, gdc->_index);
+
+  // NULL is the OpenGL convention for the first byte of the buffer.
+  return NULL;
 }
 
 #if 0
@@ -4404,6 +4574,32 @@ get_blend_func(ColorBlendAttrib::Operand operand) {
   GLCAT.error()
     << "Unknown color blend operand " << (int)operand << endl;
   return GL_ZERO;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::get_usage
+//       Access: Public, Static
+//  Description: Maps from UsageHint to the GL symbol.
+////////////////////////////////////////////////////////////////////
+GLenum CLP(GraphicsStateGuardian)::
+get_usage(qpGeomVertexArrayData::UsageHint usage_hint) {
+  switch (usage_hint) {
+  case qpGeomVertexArrayData::UH_stream:
+    return GL_STREAM_DRAW;
+
+  case qpGeomVertexArrayData::UH_static:
+    return GL_STATIC_DRAW;
+
+  case qpGeomVertexArrayData::UH_dynamic:
+    return GL_DYNAMIC_DRAW;
+
+  case qpGeomVertexArrayData::UH_client:
+    break;
+  }
+
+  GLCAT.error()
+    << "Unexpected usage_hint " << (int)usage_hint << endl;
+  return GL_STATIC_DRAW;
 }
 
 

@@ -11,7 +11,9 @@
 
   #define SOURCES \
     boundedObject.I boundedObject.h \
-    config_gobj.h drawable.h \
+    config_gobj.h \
+    dataContext.I dataContext.h \
+    drawable.h \
     geom.I geom.h \
     geomContext.I geomContext.h \
     geomLine.h geomLinestrip.h geomPoint.h geomPolygon.h  \
@@ -23,6 +25,7 @@
     qpgeomTriangles.h \
     qpgeomTristrips.h \
     qpgeomTrifans.h \
+    qpgeomVertexArrayData.h qpgeomVertexArrayData.I \
     qpgeomVertexArrayFormat.h qpgeomVertexArrayFormat.I \
     qpgeomVertexCacheManager.h qpgeomVertexCacheManager.I \
     qpgeomVertexData.h qpgeomVertexData.I \
@@ -44,7 +47,9 @@
     
   #define INCLUDED_SOURCES \
     boundedObject.cxx \
-    config_gobj.cxx drawable.cxx geom.cxx  \
+    config_gobj.cxx \
+    dataContext.cxx \
+    drawable.cxx geom.cxx  \
     geomContext.cxx \
     geomLine.cxx geomLinestrip.cxx geomPoint.cxx geomPolygon.cxx  \
     geomQuad.cxx geomSphere.cxx geomSprite.cxx geomTri.cxx  \
@@ -55,6 +60,7 @@
     qpgeomTriangles.cxx \
     qpgeomTristrips.cxx \
     qpgeomTrifans.cxx \
+    qpgeomVertexArrayData.cxx \
     qpgeomVertexArrayFormat.cxx \
     qpgeomVertexCacheManager.cxx \
     qpgeomVertexData.cxx \
@@ -73,6 +79,7 @@
   #define INSTALL_HEADERS \
     boundedObject.I boundedObject.h \
     config_gobj.h \
+    dataContext.I dataContext.h \
     drawable.h geom.I geom.h \
     textureContext.I textureContext.h \
     geomLine.h \
@@ -85,6 +92,7 @@
     qpgeomTriangles.h \
     qpgeomTristrips.h \
     qpgeomTrifans.h \
+    qpgeomVertexArrayData.h qpgeomVertexArrayData.I \
     qpgeomVertexArrayFormat.h qpgeomVertexArrayFormat.I \
     qpgeomVertexCacheManager.h qpgeomVertexCacheManager.I \
     qpgeomVertexData.h qpgeomVertexData.I \

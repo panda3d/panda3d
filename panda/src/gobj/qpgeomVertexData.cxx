@@ -43,15 +43,21 @@ qpGeomVertexData() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 qpGeomVertexData::
-qpGeomVertexData(const qpGeomVertexFormat *format) :
+qpGeomVertexData(const qpGeomVertexFormat *format,
+                 qpGeomVertexArrayData::UsageHint usage_hint) :
   _format(format)
 {
   nassertv(_format->is_registered());
 
   // Create some empty arrays as required by the format.
   CDWriter cdata(_cycler);
-  cdata->_arrays.insert(cdata->_arrays.end(), _format->get_num_arrays(), 
-                        PTA_uchar());
+
+  int num_arrays = _format->get_num_arrays();
+  for (int i = 0; i < num_arrays; i++) {
+    PT(qpGeomVertexArrayData) array = new qpGeomVertexArrayData
+      (_format->get_array(i), usage_hint);
+    cdata->_arrays.push_back(array);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -125,7 +131,7 @@ get_num_vertices() const {
 
   // Look up the answer on the first array (since any array will do).
   int stride = _format->get_array(0)->get_stride();
-  return cdata->_arrays[0].size() / stride;
+  return cdata->_arrays[0]->get_num_bytes() / stride;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,6 +143,7 @@ get_num_vertices() const {
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexData::
 clear_vertices() {
+  clear_cache();
   CDWriter cdata(_cycler);
   nassertv(_format->get_num_arrays() == (int)cdata->_arrays.size());
 
@@ -144,12 +151,12 @@ clear_vertices() {
   for (ai = cdata->_arrays.begin();
        ai != cdata->_arrays.end();
        ++ai) {
-    (*ai).clear();
+    (*ai)->clear_vertices();
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::modify_array_data
+//     Function: qpGeomVertexData::modify_array
 //       Access: Published
 //  Description: Returns a modifiable pointer to the indicated vertex
 //               array, so that application code may directly
@@ -157,27 +164,24 @@ clear_vertices() {
 //               the length of this array, since all of the arrays
 //               should be kept in sync--use add_vertices() instead.
 ////////////////////////////////////////////////////////////////////
-PTA_uchar qpGeomVertexData::
-modify_array_data(int array) {
+qpGeomVertexArrayData *qpGeomVertexData::
+modify_array(int i) {
   // Perform copy-on-write: if the reference count on the vertex data
   // is greater than 1, assume some other GeomVertexData has the same
   // pointer, so make a copy of it first.
-
+  clear_cache();
   CDWriter cdata(_cycler);
-  nassertr(array >= 0 && array < (int)cdata->_arrays.size(), PTA_uchar());
+  nassertr(i >= 0 && i < (int)cdata->_arrays.size(), NULL);
 
-  if (cdata->_arrays[array].get_ref_count() > 1) {
-    PTA_uchar orig_data = cdata->_arrays[array];
-    cdata->_arrays[array] = PTA_uchar();
-    cdata->_arrays[array].v() = orig_data.v();
+  if (cdata->_arrays[i]->get_ref_count() > 1) {
+    cdata->_arrays[i] = new qpGeomVertexArrayData(*cdata->_arrays[i]);
   }
 
-  clear_cache();
-  return cdata->_arrays[array];
+  return cdata->_arrays[i];
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: qpGeomVertexData::set_array_data
+//     Function: qpGeomVertexData::set_array
 //       Access: Published
 //  Description: Replaces the indicated vertex data array with
 //               a completely new array.  You should be careful that
@@ -185,10 +189,11 @@ modify_array_data(int array) {
 //               unless you know what you are doing.
 ////////////////////////////////////////////////////////////////////
 void qpGeomVertexData::
-set_array_data(int array, PTA_uchar array_data) {
+set_array(int i, const qpGeomVertexArrayData *array) {
+  clear_cache();
   CDWriter cdata(_cycler);
-  nassertv(array >= 0 && array < (int)cdata->_arrays.size());
-  cdata->_arrays[array] = array_data;
+  nassertv(i >= 0 && i < (int)cdata->_arrays.size());
+  cdata->_arrays[i] = (qpGeomVertexArrayData *)array;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -205,7 +210,7 @@ get_num_bytes() const {
 
   Arrays::const_iterator ai;
   for (ai = cdata->_arrays.begin(); ai != cdata->_arrays.end(); ++ai) {
-    num_bytes += (*ai).size();
+    num_bytes += (*ai)->get_num_bytes();
   }
 
   return num_bytes;
@@ -257,33 +262,34 @@ convert_to(const qpGeomVertexFormat *new_format) const {
   }
   PStatTimer timer(_munge_data_pcollector);
 
-  PT(qpGeomVertexData) new_data = new qpGeomVertexData(new_format);
+  PT(qpGeomVertexData) new_data = 
+    new qpGeomVertexData(new_format, qpGeomVertexArrayData::UH_client);
 
   pset<int> done_arrays;
 
   int num_arrays = _format->get_num_arrays();
-  int array;
+  int i;
 
   // First, check to see if any arrays can be simply appropriated for
   // the new format, without changing the data.
-  for (array = 0; array < num_arrays; ++array) {
+  for (i = 0; i < num_arrays; ++i) {
     const qpGeomVertexArrayFormat *array_format = 
-      _format->get_array(array);
+      _format->get_array(i);
 
     bool array_done = false;
 
     int new_num_arrays = new_format->get_num_arrays();
-    for (int new_array = 0; 
-         new_array < new_num_arrays && !array_done; 
-         ++new_array) {
+    for (int new_i = 0; 
+         new_i < new_num_arrays && !array_done; 
+         ++new_i) {
       const qpGeomVertexArrayFormat *new_array_format = 
-        new_format->get_array(new_array);
+        new_format->get_array(new_i);
       if (new_array_format->is_data_subset_of(*array_format)) {
         // Great!  Just use the same data for this one.
-        new_data->set_array_data(new_array, (PTA_uchar &)get_array_data(array));
+        new_data->set_array(new_i, get_array(i));
         array_done = true;
 
-        done_arrays.insert(new_array);
+        done_arrays.insert(new_i);
       }
     }
   }
@@ -292,27 +298,30 @@ convert_to(const qpGeomVertexFormat *new_format) const {
   new_data->set_num_vertices(num_vertices);
 
   // Now go back through and copy any data that's left over.
-  for (array = 0; array < num_arrays; ++array) {
-    CPTA_uchar array_data = get_array_data(array);
-    const qpGeomVertexArrayFormat *array_format = 
-      _format->get_array(array);
+  for (i = 0; i < num_arrays; ++i) {
+    CPTA_uchar data = get_array(i)->get_data();
+    const qpGeomVertexArrayFormat *array_format = _format->get_array(i);
     int num_data_types = array_format->get_num_data_types();
     for (int di = 0; di < num_data_types; ++di) {
       const qpGeomVertexDataType *data_type = array_format->get_data_type(di);
 
-      int new_array = new_format->get_array_with(data_type->get_name());
-      if (new_array >= 0 && done_arrays.count(new_array) == 0) {
+      int new_i = new_format->get_array_with(data_type->get_name());
+      if (new_i >= 0 && done_arrays.count(new_i) == 0) {
         // The data type exists in the new format; we have to copy it.
-        PTA_uchar new_array_data = new_data->modify_array_data(new_array);
+        PT(qpGeomVertexArrayData) new_array_data = new
+          qpGeomVertexArrayData(*get_array(i));
+        new_data->set_array(new_i, new_array_data);
+        PTA_uchar new_data = new_array_data->modify_data();
+
         const qpGeomVertexArrayFormat *new_array_format = 
-          new_format->get_array(new_array);
+          new_format->get_array(new_i);
         const qpGeomVertexDataType *new_data_type = 
           new_array_format->get_data_type(data_type->get_name());
 
         new_data_type->copy_records
-          (new_array_data + new_data_type->get_start(), 
+          (new_data + new_data_type->get_start(), 
            new_array_format->get_stride(),
-           array_data + data_type->get_start(), array_format->get_stride(),
+           data + data_type->get_start(), array_format->get_stride(),
            data_type, num_vertices);
       }
     }
@@ -397,7 +406,7 @@ set_data(int array, const qpGeomVertexDataType *data_type,
 
   {
     CDReader cdata(_cycler);
-    int array_size = (int)cdata->_arrays[array].size();
+    int array_size = (int)cdata->_arrays[array]->get_num_bytes();
     if (element + data_type->get_total_bytes() > array_size) {
       // Whoops, we need more vertices!
       CDWriter cdataw(_cycler, cdata);
@@ -405,7 +414,7 @@ set_data(int array, const qpGeomVertexDataType *data_type,
     }
   }
 
-  PTA_uchar array_data = modify_array_data(array);
+  PTA_uchar array_data = modify_array(array)->modify_data();
   nassertv(element >= 0 && element + data_type->get_total_bytes() <= (int)array_data.size());
 
   switch (data_type->get_numeric_type()) {
@@ -484,7 +493,7 @@ set_data(int array, const qpGeomVertexDataType *data_type,
 void qpGeomVertexData::
 get_data(int array, const qpGeomVertexDataType *data_type,
          int vertex, float *data, int num_values) const {
-  CPTA_uchar array_data = get_array_data(array);
+  CPTA_uchar array_data = get_array(array)->get_data();
   int stride = _format->get_array(array)->get_stride();
   int element = vertex * stride + data_type->get_start();
   nassertv(element >= 0 && element + data_type->get_total_bytes() <= (int)array_data.size());
@@ -561,7 +570,8 @@ get_data(int array, const qpGeomVertexDataType *data_type,
 //               which case none of the output parameters are valid).
 ////////////////////////////////////////////////////////////////////
 bool qpGeomVertexData::
-get_array_info(const InternalName *name, CPTA_uchar &array_data,
+get_array_info(const InternalName *name, 
+               const qpGeomVertexArrayData *&array_data,
                int &num_components, 
                qpGeomVertexDataType::NumericType &numeric_type, 
                int &start, int &stride) const {
@@ -712,45 +722,23 @@ remove_cache_entry(const qpGeomVertexFormat *modifier) const {
 //       Access: Private
 //  Description: The private implementation of set_num_vertices().
 ////////////////////////////////////////////////////////////////////
-void qpGeomVertexData::
-do_set_num_vertices(int n, CDWriter &cdata) {
-  nassertv(_format->get_num_arrays() == (int)cdata->_arrays.size());
+bool qpGeomVertexData::
+do_set_num_vertices(int n, qpGeomVertexData::CDWriter &cdata) {
+  nassertr(_format->get_num_arrays() == (int)cdata->_arrays.size(), false);
 
   bool any_changed = false;
 
   for (size_t i = 0; i < cdata->_arrays.size(); i++) {
-    int stride = _format->get_array(i)->get_stride();
-    int delta = n - (cdata->_arrays[i].size() / stride);
-
-    if (delta != 0) {
+    if (cdata->_arrays[i]->set_num_vertices(n)) {
       any_changed = true;
-      if (cdata->_arrays[i].get_ref_count() > 1) {
-        // Copy-on-write: the array is already reffed somewhere else,
-        // so we're just going to make a copy.
-        PTA_uchar new_array;
-        new_array.reserve(n * stride);
-        new_array.insert(new_array.end(), n * stride, uchar());
-        memcpy(new_array, cdata->_arrays[i], 
-               min((size_t)(n * stride), cdata->_arrays[i].size()));
-        cdata->_arrays[i] = new_array;
-
-      } else {
-        // We've got the only reference to the array, so we can change
-        // it directly.
-        if (delta > 0) {
-          cdata->_arrays[i].insert(cdata->_arrays[i].end(), delta * stride, uchar());
-          
-        } else {
-          cdata->_arrays[i].erase(cdata->_arrays[i].begin() + n * stride, 
-                                  cdata->_arrays[i].end());
-        }
-      }
     }
   }
 
   if (any_changed) {
     clear_cache();
   }
+
+  return any_changed;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -28,6 +28,7 @@
 #include "qpgeomTriangles.h"
 #include "qpgeomTristrips.h"
 #include "qpgeomTrifans.h"
+#include "qpgeomVertexArrayData.h"
 #include "qpgeomVertexArrayFormat.h"
 #include "qpgeomVertexData.h"
 #include "qpgeomVertexFormat.h"
@@ -38,6 +39,9 @@
 #include "lens.h"
 #include "texture.h"
 #include "textureStage.h"
+#include "textureContext.h"
+#include "geomContext.h"
+#include "dataContext.h"
 #include "internalName.h"
 
 #include "dconfig.h"
@@ -80,6 +84,15 @@ ConfigVariableBool retained_mode
           "buffers) with the GSG for static geometry, when supported by the "
           "GSG.  Set it false to use only immediate mode, which sends the "
           "vertices to the GSG every frame."));
+
+ConfigVariableBool vertex_buffers
+("vertex-buffers", false,
+ PRC_DESC("Set this true to allow the use of vertex buffers (or buffer "
+          "objects, as OpenGL dubs them) for rendering vertex data.  This "
+          "can greatly improve rendering performance, especially on "
+          "higher-end graphics cards, at the cost of some additional "
+          "graphics memory (which might otherwise be used for textures "
+          "or offscreen buffers)."));
 
 ConfigVariableBool use_qpgeom
 ("use-qpgeom", false,
@@ -163,9 +176,13 @@ ConfigureFn(config_gobj) {
   qpGeomTriangles::init_type();
   qpGeomTristrips::init_type();
   qpGeomTrifans::init_type();
+  qpGeomVertexArrayData::init_type();
   qpGeomVertexArrayFormat::init_type();
   qpGeomVertexData::init_type();
   qpGeomVertexFormat::init_type();
+  TextureContext::init_type();
+  GeomContext::init_type();
+  DataContext::init_type();
   Material::init_type();
   OrthographicLens::init_type();
   MatrixLens::init_type();
@@ -192,6 +209,7 @@ ConfigureFn(config_gobj) {
   qpGeomTriangles::register_with_read_factory();
   qpGeomTristrips::register_with_read_factory();
   qpGeomTrifans::register_with_read_factory();
+  qpGeomVertexArrayData::register_with_read_factory();
   qpGeomVertexArrayFormat::register_with_read_factory();
   qpGeomVertexData::register_with_read_factory();
   qpGeomVertexFormat::register_with_read_factory();

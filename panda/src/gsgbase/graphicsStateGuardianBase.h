@@ -30,6 +30,7 @@ class RenderBuffer;
 class GraphicsWindow;
 class NodePath;
 
+class DataContext;
 class GeomContext;
 class GeomNode;
 class Geom;
@@ -44,6 +45,7 @@ class GeomTristrip;
 class GeomTrifan;
 class GeomSphere;
 class qpGeomVertexData;
+class qpGeomVertexArrayData;
 class qpGeomTriangles;
 class qpGeomTristrips;
 class qpGeomTrifans;
@@ -131,6 +133,9 @@ public:
 
   virtual GeomContext *prepare_geom(Geom *geom)=0;
   virtual void release_geom(GeomContext *gc)=0;
+
+  virtual DataContext *prepare_data(qpGeomVertexArrayData *data)=0;
+  virtual void release_data(DataContext *gc)=0;
 
   virtual CPT(qpGeomMunger) get_geom_munger(const RenderState *state)=0;
 

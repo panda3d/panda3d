@@ -389,7 +389,7 @@ recompute_bound() {
   int start = data_type->get_start();
   int num_components = data_type->get_num_components();
 
-  CPTA_uchar array_data = cdata->_data->get_array_data(array_index);
+  CPTA_uchar array_data = cdata->_data->get_array(array_index)->get_data();
 
   if (stride == 3 * sizeof(PN_float32) && start == 0 && num_components == 3 &&
       (array_data.size() % stride) == 0) {

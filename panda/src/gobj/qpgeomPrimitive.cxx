@@ -560,7 +560,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
   int start = data_type->get_start();
   int num_components = data_type->get_num_components();
 
-  CPTA_uchar array_data = vertex_data->get_array_data(array_index);
+  CPTA_uchar array_data = vertex_data->get_array(array_index)->get_data();
 
   PTA_ushort::const_iterator ii;
   for (ii = cdata->_vertices.begin(); ii != cdata->_vertices.end(); ++ii) {

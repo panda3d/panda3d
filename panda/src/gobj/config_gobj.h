@@ -51,6 +51,7 @@ extern EXPCL_PANDA ConfigVariableInt max_texture_dimension;
 extern EXPCL_PANDA ConfigVariableBool keep_texture_ram;
 extern EXPCL_PANDA ConfigVariableBool keep_geom_ram;
 extern EXPCL_PANDA ConfigVariableBool retained_mode;
+extern EXPCL_PANDA ConfigVariableBool vertex_buffers;
 
 extern EXPCL_PANDA ConfigVariableBool use_qpgeom;
 

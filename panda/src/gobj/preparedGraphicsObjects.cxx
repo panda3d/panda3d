@@ -358,6 +358,146 @@ prepare_geom_now(Geom *geom, GraphicsStateGuardianBase *gsg) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::enqueue_data
+//       Access: Public
+//  Description: Indicates that a data array would like to be put on the
+//               list to be prepared when the GSG is next ready to
+//               do this (presumably at the next frame).
+////////////////////////////////////////////////////////////////////
+void PreparedGraphicsObjects::
+enqueue_data(qpGeomVertexArrayData *data) {
+  MutexHolder holder(_lock);
+
+  _enqueued_datas.insert(data);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::dequeue_data
+//       Access: Public
+//  Description: Removes a data array from the queued list of data
+//               arrays to be prepared.  Normally it is not necessary
+//               to call this, unless you change your mind about
+//               preparing it at the last minute, since the data will
+//               automatically be dequeued and prepared at the next
+//               frame.
+//
+//               The return value is true if the data array is
+//               successfully dequeued, false if it had not been
+//               queued.
+////////////////////////////////////////////////////////////////////
+bool PreparedGraphicsObjects::
+dequeue_data(qpGeomVertexArrayData *data) {
+  MutexHolder holder(_lock);
+
+  EnqueuedDatas::iterator qi = _enqueued_datas.find(data);
+  if (qi != _enqueued_datas.end()) {
+    _enqueued_datas.erase(qi);
+    return true;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::release_data
+//       Access: Public
+//  Description: Indicates that a data context, created by a
+//               previous call to prepare_data(), is no longer
+//               needed.  The driver resources will not be freed until
+//               some GSG calls update(), indicating it is at a
+//               stage where it is ready to release datas--this
+//               prevents conflicts from threading or multiple GSG's
+//               sharing datas (we have no way of knowing which
+//               graphics context is currently active, or what state
+//               it's in, at the time release_data is called).
+////////////////////////////////////////////////////////////////////
+void PreparedGraphicsObjects::
+release_data(DataContext *gc) {
+  MutexHolder holder(_lock);
+
+  gc->_data->clear_prepared(this);
+
+  // We have to set the Data pointer to NULL at this point, since
+  // the Data itself might destruct at any time after it has been
+  // released.
+  gc->_data = (qpGeomVertexArrayData *)NULL;
+
+  bool removed = (_prepared_datas.erase(gc) != 0);
+  nassertv(removed);
+
+  _released_datas.insert(gc);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::release_all_datas
+//       Access: Public
+//  Description: Releases all datas at once.  This will force them
+//               to be reloaded into data memory for all GSG's that
+//               share this object.  Returns the number of datas
+//               released.
+////////////////////////////////////////////////////////////////////
+int PreparedGraphicsObjects::
+release_all_datas() {
+  MutexHolder holder(_lock);
+
+  int num_datas = (int)_prepared_datas.size();
+
+  Datas::iterator gci;
+  for (gci = _prepared_datas.begin();
+       gci != _prepared_datas.end();
+       ++gci) {
+    DataContext *gc = (*gci);
+    gc->_data->clear_prepared(this);
+    gc->_data = (qpGeomVertexArrayData *)NULL;
+
+    _released_datas.insert(gc);
+  }
+
+  _prepared_datas.clear();
+
+  return num_datas;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::prepare_data_now
+//       Access: Public
+//  Description: Immediately creates a new DataContext for the
+//               indicated data and returns it.  This assumes that
+//               the GraphicsStateGuardian is the currently active
+//               rendering context and that it is ready to accept new
+//               datas.  If this is not necessarily the case, you
+//               should use enqueue_data() instead.
+//
+//               Normally, this function is not called directly.  Call
+//               Data::prepare_now() instead.
+//
+//               The DataContext contains all of the pertinent
+//               information needed by the GSG to keep track of this
+//               one particular data, and will exist as long as the
+//               data is ready to be rendered.
+//
+//               When either the Data or the
+//               PreparedGraphicsObjects object destructs, the
+//               DataContext will be deleted.
+////////////////////////////////////////////////////////////////////
+DataContext *PreparedGraphicsObjects::
+prepare_data_now(qpGeomVertexArrayData *data, GraphicsStateGuardianBase *gsg) {
+  MutexHolder holder(_lock);
+
+  // Ask the GSG to create a brand new DataContext.  There might
+  // be several GSG's sharing the same set of datas; if so, it
+  // doesn't matter which of them creates the context (since they're
+  // all shared anyway).
+  DataContext *gc = gsg->prepare_data(data);
+
+  if (gc != (DataContext *)NULL) {
+    bool prepared = _prepared_datas.insert(gc).second;
+    nassertr(prepared, gc);
+  }
+
+  return gc;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PreparedGraphicsObjects::update
 //       Access: Public
 //  Description: This is called by the GraphicsStateGuardian to
