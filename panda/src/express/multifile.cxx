@@ -262,7 +262,7 @@ flush() {
     return false;
   }
 
-  if (_next_index == 0) {
+  if (_next_index == (streampos)0) {
     // If we don't have an index yet, we don't have a header.  Write
     // the header.
     if (!write_header()) {
@@ -286,7 +286,7 @@ flush() {
   if (!_new_subfiles.empty()) {
     // Add a few more files to the end.  We always add subfiles at the
     // end of the multifile, so go there first.
-    if (_last_index != 0) {
+    if (_last_index != (streampos)0) {
       _write->seekp(0, ios::end);
       if (_write->fail()) {
         express_cat.info()
@@ -301,7 +301,7 @@ flush() {
       _write->seekp(_last_index);
       Datagram dg;
       dg.add_uint32(streampos_to_word(_next_index));
-      _write->write(dg.get_data(), dg.get_length());
+      _write->write((const char *)dg.get_data(), dg.get_length());
     }
 
     _write->seekp(_next_index);
@@ -321,7 +321,7 @@ flush() {
     // end.
     Datagram dg;
     dg.add_uint32(0);
-    _write->write(dg.get_data(), dg.get_length());
+    _write->write((const char *)dg.get_data(), dg.get_length());
     _next_index += 4;
     _next_index = pad_to_streampos(_next_index);
 
@@ -619,7 +619,7 @@ open_read_write(iostream *multifile_stream) {
 
   // Check whether the read stream is empty.
   _read->seekg(0, ios::end);
-  if (_read->tellg() == 0) {
+  if (_read->tellg() == (streampos)0) {
     // The read stream is empty, which is always valid.
     return true;
   }
@@ -703,7 +703,7 @@ open_read_subfile(int index) {
     _open_subfile->_source_filename.open_read(_subfile_read);
     return _subfile_read;
   }
-  nassertr(_open_subfile->_data_start != 0, empty_stream);
+  nassertr(_open_subfile->_data_start != (streampos)0, empty_stream);
   _read->seekg(_open_subfile->_data_start);
   return *_read;
 }
@@ -737,7 +737,7 @@ pad_to_streampos(streampos fpos) {
   streampos new_fpos = normalize_streampos(fpos);
   while (fpos < new_fpos) {
     _write->put(0);
-    fpos++;
+    fpos += 1; // VC++ doesn't define streampos++ (!)
   }
   return fpos;
 }
@@ -750,7 +750,7 @@ pad_to_streampos(streampos fpos) {
 ////////////////////////////////////////////////////////////////////
 bool Multifile::
 add_new_subfile(Subfile *subfile) {
-  if (_next_index != 0) {
+  if (_next_index != (streampos)0) {
     // If we're adding a Subfile to an already-existing Multifile, we
     // will eventually need to repack the file.
     _needs_repack = true;
@@ -850,7 +850,7 @@ read_index() {
 
   Subfile *subfile = new Subfile("");
   index_forward = subfile->read_index(*_read, _next_index, this);
-  while (index_forward != 0) {
+  while (index_forward != (streampos)0) {
     _last_index = _next_index;
     if (subfile->is_deleted()) {
       // Ignore deleted Subfiles in the index.
@@ -898,13 +898,13 @@ read_index() {
 bool Multifile::
 write_header() {
   nassertr(_write != (ostream *)NULL, false);
-  nassertr(_write->tellp() == 0, false);
+  nassertr(_write->tellp() == (streampos)0, false);
   _write->write(_header, _header_size);
   Datagram dg;
   dg.add_int16(_current_major_ver);
   dg.add_int16(_current_minor_ver);
   dg.add_uint32(_scale_factor);
-  _write->write(dg.get_data(), dg.get_length());
+  _write->write((const char *)dg.get_data(), dg.get_length());
 
   _next_index = _write->tellp();
   _next_index = pad_to_streampos(_next_index);
@@ -948,7 +948,7 @@ read_index(istream &read, streampos fpos, Multifile *multifile) {
   DatagramIterator idgi(idg);
   streampos next_index = multifile->word_to_streampos(idgi.get_uint32());
 
-  if (next_index == 0) {
+  if (next_index == (streampos)0) {
     return 0;
   }
 
@@ -1022,12 +1022,12 @@ write_index(ostream &write, streampos fpos, Multifile *multifile) {
   size_t this_index_size = 4 + dg.get_length();
 
   // Plus, we will write out the next index address first.
-  streampos next_index = fpos + this_index_size;
+  streampos next_index = fpos + (streampos)this_index_size;
   Datagram idg;
   idg.add_uint32(multifile->streampos_to_word(next_index));
 
-  write.write(idg.get_data(), idg.get_length());
-  write.write(dg.get_data(), dg.get_length());
+  write.write((const char *)idg.get_data(), idg.get_length());
+  write.write((const char *)dg.get_data(), dg.get_length());
 
   return next_index;
 }
@@ -1109,7 +1109,7 @@ write_data(ostream &write, istream *read, streampos fpos) {
   _source_filename = Filename();
   source_file.close();
 
-  return fpos + _data_length;
+  return fpos + (streampos)_data_length;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1121,17 +1121,17 @@ write_data(ostream &write, istream *read, streampos fpos) {
 ////////////////////////////////////////////////////////////////////
 void Multifile::Subfile::
 rewrite_index_data_start(ostream &write, Multifile *multifile) {
-  nassertv(_index_start != 0);
+  nassertv(_index_start != (streampos)0);
 
   static const size_t data_start_offset = 4;
-  size_t data_start_pos = _index_start + data_start_offset;
+  size_t data_start_pos = _index_start + (streampos)data_start_offset;
   write.seekp(data_start_pos);
   nassertv(!write.fail());
 
   Datagram dg;
   dg.add_uint32(multifile->streampos_to_word(_data_start));
   dg.add_uint32(_data_length);
-  write.write(dg.get_data(), dg.get_length());
+  write.write((const char *)dg.get_data(), dg.get_length());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1143,14 +1143,14 @@ rewrite_index_data_start(ostream &write, Multifile *multifile) {
 ////////////////////////////////////////////////////////////////////
 void Multifile::Subfile::
 rewrite_index_flags(ostream &write) {
-  nassertv(_index_start != 0);
+  nassertv(_index_start != (streampos)0);
 
   static const size_t flags_offset = 4 + 4 + 4;
-  size_t flags_pos = _index_start + flags_offset;
+  size_t flags_pos = _index_start + (streampos)flags_offset;
   write.seekp(flags_pos);
   nassertv(!write.fail());
 
   Datagram dg;
   dg.add_uint16(_flags);
-  write.write(dg.get_data(), dg.get_length());
+  write.write((const char *)dg.get_data(), dg.get_length());
 }

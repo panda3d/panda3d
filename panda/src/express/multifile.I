@@ -77,10 +77,10 @@ needs_repack() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void Multifile::
 set_scale_factor(size_t scale_factor) {
-  nassertv(scale_factor != 0);
+  nassertv(scale_factor != (size_t)0);
   if (_scale_factor != scale_factor) {
     _scale_factor = scale_factor;
-    if (_next_index != 0) {
+    if (_next_index != (streampos)0) {
       repack();
     }
   }
@@ -116,7 +116,7 @@ word_to_streampos(size_t word) const {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t Multifile::
 streampos_to_word(streampos fpos) const {
-  return (size_t)((fpos + _scale_factor - 1) / _scale_factor); 
+  return (size_t)((fpos + (streampos)_scale_factor - (streampos)1) / (streampos)_scale_factor); 
 }
 
 ////////////////////////////////////////////////////////////////////
