@@ -55,8 +55,6 @@ class DistributedObject(PandaObject):
 
             # This is used by doneBarrier().
             self.__barrierContext = None
-            
-        return None
 
     #def __del__(self):
     #    """
@@ -68,7 +66,6 @@ class DistributedObject(PandaObject):
     def setNeverDisable(self, bool):
         assert((bool == 1) or (bool == 0))
         self.neverDisable = bool
-        return None
 
     def getNeverDisable(self):
         return self.neverDisable
@@ -86,7 +83,6 @@ class DistributedObject(PandaObject):
             self.deleteImminent = 1
         else:
             self.disableAnnounceAndDelete()
-        return None
 
     def delayDelete(self, flag):
         # Flag should be 0 or 1, meaning increment or decrement count
@@ -118,10 +114,9 @@ class DistributedObject(PandaObject):
     def disableAnnounceAndDelete(self):
         self.disableAndAnnounce()
         self.delete()
-        return None
 
     def disableAndAnnounce(self):
-        """disableAndAnnounce(self)
+        """
         Inheritors should *not* redefine this function.
         """
         # We must send the disable announce message *before* we
@@ -134,7 +129,6 @@ class DistributedObject(PandaObject):
             self.activeState = ESDisabling
             messenger.send(self.uniqueName("disable"))
             self.disable()
-        return None
 
     def announceGenerate(self):
         """
@@ -177,7 +171,6 @@ class DistributedObject(PandaObject):
         except:
             self.DistributedObject_deleted = 1
             del self.cr
-            return
 
     def generate(self):
         """
