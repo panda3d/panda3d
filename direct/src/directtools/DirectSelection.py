@@ -532,6 +532,10 @@ class SelectionRay(SelectionQueue):
             mx = direct.dr.mouseX
             my = direct.dr.mouseY
         else:
+            if not base.mouseWatcherNode.hasMouse():
+                # No mouse in window.
+                self.clearEntries()
+                return
             mx = base.mouseWatcherNode.getMouseX()
             my = base.mouseWatcherNode.getMouseY()
         self.collider.setFromLens( base.camNode, mx, my )
