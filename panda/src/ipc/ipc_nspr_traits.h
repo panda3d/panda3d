@@ -225,36 +225,38 @@ public:
 	INLINE void close(void) {
 	  if (_fhandle != (PRFileDesc *)NULL) { PR_Close(_fhandle); _fhandle = (PRFileDesc *)NULL; }
 	}
-        INLINE bool empty(void){
-	  return (PR_Available(_fhandle) <= 0);
-        }
-        INLINE int readin(string &block, int numBytes) {
+    INLINE bool empty(void){ return (PR_Available(_fhandle) <= 0); }
+
+    INLINE int readin(string &block, int numBytes) {
            //Don't try and read less than nothing
+           if (_fhandle == (PRFileDesc *)NULL)
+              return 0;
+
            nassertr(numBytes >= 0, 0);
-           int numRead;
+
            char* temp = new char[numBytes];
-           if (_fhandle != (PRFileDesc *)NULL){
-             numRead = PR_Read(_fhandle, temp, numBytes);
-             if(numRead<=0) {
+           int numRead = PR_Read(_fhandle, temp, numBytes);
+           if(numRead<=0) {
                 cerr << "PR_Read() in libnspr failed!\n";
+                delete temp;
                 return 0;
-             }
-             block.assign(temp, numRead);
-             delete temp;
-             return numRead;
-  	   }
-           return 0;
-  	}
+           }
+           block.assign(temp, numRead);
+           delete temp;
+           return numRead;
+    }
+
   	INLINE int writeout(const string &block) {
-            //Make sure there is something to write out
-            nassertr(block.size() > 0, 0);
-           if (_fhandle != (PRFileDesc *)NULL) {
+        nassertr(block.size() > 0, 0);      //Make sure there is something to write out
+        nassertr(block.data() != NULL, 0);
+
+        if (_fhandle == (PRFileDesc *)NULL)
+           return 0;
   	    return PR_Write(_fhandle, (void*)block.data(), block.size());
-  	   }
-  	   return 0;
 	}
-      private:
-        string _filename;
+
+  private:
+    string _filename;
 	PRFileDesc* _fhandle;
   };
 
