@@ -1956,28 +1956,73 @@ clear_color_scale() {
 void NodePath::
 set_color_scale(const LVecBase4f &scale, int priority) {
   nassertv_always(!is_empty());
-  node()->set_attrib(ColorScaleAttrib::make(scale), priority);
+
+  const RenderAttrib *attrib =
+    node()->get_attrib(ColorScaleAttrib::get_class_type());
+  if (attrib != (const RenderAttrib *)NULL) {
+    priority = max(priority,
+                   node()->get_state()->get_override(ColorScaleAttrib::get_class_type()));
+    const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attrib);
+
+    // Modify the existing ColorScaleAttrib to add the indicated
+    // colorScale.
+    node()->set_attrib(csa->set_scale(scale), priority);
+
+  } else {
+    // Create a new ColorScaleAttrib for this node.
+    node()->set_attrib(ColorScaleAttrib::make(scale), priority);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_color_scale_off
+//       Access: Published
+//  Description: Disables any color scale attribute inherited from
+//               above.  This is not the same thing as
+//               clear_color_scale(), which undoes any previous
+//               set_color_scale() operation on this node; rather,
+//               this actively disables any set_color_scale() that
+//               might be inherited from a parent node.  This also
+//               disables set_alpha_scale() at the same time.
+//
+//               It is legal to specify a new color scale on the same
+//               node with a subsequent call to set_color_scale() or
+//               set_alpha_scale(); this new scale will apply to lower
+//               geometry.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_color_scale_off(int priority) {
+  nassertv_always(!is_empty());
+  node()->set_attrib(ColorScaleAttrib::make_off(), priority);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::set_alpha_scale
 //       Access: Published
 //  Description: Sets the alpha scale component of the transform
-//               without affecting the color scale.  Note that any
-//               priority specified will also apply to the color
+//               without (much) affecting the color scale.  Note that
+//               any priority specified will also apply to the color
 //               scale.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_alpha_scale(float scale, int priority) {
   nassertv_always(!is_empty());
+
   const RenderAttrib *attrib =
     node()->get_attrib(ColorScaleAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
+    priority = max(priority,
+                   node()->get_state()->get_override(ColorScaleAttrib::get_class_type()));
     const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attrib);
+
+    // Modify the existing ColorScaleAttrib to add the indicated
+    // colorScale.
     const LVecBase4f &sc = csa->get_scale();
-    set_color_scale(sc[0], sc[1], sc[2], scale, priority);
+    node()->set_attrib(csa->set_scale(LVecBase4f(sc[0], sc[1], sc[2], scale)), priority);
+
   } else {
-    set_color_scale(1.0f, 1.0f, 1.0f, scale, priority);
+    // Create a new ColorScaleAttrib for this node.
+    node()->set_attrib(ColorScaleAttrib::make(LVecBase4f(1.0f, 1.0f, 1.0f, scale)), priority);
   }
 }
 
@@ -1985,21 +2030,29 @@ set_alpha_scale(float scale, int priority) {
 //     Function: NodePath::set_all_color_scale
 //       Access: Published
 //  Description: Scales all the color components of the object by the
-//               same amount, darkening the object, without affecting
-//               alpha.  Note that any priority specified will also
-//               apply to the alpha scale.
+//               same amount, darkening the object, without (much)
+//               affecting alpha.  Note that any priority specified
+//               will also apply to the alpha scale.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_all_color_scale(float scale, int priority) {
   nassertv_always(!is_empty());
+
   const RenderAttrib *attrib =
     node()->get_attrib(ColorScaleAttrib::get_class_type());
   if (attrib != (const RenderAttrib *)NULL) {
+    priority = max(priority,
+                   node()->get_state()->get_override(ColorScaleAttrib::get_class_type()));
     const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attrib);
+
+    // Modify the existing ColorScaleAttrib to add the indicated
+    // colorScale.
     const LVecBase4f &sc = csa->get_scale();
-    set_color_scale(scale, scale, scale, sc[3], priority);
+    node()->set_attrib(csa->set_scale(LVecBase4f(scale, scale, scale, sc[3])), priority);
+
   } else {
-    set_color_scale(scale, scale, scale, 1.0f, priority);
+    // Create a new ColorScaleAttrib for this node.
+    node()->set_attrib(ColorScaleAttrib::make(LVecBase4f(scale, scale, scale, 1.0f)), priority);
   }
 }
 
@@ -2007,8 +2060,10 @@ set_all_color_scale(float scale, int priority) {
 //     Function: NodePath::get_color_scale
 //       Access: Published
 //  Description: Returns the complete color scale vector that has been
-//               applied to the bottom node, or all 1's (identity) if
-//               no scale has been applied.
+//               applied to this node via a previous call to
+//               set_color_scale() and/or set_alpha_scale(), or all
+//               1's (identity) if no scale has been applied to this
+//               particular node.
 ////////////////////////////////////////////////////////////////////
 const LVecBase4f &NodePath::
 get_color_scale() const {

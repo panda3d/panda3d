@@ -34,7 +34,36 @@ TypeHandle ColorScaleAttrib::_type_handle;
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ColorScaleAttrib::
 make(const LVecBase4f &scale) {
-  ColorScaleAttrib *attrib = new ColorScaleAttrib(scale);
+  ColorScaleAttrib *attrib = new ColorScaleAttrib(false, scale);
+  return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorScaleAttrib::make_off
+//       Access: Published, Static
+//  Description: Constructs a new ColorScaleAttrib object that ignores
+//               any ColorScaleAttrib inherited from above.  You may
+//               also specify an additional color scale to apply to
+//               geometry below (using set_scale()).
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) ColorScaleAttrib::
+make_off() {
+  ColorScaleAttrib *attrib = 
+    new ColorScaleAttrib(true, LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));
+  return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorScaleAttrib::set_scale
+//       Access: Published
+//  Description: Returns a new ColorScaleAttrib, just like this one, but
+//               with the scale changed to the indicated value.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) ColorScaleAttrib::
+set_scale(const LVecBase4f &scale) const {
+  ColorScaleAttrib *attrib = new ColorScaleAttrib(*this);
+  attrib->_scale = scale;
+  attrib->_has_scale = !scale.almost_equal(LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));
   return return_new(attrib);
 }
 
@@ -59,7 +88,13 @@ issue(GraphicsStateGuardianBase *gsg) const {
 ////////////////////////////////////////////////////////////////////
 void ColorScaleAttrib::
 output(ostream &out) const {
-  out << get_type() << ":(" << get_scale() << ")";
+  out << get_type() << ":";
+  if (is_off()) {
+    out << "off";
+  }
+  if (has_scale()) {
+    out << "(" << get_scale() << ")";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -81,6 +116,11 @@ int ColorScaleAttrib::
 compare_to_impl(const RenderAttrib *other) const {
   const ColorScaleAttrib *ta;
   DCAST_INTO_R(ta, other, 0);
+
+  if (is_off() != ta->is_off()) {
+    return (int)is_off() - (int)ta->is_off();
+  }
+
   return _scale.compare_to(ta->_scale);
 }
 
@@ -105,12 +145,17 @@ CPT(RenderAttrib) ColorScaleAttrib::
 compose_impl(const RenderAttrib *other) const {
   const ColorScaleAttrib *ta;
   DCAST_INTO_R(ta, other, 0);
+
+  if (ta->is_off()) {
+    return ta;
+  }
+
   LVecBase4f new_scale(ta->_scale[0] * _scale[0],
                        ta->_scale[1] * _scale[1],
                        ta->_scale[2] * _scale[2],
                        ta->_scale[3] * _scale[3]);
-
-  ColorScaleAttrib *attrib = new ColorScaleAttrib(new_scale);
+  
+  ColorScaleAttrib *attrib = new ColorScaleAttrib(is_off(), new_scale);
   return return_new(attrib);
 }
 
@@ -125,14 +170,17 @@ compose_impl(const RenderAttrib *other) const {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ColorScaleAttrib::
 invert_compose_impl(const RenderAttrib *other) const {
+  if (is_off()) {
+    return other;
+  }
   const ColorScaleAttrib *ta;
   DCAST_INTO_R(ta, other, 0);
-  LVecBase4f new_scale(ta->_scale[0] / _scale[0],
-                       ta->_scale[1] / _scale[1],
-                       ta->_scale[2] / _scale[2],
-                       ta->_scale[3] / _scale[3]);
+  LVecBase4f new_scale(_scale[0] == 0.0f ? 1.0f : ta->_scale[0] / _scale[0],
+                       _scale[1] == 0.0f ? 1.0f : ta->_scale[1] / _scale[1],
+                       _scale[2] == 0.0f ? 1.0f : ta->_scale[2] / _scale[2],
+                       _scale[3] == 0.0f ? 1.0f : ta->_scale[3] / _scale[3]);
 
-  ColorScaleAttrib *attrib = new ColorScaleAttrib(new_scale);
+  ColorScaleAttrib *attrib = new ColorScaleAttrib(false, new_scale);
   return return_new(attrib);
 }
 
@@ -149,7 +197,7 @@ invert_compose_impl(const RenderAttrib *other) const {
 ////////////////////////////////////////////////////////////////////
 RenderAttrib *ColorScaleAttrib::
 make_default_impl() const {
-  return new ColorScaleAttrib(LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));
+  return new ColorScaleAttrib(false, LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -173,6 +221,10 @@ void ColorScaleAttrib::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderAttrib::write_datagram(manager, dg);
 
+  // We cheat, and modify the bam stream without upping the bam
+  // version.  We can do this since we know that no existing bam files
+  // have a ColorScaleAttrib in them.
+  dg.add_bool(_off);
   _scale.write_datagram(dg);
 }
 
@@ -186,7 +238,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 ////////////////////////////////////////////////////////////////////
 TypedWritable *ColorScaleAttrib::
 make_from_bam(const FactoryParams &params) {
-  ColorScaleAttrib *attrib = new ColorScaleAttrib(LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));
+  ColorScaleAttrib *attrib = new ColorScaleAttrib(false, LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));
   DatagramIterator scan;
   BamReader *manager;
 
@@ -207,5 +259,7 @@ void ColorScaleAttrib::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
+  _off = scan.get_bool();
   _scale.read_datagram(scan);
+  _has_scale = !_scale.almost_equal(LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));
 }

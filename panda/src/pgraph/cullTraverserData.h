@@ -62,7 +62,7 @@ public:
   INLINE PandaNode *node() const;
 
   INLINE bool is_in_view(const DrawMask &camera_mask);
-  INLINE void apply_transform_and_state(CullTraverser *trav);
+  void apply_transform_and_state(CullTraverser *trav);
   void apply_transform_and_state(CullTraverser *trav, 
                                  CPT(TransformState) node_transform, 
                                  CPT(RenderState) node_state,

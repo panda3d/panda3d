@@ -49,6 +49,7 @@ TypeHandle CullTraverser::_type_handle;
 CullTraverser::
 CullTraverser() {
   _camera_mask = DrawMask::all_on();
+  _has_tag_state_key = false;
   _initial_state = RenderState::make_empty();
   _depth_offset_decals = false;
   _cull_handler = (CullHandler *)NULL;
@@ -64,6 +65,8 @@ CullTraverser::
 CullTraverser(const CullTraverser &copy) :
   _scene_setup(copy._scene_setup),
   _camera_mask(copy._camera_mask),
+  _has_tag_state_key(copy._has_tag_state_key),
+  _tag_state_key(copy._tag_state_key),
   _initial_state(copy._initial_state),
   _depth_offset_decals(copy._depth_offset_decals),
   _view_frustum(copy._view_frustum),
@@ -148,8 +151,11 @@ traverse(CullTraverserData &data) {
   // being "fancy", and skip this processing for non-fancy nodes.
   
   if (data.is_in_view(_camera_mask)) {
+    if (pgraph_cat.is_spam()) {
+      pgraph_cat.spam() << "\n" << data._node_path << "\n";
+    }
+
     PandaNode *node = data.node();
-    pgraph_cat.spam() << "\n" << data._node_path << "\n";
 
     const RenderEffects *node_effects = node->get_effects();
     if (node_effects->has_show_bounds()) {

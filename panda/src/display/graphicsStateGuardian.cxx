@@ -590,10 +590,10 @@ void GraphicsStateGuardian::
 issue_color_scale(const ColorScaleAttrib *attrib) {
   _current_color_scale = attrib->get_scale();
 
-  if (_current_color_scale == LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f)) {
-    _color_transform_enabled &= ~CT_scale;
-  } else {
+  if (attrib->has_scale()) {
     _color_transform_enabled |= CT_scale;
+  } else {
+    _color_transform_enabled &= ~CT_scale;
   }
 
   _scene_graph_color_stale = _has_scene_graph_color;

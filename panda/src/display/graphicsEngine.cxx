@@ -978,9 +978,13 @@ setup_scene(const NodePath &camera, GraphicsStateGuardian *gsg) {
   // We will need both the camera transform (the net transform to the
   // camera from the scene) and the world transform (the camera
   // transform inverse, or the net transform to the scene from the
-  // camera).
-  CPT(TransformState) camera_transform = camera.get_transform(scene_root);
-  CPT(TransformState) world_transform = scene_root.get_transform(camera);
+  // camera).  These are actually defined from the parent of the
+  // scene_root, because the scene_root's own transform is immediately
+  // applied to these during rendering.  (Normally, the parent of the
+  // scene_root is the empty NodePath, although it need not be.)
+  NodePath scene_parent = scene_root.get_parent();
+  CPT(TransformState) camera_transform = camera.get_transform(scene_parent);
+  CPT(TransformState) world_transform = scene_parent.get_transform(camera);
 
   // The render transform is the same as the world transform, except
   // it is converted into the GSG's internal coordinate system.  This

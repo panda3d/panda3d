@@ -118,7 +118,7 @@ get_camera_mask() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Camera::set_cull_center
-//       Access: Public
+//       Access: Published
 //  Description: Specifies the point from which the culling operations
 //               are performed.  Normally, this is the same as the
 //               camera, and that is the default if this is not
@@ -133,7 +133,7 @@ set_cull_center(const NodePath &cull_center) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Camera::get_cull_center
-//       Access: Public
+//       Access: Published
 //  Description: Returns the point from which the culling operations
 //               will be performed, if it was set by
 //               set_cull_center(), or the empty NodePath otherwise.
@@ -141,4 +141,51 @@ set_cull_center(const NodePath &cull_center) {
 INLINE const NodePath &Camera::
 get_cull_center() const {
   return _cull_center;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Camera::set_initial_state
+//       Access: Published
+//  Description: Sets the initial state which is applied to all nodes
+//               in the scene, as if it were set at the top of the
+//               scene graph.
+////////////////////////////////////////////////////////////////////
+INLINE void Camera::
+set_initial_state(const RenderState *state) {
+  _initial_state = state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Camera::get_initial_state
+//       Access: Published
+//  Description: Returns the initial state as set by a previous call
+//               to set_initial_state().
+////////////////////////////////////////////////////////////////////
+INLINE CPT(RenderState) Camera::
+get_initial_state() const {
+  return _initial_state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Camera::set_tag_state_key
+//       Access: Published
+//  Description: Sets the tag key which, when encountered as a tag on
+//               nodes in the scene graph, causes this Camera to apply
+//               an arbitrary state transition based on the value of
+//               the tag (as specified to set_tag_state()).
+////////////////////////////////////////////////////////////////////
+INLINE void Camera::
+set_tag_state_key(const string &tag_state_key) {
+  _tag_state_key = tag_state_key;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Camera::get_tag_state_key
+//       Access: Published
+//  Description: Returns the tag key as set by a previous call to
+//               set_tag_state_key().
+////////////////////////////////////////////////////////////////////
+INLINE const string &Camera::
+get_tag_state_key() const {
+  return _tag_state_key;
 }

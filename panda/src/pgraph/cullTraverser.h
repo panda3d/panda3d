@@ -27,6 +27,7 @@
 #include "transformState.h"
 #include "geometricBoundingVolume.h"
 #include "pointerTo.h"
+#include "camera.h"
 #include "drawMask.h"
 #include "typedObject.h"
 #include "pStatCollector.h"
@@ -53,6 +54,8 @@ public:
 
   INLINE void set_scene(SceneSetup *scene_setup);
   INLINE SceneSetup *get_scene() const;
+  INLINE bool has_tag_state_key() const;
+  INLINE const string &get_tag_state_key() const;
 
   INLINE void set_camera_mask(const DrawMask &camera_mask);
   INLINE const DrawMask &get_camera_mask() const;
@@ -99,6 +102,8 @@ private:
 
   PT(SceneSetup) _scene_setup;
   DrawMask _camera_mask;
+  bool _has_tag_state_key;
+  string _tag_state_key;
   CPT(RenderState) _initial_state;
   bool _depth_offset_decals;
   PT(GeometricBoundingVolume) _view_frustum;

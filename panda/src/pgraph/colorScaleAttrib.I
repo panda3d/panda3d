@@ -19,14 +19,55 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ColorScaleAttrib::Constructor
-//       Access: Private
+//       Access: Protected
 //  Description: Use ColorScaleAttrib::make() to construct a new
 //               ColorScaleAttrib object.
 ////////////////////////////////////////////////////////////////////
 INLINE ColorScaleAttrib::
-ColorScaleAttrib(const LVecBase4f &scale) :
+ColorScaleAttrib(bool off, const LVecBase4f &scale) :
+  _off(off),
   _scale(scale)
 {
+  _has_scale = !_scale.almost_equal(LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorScaleAttrib::Copy Constructor
+//       Access: Protected
+//  Description: Use ColorScaleAttrib::make() to construct a new
+//               ColorScaleAttrib object.
+////////////////////////////////////////////////////////////////////
+INLINE ColorScaleAttrib::
+ColorScaleAttrib(const ColorScaleAttrib &copy) :
+  _off(copy._off),
+  _has_scale(copy._has_scale),
+  _scale(copy._scale)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorScaleAttrib::is_off
+//       Access: Published
+//  Description: Returns true if the ColorScaleAttrib will ignore any
+//               color scales inherited from above, false otherwise.
+//               This is not the same thing as !has_scale(); a
+//               ColorScaleAttrib may have the "off" flag set and also
+//               have another scale specified.
+////////////////////////////////////////////////////////////////////
+INLINE bool ColorScaleAttrib::
+is_off() const {
+  return _off;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorScaleAttrib::has_scale
+//       Access: Published
+//  Description: Returns true if the ColorScaleAttrib has a
+//               non-identity scale, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool ColorScaleAttrib::
+has_scale() const {
+  return _has_scale;
 }
 
 ////////////////////////////////////////////////////////////////////

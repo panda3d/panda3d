@@ -32,7 +32,8 @@ Camera::
 Camera(const string &name) :
   LensNode(name),
   _active(true),
-  _camera_mask(DrawMask::all_on())
+  _camera_mask(DrawMask::all_on()),
+  _initial_state(RenderState::make_empty())
 {
 }
 
@@ -46,7 +47,10 @@ Camera(const Camera &copy) :
   LensNode(copy),
   _active(copy._active),
   _scene(copy._scene),
-  _camera_mask(copy._camera_mask)
+  _camera_mask(copy._camera_mask),
+  _initial_state(copy._initial_state),
+  _tag_state_key(copy._tag_state_key),
+  _tag_states(copy._tag_states)
 {
 }
 
@@ -102,6 +106,69 @@ safe_to_flatten() const {
 bool Camera::
 safe_to_transform() const {
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Camera::set_tag_state
+//       Access: Published
+//  Description: Associates a particular state transition with the
+//               indicated tag value.  When a node is encountered
+//               during traversal with the tag key specified by
+//               set_tag_state_key(), if the value of that tag matches
+//               tag_state, then the indicated state is applied to
+//               this node--but only when it is rendered by this
+//               camera.
+//
+//               This can be used to apply special effects to nodes
+//               when they are rendered by certain cameras.  It is
+//               particularly useful for multipass rendering, in which
+//               specialty cameras might be needed to render the scene
+//               with a particular set of effects.
+////////////////////////////////////////////////////////////////////
+void Camera::
+set_tag_state(const string &tag_state, const RenderState *state) {
+  _tag_states[tag_state] = state;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Camera::clear_tag_state
+//       Access: Published
+//  Description: Removes the association established by a previous
+//               call to set_tag_state().
+////////////////////////////////////////////////////////////////////
+void Camera::
+clear_tag_state(const string &tag_state) {
+  _tag_states.erase(tag_state);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Camera::has_tag_state
+//       Access: Published
+//  Description: Returns true if set_tag_state() has previously been
+//               called with the indicated tag state, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool Camera::
+has_tag_state(const string &tag_state) const {
+  TagStates::const_iterator tsi;
+  tsi = _tag_states.find(tag_state);
+  return (tsi != _tag_states.end());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Camera::get_tag_state
+//       Access: Published
+//  Description: Returns the state associated with the indicated tag
+//               state by a previous call to set_tag_state(), or the
+//               empty state if nothing has been associated.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) Camera::
+get_tag_state(const string &tag_state) const {
+  TagStates::const_iterator tsi;
+  tsi = _tag_states.find(tag_state);
+  if (tsi != _tag_states.end()) {
+    return (*tsi).second;
+  }
+  return RenderState::make_empty();
 }
 
 ////////////////////////////////////////////////////////////////////

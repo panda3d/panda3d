@@ -357,11 +357,13 @@ has_parent() const {
 //       Access: Published
 //  Description: Returns the NodePath to the parent of the referenced
 //               node: that is, this NodePath, shortened by one node.
+//               The parent of a singleton NodePath is defined to be
+//               the empty NodePath.
 ////////////////////////////////////////////////////////////////////
 INLINE NodePath NodePath::
 get_parent() const {
   if (!has_parent()) {
-    return NodePath::fail();
+    return NodePath();
   }
   NodePath parent;
   parent._head = _head->get_next();

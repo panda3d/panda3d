@@ -136,16 +136,3 @@ is_in_view(const DrawMask &camera_mask) {
   return is_in_view_impl();
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: CullTraverserData::apply_transform_and_state
-//       Access: Public
-//  Description: Applies the transform and state from the current
-//               node onto the current data.  This also evaluates
-//               billboards, etc.
-////////////////////////////////////////////////////////////////////
-INLINE void CullTraverserData::
-apply_transform_and_state(CullTraverser *trav) {
-  apply_transform_and_state(trav, node()->get_transform(),
-                            node()->get_state(), node()->get_effects());
-}
-

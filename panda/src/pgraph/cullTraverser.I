@@ -27,6 +27,10 @@
 INLINE void CullTraverser::
 set_scene(SceneSetup *scene_setup) {
   _scene_setup = scene_setup;
+  const Camera *camera = scene_setup->get_camera_node();
+  _tag_state_key = camera->get_tag_state_key();
+  _has_tag_state_key = !_tag_state_key.empty();
+  _initial_state = camera->get_initial_state();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -37,6 +41,28 @@ set_scene(SceneSetup *scene_setup) {
 INLINE SceneSetup *CullTraverser::
 get_scene() const {
   return _scene_setup;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::has_tag_state_key
+//       Access: Public
+//  Description: Returns true if a nonempty tag state key has been
+//               specified for the scene's camera, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool CullTraverser::
+has_tag_state_key() const {
+  return _has_tag_state_key;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::get_tag_state_key
+//       Access: Public
+//  Description: Returns the tag state key that has been specified for
+//               the scene's camera, if any.
+////////////////////////////////////////////////////////////////////
+INLINE const string &CullTraverser::
+get_tag_state_key() const {
+  return _tag_state_key;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -24,6 +24,9 @@
 #include "lensNode.h"
 #include "nodePath.h"
 #include "drawMask.h"
+#include "renderState.h"
+#include "pointerTo.h"
+#include "pmap.h"
 
 class DisplayRegion;
 
@@ -62,6 +65,17 @@ PUBLISHED:
   INLINE void set_cull_center(const NodePath &cull_center);
   INLINE const NodePath &get_cull_center() const;
 
+  INLINE void set_initial_state(const RenderState *state);
+  INLINE CPT(RenderState) get_initial_state() const;
+
+  INLINE void set_tag_state_key(const string &tag_state_key);
+  INLINE const string &get_tag_state_key() const;
+
+  void set_tag_state(const string &tag_state, const RenderState *state);
+  void clear_tag_state(const string &tag_state);
+  bool has_tag_state(const string &tag_state) const;
+  CPT(RenderState) get_tag_state(const string &tag_state) const;
+
 private:
   void add_display_region(DisplayRegion *display_region);
   void remove_display_region(DisplayRegion *display_region);
@@ -74,6 +88,12 @@ private:
 
   typedef pvector<DisplayRegion *> DisplayRegions;
   DisplayRegions _display_regions;
+
+  CPT(RenderState) _initial_state;
+  string _tag_state_key;
+
+  typedef pmap<string, CPT(RenderState) > TagStates;
+  TagStates _tag_states;
 
 public:
   static void register_with_read_factory();

@@ -27,6 +27,33 @@
 #include "compassEffect.h"
 #include "polylightEffect.h"
 #include "renderState.h"
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullTraverserData::apply_transform_and_state
+//       Access: Public
+//  Description: Applies the transform and state from the current
+//               node onto the current data.  This also evaluates
+//               billboards, etc.
+////////////////////////////////////////////////////////////////////
+void CullTraverserData::
+apply_transform_and_state(CullTraverser *trav) {
+  PandaNode *node = _node_path.node();
+  CPT(RenderState) node_state = node->get_state();
+
+  if (trav->has_tag_state_key() && node->has_tag(trav->get_tag_state_key())) {
+    // Here's a node that has been tagged with the special key for our
+    // current camera.  This indicates some special state transition
+    // for this node, which is unique to this camera.
+    const Camera *camera = trav->get_scene()->get_camera_node();
+    string tag_state = node->get_tag(trav->get_tag_state_key());
+    node_state = node_state->compose(camera->get_tag_state(tag_state));
+  }
+
+  apply_transform_and_state(trav, node->get_transform(),
+                            node_state, node->get_effects());
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverserData::apply_specific_transform
 //       Access: Public
