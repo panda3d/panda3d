@@ -95,6 +95,7 @@ x_cleanup_parser() {
 %type <double_list> realnum_list
 %type <str> name
 %type <str> optional_name
+%type <str> string
 %type <guid> class_id
 %type <guid> optional_class_id
 
