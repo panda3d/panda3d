@@ -394,7 +394,7 @@ consider_child(PandaNode *grandparent_node, PandaNode *parent_node,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SceneGraphReducer:c:onsider_siblings
+//     Function: SceneGraphReducer::consider_siblings
 //       Access: Protected
 //  Description: Decides whether or not the indicated sibling nodes
 //               should be collapsed into a single node or not.
