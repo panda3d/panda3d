@@ -1,17 +1,5 @@
-// Filename: wdxGraphicsWindow.cxx  
+// Filename: wdxGraphicsWindow.cxx
 // Created by:  mike (09Jan00)
-//
-////////////////////////////////////////////////////////////////////
-// Copyright (C) 1999-2000
-// Walt Disney Imagineering, Inc.
-//
-// These  coded  instructions,  statements,  data   structures   and
-// computer  programs contain unpublished proprietary information of
-// Walt Disney Imagineering and are protected by  Federal  copyright
-// law.  They may  not be  disclosed to third  parties  or copied or
-// duplicated in any form, in whole or in part,  without  the  prior
-// written consent of Walt Disney Imagineering Inc.
-////////////////////////////////////////////////////////////////////
 //
 ////////////////////////////////////////////////////////////////////
 // Includes
@@ -20,7 +8,7 @@
 #define STRICT
 #endif
 #define D3D_OVERLOADS
-#define  INITGUID
+//#define  INITGUID  dont need this if linking w/dxguid.lib
 #include <d3d.h>
 #include "wdxGraphicsWindow.h"
 #include "wdxGraphicsPipe.h"
@@ -1077,13 +1065,12 @@ void wdxGraphicsWindow::config(void) {
   RECT win_rect;
   SetRect(&win_rect, _props._xorg,  _props._yorg, _props._xorg + _props._xsize, 
 				 _props._yorg + _props._ysize);
-  HWND desktop = GetDesktopWindow();
 
   // rect now contains the coords for the entire window, not the client
   if (dx_full_screen) {
 	  _mwindow = CreateWindow("wdxDisplay", _props._title.c_str(),
                               WS_POPUP, 0, 0, _props._xsize,_props._ysize,
-                              desktop, NULL, hinstance, 0);
+                              NULL, NULL, hinstance, 0);
   } else  {
 	  if (_props._border)
 		    style = WS_OVERLAPPEDWINDOW; 
@@ -1099,7 +1086,7 @@ void wdxGraphicsWindow::config(void) {
 	  _mwindow = CreateWindow("wdxDisplay", _props._title.c_str(),
 		style, win_rect.left, win_rect.top, win_rect.right-win_rect.left, 
 		win_rect.bottom-win_rect.top,
-		desktop, NULL, hinstance, 0);
+		NULL, NULL, hinstance, 0);
   }
 
   if (!_mwindow) {
@@ -1132,8 +1119,8 @@ void wdxGraphicsWindow::config(void) {
     GraphicsWindowInputDevice::pointer_and_keyboard("keyboard/mouse");
   _input_devices.push_back(device);
 
-    ShowWindow(_mwindow, SW_SHOWNORMAL);
-    ShowWindow(_mwindow, SW_SHOWNORMAL);
+  ShowWindow(_mwindow, SW_SHOWNORMAL);
+  ShowWindow(_mwindow, SW_SHOWNORMAL);  // call twice to override STARTUPINFO value, which may be set to hidden initially by emacs
 //  UpdateWindow( _mwindow );
 }
 
@@ -1204,12 +1191,17 @@ dx_setup()
     
       FreeLibrary(DDHinst);  //undo LoadLib above, decrement ddrawl.dll refcnt (after DDrawCreate, since dont want to unload/reload)
     
-#ifdef _DEBUG
+
       DDDEVICEIDENTIFIER2 dddi;
       pDD->GetDeviceIdentifier(&dddi,0x0);
+
+#ifdef _DEBUG
       wdxdisplay_cat.debug()
-          << " GfxCard: " << dddi.szDescription <<  "; DriverVer: " << HIWORD(dddi.liDriverVersion.HighPart) << "." << LOWORD(dddi.liDriverVersion.HighPart) << "." << HIWORD(dddi.liDriverVersion.LowPart) << "." << LOWORD(dddi.liDriverVersion.LowPart) << endl;
+          << " GfxCard: " << dddi.szDescription <<  "; VendorID: " <<dddi.dwVendorId <<"; DriverVer: " << HIWORD(dddi.liDriverVersion.HighPart) << "." << LOWORD(dddi.liDriverVersion.HighPart) << "." << HIWORD(dddi.liDriverVersion.LowPart) << "." << LOWORD(dddi.liDriverVersion.LowPart) << endl;
 #endif
+
+      // imperfect method to ID NVid, could also scan desc str, but that isnt fullproof either
+      BOOL bIsNvidia = (dddi.dwVendorId==4318) || (dddi.dwVendorId==4818);  
     
       // Query DirectDraw for access to Direct3D
     
@@ -1357,9 +1349,7 @@ dx_setup()
 #endif
 
 	    // Setup to create the primary surface w/backbuffer
-	    DDSURFACEDESC2 ddsd;
-	    ZeroMemory( &ddsd, sizeof(ddsd) );
-	    ddsd.dwSize            = sizeof(ddsd);
+	    DX_DECLARE_CLEAN(DDSURFACEDESC2,ddsd)
 	    ddsd.dwFlags           = DDSD_CAPS|DDSD_BACKBUFFERCOUNT;
 	    ddsd.ddsCaps.dwCaps    = DDSCAPS_PRIMARYSURFACE | DDSCAPS_3DDEVICE |
 	                             DDSCAPS_FLIP | DDSCAPS_COMPLEX;
@@ -1503,30 +1493,43 @@ dx_setup()
         }
     #endif
     
-        {
+        LPDDPIXELFORMAT pCurPixFmt,pz16=NULL,pz24=NULL,pz32=NULL;
+        for(i=0,pCurPixFmt=ZBufPixFmts;i<cNumZBufFmts;i++,pCurPixFmt++) {
+            switch(pCurPixFmt->dwRGBBitCount) {
+               case 16:
+                  if(!(pCurPixFmt->dwFlags & DDPF_STENCILBUFFER))
+                      pz16=pCurPixFmt;
+                  break;
+               case 24:
+                  assert(!(pCurPixFmt->dwFlags & DDPF_STENCILBUFFER));  // shouldnt be stencil at 24bpp
+                  pz24=pCurPixFmt;
+                  break;
+               case 32:
+                  if(!(pCurPixFmt->dwFlags & DDPF_STENCILBUFFER))
+                      pz32=pCurPixFmt;
+                  break;
+            }
+        }
+    
+        if(bIsNvidia) {	    
+            DX_DECLARE_CLEAN(DDSURFACEDESC2,ddsd_pri)
+            pPrimaryDDSurf->GetSurfaceDesc(&ddsd_pri);
+
+            // must pick zbuf depth to match primary surface depth for nvidia
+            if(ddsd_pri.ddpfPixelFormat.dwRGBBitCount==16) {
+                assert(pz16!=NULL);
+                ddsd.ddpfPixelFormat = *pz16;                
+            } else {
+                assert(pz24!=NULL);
+                ddsd.ddpfPixelFormat = *pz24;  //take the no-stencil version of the 32-bit Zbuf
+            }
+        } else {
             // pick the largest non-stencil zbuffer format avail (wont support stenciling
             // until we definitely need it).  Note: this is choosing to waste memory
             // and possibly perf for more accuracy at long distance (std 16bpp would be smaller/
             // maybe faster)
         
-            LPDDPIXELFORMAT pCurPixFmt,pz16=NULL,pz24=NULL,pz32=NULL;
-            for(i=0,pCurPixFmt=ZBufPixFmts;i<cNumZBufFmts;i++,pCurPixFmt++) {
-                switch(pCurPixFmt->dwRGBBitCount) {
-                   case 16:
-                      if(!(pCurPixFmt->dwFlags & DDPF_STENCILBUFFER))
-                          pz16=pCurPixFmt;
-                      break;
-                   case 24:
-                      assert(!(pCurPixFmt->dwFlags & DDPF_STENCILBUFFER));  // shouldnt be stencil at 24bpp
-                      pz24=pCurPixFmt;
-                      break;
-                   case 32:
-                      if(!(pCurPixFmt->dwFlags & DDPF_STENCILBUFFER))
-                          pz32=pCurPixFmt;
-                      break;
-                }
-            }
-        
+
             if(pz32!=NULL) {
                 ddsd.ddpfPixelFormat = *pz32;
             } else if(pz24!=NULL) {
