@@ -7,7 +7,6 @@
 #define DIR_TYPE metalib
 #define BUILDING_DLL BUILDING_PANDA
 #define USE_PACKAGES net
-#define WIN_SYS_LIBS $[WIN_SYS_LIBS] Ws2_32.lib
 
 #define COMPONENT_LIBS \
     recorder pgraph \

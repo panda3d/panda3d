@@ -3309,15 +3309,6 @@ TextureContext *DXGraphicsStateGuardian7::
 prepare_texture(Texture *tex) {
 
     DXTextureContext7 *dtc = new DXTextureContext7(tex);
-#ifdef WBD_GL_MODE
-    glGenTextures(1, &gtc->_index);
-
-    bind_texture(gtc);
-    glPrioritizeTextures(1, &gtc->_index, &gtc->_priority);
-    specify_texture(tex);
-    apply_texture_immediate(tex);
-#else
-
 #ifdef USE_TEXFMTVEC
     if (dtc->CreateTexture(_pScrn->pD3DDevice,_pScrn->TexPixFmts,&_pScrn->D3DDevDesc) == NULL) {
 #else
@@ -3326,14 +3317,6 @@ prepare_texture(Texture *tex) {
         delete dtc;
         return NULL;
     }
-#endif              // WBD_GL_MODE
-
-    bool inserted = mark_prepared_texture(dtc);
-
-    // If this assertion fails, the same texture was prepared twice,
-    // which shouldn't be possible, since the texture itself should
-    // detect this.
-    nassertr(inserted, NULL);
 
     return dtc;
 }
@@ -3503,17 +3486,7 @@ apply_texture(TextureContext *tc) {
 void DXGraphicsStateGuardian7::
 release_texture(TextureContext *tc) {
     DXTextureContext7 *gtc = DCAST(DXTextureContext7, tc);
-    Texture *tex = tc->_texture;
-
     gtc->DeleteTexture();
-    bool erased = unmark_prepared_texture(gtc);
-
-    // If this assertion fails, a texture was released that hadn't been
-    // prepared (or a texture was released twice).
-    nassertv(erased);
-
-    tex->clear_gsg(this);
-
     delete gtc;
 }
 
@@ -3913,7 +3886,9 @@ issue_texture(const TextureAttrib *attrib) {
     enable_texturing(true);
     Texture *tex = attrib->get_texture();
     nassertv(tex != (Texture *)NULL);
-    tex->apply(this);
+
+    TextureContext *tc = tex->prepare_now(_prepared_objects, this);
+    apply_texture(tc);
   }
 }
 
@@ -4834,12 +4809,6 @@ dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled) {
     if(!bAtExitFnEverCalled) {
 
         PRINTREFCNT(_pScrn->pDD,"exit start IDirectDraw7");
-
-        // these 2 calls release ddraw surfaces and vbuffers.  unsafe unless not on exit
-        release_all_textures();
-        release_all_geoms();
-
-        PRINTREFCNT(_pScrn->pDD,"after release_all_textures IDirectDraw7");
 
         // Do a safe check for releasing the D3DDEVICE. RefCount should be zero.
         // if we're called from exit(), _pScrn->pD3DDevice may already have been released

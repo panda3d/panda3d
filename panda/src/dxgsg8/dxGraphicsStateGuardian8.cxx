@@ -3004,27 +3004,10 @@ TextureContext *DXGraphicsStateGuardian8::
 prepare_texture(Texture *tex) {
 
     DXTextureContext8 *dtc = new DXTextureContext8(tex);
-#ifdef WBD_GL_MODE
-    glGenTextures(1, &gtc->_index);
-
-    bind_texture(gtc);
-    glPrioritizeTextures(1, &gtc->_index, &gtc->_priority);
-    specify_texture(tex);
-    apply_texture_immediate(tex);
-#else
-
     if (dtc->CreateTexture(*_pScrn) == NULL) {
         delete dtc;
         return NULL;
     }
-#endif              // WBD_GL_MODE
-
-    bool inserted = mark_prepared_texture(dtc);
-
-    // If this assertion fails, the same texture was prepared twice,
-    // which shouldn't be possible, since the texture itself should
-    // detect this.
-    nassertr(inserted, NULL);
 
     return dtc;
 }
@@ -3199,17 +3182,7 @@ apply_texture(TextureContext *tc) {
 void DXGraphicsStateGuardian8::
 release_texture(TextureContext *tc) {
     DXTextureContext8 *gtc = DCAST(DXTextureContext8, tc);
-    Texture *tex = tc->_texture;
-
     gtc->DeleteTexture();
-    bool erased = unmark_prepared_texture(gtc);
-
-    // If this assertion fails, a texture was released that hadn't been
-    // prepared (or a texture was released twice).
-    nassertv(erased);
-
-    tex->clear_gsg(this);
-
     delete gtc;
 }
 
@@ -3673,7 +3646,9 @@ issue_texture(const TextureAttrib *attrib) {
     enable_texturing(true);
     Texture *tex = attrib->get_texture();
     nassertv(tex != (Texture *)NULL);
-    tex->apply(this);
+
+    TextureContext *tc = tex->prepare_now(_prepared_objects, this);
+    apply_texture(tc);
   }
 }
 
@@ -4575,12 +4550,6 @@ dx_cleanup(bool bRestoreDisplayMode,bool bAtExitFnCalled) {
     // msg already delivered to d3d.dll and it's unloaded itself
 
     free_nondx_resources();
-
-    PRINT_REFCNT(dxgsg8,_pD3DDevice);
-
-    // these 2 calls release ddraw surfaces and vbuffers.  unsafe unless not on exit
-    release_all_textures();
-    release_all_geoms();
 
     PRINT_REFCNT(dxgsg8,_pD3DDevice);
 
