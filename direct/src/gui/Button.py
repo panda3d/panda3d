@@ -5,11 +5,10 @@ import GuiLabel
 import GuiButton
 
 guiMgr = GuiManager.GuiManager.getPtr(base.win, base.mak.node(), base.renderGui.node())
-font = loader.loadModelNode("phase_3/models/fonts/ttf-comic")
 
 class Button(DirectObject):
 
-    def __init__(self, name, label=None):
+    def __init__(self, name, label=None, font=interfaceFont):
         self.name = name
         # if no label given, use the button name
         if (label == None):

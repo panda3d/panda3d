@@ -6,11 +6,9 @@ import GuiLabel
 
 guiMgr = GuiManager.GuiManager.getPtr(base.win, base.mak.node(), base.renderGui.node())
 
-font = (loader.loadModelOnce("phase_3/models/fonts/ttf-comic")).node()
-
 class Sign(DirectObject):
 
-    def __init__(self, name, label=None):
+    def __init__(self, name, label=None, font=interfaceFont):
         self.name = name
         # label in this case means GuiLabel
         if not label:
