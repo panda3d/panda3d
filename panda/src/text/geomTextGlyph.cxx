@@ -18,6 +18,8 @@
 
 #include "geomTextGlyph.h"
 
+#ifdef HAVE_FREETYPE
+
 #include "datagramIterator.h"
 #include "bamReader.h"
 
@@ -95,3 +97,5 @@ make_GeomTextGlyph(const FactoryParams &params) {
   me->config();
   return me;
 }
+
+#endif  // HAVE_FREETYPE
