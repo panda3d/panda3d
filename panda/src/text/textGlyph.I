@@ -37,6 +37,21 @@ INLINE TextGlyph::
 TextGlyph(Geom *geom, const AllTransitionsWrapper &trans, float advance) :
   _geom(geom), _trans(trans), _advance(advance) 
 { 
+  _state = RenderState::make_empty();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextGlyph::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE TextGlyph::
+TextGlyph(Geom *geom, const RenderState *state, float advance) :
+  _geom(geom), _state(state), _advance(advance) 
+{ 
+  if (_state == (RenderState *)NULL) {
+    _state = RenderState::make_empty();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -48,6 +63,7 @@ INLINE TextGlyph::
 TextGlyph(const TextGlyph &copy) :
   _geom(copy._geom),
   _trans(copy._trans),
+  _state(copy._state),
   _advance(copy._advance) 
 { 
 }
@@ -61,6 +77,7 @@ INLINE void TextGlyph::
 operator = (const TextGlyph &copy) {
   _geom = copy._geom;
   _trans = copy._trans;
+  _state = copy._state;
   _advance = copy._advance;
 }
 
@@ -73,6 +90,17 @@ operator = (const TextGlyph &copy) {
 INLINE const AllTransitionsWrapper &TextGlyph::
 get_trans() const {
   return _trans;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextGlyph::get_state
+//       Access: Public
+//  Description: Returns the state in which the glyph should be
+//               rendered.
+////////////////////////////////////////////////////////////////////
+INLINE const RenderState *TextGlyph::
+get_state() const {
+  return _state;
 }
 
 ////////////////////////////////////////////////////////////////////

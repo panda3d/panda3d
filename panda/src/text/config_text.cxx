@@ -20,6 +20,7 @@
 #include "staticTextFont.h"
 #include "textFont.h"
 #include "textNode.h"
+#include "qptextNode.h"
 #include "dynamicTextFont.h"
 #include "dynamicTextPage.h"
 #include "geomTextGlyph.h"
@@ -68,6 +69,7 @@ init_libtext() {
   StaticTextFont::init_type();
   TextFont::init_type();
   TextNode::init_type();
+  qpTextNode::init_type();
 
 #ifdef HAVE_FREETYPE
   DynamicTextFont::init_type();

@@ -938,7 +938,8 @@ get_distance(const qpNodePath &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void qpNodePath::
 adjust_all_priorities(int adjustment) {
-  nassertv(false);
+  nassertv(!is_empty());
+  r_adjust_all_priorities(node(), adjustment);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -186,7 +186,7 @@ operator < (const TransformState &other) const {
     if (c != 0) {
       return c < 0;
     }
-    c = _scale.compare_to(other._hpr);
+    c = _scale.compare_to(other._scale);
     return c < 0;
   }
 

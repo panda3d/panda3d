@@ -488,6 +488,8 @@ private:
                       const qpFindApproxLevel &level,
                       int max_matches, int num_levels_remaining) const;
 
+  void r_adjust_all_priorities(PandaNode *node, int adjustment);
+
   PT(qpNodePathComponent) _head;
   ErrorType _error_type;
   static int _max_search_depth;

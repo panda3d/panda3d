@@ -22,6 +22,9 @@
 
 #include "dynamicTextPage.h"
 #include "geomTextGlyph.h"
+#include "textureAttrib.h"
+#include "transparencyAttrib.h"
+#include "renderState.h"
 #include "textureTransition.h"
 #include "transparencyTransition.h"
 
@@ -163,6 +166,9 @@ make_geom(int bitmap_top, int bitmap_left,
 
   _trans.set_transition(tex);
   _trans.set_transition(trans);
+
+  _state = RenderState::make(TextureAttrib::make(_page),
+                             TransparencyAttrib::make(TransparencyAttrib::M_alpha));
 
   _advance = advance / pixels_per_unit;
 }

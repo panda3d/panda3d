@@ -21,6 +21,9 @@
 
 #include "geom.h"
 #include "geomPoint.h"
+#include "qpgeomNode.h"
+#include "renderState.h"
+
 #include "geomNode.h"
 #include "namedNode.h"
 #include "renderRelation.h"
@@ -47,6 +50,25 @@ StaticTextFont(Node *font_def) {
     NamedNode *named_node = DCAST(NamedNode, _font);
     set_name(named_node->get_name());
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StaticTextFont::Constructor
+//       Access: Published
+//  Description: The constructor expects the root node to a model
+//               generated via egg-mkfont, which consists of a set of
+//               models, one per each character in the font.
+////////////////////////////////////////////////////////////////////
+StaticTextFont::
+StaticTextFont(PandaNode *font_def) {
+  nassertv(font_def != (PandaNode *)NULL);
+  _qpfont = font_def;
+  _glyphs.clear();
+
+  find_characters(font_def, RenderState::make_empty());
+  _is_valid = !_glyphs.empty();
+
+  set_name(font_def->get_name());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -295,6 +317,119 @@ find_characters(Node *root) {
     for (int i = 0; i < num_children; i++) {
       NodeRelation *child_arc = root->get_child(graph_type, i);
       find_characters(child_arc->get_child());
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StaticTextFont::find_character_gsets
+//       Access: Private
+//  Description: Given that 'root' is a PandaNode containing at least
+//               a polygon and a point which define the character's
+//               appearance and kern position, respectively,
+//               recursively walk the hierarchy and root and locate
+//               those two Geoms.
+////////////////////////////////////////////////////////////////////
+void StaticTextFont::
+find_character_gsets(PandaNode *root, Geom *&ch, GeomPoint *&dot,
+                     const RenderState *&state, const RenderState *net_state) {
+  CPT(RenderState) next_net_state = net_state->compose(root->get_state());
+
+  if (root->is_geom_node()) {
+    qpGeomNode *geode = DCAST(qpGeomNode, root);
+
+    for (int i = 0; i < geode->get_num_geoms(); i++) {
+      dDrawable *geom = geode->get_geom(i);
+      if (geom->is_of_type(GeomPoint::get_class_type())) {
+        dot = DCAST(GeomPoint, geom);
+
+      } else if (geom->is_of_type(Geom::get_class_type())) {
+        ch = DCAST(Geom, geom);
+        state = next_net_state->compose(geode->get_geom_state(i));
+      }
+    }
+
+  } else {
+    PandaNode::Children cr = root->get_children();
+    int num_children = cr.get_num_children();
+    for (int i = 0; i < num_children; i++) {
+      find_character_gsets(cr.get_child(i), ch, dot, state, next_net_state);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StaticTextFont::find_characters
+//       Access: Private
+//  Description: Walk the hierarchy beginning at the indicated root
+//               and locate any nodes whose names are just integers.
+//               These are taken to be characters, and their
+//               definitions and kern informations are retrieved.
+////////////////////////////////////////////////////////////////////
+void StaticTextFont::
+find_characters(PandaNode *root, const RenderState *net_state) {
+  CPT(RenderState) next_net_state = net_state->compose(root->get_state());
+  string name = root->get_name();
+
+  bool all_digits = !name.empty();
+  const char *p = name.c_str();
+  while (all_digits && *p != '\0') {
+    // VC++ complains if we treat an int as a bool, so we have to do
+    // this != 0 comparison on the int isdigit() function to shut it
+    // up.
+    all_digits = (isdigit(*p) != 0);
+    p++;
+  }
+
+  if (all_digits) {
+    int character = atoi(name.c_str());
+    Geom *ch = NULL;
+    GeomPoint *dot = NULL;
+    const RenderState *state = NULL;
+    find_character_gsets(root, ch, dot, state, next_net_state);
+    if (dot != NULL) {
+      // Get the first vertex from the "dot" geoset.  This will be the
+      // origin of the next character.
+      PTA_Vertexf alist;
+      PTA_ushort ilist;
+      float width;
+      dot->get_coords(alist, ilist);
+      if (ilist.empty()) {
+        width = alist[0][0];
+      } else {
+        width = alist[ilist[0]][0];
+      }
+
+      _glyphs[character] = new TextGlyph(ch, state, width);
+    }
+
+  } else if (name == "ds") {
+    // The group "ds" is a special node that indicate's the font's
+    // design size, or line height.
+
+    Geom *ch = NULL;
+    GeomPoint *dot = NULL;
+    const RenderState *state = NULL;
+    find_character_gsets(root, ch, dot, state, next_net_state);
+    if (dot != NULL) {
+      // Get the first vertex from the "dot" geoset.  This will be the
+      // design size indicator.
+      PTA_Vertexf alist;
+      PTA_ushort ilist;
+      dot->get_coords(alist, ilist);
+      if (ilist.empty()) {
+        _line_height = alist[0][2];
+      } else {
+        _line_height = alist[ilist[0]][2];
+      }
+      _space_advance = 0.25f * _line_height;
+    }
+
+  } else {
+    PandaNode::Children cr = root->get_children();
+    int num_children = cr.get_num_children();
+    for (int i = 0; i < num_children; i++) {
+      find_characters(cr.get_child(i), next_net_state);
     }
   }
 }

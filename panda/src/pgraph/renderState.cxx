@@ -451,7 +451,7 @@ add_attrib(const RenderAttrib *attrib, int override) const {
 //       Access: Published
 //  Description: Returns a new RenderState object that represents the
 //               same as the source state, with the indicated
-//               RenderAttrib removed
+//               RenderAttrib removed.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) RenderState::
 remove_attrib(TypeHandle type) const {
@@ -467,6 +467,30 @@ remove_attrib(TypeHandle type) const {
       ++result;
     }
     ++ai;
+  }
+
+  return return_new(new_state);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::remove_attrib
+//       Access: Published
+//  Description: Returns a new RenderState object that represents the
+//               same as the source state, with all attributes'
+//               override values incremented (or decremented, if
+//               negative) by the indicated amount.  If the override
+//               would drop below zero, it is set to zero.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) RenderState::
+adjust_all_priorities(int adjustment) const {
+  RenderState *new_state = new RenderState;
+  new_state->_attributes.reserve(_attributes.size());
+
+  Attributes::const_iterator ai;
+  for (ai = _attributes.begin(); ai != _attributes.end(); ++ai) {
+    Attribute attrib = *ai;
+    attrib._override = max(attrib._override + adjustment, 0);
+    new_state->_attributes.push_back(attrib);
   }
 
   return return_new(new_state);

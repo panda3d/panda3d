@@ -35,11 +35,9 @@
 #include "allTransitionsWrapper.h"
 
 // These are deprecated.  Use TextNode::Alignment instead.
-BEGIN_PUBLISH
 #define TM_ALIGN_LEFT         1
 #define TM_ALIGN_RIGHT        2
 #define TM_ALIGN_CENTER       3
-END_PUBLISH
 
 class StringDecoder;
 

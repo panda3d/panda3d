@@ -926,6 +926,8 @@ remove_all_children() {
     child_node->fix_path_lengths(cdata_child);
     child_node->parents_changed();
   }
+  cdata->_down.clear();
+
   for (di = cdata->_stashed.begin(); di != cdata->_stashed.end(); ++di) {
     PT(PandaNode) child_node = (*di).get_child();
     CDWriter cdata_child(child_node->_cycler);
@@ -955,6 +957,7 @@ remove_all_children() {
     child_node->fix_path_lengths(cdata_child);
     child_node->parents_changed();
   }
+  cdata->_stashed.clear();
 
   // Mark the bounding volumes stale.
   force_bound_stale();
@@ -1517,9 +1520,16 @@ fix_path_lengths(const CData *cdata) {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 r_list_descendants(ostream &out, int indent_level) const {
-  indent(out, indent_level) << *this << "\n";
-
   CDReader cdata(_cycler);
+  indent(out, indent_level) << *this;
+  if (!cdata->_transform->is_identity()) {
+    out << " " << *cdata->_transform;
+  }
+  if (!cdata->_state->is_empty()) {
+    out << " " << *cdata->_state;
+  }
+  out << "\n";
+
   Down::const_iterator di;
   for (di = cdata->_down.begin(); di != cdata->_down.end(); ++di) {
     (*di).get_child()->r_list_descendants(out, indent_level + 2);

@@ -2472,3 +2472,21 @@ r_find_matches(qpNodePathCollection &result,
     r_find_matches(result, next_level, max_matches, num_levels_remaining);
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: qpNodePath::r_adjust_all_priorities
+//       Access: Private
+//  Description: The recursive implementation of
+//               adjust_all_priorities().  This walks through the
+//               subgraph defined by the indicated node and below.
+////////////////////////////////////////////////////////////////////
+void qpNodePath::
+r_adjust_all_priorities(PandaNode *node, int adjustment) {
+  node->set_state(node->get_state()->adjust_all_priorities(adjustment));
+
+  PandaNode::Children cr = node->get_children();
+  int num_children = cr.get_num_children();
+  for (int i = 0; i < num_children; i++) {
+    r_adjust_all_priorities(cr.get_child(i), adjustment);
+  }
+}
