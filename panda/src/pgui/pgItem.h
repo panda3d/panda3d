@@ -72,7 +72,8 @@ public:
   INLINE PGMouseWatcherRegion *get_region() const;
 
   virtual void draw_item(PGTop *top, GraphicsStateGuardian *gsg, 
-                         const AllAttributesWrapper &attrib);
+                         const AllAttributesWrapper &attrib,
+                         const AllTransitionsWrapper &trans);
 
   virtual void enter(const MouseWatcherParameter &param);
   virtual void exit(const MouseWatcherParameter &param);

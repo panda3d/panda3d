@@ -200,7 +200,8 @@ activate_region(PGTop *, const LMatrix4f &transform, int sort) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 draw_item(PGTop *top, GraphicsStateGuardian *gsg, 
-          const AllAttributesWrapper &attrib) {
+          const AllAttributesWrapper &attrib,
+          const AllTransitionsWrapper &trans) {
   if (has_state_def(get_state())) {
     // This item has a current state definition that we should use
     // to render the item.
@@ -211,11 +212,11 @@ draw_item(PGTop *top, GraphicsStateGuardian *gsg,
       // of the subgraph.
       DirectRenderTraverser drt(gsg, RenderRelation::get_class_type());
       drt.set_view_frustum_cull(false);
-      drt.traverse(def, attrib, AllTransitionsWrapper());
+      drt.traverse(def, attrib, trans);
 
     } else {
       QuickRenderTraverser qrt(gsg, RenderRelation::get_class_type());
-      qrt.traverse(def, attrib, AllTransitionsWrapper());
+      qrt.traverse(def, attrib, trans);
     }
   }
 }

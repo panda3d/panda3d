@@ -206,9 +206,7 @@ r_traverse(Node *node, const ArcChain &chain) {
     AllTransitionsWrapper complete_trans;
     wrt(pgi, chain.begin(), chain.end(), this,
         complete_trans, RenderRelation::get_class_type());
-    AllAttributesWrapper render_state;
-    render_state.apply_from(_attrib, complete_trans);
-    pgi->draw_item(this, _gsg, render_state);
+    pgi->draw_item(this, _gsg, _attrib, complete_trans);
 
   } else if (node->is_of_type(GeomNode::get_class_type())) {
     _gsg->_geom_nodes_pcollector.add_level(1);

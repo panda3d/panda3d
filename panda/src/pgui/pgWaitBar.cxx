@@ -96,9 +96,10 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void PGWaitBar::
 draw_item(PGTop *top, GraphicsStateGuardian *gsg, 
-          const AllAttributesWrapper &attrib) {
+          const AllAttributesWrapper &attrib,
+          const AllTransitionsWrapper &trans) {
   update();
-  PGItem::draw_item(top, gsg, attrib);
+  PGItem::draw_item(top, gsg, attrib, trans);
 }
 
 ////////////////////////////////////////////////////////////////////
