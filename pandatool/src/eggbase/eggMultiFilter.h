@@ -24,6 +24,7 @@ protected:
   virtual bool handle_args(Args &args);
   virtual bool post_command_line();
 
+  Filename get_output_filename(const Filename &source_filename) const;
   void write_eggs();
 
 protected:

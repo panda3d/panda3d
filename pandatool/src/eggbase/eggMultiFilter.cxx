@@ -127,6 +127,30 @@ post_command_line() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggMultiFilter::get_output_filename
+//       Access: Protected
+//  Description: Returns the output filename of the egg file with the
+//               given input filename.  This is based on the user's
+//               choice of -inplace, -o, or -d.
+////////////////////////////////////////////////////////////////////
+Filename EggMultiFilter::
+get_output_filename(const Filename &source_filename) const {
+  if (_got_output_filename) {
+    nassertr(!_inplace && !_got_output_dirname && _eggs.size() == 1, Filename());
+    return _output_filename;
+    
+  } else if (_got_output_dirname) {
+    nassertr(!_inplace, Filename());
+    Filename result = source_filename;
+    result.set_dirname(_output_dirname);
+    return result;
+  }
+
+  nassertr(_inplace, Filename());
+  return source_filename;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggMultiFilter::write_eggs
 //       Access: Protected
 //  Description: Writes out all of the egg files in the _eggs vector,
@@ -138,19 +162,7 @@ write_eggs() {
   Eggs::iterator ei;
   for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
     EggData *data = (*ei);
-    Filename filename = data->get_egg_filename();
-
-    if (_got_output_filename) {
-      nassertv(!_inplace && !_got_output_dirname && _eggs.size() == 1);
-      filename = _output_filename;
-
-    } else if (_got_output_dirname) {
-      nassertv(!_inplace);
-      filename.set_dirname(_output_dirname);
-
-    } else {
-      nassertv(_inplace);
-    }
+    Filename filename = get_output_filename(data->get_egg_filename());
 
     nout << "Writing " << filename << "\n";
     filename.make_dir();

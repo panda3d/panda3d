@@ -1,0 +1,357 @@
+// Filename: imageFile.cxx
+// Created by:  drose (29Nov00)
+// 
+////////////////////////////////////////////////////////////////////
+
+#include "imageFile.h"
+
+#include <pnmImage.h>
+#include <pnmFileType.h>
+#include <eggTexture.h>
+#include <datagram.h>
+#include <datagramIterator.h>
+#include <bamReader.h>
+#include <bamWriter.h>
+
+TypeHandle ImageFile::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageFile::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+ImageFile::
+ImageFile() {
+  _size_known = false;
+  _x_size = 0;
+  _y_size = 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageFile::is_size_known
+//       Access: Public
+//  Description: Returns true if the size of the image file is known,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool ImageFile::
+is_size_known() const { 
+  return _size_known;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageFile::get_x_size
+//       Access: Public
+//  Description: Returns the size of the image file in pixels in the X
+//               direction.  It is an error to call this unless
+//               is_size_known() returns true.
+////////////////////////////////////////////////////////////////////
+int ImageFile::
+get_x_size() const { 
+  nassertr(is_size_known(), 0);
+  return _x_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageFile::get_y_size
+//       Access: Public
+//  Description: Returns the size of the image file in pixels in the Y
+//               direction.  It is an error to call this unless
+//               is_size_known() returns true.
+////////////////////////////////////////////////////////////////////
+int ImageFile::
+get_y_size() const { 
+  nassertr(is_size_known(), 0);
+  return _y_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageFile::has_num_channels
+//       Access: Public
+//  Description: Returns true if the number of channels in the image
+//               is known, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool ImageFile::
+has_num_channels() const { 
+  return _properties.has_num_channels();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageFile::get_num_channels
+//       Access: Public
+//  Description: Returns the number of channels of the image.  It is
+//               an error to call this unless has_num_channels()
+//               returns true.
+////////////////////////////////////////////////////////////////////
+int ImageFile::
+get_num_channels() const { 
+  return _properties.get_num_channels();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageFile::get_properties
+//       Access: Public
+//  Description: Returns the grouping properties of the image.
+////////////////////////////////////////////////////////////////////
+const TextureProperties &ImageFile::
+get_properties() const {
+  return _properties;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageFile::update_properties
+//       Access: Public
+//  Description: If the indicate TextureProperties structure is more
+//               specific than this one, updates this one.
+////////////////////////////////////////////////////////////////////
+void ImageFile::
+update_properties(const TextureProperties &properties) {
+  _properties.update_properties(properties);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageFile::set_filename
+//       Access: Public
+//  Description: Sets the filename, and if applicable, the
+//               alpha_filename, from the indicated basename.  The
+//               extension appropriate to the image file type
+//               specified in _color_type (and _alpha_type) is
+//               automatically applied.
+////////////////////////////////////////////////////////////////////
+void ImageFile::
+set_filename(const string &basename) {
+  _filename = basename;
+
+  if (_properties._color_type != (PNMFileType *)NULL) {
+    _filename.set_extension
+      (_properties._color_type->get_suggested_extension());
+  }
+
+  if (_properties._alpha_type != (PNMFileType *)NULL) {
+    _alpha_filename = _filename.get_fullpath_wo_extension() + "_alpha";
+    _alpha_filename.set_extension
+      (_properties._alpha_type->get_suggested_extension());
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageFile::get_filename
+//       Access: Public
+//  Description: Returns the primary filename of the image file.
+////////////////////////////////////////////////////////////////////
+const Filename &ImageFile::
+get_filename() const {
+  return _filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageFile::get_alpha_filename
+//       Access: Public
+//  Description: Returns the alpha filename of the image file.  This
+//               is the name of the file that contains the alpha
+//               channel, if it is stored in a separate file, or the
+//               empty string if it is not.
+////////////////////////////////////////////////////////////////////
+const Filename &ImageFile::
+get_alpha_filename() const {
+  return _alpha_filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageFile::exists
+//       Access: Public
+//  Description: Returns true if the file or files named by the image
+//               file exist, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool ImageFile::
+exists() const {
+  if (!_filename.exists()) {
+    return false;
+  }
+  if (_properties._alpha_type != (PNMFileType *)NULL && 
+      _properties.uses_alpha()) {
+    if (_alpha_filename.exists()) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageFile::read
+//       Access: Public
+//  Description: Reads in the image (or images, if the alpha_filename
+//               is separate) and stores it in the indicated PNMImage.
+//               Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool ImageFile::
+read(PNMImage &image) const {
+  nassertr(!_filename.empty(), false);
+
+  image.set_type(_properties._color_type);
+  nout << "Reading " << _filename << "\n";
+  if (!image.read(_filename)) {
+    nout << "Unable to read.\n";
+    return false;
+  }
+
+  if (!_alpha_filename.empty()) {
+    // Read in a separate color image and an alpha channel image.
+    PNMImage alpha_image;
+    alpha_image.set_type(_properties._alpha_type);
+    nout << "Reading " << _alpha_filename << "\n";
+    if (!alpha_image.read(_alpha_filename)) {
+      nout << "Unable to read.\n";
+      return false;
+    }
+    if (image.get_x_size() != alpha_image.get_x_size() ||
+	image.get_y_size() != alpha_image.get_y_size()) {
+      return false;
+    }
+
+    image.add_alpha();
+    for (int y = 0; y < image.get_y_size(); y++) {
+      for (int x = 0; x < image.get_x_size(); x++) {
+	image.set_alpha(x, y, alpha_image.get_gray(x, y));
+      }
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageFile::write
+//       Access: Public
+//  Description: Writes out the image in the indicated PNMImage to the
+//               _filename and/or _alpha_filename.  Returns true on
+//               success, false on failure.  Warning: this may change
+//               the PNMImage.  In particular, it may remove the alpha
+//               channel.
+////////////////////////////////////////////////////////////////////
+bool ImageFile::
+write(PNMImage &image) const {
+  nassertr(!_filename.empty(), false);
+
+  if (!image.has_alpha() || 
+      _properties._alpha_type == (PNMFileType *)NULL) {
+    if (!_alpha_filename.empty() && _alpha_filename.exists()) {
+      _alpha_filename.unlink();
+    }
+    nout << "Writing " << _filename << "\n";
+    if (!image.write(_filename, _properties._color_type)) {
+      nout << "Unable to write.\n";
+      return false;
+    }
+    return true;
+  }
+
+  // Write out a separate color image and an alpha channel image.
+  PNMImage alpha_image(image.get_x_size(), image.get_y_size(), 1,
+		       image.get_maxval());
+  for (int y = 0; y < image.get_y_size(); y++) {
+    for (int x = 0; x < image.get_x_size(); x++) {
+      alpha_image.set_gray_val(x, y, image.get_alpha_val(x, y));
+    }
+  }
+
+  image.remove_alpha();
+  nout << "Writing " << _filename << "\n";
+  if (!image.write(_filename, _properties._color_type)) {
+    nout << "Unable to write.\n";
+    return false;
+  }
+  nout << "Writing " << _alpha_filename << "\n";
+  if (!alpha_image.write(_alpha_filename, _properties._alpha_type)) {
+    nout << "Unable to write.\n";
+    return false;
+  }
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageFile::unlink
+//       Access: Public
+//  Description: Deletes the image file or files.
+////////////////////////////////////////////////////////////////////
+void ImageFile::
+unlink() {
+  if (!_filename.empty() && _filename.exists()) {
+    nout << "Deleting " << _filename << "\n";
+    _filename.unlink();
+  }
+  if (!_alpha_filename.empty() && _alpha_filename.exists()) {
+    nout << "Deleting " << _alpha_filename << "\n";
+    _alpha_filename.unlink();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageFile::update_egg_tex
+//       Access: Public
+//  Description: Sets the indicated EggTexture to refer to this file.
+////////////////////////////////////////////////////////////////////
+void ImageFile::
+update_egg_tex(EggTexture *egg_tex) const {
+  nassertv(egg_tex != (EggTexture *)NULL);
+
+  egg_tex->set_filename(_filename);
+
+  if (_properties._alpha_type != (PNMFileType *)NULL &&
+      !_alpha_filename.empty()) {
+    egg_tex->set_alpha_file(_alpha_filename);
+  } else {
+    egg_tex->clear_alpha_file();
+  }
+
+  _properties.update_egg_tex(egg_tex);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageFile::output_filename
+//       Access: Public
+//  Description: Writes the filename (or pair of filenames) to the
+//               indicated output stream.
+////////////////////////////////////////////////////////////////////
+void ImageFile::
+output_filename(ostream &out) const {
+  out << _filename;
+  if (_properties._alpha_type != (PNMFileType *)NULL &&
+      !_alpha_filename.empty()) {
+    out << " " << _alpha_filename;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageFile::write_datagram
+//       Access: Public, Virtual
+//  Description: Fills the indicated datagram up with a binary
+//               representation of the current object, in preparation
+//               for writing to a Bam file.
+////////////////////////////////////////////////////////////////////
+void ImageFile::
+write_datagram(BamWriter *writer, Datagram &datagram) {
+  _properties.write_datagram(writer, datagram);
+  datagram.add_string(_filename);
+  datagram.add_string(_alpha_filename);
+  datagram.add_bool(_size_known);
+  datagram.add_int32(_x_size);
+  datagram.add_int32(_y_size);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ImageFile::fillin
+//       Access: Protected
+//  Description: Reads the binary data from the given datagram
+//               iterator, which was written by a previous call to
+//               write_datagram().
+////////////////////////////////////////////////////////////////////
+void ImageFile::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  _properties.fillin(scan, manager);
+  _filename = scan.get_string();
+  _alpha_filename = scan.get_string();
+  _size_known = scan.get_bool();
+  _x_size = scan.get_int32();
+  _y_size = scan.get_int32();
+}
