@@ -18,6 +18,7 @@ LwoToEgg::
 LwoToEgg() :
   SomethingToEgg("MultiGen", ".lwo")
 {
+  add_units_options();
   add_normals_options();
   add_transform_options();
 
@@ -33,6 +34,11 @@ LwoToEgg() :
     ("cs",
      "Specify the coordinate system of the input " + _format_name +
      " file.  Normally, this is y-up-left.");
+
+  redescribe_option
+    ("ui",
+     "Specify the units of the input Lightwave file.  By convention, "
+     "this is assumed to be meters if it is unspecified.");
 
   _coordinate_system = CS_yup_left;
 }
