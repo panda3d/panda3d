@@ -5,7 +5,7 @@
 #include <fcntl.h>
 
 #include "mpg123.h"
-#include "buffer.h"
+#include "mpgbuffer.h"
 #include "common.h"
 
 #ifdef READ_MMAP

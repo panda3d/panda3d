@@ -68,7 +68,7 @@ typedef unsigned char byte;
 #define INLINE
 #endif
 
-#include "audio.h"
+#include "mpgaudio.h"
 
 /* AUDIOBUFSIZE = n*64 with n=1,2,3 ...  */
 #define		AUDIOBUFSIZE		16384
