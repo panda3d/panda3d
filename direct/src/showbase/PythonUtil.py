@@ -519,7 +519,8 @@ def lerp(v0, v1, t):
 
 def lineupPos(i, num, spacing):
     """
-    use to line up a series of 'num' objects, centered around zero
+    use to line up a series of 'num' objects, in one dimension,
+    centered around zero
     'i' is the index of the object in the lineup
     'spacing' is the amount of space between objects in the lineup
     """
