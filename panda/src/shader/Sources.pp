@@ -6,16 +6,22 @@
   #define TARGET shader
   #define LOCAL_LIBS \
     putil express display graph sgattrib light sgraphutil
+    
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx    
 
   #define SOURCES \
-    casterShader.I casterShader.cxx casterShader.h config_shader.cxx \
-    config_shader.h outlineShader.cxx outlineShader.h \
-    planarReflector.cxx planarReflector.h projtexShader.cxx \
-    projtexShader.h projtexShadower.cxx projtexShadower.h shader.I \
-    shader.cxx shader.h shaderTransition.I shaderTransition.cxx \
-    shaderTransition.h spheretexHighlighter.cxx spheretexHighlighter.h \
-    spheretexReflector.cxx spheretexReflector.h spheretexShader.cxx \
-    spheretexShader.h spotlightShader.cxx spotlightShader.h
+     casterShader.I casterShader.h config_shader.h outlineShader.h  \
+     planarReflector.h projtexShader.h projtexShadower.h shader.I  \
+     shader.h shaderTransition.I shaderTransition.h  \
+     spheretexHighlighter.h spheretexReflector.h  \
+     spheretexShader.h spotlightShader.h  \
+
+  #define INCLUDED_SOURCES  \
+     casterShader.cxx config_shader.cxx outlineShader.cxx  \
+     planarReflector.cxx projtexShader.cxx projtexShadower.cxx  \
+     shader.cxx shaderTransition.cxx spheretexHighlighter.cxx  \
+     spheretexReflector.cxx spheretexShader.cxx  \
+     spotlightShader.cxx 
 
   #define INSTALL_HEADERS \
     casterShader.I casterShader.h outlineShader.h planarReflector.h \
