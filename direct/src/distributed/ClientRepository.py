@@ -8,6 +8,7 @@ import ClientDistClass
 import CRCache
 import ConnectionRepository
 import PythonUtil
+import time
 
 class ClientRepository(ConnectionRepository.ConnectionRepository):
     notify = DirectNotifyGlobal.directNotify.newCategory("ClientRepository")
@@ -41,6 +42,19 @@ class ClientRepository(ConnectionRepository.ConnectionRepository):
 
     def getServerDelta(self):
         return self.serverDelta
+
+    def getServerTimeOfDay(self):
+        """
+        Returns the current time of day (seconds elapsed since the
+        1972 epoch) according to the server's clock.  This is in GMT,
+        and hence is irrespective of timezones.
+
+        The value is computed based on the client's clock and the
+        known delta from the server's clock, which is not terribly
+        precisely measured and may drift slightly after startup, but
+        it should be accurate plus or minus a couple of seconds.
+        """
+        return time.time() + self.cr.getServerDelta()
 
     def parseDcFile(self, dcFileName):
         self.dcFile = DCFile()
