@@ -30,7 +30,8 @@
   #define COMMONFLAGS /Gi- /Qwd985
 //  #define OPTFLAGS /O3 /G6 /Qvc6 /Qipo /QaxW /Qvec_report1 
   #define OPTFLAGS /O3 /G6 /Qvc6 /Qip
-  #define DEBUGFLAGS /MDd /Zi /Qinline_debug_info
+  // Oy- needed for MS debugger
+  #define DEBUGFLAGS /MDd /Zi /Qinline_debug_info /Oy-
   #define OPT1FLAGS /GZ /Od
   #define RELEASEFLAGS /MD
   // We assume the Intel compiler installation dir is mounted as /ia32.
