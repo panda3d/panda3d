@@ -56,7 +56,7 @@ private:
 		   EggGroupNode *egg_parent);
   void convert_group(const FltGroup *flt_group, const FltObject *flt_object,
 		     EggGroupNode *egg_parent);
-  void convert_object(const FltObject *flt_object, const FltObject *flt_object,
+  void convert_object(const FltObject *flt_object, const FltObject *,
 		      EggGroupNode *egg_parent);
   void convert_bead_id(const FltBeadID *flt_bead, const FltObject *flt_object,
 		       EggGroupNode *egg_parent);
