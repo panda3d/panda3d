@@ -349,12 +349,24 @@ reset() {
   _supports_3d_texture = 
     has_extension("GL_EXT_texture3D") || is_at_least_version(1, 2);
 
-  if (_supports_3d_texture) {
+  if (is_at_least_version(1, 2)) {
+    _supports_3d_texture = true;
+
     _glTexImage3D = (PFNGLTEXIMAGE3DPROC)
       get_extension_func(GLPREFIX_QUOTED, "TexImage3D");
     _glTexSubImage3D = (PFNGLTEXSUBIMAGE3DPROC)
       get_extension_func(GLPREFIX_QUOTED, "TexSubImage3D");
 
+  } else if (has_extension("GL_EXT_texture3D")) {
+    _supports_3d_texture = true;
+
+    _glTexImage3D = (PFNGLTEXIMAGE3DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "TexImage3DEXT");
+    _glTexSubImage3D = (PFNGLTEXSUBIMAGE3DPROC)
+      get_extension_func(GLPREFIX_QUOTED, "TexSubImage3DEXT");
+  }
+
+  if (_supports_3d_texture) {
     if (_glTexImage3D == NULL || _glTexSubImage3D == NULL) {
       GLCAT.warning()
         << "3-D textures advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
