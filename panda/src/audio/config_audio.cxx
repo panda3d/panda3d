@@ -49,6 +49,10 @@ ConfigureFn(config_audio) {
 }
 
 void audio_load_loaders(void) {
+  static bool did_load = false;
+
+  if (did_load)
+    return;
   Config::ConfigTable::Symbol::iterator i;
   Config::ConfigTable::Symbol loaders;
   config_audio.GetAll("audio-loader", loaders);
@@ -60,4 +64,5 @@ void audio_load_loaders(void) {
     if (tmp == (void*)0L)
       audio_cat->info() << "unable to load: " << load_dso_error() << endl;
   }
+  did_load = true;
 }
