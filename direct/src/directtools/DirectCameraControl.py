@@ -259,7 +259,6 @@ class DirectCameraControl(PandaObject):
 
     def mouseRollTask(self, state):
         wrtMat = state.wrtMat
-        print wrtMat
         angle = getCrankAngle(state.coaCenter)
         deltaAngle = angle - state.lastAngle
         state.lastAngle = angle

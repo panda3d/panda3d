@@ -170,15 +170,9 @@ class DirectSession(PandaObject):
         if self.clusterMode == 'client':
             self.cluster = createClusterClient()
         elif self.clusterMode == 'server':
-            if base.config.GetBool('cluster-sync',0):
-                self.cluster = ClusterServerSync(base.cameraList[0],
-                                                        base.camList[0])
-                base.win.setSync(1)
-            else:
-                self.cluster = ClusterServer(base.cameraList[0],
-                                                   base.camList[0])
+            self.cluster = ClusterServer(base.cameraList[0], base.camList[0])
         else:
-            self.cluster = None
+            self.cluster = DummyClusterClient()
             
     def enable(self):
         # Make sure old tasks are shut down

@@ -19,7 +19,17 @@ CLUSTER_SELECTED_MOVEMENT = 7
 CLUSTER_EXIT = 100
 
 #Port number for cluster rendering
-CLUSTER_PORT = 1970
+CLUSTER_SERVER_PORT = 1970
+CLUSTER_DAEMON_PORT = 8001
+
+SERVER_STARTUP_STRING = (
+    'bash ppython -c ' + 
+    '"import __builtin__; ' +
+    '__builtin__.clusterServerPort = %s;' +
+    '__builtin__.clusterSyncFlag = %d;' +
+    '__builtin__.clusterDaemonClient = \'%s\';' +
+    '__builtin__.clusterDaemonPort = %d;'
+    'from ShowBaseGlobal import *"')
 
 class ClusterMsgHandler:
     """ClusterMsgHandler: wrapper for PC clusters/multi-piping networking"""

@@ -11,18 +11,40 @@ class ClusterClient(DirectObject.DirectObject):
     notify = DirectNotifyGlobal.directNotify.newCategory("ClusterClient")
     MGR_NUM = 1000000
 
-    def __init__(self, configList):
+    def __init__(self, configList, clusterSyncFlag):
+        # First start up servers using direct daemon
+        clusterDaemonClient = base.config.GetString(
+            'cluster-daemon-client', 'localhost')
+        clusterDaemonPort = base.config.GetInt(
+            'cluster-daemon-port', CLUSTER_DAEMON_PORT)
+        self.daemon = DirectD()
+        print 'LISTEN'
+        self.daemon.listenTo(clusterDaemonPort)
+        for serverConfig in configList:
+            serverCommand = (SERVER_STARTUP_STRING %
+                             (serverConfig.serverPort,
+                              clusterSyncFlag,
+                              clusterDaemonClient,
+                              clusterDaemonPort))
+            print 'BOOTSTRAP', serverCommand
+            self.daemon.clientReady(serverConfig.serverName,
+                                    clusterDaemonPort,
+                                    serverCommand)
+        print 'WAITING'
+        if not self.daemon.waitForServers(len(configList)):
+            print 'ERROR'
+        print 'DONE'
         self.qcm=QueuedConnectionManager()
         self.serverList = []
         self.msgHandler = ClusterMsgHandler(ClusterClient.MGR_NUM, self.notify)
         for serverConfig in configList:
             server = DisplayConnection(self.qcm,serverConfig.serverName,
-                                         serverConfig.port,self.msgHandler)
+                                       serverConfig.serverPort,self.msgHandler)
             if server == None:
                 self.notify.error('Could not open %s on %s port %d' %
                                   (serverConfig.serverConfigName,
                                    serverConfig.serverName,
-                                   serverConfig.port))
+                                   serverConfig.serverPort))
             else:
                 server.sendCamOffset(serverConfig.xyz,serverConfig.hpr)
                 if serverConfig.fFrustum:
@@ -98,10 +120,10 @@ class ClusterClient(DirectObject.DirectObject):
         import sys
         sys.exit()
 
-class ClusterClientSync(ClusterClient):
 
-    def __init__(self, configList):
-        ClusterClient.__init__(self, configList)
+class ClusterClientSync(ClusterClient):
+    def __init__(self, configList, clusterSyncFlag):
+        ClusterClient.__init__(self, configList, clusterSyncFlag)
         #I probably don't need this
         self.waitForSwap = 0
         self.ready = 0
@@ -135,6 +157,7 @@ class ClusterClientSync(ClusterClient):
             self.notify.debug('moving synced camera')
             ClusterClient.moveCamera(self,xyz,hpr)
             self.waitForSwap=1
+
         
 class DisplayConnection:
     def __init__(self,qcm,serverName,port,msgHandler):
@@ -220,10 +243,10 @@ class DisplayConnection:
         self.cw.send(datagram, self.tcpConn)
 
 class ClusterConfigItem:
-    def __init__(self, serverConfigName, serverName, port):
+    def __init__(self, serverConfigName, serverName, serverPort):
         self.serverConfigName = serverConfigName
         self.serverName = serverName
-        self.port = port
+        self.serverPort = serverPort
         # Camera Offset
         self.xyz = Vec3(0)
         self.hpr = Vec3(0)
@@ -240,6 +263,7 @@ class ClusterConfigItem:
         self.focalLength = focalLength
         self.filmSize = filmSize
         self.filmOffset = filmOffset
+
 
 def createClusterClient():
     # setup camera offsets based on cluster-config
@@ -269,29 +293,29 @@ def createClusterClient():
             lens = base.cam.node().getLens()
             lens.setViewHpr(hpr)
             lens.setIodOffset(pos[0])
-            lens.setFocalLength(fl)
-            lens.setFilmSize(fs[0], fs[1])
-            lens.setFilmOffset(fo[0], fo[1])
+            if fl is not None:
+                lens.setFocalLength(fl)
+            if fs is not None:
+                lens.setFilmSize(fs[0], fs[1])
+            if fo is not None:
+                lens.setFilmOffset(fo[0], fo[1])
         else:
             serverConfigName = 'cluster-server-%s' % displayName
-            serverString = base.config.GetString(serverConfigName, '')
-            if serverString == '':
+            serverName = base.config.GetString(serverConfigName, '')
+            if serverName == '':
                 base.notify.warning(
                     '%s undefined in Configrc: expected by %s display client.'%
                     (serverConfigName,clusterConfig))
                 base.notify.warning('%s will not be used.' % serverConfigName)
             else:
-                serverInfo = string.split(serverString)
-                serverName = serverInfo[0]
-                if len(serverInfo) > 1:
-                    port = int(serverInfo[1])
-                else:
-                    # Use default port
-                    port = CLUSTER_PORT
+                # Server port
+                serverPortConfigName = 'cluster-server-port-%s' % displayName
+                serverPort = base.config.GetInt(serverPortConfigName,
+                                                CLUSTER_SERVER_PORT)
                 cci = ClusterConfigItem(
                     serverConfigName,
                     serverName,
-                    port)
+                    serverPort)
                 # Init cam offset
                 cci.setCamOffset(pos, hpr)
                 # Init frustum if specified
@@ -300,10 +324,23 @@ def createClusterClient():
                 displayConfigs.append(cci)
     # Create Cluster Managers (opening connections to servers)
     # Are the servers going to be synced?
-    if base.config.GetBool('cluster-sync', 0):
+    clusterSyncFlag = base.config.GetBool('cluster-sync', 0)
+    if clusterSyncFlag:
         base.win.setSync(1)
-        return ClusterClientSync(displayConfigs)
+        return ClusterClientSync(displayConfigs, clusterSyncFlag)
     else:
-            return ClusterClient(displayConfigs)
+        return ClusterClient(displayConfigs, clusterSyncFlag)
     
     
+class DummyClusterClient(DirectObject.DirectObject):
+    """ Dummy class to handle command strings when not in cluster mode """
+    notify = DirectNotifyGlobal.directNotify.newCategory("ClusterClient")
+    def __init__(self):
+        pass
+
+    def cmd(self, commandString, fLocally = 1):
+        if fLocally:
+            # Execute locally
+            exec( commandString, globals() )
+
+

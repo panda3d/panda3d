@@ -7,6 +7,12 @@ import DirectNotifyGlobal
 import DirectObject
 import Task
 
+# NOTE: This assumes the following variables are set via bootstrap command line
+# arguments on server startup:
+#     clusterServerPort
+#     clusterSyncFlag
+#     clusterDaemonClient
+#     clusterDaemonPort
 # Also, I'm not sure multiple camera-group configurations are working for the
 # cluster system.
 
@@ -15,6 +21,9 @@ class ClusterServer(DirectObject.DirectObject):
     MSG_NUM = 2000000
 
     def __init__(self,cameraJig,camera):
+        import pdb
+        pdb.set_trace()
+        print clusterServerPort, clusterSyncFlag, clusterDaemonClient, clusterDaemonPort
         # Store information about the cluster's camera
         self.cameraJig = cameraJig
         self.camera = camera
@@ -26,13 +35,39 @@ class ClusterServer(DirectObject.DirectObject):
         self.qcl = QueuedConnectionListener(self.qcm, 0)
         self.qcr = QueuedConnectionReader(self.qcm, 0)
         self.cw = ConnectionWriter(self.qcm,0)
-        port = base.config.GetInt('cluster-server-port', CLUSTER_PORT)
+        try:
+            port = clusterServerPort
+        except NameError:
+            port = CLUSTER_SERVER_PORT
         self.tcpRendezvous = self.qcm.openTCPServerRendezvous(port, 1)
         self.qcl.addConnection(self.tcpRendezvous)
         self.msgHandler = ClusterMsgHandler(ClusterServer.MSG_NUM, self.notify)
         # Start cluster tasks
         self.startListenerPollTask()
         self.startReaderPollTask()
+        # If synchronized server, start swap coordinator too
+        try:
+            clusterSyncFlag
+        except NameError:
+            clusterSyncFlag = 0
+        if clusterSyncFlag:
+            self.startSwapCoordinator()
+            base.win.setSync(1)
+        print 'DAEMON'
+        # Send verification of startup to client
+        self.daemon = DirectD()
+        # These must be passed in as bootstrap arguments and stored in
+        # the __builtin__ namespace
+        try:
+            clusterDaemonClient
+        except NameError:
+            clusterDaemonClient = 'localhost'
+        try:
+            clusterDaemonPort
+        except NameError:
+            clusterDaemonPort = CLUSTER_DAEMON_PORT
+        print 'SERVER READY'
+        self.daemon.serverReady(clusterDaemonClient, clusterDaemonPort)
 
     def startListenerPollTask(self):
         # Run this task near the start of frame, sometime after the dataloop
@@ -59,9 +94,14 @@ class ClusterServer(DirectObject.DirectObject):
     def startReaderPollTask(self):
         """ Task to handle datagrams from client """
         # Run this task just after the listener poll task
-        taskMgr.add(self.readerPollTask, "serverReaderPollTask", -39)
+        if clusterSyncFlag:
+            # Sync version
+            taskMgr.add(self._syncReaderPollTask, "serverReaderPollTask", -39)
+        else:
+            # Asynchronous version
+            taskMgr.add(self._readerPollTask, "serverReaderPollTask", -39)
 
-    def readerPollTask(self, state):
+    def _readerPollTask(self, state):
         """ Non blocking task to read all available datagrams """
         while 1:
             (datagram, dgi,type) = self.msgHandler.nonBlockingRead(self.qcr)
@@ -72,6 +112,41 @@ class ClusterServer(DirectObject.DirectObject):
                 # Got a datagram, handle it
                 self.handleDatagram(dgi, type)
         return Task.cont
+
+    def _syncReaderPollTask(self, task):
+        if self.lastConnection is None:
+            pass
+        elif self.qcr.isConnectionOk(self.lastConnection):
+            # Process datagrams till you get a postion update
+            type = CLUSTER_NONE
+            while type != CLUSTER_CAM_MOVEMENT:
+                # Block until you get a new datagram
+                (datagram,dgi,type) = self.msgHandler.blockingRead(self.qcr)
+                # Process datagram
+                self.handleDatagram(dgi,type)
+        return Task.cont
+
+    def startSwapCoordinator(self):
+        taskMgr.add(self.swapCoordinatorTask, "serverSwapCoordinator", 51)
+
+    def swapCoordinatorTask(self, task):
+        if self.fPosReceived:
+            self.fPosReceived = 0
+            # Alert client that this server is ready to swap
+            self.sendSwapReady()
+            # Wait for swap command (processing any intermediate datagrams)
+            while 1:
+                (datagram,dgi,type) = self.msgHandler.blockingRead(self.qcr)
+                self.handleDatagram(dgi,type)
+                if type == CLUSTER_SWAP_NOW:
+                    break
+        return Task.cont
+
+    def sendSwapReady(self):
+        self.notify.debug(
+            'send swap ready packet %d' % self.msgHandler.packetNumber)
+        datagram = self.msgHandler.makeSwapReadyDatagram()
+        self.cw.send(datagram, self.lastConnection)
 
     def handleDatagram(self, dgi, type):
         """ Process a datagram depending upon type flag """
@@ -130,55 +205,3 @@ class ClusterServer(DirectObject.DirectObject):
         command = self.msgHandler.parseCommandStringDatagram(dgi)
         exec( command, globals() )
         
-class ClusterServerSync(ClusterServer):
-
-    def __init__(self,cameraJig,camera):
-        self.notify.info('starting ClusterServerSync')
-        ClusterServer.__init__(self,cameraJig,camera)
-        self.startSwapCoordinator()
-
-    def readerPollTask(self, task):
-        if self.lastConnection is None:
-            pass
-        elif self.qcr.isConnectionOk(self.lastConnection):
-            # Process datagrams till you get a postion update
-            type = CLUSTER_NONE
-            while type != CLUSTER_CAM_MOVEMENT:
-                # Block until you get a new datagram
-                (datagram,dgi,type) = self.msgHandler.blockingRead(self.qcr)
-                # Process datagram
-                self.handleDatagram(dgi,type)
-        return Task.cont
-
-    def sendSwapReady(self):
-        self.notify.debug(
-            'send swap ready packet %d' % self.msgHandler.packetNumber)
-        datagram = self.msgHandler.makeSwapReadyDatagram()
-        self.cw.send(datagram, self.lastConnection)
-
-    def startSwapCoordinator(self):
-        taskMgr.add(self.swapCoordinatorTask, "serverSwapCoordinator", 51)
-
-    def swapCoordinatorTask(self, task):
-        if self.fPosReceived:
-            self.fPosReceived = 0
-            # Alert client that this server is ready to swap
-            self.sendSwapReady()
-            # Wait for swap command (processing any intermediate datagrams)
-            while 1:
-                (datagram,dgi,type) = self.msgHandler.blockingRead(self.qcr)
-                self.handleDatagram(dgi,type)
-                if type == CLUSTER_SWAP_NOW:
-                    break
-        return Task.cont
-
-
-    
-
-
-
-
-
-
-
-
