@@ -32,6 +32,12 @@ class DownloaderToken;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Downloader : public AsyncUtility {
 PUBLISHED:
+  enum DownloadCode {
+    DS_write = 2,
+    DS_success = 1,
+    DS_abort = -1,
+    DS_timeout = -2
+  };
   Downloader(void);
   //Downloader(PT(Buffer) buffer);
   virtual ~Downloader(void);
