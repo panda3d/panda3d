@@ -33,6 +33,8 @@
 //               each time they are needed, so that we can sensibly
 //               pass around pointers to things which are both
 //               TypedWritables and ReferenceCounters.
+//               
+//               See Also TypeObject for detailed instructions.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA TypedWritableReferenceCount : public TypedWritable, public ReferenceCount {
 public:

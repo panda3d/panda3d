@@ -31,6 +31,8 @@ class DatagramIterator;
 //       Class : TypedWritable
 // Description : Base class for objects that can be written to and
 //               read from Bam files.
+//               
+//               See Also TypeObject for detailed instructions.
 ////////////////////////////////////////////////////////////////////
 
 class EXPCL_PANDA TypedWritable : public TypedObject {

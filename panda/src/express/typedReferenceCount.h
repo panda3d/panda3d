@@ -33,6 +33,8 @@
 //               each time they are needed, so that we can sensibly
 //               pass around pointers to things which are both
 //               TypedObjects and ReferenceCounters.
+//               
+//               See Also TypeObject for detailed instructions.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS TypedReferenceCount : public TypedObject, public ReferenceCount {
 public:
