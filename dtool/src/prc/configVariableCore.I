@@ -204,7 +204,7 @@ get_num_references() const {
 INLINE const ConfigDeclaration *ConfigVariableCore::
 get_reference(int n) const {
   check_sort_declarations();
-  nassertr(n >= 0 && n < (int)_declarations.size(), NULL);
+  nassertr(n >= 0 && n < (int)_declarations.size(), (ConfigDeclaration *)NULL);
   return _declarations[n];
 }
 
@@ -238,7 +238,7 @@ get_num_trusted_references() const {
 INLINE const ConfigDeclaration *ConfigVariableCore::
 get_trusted_reference(int n) const {
   check_sort_declarations();
-  nassertr(n >= 0 && n < (int)_trusted_declarations.size(), NULL);
+  nassertr(n >= 0 && n < (int)_trusted_declarations.size(), (ConfigDeclaration *)NULL);
   return _trusted_declarations[n];
 }
 
@@ -265,7 +265,7 @@ get_num_unique_references() const {
 INLINE const ConfigDeclaration *ConfigVariableCore::
 get_unique_reference(int n) const {
   check_sort_declarations();
-  nassertr(n >= 0 && n < (int)_unique_declarations.size(), NULL);
+  nassertr(n >= 0 && n < (int)_unique_declarations.size(), (ConfigDeclaration *)NULL);
   return _unique_declarations[n];
 }
 

@@ -253,7 +253,7 @@ get_top_category() {
 NotifyCategory *Notify::
 get_category(const string &basename, NotifyCategory *parent_category) {
   // The string should not contain colons.
-  nassertr(basename.find(':') == string::npos, NULL);
+  nassertr(basename.find(':') == string::npos, (NotifyCategory *)NULL);
 
   string fullname;
   if (parent_category != (NotifyCategory *)NULL) {
@@ -270,7 +270,7 @@ get_category(const string &basename, NotifyCategory *parent_category) {
   }
 
   pair<Categories::iterator, bool> result = 
-    _categories.insert(Categories::value_type(fullname, NULL));
+    _categories.insert(Categories::value_type(fullname, (NotifyCategory *)NULL));
 
   bool inserted = result.second;
   NotifyCategory *&category = (*result.first).second;

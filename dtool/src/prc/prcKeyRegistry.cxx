@@ -66,7 +66,7 @@ void PrcKeyRegistry::
 record_keys(const KeyDef *key_def, int num_keys) {
   for (int i = 0; i < num_keys; i++) {
     const KeyDef *def = &key_def[i];
-    if (def->_data != NULL) {
+    if (def->_data != (char *)NULL) {
       // Clear the ith key.
       while ((int)_keys.size() <= i) {
         Key key;
@@ -136,7 +136,7 @@ get_num_keys() const {
 ////////////////////////////////////////////////////////////////////
 EVP_PKEY *PrcKeyRegistry::
 get_key(int n) const {
-  nassertr(n >= 0 && n < (int)_keys.size(), NULL);
+  nassertr(n >= 0 && n < (int)_keys.size(), (EVP_PKEY *)NULL);
 
   if (_keys[n]._def != (KeyDef *)NULL) {
     if (_keys[n]._pkey == (EVP_PKEY *)NULL) {

@@ -137,7 +137,7 @@ get_num_implicit_pages() const {
 INLINE ConfigPage *ConfigPageManager::
 get_implicit_page(int n) const {
   check_sort_pages();
-  nassertr(n >= 0 && n < (int)_implicit_pages.size(), NULL);
+  nassertr(n >= 0 && n < (int)_implicit_pages.size(), (ConfigPage *)NULL);
   return _implicit_pages[n];
 }
 
@@ -163,7 +163,7 @@ get_num_explicit_pages() const {
 INLINE ConfigPage *ConfigPageManager::
 get_explicit_page(int n) const {
   check_sort_pages();
-  nassertr(n >= 0 && n < (int)_explicit_pages.size(), NULL);
+  nassertr(n >= 0 && n < (int)_explicit_pages.size(), (ConfigPage *)NULL);
   return _explicit_pages[n];
 }
 

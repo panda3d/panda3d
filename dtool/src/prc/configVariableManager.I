@@ -35,7 +35,7 @@ get_num_variables() const {
 ////////////////////////////////////////////////////////////////////
 INLINE ConfigVariableCore *ConfigVariableManager::
 get_variable(int n) const {
-  nassertr(n >= 0 && n < (int)_variables.size(), NULL);
+  nassertr(n >= 0 && n < (int)_variables.size(), (ConfigVariableCore *)NULL);
   return _variables[n];
 }
 

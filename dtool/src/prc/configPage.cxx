@@ -153,7 +153,7 @@ read_prc(istream &in) {
 
     // Look for the first line in the buffer..
     char *newline = (char *)memchr((void *)buffer, '\n', count);
-    if (newline == NULL) {
+    if (newline == (char *)NULL) {
       // The buffer was one long line.  Huh.
       prev_line += string(buffer, count);
 
@@ -165,7 +165,7 @@ read_prc(istream &in) {
       // Now look for the next line, etc.
       char *start = newline + 1;
       newline = (char *)memchr((void *)start, '\n', buffer_end - start);
-      while (newline != NULL) {
+      while (newline != (char *)NULL) {
         length = newline - start;
         read_prc_line(string(start, length + 1));
         start = newline + 1;
@@ -290,7 +290,7 @@ get_num_declarations() const {
 ////////////////////////////////////////////////////////////////////
 const ConfigDeclaration *ConfigPage::
 get_declaration(int n) const {
-  nassertr(n >= 0 && n < (int)_declarations.size(), NULL);
+  nassertr(n >= 0 && n < (int)_declarations.size(), (ConfigDeclaration *)NULL);
   return _declarations[n];
 }
 
