@@ -733,10 +733,16 @@ make_Texture(const FactoryParams &params) {
   string name = scan.get_string();
   Filename filename = scan.get_string();
   Filename alpha_filename = scan.get_string();
+
   int primary_file_num_channels = 0;  
   int alpha_file_channel = 0;  
 
-  if (manager->get_file_minor_ver() >= 3) {
+  if (manager->get_file_minor_ver() == 2) {
+    // We temporarily had a version that stored the number of channels
+    // here.
+    primary_file_num_channels = scan.get_uint8();
+
+  } else if (manager->get_file_minor_ver() >= 3) {
     primary_file_num_channels = scan.get_uint8();
     alpha_file_channel = scan.get_uint8();
   }
