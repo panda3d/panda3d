@@ -1030,40 +1030,56 @@ prepare_lens() {
     return false;
   }
 
-  HRESULT hr;
+  // lets get the lens perspective matrix
+  const LMatrix4f &projection_mat = _current_lens->get_projection_mat();
+  
+  // The projection matrix must always be left-handed Y-up internally,
+  // even if our coordinate system of choice is otherwise.
+  LMatrix4f new_projection_mat =
+    LMatrix4f::convert_mat(CS_yup_left, _current_lens->get_coordinate_system()) *
+    projection_mat;
+  
+  float vfov = _current_lens->get_vfov();
+  float nearf = _current_lens->get_near();
+  float farf = _current_lens->get_far();
 
+  //dxgsg8_cat.debug() << new_projection_mat << endl;
+  
+  HRESULT hr;
   if (_current_lens->get_type().get_name() == "PerspectiveLens") {
-    // new method, still in test
+#if 0
     const LMatrix4f mat_temp;
+
     float hfov = _current_lens->get_hfov();
-    float vfov = _current_lens->get_vfov();
     float ar = _current_lens->get_aspect_ratio();
     float nearf = _current_lens->get_near();
     float farf = _current_lens->get_far();
-    //dxgsg8_cat.debug() << "hfov " << hfov << " vfov " << vfov << " ar " << ar << " near " << nearf << " far " << farf << endl;
-    
     double vfov_radian = vfov * 0.0174532925;
-    
+
+    dxgsg8_cat.debug() << "hfov " << hfov << " vfov " << vfov << " ar " << ar << " near " << nearf << " far " << farf << endl;
     D3DXMatrixPerspectiveFovLH( (D3DXMATRIX*)mat_temp.get_data(), vfov_radian, ar, nearf, farf );
-    
+
     hr = _pD3DDevice->SetTransform(D3DTS_PROJECTION,
                                    (D3DMATRIX*)mat_temp.get_data());
-    //dxgsg8_cat.debug() << mat_temp << endl;
-    //dxgsg8_cat.debug() << "using perspective projection" << endl;
-  }
-  else {
-    const LMatrix4f &projection_mat = _current_lens->get_projection_mat();
+    dxgsg8_cat.debug() << mat_temp << endl;
+#endif
     
-    // The projection matrix must always be left-handed Y-up internally,
-    // even if our coordinate system of choice is otherwise.
-    LMatrix4f new_projection_mat =
-      LMatrix4f::convert_mat(CS_yup_left, _current_lens->get_coordinate_system()) *
-      projection_mat;
- 
+    ((D3DXMATRIX*)new_projection_mat.get_data())->_33 = farf / (farf-nearf);
+    ((D3DXMATRIX*)new_projection_mat.get_data())->_43 = -nearf * farf / (farf - nearf);
+
     hr = _pD3DDevice->SetTransform(D3DTS_PROJECTION,
                                    (D3DMATRIX*)new_projection_mat.get_data());
     //dxgsg8_cat.debug() << new_projection_mat << endl;
-    //dxgsg8_cat.debug() << "using other projection" << endl;
+    //dxgsg8_cat.debug() << "using perspective projection" << endl;
+  }
+  else {
+    ((D3DXMATRIX*)new_projection_mat.get_data())->_33 = 1/(farf-nearf);
+    ((D3DXMATRIX*)new_projection_mat.get_data())->_43 = -nearf/(farf-nearf);
+    
+    hr = _pD3DDevice->SetTransform(D3DTS_PROJECTION,
+                                   (D3DMATRIX*)new_projection_mat.get_data());
+    //dxgsg8_cat.debug() << new_projection_mat << endl;
+    //dxgsg8_cat.debug() << "using ortho projection" << endl;
   }
   return SUCCEEDED(hr);
 }

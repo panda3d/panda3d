@@ -802,6 +802,7 @@ prepare_lens() {
     return false;
   }
 
+  // lets get the lens perspective matrix
   const LMatrix4f &projection_mat = _current_lens->get_projection_mat();
 
   // The projection matrix must always be left-handed Y-up internally,
@@ -810,9 +811,31 @@ prepare_lens() {
     LMatrix4f::convert_mat(CS_yup_left, _current_lens->get_coordinate_system()) *
     projection_mat;
 
+  float vfov = _current_lens->get_vfov();
+  float nearf = _current_lens->get_near();
+  float farf = _current_lens->get_far();
+
+  //dxgsg7_cat.debug() << new_projection_mat << endl;
+  
   HRESULT hr;
-  hr = _pScrn->pD3DDevice->SetTransform(D3DTRANSFORMSTATE_PROJECTION,
-                                     (LPD3DMATRIX)new_projection_mat.get_data());
+  if (_current_lens->get_type().get_name() == "PerspectiveLens") {
+    ((LPD3DMATRIX)new_projection_mat.get_data())->_33 = farf / (farf-nearf);
+    ((LPD3DMATRIX)new_projection_mat.get_data())->_43 = -nearf * farf / (farf - nearf);
+
+    hr = _pD3DDevice->SetTransform(D3DTRANSFORMSTATE_PROJECTION,
+                                   (D3DMATRIX*)new_projection_mat.get_data());
+    //dxgsg7_cat.debug() << new_projection_mat << endl;
+    //dxgsg7_cat.debug() << "using perspective projection" << endl;
+  }
+  else {
+    ((LPD3DMATRIX)new_projection_mat.get_data())->_33 = 1/(farf-nearf);
+    ((LPD3DMATRIX)new_projection_mat.get_data())->_43 = -nearf/(farf-nearf);
+    
+    hr = _pD3DDevice->SetTransform(D3DTRANSFORMSTATE_PROJECTION,
+                                   (LPD3DMATRIX)new_projection_mat.get_data());
+    //dxgsg7_cat.debug() << new_projection_mat << endl;
+    //dxgsg7_cat.debug() << "using ortho projection" << endl;
+  }
   return SUCCEEDED(hr);
 }
 
