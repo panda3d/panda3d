@@ -84,7 +84,7 @@ static void exit_button(CPT_Event e) {
   val->exit();
 }
 
-static void click_button(CPT_Event e) {
+static void click_button_down(CPT_Event e) {
   GuiButton* val = find_in_buttons_map(e->get_name());
   if (val == (GuiButton *)NULL) {
     if (gui_cat.is_debug()) {
@@ -94,7 +94,20 @@ static void click_button(CPT_Event e) {
     return;
   }
   val->test_ref_count_integrity();
-  val->click();
+  val->down();
+}
+
+static void click_button_up(CPT_Event e) {
+  GuiButton* val = find_in_buttons_map(e->get_name());
+  if (val == (GuiButton *)NULL) {
+    if (gui_cat.is_debug()) {
+      gui_cat.debug()
+	<< "Ignoring event " << e->get_name() << " for deleted button\n";
+    }
+    return;
+  }
+  val->test_ref_count_integrity();
+  val->up();
 }
 
 void GuiButton::switch_state(GuiButton::States nstate) {
@@ -253,6 +266,9 @@ GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* down)
   buttons["gui-button-" + name + "-mouse1"] = this;
   buttons["gui-button-" + name + "-mouse2"] = this;
   buttons["gui-button-" + name + "-mouse3"] = this;
+  buttons["gui-button-" + name + "-mouse1-up"] = this;
+  buttons["gui-button-" + name + "-mouse2-up"] = this;
+  buttons["gui-button-" + name + "-mouse3-up"] = this;
 }
 
 GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* down,
@@ -273,6 +289,9 @@ GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* down,
   buttons["gui-button-" + name + "-mouse1"] = this;
   buttons["gui-button-" + name + "-mouse2"] = this;
   buttons["gui-button-" + name + "-mouse3"] = this;
+  buttons["gui-button-" + name + "-mouse1-up"] = this;
+  buttons["gui-button-" + name + "-mouse2-up"] = this;
+  buttons["gui-button-" + name + "-mouse3-up"] = this;
 }
 
 GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* up_roll,
@@ -294,6 +313,9 @@ GuiButton::GuiButton(const string& name, GuiLabel* up, GuiLabel* up_roll,
   buttons["gui-button-" + name + "-mouse1"] = this;
   buttons["gui-button-" + name + "-mouse2"] = this;
   buttons["gui-button-" + name + "-mouse3"] = this;
+  buttons["gui-button-" + name + "-mouse1-up"] = this;
+  buttons["gui-button-" + name + "-mouse2-up"] = this;
+  buttons["gui-button-" + name + "-mouse3-up"] = this;
 }
 
 GuiButton::~GuiButton(void) {
@@ -307,6 +329,9 @@ GuiButton::~GuiButton(void) {
   buttons.erase("gui-button-" + name + "-mouse1");
   buttons.erase("gui-button-" + name + "-mouse2");
   buttons.erase("gui-button-" + name + "-mouse3");
+  buttons.erase("gui-button-" + name + "-mouse1-up");
+  buttons.erase("gui-button-" + name + "-mouse2-up");
+  buttons.erase("gui-button-" + name + "-mouse3-up");
 
   if (_behavior_functor != (GuiBehavior::BehaviorFunctor*)0L)
     delete _behavior_functor;
@@ -316,9 +341,12 @@ void GuiButton::manage(GuiManager* mgr, EventHandler& eh) {
   if (!_added_hooks) {
     eh.add_hook("gui-in-button-" + get_name(), enter_button);
     eh.add_hook("gui-out-button-" + get_name(), exit_button);
-    eh.add_hook("gui-button-" + get_name() + "-mouse1", click_button);
-    eh.add_hook("gui-button-" + get_name() + "-mouse2", click_button);
-    eh.add_hook("gui-button-" + get_name() + "-mouse3", click_button);
+    eh.add_hook("gui-button-" + get_name() + "-mouse1", click_button_down);
+    eh.add_hook("gui-button-" + get_name() + "-mouse2", click_button_down);
+    eh.add_hook("gui-button-" + get_name() + "-mouse3", click_button_down);
+    eh.add_hook("gui-button-" + get_name() + "-mouse1-up", click_button_up);
+    eh.add_hook("gui-button-" + get_name() + "-mouse2-up", click_button_up);
+    eh.add_hook("gui-button-" + get_name() + "-mouse3-up", click_button_up);
     _added_hooks = true;
   }
   if (_mgr == (GuiManager*)0L) {

@@ -112,6 +112,18 @@ void GuiRollover::unmanage(void) {
   GuiItem::unmanage();
 }
 
+int GuiRollover::freeze(void) {
+  _off->freeze();
+  _on->freeze();
+  return 0;
+}
+
+int GuiRollover::thaw(void) {
+  _off->thaw();
+  _on->thaw();
+  return 0;
+}
+
 void GuiRollover::set_scale(float f) {
   _on->set_scale(f * _on_scale);
   _off->set_scale(f * _off_scale);

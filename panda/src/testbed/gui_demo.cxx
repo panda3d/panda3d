@@ -66,6 +66,7 @@ static void test2(GuiManager* mgr, Node* font) {
   GuiRollover* r1 = new GuiRollover("test2", l1, l2);
   r1->set_scale(0.1);
   r1->set_pos(LVector3f::rfu(0.25, 0., 0.25));
+  r1->thaw();
   r1->manage(mgr, event_handler);
 }
 
@@ -82,6 +83,7 @@ static void test3(GuiManager* mgr, Node* font) {
   l4->set_foreground_color(1., 1., 0., 1.);
   l3->set_background_color(1., 1., 1., 0.5);
   l4->set_background_color(1., 1., 1., 0.5);
+  b1->thaw();
   b1->manage(mgr, event_handler);
 }
 
@@ -167,6 +169,7 @@ static void test4(GuiManager* mgr, Node* font) {
   f1->pack_item(r0, GuiFrame::RIGHT, r9);
   f1->set_scale(0.1);
   f1->set_pos(LVector3f::rfu(0., 0., -0.25));
+  f1->thaw();
   f1->manage(mgr, event_handler);
   //  cerr << *f1;
 }
@@ -189,7 +192,6 @@ static void test5(GuiManager* mgr, Node* font) {
   f1->add_item(r2);
   f1->pack_item(r2, GuiFrame::UNDER, r1);
   f1->set_scale(0.1);
-  f1->manage(mgr, event_handler);
   float w1, w2, w3, w4, w;
   w1 = l1->get_width();
   w2 = l2->get_width();
@@ -202,6 +204,8 @@ static void test5(GuiManager* mgr, Node* font) {
   l2->set_width(w);
   l3->set_width(w);
   l4->set_width(w);
+  f1->thaw();
+  f1->manage(mgr, event_handler);
   //  global_frame = f1;
 }
 
@@ -302,6 +306,7 @@ static void test6(GuiManager* mgr, Node* font) {
   b5l2->set_width(w);
   b5l3->set_width(w);
   f1->recompute();
+  f1->thaw();
   f1->manage(mgr, event_handler);
 }
 
@@ -406,6 +411,8 @@ static void test7(GuiManager* mgr, Node* font) {
   b5l2->set_width(w);
   b5l3->set_width(w);
   f1->recompute();
+  f1->thaw();
+  b5->thaw();
   f1->manage(mgr, event_handler);
 }
 */
@@ -471,6 +478,8 @@ static void test8(GuiManager* mgr, Node* font) {
   l4->set_width(w);
   l5->set_width(w);
   f1->recompute();
+  f1->thaw();
+  s5->thaw();
   f1->manage(mgr, event_handler);
 }
 */
@@ -526,6 +535,8 @@ static void test9(GuiManager* mgr, Node* font) {
   l3->set_width(w);
   l4->set_width(w);
   f1->recompute();
+  f1->thaw();
+  s4->thaw();
   f1->manage(mgr, event_handler);
 }
 */
@@ -543,6 +554,7 @@ static void test10(GuiManager* mgr, Node* font) {
   s1 = new GuiSign("A", l1);
   s1->set_scale(0.1);
   s1->set_priority(GuiItem::P_Low);
+  s1->thaw();
   s1->manage(mgr, event_handler);
   GuiLabel* l2 = GuiLabel::make_simple_text_label("B", font);
   l2->set_foreground_color(0., 0., 0., 1.);
@@ -551,6 +563,7 @@ static void test10(GuiManager* mgr, Node* font) {
   s2->set_scale(0.1);
   s2->set_pos(LVector3f::rfu(0.05, 0., 0.05));
   s2->set_priority(GuiItem::P_Normal);
+  s2->thaw();
   s2->manage(mgr, event_handler);
   GuiLabel* l3 = GuiLabel::make_simple_text_label("C", font);
   l3->set_foreground_color(0., 0., 0., 1.);
@@ -559,6 +572,7 @@ static void test10(GuiManager* mgr, Node* font) {
   s3->set_scale(0.1);
   s3->set_pos(LVector3f::rfu(0.1, 0., 0.1));
   s3->set_priority(GuiItem::P_High);
+  s3->thaw();
   s3->manage(mgr, event_handler);
 }
 */
@@ -606,6 +620,7 @@ static void test11(GuiManager* mgr, Node* font) {
   lb1->add_item(s3);
   lb1->add_item(s4);
   lb1->add_item(s5);
+  lb1->thaw();
   lb1->manage(mgr, event_handler);
 }
 

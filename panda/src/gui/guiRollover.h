@@ -31,6 +31,10 @@ PUBLISHED:
 
   virtual void manage(GuiManager*, EventHandler&);
   virtual void unmanage(void);
+
+  virtual int freeze(void);
+  virtual int thaw(void);
+
   INLINE void enter(void);
   INLINE void exit(void);
 
