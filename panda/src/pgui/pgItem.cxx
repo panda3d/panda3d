@@ -633,8 +633,8 @@ update_frame(int state) {
     if (old_arc != (NodeRelation *)NULL) {
       if (old_arc->is_attached()) {
         remove_arc(old_arc);
-        _state_defs[state]._frame_arc = (NodeRelation *)NULL;
       }
+      _state_defs[state]._frame_arc = (NodeRelation *)NULL;
     }
   }
 

@@ -215,17 +215,6 @@ get_accept_prefix() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PGEntry::get_accept_event
-//       Access: Published
-//  Description: Returns the event name that will be thrown when the
-//               entry is accepted normally.
-////////////////////////////////////////////////////////////////////
-INLINE string PGEntry::
-get_accept_event(const ButtonHandle &button) const {
-  return "accept-" + button.get_name() + "-" + get_id();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PGEntry::get_overflow_prefix
 //       Access: Published, Static
 //  Description: Returns the prefix that is used to define the overflow
@@ -235,6 +224,17 @@ get_accept_event(const ButtonHandle &button) const {
 INLINE string PGEntry::
 get_overflow_prefix() {
   return "overflow-";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::get_accept_event
+//       Access: Published
+//  Description: Returns the event name that will be thrown when the
+//               entry is accepted normally.
+////////////////////////////////////////////////////////////////////
+INLINE string PGEntry::
+get_accept_event(const ButtonHandle &button) const {
+  return "accept-" + button.get_name() + "-" + get_id();
 }
 
 ////////////////////////////////////////////////////////////////////

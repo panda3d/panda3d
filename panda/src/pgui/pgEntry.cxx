@@ -98,6 +98,7 @@ PGEntry(const PGEntry &copy) :
 ////////////////////////////////////////////////////////////////////
 void PGEntry::
 operator = (const PGEntry &copy) {
+  PGItem::operator = (copy);
   _text = copy._text;
   _cursor_position = copy._cursor_position;
   _max_chars = copy._max_chars;

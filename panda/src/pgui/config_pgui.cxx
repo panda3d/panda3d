@@ -24,6 +24,7 @@
 #include "pgItem.h"
 #include "pgMouseWatcherRegion.h"
 #include "pgTop.h"
+#include "pgWaitBar.h"
 
 #include "dconfig.h"
 
@@ -38,4 +39,5 @@ ConfigureFn(config_pgui) {
   PGItem::init_type();
   PGMouseWatcherRegion::init_type();
   PGTop::init_type();
+  PGWaitBar::init_type();
 }

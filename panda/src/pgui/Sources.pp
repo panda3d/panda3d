@@ -18,7 +18,8 @@
     pgFrameStyle.I pgFrameStyle.h \
     pgItem.I pgItem.h \
     pgMouseWatcherRegion.I pgMouseWatcherRegion.h \
-    pgTop.I pgTop.h
+    pgTop.I pgTop.h \
+    pgWaitBar.I pgWaitBar.h
      
 //  #define INCLUDED_SOURCES  \
   #define SOURCES $[SOURCES] \
@@ -30,7 +31,8 @@
     pgFrameStyle.cxx \
     pgItem.cxx \
     pgMouseWatcherRegion.cxx \
-    pgTop.cxx
+    pgTop.cxx \
+    pgWaitBar.cxx
 
   #define INSTALL_HEADERS \
     pgButton.I pgButton.h \
@@ -40,7 +42,8 @@
     pgFrameStyle.I pgFrameStyle.h \
     pgItem.I pgItem.h \
     pgMouseWatcherRegion.I pgMouseWatcherRegion.h \
-    pgTop.I pgTop.h
+    pgTop.I pgTop.h \
+    pgWaitBar.I pgWaitBar.h
     
 
   #define IGATESCAN all
