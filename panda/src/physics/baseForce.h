@@ -30,7 +30,7 @@ protected:
   BaseForce(bool active = true);
   BaseForce(const BaseForce &copy);
 
-public:
+PUBLISHED:
   virtual ~BaseForce(void);
 
   INLINE bool get_active(void) const;
