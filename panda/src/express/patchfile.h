@@ -1,5 +1,5 @@
 // Filename: patchfile.h
-// Created by:  mike (09Jan97)
+// Created by:  mike, darren (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -20,8 +20,10 @@
 #include "buffer.h"
 #include "pointerTo.h"
 
+#include <algorithm>
+
 ////////////////////////////////////////////////////////////////////
-//       Class : Patchfile 
+//       Class : Patchfile
 // Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS Patchfile {
@@ -30,7 +32,7 @@ public:
   Patchfile(PT(Buffer) buffer);
   ~Patchfile(void);
 
-  bool build(Filename &file_a, Filename &file_b);
+  bool build(Filename &file_orig, Filename &file_new);
   bool apply(Filename &patch, Filename &file);
 
   int find_longest_sequence(Filename &infile, int &pos, int &len) const;
@@ -39,46 +41,31 @@ public:
 
 private:
   void init(PT(Buffer) buffer);
-  INLINE void write_header(ofstream &write_stream, const string &name); 
-  INLINE void write_entry(ofstream &write_stream, int pos, int n, int m);
-  int find_next_difference(const char *buf_a, int size_a, 
-			   const char *buf_b, int size_b);
-  int find_match(const char *win, int win_len, const char *buf,
-				  int buf_len);
-  bool find_next_match(const char *buf_a, int size_a, int &pos_a,
-		       const char *buf_b, int size_b, int &pos_b);
-  bool find_next_zone_match(const char *buf_a, int size_a, int &pos_a,
-			    const char *buf_b, int size_b, int &pos_b);
-  bool find_next_z_match(const char *buf_a, int size_a, int &pos_a,
-			 const char *buf_b, int size_b, int &pos_b);
-  bool is_match(const char *buf_a, const char *buf_b, 
-	       				int size) const;
- 
-  class Entry {
-  public:
-    Entry(void);
-
-  public:
-    int _pos;
-    int _n;
-    int _m;
-    char *_buffer;
-    int _len;
-  };
 
 private:
-  Datagram _datagram;
-  int _win_len;
-  int _zone_len;
-  int _increment;
-  Filename _name;
-  int _min_sample_size;
-  PT(Buffer) _buffer;
-  int _header_length_length;
-  Entry *_current_entry;
-  Filename _temp_file_name;
- 
-  static PN_uint32 _magic_number;
+  // stuff for the build operation
+  INLINE void write_header(ofstream &write_stream, const string &name);
+  void build_hash_link_tables(const char *buffer_orig, PN_uint32 length_orig,
+    PN_uint32 *hash_table, PN_uint32 *link_table);
+  PN_uint16 calc_hash(const char *buffer);
+  void find_longest_match(PN_uint32 new_pos, PN_uint32 &copy_offset, PN_uint32 &copy_length,
+    PN_uint32 *hash_table, PN_uint32 *link_table, const char* buffer_orig,
+    PN_uint32 length_orig, const char* buffer_new, PN_uint32 length_new);
+  PN_uint32 calc_match_length(const char* buf1, const char* buf2, PN_uint32 max_length);
+
+  void emit_ADD(ofstream &write_stream, PN_uint32 length, const char* buffer);
+  void emit_COPY(ofstream &write_stream, PN_uint32 length, PN_uint32 offset);
+
+  static const PN_uint32 _HASHTABLESIZE;
+  static const PN_uint32 _footprint_length;
+  static const PN_uint32 _NULL_VALUE;
+
+protected:
+  PT(Buffer) _buffer; // this is the work buffer for apply -- used to prevent virtual memory swapping
+  Filename _temp_file_name; // this is the temp file
+  Datagram _datagram; // used to eliminate endian problems
+
+  static const PN_uint32 _magic_number;
 };
 
 #include "patchfile.I"

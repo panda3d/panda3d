@@ -1,8 +1,8 @@
 // Filename: patchfile.cxx
-// Created by:  mike (09Jan97)
+// Created by:  mike, darren (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
-// Copyright (C) 1992,93,94,95,96,97,98  
+// Copyright (C) 1992,93,94,95,96,97,98
 // Walt Disney Imagineering, Inc.
 //
 // These  coded  instructions,  statements,  data   structures   and
@@ -24,7 +24,11 @@
 ////////////////////////////////////////////////////////////////////
 // Defines
 ////////////////////////////////////////////////////////////////////
-PN_uint32 Patchfile::_magic_number = 0xfeebfaab;
+const PN_uint32 Patchfile::_magic_number = 0xfeebfaab;
+
+const PN_uint32 Patchfile::_HASHTABLESIZE = PN_uint32(1) << 16;
+const PN_uint32 Patchfile::_footprint_length = 16;
+const PN_uint32 Patchfile::_NULL_VALUE = PN_uint32(0) - 1;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Patchfile::Constructor
@@ -49,23 +53,31 @@ Patchfile(PT(Buffer) buffer) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Patchfile::init
-//       Access: Public
+//       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void Patchfile::
 init(PT(Buffer) buffer) {
   nassertv(!buffer.is_null());
-  _win_len = patchfile_window_size;
-  _zone_len = patchfile_zone_size;
-  _increment = patchfile_increment_size;
-  _name.set_binary();
   _buffer = buffer;
-  _header_length_length = sizeof(PN_uint32) + sizeof(PN_int32);
+
+  // get all set up with a temp file
   char *temp_name = tempnam(NULL, "pf");
   _temp_file_name = temp_name;
   _temp_file_name.set_binary();
   delete temp_name;
+
   reset();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Patchfile::reset
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void Patchfile::
+reset(void) {
+  _datagram.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -79,317 +91,295 @@ Patchfile::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::find_next_difference
+//     Function: Patchfile::calc_hash
 //       Access: Private
-//  Description: Finds the first byte that differs between buf_a and
-//               buf_b.  Returns -1 if buf_a == buf_b.
+//  Description:
 ////////////////////////////////////////////////////////////////////
-int Patchfile::
-find_next_difference(const char *buf_a, int size_a, 
-		     const char *buf_b, int size_b) {
-  int i;
-  for (i = 0; i < size_a && i < size_b; i++) {
-    if (buf_a[i] != buf_b[i])
-      return i;
+PN_uint16 Patchfile::
+calc_hash(const char *buffer) {
+  PN_uint16 hash_value = 0;
+
+  for(int i = 0; i < _footprint_length; i++) {
+    // this is probably not such a good hash. to be replaced
+    hash_value ^= (*buffer) << (i % 8);
+    buffer++;
   }
 
-  // buf_a == buf_b
-  if (size_a == size_b)
-    return -1;
-
-  return i + 1;
+  return hash_value;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::is_match
+//     Function: Patchfile::build_hash_link_tables
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
-bool Patchfile::
-is_match(const char *buf_a, const char *buf_b, int size) const {
-  if (size < _win_len)
-    return false;
+void Patchfile::
+build_hash_link_tables(const char *buffer_orig, PN_uint32 length_orig,
+  PN_uint32 *hash_table, PN_uint32 *link_table) {
 
-  for (int i = 0; i < size; i++) {
-    if (buf_a[i] != buf_b[i])
-      return false;
+  PN_uint32 i;
+
+  // clear hash table
+  for(i = 0; i < _HASHTABLESIZE; i++) {
+    hash_table[i] = _NULL_VALUE;
   }
-  return true;
+
+  // clear link table
+  for(i = 0; i < length_orig; i++) {
+    link_table[i] = _NULL_VALUE;
+  }
+
+  // run through original file and hash each footprint
+  for(i = 0; i < (length_orig - _footprint_length); i++) {
+    PN_uint16 hash_value = calc_hash(&buffer_orig[i]);
+    if (_NULL_VALUE == hash_table[hash_value]) {
+      // hash entry is empty, store this offset
+      hash_table[hash_value] = i;
+    } else {
+      // hash entry is taken, go to the link table
+      PN_uint32 link_offset = hash_table[hash_value];
+      while (_NULL_VALUE != link_table[link_offset]) {
+        link_offset = link_table[link_offset];
+      }
+      link_table[link_offset] = i;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::find_match
+//     Function: Patchfile::calc_match_length
 //       Access: Private
-//  Description: Run a window along a buffer in specified increments
-//		 until a match is found.
-//		 Returns -1 on failure. 
+//  Description:
+//               This function calculates the length of a match between
+//               two strings of bytes
 ////////////////////////////////////////////////////////////////////
-int Patchfile::
-find_match(const char *win, int win_len, const char *buf, int buf_len) {
-  if (win_len < _win_len)
-    return -1;
-
-  char *bufptr = (char *)buf;
-  int bytes_left = buf_len;
-  int sample_len;
-  for (int i = 0; i < buf_len; i++) {
-    sample_len = (win_len <= bytes_left) ? win_len : bytes_left;
-    if (is_match(win, bufptr, sample_len) == true) {
-      return i;
-    }
-    bufptr++;
-    bytes_left--;
+PN_uint32 Patchfile::
+calc_match_length(const char* buf1, const char* buf2, PN_uint32 max_length) {
+  PN_uint32 length = 0;
+  while ((length < max_length) && (*buf1 == *buf2)) {
+    buf1++, buf2++, length++;
   }
-
-  return -1;
+  return length;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::find_next_zone_match
+//     Function: Patchfile::find_longest_match
 //       Access: Private
-//  Description: Advance a window down the entire length of a buffer
-//               looking for a complete match.  If one is not found,
-//               advance the window by _win_len and try again until
-//               a match is found or we reach the end of the buffer.
-//               Returns false on failure.
+//  Description:
+//               This function will find the longest string in the
+//               original file that matches a string in the new file.
 ////////////////////////////////////////////////////////////////////
-bool Patchfile::
-find_next_zone_match(const char *buf_a, int size_a, int &pos_a,
-		     const char *buf_b, int size_b, int &pos_b) {
-  // Handle boundary conditions 
-  if (size_a == 0 || size_b == 0) {
-    express_cat.debug()
-      << "Patchfile::find_next_zone_match() - size a = " << size_a 
-      << " size b = " << size_b << endl;
-    return false;
-  }
+void Patchfile::
+find_longest_match(PN_uint32 new_pos, PN_uint32 &copy_offset, PN_uint32 &copy_length,
+  PN_uint32 *hash_table, PN_uint32 *link_table, const char* buffer_orig,
+  PN_uint32 length_orig, const char* buffer_new, PN_uint32 length_new) {
 
-  char *winptr = (char *)buf_a;
-  int bytes_left = size_a;
-  int win_len, pos;
-  int i, j, k;
-  pos_a = 0;
-  for (i = 0; i < size_a; i += _increment) {
-    win_len = (_win_len <= bytes_left) ? _win_len : bytes_left;    
-    pos = find_match(winptr, win_len, buf_b, size_b);
-    if (pos != -1) {
-cerr << "found a match at: " << pos << endl;
-      // Back up the window in case we missed part of an earlier match
-      if (pos_a >= win_len) {
-        int prev_pos_a = pos_a - _increment;
-        for (j = pos_a, k = pos;
-	     j > prev_pos_a && k > 0; 
-  	     j--, k--) {
-	  if (buf_a[j] != buf_b[k]) 
-	    break;
-        }
-        pos_a = j+1;
-        pos_b = k+1;
-      } else
-	pos_b = pos;
-      return true;
+  // set length to a safe value
+  copy_length = 0;
+
+  // get offset of matching string (in orig file) from hash table
+  PN_uint16 hash_value = calc_hash(&buffer_new[new_pos]);
+
+  // if no match, bail
+  if (_NULL_VALUE == hash_table[hash_value])
+    return;
+
+  copy_offset = hash_table[hash_value];
+
+  // calc match length
+  copy_length = calc_match_length(&buffer_new[new_pos], &buffer_orig[copy_offset],
+    min((length_new - new_pos),(length_orig - copy_offset)));
+
+  // run through link table, see if we find any longer matches
+  PN_uint32 match_offset, match_length;
+  match_offset = link_table[copy_offset];
+
+  while (match_offset != _NULL_VALUE) {
+    match_length = calc_match_length(&buffer_new[new_pos], &buffer_orig[match_offset],
+                      min((length_new - new_pos),(length_orig - match_offset)));
+
+    // have we found a longer match?
+    if (match_length > copy_length) {
+      copy_offset = match_offset;
+      copy_length = match_length;
     }
-    pos_a += _increment;
-    winptr += _increment;
-    bytes_left -= _increment;
-  }
 
-  return false;
+    // traverse the link table
+    match_offset = link_table[match_offset];
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::find_next_z_match
-//       Access: Public
-//  Description: Starts with a zone in stream b and searches for
-//		 a match.  If a match is not found the zone is 
-//		 shifted down and we try again.
+//     Function: Patchfile::emit_ADD
+//       Access: Private
+//  Description:
 ////////////////////////////////////////////////////////////////////
-bool Patchfile::
-find_next_z_match(const char *buf_a, int size_a, int &pos_a,
-		  const char *buf_b, int size_b, int &pos_b) {
-  // Handle boundary conditions
-  if (size_a == 0 || size_b == 0) {
-    express_cat.debug()
-      << "Patchfile::find_next_z_match() - size a = " << size_a
-      << " size b = " << size_b << endl;
-    return false;
-  }
+void Patchfile::
+emit_ADD(ofstream &write_stream, PN_uint32 length, const char* buffer) {
+//  cout << "ADD: " << length << " bytes" << endl;
 
-  char *bufbptr = (char *)buf_b;
-  int sizeb;
-  int bytes_left = size_b;
-  int starting_pos = 0;
-  for (int i = 0; i < size_b; i += _zone_len) {
-    sizeb = (_zone_len <= bytes_left) ? _zone_len : bytes_left;
-    if (find_next_zone_match(buf_a, size_a, pos_a, bufbptr, sizeb, pos_b)
-	== true) {
-      pos_b += starting_pos; 
-      return true;
-    }
-    bytes_left -= sizeb;
-    bufbptr += sizeb;
-    starting_pos += sizeb;
-  }
+  // write ADD length
+  _datagram.clear();
+  _datagram.add_uint32(length);
+  string msg = _datagram.get_message();
+  write_stream.write((char *)msg.data(), msg.length());
 
-  return false;
+  // if there are bytes to add, add them
+  if (length > 0) {
+    _datagram.clear();
+    _datagram.append_data(buffer, length);
+    string msg = _datagram.get_message();
+    write_stream.write((char *)msg.data(), msg.length());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::find_next_match
-//       Access: Public
-//  Description: Starts with a zone in stream a and searches for a
-//		 match.  If a match is not found, expands the zone
-//		 in stream a and starts again.
+//     Function: Patchfile::emit_COPY
+//       Access: Private
+//  Description:
 ////////////////////////////////////////////////////////////////////
-bool Patchfile::
-find_next_match(const char *buf_a, int size_a, int &pos_a,
-                const char *buf_b, int size_b, int &pos_b) {
-  // Handle boundary conditions
-  if (size_a == 0 || size_b == 0) {
-    express_cat.debug()
-      << "Patchfile::find_next_match() - size a = " << size_a
-      << " size b = " << size_b << endl;
-    return false;
-  }
+void Patchfile::
+emit_COPY(ofstream &write_stream, PN_uint32 length, PN_uint32 offset) {
+//  cout << "COPY: " << length << " bytes at offset " << offset << endl;
 
-  int sizea;
-  int bytes_left = size_a;
-  for (int i = 0; i < size_a; i += _zone_len) {
-    sizea = (_zone_len <= bytes_left) ? _zone_len : bytes_left;
-    if (find_next_z_match(buf_a, sizea, pos_a, buf_b, size_b, pos_b)
-        == true) {
-      return true;
-    }
-    bytes_left -= sizea;
-  }
+  // write COPY length
+  _datagram.clear();
+  _datagram.add_uint32(length);
+  string msg = _datagram.get_message();
+  write_stream.write((char *)msg.data(), msg.length());
 
-  return false;
+  if(length > 0) {
+    // write COPY offset
+    _datagram.clear();
+    _datagram.add_uint32(offset);
+    string msg2 = _datagram.get_message();
+    write_stream.write((char *)msg2.data(), msg2.length());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Patchfile::build
 //       Access: Public
 //  Description:
+//               This implementation uses the "greedy differencing
+//               algorithm" described in the masters thesis
+//               "Differential Compression: A Generalized Solution
+//               for Binary Files" by Randal C. Burns (p.13).
+//               For an original file of size M and a new file of
+//               size N, this algorithm is O(M) in space and O(M*N)
+//               in time.
 ////////////////////////////////////////////////////////////////////
 bool Patchfile::
-build(Filename &file_a, Filename &file_b) {
+build(Filename &file_orig, Filename &file_new) {
+  Filename patch_name;
+  patch_name.set_binary();
 
-  if (express_cat.is_debug()) {
-    int pos = 0;
-    int len = 0;
-    int seq = find_longest_sequence(file_a, pos, len);
-    express_cat.debug()
-      << "File: " << file_a << " longest sequence = " << seq << " at "
-      << "position: " << pos << " of " << len << endl;
-    pos = 0;
-    len = 0;
-    seq = find_longest_sequence(file_b, pos, len);
-    express_cat.debug()
-      << "File: " << file_b << " longest sequence = " << seq << " at "
-      << "position: " << pos << " of " << len << endl;
-  }
-
-  // Open the file for read
-  ifstream stream_a;
-  file_a.set_binary();
-  if (!file_a.open_read(stream_a)) {
+  // Open the original file for read
+  ifstream stream_orig;
+  file_orig.set_binary();
+  if (!file_orig.open_read(stream_orig)) {
     express_cat.error()
-      << "Patchfile::build() - Failed to open file: " << file_a << endl;
+      << "Patchfile::build() - Failed to open file: " << file_orig << endl;
     return false;
   }
 
-  // Open the file for read
-  ifstream stream_b;
-  file_b.set_binary();
-  if (!file_b.open_read(stream_b)) {
+  // Open the new file for read
+  ifstream stream_new;
+  file_new.set_binary();
+  if (!file_new.open_read(stream_new)) {
     express_cat.error()
-      << "Patchfile::build() - Failed to open file: " << file_b << endl;
+      << "Patchfile::build() - Failed to open file: " << file_new << endl;
     return false;
   }
 
   // Open patch file for write
   ofstream write_stream;
-  _name = file_a.get_fullpath() + ".pch";
-  if (!_name.open_write(write_stream)) {
+  patch_name = file_orig.get_fullpath() + ".pch";
+  if (!patch_name.open_write(write_stream)) {
     express_cat.error()
-      << "Patchfile::build() - Failed to open file: " << _name << endl;
+      << "Patchfile::build() - Failed to open file: " << patch_name << endl;
     return false;
   }
 
-  // Determine file length
-  stream_a.seekg(0, ios::end);
-  int length_a = stream_a.tellg();
-  char *buffer_a = new char[length_a]; 
-  stream_a.seekg(0, ios::beg);
-  stream_a.read(buffer_a, length_a);
+  // read in original file
+  stream_orig.seekg(0, ios::end);
+  int length_orig = stream_orig.tellg();
+  char *buffer_orig = new char[length_orig];
+  stream_orig.seekg(0, ios::beg);
+  stream_orig.read(buffer_orig, length_orig);
 
-  // Determine file length
-  stream_b.seekg(0, ios::end);
-  int length_b = stream_b.tellg();
-  char *buffer_b = new char[length_b];
-  stream_b.seekg(0, ios::beg);
-  stream_b.read(buffer_b, length_b);
+  // read in new file
+  stream_new.seekg(0, ios::end);
+  int length_new = stream_new.tellg();
+  char *buffer_new = new char[length_new];
+  stream_new.seekg(0, ios::beg);
+  stream_new.read(buffer_new, length_new);
 
-  char *next_a = buffer_a;
-  int remaining_a = length_a;
-  char *next_b = buffer_b;
-  int remaining_b = length_b;
+  // close the original and new files (we have em in memory)
+  stream_orig.close();
+  stream_new.close();
 
+  // allocate hash/link tables
+  PN_uint32* hash_table = new PN_uint32[_HASHTABLESIZE];
+  PN_uint32* link_table = new PN_uint32[length_orig];
+
+  // build hash and link tables for original file
+  build_hash_link_tables(buffer_orig, length_orig, hash_table, link_table);
+
+  // write the patch file header
   // Strip the v# out of the filename
   // Save the original extension
-  string ext = file_a.get_extension();
+  string ext = file_orig.get_extension();
   // Strip out the extension
-  Filename tfile = file_a.get_basename_wo_extension();
+  Filename tfile = file_orig.get_basename_wo_extension();
   // Now strip out the .v#
   string fname = tfile.get_basename_wo_extension();
   fname += ".";
   fname += ext;
   write_header(write_stream, fname);
 
-  bool done = false;
-  int starting_pos = 0;
-  int pos_a, pos_b;
-cerr << "remaining_a: " << remaining_a << " remaining_b: " << remaining_b << endl;
-  while (done == false) {
-    int diff_pos = find_next_difference(next_a, remaining_a,
-					next_b, remaining_b);
-    if (diff_pos == -1)
-      done = true;
-    else if (diff_pos >= remaining_a || diff_pos >= remaining_b) {
-cerr << "madeit" << endl;
-      done = true;
-    } else {
-cerr << "found a diff at: " << starting_pos + diff_pos << endl;
-      starting_pos += diff_pos;
-      next_a += diff_pos;
-      remaining_a -= diff_pos;
-      next_b += diff_pos;
-      remaining_b -= diff_pos;
-      bool match = find_next_match(next_a, remaining_a, pos_a,
-				   next_b, remaining_b, pos_b);  
-      if (match == false) {
- 	// Files differ from here on out - replace remaining_a bytes
-	// with remaining_b bytes
-	write_entry(write_stream, starting_pos, remaining_a, remaining_b);
-	if (remaining_b > 0)
-	  write_stream.write(next_b, remaining_b);
-	done = true;
-      } else {
-	// Write an entry and start again		
-	write_entry(write_stream, starting_pos, pos_a, pos_b); 
-	if (pos_b > 0)
-	  write_stream.write(next_b, pos_b);
-	next_a += pos_a;
-	remaining_a -= pos_a;
- 	next_b += pos_b;
-	remaining_b -= pos_b;
-	starting_pos += pos_a;
-      }	
-    }
-  } 
+  // run through new file
+  PN_uint32 new_pos = 0;
+  PN_uint32 ADD_offset = new_pos; // this is the offset for the start of ADD operations
 
-  stream_a.close();
-  stream_b.close();
+  while (new_pos < (length_new - _footprint_length)) {
+
+    // find best match for current position
+    PN_uint32 COPY_offset, COPY_length;
+
+    find_longest_match(new_pos, COPY_offset, COPY_length, hash_table, link_table,
+      buffer_orig, length_orig, buffer_new, length_new);
+
+    // if no match or match not longer than footprint length, skip to next byte
+    if (COPY_length < _footprint_length) {
+      // go to next byte
+      new_pos++;
+    } else {
+      // emit ADD for all skipped bytes
+      emit_ADD(write_stream, new_pos - ADD_offset, &buffer_new[ADD_offset]);
+
+      // emit COPY for matching string
+      emit_COPY(write_stream, COPY_length, COPY_offset);
+
+      // skip past match in new_file
+      new_pos += COPY_length;
+      ADD_offset = new_pos;
+    }
+  }
+
+  // are there still more bytes left in the new file?
+  if (ADD_offset != length_new) {
+    // emit ADD for all remaining bytes
+    emit_ADD(write_stream, length_new - ADD_offset, &buffer_new[ADD_offset]);
+
+    // write null COPY
+    emit_COPY(write_stream, 0, 0);
+  }
+
+  // write terminator (null ADD, null COPY)
+  emit_ADD(write_stream, 0, NULL);
+  emit_COPY(write_stream, 0, 0);
+
   return true;
 }
 
@@ -401,6 +391,8 @@ cerr << "found a diff at: " << starting_pos + diff_pos << endl;
 ////////////////////////////////////////////////////////////////////
 bool Patchfile::
 apply(Filename &patch, Filename &file) {
+  const int _header_length = sizeof(PN_uint32) + sizeof(PN_int32);
+
   // Open the patch file for read
   ifstream patch_stream;
   patch.set_binary();
@@ -410,32 +402,16 @@ apply(Filename &patch, Filename &file) {
     return false;
   }
 
-  // Open the file for read
-  ifstream file_stream;
+  // Open the original file for read
+  ifstream origfile_stream;
   file.set_binary();
-  if (!file.open_read(file_stream)) {
+  if (!file.open_read(origfile_stream)) {
     express_cat.error()
       << "Patchfile::apply() - Failed to open file: " << file << endl;
     return false;
   }
 
-  // Determine the size of the orig file
-  file_stream.seekg(0, ios::end);
-  int orig_file_length = file_stream.tellg();
-  file_stream.seekg(0, ios::beg);
-
-#if 0
-  // Open the file for write 
-  ofstream write_stream;
-  if (!_temp_file_name.open_write(write_stream)) {
-    express_cat.error()
-      << "Patchfile::apply() - Failed to open file: " << _temp_file_name 
-      << endl;
-    return false;
-  }
-#endif
-
-  // Open the file for write
+  // Open the temp file for write
   ofstream write_stream;
   Filename mofile = "patcher_temp_file";
   mofile.set_binary();
@@ -445,24 +421,24 @@ apply(Filename &patch, Filename &file) {
     return false;
   }
 
-  // Determine the size of the patch file
-  patch_stream.seekg(0, ios::end);
-  int patch_file_length = patch_stream.tellg();
-  patch_stream.seekg(0, ios::beg);
+  /////////////
+  // read header, make sure the patch file is valid
 
-  // Make sure the patch file is valid
-  nassertr(_buffer->get_length() >= _header_length_length, false);
-  patch_stream.read(_buffer->_buffer, _header_length_length);
+  // check the magic number
+  nassertr(_buffer->get_length() >= _header_length, false);
+  patch_stream.read(_buffer->_buffer, _header_length);
   _datagram.clear();
-  _datagram.append_data(_buffer->_buffer, _header_length_length);
+  _datagram.append_data(_buffer->_buffer, _header_length);
   DatagramIterator di(_datagram);
-  uint magic_number = di.get_uint32();
+  PN_uint32 magic_number = di.get_uint32();
   if (magic_number != _magic_number) {
     express_cat.error()
       << "Patchfile::apply() - invalid patch file: " << patch << endl;
     return false;
   }
-  int name_length = di.get_int32();
+
+  // check the filename
+  PN_int32 name_length = di.get_int32();
   nassertr(_buffer->get_length() >= name_length, false);
   patch_stream.read(_buffer->_buffer, name_length);
   _datagram.clear();
@@ -475,107 +451,97 @@ apply(Filename &patch, Filename &file) {
       << ", not file: " << file << endl;
     return false;
   }
-  patch_file_length -= (_header_length_length + name_length);
 
   express_cat.debug()
     << "Patchfile::apply() - valid patchfile for file: " << name << endl;
 
   // Now patch the file using the given buffer
   int buflen = _buffer->get_length();
-  int total_orig_bytes = 0;
-  int total_patch_bytes = 0;
-  int read_bytes;
-  while (total_orig_bytes < orig_file_length) {
-  
-    // Read an entry
-    Entry entry;
-    nassertr(buflen >= entry._len, false); 
-    patch_stream.read(_buffer->_buffer, entry._len);
+  int done = 0;
+  PN_uint32 ADD_length;
+  PN_uint32 COPY_length;
+  PN_uint32 COPY_offset;
+
+  while (!done)
+  {
+    ///////////
+    // read # of ADD bytes
+    nassertr(_buffer->get_length() >= sizeof(ADD_length), false);
+    patch_stream.read(_buffer->_buffer, sizeof(ADD_length));
     _datagram.clear();
-    _datagram.append_data(_buffer->_buffer, entry._len);
-    DatagramIterator di3(_datagram);
-    entry._pos = di3.get_int32();
-    entry._n = di3.get_int32();
-    entry._m = di3.get_int32();
+    _datagram.append_data(_buffer->_buffer, sizeof(ADD_length));
+    DatagramIterator di(_datagram);
+    ADD_length = di.get_uint32();
 
-    express_cat.debug()
-      << "Patchfile::apply() - read an entry: pos: " << entry._pos
-      << " n: " << entry._n << " m: " << entry._m << endl;
+    // if there are bytes to add, read them from patch file and write them to output
+    if (0 != ADD_length) {
+      PN_uint32 bytes_left = ADD_length;
 
-    total_patch_bytes += entry._len;
-
-    // Write original file until we hit a difference
-    while (total_orig_bytes < entry._pos) { 
-      int next_diff = entry._pos - total_orig_bytes;
-      read_bytes = (next_diff < buflen) ? next_diff : buflen;
-      file_stream.read(_buffer->_buffer, read_bytes); 
-      total_orig_bytes += read_bytes;
-      write_stream.write(_buffer->_buffer, read_bytes);
-    }
-
-    // Now skip the next "n" bytes of the orig file
-    file_stream.seekg(total_orig_bytes + entry._n, ios::beg);
-    total_orig_bytes += entry._n;
-
-    // Now write the patch file until we're done with the current entry
-    int patch_bytes = 0; 
-    while (patch_bytes < entry._m) {
-      int patch_end = entry._m - patch_bytes;
-      read_bytes = (patch_end < buflen) ? patch_end : buflen;
-      patch_stream.read(_buffer->_buffer, read_bytes);
-      patch_bytes += read_bytes;
-      write_stream.write(_buffer->_buffer, read_bytes);
-    }
-
-    total_patch_bytes += patch_bytes;
-
-    // If the patch file is empty, write any remaining original file
-    // bytes to the out file
-    if (total_patch_bytes >= patch_file_length) {
-      while (total_orig_bytes < orig_file_length) {
-	int file_end = orig_file_length - total_orig_bytes;
-	read_bytes = (file_end < buflen) ? file_end : buflen;
-	file_stream.read(_buffer->_buffer, read_bytes);
-	total_orig_bytes += read_bytes;
-	write_stream.write(_buffer->_buffer, read_bytes);
+      while (bytes_left > 0) {
+        PN_uint32 bytes_this_time = (bytes_left < buflen) ? bytes_left : buflen;
+        patch_stream.read(_buffer->_buffer, bytes_this_time);
+        write_stream.write(_buffer->_buffer, bytes_this_time);
+        bytes_left -= bytes_this_time;
       }
     }
 
+    ///////////
+    // read # of COPY bytes
+    nassertr(_buffer->get_length() >= sizeof(COPY_length), false);
+    patch_stream.read(_buffer->_buffer, sizeof(COPY_length));
+    _datagram.clear();
+    _datagram.append_data(_buffer->_buffer, sizeof(COPY_length));
+    DatagramIterator di2(_datagram);
+    COPY_length = di2.get_uint32();
+
+    // if there are bytes to copy, read them from original file and write them to output
+    if (0 != COPY_length) {
+      // read copy offset
+      nassertr(_buffer->get_length() >= sizeof(COPY_offset), false);
+      patch_stream.read(_buffer->_buffer, sizeof(COPY_offset));
+      _datagram.clear();
+      _datagram.append_data(_buffer->_buffer, sizeof(COPY_offset));
+      DatagramIterator di(_datagram);
+      COPY_offset = di.get_uint32();
+
+      // seek to the offset
+      origfile_stream.seekg(COPY_offset, ios::beg);
+
+      // read the copy bytes from original file and write them to output
+      PN_uint32 bytes_left = COPY_length;
+
+      while (bytes_left > 0) {
+        PN_uint32 bytes_this_time = (bytes_left < buflen) ? bytes_left : buflen;
+        origfile_stream.read(_buffer->_buffer, bytes_this_time);
+        write_stream.write(_buffer->_buffer, bytes_this_time);
+        bytes_left -= bytes_this_time;
+      }
+    }
+
+    // if we got a pair of zero-length ADD and COPY blocks, we're done
+    if ((0 == ADD_length) && (0 == COPY_length)) {
+      done = 1;
+    }
   }
 
+  // close files
   patch_stream.close();
-  file_stream.close();
+  origfile_stream.close();
   write_stream.close();
+
+  // delete the patch file and the original file
   patch.unlink();
   file.unlink();
+
+  // rename the temp file
   if (!mofile.rename_to(file)) {
     express_cat.error()
       << "Patchfile::apply() failed to rename temp file to: " << file
       << endl;
     return false;
   }
-  
-#if 0
-  if (!_temp_file_name.rename_to(file)) {
-    express_cat.error()
-      << "Patchfile::apply() failed to rename temp file to: " << file
-      << endl;
-    return false;
-  }
-#endif
-  
-  return true;
-}
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::reset
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-void Patchfile::
-reset(void) {
-  _datagram.clear();
-  _current_entry = (Entry *)0L;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -584,13 +550,13 @@ reset(void) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 int Patchfile::
-find_longest_sequence(Filename &infile, int &pos, int &len) const { 
+find_longest_sequence(Filename &infile, int &pos, int &len) const {
   // Open the file for read
   ifstream read_stream;
   infile.set_binary();
   if (!infile.open_read(read_stream)) {
     express_cat.error()
-      << "Patchfile::find_longest_sequence() - Failed to open file: " 
+      << "Patchfile::find_longest_sequence() - Failed to open file: "
       << infile << endl;
     return 0;
   }
@@ -616,20 +582,10 @@ find_longest_sequence(Filename &infile, int &pos, int &len) const {
 	pos = i;
       }
     }
-  } 
+  }
 
   read_stream.close();
 
   return longest_seq_len;
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: Patchfile::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-Patchfile::Entry::
-Entry(void) {
-  _len = 3 * sizeof(PN_int32);
-  _buffer = (char *)0L;
-}
