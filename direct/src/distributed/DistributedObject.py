@@ -8,3 +8,6 @@ class DistributedObject(PandaObject):
         self.doId=doId
         self.zone=di.getUint32()
         assert(di.getRemainingSize() == 0)
+
+    def sendUpdate(self, fieldName, args):
+        cr.sendupdate(self, fieldName, args)
