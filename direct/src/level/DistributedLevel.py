@@ -338,6 +338,7 @@ class DistributedLevel(DistributedObject.DistributedObject,
                             (child, parent))
                         child.reparentTo(parent.getNodePath())
                     del self.parent2pendingChildren[parentId]
+                    self.ignore(self.getEntityCreateEvent(parentId))
                     
                 self.accept(self.getEntityCreateEvent(parentId), doReparent)
 
