@@ -336,9 +336,8 @@ intersects_line(double &t1, double &t2,
     // Tangent.
     t1 = t2 = -B /(2.0*A);
     return true;
-  } else
 
-  if (radical < 0.0) {
+  } else if (radical < 0.0) {
     // No real roots: no intersection with the line.
     return false;
   }
