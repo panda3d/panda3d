@@ -3,7 +3,8 @@
 # generate address base file for panda dlls
 # to simplify things, do it for Opt1 and reuse that for Opt2, 
 # and do it for Opt3 and use that for Opt4, since they will both be bigger than counterparts
-# to run, 'perl basedlls.pl' will generate dllbase.txt and dllbase_d.txt in 'tmp' dir under current
+# to run, in any directory, do 'perl basedlls.pl' and it will generate dllbase.txt and dllbase_d.txt in 'tmp' dir under current
+# make sure Opt1 and Opt3 are current so current sizes are used in map
 
 $archive_root="\\\\dimbo\\panda\\win\\";
 
@@ -49,9 +50,9 @@ chdir("tmp");
 unlink($basedlllogfilename);
 
 ############################
-### do debug
+### do release
 
-$archivepath=$archive_root."debug";
+$archivepath=$archive_root."release";
 
 # need to remove existing files or rebase will just append to them
 open(OUTFILE, ">$dllbasefile") || die "Couldn't open $dllbasefile!\n";
@@ -70,13 +71,13 @@ print $args[0]." ".$args[1]." ".$args[2]."\n";
 system(@args);
 
 ############################
-### do release
+### do debug
 
 open(OUTFILE, ">>$dllbasefile") || die "Couldn't open $dllbasefile!\n";
 print OUTFILE "\n; debug dlls\n\n";
 close(OUTFILE);
 
-$archivepath=$archive_root."release";
+$archivepath=$archive_root."debug";
 foreach my $dir1 (@modules) {    
    my @args=("cmd.exe","/c","copy ".$archivepath."\\$dir1\\lib\\*.dll .");
    system(@args);
@@ -87,11 +88,10 @@ $argstr="-v -b $baseaddr -c $dllbasefile -l $basedlllogfilename $dll_names_dbg";
 print $args[0]." ".$args[1]." ".$args[2]."\n";
 system(@args);
 
-$argstr="-v -b $baseaddr -c $dllbasefile -l $basedlllogfilename $dll_names_dbg";
-
 @args=("dos2unix",$dllbasefile);
 print $args[0]." ".$args[1]." ".$args[2]."\n";
 system(@args);
+
 
 exit(0);
 
