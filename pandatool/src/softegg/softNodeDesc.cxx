@@ -332,14 +332,14 @@ set_parentJoint(SAA_Scene *scene, SoftNodeDesc *lastJoint) {
   if (has_model())
     SAA_modelIsSkeleton( scene, get_model(), &isSkeleton );
   
-  // if name has "joint" in it
+  // if  already a joint or name has "joint" in it
   const char *name = get_name().c_str();
-  if (isSkeleton || strstr(name, "joint") != NULL) {
+  if (is_joint() || isSkeleton || strstr(name, "joint") != NULL) {
     lastJoint = this;
   }
   if ( _parentJoint && strstr( _parentJoint->get_name().c_str(), "scale" ) != NULL ) {
-    _parentJoint = lastJoint = NULL;
-    //lastJoint = stec._tree._root;
+    _parentJoint = NULL;
+    //    _parentJoint = lastJoint = NULL;
     softegg_cat.spam() << "scale joint flag set!\n";
   }
 
