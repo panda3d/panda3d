@@ -113,7 +113,7 @@ class DirectAnalogs(AnalogNode, DirectObject):
         else:
             sign = 1
         # Zero out values in deadband
-        print ANALOG_DEADBAND
+#        print ANALOG_DEADBAND
         val = sign * max(abs(val) - ANALOG_DEADBAND, 0.0)
         # Now clamp value between minVal and maxVal
         val = min( max( val, ANALOG_MIN ), ANALOG_MAX )
