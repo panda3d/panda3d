@@ -62,6 +62,7 @@ PUBLISHED:
   void hide();
   void stash();
   void unstash();
+  void detach();
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;

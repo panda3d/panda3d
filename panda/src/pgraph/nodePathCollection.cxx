@@ -367,6 +367,18 @@ unstash() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::detach
+//       Access: Published
+//  Description: Detaches all NodePaths in the collection.
+////////////////////////////////////////////////////////////////////
+void NodePathCollection::
+detach() {
+  for (int i = 0; i < get_num_paths(); i++) {
+    get_path(i).detach_node();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::output
 //       Access: Published
 //  Description: Writes a brief one-line description of the
