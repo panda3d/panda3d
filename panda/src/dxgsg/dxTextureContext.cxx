@@ -1137,8 +1137,6 @@ CreateTexture(LPDIRECT3DDEVICE7 pd3dDevice, int cNumTexPixFmts, LPDDPIXELFORMAT 
         }
     }
 
-    assert((cNumColorChannels!=3)==(cNumAlphaBits>0));  // 3 channel w/alpha makes no sense
-
     // handle each bitdepth separately
 
     switch(bpp) {  // bpp is REQUESTED bpp, not what exists in the pixbuf array
