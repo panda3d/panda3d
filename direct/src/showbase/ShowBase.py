@@ -10,6 +10,7 @@ __builtins__["config"] = ConfigConfigureGetConfigConfigShowbase
 
 from direct.directnotify.DirectNotifyGlobal import *
 from MessengerGlobal import *
+from BulletinBoardGlobal import *
 from direct.task.TaskManagerGlobal import *
 from EventManagerGlobal import *
 from PythonUtil import *
@@ -221,6 +222,7 @@ class ShowBase(DirectObject.DirectObject):
         self.loader = Loader.Loader(self)
         self.eventMgr = eventMgr
         self.messenger = messenger
+        self.bboard = bulletinBoard
         self.taskMgr = taskMgr
 
         # Particle manager
@@ -252,6 +254,7 @@ class ShowBase(DirectObject.DirectObject):
         __builtins__["taskMgr"] = self.taskMgr
         __builtins__["eventMgr"] = self.eventMgr
         __builtins__["messenger"] = self.messenger
+        __builtins__["bboard"] = self.bboard
         # Config needs to be defined before ShowBase is constructed
         #__builtins__["config"] = self.config
         __builtins__["run"] = self.run
