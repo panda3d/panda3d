@@ -45,11 +45,14 @@ class CullHandler;
 class EXPCL_PANDA GraphicsLayer : public TypedReferenceCount {
 private:
   GraphicsLayer();
-  GraphicsLayer(GraphicsChannel *channel);
+  GraphicsLayer(GraphicsChannel *channel, int sort);
 
 private:
   GraphicsLayer(const GraphicsLayer &copy);
   void operator = (const GraphicsLayer &copy);
+
+public:
+  INLINE bool operator < (const GraphicsLayer &other) const;
 
 PUBLISHED:
   virtual ~GraphicsLayer();
@@ -70,6 +73,9 @@ PUBLISHED:
   void set_active(bool active);
   INLINE bool is_active() const;
 
+  void set_sort(int sort);
+  INLINE int get_sort() const;
+
 public:
   void channel_resized(int x, int y);
 
@@ -79,6 +85,7 @@ private:
   Mutex _lock;
   GraphicsChannel *_channel;
   bool _is_active;
+  int _sort;
 
   typedef pvector< PT(DisplayRegion) > DisplayRegions;
   DisplayRegions _display_regions;

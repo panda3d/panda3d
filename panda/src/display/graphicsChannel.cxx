@@ -100,22 +100,73 @@ GraphicsChannel::
 //     Function: GraphicsChannel::make_layer
 //       Access: Published
 //  Description: Creates a new GraphicsLayer, associated with the
-//               window, at the indicated index position.  If the
-//               index position negative or past the end of the array,
-//               the end of the array is assumed.  The layers will be
-//               rendered on top of each other, in increasing order by
-//               index, from back to front.
+//               window, with the indicated sort value.  The sort
+//               value is an arbitrary integer, and may be zero or
+//               negative.  The graphics layers are rendered in order
+//               from lower sort value to higher sort value; within
+//               layers of the same sort value, they are ordered in
+//               sequence from the first added to the last added.
 ////////////////////////////////////////////////////////////////////
 GraphicsLayer *GraphicsChannel::
-make_layer(int index) {
+make_layer(int sort) {
   MutexHolder holder(_lock);
-  PT(GraphicsLayer) layer = new GraphicsLayer(this);
-  if (index < 0 || index >= (int)_layers.size()) {
-    _layers.push_back(layer);
-  } else {
-    _layers.insert(_layers.begin() + index, layer);
-  }
+  PT(GraphicsLayer) layer = new GraphicsLayer(this, sort);
+  _layers.insert(layer);
+
   return layer;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsChannel::remove_layer
+//       Access: Published
+//  Description: Removes the indicated GraphicsLayer.  Returns true if
+//               it was successfully removed, false if it was not a
+//               member of the channel in the first place.
+////////////////////////////////////////////////////////////////////
+bool GraphicsChannel::
+remove_layer(GraphicsLayer *layer) {
+  MutexHolder holder(_lock);
+  GraphicsLayers::iterator li = find_layer(layer);
+
+  if (li == _layers.end()) {
+    return false;
+  }
+
+  _layers.erase(li); 
+  win_display_regions_changed();
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsChannel::move_layer
+//       Access: Published
+//  Description: Reinserts the indicated layer into the list with the
+//               indicated sort value.  The layer will be rendered
+//               last among all of the previously-added layers with
+//               the same sort value.  If the new sort value is the
+//               same as the previous sort value, the layer will be
+//               moved to the end of the list of layers with this sort
+//               value.
+//
+//               Returns true if the layer is successfully moved,
+//               false if it is not a member of this channel.
+////////////////////////////////////////////////////////////////////
+bool GraphicsChannel::
+move_layer(GraphicsLayer *layer, int sort) {
+  MutexHolder holder(_lock);
+
+  GraphicsLayers::iterator li = find_layer(layer);
+  if (li == _layers.end()) {
+    return false;
+  }
+
+  PT(GraphicsLayer) hold_layer = layer;
+  _layers.erase(li);
+  layer->_sort = sort;
+  _layers.insert(layer);
+
+  win_display_regions_changed();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -134,57 +185,17 @@ get_num_layers() const {
 //     Function: GraphicsChannel::get_layer
 //       Access: Published
 //  Description: Returns the nth layer associated with the channel.
+//               Walking through this list from 0 to (get_num_layers()
+//               - 1) will retrieve all of the layers in the order in
+//               which they will be rendered.  It is therefore invalid
+//               to call make_layer(), remove_layer(), or move_layer()
+//               while traversing this list.
 ////////////////////////////////////////////////////////////////////
 GraphicsLayer *GraphicsChannel::
 get_layer(int index) const {
   MutexHolder holder(_lock);
-  if (index >= 0 && index < (int)_layers.size()) {
-    return _layers[index];
-  }
-  return NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsChannel::move_layer
-//       Access: Published
-//  Description: Changes the ordering of the layers so that the
-//               indicated layer will move to the indicated position.
-//               If to_index is negative or past the end of the array,
-//               the end of the array is assumed.
-////////////////////////////////////////////////////////////////////
-void GraphicsChannel::
-move_layer(int from_index, int to_index) {
-  MutexHolder holder(_lock);
-  nassertv(from_index >= 0 && from_index < (int)_layers.size());
-  PT(GraphicsLayer) layer = _layers[from_index];
-
-  if (to_index < 0 || to_index >= (int)_layers.size()) {
-    _layers.erase(_layers.begin() + from_index);
-    _layers.push_back(layer);
-
-  } else if (to_index > from_index) {
-    // Move the layer later in the list.
-    _layers.insert(_layers.begin() + to_index, layer);
-    _layers.erase(_layers.begin() + from_index);
-
-  } else if (to_index < from_index) {
-    // Move the layer earlier in the list.
-    _layers.erase(_layers.begin() + from_index);
-    _layers.insert(_layers.begin() + to_index, layer);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsChannel::remove_layer
-//       Access: Published
-//  Description: Removes the nth layer.  This changes the numbers of
-//               all subsequent layers.
-////////////////////////////////////////////////////////////////////
-void GraphicsChannel::
-remove_layer(int index) {
-  MutexHolder holder(_lock);
-  nassertv(index >= 0 && index < (int)_layers.size());
-  _layers.erase(_layers.begin() + index);
+  nassertr(index >= 0 && index < (int)_layers.size(), NULL);
+  return _layers[index];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -266,4 +277,25 @@ win_display_regions_changed() {
   if (_window != (GraphicsWindow *)NULL) {
     _window->win_display_regions_changed();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsChannel::find_layer
+//       Access: Private
+//  Description: Returns the iterator corresponding to the indicated
+//               layer, or _layers.end() if the layer is not part of
+//               this channel.
+////////////////////////////////////////////////////////////////////
+GraphicsChannel::GraphicsLayers::iterator GraphicsChannel::
+find_layer(GraphicsLayer *layer) {
+  GraphicsLayers::iterator li = _layers.lower_bound(layer);
+  while (li != _layers.end() && (*li) != layer) {
+    if (*layer < *(*li)) {
+      // The layer was not found.
+      return _layers.end();
+    }
+    ++li;
+  }
+
+  return li;
 }

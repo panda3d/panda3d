@@ -23,7 +23,8 @@
 #include "typedReferenceCount.h"
 #include "pointerTo.h"
 #include "pmutex.h"
-#include "pvector.h"
+#include "ordered_vector.h"
+#include "indirectLess.h"
 
 class GraphicsChannel;
 class GraphicsPipe;
@@ -51,11 +52,12 @@ private:
 
 PUBLISHED:
   virtual ~GraphicsChannel();
-  GraphicsLayer *make_layer(int index = -1);
+  GraphicsLayer *make_layer(int sort = 0);
+  bool remove_layer(GraphicsLayer *layer);
+  bool move_layer(GraphicsLayer *layer, int sort);
+
   int get_num_layers() const;
   GraphicsLayer *get_layer(int index) const;
-  void move_layer(int from_index, int to_index);
-  void remove_layer(int index);
 
   GraphicsWindow *get_window() const;
   GraphicsPipe *get_pipe() const;
@@ -74,8 +76,11 @@ protected:
   GraphicsWindow *_window;
   bool _is_active;
 
-  typedef pvector< PT(GraphicsLayer) > GraphicsLayers;
+  typedef ov_multiset< PT(GraphicsLayer), IndirectLess<GraphicsLayer> > GraphicsLayers;
   GraphicsLayers _layers;
+
+private:
+  GraphicsLayers::iterator find_layer(GraphicsLayer *layer);
 
 public:
   static TypeHandle get_class_type() {

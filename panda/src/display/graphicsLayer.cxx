@@ -37,6 +37,7 @@ TypeHandle GraphicsLayer::_type_handle;
 GraphicsLayer::
 GraphicsLayer() {
   _channel = NULL;
+  _sort = 0;
   _is_active = true;
 }
 
@@ -47,8 +48,9 @@ GraphicsLayer() {
 //               layer.
 ////////////////////////////////////////////////////////////////////
 GraphicsLayer::
-GraphicsLayer(GraphicsChannel *channel)
-  : _channel(channel)
+GraphicsLayer(GraphicsChannel *channel, int sort) :
+  _channel(channel),
+  _sort(sort)
 {
   _is_active = true;
 }
@@ -255,6 +257,24 @@ set_active(bool active) {
   if (active != _is_active) {
     _is_active = active;
     win_display_regions_changed();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsLayer::set_sort
+//       Access: Published
+//  Description: Changes the sort parameter on the layer.  If the sort
+//               parameter is changed, the layer will be reordered
+//               among the other layers on the same channel.  If the
+//               sort parameter is not changed, the layer will remain
+//               in the same sort position.  (This is different from
+//               GraphicsChannel::move_layer(), which will reorder the
+//               layer even if the sort parameter does not change.)
+////////////////////////////////////////////////////////////////////
+void GraphicsLayer::
+set_sort(int sort) {
+  if (sort != _sort) {
+    _channel->move_layer(this, sort);
   }
 }
 
