@@ -91,7 +91,7 @@ class Button(DirectObject):
         self.setPos(pos[0], pos[1])
         self.managed = 0
 
-	return None
+        return None
 
     def cleanup(self):
         if (self.managed):
@@ -101,7 +101,7 @@ class Button(DirectObject):
         self.lDown = None
         self.lInactive = None
         self.button = None
-	return None
+        return None
 
     def __str__(self):
         return "Button: %s" % self.name
