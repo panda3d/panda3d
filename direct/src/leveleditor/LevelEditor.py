@@ -39,13 +39,14 @@ BUILDING_TYPES = ['10_10', '20', '10_20', '20_10', '10_10_10',
                   '12_8', '13_9_8'
                   ]
 # The list of neighborhoods to edit
-NEIGHBORHOODS = ['toontown_central',
-                 'donalds_dock',
-                 'minnies_melody_land',
-                 'the_burrrgh',
-                 'daisys_garden',
-                 'donalds_dreamland'
-                 ]
+NEIGHBORHOODS = [
+    'toontown_central',
+    'donalds_dock',
+    'minnies_melody_land',
+    'the_burrrgh',
+    'daisys_garden',
+    'donalds_dreamland',
+    ]
 NEIGHBORHOOD_CODES = {'toontown_central': 'TT',
                       'donalds_dock': 'DD',
                       'minnies_melody_land': 'MM',
