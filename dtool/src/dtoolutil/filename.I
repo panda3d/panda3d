@@ -362,8 +362,7 @@ set_type(Filename::Type type) {
   case T_executable:
     set_binary();
 
-  default:
-    ;
+  NODEFAULT;
   }
 }
 
