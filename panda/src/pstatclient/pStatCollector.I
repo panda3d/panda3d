@@ -355,6 +355,24 @@ get_level(const PStatThread &thread) {
 //               should compile to nothing.
 ////////////////////////////////////////////////////////////////////
 INLINE PStatCollector::
+PStatCollector(const string &, PStatClient *client) {
+  // We need this bogus comparison just to prevent the SGI compiler
+  // from dumping core.  It's perfectly meaningless.
+#ifdef mips
+  if (client == (PStatClient *)NULL) {
+    return;
+  }
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::Constructor
+//       Access: Published
+//  Description: This bogus version of the function is only defined if
+//               DO_PSTATS is not defined, meaning all these functions
+//               should compile to nothing.
+////////////////////////////////////////////////////////////////////
+INLINE PStatCollector::
 PStatCollector(const PStatCollector &parent, const string &) {
   // We need this bogus comparison just to prevent the SGI compiler
   // from dumping core.  It's perfectly meaningless.
