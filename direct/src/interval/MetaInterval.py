@@ -103,6 +103,56 @@ class MetaInterval(CMetaInterval):
         # Appends a list of intervals to the list so far.
         self += ivals
 
+    def count(self, ival):
+        # Returns the number of occurrences of the indicated interval.
+        return self.ivals.count(ival)
+
+    def index(self, ival):
+        # Returns the position of the indicated interval within the list.
+        return self.ivals.index(ival)
+
+    def insert(self, index, ival):
+        # Inserts the given interval into the middle of the list.
+        if isinstance(self.ivals, types.TupleType):
+            self.ivals = list(self.ivals)
+        self.ivals.insert(index, ival)
+        self.__ivalsDirty = 1
+
+    def pop(self, index = None):
+        # Returns element index (or the last element) and removes it
+        # from the list.
+        if isinstance(self.ivals, types.TupleType):
+            self.ivals = list(self.ivals)
+        self.__ivalsDirty = 1
+        if index == None:
+            return self.ivals.pop()
+        else:
+            return self.ivals.pop(index)
+
+    def remove(self, ival):
+        # Removes the indicated interval from the list.
+        if isinstance(self.ivals, types.TupleType):
+            self.ivals = list(self.ivals)
+        self.ivals.remove(ival)
+        self.__ivalsDirty = 1
+
+    def reverse(self):
+        # Reverses the order of the intervals.
+        if isinstance(self.ivals, types.TupleType):
+            self.ivals = list(self.ivals)
+        self.ivals.reverse()
+        self.__ivalsDirty = 1
+
+    def sort(self, cmpfunc = None):
+        # Sorts the intervals. (?)
+        if isinstance(self.ivals, types.TupleType):
+            self.ivals = list(self.ivals)
+        self.__ivalsDirty = 1
+        if cmpfunc == None:
+            self.ivals.sort()
+        else:
+            self.ivals.sort(cmpfunc)
+
     def __len__(self):
         return len(self.ivals)
 
