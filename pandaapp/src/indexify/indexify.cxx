@@ -158,6 +158,12 @@ Indexify() {
      &Indexify::dispatch_none, &caption_frame_numbers);
 
   add_option
+    ("font", "fontname", 0,
+     "Specifies the filename of the font to use to generate the thumbnail "
+     "captions.",
+     &Indexify::dispatch_filename, NULL, &_font_filename);
+
+  add_option
     ("fontaa", "factor", 0,
      "Specifies a scale factor to apply to the fonts used for captioning "
      "when generating text for the purpose of antialiasing the fonts a "
@@ -167,14 +173,8 @@ Indexify() {
      &Indexify::dispatch_double, NULL, &_font_aa_factor);
 
   add_option
-    ("font", "fontname", 0,
-     "Specifies the filename of the font to use to generate the thumbnail "
-     "captions.",
-     &Indexify::dispatch_filename, NULL, &_font_filename);
-
-  add_option
     ("thumb", "x,y", 0,
-     "Specifies the size in pixels of thumbnails.",
+     "Specifies the size in pixels of the thumbnail images.",
      &Indexify::dispatch_int_pair, NULL, &thumb_width);
 
   add_option
@@ -185,12 +185,13 @@ Indexify() {
 
   add_option
     ("space", "x,y", 0,
-     "Specifies the x,y spacing between thumbnails in pixels.",
+     "Specifies the x,y spacing between thumbnail images, in pixels.",
      &Indexify::dispatch_int_pair, NULL, &thumb_x_space);
 
   add_option
     ("index", "x,y", 0,
-     "Specifies the size in pixels of the index images.",
+     "Specifies the size in pixels of the index images (the images that "
+     "contain an index of thumbnails).",
      &Indexify::dispatch_int_pair, NULL, &max_index_width);
 
   add_option
