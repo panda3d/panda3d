@@ -165,16 +165,15 @@ void ConfigTable::ReadConfigFile(void) {
     if (microconfig_cat->is_spam())
       microconfig_cat->spam() << "examining file '" << config_file << "'"
 			       << endl;
-    /*
-    if (file_access(convert_executable_pathname(config_file), X_OK) == 0) {
-      ConfigString line = config_file + " " + ExecutionEnvironment::get_binary_name();
+    if (config_file.is_executable()) {
+      ConfigString line = config_file.to_os_specific() + " "
+	+ ExecutionEnvironment::get_binary_name();
       if (microconfig_cat->is_spam())
 	microconfig_cat->spam() << "file is executable, running '"
 				 << line << "'" << endl;
-      ipfstream ifs(line);
+      IPipeStream ifs(line);
       ParseConfigFile(ifs, config_file);
-    } else
-    */{
+    } else {
       if (microconfig_cat->is_spam())
 	microconfig_cat->spam()
 	  << "file is not executable, reading normally" << endl;

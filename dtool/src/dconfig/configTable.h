@@ -73,6 +73,7 @@ class EXPCL_DTOOL ConfigTable {
       SymEnt Get(const ConfigString& sym, const ConfigString qual = "");
       const Symbol& GetSym(const ConfigString& sym,
 			   const ConfigString qual = "");
+      INLINE ConfigString GetConfigPath(void) const;
 };
 
 #include "configTable.I"

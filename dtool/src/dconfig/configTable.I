@@ -70,3 +70,7 @@ INLINE void ConfigTable::ArgSuffixDefault(void) {
 INLINE void ConfigTable::CommandStubDefault(void) {
   commandstub = "CONFIG";
 }
+
+INLINE ConfigString ConfigTable::GetConfigPath(void) const {
+  return configpath;
+}
