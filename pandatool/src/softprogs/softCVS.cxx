@@ -482,12 +482,32 @@ cvs_add(const string &path) {
 ////////////////////////////////////////////////////////////////////
 bool SoftCVS::
 cvs_add_all() {
+  static const int max_command = 4096;
+
   if (!_cvs_paths.empty()) {
     string command = _cvs_binary + " add";
     vector_string::const_iterator pi;
-    for (pi = _cvs_paths.begin(); pi != _cvs_paths.end(); ++pi) {
+    pi = _cvs_paths.begin();
+    while (pi != _cvs_paths.end()) {
+      const string &path = (*pi);
+
+      if ((int)command.length() + 1 + (int)path.length() >= max_command) {
+	// Fire off the command now.
+	nout << command << "\n";
+	int result = system(command.c_str());
+    
+	if (result != 0) {
+	  nout << "Failure invoking cvs.\n";
+	  return false;
+	}
+
+	command = _cvs_binary + " add";
+      }
+
       command += ' ';
-      command += (*pi);
+      command += path;
+
+      ++pi;
     }
     nout << command << "\n";
     int result = system(command.c_str());
