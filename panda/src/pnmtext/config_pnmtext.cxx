@@ -17,7 +17,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_pnmtext.h"
-#include "staticTextFont.h"
 
 #include "dconfig.h"
 

@@ -23,10 +23,11 @@
 
 #ifdef HAVE_FREETYPE
 
-#include "config_text.h"
+#include "config_pnmtext.h"
 #include "filename.h"
 #include "pvector.h"
 #include "pmap.h"
+#include "pnmImage.h"
 #include "namable.h"
 
 #include <ft2build.h>

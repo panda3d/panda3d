@@ -74,7 +74,7 @@ generate_into(const wstring &text, PNMImage &dest_image, int x, int y) {
     width += glyph->get_advance();
   }
 
-  int xp;
+  int xp = x; 
   int yp = y;
 
   switch (_align) {
