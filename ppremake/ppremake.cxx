@@ -98,7 +98,7 @@ report_version() {
 
 static void
 report_platform() {
-  cerr << "ppremake built for platform " << PLATFORM << ".\n";
+  cerr << "ppremake built for default platform " << PLATFORM << ".\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -216,7 +216,13 @@ main(int argc, char *argv[]) {
   bool dependencies_stale = false;
   bool report_depends = false;
   bool report_reverse_depends = false;
-  string platform = PLATFORM;
+
+  string platform;
+  char *platform_env = getenv("PPREMAKE_PLATFORM");
+  if(platform_env==NULL) 
+     platform=PLATFORM;
+    else platform=platform_env;
+
   string ppremake_config;
   bool got_ppremake_config = false;
   string sed_command;
