@@ -321,9 +321,13 @@ class ShowBase(DirectObject.DirectObject):
         properties in base.camLens.
         """
         oldLens = self.camLens
+        oldClearColorActive = None
         if self.win != None:
             # Close the previous window.
-            oldLens = self.camLens
+            oldClearColorActive = self.win.getClearColorActive()
+            oldClearColor = VBase4(self.win.getClearColor())
+            oldClearDepthActive = self.win.getClearDepthActive()
+            oldClearDepth = self.win.getClearDepth()
             self.closeWindow(self.win)
 
         # Open a new window.
@@ -335,6 +339,13 @@ class ShowBase(DirectObject.DirectObject):
             # Restore the previous lens properties.
             self.camNode.setLens(oldLens)
             self.camLens = oldLens
+
+        if oldClearColorActive != None:
+            # Restore the previous clear properties.
+            self.win.setClearColorActive(oldClearColorActive)
+            self.win.setClearColor(oldClearColor)
+            self.win.setClearDepthActive(oldClearDepthActive)
+            self.win.setClearDepth(oldClearDepth)
 
     def setupRender(self):
         """setupRender(self)
