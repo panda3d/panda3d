@@ -19,14 +19,18 @@
 #include "config_ptloader.h"
 #include "loaderFileTypePandatool.h"
 
-#include <config_lwo.h>
-#include <fltToEggConverter.h>
-#include <config_flt.h>
-#include <lwoToEggConverter.h>
+#include "config_lwo.h"
+#include "fltToEggConverter.h"
+#include "config_flt.h"
+#include "lwoToEggConverter.h"
 
-#include <dconfig.h>
-#include <loaderFileTypeRegistry.h>
-#include <eggData.h>
+#ifdef HAVE_DX
+#include "xFileToEggConverter.h"
+#endif
+
+#include "dconfig.h"
+#include "loaderFileTypeRegistry.h"
+#include "eggData.h"
 
 ConfigureDef(config_ptloader);
 
@@ -61,4 +65,9 @@ init_libptloader() {
   init_libflt();
   LwoToEggConverter *lwo = new LwoToEggConverter;
   reg->register_type(new LoaderFileTypePandatool(lwo));
+
+#ifdef HAVE_DX
+  XFileToEggConverter *xfile = new XFileToEggConverter;
+  reg->register_type(new LoaderFileTypePandatool(xfile));
+#endif
 }

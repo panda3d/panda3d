@@ -24,4 +24,11 @@
 
 const int d3drm_xtemplates_length = D3DRM_XTEMPLATE_BYTES;
 
+// I don't know what the official Windows way to declare this thing
+// is.  This is my way.  What a strange coding environment this is.
+#define DECLARE_GUID(name, l, w1, w2, b1, b2, b3, b4, b5, b6, b7, b8) \
+  const GUID name \
+      = { l, w1, w2, { b1, b2,  b3,  b4,  b5,  b6,  b7,  b8 } }
 
+DECLARE_GUID(mydef_TID_D3DRMHeader,
+0x3d82ab43, 0x62da, 0x11cf, 0xab, 0x39, 0x0, 0x20, 0xaf, 0x71, 0xe4, 0x33);

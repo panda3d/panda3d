@@ -92,6 +92,7 @@ open(const Filename &filename) {
 
   // Save the templates we will use.
   static const GUID *temps[] = {
+    &mydef_TID_D3DRMHeader,
     &TID_D3DRMCoords2d,
     &TID_D3DRMVector,
     &TID_D3DRMColorRGBA,

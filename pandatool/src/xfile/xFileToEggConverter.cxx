@@ -27,7 +27,6 @@
 #include "eggMaterialCollection.h"
 #include "eggTextureCollection.h"
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: XFileToEggConverter::Constructor
 //       Access: Public
@@ -131,6 +130,10 @@ convert_file(const Filename &filename) {
   if (hr != DXFILE_OK) {
     nout << "Unable to open X file: " << os_file << "\n";
     return false;
+  }
+
+  if (_egg_data->get_coordinate_system() == CS_default) {
+    _egg_data->set_coordinate_system(CS_yup_left);
   }
 
   return get_toplevel();
@@ -249,7 +252,10 @@ convert_data_object(LPDIRECTXFILEDATA obj, EggGroupNode *egg_parent) {
     return false;
   }
 
-  if (*type == TID_D3DRMFrame) {
+  if (*type == mydef_TID_D3DRMHeader) {
+    // Quietly ignore headers.
+
+  } else if (*type == TID_D3DRMFrame) {
     if (!convert_frame(obj, egg_parent)) {
       return false;
     }
