@@ -1313,8 +1313,12 @@ compute_film_mat() {
   // The lens will return a point in the range [-film_size/2,
   // film_size/2] in each dimension.  Convert this to [-1, 1], and
   // also apply the offset.
-  const LVecBase2f &film_size = get_film_size();
-  const LVector2f &film_offset = get_film_offset();
+
+  // We declare these two as local variables, instead of references,
+  // to work around a VC7 compiler bug.
+  LVecBase2f film_size = get_film_size();
+  LVector2f film_offset = get_film_offset();
+
   /* this line triggers a VC7 opt bug, so explicitly set matrix below instead
   _film_mat =
     LMatrix4f::translate_mat(-film_offset[0], -film_offset[1], 0.0f) *
