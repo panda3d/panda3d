@@ -48,6 +48,14 @@
 /* C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data */
 #pragma warning (disable : 4244)
 
+/*
+#if _MSC_VER < 1300
+#pragma message("VC 6.0")
+#else 
+#pragma message("VC 7.0")
+#endif
+*/
+
 #endif  /* WIN32_VC */
 
 #include "dtoolsymbols.h"

@@ -24,6 +24,11 @@
 
 #include <set>
 
+#ifdef UNKNOWN_ALLOCATOR
+#define pset set
+#define pmultiset multiset
+#else
+
 ////////////////////////////////////////////////////////////////////
 //       Class : pset
 // Description : This is our own Panda specialization on the default
@@ -55,4 +60,4 @@ public:
 };
 
 #endif
-
+#endif

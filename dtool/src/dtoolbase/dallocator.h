@@ -18,10 +18,9 @@
 
 #ifndef DALLOCATOR_H
 #define DALLOCATOR_H
+#include <memory>
 
 #include "dtoolbase.h"
-
-#include <memory>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : dallocator
@@ -36,7 +35,9 @@
 //               within the MemoryUsage class itself.
 ////////////////////////////////////////////////////////////////////
 
-#if defined(OLD_STYLE_ALLOCATOR)
+#if defined(UNKNOWN_ALLOCATOR)
+#define dallocator allocator
+#elif defined(OLD_STYLE_ALLOCATOR)
 // Early versions of gcc wanted to use its own kind of allocator,
 // somewhat different from the STL standard.  Irix uses this one too.
 // It might be inherited from an early draft of the STL standard.
@@ -80,13 +81,14 @@ class dallocator : public allocator<Type> {
 public:
 #ifndef NDEBUG
   INLINE pointer allocate(size_type n, allocator<void>::const_pointer hint = 0);
-  //  INLINE void deallocate(pointer p, size_type n);
   INLINE void deallocate(void *p, size_type n);
 #endif  // NDEBUG
 };
 #endif  // *_STYLE_ALLOCATOR
 
+#if !defined(UNKNOWN_ALLOCATOR)
 #include "dallocator.T"
+#endif
 
 #endif
 

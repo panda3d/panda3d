@@ -24,6 +24,11 @@
 
 #include <map>
 
+#ifdef UNKNOWN_ALLOCATOR
+#define pmap map
+#define pmultimap multimap
+#else
+
 ////////////////////////////////////////////////////////////////////
 //       Class : pmap
 // Description : This is our own Panda specialization on the default
@@ -55,4 +60,4 @@ public:
 };
 
 #endif
-
+#endif

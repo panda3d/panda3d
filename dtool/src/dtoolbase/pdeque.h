@@ -21,8 +21,12 @@
 
 #include "dtoolbase.h"
 #include "pallocator.h"
-
 #include <deque>
+
+#ifdef UNKNOWN_ALLOCATOR
+#define pdeque deque 
+
+#else
 
 ////////////////////////////////////////////////////////////////////
 //       Class : pdeque
@@ -41,4 +45,4 @@ public:
 };
 
 #endif
-
+#endif

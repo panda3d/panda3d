@@ -19,10 +19,14 @@
 #ifndef PVECTOR_H
 #define PVECTOR_H
 
+#include <vector>
+
 #include "dtoolbase.h"
 #include "pallocator.h"
 
-#include <vector>
+#ifdef UNKNOWN_ALLOCATOR
+#define pvector vector
+#else
 
 ////////////////////////////////////////////////////////////////////
 //       Class : pvector
@@ -41,5 +45,6 @@ public:
   pvector(const Type *begin, const Type *end) : vector<Type, pallocator<Type> >(begin, end) { }
 };
 
+#endif
 #endif
 

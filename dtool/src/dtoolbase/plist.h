@@ -21,8 +21,12 @@
 
 #include "dtoolbase.h"
 #include "pallocator.h"
-
 #include <list>
+
+#ifdef UNKNOWN_ALLOCATOR
+#define plist list
+
+#else
 
 ////////////////////////////////////////////////////////////////////
 //       Class : plist
@@ -47,4 +51,4 @@ public:
 };
 
 #endif
-
+#endif
