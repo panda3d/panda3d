@@ -83,8 +83,8 @@
 // NODEFAULTLIB ensures static libs linked in will connect to the correct msvcrt, so no debug/release mixing occurs
 #defer LDFLAGS_OPT1 /debug /incremental:no /NODEFAULTLIB:MSVCRT.LIB /WARN:3 $[PROFILE_FLAG]
 #defer LDFLAGS_OPT2 /debug /incremental:no /NODEFAULTLIB:MSVCRT.LIB /WARN:3 $[PROFILE_FLAG]
-#defer LDFLAGS_OPT3 /fixed:no /NODEFAULTLIB:MSVCRTD.LIB /WARN:3 $[PROFILE_FLAG]
-#defer LDFLAGS_OPT4 /fixed:no /NODEFAULTLIB:MSVCRTD.LIB $[PROFILE_FLAG]
+#defer LDFLAGS_OPT3 /fixed:no /incremental:no /NODEFAULTLIB:MSVCRTD.LIB /WARN:3 $[PROFILE_FLAG] /OPT:REF
+#defer LDFLAGS_OPT4 /fixed:no /incremental:no /NODEFAULTLIB:MSVCRTD.LIB /WARN:3 $[PROFILE_FLAG] /OPT:REF
 
 // $[dllext] will be "_d" for debug builds, and empty for non-debug
 // builds.  This is the extra bit of stuff we tack on to the end of a
