@@ -67,6 +67,32 @@ get_current_queue_size() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: QueuedReturn::get_overflow_flag
+//       Access: Published
+//  Description: Returns true if the queue has overflowed since the
+//               last call to reset_overflow_flag() (implying that
+//               some elements have been dropped from the queue), or
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+template<class Thing>
+bool QueuedReturn<Thing>::
+get_overflow_flag() const {
+  return _overflow_flag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: QueuedReturn::reset_overflow_flag
+//       Access: Published
+//  Description: Resets the overflow flag so that get_overflow_flag()
+//               will return false until a new overflow occurs.
+////////////////////////////////////////////////////////////////////
+template<class Thing>
+void QueuedReturn<Thing>::
+reset_overflow_flag() {
+  _overflow_flag = false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: QueuedReturn::Constructor
 //       Access: Protected
 //  Description:
@@ -77,6 +103,7 @@ QueuedReturn() {
   _mutex = PR_NewLock();
   _available = false;
   _max_queue_size = get_net_max_response_queue();
+  _overflow_flag = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -147,6 +174,8 @@ enqueue_thing(const Thing &thing) {
   bool enqueue_ok = ((int)_things.size() < _max_queue_size);
   if (enqueue_ok) {
     _things.push_back(thing);
+  } else {
+    _overflow_flag = true;
   }
   _available = true;
   PR_Unlock(_mutex);
@@ -176,6 +205,9 @@ enqueue_unique_thing(const Thing &thing) {
       // It was already there; return false to indicate this.
       enqueue_ok = false;
     }
+
+  } else {
+    _overflow_flag = true;
   }
   _available = true;
   PR_Unlock(_mutex);

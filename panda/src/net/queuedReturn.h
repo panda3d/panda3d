@@ -42,6 +42,9 @@ PUBLISHED:
   int get_max_queue_size() const;
   int get_current_queue_size() const;
 
+  bool get_overflow_flag() const;
+  void reset_overflow_flag();
+
 protected:
   QueuedReturn();
   ~QueuedReturn();
@@ -57,6 +60,7 @@ private:
   pdeque<Thing> _things;
   bool _available;
   int _max_queue_size;
+  bool _overflow_flag;
 };
 
 #include "queuedReturn.I"

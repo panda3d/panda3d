@@ -19,7 +19,8 @@
      netAddress.h netDatagram.I netDatagram.h  \
      pprerror.h queuedConnectionListener.I  \
      queuedConnectionListener.h queuedConnectionManager.h  \
-     queuedConnectionReader.h recentConnectionReader.h 
+     queuedConnectionReader.h recentConnectionReader.h \
+     queuedReturn.h queuedReturn.I
 
   #define INCLUDED_SOURCES \ \
      config_net.cxx connection.cxx connectionListener.cxx  \
